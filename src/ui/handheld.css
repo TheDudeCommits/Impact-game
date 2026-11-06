@@ -1,0 +1,273 @@
+/* Phones and tablets (src/input/touch.ts, src/input/device.ts, src/render/qualityTier.ts): the on-screen controls,
+   the turn-your-phone page, the graphics notice, and the home and mode sheet at a phone's size. The controls are dark
+   glass with thin bright rims, the skills wearing their move's art, see-through enough to watch the fight behind them;
+   every position keeps clear of the notch and the home bar (safe-area insets) and is sized for a thumb. */
+/* Absolute against the page's own box, as the HUD is, not fixed: a phone's browser can widen the viewport fixed things
+   hang from past the screen (Chrome did, to 1756 px on an 844 px phone, mid-royale) and the buttons went with it. */
+.touch-controls{--tc-ink:#0b0c0e;--tc-paper:#fbf6ea;--tc-red:#cc202b;--tc-gold:#f0c35a;--tc-teal:#3ad1c9;--tc-rim:#fbf6eadb;--tc-k:1;position:absolute;inset:0;z-index:40;pointer-events:none;overflow:hidden;
+  touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  font-family:'Barlow Condensed','Arial Narrow',sans-serif;font-style:italic;font-weight:900;
+  --tc-l:env(safe-area-inset-left,0px);--tc-r:env(safe-area-inset-right,0px);--tc-b:env(safe-area-inset-bottom,0px);--tc-t:env(safe-area-inset-top,0px)}
+.touch-controls[hidden]{display:none}
+.touch-controls.tc-tablet{--tc-k:1.3}
+.touch-controls *{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+
+.tc-stick{position:absolute;left:0;top:0;width:0;height:0;opacity:0;transition:opacity .12s}
+.tc-stick.on{opacity:1}
+.tc-base,.tc-knob,.tc-stick-home{position:absolute;display:block;border-radius:50%}
+.tc-base{width:calc(116px * var(--tc-k));height:calc(116px * var(--tc-k));margin:calc(-58px * var(--tc-k))}
+.tc-knob{width:calc(46px * var(--tc-k));height:calc(46px * var(--tc-k));margin:calc(-23px * var(--tc-k));box-sizing:border-box;
+  background:radial-gradient(circle at 50% 36%,#fbf6ea8f,#fbf6ea38 72%);border:2px solid #fbf6eae6;box-shadow:0 0 0 1px #0b0c0e66}
+.tc-stick-home{left:calc(40px * var(--tc-k) + var(--tc-l));bottom:calc(34px * var(--tc-k) + var(--tc-b));width:calc(116px * var(--tc-k));height:calc(116px * var(--tc-k));
+  opacity:.82;transition:opacity .2s}
+.tc-stick-home .tc-knob{left:50%;top:50%;opacity:.7}
+.tc-stick.on~.tc-stick-home{opacity:0}
+.tc-ring-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:#0b0c0e2e;stroke:#fbf6eab8;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 1px #0b0c0e99)}
+.tc-ring-svg path{fill:none;stroke-width:3.2}
+/* The buttons: dark glass with a thin bright rim, in the game's ink and paper. --d across, --x
+   from the right and --y from the bottom of the safe area (phone px, scaled on a tablet): TouchControls sets them from
+   input/touchLayout.ts, where the fan is drawn and tested. */
+.tc-btn{--d:62px;--x:0px;--y:0px;position:absolute;display:block;box-sizing:border-box;margin:0;padding:0;border-radius:50%;
+  width:calc(var(--d) * var(--tc-k));height:calc(var(--d) * var(--tc-k));right:calc(var(--x) * var(--tc-k) + var(--tc-r));bottom:calc(var(--y) * var(--tc-k) + var(--tc-b));
+  pointer-events:auto;cursor:default;color:var(--tc-paper);background:radial-gradient(circle at 50% 30%,#30343c75,#0b0c0eab 72%);
+  border:calc(2px * var(--tc-k)) solid var(--tc-rim);box-shadow:0 0 0 1px #0b0c0e80,inset 0 0 0 1px #0b0c0e66;
+  font:inherit;font-size:calc(var(--d) * .25 * var(--tc-k));line-height:1;isolation:isolate;transition:transform .06s,border-color .12s}
+.tc-face{position:absolute;inset:0;z-index:0;display:grid;place-items:center;border-radius:50%;overflow:hidden}
+.tc-glyph{width:48%;height:48%;margin-top:-14%;fill:none;stroke:var(--tc-paper);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.tc-fist{width:50%;height:50%;margin-top:-16%;fill:var(--tc-paper);stroke:var(--tc-ink);stroke-width:1.3}
+.tc-pause .tc-glyph{margin:0;width:56%;height:56%;stroke-width:3.4}
+/* The skills' faces: their move's art (touchArt.ts, as the move cards draw it: one panel of the fighter's sheet, or the
+   area move's own picture, or the reticle while that loads). */
+.tc-skill .ik-art{position:absolute;inset:0;display:block;background-image:var(--move-sheet);background-repeat:no-repeat;background-size:540% auto;background-position:var(--art-x,50%) 48.5%}
+.tc-skill .ik-art.ik-area-art{background-size:108% auto}
+.tc-skill .ik-art.ik-glyph{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23fbf6ea'%3E%3Ccircle cx='50' cy='50' r='27' stroke-width='5'/%3E%3Cpath d='M50 8v20M50 72v20M8 50h20M72 50h20' stroke-width='5' stroke-linecap='round'/%3E%3C/g%3E%3Ccircle cx='50' cy='50' r='7' fill='%23cc202b'/%3E%3C/svg%3E") 50% 40%/60% auto no-repeat}
+.tc-portrait svg{display:block;width:100%;height:100%}
+/* The name, as the prompts print it (prompts.ts touchKey): small, on a dark tab over a picture, plain under a glyph. */
+.tc-btn>b{position:absolute;left:50%;bottom:13%;z-index:3;transform:translateX(-50%);padding:1px 3px 1.5px;border-radius:3px;white-space:nowrap;
+  font:inherit;font-size:calc(9px * var(--tc-k));line-height:1;letter-spacing:.07em;color:var(--tc-paper);text-shadow:0 1px 0 #0b0c0e,0 0 3px #0b0c0e}
+.tc-skill>b,.tc-awaken>b{bottom:9%;padding:1.5px 4px 2px;background:#0b0c0ed1;text-shadow:none}
+.tc-light>b{bottom:15%;font-size:calc(11px * var(--tc-k))}
+.tc-btn>b[hidden]{display:none}
+.tc-emote,.tc-slot{display:grid;place-items:center}
+.tc-emote>b,.tc-slot>b{position:static;transform:none;padding:0;font-size:calc(16px * var(--tc-k));letter-spacing:.02em}
+/* Pressed: in a little, lit from inside. */
+.tc-btn.down{transform:scale(.93);border-color:var(--tc-paper)}
+.tc-btn.down::before{content:'';position:absolute;inset:0;z-index:2;border-radius:50%;background:#fbf6ea30;pointer-events:none}
+/* Cooling (TouchControls.meters, ten times a second): a dark radial wipe draining clockwise and the seconds left. */
+.tc-wipe{position:absolute;inset:0;z-index:1;border-radius:50%;pointer-events:none;opacity:0;background:conic-gradient(#0b0c0ee6 calc(var(--cool,0) * 1turn),#0b0c0e73 0)}
+.tc-btn.cooling .tc-wipe{opacity:1}
+.tc-light .tc-wipe{background:conic-gradient(#0b0c0e8c calc(var(--cool,0) * 1turn),transparent 0)}
+.tc-num{position:absolute;inset:0 0 14%;z-index:2;display:grid;place-items:center;font-style:normal;font-size:calc(var(--d) * .4 * var(--tc-k));line-height:1;
+  color:var(--tc-paper);text-shadow:0 1px 0 #0b0c0e,0 0 4px #0b0c0e}
+.tc-num:empty{display:none}
+
+.tc-skill.ready{border-color:var(--tc-gold);box-shadow:0 0 0 1px #0b0c0e80,0 0 calc(7px * var(--tc-k)) #f0c35a4d}
+/* ULT and AWAKEN: their charge as a ring round the rim - ULT red, AWAKEN teal - full and lit when
+   ready; AWAKEN's drains while the form lasts. Short of ready, their picture is dimmed. */
+.tc-ring{position:absolute;inset:calc(-5px * var(--tc-k));z-index:-1;border-radius:50%;pointer-events:none;
+  background:conic-gradient(var(--ring,var(--tc-red)) calc(var(--charge,0) * 1turn),#0b0c0e8c 0);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px * var(--tc-k)),#000 calc(100% - 3.5px * var(--tc-k)));
+  mask:radial-gradient(farthest-side,transparent calc(100% - 4px * var(--tc-k)),#000 calc(100% - 3.5px * var(--tc-k)))}
+.tc-awaken{--ring:var(--tc-teal)}
+.tc-ultimate:not(.ready) .tc-face::after,.tc-awaken:not(.ready):not(.awake) .tc-face::after{content:'';position:absolute;inset:0;background:#0b0c0e80}
+.tc-ultimate.ready{--ring:var(--tc-gold);border-color:var(--tc-gold);box-shadow:0 0 0 1px #0b0c0e80,0 0 calc(10px * var(--tc-k)) #f0c35a73}
+.tc-awaken.ready,.tc-awaken.awake{border-color:var(--tc-teal);box-shadow:0 0 0 1px #0b0c0e80,0 0 calc(10px * var(--tc-k)) #3ad1c966}
+/* DASH: its dashes in hand (a dash takes 20 stamina), pips over the glyph; none left, it dims. */
+.tc-pips{position:absolute;left:50%;top:13%;z-index:3;display:flex;gap:calc(2.5px * var(--tc-k));transform:translateX(-50%)}
+.tc-pips>i{display:block;width:calc(4.5px * var(--tc-k));height:calc(4.5px * var(--tc-k));border-radius:50%;background:#0b0c0e99;box-shadow:0 0 0 1px #fbf6ea80}
+.tc-pips>i.on{background:var(--tc-red);box-shadow:0 0 0 1px #fbf6eae6}
+.tc-pips>i[hidden]{display:none}
+.tc-dash .tc-glyph{margin-top:2%}
+.tc-dash>b{bottom:11%}
+.tc-dash.spent .tc-face{opacity:.45}
+/* PAUSE and the emote wheel along the top, away from both thumbs, in the first gap between the HUD's own pieces
+   (TouchControls.placeTop sets left and top; these are where they start). */
+.tc-pause,.tc-emote{--d:44px;right:auto;bottom:auto;top:calc(10px + var(--tc-t));font-size:calc(15px * var(--tc-k))}
+.tc-pause{left:calc(31vw + var(--tc-l))}
+.tc-emote{left:calc(31vw + 52px * var(--tc-k) + var(--tc-l))}
+.tc-wheel{position:absolute;left:calc(31vw + var(--tc-l));top:calc(10px + 54px * var(--tc-k) + var(--tc-t));display:flex;gap:8px}
+.tc-wheel[hidden]{display:none}
+.tc-slot{--d:44px;position:relative;right:auto;bottom:auto}
+/* Training's keys 1-4 are its tools (the bar is tapped), so no emotes there, as on the keyboard. */
+#interface[data-hud=training]~.touch-controls .tc-emote{display:none}
+/* LABORATORY's drawer opens down the right, where the buttons are: they step aside while it is open (the stick and the
+   look still work). */
+:where(body).pf-lab.pf-lab #app .touch-controls .tc-btn{display:none}
+/* AREA held: a ring of its reach round it, and a dot where the aim sits (TouchControls.placeDot); dragged back onto the
+   button, the aim is put away and the ring goes until the finger lifts. */
+.tc-aim{position:absolute;left:50%;top:50%;display:none;width:calc(var(--reach,120px) * 2);height:calc(var(--reach,120px) * 2);margin:calc(var(--reach,120px) * -1);
+  border:2px dashed #fbf6eab3;border-radius:50%;box-shadow:0 0 0 1px #0b0c0e66;pointer-events:none;z-index:-2}
+.tc-area.aiming .tc-aim{display:block}
+.tc-aim-dot{position:absolute;left:50%;top:50%;width:calc(22px * var(--tc-k));height:calc(22px * var(--tc-k));margin:calc(-11px * var(--tc-k));border-radius:50%;
+  background:var(--tc-red);border:3px solid var(--tc-paper);box-shadow:0 0 0 2px var(--tc-ink)}
+.tc-area.cancelled{opacity:.5}
+/* A short landscape phone: the fan a little smaller so it clears the HUD's pieces on the right. */
+@media (max-height:360px){.touch-controls:not(.tc-tablet){--tc-k:.88}}
+
+/* While the controls are up, the arena keeps every touch: no pull-to-refresh, no double-tap zoom, no text selection. */
+html.touch-play,html.touch-play body{overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html.touch-play #game-canvas{touch-action:none}
+/* The keyboard's strip, the click-to-look chip and the menu glyph say nothing to a thumb; the move cards sit where the
+   buttons are and the buttons carry their cooldowns and charge. The HUD's other prompts are drawn for touch (prompts.ts). */
+#interface[data-input=touch] .combat-hud :is(.controls-hint,.pointer-hint,.move-bar){display:none!important}
+/* A prompt's button on a touch screen: the on-screen button's own label in a small ink circle. */
+kbd.touch-key{display:inline-block;min-width:1.9em;padding:.1em .45em;border:2px solid currentColor;border-radius:999px;font:inherit;font-style:italic;font-weight:900;font-size:.82em;line-height:1.15;text-align:center;letter-spacing:.02em;vertical-align:.08em}
+
+/* A phone held upright in a fight. */
+.tc-turn{position:absolute;inset:0;z-index:2147483000;display:none;place-items:center;padding:24px;background:#fff;color:#111;text-align:center;
+  font-family:'Barlow Condensed','Arial Narrow',sans-serif;font-style:italic;font-weight:900}
+html.tc-upright .tc-turn{display:grid}
+.tc-turn div{display:grid;gap:10px;justify-items:center;border:4px solid #111;box-shadow:8px 9px 0 #cc202b;padding:26px 22px;background:#fff}
+.tc-turn i{display:block;font-style:normal;font-size:64px;line-height:1;color:#cc202b;animation:tc-turn 1.8s ease-in-out infinite}
+.tc-turn strong{font-size:34px;letter-spacing:.02em}
+.tc-turn span{font-size:18px;font-weight:800;letter-spacing:.04em}
+@keyframes tc-turn{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(90deg)}}
+
+/* The graphics notice: the quality stepped down for smoother play (render/qualityTier.ts). */
+.quality-toast{position:absolute;left:50%;top:calc(12px + env(safe-area-inset-top,0px));z-index:2147482000;max-width:min(92vw,560px);transform:translate(-50%,-140%);
+  padding:8px 14px 9px;background:#fbf6ea;color:#0b0c0e;border:3px solid #0b0c0e;box-shadow:4px 5px 0 #0b0c0e;pointer-events:none;
+  font:italic 800 16px/1.25 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.03em;text-align:center;transition:transform .25s ease-out}
+.quality-toast.in{transform:translate(-50%,0)}
+.quality-toast b{color:#cc202b;font-weight:900}
+
+/* ---- The home and the mode sheet at a phone's size (both ways up). ---- */
+/* The VOL. tabs ride the rule beside the heading on a wide page; on a phone that spot is the heading's own text, so
+   they follow it instead. */
+@media (max-width:700px),(max-height:520px) and (orientation:landscape){
+  .manga-home .home-heading{gap:8px}
+  .manga-home .home-heading span:first-child{width:auto!important;flex:none}
+  .manga-home .home-heading span:first-child::after{display:none}
+  .manga-home .home-heading .home-volumes{position:static;padding:0;background:none;flex:none}
+  .manga-home .home-heading::after{position:static;display:block;flex:1;min-width:12px}
+}
+/* A phone on its side: the chip's next-reward line would run under PLAY; LV and ink stay. */
+@media (max-height:520px) and (orientation:landscape){.manga-home .home-heading .shop-chip-next{display:none}}
+/* Upright, the account's chip (LV, ink) takes its own line under the heading rather than sitting on the VOL. tabs. */
+@media (max-width:700px) and (orientation:portrait){
+  .manga-home .home-heading{flex-wrap:wrap;height:auto!important;row-gap:6px}
+  .manga-home .home-heading .shop-chip{position:static;transform:none;max-width:none;margin-left:auto;padding:2px 0}
+}
+/* A phone either way up: SHOP, PARTY, OPTIONS and PLAY share one bar along the foot of the page, the roster scrolling
+   above it (on its side PLAY was pinned on its own, over PARTY and OPTIONS once the page reached them). */
+@media (max-width:700px) and (orientation:portrait),(max-height:520px) and (orientation:landscape){
+  .lobby.manga-home{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  .manga-home .home-actions{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-start;gap:16px;
+    padding:6px calc(14px + env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px));background:#fff;border-top:3px solid #111;box-shadow:0 -6px 0 #cc202b}
+  .manga-home .home-actions>button{min-height:44px}
+  html .manga-home .home-actions #home-play{position:relative;left:auto;right:auto;bottom:auto;margin-left:auto}
+}
+@media (max-height:520px) and (orientation:landscape){
+  .lobby.manga-home{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+  html .manga-home .home-actions #home-play{padding:2px 12px 4px 10px}
+  html .manga-home .home-actions #home-play>span:first-child{font-size:28px!important}
+  /* The mode and fighter it plays, beside it rather than over the roster. */
+  html .manga-home .home-actions #home-play .home-play-sub{right:calc(100% + 12px);top:50%;bottom:auto;padding:0;background:none;transform:translateY(-50%)}
+}
+/* A friends room upright: its drawer is the width of the screen, so the room's rules and seats keep to their lines. */
+@media (max-width:700px) and (orientation:portrait){
+  #interface .combat-hud.waiting-room .private-status.waiting{left:8px;right:8px;top:112px;width:auto;max-height:calc(100% - 124px)}
+  #interface .combat-hud.waiting-room .private-status.waiting .room-roster{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* The mode sheet upright: the mode's name, then how you play and GO, then the rules, so GO is in the first screen. */
+@media (max-width:760px) and (orientation:portrait){
+  dialog.mode-sheet[open]{display:flex;flex-direction:column}
+  dialog.mode-sheet>section{flex:none}
+  dialog.mode-sheet>.ms-mode{order:0}
+  dialog.mode-sheet .ms-art{height:96px}
+  dialog.mode-sheet>.ms-play{order:1;border-top:2px solid var(--ms-ink,#111)}
+  dialog.mode-sheet>.ms-rules{order:2}
+}
+/* The mode sheet's key line (arrows, Enter, Esc) says nothing to a thumb: its tabs and GO are tapped. */
+[data-input=touch] .mode-sheet .ms-hint{display:none}
+/* Overnight UX (8 October 2026): a phone on its side scrolls the rail, so each card is wide (about 230 px), yet the
+   mode's name was sized for six cards sharing the width (1.18vw: 10 px) - smaller than the BOTS / ONLINE / FRIENDS line
+   under it. The name is the card's title again. */
+@media (max-height:520px) and (orientation:landscape){.manga-home .home-mode-label{font-size:14px}}
+/* Overnight UX (8 October 2026): the home's small words on a touch screen. A tablet keeps the desktop's page, where
+   BOTS / ONLINE / FRIENDS are 25×24, HOW TO PLAY 73×17 and the VOL. tabs 48×21 - small for a thumb. Their tappable
+   area grows past their ink (an invisible margin, never over the card's own name above the words); nothing moves. */
+#interface[data-input=touch] .manga-home :is(.home-variants button,.home-volumes button,.home-mode-line [data-howto],.home-actions>button:not(#home-play)){position:relative}
+#interface[data-input=touch] .manga-home .home-variants button::after{content:'';position:absolute;inset:-3px -5px -9px}
+#interface[data-input=touch] .manga-home .home-volumes button::after{content:'';position:absolute;inset:-10px -3px}
+#interface[data-input=touch] .manga-home .home-mode-line [data-howto]::after{content:'';position:absolute;inset:-13px -8px}
+#interface[data-input=touch] .manga-home .home-actions>button:not(#home-play)::after{content:'';position:absolute;inset:-4px -8px}
+/* Overnight UX (9 October 2026): on a touch screen the HUD's bottom-left zone (zone 5: the arcade's map, the royale's
+   KNOCKED OUT bar, Last Stand's challenge, Training's inputs) sat on the stick's home, under the thumb and the MOVE
+   ring. It rises above the stick (.tc-stick-home: 34 + 116 px from the foot, ×1.3 on a tablet, ×.88 on a short phone). */
+#interface[data-input=touch] .combat-hud .mode-hud{--mh-above-strip:calc(162px + env(safe-area-inset-bottom,0px))}
+@media (max-height:360px){#interface[data-input=touch] .combat-hud .mode-hud{--mh-above-strip:calc(144px + env(safe-area-inset-bottom,0px))}}
+@media (min-width:600px) and (min-height:600px){#interface[data-input=touch] .combat-hud .mode-hud{--mh-above-strip:calc(206px + env(safe-area-inset-bottom,0px))}}
+/* The prompt lane (zone 6, and 6a over it) on a touch screen on its side, between the stick and the fan (2 November
+   2026): a little higher and further left than zones.css has it, so a long prompt passes left of JUMP, over AWAKEN
+   (touchLayout.ts FAR_TOP: 136 px up) and clear of the stick's ring. */
+/* Last Stand's gate, squad and challenge (zone 3, top right; lastStandAnime.css draws them at --u, never under .6 px a
+   line, so on a phone they reach 188 px down) on a touch phone on its side: at .5 they end near 157 px, above the fan's
+   corner (ULT's top, 176 px up at --tc-k 1, 155 at .88) on phones down to 320 px tall. */
+@media (max-height:400px) and (orientation:landscape){html #interface[data-hud="last-stand"][data-input=touch] .mode-hud>[data-zone="3"]{--u:.5px}}
+@media (max-height:520px) and (orientation:landscape){
+  html #interface[data-input=touch] .combat-hud .mode-hud{--mh-lane:38%}
+  html #interface[data-input=touch] .combat-hud .mode-hud>:is([data-zone="6"],[data-zone="6a"]){left:40%}
+}
+/* A knocked-out royale player watches: the move cards go (royaleHud.css), and so do the moves' buttons and the MOVE ring
+   here. LOCK stays (it is NEXT on the spectator bar), with PAUSE and the look; RESULTS is on the bar itself. */
+#interface[data-hud="royale"][data-royale-down]~.touch-controls :is(.tc-light,.tc-heavy,.tc-special,.tc-ultimate,.tc-area,.tc-jump,.tc-dash,.tc-guard,.tc-awaken,.tc-emote,.tc-stick-home){display:none}
+/* A room's seat on a narrow panel (a phone on its side): the fighter and READY / HOST line keeps to its card
+   ("Konta · READ" ran out of it), as the name above it already does; and two seats to a row, so that line has the
+   room to say HOST or READY at all. */
+.room-player small{display:block;overflow:hidden;text-overflow:ellipsis}
+@media (max-height:520px) and (orientation:landscape){#interface .combat-hud.waiting-room .private-status.waiting .room-roster{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ---- The phone pass (November 2026). ---- */
+/* A notched phone on its side (index.html: viewport-fit=cover): the arena is drawn to the screen's edges, under the notch
+   and round the corners, where it was a bar of page before; what is read or pressed stands inside the safe area. Only
+   on a touch screen (pointer:coarse): a desktop window, however short, is untouched; and the insets are 0 on a tablet
+   and a phone held upright (its own are top and bottom), so nothing moves there either. The HUD's own boxes stay the
+   whole screen - the lock-on pin, the damage numbers and the markers are placed in the screen's coordinates - and the
+   pieces at its sides step in: the plates and what the mode stands beside them. */
+@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){
+  #interface{--sa-l:env(safe-area-inset-left,0px);--sa-r:env(safe-area-inset-right,0px)}
+  #interface .combat-hud .fighter-meter.own{translate:var(--sa-l) 0}
+  #interface .combat-hud .fighter-meter.foe{translate:calc(-1 * var(--sa-r)) 0}
+  #interface .combat-hud .mode-hud{--mh-edge:max(9px,var(--sa-l),var(--sa-r))}
+  /* The zones a touch screen stands beside a plate (halo.css) go with it. */
+  #interface[data-skin="halo"][data-hud="training"][data-input="touch"] .combat-hud .mode-hud>[data-zone="3b"]{translate:var(--sa-l) 0}
+  #interface[data-skin="halo"]:is([data-hud="duel"],[data-hud="royale"],[data-hud="bad-blood"])[data-input="touch"] .combat-hud .mode-hud>[data-zone="3b"]{translate:calc(-1 * var(--sa-r)) 0}
+  #interface[data-skin="halo"][data-hud="rift-war"][data-input="touch"] .rift-hud :is(.rift-personal,.rift-build){translate:var(--sa-l) 0}
+  /* Training's bench (opened from the pause menu) and the Forge Studio's tab, on the right edge. The tab stood where a
+     narrow phone's always had (forge.css: 30vh): on a phone wider than 760 px - a Pixel's 863, an iPhone drawn to its
+     edges - it came down onto LIGHT. Since the fan (2 November 2026) ULT is the corner's top, 175 px up
+     (touchLayout.ts RIGHT_TOP): the tab, 87 px tall, ends above it on a 375 px phone. */
+  html .training-lab section{right:max(14px,var(--sa-r))}
+  html .fs-open-tab{right:env(safe-area-inset-right,0px);top:22vh}
+  /* The pause menu and every settings card: no wider than the safe area, and clear of the home bar. */
+  html #interface .settings-scrim>.settings-card{max-width:calc(100vw - var(--sa-l) - var(--sa-r) - 24px);max-height:calc(100dvh - 26px - env(safe-area-inset-bottom,0px))}
+  /* The mode sheet (the stage select, modeSheet.css): its words, its tiles and its FIGHT bar inside the safe area; the
+     place's art still runs to the edges. */
+  html .mode-sheet.ms-select .ms-where{left:max(16px,env(safe-area-inset-left,0px));right:calc(70px + env(safe-area-inset-right,0px))}
+  html .mode-sheet.ms-select .ms-close{right:max(17px,env(safe-area-inset-right,0px))}
+  html .mode-sheet.ms-select .ms-place{padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  html .mode-sheet.ms-select :is(.ms-mode,.ms-play){padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  html .mode-sheet.ms-select .ms-play{padding-bottom:max(8px,env(safe-area-inset-bottom,0px))}
+  /* The home and its roster. */
+  html .lobby.manga-home{padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+}
+@media (orientation:landscape) and (max-height:450px) and (pointer:coarse){html .training-lab section{max-height:calc(100dvh - 92px - env(safe-area-inset-bottom,0px))}}
+/* The safe area as the controls see it (TouchControls.placeTop reads it: PAUSE and the emote button keep inside it). */
+.tc-safe{position:absolute;left:var(--tc-l);right:var(--tc-r);top:var(--tc-t);bottom:var(--tc-b);visibility:hidden;pointer-events:none}
+/* The smallest buttons (PAUSE and the emote at 39 px on a short phone, LOCK at 40-46) take a finger a few pixels past
+   their rim: an invisible ring, clear of their neighbours' (the fan keeps 9 px or more between buttons). */
+.tc-pause::after,.tc-emote::after{content:'';position:absolute;inset:-6px;border-radius:50%}
+.tc-target::after{content:'';position:absolute;inset:-4px;border-radius:50%}
+/* A touch screen keeps its taps: no double-tap zoom anywhere (a pinch still zooms), no pull-to-refresh or overscroll
+   navigation from the page's edges - one reloaded a fight, the other left it. */
+@media (pointer:coarse){
+  html{touch-action:manipulation}
+  html,body{overscroll-behavior:none}
+}
+/* The now-playing tag in a fight on the touch controls (the stability pass, 2 November 2026: it slid in over the MOVE
+   stick as the fight began - on the iPhone 14 profile 243x65 px of it on the stick's ring - and a thumb that landed on it
+   there hit the tag, not the stick): under the top bars and the PAUSE button, centred, at about six tenths of its size, and never under a
+   finger. (Specific enough to win over Arcade Survival's own place for it, rift.css, which was on the stick as well.) */
+:root.touch-play body .music-caption.music-caption{left:0;right:0;bottom:auto;top:calc(100px + env(safe-area-inset-top,0px));margin-inline:auto;width:max-content;max-width:min(80vw,500px);
+  transform:scale(.62);transform-origin:50% 0;pointer-events:none}

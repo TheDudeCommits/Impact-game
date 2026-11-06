@@ -1,0 +1,966 @@
+{
+ "oro": {
+  "dash": {
+   "duration": 0.8333,
+   "speed": 4.688,
+   "step": 0.2083,
+   "steps": 4
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 5.782,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 1.25,
+   "speed": 2.893,
+   "step": 0.4167,
+   "steps": 3,
+   "phase": 1
+  }
+ },
+ "taisei": {
+  "dash": {
+   "duration": 0.875,
+   "speed": 0.42,
+   "step": 0.875,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 5.282,
+   "step": 0.3333,
+   "steps": 2
+  },
+  "walk": {
+   "duration": 1.25,
+   "speed": 2.465,
+   "step": 0.625,
+   "steps": 2,
+   "phase": 1.25
+  }
+ },
+ "gaunt": {
+  "dash": {
+   "duration": 0.8333,
+   "speed": 3.348,
+   "step": 0.2083,
+   "steps": 4
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.997,
+   "step": 0.2222,
+   "steps": 3
+  },
+  "walk": {
+   "duration": 1.25,
+   "speed": 2.017,
+   "step": 0.625,
+   "steps": 2,
+   "phase": 1
+  }
+ },
+ "gaunt-form": {
+  "dash": {
+   "duration": 0.8333,
+   "speed": 0.474,
+   "step": 0.8333,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.723,
+   "step": 0.2222,
+   "steps": 3
+  },
+  "walk": {
+   "duration": 1.25,
+   "speed": 1.174,
+   "step": 0.625,
+   "steps": 2
+  }
+ },
+ "nigo": {
+  "dash": {
+   "duration": 0.6667,
+   "speed": 3.011,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.216,
+   "step": 0.2222,
+   "steps": 3
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 3.011,
+   "step": 0.1667,
+   "steps": 4,
+   "phase": 2.75
+  }
+ },
+ "nigo-form": {
+  "dash": {
+   "duration": 0.6667,
+   "speed": 3.344,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.344,
+   "step": 0.141,
+   "steps": 4.73
+  }
+ },
+ "koko": {
+  "dash": {
+   "duration": 0.8333,
+   "speed": 1.763,
+   "step": 0.4167,
+   "steps": 2
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 2.191,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 1.25,
+   "speed": 1.177,
+   "step": 0.4167,
+   "steps": 3,
+   "phase": 1
+  }
+ },
+ "shirokane": {
+  "dash": {
+   "duration": 0.8333,
+   "speed": 2.33,
+   "step": 0.2083,
+   "steps": 4
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 2.799,
+   "step": 0.2222,
+   "steps": 3
+  },
+  "walk": {
+   "duration": 1.25,
+   "speed": 1.414,
+   "step": 0.625,
+   "steps": 2,
+   "phase": 1
+  }
+ },
+ "setsu": {
+  "dash": {
+   "duration": 0.8333,
+   "speed": 3.359,
+   "step": 0.2083,
+   "steps": 4
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 4.065,
+   "step": 0.2667,
+   "steps": 2.5
+  },
+  "walk": {
+   "duration": 1.25,
+   "speed": 1.978,
+   "step": 0.625,
+   "steps": 2,
+   "phase": 1
+  }
+ },
+ "gummy": {
+  "dash": {
+   "duration": 1.5417,
+   "speed": 0.31,
+   "step": 1.5417,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.509,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 3.333,
+   "step": 0.1667,
+   "steps": 4,
+   "phase": 0
+  }
+ },
+ "gummy-form": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.204,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.375,
+   "speed": 5.545,
+   "step": 0.0938,
+   "steps": 4
+  }
+ },
+ "konta": {
+  "dash": {
+   "duration": 0.875,
+   "speed": 1.594,
+   "step": 0.2188,
+   "steps": 4
+  },
+  "run": {
+   "duration": 0.4583,
+   "speed": 2.671,
+   "step": 0.2,
+   "steps": 2.29
+  },
+  "walk": {
+   "duration": 1.1667,
+   "speed": 0.54,
+   "step": 0.2917,
+   "steps": 4,
+   "phase": 1
+  }
+ },
+ "konta-form": {
+  "dash": {
+   "duration": 0.8333,
+   "speed": 1.563,
+   "step": 0.1389,
+   "steps": 6
+  },
+  "run": {
+   "duration": 0.8333,
+   "speed": 1.563,
+   "step": 0.0992,
+   "steps": 8.4
+  }
+ },
+ "kosho": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.281,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 4.08,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 2.255,
+   "step": 0.3333,
+   "steps": 2,
+   "phase": 0
+  }
+ },
+ "shiden": {
+  "dash": {
+   "duration": 0.8333,
+   "speed": 0.422,
+   "step": 0.8333,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.234,
+   "step": 0.2,
+   "steps": 3.33
+  },
+  "walk": {
+   "duration": 1.25,
+   "speed": 0.951,
+   "step": 0.625,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "ouga": {
+  "dash": {
+   "duration": 0.8333,
+   "speed": 2.086,
+   "step": 0.4167,
+   "steps": 2
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 2.812,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 1.25,
+   "speed": 1.301,
+   "step": 0.3125,
+   "steps": 4,
+   "phase": 2.5
+  }
+ },
+ "kenzo": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.264,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.5,
+   "speed": 3.975,
+   "step": 0.125,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.5,
+   "speed": 2.27,
+   "step": 0.25,
+   "steps": 2,
+   "phase": 0
+  }
+ },
+ "kagari": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.222,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.7917,
+   "speed": 2.59,
+   "step": 0.1979,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.7917,
+   "speed": 2.59,
+   "step": 0.1979,
+   "steps": 4,
+   "phase": 0
+  }
+ },
+ "ward": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.332,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.75,
+   "speed": 3.109,
+   "step": 0.1875,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.75,
+   "speed": 2.431,
+   "step": 0.1875,
+   "steps": 4,
+   "phase": 0
+  }
+ },
+ "kuon": {
+  "dash": {
+   "duration": 0.8333,
+   "speed": 4.113,
+   "step": 0.2083,
+   "steps": 4
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 5.188,
+   "step": 0.2222,
+   "steps": 3
+  },
+  "walk": {
+   "duration": 1.25,
+   "speed": 2.502,
+   "step": 0.625,
+   "steps": 2,
+   "phase": 1
+  }
+ },
+ "gorai": {
+  "dash": {
+   "duration": 1.625,
+   "speed": 0.379,
+   "step": 1.625,
+   "steps": 1
+  },
+  "run": {
+   "duration": 1.3333,
+   "speed": 2.828,
+   "step": 0.2222,
+   "steps": 6
+  },
+  "walk": {
+   "duration": 2.1667,
+   "speed": 2.103,
+   "step": 0.3715,
+   "steps": 5.83,
+   "phase": 0.5
+  }
+ },
+ "haldor": {
+  "dash": {
+   "duration": 1.625,
+   "speed": 0.255,
+   "step": 1.625,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.875,
+   "speed": 3.199,
+   "step": 0.2188,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.875,
+   "speed": 1.723,
+   "step": 0.4375,
+   "steps": 2,
+   "phase": 0
+  }
+ },
+ "sorrel": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.363,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.979,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 2.361,
+   "step": 0.3333,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "dorado": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.365,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.5833,
+   "speed": 5.101,
+   "step": 0.1458,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.5833,
+   "speed": 2.725,
+   "step": 0.2917,
+   "steps": 2,
+   "phase": 0
+  }
+ },
+ "shiun": {
+  "run": {
+   "step": 0.2222,
+   "speed": 3.518,
+   "steps": 3,
+   "duration": 0.6667
+  },
+  "walk": {
+   "step": 0.2222,
+   "speed": 2.554,
+   "steps": 3,
+   "duration": 0.6667,
+   "phase": 0.25
+  },
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.312,
+   "step": 1.4583,
+   "steps": 1
+  }
+ },
+ "magatsu": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.262,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.669,
+   "step": 0.2222,
+   "steps": 3
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 1.985,
+   "step": 0.3333,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "gorai-form": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.366,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 1,
+   "speed": 3.509,
+   "step": 0.25,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 1,
+   "speed": 2.049,
+   "step": 0.25,
+   "steps": 4
+  }
+ },
+ "vesper": {
+  "dash": {
+   "duration": 0.5833,
+   "speed": 4.489,
+   "step": 0.2917,
+   "steps": 2
+  },
+  "run": {
+   "duration": 0.625,
+   "speed": 5.671,
+   "step": 0.3125,
+   "steps": 2
+  },
+  "walk": {
+   "duration": 1,
+   "speed": 1.796,
+   "step": 0.5,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "imago": {
+  "dash": {
+   "duration": 0.5833,
+   "speed": 4.319,
+   "step": 0.2917,
+   "steps": 2
+  },
+  "run": {
+   "duration": 0.625,
+   "speed": 5.698,
+   "step": 0.3125,
+   "steps": 2
+  },
+  "walk": {
+   "duration": 1,
+   "speed": 1.719,
+   "step": 0.5,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "wuming": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.325,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.308,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 2.016,
+   "step": 0.3333,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "jirenga": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.275,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.91,
+   "step": 0.2222,
+   "steps": 3
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 2.302,
+   "step": 0.2222,
+   "steps": 3,
+   "phase": 0.5
+  }
+ },
+ "jinlin": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.22,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.15,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 1.716,
+   "step": 0.3333,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "gohaku": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.359,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 4.239,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 2.308,
+   "step": 0.3333,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "ippon": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.235,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.48,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 1.97,
+   "step": 0.3333,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "sekka": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.278,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.425,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 1.961,
+   "step": 0.3333,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "tobari": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.225,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.618,
+   "step": 0.2222,
+   "steps": 3
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 1.971,
+   "step": 0.2222,
+   "steps": 3,
+   "phase": 0.5
+  }
+ },
+ "akagane": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.229,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.052,
+   "step": 0.2222,
+   "steps": 3
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 1.952,
+   "step": 0.2222,
+   "steps": 3,
+   "phase": 0.5
+  }
+ },
+ "asahi": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.237,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.305,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 1.862,
+   "step": 0.3333,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "levin": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.236,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.133,
+   "step": 0.2222,
+   "steps": 3
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 1.731,
+   "step": 0.2222,
+   "steps": 3,
+   "phase": 0.5
+  }
+ },
+ "rook": {
+  "dash": {
+   "duration": 0.5833,
+   "speed": 4.055,
+   "step": 0.2917,
+   "steps": 2
+  },
+  "run": {
+   "duration": 0.625,
+   "speed": 5.406,
+   "step": 0.3125,
+   "steps": 2
+  },
+  "walk": {
+   "duration": 1,
+   "speed": 1.678,
+   "step": 0.5,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "gaku": {
+  "dash": {
+   "duration": 0.5833,
+   "speed": 2.762,
+   "step": 0.2917,
+   "steps": 2
+  },
+  "run": {
+   "duration": 0.625,
+   "speed": 3.753,
+   "step": 0.3125,
+   "steps": 2
+  },
+  "walk": {
+   "duration": 1,
+   "speed": 1.157,
+   "step": 0.5,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "gaku-form": {
+  "dash": {
+   "duration": 0.5833,
+   "speed": 6.099,
+   "step": 0.2917,
+   "steps": 2
+  },
+  "run": {
+   "duration": 0.625,
+   "speed": 8.249,
+   "step": 0.3125,
+   "steps": 2
+  },
+  "walk": {
+   "duration": 1,
+   "speed": 2.565,
+   "step": 0.5,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "jinlin-form": {
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.24,
+   "step": 1.4583,
+   "steps": 1
+  },
+  "run": {
+   "duration": 0.6667,
+   "speed": 3.22,
+   "step": 0.1667,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.6667,
+   "speed": 1.757,
+   "step": 0.3333,
+   "steps": 2,
+   "phase": 0.25
+  }
+ },
+ "vesper-form": {
+  "dash": {
+   "duration": 0.5833,
+   "speed": 4.422,
+   "step": 0.2917,
+   "steps": 2
+  },
+  "run": {
+   "duration": 0.625,
+   "speed": 5.902,
+   "step": 0.3125,
+   "steps": 2
+  },
+  "walk": {
+   "duration": 1,
+   "phase": 0.25,
+   "speed": 1.821,
+   "step": 0.5,
+   "steps": 2
+  }
+ },
+ "rook-form": {
+  "dash": {
+   "duration": 0.5833,
+   "speed": 4.469,
+   "step": 0.2917,
+   "steps": 2
+  },
+  "run": {
+   "duration": 0.625,
+   "speed": 6.13,
+   "step": 0.3125,
+   "steps": 2
+  },
+  "walk": {
+   "duration": 1,
+   "phase": 0.25,
+   "speed": 1.915,
+   "step": 0.5,
+   "steps": 2
+  }
+ },
+ "shiun-form": {
+  "run": {
+   "duration": 0.7917,
+   "speed": 2.761,
+   "step": 0.1979,
+   "steps": 4
+  },
+  "walk": {
+   "duration": 0.7917,
+   "speed": 1.699,
+   "step": 0.3958,
+   "steps": 2,
+   "phase": 0.25
+  },
+  "dash": {
+   "duration": 1.4583,
+   "speed": 0.223,
+   "step": 1.4583,
+   "steps": 1
+  }
+ },
+ "magatsu-form": {
+  "run": {
+   "step": 0.3125,
+   "speed": 4.577,
+   "steps": 2,
+   "duration": 0.625
+  },
+  "walk": {
+   "step": 0.5,
+   "speed": 1.346,
+   "steps": 2,
+   "duration": 1,
+   "phase": 0.25
+  },
+  "dash": {
+   "step": 0.2917,
+   "speed": 3.258,
+   "steps": 2,
+   "duration": 0.5833
+  }
+ }
+}

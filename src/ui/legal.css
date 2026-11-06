@@ -1,0 +1,31 @@
+/* LEGAL and CREDITS (legal.ts): the quiet rows under the Options panel's two cards, a column each, and the page LEGAL
+   turns the panel to (CREDITS opens /credits.html in a new tab).
+   The home sets its display face on every button, paragraph and span with !important (home.css): the page's sentences
+   are set in a reading face as firmly. */
+.home-options-links>button.home-legal-entry{gap:12px;padding:9px 14px!important;background:transparent!important;color:#111!important;border:1px solid #111!important;box-shadow:none!important}
+.home-options-links>button.home-legal-entry span{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;font-size:13px;letter-spacing:.06em}
+.home-options-links>button.home-legal-entry small{margin:0;font-size:9px;color:#6b6560}
+.home-options-links>button.home-legal-entry b{font-size:15px}
+.home-options-links>button.home-legal-entry:is(:hover,:focus-visible){background:#111!important;color:#fff!important;box-shadow:3px 3px 0 #cc202b!important}
+.home-options-links>button.home-legal-entry:is(:hover,:focus-visible) small{color:#d8d3cc}
+.home-legal{display:grid;gap:12px;max-width:640px;color:#111}
+.home-legal>button{justify-self:start}
+.home-legal p{margin:0;font-size:13px;line-height:1.5}
+.home-legal .home-legal-lead{font-size:14px;line-height:1.45;padding-left:12px;border-left:3px solid #cc202b}
+.home-legal a{color:#111;text-decoration-thickness:1px;text-underline-offset:3px}
+.home-legal a:is(:hover,:focus-visible){color:#cc202b}
+.home-legal-pages{display:flex;flex-wrap:wrap;gap:10px}
+.home-dialog .home-legal button.home-legal-privacy{justify-self:start;background:#fff;color:#111;border:2px solid #111;padding:8px 14px;font-size:12px;letter-spacing:.06em}
+.home-dialog .home-legal button.home-legal-privacy:is(:hover,:focus-visible){background:#111;color:#fff;box-shadow:3px 3px 0 #cc202b}
+/* Overnight UX (8 October 2026): the reading face the rest of Options reads in (home.css .home-panel-intro), not Arial. */
+.manga-home .home-legal :is(p,a){font-family:Barlow,system-ui,sans-serif!important;font-weight:500!important}
+@media(max-width:600px){.home-options-links>button.home-legal-entry{padding:8px 10px!important}.home-legal p{font-size:12px}.home-legal .home-legal-lead{font-size:13px}}
+
+.home-legal .home-legal-head{margin:8px 0 0;font:400 13px/1.2 Electroharmonix,Impact,sans-serif;letter-spacing:.08em;color:#cc202b}
+.home-legal .home-legal-note{font-size:12px;color:#55534e}
+.home-legal .home-legal-list{display:grid;gap:5px;margin:0;padding-left:18px}
+.home-legal .home-legal-list li{font-size:12.5px;line-height:1.45}
+.home-legal .home-legal-thanks li{font-size:12px;color:#3d3a36}
+.manga-home .home-legal :is(li,b){font-family:Barlow,system-ui,sans-serif!important}
+.manga-home .home-legal li{font-weight:500!important}.manga-home .home-legal li b{font-weight:700!important}
+@media(max-width:600px){.home-legal .home-legal-list li{font-size:12px}.home-legal .home-legal-thanks li{font-size:11.5px}}

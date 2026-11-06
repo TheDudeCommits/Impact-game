@@ -1,0 +1,502 @@
+{
+ "akaito": [
+  "qk_explosion",
+  "blade_iaido",
+  "bonecage"
+ ],
+ "shijima": [
+  "p27_cathedral",
+  "seal_snowcompass",
+  "colossus_glacierdrop"
+ ],
+ "chohan": [
+  "blade_iaido",
+  "qk_explosion",
+  "efk_toonwater"
+ ],
+ "aqrab": [
+  "undertow",
+  "aurora",
+  "efk_toonwater"
+ ],
+ "tsubute": [
+  "bloomburst",
+  "efk_cosmic",
+  "p27_solarnova"
+ ],
+ "yodaka": [
+  "wildfire",
+  "ext_aura_fire",
+  "fx_icsfire"
+ ],
+ "ume": [
+  "qk_explosion",
+  "bonecage",
+  "plaguebloom"
+ ],
+ "lanthorn": [
+  "qk_explosion",
+  "scifi_emp",
+  "aurora"
+ ],
+ "highsun": [
+  "p27_solarnova",
+  "fx_icsfire",
+  "wildfire"
+ ],
+ "torsion": [
+  "inkbloom",
+  "aurora",
+  "efk_toonwater"
+ ],
+ "kubiwa": [
+  "p27_gravity",
+  "ext_portal",
+  "quench"
+ ],
+ "onigawara": [
+  "qk_explosion",
+  "blade_iaido",
+  "efk_goldencrash"
+ ],
+ "cardo": [
+  "qk_vortex",
+  "qk_explosion",
+  "efk_toonwater"
+ ],
+ "minase": [
+  "thunderclap",
+  "scifi_emp",
+  "p27_stormdragon"
+ ],
+ "aquilo": [
+  "found_tornado",
+  "efk_tornado",
+  "cyclone"
+ ],
+ "psyche": [
+  "qk_explosion",
+  "inkbloom",
+  "seal_stringcage"
+ ],
+ "ovid": [
+  "colossus_moltenfist",
+  "scifi_emp",
+  "nature_lightningstorm"
+ ],
+ "hawser": [
+  "qk_explosion",
+  "inkbloom",
+  "scifi_lasergrid"
+ ],
+ "rotfalke": [
+  "scifi_emp",
+  "nb_starburst",
+  "scifi_lasergrid"
+ ],
+ "bonsho": [
+  "efk_toonwater",
+  "hivecolumn",
+  "fx_icsfire"
+ ],
+ "murex": [
+  "scifi_orbitalstrike",
+  "scifi_emp",
+  "nb_starburst"
+ ],
+ "kinu": [
+  "qk_explosion",
+  "inkbloom",
+  "bloomburst"
+ ],
+ "madake": [
+  "qk_explosion",
+  "efk_toonwater",
+  "bonecage"
+ ],
+ "akayuri": [
+  "blade_iaido",
+  "p27_arsenal",
+  "qk_explosion"
+ ],
+ "hagure": [
+  "breath_wind",
+  "qk_explosion",
+  "bonecage"
+ ],
+ "hisame": [
+  "colossus_glacierdrop",
+  "qk_explosion",
+  "inkbloom"
+ ],
+ "svanhild": [
+  "bubblecage",
+  "inkbloom",
+  "aurora"
+ ],
+ "mizuhiki": [
+  "blade_iaido",
+  "qk_explosion",
+  "inkbloom"
+ ],
+ "shibuichi": [
+  "scifi_orbitalstrike",
+  "scifi_emp",
+  "astralgate"
+ ],
+ "rakucho": [
+  "qk_explosion",
+  "efk_toonwater",
+  "bonecage"
+ ],
+ "irbis": [
+  "found_attractor",
+  "found_blackhole",
+  "found_caustics"
+ ],
+ "shidare": [
+  "qk_explosion",
+  "inkbloom",
+  "bloomburst"
+ ],
+ "hinomoto": [
+  "wildfire",
+  "magma",
+  "obsidian"
+ ],
+ "amagoi": [
+  "bonecage",
+  "bubblecage",
+  "pyroclasm"
+ ],
+ "shakudo": [
+  "qk_explosion",
+  "blade_iaido",
+  "efk_goldencrash"
+ ],
+ "hikui": [
+  "wildfire",
+  "ext_fireportal",
+  "ext_pyre"
+ ],
+ "tokan": [
+  "colossus_glacierdrop",
+  "blackice",
+  "ext_pyre"
+ ],
+ "strappado": [
+  "qk_explosion",
+  "inkbloom",
+  "seal_stringcage"
+ ],
+ "unari": [
+  "qk_explosion",
+  "anvilfall",
+  "inkbloom"
+ ],
+ "barrow": [
+  "qk_explosion",
+  "efk_toonwater",
+  "dawnbreak"
+ ],
+ "sashigane": [
+  "fx_magiccircle",
+  "qk_explosion",
+  "blade_iaido"
+ ],
+ "gosu": [
+  "inkbloom",
+  "hivecolumn",
+  "bloomburst"
+ ],
+ "kusushi": [
+  "bonecage",
+  "qk_explosion",
+  "efk_toonwater"
+ ],
+ "hakushi": [
+  "wildfire",
+  "magma",
+  "obsidian"
+ ],
+ "suzuran": [
+  "inkbloom",
+  "aurora",
+  "efk_toonwater"
+ ],
+ "wataame": [
+  "qk_explosion",
+  "blade_iaido",
+  "efk_goldencrash"
+ ],
+ "bruin": [
+  "cosmos_blackhole",
+  "cosmos_galaxy",
+  "arts_domain"
+ ],
+ "senko": [
+  "p27_megiddo",
+  "scifi_orbitalstrike",
+  "fx_magiccircle"
+ ],
+ "buna": [
+  "qk_explosion",
+  "colossus_thundercloud",
+  "efk_toonwater"
+ ],
+ "oyashio": [
+  "qk_explosion",
+  "inkbloom",
+  "aurora"
+ ],
+ "adad": [
+  "snare",
+  "scifi_emp",
+  "thunderclap"
+ ],
+ "tempo": [
+  "cosmos_blackhole",
+  "cosmos_galaxy",
+  "arts_domain"
+ ],
+ "tancho": [
+  "wildfire",
+  "p27_solarnova",
+  "pyroclasm"
+ ],
+ "bellows": [
+  "fx_icsfire",
+  "obsidian",
+  "wildfire"
+ ],
+ "mikage": [
+  "colossus_thundercloud",
+  "sheetlightning",
+  "p27_stormdragon"
+ ],
+ "full-beam": [
+  "qk_explosion",
+  "inkbloom",
+  "aurora"
+ ],
+ "pyroclast": [
+  "qk_explosion",
+  "efk_cosmic",
+  "p27_solarnova"
+ ],
+ "ampere": [
+  "scifi_emp",
+  "aurora",
+  "efk_toonwater"
+ ],
+ "shanxiao": [
+  "efk_toonwater",
+  "p27_megiddo",
+  "fx_icsfire"
+ ],
+ "kuzu": [
+  "qk_explosion",
+  "inkbloom",
+  "gearlock"
+ ],
+ "shakugo": [
+  "obsidian",
+  "wildfire",
+  "p27_solarnova"
+ ],
+ "strix": [
+  "eclipse",
+  "arts_domain",
+  "ext_pyre"
+ ],
+ "basilissa": [
+  "qk_explosion",
+  "inkbloom",
+  "seal_stringcage"
+ ],
+ "sorayomi": [
+  "efk_toonwater",
+  "snare",
+  "scifi_emp"
+ ],
+ "kenzo": [
+  "eclipse",
+  "arts_domain",
+  "qk_explosion"
+ ],
+ "koko": [
+  "qk_explosion",
+  "efk_toonwater",
+  "bonecage"
+ ],
+ "nigo": [
+  "found_attractor",
+  "found_blackhole",
+  "found_caustics"
+ ],
+ "shirokane": [
+  "snare",
+  "scifi_emp",
+  "thunderclap"
+ ],
+ "shiden": [
+  "colossus_thundercloud",
+  "scifi_emp",
+  "thunderclap"
+ ],
+ "kosho": [
+  "efk_toonwater",
+  "fx_icsfire",
+  "qk_explosion"
+ ],
+ "ouga": [
+  "found_attractor",
+  "found_blackhole",
+  "found_caustics"
+ ],
+ "taisei": [
+  "p27_stormdragon",
+  "scifi_lasergrid",
+  "aurora"
+ ],
+ "gummy": [
+  "qk_explosion",
+  "efk_toonwater",
+  "dawnbreak"
+ ],
+ "konta": [
+  "inkbloom",
+  "efk_toonwater",
+  "hivecolumn"
+ ],
+ "kagari": [
+  "fx_icsfire",
+  "wildfire",
+  "p27_solarnova"
+ ],
+ "ward": [
+  "inkbloom",
+  "dawnbreak",
+  "eclipse"
+ ],
+ "kuon": [
+  "cosmos_galaxy",
+  "cosmos_meteorstorm",
+  "cosmos_supernova"
+ ],
+ "oro": [
+  "inkbloom",
+  "hivecolumn",
+  "bloomburst"
+ ],
+ "gaunt": [
+  "qk_explosion",
+  "anvilfall",
+  "inkbloom"
+ ],
+ "setsu": [
+  "colossus_thundercloud",
+  "sheetlightning",
+  "p27_stormdragon"
+ ],
+ "gorai": [
+  "efk_toonwater",
+  "p27_stormdragon",
+  "qk_explosion"
+ ],
+ "haldor": [
+  "qk_explosion",
+  "efk_toonwater",
+  "dawnbreak"
+ ],
+ "sorrel": [
+  "arts_domain",
+  "p27_worldrend",
+  "qk_explosion"
+ ],
+ "dorado": [
+  "qk_explosion",
+  "inkbloom",
+  "seal_stringcage"
+ ],
+ "shiun": [
+  "p27_megiddo",
+  "sealscript",
+  "scifi_orbitalstrike"
+ ],
+ "magatsu": [
+  "sealscript",
+  "qk_explosion",
+  "fx_magiccircle"
+ ],
+ "vesper": [
+  "qk_explosion",
+  "anvilfall",
+  "inkbloom"
+ ],
+ "imago": [
+  "qk_explosion",
+  "efk_toonwater",
+  "bonecage"
+ ],
+ "wuming": [
+  "efk_benediction",
+  "p27_megiddo",
+  "scifi_orbitalstrike"
+ ],
+ "jirenga": [
+  "qk_explosion",
+  "aurora",
+  "efk_toonwater"
+ ],
+ "jinlin": [
+  "qk_explosion",
+  "found_attractor",
+  "found_blackhole"
+ ],
+ "gohaku": [
+  "aurora",
+  "p27_megiddo",
+  "efk_cosmic"
+ ],
+ "ippon": [
+  "qk_explosion",
+  "aurora",
+  "efk_toonwater"
+ ],
+ "sekka": [
+  "qk_explosion",
+  "efk_toonwater",
+  "bonecage"
+ ],
+ "tobari": [
+  "ext_fireportal",
+  "bonecage",
+  "bubblecage"
+ ],
+ "akagane": [
+  "fx_icsfire",
+  "ext_aura_fire",
+  "wildfire"
+ ],
+ "asahi": [
+  "qk_explosion",
+  "wildfire",
+  "inkbloom"
+ ],
+ "levin": [
+  "qk_explosion",
+  "inkbloom",
+  "gearlock"
+ ],
+ "rook": [
+  "qk_explosion",
+  "inkbloom",
+  "p27_colossus"
+ ],
+ "gaku": [
+  "p27_worldrend",
+  "qk_explosion",
+  "efk_toonwater"
+ ]
+}

@@ -1,0 +1,3 @@
+# An arena fighter of original characters. The game is one page (the canonical link in index.html), so there is no sitemap.
+User-agent: *
+Allow: /

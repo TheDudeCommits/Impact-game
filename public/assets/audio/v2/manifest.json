@@ -1,0 +1,12 @@
+{
+ "version": 9,
+ "assets": [],
+ "validation": {
+  "assetCount": 0,
+  "totalBytes": 0,
+  "format": "48kHz mono PCM WAV"
+ },
+ "speechPolicy": "No recording of an anime or game performance. The original fighters' voices are the game's own (voice/originals/manifest.json).",
+ "musicPolicy": "Original compositions only (/assets/music/manifest.json); no licensed song or recording.",
+ "originals": "Signature cues: sound design made for the game; each entry lists its sources. The fighters' own lines play under these cue names, so these are what the names hold if a line drops out."
+}

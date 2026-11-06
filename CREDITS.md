@@ -1,0 +1,71 @@
+# Credits
+
+Impact's own assets (its fighters' bodies and art, its places' own models, its voices, its score and the animation
+made for it) are covered by the project's [LICENSE](LICENSE). This file lists every third-party asset in the
+repository, with its author, source and licence. Works under CC0 or public-domain terms need no credit; they are listed
+here anyway, so you know where each piece comes from.
+
+If you believe something here is yours and should not be, write to Hello@Dude.work and it will be taken down.
+
+## Animation
+
+| Asset | Author | Source | Licence | Where |
+|---|---|---|---|---|
+| Universal Animation Library and Universal Animation Library 2 (Standard) | Quaternius | https://quaternius.com/packs/universalanimationlibrary.html | CC0 1.0 | The shared moves (stance, gaits, jumps, guard, hits, knockdown, get-up, death, sword string) of many fighters and bosses in `public/assets/fighters/` and `public/assets/survival/enemies/`, retargeted and re-timed, and the takes authored over them |
+
+## Models and textures
+
+| Asset | Author | Source | Licence | Where |
+|---|---|---|---|---|
+| Stylized Asia Environment Megapack | RG Poly | https://rg-poly.itch.io/stylized-asia-enviroment-megapack-unity-urp | CC0 1.0 | `public/assets/environment/asian/`, the RG Poly pieces and `rg-*.png` textures in `public/assets/environment/br/` (converted to GLB, textures reduced) |
+| Pirate Kit 2.1 | Kenney | https://kenney.nl/assets/pirate-kit | CC0 1.0 | `public/assets/environment/harbor/`, `public/assets/environment/br/kenney-pirate-*` |
+| Fantasy Town Kit 2.0 | Kenney | https://kenney.nl/assets/fantasy-town-kit | CC0 1.0 | `public/assets/environment/br/kenney-town-*` |
+| Kokura Castle | AVATTA | https://sketchfab.com/3d-models/kokura-castle-aba23531911c45439067a6e0aaccad07 | CC BY 4.0 | `public/assets/environment/kokura-keep/keep.glb` |
+| Stone Bridges Pack 01 (Bridge.09) | Creative Trio / Katsukagi | https://creativetrio.art/2021/03/11/stone-bridges-pack-01/ | CC BY 4.0 | `public/assets/environment/stone-arch/bridge.glb` (and its collider, `src/game/data/stoneArchCollider.json`) |
+| Japanese Oni Mask | snailpot_maysachan | https://sketchfab.com/models/9df68b42f2044ca2866fe99217ba343b | CC BY 4.0 | `public/assets/environment/br/oni-mask.glb` |
+| Poly Haven models and textures (barrels, boulders, cliffs, crates, trunks, trees, lanterns, a covered car, a ship hulk, a utility box; ashlar, asphalt, flagstone, grass, limestone, pebbles, planks, rock, sand, sandstone, slate, snow, stone path and stone tile surfaces) | Poly Haven contributors | https://polyhaven.com | CC0 1.0 | `public/assets/environment/cc0/` |
+| pavement_01 | Rob Tuytel / Poly Haven | https://polyhaven.com/a/pavement_01 | CC0 1.0 | `public/assets/environment/paving/` |
+| cobblestone_floor_02 | Rob Tuytel / Poly Haven | https://polyhaven.com/a/cobblestone_floor_02 | CC0 1.0 | `public/assets/environment/br/cobble-*.jpg` |
+| dry_ground_rocks | Poly Haven | https://polyhaven.com/a/dry_ground_rocks | CC0 1.0 | `public/assets/environment/br/crater-detail.jpg` |
+| hinoki_planks, dark_wood, clay_plaster | Poly Haven | https://polyhaven.com | CC0 1.0 | Kuroyuki Hall's surfaces |
+| snow_field_aerial, dry_decay_leaves, burned_ground_01, damp_beach_sand | Poly Haven | https://polyhaven.com | CC0 1.0 | Arcade Survival's grounds |
+| kloofendal_48d_partly_cloudy_puresky | Greg Zaal, Jarod Guest / Poly Haven | https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky | CC0 1.0 | `public/assets/environment/sky/partly-cloudy-2k.hdr` |
+
+## Sound
+
+| Asset | Author | Source | Licence | Where |
+|---|---|---|---|---|
+| FGHTImpt_Fight Punches 01 | KVV_Audio | https://freesound.org/people/KVV_Audio/sounds/749785/ | CC BY 4.0 | `public/assets/audio/v2/sfx/originals/families/hits/hit-barrage-3.wav` |
+| Horror Sound Effects Library | Little Robot Sound Factory (www.littlerobotsoundfactory.com) | https://opengameart.org/content/horror-sound-effects-library | CC BY 3.0 | `public/assets/audio/survival/` (entries marked so in its manifest), `public/assets/audio/ambience/hell.m4a`, `crows.m4a` |
+| Nature Ambient Pack Vol 1 | JC Sounds | https://opengameart.org/content/jc-sounds-nature-ambient-pack-vol-1 | CC BY 4.0 | `public/assets/audio/ambience/wind.m4a`, `fire.m4a`, `crackle.m4a`; `public/assets/audio/survival/` (entries marked so) |
+| 80 CC0 creature SFX, 80 CC0 creature SFX #2, 80 CC0 RPG SFX, 100 CC0 SFX #2 | rubberduck | https://opengameart.org/users/rubberduck | CC0 1.0 | `public/assets/audio/survival/` |
+| Zombies Sound Pack | artisticdude | https://opengameart.org/content/zombies-sound-pack | CC0 1.0 | `public/assets/audio/survival/` |
+| 20 Sword Sound Effects (Attacks and Clashes); Crowd Shouting Ambience | StarNinjas | https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes | CC0 1.0 | `public/assets/audio/survival/`, `public/assets/audio/ambience/crowd.m4a` |
+| Monster Sound Pack Volume 1 | OpenGameArt | https://opengameart.org/content/monster-sound-pack-volume-1 | CC0 1.0 | `public/assets/audio/survival/` |
+| Male Grunt/Yelling sounds | OpenGameArt | https://opengameart.org/content/male-gruntyelling-sounds | CC0 1.0 | `public/assets/audio/survival/` |
+| Impact Sounds, RPG Audio | Kenney | https://kenney.nl/assets/impact-sounds | CC0 1.0 | `public/assets/audio/survival/` |
+| Wind in the reed (Funkelfang); HyenaLaugh2, Hyena Moan 2 (sounagix); Hyena-like Creature Noise | Freesound users | https://freesound.org | CC0 1.0 | `public/assets/audio/survival/` (named in its manifest) |
+
+Each file in `public/assets/audio/survival/manifest.json` names its own source and licence.
+
+## Music
+
+| Asset | Author | Source | Licence | Where |
+|---|---|---|---|---|
+| GeneralUser GS (SoundFont) | S. Christian Collins | https://github.com/mrbumpy409/GeneralUser-GS | GeneralUser GS licence (free for any use, commercial included) | The instrument sounds every track in `public/assets/music/originals/` is rendered with; the compositions are the game's own |
+
+## Fonts
+
+| Asset | Author | Source | Licence | Where |
+|---|---|---|---|---|
+| Barlow, Barlow Condensed | The Barlow Project Authors | https://github.com/jpt/barlow | SIL OFL 1.1 | `public/assets/ui/hud/fonts/` |
+| Yuji Boku | The Yuji Project Authors | https://fonts.google.com/specimen/Yuji+Boku | SIL OFL 1.1 | The area moves' seal glyphs (`src/render/area/glyphs.json`, outlines taken from the font) |
+
+The OFL texts are in `docs/provenance/fonts/`.
+
+## Made with
+
+The game's own art, models, motion and voices were made with these tools on the maintainer's accounts; what they
+made belongs to the project and is covered by its licence: Meshy (models, animation-library actions and text-to-motion
+takes), Tripo (models, rigs and troop animation), OpenAI image generation and Codex (2D art), FLUX.2 [klein] 4B (four
+chapter panels), Higgsfield (voices), Qwen3-TTS (the announcer), Blender (modelling, rigging and animation).

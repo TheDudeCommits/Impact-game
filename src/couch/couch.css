@@ -1,0 +1,8 @@
+/* Couch play (couch/couch.ts): the single player's key prompts name keys neither seat may be using (the keyboard split
+   in two moves LIGHT and HEAVY to C and V), so they stand down while a couch fight is on - but each person's cards name
+   their own seat's keys, in their half of a split screen or their corner of one screen (couch/CouchHud.ts). */
+body.couch-play #controls-hint, body.couch-play:not(.couch-split):not(.couch-shared) .move-bar kbd, body.couch-play:not(.couch-split) .ik-ult-key { display: none !important; }
+/* The mode sheet's CONTROLS line (ModeSheet seatsHtml): each seat apart, and each keyboard half's keys on a line of its own. */
+.mode-sheet .ms-couch .ms-couch-seats { display: inline-flex; flex-wrap: wrap; gap: 6px 14px; }
+.mode-sheet .ms-couch .ms-couch-seats span { white-space: nowrap; }
+.mode-sheet .ms-couch .ms-couch-keys { display: block; flex-basis: 100%; font: 600 12px/1.35 Barlow, sans-serif; letter-spacing: .02em; color: rgba(255, 255, 255, .78); text-transform: none; }

@@ -1,0 +1,9 @@
+import {describe,it,expect} from 'vitest';
+import fs from 'node:fs';
+import {AKAYURI_MOVES,AKAYURI_CONTACTS,AKAYURI_AWAKENING,akayuriStrikeSide} from '../src/game/fighters/akayuri';
+describe('Akayuri manual candidate combat contract',()=>{
+ it('keeps every damaging action manually committed, with no poison or autonomous projectile',()=>{for(const m of Object.values(AKAYURI_MOVES)){expect(m.style).toBe('melee');expect(m.contacts.length).toBeGreaterThan(0);for(const t of m.contacts)expect(t).toBeLessThan(m.duration)}expect(AKAYURI_MOVES.special.contacts).toHaveLength(1);expect(AKAYURI_MOVES.special.lunge).toBeGreaterThan(8)});
+ it('retimes a prompt confirmed opener while preserving the unique290 actual schedule',()=>{const m=AKAYURI_MOVES.ultimate;expect(m.contacts[0]).toBeLessThanOrEqual(.6);expect(m.damage*2+m.finisherDamage!).toBe(290);expect(m.schedule!.reduce((s,d,i)=>s+Math.round(d*(1-.09*i)),0)).toBe(290);expect(AKAYURI_CONTACTS.ultimate).toEqual([.18,.48,.82]);expect(m.contacts[0]).not.toBe(m.duration*AKAYURI_CONTACTS.ultimate[0]);expect(m.confirm?.recovery).toBeLessThan(.7)});
+ it('reveals the manual form after palm contact and before the low guard',()=>{expect(AKAYURI_AWAKENING.entryDuration).toBe(.9);expect(AKAYURI_AWAKENING.swapAt).toBeGreaterThan(AKAYURI_AWAKENING.beats.palm);expect(AKAYURI_AWAKENING.swapAt).toBeLessThan(AKAYURI_AWAKENING.beats.guard);expect(AKAYURI_AWAKENING.manualOnly).toBe(true)});
+ it('uses the actual right blade for every branch and all three aerial aliases',()=>{for(const clip of['Lily Cut','Farewell Turn','Far Shore Thrust','Rush 1','Rush 2','Rush 3','Crossing Lilies','Upturned Lily','Line Through','Quiet Pursuit','Falling Petal','Red Rain Descent'])expect(akayuriStrikeSide('heavy',.4,clip)).toBe('Right');for(let i=0;i<3;i++)expect(akayuriStrikeSide('ultimate',0,'Equinox: Lily Field',i)).toBe('Right')});
+});

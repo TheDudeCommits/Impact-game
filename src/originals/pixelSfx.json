@@ -1,0 +1,33 @@
+{
+ "note": "Signature sounds in these characters' slots: cue -> file under audio/v2, and its length. Provenance: public/assets/audio/v2/sfx/px/manifest.json.",
+ "cues": {
+  "fx-senpugan": {
+   "file": "sfx/px/wind-spin-held.wav",
+   "seconds": 1.36
+  },
+  "fx-senpugan-hit": {
+   "file": "sfx/px/wind-spin-hit.wav",
+   "seconds": 1.127
+  },
+  "fx-sig-ouga-gale": {
+   "file": "sfx/px/ki-rise-rough.wav",
+   "seconds": 0.683
+  },
+  "fx-sig-ouga-flash": {
+   "file": "sfx/px/ki-flash.wav",
+   "seconds": 0.977
+  },
+  "fx-sig-kosho-flambe": {
+   "file": "sfx/px/flame-spin.wav",
+   "seconds": 0.65
+  },
+  "fx-sig-kosho-sear": {
+   "file": "sfx/px/sear.wav",
+   "seconds": 0.462
+  },
+  "fx-sig-kagari-taimatsu": {
+   "file": "sfx/px/flame-jet.wav",
+   "seconds": 0.973
+  }
+ }
+}

@@ -1,0 +1,84 @@
+{
+ "note": "The CC BY 4.0 recordings the sound effects keep (r6-audio/sfx/LICENCES.md; each credit's `files` are the files that contain it, from the set's manifest). The LEGAL page lists them (src/ui/legal.ts ATTRIBUTIONS); tests/originals-sfx.test.ts fails for a CC BY file with no credit here. Re-derive after a rebuilt set from wire/manifest.json `sources`.",
+ "placeholder": "",
+ "credits": [
+  {
+   "work": "“SwordClash05” and “SwordClash09”",
+   "by": "by 32cheeseman32",
+   "sources": [
+    [
+     "Freesound: SwordClash05",
+     "https://freesound.org/people/32cheeseman32/sounds/180825/"
+    ],
+    [
+     "Freesound: SwordClash09",
+     "https://freesound.org/people/32cheeseman32/sounds/180828/"
+    ]
+   ],
+   "licence": "CC BY 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "changes": "cut, layered and levelled for the game",
+   "files": [
+    "assets/audio/v2/sfx/originals/families/blade/clash-1.wav",
+    "assets/audio/v2/sfx/originals/families/blade/clash-2.wav",
+    "assets/audio/v2/sfx/originals/families/guard/block-blade.wav",
+    "assets/audio/v2/sfx/originals/families/guard/parry.wav"
+   ]
+  },
+  {
+   "work": "“FGHTImpt_Fight Punches 01” and “02”",
+   "by": "by KVV_Audio",
+   "sources": [
+    [
+     "Freesound: Fight Punches 01",
+     "https://freesound.org/people/KVV_Audio/sounds/749785/"
+    ],
+    [
+     "Freesound: Fight Punches 02",
+     "https://freesound.org/people/KVV_Audio/sounds/753685/"
+    ]
+   ],
+   "licence": "CC BY 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "changes": "cut, layered and levelled for the game",
+   "files": [
+    "assets/audio/v2/sfx/originals/families/guard/guard-break.wav",
+    "assets/audio/v2/sfx/originals/families/guard/guard-shatter.wav",
+    "assets/audio/v2/sfx/originals/families/hits/hit-barrage-3.wav",
+    "assets/audio/v2/sfx/originals/families/hits/hit-finisher-1.wav",
+    "assets/audio/v2/sfx/originals/families/hits/hit-kick-2.wav",
+    "assets/audio/v2/sfx/originals/families/hits/hit-kick-3.wav",
+    "assets/audio/v2/sfx/originals/families/hits/hit-light-3.wav",
+    "assets/audio/v2/sfx/originals/signatures/gaku/rock-fist.wav",
+    "assets/audio/v2/sfx/originals/signatures/haldor/faultline-fist.wav",
+    "assets/audio/v2/sfx/originals/signatures/ippon/clean-slate.wav",
+    "assets/audio/v2/sfx/originals/signatures/ippon/clock-in.wav",
+    "assets/audio/v2/sfx/originals/signatures/jirenga/mountain-felling.wav",
+    "assets/audio/v2/sfx/originals/signatures/koko/gan-gan-barrage.wav",
+    "assets/audio/v2/sfx/originals/signatures/lord-oro/noroma-barrage.wav",
+    "assets/audio/v2/sfx/originals/signatures/shirokane/storm-cutter-hit.wav",
+    "assets/audio/v2/sfx/originals/signatures/taisei/thunderclap.wav",
+    "assets/audio/v2/sfx/originals/signatures/ward/defib-shock.wav"
+   ]
+  },
+  {
+   "work": "The library recordings the sound effects are made of",
+   "by": "from the Sonniss #GameAudioGDC bundles (the libraries of their makers) and 効果音ラボ (Sound Effect Lab)",
+   "sources": [
+    [
+     "Sonniss",
+     "https://sonniss.com/gameaudiogdc"
+    ],
+    [
+     "効果音ラボ",
+     "https://soundeffect-lab.info"
+    ]
+   ],
+   "licence": "royalty-free for games, no credit required (the Sonniss GDC bundle licence, 効果音ラボ's terms); credited with thanks",
+   "changes": "trimmed, layered (at most three a sound) and levelled for the game",
+   "files": [
+    "assets/audio/v2/sfx/originals/"
+   ]
+  }
+ ]
+}

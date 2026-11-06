@@ -1,0 +1,25 @@
+# Dependencies and build output
+node_modules
+dist/
+*.tsbuildinfo
+
+# Local settings and secrets
+.env*
+!.env.example
+
+# Test and browser-run output
+test-results/
+playwright-report/
+.playwright-cli/
+coverage/
+
+# Editors and OS
+.DS_Store
+.vscode/
+.idea/
+
+# Tooling caches
+__pycache__/
+*.pyc
+*.blend1
+tools/fonts/

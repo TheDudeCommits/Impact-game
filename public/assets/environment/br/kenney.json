@@ -1,0 +1,23 @@
+{
+  "license": "CC0-1.0",
+  "author": "Kenney (www.kenney.nl)",
+  "kits": {
+    "pirate": "Pirate Kit 2.1, https://kenney.nl/assets/pirate-kit",
+    "town": "Fantasy Town Kit 2.0, https://kenney.nl/assets/fantasy-town-kit"
+  },
+  "pieces": [
+    "kenney-pirate-cannon",
+    "kenney-pirate-cannon-mobile",
+    "kenney-pirate-cannon-ball",
+    "kenney-pirate-flag-high",
+    "kenney-town-cart-high",
+    "kenney-town-wheel",
+    "kenney-town-lantern",
+    "kenney-town-rock-wide",
+    "kenney-town-rock-small",
+    "kenney-town-wall-broken",
+    "kenney-town-wall-wood-broken",
+    "kenney-town-planks",
+    "kenney-town-poles"
+  ]
+}

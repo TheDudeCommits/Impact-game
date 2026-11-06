@@ -1,0 +1,16 @@
+/* SHARE CARD's picture (shareResult.ts): the card over a dark scrim, its four plain buttons under it in the results'
+   ink. Plain UI only - no flash, no shake. */
+dialog.result-share{width:min(980px,94vw);max-width:none;max-height:94dvh;padding:0;border:0;background:none;color:#fff;overflow:visible}
+dialog.result-share::backdrop{background:rgba(8,9,12,.86)}
+.result-share-card{display:flex;flex-direction:column;gap:12px}
+.result-share-picture{position:relative;aspect-ratio:1200/630;background:#141414;border:4px solid #f7f4ed;box-shadow:8px 8px 0 #d91e36}
+.result-share-picture img{display:block;width:100%;height:100%;object-fit:contain}
+.result-share-picture p{position:absolute;inset:0;display:grid;place-items:center;margin:0;font:800 16px/1.2 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.14em;color:#ddd;text-align:center;padding:0 16px}
+.result-share-picture [hidden]{display:none}
+.result-share-note{min-height:1.2em;margin:0;font:700 14px/1.2 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.06em;color:#eee;overflow-wrap:anywhere}
+.result-share-actions{display:flex;flex-wrap:wrap;gap:10px}
+.result-share-actions>*{flex:1 1 140px;display:grid;place-items:center;min-height:46px;padding:10px 14px;border:2px solid #f7f4ed;background:#141414;color:#fff;font:italic 900 17px/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.04em;text-decoration:none;transform:skewX(-8deg);cursor:pointer}
+.result-share-actions>.is-primary{background:#f7f4ed;color:#141414;box-shadow:5px 5px 0 #d91e36}
+.result-share-actions>*:focus-visible{outline:3px solid #d91e36;outline-offset:3px}
+.result-share-actions>[hidden]{display:none}
+.result-share-actions>:disabled{opacity:.5;cursor:default}

@@ -1,0 +1,1976 @@
+{
+ "signatures": {
+  "akagane": {
+   "special": {
+    "what": "A sea of fire: a wall of flame roaring out wide and burning on.",
+    "cast": [
+     [
+      "fx-sig-akagane-burning-sea",
+      0.55,
+      "contact"
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "A star pulled out of the sky: a roar coming down for two seconds and the impact of a falling world.",
+    "cast": [
+     [
+      "fx-sig-akagane-heavens-anvil",
+      0.6,
+      "contact"
+     ]
+    ]
+   },
+   "light": {
+    "what": "The war fan swept: a great flat rush of air and a kabuki crack at its end.",
+    "cast": [
+     [
+      "fx-sig-akagane-war-fan",
+      0.42,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "asahi": {
+   "ultimate": {
+    "what": "A fire dance through the ash: four burning turns of the blade and a flare where it lands. / The first light of a dawn: a koto's sweep, then one burning cut as the sun comes up.",
+    "cast": [
+     [
+      "fx-sig-asahi-ashfall-waltz",
+      0.5,
+      "contact"
+     ],
+     [
+      "fx-sig-asahi-first-light",
+      0.55,
+      "contact"
+     ]
+    ]
+   },
+   "light": {
+    "what": "A rippling cut: a katana stroke flowing like water.",
+    "cast": [
+     [
+      "fx-sig-asahi-ripple-cut",
+      0.45,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "dorado": {
+   "special": {
+    "what": "The flintlock: the hammer cocked, the flint's spark and a heavy shot.",
+    "cast": [
+     [
+      "fx-sig-dorado-sovereign-shot",
+      0.6,
+      "contact"
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "The last light dividing the sunset: the blade set, one cut and a great gong ringing under it.",
+    "cast": [
+     [
+      "fx-sig-dorado-sunset-divide",
+      0.55,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "jinlin": {
+   "ultimate": {
+    "what": "The drowned sun: water swelling, then plunged down in a detonation of sea.",
+    "cast": [
+     [
+      "fx-sig-emperor-jinlin-drowned-sun",
+      0.55,
+      "contact"
+     ]
+    ]
+   },
+   "light": {
+    "what": "A needle of light off one finger: a blaster's shot with a glint in it.",
+    "cast": [
+     [
+      "fx-sig-emperor-jinlin-pearl-needle",
+      0.45,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "gaunt": {
+   "ultimate": {
+    "what": "The frenzied howl: a great beast's roar and a dragon's under it, iron at its end (recorded animals and a designed creature, no voice).",
+    "cast": [
+     [
+      "fx-sig-gaunt-rampage",
+      0.45,
+      0
+     ]
+    ]
+   },
+   "light": {
+    "what": "A slab of rail steel landing: a cinematic chop, an iron impact and the ground giving.",
+    "hit": [
+     [
+      "fx-sig-gaunt-wyrmbreaker",
+      0.5
+     ]
+    ]
+   },
+   "heavy": {
+    "what": "A slab of rail steel landing: a cinematic chop, an iron impact and the ground giving.",
+    "hit": [
+     [
+      "fx-sig-gaunt-wyrmbreaker",
+      0.5
+     ]
+    ]
+   }
+  },
+  "gorai": {
+   "special": {
+    "what": "A swig of storm-grog and a gale breathed out: bubbles, a bottle knocked aside and a howling gust.",
+    "cast": [
+     [
+      "fx-sig-gorai-grog-gale",
+      0.5,
+      "contact"
+     ]
+    ]
+   },
+   "heavy": {
+    "what": "The mast brought down: a wooden beam crashing onto concrete, a huge iron hammer and the ground breaking.",
+    "hit": [
+     [
+      "fx-sig-gorai-hull-crusher",
+      0.55
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "The lightning called down the club: the storm crackling, then a thunderbolt hammered onto them like an anvil.",
+    "cast": [
+     [
+      "fx-sig-gorai-sky-anvil",
+      0.55,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "haldor": {
+   "light": {
+    "what": "The crescent glaive reaping: a huge low swing and the blade's ring.",
+    "cast": [
+     [
+      "fx-sig-haldor-crescent-reap",
+      0.4,
+      "contact"
+     ]
+    ]
+   },
+   "special": {
+    "what": "The quake fist: a blow, a crack like glass in the air, and the ground rolling out from it.",
+    "hit": [
+     [
+      "fx-sig-haldor-faultline-fist",
+      0.55
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "The seabed rising: a tremor building, the ground heaving up and the old sea's surf breaking on it.",
+    "cast": [
+     [
+      "fx-sig-haldor-world-tilt",
+      0.6,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "imago": {
+   "ultimate": {
+    "what": "The last molt: a shell cracking open, something wet splitting and a burst of new power.",
+    "cast": [
+     [
+      "fx-sig-imago-final-molt",
+      0.55,
+      "contact"
+     ]
+    ]
+   },
+   "special": {
+    "what": "The hive bursting: a hornet swarm swelling into an energy blast and buzzing outward.",
+    "cast": [
+     [
+      "fx-sig-imago-hive-burst",
+      0.5,
+      "contact"
+     ]
+    ]
+   },
+   "heavy": {
+    "what": "The ringed tail's stinger: a whip's crack, a pierce and a hornet swarm's buzz in it.",
+    "cast": [
+     [
+      "fx-sig-imago-stinger-lash",
+      0.5,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "ippon": {
+   "ultimate": {
+    "what": "The one punch he means: half a second of nothing, a little swish, then a blow that splits the sky in two.",
+    "cast": [
+     [
+      "fx-sig-ippon-clean-slate",
+      0.6,
+      "contact"
+     ]
+    ]
+   },
+   "light": {
+    "what": "Clocking in: a time-clock's stamp and a perfectly ordinary punch.",
+    "cast": [
+     [
+      "fx-sig-ippon-clock-in",
+      0.4,
+      "contact"
+     ]
+    ]
+   },
+   "heavy": {
+    "what": "A sneeze that flattens the street: a little squeak of a breath in, then a gale (no voice).",
+    "cast": [
+     [
+      "fx-sig-ippon-dust-allergy",
+      0.5,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "jirenga": {
+   "ultimate": {
+    "what": "A punch with a thousand years of stillness behind it: one stone's click in the quiet, then a mountain split.",
+    "cast": [
+     [
+      "fx-sig-jirenga-mountain-felling",
+      0.6,
+      "contact"
+     ]
+    ]
+   },
+   "special": {
+    "what": "A temple seal stamped: a taiko's double strike, a stone's knock and a temple bell.",
+    "hit": [
+     [
+      "fx-sig-jirenga-vermilion-seal",
+      0.5
+     ]
+    ]
+   }
+  },
+  "kenzo": {
+   "special": {
+    "what": "The flying cut: a flurry of slashes thrown off in a rush of air, the steel singing.",
+    "cast": [
+     [
+      "fx-sig-kenzo-falcon",
+      0.5,
+      "contact"
+     ]
+    ]
+   },
+   "heavy": {
+    "what": "A draw-cut: the guard loosed, a held stillness, one cut too fast to see and the guard clicking home.",
+    "cast": [
+     [
+      "fx-sig-kenzo-lions-whisper",
+      0.45,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "oro": {
+   "special": {
+    "what": "The gilded spirit's barrage: fists in a blur over a clockwork tick, the last one hardest.",
+    "cast": [
+     [
+      "fx-sig-lord-oro-noroma-barrage",
+      0.36,
+      "contact"
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "The gilded hour stops: clockwork ticks quickening, a clock's toll and a deep strike, then stillness.",
+    "cast": [
+     [
+      "fx-sig-lord-oro-the-hour",
+      0.5,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "magatsu": {
+   "ultimate": {
+    "what": "The carrion altar raised: a vast low boom, a temple bell tolling and bones. / A thousand cuts: blades slicing in a blur.",
+    "cast": [
+     [
+      "fx-sig-magatsu-carrion-altar",
+      0.4,
+      0
+     ],
+     [
+      "fx-sig-magatsu-thousand-cuts",
+      0.5,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "rook": {
+   "ultimate": {
+    "what": "The black rookery: ravens streaming in and bursting in a dark blast.",
+    "cast": [
+     [
+      "fx-sig-rook-black-rookery",
+      0.55,
+      "contact"
+     ]
+    ]
+   },
+   "special": {
+    "what": "An invisible grip closing: a crushing implosion and bones creaking.",
+    "cast": [
+     [
+      "fx-sig-rook-grave-grip",
+      0.5,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "sekka": {
+   "ultimate": {
+    "what": "A black blizzard of fists: a whiteout wind with ice blows landing in a blur and the last one shattering.",
+    "cast": [
+     [
+      "fx-sig-sekka-black-blizzard",
+      0.5,
+      "contact"
+     ]
+    ]
+   },
+   "special": {
+    "what": "A gale of frost thrown from the fist.",
+    "cast": [
+     [
+      "fx-sig-sekka-frost-gale",
+      0.5,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "shiden": {
+   "special": {
+    "what": "A black sun catching on its target: a heavy dark ignition and a burning that does not go out.",
+    "hit": [
+     [
+      "fx-sig-shiden-black-sun",
+      0.5
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "A thunder god's arrow: lightning crackling as it is drawn, loosed with a snap, and the sky splitting where it lands.",
+    "cast": [
+     [
+      "fx-sig-shiden-raijin-arrow",
+      0.55,
+      "contact"
+     ]
+    ]
+   },
+   "heavy": {
+    "what": "Lightning in the hand with a real hawk's shriek riding the crackle, building to its burst.",
+    "cast": [
+     [
+      "fx-sig-shiden-shrike-bolt",
+      0.45,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "shiun": {
+   "heavy": {
+    "what": "The copy shattering like a mirror: a pane breaking and a ghostly breath.",
+    "cast": [
+     [
+      "fx-sig-shiun-false-encore",
+      0.45,
+      "contact"
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "Hymn 90: an organ's chord as the reliquary closes round them, its lid slamming down.",
+    "cast": [
+     [
+      "fx-sig-shiun-hymn-90",
+      0.55,
+      "contact"
+     ]
+    ]
+   },
+   "special": {
+    "what": "Hymn 91: an organ's chord and a volley of lances of light loosed one after another.",
+    "cast": [
+     [
+      "fx-sig-shiun-hymn-91",
+      0.5,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "sorrel": {
+   "special": {
+    "what": "A will that drops a crowd: a deep pressure blow with a crackle of sparks in it.",
+    "cast": [
+     [
+      "fx-sig-sorrel-crimson-command",
+      0.5,
+      0
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "A cut that splits the horizon: a draw and one great slash, and the far side of the sea rumbling a beat later.",
+    "cast": [
+     [
+      "fx-sig-sorrel-horizon-sunder",
+      0.55,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "taisei": {
+   "heavy": {
+    "what": "A step through the clouds: gone in a rush of air, back behind them in another.",
+    "cast": [
+     [
+      "fx-sig-taisei-cloudstep",
+      0.42,
+      "vanish"
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "The last sun held overhead: light gathering, then thrown down in a huge detonation.",
+    "cast": [
+     [
+      "fx-sig-taisei-last-sun",
+      0.5,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "tobari": {
+   "special": {
+    "what": "A black pyre catching: a dark ignition, a crow's caw in it and a burning that does not go out.",
+    "hit": [
+     [
+      "fx-sig-tobari-black-pyre",
+      0.5
+     ]
+    ]
+   },
+   "heavy": {
+    "what": "A murder of crows: the body bursting into a flock - real crows cawing, wings beating.",
+    "cast": [
+     [
+      "fx-sig-tobari-murder-of-crows",
+      0.45,
+      "contact"
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "The red moon: two slow heartbeats, crows far away and a bowed cymbal's cry.",
+    "cast": [
+     [
+      "fx-sig-tobari-red-moon",
+      0.5,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "gohaku": {
+   "special": {
+    "what": "The beam: a bright burst into a column, a great ape's bark at its front (a recorded lion, no voice).",
+    "cast": [
+     [
+      "fx-sig-tongbi-star-shifting-beam",
+      0.5,
+      "contact"
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "A spiral bored straight through them: a spinning whirr winding up and a blast tearing out.",
+    "cast": [
+     [
+      "fx-sig-tongbi-sun-seizing-spiral",
+      0.55,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "vesper": {
+   "special": {
+    "what": "A thrust of pale light: a sabre's slash, a bright reflection and the pierce.",
+    "cast": [
+     [
+      "fx-sig-vesper-pale-lance",
+      0.5,
+      "contact"
+     ]
+    ]
+   },
+   "ultimate": {
+    "what": "The offering: two slow heartbeats, a church bell tolling and everything falling away.",
+    "cast": [
+     [
+      "fx-sig-vesper-the-offering",
+      0.5,
+      "contact"
+     ]
+    ]
+   }
+  },
+  "wuming": {
+   "ultimate": {
+    "what": "The scythe that harvests the skyline: a huge slow sweep and the horizon falling.",
+    "cast": [
+     [
+      "fx-sig-wuming-heavens-harvest",
+      0.55,
+      "contact"
+     ]
+    ]
+   },
+   "heavy": {
+    "what": "A blade of light: a slash, an energy weapon's edge in it and cloth flicking after.",
+    "cast": [
+     [
+      "fx-sig-wuming-petalfall-blade",
+      0.45,
+      "contact"
+     ]
+    ]
+   }
+  }
+ },
+ "area": {
+  "jinlin": {
+   "cast": [
+    [
+     "fx-sig-emperor-jinlin-dragon-gate-disc",
+     0.45,
+     "contact"
+    ]
+   ],
+   "hit": []
+  },
+  "gaku": {
+   "cast": [
+    [
+     "fx-sig-gaku-lions-roar",
+     0.55,
+     "contact"
+    ]
+   ],
+   "hit": []
+  },
+  "haldor": {
+   "cast": [],
+   "hit": [
+    [
+     "fx-sig-haldor-groundswell",
+     0.55
+    ]
+   ]
+  },
+  "kenzo": {
+   "cast": [
+    [
+     "fx-sig-kenzo-great-whirl",
+     0.5,
+     "contact"
+    ]
+   ],
+   "hit": []
+  },
+  "koko": {
+   "cast": [],
+   "hit": [
+    [
+     "fx-sig-koko-ground-smash",
+     0.5
+    ]
+   ]
+  },
+  "oro": {
+   "cast": [
+    [
+     "fx-sig-lord-oro-knife-rain",
+     0.5,
+     "contact"
+    ]
+   ],
+   "hit": []
+  },
+  "magatsu": {
+   "cast": [
+    [
+     "fx-sig-magatsu-hex-furnace",
+     0.55,
+     "contact"
+    ]
+   ],
+   "hit": []
+  },
+  "nigo": {
+   "cast": [],
+   "hit": [
+    [
+     "fx-sig-nigo-cinder-cross",
+     0.5
+    ]
+   ]
+  },
+  "rook": {
+   "cast": [
+    [
+     "fx-sig-rook-grave-legion",
+     0.5,
+     "contact"
+    ]
+   ],
+   "hit": []
+  },
+  "sekka": {
+   "cast": [
+    [
+     "fx-sig-sekka-snowflake-seal",
+     0.45,
+     0
+    ]
+   ],
+   "hit": [
+    [
+     "fx-sig-sekka-snowcrush",
+     0.55
+    ]
+   ]
+  },
+  "shiden": {
+   "cast": [
+    [
+     "fx-sig-shiden-thunderball",
+     0.5,
+     "contact"
+    ]
+   ],
+   "hit": []
+  },
+  "shirokane": {
+   "cast": [
+    [
+     "fx-sig-shirokane-dust-fall",
+     0.5,
+     "contact"
+    ]
+   ],
+   "hit": []
+  },
+  "sorrel": {
+   "cast": [],
+   "hit": [
+    [
+     "fx-sig-sorrel-crimson-wake",
+     0.5
+    ]
+   ]
+  },
+  "taisei": {
+   "cast": [],
+   "hit": [
+    [
+     "fx-sig-taisei-thunderclap",
+     0.5
+    ]
+   ]
+  },
+  "vesper": {
+   "cast": [
+    [
+     "fx-sig-vesper-raven-host",
+     0.5,
+     "contact"
+    ]
+   ],
+   "hit": []
+  },
+  "ward": {
+   "cast": [
+    [
+     "fx-sig-ward-lift",
+     0.5,
+     "contact"
+    ]
+   ],
+   "hit": []
+  },
+  "wuming": {
+   "cast": [
+    [
+     "fx-sig-wuming-lotus-wrath",
+     0.5,
+     "contact"
+    ]
+   ],
+   "hit": []
+  }
+ },
+ "awaken": {
+  "akagane": [
+   [
+    "fx-sig-akagane-wrathful-king",
+    0.5
+   ]
+  ],
+  "asahi": [
+   [
+    "fx-sig-asahi-daybreak",
+    0.5
+   ]
+  ],
+  "dorado": [
+   [
+    "fx-sig-dorado-last-horizon",
+    0.5
+   ]
+  ],
+  "gaku": [
+   [
+    "fx-sig-gaku-komainu",
+    0.5
+   ]
+  ],
+  "gaunt": [
+   [
+    "fx-sig-gaunt-hound-armor",
+    0.5
+   ]
+  ],
+  "gorai": [
+   [
+    "fx-sig-gorai-storm-wyrm",
+    0.5
+   ]
+  ],
+  "imago": [
+   [
+    "fx-sig-imago-swarm-ascendant",
+    0.5
+   ]
+  ],
+  "jirenga": [
+   [
+    "fx-sig-jirenga-wrathful-guardian",
+    0.5
+   ]
+  ],
+  "kuzu": [
+   [
+    "fx-sig-kuzu-off-the-leash",
+    0.28
+   ]
+  ],
+  "rook": [
+   [
+    "fx-sig-rook-hollow-crown",
+    0.5
+   ]
+  ],
+  "shiun": [
+   [
+    "fx-sig-shiun-pale-seraph",
+    0.5
+   ]
+  ],
+  "taisei": [
+   [
+    "fx-sig-taisei-golden-sage",
+    0.5
+   ]
+  ],
+  "tobari": [
+   [
+    "fx-sig-tobari-crow-tengu",
+    0.5
+   ]
+  ],
+  "gohaku": [
+   [
+    "fx-sig-tongbi-white-ape",
+    0.5
+   ]
+  ],
+  "vesper": [
+   [
+    "fx-sig-vesper-black-vespers",
+    0.5
+   ]
+  ]
+ },
+ "special": [
+  {
+   "slot": "akaito",
+   "cue": "fx-sig-akaito-pinky-promise",
+   "move": "swap (ultimate): Pinky Promise",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The pinky promise: the ghost bride's cry, a dark blast and a bell tree's shimmer.",
+   "swap": "fx-beam-big",
+   "in": "ultimate"
+  },
+  {
+   "slot": "akaito",
+   "cue": "fx-sig-akaito-till-death",
+   "move": "swap: TILL DEATH",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "TILL DEATH: a wedding bell struck once, the ghost bride rising and a bowl humming.",
+   "swap": "fx-enter-cursed"
+  },
+  {
+   "slot": "akaito",
+   "cue": "fx-sig-akaito-whispered-vow",
+   "move": "swap (special): Whispered Vow",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A whispered vow: a ghost's breath, a koto's sweep and the red thread drawn.",
+   "swap": "fx-el-sonic-cast",
+   "in": "special"
+  },
+  {
+   "slot": "amagoi",
+   "cue": "fx-sig-amagoi-ash-moon",
+   "move": "swap (ultimate): Ash Moon",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The ash moon: thunder, a deluge falling and a deep boom.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "amagoi",
+   "cue": "fx-sig-amagoi-calling-water",
+   "move": "swap (special): Calling Water",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Calling water: the rain drawn in, pulled heavy and far thunder.",
+   "swap": "fx-el-grav-cast",
+   "in": "special"
+  },
+  {
+   "slot": "amagoi",
+   "cue": "fx-sig-amagoi-iron-halo",
+   "move": "swap: IRON HALO",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "IRON HALO: an iron ring struck like a gong, metal resounding and thunder under it.",
+   "swap": "fx-enter-chi"
+  },
+  {
+   "slot": "ampere",
+   "cue": "fx-sig-ampere-finisterre-flick",
+   "move": "swap (special): Finisterre Flick",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A flick that cracks like a live line: a shock, the air thrown and sparks.",
+   "swap": "fx-wind-blast",
+   "in": "special"
+  },
+  {
+   "slot": "ampere",
+   "cue": "fx-sig-ampere-foghorn-blast",
+   "move": "swap (ultimate): Foghorn Blast: Overcharge",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The foghorn blast: a boom, current surging behind it and the air driven out.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "ampere",
+   "cue": "fx-sig-ampere-lights-on",
+   "move": "swap: LIGHTS ON",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "LIGHTS ON: a breaker thrown, the lines humming awake and an arc crackling.",
+   "swap": "fx-lightning"
+  },
+  {
+   "slot": "bonsho",
+   "cue": "fx-sig-bonsho-first-toll",
+   "move": "swap (special): First Toll",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The first toll: the temple's bronze bell struck, a gong under it and the palm's push.",
+   "swap": "fx-el-light-cast",
+   "in": "special"
+  },
+  {
+   "slot": "bonsho",
+   "cue": "fx-sig-bonsho-great-bell",
+   "move": "swap: GREAT BELL",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "GREAT BELL: the bronze bell struck once, a deep boom and a singing bowl's hum after it.",
+   "swap": "fx-enter-aura"
+  },
+  {
+   "slot": "bonsho",
+   "cue": "fx-sig-bonsho-hundred-and-eight",
+   "move": "swap (ultimate): Hundred and Eight Tolls",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The hundred and eighth toll: a great bell's crash, a deep \"DOON\" and a gong ringing out.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "bruin",
+   "cue": "fx-sig-bruin-night-prowl",
+   "move": "swap (special): Night Prowl",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A night prowl: a bear's grumble, the dark moving and a blade's swish.",
+   "swap": "fx-el-dark-cast",
+   "in": "special"
+  },
+  {
+   "slot": "bruin",
+   "cue": "fx-sig-bruin-starless-cut",
+   "move": "swap (ultimate): Starless Cut",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The starless cut: a long blade's cut, a dark low blow and a deep boom.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "bruin",
+   "cue": "fx-sig-bruin-wide-awake",
+   "move": "swap: WIDE AWAKE",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "WIDE AWAKE: the bear woken with a roar, a dark boom and a growl.",
+   "swap": "fx-enter-cursed"
+  },
+  {
+   "slot": "cardo",
+   "cue": "fx-sig-cardo-last-weed",
+   "move": "swap (ultimate): Last Weed Standing",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The last weed standing: a great blade cleaving, wood cracking and the thistles thrashing.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "cardo",
+   "cue": "fx-sig-cardo-overgrown",
+   "move": "swap: OVERGROWN",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "OVERGROWN: a branch cracking as the briars burst out, leaves thrashing and bark tearing.",
+   "swap": "fx-enter-cursed"
+  },
+  {
+   "slot": "cardo",
+   "cue": "fx-sig-cardo-unspell",
+   "move": "swap (special): Unspell",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A spell cut apart: magic tearing like cloth, broken off a blade, and the steel humming.",
+   "swap": "fx-el-dark-cast",
+   "in": "special"
+  },
+  {
+   "slot": "chohan",
+   "cue": "fx-sig-chohan-all-in",
+   "move": "swap (awaken): ALL IN",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "ALL IN: a drum struck as the chips are pushed across the table.",
+   "swap": "fx-wind-blast",
+   "in": "awaken"
+  },
+  {
+   "slot": "chohan",
+   "cue": "fx-sig-chohan-house-wins",
+   "move": "swap (ultimate): The House Wins",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The house wins: a blade's cut, the chips raked in and the dealer's clappers.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "chohan",
+   "cue": "fx-sig-chohan-sleight-of-hand",
+   "move": "swap (special): Sleight of Hand",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Sleight of hand: cards riffled, a blade palmed and a quick swish.",
+   "swap": "fx-draw",
+   "in": "special"
+  },
+  {
+   "slot": "gosu",
+   "cue": "fx-sig-gosu-gilded-scars",
+   "move": "swap (ultimate): Gilded Scars",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Gilded scars: porcelain bursting, an anvil's ring as it is mended and a golden glint.",
+   "swap": "fx-hit-finisher-2|fx-hit-finisher-1",
+   "in": "ultimate"
+  },
+  {
+   "slot": "gosu",
+   "cue": "fx-sig-gosu-golden-mend",
+   "move": "swap (awaken): the golden mend",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Mended: a smith's anvil struck, porcelain cracking and a golden glint across the seams.",
+   "swap": "fx-energy-hit-1",
+   "in": "awaken"
+  },
+  {
+   "slot": "gosu",
+   "cue": "fx-sig-gosu-kin-kin",
+   "move": "swap (special): KIN KIN Barrage",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A blow in the KIN KIN barrage: a fist's swish with a golden glint and a chip of porcelain on it.",
+   "swap": "fx-swing-heavy-1|fx-swing-heavy-2",
+   "in": "special"
+  },
+  {
+   "slot": "hakushi",
+   "cue": "fx-sig-hakushi-lion-dance",
+   "move": "swap (ultimate): Lion Dance: Over the Cliff",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The lion dance: the festival drums, the lion roaring over them and a cymbal.",
+   "swap": "fx-fire-roar",
+   "in": "ultimate"
+  },
+  {
+   "slot": "hakushi",
+   "cue": "fx-sig-hakushi-lions-breath",
+   "move": "swap (special): Cinder Art: Lion's Breath",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The lion's breath: fire roared out, a lion's roar in it and a hot wind.",
+   "swap": "fx-fire-whoosh-2",
+   "in": "special"
+  },
+  {
+   "slot": "hakushi",
+   "cue": "fx-sig-hakushi-old-lion",
+   "move": "swap: THE OLD LION",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "THE OLD LION: a lion's roar, a taiko struck with it and the wind off the cliff.",
+   "swap": "fx-enter-chi"
+  },
+  {
+   "slot": "highsun",
+   "cue": "fx-sig-highsun-no-shadow",
+   "move": "swap: NO SHADOW",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "NO SHADOW: a burst of noonday light, a blaze roaring and the twelve o'clock bell.",
+   "swap": "fx-enter-aura"
+  },
+  {
+   "slot": "highsun",
+   "cue": "fx-sig-highsun-pocket-sun",
+   "move": "swap (special): Pocket Sun",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A pocket sun kindled: gas flaring, a flame gathering and plasma burning.",
+   "swap": "fx-fire-ignite",
+   "in": "special"
+  },
+  {
+   "slot": "highsun",
+   "cue": "fx-sig-highsun-zenith",
+   "move": "swap (ultimate): Sword of the Zenith",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The sword of the zenith raised: the noon bell, flame roaring along it and a holy light.",
+   "swap": "fx-el-light-cast",
+   "in": "ultimate"
+  },
+  {
+   "slot": "hinomoto",
+   "cue": "fx-sig-hinomoto-funeral-pyre",
+   "move": "swap (ultimate): Funeral Pyre",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The funeral pyre: fire bursting up, wood burning and a temple bell for the dead.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "hinomoto",
+   "cue": "fx-sig-hinomoto-furnace-wave",
+   "move": "swap (special): Furnace Wave",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A furnace wave: a house fire roaring, flame thrown and the heat buffeting.",
+   "swap": "fx-fire-whoosh-2|fx-fire-whoosh-1",
+   "in": "special"
+  },
+  {
+   "slot": "hinomoto",
+   "cue": "fx-sig-hinomoto-old-fire",
+   "move": "swap: THE OLD FIRE",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "THE OLD FIRE: a war drum, black lacquer armour settling and the pyre roaring up.",
+   "swap": "fx-enter-pressure"
+  },
+  {
+   "slot": "kagari",
+   "cue": "fx-sig-kagari-flare-heavy-1",
+   "move": "swap (light): fx-swing-heavy-1",
+   "when": "contact",
+   "gain": 0.5,
+   "what": "The string's last blow, all fire: a long swing and a torch's full whoosh, a roaring flame under it.",
+   "swap": "fx-swing-heavy-1",
+   "in": "light"
+  },
+  {
+   "slot": "kagari",
+   "cue": "fx-sig-kagari-flare-heavy-2",
+   "move": "swap (light): fx-swing-heavy-2",
+   "when": "contact",
+   "gain": 0.5,
+   "what": "The string's last blow, all fire: a weapon's swing and fire swooshing off it.",
+   "swap": "fx-swing-heavy-2",
+   "in": "light"
+  },
+  {
+   "slot": "kagari",
+   "cue": "fx-sig-kagari-flare-jab-1",
+   "move": "swap (light): fx-swing-jab-1",
+   "when": "contact",
+   "gain": 0.44,
+   "what": "A fist thrown with fire on it: a quick swish and a short fire swoosh.",
+   "swap": "fx-swing-jab-1",
+   "in": "light"
+  },
+  {
+   "slot": "kagari",
+   "cue": "fx-sig-kagari-flare-jab-2",
+   "move": "swap (light): fx-swing-jab-2",
+   "when": "contact",
+   "gain": 0.44,
+   "what": "A fist thrown with fire on it: a swish and a flame flaring off the knuckles.",
+   "swap": "fx-swing-jab-2",
+   "in": "light"
+  },
+  {
+   "slot": "kagari",
+   "cue": "fx-sig-kagari-flare-jab-3",
+   "move": "swap (light): fx-swing-jab-3",
+   "when": "contact",
+   "gain": 0.44,
+   "what": "A fist thrown with fire on it: a swish and a torch's whoosh.",
+   "swap": "fx-swing-jab-3",
+   "in": "light"
+  },
+  {
+   "slot": "kagari",
+   "cue": "fx-sig-kagari-flare-jab-4",
+   "move": "swap (light): fx-swing-jab-4",
+   "when": "contact",
+   "gain": 0.44,
+   "what": "A fist thrown with fire on it: a glove's punchy air, a fire puff and a catch of flame.",
+   "swap": "fx-swing-jab-4",
+   "in": "light"
+  },
+  {
+   "slot": "kagari",
+   "cue": "fx-sig-kagari-flare-kick-1",
+   "move": "swap (light): fx-swing-kick-1",
+   "when": "contact",
+   "gain": 0.44,
+   "what": "A burning kick in the air: cloth and leather and a torch's whoosh.",
+   "swap": "fx-swing-kick-1",
+   "in": "light"
+  },
+  {
+   "slot": "kagari",
+   "cue": "fx-sig-kagari-flare-kick-2",
+   "move": "swap (light): fx-swing-kick-2",
+   "when": "contact",
+   "gain": 0.44,
+   "what": "A burning kick in the air: a sleeve's snap and a short fire swoosh.",
+   "swap": "fx-swing-kick-2",
+   "in": "light"
+  },
+  {
+   "slot": "kagari",
+   "cue": "fx-sig-kagari-flare-kick-3",
+   "move": "swap (light): fx-swing-kick-3",
+   "when": "contact",
+   "gain": 0.44,
+   "what": "A burning kick in the air: a swish, a flame catching and a fire puff.",
+   "swap": "fx-swing-kick-3",
+   "in": "light"
+  },
+  {
+   "slot": "minase",
+   "cue": "fx-sig-kanata-fifty-three-stations",
+   "move": "swap (ultimate): Fifty-Three Stations",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Fifty-three stations: a blow landed, a dash already gone and the courier's bell.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "minase",
+   "cue": "fx-sig-kanata-full-stride",
+   "move": "swap: FULL STRIDE",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "FULL STRIDE: a dash breaking the air, wind roaring past and the courier's bell.",
+   "swap": "fx-enter-chi"
+  },
+  {
+   "slot": "minase",
+   "cue": "fx-sig-kanata-relay-leap",
+   "move": "swap (special): Relay Leap",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A relay leap: gone in a rush, a \"hyun\" and a courier's little bell.",
+   "swap": "fx-dash",
+   "in": "special"
+  },
+  {
+   "slot": "kinu",
+   "cue": "fx-sig-kinu-broken-shackles",
+   "move": "swap (ultimate): Broken Shackles",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Broken shackles: a heavy chain swung into them and links bursting apart.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "kinu",
+   "cue": "fx-sig-kinu-buchi-buchi",
+   "move": "swap (special): BUCHI BUCHI Barrage",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A blow in the BUCHI BUCHI barrage: a fist's swish, a thread snapping off it.",
+   "swap": "fx-swing-jab-3|fx-swing-jab-1|fx-swing-jab-2|fx-swing-jab-4",
+   "in": "special"
+  },
+  {
+   "slot": "kinu",
+   "cue": "fx-sig-kinu-cut-loose",
+   "move": "swap (awaken): CUT LOOSE",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "CUT LOOSE: a chain breaking, threads pulled taut and snapping free.",
+   "swap": "fx-energy-hit-1",
+   "in": "awaken"
+  },
+  {
+   "slot": "koko",
+   "cue": "fx-sig-koko-iron-lullaby",
+   "move": "every move: IRON LULLABY appears",
+   "when": "cast",
+   "gain": 0.34,
+   "what": "The iron spirit rising behind him: a ghostly whoosh, an iron clank as it stands and a bell tree's shimmer."
+  },
+  {
+   "slot": "kusushi",
+   "cue": "fx-sig-kusushi-double-or-nothing",
+   "move": "swap (ultimate): Double or Nothing",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Double or nothing: a slam with all she has, the chips scattering and a boom.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "kusushi",
+   "cue": "fx-sig-kusushi-grand-champion",
+   "move": "swap: GRAND CHAMPION",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "GRAND CHAMPION: the ring's taiko, a fistful of salt thrown and a gust.",
+   "swap": "fx-enter-chi"
+  },
+  {
+   "slot": "kusushi",
+   "cue": "fx-sig-kusushi-ring-out",
+   "move": "swap (special): Ring-Out Palm",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A ring-out palm: a sumo's slap, a body thrown out across the dirt and the clappers.",
+   "swap": "fx-el-stone-cast",
+   "in": "special"
+  },
+  {
+   "slot": "lanthorn",
+   "cue": "fx-sig-lanthorn-after-hours",
+   "move": "swap: AFTER HOURS",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "AFTER HOURS: the iron lamp's shutter clanking open, flame lit and a black fire swelling.",
+   "swap": "fx-enter-cursed"
+  },
+  {
+   "slot": "lanthorn",
+   "cue": "fx-sig-lanthorn-lampblack-edge",
+   "move": "swap (special): Lampblack Edge",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The lampblack edge: a torch swung, the blade's glint and a black flame trailing.",
+   "swap": "fx-fire-whoosh-2|fx-fire-whoosh-1",
+   "in": "special"
+  },
+  {
+   "slot": "lanthorn",
+   "cue": "fx-sig-lanthorn-last-call",
+   "move": "swap (ultimate): Last Call",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Last call: a bottle smashed, black fire bursting from it and the dark rushing in.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "oro",
+   "cue": "fx-sig-lord-oro-death-knell-fall",
+   "move": "ultimate finisher: THE HOUR: Death Knell (the fall)",
+   "when": "before the last blow",
+   "gain": 0.55,
+   "what": "The tower's great bell coming down: a long falling whistle and the air rushing ahead of it."
+  },
+  {
+   "slot": "oro",
+   "cue": "fx-sig-lord-oro-gilded-spirit",
+   "move": "every move: THE GILDED HOUR appears",
+   "when": "cast",
+   "gain": 0.34,
+   "what": "The clockwork knight rising behind him: a ghostly whoosh over clockwork ticks and a clock's toll."
+  },
+  {
+   "slot": "madake",
+   "cue": "fx-sig-madake-evergreen",
+   "move": "swap: EVERGREEN",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "EVERGREEN: steam bursting off him, bamboo cracking and the leaves shaken.",
+   "swap": "fx-steam"
+  },
+  {
+   "slot": "madake",
+   "cue": "fx-sig-madake-midwinter-bamboo",
+   "move": "swap (ultimate): Midwinter Bamboo",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Midwinter bamboo: a trunk splitting, a beam breaking and the kick's blow.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "madake",
+   "cue": "fx-sig-madake-summer-wolf",
+   "move": "swap (special): Summer Wolf",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The summer wolf: a kick that throws the air, bamboo cracking in it and a gust.",
+   "swap": "fx-wind-blast",
+   "in": "special"
+  },
+  {
+   "slot": "mizuhiki",
+   "cue": "fx-sig-mizuhiki-bitter-end",
+   "move": "swap (ultimate): Bitter End",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The bitter end: a blade's cut, a rope cracking and the plates rattling.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "mizuhiki",
+   "cue": "fx-sig-mizuhiki-haul-in",
+   "move": "swap (special): Haul In",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Hauling in: a cable reeled in fast, a strap drawn and the line whipping taut.",
+   "swap": "fx-sig-grapple",
+   "in": "special"
+  },
+  {
+   "slot": "mizuhiki",
+   "cue": "fx-sig-mizuhiki-taut",
+   "move": "swap: TAUT",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "TAUT: armour plates locking and the cables drawn tight.",
+   "swap": "fx-lightning"
+  },
+  {
+   "slot": "murex",
+   "cue": "fx-sig-murex-flinch-wave",
+   "move": "swap (special): Flinch Wave",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A flinch wave: a menacing pulse, a metal frame shuddering and current surging.",
+   "swap": "fx-el-light-rush",
+   "in": "special"
+  },
+  {
+   "slot": "murex",
+   "cue": "fx-sig-murex-spinestorm",
+   "move": "swap (ultimate): Spinestorm",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The spinestorm: a frame crashing into them, spines driving in and power falling.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "murex",
+   "cue": "fx-sig-murex-unstrapped",
+   "move": "swap: UNSTRAPPED",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "UNSTRAPPED: restraints tearing, straps snapping and the frame's metal struck.",
+   "swap": "fx-enter-aura"
+  },
+  {
+   "slot": "ovid",
+   "cue": "fx-sig-ovid-cracked-open",
+   "move": "swap: CRACKED OPEN",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "CRACKED OPEN: the black glass cracking, a growl in it and the shell falling away.",
+   "swap": "fx-lightning"
+  },
+  {
+   "slot": "ovid",
+   "cue": "fx-sig-ovid-full-demolition",
+   "move": "swap (ultimate): Full Demolition",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Full demolition: a wall smashed, windows going and the building coming down.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "ovid",
+   "cue": "fx-sig-ovid-shatterburst",
+   "move": "swap (special): Shatterburst",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A shatterburst: black glass bursting, the shards flying and a boom.",
+   "swap": "fx-wind-blast",
+   "in": "special"
+  },
+  {
+   "slot": "oyashio",
+   "cue": "fx-sig-oyashio-brine-shot",
+   "move": "swap (special): Brine Shot",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A brine shot: a jet of seawater thrown hard, splashing and pushing the air.",
+   "swap": "fx-el-water-rush",
+   "in": "special"
+  },
+  {
+   "slot": "oyashio",
+   "cue": "fx-sig-oyashio-deep-current",
+   "move": "swap: DEEP CURRENT",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "DEEP CURRENT: the sea surging round him, a deep boom and bubbles rising.",
+   "swap": "fx-enter-will"
+  },
+  {
+   "slot": "oyashio",
+   "cue": "fx-sig-oyashio-grand-gyre",
+   "move": "swap (ultimate): Grand Gyre",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The grand gyre: a wave breaking over them, a second behind it and the deep under.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "psyche",
+   "cue": "fx-sig-psyche-ruin-palm",
+   "move": "swap (special): Ruin Palm",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A ruin palm: moth wings fluttering up, old dust and pages rustling.",
+   "swap": "fx-el-petal-cast",
+   "in": "special"
+  },
+  {
+   "slot": "psyche",
+   "cue": "fx-sig-psyche-silk-cocoon",
+   "move": "swap (ultimate): Silk Cocoon",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The silk cocoon: bones creaking as the silk wraps them, cloth drawn tight.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "psyche",
+   "cue": "fx-sig-psyche-violet-swarm",
+   "move": "swap: VIOLET SWARM",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "VIOLET SWARM: moth wings beating, the swarm's hum and a ghostly air.",
+   "swap": "fx-enter-will"
+  },
+  {
+   "slot": "pyroclast",
+   "cue": "fx-sig-pyroclast-boiling-point",
+   "move": "swap: BOILING POINT",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "BOILING POINT: magma roaring up, the black glass bubbling and a blast as it cracks.",
+   "swap": "fx-fire-roar"
+  },
+  {
+   "slot": "pyroclast",
+   "cue": "fx-sig-pyroclast-supervolcano",
+   "move": "swap (ultimate): Supervolcano",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The supervolcano: a deep detonation, the mountain crumbling and fire roaring up.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "pyroclast",
+   "cue": "fx-sig-pyroclast-vent-shot",
+   "move": "swap (special): Vent Shot",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A vent blowing: steam shrieking out, a boom and magma spat after it.",
+   "swap": "fx-ki-launch",
+   "in": "special"
+  },
+  {
+   "slot": "sashigane",
+   "cue": "fx-sig-sashigane-condemned",
+   "move": "swap (special): Condemned",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Condemned: a hard stamp on wood, brick giving way and a notice slapped up.",
+   "swap": "fx-el-stone-cast",
+   "in": "special"
+  },
+  {
+   "slot": "sashigane",
+   "cue": "fx-sig-sashigane-final-inspection",
+   "move": "swap (ultimate): Final Inspection",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The final inspection: a cut at the weak point, debris falling and the wall coming down.",
+   "swap": "fx-hit-finisher-2|fx-hit-finisher-1",
+   "in": "ultimate"
+  },
+  {
+   "slot": "sashigane",
+   "cue": "fx-sig-sashigane-zero-tolerance",
+   "move": "swap: ZERO TOLERANCE",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "ZERO TOLERANCE: a tape measure snapping back, a clock's tick and a deep blow.",
+   "swap": "fx-enter-cursed"
+  },
+  {
+   "slot": "senko",
+   "cue": "fx-sig-senko-blinding-noon",
+   "move": "swap: BLINDING NOON",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "BLINDING NOON: a flash of light, a bell tree's shimmer and the glare humming.",
+   "swap": "fx-enter-will"
+  },
+  {
+   "slot": "senko",
+   "cue": "fx-sig-senko-fingertip-glare",
+   "move": "swap (special): Fingertip Glare",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A fingertip's glare: a glint, light burning through and a flash.",
+   "swap": "fx-el-light-rush",
+   "in": "special"
+  },
+  {
+   "slot": "senko",
+   "cue": "fx-sig-senko-hundred-lights",
+   "move": "swap (ultimate): Troop of a Hundred Lights",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A troop of a hundred lights: a barrage of light shots, a blaster and a glint.",
+   "swap": "fx-beam-big",
+   "in": "ultimate"
+  },
+  {
+   "slot": "shanxiao",
+   "cue": "fx-sig-shanxiao-jade-comet",
+   "move": "swap (special): Jade Comet",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A jade comet: a boulder hurled so fast it roars, bursting where it lands.",
+   "swap": "fx-ki-blast-2|fx-ki-blast-1|fx-ki-blast-3",
+   "in": "special"
+  },
+  {
+   "slot": "shanxiao",
+   "cue": "fx-sig-shanxiao-jade-storm",
+   "move": "swap (awaken): JADE STORM",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "JADE STORM: a taiko's \"DON\", the mountain rumbling and stone crumbling away.",
+   "swap": "fx-land-heavy",
+   "in": "awaken"
+  },
+  {
+   "slot": "shanxiao",
+   "cue": "fx-sig-shanxiao-sun-chaser",
+   "move": "swap (ultimate): Sun Chaser",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The sun chaser's blow: a deep boom, a mountainside sliding and the earth shaking.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "shibuichi",
+   "cue": "fx-sig-shibuichi-golden-seam",
+   "move": "swap (ultimate): KINTSUGI: Golden Seam",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "KINTSUGI: the hammer on the anvil, the seam ringing and a golden glint.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "shibuichi",
+   "cue": "fx-sig-shibuichi-hearthlight",
+   "move": "swap: HEARTHLIGHT",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "HEARTHLIGHT: an anvil struck, the forge roaring up inside the plate and the plates settling.",
+   "swap": "fx-lightning"
+  },
+  {
+   "slot": "shibuichi",
+   "cue": "fx-sig-shibuichi-quench-palm",
+   "move": "swap (special): Quench Palm",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A quench: hot iron plunged with a hiss of steam, the anvil's ring under it.",
+   "swap": "fx-el-stone-cast",
+   "in": "special"
+  },
+  {
+   "slot": "sorayomi",
+   "cue": "fx-sig-sorayomi-eye-of-the-storm",
+   "move": "swap: EYE OF THE STORM",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "EYE OF THE STORM: the wind spinning up round her, a thunderclap and the storm whirling.",
+   "swap": "fx-awaken"
+  },
+  {
+   "slot": "sorayomi",
+   "cue": "fx-sig-sorayomi-gust-spinner",
+   "move": "swap (special): Gust Spinner",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A gust spinner: wind whirling, whistling and a gust thrown.",
+   "swap": "fx-wind-swirl",
+   "in": "special"
+  },
+  {
+   "slot": "sorayomi",
+   "cue": "fx-sig-sorayomi-storm-warning",
+   "move": "swap (ultimate): Storm Warning",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The storm warning: lightning striking where she said it would, thunder rolling and the arc.",
+   "swap": "fx-lightning",
+   "in": "ultimate"
+  },
+  {
+   "slot": "strappado",
+   "cue": "fx-sig-strappado-final-bow",
+   "move": "swap (ultimate): Curtain Call: The Final Bow",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The final bow: a heavy blow, the stage clappers' crack and the curtain dropping.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "strappado",
+   "cue": "fx-sig-strappado-searing-cord",
+   "move": "swap (special): Searing Cord",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A cord cracked across them: a rope lashing, a whip's crack and the line singing.",
+   "swap": "fx-el-string-rush",
+   "in": "special"
+  },
+  {
+   "slot": "strappado",
+   "cue": "fx-sig-strappado-showstopper",
+   "move": "swap: SHOWSTOPPER",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "SHOWSTOPPER: a cymbal crash, a drum roll's finish and the strings drawn tight.",
+   "swap": "fx-enter-will"
+  },
+  {
+   "slot": "strix",
+   "cue": "fx-sig-strix-last-vigil",
+   "move": "swap (ultimate): Last Vigil",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The last vigil's stroke: a long blade's cut, a low boom under it and steel humming.",
+   "swap": "fx-slash-wave",
+   "in": "ultimate"
+  },
+  {
+   "slot": "strix",
+   "cue": "fx-sig-strix-long-farewell",
+   "move": "swap (special): Vigil: Long Farewell",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A farewell flung down the blade: a great sword's cut, the wind whistling after it, a candle flame caught in it.",
+   "swap": "fx-slash-wave",
+   "in": "special"
+  },
+  {
+   "slot": "strix",
+   "cue": "fx-sig-strix-unblinking",
+   "move": "swap: UNBLINKING",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "UNBLINKING: a blade ringing cold, a deep boom, a candle catching.",
+   "swap": "fx-enter-will"
+  },
+  {
+   "slot": "tempo",
+   "cue": "fx-sig-tempo-in-the-zone",
+   "move": "swap: IN THE ZONE",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "IN THE ZONE: the heart slowing, a deep boom and the world snapping back.",
+   "swap": "fx-enter-cursed"
+  },
+  {
+   "slot": "tempo",
+   "cue": "fx-sig-tempo-perfect-timing",
+   "move": "swap (ultimate): Perfect Timing",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Perfect timing: a blow and its double landing a heartbeat apart.",
+   "swap": "fx-dark-spark",
+   "in": "ultimate"
+  },
+  {
+   "slot": "tempo",
+   "cue": "fx-sig-tempo-pulse-shot",
+   "move": "swap (special): Pulse Shot",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A pulse shot: a heartbeat, a punch on the beat and the air knocked out.",
+   "swap": "fx-el-blood-rush",
+   "in": "special"
+  },
+  {
+   "slot": "tokan",
+   "cue": "fx-sig-tokan-dead-of-winter",
+   "move": "swap: DEAD OF WINTER",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "DEAD OF WINTER: ice crusting over at once, a winter gust and the cold settling.",
+   "swap": "fx-enter-will"
+  },
+  {
+   "slot": "tokan",
+   "cue": "fx-sig-tokan-frostplume",
+   "move": "swap (special): Frostplume Flight",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Frost plumes in flight: ice rushing through the air, frost crackling and wings beating.",
+   "swap": "fx-el-ice-rush",
+   "in": "special"
+  },
+  {
+   "slot": "tokan",
+   "cue": "fx-sig-tokan-winter-sleep",
+   "move": "swap (ultimate): Winter Sleep",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Winter sleep: a sheet of sea ice heaving shut, freezing over and cracking.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "torsion",
+   "cue": "fx-sig-torsion-full-torque",
+   "move": "swap (ultimate): Full Torque",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Full torque: a slam, metal wrung like a rag and the street crumbling.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  },
+  {
+   "slot": "torsion",
+   "cue": "fx-sig-torsion-gloves-off",
+   "move": "swap: GLOVES OFF",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "GLOVES OFF: the gloves pulled off with a snap of leather and the air twisting round her.",
+   "swap": "fx-enter-aura"
+  },
+  {
+   "slot": "torsion",
+   "cue": "fx-sig-torsion-rubble-volley",
+   "move": "swap (special): Rubble Volley",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "A rubble volley: stones tumbling up, whirled and flung.",
+   "swap": "fx-el-stone-cast",
+   "in": "special"
+  },
+  {
+   "slot": "tsubute",
+   "cue": "fx-sig-tsubute-pouch-draw-1",
+   "move": "swap: fx-stretch-1",
+   "when": "contact",
+   "gain": 0.32,
+   "what": "The stone seated and the pouch drawn back: leather gripped, a pebble's tick.",
+   "swap": "fx-stretch-1"
+  },
+  {
+   "slot": "tsubute",
+   "cue": "fx-sig-tsubute-pouch-draw-2",
+   "move": "swap: fx-stretch-2",
+   "when": "contact",
+   "gain": 0.3,
+   "what": "The pouch drawn back hard: leather and a sleeve pulled tight.",
+   "swap": "fx-stretch-2"
+  },
+  {
+   "slot": "tsubute",
+   "cue": "fx-sig-tsubute-stone-loose-1",
+   "move": "swap: fx-snap-1",
+   "when": "contact",
+   "gain": 0.42,
+   "what": "The shot: the pouch slapping forward and the stone whipping away.",
+   "swap": "fx-snap-1"
+  },
+  {
+   "slot": "tsubute",
+   "cue": "fx-sig-tsubute-stone-loose-2",
+   "move": "swap: fx-snap-2",
+   "when": "contact",
+   "gain": 0.38,
+   "what": "A hard shot: the pouch's slap and the stone cutting the air.",
+   "swap": "fx-snap-2"
+  },
+  {
+   "slot": "yodaka",
+   "cue": "fx-sig-yodaka-burning-star",
+   "move": "swap (awaken): BURNING STAR",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "BURNING STAR: a temple drum struck, wings opening and a blaze.",
+   "swap": "fx-fire-ignite",
+   "in": "awaken"
+  },
+  {
+   "slot": "yodaka",
+   "cue": "fx-sig-yodaka-flaring-wings",
+   "move": "swap (special): Fourth Watch: Flaring Wings",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "Flaring wings: great wings beating, a torch swung and fire on the wind.",
+   "swap": "fx-fire-whoosh-2|fx-fire-whoosh-1",
+   "in": "special"
+  },
+  {
+   "slot": "yodaka",
+   "cue": "fx-sig-yodaka-nighthawk-star",
+   "move": "swap (ultimate): Ninth Watch: Nighthawk Star",
+   "when": "contact",
+   "gain": 0.45,
+   "what": "The nighthawk star: a temple drum struck, fire bursting and a flame roaring.",
+   "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
+   "in": "ultimate"
+  }
+ ],
+ "describe": {
+  "fx-sig-gaku-rock-paper": "The landslide fist: a heartbeat quickening as power is drawn into one fist, then a blow like a rockslide.",
+  "fx-sig-magatsu-dismantle": "A cut with no blade: two thin slices a twentieth of a second apart, cold and dry.",
+  "fx-sig-sunpalm-charge": "The cannon cupped at the hip: the aura's rush and power drawn in, let go in a charged energy shot."
+ }
+}

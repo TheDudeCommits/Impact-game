@@ -1,0 +1,1827 @@
+{
+  "taisei": {
+    "name": "Great Sage Thunderclap",
+    "damage": 220,
+    "radius": 3.6,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.7,
+      "look": "burst",
+      "anim": "light",
+      "voice": "vo-taisei-ikke",
+      "ja": "大聖雷拳",
+      "card": "Thunderclap"
+    }
+  },
+  "konta": {
+    "element": "windwater",
+    "name": "Wind Art: Senpu Shigure",
+    "damage": 224,
+    "radius": 4,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.8,
+      "look": "rain",
+      "anim": {
+        "clip": "Senpugan charge Bushin"
+      },
+      "voice": "vo-konta-odama-senpugan",
+      "ja": "風術・旋風時雨",
+      "card": "Senpu Shigure"
+    }
+  },
+  "gummy": {
+    "name": "Monsoon",
+    "damage": 224,
+    "radius": 3.8,
+    "outcome": "crumple",
+    "knockback": 6,
+    "area": {
+      "telegraph": 0.75,
+      "look": "rain",
+      "anim": "special",
+      "voice": "vo-gummy-tusk-barrage",
+      "ja": "モンスーン"
+    }
+  },
+  "kenzo": {
+    "element": "slash",
+    "name": "Oni Wind: Great Sandspout",
+    "damage": 224,
+    "radius": 4,
+    "outcome": "launch",
+    "knockback": 8,
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": "special",
+      "voice": "vo-kenzo-three-blades",
+      "ja": "鬼風・大砂柱",
+      "card": "Sandspout"
+    }
+  },
+  "kosho": {
+    "name": "Brasier: Salamandre",
+    "damage": 200,
+    "radius": 3.6,
+    "outcome": "launch",
+    "knockback": 8,
+    "status": {
+      "kind": "burn",
+      "seconds": 3,
+      "dps": 10
+    },
+    "area": {
+      "telegraph": 0.7,
+      "look": "pillar",
+      "anim": {
+        "clip": "Brasier: Coup de Feu"
+      },
+      "voice": "vo-kosho-spectre",
+      "ja": "ブラジエ・サラマンドル",
+      "card": "Salamandre"
+    }
+  },
+  "ouga": {
+    "name": "Haou Ryuusei",
+    "damage": 40,
+    "radius": 4,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.6,
+      "look": "rain",
+      "anim": "heavy",
+      "voice": "vo-ouga-kutabare",
+      "ja": "覇王流星",
+      "hits": 5,
+      "interval": 0.1
+    },
+    "finisherDamage": 60
+  },
+  "shirokane": {
+    "name": "Ash Art: Great Dust Fall",
+    "damage": 208,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.75,
+      "look": "pillar",
+      "anim": "special",
+      "voice": "vo-shirokane-great-waterfall",
+      "ja": "灰遁・大塵瀑",
+      "card": "Dust Fall"
+    }
+  },
+  "shiden": {
+    "element": "fire",
+    "name": "Cinder Art: Pyre Crow Technique",
+    "damage": 196,
+    "radius": 4,
+    "outcome": "launch",
+    "knockback": 8,
+    "status": {
+      "kind": "burn",
+      "seconds": 3,
+      "dps": 10
+    },
+    "area": {
+      "telegraph": 0.8,
+      "look": "burst",
+      "anim": {
+        "from": "akagane",
+        "slot": "special"
+      },
+      "voice": "vo-shiden-great-blaze",
+      "ja": "霆遁・大雷球",
+      "card": "Thunderball"
+    }
+  },
+  "koko": {
+    "element": "strength",
+    "name": "Iron Lullaby: Ground Smash",
+    "damage": 228,
+    "radius": 3.4,
+    "outcome": "crumple",
+    "knockback": 6,
+    "area": {
+      "telegraph": 0.65,
+      "look": "burst",
+      "anim": "light",
+      "voice": "vo-koko-iron-spirit",
+      "ja": "鉄の子守唄",
+      "card": "Iron Lullaby"
+    }
+  },
+  "nigo": {
+    "element": "slash",
+    "name": "Ash Brand",
+    "damage": 224,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.75,
+      "look": "zone",
+      "anim": "special",
+      "voice": "vo-nigo-cross-scar",
+      "ja": "灰の烙印"
+    }
+  },
+  "oro": {
+    "element": "slash",
+    "name": "The Hour: Knife Rain",
+    "damage": 224,
+    "radius": 3.6,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.7,
+      "look": "rain",
+      "anim": "heavy",
+      "voice": "vo-oro-time-halt",
+      "ja": "刻の刃雨",
+      "card": "Knife Rain"
+    }
+  },
+  "setsu": {
+    "element": "lightning",
+    "name": "Raisetsu",
+    "damage": 220,
+    "radius": 3.4,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.6,
+      "look": "zone",
+      "anim": {
+        "clip": "Whirlwind"
+      },
+      "voice": "vo-setsu-flash-rise",
+      "ja": "雷雪"
+    }
+  },
+  "kagari": {
+    "element": "fire",
+    "name": "Kagaribi",
+    "damage": 208,
+    "radius": 4,
+    "outcome": "launch",
+    "knockback": 7,
+    "status": {
+      "kind": "burn",
+      "seconds": 3,
+      "dps": 10
+    },
+    "area": {
+      "telegraph": 0.75,
+      "look": "pillar",
+      "anim": {
+        "clip": "Taiyou-Dama"
+      },
+      "voice": "vo-kagari-kagaribi",
+      "ja": "篝火"
+    }
+  },
+  "ward": {
+    "element": "slash",
+    "name": "THEATRE: Lift",
+    "damage": 180,
+    "radius": 4,
+    "outcome": "crumple",
+    "knockback": 3,
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": "special",
+      "voice": "vo-ward-takt",
+      "ja": "手術室・浮揚"
+    }
+  },
+  "kuon": {
+    "element": "gravity",
+    "name": "Hex: Collapse",
+    "damage": 200,
+    "radius": 4.2,
+    "outcome": "crumple",
+    "knockback": -6,
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": "heavy",
+      "voice": "vo-kuon-maximum",
+      "ja": "呪・崩落",
+      "card": "Condemned"
+    }
+  },
+  "gaunt": {
+    "element": "explosion",
+    "name": "Scrap Repeater",
+    "damage": 208,
+    "radius": 3.6,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.6,
+      "look": "rain",
+      "anim": "special",
+      "voice": "vo-gaunt-steel",
+      "ja": "鉄屑連射"
+    }
+  },
+  "tobari": {
+    "element": "fire",
+    "name": "Cinder Art: Pyre Crow Technique",
+    "damage": 192,
+    "radius": 4.4,
+    "outcome": "launch",
+    "knockback": 8,
+    "status": {
+      "kind": "burn",
+      "seconds": 3,
+      "dps": 8
+    },
+    "area": {
+      "telegraph": 0.85,
+      "look": "burst",
+      "anim": {
+        "from": "akagane",
+        "slot": "special"
+      },
+      "voice": "vo-tobari-great-blaze",
+      "ja": "鴉遁・大燼",
+      "card": "Great Ember"
+    }
+  },
+  "bellows": {
+    "element": "fire",
+    "name": "Open Furnace",
+    "damage": 168,
+    "radius": 4,
+    "outcome": "launch",
+    "knockback": 7,
+    "status": {
+      "kind": "burn",
+      "seconds": 3,
+      "dps": 10
+    },
+    "area": {
+      "telegraph": 0.75,
+      "look": "pillar",
+      "anim": {
+        "clip": "Cast-Iron Landing"
+      },
+      "voice": "vo-bellows-inferno",
+      "ja": "炉門開放"
+    }
+  },
+  "shakugo": {
+    "element": "fire",
+    "name": "Sentence: Molten Prison",
+    "damage": 200,
+    "radius": 4,
+    "outcome": "launch",
+    "knockback": 9,
+    "status": {
+      "kind": "burn",
+      "seconds": 3,
+      "dps": 12
+    },
+    "area": {
+      "telegraph": 0.8,
+      "look": "burst",
+      "anim": {
+        "clip": "Gavel Drop"
+      },
+      "voice": "vo-shakugo-kazan-bakuhatsu",
+      "ja": "刑・溶獄",
+      "card": "Molten Prison"
+    }
+  },
+  "shidare": {
+    "element": "slash",
+    "name": "Steel Avenue",
+    "damage": 232,
+    "radius": 4,
+    "outcome": "crumple",
+    "knockback": 5,
+    "area": {
+      "telegraph": 0.85,
+      "look": "zone",
+      "anim": "special",
+      "voice": "vo-shidare-senkei",
+      "ja": "鋼並木"
+    }
+  },
+  "ume": {
+    "element": "strength",
+    "name": "Earthbloom!!",
+    "damage": 216,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.75,
+      "look": "burst",
+      "anim": {
+        "clip": "Shattering Blossom"
+      },
+      "voice": "vo-ume-earthbloom",
+      "ja": "大地咲き"
+    }
+  },
+  "lanthorn": {
+    "element": "explosion",
+    "name": "Closing Time",
+    "damage": 220,
+    "radius": 4,
+    "outcome": "launch",
+    "knockback": 11,
+    "area": {
+      "telegraph": 0.8,
+      "look": "burst",
+      "anim": {
+        "clip": "Tavern Cleaver"
+      },
+      "voice": "vo-lanthorn-closing-time",
+      "ja": "店じまい"
+    }
+  },
+  "highsun": {
+    "element": "fire",
+    "name": "Corona Burst",
+    "damage": 200,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 9,
+    "status": {
+      "kind": "burn",
+      "seconds": 3,
+      "dps": 10
+    },
+    "area": {
+      "telegraph": 0.85,
+      "look": "pillar",
+      "anim": {
+        "clip": "Solar Reply"
+      },
+      "voice": "vo-highsun-corona-burst",
+      "ja": "日冕爆"
+    }
+  },
+  "torsion": {
+    "element": "gravity",
+    "name": "Twist-Off",
+    "damage": 220,
+    "radius": 4,
+    "outcome": "crumple",
+    "knockback": 3,
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": {
+        "clip": "Hoist Up"
+      },
+      "voice": "vo-torsion-no-refunds",
+      "ja": "捻じ切り"
+    }
+  },
+  "kubiwa": {
+    "element": "gravity",
+    "name": "Grand Pause",
+    "damage": 208,
+    "radius": 3.6,
+    "outcome": "crumple",
+    "knockback": 3.2,
+    "area": {
+      "telegraph": 0.9,
+      "look": "zone",
+      "anim": {
+        "clip": "Hold"
+      },
+      "voice": "vo-kubiwa-enough",
+      "ja": "総休止"
+    }
+  },
+  "onigawara": {
+    "element": "slash",
+    "name": "Rampage Ground",
+    "damage": 224,
+    "radius": 4,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.8,
+      "look": "burst",
+      "anim": {
+        "clip": "Jagged Finish"
+      },
+      "voice": "vo-onigawara-rampage-ground",
+      "ja": "暴れ野",
+      "card": "Rampage"
+    }
+  },
+  "cardo": {
+    "element": "slash",
+    "name": "Thistledown Storm",
+    "damage": 224,
+    "radius": 4,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.8,
+      "look": "burst",
+      "anim": {
+        "clip": "Thistledown Storm"
+      },
+      "voice": "vo-cardo-thistledown-storm",
+      "ja": "綿毛嵐",
+      "card": "Thistledown"
+    }
+  },
+  "minase": {
+    "element": "windwater",
+    "name": "Grand Circuit",
+    "damage": 216,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 8,
+    "area": {
+      "telegraph": 0.7,
+      "look": "burst",
+      "anim": {
+        "clip": "Relay Rush"
+      },
+      "voice": "vo-minase-rasen-senko",
+      "ja": "疾風早馬・大周回・三番"
+    }
+  },
+  "aquilo": {
+    "element": "windwater",
+    "name": "Eye of the Gale",
+    "damage": 216,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 8,
+    "area": {
+      "telegraph": 0.7,
+      "look": "burst",
+      "anim": {
+        "clip": "Darting Flock"
+      },
+      "voice": "vo-aquilo-tornado-tower",
+      "ja": "疾風の眼"
+    }
+  },
+  "psyche": {
+    "element": "strings",
+    "name": "Field of Hands",
+    "damage": 200,
+    "radius": 4.2,
+    "outcome": "crumple",
+    "knockback": 3.2,
+    "status": {
+      "kind": "slow",
+      "seconds": 2.5,
+      "factor": 0.65
+    },
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": {
+        "clip": "Swarm Push"
+      },
+      "voice": "vo-psyche-field-of-hands",
+      "ja": "掌の野"
+    }
+  },
+  "hawser": {
+    "element": "slash",
+    "name": "Tug of War",
+    "damage": 194,
+    "radius": 3.6,
+    "outcome": "spin",
+    "knockback": 6,
+    "area": {
+      "telegraph": 0.65,
+      "look": "zone",
+      "anim": {
+        "clip": "Cross Lay"
+      },
+      "voice": "vo-hawser-strike",
+      "ja": "綱引き"
+    }
+  },
+  "rotfalke": {
+    "element": "mecha",
+    "name": "Hood Off: Wild Raptor",
+    "damage": 216,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.75,
+      "look": "burst",
+      "anim": {
+        "clip": "Cross Talon Drive"
+      },
+      "voice": "vo-rotfalke-hood-off-wild-raptor",
+      "ja": "猛禽解放",
+      "card": "Hood Off"
+    }
+  },
+  "bonsho": {
+    "element": "summon",
+    "name": "Last Toll",
+    "damage": 224,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 11,
+    "area": {
+      "telegraph": 0.9,
+      "look": "pillar",
+      "anim": {
+        "clip": "Gratitude"
+      },
+      "voice": "vo-bonsho-last-toll",
+      "ja": "終の鐘"
+    }
+  },
+  "murex": {
+    "element": "beam",
+    "name": "Core Flare",
+    "damage": 216,
+    "radius": 3.6,
+    "outcome": "knockdown",
+    "knockback": 8,
+    "area": {
+      "telegraph": 0.8,
+      "look": "pillar",
+      "anim": {
+        "clip": "Leave Me Alone"
+      },
+      "voice": "vo-murex-nigecha-dame",
+      "ja": "炉心閃光"
+    }
+  },
+  "kinu": {
+    "element": "strings",
+    "name": "Cat's Cradle",
+    "damage": 200,
+    "radius": 4,
+    "outcome": "stagger",
+    "knockback": 4,
+    "status": {
+      "kind": "slow",
+      "seconds": 2.5,
+      "factor": 0.65
+    },
+    "area": {
+      "telegraph": 0.75,
+      "look": "zone",
+      "anim": {
+        "clip": "Whip Stitch"
+      },
+      "voice": "vo-kinu-ito-no-kekkai",
+      "ja": "あやとり"
+    }
+  },
+  "madake": {
+    "element": "strength",
+    "name": "Autumn Stag",
+    "damage": 230,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 12,
+    "area": {
+      "telegraph": 0.7,
+      "look": "burst",
+      "anim": {
+        "clip": "Autumn Stag"
+      },
+      "voice": "vo-madake-evening-beast",
+      "ja": "秋の鹿"
+    }
+  },
+  "akayuri": {
+    "element": "slash",
+    "name": "Blossom-Scatter",
+    "damage": 216,
+    "radius": 3.8,
+    "outcome": "crumple",
+    "knockback": 3,
+    "area": {
+      "telegraph": 0.8,
+      "look": "burst",
+      "anim": {
+        "clip": "Line Through"
+      },
+      "voice": "vo-akayuri-tsugi-de-kimeru",
+      "ja": "花散らし"
+    }
+  },
+  "hisame": {
+    "element": "ice",
+    "name": "Permafrost",
+    "damage": 220,
+    "radius": 4,
+    "outcome": "crumple",
+    "knockback": 3,
+    "area": {
+      "telegraph": 0.85,
+      "look": "zone",
+      "anim": {
+        "clip": "Borealis"
+      },
+      "voice": "vo-hisame-dekinai-mono",
+      "ja": "永久凍土"
+    }
+  },
+  "svanhild": {
+    "element": "windwater",
+    "name": "Mirror Lake",
+    "damage": 220,
+    "radius": 4,
+    "outcome": "crumple",
+    "knockback": 3,
+    "area": {
+      "telegraph": 0.85,
+      "look": "zone",
+      "anim": {
+        "clip": "Reed Snare"
+      },
+      "voice": "vo-svanhild-reed-snare",
+      "ja": "鏡の湖"
+    }
+  },
+  "mizuhiki": {
+    "element": "slash",
+    "name": "Spinning Slash",
+    "damage": 220,
+    "radius": 3.6,
+    "outcome": "spin",
+    "knockback": 6,
+    "area": {
+      "telegraph": 0.7,
+      "look": "zone",
+      "anim": {
+        "clip": "Shears"
+      },
+      "voice": "vo-mizuhiki-zutazuta",
+      "ja": "紡ぎ車"
+    }
+  },
+  "shibuichi": {
+    "element": "earth",
+    "name": "Recast",
+    "damage": 216,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.85,
+      "look": "pillar",
+      "anim": {
+        "clip": "Ground Quench"
+      },
+      "voice": "vo-shibuichi-recast",
+      "ja": "鋳直し"
+    }
+  },
+  "rakucho": {
+    "element": "strength",
+    "name": "Torn Binding",
+    "damage": 216,
+    "radius": 4,
+    "outcome": "knockdown",
+    "knockback": 8,
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": {
+        "clip": "Hungry Lunge"
+      },
+      "voice": "vo-rakucho-kuwaretemo",
+      "ja": "綴じ破り"
+    }
+  },
+  "irbis": {
+    "element": "beam",
+    "name": "Hailstorm Talons",
+    "damage": 210,
+    "radius": 3.6,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.7,
+      "look": "rain",
+      "anim": {
+        "clip": "Snow-Cat Crash"
+      },
+      "voice": "vo-irbis-anaaki",
+      "ja": "雹爪",
+      "card": "Hailstorm"
+    }
+  },
+  "hinomoto": {
+    "element": "fire",
+    "name": "Old Fire",
+    "damage": 224,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 9,
+    "status": {
+      "kind": "burn",
+      "seconds": 3,
+      "dps": 10
+    },
+    "area": {
+      "telegraph": 0.85,
+      "look": "zone",
+      "anim": {
+        "clip": "Cinder Reprisal"
+      },
+      "voice": "vo-hinomoto-all-to-ash",
+      "ja": "焼尽の令"
+    }
+  },
+  "amagoi": {
+    "element": "gravity",
+    "name": "Weeping Sky",
+    "damage": 220,
+    "radius": 4.4,
+    "outcome": "launch",
+    "knockback": 12,
+    "area": {
+      "telegraph": 0.85,
+      "look": "burst",
+      "anim": {
+        "clip": "Falling Sky"
+      },
+      "voice": "vo-amagoi-world-hurt",
+      "ja": "天の涙"
+    }
+  },
+  "shakudo": {
+    "element": "earth",
+    "name": "Full Pour",
+    "damage": 216,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.75,
+      "look": "burst",
+      "anim": {
+        "clip": "Slag Fall"
+      },
+      "voice": "vo-shakudo-takane-no-chigai",
+      "ja": "総鋳込み"
+    }
+  },
+  "hikui": {
+    "element": "explosion",
+    "name": "Sending Fire",
+    "damage": 216,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.75,
+      "look": "burst",
+      "anim": {
+        "clip": "Scorch Cross"
+      },
+      "voice": "vo-hikui-hellfire-chain",
+      "ja": "送り火"
+    }
+  },
+  "tokan": {
+    "element": "ice",
+    "name": "Icicle Pikes",
+    "damage": 210,
+    "radius": 4,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.75,
+      "look": "zone",
+      "anim": {
+        "clip": "Icicle Thrust"
+      },
+      "voice": "vo-tokan-partisan",
+      "ja": "氷柱槍"
+    }
+  },
+  "strappado": {
+    "element": "strings",
+    "name": "Big Top",
+    "damage": 216,
+    "radius": 4.4,
+    "outcome": "crumple",
+    "knockback": 3,
+    "status": {
+      "kind": "slow",
+      "seconds": 2.5,
+      "factor": 0.65
+    },
+    "area": {
+      "telegraph": 0.85,
+      "look": "zone",
+      "anim": {
+        "clip": "Spool Burst"
+      },
+      "voice": "vo-strappado-cage",
+      "ja": "天幕"
+    }
+  },
+  "unari": {
+    "element": "slash",
+    "name": "All Fall Down",
+    "damage": 208,
+    "radius": 3.6,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.7,
+      "look": "rain",
+      "anim": {
+        "clip": "Tailspin"
+      },
+      "voice": "vo-unari-card-game",
+      "ja": "総崩れ"
+    }
+  },
+  "barrow": {
+    "element": "gravity",
+    "name": "Wrecker's Haul",
+    "damage": 216,
+    "radius": 4.2,
+    "outcome": "crumple",
+    "knockback": -6,
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": {
+        "clip": "Sinkhole Crash"
+      },
+      "voice": "vo-barrow-wrecker-s-haul",
+      "ja": "引き揚げ",
+      "card": "Haul"
+    }
+  },
+  "yodaka": {
+    "element": "slash",
+    "name": "Fifth Watch: Fire Owl",
+    "duration": 1.42,
+    "contacts": [
+      0.72
+    ],
+    "damage": 204,
+    "range": 14,
+    "radius": 3.5,
+    "stamina": 24,
+    "cooldown": 14,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 1.85,
+      "look": "burst",
+      "hits": 1,
+      "anim": {
+        "clip": "Flame Tiger",
+        "full": true
+      },
+      "voice": "vo-yodaka-flame-tiger",
+      "ja": "五番・火梟",
+      "card": "Fire Owl"
+    }
+  },
+  "hagure": {
+    "element": "windwater",
+    "name": "Stray Fist: Thousand Bites",
+    "duration": 0.85,
+    "contacts": [
+      0.5
+    ],
+    "damage": 210,
+    "range": 10,
+    "radius": 3.5,
+    "stamina": 28,
+    "cooldown": 14,
+    "stun": 0.65,
+    "outcome": "spin",
+    "knockback": 6,
+    "area": {
+      "telegraph": 1.16,
+      "look": "zone",
+      "anim": {
+        "clip": "Moonfall Break",
+        "full": true
+      },
+      "card": "Thousand Bites",
+      "voice": "vo-hagure-watch-closely",
+      "ja": "野良拳・千噛み"
+    }
+  },
+  "ovid": {
+    "element": "strength",
+    "name": "Wrecking Ball",
+    "duration": 1.15,
+    "contacts": [
+      0.62
+    ],
+    "damage": 220,
+    "range": 11,
+    "radius": 3.8,
+    "stamina": 28,
+    "cooldown": 14,
+    "stun": 0.75,
+    "outcome": "knockdown",
+    "knockback": 8,
+    "area": {
+      "telegraph": 1.74,
+      "look": "burst",
+      "anim": {
+        "clip": "Sledgehammer",
+        "full": true
+      },
+      "voice": "vo-ovid-dimensional",
+      "ja": "解体の鉄球"
+    }
+  },
+  "sashigane": {
+    "element": "slash",
+    "name": "Fault Line",
+    "damage": 216,
+    "radius": 3.4,
+    "outcome": "crumple",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.7,
+      "look": "burst",
+      "anim": {
+        "clip": "Rising Section"
+      },
+      "voice": "vo-sashigane-wont-miss",
+      "ja": "断層線"
+    }
+  },
+  "gosu": {
+    "element": "summon",
+    "name": "Shard Shot",
+    "damage": 208,
+    "radius": 3.6,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.6,
+      "look": "rain",
+      "anim": {
+        "clip": "Gosu Command"
+      },
+      "voice": "vo-gosu-shard-shot",
+      "ja": "欠片弾"
+    }
+  },
+  "kusushi": {
+    "element": "summon",
+    "name": "Purifying Salt",
+    "damage": 208,
+    "radius": 4.2,
+    "outcome": "stagger",
+    "knockback": 4,
+    "status": {
+      "kind": "slow",
+      "seconds": 2.5,
+      "factor": 0.65
+    },
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": {
+        "clip": "Ring Splitter"
+      },
+      "voice": "vo-kusushi-not-just-medical",
+      "ja": "清め塩"
+    }
+  },
+  "hakushi": {
+    "element": "summon",
+    "name": "Mane Cage",
+    "damage": 200,
+    "radius": 4.4,
+    "outcome": "crumple",
+    "knockback": -3,
+    "status": {
+      "kind": "slow",
+      "seconds": 2.5,
+      "factor": 0.65
+    },
+    "area": {
+      "telegraph": 0.85,
+      "look": "zone",
+      "anim": {
+        "clip": "Falling Lion Palm"
+      },
+      "voice": "vo-hakushi-toad-mouth",
+      "ja": "鬣の檻"
+    }
+  },
+  "suzuran": {
+    "element": "windwater",
+    "name": "Bell Garden",
+    "damage": 224,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 8,
+    "area": {
+      "telegraph": 0.7,
+      "look": "zone",
+      "anim": {
+        "clip": "Sunken Bell"
+      },
+      "voice": "vo-suzuran-protective-palms",
+      "ja": "鈴の庭"
+    }
+  },
+  "wataame": {
+    "element": "explosion",
+    "name": "Lie In",
+    "damage": 216,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.7,
+      "look": "burst",
+      "anim": {
+        "clip": "Go Dutch"
+      },
+      "voice": "vo-wataame-lie-in",
+      "ja": "朝寝坊"
+    }
+  },
+  "bruin": {
+    "element": "gravity",
+    "name": "Bear's Den",
+    "damage": 216,
+    "radius": 4.2,
+    "outcome": "crumple",
+    "knockback": 3,
+    "area": {
+      "telegraph": 0.85,
+      "look": "zone",
+      "anim": {
+        "clip": "Deep Woods Cut"
+      },
+      "ja": "熊の穴"
+    }
+  },
+  "senko": {
+    "element": "beam",
+    "name": "Black Pyre",
+    "damage": 212,
+    "radius": 4.0,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.75,
+      "look": "pillar",
+      "anim": {
+        "clip": "Noonfall"
+      },
+      "ja": "白昼光",
+      "card": "Daylight"
+    }
+  },
+  "buna": {
+    "element": "ice",
+    "name": "Cold Snap",
+    "damage": 200,
+    "radius": 3.8,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.7,
+      "look": "zone",
+      "anim": {
+        "clip": "Heave"
+      },
+      "voice": "vo-buna-cold-snap",
+      "ja": "寒波"
+    }
+  },
+  "oyashio": {
+    "element": "windwater",
+    "name": "Riptide Overthrow",
+    "damage": 224,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": {
+        "clip": "DEEP CURRENT"
+      },
+      "voice": "vo-oyashio-sea-throw",
+      "ja": "離岸流・巴投げ",
+      "card": "Overthrow"
+    }
+  },
+  "adad": {
+    "element": "lightning",
+    "name": "Advent of Thunder",
+    "damage": 224,
+    "radius": 4.4,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.8,
+      "look": "pillar",
+      "anim": {
+        "clip": "Heavensdrop"
+      },
+      "voice": "vo-adad-advent-of-thunder",
+      "ja": "天雷降臨",
+      "card": "Advent"
+    }
+  },
+  "shijima": {
+    "element": "fire",
+    "name": "Hymn 27: Blue Pyre",
+    "damage": 200,
+    "radius": 3.6,
+    "outcome": "launch",
+    "knockback": 7,
+    "area": {
+      "telegraph": 0.7,
+      "look": "pillar",
+      "anim": {
+        "clip": "Shirafune"
+      },
+      "voice": "vo-shijima-pale-fire",
+      "ja": "聖歌二十七番・青き弔火",
+      "card": "Blue Pyre"
+    }
+  },
+  "akaito": {
+    "element": "summon",
+    "name": "Ghost Bride",
+    "damage": 220,
+    "radius": 4.0,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.8,
+      "look": "burst",
+      "anim": {
+        "clip": "Echoed Vow"
+      },
+      "voice": "vo-akaito-ghost-bride-come",
+      "ja": "冥婚"
+    }
+  },
+  "tempo": {
+    "element": "strength",
+    "name": "Dark Spark",
+    "damage": 224,
+    "radius": 3.4,
+    "outcome": "knockdown",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.65,
+      "look": "burst",
+      "anim": {
+        "clip": "Red Crash"
+      },
+      "voice": "vo-tempo-that-feeling",
+      "ja": "零距離"
+    }
+  },
+  "tancho": {
+    "element": "explosion",
+    "name": "Snowmelt Rupture",
+    "damage": 216,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 12,
+    "area": {
+      "telegraph": 0.75,
+      "look": "burst",
+      "anim": {
+        "clip": "Kindling Palm"
+      },
+      "voice": "vo-tancho-burst-air",
+      "ja": "雪解爆波",
+      "card": "Snowmelt"
+    }
+  },
+  "mikage": {
+    "element": "lightning",
+    "name": "Catwalk",
+    "damage": 216,
+    "radius": 3.6,
+    "outcome": "stagger",
+    "knockback": 5,
+    "area": {
+      "telegraph": 0.6,
+      "look": "zone",
+      "anim": {
+        "clip": "Rising Pounce"
+      },
+      "voice": "vo-mikage-catwalk",
+      "ja": "猫道"
+    }
+  },
+  "full-beam": {
+    "element": "windwater",
+    "name": "Cape Hatteras Gale",
+    "damage": 220,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.7,
+      "look": "zone",
+      "anim": {
+        "clip": "Pressure Front"
+      },
+      "voice": "vo-full-beam-blow-away",
+      "ja": "灯台旋風",
+      "card": "Hatteras Gale"
+    }
+  },
+  "pyroclast": {
+    "element": "explosion",
+    "name": "Tephra Storm",
+    "damage": 216,
+    "radius": 4.0,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.7,
+      "look": "rain",
+      "anim": {
+        "clip": "Cluster Ignition"
+      },
+      "voice": "vo-pyroclast-burst-fly",
+      "ja": "噴石嵐"
+    }
+  },
+  "ampere": {
+    "element": "strength",
+    "name": "Good Hope Drop",
+    "damage": 216,
+    "radius": 3.4,
+    "outcome": "knockdown",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.65,
+      "look": "burst",
+      "anim": {
+        "clip": "Good Hope Drop"
+      },
+      "voice": "vo-ampere-go",
+      "ja": "希望岬",
+      "card": "Good Hope"
+    }
+  },
+  "shanxiao": {
+    "element": "explosion",
+    "name": "Toppled Peak",
+    "damage": 224,
+    "radius": 4.4,
+    "outcome": "launch",
+    "knockback": 12,
+    "area": {
+      "telegraph": 0.85,
+      "look": "pillar",
+      "anim": {
+        "clip": "Jade Cannon"
+      },
+      "voice": "vo-shanxiao-vanish-now",
+      "ja": "崩山"
+    }
+  },
+  "kuzu": {
+    "element": "slash",
+    "name": "Choke Chain",
+    "damage": 208,
+    "radius": 3.6,
+    "outcome": "crumple",
+    "knockback": -4,
+    "area": {
+      "telegraph": 0.7,
+      "look": "zone",
+      "anim": {
+        "clip": "Saw Drive"
+      },
+      "voice": "vo-kuzu-in-my-way",
+      "ja": "首輪鎖"
+    }
+  },
+  "basilissa": {
+    "element": "will",
+    "name": "Gaze of the Stone Rose",
+    "damage": 216,
+    "radius": 4.0,
+    "outcome": "stagger",
+    "knockback": 4,
+    "status": {
+      "kind": "freeze",
+      "seconds": 0.6
+    },
+    "area": {
+      "telegraph": 0.75,
+      "look": "zone",
+      "anim": {
+        "clip": "SERPENT CROWN"
+      },
+      "voice": "vo-basilissa-gaze-of-the-stone-rose",
+      "ja": "石薔薇の眼差し",
+      "card": "Stone Rose"
+    }
+  },
+  "sorayomi": {
+    "element": "lightning",
+    "name": "Forecast: Lightning Front",
+    "damage": 220,
+    "radius": 4.2,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.8,
+      "look": "pillar",
+      "anim": {
+        "clip": "Staff Thrust"
+      },
+      "voice": "vo-sorayomi-forecast-lightning-front",
+      "ja": "予報・雷雨前線",
+      "card": "Lightning Front"
+    }
+  },
+  "strix": {
+    "element": "slash",
+    "name": "Vigil: Thousand Candles",
+    "damage": 216,
+    "radius": 3.6,
+    "outcome": "spin",
+    "knockback": 6,
+    "area": {
+      "telegraph": 0.7,
+      "look": "zone",
+      "anim": {
+        "clip": "Yoru Diagonal Finisher"
+      },
+      "voice": "vo-strix-rain-cut",
+      "ja": "通夜・千の灯",
+      "card": "Thousand Candles"
+    }
+  },
+  "gorai": {
+    "element": "fire",
+    "name": "Wyrm Breath",
+    "damage": 224,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.85,
+      "look": "pillar",
+      "anim": {
+        "clip": "Great Roar"
+      },
+      "voice": "vo-gorai-vanish",
+      "ja": "嵐竜の息吹"
+    }
+  },
+  "haldor": {
+    "element": "windwater",
+    "name": "Groundswell Quake",
+    "damage": 224,
+    "radius": 4.4,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": {
+        "clip": "Aftershock"
+      },
+      "voice": "vo-haldor-groundswell-quake",
+      "ja": "地鳴り",
+      "card": "Groundswell"
+    }
+  },
+  "sorrel": {
+    "element": "will",
+    "name": "Crimson Wake Strike",
+    "damage": 220,
+    "radius": 3.8,
+    "outcome": "crumple",
+    "knockback": 6,
+    "area": {
+      "telegraph": 0.7,
+      "look": "burst",
+      "anim": {
+        "clip": "Crimson Lightning Chop"
+      },
+      "voice": "vo-sorrel-new-world-blow",
+      "ja": "紅の航跡",
+      "card": "Crimson Wake"
+    }
+  },
+  "dorado": {
+    "element": "will",
+    "name": "Crown Clash",
+    "damage": 224,
+    "radius": 4.4,
+    "outcome": "crumple",
+    "knockback": 5,
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": {
+        "clip": "Sovereign Clash"
+      },
+      "voice": "vo-dorado-leave-it-all",
+      "ja": "王冠の激突"
+    }
+  },
+  "shiun": {
+    "element": "lightning",
+    "name": "Hymn 7: Storm Psalm",
+    "damage": 216,
+    "radius": 3.8,
+    "outcome": "stagger",
+    "knockback": 4,
+    "area": {
+      "telegraph": 0.7,
+      "look": "pillar",
+      "anim": {
+        "clip": "Presence Turn"
+      },
+      "voice": "vo-shiun-thunder-hymn",
+      "ja": "聖歌七番・嵐の詩篇",
+      "card": "Storm Psalm"
+    }
+  },
+  "magatsu": {
+    "element": "fire",
+    "name": "Calamity Pyre",
+    "damage": 224,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.85,
+      "look": "pillar",
+      "anim": {
+        "clip": "Calamity Pyre"
+      },
+      "voice": "vo-magatsu-burn-it-all",
+      "ja": "禍焔"
+    }
+  },
+  "vesper": {
+    "element": "summon",
+    "name": "Raven Host",
+    "damage": 212,
+    "radius": 4.0,
+    "outcome": "launch",
+    "knockback": 8,
+    "area": {
+      "telegraph": 0.7,
+      "look": "rain",
+      "anim": {
+        "clip": "Updraft"
+      },
+      "voice": "vo-vesper-scatter-them",
+      "ja": "鴉の軍"
+    }
+  },
+  "imago": {
+    "element": "strength",
+    "name": "Checkmate",
+    "damage": 216,
+    "radius": 4.2,
+    "outcome": "crumple",
+    "knockback": 2,
+    "area": {
+      "telegraph": 0.8,
+      "look": "zone",
+      "anim": {
+        "clip": "Rising Barb"
+      },
+      "voice": "vo-imago-checkmate",
+      "ja": "終局"
+    }
+  },
+  "wuming": {
+    "element": "beam",
+    "name": "Lotus Verdict",
+    "damage": 220,
+    "radius": 4.0,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.8,
+      "look": "pillar",
+      "anim": {
+        "clip": "Dusk Rush 5"
+      },
+      "voice": "vo-wuming-gods-wrath",
+      "ja": "裁きの蓮",
+      "card": "Verdict"
+    }
+  },
+  "jirenga": {
+    "element": "explosion",
+    "name": "Immovable Barrage",
+    "damage": 216,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.65,
+      "look": "burst",
+      "anim": {
+        "clip": "Pride Rush 3"
+      },
+      "voice": "vo-jirenga-strength-absolute",
+      "ja": "不動連撃",
+      "card": "Immovable"
+    }
+  },
+  "jinlin": {
+    "element": "slash",
+    "name": "Dragon-Gate Disc",
+    "damage": 212,
+    "radius": 3.6,
+    "outcome": "spin",
+    "knockback": 6,
+    "area": {
+      "telegraph": 0.65,
+      "look": "zone",
+      "anim": {
+        "clip": "Jinlin Rush 5"
+      },
+      "voice": "vo-jinlin-kill-you",
+      "ja": "龍門円刃"
+    }
+  },
+  "gohaku": {
+    "element": "strength",
+    "name": "White Ape Barrage",
+    "damage": 220,
+    "radius": 3.6,
+    "outcome": "knockdown",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.65,
+      "look": "burst",
+      "anim": {
+        "clip": "Beast Rush 4"
+      },
+      "voice": "vo-gohaku-fly-off",
+      "ja": "白猿連打",
+      "card": "White Ape"
+    }
+  },
+  "ippon": {
+    "element": "strength",
+    "name": "All-Nighter Desk Flip",
+    "damage": 220,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 10,
+    "area": {
+      "telegraph": 0.75,
+      "look": "burst",
+      "anim": {
+        "clip": "Serious Uppercut"
+      },
+      "voice": "vo-ippon-trump-card",
+      "ja": "残業ちゃぶ台返し",
+      "card": "Desk Flip"
+    }
+  },
+  "sekka": {
+    "element": "strength",
+    "name": "Shatter Art: Snowcrush",
+    "damage": 216,
+    "radius": 4.0,
+    "outcome": "knockdown",
+    "knockback": 8,
+    "area": {
+      "telegraph": 0.75,
+      "look": "zone",
+      "anim": {
+        "clip": "Icefall Hammer"
+      },
+      "voice": "vo-sekka-pierce-you",
+      "ja": "砕雪",
+      "card": "Snowcrush"
+    }
+  },
+  "akagane": {
+    "element": "fire",
+    "name": "Tomb Pyre",
+    "damage": 224,
+    "radius": 4.2,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.85,
+      "look": "pillar",
+      "anim": {
+        "clip": "Warlord Rise"
+      },
+      "voice": "vo-akagane-dragon-flame",
+      "ja": "墓炎",
+      "card": "Tomb Pyre"
+    }
+  },
+  "asahi": {
+    "element": "windwater",
+    "name": "Daybreak Cycle",
+    "damage": 220,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 8,
+    "area": {
+      "telegraph": 0.75,
+      "look": "zone",
+      "anim": {
+        "clip": "Water Wheel"
+      },
+      "voice": "vo-asahi-daybreak-cycle",
+      "ja": "夜明けの巡り"
+    }
+  },
+  "levin": {
+    "element": "slash",
+    "name": "Spotless",
+    "damage": 216,
+    "radius": 3.6,
+    "outcome": "spin",
+    "knockback": 6,
+    "area": {
+      "telegraph": 0.65,
+      "look": "zone",
+      "anim": {
+        "clip": "Crosshatch"
+      },
+      "voice": "vo-levin-carve-next",
+      "ja": "塵ひとつ無し"
+    }
+  },
+  "rook": {
+    "element": "domain",
+    "name": "Grave Legion",
+    "damage": 216,
+    "radius": 4.0,
+    "outcome": "stagger",
+    "knockback": 3,
+    "area": {
+      "telegraph": 0.75,
+      "look": "zone",
+      "anim": {
+        "clip": "Raven Rise"
+      },
+      "voice": "vo-rook-your-soldiers",
+      "ja": "墓の軍勢"
+    }
+  },
+  "gaku": {
+    "element": "strength",
+    "name": "Lion's Roar",
+    "damage": 212,
+    "radius": 3.8,
+    "outcome": "launch",
+    "knockback": 9,
+    "area": {
+      "telegraph": 0.7,
+      "look": "burst",
+      "anim": {
+        "clip": "Rising Paw"
+      },
+      "voice": "vo-gaku-lion-s-roar",
+      "ja": "獅子吼"
+    }
+  },
+  "tsubute": {
+    "element": "strings",
+    "name": "Spate",
+    "duration": 1.35,
+    "contacts": [
+      0.72
+    ],
+    "damage": 184,
+    "range": 14,
+    "radius": 3.5,
+    "stamina": 24,
+    "cooldown": 14,
+    "outcome": "launch",
+    "knockback": 7,
+    "area": {
+      "telegraph": 1.5,
+      "look": "burst",
+      "hits": 1,
+      "anim": {
+        "clip": "Spate",
+        "full": true
+      },
+      "voice": "vo-tsubute-green-star",
+      "ja": "鉄砲水"
+    }
+  },
+  "aqrab": {
+    "element": "earth",
+    "name": "Antlion Pit",
+    "duration": 0.93,
+    "contacts": [
+      0.43
+    ],
+    "damage": 208,
+    "range": 14,
+    "radius": 3.8,
+    "stamina": 25,
+    "cooldown": 15,
+    "outcome": "knockdown",
+    "knockback": 7,
+    "area": {
+      "telegraph": 1.65,
+      "look": "burst",
+      "hits": 1,
+      "anim": {
+        "clip": "Antlion Pit",
+        "full": true
+      },
+      "voice": "vo-aqrab-wither",
+      "ja": "蟻地獄"
+    }
+  },
+  "chohan": {
+    "element": "slash",
+    "name": "Loaded Dice",
+    "damage": 216,
+    "radius": 3.6,
+    "outcome": "knockdown",
+    "knockback": 8,
+    "area": {
+      "telegraph": 0.8,
+      "look": "burst",
+      "anim": {
+        "clip": "Loaded Dice"
+      },
+      "voice": "vo-chohan-ready",
+      "ja": "イカサマ賽"
+    }
+  }
+}

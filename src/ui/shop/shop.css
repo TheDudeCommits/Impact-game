@@ -1,0 +1,290 @@
+/* The shop: a page of the manga over the home screen, in the home's own means - white paper, black ink, one red,
+   skewed frames, the VOL.2 panels' borders. Words are set in the home's display face; numbers (prices, the wallet,
+   progress) in a plain heavy face, because the display face's numerals are drawn to look like kana and a price must be
+   read at a glance; sentences in a plain condensed one. Two tabs since 30 October 2026: UNLOCKS (every fighter, the one
+   picked big on the right; on a phone, on top) and PROFILE. */
+.shop,.shop-chip,.pay,.shop-toast{--s-ink:#111;--s-red:#cc202b;--s-grey:#6b6560;--s-gold:#b8860b;--s-num:Impact,'Haettenschweiler','Arial Narrow Bold','Roboto Condensed',sans-serif;--s-text:'Avenir Next Condensed','Barlow Condensed','Arial Narrow','Roboto Condensed',sans-serif;--s-kanji:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP','Songti SC',serif}
+.r-common{--r:#6b6560}.r-rare{--r:#1f6fb8}.r-epic{--r:#7a3cb4}.r-legendary{--r:#a8740a}.r-mythic{--r:#c81e2a}
+
+/* While it is open the home's own page is not laid out (the HUD's pad navigation finds only the shop). */
+.manga-home.shop-open>:not(.shop){display:none!important}
+.shop{position:absolute;inset:0;z-index:3;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:10px;padding:16px 2.2vw 6px;background:#fff;color:var(--s-ink);font-family:Electroharmonix,'Barlow Condensed',Impact,sans-serif;pointer-events:auto;overflow:hidden}
+.shop button{color:var(--s-ink);font-family:inherit;border-radius:0;touch-action:manipulation;cursor:pointer}
+
+.shop button:focus-visible{outline:3px solid var(--s-red);outline-offset:3px}
+.shop button:disabled{cursor:default}
+.shop.busy .shop-act{opacity:.5;pointer-events:none}
+.shop-coin{display:inline-grid;place-items:center;flex:none;width:1.3em;height:1.3em;margin-right:.22em;border-radius:50%;background:var(--s-red);color:#fff;font:900 .74em/1 var(--s-kanji);font-style:normal;vertical-align:-.14em;letter-spacing:0}
+
+/* ---- The head: the name, the tabs, the level and the Sumi --------------------------------------------- */
+.shop-head{display:flex;align-items:center;gap:clamp(10px,1.4vw,26px);padding-bottom:10px;border-bottom:3px solid var(--s-ink)}
+.shop-name{display:flex;align-items:center;gap:10px;margin:0;font:400 clamp(28px,3vw,52px)/1 Electroharmonix,'Barlow Condensed',Impact,sans-serif;letter-spacing:.02em}
+.shop-name b{display:grid;place-items:center;width:1.05em;height:1.05em;background:var(--s-red);color:#fff;font:900 .62em/1 var(--s-kanji);transform:rotate(-6deg)}
+.shop-tabs{display:flex;gap:8px;margin-right:auto}
+.shop-tabs button{padding:10px clamp(14px,1.4vw,24px) 9px;border:2px solid var(--s-ink);background:#fff;font:400 clamp(12px,1.15vw,20px)/1 Electroharmonix,'Barlow Condensed',Impact,sans-serif;transform:skewX(-8deg);white-space:nowrap;transition:background-color .12s,color .12s}
+.shop-tabs button:hover{color:var(--s-red)}
+.shop-tabs button[aria-selected=true]{background:var(--s-ink);color:#fff}
+.shop-wallet{display:flex;align-items:center;gap:clamp(10px,1.4vw,22px)}
+.shop-level{display:flex;align-items:center;gap:9px;padding:0;border:0;background:none;text-align:left}
+.shop-level>b{display:grid;place-items:center;width:clamp(36px,3vw,48px);height:clamp(36px,3vw,48px);border-radius:50%;background:var(--s-ink);color:#fff;font:400 clamp(18px,1.6vw,26px)/1 var(--s-num)}
+.shop-level>span{display:grid;gap:3px;min-width:clamp(110px,10vw,170px)}
+.shop-level small{font:400 10px/1 var(--s-num);letter-spacing:.12em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shop-level .shop-level-next{color:var(--s-red)}
+.shop-level:hover .shop-level-next{text-decoration:underline}
+.shop-level i,.shop-mission-list i,.pay-level i,.acct-level i,.shop-how i,.pay-next i,.shop-chip-next i{display:block;height:7px;border:1.5px solid var(--s-ink);background:#fff}
+.shop-level u,.shop-mission-list u,.pay-level u,.acct-level u,.shop-how u,.pay-next u,.shop-chip-next u{display:block;height:100%;background:var(--s-ink);transition:width .5s}
+.shop-balance{display:flex;align-items:center;font:400 clamp(24px,2.3vw,40px)/1 var(--s-num)}
+.shop-balance strong{font-weight:400}
+.shop-balance small{align-self:flex-end;margin:0 0 .25em .5em;font:400 10px/1 var(--s-num);letter-spacing:.14em}
+.shop-close{border:0;background:none;padding:10px 0;font:400 clamp(12px,1.1vw,19px)/1 Electroharmonix,'Barlow Condensed',Impact,sans-serif;white-space:nowrap}
+.shop-close:hover{color:var(--s-red)}
+
+.shop-earned{display:flex;align-items:center;justify-content:center;gap:8px;margin:-4px 0 0;padding:6px 12px 5px;background:var(--s-ink);color:#fff;font:700 clamp(13px,1.05vw,17px)/1.2 var(--s-text);letter-spacing:.03em;text-align:center}
+.shop-earned .shop-coin{background:#fff;color:var(--s-ink)}
+.shop-how .shop-how-earned{grid-column:1/-1;font:700 12px/1.25 var(--s-text);letter-spacing:.01em;color:var(--s-ink)}
+.shop-status{min-height:1.3em;margin:0;font:400 14px/1.3 var(--s-text);color:var(--s-red)}
+
+/* ---- The body: UNLOCKS, every fighter on the left and the one looked at on the right; PROFILE, one page --- */
+.shop-body{min-height:0}
+.shop-body[data-tab=unlocks]{display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,31vw,500px);gap:clamp(12px,1.6vw,26px)}
+.shop-body[data-tab=profile]{display:block;overflow:auto;padding-right:8px;scrollbar-width:thin;scrollbar-color:#111 #fff}
+.shop-scroll{min-height:0;overflow:auto;padding:4px 12px 18px 4px;scrollbar-width:thin;scrollbar-color:#111 #fff}
+.shop-shelf{margin-bottom:26px}
+.shop-scroll h3,.shop-account h3{display:flex;align-items:center;gap:12px;margin:0 0 11px;font:400 clamp(15px,1.35vw,23px)/1 Electroharmonix,'Barlow Condensed',Impact,sans-serif;white-space:nowrap}
+.shop-scroll h3::after,.shop-account h3::after{content:'';flex:1;height:2px;background:var(--s-ink)}
+.shop-scroll h3 small,.shop-account h3 small{order:2;font:400 13px/1.2 var(--s-text);white-space:normal;text-align:right;max-width:52%}
+.shop-scroll h3 small b,.shop-account h3 small b{font:400 1.05em/1 var(--s-num);color:var(--s-red);letter-spacing:.04em}
+.shop-empty{margin:20px 6px;font:400 17px/1.4 var(--s-text)}
+
+/* Which fighters are listed: all, those to unlock, or yours. */
+.shop-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:4px 6px 18px 4px}
+.shop-filter button{display:flex;align-items:center;gap:8px;padding:8px 14px 7px;border:2px solid var(--s-ink);background:#fff;font:400 clamp(11px,.9vw,15px)/1 Electroharmonix,'Barlow Condensed',Impact,sans-serif;transform:skewX(-8deg);white-space:nowrap}
+.shop-filter button b{font:400 1.15em/1 var(--s-num);color:var(--s-red)}
+.shop-filter button:hover{color:var(--s-red)}
+.shop-filter button[aria-pressed=true]{background:var(--s-ink);color:#fff}
+.shop-filter button[aria-pressed=true] b{color:#fff}
+.shop-filter-note{margin-left:auto;font:400 14px/1.3 var(--s-text);color:var(--s-grey);text-align:right}
+
+/* Cards: a fighter's portrait, their name, and how they are got. */
+.shop-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(108px,8.2vw,150px),1fr));gap:14px 12px}
+.shop-card{position:relative;display:flex;flex-direction:column;min-width:0;margin:0;padding:0;border:2px solid var(--s-ink);background:#fff;text-align:left;overflow:hidden;transform:skewX(-1.2deg);transition:border-color .12s,box-shadow .12s}
+.shop-card:nth-child(3n+2){transform:skewX(.8deg)}
+.shop-card:hover{box-shadow:3px 3px 0 var(--s-ink)}
+.shop-card[aria-pressed=true]{border-color:var(--s-red);box-shadow:0 0 0 2px var(--s-red)}
+.shop-card-name{display:block;padding:7px 8px 2px;border-top:2px solid var(--s-ink);font:400 clamp(11px,.92vw,15px)/1.12 Electroharmonix,'Barlow Condensed',Impact,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shop-card-how{display:flex;flex-wrap:wrap;align-items:center;gap:1px 6px;min-height:1.4em;padding:1px 8px 7px;font:400 clamp(14px,1.08vw,17px)/1.15 var(--s-num);letter-spacing:.02em}
+.shop-card-how em{font-style:normal;color:var(--s-red)}
+.shop-card-how span{display:flex;align-items:center;color:var(--s-grey);font-size:.86em}
+.shop-card.is-owned .shop-card-how{color:var(--s-grey)}
+.shop-card.can-buy .shop-card-how{text-decoration:underline 2px var(--s-red);text-underline-offset:3px}
+.shop-card-seal{position:absolute;right:6px;top:6px;z-index:4;display:grid;place-items:center;min-width:30px;height:30px;padding:0 4px;border:2.5px solid var(--s-red);border-radius:50%;background:#fffc;color:var(--s-red);font:900 15px/1 var(--s-kanji);transform:rotate(-12deg)}
+.shop-card-seal.fresh{animation:shop-seal .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes shop-seal{from{transform:rotate(-30deg) scale(3);opacity:0}to{transform:rotate(-12deg) scale(1);opacity:1}}
+@keyframes shop-sheen{from{background-position:120% 0}to{background-position:-120% 0}}
+
+/* A one-time word: prices dropped, and what came back. */
+.shop-notice{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;margin:4px 8px 20px 2px;padding:12px 14px;border:3px solid var(--s-red);box-shadow:5px 5px 0 var(--s-ink);background:#fff}
+.shop-notice-mark{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--s-red);color:#fff;font:900 24px/1 var(--s-kanji)}
+.shop-notice strong{display:flex;align-items:center;font:400 clamp(16px,1.4vw,24px)/1.1 Electroharmonix,'Barlow Condensed',Impact,sans-serif}
+.shop-notice small{display:block;margin-top:4px;font:400 14px/1.3 var(--s-text)}
+.shop-notice .shop-act{width:auto;min-height:40px;margin:0}
+
+/* ---- The one looked at -------------------------------------------------------------------------------- */
+.shop-detail{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;border:3px solid var(--s-ink);box-shadow:7px 7px 0 var(--s-ink);background:#fff;overflow:hidden;margin:2px 8px 8px 0}
+.shop-stage{position:relative;min-height:150px;overflow:hidden;border-bottom:3px solid var(--s-ink);background:#fff;container-type:size}
+.shop-stage>.shop-art{position:absolute;inset:0;aspect-ratio:auto}
+.shop-stage>canvas{position:absolute;inset:0;width:100%;height:100%;z-index:5;opacity:0;transition:opacity .25s}
+.shop-stage.drawn>canvas{opacity:1}
+.shop-detail-text{display:grid;gap:8px;padding:12px 16px 16px;overflow:auto}
+.shop-detail-kind{font:400 11px/1.6 Electroharmonix,'Barlow Condensed',Impact,sans-serif;letter-spacing:.08em}
+.shop-detail-kind b{display:inline-block;margin-right:8px;padding:3px 8px 2px;background:var(--r);color:#fff;font-weight:400}
+.r-legendary .shop-detail-kind b,.r-legendary>.shop-card-tag{background:linear-gradient(100deg,#8a5a00,#d9a520 45%,#ffe08a 55%,#a8740a)}
+.r-mythic .shop-detail-kind b,.r-mythic>.shop-card-tag{background:linear-gradient(100deg,#7a0d16,#c81e2a 40%,#ff7a6b 50%,#c81e2a 60%,#7a0d16);background-size:220% 100%;animation:shop-sheen 3.4s linear infinite}
+.shop-detail h3{margin:0;font:400 clamp(21px,2vw,34px)/1.02 Electroharmonix,'Barlow Condensed',Impact,sans-serif}
+.shop-detail p{margin:0;font:400 clamp(14px,1.02vw,17px)/1.35 var(--s-text)}
+.shop-how{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;gap:4px 10px;padding:8px 10px;border:2px solid var(--s-ink)}
+.shop-how>b{display:flex;align-items:center;font:400 clamp(15px,1.25vw,21px)/1 var(--s-num);letter-spacing:.03em}
+.shop-how span{font:400 14px/1.25 var(--s-text);color:var(--s-grey)}
+.shop-how i{grid-column:1/-1}
+.shop-how.is-road{border-color:var(--s-red)}
+.shop-how.is-road>b{color:var(--s-red)}
+.shop-how.is-road u{background:var(--s-red)}
+.shop-how.is-mine{background:var(--s-ink);color:#fff}
+.shop-how.is-mine span{color:#fffc}
+.shop-acts{display:grid;gap:7px}
+.shop-act{display:flex;align-items:center;justify-content:center;width:100%;min-height:46px;margin:0;padding:11px 12px 9px;border:2px solid var(--s-ink);background:var(--s-ink);color:#fff!important;font:400 clamp(13px,1.1vw,18px)/1.1 Electroharmonix,'Barlow Condensed',Impact,sans-serif;letter-spacing:.04em;transition:background-color .12s,border-color .12s}
+.shop-act:hover:not(:disabled),.shop-act.sure{background:var(--s-red);border-color:var(--s-red)}
+.shop-act.off{background:#fff;color:var(--s-ink)!important}
+.shop-act.off:hover:not(:disabled){background:var(--s-ink);border-color:var(--s-ink);color:#fff!important}
+.shop-act:disabled{background:#fff;color:var(--s-grey)!important;border-color:var(--s-grey);opacity:1}
+.shop-act .shop-coin{font-size:.8em}
+.shop-goal.is-goal{border-color:var(--s-red);color:var(--s-red)!important}
+.shop-n{font:400 1.15em/1 var(--s-num);letter-spacing:.02em}
+.shop-why{color:var(--s-red)}
+
+.shop-missions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px clamp(16px,2.4vw,40px);margin:0 10px 24px 2px}
+.shop-missions .shop-day{grid-column:1/-1}
+.shop-mission-list{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.shop-mission-list li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:4px 12px;padding:9px 12px;border:2px solid var(--s-ink);transform:skewX(-1.2deg)}
+.shop-mission-list span{font:600 clamp(15px,1.12vw,19px)/1.2 var(--s-text)}
+.shop-mission-list i{grid-column:1;grid-row:2}
+.shop-mission-list em{grid-row:2;font:400 13px/1 var(--s-num);font-style:normal;letter-spacing:.04em}
+.shop-mission-list li>b{grid-row:1/3;grid-column:3;display:flex;align-items:center;font:400 clamp(18px,1.5vw,24px)/1 var(--s-num)}
+.shop-mission-list li.done{background:var(--s-ink);color:#fff}
+.shop-mission-list li.done i{border-color:#fff;background:#111}
+.shop-mission-list li.challenge{border-style:dashed}
+.shop-mission-list li.challenge span small{display:block;font:400 11px/1.2 var(--s-num);letter-spacing:.12em;opacity:.7}
+.shop-mission-list li.done u{background:#fff}
+.shop-note{margin:8px 0 0;font:400 14px/1.35 var(--s-text)}
+.shop-note.done{color:var(--s-red);font-weight:700}
+.shop-streak{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.shop-streak span{display:grid;justify-items:center;gap:4px;padding:7px 2px 6px;border:2px solid var(--s-ink);font:400 clamp(13px,1.05vw,17px)/1 var(--s-num)}
+.shop-streak span.had{background:var(--s-ink);color:#fff}
+.shop-streak small{font-size:9px;letter-spacing:.1em}
+.shop-feats{margin:0 10px 18px 2px}
+.shop-feats ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 26px}
+.shop-feats li{display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr) auto;align-items:baseline;gap:10px;padding:5px 2px;border-bottom:1px solid #1113}
+.shop-feats li>b{font:400 clamp(12px,.92vw,15px)/1.1 Electroharmonix,'Barlow Condensed',Impact,sans-serif}
+.shop-feats li>span{font:400 14px/1.25 var(--s-text)}
+.shop-feats em{display:flex;align-items:center;font:400 14px/1 var(--s-num);font-style:normal}
+.shop-feats li.done{color:var(--s-grey)}
+.shop-feats li.done em{color:var(--s-red)}
+
+/* ---- PROFILE (accountPanel.ts): who and the settings on the left, the level, the Sumi, the missions, the feats and
+   the record on the right ------------------------------------------------------------------------------ */
+.shop-account{display:grid;grid-template-columns:minmax(260px,.62fr) minmax(0,1.6fr);gap:18px clamp(18px,3vw,44px);align-items:start;padding:2px 2px 16px}
+.acct-main{display:grid;gap:26px;min-width:0}
+.acct-main>section{margin:0}
+.shop-who{display:grid;gap:9px;padding:16px;border:3px solid var(--s-ink);box-shadow:6px 6px 0 var(--s-ink)}
+.shop-who h3::after{display:none}
+.shop-who p{margin:0;font:400 15px/1.4 var(--s-text)}
+.shop-who small{font:400 10px/1 var(--s-num);letter-spacing:.1em;color:var(--s-grey)}
+.shop-account dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:0}
+.shop-account dl div{padding:8px 10px;border:2px solid var(--s-ink)}
+.shop-account dt{font:400 10px/1.2 var(--s-num);letter-spacing:.1em;color:var(--s-grey)}
+.shop-account dd{display:flex;align-items:center;margin:4px 0 0;font:400 clamp(19px,1.6vw,26px)/1 var(--s-num)}
+.acct-progress{display:grid;gap:12px}
+.acct-level{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px 20px;padding:14px 18px;border:3px solid var(--s-ink);box-shadow:6px 6px 0 var(--s-ink)}
+.acct-level-n{display:grid;place-items:center;align-content:center;width:clamp(72px,6vw,92px);height:clamp(72px,6vw,92px);border-radius:50%;background:var(--s-ink);color:#fff;font:400 clamp(32px,3vw,46px)/1 var(--s-num)}
+.acct-level-n small{font:400 10px/1 var(--s-num);letter-spacing:.14em}
+.acct-level>div{display:grid;gap:7px;min-width:0}
+.acct-level strong{font:400 clamp(18px,1.6vw,26px)/1 var(--s-num)}
+.acct-level i{height:11px;border-width:2px}
+.acct-level small{font:400 14px/1.3 var(--s-text)}
+.acct-level em{font:400 13px/1 var(--s-num);font-style:normal;letter-spacing:.06em;color:var(--s-red)}
+.acct-progress .shop-note{margin:0}
+
+/* ---- What an item looks like on its card -------------------------------------------------------------- */
+.shop-art{position:relative;display:block;aspect-ratio:1/1;overflow:hidden;background:#fff;container-type:size}
+.shop-art>i{position:absolute;inset:0;z-index:1}
+.shop-art>b{position:absolute;inset:0;z-index:2;display:grid;place-items:center;color:var(--s-ink);font:900 44cqmin/1 var(--s-kanji);font-style:normal;white-space:nowrap}
+.shop-art.waiting{filter:grayscale(1)}
+.shop-art.waiting>i{background:repeating-linear-gradient(135deg,#1111 0 6px,transparent 6px 13px)}
+.shop-art.waiting>b{opacity:.5}
+.shop-art-face{position:absolute;inset:0}
+.shop-art-face svg{display:block;width:100%;height:100%}
+/* A fighter: their own manga portrait, full bleed, their mark in the corner on gold. */
+.k-fighter{background:#fff}
+.k-fighter>b{inset:auto 5% 5% auto;width:1.5em;height:1.5em;border:2px solid var(--s-gold);background:#111;color:#f3d27a;font-size:15cqmin;z-index:3}
+.k-fighter>i{display:none}
+
+/* ---- On the home screen: the account in the heading's rule - level, the road's next, the goal, the wallet ---- */
+.shop-chip{position:absolute;right:0;top:50%;z-index:2;display:flex;align-items:center;gap:10px;max-width:42%;padding:5px 0 4px 14px;border:0;background:#fff;color:var(--s-ink);font:400 clamp(11px,.95vw,16px)/1 Electroharmonix,'Barlow Condensed',Impact,sans-serif;transform:translateY(-50%);white-space:nowrap;cursor:pointer}
+.shop-chip:hover .shop-chip-money,.shop-chip:focus-visible .shop-chip-money{color:var(--s-red)}
+.shop-chip-level{flex:none;padding:4px 8px 3px;background:var(--s-ink);color:#fff;font:400 clamp(12px,1vw,16px)/1 var(--s-num);letter-spacing:.04em}
+.shop-chip-next,.shop-chip-goal{display:grid;gap:3px;min-width:0;overflow:hidden;text-overflow:ellipsis;font:400 clamp(9px,.72vw,12px)/1 var(--s-num);font-style:normal;letter-spacing:.06em}
+.shop-chip-next{color:var(--s-red)}
+.shop-chip-next i{height:5px;border-width:1px}
+.shop-chip-goal{padding:3px 6px 2px;border:1.5px solid var(--s-ink)}
+.shop-chip-money{flex:none;display:flex;align-items:center;font:400 clamp(17px,1.5vw,26px)/1 var(--s-num)}
+
+/* ---- What a fight paid (on a run's results, and a note after a match) -------------------------- */
+.pay{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px clamp(12px,1.6vw,26px);padding:9px 14px;border:2px solid #fff;background:#0b0c0ecc;color:#fff}
+.pay-total{display:flex;align-items:center;gap:2px;font:400 clamp(24px,2.3vw,40px)/1 var(--s-num)}
+.pay-total small{display:block;margin-right:12px;font:400 10px/1.15 var(--s-num);letter-spacing:.14em;opacity:.8;max-width:6.5em}
+.pay-lines{display:flex;flex-wrap:wrap;gap:3px 14px;margin:0;padding:0;list-style:none;font:400 clamp(12px,.95vw,15px)/1.25 var(--s-text)}
+.pay-lines li{display:flex;gap:6px;white-space:nowrap;animation:pay-in .3s both}
+.pay-lines b{font:400 1em/1.25 var(--s-num);color:#ffcf5a}
+.pay-lines li.big{color:#ffcf5a;font-weight:700}
+.pay-level{display:grid;grid-template-columns:auto minmax(70px,9vw);align-items:center;gap:3px 8px;font:400 12px/1 var(--s-num);letter-spacing:.08em}
+.pay-level i,.pay-next i{border-color:#fff;background:transparent}
+.pay-level u,.pay-next u{background:#fff}
+.pay-level small{grid-column:1/-1;opacity:.8}
+/* What the match brought nearer: the road's next, the goal - and what it unlocked. */
+.pay-next{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;padding-top:6px;border-top:1px solid #fff4;font:400 12px/1.2 var(--s-num);letter-spacing:.06em}
+.pay-next>span{display:grid;grid-template-columns:auto minmax(70px,8vw);align-items:center;gap:3px 8px}
+.pay-next>span small{grid-column:1/-1;opacity:.75}
+.pay-next strong{padding:4px 9px 3px;background:#cc202b;color:#fff;font:400 13px/1 Electroharmonix,'Barlow Condensed',Impact,sans-serif;letter-spacing:.06em;animation:pay-in .3s both}
+.pay-note{grid-column:1/-1;margin:0;font:400 13px/1.3 var(--s-text);opacity:.85}
+.pay.waiting .pay-total strong{opacity:.55}
+@keyframes pay-in{from{opacity:0;transform:translateY(4px)}}
+.shop-toast{position:absolute;right:22px;top:112px;z-index:30;max-width:min(430px,80vw);pointer-events:none;animation:shop-toast 7s both}
+.shop-toast .pay{grid-template-columns:auto minmax(0,1fr)}
+.shop-toast .pay-level{display:none}
+@keyframes shop-toast{0%{opacity:0;transform:translateX(24px)}5%,88%{opacity:1;transform:none}100%{opacity:0;transform:translateX(24px)}}
+
+/* The home screen sets its display face on every button, span, small and paragraph under it, with !important:
+   where the shop wants a number or a sentence read, it says so as firmly. */
+.manga-home .shop :is(.shop-filter b,.shop-card-how,.shop-card-how span,.shop-level small,.shop-balance small,.shop-mission-list em,.shop-who small,.shop-streak span,.shop-streak small,.shop-n,.shop-how>b,.acct-level-n small,.acct-level strong,.acct-level em,.shop-detail-kind){font-family:var(--s-num)!important}
+.manga-home .shop :is(.shop-filter-note,.shop-detail p,.shop-status,.shop-note,.shop-empty,.shop-scroll h3 small,.shop-account h3 small,.shop-mission-list span,.shop-feats li>span,.shop-who p,.shop-how span,.acct-level small,.shop-notice small,.shop-earned,.shop-earned span,.shop-how-earned){font-family:var(--s-text)!important}
+.manga-home .shop :is(.shop-mission-list span,.shop-who p,.shop-detail p){font-weight:500!important}
+.manga-home .shop-chip :is(em,strong){font-style:normal}
+.manga-home .shop-chip :is(.shop-chip-next,.shop-chip-goal){font-family:var(--s-num)!important}
+
+@media(max-width:1100px){
+  .shop{padding:12px 16px 6px}
+  .shop-head{flex-wrap:wrap;gap:8px 14px}
+  .shop-body[data-tab=unlocks]{grid-template-columns:minmax(0,1fr) clamp(250px,34vw,330px)}
+  .shop-missions,.shop-account{grid-template-columns:minmax(0,1fr)}
+  .shop-feats ul{grid-template-columns:minmax(0,1fr)}
+  .shop-chip-goal{display:none}
+}
+/* A phone: what is looked at on top, the page under it. */
+@media(max-width:700px){
+  .shop{gap:6px;padding:8px 10px 4px}
+  .shop-head{gap:6px 10px;padding-bottom:6px}
+  .shop-tabs{order:3;width:100%;margin:0;padding:0 5px;box-sizing:border-box}
+  .shop-tabs button{flex:1;padding:9px 6px 8px;font-size:13px}
+  .shop-name{font-size:22px;gap:6px}
+  .shop-level>span{display:none}
+  .shop-level>b{width:34px;height:34px;font-size:17px}
+  .shop-wallet{gap:8px;margin-left:auto}
+  .shop-balance{font-size:22px}
+  .shop-balance small{display:none}
+  .shop-close{font-size:11px;padding:8px 0}
+  .shop-body[data-tab=unlocks]{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:8px}
+  .shop-detail{grid-row:1;grid-template-columns:40% minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:clamp(190px,34vh,280px);margin:0;box-shadow:none}
+  .shop-stage{min-height:0;border-bottom:0;border-right:3px solid var(--s-ink)}
+  .shop-detail-text{gap:6px;padding:8px 10px}
+  .shop-detail h3{font-size:19px}
+  .shop-detail p{display:none}
+  .shop-detail-kind{font-size:9px}
+  .shop-how{grid-template-columns:minmax(0,1fr);gap:3px;padding:5px 7px}
+  .shop-how>b{font-size:14px}
+  .shop-how span{font-size:11px;line-height:1.15}
+  .shop-how .shop-how-earned{font-size:10px;line-height:1.1}
+  .shop-earned{margin:-2px 0 0;padding:4px 8px 3px;font-size:12px;gap:6px}
+  .shop-acts{gap:5px}
+  .shop-act{min-height:36px;padding:7px 6px 6px;font-size:11px}
+  .shop-scroll{padding:2px 4px 14px 2px}
+  .shop-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 8px}
+  .shop-scroll h3 small{display:none}
+  .shop-filter{margin:2px 2px 12px}
+  .shop-filter button{flex:1;justify-content:center;padding:8px 6px 7px;font-size:11px}
+  .shop-filter-note{display:none}
+  .acct-level{grid-template-columns:auto minmax(0,1fr);gap:10px 12px;padding:10px}
+  .acct-level-n{width:60px;height:60px;font-size:28px}
+  .shop-notice{grid-template-columns:auto minmax(0,1fr)}
+  .shop-notice .shop-act{grid-column:1/-1;width:100%}
+  .shop-chip-next{display:none}
+}
+@media(prefers-reduced-motion:reduce){.shop *,.pay *,.shop-toast{animation:none!important;transition:none!important}}
+/* Overnight UX (8 October 2026): a phone on its side (390 px tall). The detail column is shorter than its words, so
+   the stage's row shrank to nothing while the stage kept its 150 px - and sat over the item's tag, name and words: the
+   shop showed a price for something it never named. The stage takes a fixed share and the words scroll under it. */
+@media (max-height:560px) and (orientation:landscape) and (min-width:701px){
+  .shop-detail{grid-template-rows:clamp(96px,30vh,150px) minmax(0,1fr)}
+  .shop-stage{min-height:0}
+}
+
+.shop-shelf:has(> .shop-cards:empty){display:none}

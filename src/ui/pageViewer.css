@@ -1,0 +1,16 @@
+/* The page viewer (pageViewer.ts): a page beside the game, opened from a pad, in a manga panel over everything - the
+   home's ink, paper and red, as the first-visit notice. Appended to <body>, so its own rules are all here. */
+.page-viewer{width:min(980px,calc(100vw - 24px));height:min(860px,calc(100dvh - 24px));max-height:none;margin:auto;padding:0;border:3px solid #111;background:#fff;color:#111;box-shadow:8px 8px 0 #cc202b;display:none;flex-direction:column;overflow:hidden;font:500 15px/1.5 Barlow,system-ui,sans-serif}
+.page-viewer[open]{display:flex}
+.page-viewer::backdrop{background:rgba(8,8,10,.82)}
+.page-viewer *{box-sizing:border-box}
+.page-viewer-head{display:flex;align-items:center;gap:16px;padding:12px 14px 12px 20px;border-bottom:3px solid #111;background:#111;color:#fff}
+.page-viewer-head h2{margin:0;flex:1;min-width:0;font:400 22px/1 Electroharmonix,Impact,'Arial Narrow',sans-serif;letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.page-viewer-keys{font:600 11px/1 Barlow,system-ui,sans-serif;letter-spacing:.12em;color:#c8c4bb;white-space:pre}
+.page-viewer-close{min-height:40px;padding:8px 16px;border:2px solid #fff;background:#cc202b;color:#fff;font:400 14px/1 Electroharmonix,Impact,sans-serif;letter-spacing:.1em;cursor:pointer}
+.page-viewer-close:is(:hover,:focus){outline:3px solid #fff;outline-offset:3px}
+.page-viewer-body{flex:1;min-height:0;display:flex}
+.page-viewer-body iframe{flex:1;width:100%;height:100%;border:0;background:#fff}
+.page-viewer-away{margin:auto;max-width:560px;padding:28px;text-align:center}
+.page-viewer-away b{display:block;margin:12px 0 16px;padding:12px 16px;border:2px solid #111;font:700 18px/1.3 Barlow,system-ui,sans-serif;word-break:break-all;box-shadow:4px 4px 0 #cc202b}
+@media(max-width:640px){.page-viewer-keys{display:none}}

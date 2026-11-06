@@ -1,0 +1,4483 @@
+{
+ "version": 1,
+ "note": "Creature, voice, gore, weapon and art effects for the arcade horde; one-shots trimmed, peak-normalised to -1 dBFS, AAC 80 kbps mono; beds looped with a 2 s crossfade, AAC 96 kbps stereo.",
+ "assets": [
+  {
+   "id": "man-swing-1",
+   "file": "/assets/audio/survival/man-swing-1.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "3grunt1.wav",
+   "sourceSha256": "57b3a59c39ffe74a1706bcb85c451443c3b388d1f6423827b2af4af508c8416b",
+   "duration": 0.388
+  },
+  {
+   "id": "man-swing-2",
+   "file": "/assets/audio/survival/man-swing-2.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "3grunt4.wav",
+   "sourceSha256": "4ba97adf030acefa10195f88c3fb329ebbea2c9638bd412896e1b4fc0ca35404",
+   "duration": 0.239
+  },
+  {
+   "id": "man-swing-3",
+   "file": "/assets/audio/survival/man-swing-3.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "3yell3.wav",
+   "sourceSha256": "2e55e23478c86bf9bfdf4297a24fb5135c18822dd38f95cabeb45612c840b64b",
+   "duration": 0.342
+  },
+  {
+   "id": "man-swing-4",
+   "file": "/assets/audio/survival/man-swing-4.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "3yell4.wav",
+   "sourceSha256": "804966a07b60c8e80c8f45c33ae5adfb1d7abbe4ebd07d67eb5d31351f4d250c",
+   "duration": 0.462
+  },
+  {
+   "id": "man-swing-5",
+   "file": "/assets/audio/survival/man-swing-5.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "1yell9.wav",
+   "sourceSha256": "da11a59a017ad4ed3f371ca0829c1f5f3d6a59106eee1ae914d39e04ffe08d6e",
+   "duration": 0.26
+  },
+  {
+   "id": "man-swing-6",
+   "file": "/assets/audio/survival/man-swing-6.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "1yell15.wav",
+   "sourceSha256": "761a03d1ea2339ef26e11744c7aa7f641ba259acc1e3398516ca90eef3f3da1d",
+   "duration": 0.356
+  },
+  {
+   "id": "man-swing-7",
+   "file": "/assets/audio/survival/man-swing-7.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "yell12.wav",
+   "sourceSha256": "7bc85e86d21552e525d2ffa82dd4276f2d46828593993018d4646ac68e4b1108",
+   "duration": 0.522
+  },
+  {
+   "id": "man-swing-8",
+   "file": "/assets/audio/survival/man-swing-8.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "human_03.ogg",
+   "sourceSha256": "a0d24f9031b57b2e48a8ff73050a7ba686b1311e5f91a6fe27c9b86b40d03b50",
+   "duration": 0.476
+  },
+  {
+   "id": "man-swing-9",
+   "file": "/assets/audio/survival/man-swing-9.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "human_07.ogg",
+   "sourceSha256": "6abe4757667a46f2b4aab03574213108f23d5d433b62c9c833a20c220a1b4d63",
+   "duration": 0.474
+  },
+  {
+   "id": "man-swing-10",
+   "file": "/assets/audio/survival/man-swing-10.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "human_05.ogg",
+   "sourceSha256": "8f4382eccaa0d95ad5dca28717fc8fed6ac38b2ce03852c40ea6fe7cfb2b30a3",
+   "duration": 0.421
+  },
+  {
+   "id": "man-cry-1",
+   "file": "/assets/audio/survival/man-cry-1.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "3yell1.wav",
+   "sourceSha256": "df151155a9c1a743de9d7c079a700896f37926d832305e07d2c7f2f0846c86b9",
+   "duration": 1.515
+  },
+  {
+   "id": "man-cry-2",
+   "file": "/assets/audio/survival/man-cry-2.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "3yell9.wav",
+   "sourceSha256": "f9c63c26c2dafb9c0dd0859c56c79c9012faf32bf2defdc8b53b19ed23ad0704",
+   "duration": 1.618
+  },
+  {
+   "id": "man-cry-3",
+   "file": "/assets/audio/survival/man-cry-3.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "yell1.wav",
+   "sourceSha256": "ce6ddb412e2c562be70f7cd1ca8f5c8cdb8cc321d9f23d596bf796c6d2da1a16",
+   "duration": 1.192
+  },
+  {
+   "id": "man-cry-4",
+   "file": "/assets/audio/survival/man-cry-4.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "yell2.wav",
+   "sourceSha256": "7bd946b5858450313327f2c3c351d2cb79d7e6a82369a93a15be625adcf5cbb3",
+   "duration": 1.337
+  },
+  {
+   "id": "man-cry-5",
+   "file": "/assets/audio/survival/man-cry-5.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "yell4.wav",
+   "sourceSha256": "399f3bb14cf9a1ac1ab71d66c7931aef537687a03568278a7a49766686d54857",
+   "duration": 1.027
+  },
+  {
+   "id": "man-cry-6",
+   "file": "/assets/audio/survival/man-cry-6.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "yell5.wav",
+   "sourceSha256": "39808573744040c5740bc451a037a4523b28a642d0bf635a0705dcc5f453c9c1",
+   "duration": 1.218
+  },
+  {
+   "id": "man-cry-7",
+   "file": "/assets/audio/survival/man-cry-7.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "3yell14.wav",
+   "sourceSha256": "7a84b5a5eb0521ebe05b01df9cac45cc37795fba91cc1b5019a504389e3305f2",
+   "duration": 0.912
+  },
+  {
+   "id": "man-cry-8",
+   "file": "/assets/audio/survival/man-cry-8.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "2yell11.wav",
+   "sourceSha256": "dc42f9af596b189ac3225ffd96c227dbcebb3b7d3d1d11fa60d1417d5431e4d5",
+   "duration": 0.75
+  },
+  {
+   "id": "man-hurt-1",
+   "file": "/assets/audio/survival/man-hurt-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "hurt_03.ogg",
+   "sourceSha256": "53e0ff510ef43f583befea63af23af1d82ddb993b981f7c3c0e7eb5f0f9d21ab",
+   "duration": 0.26
+  },
+  {
+   "id": "man-hurt-2",
+   "file": "/assets/audio/survival/man-hurt-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "hurt_04.ogg",
+   "sourceSha256": "65a6524d46bbf2acccb09b551fe7e3616dbd19f62266b5ea7e6313df29031df1",
+   "duration": 0.291
+  },
+  {
+   "id": "man-hurt-3",
+   "file": "/assets/audio/survival/man-hurt-3.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "hurt_05.ogg",
+   "sourceSha256": "4dc63fc62e8604a87baa1f5a74b75d848ccb68ce6e0e34d603dd3cbefc8519ed",
+   "duration": 0.345
+  },
+  {
+   "id": "man-hurt-4",
+   "file": "/assets/audio/survival/man-hurt-4.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "human_01.ogg",
+   "sourceSha256": "9c4e9cf68b2d5804b0becb649fe3af0cc83b274846f0da8be60be21373d2580e",
+   "duration": 0.433
+  },
+  {
+   "id": "man-hurt-5",
+   "file": "/assets/audio/survival/man-hurt-5.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "human_06.ogg",
+   "sourceSha256": "ac41237ed59161771bd660c489959c021eaa3bb9ffeebb1b5e039377127b5827",
+   "duration": 0.47
+  },
+  {
+   "id": "man-die-1",
+   "file": "/assets/audio/survival/man-die-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "die_01.ogg",
+   "sourceSha256": "d592dfbbe36a5e3e4b7dcaaa13498e50c59319d6df443c309858affb69336523",
+   "duration": 0.34
+  },
+  {
+   "id": "man-die-2",
+   "file": "/assets/audio/survival/man-die-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "die_03.ogg",
+   "sourceSha256": "59f9188919b50d40da3c9dd94e00c2d1c0db915ecc5b2eddfbf574743651c836",
+   "duration": 0.443
+  },
+  {
+   "id": "man-die-3",
+   "file": "/assets/audio/survival/man-die-3.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "2yell4.wav",
+   "sourceSha256": "5ca6b2e5cf2558857e7f852684672103d92989aac7ec145573532917bf0366b5",
+   "duration": 1.328
+  },
+  {
+   "id": "man-die-4",
+   "file": "/assets/audio/survival/man-die-4.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "2yell8.wav",
+   "sourceSha256": "c0e6628c4a548cfd7e5aa9adf1d8f2d6d99b22f73a4884bb20470ff06d7fc7d9",
+   "duration": 1.136
+  },
+  {
+   "id": "man-die-5",
+   "file": "/assets/audio/survival/man-die-5.m4a",
+   "source": "https://opengameart.org/content/male-gruntyelling-sounds",
+   "license": "CC0",
+   "sourceFile": "3yell12.wav",
+   "sourceSha256": "24d232e83d15537868a849328e367f6e8fb0028b6825d67637515ff350817056",
+   "duration": 0.82
+  },
+  {
+   "id": "beast-swing-1",
+   "file": "/assets/audio/survival/beast-swing-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "monster_08.ogg",
+   "sourceSha256": "09e28e7c4d0f341d04a0d8019ee782ab31685358c09ab9ca4116c0f627f04fb9",
+   "duration": 0.347
+  },
+  {
+   "id": "beast-swing-2",
+   "file": "/assets/audio/survival/beast-swing-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "monster_10.ogg",
+   "sourceSha256": "0f7293afd256e035a42255e3a7901df68ca6a4245194179d4091c26cc402f994",
+   "duration": 0.362
+  },
+  {
+   "id": "beast-swing-3",
+   "file": "/assets/audio/survival/beast-swing-3.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "roar_03.ogg",
+   "sourceSha256": "983396c808eb658ed3bd223ffaf9ea7f756dba7bc45ecc3fde117083026a4556",
+   "duration": 0.361
+  },
+  {
+   "id": "beast-swing-4",
+   "file": "/assets/audio/survival/beast-swing-4.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "attack_02.ogg",
+   "sourceSha256": "a309384ee58556a16f0ca7990ae1521dfd4cd71fdaad2fc64e28258ad278a493",
+   "duration": 0.44
+  },
+  {
+   "id": "beast-swing-5",
+   "file": "/assets/audio/survival/beast-swing-5.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "attack_03.ogg",
+   "sourceSha256": "53ef2f7e7c6660b35bc5cdec20fedcaac614c796abdce05c0c2599ad54af88fa",
+   "duration": 0.405
+  },
+  {
+   "id": "beast-swing-6",
+   "file": "/assets/audio/survival/beast-swing-6.m4a",
+   "source": "https://opengameart.org/content/monster-sound-pack-volume-1",
+   "license": "CC0",
+   "sourceFile": "Monster-1.wav",
+   "sourceSha256": "ac042cd669d74d5fa92187f17f7ef0ab024f89f8fd9be9e854ccf248270f921a",
+   "duration": 0.523
+  },
+  {
+   "id": "beast-swing-7",
+   "file": "/assets/audio/survival/beast-swing-7.m4a",
+   "source": "https://opengameart.org/content/monster-sound-pack-volume-1",
+   "license": "CC0",
+   "sourceFile": "Monster-4.wav",
+   "sourceSha256": "9bad9e38aa312416ea4b9913feb1e25e899c2120070f358ed60d7ba5eaf6eca6",
+   "duration": 0.31
+  },
+  {
+   "id": "beast-swing-8",
+   "file": "/assets/audio/survival/beast-swing-8.m4a",
+   "source": "https://opengameart.org/content/monster-sound-pack-volume-1",
+   "license": "CC0",
+   "sourceFile": "Monster-7.wav",
+   "sourceSha256": "ff1a392b9eb36c037e93cedc940146fbbdf26484607b090dd87e4c3cb047b103",
+   "duration": 0.347
+  },
+  {
+   "id": "beast-swing-9",
+   "file": "/assets/audio/survival/beast-swing-9.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "barking_01.ogg",
+   "sourceSha256": "f9b32cc139f0b8e7ae1f3b2409c08f374faa3d3a0935beb85b13e822d84bbb3d",
+   "duration": 0.265
+  },
+  {
+   "id": "beast-growl-1",
+   "file": "/assets/audio/survival/beast-growl-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "monster_03.ogg",
+   "sourceSha256": "1208729886f3f66e7d8018e8880dff073275fd37b30e1016dd5b164161482df1",
+   "duration": 0.363
+  },
+  {
+   "id": "beast-growl-2",
+   "file": "/assets/audio/survival/beast-growl-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "monster_06.ogg",
+   "sourceSha256": "6b8df01eb7821fb0fcf66b4683a8eb997ca728fded26b6937734b84ff05852f9",
+   "duration": 0.505
+  },
+  {
+   "id": "beast-growl-3",
+   "file": "/assets/audio/survival/beast-growl-3.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "monster_09.ogg",
+   "sourceSha256": "00f77e58a6c6fcf810a94fbb1e6a6b74c26feb4b4499cfe7c9d17529d28f9f72",
+   "duration": 0.425
+  },
+  {
+   "id": "beast-growl-4",
+   "file": "/assets/audio/survival/beast-growl-4.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "monster_12.ogg",
+   "sourceSha256": "ed46c28e65ae5022b47c3b50e60bfaf2d448efce3e54bfa705e723dc247b3f86",
+   "duration": 0.479
+  },
+  {
+   "id": "beast-growl-5",
+   "file": "/assets/audio/survival/beast-growl-5.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "monster_15.ogg",
+   "sourceSha256": "e76544535cfa7975f2a7fda9a0e53f536f1b4f0900544226ddfb10ad74d27541",
+   "duration": 0.385
+  },
+  {
+   "id": "beast-growl-6",
+   "file": "/assets/audio/survival/beast-growl-6.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "troll_01.ogg",
+   "sourceSha256": "d61a6ea6ab0263406de93002ee7378abac7b33486eafc04a91eeb625938e0df1",
+   "duration": 0.546
+  },
+  {
+   "id": "beast-growl-7",
+   "file": "/assets/audio/survival/beast-growl-7.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "troll_02.ogg",
+   "sourceSha256": "d63ae3a57294b8370eb6370cc4c75f544f4a8571d893ea3a48a4564d82e078cb",
+   "duration": 0.394
+  },
+  {
+   "id": "beast-growl-8",
+   "file": "/assets/audio/survival/beast-growl-8.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "troll_03.ogg",
+   "sourceSha256": "993b97ae0ca7755b6254f02242e6da4fe9895fc06ab2e092771927caab689660",
+   "duration": 0.342
+  },
+  {
+   "id": "beast-growl-9",
+   "file": "/assets/audio/survival/beast-growl-9.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "grunt_06.ogg",
+   "sourceSha256": "406b88a519f2b067f99dedbce1b3dc2f472c7f5a50f8443e8dddbcf5e0edaf53",
+   "duration": 0.437
+  },
+  {
+   "id": "beast-growl-10",
+   "file": "/assets/audio/survival/beast-growl-10.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "grunt_08.ogg",
+   "sourceSha256": "2bcb2c8fad6bec49d289a2b8455c2c56d58c63d43628abf24bd11e21012a74a6",
+   "duration": 0.449
+  },
+  {
+   "id": "beast-roar-1",
+   "file": "/assets/audio/survival/beast-roar-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "roar_01.ogg",
+   "sourceSha256": "e9d44326860a1c3aba917684faccfd967a4fefa284d7df773e05ae890ec242e0",
+   "duration": 0.327
+  },
+  {
+   "id": "beast-roar-2",
+   "file": "/assets/audio/survival/beast-roar-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "roar_02.ogg",
+   "sourceSha256": "ceb532ee0fe775d6f86a821099b75f1790ab8022b963cb837c8c1fa4fffee5c2",
+   "duration": 0.589
+  },
+  {
+   "id": "beast-roar-3",
+   "file": "/assets/audio/survival/beast-roar-3.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "roar_04.ogg",
+   "sourceSha256": "4bd8be77b058410e1af9a3a5aa5c62b8ec9ac214672be4ab84180e156e8c0a20",
+   "duration": 0.66
+  },
+  {
+   "id": "beast-roar-4",
+   "file": "/assets/audio/survival/beast-roar-4.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "roar_05.ogg",
+   "sourceSha256": "26614607c1683d8bbb82993f285a0d11b6e5ca1ebd5176e6ea552c3e833479f1",
+   "duration": 0.736
+  },
+  {
+   "id": "beast-roar-5",
+   "file": "/assets/audio/survival/beast-roar-5.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "roar_06.ogg",
+   "sourceSha256": "87c2c2658788e287c3f05f81605c7f343b56fc8197fe251bca0811c7520eeb7c",
+   "duration": 0.77
+  },
+  {
+   "id": "beast-roar-6",
+   "file": "/assets/audio/survival/beast-roar-6.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "howl.ogg",
+   "sourceSha256": "e63e29a219dfbe64724525600f36db7aab6017145650ffbc92763f87181c7825",
+   "duration": 0.554
+  },
+  {
+   "id": "beast-roar-7",
+   "file": "/assets/audio/survival/beast-roar-7.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "monster_20.ogg",
+   "sourceSha256": "4533ca9b6b1458ebfb23bbcc34af8bd4df414b76325421c7235cd958dc65773c",
+   "duration": 0.865
+  },
+  {
+   "id": "beast-hurt-1",
+   "file": "/assets/audio/survival/beast-hurt-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "hurt_01.ogg",
+   "sourceSha256": "619f9f2b4bc6cb013b4a62d0ef515a11e4be3a73c9d78c7c12ec5669b166d2cd",
+   "duration": 0.334
+  },
+  {
+   "id": "beast-hurt-2",
+   "file": "/assets/audio/survival/beast-hurt-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "hurt_02.ogg",
+   "sourceSha256": "b90ca3a0f5f48e1141ec6326f08ebf9f597efb6b2ca4ceeccc285b203c1ccbe1",
+   "duration": 0.364
+  },
+  {
+   "id": "beast-hurt-3",
+   "file": "/assets/audio/survival/beast-hurt-3.m4a",
+   "source": "https://opengameart.org/content/monster-sound-pack-volume-1",
+   "license": "CC0",
+   "sourceFile": "Monster-5.wav",
+   "sourceSha256": "b6043984a93b2a571f2a0d299c3968f6331736aa674608f6f69d8d2caa77cfbf",
+   "duration": 0.42
+  },
+  {
+   "id": "beast-hurt-4",
+   "file": "/assets/audio/survival/beast-hurt-4.m4a",
+   "source": "https://opengameart.org/content/monster-sound-pack-volume-1",
+   "license": "CC0",
+   "sourceFile": "Monster-8.wav",
+   "sourceSha256": "e7fc1c4a831c429f27f55722a102520038f764d0c01b867197d05469a7e39224",
+   "duration": 0.232
+  },
+  {
+   "id": "beast-hurt-5",
+   "file": "/assets/audio/survival/beast-hurt-5.m4a",
+   "source": "https://opengameart.org/content/monster-sound-pack-volume-1",
+   "license": "CC0",
+   "sourceFile": "monster-10.wav",
+   "sourceSha256": "9f8967357f20dc564bbe3fd5d80e81e80bbe7c9b7dc9645a49678d2bdeaa50df",
+   "duration": 0.293
+  },
+  {
+   "id": "beast-die-1",
+   "file": "/assets/audio/survival/beast-die-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "die_02.ogg",
+   "sourceSha256": "03e0fefd50fe350d0ca16c6ebf121c005290aa26a04a8e8573925bf33d4501d3",
+   "duration": 0.401
+  },
+  {
+   "id": "beast-die-2",
+   "file": "/assets/audio/survival/beast-die-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "die_04.ogg",
+   "sourceSha256": "aad7ac7b49b3dc2c4d929ddc6a5c184c7c188d1a5224b4d88e4f7371c9075f79",
+   "duration": 0.629
+  },
+  {
+   "id": "beast-die-3",
+   "file": "/assets/audio/survival/beast-die-3.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "scream_01.ogg",
+   "sourceSha256": "54da7bba4c4272b0b77dc3fe26a91d0a26d9280797fecb8197d716b47745eb85",
+   "duration": 0.829
+  },
+  {
+   "id": "beast-die-4",
+   "file": "/assets/audio/survival/beast-die-4.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "scream_02.ogg",
+   "sourceSha256": "73aedfbcc7e5b3004507d5a79e95ae53954026036bf8d6f65aa0a4ca298dd372",
+   "duration": 0.828
+  },
+  {
+   "id": "beast-die-5",
+   "file": "/assets/audio/survival/beast-die-5.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "monster_17.ogg",
+   "sourceSha256": "8e6acb27540315e6479f3a57e5e6cec580eec8f1e1e639519b65b6e51445032e",
+   "duration": 0.752
+  },
+  {
+   "id": "beast-die-6",
+   "file": "/assets/audio/survival/beast-die-6.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "monster_19.ogg",
+   "sourceSha256": "97305b59150e8690b7c61a1b2ce57d93ce9f4b9db8090cd3fb1139d5fd9c2e22",
+   "duration": 0.877
+  },
+  {
+   "id": "beast-die-7",
+   "file": "/assets/audio/survival/beast-die-7.m4a",
+   "source": "https://opengameart.org/content/monster-sound-pack-volume-1",
+   "license": "CC0",
+   "sourceFile": "Monster-2.wav",
+   "sourceSha256": "fd0c97cd0a5be99ed21617eab2373e2180825bb1329664080a7b7a095da3337b",
+   "duration": 0.81
+  },
+  {
+   "id": "brute-roar-1",
+   "file": "/assets/audio/survival/brute-roar-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "grunt_07.ogg",
+   "sourceSha256": "3cfc82e16c9a40d8a82505877746836110735cae60f6abe98c77e325764e92af",
+   "duration": 0.699
+  },
+  {
+   "id": "brute-roar-2",
+   "file": "/assets/audio/survival/brute-roar-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "grunt_09.ogg",
+   "sourceSha256": "b138762382a073bc661baca09c167bc4b774adfaff32bddffb843e22a66dc1cb",
+   "duration": 0.375
+  },
+  {
+   "id": "brute-roar-3",
+   "file": "/assets/audio/survival/brute-roar-3.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "monster_04.ogg",
+   "sourceSha256": "04b556b93bf3f99255ac362ebe7f905f750a8bcbb653f78ef7191adb91e71f49",
+   "duration": 0.975
+  },
+  {
+   "id": "brute-roar-4",
+   "file": "/assets/audio/survival/brute-roar-4.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "monster_07.ogg",
+   "sourceSha256": "5f7d40c4899f2e2e146fe8a0207597d4daf4d304a644ad2e8629057bc49a87e9",
+   "duration": 0.687
+  },
+  {
+   "id": "brute-roar-5",
+   "file": "/assets/audio/survival/brute-roar-5.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "roar_02.ogg",
+   "sourceSha256": "ceb532ee0fe775d6f86a821099b75f1790ab8022b963cb837c8c1fa4fffee5c2",
+   "duration": 0.589
+  },
+  {
+   "id": "imp-1",
+   "file": "/assets/audio/survival/imp-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "alien_02.ogg",
+   "sourceSha256": "a28c192579824352a0177d71d9f2fe32560d17b00fbc16297488bddd07ddcdc9",
+   "duration": 0.456
+  },
+  {
+   "id": "imp-2",
+   "file": "/assets/audio/survival/imp-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "alien_03.ogg",
+   "sourceSha256": "8e417706c6ca3f7eb99d9500d17bf74ef977d16c540dfa9d695db4721cc30003",
+   "duration": 0.574
+  },
+  {
+   "id": "imp-3",
+   "file": "/assets/audio/survival/imp-3.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "alien_07.ogg",
+   "sourceSha256": "da62275c7b3b8fe3fbf8feb318cd030b045a0e598b792a996734d2cedcc1f323",
+   "duration": 0.469
+  },
+  {
+   "id": "imp-4",
+   "file": "/assets/audio/survival/imp-4.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "bug_04.ogg",
+   "sourceSha256": "478418f0d70667109145ca10d82e918c5eeb95c594be40186681179a883d64be",
+   "duration": 0.342
+  },
+  {
+   "id": "imp-5",
+   "file": "/assets/audio/survival/imp-5.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "weird_02.ogg",
+   "sourceSha256": "1d1bc049e70edaeaa31c2d87a65a05daf3f47ac317908368c245814cb649934e",
+   "duration": 0.294
+  },
+  {
+   "id": "imp-6",
+   "file": "/assets/audio/survival/imp-6.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "misc_02.ogg",
+   "sourceSha256": "bd424eeee4112dd7221eef93ec83fe632c4c5990e8e3a39bb68441354e4e7764",
+   "duration": 0.292
+  },
+  {
+   "id": "imp-7",
+   "file": "/assets/audio/survival/imp-7.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "alien_12.ogg",
+   "sourceSha256": "c3f42742fdb2d6bf5ad38c1c00d593d1cfbb9de61f21e3a573970e2f82fa003e",
+   "duration": 0.289
+  },
+  {
+   "id": "gore-1",
+   "file": "/assets/audio/survival/gore-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "slime_02.ogg",
+   "sourceSha256": "7879b8931d025c991999d075b020349b6a0ab2a441518b08294c542cf20fa71f",
+   "duration": 0.376
+  },
+  {
+   "id": "gore-2",
+   "file": "/assets/audio/survival/gore-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "slime_07.ogg",
+   "sourceSha256": "687cd1feb815f9e214b20f16000ec5fd52174b03ec0b4da18d1abb20c2c4cbe2",
+   "duration": 0.242
+  },
+  {
+   "id": "gore-3",
+   "file": "/assets/audio/survival/gore-3.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "slime_08.ogg",
+   "sourceSha256": "8f675b9dba1b065b78731fe5d809dd3dfc1e443050afeb070d068eb9f1e4f32f",
+   "duration": 0.379
+  },
+  {
+   "id": "gore-4",
+   "file": "/assets/audio/survival/gore-4.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "eat_02.ogg",
+   "sourceSha256": "60226fe5e4bf5ced6457f43ef89114a91d8790634a9aebb3c5754768fe04d6ee",
+   "duration": 0.272
+  },
+  {
+   "id": "gore-5",
+   "file": "/assets/audio/survival/gore-5.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+   "license": "CC0",
+   "sourceFile": "spit_02.ogg",
+   "sourceSha256": "aa65f01311e914d2861f1992a4e59f431c03edcf020e09961e422728562a2657",
+   "duration": 0.549
+  },
+  {
+   "id": "gore-6",
+   "file": "/assets/audio/survival/gore-6.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "misc_15.ogg",
+   "sourceSha256": "c49aa1281131c3cfa8a2b3fae7438167e8467927af41e1272b7cb419b9e69662",
+   "duration": 0.2
+  },
+  {
+   "id": "gore-7",
+   "file": "/assets/audio/survival/gore-7.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Stab_Knife_00.wav",
+   "sourceSha256": "fb17938c11e04ac8a9d204f97e99fb70a1c8f801964df43268de48a5a4908686",
+   "duration": 0.219
+  },
+  {
+   "id": "gore-8",
+   "file": "/assets/audio/survival/gore-8.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Stab_Knife_01.wav",
+   "sourceSha256": "63113c7196a507579f83c4e8870a21f0d1e860d97fc5bba6e9508696b4a8d913",
+   "duration": 0.239
+  },
+  {
+   "id": "gore-9",
+   "file": "/assets/audio/survival/gore-9.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Stab_Knife_02.wav",
+   "sourceSha256": "ffe6a9d67d0bfebcecb8046c6c0b9127f393aaa1c2ec32600d3d7d60730b7572",
+   "duration": 0.369
+  },
+  {
+   "id": "gore-10",
+   "file": "/assets/audio/survival/gore-10.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Bonecrack_00.wav",
+   "sourceSha256": "89a47994f7c8af94613acf09a4a37237a02489540d10eec3f570b1e090fd3c85",
+   "duration": 0.391
+  },
+  {
+   "id": "gore-11",
+   "file": "/assets/audio/survival/gore-11.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Bonecrack_01.wav",
+   "sourceSha256": "8ff8e9ffb168ed73498463374bbec715a013e5e4d5653583567d16f0011bbc6d",
+   "duration": 0.101
+  },
+  {
+   "id": "gore-12",
+   "file": "/assets/audio/survival/gore-12.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Bonecrack_02.wav",
+   "sourceSha256": "1013713d8df8b696afb9c9df700692d401d4d22f3ce6e61d599b956eb9b464a8",
+   "duration": 0.215
+  },
+  {
+   "id": "gore-13",
+   "file": "/assets/audio/survival/gore-13.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Bonecrack_03.wav",
+   "sourceSha256": "dbcd698fa8e7b34a57e617ea9300ec7f7183cdcf28b7217c887abed577c1ef05",
+   "duration": 0.244
+  },
+  {
+   "id": "gore-14",
+   "file": "/assets/audio/survival/gore-14.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactPunch_heavy_000.ogg",
+   "sourceSha256": "b33a8f14068aec24ec69ba85e5e87fdc41228975f6a1a3e44a6e7d6fc3d9f8d8",
+   "duration": 0.317
+  },
+  {
+   "id": "gore-15",
+   "file": "/assets/audio/survival/gore-15.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactPunch_heavy_002.ogg",
+   "sourceSha256": "7993dd4c156b9979ad69f17be5ebe31850b16039a3857f8477141be54dfee1b3",
+   "duration": 0.243
+  },
+  {
+   "id": "gore-16",
+   "file": "/assets/audio/survival/gore-16.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactSoft_heavy_001.ogg",
+   "sourceSha256": "4d0096364ba9e46119d2ff6df493fdc101bd2e1efae061da5e5f77a53b3fdcb6",
+   "duration": 0.258
+  },
+  {
+   "id": "gore-17",
+   "file": "/assets/audio/survival/gore-17.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "creature_slime_02.ogg",
+   "sourceSha256": "8c26b66076752b712dad7be704a3e4e11d3a49847fbd804ba7f858024ff33c8d",
+   "duration": 0.397
+  },
+  {
+   "id": "gore-18",
+   "file": "/assets/audio/survival/gore-18.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "creature_slime_04.ogg",
+   "sourceSha256": "720c15c73a7fae29a02a9cd3cb5b9940ae8213e4b50f8deb0c531796289290d9",
+   "duration": 0.453
+  },
+  {
+   "id": "stomp-1",
+   "file": "/assets/audio/survival/stomp-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-creture-sfx-2",
+   "license": "CC0",
+   "sourceFile": "stomp_01.ogg",
+   "sourceSha256": "3524b2f6d6927480942a03f2db54da0b517f0a1dff00eebcc5e1bca8e81bb428",
+   "duration": 0.322
+  },
+  {
+   "id": "zombie-swing-1",
+   "file": "/assets/audio/survival/zombie-swing-1.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-1.wav",
+   "sourceSha256": "dad8280256985cadc5745f407c53ebdcf428d55e6369a70847e5b83d60e98c17",
+   "duration": 0.762
+  },
+  {
+   "id": "zombie-swing-2",
+   "file": "/assets/audio/survival/zombie-swing-2.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-2.wav",
+   "sourceSha256": "b8833b90e2f929cb28ce067e10dacc6e807f47f92393b8f2e6fd17d34f207efe",
+   "duration": 0.675
+  },
+  {
+   "id": "zombie-swing-3",
+   "file": "/assets/audio/survival/zombie-swing-3.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-3.wav",
+   "sourceSha256": "8097e5c1da76b30ae5a1dca0b85d70fab0e1386170a03acc77f9492047ac4e84",
+   "duration": 0.571
+  },
+  {
+   "id": "zombie-swing-4",
+   "file": "/assets/audio/survival/zombie-swing-4.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-4.wav",
+   "sourceSha256": "36b6376649969e11112361afb00e6d161a2433f9db045273d9ed40d6e9b06ab0",
+   "duration": 0.715
+  },
+  {
+   "id": "zombie-swing-5",
+   "file": "/assets/audio/survival/zombie-swing-5.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-5.wav",
+   "sourceSha256": "6920b559f953d19737f65a9da5b31f7bb3e1421c48552f52d7a57399d507574b",
+   "duration": 0.428
+  },
+  {
+   "id": "zombie-swing-6",
+   "file": "/assets/audio/survival/zombie-swing-6.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-6.wav",
+   "sourceSha256": "2ad9acaccc9bc29f77f89581767699c3ed8d9630c19a11a8bbf6332ce89686a2",
+   "duration": 0.456
+  },
+  {
+   "id": "zombie-swing-7",
+   "file": "/assets/audio/survival/zombie-swing-7.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-7.wav",
+   "sourceSha256": "8e63e327c960bfe76d0402f7a54f7629272e6346e5c6b84ac35ad52b9597dec8",
+   "duration": 0.56
+  },
+  {
+   "id": "zombie-swing-8",
+   "file": "/assets/audio/survival/zombie-swing-8.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-8.wav",
+   "sourceSha256": "98dadef79f3cdbf120277e24e95919dfc2e853a45a7d72273a1d3c2cbc1ea823",
+   "duration": 0.794
+  },
+  {
+   "id": "zombie-swing-9",
+   "file": "/assets/audio/survival/zombie-swing-9.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-10.wav",
+   "sourceSha256": "be9223a5c65ad1c1444e6e2153918d8c2a2a1dee59efeb36fa5bbb060c2bfed8",
+   "duration": 0.647
+  },
+  {
+   "id": "zombie-swing-10",
+   "file": "/assets/audio/survival/zombie-swing-10.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-12.wav",
+   "sourceSha256": "2b1984e3485715642a1195393fd35227eadc27b8f7eeb968956e18f4e8cb9400",
+   "duration": 0.763
+  },
+  {
+   "id": "zombie-swing-11",
+   "file": "/assets/audio/survival/zombie-swing-11.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-13.wav",
+   "sourceSha256": "b8a64c3a557d7ce0b69492717bc1a88706b69c499a2714f02527d822a8462545",
+   "duration": 0.501
+  },
+  {
+   "id": "zombie-swing-12",
+   "file": "/assets/audio/survival/zombie-swing-12.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-14.wav",
+   "sourceSha256": "b1fffbf93fd9cf353a9dd0d519b6cd6e739bd3fb28853a580e018ac73efdda4b",
+   "duration": 0.601
+  },
+  {
+   "id": "zombie-swing-13",
+   "file": "/assets/audio/survival/zombie-swing-13.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-15.wav",
+   "sourceSha256": "19d0955dfcca86939dbce76388dad5d3ad4dd8ed70bf7ce457d9a46b555e220b",
+   "duration": 0.84
+  },
+  {
+   "id": "zombie-swing-14",
+   "file": "/assets/audio/survival/zombie-swing-14.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-22.wav",
+   "sourceSha256": "3224f8e3e9e446e5e424a9f6ce11ee78784ebd7bdc2db535306b337c973e6e02",
+   "duration": 0.647
+  },
+  {
+   "id": "zombie-swing-15",
+   "file": "/assets/audio/survival/zombie-swing-15.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-23.wav",
+   "sourceSha256": "d467553c380b0c2fb04cd5e5583ec53d0d3620902cf3b90e6aa64438f3e5e84c",
+   "duration": 0.768
+  },
+  {
+   "id": "zombie-swing-16",
+   "file": "/assets/audio/survival/zombie-swing-16.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-24.wav",
+   "sourceSha256": "3776a39a471c215f26115290837012084fc07f37e20b4808ce76f5dafe98f2fb",
+   "duration": 0.322
+  },
+  {
+   "id": "zombie-cry-1",
+   "file": "/assets/audio/survival/zombie-cry-1.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-17.wav",
+   "sourceSha256": "c954b6173399ed574c1c1350b8da4a5b465e0454cc810d6e49779fe121fafa34",
+   "duration": 1.523
+  },
+  {
+   "id": "zombie-cry-2",
+   "file": "/assets/audio/survival/zombie-cry-2.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-21.wav",
+   "sourceSha256": "d58c26ae8df808238becc3434cf46778fca4582e9fcda138bdc01f720ecbbefc",
+   "duration": 1.068
+  },
+  {
+   "id": "zombie-cry-3",
+   "file": "/assets/audio/survival/zombie-cry-3.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Zombie_02.wav",
+   "sourceSha256": "27deabb71b77d41f8ccb2ee01a6478a86d8aaf94191c653161164afc4d7d6016",
+   "duration": 2.32
+  },
+  {
+   "id": "zombie-cry-4",
+   "file": "/assets/audio/survival/zombie-cry-4.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-16.wav",
+   "sourceSha256": "637f8d26b186005246a279fb19def56c81eebcf144c2346460ac1e4fc0075fc7",
+   "duration": 1.406
+  },
+  {
+   "id": "zombie-cry-5",
+   "file": "/assets/audio/survival/zombie-cry-5.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Zombie_00.wav",
+   "sourceSha256": "ff0a8027897e7ce44f00b878337475548d13ced4fd213f9f9ee677eca3fbce68",
+   "duration": 3.093
+  },
+  {
+   "id": "zombie-hurt-1",
+   "file": "/assets/audio/survival/zombie-hurt-1.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-9.wav",
+   "sourceSha256": "938c9a75828cda0ec78482e7a969cebc8f989968dcde15326e8c5a2f437fd468",
+   "duration": 0.83
+  },
+  {
+   "id": "zombie-hurt-2",
+   "file": "/assets/audio/survival/zombie-hurt-2.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-11.wav",
+   "sourceSha256": "edbe930f09f61f034c90b80a6f5b06757fbea2a8f2b9ccdc263ed9246b33a400",
+   "duration": 0.491
+  },
+  {
+   "id": "zombie-hurt-3",
+   "file": "/assets/audio/survival/zombie-hurt-3.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-19.wav",
+   "sourceSha256": "79fa7bb077c0b5c46837a63299a1df3269a2310f25b6a3055dd27a4700c74789",
+   "duration": 0.954
+  },
+  {
+   "id": "zombie-hurt-4",
+   "file": "/assets/audio/survival/zombie-hurt-4.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-20.wav",
+   "sourceSha256": "3a962ea1d8517ad4c2fea8221e6a0e622dcad3ba34bae5a436d4f0971774b56d",
+   "duration": 0.923
+  },
+  {
+   "id": "zombie-hurt-5",
+   "file": "/assets/audio/survival/zombie-hurt-5.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Zombie_01.wav",
+   "sourceSha256": "0cffb1852e5f6d28c808a04cd50e0b86b7cd4f2b4ec4e98efef32ee62d3c51ee",
+   "duration": 0.692
+  },
+  {
+   "id": "zombie-hurt-6",
+   "file": "/assets/audio/survival/zombie-hurt-6.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Zombie_03.wav",
+   "sourceSha256": "0ed76f584d044f4ebeea2743d74bb69de245d4f9eed51a0d902b9add9dd8dfda",
+   "duration": 0.951
+  },
+  {
+   "id": "zombie-die-1",
+   "file": "/assets/audio/survival/zombie-die-1.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-18.wav",
+   "sourceSha256": "91c33adaf9efa32d87c364eb2a679833a24ac5586c52f675f3e9cf8cedfde199",
+   "duration": 1.082
+  },
+  {
+   "id": "zombie-die-2",
+   "file": "/assets/audio/survival/zombie-die-2.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Zombie_04.wav",
+   "sourceSha256": "fcdd4e0bcd616c01ecc8cdf315f24fac4e6fed7e463c85a533e26d2868045e8f",
+   "duration": 1.6
+  },
+  {
+   "id": "zombie-die-3",
+   "file": "/assets/audio/survival/zombie-die-3.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-16.wav",
+   "sourceSha256": "637f8d26b186005246a279fb19def56c81eebcf144c2346460ac1e4fc0075fc7",
+   "duration": 1.406
+  },
+  {
+   "id": "zombie-die-4",
+   "file": "/assets/audio/survival/zombie-die-4.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Zombie_00.wav",
+   "sourceSha256": "ff0a8027897e7ce44f00b878337475548d13ced4fd213f9f9ee677eca3fbce68",
+   "duration": 3.093
+  },
+  {
+   "id": "zombie-die-5",
+   "file": "/assets/audio/survival/zombie-die-5.m4a",
+   "source": "https://opengameart.org/content/zombies-sound-pack",
+   "license": "CC0",
+   "sourceFile": "zombie-21.wav",
+   "sourceSha256": "d58c26ae8df808238becc3434cf46778fca4582e9fcda138bdc01f720ecbbefc",
+   "duration": 1.068
+  },
+  {
+   "id": "demon-roar-1",
+   "file": "/assets/audio/survival/demon-roar-1.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Monster_00.wav",
+   "sourceSha256": "944023439525231f1095b4e63f6ea100f87aa3e637dc02b640093cb40dbe82a0",
+   "duration": 2.445
+  },
+  {
+   "id": "demon-roar-2",
+   "file": "/assets/audio/survival/demon-roar-2.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Monster_01.wav",
+   "sourceSha256": "c3b3226e85c9b738de779a72ac834cd339ff1c40d360ab10579dd4c7c086759d",
+   "duration": 1.165
+  },
+  {
+   "id": "demon-roar-3",
+   "file": "/assets/audio/survival/demon-roar-3.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Monster_02.wav",
+   "sourceSha256": "160941eb9d0dfa136857c43ed0b0efcb11d8659691ad043ba0a91eb7467f842e",
+   "duration": 2.279
+  },
+  {
+   "id": "demon-roar-4",
+   "file": "/assets/audio/survival/demon-roar-4.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Monster_03.wav",
+   "sourceSha256": "371261253c916d3e4e79e7c6b54471de34f1e9441ece31eb77c66c26fcf04b89",
+   "duration": 2.978
+  },
+  {
+   "id": "demon-roar-5",
+   "file": "/assets/audio/survival/demon-roar-5.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Monster_04.wav",
+   "sourceSha256": "153f176c885faf148f508057ddd71aa79047e6e57c8c4622b2a9e15e17290cfc",
+   "duration": 2.853
+  },
+  {
+   "id": "demon-roar-6",
+   "file": "/assets/audio/survival/demon-roar-6.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Monster_05.wav",
+   "sourceSha256": "6ff58ca1c50a628ef4a2225dfbaefed6844d53dad9c7530c4051cd40942698ca",
+   "duration": 5.46
+  },
+  {
+   "id": "demon-roar-7",
+   "file": "/assets/audio/survival/demon-roar-7.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Monster_06.wav",
+   "sourceSha256": "f00bc45389402bd4062ebd4e8a4cafc9de75dd0b38bb9a2f8113ecedef8c83db",
+   "duration": 2.36
+  },
+  {
+   "id": "demon-roar-8",
+   "file": "/assets/audio/survival/demon-roar-8.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "creature_roar_01.ogg",
+   "sourceSha256": "ca1b9198490f29037e6e6487dd6db6165ca8b2583a445c0edd6b9f474d2d1f5f",
+   "duration": 0.413
+  },
+  {
+   "id": "demon-roar-9",
+   "file": "/assets/audio/survival/demon-roar-9.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "creature_roar_02.ogg",
+   "sourceSha256": "4da0cf77a3506e1b573ec40e3688dc66400d1734853510db357fb3f843cde242",
+   "duration": 0.63
+  },
+  {
+   "id": "demon-roar-10",
+   "file": "/assets/audio/survival/demon-roar-10.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "creature_roar_03.ogg",
+   "sourceSha256": "3571f6372012fdebb2a38ef89e18a6137b3f17d519f1259aafeb166dbdd94195",
+   "duration": 0.653
+  },
+  {
+   "id": "demon-roar-11",
+   "file": "/assets/audio/survival/demon-roar-11.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "creature_monster_01.ogg",
+   "sourceSha256": "28d047e95058cecc3513eb831d14072318526fcb9207d8a50aad0f666e17893a",
+   "duration": 0.159
+  },
+  {
+   "id": "demon-roar-12",
+   "file": "/assets/audio/survival/demon-roar-12.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "creature_monster_03.ogg",
+   "sourceSha256": "b13abf8c710750bb3699ae61b450fc7c12e92cb9c180581b0f1a681f7f692c8b",
+   "duration": 0.618
+  },
+  {
+   "id": "scream-1",
+   "file": "/assets/audio/survival/scream-1.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Scream_Male_00.wav",
+   "sourceSha256": "82967b37e231c746f00d94d169b639f0a297eba83fd1a8076aca5f7a1ffda40b",
+   "duration": 2.263
+  },
+  {
+   "id": "scream-2",
+   "file": "/assets/audio/survival/scream-2.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Scream_Male_01.wav",
+   "sourceSha256": "452ab62f50fa9e18b5bfb5a9e9c52bb05cb939e615ded648415d03e47f24d5d0",
+   "duration": 1.631
+  },
+  {
+   "id": "scream-3",
+   "file": "/assets/audio/survival/scream-3.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Scream_Male_02.wav",
+   "sourceSha256": "f72c0be39cda5696b2914d8d0ecc0c671cc07c33d5a03ff80ac51ec26e7da4e2",
+   "duration": 0.987
+  },
+  {
+   "id": "scream-4",
+   "file": "/assets/audio/survival/scream-4.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Scream_Male_03.wav",
+   "sourceSha256": "309bca23d76f137ea542f81b8e41263ad7c14ff514432f8615a8b9b455edd7ea",
+   "duration": 1.025
+  },
+  {
+   "id": "scream-5",
+   "file": "/assets/audio/survival/scream-5.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Scream_Male_04.wav",
+   "sourceSha256": "5c2435f426385a8b22725923d8b2a3393cca41067d0fe1b6710b0abcc7ca5be6",
+   "duration": 1.015
+  },
+  {
+   "id": "laugh-1",
+   "file": "/assets/audio/survival/laugh-1.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Laugh_Evil_00.wav",
+   "sourceSha256": "3aeeaeb6a31a40e6354efad69314d92b4a21332fae1d9be13bf5c6d9da42ad2e",
+   "duration": 2.636
+  },
+  {
+   "id": "laugh-2",
+   "file": "/assets/audio/survival/laugh-2.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Laugh_Evil_01.wav",
+   "sourceSha256": "d978ecd81c1735262daa9f334a37093a3899caaadddf490ba1d0f121829f9891",
+   "duration": 2.591
+  },
+  {
+   "id": "laugh-3",
+   "file": "/assets/audio/survival/laugh-3.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Laugh_Evil_02.wav",
+   "sourceSha256": "56ac62fbcaa48e445417abd1b42cf3a12a34be1bc101f170017e4fd4ca5c8209",
+   "duration": 2.217
+  },
+  {
+   "id": "chain-1",
+   "file": "/assets/audio/survival/chain-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "chain_01.ogg",
+   "sourceSha256": "d376caf0f61384b1d2e0b447f64f06be56d0ee0622ba70dd01cfdd78b3a10687",
+   "duration": 0.393
+  },
+  {
+   "id": "chain-2",
+   "file": "/assets/audio/survival/chain-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "chain_02.ogg",
+   "sourceSha256": "dd3b753e54fd4e6ed94c36231d1950fafd681ff4a93462cfa3980099a6454ecb",
+   "duration": 0.33
+  },
+  {
+   "id": "chain-3",
+   "file": "/assets/audio/survival/chain-3.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "chain_03.ogg",
+   "sourceSha256": "ae2247dc68aa85bca15d87355353b5858441644b6a65172e9659f4d0819b42d6",
+   "duration": 0.613
+  },
+  {
+   "id": "thunder-1",
+   "file": "/assets/audio/survival/thunder-1.m4a",
+   "source": "https://opengameart.org/content/100-cc0-sfx-2",
+   "license": "CC0",
+   "sourceFile": "sfx100v2_thunder_01.ogg",
+   "sourceSha256": "8a4f1dee999546b363f989eff92174375eeae7c241dc9beaa0892fb131ef12a9",
+   "duration": 3.255
+  },
+  {
+   "id": "spell-fire-1",
+   "file": "/assets/audio/survival/spell-fire-1.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "spell_fire_01.ogg",
+   "sourceSha256": "02fa3a2c6e79e868e546802f45127c5cdda69aba6d5a24ac997ea66f81a816cb",
+   "duration": 0.791
+  },
+  {
+   "id": "spell-fire-2",
+   "file": "/assets/audio/survival/spell-fire-2.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "spell_fire_02.ogg",
+   "sourceSha256": "bf1eef4993f0adb4bd3a1c1ec91f8f6e4ddeb32d922671a14561846d5b7cab98",
+   "duration": 0.72
+  },
+  {
+   "id": "spell-fire-3",
+   "file": "/assets/audio/survival/spell-fire-3.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "spell_fire_03.ogg",
+   "sourceSha256": "2e4edee4ff8d7898198f1ab5213e086965e14a665cb947d53759505e28ddd3e4",
+   "duration": 1.475
+  },
+  {
+   "id": "spell-fire-4",
+   "file": "/assets/audio/survival/spell-fire-4.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "spell_fire_04.ogg",
+   "sourceSha256": "64d653cd0cc6eb71bb45a1dfbba29eaa769ed5b663cce275082d6971e4f2ca8e",
+   "duration": 1.101
+  },
+  {
+   "id": "spell-fire-5",
+   "file": "/assets/audio/survival/spell-fire-5.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "spell_fire_05.ogg",
+   "sourceSha256": "18025b21a4ecb3b41acc0dccb0697a8930262109ea198ff8c5ef0853d3ed1cfa",
+   "duration": 1.068
+  },
+  {
+   "id": "spell-fire-6",
+   "file": "/assets/audio/survival/spell-fire-6.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "spell_fire_06.ogg",
+   "sourceSha256": "66fa753e8033d08f3837d6ef1706b0450297db68c0d4b21782a03fd9ae960d63",
+   "duration": 0.799
+  },
+  {
+   "id": "spell-fire-7",
+   "file": "/assets/audio/survival/spell-fire-7.m4a",
+   "source": "https://opengameart.org/content/80-cc0-rpg-sfx",
+   "license": "CC0",
+   "sourceFile": "spell_fire_07.ogg",
+   "sourceSha256": "bb13cef9c0b0b4ec7f9335c356b14814c88418abd85dd3747cb62469e9ada93f",
+   "duration": 0.488
+  },
+  {
+   "id": "shatter-1",
+   "file": "/assets/audio/survival/shatter-1.m4a",
+   "source": "https://opengameart.org/content/100-cc0-sfx-2",
+   "license": "CC0",
+   "sourceFile": "sfx100v2_glass_01.ogg",
+   "sourceSha256": "9c664345b242c2ff06e4d00b0383a03afe1b7bf8a685ec9628fb605a1e43c196",
+   "duration": 0.15
+  },
+  {
+   "id": "shatter-2",
+   "file": "/assets/audio/survival/shatter-2.m4a",
+   "source": "https://opengameart.org/content/100-cc0-sfx-2",
+   "license": "CC0",
+   "sourceFile": "sfx100v2_glass_02.ogg",
+   "sourceSha256": "27464f1af8eabe2df582d17d12fd9e140e69723d87a4548123cb0ac796aded0b",
+   "duration": 0.342
+  },
+  {
+   "id": "shatter-3",
+   "file": "/assets/audio/survival/shatter-3.m4a",
+   "source": "https://opengameart.org/content/100-cc0-sfx-2",
+   "license": "CC0",
+   "sourceFile": "sfx100v2_glass_04.ogg",
+   "sourceSha256": "f639cedb7d6d2383202b37c5a55e0a81c57ab178c19f506b75ca4b3ffb118345",
+   "duration": 0.161
+  },
+  {
+   "id": "shatter-4",
+   "file": "/assets/audio/survival/shatter-4.m4a",
+   "source": "https://opengameart.org/content/100-cc0-sfx-2",
+   "license": "CC0",
+   "sourceFile": "sfx100v2_glass_05.ogg",
+   "sourceSha256": "5179a026765a6ab37fbeb7f97935aac0b355161f07731e7a39c95b213beb35e8",
+   "duration": 0.433
+  },
+  {
+   "id": "shatter-5",
+   "file": "/assets/audio/survival/shatter-5.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactGlass_heavy_000.ogg",
+   "sourceSha256": "b44b39a940e8948e74b9bd3776bff980df43cf220abdaf0d467dc4c43c0244a5",
+   "duration": 0.159
+  },
+  {
+   "id": "shatter-6",
+   "file": "/assets/audio/survival/shatter-6.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactGlass_heavy_002.ogg",
+   "sourceSha256": "4978654ac840ad519692d5d5ba48a8101cabce13b9a577be73ad589185e5e9ed",
+   "duration": 0.144
+  },
+  {
+   "id": "shatter-7",
+   "file": "/assets/audio/survival/shatter-7.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactGlass_heavy_004.ogg",
+   "sourceSha256": "c7742b0e33c1733ddaf902aa68464a4f5364e4d4cb6ff11b76a7aa4151a138dd",
+   "duration": 0.16
+  },
+  {
+   "id": "blade-swing-1",
+   "file": "/assets/audio/survival/blade-swing-1.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword.1.ogg",
+   "sourceSha256": "4a3e80705619cbd7500682ab51004011ddf67e14ccf1818ceb9e5b539fe42b75",
+   "duration": 0.362
+  },
+  {
+   "id": "blade-swing-2",
+   "file": "/assets/audio/survival/blade-swing-2.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword.2.ogg",
+   "sourceSha256": "e74221f6cec0acaa7c19095618c683c3cdc1741f02193b61cb28a2ec56cbfce2",
+   "duration": 0.285
+  },
+  {
+   "id": "blade-swing-3",
+   "file": "/assets/audio/survival/blade-swing-3.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword.3.ogg",
+   "sourceSha256": "ce09eb2987531d1323415065d7811a9cf0ea8639766d9fa77655d602e7e14989",
+   "duration": 0.325
+  },
+  {
+   "id": "blade-swing-4",
+   "file": "/assets/audio/survival/blade-swing-4.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword.4.ogg",
+   "sourceSha256": "320aa8a77d35f9354c3d7e03a53e987ae67b0c5721f0dd2680100c5e6b5e4cc4",
+   "duration": 0.275
+  },
+  {
+   "id": "blade-swing-5",
+   "file": "/assets/audio/survival/blade-swing-5.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword.5.ogg",
+   "sourceSha256": "135d1b26aad8d2f2205e56c14cd0162755a883e9419d6fd955cb978126a77452",
+   "duration": 0.363
+  },
+  {
+   "id": "blade-swing-6",
+   "file": "/assets/audio/survival/blade-swing-6.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword.6.ogg",
+   "sourceSha256": "5b6eaaac9c552ce364cfdea3c12cef846c89796fc9bb880181615f43ee4e4779",
+   "duration": 0.295
+  },
+  {
+   "id": "blade-swing-7",
+   "file": "/assets/audio/survival/blade-swing-7.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword.7.ogg",
+   "sourceSha256": "66f2a2e63182fa14470a63fc4a862ff77fa861f69a6a41d8e9874c9853c2d9dd",
+   "duration": 0.414
+  },
+  {
+   "id": "blade-swing-8",
+   "file": "/assets/audio/survival/blade-swing-8.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword.8.ogg",
+   "sourceSha256": "97f55774d7f0602c5f87e4ef289fcdf7ff07eea987ddc52849909d74374458a6",
+   "duration": 0.456
+  },
+  {
+   "id": "blade-swing-9",
+   "file": "/assets/audio/survival/blade-swing-9.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword.9.ogg",
+   "sourceSha256": "11d11e060c3172cf0573620e9c6f57855eca017c7ab4a995a1aa276f176eb4b7",
+   "duration": 0.57
+  },
+  {
+   "id": "blade-swing-10",
+   "file": "/assets/audio/survival/blade-swing-10.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword.10.ogg",
+   "sourceSha256": "530bf3daac9e21ba7f8414291820bc8c26f3522ecbda8f00e6454b1cef74cd07",
+   "duration": 0.592
+  },
+  {
+   "id": "blade-clash-1",
+   "file": "/assets/audio/survival/blade-clash-1.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword_clash.1.ogg",
+   "sourceSha256": "5c5e78e466ba78fe2414f2b7a2a6eb674822ccfc8a8bc9fda32be22f5dde5e69",
+   "duration": 0.333
+  },
+  {
+   "id": "blade-clash-2",
+   "file": "/assets/audio/survival/blade-clash-2.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword_clash.2.ogg",
+   "sourceSha256": "e09f222b70d53f2967514d076e2ae50c21526ac640fe4919965f964af043da1a",
+   "duration": 0.225
+  },
+  {
+   "id": "blade-clash-3",
+   "file": "/assets/audio/survival/blade-clash-3.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword_clash.3.ogg",
+   "sourceSha256": "6c588bc79b7e4fe202e3b65fa849954d684d2d2342f6ad04813540854c421663",
+   "duration": 0.264
+  },
+  {
+   "id": "blade-clash-4",
+   "file": "/assets/audio/survival/blade-clash-4.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword_clash.4.ogg",
+   "sourceSha256": "4c2c962f8703882b8a6f863c1f5a35c6ae518d0281755fac9a13e63a73b86fa5",
+   "duration": 0.236
+  },
+  {
+   "id": "blade-clash-5",
+   "file": "/assets/audio/survival/blade-clash-5.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword_clash.5.ogg",
+   "sourceSha256": "09e36369f2556e6a234ce78ec797447518ef7671f8224fc64747a7fa66ea229a",
+   "duration": 0.161
+  },
+  {
+   "id": "blade-clash-6",
+   "file": "/assets/audio/survival/blade-clash-6.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword_clash.6.ogg",
+   "sourceSha256": "4c7643dbcd813eb614a56451652987d37ba587fac3309303aa0ab9a27d3a7e71",
+   "duration": 0.182
+  },
+  {
+   "id": "blade-clash-7",
+   "file": "/assets/audio/survival/blade-clash-7.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword_clash.7.ogg",
+   "sourceSha256": "6763e519e7b31250a78f514d2b8b4f4e73a3bb105c980844ea687d698364b80c",
+   "duration": 0.211
+  },
+  {
+   "id": "blade-clash-8",
+   "file": "/assets/audio/survival/blade-clash-8.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword_clash.8.ogg",
+   "sourceSha256": "1466349e10779cfede4538657031bd87f3757d6cf5139cfad6552fa859007172",
+   "duration": 0.185
+  },
+  {
+   "id": "blade-clash-9",
+   "file": "/assets/audio/survival/blade-clash-9.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword_clash.9.ogg",
+   "sourceSha256": "aabd55ad99a1d171b50d741923077488a1021460fab35adf4fb7f36def49adc0",
+   "duration": 0.344
+  },
+  {
+   "id": "blade-clash-10",
+   "file": "/assets/audio/survival/blade-clash-10.m4a",
+   "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "sword_clash.10.ogg",
+   "sourceSha256": "61d40c241c5df7722249983938109564a8470245116fe34d23d2a35324d3a4f1",
+   "duration": 0.266
+  },
+  {
+   "id": "iron-hit-1",
+   "file": "/assets/audio/survival/iron-hit-1.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactMetal_heavy_000.ogg",
+   "sourceSha256": "e07045693e4a2b3d165c424e3dab4c781d9ff8880a386880ac89a51315d7f831",
+   "duration": 0.104
+  },
+  {
+   "id": "iron-hit-2",
+   "file": "/assets/audio/survival/iron-hit-2.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactMetal_heavy_001.ogg",
+   "sourceSha256": "83554049f81f4db9209379e103c30bfa63f65c42189a03f300b045c2c82e23ae",
+   "duration": 0.126
+  },
+  {
+   "id": "iron-hit-3",
+   "file": "/assets/audio/survival/iron-hit-3.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactMetal_heavy_002.ogg",
+   "sourceSha256": "b914c8f1eb7c0f34bb165d7c77f4be0351f6be0660c13c53e65424e262e2c093",
+   "duration": 0.111
+  },
+  {
+   "id": "iron-hit-4",
+   "file": "/assets/audio/survival/iron-hit-4.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactMetal_heavy_003.ogg",
+   "sourceSha256": "b0f2ba4dabde9a87eb9c188a19d31e0c2300fd321adeba08d3b9b8aa011d7037",
+   "duration": 0.115
+  },
+  {
+   "id": "iron-hit-5",
+   "file": "/assets/audio/survival/iron-hit-5.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactMetal_heavy_004.ogg",
+   "sourceSha256": "6d65b463c0555dd5be16b8db6d2cbe23a94e07a4637779b8ad17d0db3e500a87",
+   "duration": 0.103
+  },
+  {
+   "id": "iron-hit-6",
+   "file": "/assets/audio/survival/iron-hit-6.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactPlate_heavy_000.ogg",
+   "sourceSha256": "112d4f93ddcc370b410630f971c0f5d991856102da9c76bc5c5540d388e75aaa",
+   "duration": 0.342
+  },
+  {
+   "id": "iron-hit-7",
+   "file": "/assets/audio/survival/iron-hit-7.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactPlate_heavy_001.ogg",
+   "sourceSha256": "142fd6c77f13d25f318265901163f70f8dfe12f87829169a570025be43de7011",
+   "duration": 0.312
+  },
+  {
+   "id": "iron-hit-8",
+   "file": "/assets/audio/survival/iron-hit-8.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactPlate_heavy_002.ogg",
+   "sourceSha256": "b0cab75d1befa32b4cf215d8ee7e1c400a39182e8b105963b8e310f825b198a1",
+   "duration": 0.376
+  },
+  {
+   "id": "quake-1",
+   "file": "/assets/audio/survival/quake-1.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactMining_000.ogg",
+   "sourceSha256": "36b4ea107222d073c67ca64dde26944975609202d5090b2f2021213c1a7e35cd",
+   "duration": 0.479
+  },
+  {
+   "id": "quake-2",
+   "file": "/assets/audio/survival/quake-2.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactMining_001.ogg",
+   "sourceSha256": "61235a18de3f3d92118235398222dbf51d448f1be70b1c8bc962b10b86f2d9c6",
+   "duration": 0.434
+  },
+  {
+   "id": "quake-3",
+   "file": "/assets/audio/survival/quake-3.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactMining_002.ogg",
+   "sourceSha256": "059558ec751115ca6b1441e00f0adc837c1a3eeb0a066b109e0fd879fc5d0b0c",
+   "duration": 0.423
+  },
+  {
+   "id": "quake-4",
+   "file": "/assets/audio/survival/quake-4.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactMining_003.ogg",
+   "sourceSha256": "4237fa2cd80364ad81cd0af44f67d7497f1c5edcc7bdb02cd22be2ba4580c83d",
+   "duration": 0.491
+  },
+  {
+   "id": "quake-5",
+   "file": "/assets/audio/survival/quake-5.m4a",
+   "source": "https://kenney.nl/assets/impact-sounds",
+   "license": "CC0",
+   "sourceFile": "impactMining_004.ogg",
+   "sourceSha256": "8ca3a99d85d845751ad8ce7b40509da58263a62e48cde70e5a30b5ccef4c9a3b",
+   "duration": 0.435
+  },
+  {
+   "id": "quake-6",
+   "file": "/assets/audio/survival/quake-6.m4a",
+   "source": "https://opengameart.org/content/100-cc0-sfx-2",
+   "license": "CC0",
+   "sourceFile": "sfx100v2_stones_01.ogg",
+   "sourceSha256": "20d293a892e1fa6330da2569065aa260a822198bddce2b183f8c11642e7deb4d",
+   "duration": 0.346
+  },
+  {
+   "id": "quake-7",
+   "file": "/assets/audio/survival/quake-7.m4a",
+   "source": "https://opengameart.org/content/100-cc0-sfx-2",
+   "license": "CC0",
+   "sourceFile": "sfx100v2_stones_03.ogg",
+   "sourceSha256": "94d7e0978fd90621d2d24e8ea33eefbae2933a434bb14c643cc12ea5175cefa9",
+   "duration": 0.451
+  },
+  {
+   "id": "bed-village-fire",
+   "file": "/assets/audio/survival/bed-village-fire.m4a",
+   "source": "https://opengameart.org/content/jc-sounds-nature-ambient-pack-vol-1",
+   "license": "CC-BY 4.0, JC Sounds",
+   "sourceFile": "AMB_Nature Pack Vol 1_ Fire & Elemental_Large Bonfire.mp3",
+   "sourceSha256": "44da317f8b88ea00d37ed4b9316cf86f2045c0b898abd5e31d2f8bf298f674e2",
+   "duration": 38.0,
+   "loop": true
+  },
+  {
+   "id": "bed-village-crackle",
+   "file": "/assets/audio/survival/bed-village-crackle.m4a",
+   "source": "https://opengameart.org/content/jc-sounds-nature-ambient-pack-vol-1",
+   "license": "CC-BY 4.0, JC Sounds",
+   "sourceFile": "AMB_Nature Pack Vol 1_ Fire & Elemental_Campfire Crackling.mp3",
+   "sourceSha256": "8c5ab104d6c09c5379249bc4bdadcde06a7103399f439cfaed65175683cb95f1",
+   "duration": 34.0,
+   "loop": true
+  },
+  {
+   "id": "bed-swords-wind",
+   "file": "/assets/audio/survival/bed-swords-wind.m4a",
+   "source": "https://opengameart.org/content/jc-sounds-nature-ambient-pack-vol-1",
+   "license": "CC-BY 4.0, JC Sounds",
+   "sourceFile": "AMB_Nature Pack Vol 1_Weather_Winter Wind.mp3",
+   "sourceSha256": "854360c011f690a2cbf0e2324b560532097f1ec0271034aa71797b45cd0b6626",
+   "duration": 42.0,
+   "loop": true
+  },
+  {
+   "id": "bed-swords-crows",
+   "file": "/assets/audio/survival/bed-swords-crows.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Ambience_MurderofCrows_00.wav",
+   "sourceSha256": "d3296c807e160559c976558a96ed5b8191d27ae3de500e3175ee9c6d94bbf12e",
+   "duration": 12.0,
+   "loop": true
+  },
+  {
+   "id": "bed-fortress-storm",
+   "file": "/assets/audio/survival/bed-fortress-storm.m4a",
+   "source": "https://opengameart.org/content/jc-sounds-nature-ambient-pack-vol-1",
+   "license": "CC-BY 4.0, JC Sounds",
+   "sourceFile": "AMB_Nature Pack Vol 1_Weather_Heavy Thunderstorm.mp3",
+   "sourceSha256": "ea138ba40801b9d38a0432b4f95ecff4526490b1f6b2bdecce678dec812685c1",
+   "duration": 46.0,
+   "loop": true
+  },
+  {
+   "id": "bed-eclipse-hell",
+   "file": "/assets/audio/survival/bed-eclipse-hell.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Ambience_Hell_02.wav",
+   "sourceSha256": "cf56d2da8085c1f5fc63e0d63aa28519c929c81cdc2725cf08935df25033201e",
+   "duration": 32.0,
+   "loop": true
+  },
+  {
+   "id": "bed-eclipse-belly",
+   "file": "/assets/audio/survival/bed-eclipse-belly.m4a",
+   "source": "https://opengameart.org/content/horror-sound-effects-library",
+   "license": "CC-BY 3.0, Little Robot Sound Factory (www.littlerobotsoundfactory.com)",
+   "sourceFile": "Ambience_MonstersBelly_00.wav",
+   "sourceSha256": "0f9808fa29f35b4dd40c52ef3b4b4eb108c52f305f1ad85ea0068db96abd08db",
+   "duration": 42.0,
+   "loop": true
+  },
+  {
+   "id": "bed-army",
+   "file": "/assets/audio/survival/bed-army.m4a",
+   "source": "https://opengameart.org/content/crowd-shoutingspeaking-ambience",
+   "license": "CC0 (StarNinjas)",
+   "sourceFile": "crowd-shouting.ogg",
+   "sourceSha256": "a2c23a64c127c77717cbe4abb21f138bac9d9aa6cb3cc89d62bab5d0d96dd7ca",
+   "duration": 25.384,
+   "loop": true
+  },
+  {
+   "id": "bed-horde",
+   "file": "/assets/audio/survival/bed-horde.m4a",
+   "source": "Layered from this bank's zombie, beast and demon takes (their sources above)",
+   "license": "As its takes: CC0 and CC-BY 3.0 (Little Robot Sound Factory)",
+   "duration": 26.0,
+   "loop": true
+  },
+  {
+   "id": "voice-shiun-entrance-1",
+   "file": "/assets/audio/survival/voice-shiun-entrance-1.m4a",
+   "source": "the fighter's own line vo-shiun-bell-a (shiun): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "さあ、開演だ。……どうぞ、ごゆっくり。",
+   "sourceSha256": "6584fec675350d2dbb2b143b007bf983517133f67c2636029b9b08dac3610808",
+   "duration": 2.35,
+   "note": "shiun: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-shiun-rage-1",
+   "file": "/assets/audio/survival/voice-shiun-rage-1.m4a",
+   "source": "the fighter's own line vo-shiun-pale-gem (shiun): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "さあ、終楽章だ。……蒼白の熾天使を、お見せしよう。",
+   "sourceSha256": "3641b552170b10cb0a6cc01bef38ba66499b2a458aefe814f84d47c77fc47e94",
+   "duration": 3.41,
+   "note": "shiun: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-shiun-rage-2",
+   "file": "/assets/audio/survival/voice-shiun-rage-2.m4a",
+   "source": "the fighter's own line vo-shiun-low-a (shiun): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……ほう。不協和音か。",
+   "sourceSha256": "fdfcc8164bae01e7c88e5ca60d9ae052556d9b30c808196f5af62b7e7bb99e13",
+   "duration": 1.66,
+   "note": "shiun: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-shiun-hurt-1",
+   "file": "/assets/audio/survival/voice-shiun-hurt-1.m4a",
+   "source": "the fighter's own line vo-shiun-thrown-a (shiun): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぐっ……ぁあっ！",
+   "sourceSha256": "e1f9831015da65120d89f639894d87be6c80296d08a231e977fa8da791e63603",
+   "duration": 1.55,
+   "note": "shiun: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-shiun-defeat-1",
+   "file": "/assets/audio/survival/voice-shiun-defeat-1.m4a",
+   "source": "the fighter's own line vo-shiun-loss-a (shiun): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……私の譜面に、こんな結末は無い。",
+   "sourceSha256": "3f400f696a0f6555d88b8c0fb0fd8c356566cb535b0e57264bb068ef78395e6b",
+   "duration": 2.47,
+   "note": "shiun: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-shiun-attack-1",
+   "file": "/assets/audio/survival/voice-shiun-attack-1.m4a",
+   "source": "the fighter's own line vo-shiun-weak (shiun): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "拍がずれたね。",
+   "sourceSha256": "09baad06a58d90e783d3363fe2db9928be26a2a197037fdc772443bae6ad7fb4",
+   "duration": 1.28,
+   "note": "shiun: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-shiun-attack-2",
+   "file": "/assets/audio/survival/voice-shiun-attack-2.m4a",
+   "source": "the fighter's own line vo-shiun-kill-a (shiun): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……休符だ。",
+   "sourceSha256": "2f8905d665f5a07818f4f43d26287bbdc4ef489e5139ec80ff85096728cc5edc",
+   "duration": 0.655,
+   "note": "shiun: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-shiun-attack-3",
+   "file": "/assets/audio/survival/voice-shiun-attack-3.m4a",
+   "source": "the fighter's own line vo-shiun-effort-c (shiun): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "せいっ。",
+   "sourceSha256": "2357c8f861c2d3fffdf7e30df70b1c83a791caf3b0349cc47496aafc2aa5dab0",
+   "duration": 0.62,
+   "note": "shiun: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-entrance-1",
+   "file": "/assets/audio/survival/voice-barrow-entrance-1.m4a",
+   "source": "the fighter's own line vo-barrow-quip-banquet (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ガブハハハ！ 獲物の船が、来やがった！",
+   "sourceSha256": "1a112267b33515de0960596a915d54e2316f137b80922f29e01fd9e04f1d8376",
+   "duration": 3.5,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-entrance-2",
+   "file": "/assets/audio/survival/voice-barrow-entrance-2.m4a",
+   "source": "the fighter's own line vo-barrow-bell-a (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "おうおう、いい船だ！ 沈めて、中身をいただくぜ！",
+   "sourceSha256": "fba1f112cd0700fbfca22544788ef23a725f92fa4e5ba68fc3dcc5712880af10",
+   "duration": 3.5,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-rage-1",
+   "file": "/assets/audio/survival/voice-barrow-rage-1.m4a",
+   "source": "the fighter's own line vo-barrow-strongest (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ガブハハハ！ まだ入るぜ……底無しだァ！",
+   "sourceSha256": "2b8e2785cd05c6e8233a662f0bdc7f4347e6e51305ee067be28ef7e7abc7f259",
+   "duration": 4.05,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-rage-2",
+   "file": "/assets/audio/survival/voice-barrow-rage-2.m4a",
+   "source": "the fighter's own line vo-barrow-quip-laugh (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ガブハハハハハッ！",
+   "sourceSha256": "209bdcf8df1f37a48d7bf1144bda179a58843116578da8b0d96d48897a53e6e2",
+   "duration": 2.075,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-hurt-1",
+   "file": "/assets/audio/survival/voice-barrow-hurt-1.m4a",
+   "source": "the fighter's own line vo-barrow-hurt-a (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "いでっ！",
+   "sourceSha256": "e5bb19b7eb59a2eb7c5658093850fadf2a77738496a5841ad1f5f04f986e416b",
+   "duration": 0.515,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-hurt-2",
+   "file": "/assets/audio/survival/voice-barrow-hurt-2.m4a",
+   "source": "the fighter's own line vo-barrow-hurt-b (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぐえっ",
+   "sourceSha256": "47d90e4476c732a38ce0f59d55cc0f7515be35d383346b4d77de648ed67f1c46",
+   "duration": 0.635,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-hurt-3",
+   "file": "/assets/audio/survival/voice-barrow-hurt-3.m4a",
+   "source": "the fighter's own line vo-barrow-hurt-c (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "おごっ",
+   "sourceSha256": "92f705da5f7d6cacce4dfc3da58debe08a1b7d6bed5a099cb287341c423e24a8",
+   "duration": 0.56,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-defeat-1",
+   "file": "/assets/audio/survival/voice-barrow-defeat-1.m4a",
+   "source": "the fighter's own line vo-barrow-loss-a (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ウソだろ……！ 俺の宝が……俺の夢がァ……！",
+   "sourceSha256": "f843e8ba5596ff64020880866dcaa3538ad7e75914aa54b6fc4659b46bd7bb0c",
+   "duration": 2.9,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-attack-1",
+   "file": "/assets/audio/survival/voice-barrow-attack-1.m4a",
+   "source": "the fighter's own line vo-barrow-take-it-all (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "拾ったモンは、俺のモンだ！",
+   "sourceSha256": "dea1fb6a045d2f7fec739e240d7caeb39e855c98b319fbe6897df26d7ff23db1",
+   "duration": 1.785,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-attack-2",
+   "file": "/assets/audio/survival/voice-barrow-attack-2.m4a",
+   "source": "the fighter's own line vo-barrow-effort-a (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ふんっ！",
+   "sourceSha256": "f23c154066e358820e2cded51d01a09d7349e02df3f27c55570ae54e411b3a85",
+   "duration": 0.3,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-barrow-attack-3",
+   "file": "/assets/audio/survival/voice-barrow-attack-3.m4a",
+   "source": "the fighter's own line vo-barrow-effort-b (barrow): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぬおっ！",
+   "sourceSha256": "6a1597b080510a731863dc7e7adc7bde961d4cc7bb74cc8fc51601801e4e8af5",
+   "duration": 0.535,
+   "note": "barrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-entrance-1",
+   "file": "/assets/audio/survival/voice-oro-entrance-1.m4a",
+   "source": "the fighter's own line vo-oro-bell-a (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "跪け。……オロ様の刻だ。",
+   "sourceSha256": "2a954669b169ba72c544f89271e187c0ef1d06c11f4f6eec307e5ead8d02e971",
+   "duration": 2.615,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-entrance-2",
+   "file": "/assets/audio/survival/voice-oro-entrance-2.m4a",
+   "source": "the fighter's own line vo-oro-bell-b (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "フハハ……その心臓、あと何拍もつかな？",
+   "sourceSha256": "123a005b89574686234ebe414c1833565bcd1e88f76c941709d0bcc6e1bb5037",
+   "duration": 3.49,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-rage-1",
+   "file": "/assets/audio/survival/voice-oro-rage-1.m4a",
+   "source": "the fighter's own line vo-oro-saiko-ni-high (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "時は満ちた……我が刻の始まりだァッ！",
+   "sourceSha256": "8666bc5087fa88912fb93f49f0a9f17c7ef2f89f6edc565b637ca6057e752e14",
+   "duration": 3.69,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-rage-2",
+   "file": "/assets/audio/survival/voice-oro-rage-2.m4a",
+   "source": "the fighter's own line vo-oro-low-a (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "この私が……追い詰められるだと？",
+   "sourceSha256": "9f7965b5b35640fbda83bca5f5f17a108c8aa7a8ddbd94f060364d916dc63539",
+   "duration": 2.9,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-hurt-1",
+   "file": "/assets/audio/survival/voice-oro-hurt-1.m4a",
+   "source": "the fighter's own line vo-oro-hurt-a (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぐぅっ！",
+   "sourceSha256": "1be25cef91a875070f96878d423420fd8728c1f6352afb3ca3728af62ba454ea",
+   "duration": 0.89,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-hurt-2",
+   "file": "/assets/audio/survival/voice-oro-hurt-2.m4a",
+   "source": "the fighter's own line vo-oro-hurt-b (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "がぁっ！",
+   "sourceSha256": "8347ed97cbdfb2cb7b5da74e2a255ff01ff322cd6d09b9c4b88a0cdc7e421a58",
+   "duration": 0.865,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-defeat-1",
+   "file": "/assets/audio/survival/voice-oro-defeat-1.m4a",
+   "source": "the fighter's own line vo-oro-ko-a (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "あり得ぬ……この私の、刻がァァ……！",
+   "sourceSha256": "82bc241c89dccb2b8d04e8029de7fbc0d0d0621be011cecbc7fa66a451179277",
+   "duration": 2.59,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-attack-1",
+   "file": "/assets/audio/survival/voice-oro-attack-1.m4a",
+   "source": "the fighter's own line vo-oro-noroma (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "のろまッ！",
+   "sourceSha256": "d88db55e9f75d04a741a72063f79babe9a43f2420a5c5c5255b22f66257b5efb",
+   "duration": 0.61,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-attack-2",
+   "file": "/assets/audio/survival/voice-oro-attack-2.m4a",
+   "source": "the fighter's own line vo-oro-wasted (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "トロいッ！",
+   "sourceSha256": "8518ae5c90dbad70ba0b864ad472c8b4d254cb51556b16847197162e73d2f474",
+   "duration": 0.61,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-attack-3",
+   "file": "/assets/audio/survival/voice-oro-attack-3.m4a",
+   "source": "the fighter's own line vo-oro-ukete (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "跪くがいい！",
+   "sourceSha256": "ad2bc5eab3c6cb5c3ba12164ac1a648a65a842707bd9219fc1a473cbbb6e7bcc",
+   "duration": 1.73,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-move-1",
+   "file": "/assets/audio/survival/voice-oro-move-1.m4a",
+   "source": "the fighter's own line vo-oro-noroma-barrage (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "のろまのろまのろまのろまのろまァッ！",
+   "sourceSha256": "ab51639038f9a3bccd9678df08b673c182c8e88f9b4d0457b27c03b1d2b30f0b",
+   "duration": 2.91,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-oro-move-2",
+   "file": "/assets/audio/survival/voice-oro-move-2.m4a",
+   "source": "the fighter's own line vo-oro-the-hour (oro): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "我が刻だッ！",
+   "sourceSha256": "1a5b4e8c43b9fd913660212188081187cfaa7b2d18b5e881667ab2d792241594",
+   "duration": 1.15,
+   "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-wuming-entrance-1",
+   "file": "/assets/audio/survival/voice-wuming-entrance-1.m4a",
+   "source": "the fighter's own line vo-wuming-bell-a (wuming): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "さあ、草むしりの時間だ。",
+   "sourceSha256": "1b0f0758773f96b5aa9ebce643356d9970cffdad7ee306a53b1a3d1708f55f97",
+   "duration": 1.925,
+   "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-wuming-entrance-2",
+   "file": "/assets/audio/survival/voice-wuming-entrance-2.m4a",
+   "source": "the fighter's own line vo-wuming-bell-b (wuming): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "天の庭に、土足で入るか。",
+   "sourceSha256": "23a43cc0b923985916ff3e0fb5d2ab20f655ef9b8a947182849781396a637277",
+   "duration": 2.29,
+   "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-wuming-rage-1",
+   "file": "/assets/audio/survival/voice-wuming-rage-1.m4a",
+   "source": "the fighter's own line vo-wuming-true-power (wuming): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "見せてあげよう…咲き誇れ、炎の蓮よ。",
+   "sourceSha256": "67ca0e19efcee17c4a14807d0c879ceb28fc88ac582f67998ea6a471a6749a8b",
+   "duration": 2.91,
+   "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-wuming-hurt-1",
+   "file": "/assets/audio/survival/voice-wuming-hurt-1.m4a",
+   "source": "the fighter's own line vo-wuming-hurt-a (wuming): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "っ…！",
+   "sourceSha256": "57a92bd645dbf2c39802ecf4afc198f7f77a188491cc45e0356c7ba39317ec19",
+   "duration": 0.415,
+   "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-wuming-hurt-2",
+   "file": "/assets/audio/survival/voice-wuming-hurt-2.m4a",
+   "source": "the fighter's own line vo-wuming-hurt-b (wuming): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぐぅ…",
+   "sourceSha256": "3b093fa60cb3e2f963e009a16e21025d5a8f2306ef2b66d90015bc8593fe514b",
+   "duration": 0.9,
+   "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-wuming-hurt-3",
+   "file": "/assets/audio/survival/voice-wuming-hurt-3.m4a",
+   "source": "the fighter's own line vo-wuming-hurt-c (wuming): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ちぃっ！",
+   "sourceSha256": "c9ac947c984574200565f5411fee71711a14b28f54a08fd2778d2fa242e92ca2",
+   "duration": 0.51,
+   "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-wuming-defeat-1",
+   "file": "/assets/audio/survival/voice-wuming-defeat-1.m4a",
+   "source": "the fighter's own line vo-wuming-loss-a (wuming): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ありえない…人間ごときに……！",
+   "sourceSha256": "5579db4a47af023e114d35f8d57b762f41c275bd986570e102d46af751f2c595",
+   "duration": 2.32,
+   "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-wuming-attack-1",
+   "file": "/assets/audio/survival/voice-wuming-attack-1.m4a",
+   "source": "the fighter's own line vo-wuming-finish (wuming): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ひれ伏せ。",
+   "sourceSha256": "7138ed7ec9f9cc1acb8e34374c04d0de83b9b5f26b7996a4a7ae1f60e42b488f",
+   "duration": 0.7,
+   "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-wuming-attack-2",
+   "file": "/assets/audio/survival/voice-wuming-attack-2.m4a",
+   "source": "the fighter's own line vo-wuming-kill-a (wuming): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "刈り取った。",
+   "sourceSha256": "94c1c68e7a638ebb49fd7ab7b3a5949d8389c908b5ee356d7501c1d621c46153",
+   "duration": 0.765,
+   "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-wuming-attack-3",
+   "file": "/assets/audio/survival/voice-wuming-attack-3.m4a",
+   "source": "the fighter's own line vo-wuming-effort-a (wuming): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ふっ。",
+   "sourceSha256": "568e5340577f76fd93b293044b8c303afd4cb5e3f29a26b1f7ae49ad4072f156",
+   "duration": 0.62,
+   "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jinlin-entrance-1",
+   "file": "/assets/audio/survival/voice-jinlin-entrance-1.m4a",
+   "source": "the fighter's own line vo-jinlin-bell-a (jinlin): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "一滴ずつ、搾り取ってあげます。",
+   "sourceSha256": "54f6d69da914ca8539a1aae3e93ec4420f75d4f3d6b09ae8fa2b75019a9c2189",
+   "duration": 2.615,
+   "note": "jinlin: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jinlin-rage-1",
+   "file": "/assets/audio/survival/voice-jinlin-rage-1.m4a",
+   "source": "the fighter's own line vo-jinlin-low-a (jinlin): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "…よくも。この私に、泥を…！",
+   "sourceSha256": "66a3d1e63a325a27bbb6b017ff462631f6d23415062a6a787522c4d313efa3c6",
+   "duration": 2.855,
+   "note": "jinlin: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jinlin-hurt-1",
+   "file": "/assets/audio/survival/voice-jinlin-hurt-1.m4a",
+   "source": "the fighter's own line vo-jinlin-hurt-a (jinlin): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ひっ！",
+   "sourceSha256": "cbc7286d7b13a2d1da055b6e4ab3c87cf5538092e25a4cf3714dc084e0badf23",
+   "duration": 0.765,
+   "note": "jinlin: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jinlin-hurt-2",
+   "file": "/assets/audio/survival/voice-jinlin-hurt-2.m4a",
+   "source": "the fighter's own line vo-jinlin-hurt-b (jinlin): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぎっ…！",
+   "sourceSha256": "9d1df7612d67176033ca330d73b3682a76f27195c3dbddeb40b588f404104c2d",
+   "duration": 0.9,
+   "note": "jinlin: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jinlin-hurt-3",
+   "file": "/assets/audio/survival/voice-jinlin-hurt-3.m4a",
+   "source": "the fighter's own line vo-jinlin-hurt-c (jinlin): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぐぬっ！",
+   "sourceSha256": "a66d8f9fe156d31fc9d8063d27fdc2e0b19465fd06ddced3f822a30656df86e6",
+   "duration": 0.9,
+   "note": "jinlin: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jinlin-defeat-1",
+   "file": "/assets/audio/survival/voice-jinlin-defeat-1.m4a",
+   "source": "the fighter's own line vo-jinlin-loss-a (jinlin): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "そんな…この、私が…！？",
+   "sourceSha256": "b19d9b228f5fd90fd8312010b713b846dfd8ff11bbe9541f4225782948e641fd",
+   "duration": 2.925,
+   "note": "jinlin: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jinlin-attack-1",
+   "file": "/assets/audio/survival/voice-jinlin-attack-1.m4a",
+   "source": "the fighter's own line vo-jinlin-die (jinlin): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "目障りです！",
+   "sourceSha256": "7e6d302f5c352b08f16da14c474400edf635fd139be50459ca3c97d59bb60d5c",
+   "duration": 0.925,
+   "note": "jinlin: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jinlin-attack-2",
+   "file": "/assets/audio/survival/voice-jinlin-attack-2.m4a",
+   "source": "the fighter's own line vo-jinlin-vanish (jinlin): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "こちらですよ。",
+   "sourceSha256": "9763a335002ebd3a944913433f7856acdc91ad11bccdf6f9d7687182b9736cd3",
+   "duration": 1.1,
+   "note": "jinlin: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jinlin-attack-3",
+   "file": "/assets/audio/survival/voice-jinlin-attack-3.m4a",
+   "source": "the fighter's own line vo-jinlin-effort-d (jinlin): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ほらっ。",
+   "sourceSha256": "7436e9b0c99b4e74b4fd4170fa2c651d4ac243f1901bcaceecb95210c4f42516",
+   "duration": 0.46,
+   "note": "jinlin: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-vesper-entrance-1",
+   "file": "/assets/audio/survival/voice-vesper-entrance-1.m4a",
+   "source": "the fighter's own line vo-vesper-bell-a (vesper): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "晩鐘が聞こえるかい？……君のための鐘だ。",
+   "sourceSha256": "f9aedc5d24b341243b66722726d6664087f2d01eae20695bbc9db8494f910fd7",
+   "duration": 2.75,
+   "note": "vesper: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-vesper-rage-1",
+   "file": "/assets/audio/survival/voice-vesper-rage-1.m4a",
+   "source": "the fighter's own line vo-vesper-free (vesper): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "鐘が鳴る……黒き晩鐘の刻だ。",
+   "sourceSha256": "a1e7283e3e80581dbfa68561e173489d0d4cc820360b61d4f99e5f0a4e1af1a8",
+   "duration": 2.445,
+   "note": "vesper: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-vesper-hurt-1",
+   "file": "/assets/audio/survival/voice-vesper-hurt-1.m4a",
+   "source": "the fighter's own line vo-vesper-no (vesper): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "っ……翼が……！",
+   "sourceSha256": "e84690997bb8fbe144af5792a340cfc695a8463f977da6082aa95f7a5e2d8872",
+   "duration": 1.17,
+   "note": "vesper: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-vesper-defeat-1",
+   "file": "/assets/audio/survival/voice-vesper-defeat-1.m4a",
+   "source": "the fighter's own line vo-vesper-loss-a (vesper): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……王冠は、まだ……遠い、か……",
+   "sourceSha256": "27844532bd1bad6c72327cac8e001ebf25c57b11567f4a5c4aa784435cd97361",
+   "duration": 2.835,
+   "note": "vesper: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-vesper-attack-1",
+   "file": "/assets/audio/survival/voice-vesper-attack-1.m4a",
+   "source": "the fighter's own line vo-vesper-wont-allow (vesper): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "白き槍よ。",
+   "sourceSha256": "50622938f45520705cee9851fd7184cc9d2df247aecc094896efa62b1fcf2509",
+   "duration": 1.09,
+   "note": "vesper: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-vesper-attack-2",
+   "file": "/assets/audio/survival/voice-vesper-attack-2.m4a",
+   "source": "the fighter's own line vo-vesper-mine (vesper): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "供物となれ。",
+   "sourceSha256": "880a57655bb85dc5610a1fb5fe12c3539d9105a4c116af6fd5a02749528be58a",
+   "duration": 0.94,
+   "note": "vesper: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-vesper-attack-3",
+   "file": "/assets/audio/survival/voice-vesper-attack-3.m4a",
+   "source": "the fighter's own line vo-vesper-effort-c (vesper): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "せっ。",
+   "sourceSha256": "e38c8bbbec7df73c4f53efae0c83620e5c2be1bc6d91b07e83a0ff0def30fa94",
+   "duration": 0.53,
+   "note": "vesper: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jirenga-entrance-1",
+   "file": "/assets/audio/survival/voice-jirenga-entrance-1.m4a",
+   "source": "the fighter's own line vo-jirenga-bell-a (jirenga): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "動かしてみろ。",
+   "sourceSha256": "3b0822dfc7e61f0622503afb16f34edb977465044e1f42d09a8cfe317207ec37",
+   "duration": 1.01,
+   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jirenga-entrance-2",
+   "file": "/assets/audio/survival/voice-jirenga-entrance-2.m4a",
+   "source": "the fighter's own line vo-jirenga-taunt-b (jirenga): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "千年、待った。退屈させるな。",
+   "sourceSha256": "df62a64a4bdb12c8291efad7412296ba838901bf400932ee5843985cd3be0fc6",
+   "duration": 2.37,
+   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jirenga-rage-1",
+   "file": "/assets/audio/survival/voice-jirenga-rage-1.m4a",
+   "source": "the fighter's own line vo-jirenga-low-a (jirenga): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……この俺に、膝をつかせるか。",
+   "sourceSha256": "0fd0a62b2c516a6fb08502d877848f687a794ae2c7b15974b3760bd243f450bb",
+   "duration": 2.73,
+   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jirenga-rage-2",
+   "file": "/assets/audio/survival/voice-jirenga-rage-2.m4a",
+   "source": "the fighter's own line vo-jirenga-come-all (jirenga): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "千年の…怒りだ。",
+   "sourceSha256": "896525bba9c516d44d88f772ea6d760916ac32d79c39fff0fc9706d6b2ce17cb",
+   "duration": 2.48,
+   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jirenga-hurt-1",
+   "file": "/assets/audio/survival/voice-jirenga-hurt-1.m4a",
+   "source": "the fighter's own line vo-jirenga-thrown-a (jirenga): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぬぅおっ……！",
+   "sourceSha256": "f3bdb11c106309270396e3e11e01e97c07f728384d2d6007fee1768ac920cc7b",
+   "duration": 1.21,
+   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jirenga-defeat-1",
+   "file": "/assets/audio/survival/voice-jirenga-defeat-1.m4a",
+   "source": "the fighter's own line vo-jirenga-ko-a (jirenga): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……門が、崩れる、か……",
+   "sourceSha256": "e92fad95dbf75f5cd88f04650fad089bdee36f51727d707a1c1632af556dbc5b",
+   "duration": 2.24,
+   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jirenga-attack-1",
+   "file": "/assets/audio/survival/voice-jirenga-attack-1.m4a",
+   "source": "the fighter's own line vo-jirenga-fall (jirenga): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "沈め。",
+   "sourceSha256": "1d96eb337d2d73db413ac7fc24e30f428ff1eb4d8b1e0fd480b10fc4a59796b7",
+   "duration": 0.95,
+   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jirenga-attack-2",
+   "file": "/assets/audio/survival/voice-jirenga-attack-2.m4a",
+   "source": "the fighter's own line vo-jirenga-finish (jirenga): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "山崩し。",
+   "sourceSha256": "93f22d92470d6a6b5541a3d02825dadf1525ff5d2f95a01105a9e24ca18ddeb1",
+   "duration": 0.955,
+   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-jirenga-attack-3",
+   "file": "/assets/audio/survival/voice-jirenga-attack-3.m4a",
+   "source": "the fighter's own line vo-jirenga-effort-a (jirenga): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "むんっ。",
+   "sourceSha256": "899f28c62195b96db45dbafa600a90a0b54866e0886546575e6c820cfb3376b5",
+   "duration": 0.455,
+   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-entrance-1",
+   "file": "/assets/audio/survival/voice-gorai-entrance-1.m4a",
+   "source": "the fighter's own line vo-gorai-bell-a (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ヒック……さあ、嵐の時間だ。",
+   "sourceSha256": "769b5027bad245ff02c80b58528d5f6863b20ea42b9d0fac30ee86e1958939fd",
+   "duration": 2.495,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-entrance-2",
+   "file": "/assets/audio/survival/voice-gorai-entrance-2.m4a",
+   "source": "the fighter's own line vo-gorai-taunt-a (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ヒック……で？ 誰から沈む？",
+   "sourceSha256": "5a698fce1278423e846ec18a7292efd7165dae8923dde8399002b076ee1aa723",
+   "duration": 2.15,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-rage-1",
+   "file": "/assets/audio/survival/voice-gorai-rage-1.m4a",
+   "source": "the fighter's own line vo-gorai-laugh (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ゴッハッハッハッハァ！",
+   "sourceSha256": "1ad40b0cc2b2f6811d799d799891556f02b3e45f7d28acc359c411ddbf7a74b2",
+   "duration": 2.795,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-rage-2",
+   "file": "/assets/audio/survival/voice-gorai-rage-2.m4a",
+   "source": "the fighter's own line vo-gorai-low-a (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ゴハ……いいぞ……もっと痛くしてみろォ！",
+   "sourceSha256": "eea29eb18f5d9ae6332ed232e814b5643d0a9266799c45d054059a881d190379",
+   "duration": 3.29,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-hurt-1",
+   "file": "/assets/audio/survival/voice-gorai-hurt-1.m4a",
+   "source": "the fighter's own line vo-gorai-hurt-a (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぬぐっ！",
+   "sourceSha256": "206be4e7ab1b4f7413291619a0b8658576465e3a29ed8c6f2d1cd87d979e47ea",
+   "duration": 0.73,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-hurt-2",
+   "file": "/assets/audio/survival/voice-gorai-hurt-2.m4a",
+   "source": "the fighter's own line vo-gorai-hurt-b (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ごふっ！",
+   "sourceSha256": "d40ead221b9b112988a60257f575a46b1b87092ebd544a26cd3ebbc9831ffe8a",
+   "duration": 0.74,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-hurt-3",
+   "file": "/assets/audio/survival/voice-gorai-hurt-3.m4a",
+   "source": "the fighter's own line vo-gorai-hurt-c (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "うおっ！",
+   "sourceSha256": "0e074754dbead314db06552344f07f48990682d0e910520cfc03ef076ee25d8a",
+   "duration": 0.635,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-defeat-1",
+   "file": "/assets/audio/survival/voice-gorai-defeat-1.m4a",
+   "source": "the fighter's own line vo-gorai-ko-a (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ゴハ……ハ……いい嵐、だったぞ……",
+   "sourceSha256": "fc1627706305c9511501963604695b39543262fbdd3774488a6482973deb903c",
+   "duration": 2.591,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-attack-1",
+   "file": "/assets/audio/survival/voice-gorai-attack-1.m4a",
+   "source": "the fighter's own line vo-gorai-vanish (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ゴハッ……吹っ飛べェッ！",
+   "sourceSha256": "d952ba88ffab5b9d2805fc90420298fdf2ca8871c0011b3252e9c85811f85a33",
+   "duration": 2.26,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-attack-2",
+   "file": "/assets/audio/survival/voice-gorai-attack-2.m4a",
+   "source": "the fighter's own line vo-gorai-effort-a (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぬうんっ！",
+   "sourceSha256": "4236d82db0d9b47665e83e1633508a5e57edffc5d28fc6eb81e0086af543d763",
+   "duration": 0.61,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gorai-attack-3",
+   "file": "/assets/audio/survival/voice-gorai-attack-3.m4a",
+   "source": "the fighter's own line vo-gorai-effort-b (gorai): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "がぁっ！",
+   "sourceSha256": "1511282b10b91752e06924751d9e9f7616e05c55c82c3fd52effac6045878e22",
+   "duration": 0.61,
+   "note": "gorai: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-akagane-entrance-1",
+   "file": "/assets/audio/survival/voice-akagane-entrance-1.m4a",
+   "source": "the fighter's own line vo-akagane-bell-a (akagane): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "久しいな…この血の匂い。",
+   "sourceSha256": "2305a5f0ead5bdba0a0f817c9e4f3333b646b66dce522fe6a82792e5ce0e8e9a",
+   "duration": 2.19,
+   "note": "akagane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-akagane-entrance-2",
+   "file": "/assets/audio/survival/voice-akagane-entrance-2.m4a",
+   "source": "the fighter's own line vo-akagane-taunt-a (akagane): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "天を仰ぐ覚悟は、あるか。",
+   "sourceSha256": "501253af2795ed10ba9c51dcb0225e936715439484ac2f0c479595f55676b078",
+   "duration": 2.61,
+   "note": "akagane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-akagane-rage-1",
+   "file": "/assets/audio/survival/voice-akagane-rage-1.m4a",
+   "source": "the fighter's own line vo-akagane-end-this (akagane): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "目覚めよ、憤怒の王！",
+   "sourceSha256": "d400984b9e08b5a1b1a92dc3d2fc9e15126c297e8cd0dc16773170ebac0ec74f",
+   "duration": 1.9,
+   "note": "akagane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-akagane-hurt-1",
+   "file": "/assets/audio/survival/voice-akagane-hurt-1.m4a",
+   "source": "the fighter's own line vo-akagane-effort-c (akagane): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぬっ！",
+   "sourceSha256": "27d56b5c23a576c44debf1643449831ca706e79bef462bcde9dad19435791e8d",
+   "duration": 0.46,
+   "note": "akagane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-akagane-defeat-1",
+   "file": "/assets/audio/survival/voice-akagane-defeat-1.m4a",
+   "source": "the fighter's own line vo-akagane-ko-a (akagane): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "地に還るは……我の方、か……",
+   "sourceSha256": "0b12cfcd0c0a2591443f877f3771374c1c989fd3e15b35935ef41e9faa313863",
+   "duration": 2.59,
+   "note": "akagane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-akagane-attack-1",
+   "file": "/assets/audio/survival/voice-akagane-attack-1.m4a",
+   "source": "the fighter's own line vo-akagane-shatter (akagane): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "地に還れ！",
+   "sourceSha256": "64e216bdaba509caaa94f91b33d6212d0ad4cf3fdc629fd14ce904cd8f61d020",
+   "duration": 1.0,
+   "note": "akagane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-akagane-attack-2",
+   "file": "/assets/audio/survival/voice-akagane-attack-2.m4a",
+   "source": "the fighter's own line vo-akagane-its-over (akagane): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ここで果てよ！",
+   "sourceSha256": "39864fa9deab06b35072d19c15a6cccd107caf09df3f5731c4a3ca65af3cfb32",
+   "duration": 1.27,
+   "note": "akagane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-akagane-attack-3",
+   "file": "/assets/audio/survival/voice-akagane-attack-3.m4a",
+   "source": "the fighter's own line vo-akagane-effort-d (akagane): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "せやっ！",
+   "sourceSha256": "c7230418e65199b15530d5109ae611e745f6cc713ca59fa2f02370eb8f1574af",
+   "duration": 0.59,
+   "note": "akagane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-imago-entrance-1",
+   "file": "/assets/audio/survival/voice-imago-entrance-1.m4a",
+   "source": "the fighter's own line vo-imago-bell-a (imago): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "盤に、着け。",
+   "sourceSha256": "e70a18d1089be4e1c25a193b9758eaee39c1de022c50ba489b2df5077e96d74d",
+   "duration": 1.085,
+   "note": "imago: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-imago-entrance-2",
+   "file": "/assets/audio/survival/voice-imago-entrance-2.m4a",
+   "source": "the fighter's own line vo-imago-bell-b (imago): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "始めよ。",
+   "sourceSha256": "2dcd0451181d99b36e02f8c674f9e64b604368dc1b0265d3b853946c199ac016",
+   "duration": 0.58,
+   "note": "imago: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-imago-rage-1",
+   "file": "/assets/audio/survival/voice-imago-rage-1.m4a",
+   "source": "the fighter's own line vo-imago-power (imago): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "羽化の時だ……群れよ、王を仰げ。",
+   "sourceSha256": "0246285c9a5e8412deba4fd9642ba68e0c6fcedbff3a9662f7ded2fe995bb5ec",
+   "duration": 2.82,
+   "note": "imago: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-imago-hurt-1",
+   "file": "/assets/audio/survival/voice-imago-hurt-1.m4a",
+   "source": "the fighter's own line vo-imago-hurt-a (imago): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぬ…！",
+   "sourceSha256": "a0da5f25a0c84f463fecfa2358b23c14612f20469550f566baceccc2bd642956",
+   "duration": 0.89,
+   "note": "imago: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-imago-hurt-2",
+   "file": "/assets/audio/survival/voice-imago-hurt-2.m4a",
+   "source": "the fighter's own line vo-imago-hurt-b (imago): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "っ…",
+   "sourceSha256": "ee5331d74166302b9dad7201d76499b7acafca663ea3d1872e130007f04dc886",
+   "duration": 0.855,
+   "note": "imago: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-imago-hurt-3",
+   "file": "/assets/audio/survival/voice-imago-hurt-3.m4a",
+   "source": "the fighter's own line vo-imago-hurt-c (imago): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "がっ…！",
+   "sourceSha256": "8b4d3dbc94c9176d05770831deef9dafa993398108f834e4e5b880cf1fe11151",
+   "duration": 0.89,
+   "note": "imago: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-imago-defeat-1",
+   "file": "/assets/audio/survival/voice-imago-defeat-1.m4a",
+   "source": "the fighter's own line vo-imago-loss-a (imago): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……盤を、覆されたか。……次は、学んでおこう。",
+   "sourceSha256": "7ff92aafd7a720faf66a6b5252dc602caf0216c1d17e3b8c7ecf0a021c005afd",
+   "duration": 3.51,
+   "note": "imago: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-imago-attack-1",
+   "file": "/assets/audio/survival/voice-imago-attack-1.m4a",
+   "source": "the fighter's own line vo-imago-prepare (imago): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "刺し貫け。",
+   "sourceSha256": "8e62e9d0388c7db166f90e1f9eeb9761ce9180e5d52dedefa82be83875ff3412",
+   "duration": 1.04,
+   "note": "imago: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-imago-attack-2",
+   "file": "/assets/audio/survival/voice-imago-attack-2.m4a",
+   "source": "the fighter's own line vo-imago-finish (imago): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "最後の脱皮だ。",
+   "sourceSha256": "be320ff20c3ab7d74ad3e118c628e250c4d9a6eb6cb9a8393026e0e66ff0ba8c",
+   "duration": 1.47,
+   "note": "imago: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-imago-attack-3",
+   "file": "/assets/audio/survival/voice-imago-attack-3.m4a",
+   "source": "the fighter's own line vo-imago-vanish (imago): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "群れよ、弾けろ。",
+   "sourceSha256": "5c5c30f19ab500cf917935b5a2349c0b5f69a09de024e3ba858cb997b66fa98d",
+   "duration": 1.29,
+   "note": "imago: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-magatsu-entrance-1",
+   "file": "/assets/audio/survival/voice-magatsu-entrance-1.m4a",
+   "source": "the fighter's own line vo-magatsu-bell-a (magatsu): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "腹が減った。……前菜は、お前か？",
+   "sourceSha256": "6fb9d28f4c563408e6dd808bb5819ef8fd0dcca017fecafdfabacec6878e6724",
+   "duration": 2.435,
+   "note": "magatsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-magatsu-entrance-2",
+   "file": "/assets/audio/survival/voice-magatsu-entrance-2.m4a",
+   "source": "the fighter's own line vo-magatsu-taunt-a (magatsu): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "震えて待て。……次の皿は、お前だ。",
+   "sourceSha256": "a35e6cc122b6d5007da9933cbbbacb8b9208c9069d0c54a1f87a35a6c9824d44",
+   "duration": 3.13,
+   "note": "magatsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-magatsu-rage-1",
+   "file": "/assets/audio/survival/voice-magatsu-rage-1.m4a",
+   "source": "the fighter's own line vo-magatsu-fun (magatsu): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "クハハ……災厄の王だ！",
+   "sourceSha256": "7943e247b94fdc9bbd6e97c08ffb3fa562c5b383caa1e2547df5e502bff91daa",
+   "duration": 2.87,
+   "note": "magatsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-magatsu-hurt-1",
+   "file": "/assets/audio/survival/voice-magatsu-hurt-1.m4a",
+   "source": "the fighter's own line vo-magatsu-tch (magatsu): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "羽虫が。",
+   "sourceSha256": "d24f5479c2fe893223caf99014ba63f5f5f230f805fe012320dfb789aa952d1d",
+   "duration": 1.25,
+   "note": "magatsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-magatsu-defeat-1",
+   "file": "/assets/audio/survival/voice-magatsu-defeat-1.m4a",
+   "source": "the fighter's own line vo-magatsu-ko-a (magatsu): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "俺が……喰われる……だと……？",
+   "sourceSha256": "b17a20c31c48ead7578d56af2775f4366833ebb894c4fe8e3ec8ceeb29d20329",
+   "duration": 2.115,
+   "note": "magatsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-magatsu-attack-1",
+   "file": "/assets/audio/survival/voice-magatsu-attack-1.m4a",
+   "source": "the fighter's own line vo-magatsu-kai (magatsu): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "千裂き！",
+   "sourceSha256": "24431693e5f71911790e9dde5c69ebeab2484d77610e6091227881903a86150d",
+   "duration": 1.01,
+   "note": "magatsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-magatsu-attack-2",
+   "file": "/assets/audio/survival/voice-magatsu-attack-2.m4a",
+   "source": "the fighter's own line vo-magatsu-hachi (magatsu): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "噛み砕いてやる！",
+   "sourceSha256": "8be8e0ab8507bc29aa08b60893f78baad812ee523187b180aaea90e728885e57",
+   "duration": 1.185,
+   "note": "magatsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-magatsu-attack-3",
+   "file": "/assets/audio/survival/voice-magatsu-attack-3.m4a",
+   "source": "the fighter's own line vo-magatsu-calamity-pyre (magatsu): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "潰れろ！",
+   "sourceSha256": "892eb6150da72cf7067d02c3848648becdc4c98e22fb4808be02b786b6cf1536",
+   "duration": 0.78,
+   "note": "magatsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-haldor-entrance-1",
+   "file": "/assets/audio/survival/voice-haldor-entrance-1.m4a",
+   "source": "the fighter's own line vo-haldor-bell-a (haldor): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "来い、小童ども。この老骨が相手だ。",
+   "sourceSha256": "7ec35284f251576808fca8f39d19c643ca383f1b8c5fd3702386c0054fed220e",
+   "duration": 3.386,
+   "note": "haldor: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-haldor-rage-1",
+   "file": "/assets/audio/survival/voice-haldor-rage-1.m4a",
+   "source": "the fighter's own line vo-haldor-laugh (haldor): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ムッハッハッハッハ！",
+   "sourceSha256": "cac529962e8b356865752dd03de2092b8bdcf4b227d576f14fdba7fcd2d5c74d",
+   "duration": 1.89,
+   "note": "haldor: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-haldor-rage-2",
+   "file": "/assets/audio/survival/voice-haldor-rage-2.m4a",
+   "source": "the fighter's own line vo-haldor-low-a (haldor): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "この拳……まだ海の底まで、届くぞ。",
+   "sourceSha256": "995158daf0375858f2dc32d01f65734b9ce991102a43b8bd7b6c10b09cbadfc7",
+   "duration": 3.29,
+   "note": "haldor: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-haldor-hurt-1",
+   "file": "/assets/audio/survival/voice-haldor-hurt-1.m4a",
+   "source": "the fighter's own line vo-haldor-gu (haldor): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぐむっ……！",
+   "sourceSha256": "016a6a725786a82dcac1ff6791d032fcdb118c60e358a6a941d5255cc48ff5e4",
+   "duration": 0.61,
+   "note": "haldor: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-haldor-defeat-1",
+   "file": "/assets/audio/survival/voice-haldor-defeat-1.m4a",
+   "source": "the fighter's own line vo-haldor-loss-a (haldor): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……ふっ。歳には、勝てんか。",
+   "sourceSha256": "6339010632ca01fceab17b246f69478355a6544000b63c4bff74f8f88a975f91",
+   "duration": 2.687,
+   "note": "haldor: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-haldor-attack-1",
+   "file": "/assets/audio/survival/voice-haldor-attack-1.m4a",
+   "source": "the fighter's own line vo-haldor-effort-a (haldor): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ふんっ！",
+   "sourceSha256": "85133f4266f8a8a76ebbd7bb008a8364cdf388b2907372e382b65a11a3c2c938",
+   "duration": 0.445,
+   "note": "haldor: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-haldor-attack-2",
+   "file": "/assets/audio/survival/voice-haldor-attack-2.m4a",
+   "source": "the fighter's own line vo-haldor-effort-b (haldor): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぬおっ！",
+   "sourceSha256": "beac20bd819202e85d17d58a33cba62c1a3177485b734d9dc77d2223c2a51e44",
+   "duration": 0.605,
+   "note": "haldor: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-haldor-attack-3",
+   "file": "/assets/audio/survival/voice-haldor-attack-3.m4a",
+   "source": "the fighter's own line vo-haldor-effort-c (haldor): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "どりゃっ！",
+   "sourceSha256": "3ffd4ef6cfb1015ddd02d8edaa4edf41d1ccacab3b76aa6014a2c681f859ee27",
+   "duration": 0.55,
+   "note": "haldor: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-entrance-1",
+   "file": "/assets/audio/survival/voice-nightfall-entrance-1.m4a",
+   "source": "the fighter's own line vo-nigo-taunt-a (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……本気で来い。退屈だ。",
+   "sourceSha256": "8753c9dc525ac001e48e1d0a1d308af7228cf3a6db93686d83cef9cf46034c45",
+   "duration": 1.845,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-entrance-2",
+   "file": "/assets/audio/survival/voice-nightfall-entrance-2.m4a",
+   "source": "the fighter's own line vo-nigo-bell-b (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "来いよ。……灰ごと、叩き斬る。",
+   "sourceSha256": "d915a484878a9f8ec16123c86c787dbc1c54e24ed53d5d65e00ebafb3a427bce",
+   "duration": 2.035,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-rage-1",
+   "file": "/assets/audio/survival/voice-nightfall-rage-1.m4a",
+   "source": "the fighter's own line vo-nigo-unsealed (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ナイト……フォール！",
+   "sourceSha256": "2a47b3691c2f348e64f3cd70aabd597178199b4883df283f3dafb82cccf76d7d",
+   "duration": 1.115,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-rage-2",
+   "file": "/assets/audio/survival/voice-nightfall-rage-2.m4a",
+   "source": "the fighter's own line nigo-nightfall (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……最後の一太刀だ。",
+   "sourceSha256": "0f6d6cbd6f46c64a3cb99136ca10941dafbe94616e7954bea4818ad4fac6f2a2",
+   "duration": 1.19,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-hurt-1",
+   "file": "/assets/audio/survival/voice-nightfall-hurt-1.m4a",
+   "source": "the fighter's own line vo-nigo-hurt-a (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ちぃっ！",
+   "sourceSha256": "e46874186e8e3c6d4afd260290b25f7c1b1e0d9367109f2de8988e048a8648c3",
+   "duration": 0.62,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-hurt-2",
+   "file": "/assets/audio/survival/voice-nightfall-hurt-2.m4a",
+   "source": "the fighter's own line vo-nigo-hurt-b (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぐぅっ！",
+   "sourceSha256": "653ca80995cc8700e7728a5550aa5628fff2fac6e3dac2190b3514f3516a57ea",
+   "duration": 0.685,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-hurt-3",
+   "file": "/assets/audio/survival/voice-nightfall-hurt-3.m4a",
+   "source": "the fighter's own line vo-nigo-hurt-c (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "がはっ！",
+   "sourceSha256": "e1c19f5cf3df84b9aa4122cf114a6184673ead8aea8ab3eb4ae631b22922a359",
+   "duration": 0.515,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-defeat-1",
+   "file": "/assets/audio/survival/voice-nightfall-defeat-1.m4a",
+   "source": "the fighter's own line vo-nigo-ko-a (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……灰が……冷てえ……",
+   "sourceSha256": "975b712decd995aa6285c68138a65d5b85513733c4ea814ad8f8598d2f129d52",
+   "duration": 2.12,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-attack-1",
+   "file": "/assets/audio/survival/voice-nightfall-attack-1.m4a",
+   "source": "the fighter's own line vo-nigo-da (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "だぁっ！",
+   "sourceSha256": "6a688ea7f9906482363754634aa9901ad297831588566d9b9d15ccbdf2506912",
+   "duration": 0.61,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-attack-2",
+   "file": "/assets/audio/survival/voice-nightfall-attack-2.m4a",
+   "source": "the fighter's own line vo-nigo-ha (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "はぁっ！",
+   "sourceSha256": "a5fb2edcee609f852a5bedd73e5af6cd78ef2feabe5a7a9dd593b9d81adc38d9",
+   "duration": 0.46,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nightfall-attack-3",
+   "file": "/assets/audio/survival/voice-nightfall-attack-3.m4a",
+   "source": "the fighter's own line vo-nigo-kill-b (nigo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "……成仏しろ。",
+   "sourceSha256": "7c9a04fa4ff1547e2cfc4e39d471ab6b7087844b8bbe7d77b49edcf32e517c55",
+   "duration": 0.77,
+   "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rakshasa-entrance-1",
+   "file": "/assets/audio/survival/voice-rakshasa-entrance-1.m4a",
+   "source": "the fighter's own line vo-kenzo-bell-b (kenzo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "どっちが前だ？……まあいい、斬る。",
+   "sourceSha256": "a8eaf6c9cab385595870c86a2d8cb332c0ff58e34140e2332fbe94365c2e5eaf",
+   "duration": 1.865,
+   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rakshasa-rage-1",
+   "file": "/assets/audio/survival/voice-rakshasa-rage-1.m4a",
+   "source": "the fighter's own line vo-kenzo-rakshasa (kenzo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "鬼面……羅刹ッ！",
+   "sourceSha256": "50dd6813115a64a28b046e4d100f74626f63e21f458609135bf1c389e88973fc",
+   "duration": 2.51,
+   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rakshasa-rage-2",
+   "file": "/assets/audio/survival/voice-rakshasa-rage-2.m4a",
+   "source": "the fighter's own line vo-kenzo-low-a (kenzo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "面白え……血が騒ぐ。",
+   "sourceSha256": "0c4a702cb691633de1a69282969bf27e81043af8ae11bcf4b319af23b4f6c8e7",
+   "duration": 2.065,
+   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rakshasa-hurt-1",
+   "file": "/assets/audio/survival/voice-rakshasa-hurt-1.m4a",
+   "source": "the fighter's own line vo-kenzo-hurt-a (kenzo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぬぐっ！",
+   "sourceSha256": "931a6a0488f52a6b3d2eaa07ef85a9de0c5ace98cd9fa46eb989e9786f771d9b",
+   "duration": 0.75,
+   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rakshasa-hurt-2",
+   "file": "/assets/audio/survival/voice-rakshasa-hurt-2.m4a",
+   "source": "the fighter's own line vo-kenzo-hurt-b (kenzo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ちぃっ！",
+   "sourceSha256": "ec0f5221c9bb9e04b66c6f1c6bd2cbd11f5436bfac596e9a9f7d9d386884812f",
+   "duration": 0.81,
+   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rakshasa-hurt-3",
+   "file": "/assets/audio/survival/voice-rakshasa-hurt-3.m4a",
+   "source": "the fighter's own line vo-kenzo-hurt-c (kenzo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "がはっ！",
+   "sourceSha256": "2982aa400884f6dc0555a2895072eb01bbb0e021e756faab3bb0114c9b30519b",
+   "duration": 0.67,
+   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rakshasa-defeat-1",
+   "file": "/assets/audio/survival/voice-rakshasa-defeat-1.m4a",
+   "source": "the fighter's own line vo-kenzo-ko-a (kenzo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ぐ……面が……割れ……",
+   "sourceSha256": "bcbff86a7cf64823a3a4051e2671e6f3b9a06f8375654206b7129465183b97a7",
+   "duration": 2.33,
+   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rakshasa-attack-1",
+   "file": "/assets/audio/survival/voice-rakshasa-attack-1.m4a",
+   "source": "the fighter's own line vo-kenzo-ura (kenzo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "うらぁっ！",
+   "sourceSha256": "b60f431b1a72b007bc76b698e552103fdee0c3535afa9e39db09d0ca4a84c7ca",
+   "duration": 0.61,
+   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rakshasa-attack-2",
+   "file": "/assets/audio/survival/voice-rakshasa-attack-2.m4a",
+   "source": "the fighter's own line vo-kenzo-fun (kenzo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "ふんっ！",
+   "sourceSha256": "73b14b261488562cf7e6f2b57de0dafeb262a2934984974921541d55c6b8a798",
+   "duration": 0.35,
+   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rakshasa-attack-3",
+   "file": "/assets/audio/survival/voice-rakshasa-attack-3.m4a",
+   "source": "the fighter's own line vo-kenzo-kill-a (kenzo): Eleven v4 stock preset via Higgsfield",
+   "license": "Original (made for the game)",
+   "text": "峰打ちじゃねえぞ。",
+   "sourceSha256": "4f2b36459470b52857e68945435998b84bb1e98d6442de3fa654fc8fd0d36abe",
+   "duration": 1.25,
+   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-takane-entrance-1",
+   "file": "/assets/audio/survival/voice-takane-entrance-1.m4a",
+   "source": "the boss's own line rift-takane-entrance-a (Takane, Eleven v4 stock preset Vera via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "花嫁の踊りを、見ていきなさい。……最後の一曲よ。",
+   "sourceSha256": "ff598fb33a605711468bc12f4a831217bc2ae13d4555969d170070ea9d0d1a59",
+   "duration": 3.27,
+   "note": "takane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-takane-rage-1",
+   "file": "/assets/audio/survival/voice-takane-rage-1.m4a",
+   "source": "the boss's own line rift-takane-rage-a (Takane, Eleven v4 stock preset Vera via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "ヴェールを上げるわ。……誰も、生きては帰さない。",
+   "sourceSha256": "2d492f690930ec92214f76eb10e84ae8e3e7a3300ce7a465958fe9ab5655858d",
+   "duration": 3.18,
+   "note": "takane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-takane-defeat-1",
+   "file": "/assets/audio/survival/voice-takane-defeat-1.m4a",
+   "source": "the boss's own line rift-takane-defeat-a (Takane, Eleven v4 stock preset Vera via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "誓いが……ほどけて……",
+   "sourceSha256": "0b6c3c8ea8cf110b624013611392f8f298f7c4fe87735e1464a5296006292ba2",
+   "duration": 1.73,
+   "note": "takane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-takane-hurt-1",
+   "file": "/assets/audio/survival/voice-takane-hurt-1.m4a",
+   "source": "the boss's own line rift-takane-hurt-a (Takane, Eleven v4 stock preset Vera via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "っ……！",
+   "sourceSha256": "9d2cdf8e3e62527f1d0d82172bc98103f236438358667ef130bc7b95cd286107",
+   "duration": 0.64,
+   "note": "takane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-takane-attack-1",
+   "file": "/assets/audio/survival/voice-takane-attack-1.m4a",
+   "source": "the boss's own line rift-takane-attack-a (Takane, Eleven v4 stock preset Vera via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "踊って！",
+   "sourceSha256": "847d4625bab43bb9b2831826acce30013722f16032637e2891605e50b207f93b",
+   "duration": 0.71,
+   "note": "takane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-takane-attack-2",
+   "file": "/assets/audio/survival/voice-takane-attack-2.m4a",
+   "source": "the boss's own line rift-takane-attack-b (Takane, Eleven v4 stock preset Vera via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "刃の雨よ。",
+   "sourceSha256": "b6798f5813dd3d7e2749033a9bf6a3cecde93d12f13175e53ec590898b17e20c",
+   "duration": 1.08,
+   "note": "takane: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-harrow-entrance-1",
+   "file": "/assets/audio/survival/voice-harrow-entrance-1.m4a",
+   "source": "the boss's own line rift-harrow-entrance-a (Harrow, Eleven v4 stock preset Luc via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "墓守の祈りは、拳で捧げる。……来い、迷い犬。",
+   "sourceSha256": "84be15ac02f8a4670cf4d3974f16e613db22ead3085ecef48f14aec66b323b7a",
+   "duration": 3.85,
+   "note": "harrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-harrow-rage-1",
+   "file": "/assets/audio/survival/voice-harrow-rage-1.m4a",
+   "source": "the boss's own line rift-harrow-rage-a (Harrow, Eleven v4 stock preset Luc via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "骨の冠が、吠えている……！",
+   "sourceSha256": "819609e1e67b2c01c1cf2e6f9eba966f57bbde4c6cfd04727c979be55e62c4c9",
+   "duration": 2.14,
+   "note": "harrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-harrow-defeat-1",
+   "file": "/assets/audio/survival/voice-harrow-defeat-1.m4a",
+   "source": "the boss's own line rift-harrow-defeat-a (Harrow, Eleven v4 stock preset Luc via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "土に……還るか……",
+   "sourceSha256": "2acf6dc0c8950fc1d21b29c88b1048dadc506a94f3c4a45d9368845eaeef1ecc",
+   "duration": 1.71,
+   "note": "harrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-harrow-hurt-1",
+   "file": "/assets/audio/survival/voice-harrow-hurt-1.m4a",
+   "source": "the boss's own line rift-harrow-hurt-a (Harrow, Eleven v4 stock preset Luc via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "ぬぅっ！",
+   "sourceSha256": "7a4f9c1798a82e4f1922f32dedf11b87229284d6c992236b18d347216f4cbf9d",
+   "duration": 0.725,
+   "note": "harrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-harrow-attack-1",
+   "file": "/assets/audio/survival/voice-harrow-attack-1.m4a",
+   "source": "the boss's own line rift-harrow-attack-a (Harrow, Eleven v4 stock preset Luc via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "ふんっ！",
+   "sourceSha256": "526a07ce5d3119df6ee60e12a059599d8f6b896e05ea455402d961625bffaaca",
+   "duration": 0.98,
+   "note": "harrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-harrow-attack-2",
+   "file": "/assets/audio/survival/voice-harrow-attack-2.m4a",
+   "source": "the boss's own line rift-harrow-attack-b (Harrow, Eleven v4 stock preset Luc via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "鎮まれ！",
+   "sourceSha256": "73003110dab65d12273eab0083333e341361fd35eea97889a85cdeef4af06d14",
+   "duration": 0.82,
+   "note": "harrow: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kanuki-entrance-1",
+   "file": "/assets/audio/survival/voice-kanuki-entrance-1.m4a",
+   "source": "the boss's own line rift-kanuki-entrance-a (Kanuki, Eleven v4 stock preset Bob via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "ここは通さない。……扉は、私が閉じる。",
+   "sourceSha256": "c4a718f09637ca0846f5791cc67b45fc83badcf5963d3bf775aedfcc81e7d213",
+   "duration": 3.26,
+   "note": "kanuki: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kanuki-rage-1",
+   "file": "/assets/audio/survival/voice-kanuki-rage-1.m4a",
+   "source": "the boss's own line rift-kanuki-rage-a (Kanuki, Eleven v4 stock preset Bob via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "……少々、長引きすぎたな。",
+   "sourceSha256": "e9951cafec3e7d1e56f95e6f73cfeeeb811f670aa27e821329fb810936fa2044",
+   "duration": 2.24,
+   "note": "kanuki: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kanuki-defeat-1",
+   "file": "/assets/audio/survival/voice-kanuki-defeat-1.m4a",
+   "source": "the boss's own line rift-kanuki-defeat-a (Kanuki, Eleven v4 stock preset Bob via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "馬鹿な……扉が……開かない……",
+   "sourceSha256": "8298b2e4b22da51e4b1f449ae7ebb01c23040e01c98e29bfaf936da46a836714",
+   "duration": 2.475,
+   "note": "kanuki: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kanuki-hurt-1",
+   "file": "/assets/audio/survival/voice-kanuki-hurt-1.m4a",
+   "source": "the boss's own line rift-kanuki-hurt-a (Kanuki, Eleven v4 stock preset Bob via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "むっ……！",
+   "sourceSha256": "1e2c4979461685bca0cf9cd202db249edb96110e031c05313da783336140fcd3",
+   "duration": 0.68,
+   "note": "kanuki: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kanuki-attack-1",
+   "file": "/assets/audio/survival/voice-kanuki-attack-1.m4a",
+   "source": "the boss's own line rift-kanuki-attack-a (Kanuki, Eleven v4 stock preset Bob via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "閉じろ。",
+   "sourceSha256": "45f7452853588034ad22d64634c6b78952f2378d053ecaa0bedf9cf9f9aede90",
+   "duration": 0.47,
+   "note": "kanuki: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kanuki-attack-2",
+   "file": "/assets/audio/survival/voice-kanuki-attack-2.m4a",
+   "source": "the boss's own line rift-kanuki-attack-b (Kanuki, Eleven v4 stock preset Bob via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "無駄だ。",
+   "sourceSha256": "dbde53369d4f15cd33d0bbd1011da1a7d73deeb82a375b71325115313e0fa960",
+   "duration": 0.69,
+   "note": "kanuki: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gantry-entrance-1",
+   "file": "/assets/audio/survival/voice-gantry-entrance-1.m4a",
+   "source": "the boss's own line rift-gantry-entrance-a (Gantry, Eleven v4 stock preset Miles via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "止まれ止まれ！ ここから先は、一歩も通さねえ！",
+   "sourceSha256": "a4d20f004d5bf52d46be184fc9ea0ca5519cc52dc7299038b8f98f3a2d5fceee",
+   "duration": 3.33,
+   "note": "gantry: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gantry-rage-1",
+   "file": "/assets/audio/survival/voice-gantry-rage-1.m4a",
+   "source": "the boss's own line rift-gantry-rage-a (Gantry, Eleven v4 stock preset Miles via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "鉄の兵ども、起きろォ！ 全員で、叩き潰せ！",
+   "sourceSha256": "087e6c73cf09cbd973d1b19c8db5d152e2c441130a45160646ae5064250aba81",
+   "duration": 3.62,
+   "note": "gantry: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gantry-defeat-1",
+   "file": "/assets/audio/survival/voice-gantry-defeat-1.m4a",
+   "source": "the boss's own line rift-gantry-defeat-a (Gantry, Eleven v4 stock preset Miles via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "くそっ……持ち場を……離れちまった……",
+   "sourceSha256": "2aadfc11c76a29fff679ed70dfbb6c8479c308c76b15dc1df8e2703829812a16",
+   "duration": 2.665,
+   "note": "gantry: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gantry-hurt-1",
+   "file": "/assets/audio/survival/voice-gantry-hurt-1.m4a",
+   "source": "the boss's own line rift-gantry-hurt-a (Gantry, Eleven v4 stock preset Miles via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "ぐはっ！",
+   "sourceSha256": "e4d27381435d844626e0f2da4699f092bda95bc749206594b83f20c7713876c0",
+   "duration": 0.645,
+   "note": "gantry: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gantry-attack-1",
+   "file": "/assets/audio/survival/voice-gantry-attack-1.m4a",
+   "source": "the boss's own line rift-gantry-attack-a (Gantry, Eleven v4 stock preset Miles via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "おりゃああっ！",
+   "sourceSha256": "0e5e88a6909e56f2cb22a833c0101907506366c8ad972477e3a7a8a9205d2fa8",
+   "duration": 1.03,
+   "note": "gantry: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-gantry-attack-2",
+   "file": "/assets/audio/survival/voice-gantry-attack-2.m4a",
+   "source": "the boss's own line rift-gantry-attack-b (Gantry, Eleven v4 stock preset Miles via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "通さねえ！",
+   "sourceSha256": "1d13807b93270098a44b95129a59f1bb5b001bf833c773074c00551f13e685aa",
+   "duration": 0.935,
+   "note": "gantry: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-zarek-entrance-1",
+   "file": "/assets/audio/survival/voice-zarek-entrance-1.m4a",
+   "source": "the boss's own line rift-zarek-entrance-a (Zarek, Eleven v4 stock preset Landon via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "ハッ！ 獲物のほうから来やがった。……狩りの時間だ！",
+   "sourceSha256": "d8dfbb51305a770000e45882bba69a553482197f95802fafff7f6048eac70d7d",
+   "duration": 3.13,
+   "note": "zarek: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-zarek-rage-1",
+   "file": "/assets/audio/survival/voice-zarek-rage-1.m4a",
+   "source": "the boss's own line rift-zarek-rage-a (Zarek, Eleven v4 stock preset Landon via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "上等だ……てめえの喉、食い破ってやる！",
+   "sourceSha256": "87e1296a3e13a0b2de676f0a98299f85436501cbf2c8d717a0863004dedb2575",
+   "duration": 3.06,
+   "note": "zarek: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-zarek-defeat-1",
+   "file": "/assets/audio/survival/voice-zarek-defeat-1.m4a",
+   "source": "the boss's own line rift-zarek-defeat-a (Zarek, Eleven v4 stock preset Landon via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "ありえ……ねえ……この俺が……",
+   "sourceSha256": "b8d51c4a6dc48e6ee7c2f0c39417649db0de70049f82476f14997f8725e2996b",
+   "duration": 2.41,
+   "note": "zarek: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-zarek-hurt-1",
+   "file": "/assets/audio/survival/voice-zarek-hurt-1.m4a",
+   "source": "the boss's own line rift-zarek-hurt-a (Zarek, Eleven v4 stock preset Landon via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "ガッ！",
+   "sourceSha256": "cacde5581113c6e9fb43d729f8bb506463cdf236f4bba216a7bb0ca874001ace",
+   "duration": 0.67,
+   "note": "zarek: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-zarek-attack-1",
+   "file": "/assets/audio/survival/voice-zarek-attack-1.m4a",
+   "source": "the boss's own line rift-zarek-attack-a (Zarek, Eleven v4 stock preset Landon via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "遅えっ！",
+   "sourceSha256": "dbbe0bbd10bc1aeebb6348a2762880a78aa09d88bf253ff8b2b29fda7fd26d83",
+   "duration": 0.725,
+   "note": "zarek: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-zarek-attack-2",
+   "file": "/assets/audio/survival/voice-zarek-attack-2.m4a",
+   "source": "the boss's own line rift-zarek-attack-b (Zarek, Eleven v4 stock preset Landon via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "そこだァ！",
+   "sourceSha256": "156fbea619972c0582eda6a3d4e7feaeafe74bfdd1723786f5c6afd218f7d7ee",
+   "duration": 0.825,
+   "note": "zarek: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kade-entrance-1",
+   "file": "/assets/audio/survival/voice-kade-entrance-1.m4a",
+   "source": "the boss's own line rift-kade-entrance-a (Kade, Eleven v4 stock preset Alistair via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "獲物が、自ら檻に入ったか。……静かに、終わらせてやる。",
+   "sourceSha256": "d5fbeadb55dcf43c9225aac3b5f0f2622c65b9b6077d5d87fd960c0c17a90d32",
+   "duration": 4.35,
+   "note": "kade: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kade-rage-1",
+   "file": "/assets/audio/survival/voice-kade-rage-1.m4a",
+   "source": "the boss's own line rift-kade-rage-a (Kade, Eleven v4 stock preset Alistair via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "……少し、本気を出そう。獣の時間だ。",
+   "sourceSha256": "8eef27418efe0fef6003de5b2d4726e934f09713f9541cff73ed2f8334e110b0",
+   "duration": 3.13,
+   "note": "kade: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kade-defeat-1",
+   "file": "/assets/audio/survival/voice-kade-defeat-1.m4a",
+   "source": "the boss's own line rift-kade-defeat-a (Kade, Eleven v4 stock preset Alistair via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "……見事だ。……だが、次は、ない。",
+   "sourceSha256": "4295bd8d9f517b88036ef366bd39c437a2e74bd79eecc9d78c7da39c9bc158b6",
+   "duration": 2.77,
+   "note": "kade: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kade-hurt-1",
+   "file": "/assets/audio/survival/voice-kade-hurt-1.m4a",
+   "source": "the boss's own line rift-kade-hurt-a (Kade, Eleven v4 stock preset Alistair via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "ぐるっ……！",
+   "sourceSha256": "dee756791354c53d609eaff4e8b78b9c3c5e82a9c40da95f189230367884d400",
+   "duration": 0.89,
+   "note": "kade: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kade-attack-1",
+   "file": "/assets/audio/survival/voice-kade-attack-1.m4a",
+   "source": "the boss's own line rift-kade-attack-a (Kade, Eleven v4 stock preset Alistair via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "遅い。",
+   "sourceSha256": "03580af23db2da851f5e49bdbd71794c3b0b88cccc4d0cc94e667ae8e3c51235",
+   "duration": 0.64,
+   "note": "kade: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kade-attack-2",
+   "file": "/assets/audio/survival/voice-kade-attack-2.m4a",
+   "source": "the boss's own line rift-kade-attack-b (Kade, Eleven v4 stock preset Alistair via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "そこだ。",
+   "sourceSha256": "cdde160e13dbe3b828f6009b24a6514305329eea1084282b5325d1f72ea8d948",
+   "duration": 0.71,
+   "note": "kade: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nihil-entrance-1",
+   "file": "/assets/audio/survival/voice-nihil-entrance-1.m4a",
+   "source": "the boss's own line rift-nihil-entrance-a (Nihil, Eleven v4 stock preset Andre via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "……屑が、集まったか。……意味のないことだ。",
+   "sourceSha256": "c8cbacd43ff4b3bc9799037d4182737cc979d8c6c03c1034f80994ca4744177b",
+   "duration": 3.145,
+   "note": "nihil: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nihil-rage-1",
+   "file": "/assets/audio/survival/voice-nihil-rage-1.m4a",
+   "source": "the boss's own line rift-nihil-rage-a (Nihil, Eleven v4 stock preset Andre via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "……見せてやろう。本当の、虚無を。",
+   "sourceSha256": "c7a3527fd6c155313f49dadda11863258629fabad683aa6bd6e9813fc345a7ba",
+   "duration": 2.465,
+   "note": "nihil: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nihil-defeat-1",
+   "file": "/assets/audio/survival/voice-nihil-defeat-1.m4a",
+   "source": "the boss's own line rift-nihil-defeat-a (Nihil, Eleven v4 stock preset Andre via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "……無に、還るだけだ。",
+   "sourceSha256": "40d50a54f01c62727277c66ea08c6f3444e4dda674492e8af476630ab463259b",
+   "duration": 1.585,
+   "note": "nihil: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nihil-hurt-1",
+   "file": "/assets/audio/survival/voice-nihil-hurt-1.m4a",
+   "source": "the boss's own line rift-nihil-hurt-a (Nihil, Eleven v4 stock preset Andre via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "くっ……！",
+   "sourceSha256": "bb767905841a3c1b209347abd00091529810da51e527f7a85d4e103a9b495497",
+   "duration": 0.68,
+   "note": "nihil: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nihil-attack-1",
+   "file": "/assets/audio/survival/voice-nihil-attack-1.m4a",
+   "source": "the boss's own line rift-nihil-attack-a (Nihil, Eleven v4 stock preset Andre via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "消えろ。",
+   "sourceSha256": "bbd5ca9ca241767c2c18ad9fec5562fd74513553284140b69902e4312768d355",
+   "duration": 0.685,
+   "note": "nihil: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-nihil-attack-2",
+   "file": "/assets/audio/survival/voice-nihil-attack-2.m4a",
+   "source": "the boss's own line rift-nihil-attack-b (Nihil, Eleven v4 stock preset Andre via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "沈め。",
+   "sourceSha256": "2eedb84777f33554e6eed995d71b431351e3fa7d021461bec65ea965d7705727",
+   "duration": 0.765,
+   "note": "nihil: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-ashwing-entrance-1",
+   "file": "/assets/audio/survival/voice-ashwing-entrance-1.m4a",
+   "source": "the boss's own line rift-king-entrance-a (Ashwing, Eleven v4 stock preset Harrison via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "火葬の騎士、参る。……灰も、残さん。",
+   "sourceSha256": "0f0978570202b564bdd6d40916f9d385731b1882be97814decb0a8158a91aa15",
+   "duration": 3.39,
+   "note": "ashwing: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-ashwing-rage-1",
+   "file": "/assets/audio/survival/voice-ashwing-rage-1.m4a",
+   "source": "the boss's own line rift-king-rage-a (Ashwing, Eleven v4 stock preset Harrison via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "思い上がるな……野火が、全てを呑む！",
+   "sourceSha256": "08426433c6ce822de6d15f53f70bd38f3fc74e70477a827cfed6c5e630657f73",
+   "duration": 2.895,
+   "note": "ashwing: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-ashwing-defeat-1",
+   "file": "/assets/audio/survival/voice-ashwing-defeat-1.m4a",
+   "source": "the boss's own line rift-king-defeat-a (Ashwing, Eleven v4 stock preset Harrison via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "この翼が……落ちる、のか……",
+   "sourceSha256": "e6aaf0adf0ed171c8dd9ac7ff18fbfb004d029b7ecf270ce0717efe94837ba9a",
+   "duration": 2.565,
+   "note": "ashwing: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-ashwing-hurt-1",
+   "file": "/assets/audio/survival/voice-ashwing-hurt-1.m4a",
+   "source": "the boss's own line rift-king-hurt-a (Ashwing, Eleven v4 stock preset Harrison via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "グォッ！",
+   "sourceSha256": "a315d59e332cb278b5987e1368a368b54346126bd2722b8dc54877e401e81472",
+   "duration": 0.89,
+   "note": "ashwing: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-ashwing-attack-1",
+   "file": "/assets/audio/survival/voice-ashwing-attack-1.m4a",
+   "source": "the boss's own line rift-king-attack-b (Ashwing, Eleven v4 stock preset Harrison via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "失せろ！",
+   "sourceSha256": "02cebd931a6a0d6f2c5db899b64ad0086dd35d75bcfa994c794482aa3854edc3",
+   "duration": 0.585,
+   "note": "ashwing: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kuromitsu-entrance-1",
+   "file": "/assets/audio/survival/voice-kuromitsu-entrance-1.m4a",
+   "source": "the boss's own line rift-kuromitsu-entrance-a (Kuromitsu, Eleven v4 stock preset Fraser via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "お前の次の一手は、もう読んだ。",
+   "sourceSha256": "873cf4facf37920a1f951c26c4c2bbec13ab38952cb59b3365cc5548347b4f6b",
+   "duration": 2.25,
+   "note": "kuromitsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kuromitsu-rage-1",
+   "file": "/assets/audio/survival/voice-kuromitsu-rage-1.m4a",
+   "source": "the boss's own line rift-kuromitsu-rage-a (Kuromitsu, Eleven v4 stock preset Fraser via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "……未来を、塗り替えるか。……ならば、全力で応えよう。",
+   "sourceSha256": "fd8bd86bff0aa234160e8c340d12e7f57f8532ac346c3e98dedae93141425cfe",
+   "duration": 3.345,
+   "note": "kuromitsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kuromitsu-defeat-1",
+   "file": "/assets/audio/survival/voice-kuromitsu-defeat-1.m4a",
+   "source": "the boss's own line rift-kuromitsu-defeat-a (Kuromitsu, Eleven v4 stock preset Fraser via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "見えて……いたはずだ……この、未来は……",
+   "sourceSha256": "0f5e0d3d75e8956d250573fac6cf20d35f62e51d9977313c9f0c3c2ff5d3b274",
+   "duration": 3.175,
+   "note": "kuromitsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kuromitsu-hurt-1",
+   "file": "/assets/audio/survival/voice-kuromitsu-hurt-1.m4a",
+   "source": "the boss's own line rift-kuromitsu-hurt-a (Kuromitsu, Eleven v4 stock preset Fraser via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "ぬっ……！",
+   "sourceSha256": "463fe36b57db5f611582c166788079ca59cc6142705d2377d79341a649d2a7d0",
+   "duration": 0.89,
+   "note": "kuromitsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kuromitsu-attack-1",
+   "file": "/assets/audio/survival/voice-kuromitsu-attack-1.m4a",
+   "source": "the boss's own line rift-kuromitsu-attack-a (Kuromitsu, Eleven v4 stock preset Fraser via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "先手は、こちらだ。",
+   "sourceSha256": "a17ab212a7e2444ef9d9516bb08147ecb910b46be945af2c6512c7dfb878dbe5",
+   "duration": 1.19,
+   "note": "kuromitsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-kuromitsu-attack-2",
+   "file": "/assets/audio/survival/voice-kuromitsu-attack-2.m4a",
+   "source": "the boss's own line rift-kuromitsu-attack-b (Kuromitsu, Eleven v4 stock preset Fraser via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "絡め取れ！",
+   "sourceSha256": "43016db5e1a883cf023f508390941588cb6e106ffd3333e727bb2251946ed0ea",
+   "duration": 0.8,
+   "note": "kuromitsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rime-entrance-1",
+   "file": "/assets/audio/survival/voice-rime-entrance-1.m4a",
+   "source": "the boss's own line rift-rime-entrance-a (Rime, Eleven v4 stock preset Holden via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "……誰だ。氷河の眠りを、踏み荒らすのは。",
+   "sourceSha256": "2aeaafbf7c7f56f8a9bb3961f955c79bc85db5896050a0381d92c7f398d8ea18",
+   "duration": 3.27,
+   "note": "rime: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rime-rage-1",
+   "file": "/assets/audio/survival/voice-rime-rage-1.m4a",
+   "source": "the boss's own line rift-rime-rage-a (Rime, Eleven v4 stock preset Holden via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "……ならば、長い冬をくれてやる。",
+   "sourceSha256": "9d92a81b6633b4caeca447789cb49150053d7d60fcc4b86e2e9fafe801e68bf4",
+   "duration": 2.58,
+   "note": "rime: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rime-defeat-1",
+   "file": "/assets/audio/survival/voice-rime-defeat-1.m4a",
+   "source": "the boss's own line rift-rime-defeat-a (Rime, Eleven v4 stock preset Holden via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "……ああ。氷の、割れる音がする……",
+   "sourceSha256": "2a1bee16762a17970e484ad396de71ea2d374dbe34e475e348c98841513f43d9",
+   "duration": 2.435,
+   "note": "rime: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rime-hurt-1",
+   "file": "/assets/audio/survival/voice-rime-hurt-1.m4a",
+   "source": "the boss's own line rift-rime-hurt-a (Rime, Eleven v4 stock preset Holden via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "ぐっ！",
+   "sourceSha256": "7924b3c9bc3736ca8a6ef36fff79bc42b1256d411097995be8c4fa24e2124971",
+   "duration": 0.71,
+   "note": "rime: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rime-attack-1",
+   "file": "/assets/audio/survival/voice-rime-attack-1.m4a",
+   "source": "the boss's own line rift-rime-attack-a (Rime, Eleven v4 stock preset Holden via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "凍れ。",
+   "sourceSha256": "da9bedd1b6d01d0365e57ec85c6cd174d78ae162515cd95385c31f52bcb2a6ff",
+   "duration": 0.54,
+   "note": "rime: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-rime-attack-2",
+   "file": "/assets/audio/survival/voice-rime-attack-2.m4a",
+   "source": "the boss's own line rift-rime-attack-b (Rime, Eleven v4 stock preset Holden via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "動くな。",
+   "sourceSha256": "aa6c389385eaaa210610d1e5c91dadcecfb5c43c9001e923bbbd2648f1eabbc6",
+   "duration": 0.575,
+   "note": "rime: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-lumen-entrance-1",
+   "file": "/assets/audio/survival/voice-lumen-entrance-1.m4a",
+   "source": "the boss's own line rift-lumen-entrance-a (Lumen, Eleven v4 stock preset Tamsin via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "見てはいけないわ。……私を見た者は、皆、灰になった。",
+   "sourceSha256": "e050a22febec0183620eb0507351c9611bd84aff19154c8a77d8567c5e5e6e94",
+   "duration": 4.135,
+   "note": "lumen: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-lumen-rage-1",
+   "file": "/assets/audio/survival/voice-lumen-rage-1.m4a",
+   "source": "the boss's own line rift-lumen-rage-a (Lumen, Eleven v4 stock preset Tamsin via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "鏡がすべて、あなたを映している。",
+   "sourceSha256": "a302f556a25d83d9a3b7dca724e4439560d87644d4a426f80e32069765cc79b7",
+   "duration": 2.33,
+   "note": "lumen: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-lumen-defeat-1",
+   "file": "/assets/audio/survival/voice-lumen-defeat-1.m4a",
+   "source": "the boss's own line rift-lumen-defeat-a (Lumen, Eleven v4 stock preset Tamsin via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "光が、消える……やっと、あの人のところへ……",
+   "sourceSha256": "a5f1f3c2554fff384cd5f8922a896f25f78fe4915a45403439758558c8c7b49a",
+   "duration": 3.535,
+   "note": "lumen: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-lumen-hurt-1",
+   "file": "/assets/audio/survival/voice-lumen-hurt-1.m4a",
+   "source": "the boss's own line rift-lumen-hurt-a (Lumen, Eleven v4 stock preset Tamsin via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "っ……！",
+   "sourceSha256": "a0c0d60943c48bda44aec209ff9a26244dac144d3290268933a9ab1a5c68ab7e",
+   "duration": 0.66,
+   "note": "lumen: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-lumen-attack-1",
+   "file": "/assets/audio/survival/voice-lumen-attack-1.m4a",
+   "source": "the boss's own line rift-lumen-attack-a (Lumen, Eleven v4 stock preset Tamsin via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "見なさい。",
+   "sourceSha256": "3f0a0289857465fd207750efb14be7dd8e8dcae7e467124cd50c2bcfbfd72e7d",
+   "duration": 0.585,
+   "note": "lumen: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-lumen-attack-2",
+   "file": "/assets/audio/survival/voice-lumen-attack-2.m4a",
+   "source": "the boss's own line rift-lumen-attack-b (Lumen, Eleven v4 stock preset Tamsin via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "眩しいでしょう。",
+   "sourceSha256": "0b2d26891e013f96c6eb79900772457debce03e3d4483c8d5e87a84164687d6f",
+   "duration": 1.005,
+   "note": "lumen: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-caldera-entrance-1",
+   "file": "/assets/audio/survival/voice-caldera-entrance-1.m4a",
+   "source": "the boss's own line rift-caldera-entrance-a (Caldera, Eleven v4 stock preset Cillian via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "祈りは済んだ。……あとは、燃えるだけだ。",
+   "sourceSha256": "426208aa5acc44d5d48679ec51dfe4bc779376fe4c1140620d094dde3e8068fd",
+   "duration": 2.96,
+   "note": "caldera: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-caldera-rage-1",
+   "file": "/assets/audio/survival/voice-caldera-rage-1.m4a",
+   "source": "the boss's own line rift-caldera-rage-a (Caldera, Eleven v4 stock preset Cillian via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "火口が開いた……灰の雨を、浴びるがいい！",
+   "sourceSha256": "2728c8e5e4dbc77fe8dfa99321ec394503de24f50c15c107030ce93db714b9d3",
+   "duration": 2.93,
+   "note": "caldera: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-caldera-defeat-1",
+   "file": "/assets/audio/survival/voice-caldera-defeat-1.m4a",
+   "source": "the boss's own line rift-caldera-defeat-a (Caldera, Eleven v4 stock preset Cillian via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "馬鹿な……この炎が……冷える、だと……",
+   "sourceSha256": "e74cd15ca48f09075a9d4c7168ae93fc5d2cdfe01363adb6d1bc942f0cf04faf",
+   "duration": 2.825,
+   "note": "caldera: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-caldera-hurt-1",
+   "file": "/assets/audio/survival/voice-caldera-hurt-1.m4a",
+   "source": "the boss's own line rift-caldera-hurt-a (Caldera, Eleven v4 stock preset Cillian via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "ぐぬっ！",
+   "sourceSha256": "d3f3911a54e9e6d8a063ad6cfa416bc66a031fe734ddbb670999de8204484d4d",
+   "duration": 0.85,
+   "note": "caldera: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-caldera-attack-1",
+   "file": "/assets/audio/survival/voice-caldera-attack-1.m4a",
+   "source": "the boss's own line rift-caldera-attack-a (Caldera, Eleven v4 stock preset Cillian via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "溶けろ！",
+   "sourceSha256": "46cdd4d68bf1172bc91845330f96636632bc63a261bf13115c4da64fbdb1c060",
+   "duration": 0.595,
+   "note": "caldera: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-mirabel-entrance-1",
+   "file": "/assets/audio/survival/voice-mirabel-entrance-1.m4a",
+   "source": "the boss's own line rift-mirabel-entrance-a (Mother Mirabel, Eleven v4 stock preset Maya via Higgsfield, fix-audio3: the boss redesigned by modes-bosses)",
+   "license": "Original (made for the game)",
+   "text": "アッハッハ！ 可愛い魂が来たねえ。全部、ロケットに閉じ込めてあげる！",
+   "sourceSha256": "1c6f4b81d40b075f174ea7701e70afbc8f90266d492808d9eb5c70645d7fd268",
+   "duration": 5.49,
+   "note": "mirabel: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-mirabel-rage-1",
+   "file": "/assets/audio/survival/voice-mirabel-rage-1.m4a",
+   "source": "the boss's own line rift-mirabel-rage-a (Mother Mirabel, Eleven v4 stock preset Maya via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "よくも、あたしの宝を……！ 嵐よ、鳴りな！",
+   "sourceSha256": "f7386339acbdfc25d57bc94df9a434528a2e6eff45ac7569802e3e03f21f9bf4",
+   "duration": 3.6,
+   "note": "mirabel: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-mirabel-defeat-1",
+   "file": "/assets/audio/survival/voice-mirabel-defeat-1.m4a",
+   "source": "the boss's own line rift-mirabel-defeat-a (Mother Mirabel, Eleven v4 stock preset Maya via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "そんな……あたしの魂が……こぼれていく……",
+   "sourceSha256": "0197dbd34a45b9ececf8e94f4424e0ef5e9ba69864b440df6183900ef8aa4905",
+   "duration": 3.885,
+   "note": "mirabel: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-mirabel-hurt-1",
+   "file": "/assets/audio/survival/voice-mirabel-hurt-1.m4a",
+   "source": "the boss's own line rift-mirabel-hurt-a (Mother Mirabel, Eleven v4 stock preset Maya via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "ぐぅっ！",
+   "sourceSha256": "5f06f1d028e9f0ddc2f4f5a37d596bcaf89dd79f51850fc76a7a9480573de8aa",
+   "duration": 0.84,
+   "note": "mirabel: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-mirabel-attack-1",
+   "file": "/assets/audio/survival/voice-mirabel-attack-1.m4a",
+   "source": "the boss's own line rift-mirabel-attack-a (Mother Mirabel, Eleven v4 stock preset Maya via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "沈みな！",
+   "sourceSha256": "798d7c289d801adc124e1bf02d8fc701850e7f6a55ef8f496327cc89e9dddcc8",
+   "duration": 0.86,
+   "note": "mirabel: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "voice-mirabel-attack-2",
+   "file": "/assets/audio/survival/voice-mirabel-attack-2.m4a",
+   "source": "the boss's own line rift-mirabel-attack-b (Mother Mirabel, Eleven v4 stock preset Maya via Higgsfield, the quality round)",
+   "license": "Original (made for the game)",
+   "text": "よこしな！",
+   "sourceSha256": "70dbaed3405fec16ed361ceca63d291e4a227c5cad61d1d0c35799724142875d",
+   "duration": 0.73,
+   "note": "mirabel: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+  },
+  {
+   "id": "bed-armoury-reeds",
+   "file": "/assets/audio/survival/bed-armoury-reeds.m4a",
+   "source": "Freesound: Wind in the reed by Funkelfang (https://freesound.org/people/Funkelfang/sounds/844604/)",
+   "license": "CC0",
+   "sourceSha256": "7af1ff2de8352064015c23e7774de0a7361650e4138b880a674932f2e838636b",
+   "duration": 32.0,
+   "loop": true,
+   "note": "fix-audio3: cut, crossfaded, levelled",
+   "runtimeSha256": "cb09222fee5ecb3dc6069bb98e6de01ca8b3096c81b133ac6c4e42eda52da762"
+  },
+  {
+   "id": "woman-swing-1",
+   "file": "/assets/audio/survival/woman-swing-1.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "4e31dddb7a48191b3e416867df1680de997f5310330704f40e8bb85da0d8b381",
+   "duration": 0.596,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "9e530a775fc341227f77af873a4db161416a8d4f2c393f23e96d5ce4310a2c1c"
+  },
+  {
+   "id": "woman-swing-2",
+   "file": "/assets/audio/survival/woman-swing-2.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "4e31dddb7a48191b3e416867df1680de997f5310330704f40e8bb85da0d8b381",
+   "duration": 0.463,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "04908e2577e9e2c9e41debd877edbf4f8481f004613beec5ef31d28e03530d02"
+  },
+  {
+   "id": "woman-swing-3",
+   "file": "/assets/audio/survival/woman-swing-3.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "4e31dddb7a48191b3e416867df1680de997f5310330704f40e8bb85da0d8b381",
+   "duration": 0.473,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "8973e9c52632d1b97216930995bdfbb635190e713844f1c343c2e5d5750f2dfa"
+  },
+  {
+   "id": "woman-swing-4",
+   "file": "/assets/audio/survival/woman-swing-4.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "4e31dddb7a48191b3e416867df1680de997f5310330704f40e8bb85da0d8b381",
+   "duration": 0.549,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "b9780b244e0ca88588ef7ecbd4a2d8648949886f88e2c7ff07214f8529af16e1"
+  },
+  {
+   "id": "woman-swing-5",
+   "file": "/assets/audio/survival/woman-swing-5.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "4e31dddb7a48191b3e416867df1680de997f5310330704f40e8bb85da0d8b381",
+   "duration": 0.38,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "23e8e9c0c91872091df0b672d41944c31137e2d2e9fdd7ed48feace1600b1991"
+  },
+  {
+   "id": "woman-cry-1",
+   "file": "/assets/audio/survival/woman-cry-1.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "6a72b95d9c41b9191daf8e5faf406fbcb5de0aa145e761534cfda390c45d344d",
+   "duration": 1.428,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "5e2dc9819224f0341d9eb7854c250e94894a4711897366f6e780258268d2d251"
+  },
+  {
+   "id": "woman-cry-2",
+   "file": "/assets/audio/survival/woman-cry-2.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "6a72b95d9c41b9191daf8e5faf406fbcb5de0aa145e761534cfda390c45d344d",
+   "duration": 1.225,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "e8d6bb11a5ace38183bc7a24bf3268d859574e0e6643d436edf8ce605f2e7b13"
+  },
+  {
+   "id": "woman-cry-3",
+   "file": "/assets/audio/survival/woman-cry-3.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "6a72b95d9c41b9191daf8e5faf406fbcb5de0aa145e761534cfda390c45d344d",
+   "duration": 1.117,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "8a84fa615c07435b4fbb5efee1e37816e78c30d00649c7467ea5a3a77a6c138a"
+  },
+  {
+   "id": "woman-hurt-1",
+   "file": "/assets/audio/survival/woman-hurt-1.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "92e8a925ee1357465803d5ecca7476e502e87cc190aaca440429b141006a676d",
+   "duration": 0.795,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "be8c88af32f704f1480b28ad3a03ed790b356740b1b372286d44bb24cdacd21a"
+  },
+  {
+   "id": "woman-hurt-2",
+   "file": "/assets/audio/survival/woman-hurt-2.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "92e8a925ee1357465803d5ecca7476e502e87cc190aaca440429b141006a676d",
+   "duration": 0.709,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "fae31157c250c3f535154adb5532256d285aa117589381bdc691e15319b194cf"
+  },
+  {
+   "id": "woman-hurt-3",
+   "file": "/assets/audio/survival/woman-hurt-3.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "92e8a925ee1357465803d5ecca7476e502e87cc190aaca440429b141006a676d",
+   "duration": 0.839,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "1ba6b935530b2e0b622c12c7ad6aad678014f542adbe35bebbb1bef528542457"
+  },
+  {
+   "id": "woman-hurt-4",
+   "file": "/assets/audio/survival/woman-hurt-4.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "92e8a925ee1357465803d5ecca7476e502e87cc190aaca440429b141006a676d",
+   "duration": 0.763,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "9005dffd32b6826b60b742d780d81141f92d3a35debd8913302b6a92f358eacd"
+  },
+  {
+   "id": "woman-die-1",
+   "file": "/assets/audio/survival/woman-die-1.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "4db785fa22b76ebce8cf361b03248e370deb4bd7ad172eeb5695d95ad2c52abe",
+   "duration": 1.586,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "f0012966b5ad62f7787c5e4c12098715b36064d80317e416c03f843913a28548"
+  },
+  {
+   "id": "woman-die-2",
+   "file": "/assets/audio/survival/woman-die-2.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "4db785fa22b76ebce8cf361b03248e370deb4bd7ad172eeb5695d95ad2c52abe",
+   "duration": 0.95,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "201160e5198ca27cd99f95abcfa8edd60b175a19710909c897666a1bccf13561"
+  },
+  {
+   "id": "woman-die-3",
+   "file": "/assets/audio/survival/woman-die-3.m4a",
+   "source": "Higgsfield Eleven v4 stock preset Petra",
+   "license": "Original (made for the game)",
+   "sourceSha256": "4db785fa22b76ebce8cf361b03248e370deb4bd7ad172eeb5695d95ad2c52abe",
+   "duration": 1.869,
+   "note": "fix-audio3: a raider surgeon, a woman: the Graft Doctor",
+   "runtimeSha256": "58966c9c47ee2379c13dded2c0c878cc7452a88f014f6a5bd653a330851e2e63"
+  },
+  {
+   "id": "masked-swing-1",
+   "file": "/assets/audio/survival/masked-swing-1.m4a",
+   "source": "the bank's man-swing-1 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "57b3a59c39ffe74a1706bcb85c451443c3b388d1f6423827b2af4af508c8416b",
+   "duration": 0.388,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "52e3632227940e4b2d08ad0df4c6c95034c30bdb90743be069e8ebfbd924726e"
+  },
+  {
+   "id": "masked-swing-2",
+   "file": "/assets/audio/survival/masked-swing-2.m4a",
+   "source": "the bank's man-swing-2 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "4ba97adf030acefa10195f88c3fb329ebbea2c9638bd412896e1b4fc0ca35404",
+   "duration": 0.239,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "b0697e887f32d0803f1d33f495e2fa73ab6dcf1755bd10436d58083ca496ee03"
+  },
+  {
+   "id": "masked-swing-3",
+   "file": "/assets/audio/survival/masked-swing-3.m4a",
+   "source": "the bank's man-swing-3 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "2e55e23478c86bf9bfdf4297a24fb5135c18822dd38f95cabeb45612c840b64b",
+   "duration": 0.342,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "2a3f0b0abf5dd526668fe2986715cd305562ed31a4d8f298ba64201520e0948f"
+  },
+  {
+   "id": "masked-swing-4",
+   "file": "/assets/audio/survival/masked-swing-4.m4a",
+   "source": "the bank's man-swing-4 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "804966a07b60c8e80c8f45c33ae5adfb1d7abbe4ebd07d67eb5d31351f4d250c",
+   "duration": 0.462,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "cd8453e2b374ebd3a5dd898c021d765bc154907b8ccef31fb2be39736235016f"
+  },
+  {
+   "id": "masked-swing-5",
+   "file": "/assets/audio/survival/masked-swing-5.m4a",
+   "source": "the bank's man-swing-5 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "da11a59a017ad4ed3f371ca0829c1f5f3d6a59106eee1ae914d39e04ffe08d6e",
+   "duration": 0.26,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "95e8ef844939e640ff06625fc870c01a81234c61c1e7df411facae835a17f47b"
+  },
+  {
+   "id": "masked-swing-6",
+   "file": "/assets/audio/survival/masked-swing-6.m4a",
+   "source": "the bank's man-swing-6 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "761a03d1ea2339ef26e11744c7aa7f641ba259acc1e3398516ca90eef3f3da1d",
+   "duration": 0.355,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "e05a8e69a3974848f1f0b1f1bbced35bc34ed661f693b1dac2fd51ae78f5cbe5"
+  },
+  {
+   "id": "masked-swing-7",
+   "file": "/assets/audio/survival/masked-swing-7.m4a",
+   "source": "the bank's man-swing-7 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "7bc85e86d21552e525d2ffa82dd4276f2d46828593993018d4646ac68e4b1108",
+   "duration": 0.521,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "f0bd361c9b42d33265981edc52a38020b9d1919054ce7b7607d283725a0c8000"
+  },
+  {
+   "id": "masked-swing-8",
+   "file": "/assets/audio/survival/masked-swing-8.m4a",
+   "source": "the bank's man-swing-8 (https://opengameart.org/content/80-cc0-creture-sfx-2), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "a0d24f9031b57b2e48a8ff73050a7ba686b1311e5f91a6fe27c9b86b40d03b50",
+   "duration": 0.476,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "4f192d16f7167bff1d6fda65e7f08bcf7c6e7dadd094be54cad652993aa914f8"
+  },
+  {
+   "id": "masked-swing-9",
+   "file": "/assets/audio/survival/masked-swing-9.m4a",
+   "source": "the bank's man-swing-9 (https://opengameart.org/content/80-cc0-creture-sfx-2), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "6abe4757667a46f2b4aab03574213108f23d5d433b62c9c833a20c220a1b4d63",
+   "duration": 0.474,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "69558f5ae9fc01037bcfe7b9c87e17a30f4e1b0d05c470b68778644faffdb001"
+  },
+  {
+   "id": "masked-swing-10",
+   "file": "/assets/audio/survival/masked-swing-10.m4a",
+   "source": "the bank's man-swing-10 (https://opengameart.org/content/80-cc0-creture-sfx-2), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "8f4382eccaa0d95ad5dca28717fc8fed6ac38b2ce03852c40ea6fe7cfb2b30a3",
+   "duration": 0.421,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "eab10b3c9ed1200dbd2580c892765c16d685ea0b01619a3b8df03649db71b3af"
+  },
+  {
+   "id": "masked-cry-1",
+   "file": "/assets/audio/survival/masked-cry-1.m4a",
+   "source": "the bank's man-cry-1 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "df151155a9c1a743de9d7c079a700896f37926d832305e07d2c7f2f0846c86b9",
+   "duration": 1.514,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "b16bcfa985aff428ce6e2a371decf30d00cd0bc1572b775da3822d2acd2955be"
+  },
+  {
+   "id": "masked-cry-2",
+   "file": "/assets/audio/survival/masked-cry-2.m4a",
+   "source": "the bank's man-cry-2 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "f9c63c26c2dafb9c0dd0859c56c79c9012faf32bf2defdc8b53b19ed23ad0704",
+   "duration": 1.618,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "806eda9a42412334a1752114a9a77fecc092f9be7f933c4058df0df9406ae98f"
+  },
+  {
+   "id": "masked-cry-3",
+   "file": "/assets/audio/survival/masked-cry-3.m4a",
+   "source": "the bank's man-cry-3 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "ce6ddb412e2c562be70f7cd1ca8f5c8cdb8cc321d9f23d596bf796c6d2da1a16",
+   "duration": 1.192,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "a6ee45eadd48ab66d871f195e38ea003e30296ba00ae1f0e1c87f0ada151d18f"
+  },
+  {
+   "id": "masked-cry-4",
+   "file": "/assets/audio/survival/masked-cry-4.m4a",
+   "source": "the bank's man-cry-4 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "7bd946b5858450313327f2c3c351d2cb79d7e6a82369a93a15be625adcf5cbb3",
+   "duration": 1.337,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "172e36a18ee6c51f0b5f77a3bf71507589faa39182e67ca813686e0fd68fa01a"
+  },
+  {
+   "id": "masked-cry-5",
+   "file": "/assets/audio/survival/masked-cry-5.m4a",
+   "source": "the bank's man-cry-5 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "399f3bb14cf9a1ac1ab71d66c7931aef537687a03568278a7a49766686d54857",
+   "duration": 1.027,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "76c124cd21525dc40f662163d80dc25b9ef4d2251f1be9770072293b7ecaaf3e"
+  },
+  {
+   "id": "masked-cry-6",
+   "file": "/assets/audio/survival/masked-cry-6.m4a",
+   "source": "the bank's man-cry-6 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "39808573744040c5740bc451a037a4523b28a642d0bf635a0705dcc5f453c9c1",
+   "duration": 1.218,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "dd4d450b74605d03751855a0995bd319f7e50a6f5c18f318c9b0eceee33c17d0"
+  },
+  {
+   "id": "masked-cry-7",
+   "file": "/assets/audio/survival/masked-cry-7.m4a",
+   "source": "the bank's man-cry-7 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "7a84b5a5eb0521ebe05b01df9cac45cc37795fba91cc1b5019a504389e3305f2",
+   "duration": 0.912,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "0c78aafe782e1acaec75f864194575398e75c4494d0329f55d38ca61842cbaa1"
+  },
+  {
+   "id": "masked-cry-8",
+   "file": "/assets/audio/survival/masked-cry-8.m4a",
+   "source": "the bank's man-cry-8 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "dc42f9af596b189ac3225ffd96c227dbcebb3b7d3d1d11fa60d1417d5431e4d5",
+   "duration": 0.749,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "a6c93e28647313319d0247b541f326c26c331308673685a822471632f9f9d1c2"
+  },
+  {
+   "id": "masked-hurt-1",
+   "file": "/assets/audio/survival/masked-hurt-1.m4a",
+   "source": "the bank's man-hurt-1 (https://opengameart.org/content/80-cc0-creature-sfx), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "53e0ff510ef43f583befea63af23af1d82ddb993b981f7c3c0e7eb5f0f9d21ab",
+   "duration": 0.26,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "daf47692dc37f893e71a7d91203a047c61eb4b4759c7899dc0bdc121d7288096"
+  },
+  {
+   "id": "masked-hurt-2",
+   "file": "/assets/audio/survival/masked-hurt-2.m4a",
+   "source": "the bank's man-hurt-2 (https://opengameart.org/content/80-cc0-creature-sfx), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "65a6524d46bbf2acccb09b551fe7e3616dbd19f62266b5ea7e6313df29031df1",
+   "duration": 0.291,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "9fdeb1f32b4fbdd6d29dc8f94fdd34dbf4eeb27908ea5696c324577883a051af"
+  },
+  {
+   "id": "masked-hurt-3",
+   "file": "/assets/audio/survival/masked-hurt-3.m4a",
+   "source": "the bank's man-hurt-3 (https://opengameart.org/content/80-cc0-creature-sfx), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "4dc63fc62e8604a87baa1f5a74b75d848ccb68ce6e0e34d603dd3cbefc8519ed",
+   "duration": 0.344,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "3d6067d10759014a704a624a2bb183c9d51fb46a0e88f36e02a5e7ce21a32145"
+  },
+  {
+   "id": "masked-hurt-4",
+   "file": "/assets/audio/survival/masked-hurt-4.m4a",
+   "source": "the bank's man-hurt-4 (https://opengameart.org/content/80-cc0-creture-sfx-2), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "9c4e9cf68b2d5804b0becb649fe3af0cc83b274846f0da8be60be21373d2580e",
+   "duration": 0.433,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "d591401b4a861c0bf58da669f33fa0b647b4e098b0e914085a3fac5efcb1e2f2"
+  },
+  {
+   "id": "masked-hurt-5",
+   "file": "/assets/audio/survival/masked-hurt-5.m4a",
+   "source": "the bank's man-hurt-5 (https://opengameart.org/content/80-cc0-creture-sfx-2), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "ac41237ed59161771bd660c489959c021eaa3bb9ffeebb1b5e039377127b5827",
+   "duration": 0.47,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "d5226810db0703d5ec6092997085c7c73c1647bfc06e7795aea152499b709772"
+  },
+  {
+   "id": "masked-die-1",
+   "file": "/assets/audio/survival/masked-die-1.m4a",
+   "source": "the bank's man-die-1 (https://opengameart.org/content/80-cc0-creture-sfx-2), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "d592dfbbe36a5e3e4b7dcaaa13498e50c59319d6df443c309858affb69336523",
+   "duration": 0.34,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "d470edb9dba30f9a6d47349a9298031bc2c3599b2904b334d0e9e7d41a3e2b48"
+  },
+  {
+   "id": "masked-die-2",
+   "file": "/assets/audio/survival/masked-die-2.m4a",
+   "source": "the bank's man-die-2 (https://opengameart.org/content/80-cc0-creture-sfx-2), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "59f9188919b50d40da3c9dd94e00c2d1c0db915ecc5b2eddfbf574743651c836",
+   "duration": 0.443,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "ff036dec18511e8379532f82d0a0de62370ef8f75a6a97bf8956d4eac63297b4"
+  },
+  {
+   "id": "masked-die-3",
+   "file": "/assets/audio/survival/masked-die-3.m4a",
+   "source": "the bank's man-die-3 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "5ca6b2e5cf2558857e7f852684672103d92989aac7ec145573532917bf0366b5",
+   "duration": 1.328,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "79d9385ffee06e2ae33f03944c3c14e6d5cd4ee10dce7e330fded186aacf6574"
+  },
+  {
+   "id": "masked-die-4",
+   "file": "/assets/audio/survival/masked-die-4.m4a",
+   "source": "the bank's man-die-4 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "c0e6628c4a548cfd7e5aa9adf1d8f2d6d99b22f73a4884bb20470ff06d7fc7d9",
+   "duration": 1.135,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "1abccc04524235e054a8388b8a25504ffe40fd3532b0f78800a32fa2ea3eeb70"
+  },
+  {
+   "id": "masked-die-5",
+   "file": "/assets/audio/survival/masked-die-5.m4a",
+   "source": "the bank's man-die-5 (https://opengameart.org/content/male-gruntyelling-sounds), behind an iron mask (EQ)",
+   "license": "CC0",
+   "sourceSha256": "24d232e83d15537868a849328e367f6e8fb0028b6825d67637515ff350817056",
+   "duration": 0.82,
+   "note": "fix-audio3: a masked inquisitor of the Salt Court",
+   "runtimeSha256": "80a4d1d25fbf24ccfa6429c01da907262b7a1564b9117bd24a17a90bac1609f8"
+  },
+  {
+   "id": "hyena-cry-1",
+   "file": "/assets/audio/survival/hyena-cry-1.m4a",
+   "source": "Freesound: HyenaLaugh2.wav by sounagix",
+   "license": "CC0",
+   "sourceSha256": "a7c79cb76ac4edb99d18b7cc98b96b1921611aaa9f361e49014666c1a1e52231",
+   "duration": 0.988,
+   "note": "fix-audio3: a hyena's cackle: the Graft Leaper",
+   "runtimeSha256": "1715bb8c8b93ff8cc27329313bb6099a12d9739aeda09cb7ff449dbb60741485"
+  },
+  {
+   "id": "hyena-cry-2",
+   "file": "/assets/audio/survival/hyena-cry-2.m4a",
+   "source": "Freesound: Hyena Moan 2 by sounagix",
+   "license": "CC0",
+   "sourceSha256": "fa57dcfa4132233d476dbebd6ca5d96f039333880c578bc7d511e01430f86f64",
+   "duration": 1.02,
+   "note": "fix-audio3: a hyena's cackle: the Graft Leaper",
+   "runtimeSha256": "b49dc1e81862b29a7ddfbb80e914d37be6c0c59a42f3d5d2ab51e301edc470c2"
+  },
+  {
+   "id": "hyena-cry-3",
+   "file": "/assets/audio/survival/hyena-cry-3.m4a",
+   "source": "Freesound: Hyena-like Creature Noise sound effect by Mastersoundboy2005",
+   "license": "CC0",
+   "sourceSha256": "4bd2fdfd7a662e234dfac994aec27df5185bb04f33213827724c8f3f8368dd33",
+   "duration": 1.133,
+   "note": "fix-audio3: a hyena's cackle: the Graft Leaper",
+   "runtimeSha256": "4db4c9a5f92796b2b02d6e57403d6d1050ef6710dd4d62e49bef0ddf73e53457"
+  },
+  {
+   "id": "wood-swing-1",
+   "file": "/assets/audio/survival/wood-swing-1.m4a",
+   "source": "Kenney - rpg-audio: creak1",
+   "license": "CC0",
+   "sourceSha256": "8a346186fd297254248cab8e8117060a52a5cf2a84f603153a762108550ea95e",
+   "duration": 0.66,
+   "note": "fix-audio3: wood creaking as it swings",
+   "runtimeSha256": "7c700e9fef484f196cd8bbfe974efcce8d144a3d326c756ad7f0fe589ad264c9"
+  },
+  {
+   "id": "wood-swing-3",
+   "file": "/assets/audio/survival/wood-swing-3.m4a",
+   "source": "Kenney - rpg-audio: creak1",
+   "license": "CC0",
+   "sourceSha256": "8a346186fd297254248cab8e8117060a52a5cf2a84f603153a762108550ea95e",
+   "duration": 0.7,
+   "note": "fix-audio3: wood creaking as it swings",
+   "runtimeSha256": "a3317aff5ff4fcd0a4ea03cb20ee3fa8ba2f97cae7848966bd8af5a811219770"
+  }
+ ]
+}

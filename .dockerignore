@@ -1,0 +1,24 @@
+# The server image needs only the simulation, the rooms, co-op survival's director and the locked dependencies.
+**
+!Dockerfile
+!.dockerignore
+!package.json
+!package-lock.json
+!tsconfig.json
+!src/
+!src/server/
+!src/server/**
+!src/engine/
+!src/engine/sim/
+!src/engine/sim/**
+!src/game/
+!src/game/**
+!src/survival/
+!src/survival/**
+!src/originals/
+!src/originals/**
+!src/audio/
+!src/audio/voiceCues.ts
+!src/audio/quipCues.ts
+!src/audio/rosterVoiceCues.ts
+!src/audio/situationVoiceCues.ts

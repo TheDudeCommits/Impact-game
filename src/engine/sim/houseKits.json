@@ -1,0 +1,1959 @@
+{
+  "taisei": {
+    "slots": {
+      "area": {
+        "from": "taisei",
+        "fx": {
+          "effect": "efk_goldencrash",
+          "scale": 1.15
+        }
+      }
+    }
+  },
+  "konta": {
+    "slots": {
+      "area": {
+        "from": "konta",
+        "fx": {
+          "effect": "starfall"
+        }
+      }
+    }
+  },
+  "gummy": {
+    "slots": {
+      "area": {
+        "from": "gummy",
+        "fx": {
+          "effect": "qk_explosion"
+        }
+      }
+    }
+  },
+  "kenzo": {
+    "slots": {
+      "area": {
+        "from": "kenzo",
+        "fx": {
+          "effect": "cyclone",
+          "scale": 0.62,
+          "settings": {
+            "lifetime": 1.5,
+            "fadeTime": 0.6
+          }
+        }
+      }
+    }
+  },
+  "kosho": {
+    "slots": {
+      "area": {
+        "from": "kosho",
+        "fx": {
+          "effect": "fx_icsfire"
+        }
+      }
+    }
+  },
+  "ouga": {
+    "slots": {
+      "area": {
+        "from": "ouga",
+        "fx": {
+          "effect": "extra_detonation"
+        }
+      }
+    }
+  },
+  "shirokane": {
+    "slots": {
+      "area": {
+        "from": "shirokane",
+        "fx": {
+          "effect": "efk_toonwater"
+        }
+      }
+    }
+  },
+  "shiden": {
+    "slots": {
+      "area": {
+        "from": "shiden",
+        "fx": {
+          "effect": "arts_fireball",
+          "scale": 0.58,
+          "settings": {
+            "ballTime": 0.7,
+            "fadeTime": 0.5
+          }
+        }
+      }
+    }
+  },
+  "koko": {
+    "slots": {
+      "area": {
+        "from": "koko",
+        "fx": {
+          "effect": "blade_quake"
+        }
+      }
+    }
+  },
+  "nigo": {
+    "slots": {
+      "area": {
+        "from": "nigo",
+        "fx": {
+          "effect": "extra_cross"
+        }
+      }
+    }
+  },
+  "oro": {
+    "slots": {
+      "area": {
+        "from": "oro",
+        "fx": {
+          "effect": "extd_balefulcascade"
+        }
+      }
+    }
+  },
+  "setsu": {
+    "slots": {
+      "area": {
+        "from": "setsu",
+        "fx": {
+          "effect": "saga_blitz"
+        }
+      }
+    }
+  },
+  "kagari": {
+    "slots": {
+      "area": {
+        "from": "kagari",
+        "fx": {
+          "effect": "nature_firetornado"
+        }
+      }
+    }
+  },
+  "ward": {
+    "slots": {
+      "area": {
+        "from": "ward",
+        "fx": {
+          "effect": "hourglass"
+        }
+      }
+    }
+  },
+  "kuon": {
+    "slots": {
+      "area": {
+        "from": "kuon",
+        "fx": {
+          "effect": "singularity",
+          "hue": -50
+        }
+      }
+    }
+  },
+  "gaunt": {
+    "slots": {
+      "area": {
+        "from": "gaunt",
+        "fx": {
+          "effect": "qk_muzzle"
+        }
+      }
+    }
+  },
+  "tobari": {
+    "slots": {
+      "area": {
+        "from": "tobari",
+        "fx": {
+          "effect": "arts_fireball",
+          "scale": 0.6,
+          "settings": {
+            "ballTime": 0.7,
+            "fadeTime": 0.5
+          }
+        }
+      }
+    }
+  },
+  "bellows": {
+    "slots": {
+      "area": {
+        "from": "bellows",
+        "fx": {
+          "effect": "found_volumefire"
+        }
+      }
+    }
+  },
+  "shakugo": {
+    "slots": {
+      "area": {
+        "from": "shakugo",
+        "fx": {
+          "effect": "magma",
+          "scale": 0.82,
+          "settings": {
+            "lifetime": 1.4,
+            "fadeTime": 0.8,
+            "coolTime": 0.8,
+            "hazeHold": 0.3,
+            "hazeFade": 0.5,
+            "_glow": 0.9
+          }
+        }
+      }
+    }
+  },
+  "shidare": {
+    "slots": {
+      "area": {
+        "from": "shidare",
+        "fx": {
+          "effect": "edge_petalswarm"
+        }
+      }
+    }
+  },
+  "ume": {
+    "slots": {
+      "area": {
+        "from": "ume",
+        "fx": {
+          "effect": "blade_quake"
+        }
+      }
+    }
+  },
+  "lanthorn": {
+    "slots": {
+      "area": {
+        "from": "lanthorn",
+        "fx": {
+          "effect": "blade_iaido",
+          "scale": 1.27,
+          "settings": {
+            "lifetime": 1.1,
+            "fadeTime": 0.9
+          }
+        }
+      }
+    }
+  },
+  "highsun": {
+    "slots": {
+      "area": {
+        "from": "highsun",
+        "fx": {
+          "effect": "efk_benediction",
+          "scale": 0.72,
+          "settings": {
+            "flash": 0.1
+          }
+        }
+      }
+    }
+  },
+  "torsion": {
+    "slots": {
+      "area": {
+        "from": "torsion",
+        "fx": {
+          "effect": "found_tornado",
+          "scale": 0.75,
+          "settings": {
+            "color": "#5dffac",
+            "darkColor": "#1d6b48",
+            "sparkColor": "#eaffef",
+            "lightColor": "#5dffac",
+            "emissiveIntensity": 1.3,
+            "parabolStrength": 0.8,
+            "floorScale": 0.4,
+            "holdTime": 0.15,
+            "fadeTime": 0.4,
+            "liftSparks": 120,
+            "sparkSize": 0.09
+          }
+        }
+      }
+    }
+  },
+  "kubiwa": {
+    "slots": {
+      "area": {
+        "from": "kubiwa",
+        "fx": {
+          "effect": "spellbreak"
+        }
+      }
+    }
+  },
+  "onigawara": {
+    "slots": {
+      "area": {
+        "from": "onigawara",
+        "fx": {
+          "effect": "edge_onislash",
+          "settings": {
+            "colorOniGlow": "#f2c41a",
+            "oniInk": "#0a0802",
+            "oniBody": "#d9a514",
+            "oniMid": "#6b4f06",
+            "oniLight": "#fffbe0",
+            "oniHalo": "#f2c41a",
+            "oniFlame": "#f2c41a",
+            "oniFlameTip": "#fff6c8",
+            "swingInk": "#0a0802",
+            "swingBody": "#d9a514",
+            "swingMid": "#ffd84a",
+            "swingLight": "#ffffff",
+            "cutInk": "#0a0802",
+            "cutBody": "#d9a514",
+            "cutMid": "#ffe070",
+            "cutLight": "#fffbe0",
+            "colorBurstCore": "#fffbe0",
+            "colorBurstMid": "#f2c41a",
+            "colorBurstRim": "#3a2a04",
+            "colorEmberA": "#fffbe0",
+            "colorEmberB": "#ffd84a",
+            "colorEmberC": "#f2c41a",
+            "colorEmberD": "#3a2a04",
+            "colorSparkA": "#ffffff",
+            "colorSparkB": "#fff0a0",
+            "colorSparkC": "#f2c41a",
+            "colorSparkD": "#3a2a04",
+            "colorHitCore": "#fffbe0",
+            "colorHitRim": "#f2c41a",
+            "colorHitInk": "#0a0802",
+            "colorFlash": "#fff3c8",
+            "lightColor": "#f2c41a",
+            "ifLineColor": "#fff3c8"
+          }
+        }
+      }
+    }
+  },
+  "cardo": {
+    "slots": {
+      "area": {
+        "from": "cardo",
+        "fx": {
+          "effect": "blade_cyclone",
+          "settings": {
+            "colorCore": "#c8281e",
+            "colorMid": "#a0121a",
+            "colorEdge": "#3a0508",
+            "colorInk": "#000000",
+            "colorSwirlA": "#161012",
+            "colorSwirlB": "#100b0c",
+            "colorSwirlC": "#0b0708",
+            "colorSwirlD": "#050304",
+            "slashInk": 1.0,
+            "slashGlow": 0.3,
+            "slashHeadGlow": 0.2,
+            "colorChipA": "#2a2626",
+            "colorChipB": "#221e1e",
+            "colorChipC": "#1c1818",
+            "colorChipD": "#1c1818",
+            "colorSparkA": "#ff6a50",
+            "colorSparkB": "#e0282e",
+            "colorSparkC": "#7a0c10",
+            "colorSparkD": "#1a0204",
+            "colorHitCore": "#ff5a4a",
+            "colorHitRim": "#c0141c",
+            "colorHitInk": "#000000",
+            "colorFlash": "#300808",
+            "impactFlash": 0.08,
+            "lightColor": "#ff2a1a",
+            "lightIntensity": 5,
+            "lightPunch": 0.6,
+            "trackHeat": 0.1,
+            "ringIntensity": 0.3
+          }
+        }
+      }
+    }
+  },
+  "minase": {
+    "slots": {
+      "area": {
+        "from": "minase",
+        "fx": {
+          "effect": "saga_blitz",
+          "settings": {
+            "zipColorEdge": "#ffcf50",
+            "colorGhost": "#fff1c0",
+            "colorGhostDeep": "#7a5a10",
+            "colorGlint": "#ffcf50",
+            "colorDashB": "#fff6d8",
+            "colorDashC": "#ffd970",
+            "colorDashD": "#b07a10"
+          }
+        }
+      }
+    }
+  },
+  "aquilo": {
+    "slots": {
+      "area": {
+        "from": "aquilo",
+        "fx": {
+          "effect": "cyclone",
+          "settings": {
+            "funnelColorCore": "#ffffff",
+            "funnelColorInner": "#e6f6ff",
+            "funnelColorOuter": "#a8d8ee",
+            "funnelColorHalo": "#24506a",
+            "colorRibbonCore": "#ffffff",
+            "colorRibbonInner": "#e6f6ff",
+            "colorRibbonOuter": "#a8d8ee",
+            "colorRibbonHalo": "#24506a",
+            "debrisRate": 0,
+            "funnelSkirtFlare": 0.8,
+            "funnelOpacity": 0.62,
+            "funnelSheathOpacity": 0.55,
+            "funnelBandDepth": 0.85,
+            "funnelGlow": 0.35
+          },
+          "scale": 0.8
+        }
+      }
+    }
+  },
+  "psyche": {
+    "slots": {
+      "area": {
+        "from": "psyche",
+        "fx": {
+          "effect": "seal_sproutarms",
+          "scale": 1.2,
+          "settings": {
+            "arms": 12,
+            "armThickness": 0.062,
+            "handScale": 2.3,
+            "armLit": "#fff3ea",
+            "armMid": "#f4d4c2",
+            "armShade": "#bf8f7f",
+            "armRim": "#ffe6ee",
+            "ringRadius": 1.35,
+            "armLength": 1.2
+          }
+        }
+      }
+    }
+  },
+  "hawser": {
+    "slots": {
+      "area": {
+        "from": "hawser",
+        "fx": {
+          "effect": "breath_moon",
+          "scale": 1.35,
+          "settings": {
+            "moonSize": 0,
+            "katanaShow": 0,
+            "luneInk": "#0c1620",
+            "luneBody": "#8babbc",
+            "luneMid": "#dcebff",
+            "luneLight": "#ffffff",
+            "colorBurstCore": "#ffffff",
+            "colorBurstMid": "#cfe6ff",
+            "colorBurstRim": "#1a2a3a",
+            "colorMoteA": "#ffffff",
+            "colorMoteB": "#eaf4ff",
+            "colorMoteC": "#cfe6ff",
+            "colorMoteD": "#1a2a3a",
+            "colorSparkA": "#ffffff",
+            "colorSparkB": "#eaf4ff",
+            "colorSparkC": "#cfe6ff",
+            "colorSparkD": "#1a2a3a",
+            "ifCutColor": "#f0f6ff",
+            "ifLineColor": "#f0f6ff",
+            "colorHitCore": "#ffffff",
+            "colorHitRim": "#cfe6ff",
+            "colorHitInk": "#0c1620",
+            "colorFlash": "#f0f6ff",
+            "lightColor": "#cfe6ff",
+            "lifetime": 1.2,
+            "fadeTime": 1.2
+          }
+        }
+      }
+    }
+  },
+  "rotfalke": {
+    "slots": {
+      "area": {
+        "from": "rotfalke",
+        "fx": {
+          "effect": "colossus_thunderhound",
+          "settings": {
+            "houndColorB": "#ffb08a",
+            "houndColorC": "#ff3a1a",
+            "houndColorInk": "#2a0204",
+            "boltGlow": "#ff3a1a",
+            "boltRim": "#ffe0d0",
+            "trackColorGlow": "#ff4a1a",
+            "trackColorHot": "#ffe0c0",
+            "ringColorA": "#ff3a1a",
+            "colorSparkB": "#ffe0d0",
+            "colorSparkC": "#ff7a4a",
+            "colorSparkD": "#7a0a04",
+            "colorHitRim": "#ff3a1a",
+            "colorFlash": "#ffe0d0",
+            "lightColor": "#ff6a3a"
+          }
+        }
+      }
+    }
+  },
+  "bonsho": {
+    "slots": {
+      "area": {
+        "from": "bonsho",
+        "fx": {
+          "effect": "extd_celestialrend",
+          "scale": 0.8,
+          "settings": {
+            "colorTendrilCold": "#ffe9b8",
+            "colorShardBody": "#3a2a10",
+            "colorShardFacet": "#7a6030",
+            "colorShardCold": "#ffe2a0",
+            "colorPillarCool": "#fff2c8",
+            "colorStarCool": "#ffe9b8",
+            "colorHaloCool": "#ffe2a0",
+            "lifetime": 1.4,
+            "fadeTime": 0.45,
+            "lightIntensity": 14
+          }
+        }
+      }
+    }
+  },
+  "murex": {
+    "slots": {
+      "area": {
+        "from": "murex",
+        "fx": {
+          "effect": "beam",
+          "settings": {
+            "colorInner": "#fff1d6",
+            "colorOuter": "#ffb04a",
+            "colorHalo": "#e0500c",
+            "colorRing": "#ffe0a8",
+            "colorEmber": "#ffb04a",
+            "colorDustB": "#ffe0a8",
+            "colorShockA": "#ffb04a",
+            "colorSparkB": "#fff1d6",
+            "colorSparkC": "#ffb04a",
+            "colorSparkD": "#7a2a06",
+            "colorMoteB": "#ffe0a8",
+            "colorMoteC": "#ffb04a",
+            "colorMoteD": "#5e2006",
+            "lightColor": "#ffc87f",
+            "colorCastFlash": "#fff1d6",
+            "colorBurstA": "#ffb04a",
+            "colorBurstB": "#fff1d6",
+            "colorFlash": "#fff1d6"
+          }
+        }
+      }
+    }
+  },
+  "kinu": {
+    "slots": {
+      "area": {
+        "from": "kinu",
+        "fx": {
+          "effect": "webline",
+          "scale": 1.25,
+          "settings": {
+            "_glow": 1.7
+          }
+        }
+      }
+    }
+  },
+  "madake": {
+    "slots": {
+      "area": {
+        "from": "madake",
+        "fx": {
+          "effect": "will_quakebubble"
+        }
+      }
+    }
+  },
+  "akayuri": {
+    "slots": {
+      "area": {
+        "from": "akayuri",
+        "fx": {
+          "effect": "extra_iaido",
+          "scale": 1.3,
+          "settings": {
+            "element": 0,
+            "useColor": 1,
+            "color": "#d4102c"
+          }
+        }
+      }
+    }
+  },
+  "hisame": {
+    "slots": {
+      "area": {
+        "from": "hisame",
+        "fx": {
+          "effect": "colossus_glacierdrop",
+          "scale": 0.6,
+          "settings": {
+            "hold": 0.5,
+            "meltTime": 0.6,
+            "impactFlash": 0.2,
+            "mistCount": 10,
+            "rimeRadius": 5.6,
+            "ringSize": 9,
+            "frostDecal": 5
+          }
+        }
+      }
+    }
+  },
+  "svanhild": {
+    "slots": {
+      "area": {
+        "from": "svanhild",
+        "fx": {
+          "effect": "bubblecage",
+          "settings": {
+            "filmThickness": 480,
+            "filmThinRate": 0.25,
+            "filmDrain": 0.3,
+            "filmGain": 5.5,
+            "filmSaturation": 0.45,
+            "filmGlow": 1.0,
+            "colorFilmBody": "#9fd0ff",
+            "colorFilmRim": "#3a8cff",
+            "cageSquash": 0.5
+          },
+          "scale": 0.85
+        }
+      }
+    }
+  },
+  "mizuhiki": {
+    "slots": {
+      "area": {
+        "from": "mizuhiki",
+        "fx": {
+          "effect": "blade_cyclone",
+          "scale": 1.4,
+          "settings": {
+            "colorMid": "#cfe6ff",
+            "colorEdge": "#1a2a3a",
+            "colorSparkB": "#eaf4ff",
+            "colorSparkC": "#cfe6ff",
+            "colorSparkD": "#1a2a3a",
+            "colorHitRim": "#cfe6ff",
+            "colorFlash": "#f0f6ff",
+            "lightColor": "#cfe6ff",
+            "lifetime": 1.5,
+            "fadeTime": 1,
+            "swirlLifetime": 2.2,
+            "chipLifetime": 1.8
+          }
+        }
+      }
+    }
+  },
+  "shibuichi": {
+    "slots": {
+      "area": {
+        "from": "shibuichi",
+        "fx": {
+          "effect": "fx_magiccircle",
+          "scale": 0.72,
+          "settings": {
+            "pillarWidth": 0.75,
+            "pillarHeight": 0.8,
+            "pillarGain": 0.6,
+            "lifetime": 1.8,
+            "fadeTime": 0.5
+          }
+        }
+      }
+    }
+  },
+  "rakucho": {
+    "slots": {
+      "area": {
+        "from": "rakucho",
+        "fx": {
+          "effect": "ext_kraken",
+          "scale": 0.72,
+          "settings": {
+            "suckers": 0,
+            "colorSkin": "#8a0a1c",
+            "colorSkinDeep": "#2a0408",
+            "colorBelly": "#ff5a6a",
+            "colorFlush": "#ff2a3a",
+            "colorBiolume": "#ff3a4a",
+            "colorRim": "#ff6a7a",
+            "colorField": "#3a0408",
+            "colorFieldEdge": "#ff3a4a",
+            "colorVeil": "#2a0a10",
+            "colorShockA": "#ff3a4a",
+            "colorShockB": "#ffe0e4",
+            "colorRippleA": "#c01a28",
+            "colorRippleB": "#ffd0d6",
+            "colorCastFlash": "#ff3a4a",
+            "colorFlash": "#ffd0d6",
+            "zoneRadius": 3.1
+          }
+        }
+      }
+    }
+  },
+  "irbis": {
+    "slots": {
+      "area": {
+        "from": "irbis",
+        "fx": {
+          "effect": "hemolance",
+          "scale": 1.6,
+          "settings": {
+            "colorNeedleCore": "#d8f8ff",
+            "colorNeedleEdge": "#20a8e8",
+            "colorNeedleDeep": "#05203a",
+            "colorMistA": "#80dcff",
+            "colorMistB": "#20a8e8",
+            "colorMistC": "#0a4a80",
+            "colorMistD": "#04182a",
+            "colorPoolBase": "#0a2a4a",
+            "colorPoolEdge": "#80dcff",
+            "colorPoolGlow": "#20a8e8",
+            "colorPoolDeep": "#020a14",
+            "colorDropletA": "#60d0ff",
+            "colorDropletB": "#1a90d8",
+            "colorDropletC": "#0a4a80",
+            "colorDropletD": "#04182a",
+            "colorSprayA": "#a0e8ff",
+            "colorSprayB": "#20a8e8",
+            "colorSprayC": "#0a4a80",
+            "colorSprayD": "#04182a",
+            "colorHazeA": "#0a4a80",
+            "colorHazeB": "#083a68",
+            "colorHazeC": "#052a4a",
+            "colorHazeD": "#020e1a",
+            "colorMuzzleA": "#0a2a4a",
+            "colorMuzzleB": "#20a8e8",
+            "colorMuzzleC": "#d8f8ff",
+            "colorCastFlash": "#20a8e8"
+          }
+        }
+      }
+    }
+  },
+  "hinomoto": {
+    "slots": {
+      "area": {
+        "from": "hinomoto",
+        "fx": {
+          "effect": "wildfire",
+          "settings": {
+            "zoneRadius": 3.6,
+            "holdTime": 0.9,
+            "smoulderTime": 0.6,
+            "tickRate": 24,
+            "spread": 0.5,
+            "blockiness": 0.15,
+            "cellRough": 0.7,
+            "cellFill": 1.45,
+            "cellJitter": 0.35,
+            "cellGlow": 1.4,
+            "pallDensity": 0.5,
+            "flameHeight": 1.5,
+            "flameWidth": 0.24,
+            "burstSize": 1.6
+          }
+        }
+      }
+    }
+  },
+  "amagoi": {
+    "slots": {
+      "area": {
+        "from": "amagoi",
+        "fx": {
+          "effect": "thunderclap"
+        }
+      }
+    }
+  },
+  "shakudo": {
+    "slots": {
+      "area": {
+        "from": "shakudo",
+        "fx": {
+          "effect": "ext_bend_earth",
+          "settings": {
+            "lifetime": 1,
+            "towerRiseTime": 0.6,
+            "towerHold": 0.15
+          }
+        }
+      }
+    }
+  },
+  "hikui": {
+    "slots": {
+      "area": {
+        "from": "hikui",
+        "fx": {
+          "effect": "edge_palmblast",
+          "settings": {
+            "colorCrackleCore": "#ffd8ef",
+            "colorCrackleGlow": "#b5229a",
+            "colorCrackleRim": "#ffffff",
+            "colorStarCore": "#ffd8ef",
+            "colorBlastMid": "#2a0a3a",
+            "colorBlastRim": "#b5229a",
+            "colorHitCore": "#ffd8ef",
+            "colorHitRim": "#b5229a",
+            "colorHitInk": "#0a0410",
+            "colorFlash": "#f4d0ff",
+            "lightColor": "#b040e0",
+            "starInk": "#000000",
+            "starBody": "#2a0a3a",
+            "starMid": "#13081a",
+            "starLight": "#ffd8ef",
+            "starHalo": "#b5229a",
+            "puffColorSmoke": "#2a1a30",
+            "puffColorShade": "#0a0410",
+            "puffColorCore": "#13081a",
+            "puffColorMid": "#24092e",
+            "puffColorBody": "#5a1660",
+            "puffColorRim": "#b5229a",
+            "puffColorInk": "#000000",
+            "colorSparkA": "#ffffff",
+            "colorSparkB": "#ffb0e8",
+            "colorSparkC": "#b5229a",
+            "colorSparkD": "#13081a",
+            "colorEmberA": "#ffd8ef",
+            "colorEmberB": "#e050c0",
+            "colorEmberC": "#b5229a",
+            "colorEmberD": "#13081a"
+          }
+        }
+      }
+    }
+  },
+  "tokan": {
+    "slots": {
+      "area": {
+        "from": "tokan",
+        "fx": {
+          "effect": "glacier",
+          "scale": 0.5,
+          "settings": {
+            "spikeCount": 130,
+            "mistRate": 110,
+            "_glow": 0.75
+          }
+        }
+      }
+    }
+  },
+  "strappado": {
+    "slots": {
+      "area": {
+        "from": "strappado",
+        "fx": {
+          "effect": "seal_stringcage",
+          "settings": {
+            "threadColor": "#ffb0d8",
+            "threadColorCore": "#ffffff",
+            "grooveColor": "#ff80c0",
+            "lineColor": "#ffe8f4",
+            "colorHitRim": "#ff80c0",
+            "colorFlash": "#fff0f8",
+            "lightColor": "#ffa0d0"
+          }
+        }
+      }
+    }
+  },
+  "unari": {
+    "slots": {
+      "area": {
+        "from": "unari",
+        "fx": {
+          "effect": "origami",
+          "scale": 1.6,
+          "settings": {
+            "colorPaper": "#ffffff",
+            "colorShade": "#e6dcef",
+            "colorTransmit": "#ffd8f0",
+            "lightColor": "#ff8ad8",
+            "colorCrease": "#ffffff",
+            "colorInk": "#c0102c",
+            "colorScrapA": "#ffffff",
+            "colorScrapB": "#f6eef6",
+            "colorScrapC": "#e8d8ec",
+            "colorScrapD": "#c8b8d0",
+            "colorChaffA": "#ffffff",
+            "colorChaffB": "#f0e4f0",
+            "colorChaffC": "#ff8ad8",
+            "colorChaffD": "#c01060",
+            "colorDustA": "#fff4fb",
+            "colorDustB": "#f0d8ec",
+            "colorDustC": "#d8b0d0",
+            "colorDustD": "#a07898",
+            "colorRingA": "#ffffff",
+            "colorRingB": "#ff8ad8"
+          }
+        }
+      }
+    }
+  },
+  "barrow": {
+    "slots": {
+      "area": {
+        "from": "barrow",
+        "fx": {
+          "effect": "seal_pull",
+          "settings": {
+            "orbColorBody": "#100917",
+            "orbColorMid": "#0a0410",
+            "orbColorRim": "#b074e5",
+            "tetherColor": "#8a4ad8",
+            "grooveColor": "#100917",
+            "colorHitRim": "#b074e5",
+            "colorHitInk": "#0a0410",
+            "lightColor": "#b074e5"
+          }
+        }
+      }
+    }
+  },
+  "sashigane": {
+    "slots": {
+      "area": {
+        "from": "sashigane",
+        "fx": {
+          "effect": "blade_blink",
+          "scale": 1.7,
+          "settings": {
+            "colorMid": "#e3ad3c",
+            "colorEdge": "#3a2608",
+            "colorGhost": "#f0c870",
+            "colorGhostDeep": "#2a1a06",
+            "colorHitRim": "#e3ad3c",
+            "colorInk": "#0a0804",
+            "colorSparkB": "#fff0c8",
+            "colorSparkC": "#e3ad3c",
+            "colorSparkD": "#3a2608",
+            "colorStreakB": "#fff0c8",
+            "colorStreakC": "#e3ad3c",
+            "colorStreakD": "#3a2608",
+            "colorFlash": "#fff6e0",
+            "lightColor": "#e3ad3c",
+            "lifetime": 1.6,
+            "fadeTime": 1,
+            "sparkLifetime": 1,
+            "streakLifetime": 0.5
+          }
+        }
+      }
+    }
+  },
+  "gosu": {
+    "slots": {
+      "area": {
+        "from": "gosu",
+        "fx": {
+          "effect": "shrapnel",
+          "scale": 1.7,
+          "settings": {
+            "colorBurstA": "#f086b5",
+            "colorBurstB": "#ffc0dc",
+            "colorBurstC": "#faf6ff",
+            "colorFlash": "#ffe0f0",
+            "colorPockGlow": "#f086b5",
+            "colorSparkA": "#faf6ff",
+            "colorSparkB": "#ffc0dc",
+            "colorSparkC": "#f086b5",
+            "colorSparkD": "#3a1a40",
+            "lightColor": "#f086b5"
+          }
+        }
+      }
+    }
+  },
+  "kusushi": {
+    "slots": {
+      "area": {
+        "from": "kusushi",
+        "fx": {
+          "effect": "qk_acid"
+        }
+      }
+    }
+  },
+  "hakushi": {
+    "slots": {
+      "area": {
+        "from": "hakushi",
+        "fx": {
+          "effect": "sinkhole",
+          "scale": 0.5,
+          "settings": {
+            "colorFieldBase": "#7a2a3a",
+            "colorFieldDeep": "#2a0810",
+            "colorFieldEdge": "#d07080",
+            "colorFieldGlow": "#b04a60",
+            "colorGround": "#8a3a48",
+            "colorLip": "#e08a98",
+            "colorWall": "#5a1a28",
+            "colorVoid": "#140408",
+            "colorDeep": "#2a0810",
+            "colorDebris": "#6a2030",
+            "colorBurstA": "#d07080",
+            "colorBurstB": "#8a3040",
+            "colorBurstC": "#2a0810",
+            "colorDustA": "#c08890",
+            "colorDustB": "#8a5560",
+            "colorDustC": "#4a2a30",
+            "colorDustD": "#1e1012",
+            "colorPebbleA": "#a04a5a",
+            "colorPebbleB": "#7a3040",
+            "colorPebbleC": "#4a1a24",
+            "colorPebbleD": "#1e0a10",
+            "colorShockA": "#e08a98",
+            "colorShockB": "#ffd0d8",
+            "colorFlash": "#b04a60",
+            "lightColor": "#ff8a9a",
+            "dustRate": 24,
+            "dustOpacity": 0.1,
+            "blastDust": 30,
+            "lifetime": 0.7,
+            "sinkTime": 0.6,
+            "zoneRadius": 2.1,
+            "apron": 1.3,
+            "depth": 2,
+            "debrisSinkDepth": 3
+          }
+        }
+      }
+    }
+  },
+  "suzuran": {
+    "slots": {
+      "area": {
+        "from": "suzuran",
+        "fx": {
+          "effect": "seal_trigrams",
+          "scale": 1.25,
+          "settings": {
+            "lineColor": "#d4d0ff",
+            "fieldColorLight": "#e8e4ff"
+          }
+        }
+      }
+    }
+  },
+  "wataame": {
+    "slots": {
+      "area": {
+        "from": "wataame",
+        "fx": {
+          "effect": "extra_nova"
+        }
+      }
+    }
+  },
+  "bruin": {
+    "slots": {
+      "area": {
+        "from": "bruin",
+        "fx": {
+          "effect": "cosmos_blackhole",
+          "settings": {
+            "colorPhoton": "#ffffff",
+            "colorDiscHot": "#e6dcff",
+            "colorDiscMid": "#3a2058",
+            "colorDiscCool": "#14061f",
+            "colorNovaCore": "#ffffff",
+            "colorNovaHalo": "#9a7ad8",
+            "lightColor": "#7a5ac8",
+            "colorNebulaA": "#08040f",
+            "colorNebulaB": "#120a24",
+            "colorJet": "#d9c8ff",
+            "colorChunk": "#120a1c",
+            "colorChunkHot": "#9a7ad8",
+            "height": 3.5,
+            "starDensity": 0,
+            "nebulaAmount": 0,
+            "jetLength": 0,
+            "jetGlow": 0,
+            "discOut": 4.5,
+            "discOpacity": 0.5,
+            "discGlow": 0.5,
+            "photonWidth": 0.12,
+            "photonRing": 2.0
+          },
+          "scale": 0.55
+        }
+      }
+    }
+  },
+  "senko": {
+    "slots": {
+      "area": {
+        "from": "senko",
+        "fx": {
+          "effect": "solarlens",
+          "settings": {
+            "colorFlareCore": "#fffce6",
+            "colorFlareHalo": "#f9d870",
+            "colorFlareRing": "#f9bf32",
+            "colorIgniteA": "#f9bf32",
+            "colorIgniteB": "#ffe08a",
+            "colorCharGlow": "#f9bf32",
+            "colorEmberC": "#f9a020",
+            "lightColor": "#f9bf32"
+          }
+        }
+      }
+    }
+  },
+  "buna": {
+    "slots": {
+      "area": {
+        "from": "buna",
+        "fx": {
+          "effect": "ice",
+          "scale": 0.55,
+          "settings": {
+            "lifetime": 0.9,
+            "shatterDelay": 0.3,
+            "sinkTime": 0.5
+          }
+        }
+      }
+    }
+  },
+  "oyashio": {
+    "slots": {
+      "area": {
+        "from": "oyashio",
+        "fx": {
+          "effect": "ext_bend_water"
+        }
+      }
+    }
+  },
+  "adad": {
+    "slots": {
+      "area": {
+        "from": "adad",
+        "fx": {
+          "effect": "colossus_thundercloud",
+          "scale": 0.45,
+          "settings": {
+            "boltGlow": "#70d9ff",
+            "boltRim": "#eaffff",
+            "colorHitRim": "#f9d25b",
+            "hitRingColorA": "#70d9ff",
+            "colorSparkC": "#70d9ff",
+            "colorSparkD": "#1a6a90",
+            "colorFlash": "#eaffff",
+            "cloudColorLit": "#5ab8e8"
+          }
+        }
+      }
+    }
+  },
+  "shijima": {
+    "slots": {
+      "area": {
+        "from": "shijima",
+        "fx": {
+          "effect": "extra_celflame",
+          "settings": {
+            "colorCore": "#eef8ff",
+            "colorMid": "#6ab8ff",
+            "colorOuter": "#2a5aff",
+            "colorOutline": "#020818",
+            "lightColor": "#4a8aff",
+            "sparkColor": "#8ac8ff"
+          }
+        }
+      }
+    }
+  },
+  "akaito": {
+    "slots": {
+      "area": {
+        "from": "akaito",
+        "fx": {
+          "effect": "seal_ghostrush",
+          "settings": {
+            "ghostColor": "#e8e3ef",
+            "ghostColorDeep": "#2a2260",
+            "ghostColorRim": "#ffffff",
+            "fistLit": "#f4f0f8",
+            "fistMid": "#d8d0e8",
+            "fistShade": "#5446c8",
+            "fistEmit": "#2a2260",
+            "fistInk": "#0e0b22",
+            "fistAfterTint": "#8a7ad8",
+            "streakColor": "#c8c0f0",
+            "lightColor": "#5446c8",
+            "colorHitRim": "#8a7ad8",
+            "colorHitInk": "#0e0b22",
+            "ifSilColor": "#8a7ad8",
+            "colorFlash": "#f0eaff"
+          }
+        }
+      }
+    }
+  },
+  "tempo": {
+    "slots": {
+      "area": {
+        "from": "tempo",
+        "fx": {
+          "effect": "blade_darkspark"
+        }
+      }
+    }
+  },
+  "tancho": {
+    "slots": {
+      "area": {
+        "from": "tancho",
+        "fx": {
+          "effect": "quench",
+          "settings": {
+            "steamDensity": 0.6,
+            "steamWidth": 0.75,
+            "steamRate": 80,
+            "steamOpacity": 0.18,
+            "steamLifetime": 1.4
+          }
+        }
+      }
+    }
+  },
+  "mikage": {
+    "slots": {
+      "area": {
+        "from": "mikage",
+        "fx": {
+          "effect": "blade_dash",
+          "scale": 1.6,
+          "settings": {
+            "colorBurstMid": "#c9a6ff",
+            "colorEdge": "#2a0a66",
+            "colorFlash": "#f0e6ff",
+            "colorGhost": "#c9a6ff",
+            "colorGhostDeep": "#1a0640",
+            "colorHitRim": "#a67aff",
+            "colorLead": "#f4ecff",
+            "colorMid": "#a67aff",
+            "colorSparkB": "#ecdcff",
+            "colorSparkC": "#a67aff",
+            "colorSparkD": "#2a0a66",
+            "colorStreakB": "#e0d0ff",
+            "colorStreakC": "#a67aff",
+            "colorStreakD": "#2a0a66",
+            "lightColor": "#c9a6ff",
+            "dustLifetime": 2.2,
+            "sparkLifetime": 0.9
+          }
+        }
+      }
+    }
+  },
+  "full-beam": {
+    "slots": {
+      "area": {
+        "from": "full-beam",
+        "fx": {
+          "effect": "efk_tornado"
+        }
+      }
+    }
+  },
+  "pyroclast": {
+    "slots": {
+      "area": {
+        "from": "pyroclast",
+        "fx": {
+          "effect": "nb_meteorshower"
+        }
+      }
+    }
+  },
+  "ampere": {
+    "slots": {
+      "area": {
+        "from": "ampere",
+        "fx": {
+          "effect": "extra_heel",
+          "scale": 1.65,
+          "settings": {
+            "element": 0,
+            "useColor": 1,
+            "color": "#3cf07a"
+          }
+        }
+      }
+    }
+  },
+  "shanxiao": {
+    "slots": {
+      "area": {
+        "from": "shanxiao",
+        "fx": {
+          "effect": "cosmos_starfall",
+          "settings": {
+            "colorCoreHalo": "#b8ff6a",
+            "colorCraterCool": "#2a8a10",
+            "colorCraterHot": "#f4ffd0",
+            "colorCraterWarm": "#8ef03a",
+            "colorFlash": "#f4ffd0",
+            "colorHitRim": "#8ef03a",
+            "colorPillar": "#e4ff8b",
+            "colorShellBody": "#8ef03a",
+            "colorShellNose": "#f4ffd0",
+            "colorShellTail": "#1f6b1a",
+            "colorTrailCore": "#e4ff8b",
+            "colorTrailEdge": "#67d92d",
+            "lightColor": "#b8ff6a"
+          }
+        }
+      }
+    }
+  },
+  "kuzu": {
+    "slots": {
+      "area": {
+        "from": "kuzu",
+        "fx": {
+          "effect": "edge_chainsaw"
+        }
+      }
+    }
+  },
+  "basilissa": {
+    "slots": {
+      "area": {
+        "from": "basilissa",
+        "fx": {
+          "effect": "edge_heartbeam",
+          "scale": 1.7
+        }
+      }
+    }
+  },
+  "sorayomi": {
+    "slots": {
+      "area": {
+        "from": "sorayomi",
+        "fx": {
+          "effect": "p27_thunderlance",
+          "settings": {
+            "lightColor": "#ffe57a"
+          }
+        }
+      }
+    }
+  },
+  "strix": {
+    "slots": {
+      "area": {
+        "from": "strix",
+        "fx": {
+          "effect": "extra_slashstorm",
+          "scale": 1.7,
+          "settings": {
+            "slashTint": "#eaf5cf",
+            "hitTint": "#eaf5cf",
+            "lightColor": "#73a56d",
+            "sparkColor": "#b8e0a0"
+          }
+        }
+      }
+    }
+  },
+  "gorai": {
+    "slots": {
+      "area": {
+        "from": "gorai",
+        "fx": {
+          "effect": "dragonbreath"
+        }
+      }
+    }
+  },
+  "haldor": {
+    "slots": {
+      "area": {
+        "from": "haldor",
+        "fx": {
+          "effect": "found_ragingsea",
+          "settings": {
+            "color": "#0a3a5a",
+            "emissiveColor": "#a8d8ff",
+            "sparkColor": "#e8f4ff",
+            "lightColor": "#cfe8ff",
+            "radius": 4,
+            "holdTime": 0.8,
+            "settleTime": 0.6
+          }
+        }
+      }
+    }
+  },
+  "sorrel": {
+    "slots": {
+      "area": {
+        "from": "sorrel",
+        "fx": {
+          "effect": "edge_blackcrescent",
+          "settings": {
+            "colorBoltGlow": "#ff2a3a",
+            "colorCleaveEdge": "#ff2a3a",
+            "colorScarEmber": "#5a0010",
+            "colorHitRim": "#ff2a3a",
+            "lightColor": "#ff2a3a"
+          }
+        }
+      }
+    }
+  },
+  "dorado": {
+    "slots": {
+      "area": {
+        "from": "dorado",
+        "fx": {
+          "effect": "will_sovereign",
+          "settings": {
+            "arcBand": "#ffb020",
+            "arcHalo": "#5a3000",
+            "colorFlash": "#ffd060",
+            "colorHitRim": "#ffb020",
+            "colorSparkB": "#ffe08a",
+            "colorSparkC": "#ffb020",
+            "colorSparkD": "#301800",
+            "domeMid": "#ffb020",
+            "domeRim": "#ffd060",
+            "floorBand": "#ffb020",
+            "floorHot": "#fff3c4",
+            "ifSilColor": "#ffb020",
+            "lightColor": "#ffb020"
+          }
+        }
+      }
+    }
+  },
+  "shiun": {
+    "slots": {
+      "area": {
+        "from": "shiun",
+        "fx": {
+          "effect": "efk_bluelaser",
+          "settings": {
+            "colorFlash": "#e8d8ff",
+            "colorRing": "#b070ff",
+            "lightColor": "#b070ff"
+          }
+        }
+      }
+    }
+  },
+  "magatsu": {
+    "slots": {
+      "area": {
+        "from": "magatsu",
+        "fx": {
+          "effect": "ext_pyre",
+          "settings": {
+            "lifetime": 1.5,
+            "burnDelay": 0.3,
+            "burnSweep": 0.45,
+            "ashTime": 0.8,
+            "coreShare": 0.5,
+            "coreHeight": 3.8,
+            "coreSpread": 0.2,
+            "ringHeight": 1.0,
+            "colorChar": "#0b0606",
+            "colorEmber": "#7a000f",
+            "colorFlame": "#dc2337",
+            "colorCore": "#ff8a98",
+            "colorRock": "#1a0b0c",
+            "colorRim": "#ff4058",
+            "colorAsh": "#2a1418",
+            "colorField": "#c4102a",
+            "colorFieldEdge": "#ff8090",
+            "colorVeil": "#ff6070",
+            "colorVeilCrest": "#dc2337",
+            "colorVeilSmoke": "#140608",
+            "colorScorch": "#0b0606",
+            "colorScorchEmber": "#dc2337",
+            "colorFracture": "#ff6a7a",
+            "colorShockA": "#dc2337",
+            "colorShockB": "#ffd0d6",
+            "colorSmokeA": "#2a1014",
+            "colorSmokeB": "#1c0b0e",
+            "colorSmokeC": "#120709",
+            "colorSmokeD": "#060304",
+            "colorCinderA": "#ffd9de",
+            "colorCinderB": "#ff3a50",
+            "colorCinderC": "#7a000f",
+            "colorCinderD": "#0b0606",
+            "colorEmberA": "#ffe0e4",
+            "colorEmberB": "#ff5a6a",
+            "colorEmberC": "#c4102a",
+            "colorEmberD": "#2a0006",
+            "colorUpdraftA": "#ffc0c8",
+            "colorUpdraftB": "#ff3a50",
+            "colorUpdraftC": "#8a0010",
+            "colorUpdraftD": "#140004",
+            "lightColor": "#ff2a40",
+            "colorCastFlash": "#b0102a",
+            "colorFlash": "#801020",
+            "birthGlow": 1.2,
+            "frontGlow": 1.8,
+            "glow": 1.1,
+            "ringShare": 0.22,
+            "lateShare": 0.1,
+            "coreLean": 0.1,
+            "skirtHeight": 0.8,
+            "sharp": 0.42,
+            "curl": 0.9,
+            "flameStretch": 0.6,
+            "flameScale": 3.6
+          }
+        }
+      }
+    }
+  },
+  "vesper": {
+    "slots": {
+      "area": {
+        "from": "vesper",
+        "fx": {
+          "effect": "emberflock",
+          "settings": {
+            "colorBirdA": "#ffffff",
+            "colorBirdB": "#e6ecf5",
+            "colorBirdC": "#b8c4d8",
+            "colorBirdD": "#23142d",
+            "colorTrailA": "#ffffff",
+            "colorTrailB": "#d6dde9",
+            "colorTrailC": "#8a96b0",
+            "colorTrailD": "#23142d",
+            "colorBurstA": "#d6dde9",
+            "colorBurstB": "#ffffff",
+            "colorBurstC": "#ffffff",
+            "colorEmberA": "#ffffff",
+            "colorEmberB": "#e6ecf5",
+            "colorEmberC": "#b8c4d8",
+            "colorEmberD": "#23142d",
+            "colorSparkB": "#f0f4ff",
+            "colorSparkC": "#b8c4d8",
+            "colorSparkD": "#23142d",
+            "colorFlash": "#ffffff",
+            "colorCastFlash": "#ffffff",
+            "colorShockA": "#d6dde9",
+            "colorShockB": "#ffffff",
+            "colorCharEmber": "#b8c4d8",
+            "lightColor": "#e6ecf5"
+          }
+        }
+      }
+    }
+  },
+  "imago": {
+    "slots": {
+      "area": {
+        "from": "imago",
+        "fx": {
+          "effect": "photonlattice",
+          "scale": 0.62,
+          "settings": {
+            "colorHalo": "#2f8f72",
+            "colorShockB": "#2f8f72",
+            "colorMoteB": "#bfe8d8",
+            "colorMoteC": "#2f8f72",
+            "colorMoteD": "#2a1242",
+            "colorEnd": "#9a6ad8",
+            "colorCastFlash": "#e8fff4",
+            "lightColor": "#7fd8b8",
+            "lifetime": 1.3,
+            "fadeTime": 0.5
+          }
+        }
+      }
+    }
+  },
+  "wuming": {
+    "slots": {
+      "area": {
+        "from": "wuming",
+        "fx": {
+          "effect": "p27_megiddo",
+          "settings": {
+            "lightColor": "#ff5fcf"
+          }
+        }
+      }
+    }
+  },
+  "jirenga": {
+    "slots": {
+      "area": {
+        "from": "jirenga",
+        "fx": {
+          "effect": "ki_volley",
+          "scale": 0.75,
+          "settings": {
+            "blastColorBody": "#ff4a2a",
+            "blastColorMid": "#ffb0a0",
+            "blastColorRim": "#8a0a14",
+            "boltColorBody": "#ff4a2a",
+            "boltColorMid": "#ffc0b0",
+            "boltColorRim": "#8a0a14",
+            "colorEmberB": "#ffb0a0",
+            "colorEmberC": "#ff4a2a",
+            "colorEmberD": "#400408",
+            "colorEmberGlow": "#ff4a2a",
+            "colorFlash": "#fff0e6",
+            "barrageTime": 1,
+            "linger": 0.8
+          }
+        }
+      }
+    }
+  },
+  "jinlin": {
+    "slots": {
+      "area": {
+        "from": "jinlin",
+        "fx": {
+          "effect": "ki_disc"
+        }
+      }
+    }
+  },
+  "gohaku": {
+    "slots": {
+      "area": {
+        "from": "gohaku",
+        "fx": {
+          "effect": "extra_rush",
+          "settings": {
+            "element": 0,
+            "useColor": 1,
+            "color": "#c8a0ff"
+          }
+        }
+      }
+    }
+  },
+  "ippon": {
+    "slots": {
+      "area": {
+        "from": "ippon",
+        "fx": {
+          "effect": "stonespine",
+          "scale": 0.6,
+          "settings": {
+            "lifetime": 0.9,
+            "sinkTime": 0.5
+          }
+        }
+      }
+    }
+  },
+  "sekka": {
+    "slots": {
+      "area": {
+        "from": "sekka",
+        "fx": {
+          "effect": "seal_snowcompass",
+          "settings": {
+            "sigilColor": "#39d0f4",
+            "sigilColorHot": "#f1fdff",
+            "lineColor": "#f1fdff",
+            "colorHitRim": "#d0408a",
+            "ifSilColor": "#d0408a",
+            "colorFlash": "#f1fdff",
+            "lightColor": "#39d0f4",
+            "iceLit": "#f1fdff",
+            "iceMid": "#39d0f4",
+            "iceShade": "#1a5a8a",
+            "iceEmit": "#d0408a",
+            "iceInk": "#0a0a1a",
+            "iceHot": "#ffffff",
+            "frozenLit": "#f1fdff",
+            "frozenMid": "#9ae6f8",
+            "frozenShade": "#d0408a",
+            "colorChipC": "#39d0f4",
+            "colorChipD": "#d0408a",
+            "colorMistC": "#9ae6f8",
+            "colorMistD": "#d0408a"
+          }
+        }
+      }
+    }
+  },
+  "akagane": {
+    "slots": {
+      "area": {
+        "from": "akagane",
+        "fx": {
+          "effect": "arts_dragonflame",
+          "scale": 0.62,
+          "settings": {
+            "fadeTime": 0.5
+          }
+        }
+      }
+    }
+  },
+  "asahi": {
+    "slots": {
+      "area": {
+        "from": "asahi",
+        "fx": {
+          "effect": "breath_water"
+        }
+      }
+    }
+  },
+  "levin": {
+    "slots": {
+      "area": {
+        "from": "levin",
+        "fx": {
+          "effect": "extra_flurry",
+          "settings": {
+            "element": 0,
+            "useColor": 1,
+            "color": "#dfe6ee"
+          }
+        }
+      }
+    }
+  },
+  "rook": {
+    "slots": {
+      "area": {
+        "from": "rook",
+        "fx": {
+          "effect": "umbralspears"
+        }
+      }
+    }
+  },
+  "gaku": {
+    "slots": {
+      "area": {
+        "from": "gaku",
+        "fx": {
+          "effect": "extra_auraflare"
+        }
+      }
+    }
+  },
+  "hagure": {
+    "slots": {
+      "area": {
+        "from": "hagure",
+        "fx": {
+          "effect": "breath_wind",
+          "settings": {
+            "colorBurstCore": "#f4f9ff",
+            "colorBurstMid": "#5fa8ff",
+            "colorBurstRim": "#10306a",
+            "galeInk": "#050c1f",
+            "galeBody": "#2563c8",
+            "galeMid": "#8cc2ff",
+            "galeLight": "#f4f9ff",
+            "colorLeafA": "#ffffff",
+            "colorLeafB": "#bcd8ff",
+            "colorLeafC": "#5f8fd8",
+            "colorLeafD": "#1a2f5a",
+            "leafSize": 0.1,
+            "colorDustA": "#a8b4c8",
+            "colorDustB": "#7a869c",
+            "colorDustC": "#4e586a",
+            "colorDustD": "#2a303c",
+            "colorStreakA": "#ffffff",
+            "colorStreakB": "#d8e8ff",
+            "colorStreakC": "#5fa8ff",
+            "colorStreakD": "#10306a",
+            "ifLineColor": "#d8e8ff",
+            "colorHitRim": "#5fa8ff",
+            "colorHitInk": "#050c1f",
+            "colorFlash": "#e8f2ff",
+            "lightColor": "#7fb8ff"
+          }
+        }
+      }
+    }
+  },
+  "ovid": {
+    "slots": {
+      "area": {
+        "from": "ovid",
+        "fx": {
+          "effect": "colossus_moltenfist",
+          "scale": 0.5,
+          "settings": {
+            "magmaColorA": "#e8fbff",
+            "magmaColorB": "#2a3036",
+            "magmaColorC": "#101418",
+            "magmaColorD": "#20e0d0",
+            "magmaColorInk": "#020405",
+            "lavaColorCore": "#e8fbff",
+            "lavaColorMid": "#7ff5ea",
+            "lavaColorBody": "#19c8c0",
+            "lavaColorRim": "#0a5a5c",
+            "lavaColorSmoke": "#22282c",
+            "lavaColorShade": "#0a0e10",
+            "lavaColorInk": "#02080a",
+            "smokeColorCore": "#c8f0ec",
+            "smokeColorMid": "#5fd8d0",
+            "smokeColorBody": "#1f8a86",
+            "smokeColorRim": "#0e3a3c",
+            "smokeColorSmoke": "#3a3e40",
+            "smokeColorShade": "#121618",
+            "smokeColorInk": "#02080a",
+            "poolColorPit": "#0a1214",
+            "poolColorLip": "#2a3236",
+            "poolColorGlow": "#19c8c0",
+            "poolColorHot": "#c8fff8",
+            "craterDish": "#121618",
+            "craterLipColor": "#2e3438",
+            "craterHot": "#22d8cc",
+            "craterEmber": "#0a4a48",
+            "ringColorA": "#19c8c0",
+            "ringColorB": "#c8fff8",
+            "warnColor": "#19c8c0",
+            "rockColor": "#8a7a68",
+            "rockGlowColor": "#22d8cc",
+            "colorEmberA": "#ffffff",
+            "colorEmberB": "#a8fff4",
+            "colorEmberC": "#19c8c0",
+            "colorEmberD": "#0a4a48",
+            "colorChipA": "#8a7a68",
+            "colorChipB": "#6a5c4e",
+            "colorChipC": "#4a4038",
+            "colorChipD": "#2a2420",
+            "colorHitRim": "#19c8c0",
+            "colorFlash": "#b8fff6",
+            "lightColor": "#2ae0d4",
+            "embedTime": 0.6,
+            "crumbleTime": 0.6,
+            "impactFlash": 0.1,
+            "rockCount": 16,
+            "lavaCount": 24
+          }
+        }
+      }
+    }
+  },
+  "aqrab": {
+    "slots": {
+      "area": {
+        "from": "aqrab",
+        "fx": {
+          "effect": "undertow",
+          "scale": 0.8,
+          "settings": {
+            "colorDeep": "#2a1a0c",
+            "colorShallow": "#b98a4e",
+            "colorFoam": "#f3e2bf",
+            "colorSpec": "#fff6e0",
+            "colorSky": "#6b5434",
+            "colorNet": "#e8c98a",
+            "colorFringe": "#fff3d6",
+            "colorWash": "#7a5a32",
+            "colorDebrisA": "#c9a46a",
+            "colorDebrisB": "#9c7a48",
+            "colorDebrisC": "#6b5230",
+            "colorDebrisD": "#2a1c0e",
+            "colorSpumeA": "#f6e8c8",
+            "colorSpumeB": "#e0c08a",
+            "colorSpumeC": "#a8844e",
+            "colorSpumeD": "#4a3420",
+            "colorMistA": "#ead7b0",
+            "colorMistB": "#c8ac7c",
+            "colorMistC": "#8a7048",
+            "colorMistD": "#3a2c1c",
+            "colorGritA": "#d6b886",
+            "colorGritB": "#a88a5a",
+            "colorGritC": "#6e5636",
+            "colorGritD": "#2a1e12",
+            "colorRimA": "#2e2010",
+            "colorRimB": "#f0d9a8",
+            "colorBurstA": "#fff1d0",
+            "colorBurstB": "#d0a060",
+            "colorBurstC": "#4a3218",
+            "colorShockA": "#f8e6c0",
+            "colorShockB": "#c09050",
+            "colorFlash": "#f0d49a",
+            "lightColor": "#f2c27a",
+            "zoneRadius": 3.6,
+            "pullTime": 1.3,
+            "closeTime": 0.6
+          }
+        }
+      }
+    }
+  },
+  "chohan": {
+    "slots": {
+      "area": {
+        "from": "chohan",
+        "fx": {
+          "effect": "blade_iaido",
+          "scale": 1.5,
+          "settings": {
+            "colorBurstMid": "#cfd8d4",
+            "colorBurstRim": "#2a3038",
+            "colorMid": "#dfe6e2",
+            "colorEdge": "#3a4048",
+            "colorSparkB": "#f2f6f4",
+            "colorSparkC": "#cfd8d4",
+            "colorSparkD": "#20262c",
+            "colorMoteB": "#e8f0ec",
+            "colorMoteC": "#aeb8b4",
+            "colorMoteD": "#171d24",
+            "colorHitRim": "#cfd8d4",
+            "colorFlash": "#f2f6f4",
+            "lightColor": "#dfe6e2",
+            "lifetime": 1.6,
+            "fadeTime": 1
+          }
+        }
+      }
+    }
+  }
+}

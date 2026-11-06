@@ -1,0 +1,322 @@
+{
+ "src/ui/modes/place.test.ts": [
+  "falls back to RANDOM for a value this build does not offer, or a ring the field does not fit",
+  "is the place named",
+  "lists RANDOM first and selected by default, then each place by its picture, its name and its scene line",
+  "lists the small rings a big royale cannot use as unavailable, with how many each holds",
+  "remembers the place named, one per mode, for the bots and the friends way alike",
+  "shows the place remembered as the one selected",
+  "stays the Proving Hall for a browser driven by a tool, unless a place is named (evidence scripts frame Training by it)"
+ ],
+ "tests/airNormals.test.ts": [
+  "gummy is announced as the air kick exactly when the air kick is what is drawn",
+  "koko is announced as the air kick exactly when the air kick is what is drawn",
+  "konta is announced as the air kick exactly when the air kick is what is drawn",
+  "kosho is announced as the air kick exactly when the air kick is what is drawn",
+  "ouga is announced as the air kick exactly when the air kick is what is drawn",
+  "taisei is announced as the air kick exactly when the air kick is what is drawn"
+ ],
+ "tests/airStrings.test.ts": [
+  "gummy: announces its air string by the names of what it draws",
+  "kagari: announces its air string by the names of what it draws",
+  "kenzo: announces its air string by the names of what it draws",
+  "koko: announces its air string by the names of what it draws",
+  "konta: announces its air string by the names of what it draws",
+  "kosho: announces its air string by the names of what it draws",
+  "kuon: announces its air string by the names of what it draws",
+  "never draws Jump + Light with the grounded jab's clip (round 4b)",
+  "nigo: announces its air string by the names of what it draws",
+  "oro: announces its air string by the names of what it draws",
+  "ouga: announces its air string by the names of what it draws",
+  "shirokane: announces its air string by the names of what it draws",
+  "taisei: announces its air string by the names of what it draws",
+  "tucks the legs under a blow thrown with the arms in the air, and leaves a kick its own legs",
+  "ward: announces its air string by the names of what it draws"
+ ],
+ "tests/amagoiSharedIntegration.test.ts": [
+  "air stages retain their individual authored receiver/repulsion clips"
+ ],
+ "tests/areaStamp.test.ts": [
+  "keeps each data entry's animation to a fighter that exists and a clip its body has"
+ ],
+ "tests/awakening.test.ts": [
+  "resolves its transformation clip in the fighter that has to play it"
+ ],
+ "tests/combosVol1Clips.test.ts": [
+  "names a clip each body plays - its own, its rush's, its extra files' or its idle's - and a segment inside it",
+  "names a form's own clips in its own body"
+ ],
+ "tests/drawnSeparation.test.ts": [
+  "kuon keeps its torso off the opponent's through its rush"
+ ],
+ "tests/dreamHurts.test.ts": [
+  "ouga carries them at its own hurt's and flinch's lengths, every core joint keyed",
+  "ouga under taisei's string",
+  "taisei under ouga's string"
+ ],
+ "tests/dustSeaCaptainsAnim.test.ts": [
+  "every light blow he takes leaves his arms their own length (the flinch stretched them to three to five times)",
+  "no clip he plays turns his missing arm (the empty sleeve on its stump holds still, as in all his own clips)"
+ ],
+ "tests/elderRuntimePoses.test.ts": [
+  "kusushi plays its entry and the exact named rush on its replacement body"
+ ],
+ "tests/fighterAssets.test.ts": [
+  "names only files that exist, so the package step cannot fail on one"
+ ],
+ "tests/fmovesClips.test.ts": [
+  "Gaunt' HOUND ARMOR, which has no new take, throws its own Scrap Cannon Arm",
+  "keeps the clips the combo enders cut from, at their lengths"
+ ],
+ "tests/footContact.test.ts": [
+  "cycles kenzo's legs into a lunge and leaves a standing swing alone",
+  "kenzo does not skate at a run",
+  "konta does not skate at a run",
+  "konta walks, runs, and does something in between",
+  "measures the whole roster",
+  "nigo does not skate at a run",
+  "ouga does not skate at a run",
+  "ouga walks, runs, and does something in between",
+  "reports a plausible number of steps for the ground covered",
+  "taisei keeps a foot on the ground while blocking and walking"
+ ],
+ "tests/formGround.test.ts": [
+  "gaunt: the bottom of the idle is on the tile",
+  "konta: the bottom of the idle is on the tile",
+  "nigo: the bottom of the idle is on the tile"
+ ],
+ "tests/gummy.test.ts": [
+  "plays a distinct authored clip per slot and keeps the arm attached"
+ ],
+ "tests/gummyRound5.test.ts": [
+  "is its own take, landing its blow on the move's contact"
+ ],
+ "tests/heldEquipment.test.ts": [
+  "tsubute keeps hold of it through a run and a combo"
+ ],
+ "tests/idleReady.test.ts": [
+  "kagari stands in his battle idle when it is a fight",
+  "ward stands in his battle idle when it is a fight"
+ ],
+ "tests/impactPose.test.ts": [
+  "konta: a big blow throws the head along it, holds it, then lets go"
+ ],
+ "tests/kubiwaSharedIntegration.test.ts": [
+  "reads actual native command fingers in every manual branch; awakened=false",
+  "reads actual native command fingers in every manual branch; awakened=true"
+ ],
+ "tests/lightTakes.test.ts": [
+  "seed 7, a press every 20 ticks",
+  "seed 7, a press every 9 ticks",
+  "seed 8, a press every 9 ticks"
+ ],
+ "tests/lockStrikes.test.ts": [
+  "every one fits its body: keyed on the body's own joints, finite, never refused"
+ ],
+ "tests/lockTakeRecursion.test.ts": [
+  "plans the rush once and plays the round for kenzo"
+ ],
+ "tests/matchFill.test.ts": [
+  "plans its bots as the countdown starts, tells every page, and seats those at kickoff"
+ ],
+ "tests/mergeStatic.test.ts": [
+  "is only switched on for real places"
+ ],
+ "tests/minaseSharedIntegration.test.ts": [
+  "actual signature draws a Senpugan only on current left-palm commands; awakened=false",
+  "actual signature draws a Senpugan only on current left-palm commands; awakened=true",
+  "uses actual right kunai or left palm on every branch; awakened=false",
+  "uses actual right kunai or left palm on every branch; awakened=true"
+ ],
+ "tests/onigawaraSharedIntegration.test.ts": [
+  "uses shown-body native right hand and matching rush/branch clips; awakened=false",
+  "uses shown-body native right hand and matching rush/branch clips; awakened=true"
+ ],
+ "tests/originals-authored-kicks.test.ts": [
+  "name shown originals and clips in their body or rush file"
+ ],
+ "tests/originals-lock-strikes.test.ts": [
+  "are every shown original's own, written from the files its body loads now",
+  "find their clip on the donor's take pack's rig, in a small file with no body in it",
+  "name only the originals' own files, never the earlier donors'"
+ ],
+ "tests/originals-lucy-onset.test.ts": [
+  "lucy-px1.glb: the Bazooka keeps its length (its blow stays on 0.42 s, contactFrames' 0.4667)",
+  "lucy-px1.glb: the jump opens at its stand, not on a crouch key it leaves on the next frame",
+  "sunrise-pxmoves1.glb: the Bazooka keeps its length (its blow stays on 0.42 s, contactFrames' 0.4667)"
+ ],
+ "tests/originals-places-r10.test.ts": [
+  "stages-old (4 November 2026): Kuroyuki Hall, Thornwood Ward, the Drifting Isle and the Cinder Flats are on the earlier model again"
+ ],
+ "tests/originals-places-r8.test.ts": [
+  "keeps the earlier model of each out of the package, unless what still loads it ships"
+ ],
+ "tests/originals-places-r9.test.ts": [
+  "leaves no built place's model loaded by anything else (modes-places: Rift War's map builds its own), so none ships"
+ ],
+ "tests/originals-shop-a.test.ts": [
+  "carry their weapons in their own right hands through every clip",
+  "stand on their boots in their idles, never on a tail or a coat's hem"
+ ],
+ "tests/originals-shop-b.test.ts": [
+  "carry every clip from beside the body, on the body's own joints",
+  "wake Emperor Jinlin as BLACK TIDE, a body of his own carrying the form's reactions, under his own tail"
+ ],
+ "tests/originals-shop-c.test.ts": [
+  "awaken as their own: a worn guardian, a looming one, and two bodies of their own"
+ ],
+ "tests/originals-shop-e.test.ts": [
+  "play every clip the slot's tables name, from their own files"
+ ],
+ "tests/originals-survival.test.ts": [
+  "gives every boss of the rotation its own voice at its entrance, rage, stagger and fall: the game's own lines, on disk, recorded"
+ ],
+ "tests/originals.test.ts": [
+  "carry every clip from beside the body with its travel, on the body's own joints",
+  "carry their blades in their own hands (and teeth), through every clip",
+  "draw only their own bodies, clips, idles and portraits, and every one of them ships",
+  "key every joint the transfer moves in every clip, so the renderer's layers never pile up on a stale pose"
+ ],
+ "tests/partyAutostart.test.ts": [
+  "a party DUEL: both in and loaded, then the room's own 3-second count, and the fight - nobody presses START",
+  "a party royale: the count, the bots at kickoff (loaded too), then the fight"
+ ],
+ "tests/partyRoom.test.ts": [
+  "honours the place the party chose in every mode that has one, and fixes the others",
+  "launches a DUEL for exactly two, into the private Duel room on the chosen place",
+  "puts a private Duel where its creator chose, from the Duel's list only",
+  "turns away every value that is not on the list"
+ ],
+ "tests/reactClips.test.ts": [
+  "Black Pyre crumples Taisei after a string has launched him, without laying him down in a frame"
+ ],
+ "tests/reactionTakes.test.ts": [
+  "gaku, a light string",
+  "gaunt shake",
+  "gaunt, gorai's light string, seed 7",
+  "gorai Hit 01",
+  "gorai shake",
+  "gorai, Konta's light string",
+  "gorai, a heavy, the knockdown and the get-up",
+  "gummy, a heavy, the knockdown and the get-up",
+  "ippon Hit 01",
+  "ippon, Konta's light string, seed 7",
+  "ippon, Konta's light string, seed 8",
+  "kagari Hit 01",
+  "kagari, a heavy, the knockdown and the get-up",
+  "konta Hit 01",
+  "konta shake",
+  "kosho Hit 01",
+  "kosho, Konta's light string",
+  "kosho, a heavy, the knockdown and the get-up",
+  "kuon shake",
+  "levin Hit 01",
+  "levin shake",
+  "nigo, Konta's light string, seed 7",
+  "nigo, Konta's light string, seed 8",
+  "nigo, a heavy, the knockdown and the get-up",
+  "nigo, a light string",
+  "nigo, gaunt's light string, seed 8",
+  "nigo, seven lights, a launch, a juggle and a second launch",
+  "oro shake",
+  "ouga shake",
+  "ouga, Konta's light string",
+  "ouga, a heavy, the knockdown and the get-up",
+  "ouga, a light string",
+  "rook, a heavy, the knockdown and the get-up",
+  "shiden, a heavy, the knockdown and the get-up",
+  "sorrel Hit 01",
+  "sorrel shake",
+  "sorrel, a heavy, the knockdown and the get-up",
+  "sorrel, a light string",
+  "taisei, a heavy, the knockdown and the get-up",
+  "tobari, a heavy, the knockdown and the get-up",
+  "ward Hit 01",
+  "ward, a heavy, the knockdown and the get-up",
+  "ward, a light string",
+  "ward, seven lights, a launch, a juggle and a second launch"
+ ],
+ "tests/runTakes.test.ts": [
+  "kuon",
+  "magatsu",
+  "ouga"
+ ],
+ "tests/rushClips.test.ts": [
+  "buna: the rush clips stand on the idle's floor and stay near the capsule",
+  "buna: the rush file binds onto the body, names its stages, and has their contacts",
+  "gaunt: the rush clips stand on the idle's floor and stay near the capsule",
+  "gaunt: the rush file binds onto the body, names its stages, and has their contacts",
+  "gummy: the rush file binds onto the body, names its stages, and has their contacts",
+  "kagari: the rush clips stand on the idle's floor and stay near the capsule",
+  "kagari: the rush file binds onto the body, names its stages, and has their contacts",
+  "kenzo: the rush file binds onto the body, names its stages, and has their contacts",
+  "koko: the rush file binds onto the body, names its stages, and has their contacts",
+  "kosho: the rush clips stand on the idle's floor and stay near the capsule",
+  "kuon: the rush clips stand on the idle's floor and stay near the capsule",
+  "kuon: the rush file binds onto the body, names its stages, and has their contacts",
+  "nigo: the rush file binds onto the body, names its stages, and has their contacts",
+  "oro: the rush clips stand on the idle's floor and stay near the capsule",
+  "oro: the rush file binds onto the body, names its stages, and has their contacts",
+  "ouga: the rush clips stand on the idle's floor and stay near the capsule",
+  "shirokane: the rush file binds onto the body, names its stages, and has their contacts",
+  "tsubute: the rush clips stand on the idle's floor and stay near the capsule",
+  "tsubute: the rush file binds onto the body, names its stages, and has their contacts",
+  "ward: the rush file binds onto the body, names its stages, and has their contacts"
+ ],
+ "tests/rushContacts.test.ts": [
+  "buna",
+  "gaunt",
+  "kagari",
+  "kenzo",
+  "kosho",
+  "kuon",
+  "oro",
+  "ouga",
+  "tsubute",
+  "ward"
+ ],
+ "tests/rushFlow.test.ts": [
+  "goes from stage to stage without a tick of idle, hit or miss, at any mashing rate, for all sixteen"
+ ],
+ "tests/rushStages.test.ts": [
+  "never plays the same swing twice running where the rig has another",
+  "plays the clips the config names, and falls back for one it cannot find",
+  "uses the air normals for airborne stages only where they are smooth"
+ ],
+ "tests/sashiganeGosuRuntime.test.ts": [
+  "human ground light commands while Crazy Diamond throws its own exact attack clip",
+  "retains all eight ultimate windows and alternates the real Stand hand only after confirmation"
+ ],
+ "tests/senkoBunaStrikePose.test.ts": [
+  "light retains its raised native striking foot through an approach lunge"
+ ],
+ "tests/setsu.test.ts": [
+  "carries the whole set, every clip keying every joint, every track binding"
+ ],
+ "tests/tokanSharedIntegration.test.ts": [
+  "plays its own DEAD OF WINTER entry with moving hands and no body swap"
+ ],
+ "tests/victory.test.ts": [
+  "adad has something to celebrate with",
+  "basilissa has something to celebrate with",
+  "bruin has something to celebrate with",
+  "buna has something to celebrate with",
+  "dorado has something to celebrate with",
+  "gaunt has something to celebrate with",
+  "gorai has something to celebrate with",
+  "haldor has something to celebrate with",
+  "kenzo has something to celebrate with",
+  "konta has something to celebrate with",
+  "kosho has something to celebrate with",
+  "onigawara has something to celebrate with",
+  "sashigane has something to celebrate with",
+  "senko has something to celebrate with",
+  "shakugo has something to celebrate with",
+  "sorayomi has something to celebrate with",
+  "sorrel has something to celebrate with",
+  "strix has something to celebrate with",
+  "tsubute has something to celebrate with",
+  "ward has something to celebrate with",
+  "wataame has something to celebrate with"
+ ]
+}

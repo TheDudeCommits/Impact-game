@@ -1,0 +1,75 @@
+/* The split screen's HUD (couch/CouchHud.ts): each half is a box laid out as the window's own HUD is - the plates, the
+   cards, the combo, the reticle, the move names, the mode's panels, the shops - and scaled as a whole to its half
+   (CouchHud writes each box and its scale on a resize). Nothing in them reads layout. */
+.couch-views{position:absolute;inset:0;z-index:3;pointer-events:none}
+.couch-view{position:absolute;overflow:hidden;transform-origin:0 0;pointer-events:none;contain:strict}
+/* A half's box is narrower or wider than the window: the drawn looks' plates fit its own width (--hud-kw, written with the
+   box), as they fit a narrow window's (proto.css), and every piece that keeps clear of them reads their size again. */
+#interface[data-proto] .couch-view{--hd-k:min(var(--hud-k),var(--hud-kw,9));--hd-own-s:calc(var(--hd-k) * var(--hd-kp) * var(--hd-own));--hd-foe-s:calc(var(--hd-k) * var(--hd-foe-k) * var(--hd-foe))}
+#interface[data-skin="halo"] .couch-view{--hl-under-bars:calc(var(--hd-top) * var(--hud-k) + 176px * var(--hd-own-s));
+  --hl-under-x:calc(var(--hd-top) * var(--hud-k) + 286px * var(--hd-own-s));--hl-foe-under-x:calc(var(--hd-top) * var(--hud-k) + 286px * var(--hd-foe-s))}
+.couch-divider{position:absolute;z-index:9;background:#0b0c0e;box-shadow:0 0 0 1px rgba(251,246,234,.35)}
+
+/* What follows Player 1's lens over the whole screen has no place on a split one: the edge markers, the damage counts,
+   the manga hits and the speed frame (each half's own reticle stays, inside its half). */
+body.couch-split .edge-mark,
+body.couch-split .objective-rescue-cue,
+body.couch-split .ink-count,
+body.couch-split .manga-hit,
+body.couch-split .manga-speed-frame{visibility:hidden !important}
+
+/* ---- Each half's own shop (Last Stand's quartermaster, the Rift's forge and battle map), opened in it: the other half
+   fights on beside it. The same dialogs as the single player's, sized to the half's box. ---- */
+.couch-view dialog[open]{position:absolute;inset:0;margin:auto;z-index:20;pointer-events:auto;box-sizing:border-box}
+.couch-view .objective-shop[open]{height:fit-content}
+.couch-view .couch-shop-prompt{pointer-events:auto}
+/* A seat's cursor (its device works its own shop: a page has one focus and two people at it). */
+.couch-view .couch-cursor{outline:4px solid #ffd23c !important;outline-offset:3px;box-shadow:0 0 0 7px rgba(11,12,14,.55) !important;position:relative;z-index:2}
+/* Player 1's own shop prompts and the Last Stand's shop button stand down: each half has its own. */
+body.couch-split #interface>.objective-shop-prompt,
+body.couch-split #interface .mode-hud .ls-shop{display:none !important}
+
+/* The Rift: each half has its seat's own panels (level, gold and relics, the lane call, the death clock, its own minimap:
+   RiftWarUI in the half); Player 1's is the page's own, with the scores, once, for both. */
+.couch-view[data-seat="1"] .rift-hud .rift-scoreboard,
+.couch-view .rift-panel{display:none !important}
+/* A forge or battle map open over one half hides the Rift panels behind it (panelFlags.ts pf-rift-sheet hides them all
+   for the single player's): the other half's stay. */
+:where(body).pf-rift-sheet.pf-rift-sheet.couch-split #interface .couch-view .rift-hud{visibility:visible}
+:where(body).pf-rift-sheet.pf-rift-sheet.couch-split #interface .couch-view.couch-shopping .rift-hud{visibility:hidden}
+/* The allies' cards (zone 3) two to a row in a half, so a narrow one keeps them clear of its plates. */
+body.couch-split-v .couch-view .mode-hud .rw-allies{flex-wrap:wrap;justify-content:flex-end;max-width:calc(460px * var(--hud-k))}
+
+/* Training: each half its own move trials (SeatTrials), where the single player's hang (zone 8b, under the plates). */
+body.couch-split #interface .mode-hud .training-trials{display:none !important}
+body.couch-split #interface .couch-view .training-trials.couch-trials{position:absolute;z-index:3;left:calc(18px * var(--hud-k));top:calc(var(--hl-under-x,calc(170px * var(--hud-k))) + 6px);display:block;max-height:calc(100% - var(--hl-under-x,170px) - 16px);overflow:hidden}
+
+/* The page's layers over the fight outside the combat HUD (the arcade's run, the Rift's scores) are the mode's, once:
+   one over the other, they keep to the top half, and the mode's shared status (the round, the scores) sits across the
+   line between the halves, a size down, rather than in the middle of Player 1's short half, over their fight. */
+body.couch-split-h .sv-hud{bottom:50% !important}
+body.couch-split-h .sv-hud .sv-round{top:100% !important;bottom:auto !important;transform:translate(-50%,-50%) scale(.78) !important;scale:none !important;transform-origin:50% 50% !important;z-index:8}
+/* Training's Forge studio is one person's bench over the whole screen (its tab sat on the second half's edge): it waits
+   for the screen to be whole again. */
+body.couch-split .forge-studio{display:none !important}
+/* Training's tools in a half: across the half's width, on two rows - the switches under the tools - as a narrow window
+   has them (trainingSwap.css [data-rows="2"]). */
+body.couch-split #interface[data-hud="training"] .couch-view .mode-hud>[data-zone="2"]{left:12px;right:12px;transform:none}
+body.couch-split #interface[data-hud="training"] .couch-view .th-tools{flex-wrap:wrap;justify-content:center;row-gap:clamp(5px,.7vh,9px)}
+body.couch-split #interface[data-hud="training"] .couch-view .th-tools::after{content:'';order:0;flex:0 0 100%;height:0}
+body.couch-split #interface[data-hud="training"] .couch-view .th-tools .th-swap{order:1;margin:0 clamp(6px,2vw,24px)}
+
+/* ---- One screen (CouchHud.share): the page's HUD whole, the fight's plates Player 1's on the left and Player 2's on the
+   right, and each person's move cards under their own plate - Player 1's (the page's own) in the left corner, Player 2's
+   (SeatCards) in the right, where the single player's stand; a narrow window's a size down, each in its own half
+   (CouchHud.fit: --couch-fit). ---- */
+.couch-cards{display:contents}
+body.couch-shared #interface .combat-hud .move-bar.ik-cards{right:auto;left:calc(52px + 14px * var(--hud-k));transform-origin:0 100%;scale:calc(var(--hud-k) * var(--k-cards) * var(--couch-fit,1))}
+body.couch-shared #interface .combat-hud .couch-cards .move-bar.ik-cards{left:auto;right:calc(52px + 14px * var(--hud-k));transform-origin:100% 100%}
+/* The arcade's run keeps its map in that corner (rift.css .sv-map): Player 1's cards stand beside it. */
+body.couch-shared.pf-sv #interface .combat-hud .move-bar.ik-cards:not(.couch-cards .move-bar){left:calc(52px + 14px * var(--hud-k) + clamp(128px,10.5vw,184px))}
+/* Training: each person's own move trials (SeatTrials) under their own plate, in place of the single player's list. */
+body.couch-shared #interface .mode-hud .training-trials{display:none !important}
+body.couch-shared #interface .combat-hud>.training-trials.couch-trials{position:absolute;z-index:3;top:calc(var(--hl-under-x,calc(170px * var(--hud-k))) + 6px);display:block;max-height:calc(100% - var(--hl-under-x,170px) - 16px);overflow:hidden}
+body.couch-shared #interface .combat-hud>.couch-trials[data-seat="0"]{left:calc(18px * var(--hud-k))}
+body.couch-shared #interface .combat-hud>.couch-trials[data-seat="1"]{right:calc(18px * var(--hud-k));top:calc(var(--hl-foe-under-x,calc(170px * var(--hud-k))) + 6px)}

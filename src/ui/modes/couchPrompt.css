@@ -1,0 +1,8 @@
+/* "Player 2 detected" (CouchPrompt.ts): a plain ink panel on the home, the dock's style. Nothing flashes. */
+/* Over the top of the mode cards, clear of PLAY and the home's actions in the bottom corner. */
+#interface .couch-prompt{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:12px;max-width:calc(100% - 48px);padding:12px 12px 12px 18px;background:#101114;color:#fff;filter:drop-shadow(3px 2px 0 #ce1c32);clip-path:polygon(2% 0,100% 0,98% 100%,0 100%);white-space:nowrap}
+#interface .couch-prompt[hidden]{display:none}
+#interface .couch-prompt strong{font:italic 900 clamp(15px,1.3vw,22px)/1 Impact,sans-serif;letter-spacing:.01em}
+#interface .couch-prompt span{font:800 clamp(10px,.8vw,13px)/1.1 'Barlow Condensed',sans-serif;letter-spacing:.08em;color:#e9e3d6;overflow:hidden;text-overflow:ellipsis}
+#interface .couch-prompt button{flex:none;padding:7px 12px;border:2px solid #fff;background:transparent;color:#fff;font:800 12px/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;cursor:pointer}
+#interface .couch-prompt button[data-couch-go]{background:#fff;color:#101114}

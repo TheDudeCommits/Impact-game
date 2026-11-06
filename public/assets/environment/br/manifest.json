@@ -1,0 +1,864 @@
+{
+  "version": 1,
+  "license": "CC0-1.0",
+  "author": "RG Poly (models); Kenney (pirate kit)",
+  "source": "https://rg-poly.itch.io/stylized-asia-enviroment-megapack-unity-urp",
+  "conversion": "converted to GLB, with a triangle budget per model and textures shared by URI (the Hidden Ash kit's asian/textures where identical).",
+  "assets": [
+    {
+      "id": "board",
+      "url": "/assets/environment/br/board.glb",
+      "note": "notice board",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Board.fbx",
+      "sourceSha256": "d716c9a8423ac99aa6aebcab56f073d42b1ebeeddf761a2d207149ec0c65ddae",
+      "bytes": 33232,
+      "sourceTriangles": 516,
+      "triangles": 516,
+      "primitives": 4,
+      "materials": [
+        "RG Wood 3",
+        "RG Wood Red",
+        "RG Wood 1",
+        "RG Cocnrate 1  Mat"
+      ],
+      "dimensionsMeters": [
+        1.9336,
+        2.2141,
+        0.9142
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/e3f6ce2a2e74e9161516.png",
+          "bytes": 240310
+        },
+        {
+          "uri": "../asian/textures/74da8b70ed734eea0026.png",
+          "bytes": 1185262
+        },
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "cart",
+      "url": "/assets/environment/br/cart.glb",
+      "note": "hand cart",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Cart_1.fbx",
+      "sourceSha256": "5a6b8168d6d687389321ddac85593770f1301568d8d8afe728cd917bd5b1a241",
+      "bytes": 69880,
+      "sourceTriangles": 1554,
+      "triangles": 1554,
+      "primitives": 2,
+      "materials": [
+        "RG Wood 1",
+        "RG Metal 2"
+      ],
+      "dimensionsMeters": [
+        1.8307,
+        0.9694,
+        3.3948
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/e3f6ce2a2e74e9161516.png",
+          "bytes": 240310
+        },
+        {
+          "uri": "../asian/textures/74da8b70ed734eea0026.png",
+          "bytes": 1185262
+        },
+        {
+          "uri": "../asian/textures/3ff27130be532c3aab45.png",
+          "bytes": 935124
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "drum",
+      "url": "/assets/environment/br/drum.glb",
+      "note": "taiko drum",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Drum.fbx",
+      "sourceSha256": "f86ce4da79c6c5b634a0329752a0e227381fc31664d4de5d00fc6d286b2beed9",
+      "bytes": 62492,
+      "sourceTriangles": 1258,
+      "triangles": 1258,
+      "primitives": 5,
+      "materials": [
+        "RG Wood 2",
+        "RG Wood 1",
+        "RG Metal 2",
+        "RG Wood Red",
+        "RG PropsMat Asia"
+      ],
+      "dimensionsMeters": [
+        1.1633,
+        1.3752,
+        0.7235
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/e3f6ce2a2e74e9161516.png",
+          "bytes": 240310
+        },
+        {
+          "uri": "../asian/textures/74da8b70ed734eea0026.png",
+          "bytes": 1185262
+        },
+        {
+          "uri": "../asian/textures/3ff27130be532c3aab45.png",
+          "bytes": 935124
+        },
+        {
+          "uri": "../asian/textures/4bfe170309a800c507ff.png",
+          "bytes": 1796675
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "flowers-a",
+      "url": "/assets/environment/br/flowers-a.glb",
+      "note": "flower bed",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Flower_1_Multi.fbx",
+      "sourceSha256": "d2bffaa291e3fce76fe6cdc7fcae29130a8f6fc7c183e47ca29d172bfa0df539",
+      "bytes": 21700,
+      "sourceTriangles": 308,
+      "triangles": 308,
+      "primitives": 1,
+      "materials": [
+        "RG Plants Mat 1"
+      ],
+      "dimensionsMeters": [
+        1.6083,
+        0.6096,
+        1.6306
+      ],
+      "textures": [
+        {
+          "uri": "rg-1d05a540bfb60b72123b.png",
+          "bytes": 811646
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "flowers-b",
+      "url": "/assets/environment/br/flowers-b.glb",
+      "note": "flower bed",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Flower_2_Multi.fbx",
+      "sourceSha256": "3b0d78b848f9a57b58b002ec041f2d474b70f2d77a3b7af134512ca8ac30ff50",
+      "bytes": 27600,
+      "sourceTriangles": 504,
+      "triangles": 504,
+      "primitives": 1,
+      "materials": [
+        "RG Plants Mat 1"
+      ],
+      "dimensionsMeters": [
+        1.2459,
+        0.4525,
+        1.1799
+      ],
+      "textures": [
+        {
+          "uri": "rg-1d05a540bfb60b72123b.png",
+          "bytes": 811646
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "gong",
+      "url": "/assets/environment/br/gong.glb",
+      "note": "gong",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Gong.fbx",
+      "sourceSha256": "32ab2c35ac49e0fac75f3e1d0bef92ef2e0d2b66b5666f79e62a8790d2bb56bf",
+      "bytes": 23520,
+      "sourceTriangles": 416,
+      "triangles": 416,
+      "primitives": 4,
+      "materials": [
+        "RG Wood 1",
+        "RG Wood Red",
+        "RG Gong Mat",
+        "RG PropsMat Asia"
+      ],
+      "dimensionsMeters": [
+        1.7634,
+        1.7786,
+        0.6826
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/e3f6ce2a2e74e9161516.png",
+          "bytes": 240310
+        },
+        {
+          "uri": "../asian/textures/74da8b70ed734eea0026.png",
+          "bytes": 1185262
+        },
+        {
+          "uri": "rg-20b039b86f3afbc03cf3.png",
+          "bytes": 294666
+        },
+        {
+          "uri": "../asian/textures/4bfe170309a800c507ff.png",
+          "bytes": 1796675
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "grass",
+      "url": "/assets/environment/br/grass.glb",
+      "note": "grass tuft",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Grass.fbx",
+      "sourceSha256": "67b115758c2e9c087c043b3956e308017d97913d3c1b08349f808ff0860eacc8",
+      "bytes": 29380,
+      "sourceTriangles": 432,
+      "triangles": 432,
+      "primitives": 1,
+      "materials": [
+        "RG Grass Mat"
+      ],
+      "dimensionsMeters": [
+        1.0843,
+        0.2807,
+        1.1068
+      ],
+      "textures": [],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "kunai",
+      "url": "/assets/environment/br/kunai.glb",
+      "note": "kunai",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Kunai.fbx",
+      "sourceSha256": "9b79c6c3142f43639de3ffcbe525d72180480e73c136c512ba1871d9eec3f686",
+      "bytes": 11672,
+      "sourceTriangles": 192,
+      "triangles": 192,
+      "primitives": 3,
+      "materials": [
+        "RG Metal 2",
+        "RG Metal 1",
+        "RG Wood 2"
+      ],
+      "dimensionsMeters": [
+        0.0224,
+        0.3737,
+        0.0641
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/3ff27130be532c3aab45.png",
+          "bytes": 935124
+        },
+        {
+          "uri": "../asian/textures/3ee6ce5b3b396a98fb50.png",
+          "bytes": 882504
+        },
+        {
+          "uri": "../asian/textures/e3f6ce2a2e74e9161516.png",
+          "bytes": 240310
+        },
+        {
+          "uri": "../asian/textures/74da8b70ed734eea0026.png",
+          "bytes": 1185262
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "lilies",
+      "url": "/assets/environment/br/lilies.glb",
+      "note": "water lilies",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Lily Multi.fbx",
+      "sourceSha256": "fdfdad90af0113a2f43500051068162b1b6e603a68ccc38f4fecc5cf2195e537",
+      "bytes": 33608,
+      "sourceTriangles": 680,
+      "triangles": 680,
+      "primitives": 1,
+      "materials": [
+        "RG Plants Mat 1"
+      ],
+      "dimensionsMeters": [
+        1.1904,
+        0.9537,
+        1.0941
+      ],
+      "textures": [
+        {
+          "uri": "rg-1d05a540bfb60b72123b.png",
+          "bytes": 811646
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "podest",
+      "url": "/assets/environment/br/podest.glb",
+      "note": "podium",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Podest_2.fbx",
+      "sourceSha256": "ac6f3d39553667b1990d5982d7816637e36f6691e459b7747e600b4730c1e9d7",
+      "bytes": 7564,
+      "sourceTriangles": 74,
+      "triangles": 74,
+      "primitives": 2,
+      "materials": [
+        "RG Bricks",
+        "RG Cocnrate Mat 4"
+      ],
+      "dimensionsMeters": [
+        7.3238,
+        0.7909,
+        5.1051
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/8180f380fc1bed760c46.png",
+          "bytes": 117854
+        },
+        {
+          "uri": "../asian/textures/201eee08b7dd3cc181fa.png",
+          "bytes": 849573
+        },
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "pot",
+      "url": "/assets/environment/br/pot.glb",
+      "note": "pot",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Pot.fbx",
+      "sourceSha256": "b3342af96b055dd458a9c29608e5e74a718b7ef9763362e4005e149656fd3494",
+      "bytes": 27388,
+      "sourceTriangles": 722,
+      "triangles": 722,
+      "primitives": 2,
+      "materials": [
+        "RG Metal 2",
+        "RG Metal 1"
+      ],
+      "dimensionsMeters": [
+        1.1764,
+        0.8659,
+        1.1764
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/3ff27130be532c3aab45.png",
+          "bytes": 935124
+        },
+        {
+          "uri": "../asian/textures/3ee6ce5b3b396a98fb50.png",
+          "bytes": 882504
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "reeds",
+      "url": "/assets/environment/br/reeds.glb",
+      "note": "reeds",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Reed Multi.fbx",
+      "sourceSha256": "a550f00404e20041afb870d49a24b92b7602d6d669c4e2a070acd0c2be34dc81",
+      "bytes": 75612,
+      "sourceTriangles": 1224,
+      "triangles": 1224,
+      "primitives": 2,
+      "materials": [
+        "RG Plants Mat 1",
+        "RG Wood 2"
+      ],
+      "dimensionsMeters": [
+        4.3447,
+        4.062,
+        3.4213
+      ],
+      "textures": [
+        {
+          "uri": "rg-1d05a540bfb60b72123b.png",
+          "bytes": 811646
+        },
+        {
+          "uri": "../asian/textures/e3f6ce2a2e74e9161516.png",
+          "bytes": 240310
+        },
+        {
+          "uri": "../asian/textures/74da8b70ed734eea0026.png",
+          "bytes": 1185262
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "rock-a",
+      "url": "/assets/environment/br/rock-a.glb",
+      "note": "boulder",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Rock_1.fbx",
+      "sourceSha256": "4f112ff444a4f0fd1618f0e29a28505cd457231e64b4f2e8421dd57023553991",
+      "bytes": 10708,
+      "sourceTriangles": 290,
+      "triangles": 290,
+      "primitives": 1,
+      "materials": [
+        "RG Cocnrate Mat 3"
+      ],
+      "dimensionsMeters": [
+        4.7987,
+        10.1895,
+        4.638
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "rock-b",
+      "url": "/assets/environment/br/rock-b.glb",
+      "note": "boulder",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Rock_2.fbx",
+      "sourceSha256": "876efa2619750075510478bcd65066da85c157fb041286622b55dc1f4a1d7f83",
+      "bytes": 14132,
+      "sourceTriangles": 414,
+      "triangles": 414,
+      "primitives": 1,
+      "materials": [
+        "RG Cocnrate Mat 3"
+      ],
+      "dimensionsMeters": [
+        5.0262,
+        7.5406,
+        3.9811
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "rock-c",
+      "url": "/assets/environment/br/rock-c.glb",
+      "note": "boulder",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Rock_3.fbx",
+      "sourceSha256": "cff767c89963f4850b7e58bc32d4a54b8a36afd21680bb03056a98f412f24cec",
+      "bytes": 12120,
+      "sourceTriangles": 338,
+      "triangles": 338,
+      "primitives": 1,
+      "materials": [
+        "RG Cocnrate Mat 3"
+      ],
+      "dimensionsMeters": [
+        3.9249,
+        6.6708,
+        4.6126
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "rock-d",
+      "url": "/assets/environment/br/rock-d.glb",
+      "note": "boulder",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Rock_4.fbx",
+      "sourceSha256": "ae5af8c35db214d93aa6e20999c5cbeb67577b058f3f2ae96cb959493977fb46",
+      "bytes": 4088,
+      "sourceTriangles": 68,
+      "triangles": 68,
+      "primitives": 1,
+      "materials": [
+        "RG Cocnrate Mat 3"
+      ],
+      "dimensionsMeters": [
+        1.5458,
+        2.3371,
+        1.7253
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "rock-formation-b",
+      "url": "/assets/environment/br/rock-formation-b.glb",
+      "note": "rock formation",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Rock_Formation_3.fbx",
+      "sourceSha256": "8f0e7d8f64818113a81df758d61aa1db23ad9ea25007ab123f83fa2fa85757b7",
+      "bytes": 12920,
+      "sourceTriangles": 282,
+      "triangles": 282,
+      "primitives": 1,
+      "materials": [
+        "RG Cocnrate Mat 3"
+      ],
+      "dimensionsMeters": [
+        8.1685,
+        4.6782,
+        4.8783
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "shuriken",
+      "url": "/assets/environment/br/shuriken.glb",
+      "note": "shuriken",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Shuriken.fbx",
+      "sourceSha256": "52bd18d4bd218e0ad6fe254dcbe93f3343ea7d37087e4cb590436e6849de4930",
+      "bytes": 24372,
+      "sourceTriangles": 212,
+      "triangles": 212,
+      "primitives": 2,
+      "materials": [
+        "RG Metal 2",
+        "RG Metal 1"
+      ],
+      "dimensionsMeters": [
+        0.202,
+        0.0104,
+        0.1741
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/3ff27130be532c3aab45.png",
+          "bytes": 935124
+        },
+        {
+          "uri": "../asian/textures/3ee6ce5b3b396a98fb50.png",
+          "bytes": 882504
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "stone-a",
+      "url": "/assets/environment/br/stone-a.glb",
+      "note": "small stone",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Stone_1.fbx",
+      "sourceSha256": "458e92f7b7418da31701aec70e9db0494d367ecb9ea9914218830500cf9f9f5f",
+      "bytes": 4096,
+      "sourceTriangles": 76,
+      "triangles": 76,
+      "primitives": 1,
+      "materials": [
+        "RG Cocnrate Mat 3"
+      ],
+      "dimensionsMeters": [
+        1.3753,
+        0.6995,
+        1.5191
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "stone-b",
+      "url": "/assets/environment/br/stone-b.glb",
+      "note": "small stone",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Stone_2.fbx",
+      "sourceSha256": "550c884206e04e13b80d68a7fc9afe3846d808520939c0332de3ac295cc4154b",
+      "bytes": 3644,
+      "sourceTriangles": 60,
+      "triangles": 60,
+      "primitives": 1,
+      "materials": [
+        "RG Cocnrate Mat 3"
+      ],
+      "dimensionsMeters": [
+        0.8789,
+        0.4494,
+        0.8906
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "stone-lamp",
+      "url": "/assets/environment/br/stone-lamp.glb",
+      "note": "toro stone lantern",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Stone Lamp_1.fbx",
+      "sourceSha256": "2080f656af44311e5562684af2bd4f15daf37f49062c49432f5879eda2f6e445",
+      "bytes": 23060,
+      "sourceTriangles": 462,
+      "triangles": 462,
+      "primitives": 2,
+      "materials": [
+        "RG Cocnrate 2 Mat",
+        "RG Cocnrate Mat 3"
+      ],
+      "dimensionsMeters": [
+        0.4652,
+        1.0374,
+        0.4652
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "table",
+      "url": "/assets/environment/br/table.glb",
+      "note": "table",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Table_1.fbx",
+      "sourceSha256": "b02fae2107530e99fd8f8ea94319b55cce5b3d2909edd8273e6f079aec235737",
+      "bytes": 22096,
+      "sourceTriangles": 360,
+      "triangles": 360,
+      "primitives": 3,
+      "materials": [
+        "RG Wood 3",
+        "RG Metal 1",
+        "RG Wood 1"
+      ],
+      "dimensionsMeters": [
+        2.3547,
+        0.8263,
+        1.6153
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/e3f6ce2a2e74e9161516.png",
+          "bytes": 240310
+        },
+        {
+          "uri": "../asian/textures/74da8b70ed734eea0026.png",
+          "bytes": 1185262
+        },
+        {
+          "uri": "../asian/textures/3ff27130be532c3aab45.png",
+          "bytes": 935124
+        },
+        {
+          "uri": "../asian/textures/3ee6ce5b3b396a98fb50.png",
+          "bytes": 882504
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "tree-place",
+      "url": "/assets/environment/br/tree-place.glb",
+      "note": "tree planter",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/TreePLace.fbx",
+      "sourceSha256": "c7dceeee53c15721313f8d998ba6add38f5aa629baf4ea1efa4efe81b3c99ee9",
+      "bytes": 19432,
+      "sourceTriangles": 510,
+      "triangles": 510,
+      "primitives": 2,
+      "materials": [
+        "RG Cocnrate 2 Mat",
+        "RG Ground Mat"
+      ],
+      "dimensionsMeters": [
+        3.3312,
+        0.4179,
+        3.2128
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/b0300633b8f4ad61f1ed.png",
+          "bytes": 315122
+        },
+        {
+          "uri": "../asian/textures/157e324f4de6d8e92f2a.png",
+          "bytes": 1217291
+        },
+        {
+          "uri": "rg-4b52ea7f545aaf6f8bea.png",
+          "bytes": 427567
+        },
+        {
+          "uri": "rg-9e8e669fd59fbf2794c2.png",
+          "bytes": 1584427
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "umbrella",
+      "url": "/assets/environment/br/umbrella.glb",
+      "note": "parasol",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Umbrella.fbx",
+      "sourceSha256": "0b32fe7f3c6bba6f145c92cd4fbace76ef6fbdf15836b584ff9004c2d0888ca7",
+      "bytes": 10736,
+      "sourceTriangles": 73,
+      "triangles": 73,
+      "primitives": 3,
+      "materials": [
+        "RG Wood 1",
+        "RG PropsMat Asia",
+        "RG Gold"
+      ],
+      "dimensionsMeters": [
+        1.113,
+        0.9591,
+        1.1601
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/e3f6ce2a2e74e9161516.png",
+          "bytes": 240310
+        },
+        {
+          "uri": "../asian/textures/74da8b70ed734eea0026.png",
+          "bytes": 1185262
+        },
+        {
+          "uri": "../asian/textures/4bfe170309a800c507ff.png",
+          "bytes": 1796675
+        },
+        {
+          "uri": "../asian/textures/3ff27130be532c3aab45.png",
+          "bytes": 935124
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    },
+    {
+      "id": "wall-column",
+      "url": "/assets/environment/br/wall-column.glb",
+      "note": "column",
+      "source": "RG Poly Stylized Asia megapack (CC0): files/Assets/Assets/Stylized Asia RG/Models/Wall_Column_1.fbx",
+      "sourceSha256": "62d174ec2fb2ea630f10dc868e419ded0c27c56c4e8664e9f5d1c3b2c3b38be7",
+      "bytes": 17880,
+      "sourceTriangles": 300,
+      "triangles": 300,
+      "primitives": 2,
+      "materials": [
+        "RG Wood 1",
+        "RG Metal 2"
+      ],
+      "dimensionsMeters": [
+        0.9016,
+        4.8,
+        0.948
+      ],
+      "textures": [
+        {
+          "uri": "../asian/textures/e3f6ce2a2e74e9161516.png",
+          "bytes": 240310
+        },
+        {
+          "uri": "../asian/textures/74da8b70ed734eea0026.png",
+          "bytes": 1185262
+        },
+        {
+          "uri": "../asian/textures/3ff27130be532c3aab45.png",
+          "bytes": 935124
+        }
+      ],
+      "pivot": "bottom center",
+      "up": "+Y"
+    }
+  ],
+  "note": "Only the pieces the battle royale places use are shipped; can convert the rest of its list again."
+}

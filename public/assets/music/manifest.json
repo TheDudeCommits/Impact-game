@@ -1,0 +1,519 @@
+{
+ "version": 3,
+ "note": "Originals game: the game's score, every piece written for the game and rendered by, which writes this file and originals.json. No licensed song or recording ships.",
+ "composition": "Original compositions written for this game as MIDI; no melody, lyric or recording from any existing song.",
+ "soundfont": {
+  "name": "GeneralUser GS",
+  "author": "S. Christian Collins",
+  "license": "GeneralUser GS licence: free for any use, commercial included (assets/source/originals/music/LICENSE-GeneralUser-GS.txt)",
+  "sha256": "9575028c7a1f589f5770fccc8cff2734566af40cd26ed836944e9a5152688cfe"
+ },
+ "conversion": {
+  "codec": "AAC-LC",
+  "encoder": "AudioToolbox (aac_at)",
+  "nominalBitrate": 160000,
+  "sampleRate": 48000,
+  "channels": 2,
+  "fastStart": true,
+  "targetIntegratedLUFS": -18.0,
+  "peakLimitDBFS": -2.0
+ },
+ "trackCount": 32,
+ "tracks": [
+  {
+   "id": "skyborn-ascent",
+   "title": "Skyborn Ascent",
+   "url": "/assets/music/originals/skyborn-ascent.m4a",
+   "bpm": 152,
+   "bars": 68,
+   "durationSeconds": 107.368,
+   "outputBytes": 2169561,
+   "outputSha256": "bdf13c504e2df8867d35f449cd0a6bc9d413f035a87f9eac2341defde721a049",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.04,
+    "measuredTruePeakDBTP": -4.98,
+    "measuredLRA": 2.6
+   }
+  },
+  {
+   "id": "gale-runner",
+   "title": "Gale Runner",
+   "url": "/assets/music/originals/gale-runner.m4a",
+   "bpm": 168,
+   "bars": 72,
+   "durationSeconds": 102.857,
+   "outputBytes": 2078674,
+   "outputSha256": "cbd3836b778f729bd20f07e333e9c82e8acf3296c2fa8e6e6c1dd9144d0e68b6",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.04,
+    "measuredTruePeakDBTP": -4.18,
+    "measuredLRA": 3.5
+   }
+  },
+  {
+   "id": "set-sail",
+   "title": "Set Sail on the Dust Sea",
+   "url": "/assets/music/originals/set-sail.m4a",
+   "bpm": 136,
+   "bars": 60,
+   "durationSeconds": 105.882,
+   "outputBytes": 2139845,
+   "outputSha256": "191e33255bb2b81bb59dcabd0f688ed8d38d6e9b139f5016dbedb594a4804c22",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.03,
+    "measuredTruePeakDBTP": -3.95,
+    "measuredLRA": 2.7
+   }
+  },
+  {
+   "id": "pages-of-legend",
+   "title": "Pages of Legend",
+   "url": "/assets/music/originals/pages-of-legend.m4a",
+   "bpm": 92,
+   "bars": 48,
+   "durationSeconds": 125.217,
+   "outputBytes": 2530029,
+   "outputSha256": "cfa20caa13817c0b567f24d0b48fbcef6b0319798382a6f581c4d2cd29945c7a",
+   "loudness": {
+    "measuredIntegratedLUFS": -17.99,
+    "measuredTruePeakDBTP": -4.03,
+    "measuredLRA": 12.6
+   }
+  },
+  {
+   "id": "cinder-requiem",
+   "title": "Cinder Requiem",
+   "url": "/assets/music/originals/cinder-requiem.m4a",
+   "bpm": 164,
+   "bars": 76,
+   "durationSeconds": 111.22,
+   "outputBytes": 2247500,
+   "outputSha256": "3363c45561881fd073f9b34dc980757c7a29e959d8cea227447a013851ff53f2",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.03,
+    "measuredTruePeakDBTP": -4.66,
+    "measuredLRA": 4.0
+   }
+  },
+  {
+   "id": "gilded-hour",
+   "title": "Gilded Hour",
+   "url": "/assets/music/originals/gilded-hour.m4a",
+   "bpm": 160,
+   "bars": 76,
+   "durationSeconds": 114.0,
+   "outputBytes": 2303498,
+   "outputSha256": "b1f2893d5606b10d57cb40db0cf0d475758a32dc696839784586d85c74bfad7d",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.04,
+    "measuredTruePeakDBTP": -5.34,
+    "measuredLRA": 2.9
+   }
+  },
+  {
+   "id": "endless-null",
+   "title": "Endless Null",
+   "url": "/assets/music/originals/endless-null.m4a",
+   "bpm": 138,
+   "bars": 64,
+   "durationSeconds": 111.304,
+   "outputBytes": 2249376,
+   "outputSha256": "e4e6ac358315cdc386ef34cf28da52c608d88eb12efc9c8d7fbf1e1d92c0fe02",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.04,
+    "measuredTruePeakDBTP": -2.7,
+    "measuredLRA": 2.6
+   }
+  },
+  {
+   "id": "grave-road",
+   "title": "Grave Road",
+   "url": "/assets/music/originals/grave-road.m4a",
+   "bpm": 96,
+   "bars": 44,
+   "durationSeconds": 110.0,
+   "outputBytes": 2222964,
+   "outputSha256": "416758f01092d2c209ca4db4f1886e87a5acda5cd91b2e12a213431739bd5b4c",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.04,
+    "measuredTruePeakDBTP": -2.62,
+    "measuredLRA": 5.8
+   }
+  },
+  {
+   "id": "static-trail",
+   "title": "Static Trail",
+   "url": "/assets/music/originals/static-trail.m4a",
+   "bpm": 172,
+   "bars": 76,
+   "durationSeconds": 106.047,
+   "outputBytes": 2142860,
+   "outputSha256": "425622dd380b18ad513e81dac6adcfca8480be7a220efdc9b3f16587e81b6b7b",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.04,
+    "measuredTruePeakDBTP": -5.2,
+    "measuredLRA": 3.0
+   }
+  },
+  {
+   "id": "rift-unbound",
+   "title": "The Rift Unbound",
+   "url": "/assets/music/originals/rift-unbound.m4a",
+   "bpm": 144,
+   "bars": 72,
+   "durationSeconds": 120.0,
+   "outputBytes": 2424516,
+   "outputSha256": "145a5c2f4191dff12bc7036b2a7b230df691cc95044f27b9fd169fb31943812d",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.03,
+    "measuredTruePeakDBTP": -3.68,
+    "measuredLRA": 2.7
+   }
+  },
+  {
+   "id": "rite-of-ashes",
+   "title": "Rite of Ashes",
+   "url": "/assets/music/originals/rite-of-ashes.m4a",
+   "bpm": 84,
+   "bars": 44,
+   "durationSeconds": 125.714,
+   "outputBytes": 2539934,
+   "outputSha256": "27858b9ba90bd310807f9091a88f9ef1024b9999535085cdfb6a0a4f63f5228a",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.02,
+    "measuredTruePeakDBTP": -4.65,
+    "measuredLRA": 5.1
+   }
+  },
+  {
+   "id": "apex-of-the-rift",
+   "title": "Apex of the Rift",
+   "url": "/assets/music/originals/apex-of-the-rift.m4a",
+   "bpm": 126,
+   "bars": 60,
+   "durationSeconds": 114.286,
+   "outputBytes": 2309538,
+   "outputSha256": "7018edbcc33aff607b9700587866c47e0a52452087007ac284754aa6a63fd6d1",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.03,
+    "measuredTruePeakDBTP": -3.83,
+    "measuredLRA": 8.3
+   }
+  },
+  {
+   "id": "last-light",
+   "title": "Last Light",
+   "url": "/assets/music/originals/last-light.m4a",
+   "bpm": 72,
+   "bars": 40,
+   "durationSeconds": 133.333,
+   "outputBytes": 2693978,
+   "outputSha256": "8c1f8c333e583318585dfed0ce194620c89b6b254debb2cc447245904f1e5026",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.03,
+    "measuredTruePeakDBTP": -4.83,
+    "measuredLRA": 11.9
+   }
+  },
+  {
+   "id": "long-night-watch",
+   "title": "Long Night Watch",
+   "url": "/assets/music/originals/long-night-watch.m4a",
+   "bpm": 88,
+   "bars": 40,
+   "durationSeconds": 109.091,
+   "outputBytes": 2204445,
+   "outputSha256": "d21fb70a0ada0a6f5f353b1ee997a177f276851015611bcf37ad4f2dc1a019bc",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.01,
+    "measuredTruePeakDBTP": -5.59,
+    "measuredLRA": 10.5
+   }
+  },
+  {
+   "id": "embers-in-the-black-snow",
+   "title": "Embers in the Black Snow",
+   "url": "/assets/music/originals/embers-in-the-black-snow.m4a",
+   "bpm": 152,
+   "bars": 72,
+   "durationSeconds": 113.684,
+   "outputBytes": 2297038,
+   "outputSha256": "82ffe2a37ebb4fd54749103824940816a44545f45e736a4d0e17d94696cc1127",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.03,
+    "measuredTruePeakDBTP": -4.78,
+    "measuredLRA": 6.6
+   }
+  },
+  {
+   "id": "hazard-pay",
+   "title": "Hazard Pay",
+   "url": "/assets/music/originals/hazard-pay.m4a",
+   "bpm": 168,
+   "bars": 66,
+   "durationSeconds": 94.286,
+   "outputBytes": 1905546,
+   "outputSha256": "c12f01aadd53fba2bddab40cc98e579e9a514ca26eafbebbfb70a145ea7e0b7f",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.03,
+    "measuredTruePeakDBTP": -4.57,
+    "measuredLRA": 9.7
+   }
+  },
+  {
+   "id": "the-dead-follow",
+   "title": "The Dead Follow",
+   "url": "/assets/music/originals/the-dead-follow.m4a",
+   "bpm": 128,
+   "bars": 64,
+   "durationSeconds": 120.0,
+   "outputBytes": 2424516,
+   "outputSha256": "c61ba6f42a5d1aa08539da278e91b46ffc3cbf59b526930449de849aadb6923d",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.03,
+    "measuredTruePeakDBTP": -1.74,
+    "measuredLRA": 12.1
+   }
+  },
+  {
+   "id": "pixel-konta",
+   "title": "Spiral Wind",
+   "artist": "Ash Spiral OST",
+   "url": "/assets/music/originals/pixel-konta.m4a",
+   "bpm": 176.471,
+   "bars": 64,
+   "durationSeconds": 87.04,
+   "outputBytes": 1759518,
+   "outputSha256": "710595506c5c562eb03131dc616fba8f6eb11b39a94b139c5bb72fae19d6ac3a",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.14,
+    "measuredTruePeakDBTP": -4.08
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-lucy",
+   "title": "Past Every Horizon",
+   "artist": "Grand Tides OST",
+   "url": "/assets/music/originals/pixel-lucy.m4a",
+   "bpm": 133.333,
+   "bars": 48,
+   "durationSeconds": 86.4,
+   "outputBytes": 1746522,
+   "outputSha256": "6e781205c9b4a4a15efc46df188820f69624ef586d878f10eb5ffdb701349fe0",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.14,
+    "measuredTruePeakDBTP": -3.23
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-kosho",
+   "title": "Service at Sea",
+   "artist": "Grand Tides OST",
+   "url": "/assets/music/originals/pixel-kosho.m4a",
+   "bpm": 134,
+   "bars": 48,
+   "durationSeconds": 85.97,
+   "outputBytes": 1737696,
+   "outputSha256": "62e4c2f2ed0098baf42b5dddc8b6357dbc8ed5a8fe46e988df970c217606ada4",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.14,
+    "measuredTruePeakDBTP": -1.94
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-ouga",
+   "title": "The Prince's March",
+   "artist": "Seven Star Saga OST",
+   "url": "/assets/music/originals/pixel-ouga.m4a",
+   "bpm": 150,
+   "bars": 56,
+   "durationSeconds": 89.6,
+   "outputBytes": 1810952,
+   "outputSha256": "9e7d0878f4e0ad3dc31a5351a14324a00fc20b1edd2ac82c83580751128d1baf",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.14,
+    "measuredTruePeakDBTP": -4.9
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-kagari",
+   "title": "Watch-Fire",
+   "artist": "Grand Tides OST",
+   "url": "/assets/music/originals/pixel-kagari.m4a",
+   "bpm": 144,
+   "bars": 52,
+   "durationSeconds": 86.667,
+   "outputBytes": 1751909,
+   "outputSha256": "f294e5b669764fc421811c64b9d3d983b5c406752ff7a4f9b13271c1c2899ed6",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.15,
+    "measuredTruePeakDBTP": -2.43
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-kuon",
+   "title": "Planetarium",
+   "artist": "Hexbound OST",
+   "url": "/assets/music/originals/pixel-kuon.m4a",
+   "bpm": 140,
+   "bars": 52,
+   "durationSeconds": 89.143,
+   "outputBytes": 1802330,
+   "outputSha256": "3c66a9ccac72406431495a1b9e745c1e379bda5a246e938caf75f297cfdd05b3",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.14,
+    "measuredTruePeakDBTP": -2.79
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-setsu",
+   "title": "Thundersnow Chase",
+   "artist": "Phantom Hunt OST",
+   "url": "/assets/music/originals/pixel-setsu.m4a",
+   "bpm": 168,
+   "bars": 56,
+   "durationSeconds": 80.0,
+   "outputBytes": 1617429,
+   "outputSha256": "d1b4bc9dd2263cae9464abc3b0339c68940fb01dcde99af4f619ccf84cfc9af5",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.16,
+    "measuredTruePeakDBTP": -2.11
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-kirigane",
+   "title": "Taut Line",
+   "artist": "Ropewalk OST",
+   "url": "/assets/music/originals/pixel-kirigane.m4a",
+   "bpm": 168,
+   "bars": 64,
+   "durationSeconds": 91.429,
+   "outputBytes": 1848308,
+   "outputSha256": "96456b57cd3bc09987fbb8058a6e99eeb2a4733908080514a45e5fee93125ede",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.13,
+    "measuredTruePeakDBTP": -2.65
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-hisame",
+   "title": "Waltz in the Snow",
+   "artist": "Frostmarch OST",
+   "url": "/assets/music/originals/pixel-hisame.m4a",
+   "bpm": 180,
+   "bars": 88,
+   "durationSeconds": 88.0,
+   "outputBytes": 1779122,
+   "outputSha256": "14ab45d8750cba6fcfd4f49eff0dcfea57df2ff5e5d63482b949f2daf3d19529",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.14,
+    "measuredTruePeakDBTP": -1.8
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-suzuran",
+   "title": "The Still Bell",
+   "artist": "Hundred Bells OST",
+   "url": "/assets/music/originals/pixel-suzuran.m4a",
+   "bpm": 152,
+   "bars": 56,
+   "durationSeconds": 88.421,
+   "outputBytes": 1787225,
+   "outputSha256": "91adc3663bfa5fc3264ac8716f3e078b24dce6beb1b9d18e216d93342f41e5e9",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.14,
+    "measuredTruePeakDBTP": -3.48
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-unari",
+   "title": "Rooftop Tango",
+   "artist": "Paper Sky OST",
+   "url": "/assets/music/originals/pixel-unari.m4a",
+   "bpm": 120,
+   "bars": 44,
+   "durationSeconds": 88.0,
+   "outputBytes": 1779080,
+   "outputSha256": "f079896f60fbdc3932a2052ddabe5188cf26712c8aa59dab86b3f8d20b9ad44e",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.11,
+    "measuredTruePeakDBTP": -3.0
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-buna",
+   "title": "Woodland Stomp",
+   "artist": "Old Growth OST",
+   "url": "/assets/music/originals/pixel-buna.m4a",
+   "bpm": 84,
+   "bars": 32,
+   "durationSeconds": 91.429,
+   "outputBytes": 1847946,
+   "outputSha256": "60f50e022e1b9f0eccf59cf9329d9565149d0212a3957faac9781e512a626707",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.11,
+    "measuredTruePeakDBTP": -1.76
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-tsubute",
+   "title": "Skipping Stones",
+   "artist": "Stone Ford OST",
+   "url": "/assets/music/originals/pixel-tsubute.m4a",
+   "bpm": 152,
+   "bars": 96,
+   "durationSeconds": 75.789,
+   "outputBytes": 1532639,
+   "outputSha256": "ac72af0d5206f2da26843dee94dc29fedfea13e5a7057c2bcae595ce21d7e5b8",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.12,
+    "measuredTruePeakDBTP": -4.4
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-shakudo",
+   "title": "Forge Funk",
+   "artist": "Slag Hill OST",
+   "url": "/assets/music/originals/pixel-shakudo.m4a",
+   "bpm": 108,
+   "bars": 40,
+   "durationSeconds": 88.889,
+   "outputBytes": 1796700,
+   "outputSha256": "2ece036f7f1312e12a7865e046335da489996d2b111ee349479dc7b1d96efaaf",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.13,
+    "measuredTruePeakDBTP": -3.0
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  },
+  {
+   "id": "pixel-wataame",
+   "title": "Odd Jobs",
+   "artist": "Lantern Ward OST",
+   "url": "/assets/music/originals/pixel-wataame.m4a",
+   "bpm": 90,
+   "bars": 32,
+   "durationSeconds": 85.333,
+   "outputBytes": 1725064,
+   "outputSha256": "57a0fe85cbbbabb5856e2076be5e979f80d29339f87e57dc081f4edca51288e9",
+   "loudness": {
+    "measuredIntegratedLUFS": -18.13,
+    "measuredTruePeakDBTP": -1.54
+   },
+   "source": "An original composition written as MIDI for the game and rendered through General MIDI soundfonts; no melody, lyric or recording from any existing song"
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+{
+ "version": 1,
+ "generatedBy": "made for the game",
+ "format": "48 kHz mono 16-bit PCM WAV, dithered",
+ "note": "Recordings cut, layered and levelled for the game, with layers made in code (numpy). No model-generated audio. Public repo: only the files whose every source is CC0 or CC BY ship here; the rest stay out.",
+ "licences": {
+  "cc0-1.0": "CC0 1.0",
+  "cc-by-4.0": "CC BY 4.0 (credited)"
+ },
+ "files": [
+  {
+   "cue": "fx-hit-barrage-3",
+   "file": "/assets/audio/v2/sfx/originals/families/hits/hit-barrage-3.wav",
+   "seconds": 0.1578,
+   "description": "One blow of a barrage: a designed punch's smack, short.",
+   "licences": [
+    "cc-by-4.0"
+   ],
+   "sources": [
+    "px:fs:749785"
+   ],
+   "synthesis": [],
+   "runtimeSha256": "b2fdd1487d22ca99079c7fd0828a4d2f0ad467319062a1a0f9de2ae18ac3c67f"
+  }
+ ]
+}

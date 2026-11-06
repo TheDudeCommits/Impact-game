@@ -1,0 +1,10 @@
+/* Lock combat's preview (game/lockCombat.ts), the third pass: a string is the two bodies, not the HUD. A blind critic
+   on our footage: about 38% of the frame was HUD during a string (15% was the aim), the hit count's
+   digit 17% of the frame's height, the damage splat printed over the move's name, the lock-on tip under
+   the fighters' feet. Only a page whose <html> carries data-lock-combat (main.ts, the preview's build) reads any of it. */
+html[data-lock-combat] #interface .combat-hud .combo-counter.ik-combo{scale:.42;transform-origin:100% 0;top:calc(178px * var(--hud-k))}
+/* The move's name off the pair (the critic: it covered the blow's contact point), above the move cards. */
+html[data-lock-combat] #interface .combat-hud #action-message{top:auto;bottom:calc(132px * var(--hud-k));scale:.8}
+html[data-lock-combat] .ink-count{display:none !important}
+html[data-lock-combat] #interface .coach-tip{display:none !important}
+html[data-lock-combat] #interface .training-combo{display:none}

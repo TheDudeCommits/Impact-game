@@ -1,0 +1,2377 @@
+{
+ "body-a": {
+  "file": "sfx/originals/families/body/body-blow-a.wav",
+  "seconds": 0.1641,
+  "peak": 0.0111
+ },
+ "body-b": {
+  "file": "sfx/originals/families/body/body-blow-b.wav",
+  "seconds": 0.1623,
+  "peak": 0.0138
+ },
+ "bomb": {
+  "file": "sfx/originals/families/hits/blast.wav",
+  "seconds": 1.4415,
+  "peak": 0.2841
+ },
+ "charge-chi": {
+  "file": "sfx/originals/families/energy/charge-swell.wav",
+  "seconds": 0.3417,
+  "peak": 0.1109
+ },
+ "cloth": {
+  "file": "sfx/originals/families/body/cloth-flick.wav",
+  "seconds": 0.4038,
+  "peak": 0.1343
+ },
+ "crack": {
+  "file": "sfx/originals/families/hits/big-crack.wav",
+  "seconds": 0.1074,
+  "peak": 0.0063
+ },
+ "energy-tail": {
+  "file": "sfx/originals/families/energy/rise-tail.wav",
+  "seconds": 1.2189,
+  "peak": 0.5077
+ },
+ "fx-armour-1": {
+  "file": "sfx/originals/families/body/armour-clank-1.wav",
+  "seconds": 0.4187,
+  "peak": 0.0415
+ },
+ "fx-armour-2": {
+  "file": "sfx/originals/families/body/armour-clank-2.wav",
+  "seconds": 0.4861,
+  "peak": 0.0285
+ },
+ "fx-rakshasa": {
+  "file": "sfx/originals/signatures/kenzo/rakshasa.wav",
+  "seconds": 1.2008,
+  "peak": 0.53
+ },
+ "fx-aura-burn": {
+  "file": "sfx/originals/families/awakening/aura-flame.wav",
+  "seconds": 2.56,
+  "peak": 1.4473,
+  "loop": true
+ },
+ "fx-aura-chi": {
+  "file": "sfx/originals/families/awakening/aura-gale.wav",
+  "seconds": 2.56,
+  "peak": 1.0268,
+  "loop": true
+ },
+ "fx-aura-cursed": {
+  "file": "sfx/originals/families/awakening/aura-dark.wav",
+  "seconds": 2.16,
+  "peak": 1.4703,
+  "loop": true
+ },
+ "fx-aura-frost": {
+  "file": "sfx/originals/families/awakening/aura-frost.wav",
+  "seconds": 3.36,
+  "peak": 0.2314,
+  "loop": true
+ },
+ "fx-aura-will": {
+  "file": "sfx/originals/families/awakening/aura-pressure.wav",
+  "seconds": 3.36,
+  "peak": 2.0951,
+  "loop": true
+ },
+ "fx-aura-aura": {
+  "file": "sfx/originals/families/awakening/aura-shroud.wav",
+  "seconds": 1.76,
+  "peak": 0.3541,
+  "loop": true
+ },
+ "fx-aura-pressure": {
+  "file": "sfx/originals/families/awakening/aura-pillar.wav",
+  "seconds": 2.16,
+  "peak": 1.0693,
+  "loop": true
+ },
+ "fx-aura-steam": {
+  "file": "sfx/originals/families/awakening/aura-steam.wav",
+  "seconds": 1.76,
+  "peak": 0.0065,
+  "loop": true
+ },
+ "fx-awaken": {
+  "file": "sfx/originals/families/awakening/awaken.wav",
+  "seconds": 1.85,
+  "peak": 0.5462,
+  "beat": 0.3609
+ },
+ "fx-awaken-end": {
+  "file": "sfx/originals/families/awakening/awaken-end.wav",
+  "seconds": 0.333,
+  "peak": 0.0757
+ },
+ "fx-unsealed": {
+  "file": "sfx/originals/signatures/nigo/release.wav",
+  "seconds": 1.9027,
+  "peak": 0.3115,
+  "beat": 0.055
+ },
+ "fx-barrage": {
+  "file": "sfx/originals/signatures/koko/gan-gan-barrage.wav",
+  "seconds": 3.3,
+  "peak": 2.8498
+ },
+ "fx-beam": {
+  "file": "sfx/originals/families/energy/beam.wav",
+  "seconds": 1.7255,
+  "peak": 0.0089
+ },
+ "fx-beam-big": {
+  "file": "sfx/originals/families/energy/beam-big.wav",
+  "seconds": 1.7691,
+  "peak": 0.0108
+ },
+ "fx-beast-bite": {
+  "file": "sfx/originals/families/body/jaws-bite.wav",
+  "seconds": 0.4511,
+  "peak": 0.0097
+ },
+ "fx-beast-roar": {
+  "file": "sfx/originals/families/body/beast-roar.wav",
+  "seconds": 1.6726,
+  "peak": 0.4709
+ },
+ "fx-beast-swipe-1": {
+  "file": "sfx/originals/families/body/snow-swipe-1.wav",
+  "seconds": 0.382,
+  "peak": 0.1321
+ },
+ "fx-beast-swipe-2": {
+  "file": "sfx/originals/families/body/snow-swipe-2.wav",
+  "seconds": 0.4807,
+  "peak": 0.1432
+ },
+ "fx-black-flame": {
+  "file": "sfx/originals/families/elements/black-flame.wav",
+  "seconds": 1.61,
+  "peak": 0.6547,
+  "loop": true
+ },
+ "fx-dark-spark": {
+  "file": "sfx/originals/families/energy/rift-blow.wav",
+  "seconds": 0.7823,
+  "peak": 0.0715
+ },
+ "fx-block-1": {
+  "file": "sfx/originals/families/guard/block-1.wav",
+  "seconds": 0.1818,
+  "peak": 0.006
+ },
+ "fx-block-2": {
+  "file": "sfx/originals/families/guard/block-2.wav",
+  "seconds": 0.3,
+  "peak": 0.0441
+ },
+ "fx-block-blade": {
+  "file": "sfx/originals/families/guard/block-blade.wav",
+  "seconds": 0.6,
+  "peak": 0.0729
+ },
+ "fx-block-heavy": {
+  "file": "sfx/originals/families/guard/block-heavy.wav",
+  "seconds": 0.408,
+  "peak": 0.0474
+ },
+ "fx-blue": {
+  "file": "sfx/originals/families/energy/implosion.wav",
+  "seconds": 0.7392,
+  "peak": 0.4671
+ },
+ "fx-burn-tick-1": {
+  "file": "sfx/originals/families/elements/burn-tick-1.wav",
+  "seconds": 0.114,
+  "peak": 0.0071
+ },
+ "fx-burn-tick-2": {
+  "file": "sfx/originals/families/elements/burn-tick-2.wav",
+  "seconds": 0.1097,
+  "peak": 0.0033
+ },
+ "fx-cannon": {
+  "file": "sfx/originals/signatures/gaunt/scrap-cannon.wav",
+  "seconds": 1.8,
+  "peak": 0.1361
+ },
+ "fx-cannon-prep": {
+  "file": "sfx/originals/families/body/latch-ready.wav",
+  "seconds": 0.4718,
+  "peak": 0.0077
+ },
+ "fx-chase": {
+  "file": "sfx/originals/families/whoosh/chase.wav",
+  "seconds": 0.8292,
+  "peak": 0.2446
+ },
+ "fx-shrike-bolt": {
+  "file": "sfx/originals/families/elements/lightning-hand.wav",
+  "seconds": 1.56,
+  "peak": 0.3197,
+  "loop": true
+ },
+ "fx-shrike-bolt-hit": {
+  "file": "sfx/originals/signatures/shirokane/storm-cutter-hit.wav",
+  "seconds": 1,
+  "peak": 0.061
+ },
+ "fx-clash": {
+  "file": "sfx/originals/families/guard/clash.wav",
+  "seconds": 1.0957,
+  "peak": 0.072
+ },
+ "fx-claw-1": {
+  "file": "sfx/originals/families/blade/claw-1.wav",
+  "seconds": 0.2827,
+  "peak": 0.0627
+ },
+ "fx-claw-2": {
+  "file": "sfx/originals/families/blade/claw-2.wav",
+  "seconds": 0.259,
+  "peak": 0.0679
+ },
+ "fx-combo-break": {
+  "file": "sfx/originals/families/guard/combo-break.wav",
+  "seconds": 0.6,
+  "peak": 0.1723
+ },
+ "fx-counter-shock": {
+  "file": "sfx/originals/signatures/ward/defib-shock.wav",
+  "seconds": 1.1999,
+  "peak": 0.5223
+ },
+ "fx-cut-1": {
+  "file": "sfx/originals/families/blade/cut-1.wav",
+  "seconds": 0.4,
+  "peak": 0.0967
+ },
+ "fx-cut-2": {
+  "file": "sfx/originals/families/blade/cut-2.wav",
+  "seconds": 0.4,
+  "peak": 0.0038
+ },
+ "fx-cut-3": {
+  "file": "sfx/originals/families/blade/cut-3.wav",
+  "seconds": 0.3205,
+  "peak": 0.0074
+ },
+ "fx-cut-heavy-1": {
+  "file": "sfx/originals/families/blade/cut-heavy-1.wav",
+  "seconds": 0.7,
+  "peak": 0.0717
+ },
+ "fx-cut-heavy-2": {
+  "file": "sfx/originals/families/blade/cut-heavy-2.wav",
+  "seconds": 0.7,
+  "peak": 0.0655
+ },
+ "fx-dash": {
+  "file": "sfx/originals/families/whoosh/dash.wav",
+  "seconds": 0.3755,
+  "peak": 0.0901
+ },
+ "fx-kuzu-ignition": {
+  "file": "sfx/originals/families/body/saw-start.wav",
+  "seconds": 1.4309,
+  "peak": 0.5797
+ },
+ "fx-kuzu-rev": {
+  "file": "sfx/originals/families/body/saw-rev.wav",
+  "seconds": 0.8425,
+  "peak": 0.5562
+ },
+ "fx-kuzu-saw-1": {
+  "file": "sfx/originals/families/body/saw-bite-1.wav",
+  "seconds": 0.3156,
+  "peak": 0.0891
+ },
+ "fx-kuzu-saw-2": {
+  "file": "sfx/originals/families/body/saw-bite-2.wav",
+  "seconds": 0.4119,
+  "peak": 0.1367
+ },
+ "fx-domain": {
+  "file": "sfx/originals/families/awakening/realm-open.wav",
+  "seconds": 2.1907,
+  "peak": 0.0249
+ },
+ "fx-draw": {
+  "file": "sfx/originals/families/blade/draw.wav",
+  "seconds": 0.2994,
+  "peak": 0.1746
+ },
+ "fx-el-acid-cast": {
+  "file": "sfx/originals/families/elements/acid-cast.wav",
+  "seconds": 0.7219,
+  "peak": 0.4234
+ },
+ "fx-el-acid-hit": {
+  "file": "sfx/originals/families/elements/acid-hit.wav",
+  "seconds": 0.9251,
+  "peak": 0.0831
+ },
+ "fx-el-blood-hit": {
+  "file": "sfx/originals/families/elements/blood-hit.wav",
+  "seconds": 0.6351,
+  "peak": 0.0064
+ },
+ "fx-el-blood-rush": {
+  "file": "sfx/originals/families/elements/blood-rush.wav",
+  "seconds": 0.4019,
+  "peak": 0.1695
+ },
+ "fx-el-dark-cast": {
+  "file": "sfx/originals/families/elements/dark-cast.wav",
+  "seconds": 0.5107,
+  "peak": 0.3074
+ },
+ "fx-el-dark-hit": {
+  "file": "sfx/originals/families/elements/dark-hit.wav",
+  "seconds": 0.95,
+  "peak": 0.0884,
+  "beat": 0.0631
+ },
+ "fx-el-grav-cast": {
+  "file": "sfx/originals/families/elements/gravity-cast.wav",
+  "seconds": 0.6875,
+  "peak": 0.4471
+ },
+ "fx-el-grav-hit": {
+  "file": "sfx/originals/families/elements/gravity-hit.wav",
+  "seconds": 0.6846,
+  "peak": 0.0471
+ },
+ "fx-el-ice-cast": {
+  "file": "sfx/originals/families/elements/ice-cast.wav",
+  "seconds": 0.7613,
+  "peak": 0.3449
+ },
+ "fx-el-ice-hit": {
+  "file": "sfx/originals/families/elements/ice-hit.wav",
+  "seconds": 0.55,
+  "peak": 0.0073
+ },
+ "fx-el-ice-rush": {
+  "file": "sfx/originals/families/elements/ice-rush.wav",
+  "seconds": 0.2876,
+  "peak": 0.1682
+ },
+ "fx-el-ice-tail": {
+  "file": "sfx/originals/families/elements/ice-tail.wav",
+  "seconds": 0.8884,
+  "peak": 0.0383
+ },
+ "fx-el-light-cast": {
+  "file": "sfx/originals/families/elements/light-cast.wav",
+  "seconds": 0.637,
+  "peak": 0.3166
+ },
+ "fx-el-light-hit": {
+  "file": "sfx/originals/families/elements/light-hit.wav",
+  "seconds": 0.8,
+  "peak": 0.0069
+ },
+ "fx-el-light-rush": {
+  "file": "sfx/originals/families/elements/light-rush.wav",
+  "seconds": 0.2268,
+  "peak": 0.0058
+ },
+ "fx-el-light-tail": {
+  "file": "sfx/originals/families/elements/light-tail.wav",
+  "seconds": 0.7786,
+  "peak": 0.1335
+ },
+ "fx-el-petal-cast": {
+  "file": "sfx/originals/families/elements/petal-cast.wav",
+  "seconds": 0.6531,
+  "peak": 0.319
+ },
+ "fx-el-petal-hit": {
+  "file": "sfx/originals/families/elements/petal-hit.wav",
+  "seconds": 0.4852,
+  "peak": 0.0751
+ },
+ "fx-el-petal-rush": {
+  "file": "sfx/originals/families/elements/petal-rush.wav",
+  "seconds": 0.4808,
+  "peak": 0.1745
+ },
+ "fx-el-plant-cast": {
+  "file": "sfx/originals/families/elements/plant-cast.wav",
+  "seconds": 0.6917,
+  "peak": 0.2591
+ },
+ "fx-el-plant-hit": {
+  "file": "sfx/originals/families/elements/plant-hit.wav",
+  "seconds": 0.5672,
+  "peak": 0.0135
+ },
+ "fx-el-psy-cast": {
+  "file": "sfx/originals/families/elements/mind-cast.wav",
+  "seconds": 0.7278,
+  "peak": 0.3901
+ },
+ "fx-el-psy-hit": {
+  "file": "sfx/originals/families/elements/mind-hit.wav",
+  "seconds": 0.82,
+  "peak": 0.0067
+ },
+ "fx-el-sand-cast": {
+  "file": "sfx/originals/families/elements/sand-cast.wav",
+  "seconds": 0.5771,
+  "peak": 0.3505
+ },
+ "fx-el-sand-hit": {
+  "file": "sfx/originals/families/elements/sand-hit.wav",
+  "seconds": 0.748,
+  "peak": 0.006
+ },
+ "fx-el-sand-rush": {
+  "file": "sfx/originals/families/elements/sand-rush.wav",
+  "seconds": 0.5663,
+  "peak": 0.1595
+ },
+ "fx-el-sand-tail": {
+  "file": "sfx/originals/families/elements/sand-tail.wav",
+  "seconds": 0.7057,
+  "peak": 0.0464
+ },
+ "fx-el-sonic-cast": {
+  "file": "sfx/originals/families/elements/sonic-cast.wav",
+  "seconds": 0.5023,
+  "peak": 0.3039
+ },
+ "fx-el-sonic-hit": {
+  "file": "sfx/originals/families/elements/sonic-hit.wav",
+  "seconds": 0.5524,
+  "peak": 0.0617
+ },
+ "fx-el-stone-cast": {
+  "file": "sfx/originals/families/elements/stone-cast.wav",
+  "seconds": 0.6346,
+  "peak": 0.378
+ },
+ "fx-el-stone-hit": {
+  "file": "sfx/originals/families/elements/stone-hit.wav",
+  "seconds": 0.95,
+  "peak": 0.0718
+ },
+ "fx-el-stone-tail": {
+  "file": "sfx/originals/families/elements/stone-tail.wav",
+  "seconds": 0.4631,
+  "peak": 0.0146
+ },
+ "fx-el-string-cast": {
+  "file": "sfx/originals/families/elements/thread-cast.wav",
+  "seconds": 0.6447,
+  "peak": 0.1911
+ },
+ "fx-el-string-hit": {
+  "file": "sfx/originals/families/elements/thread-hit.wav",
+  "seconds": 0.6192,
+  "peak": 0.0057
+ },
+ "fx-el-string-rush": {
+  "file": "sfx/originals/families/elements/thread-rush.wav",
+  "seconds": 0.4592,
+  "peak": 0.0965
+ },
+ "fx-el-water-cast": {
+  "file": "sfx/originals/families/elements/water-cast.wav",
+  "seconds": 0.5884,
+  "peak": 0.3189
+ },
+ "fx-el-water-hit": {
+  "file": "sfx/originals/families/elements/water-hit.wav",
+  "seconds": 0.8128,
+  "peak": 0.0213,
+  "beat": 0.0148
+ },
+ "fx-el-water-rush": {
+  "file": "sfx/originals/families/elements/water-rush.wav",
+  "seconds": 0.5617,
+  "peak": 0.1776
+ },
+ "fx-el-water-tail": {
+  "file": "sfx/originals/families/elements/water-tail.wav",
+  "seconds": 0.7329,
+  "peak": 0.0581
+ },
+ "fx-electric-bed": {
+  "file": "sfx/originals/families/elements/electric-bed.wav",
+  "seconds": 1.46,
+  "peak": 0.5375,
+  "loop": true
+ },
+ "fx-embers": {
+  "file": "sfx/originals/families/elements/embers.wav",
+  "seconds": 0.6585,
+  "peak": 0.1386
+ },
+ "fx-energy-hit-1": {
+  "file": "sfx/originals/families/energy/energy-hit-1.wav",
+  "seconds": 0.7829,
+  "peak": 0.1309
+ },
+ "fx-energy-hit-2": {
+  "file": "sfx/originals/families/energy/energy-hit-2.wav",
+  "seconds": 0.5988,
+  "peak": 0.1087
+ },
+ "fx-enter-chi": {
+  "file": "sfx/originals/families/awakening/enter-gale.wav",
+  "seconds": 0.9859,
+  "peak": 0.2505
+ },
+ "fx-enter-cursed": {
+  "file": "sfx/originals/families/awakening/enter-darkflame.wav",
+  "seconds": 1.2636,
+  "peak": 0.2007
+ },
+ "fx-enter-frost": {
+  "file": "sfx/originals/families/awakening/enter-frost.wav",
+  "seconds": 1.2576,
+  "peak": 0.1756
+ },
+ "fx-enter-will": {
+  "file": "sfx/originals/families/awakening/enter-pressure.wav",
+  "seconds": 1.25,
+  "peak": 0.0193,
+  "beat": 0.0059
+ },
+ "fx-enter-aura": {
+  "file": "sfx/originals/families/awakening/enter-swell.wav",
+  "seconds": 1.5968,
+  "peak": 0.247
+ },
+ "fx-enter-pressure": {
+  "file": "sfx/originals/families/awakening/enter-pillar.wav",
+  "seconds": 1.1779,
+  "peak": 0.2115
+ },
+ "fx-explosion-1": {
+  "file": "sfx/originals/families/energy/explosion-1.wav",
+  "seconds": 1.4933,
+  "peak": 0.3062
+ },
+ "fx-explosion-2": {
+  "file": "sfx/originals/families/energy/explosion-2.wav",
+  "seconds": 1.55,
+  "peak": 0.2377
+ },
+ "fx-explosion-huge": {
+  "file": "sfx/originals/families/energy/explosion-huge.wav",
+  "seconds": 2.4331,
+  "peak": 0.4932
+ },
+ "fx-fire-bed": {
+  "file": "sfx/originals/families/elements/fire-bed.wav",
+  "seconds": 1.61,
+  "peak": 0.5319,
+  "loop": true
+ },
+ "fx-fire-burst": {
+  "file": "sfx/originals/families/elements/fire-burst.wav",
+  "seconds": 0.9909,
+  "peak": 0.0424,
+  "beat": 0.0201
+ },
+ "fx-fire-ignite": {
+  "file": "sfx/originals/families/elements/fire-ignite.wav",
+  "seconds": 0.4251,
+  "peak": 0.0255
+ },
+ "fx-fire-roar": {
+  "file": "sfx/originals/families/elements/fire-roar.wav",
+  "seconds": 1.7353,
+  "peak": 0.3879
+ },
+ "fx-fire-whoosh-1": {
+  "file": "sfx/originals/families/elements/fire-whoosh-1.wav",
+  "seconds": 0.5378,
+  "peak": 0.1429
+ },
+ "fx-fire-whoosh-2": {
+  "file": "sfx/originals/families/elements/fire-whoosh-2.wav",
+  "seconds": 0.2683,
+  "peak": 0.0278
+ },
+ "fx-gamma": {
+  "file": "sfx/originals/signatures/ward/rad-knife.wav",
+  "seconds": 0.8,
+  "peak": 0.0654
+ },
+ "fx-gather": {
+  "file": "sfx/originals/families/energy/gather.wav",
+  "seconds": 1.66,
+  "peak": 0.6229,
+  "loop": true
+ },
+ "fx-gear4-bounce": {
+  "file": "sfx/originals/families/body/rubber-bounce.wav",
+  "seconds": 0.5263,
+  "peak": 0.0907
+ },
+ "fx-gear4-inflate": {
+  "file": "sfx/originals/families/body/rubber-swell.wav",
+  "seconds": 1.5139,
+  "peak": 0.901
+ },
+ "fx-nightfang": {
+  "file": "sfx/originals/signatures/nigo/cinder-crescent.wav",
+  "seconds": 1.3082,
+  "peak": 0.1817,
+  "beat": 0.01
+ },
+ "fx-ground-bounce": {
+  "file": "sfx/originals/families/hits/ground-bounce.wav",
+  "seconds": 0.75,
+  "peak": 0.0429
+ },
+ "fx-guard-break": {
+  "file": "sfx/originals/families/guard/guard-break.wav",
+  "seconds": 0.95,
+  "peak": 0.0519
+ },
+ "fx-guard-shatter": {
+  "file": "sfx/originals/families/guard/guard-shatter.wav",
+  "seconds": 1.3,
+  "peak": 0.0524
+ },
+ "fx-will": {
+  "file": "sfx/originals/families/body/iron-tighten.wav",
+  "seconds": 0.6638,
+  "peak": 0.1002
+ },
+ "fx-hit-barrage-1": {
+  "file": "sfx/originals/families/hits/hit-barrage-1.wav",
+  "seconds": 0.1487,
+  "peak": 0.007
+ },
+ "fx-hit-barrage-2": {
+  "file": "sfx/originals/families/hits/hit-barrage-2.wav",
+  "seconds": 0.1412,
+  "peak": 0.008
+ },
+ "fx-hit-barrage-3": {
+  "file": "sfx/originals/families/hits/hit-barrage-3.wav",
+  "seconds": 0.1578,
+  "peak": 0.0078
+ },
+ "fx-hit-barrage-4": {
+  "file": "sfx/originals/families/hits/hit-barrage-4.wav",
+  "seconds": 0.137,
+  "peak": 0.0059
+ },
+ "fx-hit-finisher-1": {
+  "file": "sfx/originals/families/hits/hit-finisher-1.wav",
+  "seconds": 1,
+  "peak": 0.0604
+ },
+ "fx-hit-finisher-2": {
+  "file": "sfx/originals/families/hits/hit-finisher-2.wav",
+  "seconds": 1,
+  "peak": 0.0304
+ },
+ "fx-hit-heavy-1": {
+  "file": "sfx/originals/families/hits/hit-heavy-1.wav",
+  "seconds": 0.3297,
+  "peak": 0.0286
+ },
+ "fx-hit-heavy-2": {
+  "file": "sfx/originals/families/hits/hit-heavy-2.wav",
+  "seconds": 0.3621,
+  "peak": 0.0968
+ },
+ "fx-hit-heavy-3": {
+  "file": "sfx/originals/families/hits/hit-heavy-3.wav",
+  "seconds": 0.3882,
+  "peak": 0.0076
+ },
+ "fx-hit-kick-1": {
+  "file": "sfx/originals/families/hits/hit-kick-1.wav",
+  "seconds": 0.2218,
+  "peak": 0.0131
+ },
+ "fx-hit-kick-2": {
+  "file": "sfx/originals/families/hits/hit-kick-2.wav",
+  "seconds": 0.4308,
+  "peak": 0.0076
+ },
+ "fx-hit-kick-3": {
+  "file": "sfx/originals/families/hits/hit-kick-3.wav",
+  "seconds": 0.2002,
+  "peak": 0.0034
+ },
+ "fx-hit-light-1": {
+  "file": "sfx/originals/families/hits/hit-light-1.wav",
+  "seconds": 0.1632,
+  "peak": 0.002
+ },
+ "fx-hit-light-2": {
+  "file": "sfx/originals/families/hits/hit-light-2.wav",
+  "seconds": 0.1771,
+  "peak": 0.0032
+ },
+ "fx-hit-light-3": {
+  "file": "sfx/originals/families/hits/hit-light-3.wav",
+  "seconds": 0.1832,
+  "peak": 0.0033
+ },
+ "fx-hit-light-4": {
+  "file": "sfx/originals/families/hits/hit-light-4.wav",
+  "seconds": 0.1833,
+  "peak": 0.0125
+ },
+ "fx-just-guard": {
+  "file": "sfx/originals/families/guard/just-guard.wav",
+  "seconds": 0.5505,
+  "peak": 0.0389
+ },
+ "fx-void-sickle": {
+  "file": "sfx/originals/signatures/shirokane/void-eye.wav",
+  "seconds": 0.7927,
+  "peak": 0.33
+ },
+ "fx-ki-blast-1": {
+  "file": "sfx/originals/families/energy/ki-blast-1.wav",
+  "seconds": 0.45,
+  "peak": 0.0403
+ },
+ "fx-ki-blast-2": {
+  "file": "sfx/originals/families/energy/ki-blast-2.wav",
+  "seconds": 0.45,
+  "peak": 0.0403
+ },
+ "fx-ki-blast-3": {
+  "file": "sfx/originals/families/energy/ki-blast-3.wav",
+  "seconds": 0.45,
+  "peak": 0.0336
+ },
+ "fx-ki-charge": {
+  "file": "sfx/originals/families/energy/ki-charge.wav",
+  "seconds": 1.66,
+  "peak": 1.6456,
+  "loop": true
+ },
+ "fx-ki-charge-big": {
+  "file": "sfx/originals/families/energy/ki-charge-big.wav",
+  "seconds": 1.96,
+  "peak": 0.9005,
+  "loop": true
+ },
+ "fx-ki-launch": {
+  "file": "sfx/originals/families/energy/ki-launch.wav",
+  "seconds": 1.0333,
+  "peak": 0.1735
+ },
+ "fx-knife-hit-1": {
+  "file": "sfx/originals/families/blade/knife-hit-1.wav",
+  "seconds": 0.3111,
+  "peak": 0.008
+ },
+ "fx-knife-hit-2": {
+  "file": "sfx/originals/families/blade/knife-hit-2.wav",
+  "seconds": 0.368,
+  "peak": 0.0079
+ },
+ "fx-clock-hand-knives-1": {
+  "file": "sfx/originals/families/blade/clock-hand-knives-1.wav",
+  "seconds": 0.4245,
+  "peak": 0.1047
+ },
+ "fx-clock-hand-knives-2": {
+  "file": "sfx/originals/families/blade/clock-hand-knives-2.wav",
+  "seconds": 0.4732,
+  "peak": 0.0817
+ },
+ "fx-land-heavy": {
+  "file": "sfx/originals/families/hits/land-heavy.wav",
+  "seconds": 0.66,
+  "peak": 0.1405
+ },
+ "fx-lightning": {
+  "file": "sfx/originals/families/elements/lightning.wav",
+  "seconds": 0.9768,
+  "peak": 0.0494
+ },
+ "fx-nightfall": {
+  "file": "sfx/originals/signatures/nigo/nightfall.wav",
+  "seconds": 2.071,
+  "peak": 0.9044,
+  "beat": 0.28
+ },
+ "fx-nine-cuts": {
+  "file": "sfx/originals/signatures/kenzo/thousand-worlds.wav",
+  "seconds": 1.2,
+  "peak": 0.1415
+ },
+ "fx-orig-awaken-dark": {
+  "file": "sfx/originals/families/awakening/awaken-dark.wav",
+  "seconds": 1.85,
+  "peak": 0.748,
+  "beat": 0.36
+ },
+ "fx-orig-awaken-flame": {
+  "file": "sfx/originals/families/awakening/awaken-flame.wav",
+  "seconds": 1.85,
+  "peak": 0.5143,
+  "beat": 0.36
+ },
+ "fx-orig-awaken-storm": {
+  "file": "sfx/originals/families/awakening/awaken-storm.wav",
+  "seconds": 1.85,
+  "peak": 0.3662,
+  "beat": 0.36
+ },
+ "fx-orig-clash-1": {
+  "file": "sfx/originals/families/blade/clash-1.wav",
+  "seconds": 0.7378,
+  "peak": 0.065
+ },
+ "fx-orig-clash-2": {
+  "file": "sfx/originals/families/blade/clash-2.wav",
+  "seconds": 0.5937,
+  "peak": 0.0079
+ },
+ "fx-orig-clash-3": {
+  "file": "sfx/originals/families/blade/clash-3.wav",
+  "seconds": 0.8504,
+  "peak": 0.0078
+ },
+ "fx-orig-clash-4": {
+  "file": "sfx/originals/families/blade/clash-4.wav",
+  "seconds": 0.9,
+  "peak": 0.7351
+ },
+ "fx-orig-launch-1": {
+  "file": "sfx/originals/families/hits/hit-launcher-1.wav",
+  "seconds": 0.8,
+  "peak": 0.0053
+ },
+ "fx-orig-launch-2": {
+  "file": "sfx/originals/families/hits/hit-launcher-2.wav",
+  "seconds": 0.7999,
+  "peak": 0.0079
+ },
+ "fx-orig-seal-cast": {
+  "file": "sfx/originals/families/awakening/seal-cast.wav",
+  "seconds": 1.7905,
+  "peak": 0.3891
+ },
+ "fx-orig-seal-cast-dark": {
+  "file": "sfx/originals/families/awakening/seal-cast-dark.wav",
+  "seconds": 1.7905,
+  "peak": 0.177
+ },
+ "fx-orig-seal-draw": {
+  "file": "sfx/originals/families/awakening/seal-draw.wav",
+  "seconds": 1.7853,
+  "peak": 0.2582
+ },
+ "fx-orig-teleport-in": {
+  "file": "sfx/originals/families/energy/teleport-in.wav",
+  "seconds": 0.4671,
+  "peak": 0.1528
+ },
+ "fx-orig-teleport-out": {
+  "file": "sfx/originals/families/energy/teleport-out.wav",
+  "seconds": 0.7706,
+  "peak": 0.426
+ },
+ "fx-orig-ui-back": {
+  "file": "sfx/originals/families/ui/back.wav",
+  "seconds": 0.3013,
+  "peak": 0.0022
+ },
+ "fx-orig-ui-confirm": {
+  "file": "sfx/originals/families/ui/confirm.wav",
+  "seconds": 0.45,
+  "peak": 0.0053
+ },
+ "fx-orig-ui-cut-in": {
+  "file": "sfx/originals/families/ui/cut-in.wav",
+  "seconds": 1.5683,
+  "peak": 0.6064
+ },
+ "fx-orig-ui-fight": {
+  "file": "sfx/originals/families/ui/fight.wav",
+  "seconds": 1.5917,
+  "peak": 0.4303
+ },
+ "fx-orig-ui-ko": {
+  "file": "sfx/originals/families/ui/ko.wav",
+  "seconds": 2.1468,
+  "peak": 0.6251
+ },
+ "fx-orig-ui-round-bell": {
+  "file": "sfx/originals/families/ui/round-bell.wav",
+  "seconds": 1.4803,
+  "peak": 0.0905
+ },
+ "fx-orig-ui-select": {
+  "file": "sfx/originals/families/ui/select.wav",
+  "seconds": 0.152,
+  "peak": 0.002
+ },
+ "fx-orig-ui-victory": {
+  "file": "sfx/originals/families/ui/victory.wav",
+  "seconds": 1.8721,
+  "peak": 0.0065
+ },
+ "fx-orig-ui-vs-cut": {
+  "file": "sfx/originals/families/ui/vs-cut.wav",
+  "seconds": 0.9729,
+  "peak": 0.1279
+ },
+ "fx-orig-ui-vs-panels": {
+  "file": "sfx/originals/families/ui/vs-panels.wav",
+  "seconds": 1.362,
+  "peak": 0.0392
+ },
+ "fx-orig-ui-vs-stamp": {
+  "file": "sfx/originals/families/ui/vs-stamp.wav",
+  "seconds": 1.4969,
+  "peak": 0.1395
+ },
+ "fx-parry": {
+  "file": "sfx/originals/families/guard/parry.wav",
+  "seconds": 0.73,
+  "peak": 0.0186
+ },
+ "fx-poof-1": {
+  "file": "sfx/originals/families/body/smoke-puff-1.wav",
+  "seconds": 0.5478,
+  "peak": 0.1774
+ },
+ "fx-poof-2": {
+  "file": "sfx/originals/families/body/smoke-puff-2.wav",
+  "seconds": 0.4991,
+  "peak": 0.0562
+ },
+ "fx-purple": {
+  "file": "sfx/originals/families/energy/space-tear.wav",
+  "seconds": 1.134,
+  "peak": 0.013
+ },
+ "fx-purple-charge": {
+  "file": "sfx/originals/families/energy/surge-gather.wav",
+  "seconds": 1.56,
+  "peak": 1.2691,
+  "loop": true
+ },
+ "fx-red": {
+  "file": "sfx/originals/families/energy/repel-blast.wav",
+  "seconds": 0.6349,
+  "peak": 0.0114
+ },
+ "fx-steamroller": {
+  "file": "sfx/originals/signatures/lord-oro/death-knell.wav",
+  "seconds": 2.2377,
+  "peak": 0.1123,
+  "beat": 0.07
+ },
+ "fx-room": {
+  "file": "sfx/originals/signatures/ward/theatre-open.wav",
+  "seconds": 0.7063,
+  "peak": 0.08
+ },
+ "fx-crossmatch": {
+  "file": "sfx/originals/signatures/ward/swap.wav",
+  "seconds": 0.3378,
+  "peak": 0.08
+ },
+ "fx-sheathe": {
+  "file": "sfx/originals/families/blade/sheathe.wav",
+  "seconds": 0.1882,
+  "peak": 0.0279
+ },
+ "fx-sig-akagane-burning-sea": {
+  "file": "sfx/originals/signatures/akagane/burning-sea.wav",
+  "seconds": 2.6,
+  "peak": 0.9472
+ },
+ "fx-sig-akagane-heavens-anvil": {
+  "file": "sfx/originals/signatures/akagane/heavens-anvil.wav",
+  "seconds": 4.6,
+  "peak": 2.7638,
+  "beat": 2
+ },
+ "fx-sig-akagane-war-fan": {
+  "file": "sfx/originals/signatures/akagane/war-fan.wav",
+  "seconds": 1.1182,
+  "peak": 0.35
+ },
+ "fx-sig-akagane-wrathful-king": {
+  "file": "sfx/originals/signatures/akagane/wrathful-king.wav",
+  "seconds": 1.8899,
+  "peak": 0.3477,
+  "beat": 0.34
+ },
+ "fx-sig-akaito-pinky-promise": {
+  "file": "sfx/originals/signatures/akaito/pinky-promise.wav",
+  "seconds": 2.9762,
+  "peak": 0.0108
+ },
+ "fx-sig-akaito-till-death": {
+  "file": "sfx/originals/signatures/akaito/till-death.wav",
+  "seconds": 0.9756,
+  "peak": 0.2007
+ },
+ "fx-sig-akaito-whispered-vow": {
+  "file": "sfx/originals/signatures/akaito/whispered-vow.wav",
+  "seconds": 0.8145,
+  "peak": 0.3039
+ },
+ "fx-sig-amagoi-ash-moon": {
+  "file": "sfx/originals/signatures/amagoi/ash-moon.wav",
+  "seconds": 0.9545,
+  "peak": 0.0092
+ },
+ "fx-sig-amagoi-calling-water": {
+  "file": "sfx/originals/signatures/amagoi/calling-water.wav",
+  "seconds": 1.4424,
+  "peak": 0.4471
+ },
+ "fx-sig-amagoi-iron-halo": {
+  "file": "sfx/originals/signatures/amagoi/iron-halo.wav",
+  "seconds": 1.6726,
+  "peak": 0.2505
+ },
+ "fx-sig-ampere-finisterre-flick": {
+  "file": "sfx/originals/signatures/ampere/finisterre-flick.wav",
+  "seconds": 1.4961,
+  "peak": 0.1496
+ },
+ "fx-sig-ampere-foghorn-blast": {
+  "file": "sfx/originals/signatures/ampere/foghorn-blast.wav",
+  "seconds": 0.8062,
+  "peak": 0.0092
+ },
+ "fx-sig-ampere-lights-on": {
+  "file": "sfx/originals/signatures/ampere/lights-on.wav",
+  "seconds": 1.9046,
+  "peak": 0.02
+ },
+ "fx-sig-asahi-ashfall-waltz": {
+  "file": "sfx/originals/signatures/asahi/ashfall-waltz.wav",
+  "seconds": 2.4,
+  "peak": 1.1066,
+  "beat": 1.1
+ },
+ "fx-sig-asahi-daybreak": {
+  "file": "sfx/originals/signatures/asahi/daybreak.wav",
+  "seconds": 2.2,
+  "peak": 0.3477,
+  "beat": 0.34
+ },
+ "fx-sig-asahi-first-light": {
+  "file": "sfx/originals/signatures/asahi/first-light.wav",
+  "seconds": 2.6336,
+  "peak": 1.525,
+  "beat": 1.4
+ },
+ "fx-sig-asahi-ripple-cut": {
+  "file": "sfx/originals/signatures/asahi/ripple-cut.wav",
+  "seconds": 1,
+  "peak": 0.114
+ },
+ "fx-sig-bonsho-first-toll": {
+  "file": "sfx/originals/signatures/bonsho/first-toll.wav",
+  "seconds": 1.1538,
+  "peak": 0.3166
+ },
+ "fx-sig-bonsho-great-bell": {
+  "file": "sfx/originals/signatures/bonsho/great-bell.wav",
+  "seconds": 1.8612,
+  "peak": 0.247
+ },
+ "fx-sig-bonsho-hundred-and-eight": {
+  "file": "sfx/originals/signatures/bonsho/hundred-and-eight.wav",
+  "seconds": 1.072,
+  "peak": 0.0092
+ },
+ "fx-sig-bruin-night-prowl": {
+  "file": "sfx/originals/signatures/bruin/night-prowl.wav",
+  "seconds": 0.7489,
+  "peak": 0.3074
+ },
+ "fx-sig-bruin-starless-cut": {
+  "file": "sfx/originals/signatures/bruin/starless-cut.wav",
+  "seconds": 0.7438,
+  "peak": 0.0092
+ },
+ "fx-sig-bruin-wide-awake": {
+  "file": "sfx/originals/signatures/bruin/wide-awake.wav",
+  "seconds": 1.0342,
+  "peak": 0.2007
+ },
+ "fx-sig-cardo-last-weed": {
+  "file": "sfx/originals/signatures/cardo/last-weed.wav",
+  "seconds": 1.2811,
+  "peak": 0.0092
+ },
+ "fx-sig-cardo-overgrown": {
+  "file": "sfx/originals/signatures/cardo/overgrown.wav",
+  "seconds": 1.0322,
+  "peak": 0.2007
+ },
+ "fx-sig-cardo-unspell": {
+  "file": "sfx/originals/signatures/cardo/unspell.wav",
+  "seconds": 1.0561,
+  "peak": 0.3074
+ },
+ "fx-sig-chohan-all-in": {
+  "file": "sfx/originals/signatures/chohan/all-in.wav",
+  "seconds": 0.9929,
+  "peak": 0.1496
+ },
+ "fx-sig-chohan-house-wins": {
+  "file": "sfx/originals/signatures/chohan/house-wins.wav",
+  "seconds": 1.0547,
+  "peak": 0.0092
+ },
+ "fx-sig-chohan-sleight-of-hand": {
+  "file": "sfx/originals/signatures/chohan/sleight-of-hand.wav",
+  "seconds": 0.976,
+  "peak": 0.1746
+ },
+ "fx-sig-dorado-last-horizon": {
+  "file": "sfx/originals/signatures/dorado/last-horizon.wav",
+  "seconds": 2.1286,
+  "peak": 0.3464,
+  "beat": 0.34
+ },
+ "fx-sig-dorado-sovereign-shot": {
+  "file": "sfx/originals/signatures/dorado/sovereign-shot.wav",
+  "seconds": 1.6,
+  "peak": 0.9574,
+  "beat": 0.02
+ },
+ "fx-sig-dorado-sunset-divide": {
+  "file": "sfx/originals/signatures/dorado/sunset-divide.wav",
+  "seconds": 3.2,
+  "peak": 1.3247,
+  "beat": 1.2
+ },
+ "fx-sig-emperor-jinlin-dragon-gate-disc": {
+  "file": "sfx/originals/signatures/emperor-jinlin/dragon-gate-disc.wav",
+  "seconds": 1.2556,
+  "peak": 0.2631
+ },
+ "fx-sig-emperor-jinlin-drowned-sun": {
+  "file": "sfx/originals/signatures/emperor-jinlin/drowned-sun.wav",
+  "seconds": 3.6,
+  "peak": 1.6223,
+  "beat": 1.4
+ },
+ "fx-sig-emperor-jinlin-pearl-needle": {
+  "file": "sfx/originals/signatures/emperor-jinlin/pearl-needle.wav",
+  "seconds": 0.5,
+  "peak": 0.0081
+ },
+ "fx-sig-gaku-komainu": {
+  "file": "sfx/originals/signatures/gaku/komainu.wav",
+  "seconds": 2.2,
+  "peak": 0.36,
+  "beat": 0.34
+ },
+ "fx-sig-gaku-lions-roar": {
+  "file": "sfx/originals/signatures/gaku/lions-roar.wav",
+  "seconds": 2.4,
+  "peak": 0.2962
+ },
+ "fx-sig-gaunt-hound-armor": {
+  "file": "sfx/originals/signatures/gaunt/hound-armor.wav",
+  "seconds": 1.8,
+  "peak": 0.346,
+  "beat": 0.34
+ },
+ "fx-sig-gaunt-rampage": {
+  "file": "sfx/originals/signatures/gaunt/rampage.wav",
+  "seconds": 2.367,
+  "peak": 1.5871
+ },
+ "fx-sig-gaunt-wyrmbreaker": {
+  "file": "sfx/originals/signatures/gaunt/wyrmbreaker.wav",
+  "seconds": 1.1,
+  "peak": 0.0698
+ },
+ "fx-sig-gaku-rock-paper": {
+  "file": "sfx/originals/signatures/gaku/rock-fist.wav",
+  "seconds": 1.8,
+  "peak": 1.0296,
+  "beat": 0.44
+ },
+ "fx-sig-gorai-grog-gale": {
+  "file": "sfx/originals/signatures/gorai/grog-gale.wav",
+  "seconds": 1.481,
+  "peak": 0.6529
+ },
+ "fx-sig-gorai-hull-crusher": {
+  "file": "sfx/originals/signatures/gorai/hull-crusher.wav",
+  "seconds": 1.8,
+  "peak": 0.006
+ },
+ "fx-sig-gorai-sky-anvil": {
+  "file": "sfx/originals/signatures/gorai/sky-anvil.wav",
+  "seconds": 3.2,
+  "peak": 1.2063,
+  "beat": 1.2
+ },
+ "fx-sig-gorai-storm-wyrm": {
+  "file": "sfx/originals/signatures/gorai/storm-wyrm.wav",
+  "seconds": 3.0347,
+  "peak": 0.3462,
+  "beat": 0.34
+ },
+ "fx-sig-gosu-gilded-scars": {
+  "file": "sfx/originals/signatures/gosu/gilded-scars.wav",
+  "seconds": 0.7616,
+  "peak": 0.1291
+ },
+ "fx-sig-gosu-golden-mend": {
+  "file": "sfx/originals/signatures/gosu/golden-mend.wav",
+  "seconds": 1.7229,
+  "peak": 0.1309
+ },
+ "fx-sig-gosu-kin-kin": {
+  "file": "sfx/originals/signatures/gosu/kin-kin.wav",
+  "seconds": 0.5485,
+  "peak": 0.2572
+ },
+ "fx-sig-hakushi-lion-dance": {
+  "file": "sfx/originals/signatures/hakushi/lion-dance.wav",
+  "seconds": 1.7551,
+  "peak": 0.3879
+ },
+ "fx-sig-hakushi-lions-breath": {
+  "file": "sfx/originals/signatures/hakushi/lions-breath.wav",
+  "seconds": 0.6041,
+  "peak": 0.0278
+ },
+ "fx-sig-hakushi-old-lion": {
+  "file": "sfx/originals/signatures/hakushi/old-lion.wav",
+  "seconds": 1.2986,
+  "peak": 0.2505
+ },
+ "fx-sig-haldor-crescent-reap": {
+  "file": "sfx/originals/signatures/haldor/crescent-reap.wav",
+  "seconds": 1.3345,
+  "peak": 0.4
+ },
+ "fx-sig-haldor-faultline-fist": {
+  "file": "sfx/originals/signatures/haldor/faultline-fist.wav",
+  "seconds": 1.8343,
+  "peak": 0.5986
+ },
+ "fx-sig-haldor-groundswell": {
+  "file": "sfx/originals/signatures/haldor/groundswell.wav",
+  "seconds": 1.9025,
+  "peak": 0.0158,
+  "beat": 0.01
+ },
+ "fx-sig-haldor-world-tilt": {
+  "file": "sfx/originals/signatures/haldor/world-tilt.wav",
+  "seconds": 3.8323,
+  "peak": 2.1,
+  "beat": 1.5
+ },
+ "fx-sig-highsun-no-shadow": {
+  "file": "sfx/originals/signatures/highsun/no-shadow.wav",
+  "seconds": 2.1609,
+  "peak": 0.247
+ },
+ "fx-sig-highsun-pocket-sun": {
+  "file": "sfx/originals/signatures/highsun/pocket-sun.wav",
+  "seconds": 0.5985,
+  "peak": 0.0255
+ },
+ "fx-sig-highsun-zenith": {
+  "file": "sfx/originals/signatures/highsun/zenith.wav",
+  "seconds": 0.9401,
+  "peak": 0.3166
+ },
+ "fx-sig-hinomoto-funeral-pyre": {
+  "file": "sfx/originals/signatures/hinomoto/funeral-pyre.wav",
+  "seconds": 1.0335,
+  "peak": 0.0092
+ },
+ "fx-sig-hinomoto-furnace-wave": {
+  "file": "sfx/originals/signatures/hinomoto/furnace-wave.wav",
+  "seconds": 0.8226,
+  "peak": 0.0278
+ },
+ "fx-sig-hinomoto-old-fire": {
+  "file": "sfx/originals/signatures/hinomoto/old-fire.wav",
+  "seconds": 1.9273,
+  "peak": 0.2115
+ },
+ "fx-sig-imago-final-molt": {
+  "file": "sfx/originals/signatures/imago/final-molt.wav",
+  "seconds": 2.2372,
+  "peak": 1.2041,
+  "beat": 1.2
+ },
+ "fx-sig-imago-hive-burst": {
+  "file": "sfx/originals/signatures/imago/hive-burst.wav",
+  "seconds": 2.4,
+  "peak": 1.3431,
+  "beat": 0.9
+ },
+ "fx-sig-imago-stinger-lash": {
+  "file": "sfx/originals/signatures/imago/stinger-lash.wav",
+  "seconds": 0.5202,
+  "peak": 0.0036
+ },
+ "fx-sig-imago-swarm-ascendant": {
+  "file": "sfx/originals/signatures/imago/swarm-ascendant.wav",
+  "seconds": 1.8725,
+  "peak": 0.3467,
+  "beat": 0.34
+ },
+ "fx-sig-ippon-clean-slate": {
+  "file": "sfx/originals/signatures/ippon/clean-slate.wav",
+  "seconds": 3.5533,
+  "peak": 1.1551,
+  "beat": 0.62
+ },
+ "fx-sig-ippon-clock-in": {
+  "file": "sfx/originals/signatures/ippon/clock-in.wav",
+  "seconds": 0.7,
+  "peak": 0.093,
+  "beat": 0.2
+ },
+ "fx-sig-ippon-dust-allergy": {
+  "file": "sfx/originals/signatures/ippon/dust-allergy.wav",
+  "seconds": 2,
+  "peak": 0.4393,
+  "beat": 0.3
+ },
+ "fx-sig-jirenga-mountain-felling": {
+  "file": "sfx/originals/signatures/jirenga/mountain-felling.wav",
+  "seconds": 2.4704,
+  "peak": 0.5568,
+  "beat": 0.5
+ },
+ "fx-sig-jirenga-vermilion-seal": {
+  "file": "sfx/originals/signatures/jirenga/vermilion-seal.wav",
+  "seconds": 2.2,
+  "peak": 0.0849
+ },
+ "fx-sig-jirenga-wrathful-guardian": {
+  "file": "sfx/originals/signatures/jirenga/wrathful-guardian.wav",
+  "seconds": 2.4,
+  "peak": 0.3461,
+  "beat": 0.34
+ },
+ "fx-sig-kagari-flare-heavy-1": {
+  "file": "sfx/originals/signatures/kagari/flare-heavy-1.wav",
+  "seconds": 0.651,
+  "peak": 0.2572
+ },
+ "fx-sig-kagari-flare-heavy-2": {
+  "file": "sfx/originals/signatures/kagari/flare-heavy-2.wav",
+  "seconds": 0.7008,
+  "peak": 0.3115
+ },
+ "fx-sig-kagari-flare-jab-1": {
+  "file": "sfx/originals/signatures/kagari/flare-jab-1.wav",
+  "seconds": 0.3739,
+  "peak": 0.1011
+ },
+ "fx-sig-kagari-flare-jab-2": {
+  "file": "sfx/originals/signatures/kagari/flare-jab-2.wav",
+  "seconds": 0.3488,
+  "peak": 0.0597
+ },
+ "fx-sig-kagari-flare-jab-3": {
+  "file": "sfx/originals/signatures/kagari/flare-jab-3.wav",
+  "seconds": 0.3432,
+  "peak": 0.0721
+ },
+ "fx-sig-kagari-flare-jab-4": {
+  "file": "sfx/originals/signatures/kagari/flare-jab-4.wav",
+  "seconds": 0.3484,
+  "peak": 0.0831
+ },
+ "fx-sig-kagari-flare-kick-1": {
+  "file": "sfx/originals/signatures/kagari/flare-kick-1.wav",
+  "seconds": 0.4169,
+  "peak": 0.1256
+ },
+ "fx-sig-kagari-flare-kick-2": {
+  "file": "sfx/originals/signatures/kagari/flare-kick-2.wav",
+  "seconds": 0.4817,
+  "peak": 0.1558
+ },
+ "fx-sig-kagari-flare-kick-3": {
+  "file": "sfx/originals/signatures/kagari/flare-kick-3.wav",
+  "seconds": 0.5246,
+  "peak": 0.1446
+ },
+ "fx-sig-sunpalm-charge": {
+  "file": "sfx/originals/signatures/taisei/sunpalm-charge.wav",
+  "seconds": 1.448,
+  "peak": 0.6933,
+  "beat": 0.655
+ },
+ "fx-sig-kanata-fifty-three-stations": {
+  "file": "sfx/originals/signatures/kanata/fifty-three-stations.wav",
+  "seconds": 1.2811,
+  "peak": 0.0092
+ },
+ "fx-sig-kanata-full-stride": {
+  "file": "sfx/originals/signatures/kanata/full-stride.wav",
+  "seconds": 1.5851,
+  "peak": 0.2505
+ },
+ "fx-sig-kanata-relay-leap": {
+  "file": "sfx/originals/signatures/kanata/relay-leap.wav",
+  "seconds": 0.5685,
+  "peak": 0.0901
+ },
+ "fx-sig-kenzo-falcon": {
+  "file": "sfx/originals/signatures/kenzo/falcon.wav",
+  "seconds": 1.2,
+  "peak": 0.6183
+ },
+ "fx-sig-kenzo-great-whirl": {
+  "file": "sfx/originals/signatures/kenzo/great-whirl.wav",
+  "seconds": 2,
+  "peak": 0.1199
+ },
+ "fx-sig-kenzo-lions-whisper": {
+  "file": "sfx/originals/signatures/kenzo/lions-whisper.wav",
+  "seconds": 2.2662,
+  "peak": 1.3247,
+  "beat": 1.2
+ },
+ "fx-sig-kinu-broken-shackles": {
+  "file": "sfx/originals/signatures/kinu/broken-shackles.wav",
+  "seconds": 0.5446,
+  "peak": 0.0092
+ },
+ "fx-sig-kinu-buchi-buchi": {
+  "file": "sfx/originals/signatures/kinu/buchi-buchi.wav",
+  "seconds": 0.4571,
+  "peak": 0.0721
+ },
+ "fx-sig-kinu-cut-loose": {
+  "file": "sfx/originals/signatures/kinu/cut-loose.wav",
+  "seconds": 1.2487,
+  "peak": 0.1309
+ },
+ "fx-sig-koko-ground-smash": {
+  "file": "sfx/originals/signatures/koko/ground-smash.wav",
+  "seconds": 1.8,
+  "peak": 0.298
+ },
+ "fx-sig-koko-iron-lullaby": {
+  "file": "sfx/originals/signatures/koko/iron-lullaby.wav",
+  "seconds": 0.9,
+  "peak": 0.4971,
+  "beat": 0.29
+ },
+ "fx-sig-kusushi-double-or-nothing": {
+  "file": "sfx/originals/signatures/kusushi/double-or-nothing.wav",
+  "seconds": 1.2319,
+  "peak": 0.0092
+ },
+ "fx-sig-kusushi-grand-champion": {
+  "file": "sfx/originals/signatures/kusushi/grand-champion.wav",
+  "seconds": 1.7146,
+  "peak": 0.2505
+ },
+ "fx-sig-kusushi-ring-out": {
+  "file": "sfx/originals/signatures/kusushi/ring-out.wav",
+  "seconds": 1.0027,
+  "peak": 0.378
+ },
+ "fx-sig-kuzu-off-the-leash": {
+  "file": "sfx/originals/signatures/kuzu/off-the-leash.wav",
+  "seconds": 1.7622,
+  "peak": 0.346,
+  "beat": 0.34
+ },
+ "fx-sig-lanthorn-after-hours": {
+  "file": "sfx/originals/signatures/lanthorn/after-hours.wav",
+  "seconds": 0.9556,
+  "peak": 0.2007
+ },
+ "fx-sig-lanthorn-lampblack-edge": {
+  "file": "sfx/originals/signatures/lanthorn/lampblack-edge.wav",
+  "seconds": 0.9001,
+  "peak": 0.0278
+ },
+ "fx-sig-lanthorn-last-call": {
+  "file": "sfx/originals/signatures/lanthorn/last-call.wav",
+  "seconds": 0.9209,
+  "peak": 0.0092
+ },
+ "fx-sig-lord-oro-death-knell-fall": {
+  "file": "sfx/originals/signatures/lord-oro/death-knell-fall.wav",
+  "seconds": 3.1634,
+  "peak": 1.7
+ },
+ "fx-sig-lord-oro-gilded-spirit": {
+  "file": "sfx/originals/signatures/lord-oro/gilded-spirit.wav",
+  "seconds": 0.9,
+  "peak": 0.5164,
+  "beat": 0.29
+ },
+ "fx-sig-lord-oro-knife-rain": {
+  "file": "sfx/originals/signatures/lord-oro/knife-rain.wav",
+  "seconds": 1.4577,
+  "peak": 0.5039
+ },
+ "fx-sig-lord-oro-noroma-barrage": {
+  "file": "sfx/originals/signatures/lord-oro/noroma-barrage.wav",
+  "seconds": 3.4,
+  "peak": 2.66
+ },
+ "fx-sig-lord-oro-the-hour": {
+  "file": "sfx/originals/signatures/lord-oro/the-hour.wav",
+  "seconds": 1.8881,
+  "peak": 0.5599,
+  "beat": 0.49
+ },
+ "fx-sig-madake-evergreen": {
+  "file": "sfx/originals/signatures/madake/evergreen.wav",
+  "seconds": 0.4022,
+  "peak": 0.051
+ },
+ "fx-sig-madake-midwinter-bamboo": {
+  "file": "sfx/originals/signatures/madake/midwinter-bamboo.wav",
+  "seconds": 0.6823,
+  "peak": 0.0092
+ },
+ "fx-sig-madake-summer-wolf": {
+  "file": "sfx/originals/signatures/madake/summer-wolf.wav",
+  "seconds": 1.5356,
+  "peak": 0.1496
+ },
+ "fx-sig-magatsu-carrion-altar": {
+  "file": "sfx/originals/signatures/magatsu/carrion-altar.wav",
+  "seconds": 2.6,
+  "peak": 0.5724
+ },
+ "fx-sig-magatsu-hex-furnace": {
+  "file": "sfx/originals/signatures/magatsu/hex-furnace.wav",
+  "seconds": 2.5738,
+  "peak": 1.5069,
+  "beat": 0.9
+ },
+ "fx-sig-magatsu-thousand-cuts": {
+  "file": "sfx/originals/signatures/magatsu/thousand-cuts.wav",
+  "seconds": 0.8474,
+  "peak": 0.2323
+ },
+ "fx-sig-mizuhiki-bitter-end": {
+  "file": "sfx/originals/signatures/mizuhiki/bitter-end.wav",
+  "seconds": 1.2812,
+  "peak": 0.0092
+ },
+ "fx-sig-mizuhiki-haul-in": {
+  "file": "sfx/originals/signatures/mizuhiki/haul-in.wav",
+  "seconds": 0.6786,
+  "peak": 0.0126
+ },
+ "fx-sig-mizuhiki-taut": {
+  "file": "sfx/originals/signatures/mizuhiki/taut.wav",
+  "seconds": 0.8144,
+  "peak": 0.02
+ },
+ "fx-sig-murex-flinch-wave": {
+  "file": "sfx/originals/signatures/murex/flinch-wave.wav",
+  "seconds": 0.2474,
+  "peak": 0.0058
+ },
+ "fx-sig-murex-spinestorm": {
+  "file": "sfx/originals/signatures/murex/spinestorm.wav",
+  "seconds": 1.2842,
+  "peak": 0.0092
+ },
+ "fx-sig-murex-unstrapped": {
+  "file": "sfx/originals/signatures/murex/unstrapped.wav",
+  "seconds": 1.6475,
+  "peak": 0.247
+ },
+ "fx-sig-nigo-cinder-cross": {
+  "file": "sfx/originals/signatures/nigo/cinder-cross.wav",
+  "seconds": 2,
+  "peak": 0.0288,
+  "beat": 0.01
+ },
+ "fx-sig-grapple": {
+  "file": "sfx/originals/families/body/grapple-launch.wav",
+  "seconds": 0.5579,
+  "peak": 0.0126
+ },
+ "fx-sig-ovid-cracked-open": {
+  "file": "sfx/originals/signatures/ovid/cracked-open.wav",
+  "seconds": 1.2447,
+  "peak": 0.02
+ },
+ "fx-sig-ovid-full-demolition": {
+  "file": "sfx/originals/signatures/ovid/full-demolition.wav",
+  "seconds": 1.2359,
+  "peak": 0.0092
+ },
+ "fx-sig-ovid-shatterburst": {
+  "file": "sfx/originals/signatures/ovid/shatterburst.wav",
+  "seconds": 1.5367,
+  "peak": 0.1496
+ },
+ "fx-sig-oyashio-brine-shot": {
+  "file": "sfx/originals/signatures/oyashio/brine-shot.wav",
+  "seconds": 0.9346,
+  "peak": 0.1776
+ },
+ "fx-sig-oyashio-deep-current": {
+  "file": "sfx/originals/signatures/oyashio/deep-current.wav",
+  "seconds": 1.728,
+  "peak": 0.0059
+ },
+ "fx-sig-oyashio-grand-gyre": {
+  "file": "sfx/originals/signatures/oyashio/grand-gyre.wav",
+  "seconds": 1.2809,
+  "peak": 0.0092
+ },
+ "fx-sig-psyche-ruin-palm": {
+  "file": "sfx/originals/signatures/psyche/ruin-palm.wav",
+  "seconds": 0.4465,
+  "peak": 0.319
+ },
+ "fx-sig-psyche-silk-cocoon": {
+  "file": "sfx/originals/signatures/psyche/silk-cocoon.wav",
+  "seconds": 0.7737,
+  "peak": 0.0092
+ },
+ "fx-sig-psyche-violet-swarm": {
+  "file": "sfx/originals/signatures/psyche/violet-swarm.wav",
+  "seconds": 0.8695,
+  "peak": 0.0059
+ },
+ "fx-sig-pyroclast-boiling-point": {
+  "file": "sfx/originals/signatures/pyroclast/boiling-point.wav",
+  "seconds": 1.0323,
+  "peak": 0.3879
+ },
+ "fx-sig-pyroclast-supervolcano": {
+  "file": "sfx/originals/signatures/pyroclast/supervolcano.wav",
+  "seconds": 0.7027,
+  "peak": 0.0092
+ },
+ "fx-sig-pyroclast-vent-shot": {
+  "file": "sfx/originals/signatures/pyroclast/vent-shot.wav",
+  "seconds": 0.6575,
+  "peak": 0.1735
+ },
+ "fx-sig-rook-black-rookery": {
+  "file": "sfx/originals/signatures/rook/black-rookery.wav",
+  "seconds": 2.8,
+  "peak": 1.0051,
+  "beat": 1
+ },
+ "fx-sig-rook-grave-grip": {
+  "file": "sfx/originals/signatures/rook/grave-grip.wav",
+  "seconds": 1.7704,
+  "peak": 0.6188,
+  "beat": 0.02
+ },
+ "fx-sig-rook-grave-legion": {
+  "file": "sfx/originals/signatures/rook/grave-legion.wav",
+  "seconds": 2.0826,
+  "peak": 0.8277
+ },
+ "fx-sig-rook-hollow-crown": {
+  "file": "sfx/originals/signatures/rook/ash-wraith-crown.wav",
+  "seconds": 0.7735,
+  "peak": 0.346,
+  "beat": 0.34
+ },
+ "fx-sig-sashigane-condemned": {
+  "file": "sfx/originals/signatures/sashigane/condemned.wav",
+  "seconds": 1.42,
+  "peak": 0.378
+ },
+ "fx-sig-sashigane-final-inspection": {
+  "file": "sfx/originals/signatures/sashigane/final-inspection.wav",
+  "seconds": 1.2769,
+  "peak": 0.1291
+ },
+ "fx-sig-sashigane-zero-tolerance": {
+  "file": "sfx/originals/signatures/sashigane/zero-tolerance.wav",
+  "seconds": 1.582,
+  "peak": 0.2007
+ },
+ "fx-sig-sekka-black-blizzard": {
+  "file": "sfx/originals/signatures/sekka/black-blizzard.wav",
+  "seconds": 2.6,
+  "peak": 1.752
+ },
+ "fx-sig-sekka-frost-gale": {
+  "file": "sfx/originals/signatures/sekka/frost-gale.wav",
+  "seconds": 1.2,
+  "peak": 0.519
+ },
+ "fx-sig-sekka-snowcrush": {
+  "file": "sfx/originals/signatures/sekka/snowcrush.wav",
+  "seconds": 1.1381,
+  "peak": 0.3172
+ },
+ "fx-sig-sekka-snowflake-seal": {
+  "file": "sfx/originals/signatures/sekka/snowflake-seal.wav",
+  "seconds": 1.6,
+  "peak": 0.8473
+ },
+ "fx-sig-senko-blinding-noon": {
+  "file": "sfx/originals/signatures/senko/blinding-noon.wav",
+  "seconds": 1.7281,
+  "peak": 0.0059
+ },
+ "fx-sig-senko-fingertip-glare": {
+  "file": "sfx/originals/signatures/senko/fingertip-glare.wav",
+  "seconds": 0.2096,
+  "peak": 0.0058
+ },
+ "fx-sig-senko-hundred-lights": {
+  "file": "sfx/originals/signatures/senko/hundred-lights.wav",
+  "seconds": 0.492,
+  "peak": 0.0108
+ },
+ "fx-sig-shanxiao-jade-comet": {
+  "file": "sfx/originals/signatures/shanxiao/jade-comet.wav",
+  "seconds": 0.6985,
+  "peak": 0.0252
+ },
+ "fx-sig-shanxiao-jade-storm": {
+  "file": "sfx/originals/signatures/shanxiao/jade-storm.wav",
+  "seconds": 0.827,
+  "peak": 0.0113
+ },
+ "fx-sig-shanxiao-sun-chaser": {
+  "file": "sfx/originals/signatures/shanxiao/sun-chaser.wav",
+  "seconds": 0.9957,
+  "peak": 0.0092
+ },
+ "fx-sig-shibuichi-golden-seam": {
+  "file": "sfx/originals/signatures/shibuichi/golden-seam.wav",
+  "seconds": 0.734,
+  "peak": 0.0092
+ },
+ "fx-sig-shibuichi-hearthlight": {
+  "file": "sfx/originals/signatures/shibuichi/hearthlight.wav",
+  "seconds": 1.2476,
+  "peak": 0.02
+ },
+ "fx-sig-shibuichi-quench-palm": {
+  "file": "sfx/originals/signatures/shibuichi/quench-palm.wav",
+  "seconds": 0.869,
+  "peak": 0.378
+ },
+ "fx-sig-shiden-black-sun": {
+  "file": "sfx/originals/signatures/shiden/black-sun.wav",
+  "seconds": 2.4417,
+  "peak": 0.0169,
+  "beat": 0.01
+ },
+ "fx-sig-shiden-raijin-arrow": {
+  "file": "sfx/originals/signatures/shiden/raijin-arrow.wav",
+  "seconds": 3.6485,
+  "peak": 1.524,
+  "beat": 1.5
+ },
+ "fx-sig-shiden-shrike-bolt": {
+  "file": "sfx/originals/signatures/shiden/shrike-bolt.wav",
+  "seconds": 1.8,
+  "peak": 1.0061,
+  "beat": 1
+ },
+ "fx-sig-shiden-thunderball": {
+  "file": "sfx/originals/signatures/shiden/thunderball.wav",
+  "seconds": 1.8561,
+  "peak": 0.9014,
+  "beat": 0.9
+ },
+ "fx-sig-shirokane-dust-fall": {
+  "file": "sfx/originals/signatures/shirokane/dust-fall.wav",
+  "seconds": 1.77,
+  "peak": 1.4953
+ },
+ "fx-sig-shiun-false-encore": {
+  "file": "sfx/originals/signatures/shiun/false-encore.wav",
+  "seconds": 1.2,
+  "peak": 0.0028
+ },
+ "fx-sig-shiun-hymn-90": {
+  "file": "sfx/originals/signatures/shiun/hymn-90.wav",
+  "seconds": 4,
+  "peak": 2.0044,
+  "beat": 2
+ },
+ "fx-sig-shiun-hymn-91": {
+  "file": "sfx/originals/signatures/shiun/hymn-91.wav",
+  "seconds": 2.1398,
+  "peak": 0.5991
+ },
+ "fx-sig-shiun-pale-seraph": {
+  "file": "sfx/originals/signatures/shiun/pale-seraph.wav",
+  "seconds": 2.4,
+  "peak": 0.346,
+  "beat": 0.34
+ },
+ "fx-sig-sorayomi-eye-of-the-storm": {
+  "file": "sfx/originals/signatures/sorayomi/eye-of-the-storm.wav",
+  "seconds": 1.7014,
+  "peak": 0.3609
+ },
+ "fx-sig-sorayomi-gust-spinner": {
+  "file": "sfx/originals/signatures/sorayomi/gust-spinner.wav",
+  "seconds": 1.0272,
+  "peak": 0.4043
+ },
+ "fx-sig-sorayomi-storm-warning": {
+  "file": "sfx/originals/signatures/sorayomi/storm-warning.wav",
+  "seconds": 1.6552,
+  "peak": 0.02
+ },
+ "fx-sig-sorrel-crimson-command": {
+  "file": "sfx/originals/signatures/sorrel/crimson-command.wav",
+  "seconds": 1.7875,
+  "peak": 0.2992
+ },
+ "fx-sig-sorrel-crimson-wake": {
+  "file": "sfx/originals/signatures/sorrel/crimson-wake.wav",
+  "seconds": 1.0957,
+  "peak": 0.0568
+ },
+ "fx-sig-sorrel-horizon-sunder": {
+  "file": "sfx/originals/signatures/sorrel/horizon-sunder.wav",
+  "seconds": 1.956,
+  "peak": 0.3614
+ },
+ "fx-sig-strappado-final-bow": {
+  "file": "sfx/originals/signatures/strappado/final-bow.wav",
+  "seconds": 0.7957,
+  "peak": 0.0092
+ },
+ "fx-sig-strappado-searing-cord": {
+  "file": "sfx/originals/signatures/strappado/searing-cord.wav",
+  "seconds": 0.6792,
+  "peak": 0.0965
+ },
+ "fx-sig-strappado-showstopper": {
+  "file": "sfx/originals/signatures/strappado/showstopper.wav",
+  "seconds": 1.1956,
+  "peak": 0.0059
+ },
+ "fx-sig-strix-last-vigil": {
+  "file": "sfx/originals/signatures/strix/last-vigil.wav",
+  "seconds": 1.2859,
+  "peak": 0.091
+ },
+ "fx-sig-strix-long-farewell": {
+  "file": "sfx/originals/signatures/strix/long-farewell.wav",
+  "seconds": 1.0393,
+  "peak": 0.091
+ },
+ "fx-sig-strix-unblinking": {
+  "file": "sfx/originals/signatures/strix/unblinking.wav",
+  "seconds": 1.0655,
+  "peak": 0.0059
+ },
+ "fx-sig-magatsu-dismantle": {
+  "file": "sfx/originals/signatures/magatsu/carve.wav",
+  "seconds": 0.1752,
+  "peak": 0.0053
+ },
+ "fx-sig-taisei-cloudstep": {
+  "file": "sfx/originals/signatures/taisei/cloudstep.wav",
+  "seconds": 0.51,
+  "peak": 0.0683
+ },
+ "fx-sig-taisei-golden-sage": {
+  "file": "sfx/originals/signatures/taisei/golden-sage.wav",
+  "seconds": 2,
+  "peak": 0.3601,
+  "beat": 0.34
+ },
+ "fx-sig-taisei-last-sun": {
+  "file": "sfx/originals/signatures/taisei/last-sun.wav",
+  "seconds": 4,
+  "peak": 2.3443,
+  "beat": 1.8
+ },
+ "fx-sig-taisei-thunderclap": {
+  "file": "sfx/originals/signatures/taisei/thunderclap.wav",
+  "seconds": 1.7809,
+  "peak": 0.1329
+ },
+ "fx-sig-tempo-in-the-zone": {
+  "file": "sfx/originals/signatures/tempo/in-the-zone.wav",
+  "seconds": 1.3263,
+  "peak": 0.2007
+ },
+ "fx-sig-tempo-perfect-timing": {
+  "file": "sfx/originals/signatures/tempo/perfect-timing.wav",
+  "seconds": 0.6021,
+  "peak": 0.0715
+ },
+ "fx-sig-tempo-pulse-shot": {
+  "file": "sfx/originals/signatures/tempo/pulse-shot.wav",
+  "seconds": 0.8911,
+  "peak": 0.1695
+ },
+ "fx-sig-tobari-black-pyre": {
+  "file": "sfx/originals/signatures/tobari/black-pyre.wav",
+  "seconds": 2.133,
+  "peak": 0.2553
+ },
+ "fx-sig-tobari-crow-tengu": {
+  "file": "sfx/originals/signatures/tobari/crow-tengu.wav",
+  "seconds": 2.4,
+  "peak": 0.36,
+  "beat": 0.34
+ },
+ "fx-sig-tobari-murder-of-crows": {
+  "file": "sfx/originals/signatures/tobari/murder-of-crows.wav",
+  "seconds": 1.6,
+  "peak": 0.6602
+ },
+ "fx-sig-tobari-red-moon": {
+  "file": "sfx/originals/signatures/tobari/red-moon.wav",
+  "seconds": 3.1584,
+  "peak": 0.0065,
+  "beat": 1.2
+ },
+ "fx-sig-tokan-dead-of-winter": {
+  "file": "sfx/originals/signatures/tokan/dead-of-winter.wav",
+  "seconds": 1.4809,
+  "peak": 0.0059
+ },
+ "fx-sig-tokan-frostplume": {
+  "file": "sfx/originals/signatures/tokan/frostplume.wav",
+  "seconds": 0.4898,
+  "peak": 0.1682
+ },
+ "fx-sig-tokan-winter-sleep": {
+  "file": "sfx/originals/signatures/tokan/winter-sleep.wav",
+  "seconds": 0.8729,
+  "peak": 0.0092
+ },
+ "fx-sig-tongbi-star-shifting-beam": {
+  "file": "sfx/originals/signatures/tongbi/star-shifting-beam.wav",
+  "seconds": 2,
+  "peak": 0.0081
+ },
+ "fx-sig-tongbi-sun-seizing-spiral": {
+  "file": "sfx/originals/signatures/tongbi/sun-seizing-spiral.wav",
+  "seconds": 3,
+  "peak": 1.077,
+  "beat": 1
+ },
+ "fx-sig-tongbi-white-ape": {
+  "file": "sfx/originals/signatures/tongbi/white-ape.wav",
+  "seconds": 2.4,
+  "peak": 0.3746,
+  "beat": 0.34
+ },
+ "fx-sig-torsion-full-torque": {
+  "file": "sfx/originals/signatures/torsion/full-torque.wav",
+  "seconds": 0.7983,
+  "peak": 0.0092
+ },
+ "fx-sig-torsion-gloves-off": {
+  "file": "sfx/originals/signatures/torsion/gloves-off.wav",
+  "seconds": 0.4898,
+  "peak": 0.247
+ },
+ "fx-sig-torsion-rubble-volley": {
+  "file": "sfx/originals/signatures/torsion/rubble-volley.wav",
+  "seconds": 0.8398,
+  "peak": 0.378
+ },
+ "fx-sig-tsubute-pouch-draw-1": {
+  "file": "sfx/originals/signatures/tsubute/pouch-draw-1.wav",
+  "seconds": 0.2932,
+  "peak": 0.0852
+ },
+ "fx-sig-tsubute-pouch-draw-2": {
+  "file": "sfx/originals/signatures/tsubute/pouch-draw-2.wav",
+  "seconds": 0.2761,
+  "peak": 0.0457
+ },
+ "fx-sig-tsubute-stone-loose-1": {
+  "file": "sfx/originals/signatures/tsubute/stone-loose-1.wav",
+  "seconds": 0.248,
+  "peak": 0.0113
+ },
+ "fx-sig-tsubute-stone-loose-2": {
+  "file": "sfx/originals/signatures/tsubute/stone-loose-2.wav",
+  "seconds": 0.267,
+  "peak": 0.0545
+ },
+ "fx-sig-vesper-black-vespers": {
+  "file": "sfx/originals/signatures/vesper/black-vespers.wav",
+  "seconds": 1.7623,
+  "peak": 0.3463,
+  "beat": 0.34
+ },
+ "fx-sig-vesper-pale-lance": {
+  "file": "sfx/originals/signatures/vesper/pale-lance.wav",
+  "seconds": 0.9421,
+  "peak": 0.0891
+ },
+ "fx-sig-vesper-raven-host": {
+  "file": "sfx/originals/signatures/vesper/raven-host.wav",
+  "seconds": 2,
+  "peak": 0.3864
+ },
+ "fx-sig-vesper-the-offering": {
+  "file": "sfx/originals/signatures/vesper/the-offering.wav",
+  "seconds": 4,
+  "peak": 0.0065,
+  "beat": 2.2
+ },
+ "fx-sig-ward-lift": {
+  "file": "sfx/originals/signatures/ward/lift.wav",
+  "seconds": 1.8,
+  "peak": 0.6022
+ },
+ "fx-sig-wuming-heavens-harvest": {
+  "file": "sfx/originals/signatures/wuming/heavens-harvest.wav",
+  "seconds": 2.3245,
+  "peak": 0.1352,
+  "beat": 0.25
+ },
+ "fx-sig-wuming-lotus-wrath": {
+  "file": "sfx/originals/signatures/wuming/lotus-wrath.wav",
+  "seconds": 1.8096,
+  "peak": 0.8071
+ },
+ "fx-sig-wuming-petalfall-blade": {
+  "file": "sfx/originals/signatures/wuming/petalfall-blade.wav",
+  "seconds": 0.8,
+  "peak": 0.0286
+ },
+ "fx-sig-yodaka-burning-star": {
+  "file": "sfx/originals/signatures/yodaka/burning-star.wav",
+  "seconds": 1.0151,
+  "peak": 0.0255
+ },
+ "fx-sig-yodaka-flaring-wings": {
+  "file": "sfx/originals/signatures/yodaka/flaring-wings.wav",
+  "seconds": 0.9004,
+  "peak": 0.0278
+ },
+ "fx-sig-yodaka-nighthawk-star": {
+  "file": "sfx/originals/signatures/yodaka/nighthawk-star.wav",
+  "seconds": 1.2345,
+  "peak": 0.0092
+ },
+ "fx-slash-cleaver-1": {
+  "file": "sfx/originals/families/blade/slash-cleaver-1.wav",
+  "seconds": 0.6474,
+  "peak": 0.1647
+ },
+ "fx-slash-cleaver-2": {
+  "file": "sfx/originals/families/blade/slash-cleaver-2.wav",
+  "seconds": 0.6269,
+  "peak": 0.1591
+ },
+ "fx-slash-gravedigger-1": {
+  "file": "sfx/originals/families/blade/slash-greatsword-1.wav",
+  "seconds": 0.783,
+  "peak": 0.2504
+ },
+ "fx-slash-gravedigger-2": {
+  "file": "sfx/originals/families/blade/slash-greatsword-2.wav",
+  "seconds": 0.506,
+  "peak": 0.2239
+ },
+ "fx-slash-katana-1": {
+  "file": "sfx/originals/families/blade/slash-katana-1.wav",
+  "seconds": 0.4315,
+  "peak": 0.1198
+ },
+ "fx-slash-katana-2": {
+  "file": "sfx/originals/families/blade/slash-katana-2.wav",
+  "seconds": 0.324,
+  "peak": 0.1166
+ },
+ "fx-slash-katana-3": {
+  "file": "sfx/originals/families/blade/slash-katana-3.wav",
+  "seconds": 0.3999,
+  "peak": 0.142
+ },
+ "fx-slash-kunai-1": {
+  "file": "sfx/originals/families/blade/slash-kunai-1.wav",
+  "seconds": 0.2918,
+  "peak": 0.058
+ },
+ "fx-slash-kunai-2": {
+  "file": "sfx/originals/families/blade/slash-kunai-2.wav",
+  "seconds": 0.3814,
+  "peak": 0.0572
+ },
+ "fx-slash-nodachi-1": {
+  "file": "sfx/originals/families/blade/slash-nodachi-1.wav",
+  "seconds": 0.4361,
+  "peak": 0.178
+ },
+ "fx-slash-nodachi-2": {
+  "file": "sfx/originals/families/blade/slash-nodachi-2.wav",
+  "seconds": 0.5915,
+  "peak": 0.1924
+ },
+ "fx-slash-wave": {
+  "file": "sfx/originals/families/blade/slash-wave.wav",
+  "seconds": 0.9233,
+  "peak": 0.091
+ },
+ "fx-snap-1": {
+  "file": "sfx/originals/families/body/rubber-snap-1.wav",
+  "seconds": 0.2587,
+  "peak": 0.0113
+ },
+ "fx-snap-2": {
+  "file": "sfx/originals/families/body/rubber-snap-2.wav",
+  "seconds": 0.292,
+  "peak": 0.0545
+ },
+ "fx-stand": {
+  "file": "sfx/originals/families/energy/spirit-rise.wav",
+  "seconds": 0.4866,
+  "peak": 0.2866
+ },
+ "fx-steam": {
+  "file": "sfx/originals/families/body/steam-burst.wav",
+  "seconds": 0.8884,
+  "peak": 0.051
+ },
+ "fx-step-grass-1": {
+  "file": "sfx/originals/families/steps/grass-1.wav",
+  "seconds": 0.1658,
+  "peak": 0.0099
+ },
+ "fx-step-grass-2": {
+  "file": "sfx/originals/families/steps/grass-2.wav",
+  "seconds": 0.1654,
+  "peak": 0.0124
+ },
+ "fx-step-metal-1": {
+  "file": "sfx/originals/families/steps/metal-1.wav",
+  "seconds": 0.2241,
+  "peak": 0.006
+ },
+ "fx-step-metal-2": {
+  "file": "sfx/originals/families/steps/metal-2.wav",
+  "seconds": 0.2238,
+  "peak": 0.006
+ },
+ "fx-step-sand-1": {
+  "file": "sfx/originals/families/steps/sand-1.wav",
+  "seconds": 0.1603,
+  "peak": 0.009
+ },
+ "fx-step-sand-2": {
+  "file": "sfx/originals/families/steps/sand-2.wav",
+  "seconds": 0.1541,
+  "peak": 0.0088
+ },
+ "fx-step-snow-1": {
+  "file": "sfx/originals/families/steps/snow-1.wav",
+  "seconds": 0.157,
+  "peak": 0.0171
+ },
+ "fx-step-snow-2": {
+  "file": "sfx/originals/families/steps/snow-2.wav",
+  "seconds": 0.1454,
+  "peak": 0.0091
+ },
+ "fx-step-stone-1": {
+  "file": "sfx/originals/families/steps/stone-1.wav",
+  "seconds": 0.1954,
+  "peak": 0.0058
+ },
+ "fx-step-stone-2": {
+  "file": "sfx/originals/families/steps/stone-2.wav",
+  "seconds": 0.1795,
+  "peak": 0.0056
+ },
+ "fx-step-water-1": {
+  "file": "sfx/originals/families/steps/water-1.wav",
+  "seconds": 0.1407,
+  "peak": 0.032
+ },
+ "fx-step-water-2": {
+  "file": "sfx/originals/families/steps/water-2.wav",
+  "seconds": 0.1091,
+  "peak": 0.0374
+ },
+ "fx-step-wood-1": {
+  "file": "sfx/originals/families/steps/wood-1.wav",
+  "seconds": 0.161,
+  "peak": 0.0062
+ },
+ "fx-step-wood-2": {
+  "file": "sfx/originals/families/steps/wood-2.wav",
+  "seconds": 0.1615,
+  "peak": 0.0061
+ },
+ "fx-stretch-1": {
+  "file": "sfx/originals/families/body/rubber-stretch-1.wav",
+  "seconds": 0.2903,
+  "peak": 0.0852
+ },
+ "fx-stretch-2": {
+  "file": "sfx/originals/families/body/rubber-stretch-2.wav",
+  "seconds": 0.279,
+  "peak": 0.0457
+ },
+ "fx-guardian": {
+  "file": "sfx/originals/signatures/shiden/raijin.wav",
+  "seconds": 1.2795,
+  "peak": 0.37
+ },
+ "fx-swing-heavy-1": {
+  "file": "sfx/originals/families/whoosh/swing-heavy-1.wav",
+  "seconds": 0.6575,
+  "peak": 0.2572
+ },
+ "fx-swing-heavy-2": {
+  "file": "sfx/originals/families/whoosh/swing-heavy-2.wav",
+  "seconds": 0.5436,
+  "peak": 0.3115
+ },
+ "fx-swing-huge": {
+  "file": "sfx/originals/families/whoosh/swing-huge.wav",
+  "seconds": 1.3358,
+  "peak": 0.5012
+ },
+ "fx-swing-jab-1": {
+  "file": "sfx/originals/families/whoosh/swing-jab-1.wav",
+  "seconds": 0.3569,
+  "peak": 0.1011
+ },
+ "fx-swing-jab-2": {
+  "file": "sfx/originals/families/whoosh/swing-jab-2.wav",
+  "seconds": 0.2337,
+  "peak": 0.0597
+ },
+ "fx-swing-jab-3": {
+  "file": "sfx/originals/families/whoosh/swing-jab-3.wav",
+  "seconds": 0.3548,
+  "peak": 0.0721
+ },
+ "fx-swing-jab-4": {
+  "file": "sfx/originals/families/whoosh/swing-jab-4.wav",
+  "seconds": 0.3691,
+  "peak": 0.0831
+ },
+ "fx-swing-kick-1": {
+  "file": "sfx/originals/families/whoosh/swing-kick-1.wav",
+  "seconds": 0.4338,
+  "peak": 0.1256
+ },
+ "fx-swing-kick-2": {
+  "file": "sfx/originals/families/whoosh/swing-kick-2.wav",
+  "seconds": 0.4713,
+  "peak": 0.1558
+ },
+ "fx-swing-kick-3": {
+  "file": "sfx/originals/families/whoosh/swing-kick-3.wav",
+  "seconds": 0.3921,
+  "peak": 0.1446
+ },
+ "fx-sword-ring": {
+  "file": "sfx/originals/families/blade/sword-ring.wav",
+  "seconds": 1.0609,
+  "peak": 0.1563
+ },
+ "fx-tech": {
+  "file": "sfx/originals/families/whoosh/tech.wav",
+  "seconds": 0.2807,
+  "peak": 0.0945
+ },
+ "fx-timestop": {
+  "file": "sfx/originals/signatures/koko/dead-stop.wav",
+  "seconds": 1.89,
+  "peak": 0.788,
+  "beat": 0.49
+ },
+ "fx-timestop-resume": {
+  "file": "sfx/originals/families/energy/time-resumes.wav",
+  "seconds": 1.1137,
+  "peak": 0.1775
+ },
+ "fx-timestop-tick": {
+  "file": "sfx/originals/families/energy/still-tick.wav",
+  "seconds": 0.8307,
+  "peak": 0.0314
+ },
+ "fx-vanish": {
+  "file": "sfx/originals/families/whoosh/vanish.wav",
+  "seconds": 0.3529,
+  "peak": 0.0654
+ },
+ "fx-wall-splat": {
+  "file": "sfx/originals/families/hits/wall-splat.wav",
+  "seconds": 1.1,
+  "peak": 0.0789
+ },
+ "fx-wind-blast": {
+  "file": "sfx/originals/families/elements/wind-blast.wav",
+  "seconds": 0.8913,
+  "peak": 0.1496
+ },
+ "fx-wind-swirl": {
+  "file": "sfx/originals/families/elements/wind-swirl.wav",
+  "seconds": 1.46,
+  "peak": 0.6265,
+  "loop": true
+ },
+ "fx-zap-1": {
+  "file": "sfx/originals/families/elements/zap-1.wav",
+  "seconds": 0.2086,
+  "peak": 0.1243
+ },
+ "fx-zap-2": {
+  "file": "sfx/originals/families/elements/zap-2.wav",
+  "seconds": 0.1656,
+  "peak": 0.0077
+ },
+ "fx-zap-3": {
+  "file": "sfx/originals/families/elements/zap-3.wav",
+  "seconds": 0.2751,
+  "peak": 0.093
+ },
+ "fx-zip-1": {
+  "file": "sfx/originals/families/whoosh/zip-1.wav",
+  "seconds": 0.1985,
+  "peak": 0.0636
+ },
+ "fx-zip-2": {
+  "file": "sfx/originals/families/whoosh/zip-2.wav",
+  "seconds": 0.12,
+  "peak": 0.0064
+ },
+ "ground": {
+  "file": "sfx/originals/families/hits/ground-thud.wav",
+  "seconds": 0.3035,
+  "peak": 0.0056
+ },
+ "release-ki": {
+  "file": "sfx/originals/families/energy/release-burst.wav",
+  "seconds": 0.4928,
+  "peak": 0.0148
+ }
+}

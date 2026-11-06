@@ -1,0 +1,44 @@
+/* Controller prompts and focus. Loaded after the other sheets; everything
+   here applies only once a pad is being played ([data-input=controller]). */
+
+/* PlayStation face buttons read by their colour as much as their shape:
+   deep tones on the white prompts, bright ones on the ink strip. */
+.ps-face{font-family:'Apple Symbols','Segoe UI Symbol','Arial Unicode MS',sans-serif!important;font-style:normal!important;font-weight:700!important}
+.ps-south{color:#2f62cf!important}.ps-east{color:#d3303a!important}.ps-west{color:#b93d95!important}.ps-north{color:#0f967a!important}
+.controls-hint kbd.ps-south,.sv-draft-hint kbd.ps-south,.key-cards small.ps-south{color:#8fb4ff!important}
+.controls-hint kbd.ps-east,.sv-draft-hint kbd.ps-east,.key-cards small.ps-east{color:#ff7474!important}
+.controls-hint kbd.ps-west,.sv-draft-hint kbd.ps-west,.key-cards small.ps-west{color:#f38fdb!important}
+.controls-hint kbd.ps-north,.sv-draft-hint kbd.ps-north,.key-cards small.ps-north{color:#46e2b5!important}
+.move-bar .move-slot kbd.ps-face{font-size:clamp(19px,1.7vw,32px)}
+.key-cards small.ps-face{font-size:1.5em;line-height:1}
+.home-control-list kbd.ps-face,.home-move-list kbd.ps-face{font-size:1.6em;line-height:.8}
+
+[data-input=controller] .manga-home button:focus{outline:3px solid var(--home-red);outline-offset:3px}
+[data-input=controller] .manga-home .home-fighter:focus,[data-input=controller] .manga-home .home-mode:focus{outline:5px solid var(--home-ink);outline-offset:4px;box-shadow:0 0 0 9px #fff,0 0 0 12px var(--home-red)}
+[data-input=controller] .home-dialog button:focus,[data-input=controller] .home-dialog input:focus,[data-input=controller] .home-dialog select:focus{outline:3px solid var(--home-red,#cc202b);outline-offset:3px}
+
+html[data-focus-by=pointer] :focus:not(:focus-visible){outline:0!important}
+html[data-focus-by=pointer] .manga-home :is(.home-fighter,.home-mode):focus:not(:focus-visible){box-shadow:none}
+
+/* On a pad, left and right change a setting, so the options read as one
+   column, the way a console's settings list does: up and down to move. */
+[data-input=controller] .home-options-grid{grid-template-columns:1fr}
+/* The pause menu's settings too (28 October 2026): GAMEPLAY over AUDIO, and the pickers one under another, so each row
+   is reached by up and down and changed by left and right. The card scrolls to the focused row. */
+#interface[data-input=controller] .pause-menu .pause-settings-grid{grid-template-columns:minmax(0,1fr)}
+#interface[data-input=controller] .pause-menu .pause-selects,#interface[data-input=controller] .pause-menu .pause-selects:has(ink-select){grid-template-columns:minmax(0,1fr)}
+
+/* The survival draft names ✕ on the card it would take, and only that one. */
+.sv-hud[data-input=controller] .sv-card kbd{transition:opacity .12s}
+.sv-hud[data-input=controller] .sv-card:not(.focused) kbd{opacity:0}
+.sv-draft-hint kbd{display:inline-block;min-width:22px;margin:0 4px;padding:2px 6px;border:1px solid currentColor;background:#0008;font-size:1.25em;font-style:normal;line-height:1;text-align:center;vertical-align:middle}
+
+:where(html[data-focus-by=pad]) :where(button,a[href],input,select,textarea,summary,[tabindex]:not([tabindex="-1"]),.ink-pick-option):focus{outline:3px solid #e8202b;outline-offset:3px}
+/* A code being typed with the D-pad (padEntry.ts): the field says so, and the digit being turned is selected. */
+input[data-pad-editing]{outline:3px solid #f4c430!important;outline-offset:3px;box-shadow:0 0 0 6px #111!important;caret-color:transparent}
+input[data-pad-editing]::selection{background:#f4c430;color:#111}
+/* The bug report's line for a pad (BugReport.ts PAD_REPORTS): shown once a pad is in use. */
+.report-pad-hint{display:none;margin:6px 0 0;font-size:12px;color:#555}
+html[data-focus-by=pad] .report-pad-hint{display:block}
+/* A name has no keyboard on a pad: it is optional ("Fighter", or the account's username, stands). */
+html[data-focus-by=pad] .ms-name>span::after{content:' · OPTIONAL';opacity:.65}

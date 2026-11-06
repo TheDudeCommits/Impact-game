@@ -1,0 +1,463 @@
+{
+ "note": "The area moves at the game's level, read by src/originals/sfx.ts mixCues. draw/seal: the seals' gains; cast/release/strike/strikeLast: dB on the whole moment; launch: the launcher's gain; keep: fighters left as they were.",
+ "launch": 0.125,
+ "keep": [
+  "barrow"
+ ],
+ "area": {
+  "kagari": {
+   "draw": 0.189,
+   "seal": 0.107
+  },
+  "shiun": {
+   "draw": 0.138,
+   "seal": 0.05
+  },
+  "shakugo": {
+   "draw": 0.255,
+   "seal": 0.102
+  },
+  "akayuri": {
+   "draw": 0.139,
+   "seal": 0.114
+  },
+  "sekka": {
+   "draw": 0.211,
+   "seal": 0.183,
+   "cast": -2.2,
+   "release": -2.2,
+   "strikeLast": -1.4
+  },
+  "full-beam": {
+   "draw": 0.167,
+   "seal": 0.143
+  },
+  "shibuichi": {
+   "draw": 0.2,
+   "seal": 0.119
+  },
+  "tokan": {
+   "draw": 0.211,
+   "seal": 0.114
+  },
+  "cardo": {
+   "draw": 0.139,
+   "seal": 0.114
+  },
+  "rotfalke": {
+   "draw": 0.209,
+   "seal": 0.122
+  },
+  "pyroclast": {
+   "draw": 0.068,
+   "seal": 0.163
+  },
+  "basilissa": {
+   "draw": 0.2,
+   "seal": 0.119
+  },
+  "shanxiao": {
+   "draw": 0.068,
+   "seal": 0.062
+  },
+  "shidare": {
+   "draw": 0.251,
+   "seal": 0.143
+  },
+  "aqrab": {
+   "draw": 0.221,
+   "seal": 0.111
+  },
+  "ampere": {
+   "draw": 0.257,
+   "seal": 0.108
+  },
+  "kuzu": {
+   "draw": 0.227,
+   "seal": 0.145,
+   "cast": -0.8,
+   "release": -0.8
+  },
+  "oro": {
+   "draw": 0.201,
+   "seal": 0.234,
+   "cast": -4.4,
+   "release": -4.4
+  },
+  "strappado": {
+   "draw": 0.211,
+   "seal": 0.1
+  },
+  "shakudo": {
+   "draw": 0.257,
+   "seal": 0.108
+  },
+  "bellows": {
+   "draw": 0.189,
+   "seal": 0.107
+  },
+  "adad": {
+   "draw": 0.136,
+   "seal": 0.052
+  },
+  "hawser": {
+   "draw": 0.139,
+   "seal": 0.114,
+   "cast": -2.1,
+   "release": -2.1
+  },
+  "highsun": {
+   "draw": 0.2,
+   "seal": 0.119
+  },
+  "hisame": {
+   "draw": 0.211,
+   "seal": 0.114
+  },
+  "hagure": {
+   "draw": 0.167,
+   "seal": 0.143
+  },
+  "wataame": {
+   "draw": 0.068,
+   "seal": 0.163
+  },
+  "gohaku": {
+   "draw": 0.068,
+   "seal": 0.073
+  },
+  "kuon": {
+   "draw": 0.269,
+   "seal": 0.171,
+   "cast": -0.8,
+   "release": -0.8
+  },
+  "taisei": {
+   "draw": 0.137,
+   "seal": 0.05,
+   "cast": -1.6,
+   "release": -1.6,
+   "strikeLast": -0.1
+  },
+  "wuming": {
+   "draw": 0.2,
+   "seal": 0.278,
+   "cast": -4.8,
+   "release": -4.8
+  },
+  "jinlin": {
+   "draw": 0.221,
+   "seal": 0.186,
+   "cast": -9.7,
+   "release": -9.7
+  },
+  "gaku": {
+   "draw": 0.211,
+   "seal": 0.219,
+   "cast": -9.6,
+   "release": -9.6
+  },
+  "vesper": {
+   "draw": 0.167,
+   "seal": 0.245,
+   "cast": -3.5,
+   "release": -3.5
+  },
+  "irbis": {
+   "draw": 0.201,
+   "seal": 0.097
+  },
+  "gaunt": {
+   "draw": 0.201,
+   "seal": 0.097
+  },
+  "hikui": {
+   "draw": 0.189,
+   "seal": 0.107
+  },
+  "suzuran": {
+   "draw": 0.068,
+   "seal": 0.072
+  },
+  "unari": {
+   "draw": 0.251,
+   "seal": 0.143
+  },
+  "nigo": {
+   "draw": 0.189,
+   "seal": 0.107,
+   "cast": -0.6,
+   "release": -0.6,
+   "strikeLast": -1.7
+  },
+  "tobari": {
+   "draw": 0.189,
+   "seal": 0.107
+  },
+  "oyashio": {
+   "draw": 0.221,
+   "seal": 0.12
+  },
+  "hakushi": {
+   "draw": 0.211,
+   "seal": 0.086
+  },
+  "jirenga": {
+   "draw": 0.257,
+   "seal": 0.108,
+   "cast": -7.3,
+   "release": -7.3,
+   "strike": -1.2,
+   "strikeLast": -0.7
+  },
+  "kinu": {
+   "draw": 0.211,
+   "seal": 0.1
+  },
+  "gosu": {
+   "draw": 0.201,
+   "seal": 0.097
+  },
+  "koko": {
+   "draw": 0.257,
+   "seal": 0.108,
+   "strikeLast": -0.9
+  },
+  "gorai": {
+   "draw": 0.189,
+   "seal": 0.107
+  },
+  "ovid": {
+   "draw": 0.257,
+   "seal": 0.108
+  },
+  "shirokane": {
+   "draw": 0.221,
+   "seal": 0.183,
+   "cast": -1.9,
+   "release": -1.9
+  },
+  "rakucho": {
+   "draw": 0.172,
+   "seal": 0.109
+  },
+  "onigawara": {
+   "draw": 0.139,
+   "seal": 0.114
+  },
+  "setsu": {
+   "draw": 0.137,
+   "seal": 0.052
+  },
+  "senko": {
+   "draw": 0.2,
+   "seal": 0.119
+  },
+  "ward": {
+   "draw": 0.211,
+   "seal": 0.265,
+   "cast": -5.4,
+   "release": -5.4
+  },
+  "levin": {
+   "draw": 0.139,
+   "seal": 0.114
+  },
+  "gummy": {
+   "draw": 0.068,
+   "seal": 0.163
+  },
+  "akagane": {
+   "draw": 0.189,
+   "seal": 0.107
+  },
+  "kubiwa": {
+   "draw": 0.29,
+   "seal": 0.185,
+   "cast": -0.8,
+   "release": -0.8
+  },
+  "lanthorn": {
+   "draw": 0.139,
+   "seal": 0.114
+  },
+  "imago": {
+   "draw": 0.2,
+   "seal": 0.119
+  },
+  "madake": {
+   "draw": 0.167,
+   "seal": 0.143
+  },
+  "strix": {
+   "draw": 0.139,
+   "seal": 0.114
+  },
+  "mizuhiki": {
+   "draw": 0.139,
+   "seal": 0.114
+  },
+  "minase": {
+   "draw": 0.167,
+   "seal": 0.143
+  },
+  "sorayomi": {
+   "draw": 0.136,
+   "seal": 0.048
+  },
+  "sashigane": {
+   "draw": 0.139,
+   "seal": 0.114
+  },
+  "konta": {
+   "draw": 0.167,
+   "seal": 0.143
+  },
+  "bonsho": {
+   "draw": 0.2,
+   "seal": 0.119
+  },
+  "psyche": {
+   "draw": 0.251,
+   "seal": 0.143
+  },
+  "svanhild": {
+   "draw": 0.221,
+   "seal": 0.12
+  },
+  "amagoi": {
+   "draw": 0.29,
+   "seal": 0.185,
+   "cast": -0.8,
+   "release": -0.8
+  },
+  "yodaka": {
+   "seal": 0.107
+  },
+  "dorado": {
+   "draw": 0.193,
+   "seal": 0.125,
+   "cast": -0.7,
+   "release": -0.7
+  },
+  "shijima": {
+   "draw": 0.189,
+   "seal": 0.107
+  },
+  "ippon": {
+   "draw": 0.257,
+   "seal": 0.108
+  },
+  "ume": {
+   "draw": 0.257,
+   "seal": 0.108
+  },
+  "kosho": {
+   "draw": 0.189,
+   "seal": 0.107
+  },
+  "shiden": {
+   "draw": 0.137,
+   "seal": 0.199,
+   "cast": -2.6,
+   "release": -2.6
+  },
+  "sorrel": {
+   "draw": 0.193,
+   "seal": 0.125,
+   "cast": -0.7,
+   "release": -0.7,
+   "strikeLast": -2.4
+  },
+  "murex": {
+   "draw": 0.2,
+   "seal": 0.119
+  },
+  "magatsu": {
+   "draw": 0.189,
+   "seal": 0.295,
+   "cast": -5.9,
+   "release": -5.9
+  },
+  "rook": {
+   "draw": 0.283,
+   "seal": 0.226,
+   "cast": -2.8,
+   "release": -2.8
+  },
+  "asahi": {
+   "draw": 0.189,
+   "seal": 0.107
+  },
+  "torsion": {
+   "draw": 0.167,
+   "seal": 0.143
+  },
+  "tancho": {
+   "draw": 0.068,
+   "seal": 0.163
+  },
+  "chohan": {
+   "draw": 0.139,
+   "seal": 0.114
+  },
+  "kusushi": {
+   "draw": 0.211,
+   "seal": 0.086
+  },
+  "tsubute": {
+   "draw": 0.22,
+   "seal": 0.086
+  },
+  "ouga": {
+   "draw": 0.068,
+   "seal": 0.072
+  },
+  "haldor": {
+   "draw": 0.257,
+   "seal": 0.24,
+   "cast": -0.5,
+   "release": -0.5,
+   "strike": -2.9,
+   "strikeLast": -3.9
+  },
+  "hinomoto": {
+   "draw": 0.189,
+   "seal": 0.107
+  },
+  "buna": {
+   "draw": 0.211,
+   "seal": 0.114
+  },
+  "bruin": {
+   "draw": 0.269,
+   "seal": 0.171,
+   "cast": -0.8,
+   "release": -0.8
+  },
+  "mikage": {
+   "draw": 0.135,
+   "seal": 0.047
+  },
+  "tempo": {
+   "draw": 0.246,
+   "seal": 0.156,
+   "cast": -0.8,
+   "release": -0.8
+  },
+  "aquilo": {
+   "draw": 0.167,
+   "seal": 0.143
+  },
+  "akaito": {
+   "draw": 0.283,
+   "seal": 0.105
+  },
+  "kenzo": {
+   "draw": 0.167,
+   "seal": 0.289,
+   "cast": -4.8,
+   "release": -4.8
+  }
+ }
+}

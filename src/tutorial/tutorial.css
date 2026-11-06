@@ -1,0 +1,75 @@
+/* LEARN TO FIGHT (src/tutorial): Training's HUD with the lesson in place of its tools. Training's tools bar, trials,
+   combo readout, dummy chip and lab drawer step aside; the lesson's checklist stands where the trials stood (zone 8b),
+   its line in the prompt lane (zone 6), YOU'RE READY high in the middle (zone 7). The trials' own paper slip, ink and
+   red rule: plain HUD text and ticks, nothing that flashes. */
+#interface[data-tutorial] .mode-hud :is(.th-tools,.training-trials,.training-combo,.training-dummy,.training-lab,.trial-missed,.coach-tip){display:none!important}
+
+#interface[data-tutorial] .lesson-panel{width:clamp(190px,13.5vw,250px);padding:7px 11px 9px;background:color-mix(in srgb,var(--hud-paper,#fff9ef) 94%,transparent);color:var(--hud-ink,#0b0c0e);box-shadow:inset 0 -4px var(--hud-red,#d51d34);filter:drop-shadow(3px 4px 0 #08090a);font:700 clamp(11px,.8vw,14px)/1.2 'Barlow Condensed',sans-serif}
+#interface[data-tutorial] .lesson-panel[hidden]{display:none}
+.lesson-panel header{display:flex;align-items:baseline;gap:7px;padding-bottom:5px;border-bottom:2px solid var(--hud-ink,#0b0c0e)}
+.lesson-panel header b{font:italic 900 clamp(13px,1.05vw,19px)/1 Impact,'Barlow Condensed',sans-serif}
+.lesson-panel header small{margin-left:auto;font:italic 900 clamp(11px,.85vw,15px)/1 Impact,'Barlow Condensed',sans-serif;color:var(--hud-red,#d51d34)}
+.lesson-panel ol{margin:4px 0 0;padding:0;list-style:none}
+.lesson-panel li{display:flex;align-items:center;gap:6px;min-height:clamp(17px,1.25vw,23px);padding:1px 4px;border-bottom:1px solid #e4dccd;letter-spacing:.04em;color:#8a8275}
+.lesson-panel li>i{width:1em;flex:none;font-style:normal;font-weight:900;text-align:center}
+.lesson-panel li[data-state="now"]{color:var(--hud-ink,#0b0c0e);background:#f3e9d6;box-shadow:inset 3px 0 var(--hud-red,#d51d34)}
+.lesson-panel li[data-state="now"]>i{color:var(--hud-red,#d51d34)}
+.lesson-panel li[data-state="done"]{color:var(--hud-ink,#0b0c0e)}
+.lesson-panel li[data-state="done"]>i{color:#1f8a4c}
+.lesson-panel li[data-state="skipped"]{text-decoration:line-through;text-decoration-thickness:1px}
+.lesson-panel nav{display:flex;gap:6px;margin-top:7px}
+.lesson-panel nav button{display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:3px 8px;border:2px solid var(--hud-ink,#0b0c0e);border-radius:0;background:transparent;color:var(--hud-ink,#0b0c0e);font:italic 900 clamp(11px,.82vw,14px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.03em;cursor:pointer}
+.lesson-panel nav button:first-child{flex:1;justify-content:center}
+.lesson-panel nav button:hover,.lesson-panel nav button:focus-visible{background:var(--hud-ink,#0b0c0e);color:#fff}
+.lesson-panel nav button>i{font-style:normal}
+.lesson-panel nav kbd{display:inline-block;min-width:1.4em;padding:.2em .34em;background:var(--hud-ink,#0b0c0e);color:#fff;border:1px solid #fff;box-shadow:1px 1px 0 var(--hud-red,#d51d34);font:italic 900 1em/1 Impact,'Barlow Condensed',sans-serif;text-align:center}
+
+/* The step's line: the one prompt shape (prompts.css), a size up, and a small note under it. */
+.mode-hud .lesson-line{display:none;flex-direction:column;align-items:center;gap:5px}
+.mode-hud .lesson-line.on{display:flex}
+.lesson-line .lesson-now{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.lesson-line .ux-prompt{font-size:clamp(16px,1.4vw,25px)}
+.lesson-line .ux-prompt>i{font-size:.9em;font-style:normal;opacity:.8}
+.lesson-line .lesson-now[data-done] .ux-prompt{box-shadow:inset 0 -4px #1f8a4c}
+.lesson-line .lesson-note{margin:0;padding:3px 9px;background:rgba(8,9,10,.72);color:#fff9ef;font:800 clamp(11px,.85vw,14px)/1.15 'Barlow Condensed',sans-serif;letter-spacing:.08em;white-space:pre}
+
+/* The end: YOU'RE READY, ink on paper, then the home. */
+.mode-hud .lesson-end{display:none;flex-direction:column;align-items:center;gap:4px;padding:12px 26px 15px;background:var(--hud-paper,#fff9ef);color:var(--hud-ink,#0b0c0e);box-shadow:inset 0 -5px var(--hud-red,#d51d34);filter:drop-shadow(4px 5px 0 #08090a)}
+.mode-hud .lesson-end.on{display:flex}
+.lesson-end b{font:italic 900 clamp(30px,3.2vw,56px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.01em}
+.lesson-end small{font:800 clamp(11px,.9vw,15px)/1 'Barlow Condensed',sans-serif;letter-spacing:.14em;color:#5b554b}
+
+/* A phone on its side: the checklist folds to its heading and buttons (the stick is under it), the line a size down. */
+@media(max-height:520px) and (orientation:landscape){
+  #interface[data-tutorial] .lesson-panel{width:auto;min-width:150px;padding:5px 8px 6px}
+  .lesson-panel ol{display:none}
+  .lesson-panel nav button{min-height:32px}
+  .lesson-line .ux-prompt{font-size:14px}
+  .lesson-line .lesson-note{font-size:11px}
+}
+
+/* The home (LearnOffer.ts): the offer at the left of the bottom bar, YOU'RE READY beside PLAY and PLAY in red. In the
+   bar's own type (homeShell.css: ACCOUNT, PARTY, OPTIONS), over the home's lettering rule (home.css). */
+.manga-home .learn-offer{display:flex;align-items:center;gap:12px;min-width:0;color:var(--home-ink,#111)}
+.manga-home .learn-offer[hidden]{display:none!important}
+.manga-home .learn-offer[data-kind="offer"]{order:-1;margin-right:auto}
+.manga-home .home-actions .learn-offer :is(button,b){font:italic 900 clamp(14px,1.15vw,19px)/1 Impact,'Barlow Condensed',sans-serif!important;letter-spacing:.03em}
+.manga-home .home-actions .learn-offer>span{font:800 clamp(11px,.85vw,14px)/1 'Barlow Condensed',sans-serif!important;letter-spacing:.12em;color:#5b554b}
+.manga-home .learn-offer button{border:0;border-radius:0;cursor:pointer;white-space:nowrap}
+.manga-home .learn-offer [data-learn="go"]{padding:9px 14px 10px;background:var(--home-ink,#111);color:#fff;box-shadow:4px 4px 0 var(--home-red,#cc202b)}
+.manga-home .learn-offer [data-learn="go"] i{font-style:normal;color:var(--home-red,#cc202b)}
+.manga-home .learn-offer [data-learn="skip"]{padding:6px 2px 4px;background:none;color:var(--home-ink,#111);border-bottom:2px solid currentColor}
+.manga-home .learn-offer [data-learn]:hover,.manga-home .learn-offer [data-learn]:focus-visible{outline:3px solid var(--home-red,#cc202b);outline-offset:3px}
+.manga-home .learn-offer[data-kind="ready"] b{color:var(--home-red,#cc202b);white-space:nowrap}
+html .manga-home .home-actions #home-play.learn-ready>span:first-child{color:var(--home-red,#cc202b)!important}
+@media (max-width:700px) and (orientation:portrait),(max-height:520px) and (orientation:landscape){
+  .manga-home .learn-offer{gap:9px}
+  .manga-home .learn-offer[data-kind="offer"]{order:0;margin-right:0}
+  .manga-home .home-actions .learn-offer :is(button,b){font-size:13px!important}
+  .manga-home .learn-offer>span{display:none}
+  .manga-home .learn-offer [data-learn="go"]{padding:9px 10px 10px}
+  .manga-home .learn-offer [data-learn]{min-height:40px}
+}
+@media (max-width:700px) and (orientation:portrait){
+  .manga-home .learn-offer{position:fixed;left:0;right:0;bottom:calc(66px + env(safe-area-inset-bottom,0px));justify-content:center;padding:6px;background:#fff}
+}

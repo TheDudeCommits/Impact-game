@@ -1,0 +1,475 @@
+{
+  "version": 3,
+  "scope": "Last Stand's enemies (and survival/enemies/tribunal-guard.glb, which only Last Stand fields). every entry marked original is the game's own.",
+  "assets": [
+    {
+      "id": "tribunal-guard",
+      "name": "Tribunal Guard",
+      "army": "THE TRIBUNAL",
+      "world": "Dust Sea",
+      "role": "rifleman",
+      "file": "/assets/survival/enemies/tribunal-guard.glb",
+      "sha256": "a0f03e9274155a796f5cf4c2a693328d5656caea36855a20d05656e89032ae7a",
+      "bytes": 1315832,
+      "triangles": 12071,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 16,
+      "motion": "embedded",
+      "original": true,
+      "source": {
+        "title": "Tribunal Guard (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-tribunal-guard.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library (the game's own, made with Meshy), under the clip names its kit asks for (`_combo_b`...; no ripped motion)",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "ash-raider",
+      "name": "Ash raider",
+      "army": "ASH RAIDERS",
+      "world": "Hidden Ash",
+      "role": "blade skirmisher",
+      "file": "/assets/objectives/enemies/ash-raider.glb",
+      "sha256": "53e793619c923d5e7f48c1a894c631013c7f0330782e331c4e44d6a8b03e918d",
+      "bytes": 880112,
+      "triangles": 12000,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 0,
+      "motion": "humanoid",
+      "original": true,
+      "source": {
+        "title": "Ash raider (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-ash-raider.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library at runtime (the game's own, made with Meshy), by bone name",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "ash-wraith-stalker",
+      "name": "Cinder wraith",
+      "army": "CINDER WRAITHS",
+      "world": "Cinder Requiem",
+      "role": "stalker",
+      "file": "/assets/objectives/enemies/ash-wraith-stalker.glb",
+      "sha256": "58502dcab6c593b1db217f921cfd6ede5e29c6a337885bd2666f8bd97c0e7ffa",
+      "bytes": 888256,
+      "triangles": 11999,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 0,
+      "motion": "humanoid",
+      "original": true,
+      "source": {
+        "title": "Cinder wraith (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-ash-wraith-stalker.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library at runtime (the game's own, made with Meshy), by bone name",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "ash-wraith-golem",
+      "name": "Cinder colossus",
+      "army": "CINDER WRAITHS",
+      "world": "Cinder Requiem",
+      "role": "golem",
+      "file": "/assets/objectives/enemies/ash-wraith-golem.glb",
+      "sha256": "2d3cd8accf161eb957bfed1b68b1b689e966bb0704b4271726a0093142ad8ed6",
+      "bytes": 1606352,
+      "triangles": 10000,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 20,
+      "motion": "embedded",
+      "original": true,
+      "source": {
+        "title": "Cinder colossus (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-ash-wraith-golem.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library (the game's own, made with Meshy): its twenty clips the old file carried, under the same names",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "cell-scout",
+      "name": "Glare imp",
+      "army": "GLARE IMPS",
+      "world": "Last Sun",
+      "role": "scout",
+      "file": "/assets/objectives/enemies/cell-scout.glb",
+      "sha256": "d407136256081a99cf278b03ef9b25897627de1602305c3610aacbbdd71ba59b",
+      "bytes": 1608024,
+      "triangles": 9999,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 20,
+      "motion": "embedded",
+      "original": true,
+      "source": {
+        "title": "Glare imp (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-cell-scout.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library (the game's own, made with Meshy): its twenty clips the old file carried, under the same names",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "beast-raider",
+      "name": "Dune corsair",
+      "army": "DUNE CORSAIRS",
+      "world": "Dust Sea",
+      "role": "raider",
+      "file": "/assets/objectives/enemies/beast-raider.glb",
+      "sha256": "ffc33db585a5bb7c1ea83d75dea8c82d2dfcd8efd38a7c304de0a7e681bbbd5c",
+      "bytes": 1724732,
+      "triangles": 12072,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 20,
+      "motion": "embedded",
+      "original": true,
+      "source": {
+        "title": "Dune corsair (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-beast-raider.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library (the game's own, made with Meshy): its twenty clips the old file carried, under the same names",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "cipher-agent",
+      "name": "Lantern agent",
+      "army": "LANTERN AGENTS",
+      "world": "Dust Sea",
+      "role": "agent",
+      "file": "/assets/objectives/enemies/cipher-agent.glb",
+      "sha256": "e9ea6b4476dd428ed861a29ef9718da352b12e0b9ba3617f65293164594ba706",
+      "bytes": 1214948,
+      "triangles": 12000,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 13,
+      "motion": "embedded",
+      "original": true,
+      "source": {
+        "title": "Lantern agent (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-cipher-agent.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library (the game's own, made with Meshy), under the clip names its kit asks for (`_combo_b`...; no ripped motion)",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "chess-guard",
+      "name": "Court sentinel",
+      "army": "COURT SENTINELS",
+      "world": "Dust Sea",
+      "role": "guard",
+      "file": "/assets/objectives/enemies/chess-guard.glb",
+      "sha256": "baa0932c4f7bfd2ac7d913438042dee1caf0d8735672d0d57fd1e87e2e16f440",
+      "bytes": 900824,
+      "triangles": 12060,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 0,
+      "motion": "humanoid",
+      "original": true,
+      "source": {
+        "title": "Court sentinel (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-chess-guard.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library at runtime (the game's own, made with Meshy), by bone name",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "cursed-spirit",
+      "name": "Hex puppet",
+      "army": "HEX PUPPETS",
+      "world": "Hex Fallout",
+      "role": "monster",
+      "file": "/assets/objectives/enemies/cursed-spirit.glb",
+      "sha256": "91a84fdaa0bda7f8392640d17c0ff9282be221532d54d817d2b3468fe0ff5caf",
+      "bytes": 928140,
+      "triangles": 12000,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 0,
+      "motion": "humanoid",
+      "original": true,
+      "source": {
+        "title": "Hex puppet (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-cursed-spirit.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library at runtime (the game's own, made with Meshy), by bone name",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "scrap-ghoul",
+      "name": "Scrap ghoul",
+      "army": "SCRAP GHOULS",
+      "world": "Salvage Wilds",
+      "role": "monster",
+      "file": "/assets/objectives/enemies/scrap-ghoul.glb",
+      "sha256": "b89354701bf6c02e494f4d8d292ed0d1920e57e96a37703c6e37f8ec8bac4311",
+      "bytes": 846864,
+      "triangles": 12000,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 0,
+      "motion": "humanoid",
+      "original": true,
+      "source": {
+        "title": "Scrap ghoul (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-scrap-ghoul.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library at runtime (the game's own, made with Meshy), by bone name",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "apostle-beast",
+      "name": "Barrow knight",
+      "army": "BARROW KNIGHTS",
+      "world": "Grave Hound",
+      "role": "monster",
+      "file": "/assets/objectives/enemies/apostle-beast.glb",
+      "sha256": "9154abc2f44bb31d0ad3fd89904934e2fda00a36fb5ed9edc2e338230ee93ea4",
+      "bytes": 944744,
+      "triangles": 12000,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 0,
+      "motion": "humanoid",
+      "original": true,
+      "source": {
+        "title": "Barrow knight (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-apostle-beast.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library at runtime (the game's own, made with Meshy), by bone name",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    },
+    {
+      "id": "vampire-guard",
+      "name": "Gilded thrall",
+      "army": "GILDED THRALLS",
+      "world": "Gilded Ruin",
+      "role": "agent",
+      "file": "/assets/objectives/enemies/vampire-guard.glb",
+      "sha256": "32820abd590575200789c72f5c85aafd9af6ed4311f055f9f50baf2068940629",
+      "bytes": 1226600,
+      "triangles": 12000,
+      "primitives": 1,
+      "textures": 1,
+      "animations": 13,
+      "motion": "embedded",
+      "original": true,
+      "source": {
+        "title": "Gilded thrall (an original made for the game)",
+        "author": "made for the game",
+        "url": null,
+        "license": "Original asset made for the game",
+        "licenseUrl": null
+      },
+      "provenance": {
+        "concept": {
+          "model": "gemini_3_pro_image_preview (Tripo image API)",
+          "file": "assets/source/originals/round4/concepts/objective-vampire-guard.png"
+        },
+        "body": {
+          "model": "Tripo image-to-3D v3.1, detailed geometry and texture"
+        },
+        "rig": {
+          "model": "Tripo v1.0-20240301 biped auto-rig",
+          "task": "8e224ba5-kagari4-465d-8795-e02d3fc17471"
+        },
+        "skeleton": "the horde's shared humanoid skeleton (24 joints) at the rest rotations of the file it replaces",
+        "motion": "the horde's shared motion library (the game's own, made with Meshy), under the clip names its kit asks for (`_combo_b`...; no ripped motion)",
+        "build": "made for the game"
+      },
+      "modifications": "Decimated to the horde budget, one 1024 px base-colour atlas, limbs swung onto the skeleton's T-pose, skin carried onto the shared skeleton's joints (four weights a vertex)."
+    }
+  ]
+}

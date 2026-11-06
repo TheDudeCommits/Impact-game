@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "assets": [],
+  "speechPolicy": "Every voice line is written for the game and spoken by stock text-to-speech presets (Higgsfield); no recorded, cloned or imitated voice.",
+  "validation": {
+    "assetCount": 0,
+    "format": "48kHz mono PCM WAV",
+    "totalBytes": 0
+  }
+}
