@@ -13,7 +13,7 @@ const link = (href: string, text: string) => `<a href="${esc(href)}" target="_bl
 export const MADE_HERE: readonly { what: string; how: string }[] = [
   { what: 'Fighters', how: 'Designed for this game. Their 2D art was drawn with AI image models (Gemini 3 Pro and GPT Image 2 through Tripo, and an OpenAI image model), and their 3D bodies and rigs were made with Tripo from the game\'s own concept art.' },
   { what: 'Voices', how: 'Japanese lines written for each character, voiced with text-to-speech: Qwen3-TTS VoiceDesign, run locally, and Qwen TTS preset voices on Higgsfield. Each voice was designed from a written description; none was cloned from, or made to imitate, an actor.' },
-  { what: 'Music', how: 'The fighters\' world themes and the Rift\'s are original pieces written note by note for this game and played through the GeneralUser GS SoundFont by S. Christian Collins.' },
+  { what: 'Music', how: 'The home screen\'s theme, the fighters\' world themes and the Rift\'s are original pieces written note by note for this game and played through the GeneralUser GS SoundFont by S. Christian Collins.' },
   { what: 'Scenery and sound', how: 'Some props, statues, skies and paintings were made for this game with Tripo, with Meshy and with AI image models; some of its ambient sounds were synthesised for it.' },
 ];
 

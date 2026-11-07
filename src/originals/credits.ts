@@ -1,5 +1,6 @@
 
 import { SOUNDTRACK, type SoundtrackTrack } from './score';
+import { heldSoundtrack } from './scoreStandIns';
 
 const CC_BY_4 = 'https://creativecommons.org/licenses/by/4.0/', CC_BY_3 = 'https://creativecommons.org/licenses/by/3.0/';
 const S = 'assets/audio/survival/';
@@ -108,7 +109,7 @@ export const STAGE_CC0_WORKS = [
  *  after its own. */
 const OST_TRACKS = [...new Map([...SOUNDTRACK.home, ...Object.values(SOUNDTRACK.modes).flat(), ...SOUNDTRACK.boss, ...SOUNDTRACK.results.win,
   ...SOUNDTRACK.results.loss, SOUNDTRACK.stinger.win, SOUNDTRACK.stinger.loss].map(track => [track.url, track as SoundtrackTrack])).values()];
-export const SOUNDTRACK_CREDITS = OST_TRACKS.map(track => ({
+export const SOUNDTRACK_CREDITS = OST_TRACKS.filter(track => !heldSoundtrack(track.url)).map(track => ({ // (a held-back file, not in this repository, is not credited: scoreStandIns.ts)
   work: track.credit.work, by: `${track.credit.by}; 音楽：魔王魂`,
   sources: [['maou.audio', track.credit.page]] as const,
   licence: 'CC BY 4.0', licenceUrl: CC_BY_4, changes: track.credit.changes,

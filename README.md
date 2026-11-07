@@ -100,7 +100,8 @@ The game runs without them. A fighter whose clip is missing falls back to a shar
 model or effect is drawn without it, and the fonts fall back to Barlow Condensed and the system's. Expect some fighters to
 move more plainly than they will, and some moves to look sparser. Each held-back sound effect plays a CC0 stand-in made for
 its slot (`public/assets/audio/v2/cc0/`, listed in its `manifest.json`; `src/audio/standIns.ts` picks it only where the
-sound's own file is absent); the held-back music is silent.
+sound's own file is absent). The held-back soundtrack's slots play the game's own earlier score
+(`src/originals/scoreStandIns.ts` names the piece that stands in for each), and its two stings play nothing.
 
 Some places are out of the stage rotation until their models return, and the tests that read held-back files are
 skipped by name (`tests/setup/heldBack.json`); take a test off that list when what it reads is back.

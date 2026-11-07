@@ -3,6 +3,7 @@ import type { SpringProfile } from '../render/SecondaryMotion';
 import { LOCK_NAMES } from './lockNames';
 import { ORIGINALS } from './roster';
 import { ORIGINAL_WORLDS, SOUNDTRACK, type SoundtrackMode, type SoundtrackTrack } from './score';
+import { applyScoreStandIns } from './scoreStandIns';
 import VOICES from './voices.json';
 import PIXEL_SFX from './pixelSfx.json';
 
@@ -119,7 +120,7 @@ export function applyOriginalMusic<T extends { id: string; url: string; title: s
   for (const track of [...Object.values(SOUNDTRACK.modes).flat(), ...SOUNDTRACK.results.win, ...SOUNDTRACK.results.loss])
     tracks[track.id] ??= entry(track, 'gameplay', 'score');
   for (const track of [SOUNDTRACK.stinger.win, SOUNDTRACK.stinger.loss]) tracks[track.id] = entry(track, 'gameplay', 'score', 'stinger');
-  return tracks;
+  return applyScoreStandIns(tracks); // (the held-back soundtrack's slots play the game's own score: scoreStandIns.ts)
 }
 
 /** What a match's music knows of it (4 November 2026): its mode (src/ui/modes/catalogue.ts modeOfSnapshot), how it ended
