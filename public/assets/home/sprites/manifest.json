@@ -2661,197 +2661,294 @@
     {
       "id": "nigo",
       "file": "nigo.webp",
-      "sourceFile": "nigo-poses-raw.png",
-      "bytes": 776498,
+      "sourceFile": "poses.png",
+      "scale": 1.2868632707774799,
+      "bytes": 661758,
       "frames": [
         {
           "frame": 0,
           "bounds": [
-            32,
-            37,
-            384,
+            89,
+            83,
+            334,
             500
           ],
-          "footX": 187.0
+          "footX": 197.0,
+          "sourceRect": [
+            40,
+            32,
+            230,
+            356
+          ]
         },
         {
           "frame": 1,
           "bounds": [
-            38,
-            40,
-            379,
+            75,
+            87,
+            359,
             500
           ],
-          "footX": 192.0
+          "footX": 196.0,
+          "sourceRect": [
+            311,
+            37,
+            532,
+            358
+          ]
         },
         {
           "frame": 2,
           "bounds": [
-            38,
-            41,
-            379,
+            23,
+            86,
+            341,
             500
           ],
-          "footX": 192.0
+          "footX": 195.0,
+          "sourceRect": [
+            586,
+            38,
+            833,
+            360
+          ]
         },
         {
           "frame": 3,
           "bounds": [
             37,
-            48,
-            376,
+            77,
+            336,
             500
           ],
-          "footX": 192.0
+          "footX": 196.0,
+          "sourceRect": [
+            889,
+            37,
+            1121,
+            366
+          ]
         },
         {
           "frame": 4,
           "bounds": [
-            38,
-            59,
-            328,
+            55,
+            21,
+            345,
             500
           ],
-          "footX": 192.5
+          "footX": 195.5,
+          "sourceRect": [
+            41,
+            393,
+            266,
+            765
+          ]
         },
         {
           "frame": 5,
           "bounds": [
-            38,
-            63,
-            328,
+            32,
+            20,
+            334,
             500
           ],
-          "footX": 191.5
+          "footX": 195.5,
+          "sourceRect": [
+            310,
+            391,
+            545,
+            764
+          ]
         },
         {
           "frame": 6,
           "bounds": [
-            36,
-            59,
-            332,
+            25,
+            30,
+            329,
             500
           ],
-          "footX": 192.0
+          "footX": 196.0,
+          "sourceRect": [
+            597,
+            399,
+            833,
+            764
+          ]
         },
         {
           "frame": 7,
           "bounds": [
-            54,
-            55,
-            335,
+            27,
+            77,
+            372,
             500
           ],
-          "footX": 192.0
+          "footX": 195.0,
+          "sourceRect": [
+            871,
+            435,
+            1139,
+            764
+          ]
         },
         {
           "frame": 8,
           "bounds": [
-            38,
-            54,
-            337,
+            35,
+            96,
+            352,
             500
           ],
-          "footX": 192.0
+          "footX": 196.0,
+          "sourceRect": [
+            22,
+            817,
+            268,
+            1131
+          ]
         },
         {
           "frame": 9,
           "bounds": [
-            34,
-            59,
-            336,
+            33,
+            105,
+            346,
             500
           ],
-          "footX": 191.5
+          "footX": 194.0,
+          "sourceRect": [
+            300,
+            810,
+            543,
+            1117
+          ]
         },
         {
           "frame": 10,
           "bounds": [
-            28,
-            58,
-            339,
+            4,
+            98,
+            322,
             500
           ],
-          "footX": 191.5
+          "footX": 195.0,
+          "sourceRect": [
+            585,
+            810,
+            832,
+            1122
+          ]
         },
         {
           "frame": 11,
           "bounds": [
-            30,
-            58,
-            336,
+            6,
+            93,
+            324,
             500
           ],
-          "footX": 192.5
+          "footX": 195.5,
+          "sourceRect": [
+            870,
+            807,
+            1117,
+            1123
+          ]
         },
         {
           "frame": 12,
           "bounds": [
-            38,
-            46,
-            357,
+            23,
+            77,
+            320,
             500
           ],
-          "footX": 192.0
+          "footX": 195.5,
+          "sourceRect": [
+            17,
+            1174,
+            248,
+            1503
+          ]
         },
         {
           "frame": 13,
           "bounds": [
-            40,
-            48,
-            360,
+            23,
+            78,
+            318,
             500
           ],
-          "footX": 191.5
+          "footX": 196.0,
+          "sourceRect": [
+            297,
+            1176,
+            526,
+            1504
+          ]
         },
         {
           "frame": 14,
           "bounds": [
-            40,
-            48,
-            368,
+            79,
+            78,
+            344,
             500
           ],
-          "footX": 191.5
+          "footX": 197.0,
+          "sourceRect": [
+            603,
+            1174,
+            809,
+            1502
+          ]
         },
         {
           "frame": 15,
           "bounds": [
-            40,
-            48,
-            359,
+            89,
+            83,
+            334,
             500
           ],
-          "footX": 191.5
+          "footX": 197.0,
+          "sourceRect": [
+            904,
+            1184,
+            1094,
+            1508
+          ]
         }
       ],
       "poster": "nigo-poster.webp",
-      "posterBytes": 51888,
-      "sourceSha256": "9e0f9e070728cabf11a6044edfb74b60befdb185135cbdd11e9037767b008b7d",
-      "sha256": "ab4952443ca774811c38e263ac13bec2d5883117da15165e4d7b085ed7626153",
-      "posterSha256": "a6a1bec5bd3796905a3d90aebd9ad00af66d6f988ecbdbc39488500300272132",
+      "posterBytes": 37360,
+      "sourceSha256": "28f5f837e3cb94071d935515309b1e253c253d4408ea7eef6a79a17980b188f6",
+      "sha256": "bf4c9c6b954c6beae2eac97ff88adfaaea85c4c2023e455d2ef6575e46ba9fea",
+      "posterSha256": "416801d91a7b9a274d4ccc78fc3482464fb148c7d1127add365c367bde3b10ea",
       "pose": "Haizan on his shoulder",
-      "registration": "white keyed from the border, one scale per sheet, sole anchor; bounds measured on the shipped sheet.",
-      "promptFile": "made for the game",
-      "runtimePagesSourceSha256": "ab4952443ca774811c38e263ac13bec2d5883117da15165e4d7b085ed7626153",
+      "registration": "Originals fork (scripts/originals/prepare_pose_sheet.py): white keyed from the border, free-floating ink dropped, one scale per sheet, one sole anchor.",
+      "promptFile": "scripts/originals/generate_art.py",
+      "runtimePagesSourceSha256": "bf4c9c6b954c6beae2eac97ff88adfaaea85c4c2023e455d2ef6575e46ba9fea",
       "runtimePages": [
         {
           "file": "nigo-p1.webp",
-          "sha256": "6d4af5feaa78847ad6bc7c49035af2f74644a0918edcc0731fc5e44ebeba6b0a",
+          "sha256": "9dae943c03ff69cf8993104459622e0da355435b1462993aac581d2945df05d3",
           "firstFrame": 0,
           "frameCount": 8,
           "width": 1536,
           "height": 1024,
-          "bytes": 387034
+          "bytes": 339080
         },
         {
           "file": "nigo-p2.webp",
-          "sha256": "153cca9e990ee0d9230a3ddedb64b0fbc3629f62a5a629b16cf5ecc9c3b32386",
+          "sha256": "b9dc393140dcf4bc675280fb4e38b0beff92caada21f446bd80ee16113df861e",
           "firstFrame": 8,
           "frameCount": 8,
           "width": 1536,
           "height": 1024,
-          "bytes": 389448
+          "bytes": 323864
         }
       ]
     },

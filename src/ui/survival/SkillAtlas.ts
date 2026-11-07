@@ -1,6 +1,5 @@
 import { BRANCHES, SKILL_TREE, TIERS, TIER_POINTS, TREE_NODE, branchPoints, closed, lockOf, maxRank, rankOf, refundLock, skillArt, type Branch, type SkillNode } from '../../survival/skillTree';
 import { nodeInfo } from '../../survival/skillText';
-import { cardImg } from './cardArt';
 import { upgrade } from '../../survival/upgrades';
 import { brushStroke } from '../inkSplat';
 import './skillAtlas.css';
@@ -155,7 +154,7 @@ export class SkillAtlas {
     button.className=`atlas-node ${node.keystone?'keystone':node.technique?'technique':'passive'}${rank?' learned':''}${!lock&&this.state.points?' available':''}${closed(this.state.picks,node.id)?' excluded':''}${lock&&!rank?' locked':''}`;
     button.style.cssText=`left:${at.x}px;top:${at.y}px;--branch:${COLORS[node.branch]}`;
     button.setAttribute('aria-label',`${upgrade(node.id).name}, rank ${rank} of ${max}${lock?`, ${lock}`:', hold icon to learn or use the Learn button'}`);
-    button.innerHTML=`<span class="atlas-sigil"><svg class="atlas-charge" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="36" pathLength="100"/></svg><span class="atlas-icon">${cardImg(skillArt(node.id), 'alt="" draggable="false"')}<i>${upgrade(node.id).kanji}</i></span></span><b class="atlas-rank">${rank}/${max}</b><strong>${esc(upgrade(node.id).name)}</strong>${node.keystone?'<small>ONE PER BUILD</small>':''}`;
+    button.innerHTML=`<span class="atlas-sigil"><svg class="atlas-charge" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="36" pathLength="100"/></svg><span class="atlas-icon"><img src="/assets/survival/cards/${skillArt(node.id)}.webp" alt="" draggable="false"><i>${upgrade(node.id).kanji}</i></span></span><b class="atlas-rank">${rank}/${max}</b><strong>${esc(upgrade(node.id).name)}</strong>${node.keystone?'<small>ONE PER BUILD</small>':''}`;
     const art=button.querySelector('img')!;art.onerror=()=>art.remove();
     button.onclick=()=>this.inspect(node.id);button.onfocus=()=>this.inspect(node.id);
     return button;
@@ -181,7 +180,7 @@ export class SkillAtlas {
     this.graph.querySelectorAll<SVGPathElement>('.atlas-link.parent').forEach(path=>path.classList.toggle('traced',path.dataset.from===id||path.dataset.to===id));
     const info=nodeInfo(node,this.state.picks,this.state.level,this.unlocked),lock=lockOf(this.state.picks,id,this.unlocked),refund=refundLock(this.state.picks,id,this.unlocked);
     this.tip.style.setProperty('--branch',COLORS[node.branch]);
-    this.tip.innerHTML=`<div class="atlas-tip-art">${cardImg(skillArt(id), 'alt=""')}<span>${esc(info.kanji)}</span></div><small class="atlas-tag">${info.kind} · ${info.tags.map(esc).join(' / ')}</small><h3>${esc(info.name)}</h3><div class="atlas-tip-rank">RANK ${info.rank} / ${info.max}<span>${Array.from({length:info.max},(_,i)=>`<i class="${i<info.rank?'filled':''}"></i>`).join('')}</span></div>
+    this.tip.innerHTML=`<div class="atlas-tip-art"><img src="/assets/survival/cards/${skillArt(id)}.webp" alt=""><span>${esc(info.kanji)}</span></div><small class="atlas-tag">${info.kind} · ${info.tags.map(esc).join(' / ')}</small><h3>${esc(info.name)}</h3><div class="atlas-tip-rank">RANK ${info.rank} / ${info.max}<span>${Array.from({length:info.max},(_,i)=>`<i class="${i<info.rank?'filled':''}"></i>`).join('')}</span></div>
       ${info.now?`<section><h4>CURRENT RANK</h4><p>${esc(info.now)}</p></section>`:''}${info.next?`<section class="atlas-next"><h4>${info.rank?'NEXT RANK':'FIRST RANK'}</h4><p>${esc(info.next)}</p></section>`:''}
       <button class="atlas-learn" ${lock||!this.state.points?'disabled':''}>${lock==='mastered'?'MASTERED':lock?'LOCKED':!this.state.points?'EARN A SKILL POINT':`${info.rank?'UPGRADE':'UNLOCK SKILL'} · 1 POINT`}</button><button class="atlas-refund" ${refund?'disabled':''}>REFUND ONE RANK</button>
       <p class="atlas-hold-note">Or hold its icon. Release to cancel.</p>${info.rank?`<p class="atlas-refund-note">${esc(refund??'Returns 1 point; health and cooldowns stay as they are.')}</p>`:''}

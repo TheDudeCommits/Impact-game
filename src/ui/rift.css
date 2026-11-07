@@ -1,6 +1,7 @@
 /* Arcade survival, the Rift: the round plate, the event tracker, every boss's
    own bar and a boss's entrance card. The home screen's lettering
    (Electroharmonix) for what the rift announces; ink, paper and red. */
+@font-face{font-family:'Rift Display';src:url('/assets/survival/intro/rift-display.otf') format('opentype');font-weight:400;font-style:normal;font-display:swap}
 
 
 
@@ -174,7 +175,6 @@
 .sv-chapter.show .sv-chapter-panel{animation:sv-chapter-slam .5s cubic-bezier(.2,1.3,.3,1) both}
 .sv-chapter-art{position:absolute;inset:6px;overflow:hidden;background:#f2efe8}
 .sv-chapter-art img{width:100%;height:100%;object-fit:cover;filter:contrast(1.1);transform:skewX(4deg) scale(1.08)}
-.sv-chapter-art img[hidden]{display:none}
 /* The fortress's panel is squarer than the rest: shown whole, with its own
    picture blurred and darkened behind it where cream bars stood either side. */
 .sv-chapter.show .sv-chapter-art img{animation:sv-chapter-push 3.6s ease-out both}

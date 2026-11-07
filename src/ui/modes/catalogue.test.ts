@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { existsSync } from 'node:fs';
-import { MODES, MODE_ART_HELD, MODE_ORDER, MODE_OF_HOME, VARIANT_ORDER, modeArtUrl, modeHere, modeOfSnapshot } from './catalogue';
+import { MODES, MODE_ORDER, MODE_OF_HOME, VARIANT_ORDER, modeHere, modeOfSnapshot } from './catalogue';
 import { HOME_MODES } from '../MangaHome';
 import { PROMPT_ACTIONS } from '../prompts';
 import type { GameSnapshot } from '../../game/types';
@@ -47,14 +47,8 @@ describe('the mode catalogue', () => {
     for (const card of HOME_MODES) expect(MODE_ORDER).toContain(MODE_OF_HOME[card.id].mode);
     expect(new Set(['players', 'bots', 'private'].map(c => MODE_OF_HOME[c as 'bots'].mode))).toEqual(new Set(['royale']));
   });
-  it('has art for every mode card, or a plain panel where the picture is held back (and then asks for no file)', () => {
-    for (const id of MODE_ORDER) {
-      const file = existsSync(new URL(`../../../public/assets/home/modes/${MODES[id].art}.webp`, import.meta.url));
-      expect(file, id).toBe(!MODE_ART_HELD.has(MODES[id].art));
-      expect(modeArtUrl(MODES[id].art) === undefined, id).toBe(MODE_ART_HELD.has(MODES[id].art));
-    }
-    for (const id of MODE_ORDER) for (const panel of MODES[id].panels) if ('src' in panel) expect(existsSync(new URL(`../../../public${panel.src}`, import.meta.url)), panel.src).toBe(true);
-    for (const id of MODE_ORDER) if (MODES[id].cover) expect(existsSync(new URL(`../../../public${MODES[id].cover}`, import.meta.url)), id).toBe(true);
+  it('has art for every mode card', () => {
+    for (const id of MODE_ORDER) expect(existsSync(new URL(`../../../public/assets/home/modes/${MODES[id].art}.webp`, import.meta.url))).toBe(true);
   });
   it('names the mode a running match is', () => {
     expect(modeOfSnapshot(snap(), true)).toBe('arcade');

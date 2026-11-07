@@ -1,0 +1,5 @@
+Electroharmonix, by Ray Larabie (Typodermic Fonts), 1998.
+Released into the public domain under the CC0 1.0 Universal dedication: https://creativecommons.org/publicdomain/zero/1.0/
+Source: https://typodermicfonts.com/public-domain/ (download: https://typodermicfonts.com/assets/downloads/cc0-fonts/electroharmonix.zip)
+
+public/assets/survival/intro/rift-display.otf is the same font with its K redrawn as a Latin K (the original K is a katakana ke).

@@ -1,5 +1,4 @@
 import { SkillAtlas } from './survival/SkillAtlas';
-import { cardArt } from './survival/cardArt';
 import { bossPortrait } from './survival/bossArt';
 import './survival/results.css';
 import { resultFighterArt } from './survival/resultArt';
@@ -853,10 +852,9 @@ export class SurvivalHud {
     // What the place does to the fight (placeRules.ts), where it does something.
     this.chapterRule(PLACE_RULES[def.id]);
     const img = this.root.querySelector<HTMLImageElement>('#sv-chapter-art')!;
-    // In cards/ because the packager ships that folder whole; a place whose panel is held back shows the plain card.
-    const src = cardArt(`chapter-${def.id}`);
-    img.hidden = !src;
-    if (!src) img.removeAttribute('src'); else if (!img.src.endsWith(src)) img.src = src;
+    // In cards/ because the preview and production packagers ship that folder whole.
+    const src = `/assets/survival/cards/chapter-${def.id}.webp`;
+    if (!img.src.endsWith(src)) img.src = src;
     card.dataset.place = def.id;
     card.classList.remove('hidden', 'show'); void card.offsetWidth; card.classList.add('show');
     this.chapterUntil = performance.now() + 3600;
@@ -916,9 +914,7 @@ export class SurvivalHud {
     this.chapterRule(undefined);
     this.text('sv-chapter-kanji', '封印');
     const img = this.root.querySelector<HTMLImageElement>('#sv-chapter-art')!;
-    const finale = cardArt('finale-panel');
-    img.hidden = !finale;
-    if (finale) img.src = finale; else img.removeAttribute('src');
+    img.src = '/assets/survival/cards/finale-panel.webp';
     this.root.querySelector('#sv-chapter-hero')!.innerHTML = this.hero ? mangaPortrait(this.hero) : '';
     card.dataset.place = 'finale';
     card.classList.remove('hidden', 'show'); void card.offsetWidth; card.classList.add('show');
@@ -1209,8 +1205,8 @@ export class SurvivalHud {
       card.innerHTML = `<span class="sv-card-frame"><span class="sv-card-art"><img alt="" draggable="false"><span class="sv-card-kanji"></span><span class="sv-card-rarity"></span></span><span class="sv-card-caption"><strong></strong><p></p><span class="sv-card-stack"></span></span></span><kbd></kbd>`;
       this.cardKey(card.querySelector('kbd')!, i);
       const img = card.querySelector('img')!;
-      const src = cardArt(id);
-      if (src) { img.src = src; img.onerror = () => { img.remove(); card.classList.add('no-art'); }; } else { img.remove(); card.classList.add('no-art'); }
+      img.src = `/assets/survival/cards/${id}.webp`;
+      img.onerror = () => { img.remove(); card.classList.add('no-art'); };
       card.querySelector('.sv-card-rarity')!.textContent = tag;
       card.querySelector('.sv-card-kanji')!.textContent = def.kanji;
       card.querySelector('strong')!.textContent = def.name.toUpperCase();
@@ -1308,8 +1304,7 @@ export class SurvivalHud {
     // a loss was a bare form under the victory's manga panel.
     const where = LOCATIONS.find(l => l.name === this.place?.name) ?? LOCATIONS[(this.place?.index ?? 0) % LOCATIONS.length];
     const art = this.root.querySelector<HTMLElement>('#sv-results-art')!;
-    const panelArt = cardArt(result.victory ? 'finale-panel' : `chapter-${where.id}`);
-    art.style.setProperty('--art', panelArt ? `url(${panelArt})` : 'none');
+    art.style.setProperty('--art', `url(${result.victory ? '/assets/survival/cards/finale-panel.webp' : `/assets/survival/cards/chapter-${where.id}.webp`})`);
     art.classList.toggle('fallen', !result.victory);
     this.text('sv-results-epitaph', result.victory ? 'THE BLACK SUN CLOSES ITS EYE' : party ? `THEY FELL AT ${where.name.toUpperCase()}` : `HERE ${FIGHTERS[fighter].name.toUpperCase()} FELL · ${where.name.toUpperCase()}`);
     const panel = this.root.querySelector<HTMLElement>('#sv-results')!;
@@ -1355,7 +1350,7 @@ export class SurvivalHud {
     showRunPay(this.root.querySelector<HTMLElement>('#sv-results-pay')!, result);
     const level = settled ? masteryOf(settled.progress.mastery[fighter]).level : 0;
     this.shareInput = { result, fighter, title: this.root.querySelector('#sv-results-title')!.textContent ?? '', sub: this.root.querySelector('#sv-results-sub')!.textContent ?? '',
-      epitaph: this.root.querySelector('#sv-results-epitaph')!.textContent ?? '', art: panelArt,
+      epitaph: this.root.querySelector('#sv-results-epitaph')!.textContent ?? '', art: result.victory ? '/assets/survival/cards/finale-panel.webp' : `/assets/survival/cards/chapter-${where.id}.webp`,
       fallen: !result.victory, mastery: level ? `${titleAt(level)} · MASTERY ${level}` : undefined };
     panel.classList.remove('hidden');
     this.openedAt = performance.now();

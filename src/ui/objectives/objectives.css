@@ -65,6 +65,3 @@
 @media(max-width:700px){#interface[data-objective] #pointer-hint{display:none}}
 /* COPY INVITE and SHARE (social/share.ts) side by side, the code on the left. */
 .objective-room{gap:8px}.objective-room>b{margin-right:auto}
-
-/* Both deployment covers are held back from this build: the cover is a plain panel under its gradient. */
-.objective-cover{background-color:#16222b}

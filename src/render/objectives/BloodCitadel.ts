@@ -46,9 +46,10 @@ export class BloodCitadel {
   update(time:number){this.ambience.update(time);}
   dispose(){this.ambience.dispose();}
   private async sky(){
-    const map=await new THREE.TextureLoader().loadAsync('/assets/environment/sky/citadel-moon.webp');map.colorSpace=THREE.SRGBColorSpace;
+    const map=await new THREE.TextureLoader().loadAsync('/assets/environment/sky/citadel-night.webp');map.colorSpace=THREE.SRGBColorSpace;
     const sky=new THREE.Mesh(new THREE.SphereGeometry(450,48,24),new THREE.MeshBasicMaterial({map,side:THREE.BackSide,fog:false,toneMapped:false}));
-    sky.name='Citadel moon';sky.rotation.set(0,-.8,-.62);sky.renderOrder=999_999;sky.frustumCulled=false;this.root.add(sky);
+    sky.name='Citadel moon';sky.rotation.set(0,-2*Math.PI*.648-Math.PI/2-Math.PI/3,0); // the night sky's crimson glow (u .648 of the painting) at the broken moon's bearing
+    sky.renderOrder=999_999;sky.frustumCulled=false;this.root.add(sky);
   }
   private async ground(){
     const loader=new THREE.TextureLoader(),maps=await Promise.all(['diff','nor_gl','rough'].map(k=>loader.loadAsync(`/assets/environment/paving/pavement_01_${k}_2k.jpg`)));

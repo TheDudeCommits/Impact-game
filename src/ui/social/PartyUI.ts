@@ -12,9 +12,7 @@ import {canNativeShare,shareInvite} from '../../social/share';
 import {setParty} from '../../social/presence';
 import {fighterCaption,HOME_VOLUMES,mangaPortrait} from '../MangaHome';
 import {LAUNCH,partyModeOpen} from '../../originals/launch';
-import {MODES,modeArtUrl,type ModeId} from '../modes/catalogue';
-/** A mode card's picture as a CSS image, or none where it is held back (the card keeps its colour). */
-const cssArt=(art:string)=>{const src=modeArtUrl(art);return src?`url('${src}')`:'none';};
+import {MODES,type ModeId} from '../modes/catalogue';
 import type {UiAction} from '../../input/gamepad';
 import {SocialDialog} from './Dialog';
 import {discordButton,openDiscord} from './discord';
@@ -228,11 +226,11 @@ export class PartyUI extends SocialDialog {
     const head=`<h3>THE MATCH <small>${lead?'YOU CHOOSE':`${escape(by)} CHOOSES`}</small></h3>`;
     if(!lead){
       const facts=this.facts(view).map(f=>`<span>${escape(f)}</span>`).join('');
-      return `${head}<div class="pt-summary" style="--art:${cssArt(info.art)}"><span class="pt-summary-art" aria-hidden="true"></span><div><small>MODE</small><b>${PARTY_MODES[view.mode]}</b><p>${escape(info.goal)}</p></div></div>
+      return `${head}<div class="pt-summary" style="--art:url('/assets/home/modes/${info.art}.webp')"><span class="pt-summary-art" aria-hidden="true"></span><div><small>MODE</small><b>${PARTY_MODES[view.mode]}</b><p>${escape(info.goal)}</p></div></div>
         <h4>LOCATION</h4>${this.where(view,false)}${facts?`<h4>RULES</h4><div class="pt-chips">${facts}</div>`:''}`;
     }
     const cards=PARTY_ORDER.filter(mode=>partyModeOpen(mode)).map(mode=>{const blocked=view.mode===mode?undefined:modeBlocked(mode,view.members.length),art=MODES[INFO[mode]].art;
-      return `<button type="button" class="pt-mode" role="radio" aria-checked="${view.mode===mode}" data-party-mode="${mode}" data-focus="mode-${mode}"${blocked||!editable?' disabled':''}><span class="pt-mode-art" style="background-image:${cssArt(art)}" aria-hidden="true"></span><b>${PARTY_MODES[mode]}</b><small>${blocked??SEATS[mode]}</small></button>`;}).join('');
+      return `<button type="button" class="pt-mode" role="radio" aria-checked="${view.mode===mode}" data-party-mode="${mode}" data-focus="mode-${mode}"${blocked||!editable?' disabled':''}><span class="pt-mode-art" style="background-image:url('/assets/home/modes/${art}.webp')" aria-hidden="true"></span><b>${PARTY_MODES[mode]}</b><small>${blocked??SEATS[mode]}</small></button>`;}).join('');
     return `${head}<div class="pt-modes" role="radiogroup" aria-label="Mode">${cards}</div><p class="pt-goal"><b>${PARTY_MODES[view.mode]}</b> ${escape(info.goal)}</p>
       <h4>LOCATION</h4>${this.where(view,editable)}${this.rules(view,editable)}`;
   }

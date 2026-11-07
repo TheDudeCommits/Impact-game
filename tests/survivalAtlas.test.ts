@@ -4,7 +4,6 @@ import {SKILL_TREE,lockOf,refundLock,validBuild,botPick,skillArt} from '../src/s
 import {runStats,offer} from '../src/survival/upgrades';
 import {nodeInfo} from '../src/survival/skillText';
 import {existsSync} from 'node:fs';
-import {cardArt} from '../src/ui/survival/cardArt';
 const clean:SurvivalGame[]=[];afterEach(()=>clean.splice(0).forEach(g=>g.dispose()));
 const base=['iron-fist','iron-fist','iron-fist','burning-blade','burning-blade','focus','focus'];
 function game(){const g=new SurvivalGame({fighter:'kenzo',seed:5,god:true});clean.push(g);for(let t=0;t<720&&g.phase!=='fight';t++){if(g.phase==='travel')g.arrive();else g.tick({seq:t,moveX:0,moveZ:0,yaw:0});}return g;}
@@ -25,8 +24,7 @@ describe('Ascension skill rules',()=>{
  });
  it('keeps augment cards out of blind drafts and reuses available artwork',()=>{
   for(let n=0;n<40;n++)for(const id of offer([],()=>n/40))expect(SKILL_TREE.find(x=>x.id===id)?.requires).toBeUndefined();
-  // (A picture held back from this build, cardArt.ts CARDS_HELD: the card shows its kanji and asks for no file.)
-  for(const node of SKILL_TREE)expect(existsSync(`public/assets/survival/cards/${skillArt(node.id)}.webp`),node.id).toBe(!!cardArt(skillArt(node.id)));
+  for(const node of SKILL_TREE)expect(existsSync(`public/assets/survival/cards/${skillArt(node.id)}.webp`),node.id).toBe(true);
  });
  it('validates refunds inside the authority, preserves total points and cannot farm health or refresh consumables',()=>{
   const g=game(),h=g.heroes.get(PLAYER_ID)!;h.points=30;g.choose('tree:open');g.choose('tree:tough-body');

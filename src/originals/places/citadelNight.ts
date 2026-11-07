@@ -104,42 +104,8 @@ function feudBanner() {
 const MOON = { bearing: Math.PI / 3, distance: 320, elevation: 7, radius: 16 };
 function brokenMoon(c: DressContext) {
   const root = c.root;
-  // The sky: the painting recoloured blood red and black by its own light, its small moon painted out.
-  const sky = root.getObjectByName('Citadel moon') as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial> | undefined;
-  const image = sky?.material.map?.image as (CanvasImageSource & { width: number; height: number }) | undefined;
-  if (sky && image?.width) {
-    const w = image.width, h = image.height, canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
-    const g = canvas.getContext('2d')!;
-    g.drawImage(image, 0, 0);
-    // The old moon (u .735, v .21 of the painting, 2.7% of its width across; 38 degrees up in the east as the sky is turned):
-    // it and its glow dimmed to the sky round it (each pixel no brighter than the ring of sky past the glow), so no second
-    // moon shows.
-    const mx = w * .7357, my = h * .2097, mr = w * .036, x0 = Math.max(0, Math.round(mx - mr * 3.4)), y0 = Math.max(0, Math.round(my - mr * 3.4));
-    const bw = Math.min(w - x0, Math.round(mr * 6.8)), bh = Math.min(h - y0, Math.round(mr * 6.8));
-    const block = g.getImageData(x0, y0, bw, bh), q = block.data;
-    let rr = 0, gg = 0, bb = 0, n = 0;
-    for (let i = 0; i < q.length; i += 4) { const k = i / 4, d = Math.hypot(x0 + k % bw - mx, y0 + Math.floor(k / bw) - my); if (d > mr * 2.6 && d < mr * 3.4) { rr += q[i]; gg += q[i + 1]; bb += q[i + 2]; n++; } }
-    const cap = [rr / n * .9, gg / n * .9, bb / n * .9];
-    for (let i = 0; i < q.length; i += 4) {
-      const k = i / 4, d = Math.hypot(x0 + k % bw - mx, y0 + Math.floor(k / bw) - my), t = Math.min(1, Math.max(0, (mr * 2.8 - d) / (mr * 1.2)));
-      if (t > 0) for (let ch = 0; ch < 3; ch++) q[i + ch] = q[i + ch] * (1 - t) + Math.min(q[i + ch], cap[ch]) * t;
-    }
-    g.putImageData(block, x0, y0);
-    // Blood red and black: each pixel's lightness through a ramp, black-maroon in the dark, crimson in the lit cloud.
-    const data = g.getImageData(0, 0, w, h), p = data.data;
-    const ramp = [[0, 6, 2, 6], [.22, 40, 8, 18], [.45, 110, 20, 34], [.7, 196, 52, 58], [1, 255, 176, 168]] as const;
-    for (let i = 0; i < p.length; i += 4) {
-      const l = Math.min(1, (p[i] * .3 + p[i + 1] * .45 + p[i + 2] * .25) / 255 * 1.35);
-      let j = 1; while (j < ramp.length - 1 && ramp[j][0] < l) j++;
-      const [l0, r0, g0, b0] = ramp[j - 1], [l1, r1, g1, b1] = ramp[j], t = (l - l0) / (l1 - l0);
-      p[i] = r0 + (r1 - r0) * t; p[i + 1] = g0 + (g1 - g0) * t; p[i + 2] = b0 + (b1 - b0) * t;
-    }
-    g.putImageData(data, 0, 0);
-    const map = new THREE.CanvasTexture(canvas);
-    map.colorSpace = THREE.SRGBColorSpace;
-    sky.material.map = map; sky.material.needsUpdate = true;
-  }
+  // The sky is the night under the broken moon (public/assets/environment/sky/citadel-night.webp, loaded by
+  // src/render/objectives/BloodCitadel.ts), its crimson glow turned to the moon's bearing.
   // The moon: a halo and the wound's light bleeding out behind (additive), the disc before it.
   const { bearing, distance: d } = MOON, el = THREE.MathUtils.degToRad(MOON.elevation);
   const x = Math.sin(bearing) * d, z = -Math.cos(bearing) * d, y = 2 + Math.tan(el) * d, radius = d * Math.tan(THREE.MathUtils.degToRad(MOON.radius));

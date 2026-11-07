@@ -7,8 +7,8 @@
   "/assets/hud/busts/shirokane.webp": "a064cbe3c9c2",
   "/assets/hud/busts/shiden.webp": "a465a0bb1fa2",
   "/assets/hud/busts/koko.webp": "7133e48657ab",
-  "/assets/hud/busts/nigo.webp": "2203448662a9",
-  "/assets/hud/busts/nigo-form.webp": "990d7bc0f87e",
+  "/assets/hud/busts/nigo.webp": "052c2fbc3738",
+  "/assets/hud/busts/nigo-form.webp": "f352032f9026",
   "/assets/hud/busts/ward.webp": "ac8f9f3aa0ad",
   "/assets/hud/busts/oro.webp": "bb5e4e67402e",
   "/assets/hud/busts/gaunt.webp": "163f4e886b1b",
@@ -140,7 +140,7 @@
   "/assets/home/fighters/hikui.webp": "a213d17fed72",
   "/assets/home/portraits/hikui.webp": "e595174d40bb",
   "/assets/hud/busts/hikui.webp": "68b4c2c64688",
-  "/assets/home/fighters/nigo.webp": "8727ac227fec",
+  "/assets/home/fighters/nigo.webp": "855a19870f1c",
   "/assets/home/fighters/sekka.webp": "9ebd95d26fcc",
   "/assets/home/portraits/sekka.webp": "ac9d7abc3dcc",
   "/assets/hud/busts/sekka.webp": "d98d5d902cf9",
@@ -284,5 +284,6 @@
   "/assets/hud/busts/tobari-form.webp": "bd5e0370f3fb",
   "/assets/hud/busts/ouga-form.webp": "347dd8dfd484",
   "/assets/hud/busts/wuming-form.webp": "68ae7a37e615",
-  "/assets/hud/busts/svanhild-form.webp": "729cd6e892e5"
+  "/assets/hud/busts/svanhild-form.webp": "729cd6e892e5",
+  "/assets/home/portraits/nigo.webp": "c5640725fd7c"
 }

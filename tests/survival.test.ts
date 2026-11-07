@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { ArenaSimulation } from '../src/game/simulation';
 import { createRapierCollision } from '../src/game/rapierCollision';
 import { SurvivalGame, PLAYER_ID, HERO, RIFT, AFFIXES } from '../src/survival/SurvivalGame';
-import { cardArt } from '../src/ui/survival/cardArt';
 import { Autopilot } from '../src/survival/autopilot';
 import { ENEMIES, kitOf } from '../src/survival/enemies';
 import { UPGRADES, offer, runStats, upgrade } from '../src/survival/upgrades';
@@ -334,9 +333,7 @@ describe('arcade survival', () => {
 
   it('opens every place as a chapter: a panel on disk and a line for the first time and the next', () => {
     for (const place of LOCATIONS) {
-      // A panel held back from this build (cardArt.ts CARDS_HELD) shows the plain card and asks for no file.
-      const panel = cardArt(`chapter-${place.id}`);
-      expect(existsSync(`public/assets/survival/cards/chapter-${place.id}.webp`), place.id).toBe(!!panel);
+      expect(existsSync(`public/assets/survival/cards/chapter-${place.id}.webp`), place.id).toBe(true);
       expect(place.line.length).toBeGreaterThan(20); expect(place.again.length).toBeGreaterThan(20);
       expect(place.again).not.toBe(place.line);
     }

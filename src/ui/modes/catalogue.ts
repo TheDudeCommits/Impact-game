@@ -55,12 +55,7 @@ export interface ModeInfo {
   rulesVersion: number;
 }
 
-/** A picture and its focus, the fighter's own move card, or a plain panel in the mode's tint (no picture). */
-export type Panel = { src: string; at?: string } | { move: 'ultimate' | 'special' | 'awakening' } | { tint: string };
-/** Home-card pictures held back from this build: no file ships, so the card is a plain tinted panel and nothing is asked for. */
-export const MODE_ART_HELD: ReadonlySet<string> = new Set(['training', 'private', 'bad-blood']);
-/** A home card's picture, or undefined where it is held back. */
-export const modeArtUrl = (art: string): string | undefined => MODE_ART_HELD.has(art) ? undefined : `/assets/home/modes/${art}.webp`;
+export type Panel = { src: string; at?: string } | { move: 'ultimate' | 'special' | 'awakening' };
 const art = (id: string, at?: string): Panel => ({ src: `/assets/home/modes/${id}.webp`, at });
 const revive = RULES.heroReviveSeconds, villains = RULES.villainMultiplier;
 export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
@@ -119,7 +114,7 @@ export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
   training: {
     tagline: 'Learn your fighter.',
     id: 'training', name: 'TRAINING GROUND', art: 'training', rulesVersion: 2, kicker: 'NO STAKES',
-    panels: [{ move: 'special' }, { move: 'ultimate' }, { tint: '#1d3a4a' }],
+    panels: [{ move: 'special' }, art('training', '50% 30%'), { move: 'awakening' }],
     goal: 'Learn your fighter. No stakes.',
     win: 'Nothing to win: practise until it is second nature.',
     facts: { players: 'YOU + A DUMMY', length: 'NO CLOCK', lives: 'NO KNOCKOUTS' },
@@ -153,8 +148,8 @@ export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
   'last-stand': {
     tagline: 'Defend the gate, wave after wave.',
     id: 'last-stand', name: 'LAST STAND', art: 'last-stand', rulesVersion: 1,
-    kicker: LAST_STAND.kicker,
-    panels: [art('last-stand', '50% 30%'), { move: 'special' }, { src: '/assets/ui/objectives/defences.webp', at: '0% 50%' }],
+    cover: '/assets/ui/objectives/last-stand-deployment.webp', kicker: LAST_STAND.kicker,
+    panels: [art('last-stand', '50% 30%'), { src: '/assets/ui/objectives/last-stand-deployment.webp', at: '60% 70%' }, { src: '/assets/ui/objectives/defences.webp', at: '0% 50%' }],
     goal: LAST_STAND.goal,
     win: 'Hold as many waves as you can. The stand ends if the village falls or every defender is down.',
     facts: { players: '1–4 DEFENDERS', length: 'ENDLESS', lives: 'ALLIES REVIVE YOU' },
@@ -173,8 +168,8 @@ export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
   'bad-blood': {
     tagline: 'Heroes vs empowered Villains.',
     id: 'bad-blood', name: 'BAD BLOOD', art: 'bad-blood', rulesVersion: 1,
-    kicker: 'THE FALLEN CITADEL · TEAM ELIMINATION',
-    panels: [{ move: 'special' }, { tint: '#4a1d22' }, { move: 'ultimate' }],
+    cover: '/assets/ui/objectives/bad-blood-deployment.webp', kicker: 'THE FALLEN CITADEL · TEAM ELIMINATION',
+    panels: [{ src: '/assets/ui/objectives/bad-blood-deployment.webp', at: '70% 40%' }, art('bad-blood', '50% 30%'), { move: 'ultimate' }],
     goal: 'Three Heroes against three empowered Villains.',
     win: 'Knock out the whole other team.',
     facts: { players: '3 V 3', length: '~2–5 MIN', lives: 'HEROES RETURN ONCE' },

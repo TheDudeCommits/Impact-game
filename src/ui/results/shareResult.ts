@@ -2,7 +2,7 @@ import { FIGHTERS } from '../../config';
 import type { FighterId } from '../../game/types';
 import { RIFT_TEAM_NAMES, type RiftSeat, type RiftView } from '../../game/moba/model';
 import type { UiAction } from '../../input/gamepad';
-import { MODES, modeArtUrl, type ModeId } from '../modes/catalogue';
+import { MODES, type ModeId } from '../modes/catalogue';
 import { cardBlob, drawCard, type CardSpec } from '../survival/shareCard';
 import { canShareFile, copyText, shareFileWith } from '../../social/share';
 import { prefetchResultLink, resultLink } from './resultLink';
@@ -21,8 +21,8 @@ export interface ResultCard {
   art?: string;
 }
 const tidy = (s: string | null | undefined) => (s ?? '').replace(/\s+/g, ' ').trim();
-const ART: Partial<Record<string, string>> = Object.fromEntries(Object.values(MODES).map(m => [m.name, modeArtUrl(m.art)]));
-const modeArt = (name: string, mode?: ModeId) => (mode && MODES[mode] ? modeArtUrl(MODES[mode].art) : ART[name]);
+const ART: Partial<Record<string, string>> = Object.fromEntries(Object.values(MODES).map(m => [m.name, `/assets/home/modes/${m.art}.webp`]));
+const modeArt = (name: string, mode?: ModeId) => (mode && MODES[mode] ? `/assets/home/modes/${MODES[mode].art}.webp` : undefined) ?? ART[name];
 
 /** The result a results frame (ResultsFrame.ts) shows, read from it: whatever mode drew it, the slots are the same. */
 export function readResultCard(card: HTMLElement, mode?: ModeId): ResultCard | undefined {

@@ -17,7 +17,7 @@ import { preloadLoadingArt, type LoadingMode } from '../LoadingScreen';
 import { readInvite } from '../roomInvite';
 import { modeOpen } from '../../originals/launch';
 import { nearest, type Direction } from '../spatialFocus';
-import { MODES, VARIANT_ORDER, modeArtUrl, modeHere, type ModeId, type Panel, type VariantId } from './catalogue';
+import { MODES, VARIANT_ORDER, modeHere, type ModeId, type Panel, type VariantId } from './catalogue';
 import { defenceBasics } from './defence';
 import { tutorialState } from '../../tutorial/guidedFight';
 import { explainerSeen, markExplainerSeen, modePrefs, namedPlaceFor, saveModePrefs } from './prefs';
@@ -189,7 +189,7 @@ export class ModeSheet {
   private draw() {
     const info = this.info, v = info.variants[this.variant]!, fighter = this.fighter(), seen = explainerSeen(this.mode);
     const go = goLabel(this.mode, v.go, fighterCaption(fighter), this.locked(fighter), this.joining ? this.code : undefined);
-    const art = info.cover ?? modeArtUrl(info.art);
+    const art = info.cover ?? `/assets/home/modes/${info.art}.webp`;
     const facts = [info.facts.players, info.facts.length, info.facts.lives].map(f => `<span>${escape(f)}</span>`).join('');
     const howTo = this.panels
       ? `<div class="ms-panels">${info.howTo.map((line, i) => `<figure class="ms-panel"><span class="ms-pic" style="${this.panelArt(info.panels[i], fighter)}"><b>${i + 1}</b></span><figcaption class="ux-keys">${promptText(line)}</figcaption></figure>`).join('')}</div>`
@@ -200,7 +200,7 @@ export class ModeSheet {
     this.dialog.dataset.mode = this.mode; this.dialog.dataset.variant = this.variant;
     const prefs = this.prefs(), shown = this.joining ? undefined : placeShown(this.mode, this.variant, prefs.stage, this.field());
     const home = HOME_PLACE[this.mode], place = shown?.id ?? (shown ? undefined : home);
-    const stage = place ? `url('${placePicture(place)}'),url('${placePicture(place, true)}')` : art ? `url('${art}')` : 'none';
+    const stage = place ? `url('${placePicture(place)}'),url('${placePicture(place, true)}')` : `url('${art}')`;
     this.dialog.classList.toggle('ms-on-art', !place);
     const shots = pictures(fighter, false), couch = this.variant === 'couch';
     if (couch && !this.seats) { this.seats = [...plannedSeats(!!prefs.couchSwap)]; this.padsKey = this.presence.present(seatablePads(this.pads()), this.seats, performance.now()).join(','); }
@@ -253,7 +253,6 @@ export class ModeSheet {
     }
   }
   private panelArt(panel: Panel, fighter: FighterId) {
-    if ('tint' in panel) return `background-color:${panel.tint}`;
     if ('move' in panel) return `background-image:url('${moveSheetUrl(moveSheetOf(fighter, false))}');background-size:500% auto;background-position:${MOVE_X[panel.move]} center;background-color:#0d1825`;
     return `background-image:url('${panel.src}');background-position:${panel.at ?? 'center'}`;
   }

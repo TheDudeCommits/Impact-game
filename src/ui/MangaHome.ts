@@ -10,7 +10,7 @@ import { homeRosterPages, homeAnimeOptions, homeWipStamp, homeWing, type HomeRos
 import { NO_UPCOMING as upcomingArt } from '../originals/launch';
 import { applyOriginalHomeArt } from '../originals/apply';
 import { gateHomeAssets, gateHomeRail, gateHomeRoster, LAUNCH } from '../originals/launch';
-import { MODES, MODE_OF_HOME, VARIANT_ORDER, modeArtUrl, modeHere } from './modes/catalogue';
+import { MODES, MODE_OF_HOME, VARIANT_ORDER, modeHere } from './modes/catalogue';
 // The pack goes on first (it is fetched and applied behind a top-level await): HOME_ROSTER below is read when this loads.
 import '../engine/packs/boot';
 import { activePackRoster, packArt } from '../engine/packs/active';
@@ -53,14 +53,15 @@ export const HOME_ASSETS = [
   ...upcomingArt.fighters.flatMap(fighter=>Object.values(fighter.assets)),
   '/assets/home/upcoming/index.html', '/assets/home/upcoming/manifest.json',
   '/assets/home/upcoming/README.md', '/assets/home/upcoming/production.json',
-  ...HOME_MODES.map(m=>modeArtUrl(m.id)).filter((src):src is string=>!!src),
+  ...HOME_MODES.map(m=>`/assets/home/modes/${m.id}.webp`),
   ...HOME_ROSTER.map(fighterArt),
   ...HOME_ROSTER.filter(hasPoseSheet).map(spriteArt), ...HOME_FIGHTERS.map(posePoster), '/assets/home/sprites/manifest.json',
   ...spriteManifest.fighters.filter(fighter=>HOME_ROSTER.includes(fighter.id as FighterId)).flatMap(fighter=>
     ('runtimePages' in fighter ? fighter.runtimePages as {file:string}[] : []).map(page=>`/assets/home/sprites/${page.file}`)),
   ...HOME_ROSTER.filter(id=>!HOME_FIGHTERS.includes(id)).flatMap(id=>[portraitArt(id),posePoster(id)]),
   '/assets/home/manga-faces.webp',
-  '/assets/home/manifest.json',
+  '/assets/home/fonts/electroharmonix.otf',
+  '/assets/home/fonts/LICENSE.txt', '/assets/home/manifest.json',
 ];
 
 // Exact head-only portraits from the approved version, excluding baked labels/frames. They are windows on the approved 1586x992
@@ -101,9 +102,6 @@ function volumeWings(page:HomeRosterPage, selected:FighterId, deferred=false) {
   return wing(page.left,'left')+wing(page.right,'right');
 }
 
-/** A home card's picture, or its plain tinted panel where the picture is held back (catalogue.ts MODE_ART_HELD). */
-const modeCardArt=(art:string)=>{const src=modeArtUrl(art);return src?`<span class="home-mode-art"><img src="${src}" alt="" draggable="false" fetchpriority="high"></span>`:`<span class="home-mode-art home-mode-art-plain" data-art="${art}"></span>`;};
-
 /** Artwork has no UI baked into it. Every frame, caption and control is live DOM. */
 export function mangaHome(selected:FighterId, botPlayers:number) {
   const volume=homeVolumeOf(selected), shown=volumeWindow(volume,HOME_VOLUMES.length);
@@ -112,7 +110,7 @@ export function mangaHome(selected:FighterId, botPlayers:number) {
       <div class="home-mode-rail"><div class="home-modes" role="group" aria-label="Choose game mode">
         ${HOME_MODES.filter(mode=>HOME_RAIL.includes(mode.id)).map((mode,i)=>`<div class="home-mode-panel" data-panel="${mode.id}" style="--tilt:${i===0?-2:i===1?1:i===2?-1.5:i===3?-2:0}deg">
           <button type="button" class="home-mode" data-mode="${mode.id}" aria-pressed="${mode.id==='bots'}" aria-label="${mode.label}">
-            ${modeCardArt(MODES[MODE_OF_HOME[mode.id].mode].art)}
+            <span class="home-mode-art"><img src="/assets/home/modes/${MODES[MODE_OF_HOME[mode.id].mode].art}.webp" alt="" draggable="false" fetchpriority="high"></span>
             <span class="home-mode-label">${mode.label.toUpperCase()}</span>
           </button>
           ${variantWords(mode.id)}

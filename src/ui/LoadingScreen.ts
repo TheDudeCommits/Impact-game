@@ -10,7 +10,6 @@ import { HOME_FIGHTERS, fighterArt, mangaPortrait } from './MangaHome';
 import { packArt } from '../engine/packs/active';
 import { guardTips } from './guardGuide';
 import { currentDevice, promptKey, touchKey } from './prompts';
-import { modeArtUrl } from './modes/catalogue';
 
 
 /** `party`: a party's Battle Royale (loadingMode.ts) - its own page, never PRIVATE ROOM. */
@@ -72,14 +71,14 @@ function tipsFor(fighter: FighterId, mode: LoadingMode) {
 }
 
 /** The mode's panel: the royale's own for its bots, a friends' room's for a party (there is no party picture). */
-const artFor = (mode: LoadingMode) => modeArtUrl(mode === 'bots' ? 'players' : mode === 'party' ? 'private' : mode);
+const artFor = (mode: LoadingMode) => `/assets/home/modes/${mode === 'bots' ? 'players' : mode === 'party' ? 'private' : mode}.webp`;
 const heroFor = (fighter: FighterId) => packArt(fighter, 'portrait') ?? ((HOME_FIGHTERS as readonly FighterId[]).includes(fighter) ? fighterArt(fighter) : mediaArt(`/assets/home/portraits/${fighter}.webp`));
 const warm = new Map<string, HTMLImageElement>();
 /** Round 5 corrections: the loading screen's two pictures fetched ahead (the mode sheet calls this as a way is chosen),
  *  so the page never comes in with a blank panel. */
 export function preloadLoadingArt(mode: LoadingMode, fighter: FighterId) {
   for (const src of [artFor(mode), heroFor(fighter)]) {
-    if (!src || warm.has(src)) continue;
+    if (warm.has(src)) continue;
     const img = new Image(); img.decoding = 'async'; img.src = src; warm.set(src, img);
   }
 }
@@ -144,10 +143,8 @@ export class LoadingScreen {
     $('.ml-mode').textContent = title;
     $('.ml-stage').textContent = '';
     // Each picture shows once it has arrived (preloadLoadingArt fetched it ahead), never as a blank frame.
-    const picture = (img: HTMLImageElement, src: string | undefined) => {
+    const picture = (img: HTMLImageElement, src: string) => {
       img.classList.remove('ml-ready'); img.onload = () => img.classList.add('ml-ready');
-      // A picture held back from this build: the panel stays its plain colour.
-      if (!src) { img.removeAttribute('src'); return; }
       img.src = src; if (img.complete && img.naturalWidth) img.classList.add('ml-ready');
     };
     picture($<HTMLImageElement>('.ml-panel-art'), artFor(mode));

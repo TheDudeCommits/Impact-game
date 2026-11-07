@@ -68,7 +68,7 @@ export class ObjectiveUI {
   private drawSetup(){
     const stand=this.kind==='last-stand';this.setup.dataset.mode=this.kind;
     this.setup.innerHTML=`<button class="objective-close" data-close aria-label="Close">×</button>
-      <div class="objective-cover">
+      <div class="objective-cover" style="background-image:url('/assets/ui/objectives/${this.kind}-deployment.webp')">
         <div class="objective-cover-copy"><small>${stand?LAST_STAND.kicker:'THE FALLEN CITADEL · TEAM ELIMINATION'}</small><h2>${stand?'LAST<br>STAND':'BAD<br>BLOOD'}</h2><p>${stand?'Every gate has a last defender.':'Their power. Your fighting spirit.'}</p></div>
         <div class="objective-select"><div class="objective-select-heading"><span>YOUR FIGHTER</span><b data-selected-name>${escape(FIGHTERS[this.fighter].name)}</b></div>
         ${!stand?`<nav class="objective-roles" aria-label="Choose faction"><button data-faction="heroes" aria-pressed="${this.faction==='heroes'}">HEROES <span>${RULES.heroReviveSeconds}s RETURN</span></button><button data-faction="villains" aria-pressed="${this.faction==='villains'}">VILLAINS <span>${RULES.villainMultiplier}× POWER</span></button></nav>`:''}

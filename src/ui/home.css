@@ -1,4 +1,4 @@
-
+@font-face{font-family:Electroharmonix;src:url('/assets/home/fonts/electroharmonix.otf') format('opentype');font-weight:400;font-style:normal;font-display:swap}
 
 /* Independent ink panels, white gutters, and real borders. Selection changes
    the frame itself, so it follows the panel's geometry at every screen size. */
@@ -14,10 +14,6 @@
 .home-mode-panel:has(.home-mode[aria-pressed=true]){--frame:5px;background:var(--home-red);padding:var(--frame)}
 .home-mode{display:flex;flex-direction:column;align-items:stretch;width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:#fff;overflow:hidden}
 .home-mode-art{flex:1;min-height:0;display:block;overflow:hidden}
-/* A card whose picture is held back from this build (catalogue.ts MODE_ART_HELD): a plain panel in the mode's tint. */
-.home-mode-art-plain{background:linear-gradient(160deg,#24414f,#0f1c24)}
-.home-mode-art-plain[data-art=bad-blood]{background:linear-gradient(160deg,#5a2228,#1f0b0e)}
-.home-mode-art-plain[data-art=private]{background:linear-gradient(160deg,#3d3358,#151122)}
 .home-mode-art img{display:block;width:110%;max-width:none;height:100%;margin-left:-5%;object-fit:cover;object-position:center;transform:skewX(calc(-1 * var(--tilt)));pointer-events:none;user-select:none}
 .home-mode-panel[data-panel=players] .home-mode-art img,.home-mode-panel[data-panel=arcade] .home-mode-art img{object-position:center top}
 .home-mode-label{display:flex;align-items:center;justify-content:center;flex:none;height:clamp(46px,5.8dvh,68px);background:white;border-top:2px solid #111;font-size:clamp(12px,1.18vw,23px);font-weight:800;line-height:1.1;white-space:nowrap;transform:none}

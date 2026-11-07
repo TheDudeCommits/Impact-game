@@ -10,7 +10,6 @@ import type { FighterId } from '../../game/types';
 import { FIGHTERS } from '../../config';
 import { shownFighters } from '../../originals/launch';
 import { BOSSES, RANKS } from '../../survival/bosses';
-import { cardImg } from './cardArt';
 import { ENEMIES } from '../../survival/enemies';
 import { AURAS, CHALLENGES, MAX_MASTERY, UNLOCKS, aurasAt, auraOf, masteryOf, rewardText, startPointsAt, titleAt, type AuraId } from '../../survival/progress';
 import { buyNode, loadProgress, wearAura } from '../../survival/progressStore';
@@ -114,7 +113,7 @@ export class RiftProfile {
       const action = owned ? '<span class="owned">UNLOCKED · IN YOUR TREE</span>'
         : short > 0 ? `<button type="button" disabled>◆ ${cost} · ${short} MORE</button>`
         : `<button type="button" class="buy" data-act="buy" data-node="${node}">UNLOCK · ◆ ${cost}</button>`;
-      return `<article class="sv-prof-unlock${owned ? ' owned' : ''}"><span class="sv-prof-node">${cardImg(node, 'alt="" onerror="this.remove()"')}<b>${def.kanji}</b></span>`
+      return `<article class="sv-prof-unlock${owned ? ' owned' : ''}"><span class="sv-prof-node"><img alt="" src="/assets/survival/cards/${node}.webp" onerror="this.remove()"><b>${def.kanji}</b></span>`
         + `<div><small>${branch.name} · ${branch.kanji}</small><strong>${esc(def.name.toUpperCase())}</strong><p>${esc(rankText(node, 1))}</p>${action}</div></article>`;
     }).join('');
   }

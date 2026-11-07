@@ -13,7 +13,7 @@ export interface ShareCardInput {
   result: RunResult; fighter: FighterId;
   title: string; sub: string; epitaph: string;
   /** The panel over it: the place it fell (drained red) or the seal's. */
-  art?: string; fallen: boolean;
+  art: string; fallen: boolean;
   /** The fighter's mastery, said small in the corner. */
   mastery?: string;
 }
