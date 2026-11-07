@@ -23,6 +23,7 @@ import { trimAac } from './aacTrim';
 import { wakeOnReturn } from './wake';
 import { byNeed, fighterCues } from './roomCues';
 import { GIANT, STEPS, surfaceAt, weightGain, weightNow, weightRate } from './floors';
+import { standIn, survivalStandIn } from './standIns';
 
 /** The power-up pass (10 October 2026) held one loop on a fighter, the ki flame's roar: through every entry, and after it
  *  under whoever the server's table marks `flames`. Launch day 5 (12 October): the loop is the fighter's own power's
@@ -251,8 +252,9 @@ export class CombatAudio {
     if (loading) return loading;
     loading = (async () => {
       try {
-        const file = AUDIO_CUES[cue], served = await this.files();
-        if (served && !served.has(file)) return;
+        let file: string = AUDIO_CUES[cue]; const served = await this.files();
+        // A held-back sound (README.md) plays its CC0 stand-in where this site serves one (standIns.ts).
+        if (served && !served.has(file)) { if (!served.has(standIn(file))) return; file = standIn(file); }
         const frames = this.wavOnly ? undefined : (await this.bank())?.[file];
         // The AAC copy where the deploy made one, held to its WAV's length (Firefox keeps the encoder's delay and padding,
         // which trimAac takes off: the same sound, to the sample); else, or then, the WAV.
@@ -739,7 +741,7 @@ export class CombatAudio {
       const ctx = this.context;
       if (!ctx || this.dead) { this.sampleLoads.delete(url); return; }
       try {
-        const buffer = await ctx.decodeAudioData(await this.download(url, { signal: this.abort.signal }, url));
+        const buffer = await ctx.decodeAudioData(await this.download(survivalStandIn(url), { signal: this.abort.signal }, url));
         if (!this.dead) this.samples.set(url, buffer);
       } catch (error) { if (!this.dead) console.warn(error); }
     })();

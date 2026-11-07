@@ -5,6 +5,7 @@ import { attackShout, linesOf, moveLine, ownLine, signatureLine, voicedOnCast } 
 import { BOSSES, loopOf, rankFor } from '../../survival/bosses';
 import { LOCATIONS, FINAL_ROUND } from '../../survival/locations';
 import { asleep } from '../wake';
+import { survivalStandIn } from '../standIns';
 
 const ANNOUNCE = { run: 5, boss: 5, kill: 4, down: 5, finish: 4, round: 3, event: 3, style: 2, chain: 2, level: 1, pickup: 1, finisher: 6 } as const;
 const EVENT_LINE: Record<string, string> = { 'HORDE SURGE': 'event-surge', 'ELITE HUNT': 'event-elites', 'BLOOD ECLIPSE': 'event-eclipse', SIEGE: 'event-siege', 'RIFT STORM': 'event-storm', 'TREASURE HOARDER': 'event-hoarder' };
@@ -763,7 +764,7 @@ export class RiftAudio {
     let buffer = this.recorded.get(name);
     if (!buffer) {
       const ctx = this.ctx!;
-      buffer = fetch(`/assets/audio/survival/${name}.m4a`).then(r => r.ok ? r.arrayBuffer() : Promise.reject(new Error(name))).then(bytes => ctx.decodeAudioData(bytes)).catch(() => undefined);
+      buffer = fetch(survivalStandIn(`/assets/audio/survival/${name}.m4a`)).then(r => r.ok ? r.arrayBuffer() : Promise.reject(new Error(name))).then(bytes => ctx.decodeAudioData(bytes)).catch(() => undefined);
       this.recorded.set(name, buffer);
     }
     return buffer;

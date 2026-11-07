@@ -45,8 +45,15 @@ If you believe something here is yours and should not be, write to Hello@Dude.wo
 | Male Grunt/Yelling sounds | OpenGameArt | https://opengameart.org/content/male-gruntyelling-sounds | CC0 1.0 | `public/assets/audio/survival/` |
 | Impact Sounds, RPG Audio | Kenney | https://kenney.nl/assets/impact-sounds | CC0 1.0 | `public/assets/audio/survival/` |
 | Wind in the reed (Funkelfang); HyenaLaugh2, Hyena Moan 2 (sounagix); Hyena-like Creature Noise | Freesound users | https://freesound.org | CC0 1.0 | `public/assets/audio/survival/` (named in its manifest) |
+| Impact Sounds 1.0, Interface Sounds 1.0, Sci-Fi Sounds 1.0 | Kenney | https://kenney.nl/assets/impact-sounds, https://kenney.nl/assets/interface-sounds, https://kenney.nl/assets/sci-fi-sounds | CC0 1.0 | `public/assets/audio/v2/cc0/` (cut, layered, varispeeded and levelled into the stand-ins) |
+| bodyfall gym mat light impact pad.flac | kyles | https://freesound.org/people/kyles/sounds/637241/ | CC0 1.0 | `public/assets/audio/v2/cc0/` (the bodies falling and landing) |
+| Unsheathing sword, slow, dramatic.wav | mht23SD | https://freesound.org/people/mht23SD/sounds/707339/ | CC0 1.0 | `public/assets/audio/v2/cc0/` (the blades drawn) |
 
 Each file in `public/assets/audio/survival/manifest.json` names its own source and licence.
+
+The sound effects held back from this repository play CC0 stand-ins in `public/assets/audio/v2/cc0/`, made for this
+repository from the CC0 recordings above and from sound made in code; `public/assets/audio/v2/cc0/manifest.json` names
+each stand-in's sources (with their hashes) and the file it stands in for.
 
 ## Music
 

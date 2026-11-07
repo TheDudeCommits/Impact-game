@@ -18,6 +18,7 @@ import { WITHHELD_GRUNT_FILES } from './survival';
 import { ORIGINALS } from './roster';
 import { readTakePackJson, takePackUrl } from '../engine/client/takePacks';
 import { BUILT_PLACES, WITHHELD_SKIES, RETIRED_FILES, RETIRED_KIT, STAGE_SKIES, stageSky } from './stages';
+import { standIn } from '../audio/standIns';
 
 /** Every /assets/ path a value names, as a package path (no leading slash), whatever field holds it. */
 function pathsIn(value: unknown, into = new Set<string>()) {
@@ -34,7 +35,7 @@ function fighterFiles(id: FighterId) {
   for (const file of [`assets/home/fighters/${id}.webp`, `assets/home/portraits/${id}.webp`, `assets/home/sprites/${id}.webp`,
     `assets/home/sprites/${id}-poster.webp`, `assets/ui/moves/${id}.webp`, `assets/audio/home/${id}.m4a`]) files.add(file);
   for (let page = 1; page <= 8; page++) files.add(`assets/home/sprites/${id}-p${page}.webp`);
-  for (const [cue, file] of Object.entries(AUDIO_CUES as Record<string, string>)) if (cueFighter(cue) === id) files.add(`assets/audio/v2/${file}`);
+  for (const [cue, file] of Object.entries(AUDIO_CUES as Record<string, string>)) if (cueFighter(cue) === id) for (const each of [file, standIn(file)]) files.add(`assets/audio/v2/${each}`);
   return files;
 }
 
