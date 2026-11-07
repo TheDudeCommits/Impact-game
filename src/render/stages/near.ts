@@ -14,9 +14,6 @@ import type { DressContext } from './dressing';
  * builds that pocket from, every one a single draw however many copies it
  * holds:
  *
- *  - wear on the hard floors near the fight (`wearDecals`): cracks, an
- *    impact's crater, soot and old stains, scorch, dust, stone chips,
- *    splinters and drag marks, off one atlas (scripts/framing/wear_decals.py);
  *  - lines strung overhead (`ropes`) and what hangs off them
  *    (`hangingCloth`): washing, bunting, signal flags, paper streamers,
  *    stirring in the wind (`flutter`);
@@ -44,97 +41,6 @@ export function thin<T>(list: readonly T[], share: number): T[] {
   const keep = Math.round(list.length * Math.max(0, share));
   if (!keep) return [];
   return Array.from({ length: keep }, (_, i) => list[Math.floor((i + .5) * list.length / keep)]);
-}
-
-/** The atlas's cells (4 x 4, read left to right from the top). */
-export const WEAR = {
-  crack: [0, 1, 2, 3], crater: [4, 5], scorch: [6], stain: [7, 8, 9], dust: [10, 11], chips: [12, 13], splinters: [14], scuff: [15],
-} as const;
-export type WearKind = keyof typeof WEAR;
-
-export interface Decal {
-  x: number; z: number;
-  /** The floor's height here (the decal lies a hair above it). */
-  y: number;
-  /** Metres across. */
-  size: number;
-  rot: number;
-  cell: number;
-  /** Multiplied into the mark's own colour (sRGB hex). */
-  tint?: number;
-  opacity?: number;
-}
-
-/** Marks scattered over a floor: `count` of each kind (scaled by the quality
- *  share), placed off `rng` where `where` accepts them, `size` metres across
- *  (a range), tinted per kind. */
-export function scatterWear(rng: () => number, o: {
-  kinds: Partial<Record<WearKind, { count: number; size: [number, number]; tint?: number | readonly number[]; opacity?: [number, number] }>>;
-  /** A candidate spot: x and z, or undefined to stop trying. */
-  spot: () => [number, number];
-  /** The floor's height at a spot, or undefined where there is no floor to mark. */
-  floor: (x: number, z: number) => number | undefined;
-  share?: number;
-}): Decal[] {
-  const out: Decal[] = [];
-  const share = o.share ?? nearShare();
-  for (const [kind, k] of Object.entries(o.kinds) as [WearKind, NonNullable<(typeof o.kinds)[WearKind]>][]) {
-    const want = Math.round(k.count * share);
-    for (let n = 0, tries = 0; n < want && tries < want * 8; tries++) {
-      const [x, z] = o.spot();
-      const y = o.floor(x, z);
-      if (y === undefined) continue;
-      const cells = WEAR[kind];
-      const tints = k.tint === undefined ? undefined : typeof k.tint === 'number' ? [k.tint] : k.tint;
-      const [o0, o1] = k.opacity ?? [.75, 1];
-      out.push({ x, z, y, size: k.size[0] + rng() * (k.size[1] - k.size[0]), rot: rng() * Math.PI * 2, cell: cells[Math.floor(rng() * cells.length)],
-        tint: tints?.[Math.floor(rng() * tints.length)], opacity: o0 + rng() * (o1 - o0) });
-      n++;
-    }
-  }
-  return out;
-}
-
-/** The decal sheet, when this checkout carries it. */
-const WEAR_DECALS: string | null = null;
-/** The wear decals, one draw: flat cards a hair over the floor, blended over
- *  it in the stage's look (the floor's own grade), taking the fighters'
- *  shadows. */
-export async function wearDecals(c: DressContext, decals: readonly Decal[], name = 'wear') {
-  // (The decal sheet is held back from the public repository: README.md. No wear is drawn without it.)
-  if (!decals.length || !WEAR_DECALS) return undefined;
-  const map = await c.texture(WEAR_DECALS, { anisotropy: 8 });
-  map.wrapS = map.wrapT = THREE.ClampToEdgeWrapping;
-  const material = lookStageMaterial(new THREE.MeshStandardMaterial({
-    name: 'Wear decals', map, transparent: true, depthWrite: false, roughness: 1, metalness: 0,
-    polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4,
-  }), c.stage, name) as THREE.MeshStandardMaterial;
-  addShaderPatch(material, 'near-decal-v1', shader => {
-    shader.vertexShader = 'attribute vec3 aDecal;\nvarying float vDecalAlpha;\n' + shader.vertexShader.replace('#include <uv_vertex>', `#include <uv_vertex>
-      #ifdef USE_MAP
-        vMapUv = ( vMapUv + aDecal.xy ) * .25;
-      #endif
-      vDecalAlpha = aDecal.z;`);
-    shader.fragmentShader = 'varying float vDecalAlpha;\n' + shader.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
-      diffuseColor.a *= vDecalAlpha;`);
-  });
-  const geometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
-  const cells = new Float32Array(decals.length * 3);
-  decals.forEach((d, i) => cells.set([d.cell % 4, 3 - Math.floor(d.cell / 4), d.opacity ?? 1], i * 3));
-  geometry.setAttribute('aDecal', new THREE.InstancedBufferAttribute(cells, 3));
-  const mesh = new THREE.InstancedMesh(geometry, material, decals.length);
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), s = new THREE.Vector3(), p = new THREE.Vector3(), colour = new THREE.Color();
-  decals.forEach((d, i) => {
-    mesh.setMatrixAt(i, m.compose(p.set(d.x, d.y + .012, d.z), q.setFromAxisAngle(up, d.rot), s.set(d.size, 1, d.size)));
-    mesh.setColorAt(i, colour.setHex(d.tint ?? 0xffffff));
-  });
-  mesh.name = `${c.stage}:${name}`;
-  mesh.receiveShadow = true; mesh.castShadow = false;
-  // Before the other blended things (mist, motes), which may lie over it.
-  mesh.renderOrder = -1;
-  mesh.computeBoundingBox(); mesh.computeBoundingSphere();
-  c.root.add(mesh);
-  return mesh;
 }
 
 /** A line strung between two points, sagging `sag` metres at its middle. */

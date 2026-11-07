@@ -5,7 +5,7 @@ import { NavGrid } from '../src/game/botNav';
 import { PLAYER_RADIUS } from '../src/game/moves';
 import { STAGE_PROPS, propCollider } from '../src/game/stageProps';
 import { STAGES, type StageId } from '../src/game/stages';
-import { linePoint, nearShare, scatterWear, thin, WEAR } from '../src/render/stages/near';
+import { linePoint, nearShare, thin } from '../src/render/stages/near';
 import { TOURNAMENT_MASTS } from '../src/render/ground/places/sunfallArena';
 
 /**
@@ -96,17 +96,5 @@ describe('the near scenery thins with the quality setting', () => {
     expect(Math.min(...half)).toBeLessThan(5);
     expect(Math.max(...half)).toBeGreaterThan(95);
     expect(thin(list, 0)).toEqual([]);
-  });
-
-  it('scatters the wear by kind, scaled by the share, only where there is floor', () => {
-    let s = 1;
-    const rng = () => (s = (s * 16807) % 2147483647) / 2147483647;
-    const kinds = { crack: { count: 20, size: [2, 4] as [number, number] }, dust: { count: 10, size: [3, 6] as [number, number] } };
-    const all = scatterWear(rng, { kinds, share: 1, spot: () => [(rng() - .5) * 80, (rng() - .5) * 80], floor: (x, z) => Math.abs(x) < 30 && Math.abs(z) < 30 ? 0 : undefined });
-    expect(all).toHaveLength(30);
-    for (const d of all) expect(Math.abs(d.x) < 30 && Math.abs(d.z) < 30).toBe(true);
-    expect(all.filter(d => (WEAR.crack as readonly number[]).includes(d.cell))).toHaveLength(20);
-    const low = scatterWear(rng, { kinds, share: .25, spot: () => [0, 0], floor: () => 0 });
-    expect(low).toHaveLength(8);
   });
 });
