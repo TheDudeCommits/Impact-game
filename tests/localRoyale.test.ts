@@ -18,10 +18,10 @@ describe('offline bot royale',()=>{
   it('plays a field it is given at the place it is given, and drafts its own when the field is not whole',async()=>{
     const local=new LocalRoyale();try {
       const field=['gummy','nigo','ouga','asahi','kuon'] as const;
-      await local.connect('konta','You',6,'kuroyuki-hall',[...field]);
-      expect(local.snapshot!.stage).toBe('kuroyuki-hall');
+      await local.connect('konta','You',6,'thornwood-ward',[...field]);
+      expect(local.snapshot!.stage).toBe('thornwood-ward');
       expect(local.snapshot!.players.filter(p=>p.isBot).map(p=>p.fighter)).toEqual([...field]);
-      await local.connect('konta','You',6,'kuroyuki-hall',['gummy','nigo']);
+      await local.connect('konta','You',6,'thornwood-ward',['gummy','nigo']);
       const bots=local.snapshot!.players.filter(p=>p.isBot).map(p=>p.fighter);
       expect(bots).toHaveLength(5);expect(bots).not.toContain('konta');
     } finally {await local.leave();}

@@ -16,7 +16,7 @@ import { TOURNAMENT_MASTS } from '../src/render/ground/places/sunfallArena';
  * boxes to the seats and the routes the places had: no seat moves, every
  * seat reaches the middle, and what hangs overhead stays over a jump.
  */
-const PLACES: StageId[] = ['mirror-mere'];
+const PLACES: StageId[] = ['hollowmere-quarry', 'mirror-mere'];
 /** Seats safeSpawn already slid off a landmark before stream E. */
 const MOVED_BEFORE: Partial<Record<StageId, number>> = { 'mirror-mere': 1 };
 
@@ -71,6 +71,10 @@ describe('stream E\'s near scenery keeps the places playable', () => {
 });
 
 describe('the narrow places keep their whole floor', () => {
+  it('the Wreckers\' Causeway: nothing new is solid', () => {
+    expect((STAGE_PROPS['wreckers-causeway'] ?? []).some(p => p.draw)).toBe(false);
+  });
+
   it('the ring: the field\'s masts stand off it, and it has no boxes', () => {
     const { halfX, halfZ } = STAGES['sunfall-arena'];
     for (const [x, z] of TOURNAMENT_MASTS) expect(Math.hypot(Math.max(0, Math.abs(x) - halfX), Math.max(0, Math.abs(z) - halfZ)), `mast (${x}, ${z})`).toBeGreaterThan(4);

@@ -10,18 +10,26 @@ export type Surface = 'stone' | 'wood' | 'sand' | 'grass' | 'water' | 'snow' | '
 export const FLOORS: Readonly<Record<StageId, Surface>> = {
   // ---- the main game's places (render/ground/index.ts GROUND_DECISIONS)
   harbor: 'stone',                      // cobbles and quays
+  'wreckers-causeway': 'stone',
   'ash-colosseum': 'grass',              // a grass field inside the stadium wall
   'sunfall-arena': 'stone',   // the ring is stone; its lawn is past the edge the bounds hold the fight inside
+  'zenith-coliseum': 'stone',
   'proving-hall': 'wood',           // indoors: the Proving Hall's floor
+  'sunward-summit': 'stone',
+  'ashfall-weir': 'water',
   'mirror-mere': 'water',         // a lake of blood
+  'hollowmere-quarry': 'stone',
   'cinder-flats': 'sand',                // the white desert
   'warlords-roof': 'stone',                  // the roof of the warlord's hall: tiles
   'drifting-isle': 'metal',                // the isle's metal arena
+  'thornwood-ward': 'stone',
   'kuroyuki-hall': 'stone',
   'rift-war': 'grass', 'blood-citadel': 'stone', 'hidden-ash': 'stone',
   'rift-village': 'stone', 'rift-swords': 'water', 'rift-fortress': 'stone', 'rift-eclipse': 'stone', 'rift-frost': 'snow',
   'rift-grove': 'grass', 'rift-wastes': 'sand', 'rift-harbor': 'wood',
+  'dry-harbour': 'stone',
   'starfall-crater': 'sand',               // the crater's loose, swept earth
+  'scrap-pit': 'stone',
 };
 
 /** What is under a foot at height `y` in `stage`: the place's floor; in a place whose floor is a liquid, the liquid

@@ -13,7 +13,8 @@ import type { FighterId, PlayerInput } from '../src/game/types';
  * over the floor behind its shrine, and the stadium's stands overhang their corners at 4.7-8 m: a head went through
  * all of them. scripts/probe_jump_clearance.mts measures the roofs off the stage GLBs
  * and emits them (src/game/data/stageCeilings.json); rapierCollision makes them slabs, and the simulation ends a
- * climb that meets one. The play bound still holds a leap of 12-18 m.
+ * climb that meets one. The play bound still holds a leap of 12-18 m, and the Wreckers' Causeway's bridge corner lets
+ * a fighter walk and jump out.
  */
 type Roof = { x: number; z: number; halfX: number; halfZ: number; y: number };
 const ROOFS = ceilings as Partial<Record<StageId, Roof[]>>;
@@ -102,4 +103,24 @@ describe('the round 4b jump on the stages', () => {
     }
   }, 30000);
 
+  it('lets a fighter walk and jump out of the Wreckers\' Causeway\'s bridge corner', async () => {
+    await initRapier();
+    // The corner follows the stage's bound: (halfX - .5, -(halfZ - .5)).
+    const { halfX, halfZ } = STAGES['wreckers-causeway'];
+    const cx = halfX - .5, cz = -(halfZ - .5);
+    for (const [ax, az] of [[1, -1], [.7, -.3], [.3, -.7]]) {
+      const { sim, go, a } = await arena('wreckers-causeway', 'taisei', { x: halfX - 2, z: -(halfZ - 2) });
+      for (let i = 0; i < 90; i++) go({ moveX: ax, moveZ: az });
+      expect(Math.hypot(a.state.x - cx, a.state.z - cz), 'in the corner').toBeLessThan(.2);
+      let from = { x: a.state.x, z: a.state.z };
+      for (let i = 0; i < 60; i++) go({ moveX: -.7, moveZ: .7 });
+      expect(Math.hypot(a.state.x - from.x, a.state.z - from.z), 'walked out').toBeGreaterThan(5);
+      for (let i = 0; i < 90; i++) go({ moveX: ax, moveZ: az });
+      from = { x: a.state.x, z: a.state.z };
+      go({ moveX: -.7, moveZ: .7, jump: true, jumpHeld: true });
+      for (let i = 0; i < 59; i++) go({ moveX: -.7, moveZ: .7, jumpHeld: true });
+      expect(Math.hypot(a.state.x - from.x, a.state.z - from.z), 'jumped out').toBeGreaterThan(5);
+      sim.dispose();
+    }
+  });
 });

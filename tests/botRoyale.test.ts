@@ -92,7 +92,7 @@ describe('bots in a royale fight each other', () => {
   });
 
   it('has no storm: a fighter waiting at the edge keeps every point of health', () => {
-    const sim = new ArenaSimulation({ roomMode: 'match', stage: 'mirror-mere', seed: 3 });
+    const sim = new ArenaSimulation({ roomMode: 'match', stage: 'sunward-summit', seed: 3 });
     try {
       sim.addPlayer('a', 'taisei'); sim.addPlayer('b', 'konta'); sim.addPlayer('c', 'gummy');
       sim.startMatch();
@@ -107,8 +107,8 @@ describe('bots in a royale fight each other', () => {
   });
 
   it('hunts a fighter nobody is fighting, and the royale ends', async () => {
-    const collision = await createRapierCollision('mirror-mere');
-    const sim = new ArenaSimulation({ roomMode: 'match', stage: 'mirror-mere', seed: 7, collision });
+    const collision = await createRapierCollision('sunward-summit');
+    const sim = new ArenaSimulation({ roomMode: 'match', stage: 'sunward-summit', seed: 7, collision });
     try {
       sim.addPlayer('me', 'taisei', 'Me');
       const field = ['konta', 'gummy', 'kenzo', 'shiden', 'nigo', 'ouga', 'shirokane'] as const;

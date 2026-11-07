@@ -51,20 +51,29 @@ export const AMBIENCES: Partial<Record<StageId, AmbienceRecipe>> = {
   // The stadiums: the stands, the wind over them, the banners.
   'ash-colosseum': { beds: [stands(-1), { file: 'wind', gain: -10, highpass: 120 }], accents: [flags([6, 13], -11), birds([14, 28], -16)] },
   'sunfall-arena': { beds: [stands(-1), { file: 'wind', gain: -12, highpass: 120 }], accents: [birds([10, 22], -15), flags([9, 18], -13)] },
+  'zenith-coliseum': { beds: [{ file: 'drone', gain: -5 }, stands(-11)] },
+  'ashfall-weir': { beds: [{ file: 'water', gain: 0, wide: true }, { file: 'wind', gain: -9, highpass: 150 }], accents: [birds([8, 18], -12)] },
   harbor: { beds: [{ file: 'surf', gain: -1, wide: true }, { file: 'wind', gain: -7, highpass: 120 }], accents: [birds([12, 24], -15), flags([10, 20], -14)] },
+  'wreckers-causeway': { beds: [{ file: 'surf', gain: -3, wide: true }, { file: 'wind', gain: -5, highpass: 120 }], accents: [flags([6, 12], -10), birds([10, 20], -15)] },
   // The village: a breeze in the trees and a lot of birds.
   'hidden-ash': { beds: [{ file: 'wind', gain: -6, lowpass: 2400, wide: true }], accents: [birds([4, 11], -10)] },
+  'sunward-summit': { beds: [{ file: 'wind', gain: -1, highpass: 260, rate: 1.15, wide: true }], accents: [birds([16, 30], -16)] },
   // A cold desert night: a low wind and the dark under it.
   'cinder-flats': { beds: [{ file: 'wind', gain: -2, lowpass: 900, rate: .85, wide: true }, { file: 'drone', gain: -12 }] },
   'warlords-roof': { beds: [{ file: 'wind', gain: -6, wide: true }, { file: 'fire', gain: -10 }, { file: 'crackle', gain: -12 }], accents: [crows([20, 36], -17)] },
+  'hollowmere-quarry': { beds: [{ file: 'wind', gain: -6, wide: true }, { file: 'fire', gain: -10 }, { file: 'crackle', gain: -12 }], accents: [crows([14, 28], -15), flags([8, 15], -12)] },
   // The Mirror Mere by night: a deep rumble, the drone, the braziers' fires, and the birds that circle the lake.
   'mirror-mere': { beds: [{ file: 'hell', gain: -2, wide: true }, { file: 'drone', gain: -8 }, { file: 'fire', gain: -12 }], accents: [crows([16, 30], -16)] },
   'drifting-isle': { beds: [{ file: 'drone', gain: 0, wide: true }] },
   // The Starfall Crater: the dust-laden wind over the crater, the village still burning on its rim, a low dread; crows.
   'starfall-crater': { beds: [{ file: 'wind', gain: -3, lowpass: 1100, rate: .9, wide: true }, { file: 'crackle', gain: -12 }, { file: 'fire', gain: -15 },
     { file: 'drone', gain: -16 }], accents: [crows([12, 26], -15)] },
+  'dry-harbour': { beds: [{ file: 'wind', gain: -5, highpass: 140, wide: true }, { file: 'crowd', gain: -16, lowpass: 800 }, { file: 'fire', gain: -13 },
+    { file: 'surf', gain: -15, lowpass: 650 }], accents: [birds([9, 18], -14), flags([7, 14], -12)] },
+  'thornwood-ward': { beds: [{ file: 'wind', gain: -7, lowpass: 1500, wide: true }, { file: 'drone', gain: -9, rate: .85 }, { file: 'fire', gain: -12 }, { file: 'crackle', gain: -14 }], accents: [crows([12, 26], -15)] },
   // The Kuroyuki Hall: a great hall's own air, the void's low hum under it, a draught through the castle's endless rooms.
   'kuroyuki-hall': { beds: [{ file: 'room', gain: -2, wide: true, rate: .9 }, { file: 'drone', gain: -8, rate: .7 }, { file: 'wind', gain: -14, lowpass: 520, rate: .8 }] },
+  'scrap-pit': { beds: [stands(-1), { file: 'room', gain: -9, wide: true }] },
 };
 
 export const ambienceUrl = (file: AmbienceFile) => `/assets/audio/ambience/${file}.m4a`;

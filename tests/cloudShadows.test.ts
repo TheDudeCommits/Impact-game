@@ -40,7 +40,7 @@ function shadeOverTime(stage: StageId) {
 describe('cloud shadows', () => {
   const clouded = (Object.keys(STAGE_LOOKS) as StageId[]).filter(stage => lookFor(stage).cloudShadows);
   it('drift over the sunny outdoor places only - not a hall, a domain, a night or a rift', () => {
-    expect(clouded.sort()).toEqual(['harbor', 'starfall-crater', 'sunfall-arena', 'warlords-roof']);
+    expect(clouded.sort()).toEqual(['dry-harbour', 'harbor', 'hollowmere-quarry', 'starfall-crater', 'sunfall-arena', 'sunward-summit', 'warlords-roof', 'wreckers-causeway']);
     for (const stage of clouded) {
       const look = lookFor(stage), clouds = look.cloudShadows!;
       // A sun high enough to throw a cloud's shadow near where it is, and a shade that is a shade, not a blackout.

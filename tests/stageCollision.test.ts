@@ -46,7 +46,18 @@ describe('a fighter cannot get inside a landmark', () => {
       // Three lanes separated by deliberate ridges: at least 84% of the
       // rectangle stays open; chokePoints.test.ts verifies every rotation.
       'rift-war': .16 /* deliberate lane ridges; every pass is route-tested */, 'rift-frost': .09, 'rift-grove': .15, 'rift-wastes': .1, 'rift-harbor': .11,
-      'mirror-mere': .15,
+      // The places with cover on purpose: the Sunward Summit's temple takes the far half of its summit, its gardens the
+      // south half; the Mirror Mere's seal-stone and ridges; the Ashfall Weir's boulders in the river.
+      'sunward-summit': .2, 'mirror-mere': .15, 'ashfall-weir': .09,
+      // Hollowmere Quarry's square is a town square - three houses, a market, carts, crates, boulders, a well and fire
+      // baskets (src/game/stageProps.ts) - about a tenth of it.
+      'hollowmere-quarry': .1,
+      // The Dry Harbour's field: the crane's plinth, the quay's parapet in four lengths, the heaved salt plates, guns and
+      // stores.
+      'dry-harbour': .09,
+      // Thornwood Ward: three corner buildings stand into the square's corners, and wrecks, a kiosk, a stairway and a
+      // container are its cover - about a ninth of it.
+      'thornwood-ward': .12,
       // Amagoi's Crater: the village's wreckage on the crater's floor - heaps,
       // heaved crust, two roofs, broken walls, a cart, the receivers.
       'starfall-crater': .09 };

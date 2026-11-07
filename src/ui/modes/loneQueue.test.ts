@@ -24,13 +24,13 @@ describe('a lone player in a public quick room', () => {
   });
   it("plays where the room was dealt, against the bots it drafted for its kickoff (their files fetched while it waited)", () => {
     // The performance sweep, 24 October 2026: the switch used to deal another place and draft other bots, all fetched after the wait.
-    const room = snap({ stage: 'kuroyuki-hall', lobby: { visibility: 'public', hostId: null, canStart: false, startsAt: 11, expiresAt: null } }, [{ id: 'me', fighter: 'kuon' }]);
+    const room = snap({ stage: 'thornwood-ward', lobby: { visibility: 'public', hostId: null, canStart: false, startsAt: 11, expiresAt: null } }, [{ id: 'me', fighter: 'kuon' }]);
     const planned = ['konta', 'gummy', 'nigo', 'ouga', 'asahi'] as never[];
-    expect(loneQueue(room, 'me', { kind: 'public' }, planned)).toEqual({ kind: 'bots', players: 6, lone: true, place: 'kuroyuki-hall', field: planned });
+    expect(loneQueue(room, 'me', { kind: 'public' }, planned)).toEqual({ kind: 'bots', players: 6, lone: true, place: 'thornwood-ward', field: planned });
     // A plan that is not a whole field (an older room, one cut short) leaves the draft to the device, at the same place.
-    expect(loneQueue(room, 'me', { kind: 'public' }, planned.slice(0, 3))).toEqual({ kind: 'bots', players: 6, lone: true, place: 'kuroyuki-hall' });
+    expect(loneQueue(room, 'me', { kind: 'public' }, planned.slice(0, 3))).toEqual({ kind: 'bots', players: 6, lone: true, place: 'thornwood-ward' });
     // Never the player's own fighter among the bots.
-    expect(loneQueue(room, 'me', { kind: 'public' }, ['kuon', ...planned.slice(0, 4)] as never[])).toEqual({ kind: 'bots', players: 6, lone: true, place: 'kuroyuki-hall' });
+    expect(loneQueue(room, 'me', { kind: 'public' }, ['kuon', ...planned.slice(0, 4)] as never[])).toEqual({ kind: 'bots', players: 6, lone: true, place: 'thornwood-ward' });
   });
   it('plays an operation with bots once its quick lobby is about to start, as the same fighter', () => {
     const lobby = (serverTime: number, access = 'quick') => snap({ serverTime, objective: { kind: 'last-stand', phase: 'lobby', access, seats: [], startsAt: null } });

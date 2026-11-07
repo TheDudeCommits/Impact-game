@@ -12,6 +12,7 @@ describe('the stage reverb (audio/space.ts)', () => {
     }
     expect(spaceFor(undefined)).toBeUndefined();
     expect(STAGE_SPACES['proving-hall']).toBe('hall');
+    expect(STAGE_SPACES['ashfall-weir']).toBe('canyon');
     expect(VOICE_SHARE).toBeLessThan(.6);
   });
   it('builds the same normalised, decorrelated impulse response every time, silent through its predelay', () => {
@@ -29,7 +30,7 @@ describe('the stage reverb (audio/space.ts)', () => {
   });
   it('falls about 60 dB over its length, and a canyon rings longer than an open roof', () => {
     const rate = 24000;
-    for (const stage of ['proving-hall', 'starfall-crater', 'harbor'] as StageId[]) {
+    for (const stage of ['proving-hall', 'ashfall-weir', 'harbor'] as StageId[]) {
       const space = spaceFor(stage)!, [left] = impulseResponse(space, rate), start = Math.round(space.predelay * rate);
       const rms = (from: number, to: number) => { let e = 0; for (let i = from; i < to; i++) e += left[i] ** 2; return Math.sqrt(e / Math.max(1, to - from)); };
       const w = Math.round(.03 * rate), head = rms(start + Math.round(.02 * rate), start + Math.round(.02 * rate) + w);
@@ -38,7 +39,7 @@ describe('the stage reverb (audio/space.ts)', () => {
       // 60 dB to the very end; the windows sit a little inside both ends, and the noise is noise.
       expect(fall, stage).toBeGreaterThan(40); expect(fall, stage).toBeLessThan(75);
     }
-    expect(spaceFor('starfall-crater')!.seconds).toBeGreaterThan(spaceFor('harbor')!.seconds * 2);
+    expect(spaceFor('ashfall-weir')!.seconds).toBeGreaterThan(spaceFor('harbor')!.seconds * 2);
     // The open air answers more quietly than a stone hall.
     expect(spaceFor('harbor')!.wet).toBeLessThan(spaceFor('proving-hall')!.wet);
   });

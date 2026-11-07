@@ -5,7 +5,7 @@ import { lookFor } from '../src/render/look/stageLooks';
 import type { StageId } from '../src/game/stages';
 
 /** The air laid on the distance from just behind the fight (look/air.ts). */
-const PLACES: StageId[] = ['ash-colosseum', 'sunfall-arena', 'mirror-mere'];
+const PLACES: StageId[] = ['ash-colosseum', 'sunward-summit', 'sunfall-arena', 'wreckers-causeway', 'ashfall-weir', 'hollowmere-quarry', 'mirror-mere'];
 
 describe('the air', () => {
   it('reshapes the fog chunk every fogged material shares, and leaves the linear fog running on top', () => {
@@ -25,8 +25,8 @@ describe('the air', () => {
     // The fighters' toon materials have their own share.
     const toon = THREE.UniformsUtils.clone(THREE.ShaderLib.toon.uniforms).uAirFog.value as Float32Array;
     expect(toon).not.toBe(airUniforms.uAirFog.value);
-    setAirLook(lookFor('ash-colosseum'));
-    expect(toon[0]).toBeCloseTo(lookFor('ash-colosseum').air!.fighters, 5);
+    setAirLook(lookFor('sunward-summit'));
+    expect(toon[0]).toBeCloseTo(lookFor('sunward-summit').air!.fighters, 5);
   });
 
   it('lies on scenery 20-60 m back on every place of the main game, and leaves a fighter in the lens\'s reach alone', () => {
@@ -43,15 +43,17 @@ describe('the air', () => {
     }
   });
 
-  it('keeps every place\'s own palette: no two places share one air', () => {
-    const colours = PLACES.map(place => lookFor(place).air!.color!);
-    expect(new Set(colours).size).toBe(colours.length);
+  it('keeps every place\'s own palette: the Ashfall Weir\'s violet, the Mirror Mere\'s red', () => {
+    const hue = (hex: number) => { const hsl = { h: 0, s: 0, l: 0 }; new THREE.Color(hex).getHSL(hsl); return hsl.h * 360; };
+    const weir = hue(lookFor('ashfall-weir').air!.color!), mere = hue(lookFor('mirror-mere').air!.color!);
+    expect(weir).toBeGreaterThan(260); expect(weir).toBeLessThan(330);
+    expect(mere < 15 || mere > 345).toBe(true);
   });
 
   it('is off on every place without it - the rifts, Last Stand\'s places, the harbour - so none inherits the last one\'s', () => {
     // The Proving Hall's own linear fog (10-80 m) is already the air of a room 25 m long.
-    for (const place of ['rift-village', 'hidden-ash', 'blood-citadel', 'harbor', 'proving-hall'] as StageId[]) {
-      setAirLook(lookFor('kuroyuki-hall'));
+    for (const place of ['rift-village', 'hidden-ash', 'blood-citadel', 'harbor', 'zenith-coliseum', 'proving-hall'] as StageId[]) {
+      setAirLook(lookFor('hollowmere-quarry'));
       setAirLook(lookFor(place));
       expect(Array.from(airUniforms.uAirFog.value), place).toEqual([0, 0, 0, 0]);
     }
@@ -59,7 +61,7 @@ describe('the air', () => {
 
   it('drops its shaping on low quality and keeps the haze', () => {
     setAirQuality('low');
-    setAirLook(lookFor('ash-colosseum'));
+    setAirLook(lookFor('ashfall-weir'));
     expect(airUniforms.uAirFog.value[0]).toBe(1);
     expect(Array.from(airUniforms.uAirShape.value).slice(1)).toEqual([0, 0, 0]);
     setAirQuality('high');

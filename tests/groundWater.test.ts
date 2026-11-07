@@ -9,6 +9,7 @@ import { waterGeometry, wallsFromModel, WaterSurface } from '../src/render/groun
 import { GroundFrame } from '../src/render/ground/frame';
 import { shaderPatchKeys } from '../src/render/look/shaderPatch';
 import { DENSITY, GroundField } from '../src/render/ground/mask';
+import { VALLEY_WATER } from '../src/render/ground/places/ashfallWeir';
 import { SHRINE_WATER } from '../src/render/ground/places/mirrorMere';
 import { WaveField } from '../src/render/ground/waves';
 import { STAGES } from '../src/game/stages';
@@ -25,7 +26,7 @@ describe('a splash', () => {
       // No liquid floor: nothing splashes, nothing is heard.
       kit.splash(1, 2, .5, 0);
       expect(heard).toHaveLength(0);
-      VfxKit.setLiquid(scene, LIQUID_FLOORS['mirror-mere']);
+      VfxKit.setLiquid(scene, LIQUID_FLOORS['ashfall-weir']);
       expect(() => kit.splash(1, 2, .5, 0, 1, 0)).not.toThrow();
       expect(heard).toEqual([[1, 2, .5, 1, 0]]);
       // A blow into the river is a splash too (groundImpact).
@@ -52,11 +53,11 @@ describe('the wave field', () => {
   it('holds the explicit scheme stable at every tier (Courant under 1/sqrt 2) and loses its motion over time', () => {
     for (const q of ['high', 'medium'] as const) {
       const w = GROUND_TIERS[q].water;
-      const k = waveConstants({ speed: SHRINE_WATER.speed!, damping: SHRINE_WATER.damping!, cell: w.cell, rate: w.rate });
+      const k = waveConstants({ speed: VALLEY_WATER.speed!, damping: VALLEY_WATER.damping!, cell: w.cell, rate: w.rate });
       expect(k.courant, q).toBeLessThan(Math.SQRT1_2);
       expect(k.keep).toBeLessThan(1); expect(k.keep).toBeGreaterThan(.98);
       // What the damping leaves of the motion after a second.
-      expect(Math.pow(k.keep, w.rate)).toBeCloseTo(1 - SHRINE_WATER.damping!, 2);
+      expect(Math.pow(k.keep, w.rate)).toBeCloseTo(1 - VALLEY_WATER.damping!, 2);
     }
     // A speed the field cannot hold is clamped under the limit, not run unstable.
     expect(waveConstants({ speed: 400, damping: .4, cell: .2, rate: 60 }).courant).toBeLessThan(Math.SQRT1_2);
@@ -105,7 +106,7 @@ describe('the wave field', () => {
   });
 
   it('draws a surface of its own dense over the simulated stretch and coarse beyond it', () => {
-    const rect = { x0: -60, z0: -90, x1: 65, z1: 150 }, sim = SHRINE_WATER.sim;
+    const rect = { x0: -40, z0: -90, x1: 45, z1: 150 }, sim = VALLEY_WATER.sim;
     const g = waterGeometry(rect, sim, 0, .3);
     const p = g.getAttribute('position') as THREE.BufferAttribute;
     let inside = 0;
@@ -119,8 +120,8 @@ describe('the wave field', () => {
     g.computeBoundingBox();
     expect(g.boundingBox!.min.x).toBeCloseTo(rect.x0, 5); expect(g.boundingBox!.max.z).toBeCloseTo(rect.z1, 5);
     // The play area lies inside the simulated stretch, with room to see waves come back off the banks.
-    expect(SHRINE_WATER.sim.x0).toBeLessThan(-38); expect(SHRINE_WATER.sim.x1).toBeGreaterThan(38);
-    expect(SHRINE_WATER.sim.z0).toBeLessThan(-42); expect(SHRINE_WATER.sim.z1).toBeGreaterThan(42);
+    expect(VALLEY_WATER.sim.x0).toBeLessThan(-18); expect(VALLEY_WATER.sim.x1).toBeGreaterThan(18);
+    expect(VALLEY_WATER.sim.z0).toBeLessThan(-45); expect(VALLEY_WATER.sim.z1).toBeGreaterThan(45);
   });
 });
 

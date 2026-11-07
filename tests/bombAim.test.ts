@@ -12,7 +12,7 @@ import { ROYALE_STAGES, type StageId } from '../src/game/stages';
 
 const BOMBS = ['taisei', 'konta', 'kagari', 'jinlin'] as FighterId[];
 const TRIALS = 4, DT = 1 / 60;
-const MAIN_ROYALE: StageId[] = ['mirror-mere', 'ash-colosseum', 'kuroyuki-hall', 'starfall-crater'];
+const MAIN_ROYALE: StageId[] = ['sunward-summit', 'ashfall-weir', 'mirror-mere', 'hollowmere-quarry', 'ash-colosseum', 'wreckers-causeway'];
 beforeAll(async () => { (ROYALE_STAGES as StageId[]).splice(0, ROYALE_STAGES.length, ...MAIN_ROYALE); await prepare(); });
 const rate = (fighter: FighterId, spec: { distance: number; behaviour: Behaviour; awakened?: boolean; room?: Room; hands?: Hands }) => {
   let landed = 0;

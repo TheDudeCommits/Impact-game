@@ -30,7 +30,7 @@ class Rig{
     return {whole:inside(low)&&inside(mid)&&inside(top),height:(top.y-low.y)/2,x:mid.x};}
   out(b:{halfX:number;halfZ:number}){const p=this.camera.position;return Math.max(Math.abs(p.x)-b.halfX,Math.abs(p.z)-b.halfZ);}
 }
-const HALL=STAGES['proving-hall'],RING=STAGES['sunfall-arena'],BRIDGE={halfX:13,halfZ:52},ROOF=STAGES['warlords-roof'],OPEN={halfX:16,halfZ:16};
+const HALL=STAGES['proving-hall'],RING=STAGES['sunfall-arena'],ZENITH=STAGES['zenith-coliseum'],BRIDGE=STAGES['wreckers-causeway'],WEIR=STAGES['ashfall-weir'],OPEN={halfX:16,halfZ:16};
 
 describe('calm: the lens does not move for an ordinary hit, or for nothing',()=>{
   /** How far a blow moves the picture in the frames after it: metres of lens, degrees of aim, degrees of field. */
@@ -92,7 +92,7 @@ describe('calm: the lens does not move for an ordinary hit, or for nothing',()=>
 });
 
 describe('tight spaces: against a wall and in a corner the player\'s fighter stays whole in the frame',()=>{
-  const ROOMS:[string,{halfX:number;halfZ:number;doubleSided?:boolean;background?:number},number][]=[['the Proving Hall',HALL,1.4],['the tournament ring',RING,1.4],['a long narrow bridge',BRIDGE,1.4],['the Warlord\'s Roof',ROOF,1.4],['the Cinder Flats',STAGES['cinder-flats'],1.4],['the Drifting Isle',STAGES['drifting-isle'],1.4],['a floor with room nobody has looked past the edge of',OPEN,-.25]];
+  const ROOMS:[string,{halfX:number;halfZ:number;doubleSided?:boolean;background?:number},number][]=[['the Proving Hall',HALL,1.4],['the tournament ring',RING,1.4],['the Zenith Coliseum',ZENITH,1.4],['Wreckers\' Causeway\'s bridge',BRIDGE,1.4],['the Ashfall Weir',WEIR,1.4],['the Sunward Summit',STAGES['sunward-summit'],1.4],['the Drifting Isle',STAGES['drifting-isle'],1.4],['a floor with room nobody has looked past the edge of',OPEN,-.25]];
   it.each(ROOMS)('%s: back to the wall and backed into the corner, either style, the opponent near and far',(_name,b,out)=>{
     for(const style of ['close','classic'] as const)for(const gap of [1.3,3,6]){
       // Back to the +z wall, the opponent toward the middle; then the corner, the opponent on its diagonal.
@@ -152,7 +152,7 @@ describe('tight spaces: against a wall and in a corner the player\'s fighter sta
     expect(far.rig.squeeze).toBeLessThan(.02);
   });
   it('the Close style fades to Classic as the bound squeezes the rig, on a floor with room as on a small one, and comes back',()=>{
-    const b=STAGES['warlords-roof'],r=new Rig('close',[0,0],[0,-4],b);r.step(240);
+    const b=STAGES['ashfall-weir'],r=new Rig('close',[0,0],[0,-4],b);r.step(240);
     expect(r.follow.styleBlend).toBeGreaterThan(.99);
     r.place(b.halfX-.5,0);r.foe.group.position.set(b.halfX-4.5,0,0);r.follow.cut();r.step(420);
     expect(r.rig.squeeze).toBeGreaterThan(.3);expect(r.follow.styleBlend).toBeLessThan(.05);

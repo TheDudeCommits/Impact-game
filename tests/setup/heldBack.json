@@ -1,13 +1,4 @@
 {
- "src/ui/modes/place.test.ts": [
-  "falls back to RANDOM for a value this build does not offer, or a ring the field does not fit",
-  "is the place named",
-  "lists RANDOM first and selected by default, then each place by its picture, its name and its scene line",
-  "lists the small rings a big royale cannot use as unavailable, with how many each holds",
-  "remembers the place named, one per mode, for the bots and the friends way alike",
-  "shows the place remembered as the one selected",
-  "stays the Proving Hall for a browser driven by a tool, unless a place is named (evidence scripts frame Training by it)"
- ],
  "tests/airNormals.test.ts": [
   "gummy is announced as the air kick exactly when the air kick is what is drawn",
   "koko is announced as the air kick exactly when the air kick is what is drawn",
@@ -145,9 +136,6 @@
   "lucy-px1.glb: the jump opens at its stand, not on a crouch key it leaves on the next frame",
   "sunrise-pxmoves1.glb: the Bazooka keeps its length (its blow stays on 0.42 s, contactFrames' 0.4667)"
  ],
- "tests/originals-places-r10.test.ts": [
-  "stages-old (4 November 2026): Kuroyuki Hall, Thornwood Ward, the Drifting Isle and the Cinder Flats are on the earlier model again"
- ],
  "tests/originals-places-r8.test.ts": [
   "keeps the earlier model of each out of the package, unless what still loads it ships"
  ],
@@ -176,16 +164,6 @@
   "carry their blades in their own hands (and teeth), through every clip",
   "draw only their own bodies, clips, idles and portraits, and every one of them ships",
   "key every joint the transfer moves in every clip, so the renderer's layers never pile up on a stale pose"
- ],
- "tests/partyAutostart.test.ts": [
-  "a party DUEL: both in and loaded, then the room's own 3-second count, and the fight - nobody presses START",
-  "a party royale: the count, the bots at kickoff (loaded too), then the fight"
- ],
- "tests/partyRoom.test.ts": [
-  "honours the place the party chose in every mode that has one, and fixes the others",
-  "launches a DUEL for exactly two, into the private Duel room on the chosen place",
-  "puts a private Duel where its creator chose, from the Duel's list only",
-  "turns away every value that is not on the list"
  ],
  "tests/reactClips.test.ts": [
   "Black Pyre crumples Taisei after a string has launched him, without laying him down in a frame"

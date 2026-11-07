@@ -237,6 +237,7 @@ export const STAGE_LANDMARKS: Record<StageId, readonly EnvironmentCollider[]> = 
     {x:-11,y:.6,z:27,halfX:2.5,halfY:.6,halfZ:.75},
   ],
   harbor: [],
+  'wreckers-causeway': propColliders('wreckers-causeway'),
   // The stadium wall's four corner stubs reach into the corners of the 96 m
   // rectangle; the 75 m stone ring itself is clear. The two gate arches on
   // the north and south edges are overhead and are walked under.
@@ -250,6 +251,39 @@ export const STAGE_LANDMARKS: Record<StageId, readonly EnvironmentCollider[]> = 
     ...propColliders('ash-colosseum'),
   ],
   'sunfall-arena': [],
+  'zenith-coliseum': [],
+  'sunward-summit': [
+    { x: 0, y: 10.5, z: -23.5, halfX: 17.5, halfY: 10.5, halfZ: 4.5 },
+    { x: 0, y: 7, z: -29.5, halfX: 5.5, halfY: 7, halfZ: 1.5 },
+    { x: 0, y: 5, z: -17.5, halfX: 5, halfY: 5, halfZ: 1.5 },
+    { x: 0, y: 3.4, z: -10.75, halfX: 2.75, halfY: 3.4, halfZ: 5.25 },
+    { x: -12.9, y: 7.5, z: -36, halfX: 6.1, halfY: 7.5, halfZ: 3 },
+    { x: 12.75, y: 7.5, z: -36, halfX: 6.25, halfY: 7.5, halfZ: 3 },
+    ...[-22, 22].flatMap(x => [-28.75, -19.25].flatMap(z => [
+      { x, y: .8, z, halfX: 1.6, halfY: .8, halfZ: 1.6 },
+      { x, y: 8, z, halfX: .45, halfY: 8, halfZ: .45 },
+    ])),
+    { x: -10.75, y: 2.85, z: -15.5, halfX: 5.75, halfY: 2.85, halfZ: 1 },
+    { x: 10.5, y: 2.85, z: -15.5, halfX: 6, halfY: 2.85, halfZ: 1 },
+    { x: -37.75, y: 3.6, z: 36.5, halfX: 1.75, halfY: 3.6, halfZ: 1.5 },
+    { x: 37.75, y: 3.6, z: 36.5, halfX: 1.75, halfY: 3.6, halfZ: 1.5 },
+    { x: 38, y: 3.6, z: -37, halfX: 1.5, halfY: 3.6, halfZ: 1.5 },
+    { x: -38.25, y: 3.6, z: -36.5, halfX: 1.75, halfY: 3.6, halfZ: 1.5 },
+    { x: -10.25, y: 5.75, z: 34.75, halfX: .6, halfY: 5.75, halfZ: .6 },
+    { x: 10.25, y: 5.75, z: 34.75, halfX: .6, halfY: 5.75, halfZ: .6 },
+    ...propColliders('sunward-summit'),
+  ],
+  'ashfall-weir': [
+    { x: -6, y: 1.45, z: -21.75, halfX: 2.1, halfY: 1.45, halfZ: 1.9 },
+    { x: 6.9, y: 1.2, z: -9, halfX: 1.7, halfY: 1.2, halfZ: 1.7 },
+    { x: -8, y: 1.45, z: 8, halfX: 2.2, halfY: 1.45, halfZ: 2.6 },
+    { x: 6.1, y: 1.25, z: 22.1, halfX: 2.1, halfY: 1.25, halfZ: 2 },
+    { x: 13.5, y: 1, z: 37, halfX: 1.6, halfY: 1, halfZ: 1.5 },
+    { x: -13.6, y: 1.1, z: -36.9, halfX: 1.6, halfY: 1.1, halfZ: 1.6 },
+    { x: 12.5, y: .9, z: -31, halfX: 1.3, halfY: .9, halfZ: 1.3 },
+    { x: -12.5, y: .95, z: 30, halfX: 1.5, halfY: .95, halfZ: 1.5 },
+    ...propColliders('ashfall-weir'),
+  ],
   // The Mirror Mere: the two tall seal-stone blocks on the north side (to 22 m)
   // with the rubble at their feet, and four low limestone ridges, each a
   // little over two metres high.
@@ -283,6 +317,10 @@ export const STAGE_LANDMARKS: Record<StageId, readonly EnvironmentCollider[]> = 
     // (src/game/stageProps.ts).
     ...propColliders('mirror-mere'),
   ],
+  'hollowmere-quarry': [
+    { x: 15.25, y: 1, z: -9.1, halfX: 1.75, halfY: 1, halfZ: .4 },
+    ...propColliders('hollowmere-quarry'),
+  ],
   'cinder-flats': [],
   'warlords-roof': [],
   'drifting-isle': [],
@@ -296,6 +334,37 @@ export const STAGE_LANDMARKS: Record<StageId, readonly EnvironmentCollider[]> = 
   'rift-grove': riftLandmarks('rift-grove'),
   'rift-wastes': riftLandmarks('rift-wastes'),
   'rift-harbor': riftLandmarks('rift-harbor'),
+  'dry-harbour': [
+    { x: -27, y: .6, z: -32.6, halfX: 5, halfY: .6, halfZ: 5 },
+    { x: -27, y: 1.8, z: -32.6, halfX: 4.2, halfY: .6, halfZ: 4.2 },
+    { x: -27, y: 11.4, z: -32.6, halfX: 3.5, halfY: 9, halfZ: 3.5 },
+    { x: -27, y: 20.9, z: -32.6, halfX: 5.2, halfY: .6, halfZ: 5.2 },
+    ...([[-36.5, -27.5, -8.47], [-20, -11.5, -13.31], [11.5, 20, -13.31], [27.5, 36.5, -8.47]] as const).map(([x0, x1, z]) =>
+      ({ x: (x0 + x1) / 2, y: .65, z, halfX: (x1 - x0) / 2, halfY: .65, halfZ: .78 })),
+    ...([[-14.74, 8.33, 2.2, 1.87, 2.09], [15.81, 6.95, 1.9, 1.88, 1.95], [-4.57, 18.87, 1.36, 1.65, 1.85], [20.79, 23.93, 2.18, 1.59, 2.05],
+      [-24.36, 26.75, 1.72, 1.93, 2.06], [6.3, 33.01, 1.9, 1.38, 1.86], [-34.19, 4.54, 1.23, 1.58, 1.89], [32.78, 12.82, 1.23, 1.81, 1.95]] as const)
+      .map(([x, z, halfX, halfZ, top]) => ({ x, y: top / 2, z, halfX, halfY: top / 2, halfZ })),
+    ...propColliders('dry-harbour'),
+  ],
+  'thornwood-ward': [
+    { x: -37.25, y: 19, z: -36.5, halfX: .75, halfY: 19, halfZ: 1.5 },
+    { x: -35.75, y: 19, z: -37.25, halfX: .75, halfY: 19, halfZ: .75 },
+    { x: 34, y: 23, z: -36.5, halfX: 4, halfY: 23, halfZ: 1.5 },
+    { x: 36.5, y: 23, z: -32.5, halfX: 1.5, halfY: 23, halfZ: 2.5 },
+    { x: 33.75, y: 23, z: -33.75, halfX: 1.25, halfY: 23, halfZ: 1.25 },
+    { x: -37, y: 15, z: 34, halfX: 1, halfY: 15, halfZ: 4 },
+    { x: -33, y: 15, z: 37, halfX: 3, halfY: 15, halfZ: 1 },
+    { x: -34.5, y: 15, z: 34.5, halfX: 1.5, halfY: 15, halfZ: 1.5 },
+    { x: -18, y: 2.6, z: 33, halfX: 2.25, halfY: 2.6, halfZ: 1.75 },
+    { x: -24.2, y: 1.3, z: 31.6, halfX: .22, halfY: 1.3, halfZ: .22 },
+    { x: -22.4, y: .5, z: 30.2, halfX: 1, halfY: .5, halfZ: .15 },
+    { x: -13.9, y: .5, z: 34.6, halfX: .3, halfY: .5, halfZ: 1 },
+    { x: -20.6, y: .5, z: 36.6, halfX: 1, halfY: .5, halfZ: .2 },
+    { x: 17, y: 1.6, z: -33, halfX: 1.5, halfY: 1.6, halfZ: 2.6 },
+    ...[-25.2, 25.2].flatMap(x => [-25.2, 25.2].map(z => ({ x, y: 3.1, z, halfX: .25, halfY: 3.1, halfZ: .25 }))),
+    ...[[-29.5, -14], [-29.5, 14], [29.5, -14], [29.5, 14], [-14, -29.5], [14, -29.5], [-14, 29.5]].map(([x, z]) => ({ x, y: 4.1, z, halfX: .2, halfY: 4.1, halfZ: .2 })),
+    ...propColliders('thornwood-ward'),
+  ],
   // The Kuroyuki Hall's hall (scripts/build_kuroyuki_hall.py): its pillars,
   // lanterns, partitions, daises and corner rooms - src/game/stageProps.ts.
   'kuroyuki-hall': propColliders('kuroyuki-hall'),
@@ -310,6 +379,7 @@ export const STAGE_LANDMARKS: Record<StageId, readonly EnvironmentCollider[]> = 
       .map(([x, z, halfX, halfZ, top]) => ({ x, y: top / 2, z, halfX, halfY: top / 2, halfZ })),
     ...propColliders('starfall-crater'),
   ],
+  'scrap-pit': [...propColliders('scrap-pit')],
 };
 
 export interface StageColliders {

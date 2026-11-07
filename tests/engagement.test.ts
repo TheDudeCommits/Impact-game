@@ -109,7 +109,7 @@ describe('blocking is a decision, not a tax', () => {
 
 describe('the arena hits back', () => {
   it('splats a body driven into the stage bound', () => {
-    const sim = new ArenaSimulation({ trainingBot: false, stage: 'sunfall-arena' });
+    const sim = new ArenaSimulation({ trainingBot: false, stage: 'zenith-coliseum' });
     const { halfZ } = sim.bounds;
     // Close enough to the wall that the knockback has nowhere to put them.
     sim.addPlayer('a', 'kenzo', 'A', false, { x: 0, y: 0, z: halfZ - 2.8 });

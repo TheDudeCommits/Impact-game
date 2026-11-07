@@ -139,9 +139,9 @@ describe('Cloudstep', () => {
   it('never comes back inside the stage edge, a wall or another body', () => {
     // The stage edge right behind them: behind is off the stage, so it goes
     // to the far side from where it left, or to a side.
-    const probe = new ArenaSimulation({ stage: 'sunfall-arena' });
+    const probe = new ArenaSimulation({ stage: 'zenith-coliseum' });
     const { halfZ, halfX } = probe.bounds; probe.dispose();
-    const edge = bout({ stage: 'sunfall-arena' }, { a: { x: 0, y: 0, z: halfZ - 6 }, b: { x: 0, y: 0, z: halfZ - .7 } });
+    const edge = bout({ stage: 'zenith-coliseum' }, { a: { x: 0, y: 0, z: halfZ - 6 }, b: { x: 0, y: 0, z: halfZ - .7 } });
     // b faces +z, the edge: its back is toward Taisei, so "behind" is between.
     edge.input('b', { yaw: 0 });
     edge.cast(T.appear + .02);

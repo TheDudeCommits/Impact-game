@@ -15,6 +15,7 @@ import { groundMaterial } from '../src/render/ground/toon';
 import { shaderPatchKeys } from '../src/render/look/shaderPatch';
 import { coverStage } from '../src/render/CameraCutaway';
 import { PROVING_GROUND, PROVING_PATHS } from '../src/render/ground/places/ashColosseum';
+import { cornerLawn, SUMMIT_CORNERS, summitBeds } from '../src/render/ground/places/sunwardSummit';
 import { TOURNAMENT_FIELD, TOURNAMENT_GROUND, TOURNAMENT_MASTS, TOURNAMENT_PIECES } from '../src/render/ground/places/sunfallArena';
 import { SandPrints } from '../src/render/ground/sand';
 import { LitterField, leafGeometry } from '../src/render/ground/litter';
@@ -261,7 +262,7 @@ describe('ground masks', () => {
   });
 
   it('mirror the royale\'s seats (simulation.ts safeSpawn): twelve on the spawn ellipse, inside the bounds', () => {
-    for (const stage of ['ash-colosseum', 'mirror-mere', 'kuroyuki-hall'] as const) {
+    for (const stage of ['ash-colosseum', 'ashfall-weir', 'sunward-summit'] as const) {
       const { halfX, halfZ, spawnRadius } = STAGES[stage], seats = spawnSeats(stage);
       expect(seats).toHaveLength(12);
       for (const [x, z] of seats) {
@@ -329,6 +330,25 @@ describe('the Ash Colosseum\'s field', () => {
     for (let k = 0; k < angles.length; k++) widest = Math.max(widest, ((angles[(k + 1) % angles.length] - angles[k]) + Math.PI * 2) % (Math.PI * 2));
     expect(widest).toBeGreaterThan(.25);
     expect(widest).toBeLessThan(Math.PI / 2);
+  });
+});
+
+describe('the Sunward Summit\'s gardens', () => {
+  it('lays lawns in the four corners round the rim, never on the paving the fight is held on', () => {
+    const { inner, outer, half } = SUMMIT_CORNERS, flat = () => .5;
+    // Every corner, at the rim's lawns.
+    for (const [sx, sz] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) expect(cornerLawn(sx * 36, sz * 36, inner, outer, half, flat), `${sx},${sz}`).toBe(1);
+    // None on the axes (the temple, the stair, the open sides), none inside the spawn ring or off the summit.
+    for (const [x, z] of [[50, 0], [-50, 0], [0, 50], [0, -50], [18, 18], [0, 0], [42, 42]]) expect(cornerLawn(x, z, inner, outer, half, flat), `${x},${z}`).toBe(0);
+    // The spawn ring (radius 26) and the square's middle stay paved.
+    for (let a = 0; a < Math.PI * 2; a += .2) expect(cornerLawn(Math.cos(a) * 30, Math.sin(a) * 30, inner, outer, half, flat)).toBe(0);
+  });
+
+  it('knows the gardens\' beds: the four in the south half and the rim\'s', () => {
+    const beds = summitBeds();
+    expect(beds.filter(b => Math.hypot(b.x, b.z) < 45)).toHaveLength(4);
+    expect(beds.length).toBeGreaterThan(8);
+    for (const b of beds) expect(b.radius).toBeGreaterThan(1.2);
   });
 });
 

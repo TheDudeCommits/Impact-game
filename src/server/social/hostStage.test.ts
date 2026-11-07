@@ -27,7 +27,7 @@ async function room(make: () => ArenaRoom | ObjectiveRoom, options: Record<strin
 
 describe("a friends' room is created on the host's place", () => {
   it("a private Duel opens on the `stage` it was created with (any of the Duel's places), as a party's launch sends it", async () => {
-    for (const stage of ['drifting-isle', 'mirror-mere', 'proving-hall'] as StageId[]) {
+    for (const stage of ['zenith-coliseum', 'ashfall-weir', 'proving-hall'] as StageId[]) {
       const r = await room(() => new PrivateDuelRoom(), { mode: 'match', stage });
       try { expect(r.stage(), stage).toBe(stage); } finally { r.dispose(); }
     }
@@ -42,7 +42,7 @@ describe("a friends' room is created on the host's place", () => {
     for (const stage of placesFor('duel', 'friends')) expect(DUEL_ARENAS).toContain(stage);
   });
   it('a private royale opens on the `rules.arena` the page sends (the places its custom lobby allows)', async () => {
-    for (const stage of ['mirror-mere', 'kuroyuki-hall', 'warlords-roof'] as StageId[]) {
+    for (const stage of ['sunward-summit', 'hollowmere-quarry', 'warlords-roof'] as StageId[]) {
       const rules = royaleRules(stage, 4);
       const r = await room(() => new PrivateArenaRoom(), { mode: 'match', players: 4, rules });
       try { expect(r.stage(), stage).toBe(stage); } finally { r.dispose(); }
@@ -65,7 +65,7 @@ describe("a friends' room is created on the host's place", () => {
     }
     const none = await room(() => new ObjectiveRoom(), { objective: 'bad-blood', access: 'host' });
     try { expect(none.stage()).toBe(OBJECTIVE_STAGE['bad-blood']); } finally { none.dispose(); }
-    const village = await room(() => new ObjectiveRoom(), { objective: 'last-stand', access: 'host', rules: { arena: 'mirror-mere' } });
+    const village = await room(() => new ObjectiveRoom(), { objective: 'last-stand', access: 'host', rules: { arena: 'sunward-summit' } });
     try { expect(village.stage()).toBe(OBJECTIVE_STAGE['last-stand']); } finally { village.dispose(); }
   });
 });

@@ -35,6 +35,31 @@ const mereWater: GroundPlan['water'] = async c => {
   c.own({ dispose: subscribeSplashes((x, z, size, dx, dz) => water.push(splashImpulse(x, z, size, dx, dz))) });
 };
 
+/** The Ashfall Weir's river on a surface of its own, a river bed under clear water, its waves breaking on the cover in
+ *  it. */
+const weirWater: GroundPlan['water'] = async c => {
+  const [{ propColliders }, { box, DENSITY }, { WaterSurface }, { splashImpulse, subscribeSplashes }, { VALLEY_WATER }, { stageMaterial }, THREE, { STAGE_LANDMARKS }] = await Promise.all([
+    import('../game/stageProps'), import('../render/ground/mask'), import('../render/ground/water'), import('../render/ground/splashes'),
+    import('../render/ground/places/ashfallWeir'), import('../render/stages/build'), import('three'), import('../game/environmentLayout')]);
+  const bed = await new THREE.TextureLoader().loadAsync('/assets/environment/cc0/tex/pebbles-river-diff.webp');
+  bed.colorSpace = THREE.SRGBColorSpace; bed.wrapS = bed.wrapT = THREE.RepeatWrapping; bed.repeat.set(70, 90); bed.anisotropy = 8;
+  const source = new THREE.Mesh(new THREE.PlaneGeometry(360, 450, 4, 4).rotateX(-Math.PI / 2).translate(0, VALLEY_WATER.level, 70),
+    stageMaterial('ashfall-weir', 'weir river', { map: bed, emissive: 0x1a1c22, emissiveIntensity: 1, roughness: .16, metalness: .15 }));
+  (source.material as InstanceType<typeof THREE.MeshStandardMaterial>).color.setRGB(.5, .58, .64);
+  source.name = 'weir river'; source.receiveShadow = true;
+  c.group.add(source);
+  const plan: WaterPlan = {
+    ...VALLEY_WATER, name: 'weir river', source,
+    walls: field => {
+      for (const p of [...STAGE_LANDMARKS['ashfall-weir'], ...propColliders('ashfall-weir')]) field.paint(DENSITY, box(p.x, p.z, p.halfX, p.halfZ), 1, 'max', .3);
+    },
+    look: { crest: 0xd8dce4, foam: 0xeef0f4 },
+  };
+  const water = new WaterSurface(c.frame, plan);
+  c.own(water);
+  c.own({ dispose: subscribeSplashes((x, z, size, dx, dz) => water.push(splashImpulse(x, z, size, dx, dz))) });
+};
+
 const ashPrints: GroundPlan['sand'] = async c => {
   const [{ SandPrints }, { GROUND_TIERS }] = await Promise.all([import('../render/ground/sand'), import('../render/ground/quality')]);
   const prints = new SandPrints(c.frame, { name: 'ash prints', rect: { x0: -46, z0: -46, x1: 46, z1: 46 }, level: 0, life: 30, shade: .55 }, GROUND_TIERS.high.prints);
@@ -56,6 +81,8 @@ export const GROUND_CHANGES: Partial<Record<StageId, (plan: GroundPlan) => Groun
   // The Mirror Mere: the lake's waves in its own pale colours, on its own surface (r9, built whole in code).
   'mirror-mere': plan => ({ wind: plan.wind, water: mereWater }),
   'sunfall-arena': plan => ({ wind: plan.wind, sand: dialDust }),
+  'ashfall-weir': plan => ({ wind: plan.wind, water: weirWater }),
+  'sunward-summit': regrass({ root: 0x4a3214, cool: 0x9a7a34, warm: 0xd0a04a, tip: 0xf0cc78, warmth: .7 }, { specks: [0xfff0c0, 0xffc870, 0xe08850], speckle: .04, opacity: .96 }),
 };
 
 export function applyOriginalGrounds(grounds: Partial<Record<StageId, () => Promise<GroundPlan>>>) {

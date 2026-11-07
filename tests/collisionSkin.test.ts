@@ -73,7 +73,7 @@ describe('a fighter is never carried into the floor, or through a corner', () =>
   });
 
   it.each([
-    ['proving-hall', 5, 5, 45],
+    ['zenith-coliseum', 5, 5, 45],
     ['sunfall-arena', -8, 8, 315],
     ['ash-colosseum', 42, -42, 135],
   ] as [StageId, number, number, number][])('%s: pinned diagonally into the stage\'s corner for two seconds, the feet stay on the floor', async (stage, x, z, deg) => {

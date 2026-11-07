@@ -15,8 +15,8 @@ describe('which ways of playing can choose a place', () => {
   it('never offers a choice online: the server deals every public match, whatever this device remembered', () => {
     for (const mode of MODES) {
       expect(placesFor(mode, 'online'), mode).toEqual([]);
-      expect(namedPlace('mirror-mere', mode, 'online'), mode).toBeUndefined();
-      expect(placeForStart('mirror-mere', mode, 'online', undefined, false), mode).toBeUndefined();
+      expect(namedPlace('sunward-summit', mode, 'online'), mode).toBeUndefined();
+      expect(placeForStart('sunward-summit', mode, 'online', undefined, false), mode).toBeUndefined();
     }
   });
   it("offers nothing for the modes whose place is authored: Last Stand's village, Rift War's lanes, Arcade's worlds", () => {
@@ -43,16 +43,27 @@ describe('which ways of playing can choose a place', () => {
 
 describe('the place remembered', () => {
   it('is the place named, while this way still offers it', () => {
-    expect(namedPlace('mirror-mere', 'duel', 'offline')).toBe('mirror-mere');
-    expect(namedPlace('mirror-mere', 'duel', 'friends')).toBe('mirror-mere');
+    expect(namedPlace('ashfall-weir', 'duel', 'offline')).toBe('ashfall-weir');
+    expect(namedPlace('ashfall-weir', 'duel', 'friends')).toBe('ashfall-weir');
     expect(namedPlace('warlords-roof', 'bad-blood', 'offline')).toBe('warlords-roof');
   });
   it('is RANDOM for the default, for RANDOM itself, and for anything stale or foreign - never an error', () => {
-    for (const saved of [undefined, null, 'random', '', 'harbor', 'rift-war', 'not-a-stage', 42, {}, ['mirror-mere']])
+    for (const saved of [undefined, null, 'random', '', 'harbor', 'rift-war', 'not-a-stage', 42, {}, ['sunward-summit']])
       expect(namedPlace(saved, 'duel', 'offline'), String(saved)).toBeUndefined();
     // A place from another mode's list (Bad Blood's citadel is not a Duel place; the Duel's Proving Hall is not a royale place).
     expect(namedPlace('blood-citadel', 'duel', 'offline')).toBeUndefined();
     expect(namedPlace('proving-hall', 'royale', 'offline')).toBeUndefined();
+  });
+  it('is RANDOM when the royale field does not fit the small ring that was named', () => {
+    expect(SMALL_ROYALE_STAGES['zenith-coliseum']).toBe(4);
+    expect(placeFits('zenith-coliseum', 4)).toBe(true);
+    expect(placeFits('zenith-coliseum', 12)).toBe(false);
+    expect(placeFits('sunward-summit', 12)).toBe(true);
+    expect(placeFits('zenith-coliseum')).toBe(true);
+    expect(namedPlace('zenith-coliseum', 'royale', 'offline', 4)).toBe('zenith-coliseum');
+    expect(namedPlace('zenith-coliseum', 'royale', 'offline', 12)).toBeUndefined();
+    expect(namedPlace('drifting-isle', 'royale', 'friends', 8)).toBe('drifting-isle');
+    expect(namedPlace('drifting-isle', 'royale', 'friends', 12)).toBeUndefined();
   });
 });
 
@@ -88,7 +99,13 @@ describe('RANDOM', () => {
   });
   it('leaves a browser driven by a tool on every mode\'s own place (a name still wins)', () => {
     for (const [mode, way] of PICKABLE) expect(placeForStart(undefined, mode, way, undefined, true), `${mode} ${way}`).toBeUndefined();
-    expect(placeForStart('mirror-mere', 'duel', 'offline', undefined, true)).toBe('mirror-mere');
+    expect(placeForStart('sunward-summit', 'duel', 'offline', undefined, true)).toBe('sunward-summit');
+  });
+  it('is a named place when one is named, and RANDOM when the name is not one the way offers', () => {
+    expect(placeForStart('hollowmere-quarry', 'training', 'offline', undefined, false)).toBe('hollowmere-quarry');
+    expect(placesFor('training', 'offline')).toContain(placeForStart('blood-citadel', 'training', 'offline', undefined, false)!);
+    expect(placeForStart('zenith-coliseum', 'royale', 'offline', 12, false)).toBeUndefined();
+    expect(placeForStart('zenith-coliseum', 'royale', 'offline', 4, false)).toBe('zenith-coliseum');
   });
 });
 
@@ -107,10 +124,15 @@ describe("the room options a host's choice becomes (no match-server change: the 
       expect(customRules('royale', rules).players).toBe(4);
     }
   });
+  it("sends no `rules` for the royale's RANDOM: its room deals from a deck that never repeats a place twice running", () => {
+    expect(royaleRules(undefined, 8)).toBeUndefined();
+    expect(royaleRules('zenith-coliseum', 12)).toBeUndefined();
+    expect(royaleRules('proving-hall', 8)).toBeUndefined();
+  });
   it("is a Bad Blood room's `rules.arena`, which the room places before anyone joins", () => {
     for (const stage of placesFor('bad-blood', 'friends')) expect(customRules('bad-blood', { arena: placeForStart(stage, 'bad-blood', 'friends', undefined, false) }).arena, stage).toBe(stage);
     // Last Stand's village stays fixed whatever is asked.
-    expect(customRules('last-stand', { arena: 'mirror-mere' }).arena).toBe('auto');
+    expect(customRules('last-stand', { arena: 'sunward-summit' }).arena).toBe('auto');
   });
 });
 

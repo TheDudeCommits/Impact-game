@@ -55,6 +55,11 @@ describe('stage selection', () => {
     expect(chooseStage(['konta', 'shiden'], 'match')).toBe('proving-hall');
   });
 
+  it('sends a Taisei–Ouga duel to the Zenith Coliseum', () => {
+    expect(chooseStage(['taisei', 'ouga'], 'match')).toBe('zenith-coliseum');
+    // One Last Sun fighter is not a Last Sun duel.
+    expect(chooseStage(['taisei', 'kenzo'], 'match')).toBe('proving-hall');
+  });
 
 
   it('never sends a royale to the harbour by default', () => {
@@ -96,8 +101,8 @@ describe('stage bounds are authoritative', () => {
   }, 60_000);
 
   it('has no ring on the wire or in the rules', async () => {
-    const sim = new ArenaSimulation({ roomMode: 'match', stage: 'sunfall-arena',
-      collision: await createRapierCollision('sunfall-arena') });
+    const sim = new ArenaSimulation({ roomMode: 'match', stage: 'zenith-coliseum',
+      collision: await createRapierCollision('zenith-coliseum') });
     try {
       sim.addPlayer('a', 'taisei'); sim.addPlayer('b', 'ouga');
       sim.startMatch();

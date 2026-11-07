@@ -31,6 +31,7 @@ describe('r8: the places built whole in code', () => {
       expect(gltf?.scene.children.length, id).toBe(0);
     }
     expect(ownStageModel('harbor')).toBeUndefined();
+    expect(ownStageModel('blood-citadel')).toBeUndefined();
   });
 
 

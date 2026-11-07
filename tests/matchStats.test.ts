@@ -73,8 +73,8 @@ describe('a duel is booked to the last point', () => {
 
   it('gives a fall into the water to nobody', async () => {
     // With a world: without one the floor is a clamp at y = 0 and nothing falls.
-    const sim = new ArenaSimulation({ roomMode: 'match', trainingBot: false, seed: 5, stage: 'sunfall-arena',
-      collision: await createRapierCollision('sunfall-arena') });
+    const sim = new ArenaSimulation({ roomMode: 'match', trainingBot: false, seed: 5, stage: 'zenith-coliseum',
+      collision: await createRapierCollision('zenith-coliseum') });
     sim.addPlayer('a', 'taisei'); sim.addPlayer('b', 'konta'); sim.addPlayer('c', 'kenzo');
     sim.startMatch();
     Object.assign(sim.actors.get('b')!.state, { x: 0, y: -5, z: 0, grounded: false });
@@ -93,7 +93,7 @@ describe('a duel is booked to the last point', () => {
   });
 
   it('has no storm to take a point off a fighter waiting at the edge', () => {
-    const sim = new ArenaSimulation({ roomMode: 'match', trainingBot: false, seed: 5, stage: 'sunfall-arena' });
+    const sim = new ArenaSimulation({ roomMode: 'match', trainingBot: false, seed: 5, stage: 'zenith-coliseum' });
     sim.addPlayer('a', 'taisei'); sim.addPlayer('b', 'konta'); sim.addPlayer('c', 'kenzo');
     sim.startMatch();
     // Four hundred seconds in, where the old ring had closed to nothing.

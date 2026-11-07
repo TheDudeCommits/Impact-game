@@ -107,14 +107,14 @@ describe('the room seats every fighter facing the closest opponent', () => {
   it('team-mates are not who is faced, and with nobody to face the seat keeps its heading', () => {
     // Two sides of two: the nearest body on the ring may be a team-mate.
     for (let seed = 1; seed <= 12; seed++) {
-      const sim = room('mirror-mere', 4, seed, false);
+      const sim = room('sunward-summit', 4, seed, false);
       sim.setTeam('seat-0', 'red'); sim.setTeam('seat-1', 'red'); sim.setTeam('seat-2', 'blue'); sim.setTeam('seat-3', 'blue');
       expect(sim.startMatch()).toBe(true);
       const all = sim.playerStates();
       for (const p of all) expect(closest(p, all)!.team, `seed ${seed}`).not.toBe(p.team);
       expect(worst(all), `seed ${seed}`).toBeLessThan(.01);
     }
-    const alone = room('mirror-mere', 2, 3, false);
+    const alone = room('sunward-summit', 2, 3, false);
     alone.setTeam('seat-0', 'red'); alone.setTeam('seat-1', 'red');
     expect(alone.startMatch()).toBe(true);
     for (const p of alone.playerStates()) expect(p.yaw).toBe(Math.PI);
@@ -305,7 +305,7 @@ describe('the lens starts behind the player, looking the way they face', () => {
 
   // (Its own limit: it deals every royale place, and under a loaded machine ran past the default five seconds.)
   it('a royale dealt by the room: from every seat the closest opponent is in the first frame, and the shot stays theirs', () => {
-    for (const [stage, field] of [['mirror-mere', 8], ['mirror-mere', 12], [undefined, 12], ['kuroyuki-hall', 6]] as const) for (let seed = 1; seed <= 3; seed++) {
+    for (const [stage, field] of [['sunward-summit', 8], ['sunward-summit', 12], [undefined, 12], ['ashfall-weir', 6]] as const) for (let seed = 1; seed <= 3; seed++) {
       const sim = room(stage, field, seed, false);
       expect(sim.startMatch()).toBe(true);
       const players = sim.playerStates();

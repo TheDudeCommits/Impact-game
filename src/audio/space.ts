@@ -39,14 +39,22 @@ export const STAGE_SPACES: Partial<Record<StageId, SpaceName>> = {
   'blood-citadel': 'keep',
   'ash-colosseum': 'stadium',
   'sunfall-arena': 'stadium',
+  'zenith-coliseum': 'stadium',
+  'ashfall-weir': 'canyon',
   harbor: 'open',
+  'wreckers-causeway': 'open',
   'hidden-ash': 'open',
+  'sunward-summit': 'open',
   'cinder-flats': 'open',
   'warlords-roof': 'open',
+  'hollowmere-quarry': 'open',
   'mirror-mere': 'void',
   'drifting-isle': 'void',
+  'dry-harbour': 'open',
+  'thornwood-ward': 'open',
   'kuroyuki-hall': 'open',
   'starfall-crater': 'canyon',
+  'scrap-pit': 'keep',
 };
 
 export function spaceFor(stage: StageId | undefined): Space | undefined {

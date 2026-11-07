@@ -58,7 +58,7 @@ describe('StageLife', () => {
 
   it('scales the motes and shafts with quality and the effects slider', () => {
     const { life, sky } = make();
-    life.setStage('drifting-isle', lookFor('drifting-isle'));
+    life.setStage('sunward-summit', lookFor('sunward-summit'));
     expect(sky.setLife).toHaveBeenLastCalledWith(fixture.clouds);
     life.setQuality('high', 1);
     expect(drawn(life)).toEqual({ group: true, motes: fixture.motes!.count, beams: fixture.shafts!.beams.length });
@@ -77,7 +77,7 @@ describe('StageLife', () => {
 
   it('lays each shaft along the sun, from high over the arena down to just under the floor', () => {
     const { life, parts } = make();
-    life.setStage('drifting-isle', lookFor('drifting-isle'));
+    life.setStage('sunward-summit', lookFor('sunward-summit'));
     const u = parts[1].material.uniforms;
     const [x, z] = fixture.shafts!.beams[0];
     const s = u.uBeamS.value[0] as THREE.Vector4, d = u.uBeamD.value[0] as THREE.Vector4;
@@ -95,7 +95,7 @@ describe('StageLife', () => {
 
   it('follows the camera, and goes dark with the room', () => {
     const { life, parts } = make();
-    life.setStage('drifting-isle', lookFor('drifting-isle'));
+    life.setStage('sunward-summit', lookFor('sunward-summit'));
     const camera = new THREE.PerspectiveCamera(50, 16 / 9, .08, 1500);
     camera.position.set(-3, 1.7, 5.5); camera.lookAt(5, 1, -10); camera.updateMatrixWorld();
     const focus = new THREE.Vector3(0, 0, 3);

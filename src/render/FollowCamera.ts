@@ -406,7 +406,7 @@ export const SMALL_FLOOR=15;
 /** Whether a stage's floor is small (see SMALL_FLOOR). */
 export function smallFloor(bounds?:{halfX:number;halfZ:number}){return !!bounds&&Math.min(bounds.halfX,bounds.halfZ)<SMALL_FLOOR;}
 const OPEN_EDGE:Readonly<Record<string,number>>={
-  'drifting-isle':1.4,'cinder-flats':1.4,'warlords-roof':1.4,'mirror-mere':1.4,
+  'ashfall-weir':1.4,'drifting-isle':1.4,'cinder-flats':1.4,'warlords-roof':1.4,'hollowmere-quarry':1.4,'mirror-mere':1.4,'sunward-summit':1.4,
 };
 /** How far past the stage's bounds the dynamic lens may stand (negative: inside them): an enclosed hall's
  *  ENCLOSED_OUT, and a small floor's (SMALL_FLOOR) the same; a floor with room whose edge is open, what OPEN_EDGE

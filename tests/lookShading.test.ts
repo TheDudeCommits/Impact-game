@@ -140,7 +140,7 @@ describe('stage materials', () => {
   it('an unlit source material becomes lit, keeping its map and alpha', () => {
     const map = new T.Texture();
     const source = new T.MeshBasicMaterial({ name: '5_ground02_1_0_0', map, color: 0xffffff, alphaTest: .3 });
-    const lit = lookStageMaterial(source, 'harbor', '5_ground02_1_0_0_0') as T.MeshStandardMaterial;
+    const lit = lookStageMaterial(source, 'wreckers-causeway', '5_ground02_1_0_0_0') as T.MeshStandardMaterial;
     expect(lit).toBeInstanceOf(T.MeshStandardMaterial);
     expect(lit.map).toBe(map);
     expect(lit.alphaTest).toBe(.3);
@@ -156,7 +156,7 @@ describe('stage materials', () => {
     expect(shader.fragmentShader).toContain('directLight.color *= uStageKey * lookCookie( vLookWorld )');
   });
   it('painted skies stay unlit and outside the fog', () => {
-    for (const [stage, name] of [['harbor', '5_sky_1_0_0'], ['sunfall-arena', '5_skybox_1_0_0']] as [StageId, string][]) {
+    for (const [stage, name] of [['wreckers-causeway', '5_sky_1_0_0'], ['sunfall-arena', '5_skybox_1_0_0']] as [StageId, string][]) {
       const out = lookStageMaterial(new T.MeshStandardMaterial({ name }), stage, 'Object_6') as T.MeshBasicMaterial;
       expect(out).toBeInstanceOf(T.MeshBasicMaterial);
       expect(out.fog).toBe(false);

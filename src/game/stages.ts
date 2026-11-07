@@ -14,12 +14,14 @@ import type { FighterId, RoomMode } from './types';
 import { FIGHTER_SERIES } from './fighterSeries';
 export { FIGHTER_SERIES };
 
-export type StageId = 'harbor' | 'ash-colosseum' | 'sunfall-arena'
-  | 'hidden-ash' | 'blood-citadel' | 'proving-hall' | 'cinder-flats' | 'warlords-roof' | 'drifting-isle'
-  | 'mirror-mere'
+export type StageId = 'harbor' | 'wreckers-causeway' | 'ash-colosseum' | 'sunfall-arena'
+  | 'hidden-ash' | 'blood-citadel' | 'zenith-coliseum' | 'proving-hall' | 'cinder-flats' | 'warlords-roof' | 'drifting-isle'
+  | 'sunward-summit' | 'ashfall-weir' | 'mirror-mere' | 'hollowmere-quarry'
   | 'rift-village' | 'rift-swords' | 'rift-fortress' | 'rift-eclipse'
   | 'rift-frost' | 'rift-grove' | 'rift-wastes' | 'rift-harbor' | 'rift-war'
-  | 'kuroyuki-hall' | 'starfall-crater';
+  | 'dry-harbour'
+  | 'thornwood-ward'
+  | 'kuroyuki-hall' | 'starfall-crater' | 'scrap-pit';
 
 export interface StageDefinition {
   id: StageId;
@@ -60,6 +62,11 @@ export const STAGES: Record<StageId, StageDefinition> = {
     model: null, halfX: 80, halfZ: 80, spawnRadius: 36,
     cameraFar: 340, fog: [90, 340],
   }),
+  'wreckers-causeway': define({
+    id: 'wreckers-causeway', name: 'The Wreckers\' Causeway', scene: 'A fire-lit bridge over the black sea',
+    model: null, halfX: 13, halfZ: 52, spawnRadius: 12,
+    cameraFar: 1400, fog: [140, 1250],
+  }),
   'ash-colosseum': define({
     id: 'ash-colosseum', name: 'The Ash Colosseum', scene: 'A walled court of raked ash under the smoking mountain',
     model: null, halfX: 48, halfZ: 48, spawnRadius: 26,
@@ -72,15 +79,36 @@ export const STAGES: Record<StageId, StageDefinition> = {
     // Round 3 (duelAxis): the duel faces north (+z) and south.
     duelAxis: 0,
   }),
+  'zenith-coliseum': define({
+    id: 'zenith-coliseum', name: 'The Zenith Coliseum', scene: 'A duelling floor where the sky runs out',
+    model: null, halfX: 10.5, halfZ: 10.5, spawnRadius: 7,
+    cameraFar: 340, fog: [80, 320], background: 0x0b1424,
+    duelAxis: 0,
+  }),
   'proving-hall': define({
     id: 'proving-hall', name: 'The Proving Hall', scene: 'Where the Hidden Ash tests its own',
     model: null, halfX: 6.5, halfZ: 7, spawnRadius: 4.5,
     cameraFar: 340, fog: [60, 300], doubleSided: true,
   }),
+  'sunward-summit': define({
+    id: 'sunward-summit', name: 'The Sunward Summit', scene: 'A temple on the last peak, over a sea of cloud at sundown',
+    model: null, halfX: 38, halfZ: 38, spawnRadius: 26,
+    cameraFar: 1500, fog: [170, 1400],
+  }),
+  'ashfall-weir': define({
+    id: 'ashfall-weir', name: 'The Ashfall Weir', scene: 'The river below the old weir, at first light',
+    model: null, halfX: 18, halfZ: 45, spawnRadius: 14,
+    cameraFar: 1200, fog: [130, 1100],
+  }),
   'mirror-mere': define({
     id: 'mirror-mere', name: 'The Mirror Mere', scene: 'A still lake where the hex lies sealed',
     model: null, halfX: 38, halfZ: 42, spawnRadius: 22,
     cameraFar: 900, fog: [55, 700],
+  }),
+  'hollowmere-quarry': define({
+    id: 'hollowmere-quarry', name: 'Hollowmere Quarry', scene: 'A mining town at the bottom of the iron pit',
+    model: null, halfX: 38, halfZ: 38, spawnRadius: 26,
+    cameraFar: 1300, fog: [150, 1200],
   }),
   'cinder-flats': define({
     id: 'cinder-flats', name: 'The Cinder Flats', scene: 'Black sand where the embers never cool',
@@ -129,6 +157,17 @@ export const STAGES: Record<StageId, StageDefinition> = {
     id: 'rift-harbor', name: 'The Drowned Harbor', scene: 'The tide brought the dead back in',
     model: null, halfX: 32, halfZ: 32, spawnRadius: 18, cameraFar: 700, fog: [18, 210],
   }),
+  'dry-harbour': define({
+    id: 'dry-harbour', name: 'The Dry Harbour', scene: 'Where the Dust Sea went out and never came back',
+    model: null, halfX: 38, halfZ: 38, spawnRadius: 26,
+    cameraFar: 1500, fog: [420, 1500],
+    duelAxis: .45,
+  }),
+  'thornwood-ward': define({
+    id: 'thornwood-ward', name: 'Thornwood Ward', scene: 'A city block the hex gave back to the forest',
+    model: null, halfX: 38, halfZ: 38, spawnRadius: 26,
+    cameraFar: 900, fog: [70, 820],
+  }),
   'kuroyuki-hall': define({
     id: 'kuroyuki-hall', name: 'Kuroyuki Hall', scene: 'A mountain hall in the falling black snow',
     model: null, halfX: 38, halfZ: 38, spawnRadius: 26,
@@ -140,11 +179,18 @@ export const STAGES: Record<StageId, StageDefinition> = {
     cameraFar: 1400, fog: [260, 1350],
     duelAxis: 0,
   }),
+  'scrap-pit': define({
+    id: 'scrap-pit', name: 'The Scrap Pit', scene: 'A bounty fight under the scrapyard floodlights',
+    model: null, halfX: 13, halfZ: 13, spawnRadius: 9,
+    cameraFar: 400, fog: [40, 280], background: 0x09090c,
+  }),
 };
 
 /** The battle royale's places. */
 export const ROYALE_STAGES: readonly StageId[] = [
-  'mirror-mere', 'ash-colosseum',
+  'sunward-summit', 'ashfall-weir', 'mirror-mere', 'hollowmere-quarry', 'ash-colosseum', 'wreckers-causeway',
+  'dry-harbour',
+  'thornwood-ward',
   'kuroyuki-hall',
   'starfall-crater',
 ];
@@ -156,7 +202,9 @@ const SERIES_ARENA: Record<string, StageId> = {};
 const SERIES_FAMILY: Record<string, string> = { Konta: 'Hidden Ash' };
 /** Where two fighters of one series settle it. Konta's own duel venue is the
  *  Proving Hall, which is also everyone else's, so it is not listed here. */
-const SERIES_DUEL: Record<string, StageId> = {};
+const SERIES_DUEL: Record<string, StageId> = {
+  'Last Sun': 'zenith-coliseum',
+};
 
 /** The most-represented series, if it is ahead and brings at least a third of
  *  the roster. A genuinely mixed lobby has no iconic scene. */
@@ -191,7 +239,8 @@ export function dealRoyaleStage(pick: (pool: readonly StageId[]) => StageId, pre
 /** Round 4b (MAPS): the smaller rings a small battle royale can be dealt as
  *  well, and the most fighters each holds. */
 export const SMALL_ROYALE_STAGES: Partial<Record<StageId, number>> = {
-  'sunfall-arena': 6, 'drifting-isle': 8,
+  'sunfall-arena': 6, 'zenith-coliseum': 4, 'drifting-isle': 8,
+  'scrap-pit': 6,
 };
 /** The places a royale of `field` fighters can be dealt (all of the famous
  *  places; the smaller rings too when the field is small enough for them). */
@@ -219,7 +268,7 @@ export class RoyaleDeck {
   }
 }
 
-export const ONLINE_DUEL_STAGES: readonly StageId[] = ['sunfall-arena', 'drifting-isle'];
+export const ONLINE_DUEL_STAGES: readonly StageId[] = ['sunfall-arena', 'zenith-coliseum', 'scrap-pit'];
 /** The online Duel's deck (see ONLINE_DUEL_STAGES), as RoyaleDeck deals the royale's places. Server memory only. */
 export class DuelDeck {
   private deck: StageId[] = [];

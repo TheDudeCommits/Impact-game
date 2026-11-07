@@ -7,14 +7,14 @@ export interface CustomLobby {mode:CustomMode;rules:CustomRules;votes:Record<str
 export const ARENAS:Record<CustomMode,readonly StageId[]>={
   // Round 4b (MAPS): not the harbour - its canal eliminates without warning,
   // and a blind critic asked for it out of the battle royale altogether.
-  royale:['mirror-mere','ash-colosseum','sunfall-arena','warlords-roof','drifting-isle','cinder-flats','kuroyuki-hall','starfall-crater'],
+  royale:['sunward-summit','ashfall-weir','mirror-mere','hollowmere-quarry','ash-colosseum','wreckers-causeway','sunfall-arena','zenith-coliseum','warlords-roof','drifting-isle','cinder-flats','dry-harbour','thornwood-ward','kuroyuki-hall','starfall-crater','scrap-pit'],
   'bad-blood':['blood-citadel','warlords-roof','drifting-isle','ash-colosseum','cinder-flats'],
   'last-stand':['hidden-ash'],
 };
 /** Where a private Duel can be fought (a party's DUEL chooses one; PrivateDuelRoom refuses anything else): the
  *  tournament ring first, as every Duel was until the party could choose, then the other rings and the royale's
  *  famous places - every one of them a stage the arena rooms already run. */
-export const DUEL_ARENAS:readonly StageId[]=['sunfall-arena','proving-hall','drifting-isle','mirror-mere','ash-colosseum','warlords-roof','cinder-flats','kuroyuki-hall','starfall-crater'];
+export const DUEL_ARENAS:readonly StageId[]=['sunfall-arena','zenith-coliseum','proving-hall','drifting-isle','ashfall-weir','sunward-summit','mirror-mere','hollowmere-quarry','ash-colosseum','wreckers-causeway','warlords-roof','cinder-flats','dry-harbour','thornwood-ward','kuroyuki-hall','starfall-crater','scrap-pit'];
 /** A Duel's stage from a room option: one of DUEL_ARENAS, else the tournament ring. */
 export const duelStage=(raw:unknown):StageId=>typeof raw==='string'&&DUEL_ARENAS.includes(raw as StageId)?raw as StageId:'sunfall-arena';
 export const DURATIONS=[180,240,300,600] as const;

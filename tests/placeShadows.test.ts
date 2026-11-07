@@ -13,7 +13,8 @@ describe('the places\' own shadows', () => {
     expect(placeCaster('ash-colosseum', 'Material.036')).toBe(false);
     expect(placeCaster('ash-colosseum', 'Material.073')).toBe(false);
     // Places that ask for none, and a renamed export, cast nothing.
-    expect(placeCaster('kuroyuki-hall', 'Material_5')).toBe(false);
+    expect(placeCaster('ashfall-weir', 'Material.002')).toBe(false);
+    expect(placeCaster('hollowmere-quarry', 'Material_5')).toBe(false);
     expect(placeCaster('starfall-crater', 'Crater_Cover.renamed')).toBe(false);
     expect(Object.keys(PLACE_CASTERS)).not.toContain('proving-hall');
   });

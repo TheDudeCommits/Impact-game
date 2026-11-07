@@ -39,7 +39,7 @@ describe('the places\' ambience: recipes and files', () => {
   });
   it('puts the stands only where there are stands, and keeps a place under the fight', () => {
     const crowds = Object.entries(AMBIENCES).filter(([, recipe]) => recipe!.beds.some(bed => bed.crowd)).map(([stage]) => stage).sort();
-    expect(crowds).toEqual(['ash-colosseum', 'sunfall-arena']);
+    expect(crowds).toEqual(['ash-colosseum', 'scrap-pit', 'sunfall-arena', 'zenith-coliseum']);
     expect(AMBIENCE_LEVEL).toBeLessThanOrEqual(-8);
     for (const [stage, recipe] of Object.entries(AMBIENCES)) for (const bed of recipe!.beds) expect(bed.gain, `${stage} ${bed.file}`).toBeLessThanOrEqual(0);
     expect(CHEER.win).toBeGreaterThan(CHEER.blow);
@@ -129,7 +129,7 @@ describe('the ambience player (StageAmbience)', () => {
   it('fades the place out on leaving, stops its beds, and lets go of what the next place does not play', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const { ctx, player, released } = make();
-    player.set('warlords-roof');
+    player.set('hollowmere-quarry');
     await vi.advanceTimersByTimeAsync(1);
     const beds = ctx.sources.filter(source => source.loop), fader = ctx.gains[0];
     player.set('hidden-ash');
@@ -144,7 +144,7 @@ describe('the ambience player (StageAmbience)', () => {
   });
   it('swells the stands for a big blow and more for the winner, and does nothing where there are none', async () => {
     const { ctx, player } = make();
-    player.set('cinder-flats'); await flush();
+    player.set('ashfall-weir'); await flush();
     const before = ctx.gains.map(node => node.gain.events.length);
     player.cheer(1);
     expect(ctx.gains.map(node => node.gain.events.length)).toEqual(before);

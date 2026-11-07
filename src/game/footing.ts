@@ -9,6 +9,7 @@ import type { StageId } from './stages';
  *  liquid. `lit` and `shade` are the spray's two cel tones. */
 export interface LiquidFloor { kind: 'water' | 'blood'; level: number; lit: number; shade: number }
 export const LIQUID_FLOORS: Partial<Record<StageId, LiquidFloor>> = {
+  'ashfall-weir': { kind: 'water', level: 0, lit: 0xf4fbff, shade: 0x86b7dc },
   'mirror-mere': { kind: 'water', level: 0, lit: 0x8a90c8, shade: 0x2a2c50 },
 };
 /** How far off the surface a foot may be and still be in it (m). */

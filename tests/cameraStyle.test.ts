@@ -442,7 +442,7 @@ describe('small floors: room for the lens past the bounds, and the Classic look 
   };
   const inFrame=(p:THREE.Vector3)=>p.z<1&&Math.abs(p.x)<.95&&Math.abs(p.y)<.95;
   it('small is read off the stage\'s own floor (its narrower side under 2 x SMALL_FLOOR across), not a list: the Proving Hall and the Sunfall Arena\'s ring',()=>{
-    expect([...small].sort()).toEqual(['proving-hall','sunfall-arena']);
+    expect([...small].sort()).toEqual(['proving-hall','scrap-pit','sunfall-arena','wreckers-causeway','zenith-coliseum']);
     for(const id of ids)expect(smallFloor(STAGES[id]),id).toBe(Math.min(STAGES[id].halfX,STAGES[id].halfZ)<SMALL_FLOOR);
     expect(smallFloor(undefined),'no stage known').toBe(false);
   });
@@ -471,7 +471,7 @@ describe('small floors: room for the lens past the bounds, and the Classic look 
   });
   it('the next match on another floor takes that floor\'s camera at the cut, with no blend across it',()=>{
     const r=new Rig('close',3);r.follow.stageBounds=STAGES['sunfall-arena'];r.step(120);expect(r.follow.styleBlend).toBe(0);
-    r.follow.stageBounds=STAGES['mirror-mere'];r.follow.reset();r.step(1);expect(r.follow.styleBlend).toBe(1);
+    r.follow.stageBounds=STAGES['sunward-summit'];r.follow.reset();r.step(1);expect(r.follow.styleBlend).toBe(1);
   });
   it('steering is the style chosen, not the look: with Close set, a held key keeps its bounded latch on a small floor',()=>{
     const peek=(style:CameraStyle,id:StageId)=>{
@@ -484,7 +484,7 @@ describe('small floors: room for the lens past the bounds, and the Classic look 
     };
     for(const id of small){expect(peek('close',id),id).toBeLessThan(.06);expect(peek('classic',id),id).toBeGreaterThan(.3);}
   });
-  const PAST:readonly StageId[]=['mirror-mere','drifting-isle','cinder-flats','warlords-roof'];
+  const PAST:readonly StageId[]=['sunward-summit','mirror-mere','drifting-isle','cinder-flats','warlords-roof','ashfall-weir','hollowmere-quarry'];
   it('a floor with room: the lens may stand 1.4 m past an edge that was looked at and found harmless, and stays inside any other',()=>{
     const roomy=ids.filter(id=>!smallFloor(STAGES[id])&&!STAGES[id].doubleSided&&STAGES[id].background===undefined);
     for(const id of PAST)expect(roomy,id).toContain(id);

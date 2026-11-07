@@ -178,7 +178,7 @@ describe('FollowCamera, dynamic (round 4b)', () => {
     // FollowCamera ENCLOSED_OUT): kept inside, the lens was slid over the player and stood on top of them, looking at
     // the floor. Launch night, second pass: and so does a floor with room whose edge was looked at and found harmless
     // (FollowCamera OPEN_EDGE; the fourth case here names one of them) - inside, the lens looked straight down on a fighter a tenth of the frame tall.
-    for (const [halfX, extra, inside] of [[18, {}, true], [18, { doubleSided: true }, false], [13, {}, false], [18, { id: 'warlords-roof' }, false]] as const) {
+    for (const [halfX, extra, inside] of [[18, {}, true], [18, { doubleSided: true }, false], [13, {}, false], [18, { id: 'ashfall-weir' }, false]] as const) {
       const bounds = { halfX, halfZ: 55, ...extra };
       const camera = new THREE.PerspectiveCamera(50, 16 / 9, .1, 200), follow = new FollowCamera(camera);
       follow.mode = 'dynamic'; follow.stageBounds = bounds;

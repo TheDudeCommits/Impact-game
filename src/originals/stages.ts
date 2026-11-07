@@ -37,8 +37,23 @@ export const ORIGINAL_STAGES: Record<StageId, OriginalStage> = {
   'ash-colosseum': {
     name: 'The Ash Colosseum', scene: 'A walled court of raked ash under the smoking mountain', world: 'Hidden Ash', safe: true,
   },
+  'wreckers-causeway': {
+    name: 'The Wreckers\' Causeway', scene: 'A fire-lit bridge over the black sea', world: 'Dust Sea', safe: true,
+  },
+  'sunward-summit': {
+    name: 'The Sunward Summit', scene: 'A temple on the last peak, over a sea of cloud at sundown', world: 'Last Sun', safe: true,
+  },
+  'ashfall-weir': {
+    name: 'The Ashfall Weir', scene: 'The river below the old weir, at first light', world: 'Hidden Ash', safe: true,
+  },
   'mirror-mere': {
     name: 'The Mirror Mere', scene: 'A still lake where the hex lies sealed', world: 'Hex Fallout', safe: true,
+  },
+  'hollowmere-quarry': {
+    name: 'Hollowmere Quarry', scene: 'A mining town at the bottom of the iron pit', world: 'Ironwall', safe: true,
+  },
+  'zenith-coliseum': {
+    name: 'The Zenith Coliseum', scene: 'A duelling floor where the sky runs out', world: 'Last Sun', safe: true,
   },
   'cinder-flats': {
     name: 'The Cinder Flats', scene: 'Black sand where the embers never cool', world: 'Cinder Requiem', safe: true,
@@ -50,8 +65,11 @@ export const ORIGINAL_STAGES: Record<StageId, OriginalStage> = {
     name: 'The Drifting Isle', scene: 'Old flagstones adrift in a bright sky', world: 'Last Sun', safe: true,
   },
   'rift-war': { name: 'The Torn Plain', scene: 'Three causeways across the rift', world: '', safe: true },
+  'dry-harbour': { name: 'The Dry Harbour', scene: 'Where the Dust Sea went out and never came back', world: 'Dust Sea', safe: true },
+  'thornwood-ward': { name: 'Thornwood Ward', scene: 'A city block the hex gave back to the forest', world: 'Hex Fallout', safe: true },
   'kuroyuki-hall': { name: 'Kuroyuki Hall', scene: 'A mountain hall in the falling black snow', world: 'Black Snow', safe: true },
   'starfall-crater': { name: 'The Starfall Crater', scene: 'Where a falling star struck the Hidden Ash hills', world: 'Hidden Ash', safe: true },
+  'scrap-pit': { name: 'The Scrap Pit', scene: 'A bounty fight under the scrapyard floodlights', world: 'Salvage Wilds', safe: true },
 };
 
 /** The launch gate's lists (team L): what may be dealt today, and what is left out until it is fixed. */
@@ -65,15 +83,19 @@ export function shownStage(id: StageId | string | undefined | null): { name: str
 }
 
 export const STAGE_SKIES: Partial<Record<StageId, string>> = {
+  'zenith-coliseum': 'sky-zenith-coliseum.webp',
 };
 export const SKY_OVERRIDES: Partial<Record<StageId, string>> = {
   'sunfall-arena': 'sky-sunfall-arena.webp', 
   'starfall-crater': 'sky-starfall-twilight.webp' /* places-epic-a: twilight after the star fell */, 'kuroyuki-hall': 'sky-kuroyuki-night.webp' /* places-epic-a: Kuroyuki by night */, 'cinder-flats': 'sky-cinder-ember.webp' /* places-epic-a: under the eruption */, 'mirror-mere': 'sky-mirror-mere-night.webp' /* places-epic-a: the mere at night */, 'drifting-isle': 'sky-drifting-isle.webp', 
+  'dry-harbour': 'sky-dry-harbour.webp', 'sunward-summit': 'sky-sunward-summit.webp', 'ashfall-weir': 'sky-ashfall-dawn.webp', 'thornwood-ward': 'sky-thornwood-night.webp',
+  'hollowmere-quarry': 'sky-hollowmere-quarry.webp', 'wreckers-causeway': 'sky-wreckers-night.webp', 'scrap-pit': 'sky-scrap-pit.webp',
 };
 export const WITHHELD_SKIES: readonly string[] = [];
 export const RETIRED_SKIES: readonly string[] = [];
 export const BUILT_PLACES: Partial<Record<StageId, string>> = {
   'proving-hall': 'built in code',
+  'wreckers-causeway': 'built in code',
   'sunfall-arena': 'built in code',
   'warlords-roof': 'built in code',
   'ash-colosseum': 'built in code',
@@ -82,6 +104,13 @@ export const BUILT_PLACES: Partial<Record<StageId, string>> = {
   'kuroyuki-hall': 'built in code',
   'drifting-isle': 'built in code',
   'cinder-flats': 'built in code',
+  'zenith-coliseum': 'built in code',
+  'ashfall-weir': 'built in code',
+  'sunward-summit': 'built in code',
+  'scrap-pit': 'built in code',
+  'dry-harbour': 'built in code',
+  'thornwood-ward': 'built in code',
+  'hollowmere-quarry': 'built in code',
 };
 export const STILL_LOADED: Partial<Record<StageId, string>> = {};
 export const RETIRED_FILES: readonly string[] = RETIRED_SKIES.map(file => `assets/environment/br/${file}`);

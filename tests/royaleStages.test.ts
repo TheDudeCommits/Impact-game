@@ -81,8 +81,8 @@ describe('a match is dealt its stage once', () => {
   });
 
   it('starts a private room on the arena its host named - never the harbour, which is out of the royale', async () => {
-    const { room: named } = await room(new PrivateArenaRoom(), { creationToken: crypto.randomUUID(), players: 4, rules: { arena: 'kuroyuki-hall' } });
-    try { expect(named.simulation.stage).toBe('kuroyuki-hall'); } finally { named.onDispose(); }
+    const { room: named } = await room(new PrivateArenaRoom(), { creationToken: crypto.randomUUID(), players: 4, rules: { arena: 'hollowmere-quarry' } });
+    try { expect(named.simulation.stage).toBe('hollowmere-quarry'); } finally { named.onDispose(); }
     // Round 4b (MAPS): a forged harbour choice falls back to the deal.
     const { room: forged } = await room(new PrivateArenaRoom(), { creationToken: crypto.randomUUID(), players: 4, rules: { arena: 'harbor' } });
     try { expect(ROYALE_STAGES).toContain(forged.simulation.stage); } finally { forged.onDispose(); }
@@ -113,7 +113,7 @@ describe('a match is dealt its stage once', () => {
       const { room: r, join } = await room(new BotArenaRoom(), { players: 4 });
       try { join('owner', 'konta'); small.add(r.simulation.stage); } finally { r.onDispose(); }
     }
-    expect([...small].some(s => s === 'sunfall-arena' || s === 'drifting-isle'), [...small].join(' ')).toBe(true);
+    expect([...small].some(s => s === 'zenith-coliseum' || s === 'sunfall-arena' || s === 'drifting-isle'), [...small].join(' ')).toBe(true);
     for (let i = 0; i < 12; i++) {
       const { room: r } = await room(new BotArenaRoom(), { players: 12 });
       try { expect(ROYALE_STAGES).toContain(r.simulation.stage); } finally { r.onDispose(); }

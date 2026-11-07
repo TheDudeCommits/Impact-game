@@ -33,6 +33,42 @@ async function arena(room: PrivateArenaRoom | PrivateDuelRoom | DuelRoom, option
 }
 
 describe('a party\'s match room starts by itself', () => {
+  it('a party DUEL: both in and loaded, then the room\'s own 3-second count, and the fight - nobody presses START', async () => {
+    const f = await arena(new PrivateDuelRoom(), { stage: 'zenith-coliseum', party: 2 });
+    try {
+      const a = f.join('a'), b = f.join('b');
+      expect(f.lobby()).toMatchObject({ duel: true, party: true, autoStart: true, startsAt: null });
+      f.advance(2);
+      // In, but not loaded: no count yet.
+      expect(f.lobby().startsAt).toBeNull();
+      f.loaded(a); f.advance(1);
+      expect(f.lobby().startsAt).toBeNull();
+      f.loaded(b); f.advance(.1);
+      expect(f.lobby().startsAt).toBeCloseTo(f.room.simulation.serverTime + PARTY_COUNTDOWN - .1, 0);
+      expect(statuses(f.room).at(-1)).toBe('Everyone is here — the duel starts in 3 seconds.');
+      f.advance(PARTY_COUNTDOWN + .2);
+      expect(f.room.simulation.status).toBe('active');
+      expect(f.room.simulation.stage).toBe('zenith-coliseum');
+      // The room's own after that: no party start pending.
+      expect(f.lobby()).toMatchObject({ party: true, autoStart: false });
+    } finally { f.room.onDispose(); }
+  });
+
+  it('a party royale: the count, the bots at kickoff (loaded too), then the fight', async () => {
+    const f = await arena(new PrivateArenaRoom(), { players: 4, party: 3, rules: { arena: 'ashfall-weir' } });
+    try {
+      const people = ['a', 'b', 'c'].map(id => f.join(id));
+      f.loaded(...people); f.advance(.1);
+      expect(f.lobby().startsAt).not.toBeNull();
+      f.advance(PARTY_COUNTDOWN + .1);
+      // Kickoff: the bot is in, and the pages load it before the fight.
+      expect(f.room.snapshot().players.filter(p => p.isBot)).toHaveLength(1);
+      expect(f.room.simulation.status).toBe('waiting');
+      f.loaded(...people); f.advance(.2);
+      expect(f.room.simulation.status).toBe('active');
+      expect(f.room.simulation.stage).toBe('ashfall-weir');
+    } finally { f.room.onDispose(); }
+  });
 
 
   it('every other private room still waits for its host\'s START', async () => {

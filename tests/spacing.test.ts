@@ -12,7 +12,7 @@ import type { AttackSlot, CombatEvent, FighterId, GameSnapshot, PlayerInput } fr
  *  moves slide back before they charge, and an iai draw ends past its target. */
 const ROSTER = Object.keys(MOVES) as FighterId[];
 
-function bout(fighter: FighterId, gap: number, options: { stage?: 'sunfall-arena'; at?: number; other?: FighterId } = {}) {
+function bout(fighter: FighterId, gap: number, options: { stage?: 'zenith-coliseum'; at?: number; other?: FighterId } = {}) {
   const sim = new ArenaSimulation({ trainingBot: false, seed: 9, stage: options.stage });
   const z = options.at ?? 0;
   sim.addPlayer('a', fighter, 'A', false, { x: 0, y: 0, z });
@@ -60,7 +60,7 @@ describe('bodies never end a tick inside each other', () => {
     // the two stood 0.12 m apart; the push the wall refuses now goes to the
     // attacker instead.
     for (const fighter of ['gummy', 'kenzo', 'shirokane', 'konta'] as FighterId[]) for (const slot of ['light', 'heavy'] as AttackSlot[]) {
-      const sim = new ArenaSimulation({ trainingBot: false, seed: 9, stage: 'sunfall-arena' });
+      const sim = new ArenaSimulation({ trainingBot: false, seed: 9, stage: 'zenith-coliseum' });
       const { halfZ } = sim.bounds;
       sim.addPlayer('a', fighter, 'A', false, { x: 0, y: 0, z: halfZ - 2.2 });
       sim.addPlayer('b', 'taisei', 'B', false, { x: 0, y: 0, z: halfZ - .5 });
@@ -88,7 +88,7 @@ describe('bodies never end a tick inside each other', () => {
   });
 
   it('ends a chase whose target was stopped on a wall, and the follow-up lands on them there', () => {
-    const sim = new ArenaSimulation({ trainingBot: false, seed: 9, stage: 'sunfall-arena' });
+    const sim = new ArenaSimulation({ trainingBot: false, seed: 9, stage: 'zenith-coliseum' });
     const { halfZ } = sim.bounds;
     sim.addPlayer('a', 'gummy', 'A', false, { x: 0, y: 0, z: halfZ - 2.2 });
     sim.addPlayer('b', 'taisei', 'B', false, { x: 0, y: 0, z: halfZ - .5 });
@@ -230,7 +230,7 @@ describe('an iai draw ends past the body it cuts', () => {
   });
 
   it('stops short of a body against the stage bound and cuts into them there', () => {
-    const sim = new ArenaSimulation({ trainingBot: false, seed: 9, stage: 'sunfall-arena' });
+    const sim = new ArenaSimulation({ trainingBot: false, seed: 9, stage: 'zenith-coliseum' });
     const { halfZ } = sim.bounds;
     sim.addPlayer('a', 'kenzo', 'A', false, { x: 0, y: 0, z: halfZ - 3 });
     sim.addPlayer('b', 'taisei', 'B', false, { x: 0, y: 0, z: halfZ - .5 });

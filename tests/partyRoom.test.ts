@@ -115,6 +115,32 @@ describe('party room', () => {
 
 
 
+  it('launches a DUEL for exactly two, into the private Duel room on the chosen place', async () => {
+    const { room, clients: [leader, guest], send, readyAll } = party(['leader', 'guest']);
+    try {
+      const server = matchServer();
+      send(leader, 'party-mode', 'duel');
+      expect(room.view.mode).toBe('duel');
+      expect(room.view.rules.arena).toBe('sunfall-arena');
+      send(leader, 'party-rules', { arena: 'ashfall-weir' });
+      readyAll();
+      expect(startCheck(room.view).reason).toBeUndefined();
+      await room.launch(leader);
+      expect(server.created).toHaveLength(1);
+      expect(server.created[0].name).toBe('private_duel');
+      // `party`: the members sent, so the duel starts by itself once both are in and loaded (PartyStart).
+      expect(server.created[0].options).toMatchObject({ stage: 'ashfall-weir', assetGate: true, readyGate: true, mode: 'match', party: 2 });
+      expect(server.seats.map(o => o.name)).toEqual(['leader', 'guest']);
+      expect(room.view.members.every(m => m.status === 'travelling')).toBe(true);
+      expect(vi.mocked(guest.send).mock.calls.some(c => c[0] === 'party-travel')).toBe(false);
+      expect(vi.mocked(leader.send).mock.calls.find(c => c[0] === 'party-travel')?.[1]).toMatchObject({ mode: 'duel' });
+      // A Duel's RANDOM is dealt by the party, from the Duel's own places.
+      send(leader, 'party-return'); await Promise.resolve();
+      send(leader, 'party-rules', { arena: 'random' }); readyAll(); await room.launch(leader);
+      expect(DUEL_ARENAS).toContain(server.created[1].options.stage);
+    } finally { room.onDispose(); }
+  });
+
   it('refuses a DUEL for one or three, and START says why', async () => {
     const { room, clients: [leader, b, c], send, readyAll, join } = party(['leader', 'b', 'c']);
     try {
@@ -138,13 +164,79 @@ describe('party room', () => {
 
 
 
+  it('honours the place the party chose in every mode that has one, and fixes the others', async () => {
+    const { room, clients: [leader], send, readyAll } = party(['leader', 'guest']);
+    try {
+      const server = matchServer(), go = async () => { readyAll(); await room.launch(leader); const made = server.created.at(-1)!; send(leader, 'party-return'); await Promise.resolve(); return made; };
+      send(leader, 'party-rules', { arena: 'sunward-summit', players: 12, difficulty: 'hard', seconds: 300 });
+      let made = await go();
+      expect(made.name).toBe('private_arena');
+      expect(made.options).toMatchObject({ players: 12, party: 2, rules: { arena: 'sunward-summit', difficulty: 'hard', seconds: 300, players: 12 } });
+      send(leader, 'party-rules', { arena: 'random' });
+      expect((await go()).options).toMatchObject({ rules: { arena: 'auto' } });
+      send(leader, 'party-mode', 'bad-blood'); send(leader, 'party-rules', { arena: 'warlords-roof', difficulty: 'easy' });
+      made = await go();
+      expect(made.name).toBe('objective_arena');
+      expect(made.options).toMatchObject({ objective: 'bad-blood', access: 'host', rules: { arena: 'warlords-roof', difficulty: 'easy' } });
+      send(leader, 'party-rules', { arena: 'random' });
+      expect(ARENAS['bad-blood']).toContain(((await go()).options.rules as { arena: string }).arena);
+      // A vote: one per member, the most votes wins.
+      send(leader, 'party-rules', { arena: 'vote' });
+      send(room.clients[0], 'party-vote', 'drifting-isle'); send(room.clients[1], 'party-vote', 'drifting-isle');
+      expect((await go()).options).toMatchObject({ rules: { arena: 'drifting-isle' } });
+      // Last Stand's village and the co-op run's worlds are not the party's to choose.
+      send(leader, 'party-mode', 'last-stand'); send(leader, 'party-rules', { arena: 'warlords-roof' });
+      expect(room.view.rules.arena).toBe('random');
+      made = await go();
+      expect(made.options).toMatchObject({ objective: 'last-stand', party: 2, fill: false, rules: { arena: 'auto' } });
+      // Last Stand's bot allies: chosen in the party now that its room deploys by itself.
+      send(leader, 'party-rules', { fill: true, difficulty: 'hard' });
+      expect((await go()).options).toMatchObject({ fill: true, rules: { difficulty: 'hard' } });
+      send(leader, 'party-rules', { fill: 'yes' }); send(leader, 'party-rules', { fill: 1 });
+      expect(room.view.rules.fill).toBe(true);
+      send(leader, 'party-mode', 'survival');
+      expect(room.view.rules.fill).toBe(false);
+      made = await go();
+      expect(made.name).toBe('survival_arena');
+      expect(made.options).toMatchObject({ party: 2 });
+      expect(made.options).not.toHaveProperty('fill');
+    } finally { room.onDispose(); }
+  });
+
+  it('turns away every value that is not on the list', () => {
+    const { room, clients: [leader, guest], send } = party(['leader', 'guest']);
+    try {
+      const before = structuredClone(room.view);
+      for (const mode of ['boss-hunt', 'DUEL', '', 42, null, ['duel'], { mode: 'duel' }, '__proto__']) send(leader, 'party-mode', mode);
+      for (const rules of [{ arena: 'harbor' }, { arena: 'hidden-ash' }, { arena: 'rift-village' }, { arena: '__proto__' }, { players: 2 }, { players: 6 }, { players: '8' }, { players: 1e9 }, { seconds: 999 }, { seconds: -180 }, { seconds: '300' }, { difficulty: 'god' }, { difficulty: ['hard'] }, ['arena', 'sunward-summit'], null, 'sunward-summit', 7])
+        send(leader, 'party-rules', rules);
+      expect(room.view.mode).toBe(before.mode);
+      expect(room.view.rules).toEqual(before.rules);
+      // Only the leader chooses; a vote only in a vote, and only for one of the mode's places.
+      send(guest, 'party-mode', 'duel'); send(guest, 'party-rules', { arena: 'sunward-summit' });
+      send(guest, 'party-vote', 'sunward-summit');
+      expect(room.view.mode).toBe('royale'); expect(room.view.rules.arena).toBe('random'); expect(room.view.votes).toEqual({});
+      send(leader, 'party-rules', { arena: 'vote' });
+      for (const vote of ['harbor', 'hidden-ash', 7, null, { stage: 'sunward-summit' }]) send(guest, 'party-vote', vote);
+      expect(room.view.votes).toEqual({});
+      send(leader, 'party-leader', 'leader'); send(leader, 'party-leader', 'nobody'); send(leader, 'party-leader', 7);
+      expect(room.view.leader).toBe('leader');
+      // The table itself: each mode's own places, no fixed mode's.
+      expect(partyRules('duel', { arena: 'sunward-summit' }).arena).toBe('sunward-summit');
+      expect(partyRules('duel', { arena: 'blood-citadel' }).arena).toBe('sunfall-arena');
+      expect(partyRules('last-stand', { arena: 'vote' }).arena).toBe('random');
+      expect(partyRules('survival', { arena: 'sunward-summit', difficulty: 'hard' })).toEqual(defaultPartyRules('survival'));
+      expect(PARTY_ARENAS['last-stand']).toEqual([]);
+    } finally { room.onDispose(); }
+  });
+
   it('takes READY back only when the change reaches the players: the mode, the seats, their own fighter', () => {
     const { room, clients: [leader, a, b], send, readyAll, join } = party(['leader', 'a', 'b']);
     try {
       readyAll();
       const ready = { leader: false, a: true, b: true };
       // The place, the bots and the clock: everyone stays ready.
-      send(leader, 'party-rules', { arena: 'mirror-mere' }); send(leader, 'party-rules', { arena: 'vote' }); send(a, 'party-vote', 'kuroyuki-hall');
+      send(leader, 'party-rules', { arena: 'ashfall-weir' }); send(leader, 'party-rules', { arena: 'vote' }); send(a, 'party-vote', 'hollowmere-quarry');
       send(leader, 'party-rules', { difficulty: 'hard' }); send(leader, 'party-rules', { seconds: 180 });
       expect(readyOf(room)).toEqual(ready);
       // Opening the party again resends the same profile: no change, nobody unready.
@@ -212,6 +304,15 @@ describe('the rooms a party launches honour its place', () => {
     vi.spyOn(room, 'onMessage').mockImplementation((() => () => {}) as never);
     await room.onCreate({rosterProtocol:ROSTER_PROTOCOL,...options} as never); void step; return room;
   }
+  it("puts a private Duel where its creator chose, from the Duel's list only", async () => {
+    for (const [stage, expected] of [['ashfall-weir', 'ashfall-weir'], ['zenith-coliseum', 'zenith-coliseum'], ['harbor', 'sunfall-arena'], ['hidden-ash', 'sunfall-arena'], [42, 'sunfall-arena'], [undefined, 'sunfall-arena']] as const) {
+      const room = await arena(new PrivateDuelRoom(), { creationToken: TOKEN, stage });
+      try { expect(room.simulation.stage, String(stage)).toBe(expected); } finally { room.onDispose(); }
+    }
+    // The public Duel queue is dealt its ring from the duelling rings in turn, whatever a page asks.
+    const queue = await arena(new DuelRoom(), { stage: 'ashfall-weir' });
+    try { expect(ONLINE_DUEL_STAGES).toContain(queue.simulation.stage); } finally { queue.onDispose(); }
+  });
   it('opens a hosted Bad Blood on its named arena, and keeps it for the rematch', async () => {
     const room = new ObjectiveRoom();
     vi.spyOn(room, 'setPrivate').mockResolvedValue(undefined); vi.spyOn(room, 'setMetadata').mockResolvedValue(undefined); vi.spyOn(room, 'broadcast').mockImplementation(() => {});

@@ -37,6 +37,7 @@ describe('r9: the last places on the earlier model, and Last Stand\'s backdrop',
     expect(mere.kind).toBe('water');
     expect(mere.level).toBe(LIQUID_FLOORS['mirror-mere']!.level);
     expect(mere.lit).not.toBe(LIQUID_FLOORS['mirror-mere']!.lit);
+    expect(originalLiquid('ashfall-weir')).toBe(LIQUID_FLOORS['ashfall-weir']);
     expect(originalLiquid('harbor')).toBeUndefined();
   });
 });

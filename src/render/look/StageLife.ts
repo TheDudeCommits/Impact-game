@@ -87,6 +87,22 @@ export interface StageLifeConfig { motes?: MoteLife; shafts?: ShaftLife; clouds?
 
 /** Each stage's own atmosphere. Add an entry to bring another place to life. */
 export const STAGE_LIFE: Partial<Record<StageId, StageLifeConfig>> = {
+  'sunward-summit': {
+    motes: {
+      count: 1400, box: [26, 10, 26], lead: 8, floor: .2, size: .045, color: 0xfff0d2, glow: 8, shade: .4,
+      wind: [.3, .05, .12], swirl: 1.1,
+    },
+    shafts: {
+      beams: [
+        [-6, -34, 4.6, .6], [24, -30, 4.2, .55],
+        [-34, -24, 1.7, 1], [-22, -30, 1.5, .9], [-12, -26, 2, .8], [4, -24, 1.6, 1], [12, -38, 2.1, .9], [32, -34, 1.7, .85],
+        [40, -20, 1.8, .8], [-44, -12, 1.7, .7],
+        [-40, 14, 2.4, .6], [40, 18, 2.2, .6], [-16, 36, 2.6, .5], [20, 38, 2.2, .5],
+      ],
+      height: 34, glow: 2.2, strength: .7, guard: 7,
+    },
+    clouds: { speed: 6, billow: .006, low: 1 },
+  },
 };
 
 /** Pool sizes: set once. A stage or a quality change only moves the draw counts inside them. */

@@ -126,7 +126,7 @@ describe('the launch gate: modes and stages', () => {
     for (const stage of Object.keys(SMALL_ROYALE_STAGES)) expect(stageSafe(stage), stage).toBe(true);
     expect(duelStage('sunfall-arena')).toBe(stageSafe('sunfall-arena') ? 'sunfall-arena' : 'blood-citadel');
     expect(MODES.duel.kicker).not.toMatch(/MARTIAL ARTS/);
-    for (const stage of ['proving-hall', 'hidden-ash'] as const) {
+    for (const stage of ['proving-hall', 'zenith-coliseum', 'wreckers-causeway', 'ashfall-weir', 'hidden-ash'] as const) {
       expect(stageSafe(stage), stage).toBe(LAUNCH.stages.includes(stage));
       if (!LAUNCH.stages.includes(stage)) expect(launchStage(stage)).toBe('harbor');
     }

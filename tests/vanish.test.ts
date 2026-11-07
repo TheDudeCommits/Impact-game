@@ -100,10 +100,10 @@ describe('vanish', () => {
   });
 
   it('goes to the side when the stage edge is right behind the attacker', () => {
-    const sim = new ArenaSimulation({ stage: 'sunfall-arena' });
+    const sim = new ArenaSimulation({ stage: 'zenith-coliseum' });
     const { halfZ } = sim.bounds;
     sim.dispose();
-    const fight = bout('kenzo', { stage: 'sunfall-arena' }, { a: { x: 0, y: 0, z: -halfZ + 1 }, b: { x: 0, y: 0, z: -halfZ + 2.6 } });
+    const fight = bout('kenzo', { stage: 'zenith-coliseum' }, { a: { x: 0, y: 0, z: -halfZ + 1 }, b: { x: 0, y: 0, z: -halfZ + 2.6 } });
     const attacker = fight.parry();
     const [vanish] = fight.saw('vanish');
     expect(vanish, 'a vanish still').toBeDefined();

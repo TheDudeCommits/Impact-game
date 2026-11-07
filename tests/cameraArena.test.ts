@@ -40,7 +40,7 @@ class Rig{
     return {away:Math.hypot(c.x-p.x,c.z-p.z),up:c.y-p.y,down:-Math.asin(aim.y)*DEG,yaw:Math.atan2(aim.x,aim.z)};}
   out(b:Bounds){const p=this.camera.position;return Math.max(Math.abs(p.x)-b.halfX,Math.abs(p.z)-b.halfZ);}
 }
-const HALL=STAGES['proving-hall'],RING=STAGES['sunfall-arena'],WIDE=STAGES['mirror-mere'];
+const HALL=STAGES['proving-hall'],RING=STAGES['sunfall-arena'],WIDE=STAGES['sunward-summit'];
 const W=1,A=2;   // (main.ts's movement mask: any two different non-zero values are two different sets of keys.)
 
 describe('the frame: how the arena camera frames the pair',()=>{

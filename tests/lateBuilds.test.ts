@@ -52,7 +52,7 @@ describe('a place carries the camera cutaway on every material before the room c
     expect(decals.material.customProgramCacheKey()).toMatch(/-player-cutaway-v3$/);
     expect((shader.material as THREE.ShaderMaterial).customProgramCacheKey()).not.toMatch(/cutaway/);
     expect(stages.root('sunfall-arena')).toBe(root);
-    expect(stages.root('kuroyuki-hall')).toBeUndefined();
+    expect(stages.root('hollowmere-quarry')).toBeUndefined();
   });
 });
 

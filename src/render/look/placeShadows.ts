@@ -15,6 +15,7 @@ import type { StageId } from '../../game/stages';
  *  - the stadium's wall and trees would lay the whole fight in shade under an evening sun;
  *  - the training hall's window wall is its light (the cookie). */
 const CASTERS: Partial<Record<StageId, RegExp>> = {
+  'dry-harbour': /^Admiralty_Cover_(Stone|Ice)$/,
   'starfall-crater': /^Crater_Cover(_Tiles)?$/,
 };
 
