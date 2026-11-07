@@ -7,6 +7,8 @@ You pick a fighter and fight in one of the game's modes: one-on-one Duels, twelv
 bots, private rooms, a Training Ground, co-op Arcade Survival against waves and bosses, and the objective modes Last Stand,
 Bad Blood and Rift War. It plays with a keyboard and mouse, a controller or touch.
 
+**Play it at [impact.dude.work](https://impact.dude.work).**
+
 ## Running it locally
 
 You need [Node.js](https://nodejs.org) 22.12 or newer and git. Clone your fork, then install the packages:
