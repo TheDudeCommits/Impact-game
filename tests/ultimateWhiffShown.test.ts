@@ -14,7 +14,7 @@ import type { CombatEvent, FighterId, PlayerState } from '../src/game/types';
  * Round 3e (ULTFIX): a whiffed ultimate is shown as one, at once.
  *
  * The third critic: "the tint plays, nothing lands, no whiff is reported, and
- * the meter is spent" - THE HOUR's stopped world and SETSUNA's blue held
+ * the meter is spent" - MIDNIGHT's stopped world and SETSUNA's blue held
  * for a second and more over nothing. Whatever the opener raised over the
  * world goes WHIFF_CLEAR after the verdict is known, and the miss is
  * lettered beside the thrower for them and for whoever it was thrown at.

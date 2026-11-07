@@ -16,7 +16,7 @@ export const STRIX_BEARPAW_CUT_LIMITS = Object.freeze({ crescents: 8, gashes: 10
 const lin = (r: number, g: number, b: number) => new THREE.Color(r, g, b);
 /** His greatsword's cut: a white-green edge over emerald, cooling to black (his casting's palette, #eaf5cf over #73a56d, and the
  *  green his thrown slash has always flown in: SlashWave's `strix`). It burns in no flame: a cut is light and a line. */
-export const YORU: StageLook = { core: lin(2.5, 3.2, 2.2), main: lin(.3, 1.85, .6), rim: lin(.04, .34, .1), light: lin(.5, 1.2, .58),
+export const NIGHTSTEEL: StageLook = { core: lin(2.5, 3.2, 2.2), main: lin(.3, 1.85, .6), rim: lin(.04, .34, .1), light: lin(.5, 1.2, .58),
   element: { spike: 0xeafff0, rim: 0x3fd97a, light: 0x9cf0b0, ink: 0x08140c }, shell: 0x4fe07e, edge: 0x0c3a1c, flame: -1, dark: false, heart: 0 };
 const WAVE: CrescentStyle = { mode: ENERGY, edge: lin(2.6, 3.3, 2.3), body: lin(.2, 1.25, .42), glow: lin(.2, 1.5, .5), light: lin(.4, 1.2, .52) };
 const GASH = lin(.5, 2.4, .85);
@@ -50,8 +50,8 @@ export class StrixBearpawCut {
   private basis = new THREE.Matrix4(); private q = new THREE.Quaternion(); private turn = new THREE.Quaternion();
   constructor(scene: THREE.Scene, kit: Pick<VfxKit, 'budget'> & Partial<VfxKit>) {
     this.stage = MoveStage.for(scene, kit);
-    this.crescents = new Crescents(scene, crescentGeometry(ARC, .3, .62), STRIX_BEARPAW_CUT_LIMITS.crescents, 'strix-yoru-crescent');
-    this.gashes = new FloorGashes(scene, STRIX_BEARPAW_CUT_LIMITS.gashes, 'strix-yoru-cut');
+    this.crescents = new Crescents(scene, crescentGeometry(ARC, .3, .62), STRIX_BEARPAW_CUT_LIMITS.crescents, 'strix-nightsteel-crescent');
+    this.gashes = new FloorGashes(scene, STRIX_BEARPAW_CUT_LIMITS.gashes, 'strix-nightsteel-cut');
   }
   load(_ids: readonly string[]) { return Promise.resolve(); }
   private cancel(id: string, victim = false) { for (const c of this.confirms) if (c.actor === id || victim && c.target === id && !c.final) c.actor = ''; }
@@ -89,34 +89,34 @@ export class StrixBearpawCut {
     const dir = this.dir;
     if (actor) { dir.subVectors(point, actor.group.position).setY(0); if (dir.lengthSq() < .01) dir.set(Math.sin(actor.state.yaw ?? 0), 0, Math.cos(actor.state.yaw ?? 0)); dir.normalize(); } else dir.set(0, 0, 1);
     const ground = this.ground.set(point.x, floor, point.z), lean = (seq % 2 ? .5 : -.5);
-    if (event.slot === 'light') { st.burst(point, YORU, .45, t, { dir, floor, clean: true }); this.cut(LINE, point, dir, 1.7, t, .2, floor, 0, lean * 1.6); return; }
+    if (event.slot === 'light') { st.burst(point, NIGHTSTEEL, .45, t, { dir, floor, clean: true }); this.cut(LINE, point, dir, 1.7, t, .2, floor, 0, lean * 1.6); return; }
     if (event.slot === 'heavy') {
       // The Cleave landing: the cut hung across the body, and the floor opened past it.
       const k = event.branch ? .8 : 1;
       // (Small and brief over the body it struck: it is read again within a third of a second. The blast goes off half a
       // metre behind them, so their outline stands against it, and throws no dust: the fall raises the game's own.)
-      st.burst(this.b.copy(point).addScaledVector(dir, .5), YORU, .7 * k * big, t, { dir, floor, clean: true });
+      st.burst(this.b.copy(point).addScaledVector(dir, .5), NIGHTSTEEL, .7 * k * big, t, { dir, floor, clean: true });
       this.cut(LINE, point, dir, 3.2 * k * big, t, .2, floor, 0, lean);
-      st.shock(ground, YORU, 4.2 * k, t, .4);
+      st.shock(ground, NIGHTSTEEL, 4.2 * k, t, .4);
       this.cut(SPLIT, this.a.copy(ground).addScaledVector(dir, -.4), dir, .2, t, 1.5, floor, 3.4 * k);
       return;
     }
     if (event.slot === 'special') {
-      if (event.branch === 'airSpecial') { st.burst(point, YORU, 2, t, { floor }); st.shock(ground, YORU, 4.5, t, .45); st.scar(ground, YORU, 2.4, t + .05, 1.8); this.cut(LINE, point, dir, 5, t, .4, floor); return; }
+      if (event.branch === 'airSpecial') { st.burst(point, NIGHTSTEEL, 2, t, { floor }); st.shock(ground, NIGHTSTEEL, 4.5, t, .45); st.scar(ground, NIGHTSTEEL, 2.4, t + .05, 1.8); this.cut(LINE, point, dir, 5, t, .4, floor); return; }
       for (const wave of this.waves) if (wave.live && wave.actor === event.actorId && wave.hitAt < 0 && t >= wave.born - .05) { wave.hitAt = t; wave.end.copy(point); }
       // Night landing: the cut left standing in the air over them, light out of the floor it split, the stone glowing.
       const k = (event.branch ? .7 : 1) * big;
-      st.burst(point, YORU, 2 * k, t, { dir, floor });
+      st.burst(point, NIGHTSTEEL, 2 * k, t, { dir, floor });
       this.cut(LINE, point, dir, 7.5 * k, t, .55, floor);
-      st.erupt(ground, UP, YORU, .3 * k, 6.5 * k, t, .42);
-      st.shock(ground, YORU, 5.2 * k, t, .45);
+      st.erupt(ground, UP, NIGHTSTEEL, .3 * k, 6.5 * k, t, .42);
+      st.shock(ground, NIGHTSTEEL, 5.2 * k, t, .45);
       this.cut(SPLIT, this.a.copy(ground).addScaledVector(dir, -1.6), dir, .3, t, 2.1, floor, 7 * k);
-      st.scar(ground, YORU, 2.3 * k, t + .05, 1.9);
+      st.scar(ground, NIGHTSTEEL, 2.3 * k, t + .05, 1.9);
       return;
     }
     if (event.slot !== 'ultimate' || event.branch) return;
     const final = (event.contactIndex ?? 0) >= FINAL;
-    if (!final) { st.burst(point, YORU, 1.25, t, { dir, floor }); this.cut(LINE, point, dir, 4.6, t, .34, floor, 0, -.55); st.shock(ground, YORU, 4.4, t, .4); return; }
+    if (!final) { st.burst(point, NIGHTSTEEL, 1.25, t, { dir, floor }); this.cut(LINE, point, dir, 4.6, t, .34, floor, 0, -.55); st.shock(ground, NIGHTSTEEL, 4.4, t, .4); return; }
     // The last cut needs its confirm still standing (a whiff, an interruption or a new action has cancelled it).
     let confirmed = false;
     for (const c of this.confirms) if (c.actor === event.actorId && c.seq === seq) { c.final = true; floor = c.floor; confirmed = true; }
@@ -129,11 +129,11 @@ export class StrixBearpawCut {
     this.cut(FLY, from, dir, 5.6, t, .62, floor, 17);
     this.cut(LINE, point, dir, 14, t, .7, floor);
     this.cut(SPLIT, from, dir, .55, t, 2.5, floor, 17);
-    st.erupt(ground, UP, YORU, .34, 12, t, .5);
-    for (let i = 1; i <= 2; i++) st.erupt(this.b.copy(ground).addScaledVector(dir, i * 4), UP, YORU, .2, 6.5 - i * 1.5, t + .05 + i * .08, .4);
-    st.burst(point, YORU, 2.3, t, { dir, floor });
-    st.shock(ground, YORU, 9, t, .6);
-    st.scar(ground, YORU, 3, t + .1, 2);
+    st.erupt(ground, UP, NIGHTSTEEL, .34, 12, t, .5);
+    for (let i = 1; i <= 2; i++) st.erupt(this.b.copy(ground).addScaledVector(dir, i * 4), UP, NIGHTSTEEL, .2, 6.5 - i * 1.5, t + .05 + i * .08, .4);
+    st.burst(point, NIGHTSTEEL, 2.3, t, { dir, floor });
+    st.shock(ground, NIGHTSTEEL, 9, t, .6);
+    st.scar(ground, NIGHTSTEEL, 3, t + .1, 2);
   }
 
   /** A crescent of `size` with its leading point at `head`, flying along `dir`, turned `roll` about its flight (0: it
@@ -150,8 +150,8 @@ export class StrixBearpawCut {
   private edge(grip: THREE.Vector3, tip: THREE.Vector3, k: number, wide = 1) {
     if (k <= .02) return;
     const st = this.stage, from = this.a.copy(grip).lerp(tip, .22), to = this.b.copy(from).lerp(tip, .25 + .75 * k);
-    st.streak(from, to, .15 * wide, YORU.main, .5 * k); st.streak(from, to, .045 * wide, YORU.core, 1.5 * k);
-    st.glow(to, .2 * wide, YORU.core, .8 * k, STAR, .22, Math.floor(st.time * 24));
+    st.streak(from, to, .15 * wide, NIGHTSTEEL.main, .5 * k); st.streak(from, to, .045 * wide, NIGHTSTEEL.core, 1.5 * k);
+    st.glow(to, .2 * wide, NIGHTSTEEL.core, .8 * k, STAR, .22, Math.floor(st.time * 24));
   }
 
   update(time: number, fighters: ReadonlyMap<string, Fighter>, _flights: ReadonlyMap<string, Flight>) {
@@ -166,12 +166,12 @@ export class StrixBearpawCut {
       if (s.action === 'light') {
         // Vigil Cut: the edge lit through the swing.
         const k = Math.sin(clamp(s.actionTime) * Math.PI);
-        this.edge(grip, tip, k, .8); st.light(tip, 2.2, YORU, .22 * k);
+        this.edge(grip, tip, k, .8); st.light(tip, 2.2, NIGHTSTEEL, .22 * k);
       } else if (s.action === 'heavy') {
         // Wingbreak Cleave: light runs up the blade through the wind-up; at the blow a crescent leaves it along its own
         // reach whether or not it lands (what it does to a body is the hit's: `handle`).
         const contact = s.branch ? s.actionDuration * .5 : HEAVY.contacts[0];
-        if (elapsed < contact) { const k = clamp(elapsed / contact); this.edge(grip, tip, k); st.charge(tip, YORU, .15 * big, k, seed); }
+        if (elapsed < contact) { const k = clamp(elapsed / contact); this.edge(grip, tip, k); st.charge(tip, NIGHTSTEEL, .15 * big, k, seed); }
         else if (elapsed < contact + .15) {
           const u = (elapsed - contact) / .15;
           // (Inside the blade's own reach, and short of a body standing at it: it is the swing's, and what the blade
@@ -182,20 +182,20 @@ export class StrixBearpawCut {
           this.crescent(this.p, heading, size, (s.actionSeq ?? 0) % 2 ? .5 : -.5, (1 - u) * .85, seed, time);
           // (Its light small and ahead of it, where the blow lands: a light volume lights whatever stands on the line of
           // sight to its centre, his own back included.)
-          st.light(this.a.copy(this.p).addScaledVector(heading, .6), 1.7, YORU, .32 * (1 - u));
+          st.light(this.a.copy(this.p).addScaledVector(heading, .6), 1.7, NIGHTSTEEL, .32 * (1 - u));
         }
       } else if (s.action === 'special' && !s.branch) {
         // Night's wind-up: the blade gathers light, and it lies on the floor round him.
         const release = SPECIAL.contacts[0];
         if (elapsed < release) {
           const k = clamp(elapsed / release);
-          this.edge(grip, tip, Math.min(1, k * 1.6), 1.2); st.charge(tip, YORU, .36 * big, k, seed);
-          st.disc(this.p.copy(feet), 1.6 + 1.6 * k, YORU.main, .55 * k, SHEEN, 1, seed);
+          this.edge(grip, tip, Math.min(1, k * 1.6), 1.2); st.charge(tip, NIGHTSTEEL, .36 * big, k, seed);
+          st.disc(this.p.copy(feet), 1.6 + 1.6 * k, NIGHTSTEEL.main, .55 * k, SHEEN, 1, seed);
         }
       } else if (s.action === 'ultimate' && !s.branch && s.confirmedAt === undefined && elapsed < ULT.contacts[0] + .12) {
         // The opener: the blade lit as it is driven in.
         const k = clamp(elapsed / ULT.contacts[0]);
-        this.edge(grip, tip, k, 1.1); st.charge(tip, YORU, .28, k, seed);
+        this.edge(grip, tip, k, 1.1); st.charge(tip, NIGHTSTEEL, .28, k, seed);
       }
     }
     // Vigil: Long Farewell in flight: a crescent four metres tall on the simulation's own shot, the floor split under it
@@ -212,9 +212,9 @@ export class StrixBearpawCut {
       const fade = after >= 0 ? 1 - smooth(after, .04, .26) : 1 - smooth(flown, range - 4, range), grow = (.4 + .6 * smooth(age, 0, .09)) * wave.big, size = 2.35 * grow;
       const head = this.p.set(wave.origin.x + dir.x * (flown + .5), wave.floor + size * Math.sin(ARC) * .93, wave.origin.z + dir.z * (flown + .5));
       this.crescent(head, dir, size, .3, fade, wave.id * 3.7, time, 1.1 + .12 * Math.sin(time * 37));
-      st.glow(head, size * .75, YORU.main, .3 * fade); st.glow(this.a.copy(head).setY(wave.floor + .5), size * .5, YORU.core, .22 * fade);
-      st.light(this.a.copy(head).setY(wave.floor + 1), 6.5, YORU, .9 * fade);
-      st.light(this.a.copy(head).addScaledVector(dir, -3.2).setY(wave.floor + .6), 4.5, YORU, .45 * fade);
+      st.glow(head, size * .75, NIGHTSTEEL.main, .3 * fade); st.glow(this.a.copy(head).setY(wave.floor + .5), size * .5, NIGHTSTEEL.core, .22 * fade);
+      st.light(this.a.copy(head).setY(wave.floor + 1), 6.5, NIGHTSTEEL, .9 * fade);
+      st.light(this.a.copy(head).addScaledVector(dir, -3.2).setY(wave.floor + .6), 4.5, NIGHTSTEEL, .45 * fade);
       this.gashes.add(this.a.set(wave.origin.x + dir.x * 1.2, wave.floor, wave.origin.z + dir.z * 1.2), this.b.set(head.x, wave.floor, head.z), .24 * wave.big, fade, GASH, wave.id);
     }
     for (const c of this.cuts) {
@@ -229,23 +229,23 @@ export class StrixBearpawCut {
         this.side.set(c.dir.z, 0, -c.dir.x); const axis = this.b.copy(UP).multiplyScalar(Math.cos(c.roll)).addScaledVector(this.side, Math.sin(c.roll));
         const low = Math.min(half, Math.max(.3, (c.at.y - c.floor) / Math.max(.2, Math.cos(c.roll))));
         const from = this.a.copy(c.at).addScaledVector(axis, -low), to = this.p.copy(c.at).addScaledVector(axis, half * 2 - low);
-        st.streak(from, to, Math.min(.5, .1 + c.size * .022), YORU.main, .6 * fade); st.streak(from, to, Math.min(.16, .035 + c.size * .008) * (.4 + .6 * fade), YORU.core, 1.7 * fade);
-        st.glow(c.at, Math.min(1.5, .3 + c.size * .1), YORU.core, .7 * fade, STAR, .2, c.seed);
+        st.streak(from, to, Math.min(.5, .1 + c.size * .022), NIGHTSTEEL.main, .6 * fade); st.streak(from, to, Math.min(.16, .035 + c.size * .008) * (.4 + .6 * fade), NIGHTSTEEL.core, 1.7 * fade);
+        st.glow(c.at, Math.min(1.5, .3 + c.size * .1), NIGHTSTEEL.core, .7 * fade, STAR, .2, c.seed);
         // (A short cut lights less: its light sits on the body it crossed.)
-        st.light(c.at, Math.min(7, 2 + c.size * .5), YORU, .36 * fade * Math.min(1, c.size / 5));
+        st.light(c.at, Math.min(7, 2 + c.size * .5), NIGHTSTEEL, .36 * fade * Math.min(1, c.size / 5));
       } else if (c.kind === FLY) {
         // The thrown crescent: it grows as it leaves, flies its reach, and burns out over the last third.
         const fade = 1 - smooth(u, .62, 1), size = c.size * (.45 + .55 * smooth(age, 0, .1)), flown = c.reach * u;
         const head = this.p.copy(c.at).addScaledVector(c.dir, flown + size * .5); head.y = c.floor + size * Math.sin(ARC) * .93;
         this.crescent(head, c.dir, size, c.roll, fade, c.seed, time, 1.2 + .15 * Math.sin(time * 41));
-        st.glow(this.a.copy(head).setY(c.floor + size * .5), size * .55, YORU.main, .32 * fade);
-        st.light(this.a.copy(head).setY(c.floor + 1.2), Math.min(8, size * 1.2 + 2), YORU, .5 * fade);
+        st.glow(this.a.copy(head).setY(c.floor + size * .5), size * .55, NIGHTSTEEL.main, .32 * fade);
+        st.light(this.a.copy(head).setY(c.floor + 1.2), Math.min(8, size * 1.2 + 2), NIGHTSTEEL, .5 * fade);
       } else {
         // The floor opened along the blow: it runs out to its reach in a sixth of a second and cools.
         const heat = (1 - u) * Math.min(1, age / .04), grow = smooth(age, 0, .16);
         this.gashes.add(c.at, this.a.copy(c.at).addScaledVector(c.dir, c.reach * grow), c.size, heat, GASH, c.seed);
         // (Its light goes faster than the stone cools: whoever fell along the split is read again as they land.)
-        if (heat > .08) st.light(this.b.copy(c.at).addScaledVector(c.dir, c.reach * grow * .5).setY(c.floor + .4), Math.min(7, c.reach * .45 + 1.5), YORU, .28 * heat * heat);
+        if (heat > .08) st.light(this.b.copy(c.at).addScaledVector(c.dir, c.reach * grow * .5).setY(c.floor + .4), Math.min(7, c.reach * .45 + 1.5), NIGHTSTEEL, .28 * heat * heat);
       }
     }
     for (const c of this.confirms) {
@@ -267,8 +267,8 @@ export class StrixBearpawCut {
     const st = this.stage, g = clamp((elapsed - ULT.contacts[0]) / (ULT.contacts[FINAL] - ULT.contacts[0])), seed = c.seq * 4.3;
     const feet = this.ground.copy(actor.group.position).setY(c.floor), tip = actor.strikePoint(this.tip);
     st.dim(.3 + .45 * g, c.actor, c.target);
-    st.pool(feet, 2.6 + 2.6 * g, YORU, .35 + .65 * g, seed);
-    st.disc(feet, 3.2 + 3.4 * g, YORU.main, .5 + .4 * g, SHEEN, 1, seed);
+    st.pool(feet, 2.6 + 2.6 * g, NIGHTSTEEL, .35 + .65 * g, seed);
+    st.disc(feet, 3.2 + 3.4 * g, NIGHTSTEEL.main, .5 + .4 * g, SHEEN, 1, seed);
     // The air round him cut: strokes of light that snap out at every angle, hang a moment and are gone, faster and
     // longer as it builds (each slot of the ring is a new cut every cycle).
     for (let i = 0, n = st.n(12, 6); i < n; i++) {
@@ -279,11 +279,11 @@ export class StrixBearpawCut {
       // (Across the line of sight to him: a cut seen from his side of the ring.)
       this.side.set(-Math.sin(ang), 0, Math.cos(ang)); this.b.copy(UP).multiplyScalar(Math.cos(tilt)).addScaledVector(this.side, Math.sin(tilt));
       this.centre.copy(this.a).addScaledVector(this.b, len); this.a.addScaledVector(this.b, -len);
-      st.streak(this.a, this.centre, .1, YORU.main, .5 * fade); st.streak(this.a, this.centre, .03, YORU.core, 1.5 * fade);
+      st.streak(this.a, this.centre, .1, NIGHTSTEEL.main, .5 * fade); st.streak(this.a, this.centre, .03, NIGHTSTEEL.core, 1.5 * fade);
     }
-    st.light(this.a.copy(feet).setY(c.floor + 1), 5 + 3 * g, YORU, .35 + .45 * g);
+    st.light(this.a.copy(feet).setY(c.floor + 1), 5 + 3 * g, NIGHTSTEEL, .35 + .45 * g);
     this.edge(actor.handR, tip, 1, 1.2 + .8 * g);
-    st.charge(tip, YORU, .3 + .34 * g, Math.max(.4, g), seed);
+    st.charge(tip, NIGHTSTEEL, .3 + .34 * g, Math.max(.4, g), seed);
     if (g > .75) st.speed(.5 * (g - .75) / .25, c.actor, c.target);
   }
 

@@ -372,11 +372,11 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
   koko:{
     // Round 3e (VARIETY): heavy and punishing. Iron Spirit's fist lands a
     // beat later than the roster's and harder; the string leaves them
-    // reeling for the ORA.
+    // reeling for the GAN.
     light:{name:'Straight Punch',duration:.5,contacts:[.19],damage:23,range:2.2,radius:.5,stamina:10,cooldown:.48,stun:.28,knockback:3.5,lunge:2,style:'melee'},
     // Iron Spirit's finger extends: a projectile, so KoKo has a blow that
     // reaches across the room. Every fighter carries one long-range move now.
-    // Round 3e: it pins them where they stand, reeling - the ORA or a string
+    // Round 3e: it pins them where they stand, reeling - the GAN or a string
     // is on them before they recover.
     heavy:{name:'Needle Finger',duration:.8,contacts:[.34],damage:62,range:9,radius:.5,stamina:23,cooldown:1.1,stun:.85,knockback:2.5,speed:40,style:'projectile',outcome:'stagger'},
     // Round 3d (PACE): twenty-two, at 0.9 with every special.
@@ -387,7 +387,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     // takes off a standing opponent. Measured cold (tests/fullRoster.test.ts)
     // the eight ticks now realise 138.
     // Round 3e (VARIETY): twenty-four a tick, the heavy hitter's barrage, and
-    // the last ORA blows them back along the floor into a wall bounce.
+    // the last GAN blows them back along the floor into a wall bounce.
     special:{name:'GAN GAN Barrage',duration:2.34,contacts:[.6,.77,.94,1.11,1.28,1.45,1.62,1.79],damage:24,range:3,radius:.7,stamina:32,cooldown:4.5,stun:.2,finisherStun:1.1,knockback:0,finisherKnockback:12,lunge:3,style:'melee',outcome:'wallBounce'},
   },
   nigo:{
@@ -515,13 +515,13 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     special:{name:'Singularity',duration:1.7,contacts:[.8],damage:126,range:38,radius:1.1,stamina:30,cooldown:4.5,stun:1.15,knockback:10,guardBreak:true,style:'beam',outcome:'launch'},
   },
   oro:{
-    // Round 3e (VARIETY): DEAD STOP is the quicker Stand - LORD ORO's fist a hair
+    // Round 3e (VARIETY): HUSH is the quicker Stand - LORD ORO's fist a hair
     // ahead of KoKo's and lighter, and a string that spins them round.
     light:{name:'Gilded Punch',duration:.42,contacts:[.15],damage:18,range:2.2,radius:.5,stamina:9,cooldown:.41,stun:.23,knockback:3,lunge:2,style:'melee'},
     // A fan of knives, thrown. Round 3e: they pin the body where it stands,
     // reeling - LORD ORO is on them before it can move.
     heavy:{name:'Clock-Hand Knives',duration:.72,contacts:[.28],damage:52,range:12,radius:.5,stamina:22,cooldown:1,stun:.8,knockback:2,speed:32,style:'projectile',outcome:'stagger'},
-    // DEAD STOP's barrage, mirrored on KoKo's ORA - a tick lighter, as
+    // HUSH's barrage, mirrored on KoKo's GAN - a tick lighter, as
     // LORD ORO's fists are - and blown back off a wall at the end the same way.
     special:{name:'NOROMA NOROMA Barrage',duration:2.34,contacts:[.6,.77,.94,1.11,1.28,1.45,1.62,1.79],damage:22,range:3,radius:.7,stamina:32,cooldown:4.5,stun:.2,finisherStun:1.1,knockback:0,finisherKnockback:12,lunge:3,style:'melee',outcome:'wallBounce'},
   },
@@ -800,16 +800,16 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // half of that, and the shot is held over the blows for the rest.)
   kenzo:{name:'Dust Sea Sundered',duration:2.3,contacts:[.45,1.42,1.5,1.58],schedule:[40,62,62,203],damage:40,finisherDamage:255,range:3.7,radius:1.7,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,lunge:5,guardBreak:true,style:'melee',spacing:2.2,confirm:WHIFF},
   // Round 3: time stops where he stands (no step in: `lunge` 0), and he and
-  // the Stand cross the stopped field - the ORA spread over every opponent
+  // the Stand cross the stopped field - the GAN spread over every opponent
   // it caught, a barrage each (src/game/timeStopBarrage.ts) - and the
   // finisher lands on the primary target as the clock starts again, two
   // hundredths after the stop ends, with every other victim released in the
   // same instant. Round 3d: the stop is the opener, at 0.58 rather than
   // 0.85, and a stop that catches nobody ends the move half a second later;
-  // eight ORA a sixth of a second apart from 1.0 (eleven at a fifth from
+  // eight GAN a sixth of a second apart from 1.0 (eleven at a fifth from
   // 1.1), the finisher at 2.5 (3.62). One opponent takes all eight and
   // realises what the eleven did.
-  koko:{name:'Iron Lullaby: Dead Stop',duration:3.3,contacts:[.58,1,1.16,1.32,1.48,1.64,1.8,1.96,2.12,2.5],damage:40,finisherDamage:245,range:3.6,radius:1.4,stamina:0,cooldown:22,stun:2.3,knockback:16,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.9,radius:6},confirm:WHIFF},
+  koko:{name:'Iron Lullaby: Hush',duration:3.3,contacts:[.58,1,1.16,1.32,1.48,1.64,1.8,1.96,2.12,2.5],damage:40,finisherDamage:245,range:3.6,radius:1.4,stamina:0,cooldown:22,stun:2.3,knockback:16,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.9,radius:6},confirm:WHIFF},
   // The black wave let go at 0.5 is the opener (it went at 3.1); landed, it
   // holds them inside the darkness and burns twice, and the NIGHTFALL cut is
   // the finisher at 1.9.
@@ -871,12 +871,12 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // (the third critic). The dome it raises is drawn at the same radius. The
   // strikes and the Dark Spark keep their beat after it, 0.15 s later.
   kuon:{name:'Planetarium',duration:3.15,contacts:[.65,.95,1.25,1.55,1.85,2.3],damage:42,finisherDamage:265,range:3.4,radius:1.4,stamina:0,cooldown:22,stun:2.3,knockback:16,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.63,radius:3.5},confirm:WHIFF},
-  // THE HOUR: time stops, LORD ORO and DEAD STOP GILDED PUNCH every opponent it caught,
+  // MIDNIGHT: time stops, LORD ORO and HUSH GILDED PUNCH every opponent it caught,
   // and the steamroller is the finisher as the clock starts again - KoKo's
   // shape exactly, round 3d's timings included; the move runs a quarter of a
   // second past his, so the roller is seen crushed and coming apart before
   // LORD ORO is his own again (signature/Steamroller's ROLLER_TIMING).
-  oro:{name:'THE HOUR: Death Knell',duration:3.55,contacts:[.58,1,1.16,1.32,1.48,1.64,1.8,1.96,2.12,2.5],damage:40,finisherDamage:259,range:3.6,radius:1.6,stamina:0,cooldown:22,stun:2.3,knockback:16,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.9,radius:6},confirm:WHIFF},
+  oro:{name:'MIDNIGHT: Death Knell',duration:3.55,contacts:[.58,1,1.16,1.32,1.48,1.64,1.8,1.96,2.12,2.5],damage:40,finisherDamage:259,range:3.6,radius:1.6,stamina:0,cooldown:22,stun:2.3,knockback:16,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.9,radius:6},confirm:WHIFF},
   // The overhead chop at 0.48 is the opener (1.0); landed, three more
   // swings and the two-handed slam as the finisher at 2.2 (3.3). The slam
   // lands scaled for the fifth blow of the string, where the old one landed
@@ -1004,7 +1004,7 @@ export const MAX_FLOOR_STUN: Record<AttackSlot, number> = { light: .5, heavy: .7
  *  Casts, not contacts. The budget used to count every contact and then read
  *  its threshold off whichever move had just landed, so Konta's three-hit
  *  light tripped it on his second cast while KoKo could push past it by
- *  switching into ORA. It is charged once per cast now, on the first contact
+ *  switching into GAN. It is charged once per cast now, on the first contact
  *  of that cast to land, and it never fires in the middle of a multi-contact
  *  cast: only on a cast's first contact, or on its last. */
 export const BREAK_CASTS = 6;
@@ -1234,7 +1234,7 @@ const REACH_OVERRIDE: Partial<Record<FighterId, Partial<Record<AttackSlot, numbe
   // (scripts/probe_kuon_fist.mts, 0.80 rig units at 0.74 of the clip), which
   // with the radius and the slack is 1.09 m against a 1.11 m pushbox.
   kuon: { light: .65 },
-  // DEAD STOP throws Lord ORO's barrage and his finisher from in front of him,
+  // HUSH throws Lord ORO's barrage and his finisher from in front of him,
   // exactly as Iron Spirit does for KoKo.
   oro: { special: 2.1, ultimate: 2.4 },
   // The sixth wave's measured reach is the fist's (the measurement watches the hands): Akagane's Rising Kick lands with
@@ -1615,8 +1615,8 @@ const RUSH_SPECS: Record<FighterId, RushSpec> = {
   // there - the quickest string after Setsu's, and the lightest.
   kosho: { names: ['Julienne', 'Brunoise', 'Flambe Kick'], damage: [16, 17, 38], tempo: .84, shape: 'juggle' },
   // Round 3e: the GAAAN!! leaves them reeling in front of Iron Spirit - a
-  // slower, harder string for the ORA to follow.
-  koko: { names: ['Ora!', 'Gan Gan!!', 'GAAAN!!'], damage: [23, 25, 44], tempo: 1.12, shape: 'stagger' },
+  // slower, harder string for the GAN to follow.
+  koko: { names: ['Gan!', 'Gan Gan!!', 'GAAAN!!'], damage: [23, 25, 44], tempo: 1.12, shape: 'stagger' },
   nigo: { names: ['Haizan Slash', 'Haizan Sweep', 'Point-Blank Scorch'], damage: [20, 22, 44], tempo: 1.05, shape: 'carry' },
   kagari: { names: ['Ember Jab', 'Cinder Kick', 'Rekka'], damage: [19, 20, 43], shape: 'launch' },
   // Round 3e: Tact lifts them off their feet and keeps them up.

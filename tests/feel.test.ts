@@ -179,7 +179,7 @@ describe('landing a hit pays', () => {
     // The impact freeze on a non-finisher tick is capped at a third of the gap
     // to the next contact. Every freeze the attacker takes pushes their own
     // remaining contacts back by that much, so a flat fraction of a heavier
-    // freeze turns ORA's 0.17 s cadence into a stutter and drags its last
+    // freeze turns GAN's 0.17 s cadence into a stutter and drags its last
     // contact out past the end of the move.
     const { sim, input, step, drain } = bout('koko', 'taisei', 2);
     const barrage = MOVES.koko.special;
@@ -189,7 +189,7 @@ describe('landing a hit pays', () => {
     expect(hits).toHaveLength(8);
     const authored = barrage.contacts[1] - barrage.contacts[0];
     for (let i = 1; i < hits.length; i++) {
-      expect(hits[i].serverTime - hits[i - 1].serverTime, `ORA hit ${i + 1} on time`).toBeLessThan(authored * 1.4);
+      expect(hits[i].serverTime - hits[i - 1].serverTime, `GAN hit ${i + 1} on time`).toBeLessThan(authored * 1.4);
     }
   });
 });

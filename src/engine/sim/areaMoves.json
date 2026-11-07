@@ -173,7 +173,7 @@
   },
   "oro": {
     "element": "slash",
-    "name": "The Hour: Knife Rain",
+    "name": "Midnight: Knife Rain",
     "damage": 224,
     "radius": 3.6,
     "outcome": "stagger",
@@ -1416,7 +1416,7 @@
       "telegraph": 0.7,
       "look": "zone",
       "anim": {
-        "clip": "Yoru Diagonal Finisher"
+        "clip": "Vigil Diagonal Finisher"
       },
       "voice": "vo-strix-rain-cut",
       "ja": "通夜・千の灯",

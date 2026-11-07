@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ORIGINAL_FINISHER_PROP } from '../../originals/hourBell';
 
-/** THE HOUR's finisher: the steamroller, dropped out of the stopped sky onto
+/** MIDNIGHT's finisher: the steamroller, dropped out of the stopped sky onto
  *  the victim and crushing them as the clock starts again.
  *
  *  Round 3b. The blind critic saw it "for about 0.3 s as a silhouette": it
@@ -16,7 +16,7 @@ import { ORIGINAL_FINISHER_PROP } from '../../originals/hourBell';
  *                      in the top of the frame, and slammed down in the
  *                      last 0.15 s;
  *  crush  F            it lands as time resumes - squashed, the floor
- *                      thrown up round it, a gold burst on the THE HOUR
+ *                      thrown up round it, a gold burst on the MIDNIGHT
  *                      beat - and holds there, crushed and smoking;
  *  break  F+0.55 ..    it comes apart, the drum, cab and wheels thrown off
  *         F+1.0        and fading.
@@ -254,7 +254,7 @@ export class RoadRollers {
   private map?: THREE.Texture;
   constructor(private scene: THREE.Scene) {
     // Drawn once under the floor at load, so its programs are linked before
-    // the first THE HOUR; then it is the first roller handed out.
+    // the first MIDNIGHT; then it is the first roller handed out.
     const warm = this.make();
     this.warmUp(warm);
     this.spare.push(warm);
@@ -265,7 +265,7 @@ export class RoadRollers {
   private warm?: THREE.Object3D;
   /** Draw a roller once under the floor, then hide it: links its programs
    *  (and, once the sourced model is in, uploads its paint) at load rather
-   *  than on the first THE HOUR. */
+   *  than on the first MIDNIGHT. */
   private warmUp(roller: Steamroller) {
     this.settle();
     roller.group.visible = true; roller.spot.set(0, -60, 0); roller.pose({ height: 0, tilt: 0, squash: 1, since: -1, broken: 0, opacity: 1 }, 0);

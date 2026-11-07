@@ -61,7 +61,7 @@ export function tunedMove(slot: AttackSlot, pick: SlotPick): MoveDefinition {
 }
 
 /** The five moves a kit fights with (an area slot it leaves out is the body's own). A borrowed time stop brings the
- *  tour of the fighter it comes from (VOL.3: `timeStop.tour`), so LORD ORO's THE HOUR tours its victims LORD ORO's way in any
+ *  tour of the fighter it comes from (VOL.3: `timeStop.tour`), so LORD ORO's MIDNIGHT tours its victims LORD ORO's way in any
  *  body; everything else a move carries - `origin`, `palmHold`, `lockAim`, `area` - is already on the move. */
 export function forgeMoves(kit: ForgeKit): Record<AttackSlot, MoveDefinition> {
   return Object.fromEntries(ATTACK_SLOTS.map(slot => {

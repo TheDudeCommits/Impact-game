@@ -2039,7 +2039,7 @@ export class ArenaSimulation {
     const nextRound = !branch && slot === 'light' && stage === 0 && this.lockRoundsLeft(a)
       && (a.cast ? a.cast.slot === 'light' && a.cast.stage === LOCK_ROUND - 1 : a.rushStage === LOCK_ROUND - 1);
     const round = slot !== 'light' || !this.locking(a) ? 0 : branch === 'delay' ? a.lockRound : nextRound ? this.lockRoundOf(a) + 1 : stage > 0 ? this.lockRoundOf(a) : 0;
-    // Awakened, the move may be a different one: KoKo's DEAD STOP becomes the
+    // Awakened, the move may be a different one: KoKo's HUSH becomes the
     // barrage. The cast keeps this definition for its whole duration.
     const m = branch ? comboMove(p.fighter, branch, !!p.awakened)! : (round ? lockRoundMove(p.fighter, stage, !!p.awakened) : undefined) ?? this.moveOf(a, slot, stage);
     const mods = a.mods;
@@ -2211,7 +2211,7 @@ export class ArenaSimulation {
    *  Taisei's Cloudstep read "Falling Kick" all round the arena:
    *  - awakened into a body of its own, which carries no air attacks: Kurobi
    *    and SUNRISE replace the fighter, and Iron Spirit takes over from
-   *    KoKo (DEAD STOP, which takes over from LORD ORO, has them);
+   *    KoKo (HUSH, which takes over from LORD ORO, has them);
    *  - a move played whole wherever it starts: Taisei's Rock and Instant
    *    Transmission (Fighter.groundedMelee) and LORD ORO's authored knife throw.
    *  tests/airNormals.test.ts holds this to what the renderer draws. */
@@ -4265,7 +4265,7 @@ export class ArenaSimulation {
     // once per cast, on the first contact of that cast to land on this body;
     // it used to count contacts and read its threshold off whichever move
     // had just landed, so Konta's three-hit light fired it on his second
-    // cast while KoKo could push past it by switching into ORA.
+    // cast while KoKo could push past it by switching into GAN.
     // A crowd's blows are not a string: each lands whole, and none of them
     // counts toward the scaler or the breaker a duel's combos answer to - a
     // horde swinging from every side used to hit for a third after its first
@@ -4274,8 +4274,8 @@ export class ArenaSimulation {
     if (!crowd && (opening || slot !== 'area' || target.scalingHits === 0)) target.scalingHits++;
     if (opening && !crowd) { target.chainHits++; opened?.set(p.id, target.chainHits); }
     // Hitstun scales on the breaker count. A multi-contact finisher reads the
-    // count its cast opened on: the running count is what crushed ORA's
-    // authored 1.1 s finisher to a quarter of a second and DEAD STOP's 2.3 s
+    // count its cast opened on: the running count is what crushed GAN's
+    // authored 1.1 s finisher to a quarter of a second and HUSH's 2.3 s
     // to a half, because their own ticks had been charging it.
     const chain = finisher ? opened?.get(p.id) ?? target.chainHits : target.chainHits;
     const stunScale = Math.max(0.2, 1 - Math.max(0, chain - 1) * 0.14);
@@ -4548,7 +4548,7 @@ export class ArenaSimulation {
     // defender holds longer than the attacker, which is where the frame
     // advantage above is actually felt, and a heavier blow holds longer still.
     // A non-finisher tick is capped at a third of the gap to the next contact,
-    // so KoKo's eight-hit ORA reads as a barrage rather than as a stutter.
+    // so KoKo's eight-hit GAN reads as a barrage rather than as a stutter.
     const gap = contactIndex !== undefined && contactIndex + 1 < move.contacts.length
       ? move.contacts[contactIndex + 1] - move.contacts[contactIndex] : Infinity;
     // The feel pass: a special's, an ultimate's, an ender's and a rush

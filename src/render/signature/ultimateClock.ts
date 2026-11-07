@@ -19,7 +19,7 @@ import type { PlayerState } from '../../game/types';
  *  whiff shows as one at once: what the opener raised over the world - the
  *  time stop, the Domain, ROOM, the technique's grade, its light - is gone
  *  WHIFF_CLEAR after the verdict is known (`whiffGone`), not held on through
- *  the recovery. The third critic watched THE HOUR's stop and SETSUNA's
+ *  the recovery. The third critic watched MIDNIGHT's stop and SETSUNA's
  *  blue hold for a second and more over nothing. */
 export const landed = (s: PlayerState) => s.action === 'ultimate' && s.confirmedAt !== undefined;
 export const whiffEnd = (s: PlayerState) => s.whiffedAt === undefined ? Infinity : s.whiffedAt - s.actionStarted - (s.actionFrozen ?? 0) + WHIFF_RECOVERY;

@@ -186,7 +186,7 @@ describe('the time-stop barrages', () => {
       expect(cast_.some(l => l.loop), 'nothing of the barrage goes out with the cast: a stop that catches nobody is its call alone').toBe(false);
       const layers = [...cast_, ...cinematic(fighter, awakened)];
       const loop = layers.find(l => l.loop)!;
-      expect(loop, 'a looped ORA/GILDED_PUNCH').toBeDefined();
+      expect(loop, 'a looped GAN/GILDED_PUNCH').toBeDefined();
       expect(loop.cue).toMatch(fighter === 'koko' ? /ora|barrage/ : /noroma/);
       expect(loop.delay!, 'starts right as the barrage does').toBeLessThanOrEqual(window.start);
       expect(loop.delay!).toBeGreaterThanOrEqual(window.start - .1);

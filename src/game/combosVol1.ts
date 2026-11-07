@@ -211,9 +211,9 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
   oro: {
     // Fluid fired from his eyes under pressure.
     lh: { name: 'Gilded Needle Gaze', ...blast(10, 36), damage: 40, knockback: 8 },
-    // DEAD STOP's swinging uppercut.
+    // HUSH's swinging uppercut.
     llh: { name: 'Hour Hand Uppercut', damage: 35, lift: 8.6, down: .5 },
-    // DEAD STOP vanishes, floats behind the target and punches it down.
+    // HUSH vanishes, floats behind the target and punches it down.
     lllh: { name: 'Die!', damage: 57, knock: 'spike', down: 1 },
     // A touch that freezes the body.
     llls: { name: 'Frostblood Grip', damage: 48, daze: 1.6 },

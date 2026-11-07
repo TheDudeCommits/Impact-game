@@ -32,7 +32,7 @@ export const AWAKENINGS: Record<string, BossAwakening> = {
   kurobi: { name: 'BLACK FLAME RAGE', aura: [0xffd890, 0xff5a0a], scale: 1.05 },
   barrow: { name: 'THE DARK UNLEASHED', aura: [0xe0d0ff, 0x2a0a3a], scale: 1.06 },
   akagane: { name: 'WRATHFUL KING', aura: [0xffffff, 0x5a3cc0], tint: 0xeceaf4, scale: 1.08 },
-  oro: { name: 'THE HOUR: OVER THE TOWER', aura: [0xfff6d0, 0xf2c94c], tint: 0xfff2d8, scale: 1.08 },
+  oro: { name: 'MIDNIGHT: OVER THE TOWER', aura: [0xfff6d0, 0xf2c94c], tint: 0xfff2d8, scale: 1.08 },
   magatsu: { name: 'CALAMITY KING', aura: [0xffe0e4, 0xd81f3a], tint: 0xffe8ea, scale: 1.1 },
   vesper: { name: 'BLACK VESPERS', aura: [0xe8e0ff, 0x4a2a8a], tint: 0xb8b0d0, scale: 1.12 },
   imago: { name: 'SWARM ASCENDANT', aura: [0xe8ffe8, 0x3ae88a], tint: 0xf0fff0, scale: 1.08 },
@@ -59,7 +59,7 @@ interface Base {
   /** Only once it has awakened. */
   awakened?: boolean;
   /** The next signature in the list comes this many seconds after this one,
-   *  whatever the gap between set pieces: a combination (LORD ORO's THE HOUR, then DEAD STOP). */
+   *  whatever the gap between set pieces: a combination (LORD ORO's MIDNIGHT, then HUSH). */
   then?: number;
 }
 export type Signature = Base & (
@@ -124,7 +124,7 @@ export const SIGNATURES: Record<string, readonly Signature[]> = {
   kurobi: [{ kind: 'charge', name: 'BLACK FLAME ORB', element: 'dark', seconds: 3.4, breakShare: .05, radius: 10, damage: 190, at: 'target', every: 20, first: 10 }],
   barrow: [{ kind: 'pull', name: 'NIGHT MAW', element: 'dark', radius: 13, seconds: 2.4, damage: 92, every: 14, first: 7 }],
   oro: [
-    { kind: 'wave', name: 'THE HOUR', element: 'light', speed: 26, reach: 34, width: 1.6, damage: 14, lead: 1, freeze: 1.4, every: 15, first: 7, then: 1.3 },
+    { kind: 'wave', name: 'MIDNIGHT', element: 'light', speed: 26, reach: 34, width: 1.6, damage: 14, lead: 1, freeze: 1.4, every: 15, first: 7, then: 1.3 },
     { kind: 'blinks', name: 'THE GILDED HOUR', element: 'light', count: 3, gap: .5, lead: .7, radius: 2, damage: 50, every: 999, first: 999 },
     { kind: 'meteor', name: 'DEATH KNELL!', element: 'steel', count: 1, radius: 5.5, lead: 3, damage: 170, spread: 0, look: 'meteor', every: 20, first: 4, awakened: true },
   ],

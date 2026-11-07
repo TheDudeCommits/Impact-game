@@ -71,7 +71,7 @@ describe('complete roster authority',()=>{
   expect(broken.landed).toBe(true);
   expect(broken.action).not.toBe('ultimate');
  });
- it('lands the full eight-hit ORA sequence and only launches on its finisher',()=>{const{sim,input,step}=fixture('koko');Object.assign(sim.actors.get('b')!.state,{z:2});input('a',{attack:'special',targetId:'b'});const ora=MOVES.koko.special;
+ it('lands the full eight-hit GAN sequence and only launches on its finisher',()=>{const{sim,input,step}=fixture('koko');Object.assign(sim.actors.get('b')!.state,{z:2});input('a',{attack:'special',targetId:'b'});const ora=MOVES.koko.special;
   // Round 3d (PACE): up to the seventh blow, then past the finisher, read off
   // the blows rather than a clock (each tick's freeze holds the ones after it).
   const landed=()=>sim.snapshot().events.filter(e=>e.kind==='hit'&&e.actorId==='a').length;
@@ -81,7 +81,7 @@ describe('complete roster authority',()=>{
   // special in the roster lands cold. Round 3d (PACE): read off the roster's
   // single-contact specials, which are 0.9 of what they were.
   const singles=(Object.keys(MOVES) as FighterId[]).map(f=>MOVES[f].special).filter(m=>m.contacts.length===1&&m.name!=='Wind Art: Galewheel').map(m=>m.damage);
-  expect(realised(ora,8),`ORA realises ${realised(ora,8)} cold`).toBeGreaterThanOrEqual(Math.min(...singles)-3);
+  expect(realised(ora,8),`GAN realises ${realised(ora,8)} cold`).toBeGreaterThanOrEqual(Math.min(...singles)-3);
   expect(realised(ora,8)).toBeLessThanOrEqual(Math.max(...singles));expect(sim.getPlayer('b')!.z).toBeGreaterThan(before);expect(sim.snapshot().events.filter(e=>e.kind==='hit'&&e.actorId==='a')).toHaveLength(8);});
  it('spawns Thunder Lord’s Arrow at the summoned bow height',()=>{const{sim,input,step}=fixture('shiden');sim.actors.get('a')!.state.ultimate=100;input('a',{attack:'ultimate',targetId:'b'});step(.1);const cast=sim.snapshot().events.find(e=>e.kind==='cast'&&e.actorId==='a')!;expect(cast.origin!.y).toBeCloseTo(2.94,2);expect(cast.origin!.x).toBeCloseTo(.54,2);});
 

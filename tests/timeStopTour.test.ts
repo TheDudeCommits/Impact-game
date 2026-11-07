@@ -59,7 +59,7 @@ describe('the tour of a time stop (planning)', () => {
     expect(move.lunge).toBe(0);
   });
 
-  it.each(USERS.flatMap(u => [[u, false], [u, true]] as [FighterId, boolean][]))('%s (awakened %s): barrageWindow is the one stretch the ORA/GILDED_PUNCH loop covers', (user, awakened) => {
+  it.each(USERS.flatMap(u => [[u, false], [u, true]] as [FighterId, boolean][]))('%s (awakened %s): barrageWindow is the one stretch the GAN/GILDED_PUNCH loop covers', (user, awakened) => {
     const move = moveFor(user, 'ultimate', awakened), blows = tourContacts(move)!, window = barrageWindow(move);
     const times = move.contacts.slice(blows.first, blows.last + 1);
     const gaps = times.slice(1).map((t, i) => t - times[i]);
@@ -274,7 +274,7 @@ describe('the user crosses the stop legally', () => {
 describe('prediction replays the tour the server plays', () => {
   it.each(USERS)('%s: the predicting client and the server put the user in the same places and land the same blows', user => {
     const local = (prediction: Prediction) => (prediction as unknown as { sim: ArenaSimulation }).sim;
-    // Inside the stop: DEAD STOP's reaches 6 m, the Domain 3.5 (round 3e).
+    // Inside the stop: HUSH's reaches 6 m, the Domain 3.5 (round 3e).
     const reach = MOVES[user].ultimate.timeStop!.radius / 6;
     const server = arena(user, [
       { id: 'a', distance: 2, angle: .1 },

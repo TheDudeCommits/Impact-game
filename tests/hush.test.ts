@@ -6,7 +6,7 @@ import { MAX_HP, damageScale } from '../src/game/moves';
 /**
  * Time stops, and then Iron Spirit beats them.
  *
- * DEAD STOP used to stop time and land a single blow two and three quarter
+ * HUSH used to stop time and land a single blow two and three quarter
  * seconds later, so the freeze was a pause with one hit on the end of it. The
  * barrage existed, but only on the awakened version - which meant the move
  * everyone sees most of the time was the one that did nothing while time was
@@ -34,14 +34,14 @@ function world(awakened: boolean) {
   return out;
 }
 
-describe('Iron Lullaby: Dead Stop', () => {
+describe('Iron Lullaby: Hush', () => {
   it('throws the barrage while time is stopped, not after it', () => {
     const base = world(false);
     const plain = moveFor('koko', 'ultimate', false), blows = plain.contacts.length - 1;
     // Most of the beating happens inside the freeze; the finisher is the blow
     // time resumes on, which is the whole shape of the move. Alone in the
-    // stop, one opponent takes every ORA of the tour and the finisher.
-    expect(base.hits, 'every ORA and the finisher').toBe(blows);
+    // stop, one opponent takes every GAN of the tour and the finisher.
+    expect(base.hits, 'every GAN and the finisher').toBe(blows);
     expect(base.hitsWhileFrozen, `only ${base.hitsWhileFrozen} of ${base.hits} landed in stopped time`)
       .toBeGreaterThanOrEqual(blows - 2);
     // Every contact scaled by its place in the string, the finisher included:

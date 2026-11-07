@@ -62,7 +62,7 @@ export const originalAwakening = (fighter: string): readonly (readonly [cue: str
 
 /** Where a shared cue now holds another original's sound, a slot plays its own in its place (MAP.md section 3, "swaps in a
  *  slot's own rows"). `fx-stand` is a neutral spirit; KoKo's is the iron one and Lord ORO's the gilded one. `fx-timestop` and
- *  `fx-barrage` are KoKo's Dead Stop and GAN GAN barrage; Lord ORO has his own hour and NOROMA barrage (same beats). */
+ *  `fx-barrage` are KoKo's Hush and GAN GAN barrage; Lord ORO has his own hour and NOROMA barrage (same beats). */
 const HAND_SWAPS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   koko: { 'fx-stand': 'fx-sig-koko-iron-lullaby' },
   oro: { 'fx-stand': 'fx-sig-lord-oro-gilded-spirit', 'fx-timestop': 'fx-sig-lord-oro-the-hour', 'fx-barrage': 'fx-sig-lord-oro-noroma-barrage' },

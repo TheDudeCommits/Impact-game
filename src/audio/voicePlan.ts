@@ -236,11 +236,11 @@ const KITS: Record<FighterId, VoiceKit> = {
   koko: { calls: { heavy: 'vo-koko-needle-finger', special: 'koko-star', ultimate: 'vo-koko-the-hour' },
     efforts: ['vo-koko-ora-1', 'vo-koko-ora-2', 'vo-koko-ora-4', 'vo-koko-fun'],
     barrage: 'vo-koko-ora-barrage', finisher: { cue: 'vo-koko-gaaan', lands: .15 },
-    // Iron Spirit's ORA on the receipt's last blow and on the grave-hound barrage's.
+    // Iron Spirit's GAN on the receipt's last blow and on the grave-hound barrage's.
     enders: { llh: { cues: ['vo-koko-gaaan'], chance: .55 }, airSpecial: { cues: ['vo-koko-ora-4', 'vo-koko-ora-2'], chance: .65 } } },
   oro: { calls: { heavy: 'vo-oro-ukete', ultimate: 'vo-oro-the-hour' }, efforts: ['vo-oro-noroma', 'vo-oro-wasted', 'vo-oro-fun', 'vo-oro-fun-2'],
     barrage: 'vo-oro-noroma-barrage', finisher: { cue: 'oro-steamroller', lands: 1.8 },
-    // DEAD STOP's GILDED PUNCH on its blow from behind; his scoff as the knives close in.
+    // HUSH's GILDED PUNCH on its blow from behind; his scoff as the knives close in.
     enders: { lllh: { cues: ['vo-oro-wasted', 'vo-oro-noroma'], chance: .55 }, airSpecial: { cues: ['vo-oro-fun'], chance: .5 } } },
   gaunt: { calls: { special: 'vo-gaunt-kurai', ultimate: 'vo-gaunt-roar' }, efforts: ['vo-gaunt-ha', 'vo-gaunt-fu', 'vo-gaunt-sei', 'vo-gaunt-da'],
     heavy: { cues: ['vo-gaunt-dora', 'vo-gaunt-gah'] },
@@ -685,7 +685,7 @@ function cinematicStart(move: MoveDefinition) {
  *  two things at once, and a line planned over one still being spoken cuts
  *  it). A line that must start sooner than that blow - Grand Tide's,
  *  whose cinematic is one blow - is laid out from the confirm. A Stand
- *  user's cinematic is its barrage: the ORA/GILDED_PUNCH loop across barrageWindow
+ *  user's cinematic is its barrage: the GAN/GILDED_PUNCH loop across barrageWindow
  *  and the finisher's line after it (stand). Seconds on the move's own
  *  timeline, moved onto the event's: the confirm is `castAge` into the move,
  *  the release is its contact's time. */
@@ -780,7 +780,7 @@ const BARRAGE_LEAD = .04;
 /** And runs this far past the last blow, so it is not cut on that blow. */
 const BARRAGE_TAIL = .2;
 
-/** A spirit fighter's special and ultimate: the call, the ORA/GILDED_PUNCH loop across
+/** A spirit fighter's special and ultimate: the call, the GAN/GILDED_PUNCH loop across
  *  the blows, and on the ultimate the finisher's line. One man cannot shout
  *  two things at once, so each segment starts where the one before ends.
  *

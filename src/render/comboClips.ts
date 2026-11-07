@@ -94,7 +94,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   'basilissa': { lh: whole('Thorn Sweep',0.5), llh: whole('Serpent Rising Heel',0.5652173913043478), lllh: whole('Crown Heel Drop',0.3333333333333333), llls: whole('Sandrose Barrage',0.3333333333333333), airHeavy: whole('Petal Air Kick',0.48), airSpecial: whole('Coiled Landing',0.3333333333333333) },
   sorayomi: { lh: whole('Staff Reverse Quill',9/17), llh: whole('Staff Rising Reap',11/18), lllh: whole('Staff Downstroke',11/18), llls: whole('Staff Thrust',12/20), airHeavy: whole('Staff Air Strike',11/18), airSpecial: whole('Groundstrike',14/23) },
   strix: { lh: whole('Vigil Backcut', 7.5/18), llh: whole('Vigil Rising Reap', .5),
-    lllh: whole('Gravefall', 11/18), llls: whole('Yoru Diagonal Finisher', 16/38),
+    lllh: whole('Gravefall', 11/18), llls: whole('Vigil Diagonal Finisher', 16/38),
     airHeavy: whole('Vigil Air Cleave', 11/18), airSpecial: whole('Vigil Landing Cut', 15/47) },
   gorai: { lh: seg('Rivet Ram', .94, 2.08, .4), llh: seg('Quake Stamp', .59, 1.76, .38), lllh: seg('Thunderclap Spar', .58, 1.98, .42),
     llls: seg('Great Roar', 0, 1.3, .35), airHeavy: seg('Drunken Skyfall', 1.45, 2.5, .52), airSpecial: seg('Cloudbank Dive', .5, 1.8, .28) },
@@ -168,9 +168,9 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   // Round 4b (COMBAT): Keelbreaker is the overhead two-sword cut of his own air take (kenzo-enders2.glb), not the first half
   // of the ground smash's - that take's overhead cut is now his air string's.
   kenzo: { lh: v('Dust Sea Sundered', 0.9, 2, 0.39, 2.458), llh: v('Rising Cross', 0.6, 1.7, 0.5, 6.042), lllh: v('Kenzo Air', 1, 2, 0.6, 5.042), llls: v('thousand mile eagle', 1.05, 1.95, 0.36, 2.625), airHeavy: v('Rising Cross', 1.75, 2.7, 0.47, 6.042), airSpecial: v('Cut Plunge', 2.75, 4, 0.44, 6.542) },
-  // Round 4b (COMBAT): Junkyard Assault is Iron Spirit's barrage (his special's Ora Barrage) driven into the floor,
+  // Round 4b (COMBAT): Junkyard Assault is Iron Spirit's barrage (his special's Gan Gan Barrage) driven into the floor,
   // not the second half of the knockdown's take - its diving straight is his air string's.
-  koko: { lh: v('Straight Body', 0.7, 1.75, 0.48, 5.542), llh: v('Upper Dive', 0.9, 1.9, 0.45, 6.042), lllh: v('Hammer Dive', 0.55, 1.45, 0.5, 6.542), llls: v('Straight Body', 2.6, 3.8, 0.5, 5.542), airHeavy: v('Upper Dive', 2.2, 3.3, 0.55, 6.042), airSpecial: v('Ora Barrage', 0.3, 1.8, 0.45, 3.083) },
+  koko: { lh: v('Straight Body', 0.7, 1.75, 0.48, 5.542), llh: v('Upper Dive', 0.9, 1.9, 0.45, 6.042), lllh: v('Hammer Dive', 0.55, 1.45, 0.5, 6.542), llls: v('Straight Body', 2.6, 3.8, 0.5, 5.542), airHeavy: v('Upper Dive', 2.2, 3.3, 0.55, 6.042), airSpecial: v('Gan Gan Barrage', 0.3, 1.8, 0.45, 3.083) },
   nigo: { lh: v('skill_3_4_1', 0, 1.04, 0.3, 1.042), llh: v('Punch 02', 0.1, 0.9, 0.34, 1.833), lllh: v('skill_1_3_1', 1.75, 2.4, 0.35, 4.458), llls: v('strike_1_1', 0, 0.66, 0.3, 0.667), airHeavy: v('Punch 01', 0.75, 1.6, 0.52, 1.667), airSpecial: v('Scorched Earth', 0.6, 1.9, 0.4, 2.833) },
   // Round 4b (COMBAT): Kagaribi is his TAIMATSU (Taimatsu) thrown into the floor, not the second half of the stun's take.
   kagari: { llh: v('Upper Dive', 1.15, 2.1, 0.53, 6.042), lllh: v('Taiyou-Dama', 1.2, 2.3, 0.46, 2.458), llls: v('Body Dive', 0.85, 1.75, 0.47, 6.542), airHeavy: v('Upper Dive', 2.2, 3.2, 0.5, 6.042), airSpecial: v('Taimatsu', 0.3, 1.25, 0.63, 1.25) },
@@ -182,7 +182,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   kuon: { lh: v('Punch 01', 0.3, 1, 0.36, 1.000), llh: v('PLANETARIUM', 1.9, 2.9, 0.5, 4.292), lllh: v('Axe Dive', 0.9, 1.75, 0.59, 6.542), llls: v('Stomp Palm', 1.4, 2.6, 0.25, 5.542), airHeavy: v('Stomp Palm', 0.6, 1.6, 0.7, 5.542), airSpecial: v('Singularity', 0.8, 2.4, 0.7, 2.750) },
   // Round 4b (COMBAT): Checkmate is a take of its own (oro-enders2.glb): the leap, the knives flung down from both hands,
   // the landing - not the second half of the knockdown's take.
-  oro: { lh: v('THE HOUR', 0.15, 1.15, 0.52, 4.792), llh: v('Rising Stomp', 0.25, 1.15, 0.39, 6.042), lllh: v('Hammer Dive', 0.85, 1.75, 0.5, 6.542), llls: v('Straight Spear', 3.1, 4.3, 0.5, 5.542), airHeavy: v('Rising Stomp', 2.4, 3.4, 0.6, 6.042), airSpecial: v('Checkmate Fan', 2.45, 3.45, 0.8, 5.042) },
+  oro: { lh: v('MIDNIGHT', 0.15, 1.15, 0.52, 4.792), llh: v('Rising Stomp', 0.25, 1.15, 0.39, 6.042), lllh: v('Hammer Dive', 0.85, 1.75, 0.5, 6.542), llls: v('Straight Spear', 3.1, 4.3, 0.5, 5.542), airHeavy: v('Rising Stomp', 2.4, 3.4, 0.6, 6.042), airSpecial: v('Checkmate Fan', 2.45, 3.45, 0.8, 5.042) },
   // Round 4b (COMBAT): all six are takes of his own (gaunt-enders2.glb, three Meshy takes) - the critic found five of his
   // enders and air moves cut from his ultimate's Hound Rampage, and the sixth his special's Scrap Cannon Arm: the arm raised
   // and the crossbow fired; the rising swing (the first of his air take's - the uppercut half of the crossbow's take

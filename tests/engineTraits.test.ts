@@ -69,7 +69,7 @@ describe('borrowed moves keep what they are (the Forge)', () => {
     } finally { session.restore(); }
   });
 
-  it("brings LORD ORO's tour with a borrowed THE HOUR, and the stop holds its victim", () => {
+  it("brings LORD ORO's tour with a borrowed MIDNIGHT, and the stop holds its victim", () => {
     const moves = forgeMoves(kit('bellows', 'ultimate', 'oro'));
     expect(moves.ultimate.timeStop?.tour).toEqual(TIME_STOP_TOURS.oro);
     expect(forgeMoves(ownKit('oro')).ultimate.timeStop?.tour).toBeUndefined();     // a body's own stop keeps its own table

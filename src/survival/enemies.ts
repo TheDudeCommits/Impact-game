@@ -418,11 +418,11 @@ ENEMIES.shiun = {
 // ---- Gilded Ruin: LORD ORO -----------------------------------------
 // (The fifth list: "bosses for the series that have none".) The roster's own
 // LORD ORO, in the rift's boss body: his model carries every clip a boss needs -
-// the punches, the knives, the barrage, THE HOUR - and his signature stops
+// the punches, the knives, the barrage, MIDNIGHT - and his signature stops
 // time (signatures.ts).
 const oroClips = (extra: Partial<EnemyClips> = {}): EnemyClips => ({
   idle: ['_Idle'], run: ['Run'], walk: ['Walk'], hit: ['Hit 01'], down: ['Die fall'], getup: ['down_end'], stun: ['stun'],
-  blown: ['slammed'], land: ['down_end'], death: ['Die fall'], dash: ['Dash'], jump: ['jump'], fall: ['Jump Fall'], guard: ['Block'], taunt: ['shake'], intro: ['THE HOUR'], ...extra,
+  blown: ['slammed'], land: ['down_end'], death: ['Die fall'], dash: ['Dash'], jump: ['jump'], fall: ['Jump Fall'], guard: ['Block'], taunt: ['shake'], intro: ['MIDNIGHT'], ...extra,
 });
 ENEMIES.oro = {
   id: 'oro', name: 'Lord ORO', title: 'The Gilded Hour · Lord of the Clock Tower', series: 'Gilded Ruin', role: 'boss', brain: 'boss',
@@ -432,7 +432,7 @@ ENEMIES.oro = {
     melee('Gilded Punch', 'light', ['Gilded Punch'], .83, .38, 64, { range: 2.7, radius: .8, lunge: 5, knockback: 6, maxRange: 3.3, rest: .25, element: 'light' }),
     multi(melee('NOROMA NOROMA Barrage', 'heavy', ['Noroma! Barrage'], 3.08, .5, 24, { range: 2.9, radius: 1, lunge: 7, close: 8, knockback: 3, stun: .25, maxRange: 6, rest: 3.2, telegraph: 'cone', element: 'light', callout: true }), [.5, .78, 1.06, 1.34, 1.62, 1.9, 2.18], 92),
     multi(shot('Clock-Hand Knives', 'special', ['Clock-Hand Knives'], 1.33, .55, 34, { speed: 38, radius: .5, knockback: 3, stun: .3, minRange: 3, maxRange: 20, rest: 4, element: 'steel', callout: true }), [.55, .7, .85], 48),
-    { ...melee('THE HOUR', 'ultimate', ['THE HOUR'], 4.79, 2.7, 190, { range: 5, radius: 4.4, knockback: 13, stun: 1, guardBreak: true, maxRange: 9, rest: 9, telegraph: 'ring', element: 'light', callout: true }), style: 'field' },
+    { ...melee('MIDNIGHT', 'ultimate', ['MIDNIGHT'], 4.79, 2.7, 190, { range: 5, radius: 4.4, knockback: 13, stun: 1, guardBreak: true, maxRange: 9, rest: 9, telegraph: 'ring', element: 'light', callout: true }), style: 'field' },
   ],
   clips: oroClips(), xp: 80, score: 20000, cost: 0, color: 0xf2c94c,
 };

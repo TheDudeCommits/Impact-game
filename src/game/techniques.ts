@@ -124,7 +124,7 @@ export const OWN_NAMES: Readonly<Partial<Record<FighterId, Partial<Record<Techni
   kenzo: { rush: 'Oni Lunge', counter: 'Iai Counter: Ronin' },
   nigo: { rush: 'Ember Step Thrust', counter: 'Nightfall Counter' },
   koko: { rush: 'Iron Rush', counter: 'Lullaby Counter' },
-  oro: { rush: 'Gilded Rush', counter: 'The Hour Counter' },
+  oro: { rush: 'Gilded Rush', counter: 'Midnight Counter' },
   kosho: { rush: 'Service Rush', counter: 'Kitchen Counter' },
   shirokane: { rush: 'Scarecrow Dash', counter: 'Mirror Counter' },
   kuon: { rush: 'Gravity Blink', counter: 'Null Counter' },

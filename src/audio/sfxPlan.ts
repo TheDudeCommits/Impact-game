@@ -578,7 +578,7 @@ const last = (c: Ctx) => c.move.contacts[c.move.contacts.length - 1];
 
 /** Time stop: the reversed whoomph lands its 'DOON' on the stop, a clock
  *  ticks in the stillness (one-shots, one a second: nothing here loops, so
- *  the ORA/GILDED_PUNCH voice loop stays the move's only looped layer), a Stand's
+ *  the GAN/GILDED_PUNCH voice loop stays the move's only looped layer), a Stand's
  *  barrage bed covers barrageWindow - one continuous stretch through the
  *  glides between frozen victims (TIMESTOP) - and time resumes with a shock
  *  as the stop ends, 0.02 s before the finisher.
@@ -606,7 +606,7 @@ function timeStopCinematic(c: Ctx, extra: CueLayer[] = []): CueLayer[] {
   return timeStop(c, extra).slice(1);
 }
 
-/** The rapid-fire bed under an ORA/GILDED_PUNCH barrage, from `start` to `end`. The
+/** The rapid-fire bed under an GAN/GILDED_PUNCH barrage, from `start` to `end`. The
  *  bed is a one-shot; a window longer than it is covered by overlapping takes. */
 function barrageBed(start: number, end: number, gain: number): CueLayer[] {
   const layers: CueLayer[] = [], length = sfxLength('fx-barrage') - .1;
@@ -695,7 +695,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     special: c => [bed('fx-wind-swirl', .2, .08, c0(c)), onBeat('fx-wind-blast', .42, c0(c))],
     ultimate: c => [bed('fx-electric-bed', .2, .05, c0(c)), onBeat('fx-lightning', .5, c0(c))],
   },
-  // Yoru: steel displaces air; the crescent leaves on its authoritative contact. No gunshot or ki-blast stand-in.
+  // The greatsword: steel displaces air; the crescent leaves on its authoritative contact. No gunshot or ki-blast stand-in.
   strix: {
     heavy: c => [...meleeSwings(c),onBeat('fx-sword-ring',.16,c0(c)+.035)],
     special: c => [{cue:'fx-sword-ring',gain:.18,phase:'cast'},onBeat(pick(FAMILY.gravedigger,c.seed),.55,c0(c)),onBeat('fx-slash-wave',.58,c0(c)+.025)],
@@ -847,7 +847,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     // Clock-Hand Knives: a fan of three knives.
     heavy: c => [onBeat(pick(FAMILY.clockHandKnives, c.seed), .46, c0(c)), onBeat(pick(FAMILY.clockHandKnives, c.seed, 1), .34, c0(c) + .03, 'cast', 1.06)],
     special: c => [{ cue: 'fx-stand', gain: .34, phase: 'cast' }, ...barrageBed(Math.min(.8, c0(c)), last(c) + .3, .36)],
-    // THE HOUR: the stop is the opener (round 3d); the GILDED PUNCH, and the road
+    // MIDNIGHT: the stop is the opener (round 3d); the GILDED PUNCH, and the road
     // roller dropped out of the sky as time resumes, are the cinematic.
     ultimate: c => [{ cue: 'fx-stand', gain: .3, phase: 'cast' }, timeStop(c)[0]],
   },
@@ -1185,7 +1185,7 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
     onBeat('fx-lightning', .4, last(c) + .02)],
   // Inside the stop: the clock ticking, the barrage, time resuming.
   koko: c => timeStopCinematic(c, [onBeat(pick(FAMILY.heavy, c.seed), .5, last(c)),
-    // The overnight audio pass: Iron Spirit's last ORA breaks in the mids too, under the "オラァー!" said on it.
+    // The overnight audio pass: Iron Spirit's last GAN breaks in the mids too, under the "オラァー!" said on it.
     onBeat('fx-explosion-1', .46, last(c))]),
   // ... and the steamroller dropped out of the sky as time resumes: it
   // falls for the half second before the finisher and crashes on it.
@@ -1366,7 +1366,7 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
   },
   oro: {
     lh: c => [onBeat(pick(FAMILY.zip, c.seed), .4, c0(c)), onBeat(pick(FAMILY.snap, c.seed), .28, c0(c) + .02)],
-    // DEAD STOP is gone and behind them.
+    // HUSH is gone and behind them.
     lllh: c => [onBeat('fx-vanish', .36, .04), onBeat('fx-stand', .3, Math.max(.06, c0(c) - .1)), ...meleeSwings(c)],
     // The touch that freezes: a hiss of vapour.
     llls: swung(c => [onBeat('fx-steam', .4, c0(c) + .02)]),
@@ -1524,7 +1524,7 @@ function meleeImpact(c: Ctx, index: number, final: boolean): CueLayer[] {
       if (weight === 'finisher') layers.push({ cue: pick(FAMILY.finisher, seed), gain: .45 });
       break;
     case 'stand':
-      // Iron Spirit and DEAD STOP hit harder than a man does.
+      // Iron Spirit and HUSH hit harder than a man does.
       layers.push({ cue: heavy ? pick(FAMILY.hitHeavy, seed) : pick(FAMILY.hitLight, seed, index), gain: heavy ? .72 : .64, rate });
       if (!heavy) layers.push({ cue: pick(FAMILY.hitHeavy, seed), gain: .3, rate: 1.08 });
       if (weight === 'finisher') layers.push({ cue: pick(FAMILY.finisher, seed), gain: .5 });

@@ -1567,7 +1567,7 @@ const STANDING_RISE=new Set<FighterId>(Object.keys(FIGHTERS) as FighterId[]);
 const AWAKEN_TAKE:Partial<Record<FighterId,string>>={shiden:'Shiden awaken',shirokane:'Shirokane awaken',setsu:'Setsu awaken',gaunt:'Gaunt awaken',
   koko:'KoKo awaken',
   nigo:'Nigo awaken',
-  // LORD ORO's names THE HOUR, swept as KoKo's was; his own is KYAHAAA! on the burst as DEAD STOP rises (oro-fanim5.glb).
+  // LORD ORO's names MIDNIGHT, swept as KoKo's was; his own is KYAHAAA! on the burst as HUSH rises (oro-fanim5.glb).
   oro:'LORD ORO awaken',
   ippon:'Ippon awaken'};
 /** The same for a form body that takes over on the swap and plays on to the entry's end (Gaunt' 'HOUND ARMOR': his own

@@ -484,7 +484,7 @@ export class GameRenderer {
   //                            contrast pushed, the room a little drained, an
   //                            ink vignette from the corners. 0..1; feed it
   //                            every frame (main.ts does) - unfed, it is gone.
-  //   timeStop(amount)         THE HOUR / DEAD STOP: the world as a two-tone
+  //   timeStop(amount)         MIDNIGHT / HUSH: the world as a two-tone
   //                            cyan print, the fighters as black ink with a
   //                            white edge and their outlines on top. `amount`
   //                            0..1, eased over a few frames. Call it every

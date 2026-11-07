@@ -1318,7 +1318,7 @@
    "core": "#fff4cc",
    "main": "#f0bd24",
    "rim": "#3b2604",
-   "note": "DEAD STOP's gold, matching the spirit's #d9b53c fist and gold glow; the time stop stays the engine's two-tone"
+   "note": "HUSH's gold, matching the spirit's #d9b53c fist and gold glow; the time stop stays the engine's two-tone"
   },
   "slots": {
    "body": {
@@ -1329,7 +1329,7 @@
     "when": "never",
     "scale": "small",
     "anchor": "body",
-    "why": "None: awakened, DEAD STOP already looms over him, and an Armory aura would fight the spirit's silhouette."
+    "why": "None: awakened, HUSH already looms over him, and an Armory aura would fight the spirit's silhouette."
    },
    "light": {
     "pick": "efk_goldencrash",
@@ -1340,7 +1340,7 @@
     "on": "hit",
     "scale": "small",
     "anchor": "target",
-    "why": "A golden shock dome cracks open on the hit, rayed with light: one DEAD STOP punch landing."
+    "why": "A golden shock dome cracks open on the hit, rayed with light: one HUSH punch landing."
    },
    "heavy": {
     "pick": "sam_flightblades",
@@ -1380,12 +1380,12 @@
     "on": "cast",
     "scale": "huge",
     "anchor": "body",
-    "why": "A colour-inverted sphere bursts out of him and the world freezes grey: THE HOUR, before the steamroller falls."
+    "why": "A colour-inverted sphere bursts out of him and the world freezes grey: MIDNIGHT, before the steamroller falls."
    }
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "Steamroller.ts already drops the real steamroller and GameRenderer already renders the two-tone time stop, so the ultimate gets the frozen-panes beat instead of a second falling object. chronofracture's rune seal on the floor is off: THE HOUR has no runes. anvilfall (a machined slab dropped from the sky that dents the floor and stays) is the Armory's steamroller stand-in if wanted; its engine still caught only dust. efk_goldencrash's engine still is off-frame; the top-level capture shows the rayed dome. SwordStandEffects already throws the knife mesh, and sam_flightblades adds the halo-then-volley read. extra_rush is shared by all three spirit users on purpose: the spirit's rush is their shared look, and the palettes split them. Its fire element is switched to plain so the finisher is a punch, not a fireball. 11 Oct: ultimate now seal_timestop (the Armory's seals and strings, made for this).",
+  "notes": "Steamroller.ts already drops the real steamroller and GameRenderer already renders the two-tone time stop, so the ultimate gets the frozen-panes beat instead of a second falling object. chronofracture's rune seal on the floor is off: MIDNIGHT has no runes. anvilfall (a machined slab dropped from the sky that dents the floor and stays) is the Armory's steamroller stand-in if wanted; its engine still caught only dust. efk_goldencrash's engine still is off-frame; the top-level capture shows the rayed dome. SwordStandEffects already throws the knife mesh, and sam_flightblades adds the halo-then-volley read. extra_rush is shared by all three spirit users on purpose: the spirit's rush is their shared look, and the palettes split them. Its fire element is switched to plain so the finisher is a punch, not a fireball. 11 Oct: ultimate now seal_timestop (the Armory's seals and strings, made for this).",
   "by": "casting agent batch 5",
   "at": "2026-10-11"
  },
@@ -3688,7 +3688,7 @@
     "on": "cast",
     "scale": "huge",
     "anchor": "body",
-    "why": "A colour-inverted sphere bursts out and the world stops grey: Iron Spirit, DEAD STOP."
+    "why": "A colour-inverted sphere bursts out and the world stops grey: Iron Spirit, HUSH."
    }
   },
   "moveIdeas": [],

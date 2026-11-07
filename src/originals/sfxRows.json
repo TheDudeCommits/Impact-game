@@ -1394,7 +1394,7 @@
   {
    "slot": "oro",
    "cue": "fx-sig-lord-oro-death-knell-fall",
-   "move": "ultimate finisher: THE HOUR: Death Knell (the fall)",
+   "move": "ultimate finisher: MIDNIGHT: Death Knell (the fall)",
    "when": "before the last blow",
    "gain": 0.55,
    "what": "The tower's great bell coming down: a long falling whistle and the air rushing ahead of it."

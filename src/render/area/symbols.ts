@@ -41,7 +41,7 @@ function petal(): P[] {
 export const SYMBOLS = {
   /** KoKo: a star. */
   star: star(50, 52, 46, 19),
-  /** 'LORD ORO': DEAD STOP's clock face. */
+  /** 'LORD ORO': HUSH's clock face. */
   clock: ring(50, 50, 46, 39) + [...Array(12).keys()].map(i => { const a = i * Math.PI / 6, r1 = i % 3 ? 33 : 30; return rod(50 + Math.cos(a) * r1, 50 + Math.sin(a) * r1, 50 + Math.cos(a) * 36, 50 + Math.sin(a) * 36, i % 3 ? 1.4 : 2.4); }).join('')
     + rod(50, 50, 50, 20, 2.6) + rod(50, 50, 69, 61, 3.2) + circle(50, 50, 5),
   /** Kagari: a spade. */

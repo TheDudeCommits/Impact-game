@@ -74,7 +74,7 @@ const PORTALS = 10, BLADES = 8;
 const RANK_MARK: Record<string, number> = { F: 0x9aa0a8, E: 0x6fc79a, D: 0x5a9cff, C: 0xff8a2a, B: 0xa060ff, A: 0xff2038, S: 0xffc03a };
 
 type RiftScreen = { impactFrame(strength: number, at?: THREE.Vector3): void; chromaticPulse(amount: number): void;
-  /** The renderer's stopped time (GameRenderer.timeStop): a boss relic's DEAD STOP feeds it every frame it lasts. */
+  /** The renderer's stopped time (GameRenderer.timeStop): a boss relic's HUSH feeds it every frame it lasts. */
   timeStop?(amount: number): void; techniqueGrade(color: number, strength: number, seconds: number, at?: { x: number; y: number; z: number }, reach?: number): void; speedLines(amount: number): void;
   bloomPass?: { bloom: { strength: number; threshold: number } };
   finalPass?: { uniforms: { uBloom: { value: number } } };
@@ -1034,7 +1034,7 @@ export class SurvivalFx {
         this.screen?.impactFrame(.7, _p.set(x, y + 1, z));
         break;
       case 'stop':
-        // DEAD STOP: the flash, and a sphere of it sweeping out; the renderer's stopped time holds the frame after.
+        // HUSH: the flash, and a sphere of it sweeping out; the renderer's stopped time holds the frame after.
         k.ring(x, y + 1, z, .5, 60, time, .45, 0xffffff, GOLD.rim, .3, 'flat');
         k.ring(x, y + 1, z, .5, 24, time, .35, 0xffffff, GOLD.rim, .2);
         this.screen?.impactFrame(1, _p.set(x, y + 1, z));
@@ -1093,7 +1093,7 @@ export class SurvivalFx {
     k.smoke(vent.x + (Math.random() - .5) * .5, .3, vent.z + (Math.random() - .5) * .5, (Math.random() - .5) * .3, 1.5 + Math.random() * .6, (Math.random() - .5) * .3, .55 + Math.random() * .4, time, 1.7, 0x3a2a22, 0x0c0806);
     if (Math.random() < .3) k.pulse(vent.x, .35, vent.z, EMBER.light, 3, 3.5, time, .45, .6);
   }
-  /** DEAD STOP's stopped time, as the renderer draws it (GameRenderer.timeStop): fed every frame it lasts, let go as it ends. */
+  /** HUSH's stopped time, as the renderer draws it (GameRenderer.timeStop): fed every frame it lasts, let go as it ends. */
   private stopSince = -1;
   private stoppedTime(left: number | undefined, time: number) {
     const screen = this.screen;

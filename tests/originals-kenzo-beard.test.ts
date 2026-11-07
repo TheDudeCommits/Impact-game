@@ -114,7 +114,7 @@ describe('Kenzo\'s WILD RONIN beard (kenzo, base body)', () => {
     let back = 0, swing = 0;
     const tip = new THREE.Vector3();
     for (let i = 0; i < 150; i++) {
-      // a dash forward (+z) at 9 m/s for a third of a second, then a dead stop
+      // a dash forward (+z) at 9 m/s for a third of a second, then a hush
       if (i >= 20 && i < 40) root.position.z += 9 / 60;
       root.updateMatrixWorld(true);
       springs.update(1 / 60);

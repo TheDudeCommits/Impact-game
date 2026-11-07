@@ -114,7 +114,7 @@ describe('boss relics', () => {
     game.dispose();
   }, 60000);
 
-  it('stops time on the ultimate (DEAD STOP)', () => {
+  it('stops time on the ultimate (HUSH)', () => {
     const game = fight('lumen', ['oro'], false);
     for (let t = 0; t < 60 * 4 && game.horde.alive < 5; t++) game.tick(idle());
     const hero = game.heroes.get(PLAYER_ID)!, boss = bossOf(game);

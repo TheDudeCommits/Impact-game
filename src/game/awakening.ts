@@ -201,8 +201,8 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   shirokane: define({ name: 'HARVEST WARDEN', kind: 'summon', aura: [0x6ad4ff, 0x123f7a],
     formScale: 4.2, formTint: 0x2f8ae0, formOpacity: .42,
     clips: ['Sickle Bolt', 'Void Eye: Sickle Bolt', '_Idle'] }),
-  koko: define({ name: 'DEAD STOP', kind: 'stand', aura: [0xd0a6ff, 0x2a1440], formScale: 1.5,
-    clips: ['DEAD STOP', '_Idle'] }),
+  koko: define({ name: 'HUSH', kind: 'stand', aura: [0xd0a6ff, 0x2a1440], formScale: 1.5,
+    clips: ['HUSH', '_Idle'] }),
   // Round 16. Kagari burns: the KAGUTSUCHI is fire over his own body, so the
   // aura carries the flame while his hair retains its natural color.
   kagari: define({ name: 'KAGUTSUCHI', kind: 'aura', aura: [0xffb347, 0xff3d00],
@@ -211,10 +211,10 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
     clips: ['opening', 'flagget', '_Idle'] }),
   kuon: define({ name: 'TENGAN', kind: 'aura', aura: [0x9fe8ff, 0x2a5fd0],
     clips: ['_Idle'] }),
-  // LORD ORO the same: he fights on, and DEAD STOP looms over him in gold - the
+  // LORD ORO the same: he fights on, and HUSH looms over him in gold - the
   // same shape as KoKo's Stand, drawn by the same effects class.
-  oro: define({ name: 'THE HOUR', kind: 'stand', aura: [0xffe27a, 0x8a5a10], formScale: 1.5,
-    clips: ['THE HOUR', '_Idle'] }),
+  oro: define({ name: 'MIDNIGHT', kind: 'stand', aura: [0xffe27a, 0x8a5a10], formScale: 1.5,
+    clips: ['MIDNIGHT', '_Idle'] }),
   // The HOUND ARMOR: a body of its own, bound to his skeleton so it
   // fights his clips (scripts/build_gaunt.py).
   gaunt: define({ name: 'HOUND ARMOR', kind: 'form', aura: [0xff2a2a, 0x2b0000], formScale: 1.02,
@@ -295,7 +295,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
 /** What the transformation changes about a move.
  *
  *  The spirit fighters replace their ultimates; Kurobi has his own move names
- *  and keeps his native attack timing. DEAD STOP *is* the awakening,
+ *  and keeps his native attack timing. HUSH *is* the awakening,
  *  so awakened it stops being two hits with a pause in the middle and becomes
  *  what the scene is - time stops, the Stand empties a barrage into someone
  *  who cannot move, and the damage lands when the clock starts again. LORD ORO's
@@ -332,12 +332,12 @@ export const AWAKENED_MOVES: Partial<Record<FighterId, Partial<Record<AttackSlot
   koko: {
     ultimate: {
       // The base World is a barrage of its own now, so the awakened one is the
-      // longer beating rather than the only one: eighteen ORA across the field
+      // longer beating rather than the only one: eighteen GAN across the field
       // inside a stop most of a second longer (a wider one, too), then the
       // finisher as the clock starts again - two hundredths after the stop
       // ends, as the base one's. Round 3: spread over every opponent the stop
       // caught (src/game/timeStopBarrage.ts). Round 3d: the stop at 0.58 as
-      // the base one's (0.85), fourteen ORA from 1.0 a seventh of a second
+      // the base one's (0.85), fourteen GAN from 1.0 a seventh of a second
       // apart (eighteen from 1.1), the finisher at 3.3 (4.47): 4.2 s in all
       // against 6.4, still most of a second longer than the base World. It
       // keeps the base move's `confirm` (moveFor merges over it).

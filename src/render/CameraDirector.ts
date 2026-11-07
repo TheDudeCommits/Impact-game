@@ -106,7 +106,7 @@ const SWING_CLEAR=1.1;
  *  swings in over at least IMPACT_IN, timed the same way. Only within
  *  IMPACT_RANGE. */
 const IMPACT_ANGLE=1.15,IMPACT_WIDE=1.6,IMPACT_R=3.4,IMPACT_EYE=.3,IMPACT_FOV=48,IMPACT_HOLD=.45,IMPACT_OUT=.6,IMPACT_IN=.3,IMPACT_CARRY=.9,IMPACT_RANGE=24;
-/** Round 3 (TIMESTOP): DEAD STOP, THE HOUR and PLANETARIUM are a tour of a
+/** Round 3 (TIMESTOP): HUSH, MIDNIGHT and PLANETARIUM are a tour of a
  *  stopped field - the user crosses it to each opponent the stop caught
  *  (src/game/timeStopBarrage.ts) - so after the close-up their second shot is
  *  not the release over the shoulder but the field itself: the lens craned
@@ -1259,7 +1259,7 @@ export class CameraDirector {
     // The tangent of the half-height that holds them all, with FIELD_MARGIN of it to spare.
     return THREE.MathUtils.radToDeg(2*Math.atan(this.holdNeed/FIELD_MARGIN));
   }
-  /** Round 3b: THE HOUR's steamroller (signature/Steamroller), held over the
+  /** Round 3b: MIDNIGHT's steamroller (signature/Steamroller), held over the
    *  victim for the last second of the stop and crushing them on the
    *  finisher, is framed too - it hung above the top of the field shot until
    *  the slam. Taken in over ROLLER_EASE as it comes into the stop, so the

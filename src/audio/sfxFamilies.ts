@@ -181,7 +181,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   'shibuichi': [null, 'stone', 'stone', 'light'],       // transmuted stone; a transmutation circle, and the reaction's light rising out of it
   // ----- the rest
   koko: [null, null, null, 'stone'],                       // Iron Spirit is his own; the Ground Smash
-  oro: [null, null, null, 'knives'],                         // DEAD STOP is his own; a barrage of knives
+  oro: [null, null, null, 'knives'],                         // HUSH is his own; a barrage of knives
   kinu: ['string', null, 'string', 'string'],              // her puppet's thread
   gosu: [null, null, 'light', 'knives'],                   // things mending in light; a bearing shot
   gaunt: [null, null, null, 'knives'],                        // the Dragon Slayer and the cannon are his own; crossbow bolts

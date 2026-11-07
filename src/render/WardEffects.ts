@@ -21,14 +21,14 @@ const FADE = .45;
 const SHOCK = .42;
 
 interface Room { mesh: THREE.Mesh; material: THREE.ShaderMaterial; actorId: string; since: number; until: number; radius: number; active: boolean; pulse: boolean; ultimate?: boolean;
-  /** Round 7 (WARD ULT): the ultimate's ROOM stands where it was cast (`anchored`, centred on `anchor`) rather than on
+  /** Round 7 (WARD ULT): the ultimate's THEATRE stands where it was cast (`anchored`, centred on `anchor`) rather than on
    *  him, how long it takes to open, and - from the swap (`closeAt`) - closes in on him and the body he swapped to
    *  (`toward`), to `ward` (nothing: it fades instead). */
   anchored: boolean; anchor: THREE.Vector3; opens: number; closeAt: number; toward: string; ward: number }
 /** Round 7 (WARD ULT): one Ward's ultimate, for its swap: the cast it is (`key`), where he stood before the swap, whether
  *  it has come, and whether it is past looking for. */
 interface Swap { key: number; from: THREE.Vector3; yaw: number; swapped: boolean; done: boolean }
-/** The cube he swapped with: edges of ROOM's light round a faint fill, where he stood. */
+/** The cube he swapped with: edges of THEATRE's light round a faint fill, where he stood. */
 interface Cube { group: THREE.Group; since: number; yaw: number; at: THREE.Vector3; active: boolean; spin: number }
 interface Flash { since: number; seed: number; active: boolean; position: THREE.Vector3; actorId: string; targetId: string }
 interface Knife { mesh: THREE.Group; material: THREE.MeshBasicMaterial; reach: number; at: number }
@@ -41,11 +41,11 @@ const KNIFE_HELD = .5, KNIFE_RUN = .08;
 
 // Round 7 (WARD ULT): the ultimate's is Crossmatch' reach - everyone it can swap to is inside it (it was 5.4).
 const ROOM_RADIUS = { special: 3.6, ultimate: CROSSMATCH.room, awaken: 4.6 } as const;
-/** ROOM's own light, for the swap: the dome's pale blue, over the bloom. */
-const ROOM_LIGHT = new THREE.Color(.5, 1.55, 2.4), ROOM_EDGE = new THREE.Color(.7, 2.1, 2.9), ROOM_FILL = new THREE.Color(.25, .75, 1.2);
+/** THEATRE's own light, for the swap: the dome's pale blue, over the bloom. */
+const ROOM_LIGHT = new THREE.Color(.5, 1.55, 2.4), THEATRE_EDGE = new THREE.Color(.7, 2.1, 2.9), ROOM_FILL = new THREE.Color(.25, .75, 1.2);
 const CUBES = 2, POP = .24;
 const SHOCK_COLOR = { glow: new THREE.Color(.55, .85, 2.4), light: new THREE.Color(.6, .85, 1.7) };
-/** LANCET's cut inside ROOM: a thin blue crescent with a white edge. */
+/** LANCET's cut inside THEATRE: a thin blue crescent with a white edge. */
 const LANCET: SlashStyle = { mode: ENERGY, edge: new THREE.Color(1.7, 2.6, 3.2), body: new THREE.Color(.22, .75, 1.5), glow: new THREE.Color(.08, .45, 1.0) };
 const CUTS = 4, CUT_SECONDS = .2;
 const GAMMA = { blade: new THREE.Color(2.1, 1.9, .55), glow: new THREE.Color(1.2, 1.05, .25), light: new THREE.Color(1.3, 1.15, .45) };
@@ -74,7 +74,7 @@ export class WardEffects {
   private cuts: {mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>; since: number; active: boolean}[] = [];
   private lastCut = new Map<string, number>();
   private time = 0;
-  /** The heart strike (his Light x3, Special, combosVol1.ts): the heart struck out of the chest in a cube of ROOM, one a Ward - made
+  /** The heart strike (his Light x3, Special, combosVol1.ts): the heart struck out of the chest in a cube of THEATRE, one a Ward - made
    *  at load (one, hidden, so its program is linked) and pooled. */
   private heartGeometry = new THREE.BoxGeometry(.2, .2, .2);
   private heartMaterial = new THREE.MeshBasicMaterial({color: new THREE.Color(.55, 1.3, 2.2), transparent: true, opacity: .5, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false});
@@ -85,7 +85,7 @@ export class WardEffects {
   private cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
   private cubeEdges = new THREE.EdgesGeometry(this.cubeGeometry);
   private cubeFill = new THREE.MeshBasicMaterial({color: ROOM_FILL, transparent: true, opacity: .22, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false});
-  private cubeLine = new THREE.LineBasicMaterial({color: ROOM_EDGE, transparent: true, opacity: 1, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false});
+  private cubeLine = new THREE.LineBasicMaterial({color: THEATRE_EDGE, transparent: true, opacity: 1, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false});
   private hidden = new Map<string, Fighter>();
   private hideNow = new Set<string>();
   /** A swap's flashes: where, since when. */
@@ -107,14 +107,14 @@ export class WardEffects {
         uniforms: {uTime: {value: 0}, uOpacity: {value: 0}, uColour: {value: new THREE.Color(0x7fe0ff)}, uFloor: {value: -2}, uBand: {value: 0}},
         vertexShader: 'varying vec3 vNormal;varying vec3 vView;varying vec3 vLocal;void main(){vLocal=position;vNormal=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);vView=-mv.xyz;gl_Position=projectionMatrix*mv;}',
         // A pale blue skin, brighter at the rim where the view glances the
-        // surface, with faint latitude lines drifting up the sphere: the ROOM
+        // surface, with faint latitude lines drifting up the sphere: the THEATRE
         // is a sphere you can see the edge of, not a fog. The
         // rim runs just over the bloom threshold so the edge glows.
         // Round 7 (WARD ULT): the ultimate's fills the arena, and from inside a
         // sphere there is no rim to see - its far wall faces the lens. So it
         // draws its foot as well (`uBand`): a line of light where the dome
         // meets the floor (`uFloor`, in the sphere's own units) and a low
-        // glow up the wall from it - the ROOM's edge round the ground.
+        // glow up the wall from it - the THEATRE's edge round the ground.
         fragmentShader: `varying vec3 vNormal;varying vec3 vView;varying vec3 vLocal;uniform float uTime;uniform float uOpacity;uniform vec3 uColour;uniform float uFloor;uniform float uBand;
           void main(){float facing=abs(dot(normalize(vNormal),normalize(vView)));float rim=pow(1.0-facing,2.2);
           float lines=smoothstep(.92,1.0,sin(vLocal.y*14.0-uTime*1.8))*.35;
@@ -163,12 +163,12 @@ export class WardEffects {
       this.seen.add(event.id);
       if (this.seen.size > 2048) this.seen.delete(this.seen.values().next().value!);
       if (event.fighter !== 'ward') continue;
-      // (A combo ender thrown from the special opens no ROOM of the special's: game/combos.ts. His ground smash
+      // (A combo ender thrown from the special opens no THEATRE of the special's: game/combos.ts. His ground smash
       // pulses one open where he lands, below.)
       if (event.kind === 'cast' && (event.slot === 'special' || event.slot === 'ultimate') && !event.branch) {
         const move = MOVES.ward[event.slot];
         const actor = fighters.get(event.actorId);
-        // Awakened, the ROOM is already standing (the model's own sphere), so
+        // Awakened, the THEATRE is already standing (the model's own sphere), so
         // the cast only pulses it open again rather than nesting a second one.
         // Round 7 (WARD ULT): not the ultimate's, which reaches far past the
         // standing one: it stands where it was cast, and closes in on the two
@@ -243,7 +243,7 @@ export class WardEffects {
       this.direction.set(Math.sin(actor.state.yaw),0,Math.cos(actor.state.yaw));
       if(wrist&&forearm){
         // The attack's own wrist-to-elbow line determines the blade direction;
-        // neither a stationary ROOM origin nor the target drives the hand.
+        // neither a stationary THEATRE origin nor the target drives the hand.
         this.direction.copy(actor.handL).sub(forearm.getWorldPosition(this.origin)).normalize();
         this.knifeQuaternion.setFromUnitVectors(this.up,this.direction);
         knife.mesh.quaternion.copy(this.knifeQuaternion);
@@ -265,7 +265,7 @@ export class WardEffects {
       if (!room.active) continue;
       const age = time - room.since;
       const actor = fighters.get(room.actorId);
-      // Round 3d (ULTS): the ultimate's ROOM stands for the move it opened
+      // Round 3d (ULTS): the ultimate's THEATRE stands for the move it opened
       // for - not for the whole cinematic - and closes at once when the move
       // is cut short or (round 3e) its opener found nobody.
       if (room.ultimate && actor && !room.pulse && age > .1) {
@@ -275,7 +275,7 @@ export class WardEffects {
       }
       if (age < -.1 || age > room.until - room.since || !actor || !actor.state.alive) { room.active = false; room.mesh.visible = false; continue; }
       // From the raised hand to its full radius, then the sphere settles on
-      // the fighter: the hand keeps moving through the clip and a ROOM that
+      // the fighter: the hand keeps moving through the clip and a THEATRE that
       // follows it would wobble.
       const opening = THREE.MathUtils.smoothstep(age, 0, room.opens);
       const remaining = room.until - time;
@@ -361,7 +361,7 @@ export class WardEffects {
     }
     // Shared materials: the brightest live cube sets them (one at a time is the rule; two fade alike).
     this.cubeLine.opacity = lit; this.cubeFill.opacity = .22 * lit;
-    // The swap's flashes: a ring of ROOM's light opening out and a white star, gone in POP.
+    // The swap's flashes: a ring of THEATRE's light opening out and a white star, gone in POP.
     for (const p of this.pops) {
       const age = time - p.since;
       if (age < 0 || age > POP) continue;
@@ -377,7 +377,7 @@ export class WardEffects {
 
   /** Round 7 (WARD ULT): one Ward's ultimate, `elapsed` seconds in: where he stood until the swap (ward/crossmatch.ts), and
    *  - once the drawn body is somewhere else - the swap: the body gone for CROSSMATCH.hold, the cube dropped where he
-   *  stood under a flash of ROOM, and his ROOM told to close in on the two of them. Nobody to swap to, he never
+   *  stood under a flash of THEATRE, and his THEATRE told to close in on the two of them. Nobody to swap to, he never
    *  moves, and none of it is drawn. */
   private crossmatch(id: string, actor: Fighter, elapsed: number, time: number) {
     const s = actor.state, key = Math.round(s.actionStarted * 1000);
@@ -392,7 +392,7 @@ export class WardEffects {
         swap.done = swap.swapped = true;
         const cube = this.cubes.find(c => !c.active) ?? this.cubes.reduce((a, b) => a.since <= b.since ? a : b);
         cube.active = true; cube.since = time; cube.at.copy(swap.from); cube.yaw = swap.yaw; cube.spin = (key % 2 ? 1 : -1) * (.8 + (key % 7) / 14);
-        // Where he was, a flash of ROOM over the cube (where he is, the shock is the flash).
+        // Where he was, a flash of THEATRE over the cube (where he is, the shock is the flash).
         this.pop(this.a.copy(swap.from).setY(swap.from.y + 1.05), key);
         for (const room of this.rooms) if (room.active && room.ultimate && room.actorId === id) { room.closeAt = time; room.toward = s.target ?? ''; }
       }
@@ -402,7 +402,7 @@ export class WardEffects {
       this.hideNow.add(id);
       if (!this.hidden.has(id)) { actor.group.visible = false; this.hidden.set(id, actor); }
     }
-    // The Crossmatch sign: ROOM's light on his raised hand as the swap comes.
+    // The Crossmatch sign: THEATRE's light on his raised hand as the swap comes.
     const sign = THREE.MathUtils.smoothstep(elapsed, at - .22, at - .04) * (1 - THREE.MathUtils.smoothstep(elapsed, at, at + .06));
     if (sign > .02) this.kit.halos.add(actor.handL, .32 * sign, ROOM_LIGHT, .8 * sign, GLOW, .12);
   }
@@ -413,8 +413,8 @@ export class WardEffects {
     slot.at.copy(at); slot.since = this.time; slot.seed = seed;
   }
 
-  /** A combo ender (game/combos.ts) of Ward's, in ROOM's blue: LANCET's cut where the nodachi goes through on a blow -
-   *  across them, up through a launcher, down through a knockdown or a spike - and the ROOM pulsed open round him, to
+  /** A combo ender (game/combos.ts) of Ward's, in THEATRE's blue: LANCET's cut where the nodachi goes through on a blow -
+   *  across them, up through a launcher, down through a knockdown or a spike - and the THEATRE pulsed open round him, to
    *  the smash's radius, where the ground smash comes down. Once a swing (the move's start, as the light's cut). */
   private ender(id: string, actor: Fighter, branch: ComboKey, elapsed: number, time: number, fighters: ReadonlyMap<string, Fighter>) {
     const s = actor.state, move = enderMove(branch, !!s.awakened);

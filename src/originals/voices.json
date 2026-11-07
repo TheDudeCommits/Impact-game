@@ -38,17 +38,17 @@
   },
   "vo-taisei-sunpalm-cannon": {
    "file": "voice/originals/taisei/taisei-1aa0c7ce.wav",
-   "seconds": 2.49,
-   "level": -16.4,
+   "seconds": 2.555,
+   "level": -16.5,
    "voice": "taisei",
-   "text": "大…聖…砲ぉぉぉっ！"
+   "text": "サン…パーム…キャノンッ！"
   },
   "taisei-sunpalm-cannon-full": {
    "file": "voice/originals/taisei/taisei-1aa0c7ce.wav",
-   "seconds": 2.49,
-   "level": -16.4,
+   "seconds": 2.555,
+   "level": -16.5,
    "voice": "taisei",
-   "text": "大…聖…砲ぉぉぉっ！"
+   "text": "サン…パーム…キャノンッ！"
   },
   "taisei-spirit": {
    "file": "voice/originals/taisei/vo-taisei-ikke.wav",
@@ -87,10 +87,10 @@
   },
   "konta-galewheel": {
    "file": "voice/originals/px/konta/konta-ff5f05fd.wav",
-   "seconds": 2.26,
+   "seconds": 2.46,
    "level": -16.4,
    "voice": "konta",
-   "text": "風術…風車!"
+   "text": "風術…ゲイルホイール!"
   },
   "vo-konta-fox-bomb": {
    "file": "voice/originals/px/konta/vo-konta-fox-bomb.wav",
@@ -724,10 +724,10 @@
   },
   "vo-koko-the-hour": {
    "file": "voice/originals/koko/koko-a324364d.wav",
-   "seconds": 0.695,
+   "seconds": 0.67,
    "level": -16.4,
    "voice": "koko",
-   "text": "デッド・ストップ！"
+   "text": "ハッシュ！"
   },
   "koko-star": {
    "file": "voice/originals/koko/koko-star.wav",
@@ -738,10 +738,10 @@
   },
   "koko-world": {
    "file": "voice/originals/koko/koko-a324364d.wav",
-   "seconds": 0.695,
+   "seconds": 0.67,
    "level": -16.4,
    "voice": "koko",
-   "text": "デッド・ストップ！"
+   "text": "ハッシュ！"
   },
   "vo-oro-fun": {
    "file": "voice/originals/oro/vo-oro-fun.wav",
@@ -4385,10 +4385,10 @@
   },
   "vo-gummy-bell-a": {
    "file": "voice/originals/lucy/vo-gummy-bell-a.wav",
-   "seconds": 2.41,
+   "seconds": 2.07,
    "level": -16.4,
    "voice": "lucy",
-   "text": "よーし、思いっきり伸びるぞ!"
+   "text": "よーし、ガミーの出番だ!"
   },
   "vo-gummy-bell-b": {
    "file": "voice/originals/lucy/vo-gummy-bell-b.wav",
@@ -14634,10 +14634,10 @@
   },
   "lucy": {
    "file": "/assets/audio/home/lucy.m4a",
-   "seconds": 5.24,
+   "seconds": 5.99,
    "voice": "lucy",
-   "text": "にっひひ! 水平線の向こうまで…全部、おれの冒険だ!",
-   "runtimeSha256": "d6549f250c08035f0597a9fbbe72929a911af94598c7416ae125ae87fedf6dfa"
+   "text": "にっひひ! おれはガミー! 水平線の向こうまで、全部おれの冒険だ!",
+   "runtimeSha256": "bc3d6b9d2e064afdb7253e67cc477f5294d1b85ee0cfb48cc29ed4b595a79aed"
   },
   "nigo": {
    "file": "/assets/audio/home/nigo.m4a",
@@ -15056,10 +15056,10 @@
   },
   "kanata": {
    "file": "/assets/audio/home/kanata.m4a",
-   "seconds": 3.69,
+   "seconds": 4.89,
    "voice": "kanata",
-   "text": "どこへでも、一瞬で届けます。……あなたへの返事も、ね。",
-   "runtimeSha256": "87faad71bba80b3effd7e130db8cb86ff9a3860595935500d5f353ab27274a7e"
+   "text": "ミナセです。どこへでも、一瞬で届けます。……あなたへの返事も、ね。",
+   "runtimeSha256": "d8d75b7d8ee8b4d6bfec2606fc4a0bcecfe61beff3aff86325916fa2eef72311"
   },
   "madake": {
    "file": "/assets/audio/home/madake.m4a",

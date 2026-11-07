@@ -14,7 +14,7 @@ import type { EnvironmentCollider } from './environmentLayout';
 /** The kit pieces' own sizes (x, y, z metres), measured off the GLBs
  *  (tests/stageProps.test.ts checks these against the files). */
 export const KIT_SIZE = {
-  'br/house-a': [4.03, 12, 5.9], 'br/house-b': [12.19, 11, 5.34], 'br/house-c': [14.88, 13, 7.66],
+  // (The fan-made houses are retired.)
   'br/rock-a': [4.8, 10.19, 4.64], 'br/rock-b': [5.03, 7.54, 3.98], 'br/rock-c': [3.92, 6.67, 4.61], 'br/rock-d': [1.55, 2.34, 1.73],
   'br/rock-formation-b': [8.17, 4.68, 4.88], 'br/stone-a': [1.38, .7, 1.52],
   'br/cart': [1.83, .97, 3.39], 'br/kenney-town-lantern': [.22, 1.56, .22], 'br/kenney-town-wall-broken': [.12, 1, 1],

@@ -47,7 +47,7 @@ import type {Fighter} from './Fighter';
  *  every pixel looks through its far wall, and the whole view was tinted
  *  blue for its 18 s; from the lock-on lens just outside it, Ward himself was
  *  only ever seen through its near wall. So its faces toward the lens keep
- *  ROOM_CLEAR of their tint with the lens inside and ROOM_OUTSIDE of the way
+ *  THEATRE_CLEAR of their tint with the lens inside and THEATRE_OUTSIDE of the way
  *  there from outside, and only its grazing edges keep all of it: the dome
  *  reads as a dome round the fight - a bright rim - rather than a filter. */
 const NEAR_GONE=.3,NEAR_CLEAR=.75;
@@ -75,10 +75,10 @@ const AHEAD=.35;
  *  with its twins, so the band can clear what reaches into it. */
 const PAD=.32,CROWN=1.9,NEAR_REACH=.45;
 const JOINTS=['Head','Hips','LeftFoot','RightFoot','LeftHand','RightHand','LeftShoulder','RightShoulder'] as const;
-/** Ward's ROOM: its faces toward a lens inside it keep ROOM_CLEAR of their
- *  tint (eased in over the last ROOM_EDGE of the radius), toward a lens
- *  outside it ROOM_OUTSIDE of the way to that; its grazing edges all of it. */
-const ROOM_CLEAR=.12,ROOM_EDGE=.25,ROOM_OUTSIDE=.6;
+/** Ward's THEATRE: its faces toward a lens inside it keep THEATRE_CLEAR of their
+ *  tint (eased in over the last THEATRE_EDGE of the radius), toward a lens
+ *  outside it THEATRE_OUTSIDE of the way to that; its grazing edges all of it. */
+const THEATRE_CLEAR=.12,THEATRE_EDGE=.25,THEATRE_OUTSIDE=.6;
 
 /** The uniforms every twin shares: the lens, the near band, the target's box
  *  on screen (normalised device coordinates) and its depth from the lens. */
@@ -144,7 +144,7 @@ interface FadeState{
    *  nearest padded joint comes, and whether it is in front of the lens. */
   x0:number;y0:number;x1:number;y1:number;near:number;mid:number;lens:number;seen:boolean;
   twins:Twin[];swapped:boolean;
-  /** Ward's ROOM, if the fighter has one: its mesh and how far inside it the
+  /** Ward's THEATRE, if the fighter has one: its mesh and how far inside it the
    *  lens is. */
   room?:THREE.Mesh;inside:{value:number};
 }
@@ -167,7 +167,7 @@ export function installOcclusionFade(fighter:Fighter){
     // The contact shadow keeps its own material: Fighter writes its opacity
     // through the mesh every frame, and a shadow stays with a faded body.
     if(mesh.name==='contact-shadow')continue;
-    // A translucent shell (the worn Guardian, Ward's ROOM) fades on its own.
+    // A translucent shell (the worn Guardian, Ward's THEATRE) fades on its own.
     const translucent=list.some(m=>m&&m.transparent&&m.opacity<1);
     if(translucent){if(mesh.name.startsWith('awaken-on')&&fighter.state.fighter==='ward'){record.room=mesh;for(const m of list)if(m)roomShader(m,record.inside);}continue;}
     const made:THREE.Material[]=[];
@@ -188,7 +188,7 @@ export function installOcclusionFade(fighter:Fighter){
 /** Whether a material is a fade twin, and a fighter's twins (for the tests). */
 export function isOcclusionTwin(material:THREE.Material){return twins.has(material);}
 export function occlusionTwins(fighter:Fighter):readonly {original:THREE.Material;twin:THREE.Material}[]{return records.get(fighter)?.twins??[];}
-/** Ward's ROOM: clear toward the lens while the lens is inside (see ROOM_CLEAR). */
+/** Ward's THEATRE: clear toward the lens while the lens is inside (see THEATRE_CLEAR). */
 function roomShader(material:THREE.Material,inside:{value:number}){
   const previous=material.onBeforeCompile,inherited=material.customProgramCacheKey===THREE.Material.prototype.customProgramCacheKey?previous.toString():undefined;
   const key=inherited!==undefined?()=>inherited:material.customProgramCacheKey.bind(material);
@@ -198,7 +198,7 @@ function roomShader(material:THREE.Material,inside:{value:number}){
     shader.fragmentShader='uniform float uOccInside;\n'+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`if ( uOccInside > 0.0 ) {
 		float occFacing = abs( dot( normalize( normal ), normalize( vViewPosition ) ) );
-		diffuseColor.a *= mix( 1.0, mix( ${ROOM_CLEAR.toFixed(3)}, 1.0, smoothstep( .45, .92, 1.0 - occFacing ) ), uOccInside );
+		diffuseColor.a *= mix( 1.0, mix( ${THEATRE_CLEAR.toFixed(3)}, 1.0, smoothstep( .45, .92, 1.0 - occFacing ) ), uOccInside );
 	}
 	#include <opaque_fragment>`);
   };
@@ -213,7 +213,7 @@ function roomShader(material:THREE.Material,inside:{value:number}){
 export class OcclusionFader{
   /** Read-only, for the evidence captures: how many bodies are fading this
    *  frame, the most faded one's amount, the player's own window, how many
-   *  fighters are drawn with their twins, and how far inside a ROOM the lens
+   *  fighters are drawn with their twins, and how far inside a THEATRE the lens
    *  is. */
   readonly state={faded:0,most:0,window:0,twinned:0,room:0};
   /** Round 3c: who an authored shot on screen is about besides the player -
@@ -362,7 +362,7 @@ export class OcclusionFader{
     }
     r.swapped=on;
   }
-  /** Ward's ROOM round the lens (see ROOM_CLEAR). */
+  /** Ward's THEATRE round the lens (see THEATRE_CLEAR). */
   private room(body:Fighter,r:FadeState){
     const mesh=r.room;if(!mesh)return;
     let inside=0;
@@ -371,9 +371,9 @@ export class OcclusionFader{
       if(!geometry.boundingSphere)geometry.computeBoundingSphere();
       this.sphere.copy(geometry.boundingSphere!).applyMatrix4(mesh.matrixWorld);
       const d=this.sphere.center.distanceTo(this.camera!.position),radius=this.sphere.radius;
-      inside=1-THREE.MathUtils.smoothstep(d,radius*(1-ROOM_EDGE),radius);
+      inside=1-THREE.MathUtils.smoothstep(d,radius*(1-THEATRE_EDGE),radius);
     }
-    const goal=mesh.visible?Math.max(ROOM_OUTSIDE,inside):0;
+    const goal=mesh.visible?Math.max(THEATRE_OUTSIDE,inside):0;
     r.inside.value+=(goal-r.inside.value)*(1-Math.exp(-6*this.dt));
     if(r.inside.value<1e-3&&goal===0)r.inside.value=0;
     this.state.room=Math.max(this.state.room,inside);

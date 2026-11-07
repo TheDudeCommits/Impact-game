@@ -14,7 +14,7 @@ import type { Fighter } from '../src/render/Fighter';
 import type { AttackSlot, CombatEvent, FighterId, PlayerState } from '../src/game/types';
 
 /**
- * Round 13: three specials became projectiles, DEAD STOP got its ORA track,
+ * Round 13: three specials became projectiles, HUSH got its GAN track,
  * Kenzo's light stopped speaking in Gummy's voice, and Nigo was heard.
  */
 
@@ -31,7 +31,7 @@ async function audio() { vi.stubGlobal('AudioContext', Context); vi.stubGlobal('
 const cut = (s: Source) => s.stops.length > 1;
 afterEach(() => vi.unstubAllGlobals());
 
-describe('GAN GAN on DEAD STOP', () => {
+describe('GAN GAN on HUSH', () => {
   // Round 3: the loop is scheduled over barrageWindow (src/game/timeStopBarrage.ts)
   // from its first blow through its last. The call is cut so it has ended by
   // then rather than pushing the barrage late: one man, one phrase at a time.

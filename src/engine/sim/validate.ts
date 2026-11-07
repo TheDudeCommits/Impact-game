@@ -30,7 +30,7 @@ export const MOVE_LIMITS = {
   lunge: [0, 20], lungeDelay: [0, 2], close: [0, 15], // lunge 0 .. 13, close 0 .. 7
   chargeIn: [0, 6], spacing: [0, 5], track: [0, Math.PI], active: [0, 1], hitstop: [0, 1], lift: [0, 20],
   plunge: [0, 60], down: [0, 4], daze: [0, 4],
-  contacts: [1, 24], // 1 .. 16 (awakened Iron Lullaby: Dead Stop)
+  contacts: [1, 24], // 1 .. 16 (awakened Iron Lullaby: Hush)
   teleportReach: [0, 20], timeStopDuration: [0, 5], timeStopRadius: [0, 12], confirmRecovery: [0, 3],
   areaTelegraph: [0.3, 3], areaHits: [1, 8], areaInterval: [0.05, 1.5], areaHeight: [1, 12], areaRange: [3, 30], areaRadius: [1.5, 8],
 } as const satisfies Record<string, readonly [number, number]>;

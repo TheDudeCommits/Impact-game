@@ -4,7 +4,7 @@ import { StageAmbient } from '../../render/stages/ambient';
 import { StageKit } from '../../render/stages/StageKit';
 import { Beacons, LightPools } from '../../render/stages/glow';
 import { Forge } from './forge';
-import { CHEERING, STANDING, fires, inlay, lanternString, people } from './richness';
+import { CHEERING, STANDING, fires, inlay, people } from './richness';
 import { rand } from './remake';
 import { crater } from './battleScars';
 import { PaintedSky } from '../../render/stages/PaintedSky';
@@ -41,21 +41,21 @@ export async function ashVillage(root: THREE.Group, objective: { update(time: nu
   const glow = new Beacons(root, 180, ambient.time), pools = new LightPools(root, 24);
   const braziersSouth: { x: number; y: number; z: number; size: number }[] = [];
   fires(c, braziers, { glow, smoke: .35, seed: 31 });
-  // Paper lanterns down both street fronts, post to post (the lantern posts at x +/-41, 6 m), and over the gate's wall.
+  // The street fronts lit from the ground by the defenders' braziers (no lanterns strung over a street under siege), their
+  // light pooled on the cobbles.
+  const braziersStreet: { x: number; y: number; z: number; size: number }[] = [];
   for (const s of [-1, 1]) {
-    for (let z = -46; z < 56; z += 17) lanternString(f, glow, [s * 41.2, 6.2, z], [s * 41.2, 6.2, z + 17], { gap: 2.4, sag: 1.4, colour: 0xff8a40, bodyTint: 0xff9a50, seed: z * s + 80 });
+    for (let z = -37; z <= 56; z += 17) braziersStreet.push({ x: s * 40.6, y: 1.45, z, size: .6 });
     for (let z = -37; z <= 39; z += 19) pools.add(s * 39.5, z + 8, 6, new THREE.Color(.4, .2, .08), .03);
-    lanternString(f, glow, [s * 9.5, 12.4, 18.6], [s * 40, 8.6, 19.2], { gap: 2.6, sag: 1.6, colour: 0xffa050, bodyTint: 0xffb060, size: .9, seed: s + 90 });
-    // And along the south line (its walls 9 m at x +/-9 to +/-21 and +/-33 to +/-41, its torii at 0 and +/-27, z -46).
-    lanternString(f, glow, [s * 6.5, 10.6, -45.4], [s * 27, 9.4, -45.4], { gap: 2.4, sag: 1.5, colour: 0xff8a40, bodyTint: 0xff9a50, seed: s + 94 });
-    lanternString(f, glow, [s * 27, 9.4, -45.4], [s * 41, 9, -45.4], { gap: 2.4, sag: 1.2, colour: 0xff8a40, bodyTint: 0xff9a50, seed: s + 96 });
     for (const x of [15, 37]) braziersSouth.push({ x: s * x, y: 9.35, z: -46, size: .7 });
   }
   for (const b of braziersSouth) f.cyl('dark', b.x, 9, b.z, .45, .28, .4, 0x2a2420, { sides: 8 });
+  for (const b of braziersStreet) { f.pipe('dark', [b.x, 0, b.z], [b.x, 1.1, b.z], .06, 0x2a2420); f.cyl('dark', b.x, 1.1, b.z, .4, .26, .36, 0x2a2420, { sides: 8 }); }
+  fires(c, braziersStreet, { glow, smoke: .3, seed: 33 });
   fires(c, braziersSouth, { glow, smoke: .35, seed: 37 });
   f.done();
-  glow.finish('hidden ash lanterns', 2.1);
-  pools.finish('hidden ash lantern pools');
+  glow.finish('hidden ash fires', 2.1);
+  pools.finish('hidden ash fire pools');
   // The village's banners down the south walls' inner faces, toward the plaza.
   const banner = ashBannerCloth();
   for (const s of [-1, 1]) for (const x of [11, 15, 19, 35, 39]) ambient.cloth(banner, { x: s * x, y: 8.4, z: -44.9, width: 1.8, height: 4.2, rot: 0, wind: .35, lit: .3 });

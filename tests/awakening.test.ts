@@ -191,7 +191,7 @@ describe('what a transformation is worth', () => {
   });
 });
 
-describe('DEAD STOP', () => {
+describe('HUSH', () => {
   it('becomes a barrage inside stopped time when KoKo is awakened', () => {
     const plain = moveFor('koko', 'ultimate', false), awakened = moveFor('koko', 'ultimate', true);
     expect(plain).toEqual(MOVES.koko.ultimate);

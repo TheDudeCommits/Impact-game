@@ -12,7 +12,7 @@ export interface SignatureScreen {
   /** A whole-frame grade toward `color` at `strength` for `seconds`; with
    *  `at` and `reach` (metres) a pool round that point instead (round 3c). */
   techniqueGrade?(color: number, strength: number, seconds: number, at?: { x: number; y: number; z: number }, reach?: number): void;
-  /** THE HOUR's two-tone world, 0..1; fed every frame it holds. */
+  /** MIDNIGHT's two-tone world, 0..1; fed every frame it holds. */
   timeStop?(amount: number): void;
   /** The power-up pass: a power-up's night over the place (not the fighters or the effects), 0..1; fed every frame it holds. */
   powerDim?(amount: number): void;

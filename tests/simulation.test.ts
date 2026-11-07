@@ -179,7 +179,7 @@ describe('authoritative fighting simulation', () => {
     // The budget used to count contacts and read its threshold off whichever
     // move had just landed - `max(6, contacts + 1)` - so Konta's three-hit
     // light tripped it on his second cast, six contacts in, while KoKo
-    // could push past the same count by switching into an eight-hit ORA.
+    // could push past the same count by switching into an eight-hit GAN.
     // Two three-contact casts are two charges, and six single-contact casts
     // are six. Damage scaling is the other counter and still counts every
     // contact: it is never reset by the breaker.

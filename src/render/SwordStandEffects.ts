@@ -136,7 +136,7 @@ applyCompanionShells(STAND_SHELL);
 type Slash={event:CombatEvent;root:THREE.Group;meshes:SlashMesh[];hitAt?:number;hitPoint?:THREE.Vector3;light:THREE.Color};
 /** How many sword-wave planes can be live at once: Kenzo's ultimate uses five. */
 const SLASH_POOL=40;
-/** The spirits' own light: Iron Spirit's violet, DEAD STOP's gold. */
+/** The spirits' own light: Iron Spirit's violet, HUSH's gold. */
 const STAND_GLOW:Partial<Record<FighterId,THREE.Color>>={kinu:new THREE.Color(.45,1.1,.9),gosu:new THREE.Color(.65,1.1,1.4),koko:new THREE.Color(.8,.42,1.8),oro:new THREE.Color(1.7,1.2,.3)};
 applyCompanionGlows(STAND_GLOW);
 const SLASH_LIGHT={strix:new THREE.Color(.3,1.0,.42),kenzo:new THREE.Color(.35,1.1,.45)};
@@ -178,7 +178,7 @@ function fistGeometry(gltf:GLTF,user:StandUser):THREE.BufferGeometry|undefined{
  *  the user's rush-stage clips - the animation-only file the library binds to
  *  the user's body - bound by bone name to the spirit's, as the library does
  *  (Fighter's bindClips). Both spirits are humanoid rigs on the canonical bone
- *  names, so Iron Spirit throws KoKo's rush and DEAD STOP LORD ORO's rather
+ *  names, so Iron Spirit throws KoKo's rush and HUSH LORD ORO's rather
  *  than idling (KoKo's light) or reaching for its air normals (LORD ORO's rush). */
 export function standClips(fighter:FighterId,source:GLTF,rush?:THREE.AnimationClip[]){
   const user=STAND_USERS[fighter];
@@ -253,7 +253,7 @@ export class SwordStandEffects{
   private knifeSide=new THREE.Vector3();
   private knifeAim=new THREE.Vector3();
   private knifeGrip=new THREE.Vector3();
-  /** THE HOUR's steamroller, one per LORD ORO in the match (signature/Steamroller). */
+  /** MIDNIGHT's steamroller, one per LORD ORO in the match (signature/Steamroller). */
   private rollerSet?:RoadRollers;
   /** Built (and its model fetched) with the first LORD ORO a room has: see load. */
   private get rollers(){return this.rollerSet??=new RoadRollers(this.scene);}
@@ -267,14 +267,14 @@ export class SwordStandEffects{
   private slashHolder=new THREE.Group();
   private lights=new LightVolumes(8,'sword-stand-light');
   private ringGeometry=new THREE.SphereGeometry(1,32,16);
-  /** THE HOUR's bubble: the sphere of stopped time sweeping out from the
+  /** MIDNIGHT's bubble: the sphere of stopped time sweeping out from the
    *  user, drawn as a burning violet edge (additive fresnel, both faces) that
    *  thins to nothing once it has passed. No lines across the frame. */
   private domeMaterial=new THREE.ShaderMaterial({name:'TheHourDome',transparent:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false,blending:THREE.AdditiveBlending,uniforms:{opacity:{value:0},tint:{value:new THREE.Color(1.2,.8,2.2)}},
     vertexShader:'varying vec3 vN;varying vec3 vV;void main(){vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);vV=-mv.xyz;gl_Position=projectionMatrix*mv;}',
     fragmentShader:'varying vec3 vN;varying vec3 vV;uniform float opacity;uniform vec3 tint;void main(){float f=1.-abs(dot(normalize(vN),normalize(vV)));gl_FragColor=vec4(tint*pow(f,3.)*opacity,1.);}'});
   private timeFields=new Map<string,TimeField>();
-  /** THE HOUR's stillness, where the renderer has no timeStop of its own:
+  /** MIDNIGHT's stillness, where the renderer has no timeStop of its own:
    *  a multiply toward a cold grey inside the bubble, drawn by back faces
    *  with no depth test so from inside it covers the frame. The old negative
    *  (an exclusion blend) blew the frame out to white and is gone. */
@@ -314,7 +314,7 @@ export class SwordStandEffects{
     for(const fighter of new Set(fighters)){
       const user=STAND_USERS[fighter as FighterId];
       if(user)jobs.push(once(user.name,()=>this.loadStand(fighter as FighterId,user)));
-      // THE HOUR's roller is built with the first LORD ORO, so its programs link behind the loading screen (RoadRollers).
+      // MIDNIGHT's roller is built with the first LORD ORO, so its programs link behind the loading screen (RoadRollers).
       if(fighter==='oro'){void this.rollers;jobs.push(once('LORD ORO knife',()=>this.loadKnife()));}
       if(fighter==='kenzo')jobs.push(once('RAKSHASA phantom',()=>this.threeBlade.load()));
     }
@@ -559,7 +559,7 @@ export class SwordStandEffects{
       this.standFades.set(id,0);
     }else{
       loom.placed=false;loom.surge=0;
-      // LORD ORO throws his ordinary knives himself. Summoning DEAD STOP for that
+      // LORD ORO throws his ordinary knives himself. Summoning HUSH for that
       // pose hid his hands behind a second body and repeated the same throw.
       // A combo ender is the string's big blow, and the spirit comes for it - LORD ORO's too, whose heavy is otherwise his own
       // knives - throwing the ender's own clip with its user (mirror, standEnderClips).
@@ -650,7 +650,7 @@ export class SwordStandEffects{
     if(shell){
       // Round 3 (owner): the Iron Spirit of the awakening is the one that
       // appears for his normal attacks - the same printed shell, rim, ink and
-      // glow on the same body. DEAD STOP likewise for LORD ORO.
+      // glow on the same body. HUSH likewise for LORD ORO.
       shell.enabled=true;shell.opacity=STAND_OPACITY*(looming?1:this.standFades.get(id)!);shell.clock=time;
       shell.dissolve=looming?1-loom.presence:0;
       if(loom.anchor)loom.anchor.position.y=looming?.55:1.2;
@@ -699,7 +699,7 @@ export class SwordStandEffects{
     for(let i=0;i<loom.bones.length;i++)loom.bones[i]?.quaternion.copy(loom.rest[i]);
     loom.bent=false;
   }
-  /** ORA / 'GILDED PUNCH': through the special's barrage and the tour's, a wall of fists
+  /** GAN / 'GILDED PUNCH': through the special's barrage and the tour's, a wall of fists
    *  converging on the victim from the spirit's hand, each with a smear of its
    *  light, and a flash on every beat the move lands. */
   private barrageFists(stand:Fighter,fighter:FighterId,s:PlayerState,foe:Fighter|undefined,elapsed:number,barrage:boolean){
@@ -807,7 +807,7 @@ export class SwordStandEffects{
         if(held&&typeof screen?.timeStop==='function'){if(field.graded===undefined)screen.impactFrame?.(1);screen.timeStop(hold);field.still.visible=false;field.graded=hold;}
         else{field.still.scale.setScalar(stop.radius);field.still.visible=hold>.01;(field.still.material.uniforms.tint.value as THREE.Color).setRGB(1,1,1).lerp(STILL,hold);}
       }else{field.anchored=false;if(field.graded!==undefined){SIGNATURE.screen?.timeStop?.(0);field.graded=undefined;}}
-      // THE HOUR's finisher is a steamroller (signature/Steamroller): it
+      // MIDNIGHT's finisher is a steamroller (signature/Steamroller): it
       // drops through the last 0.8 s of the stop, crushes on the finisher as
       // the clock restarts, holds there crushed and comes apart.
       if(fighter==='oro'){
@@ -927,7 +927,7 @@ export class SwordStandEffects{
     const p=roller.spot;
     // Coming in and slamming down: speed streaks above it (not while it hangs).
     if(at.since<0&&at.height>.3&&(at.since<-ROLLER_TIMING.hold||at.since>-ROLLER_TIMING.slam))for(let k=0;k<7;k++){const a=k*.9;this.smearTail.set(p.x+Math.cos(a)*1.1,p.y+at.height+2.4+(k%3)*.4,p.z+Math.sin(a)*1.1);this.barrageFrom.copy(this.smearTail);this.barrageFrom.y+=1.4+(k%2)*.8;this.bolts.segment(this.smearTail,this.barrageFrom,.035,glow,.6,.2);}
-    // The crush, on the THE HOUR beat: the floor thrown up round it, a
+    // The crush, on the MIDNIGHT beat: the floor thrown up round it, a
     // gold burst and a flare of light that dies over a second.
     if(at.since>=0&&!roller.landed){roller.landed=true;
       kit.groundImpact(p.x,p.y,p.z,0,1,0,3,time,undefined,p.y);

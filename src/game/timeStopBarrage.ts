@@ -56,7 +56,7 @@ export function tourBlows(move: MoveDefinition) {
 
 /** The stretch of a time-stop ultimate that is a barrage: from the first blow
  *  after the clock stops to the last blow before the finisher. The VOICE
- *  stream schedules the ORA/GILDED_PUNCH loop over exactly this window, so whatever
+ *  stream schedules the GAN/GILDED_PUNCH loop over exactly this window, so whatever
  *  shape the barrage takes (one target or every frozen one in turn), this is
  *  where the voice learns its timing. Seconds from the cast; null when the
  *  move has no barrage inside its stop.

@@ -4,7 +4,7 @@ import { StageAmbient } from '../../render/stages/ambient';
 import { StageKit } from '../../render/stages/StageKit';
 import { Beacons, LightPools } from '../../render/stages/glow';
 import { Forge } from './forge';
-import { fires, inlay, lanternString } from './richness';
+import { fires, inlay } from './richness';
 import { rand } from './remake';
 import { crater } from './battleScars';
 
@@ -43,12 +43,8 @@ export async function citadelNight(root: THREE.Group, objective: { update(time: 
     torches.push({ x: s * 31, y: 3.35, z, size: .55 });
   }
   fires(c, torches, { glow, pools, floor: -.025, pool: 7, smoke: .3, seed: 41 });
-  // Paper lanterns slung across the court from the banner poles (x +/-32, z -13 and 19, 11 m), and corner to corner.
-  for (const z of [-13, 19]) lanternString(f, glow, [-32, 10.6, z], [32, 10.6, z], { gap: 3, sag: 2.6, colour: 0xff7a40, bodyTint: 0xff9a5a, seed: z + 70 });
-  lanternString(f, glow, [-32, 10.6, -13], [32, 10.6, 19], { gap: 3.2, sag: 3, colour: 0xff8a48, bodyTint: 0xffa868, size: .9, seed: 72 });
-  lanternString(f, glow, [32, 10.6, -13], [-32, 10.6, 19], { gap: 3.2, sag: 3, colour: 0xff8a48, bodyTint: 0xffa868, size: .9, seed: 73 });
   f.done();
-  glow.finish('citadel lanterns and torches', 2.2);
+  glow.finish('citadel torches', 2.2);
   pools.finish('citadel torch pools');
   // The feud's banners down the courtyard wall's outer face, between the piers.
   const banner = feudBanner();

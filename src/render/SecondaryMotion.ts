@@ -163,13 +163,13 @@ export const SPRING_PROFILES:Partial<Record<FighterId|'nightfall',Partial<Spring
   // instead of the thighs. The panels sit a few centimetres off the trousers,
   // so the cone is tighter than the default to keep them out of the legs.
   koko:{stiffness:40,drag:.85,gravity:3,maxAngle:22,trail:.3},
-  // LORD ORO's chain is one hair controller; DEAD STOP, drawn off the same id,
+  // LORD ORO's chain is one hair controller; HUSH, drawn off the same id,
   // adds a back skirt and a mantle. Single-link controllers, so stiff and
   // tight: they bob with the body rather than swing.
   oro:{stiffness:40,drag:.65,gravity:2,maxAngle:12,trail:.02},
   ward:{stiffness:32,drag:.65,gravity:2.4,maxAngle:14,tipLoose:.6,spread:.25,authored:.5,trail:.05,flutter:.12},
   // The native coat already carries its swing (keyed in its clips); keep the added spring
-  // tight so recovering from Yoru does not raise the tail into a rigid sail.
+  // tight so recovering from the greatsword cut does not raise the tail into a rigid sail.
   strix:{stiffness:32,drag:.65,gravity:2.4,maxAngle:14,tipLoose:.6,spread:.25,authored:.5,trail:.05,flutter:.12},
   // Shakugo also carries native coat motion; the default spring
   // fought the keyed mantle and raised both sleeves above his head on attacks.

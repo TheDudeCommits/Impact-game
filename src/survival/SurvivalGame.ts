@@ -288,7 +288,7 @@ export interface SurvivalView {
   draft?: { cards: string[]; legendary: boolean; finale?: boolean; relic?: string };
   /** Boss relics this fighter holds (relics.ts), and how ready each is to go off again (0-1). */
   relics?: string[]; relicCharge?: number[];
-  /** Stopped time (DEAD STOP): seconds of it left. */
+  /** Stopped time (HUSH): seconds of it left. */
   stopped?: number;
   /** The horde and the champions cut down in the last half-second, and by whom, for the kill
    *  effects the party wears (economy/catalog.ts, render/cosmetics/kills.ts): four numbers each -
@@ -510,7 +510,7 @@ const RELIC_SHOWN = 2.1;
 const RELIC_GAP: Record<string, number> = Object.fromEntries(RELICS.map(relic => [relic.id, relic.gap]));
 /** WOLF HOWL: how many close in (within 3.5 m) before it howls, and how fast its ring rolls out. */
 const HOWL_CROWD = 7, HOWL_SPEED = 18;
-/** 'MIRROR MERE': seconds between its cuts. 'DEAD STOP': seconds time stands still. */
+/** 'MIRROR MERE': seconds between its cuts. 'HUSH': seconds time stands still. */
 const SHRINE_EVERY = .4, WORLD_SECONDS = 2;
 
 /** Experience to the next level from `level`, for a party of one: the first
@@ -616,7 +616,7 @@ export class SurvivalGame {
   private heroList: HordeHero[] = [];
   /** Something that happens a moment later: a card's second beat, a strike landing. */
   private later: { at: number; run: () => void }[] = [];
-  /** DEAD STOP (relics.ts): time stands still for everything but the fighters until then. */
+  /** HUSH (relics.ts): time stands still for everything but the fighters until then. */
   private stoppedUntil = 0;
   /** The run began with relics or on a door of its own (a probe's ?relics=, ?path=). */
   private probeStart = false;
@@ -3322,7 +3322,7 @@ export class SurvivalGame {
     }
     if (points.length) this.push({ kind: 'relic', sub: 'cut', text: 'magatsu', hero: hero.id, points });
   }
-  /** 'DEAD STOP': time stops for everything but the fighters - the horde where it
+  /** 'HUSH': time stops for everything but the fighters - the horde where it
    *  stands, every boss and champion held in the arena's own time stop, the
    *  strikes hanging over the field gone and the rains held back. */
   private stopTime(hero: Hero, seconds: number) {

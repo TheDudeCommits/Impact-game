@@ -476,7 +476,7 @@ const MAIN_KEYS: Partial<Record<FighterId, Partial<Record<ComboKey, Flavour>>>> 
   shiden: { lllh: 'fire' }, kuon: { lh: 'darkSpark', llls: 'infinity' }, oro: { llls: 'frost', airSpecial: 'knives' },
   gaunt: { llls: 'explosion', airSpecial: 'explosion' }, setsu: { lh: 'spark', lllh: 'claw' }, koko: { llls: 'inhale' },
   kagari: { llls: 'fireflies' }, gummy: { llh: 'flurry', airSpecial: 'fire' }, kosho: { llls: 'flurry' },
-  // Cardiac Palm and Biopsy Strike release a shock inside ROOM: they land as his Counter Shock sounds (sfxPlan ENDER_LANDS).
+  // Cardiac Palm and Biopsy Strike release a shock inside the THEATRE: they land as his Counter Shock sounds (sfxPlan ENDER_LANDS).
   ward: { lllh: 'bolt', airSpecial: 'bolt' },
 };
 const SOFT: ReadonlySet<Flavour> = new Set<Flavour>(['chi', 'slash', 'fire', 'room', 'stand', 'pressure', 'steel', 'flash', 'explosion', 'water', 'earth',
@@ -1834,7 +1834,7 @@ export class EmperorEffects {
         v.ring(p.x, low, p.z, .25, 2 * Math.min(size, 2), time, .3, 0xffffff, el.rim, .08);
         break;
       case 'stand': case 'flurry':
-        // Iron Spirit's and DEAD STOP's fists - and Waterspout's, and Mirepoix' kicks: more blows than the eye can
+        // Iron Spirit's and HUSH's fists - and Waterspout's, and Mirepoix' kicks: more blows than the eye can
         // follow, all landing round the one that lands.
         for (let i = 0, n = v.n(7, 3); i < n; i++) {
           const r = this.kit.painter.rng.seed(key * 13 + i);

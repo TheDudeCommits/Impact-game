@@ -268,7 +268,7 @@ export const ENDER_ELEMENTS: Partial<Record<FighterId, { base: Element; keys?: P
   // Blue; Dark Spark's black lightning; Event Horizon's stillness; the 200% Singularity.
   kuon: { base: HEX_BLUE, keys: { lh: DARK_SPARK, llls: HORIZON_PALE, airSpecial: HEX_PURPLE } },
   koko: { base: SPIRIT_PURPLE },
-  // DEAD STOP's gold; the freezing touch.
+  // HUSH's gold; the freezing touch.
   oro: { base: SPIRIT_GOLD, keys: { llls: FROST } },
   nigo: { base: BLACK_RED },
   // Steel and blood; the bomb and the cannon's fire.
