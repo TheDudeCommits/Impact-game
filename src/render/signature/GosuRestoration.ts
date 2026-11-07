@@ -8,7 +8,7 @@ import { SIGNATURE, involvesLocal } from './context';
 import { STAR } from './GlowBatch';
 import { MoveStage, WAVE, type StageLook } from './MoveStage';
 import { fistRush } from './SpiritRush';
-import { applyCompanionStageLooks } from '../../originals/standLooks';
+import { applyCompanionStageLooks } from '../../originals/companionLooks';
 
 export const isGosuRestoration = (id: string | undefined) => id === 'gosu';
 export const GOSU_RESTORATION_LIMITS = Object.freeze({ marks: 10, assemblies: 8 });

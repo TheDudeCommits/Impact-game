@@ -190,7 +190,7 @@ describe('the game\'s sound effects: the wiring', () => {
 
   it('gives Lord ORO his own spirit, hour, barrage and bell, and KoKo his, in their own cues', () => {
     const cues = (fighter: string, slot: AttackSlot, kind: CombatEvent['kind'], more: Partial<CombatEvent> = {}) => plan(fighter, slot, kind, more).map(l => l.cue as string);
-    for (const slot of ['heavy', 'special', 'ultimate'] as const) expect(cues('koko', slot, 'cast'), `koko ${slot}`).not.toContain('fx-stand');
+    for (const slot of ['heavy', 'special', 'ultimate'] as const) expect(cues('koko', slot, 'cast'), `koko ${slot}`).not.toContain('fx-spirit');
     expect(cues('koko', 'special', 'cast')).toContain('fx-sig-koko-iron-lullaby');
     expect(cues('oro', 'special', 'cast')).toContain('fx-sig-lord-oro-gilded-spirit');
     expect(cues('oro', 'special', 'cast')).toContain('fx-sig-lord-oro-noroma-barrage');

@@ -99,7 +99,7 @@ export function heard(power: AwakenedPower): PowerVoice | undefined {
 
 const voices = new Map<FighterId, PowerVoice | undefined>();
 /** `fighter`'s awakening, heard: their row of awakenedPower.ts, or their own layer's sound where the row leaves it to
- *  that layer. Undefined: silence (Chohan and Wataame have no energy; the Stands, the TENGAN and the rest are their own
+ *  that layer. Undefined: silence (Chohan and Wataame have no energy; the spirits, the TENGAN and the rest are their own
  *  layers' sounds). */
 export function powerVoice(fighter: FighterId): PowerVoice | undefined {
   // (An id the roster does not know - a room's list can carry one - has no awakening and no sound.)

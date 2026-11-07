@@ -9,7 +9,7 @@ import { MoveStage, STAGE_LIMITS } from '../src/render/signature/MoveStage';
 import { STAGED_BY_MODULE } from '../src/render/signature/StagedMoves';
 
 const ID = 'gosu' as FighterId, ULT = GOSU_MOVES.ultimate, SPECIAL = GOSU_MOVES.special, LAST = ULT.contacts.length - 1;
-/** A stand-in body whose strike point is the Stand's knuckle beside him. */
+/** A stand-in body whose strike point is the spirit's knuckle beside him. */
 function body(id: string, patch: Partial<PlayerState> = {}): Fighter {
   const group = new THREE.Group();
   return { group, handR: new THREE.Vector3(.3, 1.3, .2), handL: new THREE.Vector3(-.3, 1.3, .2), strikePoint: (out: THREE.Vector3) => out.set(.9, 1.3, 1.5),

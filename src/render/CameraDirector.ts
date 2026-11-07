@@ -244,8 +244,8 @@ const AWAKEN_TOP=.52,AWAKEN_FLOOR=-.66,AWAKEN_CARDS=-.36,AWAKEN_FINE_LINE=[-.08,
 const AWAKEN_CROWN=.24,AWAKEN_CROWN_MOST=1.2,CROWN_HEIGHT=1.95,AWAKEN_SIZE_RATE=8,AWAKEN_SIZE_LIFT=.8,AWAKEN_SIZE_MOST=1.9,AWAKEN_GRACE=.25,AWAKEN_WIDEN_RATE=150,AWAKEN_FORM_LEAD=.3,AWAKEN_FORM_LAG=.08;
 const AWAKEN_TALL=.22,AWAKEN_TALL_AT=.8,AWAKEN_EXCESS_RATE=8,AWAKEN_CATCH=2;
 /** A looming spirit's crown over the neck loomRegistry gives: FollowCamera's
- *  STAND_CROWN, repeated so the director does not import the rig. */
-const AWAKEN_STAND_CROWN=.45;
+ *  LOOM_CROWN, repeated so the director does not import the rig. */
+const AWAKEN_LOOM_CROWN=.45;
 /** A standing head's height over the root, for the crown's reckoning. */
 const AWAKEN_STANDING=1.6;
 
@@ -1881,7 +1881,7 @@ export class CameraDirector {
     // take the spirit out of the reckoning.
     let top=point.y+AWAKEN_CROWN;const most=Math.max(point.y,p.y+AWAKEN_STANDING)+AWAKEN_CROWN_MOST;
     const loom=loomTop(subject.state.id);
-    if(loom>0)top=Math.max(top,Math.min(p.y+loom+AWAKEN_STAND_CROWN,most));
+    if(loom>0)top=Math.max(top,Math.min(p.y+loom+AWAKEN_LOOM_CROWN,most));
     this.awakenCrown.set(point.x,top,point.z);
     this.awakenExcessGoal=Math.max(0,top-point.y-AWAKEN_CROWN);
   }

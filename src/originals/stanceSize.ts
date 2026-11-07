@@ -84,6 +84,6 @@ const FORM: Partial<Record<FighterId, number>> = {
 
 /** The model scale Fighter gives the original's own body (not a worn outfit, not a companion), or undefined to measure it. */
 export function stanceSize(state: { id?: string; fighter: FighterId }, form: boolean) {
-  if (state.id?.endsWith('-stand')) return undefined;
+  if (state.id?.endsWith('-spirit')) return undefined;
   return (form ? FORM : BASE)[state.fighter];
 }

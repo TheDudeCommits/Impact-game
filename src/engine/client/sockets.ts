@@ -171,12 +171,12 @@ const bonshoPoint = solve((ctx, out) => {
     || bonshoStrikePoint(ctx.shown.model, state.action, ctx.shownClip, out);
 });
 /** A spirit's armoured knuckle (Kinu's, Gosu's): the spirit drawn for its user. */
-const standBody = (ctx: SocketContext) => {
-  const stand = ctx.body.stand ? ctx.body : ctx.body.standSource;
-  return stand?.stand && stand.group.visible && stand.group.parent ? stand : undefined;
+const spiritBody = (ctx: SocketContext) => {
+  const spirit = ctx.body.isSpirit ? ctx.body : ctx.body.spiritSource;
+  return spirit?.isSpirit && spirit.group.visible && spirit.group.parent ? spirit : undefined;
 };
-const standContact = (ctx: SocketContext, stand: Fighter, fighter: 'kinu' | 'gosu') => {
-  const state = stand.state, alternate = !ctx.ender(state) && (state.action === 'special' || state.action === 'ultimate');
+const spiritContact = (ctx: SocketContext, spirit: Fighter, fighter: 'kinu' | 'gosu') => {
+  const state = spirit.state, alternate = !ctx.ender(state) && (state.action === 'special' || state.action === 'ultimate');
   let contact = ctx.index ?? 0;
   if (ctx.index === undefined && alternate) {
     const times = MOVES[fighter][state.action as 'special' | 'ultimate'].contacts, t = state.actionTime * state.actionDuration;
@@ -386,19 +386,19 @@ export const FIGHTER_SOCKETS: Readonly<Partial<Record<FighterId, FighterSockets>
   wataame: { socket: solve((ctx, out) => wataameBokkenPoint(ctx.body, out)) },
   buna: { socket: always((ctx, out) => bunaMastBreakerPoint(ctx.body, out)) },
   kinu: { socket: solve((ctx, out) => {
-    const stand = standBody(ctx);
-    if (!stand) return false;
-    const { state, contact } = standContact(ctx, stand, 'kinu'), clip = stand.displayedClipName;
-    const joint = stand.joints.get(kinuStrikeJoint(state.action, clip, contact));
+    const spirit = spiritBody(ctx);
+    if (!spirit) return false;
+    const { state, contact } = spiritContact(ctx, spirit, 'kinu'), clip = spirit.displayedClipName;
+    const joint = spirit.joints.get(kinuStrikeJoint(state.action, clip, contact));
     if (!joint) return false;
     kinuSpiritSurfacePoint(joint, clip, contact, out);
     return true;
   }) },
   gosu: { socket: solve((ctx, out) => {
-    const stand = standBody(ctx);
-    if (!stand) return false;
-    const { contact, alternate } = standContact(ctx, stand, 'gosu');
-    const joint = stand.joints.get(alternate && contact % 2 === 1 ? 'LeftHand' : 'RightHand');
+    const spirit = spiritBody(ctx);
+    if (!spirit) return false;
+    const { contact, alternate } = spiritContact(ctx, spirit, 'gosu');
+    const joint = spirit.joints.get(alternate && contact % 2 === 1 ? 'LeftHand' : 'RightHand');
     if (!joint) return false;
     joint.getWorldPosition(out);
     return true;

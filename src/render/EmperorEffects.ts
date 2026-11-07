@@ -457,14 +457,14 @@ const RING_WHITE = new THREE.Color(2, 2.4, 2.8);
  *  the spirits' fists, Nigo's pressure, Gaunt' steel and blood, and Shirokane's, Setsu's and Shiden's lightning. Fire,
  *  steel, swords, chi, ROOM and the spirits' fists discharge without lightning; the shock of ki, will, hex energy,
  *  the spirits and lightning breaks the air like glass. */
-type Flavour = 'chi' | 'ki' | 'will' | 'slash' | 'fire' | 'room' | 'cursed' | 'stand' | 'pressure' | 'steel' | 'bolt'
+type Flavour = 'chi' | 'ki' | 'will' | 'slash' | 'fire' | 'room' | 'cursed' | 'spirit' | 'pressure' | 'steel' | 'bolt'
   | 'flash' | 'explosion' | 'water' | 'earth' | 'plain' | 'darkSpark' | 'infinity' | 'frost' | 'claw' | 'inhale' | 'fireflies' | 'knives' | 'spark' | 'flurry';
 /** LANCET's cut inside ROOM (WardEffects' own). */
 const ROOM_CUT: SlashStyle = {mode: ENERGY, edge: new THREE.Color(1.7, 2.6, 3.2), body: new THREE.Color(.22, .75, 1.5), glow: new THREE.Color(.08, .45, 1.0)};
 const MAIN: Partial<Record<FighterId, {flavour: Flavour; cut?: SlashStyle}>> = {
   konta: {flavour: 'chi'}, taisei: {flavour: 'ki'}, ouga: {flavour: 'ki'}, gummy: {flavour: 'will'}, kenzo: {flavour: 'slash', cut: SLASH.kenzo},
-  kosho: {flavour: 'fire'}, kagari: {flavour: 'fire'}, ward: {flavour: 'room', cut: ROOM_CUT}, kuon: {flavour: 'cursed'}, koko: {flavour: 'stand'},
-  oro: {flavour: 'stand'}, nigo: {flavour: 'pressure', cut: SLASH.nightfang}, gaunt: {flavour: 'steel', cut: SLASH.gravedigger},
+  kosho: {flavour: 'fire'}, kagari: {flavour: 'fire'}, ward: {flavour: 'room', cut: ROOM_CUT}, kuon: {flavour: 'cursed'}, koko: {flavour: 'spirit'},
+  oro: {flavour: 'spirit'}, nigo: {flavour: 'pressure', cut: SLASH.nightfang}, gaunt: {flavour: 'steel', cut: SLASH.gravedigger},
   setsu: {flavour: 'bolt'}, shirokane: {flavour: 'bolt'}, shiden: {flavour: 'bolt'},
 };
 /** The enders whose element reads otherwise than their fighter's (COMBOS-DATA's names): the Blackout Flash's flash, Dirty
@@ -479,9 +479,9 @@ const MAIN_KEYS: Partial<Record<FighterId, Partial<Record<ComboKey, Flavour>>>> 
   // Cardiac Palm and Biopsy Strike release a shock inside the THEATRE: they land as his Flatline Shock sounds (sfxPlan ENDER_LANDS).
   ward: { lllh: 'bolt', airSpecial: 'bolt' },
 };
-const SOFT: ReadonlySet<Flavour> = new Set<Flavour>(['chi', 'slash', 'fire', 'room', 'stand', 'pressure', 'steel', 'flash', 'explosion', 'water', 'earth',
+const SOFT: ReadonlySet<Flavour> = new Set<Flavour>(['chi', 'slash', 'fire', 'room', 'spirit', 'pressure', 'steel', 'flash', 'explosion', 'water', 'earth',
   'plain', 'infinity', 'frost', 'claw', 'inhale', 'fireflies', 'knives', 'spark', 'flurry']);
-const CRACKED: ReadonlySet<Flavour> = new Set<Flavour>(['ki', 'will', 'cursed', 'stand', 'bolt', 'darkSpark']);
+const CRACKED: ReadonlySet<Flavour> = new Set<Flavour>(['ki', 'will', 'cursed', 'spirit', 'bolt', 'darkSpark']);
 const MAIN_LOOKS = new Map<number, EnderLook>();
 const MAIN_ORDER: readonly FighterId[] = ['taisei', 'konta', 'gummy', 'kosho', 'ouga', 'shirokane', 'shiden', 'kenzo', 'koko', 'nigo', 'kagari', 'ward', 'kuon', 'oro', 'gaunt', 'setsu'];
 /** A main-game fighter's look for one ender, built the first time it is drawn and kept. */
@@ -1833,7 +1833,7 @@ export class EmperorEffects {
         }
         v.ring(p.x, low, p.z, .25, 2 * Math.min(size, 2), time, .3, 0xffffff, el.rim, .08);
         break;
-      case 'stand': case 'flurry':
+      case 'spirit': case 'flurry':
         // Iron Spirit's and HUSH's fists - and Waterspout's, and Mirepoix' kicks: more blows than the eye can
         // follow, all landing round the one that lands.
         for (let i = 0, n = v.n(7, 3); i < n; i++) {

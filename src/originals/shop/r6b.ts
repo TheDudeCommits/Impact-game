@@ -390,7 +390,7 @@ export const SHOP_R6B: Partial<Record<FighterId, OriginalFighter>> = {
     awakening: 'CUT LOOSE',
     model: F + 'kinu-tr1.glb', extraModels: [],
     portrait: F + 'kinu-portrait.png',
-    stand: { model: F + 'kinu-puppet1.glb' },
+    companion: { model: F + 'kinu-puppet1.glb' },
     names: {
       'Stone Breaker': 'Shackle Breaker',
     },
@@ -405,7 +405,7 @@ export const SHOP_R6B: Partial<Record<FighterId, OriginalFighter>> = {
     awakening: 'MENDED IN GOLD',
     model: F + 'gosu-tr1.glb', extraModels: [],
     portrait: F + 'gosu-portrait.png',
-    stand: { model: F + 'gosu-mender1.glb' },
+    companion: { model: F + 'gosu-mender1.glb' },
     names: {},
     shop: { 'fighter-gosu': shopItem('Gosu', 'The kindest delinquent in the Gilded Ruin: a porcelain jab, a gold-seam hammer, the KIN KIN barrage - and Gilded Scars, broken and mended in gold.', '繕') },
   },

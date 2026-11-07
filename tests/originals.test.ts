@@ -22,7 +22,7 @@ import { Fighter, bindClips } from '../src/render/Fighter';
 import { IDLE_PROFILES } from '../src/render/idle/profile';
 import { RAKSHASA_ASSET } from '../src/render/signature/ThreeBlade';
 import { GUARDIAN_ASSET } from '../src/render/signature/GuardianShell';
-import { KNIFE_ASSET, STAND_USERS, SWORD_STAND_ASSETS } from '../src/render/SwordStandEffects';
+import { KNIFE_ASSET, SPIRIT_CALLERS, SWORD_SPIRIT_ASSETS } from '../src/render/SwordSpiritEffects';
 import { commandList } from '../src/ui/commandList';
 import { mangaPortrait } from '../src/ui/MangaHome';
 import MOVE_ART from '../src/ui/moveArtVersions.json';
@@ -126,10 +126,10 @@ describe('the originals', () => {
       ['ward', ['ward-tr1', 'ward-rush1', 'ward-enders1', 'ward-ult1'], ['ward-br1', 'ward-rush1', 'ward-enders1', 'ward-fanim1', 'ward-fanim2', 'ward-fanim3', 'ward-fanim4', 'ward-ult1']],
       ['koko', ['koko-tr1', 'koko-rush1', 'koko-enders1', 'koko-idle1'],
         ['koko-combat2', 'koko-fanim1', 'koko-fanim2', 'koko-fanim3', 'koko-fanim5', 'koko-idle1']],
-      ['koko', ['koko-stand-tr1', 'koko-stand-fanim1'], ['star-combat1', 'star-fanim1', 'koko-enders1']],
+      ['koko', ['koko-spirit-tr1', 'koko-spirit-fanim1'], ['star-combat1', 'star-fanim1', 'koko-enders1']],
       ['oro', ['oro-tr1', 'oro-rush1', 'oro-enders1', 'oro-enders2', 'oro-idleb1'],
         ['oro-eoh1', 'oro-fanim1', 'oro-enders2', 'oro-fanim2', 'oro-fanim3', 'oro-fanim5', 'oro-idleb1']],
-      ['oro', ['oro-stand-tr1', 'oro-stand-fanim1'], ['dead-stop1', 'dead-stop-fanim1', 'oro-enders1', 'oro-enders2']],
+      ['oro', ['oro-spirit-tr1', 'oro-spirit-fanim1'], ['dead-stop1', 'dead-stop-fanim1', 'oro-enders1', 'oro-enders2']],
       ['kuon', ['kuon-px1', 'kuon-pxrush1', 'kuon-pxenders1', 'kuon-pxenders2', 'kuon-pxidle1'],
         ['kuon-cc1', 'kuon-rush1', 'kuon-enders1', 'kuon-enders2', 'kuon-fanim1', 'kuon-fanim2', 'kuon-fanim3', 'kuon-fanim4', 'kuon-idle1']],
       ['gaunt', ['gaunt-tr1', 'gaunt-rush1', 'gaunt-enders2', 'gaunt-idleb1'], ['gaunt-dvl1', 'gaunt-rush1', 'gaunt-fmoves1', 'gaunt-enders2', 'gaunt-fanim1', 'gaunt-fanim2', 'gaunt-fanim3', 'gaunt-idleb1']],

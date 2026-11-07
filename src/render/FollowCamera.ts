@@ -167,21 +167,21 @@ const TORSO=.3,COVER_ENTER=.4,COVER_EXIT=.15,DODGE_SETTLE=.75,DODGE_STEP=.06,DOD
  *  blocker may open further, but never past ALPHA_MOST, the cone's edge.
  *  A spirit at its user's right shoulder needs about75 degrees to clear. */
 const ALPHA_MOST=1.4;
-/** Where a spirit's user's spirit is drawn while it fights, as SwordStandEffects
+/** Where a spirit's user's spirit is drawn while it fights, as SwordSpiritEffects
  *  places it: in front of the user by the separation less 1.35 m, between
- *  STAND_NEAR and STAND_FAR, and STAND_SIDE to their right; KoKo's heavy
+ *  SPIRIT_NEAR and SPIRIT_FAR, and SPIRIT_SIDE to their right; KoKo's heavy
  *  (Needle Finger) summons it, LORD ORO's (the knives) does not. Those constants are
- *  private to SwordStandEffects, so they are repeated here; keep the two in
- *  step. The spirit is broader and taller than its user - STAND_RADIUS round,
- *  STAND_HEIGHT tall: taken at a body's size, Iron Spirit's barrage hid
+ *  private to SwordSpiritEffects, so they are repeated here; keep the two in
+ *  step. The spirit is broader and taller than its user - SPIRIT_RADIUS round,
+ *  SPIRIT_HEIGHT tall: taken at a body's size, Iron Spirit's barrage hid
  *  most of Ward in the real client while the camera measured 0.27-0.37 of
- *  him covered, under COVER_ENTER. Awakened (round 3d, STANDS), the spirit
+ *  him covered, under COVER_ENTER. Awakened (round 3d, SPIRITS), the spirit
  *  looms 1.5x over its user - 0.55 m behind and 0.6 m to their left, its head
  *  bent over their shoulder - so it is never between the over-the-shoulder
  *  lens and the victim; it sizes the rig (loomRegistry, see measureDrawn) and
  *  its crown is held in the frame with the user's (round 3c, see
  *  measure). */
-const STAND_NEAR=.25,STAND_FAR=.7,STAND_SIDE=.75,STAND_RADIUS=.36,STAND_HEIGHT=2.15,STAND_HEAVY:Partial<Record<FighterId,boolean>>={koko:true,oro:false};
+const SPIRIT_NEAR=.25,SPIRIT_FAR=.7,SPIRIT_SIDE=.75,SPIRIT_RADIUS=.36,SPIRIT_HEIGHT=2.15,SPIRIT_HEAVY:Partial<Record<FighterId,boolean>>={koko:true,oro:false};
 /** Locked on, both bodies stay inside the frame, crown to feet, clear of the
  *  HUD. The composition above tilts by a fixed amount for a launched
  *  opponent, which a juggle outgrows: a chase and an air light re-launch the
@@ -234,16 +234,16 @@ const HEAD_PAD=.24,SOLE_PAD=.06,SPAN_JOINTS=['Head','LeftFoot','RightFoot','Left
  *  above MARKER_TOP pixels from the top of the frame, where the HUD would take
  *  it for a target outside the frame and draw an arrow instead. */
 const MARKER_LIFT=74,MARKER_TOP=62;
-/** Round 3c: a spirit looming over its awakened user (round 3d, STANDS) is
+/** Round 3c: a spirit looming over its awakened user (round 3d, SPIRITS) is
  *  framed with them. loomRegistry gives the height of its neck over the
- *  user's root; its bowed head and hair reach STAND_CROWN over that (a 1.5x
+ *  user's root; its bowed head and hair reach LOOM_CROWN over that (a 1.5x
  *  head), and it hovers LOOM_BACK behind its user and LOOM_LEFT to their left
- *  - nearer the over-the-shoulder lens than they are. SwordStandEffects'
+ *  - nearer the over-the-shoulder lens than they are. SwordSpiritEffects'
  *  LOOM.back and LOOM.side, repeated so the camera does not import the
  *  effects: keep them in step. Measured in training before this: at 4.2 m
  *  Iron Spirit's head at 0.56 of the half-height and its hair at 0.87, Dead
  *  Stop's at 0.69 and 0.89 - under the health bars. */
-const STAND_CROWN=.45,LOOM_BACK=.55,LOOM_LEFT=.6;
+const LOOM_CROWN=.45,LOOM_BACK=.55,LOOM_LEFT=.6;
 /** A body the joints show lying down - knocked down, splatted to the floor,
  *  tumbling flat through a launch - spans what it spans, never less than
  *  LIE_SPAN metres (times its bulk). It used to be taken for a body standing
@@ -768,7 +768,7 @@ export class FollowCamera {
   }
   private crown=new THREE.Vector3();
   /** Round 3c: the crown of a spirit looming over the player this frame, in
-   *  world metres (see STAND_CROWN); -Infinity with none. */
+   *  world metres (see LOOM_CROWN); -Infinity with none. */
   private loomHigh=-Infinity;
   private cutFocus=new THREE.Vector3();
   /** The opponent's chest, for the scenery cutaway's second aperture: locked
@@ -1042,10 +1042,10 @@ export class FollowCamera {
     // What each body spans and who could stand in front of the opponent,
     // read once for the heading and the vertical framing alike.
     if(this.lockBlend>0){this.measure(self,drawnBulk(self),this.meBox);
-      // Round 3c: the spirit looming over an awakened user (STANDS) is framed
-      // with them, crown and all (see STAND_CROWN) - the rig grew for it, but
+      // Round 3c: the spirit looming over an awakened user (SPIRITS) is framed
+      // with them, crown and all (see LOOM_CROWN) - the rig grew for it, but
       // only the user's own head was held under the HUD's bars.
-      const loom=loomTop(self.state.id);this.loomHigh=loom>0?self.group.position.y+loom+STAND_CROWN:-Infinity;
+      const loom=loomTop(self.state.id);this.loomHigh=loom>0?self.group.position.y+loom+LOOM_CROWN:-Infinity;
       if(foe){this.measure(foe,drawnBulk(foe),this.foeBox);this.gather(self,foe);}else this.blockerCount=0;}
     if(lockon)this.steer(dt,placed,self,yaw,pitch,foe,locked);
     else if(dynamic){if(arena)this.steerArena(dt,placed,self,yaw,pitch,tilted,foe,locked);else this.steerDynamic(dt,placed,self,yaw,pitch,tilted,foe,locked);pitch=this.inputPitch;this.resample(dt,self);}
@@ -1475,7 +1475,7 @@ export class FollowCamera {
       this.drawnAt=this.age;this.drawnOf=key;this.drawnTop=-Infinity;this.drawnMin=Infinity;
       self.group.updateWorldMatrix(true,false);this.drawnInverse.copy(self.group.matrixWorld).invert();
       self.group.traverseVisible(this.drawnMesh);
-      // Round 3d: and the spirit looming over an awakened spirit's user (STANDS).
+      // Round 3d: and the spirit looming over an awakened spirit's user (SPIRITS).
       this.drawnTop=Math.max(this.drawnTop,loomTop(key)||-Infinity);
       if(Number.isFinite(this.drawnTop)){
         this.drawnScaleGoal=THREE.MathUtils.clamp(this.drawnTop/DRAWN_TOP,least,Math.max(least,SCALE_MOST));
@@ -1562,7 +1562,7 @@ export class FollowCamera {
         const mb=this.meBox;this.lyingMe=smooth(mb.spread,SPREAD_FROM,SPREAD_FULL)*(REACTIONS.has(self.state.action)?1:1-this.arenaBlend);
         this.reachMeLow=Math.max(.5,THREE.MathUtils.lerp(this.reachMe,(mb.x-eye.x)*f.x+(mb.z-eye.z)*f.z-mb.spread,this.lyingMe));
         // A spirit looming over the player: its crown where it hovers (see
-        // STAND_CROWN), taken at their depth for the same angle.
+        // LOOM_CROWN), taken at their depth for the same angle.
         if(Number.isFinite(this.loomHigh)){
           const yaw=self.state.yaw,sx=me.x-Math.sin(yaw)*LOOM_BACK+Math.cos(yaw)*LOOM_LEFT,sz=me.z-Math.cos(yaw)*LOOM_BACK-Math.sin(yaw)*LOOM_LEFT;
           const reach=Math.max(.5,(sx-eye.x)*f.x+(sz-eye.z)*f.z);
@@ -2267,20 +2267,20 @@ export class FollowCamera {
    *  the framing, and leaving the opponent within ALPHA_MOST of the view. */
   private dodgeAllowed(offset:number){return Math.abs(offset)<=DODGE_MOST+1e-9&&Math.abs(this.offAxis+offset)<=ALPHA_MOST;}
   /** Every body that might stand between the lens and the opponent, into
-   *  `blockers`: the player, their spirit while it fights (see STAND_SIDE),
+   *  `blockers`: the player, their spirit while it fights (see SPIRIT_SIDE),
    *  and everybody else alive and drawn (from the root: a third body only
    *  needs to be roughly right). */
   private gather(self:Fighter,foe:Fighter){
     this.blockerCount=0;
     const mine=this.nextBlocker();mine.x=this.meBox.x;mine.z=this.meBox.z;mine.low=this.meBox.low;mine.high=this.meBox.high;mine.radius=this.meBox.radius;
-    const s=self.state,heavy=STAND_HEAVY[s.fighter];
+    const s=self.state,heavy=SPIRIT_HEAVY[s.fighter];
     // A combo ender (combos.ts; Fighter.ender's rule, repeated so the camera
     // does not import the renderer) is a move of its own, not the spirit's.
     const ender=!!s.branch&&(s.action==='heavy'||s.action==='special');
     if(heavy!==undefined&&s.alive&&!s.awakened&&!ender&&(s.action==='special'||s.action==='ultimate'||(s.action==='heavy'&&heavy))){
-      const p=self.group.position,q=foe.group.position,forward=THREE.MathUtils.clamp(Math.hypot(q.x-p.x,q.z-p.z)-1.35,STAND_NEAR,STAND_FAR);
-      const stand=this.nextBlocker();stand.x=p.x+Math.sin(s.yaw)*forward-Math.cos(s.yaw)*STAND_SIDE;stand.z=p.z+Math.cos(s.yaw)*forward+Math.sin(s.yaw)*STAND_SIDE;
-      stand.low=p.y;stand.high=p.y+STAND_HEIGHT;stand.radius=STAND_RADIUS;
+      const p=self.group.position,q=foe.group.position,forward=THREE.MathUtils.clamp(Math.hypot(q.x-p.x,q.z-p.z)-1.35,SPIRIT_NEAR,SPIRIT_FAR);
+      const spirit=this.nextBlocker();spirit.x=p.x+Math.sin(s.yaw)*forward-Math.cos(s.yaw)*SPIRIT_SIDE;spirit.z=p.z+Math.cos(s.yaw)*forward+Math.sin(s.yaw)*SPIRIT_SIDE;
+      spirit.low=p.y;spirit.high=p.y+SPIRIT_HEIGHT;spirit.radius=SPIRIT_RADIUS;
     }
     const crowd=this.director.crowd;
     if(crowd&&crowd.size>2){this.gatherSelf=self;this.gatherFoe=foe;crowd.forEach(this.gatherOne);this.gatherSelf=this.gatherFoe=undefined;}

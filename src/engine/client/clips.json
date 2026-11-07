@@ -6526,7 +6526,7 @@
   },
   "koko": {
     "body": "/assets/fighters/koko-tr1.glb",
-    "fingerprint": "30:6df154b1",
+    "fingerprint": "30:036bf7e2",
     "clips": {
       "idle": "_Idle",
       "run": "Run",
@@ -6587,7 +6587,7 @@
       "reaction stun": "stun",
       "reaction defeated": "slammed",
       "reaction downed": "down_lp",
-      "command": "Stand Command",
+      "command": "Spirit Command",
       "dream back": null,
       "dream fold": null,
       "dream spin L": null,
@@ -7752,7 +7752,7 @@
       "reaction stun": "stun",
       "reaction defeated": "slammed",
       "reaction downed": null,
-      "command": "Stand Command",
+      "command": "Spirit Command",
       "dream back": null,
       "dream fold": null,
       "dream spin L": null,

@@ -104,7 +104,7 @@ export function launchUnshipped(files: Iterable<string>): string[] {
     if (own && !fighterShown(id)) hidden.add(own.slice(1));
   }
   for (const id of ['kinu', 'gosu'] as const) {
-    const own = ORIGINALS[id]?.stand;
+    const own = ORIGINALS[id]?.companion;
     if (own && !fighterShown(id)) for (const each of [own.model, own.punches]) if (each) hidden.add(each.slice(1));
   }
   for (const [id, file] of [['shakugo', 'shakugo-magma1.glb']] as const) if (!fighterShown(id)) hidden.add(`assets/fighters/${file}`);

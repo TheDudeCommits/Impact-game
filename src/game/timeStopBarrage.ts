@@ -64,7 +64,7 @@ export function tourBlows(move: MoveDefinition) {
  *  Round 3: the barrage is now spread across every frozen opponent, with a
  *  move between one victim's blows and the next's, and it runs on through
  *  those moves - the window is still the one continuous stretch from the
- *  first blow to the last (the Stand shouts all the way across the field).
+ *  first blow to the last (the spirit shouts all the way across the field).
  *  A stop whose blows are further apart than BARRAGE_GAP - PLANETARIUM's
  *  strikes - is not a barrage, and returns null. */
 export function barrageWindow(move: MoveDefinition): { start: number; end: number } | null {

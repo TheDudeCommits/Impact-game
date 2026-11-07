@@ -37,8 +37,8 @@ const TAKES: Take[] = [
   ['kagari', 'kagari-fanim1.glb', ['Hinoko', 'Rush 1', 'Rush 2', 'Rush 3'], ['kagari-rush1.glb']],
   ['setsu', 'setsu-fanim2.glb', ['Rush 1', 'Rush 2', 'Rush 3'], ['setsu-rush2.glb']],
   ['ward', 'ward-fanim1.glb', ['Lancet Slash', 'Rush 1', 'Rush 2', 'Rush 3'], ['ward-rush1.glb']],
-  // Iteration fifteen. KoKo's and LORD ORO's own blows, thrown awakened or in the air (grounded, their Stands throw theirs:
-  // scripts/fanim/stands.py): KoKo's light and his finisher, LORD ORO's light - their Rush 1 and 2 already landed a
+  // Iteration fifteen. KoKo's and LORD ORO's own blows, thrown awakened or in the air (grounded, their spirits throw theirs:
+  // a fanim script since retired): KoKo's light and his finisher, LORD ORO's light - their Rush 1 and 2 already landed a
   // full-length straight or a kick. Gaunt' Rising Hack, which came down; his other three cut through as named.
   ['koko', 'koko-fanim5.glb', ['Straight Punch', 'Rush 3'], ['koko-enders1.glb', 'koko-fanim4.glb', 'koko-rush1.glb']],
   ['oro', 'oro-fanim5.glb', ['Gilded Punch'], ['oro-enders1.glb', 'oro-fanim4.glb', 'oro-rush1.glb']],

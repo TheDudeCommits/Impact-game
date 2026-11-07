@@ -5985,7 +5985,7 @@ export class ArenaSimulation {
   /** Start the move into visit `k`: to a legal spot beside its victim
    *  (tourSpot), a glide if the style glides and the way is clear, else one
    *  step. With nowhere legal to stand the user stays where he is, and the
-   *  blows land from there: the stop is his, and the Stand reaches. */
+   *  blows land from there: the stop is his, and the spirit reaches. */
   private beginTourMove(a: Actor, tour: TimeStopTour, style: TourStyle, k: number) {
     const move = a.cast!.move, p = a.state, visited = tour.visited ?? 0;
     tour.visit = k;

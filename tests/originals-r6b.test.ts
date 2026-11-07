@@ -25,9 +25,9 @@ import VOICES from '../src/originals/voices.json';
 import { commandList } from '../src/ui/commandList';
 import { BONSHO_BODHISATTVA_ASSETS, BonshoBodhisattva } from '../src/render/signature/BonshoBodhisattva';
 import { AKAITO_GHOST_BRIDE_ASSETS, AkaitoGhostBride } from '../src/render/signature/AkaitoGhostBride';
-import { STAND_USERS, SWORD_STAND_ASSETS } from '../src/render/SwordStandEffects';
+import { SPIRIT_CALLERS, SWORD_SPIRIT_ASSETS } from '../src/render/SwordSpiritEffects';
 import { YODAKA_TIGER_ASSET, YodakaFlameTiger } from '../src/render/signature/YodakaFlameTiger';
-import { companionPlacement } from '../src/originals/standLooks';
+import { companionPlacement } from '../src/originals/companionLooks';
 import { launchUnshipped } from '../src/originals/launchShip';
 import { glbJson } from './extraClips';
 import { loadRig } from './rigHarness';
@@ -39,10 +39,10 @@ const ALL = { ...SHOP_R6B, ...R6B_WAITING } as Partial<Record<FighterId, NonNull
 
 function companion(id: FighterId, own: string, main: string) {
   const ownUrl = `/assets/fighters/${own}`, mainUrl = `/assets/fighters/${main}`;
-  expect(ORIGINALS[id]?.stand?.model).toBe(ownUrl);
-  expect(STAND_USERS[id]!.asset).toBe(ownUrl);
-  expect([...SWORD_STAND_ASSETS]).toContain(ownUrl);
-  expect([...SWORD_STAND_ASSETS]).not.toContain(mainUrl);
+  expect(ORIGINALS[id]?.companion?.model).toBe(ownUrl);
+  expect(SPIRIT_CALLERS[id]!.asset).toBe(ownUrl);
+  expect([...SWORD_SPIRIT_ASSETS]).toContain(ownUrl);
+  expect([...SWORD_SPIRIT_ASSETS]).not.toContain(mainUrl);
   type Doc = { images?: unknown[] };
   const mine = glbJson(ownUrl) as unknown as Doc;
   expect(mine.images ?? []).toEqual([]);   // its own base colours, nothing painted
@@ -157,14 +157,14 @@ describe("round 6's new fighters, the second batch", () => {
     expect(away.has(own.slice(1))).toBe(!fighterShown('akaito'));
   });
 
-  it("Kinu fights through her own puppet, on the earlier Stand's joints and takes, and never ships the earlier Stand", () => companion('kinu', 'kinu-puppet1.glb', 'stone-free1.glb'));
+  it("Kinu fights through her own puppet, on the earlier spirit's joints and takes, and never ships the earlier spirit", () => companion('kinu', 'kinu-puppet1.glb', 'stone-free1.glb'));
 
-  it("Kinu's puppet stands where the earlier Stand stood (the slot's own placement)", () => {
-    expect(companionPlacement({ id: 'a-stand', fighter: 'kinu' })).toEqual({ scale: 1, position: [0, 0, 0] });
+  it("Kinu's puppet stands where the earlier spirit stood (the slot's own placement)", () => {
+    expect(companionPlacement({ id: 'a-spirit', fighter: 'kinu' })).toEqual({ scale: 1, position: [0, 0, 0] });
     expect(companionPlacement({ id: 'a', fighter: 'kinu' })).toBeUndefined();   // Kinu herself is fit by her own height
   });
 
-  it("Gosu fights through his own mender, on the earlier Stand's joints and takes, and never ships the earlier Stand", () => companion('gosu', 'gosu-mender1.glb', 'crazy-diamond1.glb'));
+  it("Gosu fights through his own mender, on the earlier spirit's joints and takes, and never ships the earlier spirit", () => companion('gosu', 'gosu-mender1.glb', 'crazy-diamond1.glb'));
 
 
   it("never draws or ships the earlier Flame Tiger in Yodaka's slot: his Fire Owl is drawn in its place", async () => {

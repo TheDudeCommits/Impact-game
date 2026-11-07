@@ -7,7 +7,7 @@ import { applyOriginalImpactWords } from '../originals/apply';
 
 /** Round 3b (HITFEEL): every rush finisher printed the same word, over the
  *  same panel, whoever threw it. Each fighter's finisher is lettered as its
- *  own: the Stands' cries, a blade's cut, lightning's crackle, a clone's pop. */
+ *  own: the spirits' cries, a blade's cut, lightning's crackle, a clone's pop. */
 const FINISHER_WORDS: Partial<Record<FighterId, string>> = {
   taisei: 'ドゴォッ', ouga: 'ズガァン', konta: 'ボボンッ', shiden: 'チチチッ', shirokane: 'バリィッ', gummy: 'ギュルルッ',
   kenzo: 'ズバァッ', kosho: 'ドガァッ', koko: 'オラァッ', nigo: 'ザンッ', kagari: 'ゴォォッ', ward: 'スパッ',

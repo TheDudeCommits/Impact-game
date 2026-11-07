@@ -55,7 +55,7 @@ export const STEPS: Readonly<Record<Surface, { readonly takes: readonly [AudioCu
 export function weightOf(fighter: FighterId, awakened = false): number {
   const height = FIGHTERS[fighter]?.height ?? 1.8, form = awakened ? AWAKENINGS[fighter]?.formScale ?? 1 : 1;
   // (A summon towers over its fighter without being the body on the floor: a Guardian's wearer steps as themself.)
-  const stands = height * (awakened && AWAKENINGS[fighter]?.kind !== 'summon' && AWAKENINGS[fighter]?.kind !== 'stand' ? Math.min(form, 2) : 1);
+  const stands = height * (awakened && AWAKENINGS[fighter]?.kind !== 'summon' && AWAKENINGS[fighter]?.kind !== 'spirit' ? Math.min(form, 2) : 1);
   return Math.max(0, Math.min(1, (stands - 1.55) / 1.45 + (BUILD[fighter] ?? 0)));
 }
 /** Height alone makes a tall, lean fighter a giant and a broad one of the same height no heavier: where a body's build

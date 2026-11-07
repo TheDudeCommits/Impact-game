@@ -160,14 +160,14 @@ describe('CAM5: the awakening framed on the head',()=>{
     expect(jump(frames.slice(swap))).toBeLessThan(.05);
   });
 
-  it('holds a looming Stand\'s crown in the frame with its user',()=>{
-    // The Stand's neck 2.3 m over its user's root (loomRegistry), its bowed
+  it('holds a looming spirit\'s crown in the frame with its user',()=>{
+    // The spirit's neck 2.3 m over its user's root (loomRegistry), its bowed
     // head reaching 0.45 m over that: framed with the user, crown and all.
     setLoomTop('me',2.3);
     try{
       const frames=run({pose:(_i,m)=>{m.state.fighter='koko';},watch:[new THREE.Vector3(0,2.75,0)]});
       for(const [i,f] of frames.entries()){
-        expect(f.watched[0].y,`frame ${i}: the Stand's crown under the bars`).toBeLessThan(.63);
+        expect(f.watched[0].y,`frame ${i}: the spirit's crown under the bars`).toBeLessThan(.63);
         expect(safe(f.head),`frame ${i}`).toBe(true);
       }
     }finally{clearLoomTops();}

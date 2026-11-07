@@ -1,14 +1,14 @@
 import {Vector3,type Object3D,type Camera} from 'three';
 /** Her spirit attacks from beside Kinu. Rotate the entire native body around
  * its actual striking skin point, so the physical hand never changes contact. */
-export const KINU_STAND_STAGING={flankRadians:-.66,idleSide:.92,idleBack:.12,idleLift:.035,ownerWindow:.12,maxFlank:2.5,turnSpeed:2.2,viewHysteresis:.22,scoreHysteresis:.08}as const;
+export const KINU_SPIRIT_STAGING={flankRadians:-.66,idleSide:.92,idleBack:.12,idleLift:.035,ownerWindow:.12,maxFlank:2.5,turnSpeed:2.2,viewHysteresis:.22,scoreHysteresis:.08}as const;
 const ANGLES=[-2.5,-2.2,-1.9,-1.6,1.6,1.9,2.2,2.5]as const;
 const CANDIDATES=ANGLES.map(angle=>({angle,c:Math.cos(angle),s:Math.sin(angle)}));
 type Envelope={x0:number;y0:number;x1:number;y1:number};
 const JOINTS=['Hips','Spine2','Head','LeftArm','RightArm','LeftUpLeg','RightUpLeg']as const;
 const bodyPoints=JOINTS.map(()=>new Vector3()),ownerPoints=JOINTS.map(()=>new Vector3()),targetPoints=JOINTS.map(()=>new Vector3());
 const projected=new Vector3(),sample=new Vector3();
-const standBox:Envelope={x0:0,y0:0,x1:0,y1:0},ownerBox={...standBox},targetBox={...standBox};
+const spiritBox:Envelope={x0:0,y0:0,x1:0,y1:0},ownerBox={...spiritBox},targetBox={...spiritBox};
 function points(joints:ReadonlyMap<string,Object3D>,out:Vector3[]):void{
  const fallback=joints.get('Spine')!;for(let i=0;i<JOINTS.length;i++)(joints.get(JOINTS[i])??fallback).getWorldPosition(out[i]);
 }
@@ -40,13 +40,13 @@ export function kinuInitialFlank(owner:Vector3,target:Vector3,camera:Camera):num
 export function kinuViewFlank(body:ReadonlyMap<string,Object3D>,owner:ReadonlyMap<string,Object3D>,target:ReadonlyMap<string,Object3D>,contact:Vector3,camera:Camera,current:number):number{
  points(body,bodyPoints);points(owner,ownerPoints);points(target,targetPoints);
  envelope(ownerPoints,camera,ownerBox);envelope(targetPoints,camera,targetBox);
- const score=(c:number,s:number)=>{envelope(bodyPoints,camera,standBox,contact,c,s);const separation=Math.min(Math.abs((standBox.x0+standBox.x1-ownerBox.x0-ownerBox.x1)*.5),Math.abs((standBox.x0+standBox.x1-targetBox.x0-targetBox.x1)*.5));return -2*overlap(standBox,ownerBox)-overlap(standBox,targetBox)+separation*2;};
- let best=current,bestScore=score(Math.cos(current),Math.sin(current))+KINU_STAND_STAGING.scoreHysteresis;
+ const score=(c:number,s:number)=>{envelope(bodyPoints,camera,spiritBox,contact,c,s);const separation=Math.min(Math.abs((spiritBox.x0+spiritBox.x1-ownerBox.x0-ownerBox.x1)*.5),Math.abs((spiritBox.x0+spiritBox.x1-targetBox.x0-targetBox.x1)*.5));return -2*overlap(spiritBox,ownerBox)-overlap(spiritBox,targetBox)+separation*2;};
+ let best=current,bestScore=score(Math.cos(current),Math.sin(current))+KINU_SPIRIT_STAGING.scoreHysteresis;
  for(const p of CANDIDATES){if(p.angle*current<0)continue;const value=score(p.c,p.s);if(value>bestScore){best=p.angle;bestScore=value;}}
  return best;
 }
-export function kinuFlankAroundContact(group:Object3D,contact:Vector3,weight=1,flank:number=KINU_STAND_STAGING.flankRadians):void{
- const angle=Math.max(-KINU_STAND_STAGING.maxFlank,Math.min(KINU_STAND_STAGING.maxFlank,flank))*Math.max(0,Math.min(1,weight)),c=Math.cos(angle),s=Math.sin(angle),x=group.position.x-contact.x,z=group.position.z-contact.z;
+export function kinuFlankAroundContact(group:Object3D,contact:Vector3,weight=1,flank:number=KINU_SPIRIT_STAGING.flankRadians):void{
+ const angle=Math.max(-KINU_SPIRIT_STAGING.maxFlank,Math.min(KINU_SPIRIT_STAGING.maxFlank,flank))*Math.max(0,Math.min(1,weight)),c=Math.cos(angle),s=Math.sin(angle),x=group.position.x-contact.x,z=group.position.z-contact.z;
  group.position.x=contact.x+x*c+z*s;group.position.z=contact.z-x*s+z*c;
  group.rotation.y+=angle;group.updateMatrixWorld(true);
 }

@@ -2,7 +2,7 @@ import type {Object3D,Vector3} from 'three';
 
 /** The spirit's actual armored knuckles; measured on the accepted native GLB.
  * Wrist origins sit roughly13cm behind these contact surfaces. */
-export const KINU_STAND_SURFACES = {
+export const KINU_SPIRIT_SURFACES = {
   "right": [
     0.02441114839091396,
     0.1325946772682668,
@@ -30,6 +30,6 @@ export const KINU_STAND_SURFACES = {
 export function kinuSpiritSurfacePoint(hand:Object3D,clip:string|undefined,index:number,out:Vector3):Vector3 {
   const left=hand.name==='LeftHand';
   const finish=(clip==='Broken Shackles'&&index===7)||(clip==='BUCHI BUCHI Barrage'&&index===2);
-  const p=left?(finish?KINU_STAND_SURFACES.leftFinish:KINU_STAND_SURFACES.left):(finish?KINU_STAND_SURFACES.rightFinish:KINU_STAND_SURFACES.right);
+  const p=left?(finish?KINU_SPIRIT_SURFACES.leftFinish:KINU_SPIRIT_SURFACES.left):(finish?KINU_SPIRIT_SURFACES.rightFinish:KINU_SPIRIT_SURFACES.right);
   return hand.localToWorld(out.set(p[0],p[1],p[2]));
 }

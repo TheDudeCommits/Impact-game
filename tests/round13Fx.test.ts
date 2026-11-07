@@ -9,7 +9,7 @@ import { MOVES } from '../src/game/moves';
 import { barrageWindow } from '../src/game/timeStopBarrage';
 import { CombatEffects, FLIGHTS } from '../src/render/CombatEffects';
 import { GummyEffects } from '../src/render/GummyEffects';
-import { SwordStandEffects } from '../src/render/SwordStandEffects';
+import { SwordSpiritEffects } from '../src/render/SwordSpiritEffects';
 import type { Fighter } from '../src/render/Fighter';
 import type { AttackSlot, CombatEvent, FighterId, PlayerState } from '../src/game/types';
 
@@ -229,30 +229,30 @@ describe('the new specials', () => {
 
   it('extends Needle Finger from the hand at the contact and retracts it, stopping on the body it struck', () => {
     const move = MOVES.koko.heavy, contact = move.contacts[0], flight = move.range / move.speed!;
-    expect(SwordStandEffects.fingerReach(contact - .01)).toBe(0);
-    expect(SwordStandEffects.fingerReach(contact + .1)).toBeCloseTo(4, 5);
-    expect(SwordStandEffects.fingerReach(contact + flight)).toBeCloseTo(move.range, 5);
-    const back = SwordStandEffects.fingerReach(contact + flight + .15);
+    expect(SwordSpiritEffects.fingerReach(contact - .01)).toBe(0);
+    expect(SwordSpiritEffects.fingerReach(contact + .1)).toBeCloseTo(4, 5);
+    expect(SwordSpiritEffects.fingerReach(contact + flight)).toBeCloseTo(move.range, 5);
+    const back = SwordSpiritEffects.fingerReach(contact + flight + .15);
     expect(back).toBeGreaterThan(0); expect(back).toBeLessThan(move.range);
-    expect(SwordStandEffects.fingerReach(contact + flight + .5)).toBe(0);
+    expect(SwordSpiritEffects.fingerReach(contact + flight + .5)).toBe(0);
     // A hit at 3.6 m: the finger goes no further.
     const hitAt = contact + 3.6 / move.speed!;
-    expect(SwordStandEffects.fingerReach(hitAt + .03, hitAt)).toBeCloseTo(3.6, 5);
-    expect(SwordStandEffects.fingerReach(hitAt + .3, hitAt)).toBeLessThan(3.6);
-    // In the scene, from the actor's hand while no Stand is loaded.
-    const scene = new THREE.Scene(), stand = new SwordStandEffects(scene);
+    expect(SwordSpiritEffects.fingerReach(hitAt + .03, hitAt)).toBeCloseTo(3.6, 5);
+    expect(SwordSpiritEffects.fingerReach(hitAt + .3, hitAt)).toBeLessThan(3.6);
+    // In the scene, from the actor's hand while no spirit is loaded.
+    const scene = new THREE.Scene(), spirit = new SwordSpiritEffects(scene);
     const koko = body('j', 'koko', 'heavy', 1), fighters = new Map([['j', koko]]);
-    stand.handle([event({ actorId: 'j', fighter: 'koko', slot: 'heavy', serverTime: 1, origin: { x: 0, y: 1.05, z: 0 }, endpoint: { x: 0, y: 1.05, z: 9 } })]);
+    spirit.handle([event({ actorId: 'j', fighter: 'koko', slot: 'heavy', serverTime: 1, origin: { x: 0, y: 1.05, z: 0 }, endpoint: { x: 0, y: 1.05, z: 9 } })]);
     const finger = scene.getObjectByName('needle-finger')!;
-    stand.update(1.2, 1 / 60, fighters); koko.state.actionTime = .2 / move.duration;
+    spirit.update(1.2, 1 / 60, fighters); koko.state.actionTime = .2 / move.duration;
     expect(finger.visible, 'nothing before the contact').toBe(false);
     const t = 1 + contact + .1; koko.state.actionTime = (contact + .1) / move.duration;
-    stand.update(t, 1 / 60, fighters);
+    spirit.update(t, 1 / 60, fighters);
     expect(finger.visible).toBe(true);
     expect(finger.position.distanceTo(koko.handR), 'anchored to the hand').toBeLessThan(.01);
     const tip = finger.getObjectByName('needle-finger-tip')!;
     expect(tip.getWorldPosition(new THREE.Vector3()).distanceTo(koko.handR)).toBeCloseTo(4, 1);
-    stand.dispose();
+    spirit.dispose();
   });
 
   it('lands Needle Finger in violet, and the rest of the roster as before', () => {
@@ -264,7 +264,7 @@ describe('the new specials', () => {
     effects.handle([event({ id: 4, kind: 'hit', actorId: 'g', fighter: 'taisei', slot: 'special', serverTime: 2, damage: 135, endpoint: { x: 5, y: 1, z: 4 }, origin: { x: 5, y: 1, z: 0 } })]);
     const taisei = scene.children.filter(o => o.name === 'combat-energy-burst').pop()!;
     expect(((taisei.getObjectByName('impact-outward-streaks') as THREE.InstancedMesh).material as THREE.MeshBasicMaterial).color.getHex()).toBe(0x08baff);
-    // KoKo's casts are still the Stand's business, not the generic path's.
+    // KoKo's casts are still the spirit's business, not the generic path's.
     effects.handle([event({ id: 5, actorId: 'j', fighter: 'koko', slot: 'heavy', serverTime: 3 })]);
     expect(scene.getObjectByName('cast-5')).toBeUndefined();
     effects.dispose();

@@ -8,7 +8,7 @@ import { SIGNATURE, involvesLocal } from './context';
 import { MoveStage, WAVE, type StageLook } from './MoveStage';
 import { fistRush } from './SpiritRush';
 import { limb, polygon } from './StageStrokes';
-import { applyCompanionStageLooks } from '../../originals/standLooks';
+import { applyCompanionStageLooks } from '../../originals/companionLooks';
 
 export const isKinuStoneThread = (id: string | undefined) => id === 'kinu';
 export const KINU_THREAD_LIMITS = Object.freeze({ marks: 12, links: 8 });

@@ -1,6 +1,6 @@
 import type { AttackSlot, FighterId } from '../../game/types';
 import type { ComboKey } from '../../game/combos';
-import { applyCompanionSparks } from '../../originals/standLooks';
+import { applyCompanionSparks } from '../../originals/companionLooks';
 import { applyMinaseSparks } from '../../originals/minaseSparks';
 
 /** What a blow is made of, as the three colours an impact is drawn in.

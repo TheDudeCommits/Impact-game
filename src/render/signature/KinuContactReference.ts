@@ -1,7 +1,7 @@
 import {MathUtils,Vector3,type Object3D} from 'three';
 
 /** Offline samples from the spirit's exact native skin, relative to its Hips.
- * Model74795b4596f5cb73, documented in kinu-stand-surfaces.json and the R5
+ * Model74795b4596f5cb73, documented in the Kinu spirit surface notes and the R5
  * receipt. These eleven immutable samples are cached once on module load;
  * runtime never clones/evaluates another rig to stage the body. */
 type ContactSample=readonly[seconds:number,x:number,y:number,z:number];

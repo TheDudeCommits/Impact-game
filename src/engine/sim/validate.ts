@@ -12,7 +12,7 @@ const STYLES: ReadonlySet<MoveDefinition['style']> = new Set(['melee', 'beam', '
 const OUTCOMES: ReadonlySet<Outcome> = new Set(['launch', 'hop', 'crumple', 'stagger', 'spin', 'wallBounce', 'groundBounce', 'knockdown', 'dizzy']);
 const KNOCKS: ReadonlySet<NonNullable<MoveDefinition['knock']>> = new Set(['slam', 'spike', 'slide', 'splat']);
 const RUSH_SHAPES = new Set(['launch', 'juggle', 'spike', 'carry', 'stagger', 'spin']);
-const AWAKENING_KINDS = new Set(['form', 'summon', 'stand', 'aura']);
+const AWAKENING_KINDS = new Set(['form', 'summon', 'spirit', 'aura']);
 
 /** [lowest, highest] each number may take. The roster's own extremes are in the comments. */
 export const MOVE_LIMITS = {

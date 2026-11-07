@@ -55,7 +55,7 @@ beforeAll(async () => {
 
 /** The clip on whatever body is on screen for that cast: the fighter's own,
  *  or a replacement body (a 'form'). Round 3d: an awakened spirit-caller is no
- *  longer replaced by the Stand - it looms over them and they fight on in
+ *  longer replaced by the spirit - it looms over them and they fight on in
  *  their own body - so for KoKo and LORD ORO it is their own body, awakened. */
 function drawn(id: FighterId, slot: AttackSlot, awakened: boolean) {
   const kind = awakened ? AWAKENINGS[id].kind : 'aura';

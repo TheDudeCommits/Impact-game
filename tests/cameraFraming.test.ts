@@ -135,22 +135,22 @@ describe('whatever hides the victim is looked past',()=>{
     expect(turns,'letting go is one move back').toBeLessThanOrEqual(1);
   });
 
-  it('looks past the player\'s own Stand while it fights',()=>{
+  it('looks past the player\'s own spirit while it fights',()=>{
     // KoKo's Iron Spirit stands 0.75 m to his right, a little ahead,
-    // while it throws a special (as SwordStandEffects places it); with him
+    // while it throws a special (as SwordSpiritEffects places it); with him
     // turned half a radian off the victim at arm's length it stands between
     // the over-the-shoulder lens and the victim.
     const run=(fighter:FighterId)=>{
       const me=actor('me',0,0,fighter),foe=actor('foe',0,1.2),r=new Rig(me,foe,[]);me.state.yaw=.5;swing(me,'special');
       for(let i=0;i<300;i++)r.step();
-      const stand=actor('stand'),forward=THREE.MathUtils.clamp(1.2-1.35,.25,.7),yaw=me.state.yaw;
-      stand.group.position.set(Math.sin(yaw)*forward-Math.cos(yaw)*.75,0,Math.cos(yaw)*forward+Math.sin(yaw)*.75);
-      return r.hidden([me,stand]);
+      const spirit=actor('spirit'),forward=THREE.MathUtils.clamp(1.2-1.35,.25,.7),yaw=me.state.yaw;
+      spirit.group.position.set(Math.sin(yaw)*forward-Math.cos(yaw)*.75,0,Math.cos(yaw)*forward+Math.sin(yaw)*.75);
+      return r.hidden([me,spirit]);
     };
-    // The same fight without a Stand is framed as composed, which puts the
-    // Stand's body across the victim.
-    expect(run('kenzo'),'the composed framing, measured against the Stand').toBeGreaterThan(.4);
-    expect(run('koko'),'the victim behind the Stand').toBeLessThan(.2);
+    // The same fight without a spirit is framed as composed, which puts the
+    // spirit's body across the victim.
+    expect(run('kenzo'),'the composed framing, measured against the spirit').toBeGreaterThan(.4);
+    expect(run('koko'),'the victim behind the spirit').toBeLessThan(.2);
   });
 
   it('holds still for a body straight overhead, and never counts the victim behind the lens',()=>{

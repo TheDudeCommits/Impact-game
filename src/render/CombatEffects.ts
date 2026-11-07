@@ -110,10 +110,10 @@ const SUNPALM_BALL = .15;
  *  throwers' fire, and Setsu's lightning (SetsuEffects reads FLIGHTS). */
 const FLIGHT_DRESSED = new Set<FighterId>([...FLAME_THROWERS, 'setsu', 'kuon', 'gaunt', 'sorayomi', 'basilissa', 'shakugo', 'shanxiao', 'ampere', 'pyroclast', 'full-beam', 'oyashio', 'buna', 'akaito', 'shijima', 'tancho', 'bellows', 'cardo', 'bruin']);
 /** Whose heavy is thrown steel: no ki body and no charge light, but the cast
- *  still keeps a flight, and SwordStandEffects draws the knives on it. */
+ *  still keeps a flight, and SwordSpiritEffects draws the knives on it. */
 const KNIFE_THROWERS = new Set<FighterId>(['oro']);
 /** A cast that is that knife throw: never a combo ender, which is drawn as its own move (ENDER_THROWN for an ender
- *  that is steel thrown), not as LORD ORO's heavy - SwordStandEffects dresses only the heavy's flights. */
+ *  that is steel thrown), not as LORD ORO's heavy - SwordSpiritEffects dresses only the heavy's flights. */
 const clockHandKnives = (event: CombatEvent) => !event.branch && !!event.fighter && KNIFE_THROWERS.has(event.fighter);
 /** Kagari's ultimate is a bomb drawn as a sun: the Great Flame Commandment is a
  *  ball of fire the size of a house lifted over his head and thrown. Every
@@ -1788,7 +1788,7 @@ export class CombatEffects {
     if((FLIGHT_DRESSED.has(c.event.fighter!)||hasRosterSignature(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||clockHandKnives(c.event))&&projectile){
       // The thrown fire: where it is and which way it is going, for the
       // flames that dress it. The crescent leads the kick, facing its way.
-      // LORD ORO's knives are dressed the same way, by SwordStandEffects.
+      // LORD ORO's knives are dressed the same way, by SwordSpiritEffects.
       const key=flightKey(c);let flight=FLIGHTS.get(key);
       if(!flight){flight={fighter:c.event.fighter!,slot:c.event.slot!,branch:c.event.branch,actorId:c.event.actorId,position:new THREE.Vector3(),heading:new THREE.Vector3(),origin:new THREE.Vector3(),released:false,since:c.event.serverTime+c.release,awakened:!!actor?.state.awakened};FLIGHTS.set(key,flight);}
       // Follow the charging hand, then retain the actual launch point. Trails

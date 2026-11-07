@@ -47,7 +47,7 @@ import { backgroundRoster as backgroundRosterPolicy, readSignals, thinLine } fro
 import { BugReport } from './ui/BugReport';
 import './ui/homeTools.css';
 import { HOME_VOICES, HOME_VOICE_SECONDS, HomeVoice } from './audio/HomeVoice';
-import {SwordStandEffects} from './render/SwordStandEffects';
+import {SwordSpiritEffects} from './render/SwordSpiritEffects';
 // The interface type (Barlow, Barlow Condensed) from the site itself, before the stylesheets that set it (ui/fonts.css says why).
 import './ui/fonts.css';
 import './ui/style.css';
@@ -349,7 +349,7 @@ SIGNATURE.floor=(x,y,z)=>{try{const top=y+.5,hit=localCollision?.raycast?.({x,y:
 // Hidden Rift opponents keep their already compiled rigs, outside camera/target/effect maps.
 const hiddenRiftBodies=new Map<string,Fighter>();
 function clearFighters(){for(const body of [...fighters.values(),...hiddenRiftBodies.values()])body.dispose();fighters.clear();hiddenRiftBodies.clear();}
-const timeline=new CombatTimeline(),gummyEffects=new GummyEffects(view.scene),ninjaEffects=new NinjaEffects(view.scene),swordStandEffects=new SwordStandEffects(view.scene),strikeTrails=new StrikeTrails(view.scene);
+const timeline=new CombatTimeline(),gummyEffects=new GummyEffects(view.scene),ninjaEffects=new NinjaEffects(view.scene),swordSpiritEffects=new SwordSpiritEffects(view.scene),strikeTrails=new StrikeTrails(view.scene);
 const awakeningEffects=new AwakeningEffects(view.scene);
 // The bodies the director's shots keep a clear sight line past and the lens out of.
 camera.director.crowd=fighters;
@@ -370,7 +370,7 @@ hudView.camera=view.camera;hudView.locked=()=>targeting.locked; // Round 5 (UX, 
 // Compact Arcade enemies join the same camera and target selection as every other mode.
 const survivalTargets=new SurvivalTargets(),riftTargets=new RiftTargets(),riftAssets=new RiftAssets(),riftPredictionTargets=new RiftPredictionTargets();
 // VOL.5, the move transplant (src/engine/client/transplant.ts): a borrowed move's clips and effects, loaded with the room's.
-installTransplant({ensure:ids=>library.ensure(ids),donor:state=>library.has(state.fighter)?library.create(state):undefined,bodies:()=>fighters.values(),effects:donors=>{const room=network.snapshot?riftAssets.ids(network.snapshot):[hud.selected],ids=[...new Set([...room,...(network.snapshot?effectDonors(network.snapshot.players,room):[]),...donors,...benched()])];emperorEffects.load(ids);return Promise.all([ninjaEffects.load(ids),swordStandEffects.load(ids),effects.load(ids)]).then(()=>{});},compile:()=>view.compileScene()});
+installTransplant({ensure:ids=>library.ensure(ids),donor:state=>library.has(state.fighter)?library.create(state):undefined,bodies:()=>fighters.values(),effects:donors=>{const room=network.snapshot?riftAssets.ids(network.snapshot):[hud.selected],ids=[...new Set([...room,...(network.snapshot?effectDonors(network.snapshot.players,room):[]),...donors,...benched()])];emperorEffects.load(ids);return Promise.all([ninjaEffects.load(ids),swordSpiritEffects.load(ids),effects.load(ids)]).then(()=>{});},compile:()=>view.compileScene()});
 // The dream loop, round 90: Taisei's authored hurts lent to every body that has none (src/engine/client/borrowedHurts.ts).
 void installBorrowedHurts();
 // Lock combat's preview: the second-round strikes of the fighters with none of their own (engine/client/borrowedStrikes.ts).
@@ -694,7 +694,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     clearFighters();resetSwaps();
     pauseLink.reset();roomFrozen=false;fightShown=false;
     network=riftRun?localRift:royaleRun?royale:duelRun?duel:arcadeRun?arcade:practiceRun?practice:objectiveRun?localObjective:online;timeline.delayMs=riftRun||royaleRun||duelRun||arcadeRun||practiceRun||objectiveRun?LOCAL_DELAY:ONLINE_DELAY;
-    audio.reset();areaFx.reset();effects.reset();gummyEffects.reset();ninjaEffects.reset();setsuEffects.reset();gauntEffects.reset();kuonEffects.reset();lastSunEffects.reset();wardEffects.reset();emperorEffects.reset();swordStandEffects.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();camera.reset();
+    audio.reset();areaFx.reset();effects.reset();gummyEffects.reset();ninjaEffects.reset();setsuEffects.reset();gauntEffects.reset();kuonEffects.reset();lastSunEffects.reset();wardEffects.reset();emperorEffects.reset();swordSpiritEffects.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();camera.reset();
     horde.clear();grunts.clear();gore.clear();survivalFx.reset();techniques.reset();lastEntrance=0;lastRoar=0;bossesWanted='';lastHordeVoice=0;lastBossVoice=0;lastSmash=0;bossShoutAt.clear();stages.rift?.restore();
     if(arcadeRun||coopRun)audio.preload(everyTake());
     if(access?.kind==='objective'&&access.objective==='last-stand'||access?.kind==='party'&&access.travel.mode==='last-stand')objectiveAudio.preload();
@@ -916,7 +916,7 @@ function pausePump(){
 document.addEventListener('visibilitychange',pausePump);
 // Prediction.stop frees its Rapier world. Invalidate the cached pointer and
 // pending loads as well, so reopening the same stage never reuses freed WASM.
-function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();gummyEffects.reset();ninjaEffects.reset();setsuEffects.reset();gauntEffects.reset();kuonEffects.reset();lastSunEffects.reset();wardEffects.reset();emperorEffects.reset();swordStandEffects.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
+function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();gummyEffects.reset();ninjaEffects.reset();setsuEffects.reset();gauntEffects.reset();kuonEffects.reset();lastSunEffects.reset();wardEffects.reset();emperorEffects.reset();swordSpiritEffects.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
 // Out of a party's match: home, and back on the party's sheet, where the others are seen coming home too.
 hud.onLeave=()=>{returnToLobby();if(party.joined)partyUI.show();};
 for(const each of [online,arcade,practice,duel,royale,localObjective,localRift])each.onDisconnect=(reason,code)=>{
@@ -948,7 +948,7 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   const modeView=objectiveOf(snapshot),warView=riftOf(snapshot),round=modeView?.round??warView?.round??0;
   if(round!==objectiveRound){
     objectiveRound=round;objectivePhase='';timeline.reset();lastEvent=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;input.clear();inputClock.reset();unacked.length=0;predictedCasts.clear();predictedVisuals.length=0;objectiveField.reset();horde.clear();techniques.reset();bossesWanted='';
-    audio.reset();areaFx.reset();effects.reset();gummyEffects.reset();ninjaEffects.reset();setsuEffects.reset();gauntEffects.reset();kuonEffects.reset();lastSunEffects.reset();wardEffects.reset();emperorEffects.reset();swordStandEffects.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();camera.reset();victoryFor=null;introFor=null;targeting.reset();targetId=null;
+    audio.reset();areaFx.reset();effects.reset();gummyEffects.reset();ninjaEffects.reset();setsuEffects.reset();gauntEffects.reset();kuonEffects.reset();lastSunEffects.reset();wardEffects.reset();emperorEffects.reset();swordSpiritEffects.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();camera.reset();victoryFor=null;introFor=null;targeting.reset();targetId=null;
     clearFighters();
   }
   if((modeView?.phase??warView?.phase)==='active'&&objectivePhase!=='active'){input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;input.clear();camera.reset();}
@@ -1098,7 +1098,7 @@ let rebodied=false;
  *  either - a fire still burning under the dummy, a circle still filling, the old fighter's shout from the new body.
  *  What is in flight is let go as a round's start lets it go (the block in onSnapshot): the effects go back to their
  *  pools, nothing built or compiled is thrown away. The camera, the lock, the stage and the HUD are not touched. */
-function clearFlights(){audio.reset();areaFx.reset();effects.reset();gummyEffects.reset();ninjaEffects.reset();setsuEffects.reset();gauntEffects.reset();kuonEffects.reset();lastSunEffects.reset();wardEffects.reset();emperorEffects.reset();swordStandEffects.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();predictedCasts.clear();predictedVisuals.length=0;}
+function clearFlights(){audio.reset();areaFx.reset();effects.reset();gummyEffects.reset();ninjaEffects.reset();setsuEffects.reset();gauntEffects.reset();kuonEffects.reset();lastSunEffects.reset();wardEffects.reset();emperorEffects.reset();swordSpiritEffects.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();predictedCasts.clear();predictedVisuals.length=0;}
 function applyCombatFrame(snapshot:GameSnapshot){
   // Arcade enemies are not fighters: the horde draws them (EnemyHorde).
   // A player is drawn in the outfit they wear (the room says, or, for this player, their account), once its body is here.
@@ -1241,7 +1241,7 @@ function roomExtras(ids:readonly FighterId[],donors:readonly FighterId[]=[]){
   // (And the effects of the fighters whose moves the room's kits borrow: VOL.5, the move transplant.)
   const fx=donors.length?[...ids,...donors]:ids;
   emperorEffects.load(fx);
-  return Promise.all([ninjaEffects.load(fx),swordStandEffects.load(fx),effects.load(fx)]).then(()=>{});
+  return Promise.all([ninjaEffects.load(fx),swordSpiritEffects.load(fx),effects.load(fx)]).then(()=>{});
 }
 /** The stage whose model has loaded last (the loading screen's progress). */
 let stageLoaded:StageId|null=null;
@@ -1319,7 +1319,7 @@ async function ensureSnapshotAssets(snapshot:GameSnapshot,onWarm?:()=>void,also?
     // first clash of a session then linked their programs mid-fight).
     const sharedEffects=!effectsWarmed;effectsWarmed=true;
     try{if(sharedEffects)try{awakeningEffects.warmup();clashEffects.warmup();}catch(error){console.warn('Shared effects warm-up',error);}
-      const shirokane=bodies.get('warm-shirokane');if(shirokane)ninjaEffects.warmup(shirokane);swordStandEffects.update(0,0,bodies);if(!started)await nextTask();await compileRoom();if(started)await view.uploadTexturesOverFrames(current);else await view.uploadTexturesInSlices(current);needed.forEach(id=>compiledFighters.add(id));}
+      const shirokane=bodies.get('warm-shirokane');if(shirokane)ninjaEffects.warmup(shirokane);swordSpiritEffects.update(0,0,bodies);if(!started)await nextTask();await compileRoom();if(started)await view.uploadTexturesOverFrames(current);else await view.uploadTexturesInSlices(current);needed.forEach(id=>compiledFighters.add(id));}
     finally{library.hideWarmup();library.disposeWarmup();if(sharedEffects){awakeningEffects.hideWarmup();clashEffects.hideWarmup();}}
   });warming=warm.catch(()=>{});await warm;
   if(!current()){horde.collect();return;}
@@ -1683,7 +1683,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // The area slot's casts, releases and strikes are drawn by areaFx alone; the rest go on to every effect module.
     const areaEvents=survival()?snapshot.events.filter(event=>!isProc(event.move)):snapshot.events;
     const fx=areaFx.handle(areaEvents,network.id||undefined,snapshot.players,event=>effects.handleAuthoredAreas([event],shown));
-    effects.handle(fx.filter(event=>!prediction.impactWasPresented(event)),shown);ninjaEffects.handle(fx,shown);setsuEffects.handle(fx);kuonEffects.handle(fx);wardEffects.handle(fx,shown);emperorEffects.handle(fx,shown);swordStandEffects.handle(fx);awakeningEffects.handle(fx,fighters);clashEffects.handle(fx);
+    effects.handle(fx.filter(event=>!prediction.impactWasPresented(event)),shown);ninjaEffects.handle(fx,shown);setsuEffects.handle(fx);kuonEffects.handle(fx);wardEffects.handle(fx,shown);emperorEffects.handle(fx,shown);swordSpiritEffects.handle(fx);awakeningEffects.handle(fx,fighters);clashEffects.handle(fx);
     if(survival())survivalFx.contacts(snapshot.events,serverTime);
     if(self&&started){const own=fighters.get(self.id)!;const move=['light','heavy','special','ultimate'].includes(self.action)?MOVES[self.fighter][self.action as AttackSlot]:undefined;const elapsed=own.state.actionTime*self.actionDuration;
       // The canvas carries the player's action for the capture tools; written when it changes (every frame it was 180 of the page's 800 DOM writes a second).
@@ -1753,7 +1753,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // The area slot: the aim follows the fighter, its target and its move; the circles fill and strike.
     if(self){const move=areaMoveOf(self),lock=targetId?snapshot.players.find(p=>p.id===targetId&&p.alive):undefined;input.aim.follow(self,input.yaw,lock,move.range,move.radius,areaReady(self,snapshot.serverTime));}else input.aim.cancel();
     areaFx.update(serverTime,input.aim.view,self,floorAt);
-    effects.update(serverTime,dt,steady);awakeningEffects.update(serverTime,dt,fighters,settings.effects,view.camera);gummyEffects.update(serverTime,steady,settings.effects);ninjaEffects.update(serverTime,dt,steady,settings.effects);setsuEffects.update(serverTime,steady,settings.effects);gauntEffects.update(serverTime,steady,settings.effects);kuonEffects.update(serverTime,dt,steady,settings.effects);lastSunEffects.update(serverTime,steady,settings.effects);wardEffects.update(serverTime,steady,settings.effects);emperorEffects.update(serverTime,steady,settings.effects,view.camera);swordStandEffects.update(serverTime,dt,steady,settings.effects,view.camera);strikeTrails.update(dt,steady,view.camera);clashEffects.update(serverTime,view.camera,settings.effects);
+    effects.update(serverTime,dt,steady);awakeningEffects.update(serverTime,dt,fighters,settings.effects,view.camera);gummyEffects.update(serverTime,steady,settings.effects);ninjaEffects.update(serverTime,dt,steady,settings.effects);setsuEffects.update(serverTime,steady,settings.effects);gauntEffects.update(serverTime,steady,settings.effects);kuonEffects.update(serverTime,dt,steady,settings.effects);lastSunEffects.update(serverTime,steady,settings.effects);wardEffects.update(serverTime,steady,settings.effects);emperorEffects.update(serverTime,steady,settings.effects,view.camera);swordSpiritEffects.update(serverTime,dt,steady,settings.effects,view.camera);strikeTrails.update(dt,steady,view.camera);clashEffects.update(serverTime,view.camera,settings.effects);
     // After CombatEffects has opened this frame's beam slots.
     if(survival()||objectiveOf(snapshot)?.kind==='last-stand')techniques.update(serverTime);
   }
@@ -1771,7 +1771,7 @@ requestAnimationFrame(frame);
 reloadWhenRestored(window);
 // A lost WebGL context is rebuilt when the browser gives it back (GameRenderer); one that does not come back reloads.
 reloadIfNotRestored(view.renderer.domElement,window);
-window.addEventListener('pagehide',()=>{clearInterval(inputTimer);void party.leave();career.leave();void network.leave();library.disposeWarmup();effects.dispose();gummyEffects.dispose();ninjaEffects.dispose();setsuEffects.dispose();gauntEffects.dispose();kuonEffects.dispose();lastSunEffects.dispose();wardEffects.dispose();emperorEffects.dispose();swordStandEffects.dispose();awakeningEffects.dispose();clashEffects.dispose();manga.dispose();environment.dispose();stages.dispose();audio.dispose();musicPanel.dispose();});
+window.addEventListener('pagehide',()=>{clearInterval(inputTimer);void party.leave();career.leave();void network.leave();library.disposeWarmup();effects.dispose();gummyEffects.dispose();ninjaEffects.dispose();setsuEffects.dispose();gauntEffects.dispose();kuonEffects.dispose();lastSunEffects.dispose();wardEffects.dispose();emperorEffects.dispose();swordSpiritEffects.dispose();awakeningEffects.dispose();clashEffects.dispose();manga.dispose();environment.dispose();stages.dispose();audio.dispose();musicPanel.dispose();});
 // Read-only evidence surface for local acceptance captures; never changes simulation state.
 // The scene, renderer and camera are here for the evidence scripts: what a
 // frame actually costs is a question about programs and textures, and

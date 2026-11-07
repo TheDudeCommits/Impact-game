@@ -9,7 +9,7 @@ import { MoveStage, STAGE_LIMITS } from '../src/render/signature/MoveStage';
 import { STAGED_BY_MODULE } from '../src/render/signature/StagedMoves';
 
 const ID = 'kinu' as FighterId, ULT = KINU_MOVES.ultimate, SPECIAL = KINU_MOVES.special, LAST = ULT.contacts.length - 1;
-/** A stand-in body: her two hands, and a strike point that is the Stand's knuckle beside her. */
+/** A stand-in body: her two hands, and a strike point that is the spirit's knuckle beside her. */
 function body(id: string, patch: Partial<PlayerState> = {}): Fighter {
   const group = new THREE.Group();
   return { group, handR: new THREE.Vector3(-.3, 1.3, .4), handL: new THREE.Vector3(.3, 1.2, .4), strikePoint: (out: THREE.Vector3) => out.set(.9, 1.3, 1.6),
@@ -50,7 +50,7 @@ describe('Kinu deliberate thread effects', () => {
     } finally { h.end(); }
   });
 
-  it('runs thread from the hand she commands with to the Stand\'s fist, and throws five for the reel', () => {
+  it('runs thread from the hand she commands with to the spirit\'s fist, and throws five for the reel', () => {
     const h = setup({ action: 'light', chain: 1, actionDuration: KINU_MOVES.light.duration, actionTime: .5 }); try {
       h.fx.update(10, h.fighters, h.flights);
       // One strand of seven strokes doubled, from her right hand.
@@ -85,7 +85,7 @@ describe('Kinu deliberate thread effects', () => {
     const h = setup({ action: 'ultimate', actionTime: 2 / ULT.duration }); try {
       h.fx.handle(event(), h.fighters); h.fx.handle(event(), h.fighters);
       h.fx.update(12, h.fighters, h.flights);
-      // Eight strands of six strokes doubled, three rings of eight, her thread to the Stand, twelve fists.
+      // Eight strands of six strokes doubled, three rings of eight, her thread to the spirit, twelve fists.
       expect(h.stage.counts.bolts).toBe(96 + 24 + 14 + 24); expect(h.stage.counts.lights).toBeLessThanOrEqual(STAGE_LIMITS.lights / 2);
       h.kinu.state.actionSeq = 8;
       h.fx.update(12.02, h.fighters, h.flights); expect(h.drawn()).toBe(0);

@@ -91,7 +91,7 @@ type Family = readonly AudioCue[];
 // ---------------------------------------------------------------- the roster's blows
 
 /** What a melee blow is, for its swing and its landing. */
-type Blow = 'fist' | 'kick' | 'axe' | 'blade' | 'rubber' | 'stand' | 'beast';
+type Blow = 'fist' | 'kick' | 'axe' | 'blade' | 'rubber' | 'spirit' | 'beast';
 /** The blade each armed fighter swings. Shirokane's is a kunai; Setsu's claws
  *  are aura-sharpened nails and swing like a blade. */
 const BLADE: Partial<Record<FighterId, Family>> = {
@@ -172,7 +172,7 @@ const STAGES: Record<FighterId, readonly [Blow, Blow, Blow, Blow]> = {
   rotfalke:['blade','fist','fist','blade'],
   bonsho:['fist','fist','fist','fist'],
   murex:['fist','fist','fist','fist'],
-  kinu:['stand','stand','stand','stand'],
+  kinu:['spirit','spirit','spirit','spirit'],
   'madake':['fist','kick','fist','kick'],
   akayuri:['blade','blade','blade','blade'],
   hagure:['fist','fist','fist','fist'],
@@ -192,7 +192,7 @@ const STAGES: Record<FighterId, readonly [Blow, Blow, Blow, Blow]> = {
   strappado:['blade','kick','blade','blade'],
   unari:['blade','blade','blade','fist'],
   barrow:['fist','fist','fist','fist'],
-  sashigane:['blade','blade','blade','blade'],gosu:['stand','stand','stand','stand'],
+  sashigane:['blade','blade','blade','blade'],gosu:['spirit','spirit','spirit','spirit'],
   kusushi:['fist','fist','fist','kick'],hakushi:['fist','fist','fist','fist'],
   suzuran:['fist','fist','fist','fist'],wataame:['axe','axe','axe','axe'],bruin:['axe','axe','axe','axe'],
   senko:['kick','kick','kick','kick'],buna:['axe','axe','axe','axe'],
@@ -223,8 +223,8 @@ const STAGES: Record<FighterId, readonly [Blow, Blow, Blow, Blow]> = {
   kosho: ['kick', 'kick', 'kick', 'kick'],
   kagari: ['fist', 'fist', 'fist', 'fist'],
   ward: ['blade', 'blade', 'blade', 'blade'],
-  koko: ['stand', 'stand', 'stand', 'stand'],
-  oro: ['stand', 'stand', 'kick', 'kick'],
+  koko: ['spirit', 'spirit', 'spirit', 'spirit'],
+  oro: ['spirit', 'spirit', 'kick', 'kick'],
   nigo: ['blade', 'blade', 'blade', 'blade'],
   kuon: ['fist', 'fist', 'kick', 'fist'],
   gaunt: ['blade', 'blade', 'blade', 'blade'],
@@ -277,21 +277,21 @@ export const AIR_BLOWS: Readonly<Record<string, string>> = {
   'Shikou Palm': 'fist', 'Iron Sledge': 'axe',
   'Spindrift Jab': 'rubber', 'Whitecap Punch': 'rubber',
   'Fouette': 'kick', 'Mille-Feuille': 'kick',
-  'Rivet Breaker': 'stand', 'Gan Gan! Rush': 'stand',
-  'Kneel! Kneel!': 'stand', 'Clockwork Kick': 'kick',
+  'Rivet Breaker': 'spirit', 'Gan Gan! Rush': 'spirit',
+  'Kneel! Kneel!': 'spirit', 'Clockwork Kick': 'kick',
   // Round 4b (COMBAT): every Vol.1 fighter's air string, stage 0 included (its own blow now, never the jab's).
   'Flying Kick': 'kick', 'Sky Elbow': 'fist', 'Breakwater Slam': 'rubber', 'Emince': 'kick',
   'Flying Side Kick': 'kick', 'Snap Kick': 'kick', 'Somersault Kick': 'kick',
   // Shiden's third is the heel drop now (Rush 3's clip); 'Spinning Cut' is the name a server built before it sends.
   'Aerial Slash': 'blade', 'Falling Cut': 'blade', 'Rook\'s Heel': 'kick', 'Spinning Cut': 'kick',
   'Eagle Swoop': 'blade', 'Talon Cross': 'blade', 'Dune Leap': 'blade',
-  'Rivet Hook': 'stand', 'Falling Iron': 'stand',
+  'Rivet Hook': 'spirit', 'Falling Iron': 'spirit',
   // (Nigo's first air blow shares Gaunt's name, 'Aerial Cleave', since the clean pass: it sounds as his, below.)
   'Backhand Cleave': 'blade', 'Overhead Cleave': 'blade',
   'Rising Ember': 'fist', 'Ember Hook': 'fist', 'Falling Ember': 'fist',
   'Vaulting Lancet': 'blade', 'Lancet Sweep': 'blade', 'Lancet Drop': 'blade',
   'Sky Hex': 'fist', 'Zenith Kick': 'kick', 'Gravity Dive': 'fist',
-  'Midnight Straight': 'stand',
+  'Midnight Straight': 'spirit',
   'Aerial Cleave': 'axe', 'Rising Swing': 'axe', 'Falling Chop': 'axe',
   'Sleet Kick': 'kick', 'Snow Swipe': 'fist', 'Flurry Flip': 'kick',
 };
@@ -498,7 +498,7 @@ function blowOf(c: Ctx): Blow {
   if (bladeOf(c)) return 'blade';
   if (c.fighter === 'kosho') return 'kick';
   if (c.fighter === 'gummy') return 'rubber';
-  if (c.fighter === 'koko' || c.fighter === 'oro') return 'stand';
+  if (c.fighter === 'koko' || c.fighter === 'oro') return 'spirit';
   return 'axe';
 }
 
@@ -506,7 +506,7 @@ function blowOf(c: Ctx): Blow {
 function swing(c: Ctx, blow: Blow, time: number, weight: boolean, index: number): CueLayer[] {
   const seed = c.seed + index * 7, rate = wobble(seed, .04);
   switch (blow) {
-    case 'fist': case 'stand':
+    case 'fist': case 'spirit':
       return [onBeat(weight ? pick(FAMILY.heavy, seed) : pick(FAMILY.jab, seed, index), weight ? .5 : .44, time, 'cast', rate)];
     case 'axe':
       return [onBeat(pick(FAMILY.heavy, seed, index), .52, time, 'cast', rate)];
@@ -578,7 +578,7 @@ const last = (c: Ctx) => c.move.contacts[c.move.contacts.length - 1];
 
 /** Time stop: the reversed whoomph lands its 'DOON' on the stop, a clock
  *  ticks in the stillness (one-shots, one a second: nothing here loops, so
- *  the GAN/GILDED_PUNCH voice loop stays the move's only looped layer), a Stand's
+ *  the GAN/GILDED_PUNCH voice loop stays the move's only looped layer), a spirit's
  *  barrage bed covers barrageWindow - one continuous stretch through the
  *  glides between frozen victims (TIMESTOP) - and time resumes with a shock
  *  as the stop ends, 0.02 s before the finisher.
@@ -835,21 +835,21 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
       bed('fx-electric-bed', .2, .15, c0(c))],
   },
   koko: {
-    // Needle Finger: the Stand, and a finger shot across the room.
-    heavy: c => [{ cue: 'fx-stand', gain: .34, phase: 'cast' }, onBeat(pick(FAMILY.zip, c.seed), .44, c0(c) + .02)],
-    // Gan Gan!: the Stand's wall of fists from the first blow (or .8, where
+    // Needle Finger: the spirit, and a finger shot across the room.
+    heavy: c => [{ cue: 'fx-spirit', gain: .34, phase: 'cast' }, onBeat(pick(FAMILY.zip, c.seed), .44, c0(c) + .02)],
+    // Gan Gan!: the spirit's wall of fists from the first blow (or .8, where
     // that is later) to past the last, under the voice.
-    special: c => [{ cue: 'fx-stand', gain: .34, phase: 'cast' }, ...barrageBed(Math.min(.8, c0(c)), last(c) + .3, .36)],
+    special: c => [{ cue: 'fx-spirit', gain: .34, phase: 'cast' }, ...barrageBed(Math.min(.8, c0(c)), last(c) + .3, .36)],
     // Round 3d: the stop is the opener; the rest is the cinematic.
-    ultimate: c => [{ cue: 'fx-stand', gain: .3, phase: 'cast' }, timeStop(c)[0]],
+    ultimate: c => [{ cue: 'fx-spirit', gain: .3, phase: 'cast' }, timeStop(c)[0]],
   },
   oro: {
     // Clock-Hand Knives: a fan of three knives.
     heavy: c => [onBeat(pick(FAMILY.clockHandKnives, c.seed), .46, c0(c)), onBeat(pick(FAMILY.clockHandKnives, c.seed, 1), .34, c0(c) + .03, 'cast', 1.06)],
-    special: c => [{ cue: 'fx-stand', gain: .34, phase: 'cast' }, ...barrageBed(Math.min(.8, c0(c)), last(c) + .3, .36)],
+    special: c => [{ cue: 'fx-spirit', gain: .34, phase: 'cast' }, ...barrageBed(Math.min(.8, c0(c)), last(c) + .3, .36)],
     // MIDNIGHT: the stop is the opener (round 3d); the GILDED PUNCH, and the road
     // roller dropped out of the sky as time resumes, are the cinematic.
-    ultimate: c => [{ cue: 'fx-stand', gain: .3, phase: 'cast' }, timeStop(c)[0]],
+    ultimate: c => [{ cue: 'fx-spirit', gain: .3, phase: 'cast' }, timeStop(c)[0]],
   },
   nigo: {
     // ASHSTEP: a flash step, then the cut.
@@ -1338,7 +1338,7 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
   koko: {
     // The receipt is paid in a barrage; the inhale pulls the air in.
     llh: c => [...barrageBed(Math.max(0, c0(c) - .25), c0(c), .32), ...meleeSwings(c)],
-    llls: c => [bed('fx-wind-swirl', .3, 0, c0(c) + .1), onBeat('fx-stand', .3, .02)],
+    llls: c => [bed('fx-wind-swirl', .3, 0, c0(c) + .1), onBeat('fx-spirit', .3, .02)],
   },
   nigo: {
     // The mask's Void Ray, gathered at the mask; the NIGHTFALL's stun is a blow.
@@ -1367,7 +1367,7 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
   oro: {
     lh: c => [onBeat(pick(FAMILY.zip, c.seed), .4, c0(c)), onBeat(pick(FAMILY.snap, c.seed), .28, c0(c) + .02)],
     // HUSH is gone and behind them.
-    lllh: c => [onBeat('fx-vanish', .36, .04), onBeat('fx-stand', .3, Math.max(.06, c0(c) - .1)), ...meleeSwings(c)],
+    lllh: c => [onBeat('fx-vanish', .36, .04), onBeat('fx-spirit', .3, Math.max(.06, c0(c) - .1)), ...meleeSwings(c)],
     // The touch that freezes: a hiss of vapour.
     llls: swung(c => [onBeat('fx-steam', .4, c0(c) + .02)]),
   },
@@ -1523,7 +1523,7 @@ function meleeImpact(c: Ctx, index: number, final: boolean): CueLayer[] {
       layers.push({ cue: pick(FAMILY.snap, seed, 1), gain: .22, delay: .02, rate: wobble(seed, .08) });
       if (weight === 'finisher') layers.push({ cue: pick(FAMILY.finisher, seed), gain: .45 });
       break;
-    case 'stand':
+    case 'spirit':
       // Iron Spirit and HUSH hit harder than a man does.
       layers.push({ cue: heavy ? pick(FAMILY.hitHeavy, seed) : pick(FAMILY.hitLight, seed, index), gain: heavy ? .72 : .64, rate });
       if (!heavy) layers.push({ cue: pick(FAMILY.hitHeavy, seed), gain: .3, rate: 1.08 });
@@ -1832,8 +1832,8 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
     case 'gummy': return [...base, add('fx-gear4-inflate', .36), add('fx-poof-1', .46, .34), add('fx-poof-2', .36, .48), add('fx-gear4-bounce', .42, .62)];
     // The gold awakening, Taisei's and Ouga's: the aura catching, ki drawn up, the burst on the swap, sparks (goldAwakening).
     case 'taisei': case 'ouga': return goldAwakening(fighter);
-    // The Stand looming up behind them: its ghostly swell, and the pressure it puts on the air.
-    case 'koko': case 'oro': return [...base, add('fx-stand', .5, .1), on('fx-will', .46, swap + .06)];
+    // The spirit looming up behind them: its ghostly swell, and the pressure it puts on the air.
+    case 'koko': case 'oro': return [...base, add('fx-spirit', .5, .1), on('fx-will', .46, swap + .06)];
     // The Guardian: the chi gathering into a giant - its swirl in the mids as the ribs rise. Akagane's Perfect one
     // stands up with a weight the ground feels.
     case 'shiden': case 'shirokane': case 'tobari': return [...base, add('fx-guardian', .52, .2), held('fx-purple-charge', .3, swap, swap + .9)];
@@ -1950,7 +1950,7 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
     // WRATHFUL GUARDIAN: his power welling up, and breaking out.
     case 'jirenga': return [...base, add('fx-ki-charge-big', .34), on('fx-explosion-huge', .34, swap + .1)];
     // BLACK TIDE: the space round him cracking, and a ghostly swell.
-    case 'jinlin': return [...base, on('fx-dark-spark', .44, swap + .04), on('fx-stand', .36, swap + .1)];
+    case 'jinlin': return [...base, on('fx-dark-spark', .44, swap + .04), on('fx-spirit', .36, swap + .1)];
     // ALL-NIGHTER: one stamp of a foot.
     case 'ippon': return [...base, on('fx-land-heavy', .5, swap + .06)];
     // Gravedigger's snowflake opening under him: an implosion and a glint.

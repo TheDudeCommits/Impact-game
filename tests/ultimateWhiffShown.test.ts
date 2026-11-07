@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { MOVES } from '../src/game/moves';
 import { CombatEffects } from '../src/render/CombatEffects';
 import { KuonEffects } from '../src/render/KuonEffects';
-import { SwordStandEffects } from '../src/render/SwordStandEffects';
+import { SwordSpiritEffects } from '../src/render/SwordSpiritEffects';
 import { SIGNATURE } from '../src/render/signature/context';
 import { OPENER_FEED, WHIFF_CLEAR, whiffGone } from '../src/render/signature/ultimateClock';
 import { MangaImpact } from '../src/ui/MangaImpact';
@@ -40,7 +40,7 @@ describe('the time stop and the Domain that caught nobody clear at once', () => 
   afterEach(() => { SIGNATURE.screen = undefined; });
 
   it.each([['oro', .1], ['koko', .1], ['oro', .35]] as [FighterId, number][])('%s: the stopped world is gone with the whiff (known %s s after it)', (fighter, lag) => {
-    const scene = new THREE.Scene(), stand = new SwordStandEffects(scene), move = MOVES[fighter].ultimate;
+    const scene = new THREE.Scene(), spirit = new SwordSpiritEffects(scene), move = MOVES[fighter].ultimate;
     const s = player({ id: 'd', fighter, actionStarted: 1, actionDuration: move.duration }), fighters = new Map([['d', body(s)]]);
     SIGNATURE.localId = 'd';
     const stopAt = move.contacts[move.timeStop!.contact], whiff = stopAt + 1 / 60, known = whiff + lag;
@@ -48,14 +48,14 @@ describe('the time stop and the Domain that caught nobody clear at once', () => 
     try {
       for (let t = 0; t < 1.6; t += 1 / 60) {
         moment(s, t, whiff, known);
-        stand.update(1 + t, 1 / 60, fighters);
+        spirit.update(1 + t, 1 / 60, fighters);
         let dome = false; scene.traverse(o => { if (o.name === 'dead-stop-time-stop' && o.visible) dome = true; });
         if (t > stopAt + .02 && t < known) expect(dome || stops.at(-1)! > 0, `the stop shows at ${t.toFixed(2)} until the whiff is known`).toBe(true);
         if (dome || stops.at(-1)! > 0) shownAfter = t;
       }
       expect(shownAfter, 'gone by the whiff and a clearing').toBeLessThanOrEqual(Math.max(known, whiffGone(s)) + 1 / 60 + 1e-9);
       expect(stops.at(-1), 'the world handed back').toBe(0);
-    } finally { stand.dispose(); SIGNATURE.localId = undefined; }
+    } finally { spirit.dispose(); SIGNATURE.localId = undefined; }
   });
 
 });

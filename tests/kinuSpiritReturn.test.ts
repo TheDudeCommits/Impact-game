@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {beforeAll, expect, it} from 'vitest';
 import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
 import {Fighter} from '../src/render/Fighter';
-import {SwordStandEffects, STAND_USERS} from '../src/render/SwordStandEffects';
+import {SwordSpiritEffects, SPIRIT_CALLERS} from '../src/render/SwordSpiritEffects';
 import {KINU_REFERENCE_RETURN} from '../src/render/signature/KinuContactReference';
 import {FIGHTERS} from '../src/config';
 import {MOVES} from '../src/game/moves';
@@ -10,11 +10,11 @@ import type {FighterId, PlayerState} from '../src/game/types';
 import {base, loadRig} from './rigHarness';
 
 type ReturnState = {referenceReturn?:number; referenceFrom?:THREE.Vector3};
-type Inner = {sources:Map<FighterId, GLTF>; stands:Map<string, Fighter>; looms:Map<string, ReturnState>};
+type Inner = {sources:Map<FighterId, GLTF>; spirits:Map<string, Fighter>; looms:Map<string, ReturnState>};
 let human:GLTF, source:GLTF, opponent:GLTF;
 beforeAll(async()=>{
   [human,source,opponent]=await Promise.all([
-    loadRig(FIGHTERS.kinu.model), loadRig(STAND_USERS.kinu!.asset), loadRig(FIGHTERS.shakugo.model),
+    loadRig(FIGHTERS.kinu.model), loadRig(SPIRIT_CALLERS.kinu!.asset), loadRig(FIGHTERS.shakugo.model),
   ]);
 });
 
@@ -23,7 +23,7 @@ function fixture(){
   const owner=new Fighter(state,human),foe=new Fighter({...base('shakugo'),id:'foe',z:2,yaw:Math.PI},opponent);
   const scene=new THREE.Scene();scene.add(owner.group,foe.group);owner.prepareRush();
   owner.targetPoint=new THREE.Vector3(0,1.2,2);owner.targetDistance=2;
-  const effects=new SwordStandEffects(scene),inner=effects as unknown as Inner;
+  const effects=new SwordSpiritEffects(scene),inner=effects as unknown as Inner;
   inner.sources.set('kinu',source);
   const fighters=new Map([['owner',owner],['foe',foe]]);
   const camera=new THREE.PerspectiveCamera(46,16/9,.01,100);
@@ -32,7 +32,7 @@ function fixture(){
   const tick=(s:PlayerState)=>{
     time+=1/60;owner.update(1/60,s,true);foe.update(1/60,foe.state,true);
     effects.update(time,1/60,fighters,1,camera);
-    return inner.stands.get('owner')!;
+    return inner.spirits.get('owner')!;
   };
   for(let i=0;i<120;i++)tick(state);
   return {state,owner,effects,inner,tick,dispose(){effects.dispose();owner.dispose();foe.dispose();}};
@@ -43,14 +43,14 @@ it.each(['special','ultimate'] as const)('visible %s partner returns continuousl
   try{
     const move=MOVES.kinu[slot];
     for(let i=0;i<=Math.ceil(move.duration*60);i++)f.tick({...f.state,action:slot,actionSeq:2,actionStarted:2,actionDuration:move.duration,actionTime:Math.min(1,i/60/move.duration),confirmedAt:slot==='ultimate'?2.5:undefined});
-    let previous=f.inner.stands.get('owner')!.group.position.clone(),began=false,finished=false,maximum=0,firstDelta=Infinity;
+    let previous=f.inner.spirits.get('owner')!.group.position.clone(),began=false,finished=false,maximum=0,firstDelta=Infinity;
     for(let i=0;i<75;i++){
-      const stand=f.tick({...f.state,action:'idle',actionSeq:3,actionStarted:10});
+      const spirit=f.tick({...f.state,action:'idle',actionSeq:3,actionStarted:10});
       const returning=f.inner.looms.get('owner')!.referenceReturn!==undefined;
-      const delta=stand.group.position.distanceTo(previous);
+      const delta=spirit.group.position.distanceTo(previous);
       if(returning&&!began){began=true;firstDelta=delta;}
       if(began){maximum=Math.max(maximum,delta);if(!returning)finished=true;}
-      previous.copy(stand.group.position);
+      previous.copy(spirit.group.position);
     }
     expect(began,'actual command-to-idle transition should start the return').toBe(true);
     expect(firstDelta,'the first idle frame retains the previous displayed root').toBeLessThan(1e-6);

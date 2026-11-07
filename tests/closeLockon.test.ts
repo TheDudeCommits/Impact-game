@@ -94,9 +94,9 @@ describe('the reticle rides above the head', () => {
   });
 });
 
-describe('a Stand looming over its user is framed with them', () => {
-  it('holds the Stand\'s crown under the health bars as well as the user\'s, at fighting range and at arm\'s length', () => {
-    // STANDS (round 3d): a 1.5x Stand 0.55 m behind its user and 0.6 m to
+describe('a spirit looming over its user is framed with them', () => {
+  it('holds the spirit\'s crown under the health bars as well as the user\'s, at fighting range and at arm\'s length', () => {
+    // SPIRITS (round 3d): a 1.5x spirit 0.55 m behind its user and 0.6 m to
     // their left, its neck 2.4 m up (loomRegistry), its bowed head over that.
     for (const d of [4.2, 1.6]) {
       const camera = new THREE.PerspectiveCamera(50, 16 / 9, .1, 200), follow = new FollowCamera(camera);
@@ -105,10 +105,10 @@ describe('a Stand looming over its user is framed with them', () => {
       setLoomTop('me', 2.4);
       let input = 0;
       for (let i = 0; i < 300; i++) { follow.update(1 / 60, me, input, 0, [], 0, foe, true); input = follow.inputYaw; camera.updateMatrixWorld(); }
-      // The Stand's crown, where it looms: behind and left of a user facing +z
+      // The spirit's crown, where it looms: behind and left of a user facing +z
       // (+x is their left: the lens is over their right shoulder, at -x).
       const crown = new THREE.Vector3(.6, 2.4 + .4, -.55).project(camera);
-      expect(crown.y, `${d} m: the Stand's crown under the bars`).toBeLessThan(.64);
+      expect(crown.y, `${d} m: the spirit's crown under the bars`).toBeLessThan(.64);
       expect(Math.abs(crown.x)).toBeLessThan(1);
       expect(me.group.position.clone().setY(1.95).project(camera).y, 'the user\'s crown').toBeLessThan(.64);
       // The soles are framed over the key strip (MY_BOTTOM, -0.8), the root a

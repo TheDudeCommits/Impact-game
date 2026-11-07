@@ -277,10 +277,10 @@ describe('the transformation table', () => {
     for (const id of roster) {
       const look = AWAKENINGS[id];
       const swapped = meshNames(FIGHTERS[id].model).filter(n => n.startsWith('awaken-on')).length;
-      // A Stand is the exception: KoKo steps out and SwordStandEffects puts
+      // A spirit is the exception: KoKo steps out and SwordSpiritEffects puts
       // Iron Spirit where he was standing, so the body is already in the match.
       expect(FIGHTERS[id].formModel !== undefined || GUARDIAN_USERS.includes(id) || swapped > 0 || look.hair !== undefined
-        || look.kind === 'stand' || look.kind === 'aura' && look.aura.length===2, `${id} transforms into nothing`).toBe(true);
+        || look.kind === 'spirit' || look.kind === 'aura' && look.aura.length===2, `${id} transforms into nothing`).toBe(true);
     }
     if (!ORIGINALS.kosho) expect(meshNames(FIGHTERS.kosho.model).filter(n => n.startsWith('awaken-on')).length).toBe(2);
     if (!ORIGINALS.kosho) expect(meshNames(FIGHTERS.kosho.model).filter(n => n.startsWith('awaken-off')).length).toBe(2);

@@ -53,10 +53,10 @@ export interface AwakeningDefinition {
    *
    *  form    a replacement body, shipped as the fighter's formModel
    *  summon  a shell worn over them, shipped the same way but tinted
-   *  stand   their Stand looms over them for the window (round 3d: it used
-   *          to take over from them); SwordStandEffects owns the model
+   *  spirit  their spirit looms over them for the window (round 3d: it used
+   *          to take over from them); SwordSpiritEffects owns the model
    *  aura    their own body, plus the aura every transformation burns */
-  kind: 'form' | 'summon' | 'stand' | 'aura';
+  kind: 'form' | 'summon' | 'spirit' | 'aura';
   /** Gold-hair treatment, for Taisei and Ouga. Client-side. */
   hair?: number;
   /** The hair as it is before the transformation, where the body is drawn in the transformed one: the hair's own
@@ -73,7 +73,7 @@ export interface AwakeningDefinition {
   auraGlow?: number;
   /** How much bigger the replacement body is than the fighter. Full Swell
    *  inflates; the runtime normalises every model to one height, which made the
-   *  awakened form exactly as big as the base one. For a Stand, how much
+   *  awakened form exactly as big as the base one. For a spirit, how much
    *  bigger the one looming over its awakened user is than the one summoned
    *  for a swing. Client-side. */
   formScale?: number;
@@ -115,7 +115,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   bonsho:define({name:'GREAT BELL',kind:'aura',aura:[16768893,15313723],auraGlow:.08,clips:['GREAT BELL'],swapAt:.585}),
   yodaka:define({name:'BURNING STAR',kind:'aura',aura:[0xffb441,0xe84b26],auraGlow:.08,clips:['BURNING STAR'],swapAt:.9*73/108}),
   murex:define({name:'UNSTRAPPED',kind:'aura',aura:[16752955,8993741],auraGlow:.09,clips:['UNSTRAPPED'],swapAt:.576}),
-  kinu:define({name:'CUT LOOSE',kind:'stand',aura:[8969118,7330525],auraGlow:.08,clips:['CUT LOOSE'],swapAt:.576,formScale:1}),
+  kinu:define({name:'CUT LOOSE',kind:'spirit',aura:[8969118,7330525],auraGlow:.08,clips:['CUT LOOSE'],swapAt:.576,formScale:1}),
   'madake':define({name:'EVERGREEN',kind:'form',aura:[0x9dffc8,0x1f8a4c],auraGlow:.06,clips:['EVERGREEN'],swapAt:.558}),
   akayuri:define({name:'SCARLET BLOOM',kind:'form',aura:[0xdd2949,0x220b20],auraGlow:.04,clips:['SCARLET BLOOM'],swapAt:.513}),
   hagure:define({name:'MOONLESS',kind:'form',aura:[0x8e87ff,0x2696ec],auraGlow:.08,clips:['MOONLESS'],swapAt:.549}),
@@ -135,7 +135,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   unari:define({"name":"OPEN SEASON","kind":"aura","aura":[15692487,16767474],"auraGlow":0.08,"clips":["Magicians Malice"],"swapAt":0.62}),
   barrow:define({name:"BOTTOMLESS",kind:'aura',aura:[0xb074e5,0x89c9e0],auraGlow:.09,clips:['Emperor Ambition'],swapAt:.55}),
   sashigane:define({name:'ZERO TOLERANCE',kind:'aura',aura:[0xc8e998,0x78c6b0],auraGlow:.08,clips:['Overtime Release'],swapAt:.378}),
-  gosu:define({"name":"MENDED IN GOLD","kind":"stand","aura":[15763125,8445170],"auraGlow":0.1,"formScale":1.15,"clips":["MENDED IN GOLD"],"swapAt":0.62}),
+  gosu:define({"name":"MENDED IN GOLD","kind":"spirit","aura":[15763125,8445170],"auraGlow":0.1,"formScale":1.15,"clips":["MENDED IN GOLD"],"swapAt":0.62}),
   kusushi:define({"name":"GRAND CHAMPION","kind":"form","aura":[15466487,6549427],"auraGlow":0.1,"clips":["GRAND CHAMPION"],"swapAt":0.504}),
   hakushi:define({"name":"THE OLD LION","kind":"form","aura":[10075800,16301691],"auraGlow":0.08,"clips":["THE OLD LION"],"swapAt":0.576}),
   suzuran:define({name:'YOIN',kind:'aura',aura:[0xdbeeff,0xbaa9f0],auraGlow:.12,clips:['Twin Lion Release'],swapAt:.63}),
@@ -201,7 +201,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   shirokane: define({ name: 'HARVEST WARDEN', kind: 'summon', aura: [0x6ad4ff, 0x123f7a],
     formScale: 4.2, formTint: 0x2f8ae0, formOpacity: .42,
     clips: ['Sickle Bolt', 'Void Eye: Sickle Bolt', '_Idle'] }),
-  koko: define({ name: 'HUSH', kind: 'stand', aura: [0xd0a6ff, 0x2a1440], formScale: 1.5,
+  koko: define({ name: 'HUSH', kind: 'spirit', aura: [0xd0a6ff, 0x2a1440], formScale: 1.5,
     clips: ['HUSH', '_Idle'] }),
   // Round 16. Kagari burns: the KAGUTSUCHI is fire over his own body, so the
   // aura carries the flame while his hair retains its natural color.
@@ -212,8 +212,8 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   kuon: define({ name: 'TENGAN', kind: 'aura', aura: [0x9fe8ff, 0x2a5fd0],
     clips: ['_Idle'] }),
   // LORD ORO the same: he fights on, and HUSH looms over him in gold - the
-  // same shape as KoKo's Stand, drawn by the same effects class.
-  oro: define({ name: 'MIDNIGHT', kind: 'stand', aura: [0xffe27a, 0x8a5a10], formScale: 1.5,
+  // same shape as KoKo's spirit, drawn by the same effects class.
+  oro: define({ name: 'MIDNIGHT', kind: 'spirit', aura: [0xffe27a, 0x8a5a10], formScale: 1.5,
     clips: ['MIDNIGHT', '_Idle'] }),
   // The HOUND ARMOR: a body of its own, bound to his skeleton so it
   // fights his clips (scripts/build_gaunt.py).
@@ -297,7 +297,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
  *  The spirit fighters replace their ultimates; Kurobi has his own move names
  *  and keeps his native attack timing. HUSH *is* the awakening,
  *  so awakened it stops being two hits with a pause in the middle and becomes
- *  what the scene is - time stops, the Stand empties a barrage into someone
+ *  what the scene is - time stops, the spirit empties a barrage into someone
  *  who cannot move, and the damage lands when the clock starts again. LORD ORO's
  *  is the mirror of KoKo's, with the steamroller as the finisher. Hawser's
  *  YUGE throws a kit that is all its own (COLOSSUS, below). Everyone

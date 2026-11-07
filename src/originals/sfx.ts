@@ -61,21 +61,21 @@ export const originalAreaHit = (fighter: string): readonly (readonly [cue: strin
 export const originalAwakening = (fighter: string): readonly (readonly [cue: string, gain: number])[] => ORIGINAL_SFX_ON ? AWAKEN_ROWS[fighter] ?? [] : [];
 
 /** Where a shared cue now holds another original's sound, a slot plays its own in its place (MAP.md section 3, "swaps in a
- *  slot's own rows"). `fx-stand` is a neutral spirit; KoKo's is the iron one and Lord ORO's the gilded one. `fx-timestop` and
+ *  slot's own rows"). `fx-spirit` is a neutral spirit; KoKo's is the iron one and Lord ORO's the gilded one. `fx-timestop` and
  *  `fx-barrage` are KoKo's Hush and GAN GAN barrage; Lord ORO has his own hour and NOROMA barrage (same beats). */
 const HAND_SWAPS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  koko: { 'fx-stand': 'fx-sig-koko-iron-lullaby' },
-  oro: { 'fx-stand': 'fx-sig-lord-oro-gilded-spirit', 'fx-timestop': 'fx-sig-lord-oro-the-hour', 'fx-barrage': 'fx-sig-lord-oro-noroma-barrage' },
+  koko: { 'fx-spirit': 'fx-sig-koko-iron-lullaby' },
+  oro: { 'fx-spirit': 'fx-sig-lord-oro-gilded-spirit', 'fx-timestop': 'fx-sig-lord-oro-the-hour', 'fx-barrage': 'fx-sig-lord-oro-noroma-barrage' },
   tsubute: { 'fx-stretch-1': 'fx-sig-tsubute-pouch-draw-1', 'fx-stretch-2': 'fx-sig-tsubute-pouch-draw-2', 'fx-snap-1': 'fx-sig-tsubute-stone-loose-1', 'fx-snap-2': 'fx-sig-tsubute-stone-loose-2' },
   // The fighter quality round (3 November, evening; qa-b's captures): two of the set's signatures sat under cues main shares.
   // `fx-shrike-bolt-hit` is Shirokane's Storm Cutter hit: Shiden's heavy, special and ultimate hits (and Setsu's) played it, so theirs
   // is the set's own lightning strike. `fx-guardian` is Shiden's RAIJIN: Shirokane's, Tobari's and Akagane's awakenings played it
-  // under their own, so theirs is the neutral spirit rising (`fx-stand`, energy/spirit-rise), Shiden alone keeping his.
+  // under their own, so theirs is the neutral spirit rising (`fx-spirit`, energy/spirit-rise), Shiden alone keeping his.
   shiden: { 'fx-shrike-bolt-hit': 'fx-lightning' },
   setsu: { 'fx-shrike-bolt-hit': 'fx-lightning' },
-  shirokane: { 'fx-guardian': 'fx-stand' },
-  tobari: { 'fx-guardian': 'fx-stand' },
-  akagane: { 'fx-guardian': 'fx-stand' },
+  shirokane: { 'fx-guardian': 'fx-spirit' },
+  tobari: { 'fx-guardian': 'fx-spirit' },
+  akagane: { 'fx-guardian': 'fx-spirit' },
 };
 function rowSwaps() {
   const everywhere: Record<string, Record<string, string>> = {}, inSlot: Record<string, Record<string, Record<string, string>>> = {};

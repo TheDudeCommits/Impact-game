@@ -7,9 +7,9 @@ import { ORIGINALS } from './roster';
 
 type Rgb = readonly [number, number, number];
 interface CompanionLook {
-  /** The Stand's manifestation shell (STAND_SHELL): body colour, burning edge, ink, and its print's shade and light. */
+  /** The spirit's manifestation shell (SPIRIT_SHELL): body colour, burning edge, ink, and its print's shade and light. */
   shell: { body: Rgb; rim: number; ink: number; shade: Rgb; light: Rgb; levels?: readonly [number, number]; glow?: RegExp };
-  /** The light the companion throws (STAND_GLOW). */
+  /** The light the companion throws (SPIRIT_GLOW). */
   glow: Rgb;
   stage: Record<string, { core: Rgb; main: Rgb; rim: Rgb; light: Rgb; element: StageLook['element']; shell: number; edge: number }>;
   /** Its strike sparks per slot (vfx/palette.ts TABLE). */
@@ -44,14 +44,14 @@ const PLACEMENT: Partial<Record<FighterId, { scale: number; position: [number, n
   gosu: { scale: 1.85 / 1.95, position: [.0099 * 1.85 / 1.95, 0, -.1739 * 1.85 / 1.95] },
 };
 export function companionPlacement(state: { id?: string; fighter: FighterId }) {
-  return state.id?.endsWith('-stand') && own(state.fighter) ? PLACEMENT[state.fighter] : undefined;
+  return state.id?.endsWith('-spirit') && own(state.fighter) ? PLACEMENT[state.fighter] : undefined;
 }
 
-/** The slots whose original fights with a companion of its own (roster.ts `stand`) and has its own colours here. */
-const own = (id: FighterId) => !!ORIGINALS[id]?.stand && !!COMPANION_LOOKS[id];
+/** The slots whose original fights with a companion of its own (roster.ts `companion`) and has its own colours here. */
+const own = (id: FighterId) => !!ORIGINALS[id]?.companion && !!COMPANION_LOOKS[id];
 const colour = ([r, g, b]: Rgb) => new THREE.Color(r, g, b);
 
-/** STAND_SHELL: the companion's shell in its own colours (applyOriginalStandShells calls this). */
+/** SPIRIT_SHELL: the companion's shell in its own colours (applyOriginalSpiritShells calls this). */
 export function applyCompanionShells<T extends { body: THREE.Color; rim: number; ink: number; print: GhostPrint }>(shells: Partial<Record<FighterId, T>>) {
   for (const id of Object.keys(COMPANION_LOOKS) as FighterId[]) {
     const shell = shells[id], look = COMPANION_LOOKS[id]!.shell;
@@ -62,7 +62,7 @@ export function applyCompanionShells<T extends { body: THREE.Color; rim: number;
   return shells;
 }
 
-/** STAND_GLOW: the light the companion throws. */
+/** SPIRIT_GLOW: the light the companion throws. */
 export function applyCompanionGlows(glows: Partial<Record<FighterId, THREE.Color>>) {
   for (const id of Object.keys(COMPANION_LOOKS) as FighterId[]) if (own(id) && glows[id]) glows[id] = colour(COMPANION_LOOKS[id]!.glow);
   return glows;

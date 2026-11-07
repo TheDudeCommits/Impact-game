@@ -515,7 +515,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     special:{name:'Singularity',duration:1.7,contacts:[.8],damage:126,range:38,radius:1.1,stamina:30,cooldown:4.5,stun:1.15,knockback:10,guardBreak:true,style:'beam',outcome:'launch'},
   },
   oro:{
-    // Round 3e (VARIETY): HUSH is the quicker Stand - LORD ORO's fist a hair
+    // Round 3e (VARIETY): HUSH is the quicker spirit - LORD ORO's fist a hair
     // ahead of KoKo's and lighter, and a string that spins them round.
     light:{name:'Gilded Punch',duration:.42,contacts:[.15],damage:18,range:2.2,radius:.5,stamina:9,cooldown:.41,stun:.23,knockback:3,lunge:2,style:'melee'},
     // A fan of knives, thrown. Round 3e: they pin the body where it stands,
@@ -800,7 +800,7 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // half of that, and the shot is held over the blows for the rest.)
   kenzo:{name:'Dust Sea Sundered',duration:2.3,contacts:[.45,1.42,1.5,1.58],schedule:[40,62,62,203],damage:40,finisherDamage:255,range:3.7,radius:1.7,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,lunge:5,guardBreak:true,style:'melee',spacing:2.2,confirm:WHIFF},
   // Round 3: time stops where he stands (no step in: `lunge` 0), and he and
-  // the Stand cross the stopped field - the GAN spread over every opponent
+  // the spirit cross the stopped field - the GAN spread over every opponent
   // it caught, a barrage each (src/game/timeStopBarrage.ts) - and the
   // finisher lands on the primary target as the clock starts again, two
   // hundredths after the stop ends, with every other victim released in the
@@ -1869,7 +1869,7 @@ export const JUMP_HANG_SPEED = 1.8, JUMP_HANG_GRAVITY = 1;
  *  - 3.0-3.1x, the bulk of the roster: Taisei and Ouga, Nigo (ASHSTEP), Vesper,
  *    Tobari a touch over; Kenzo, Kagari, Sorrel, Kuon, LORD ORO, Wuming, Emperor Jinlin,
  *    Gohaku, Ippon at three; Ward, Dorado a touch under;
- *  - 2.8x, the stocky: KoKo, who stands and lets the Stand move;
+ *  - 2.8x, the stocky: KoKo, who stands and lets the spirit move;
  *  - toward 2.5x, the big and the heavy, who do not leap about: Gorai (a giant)
  *    and Haldor 2.5, Gaunt (armour and a slab of iron) and Jirenga 2.6, Imago
  *    and Akagane 2.7, Magatsu and Shiun 2.75 - the imposing ones walk. */

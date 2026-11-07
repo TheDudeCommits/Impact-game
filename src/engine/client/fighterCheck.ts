@@ -5,7 +5,7 @@ import type { ActionKind, AttackSlot, CombatEvent, FighterId } from '../../game/
 import { IDLE_PROFILES } from '../../render/idle/profile';
 import { SPRING_PROFILES, isDynamicBoneName } from '../../render/SecondaryMotion';
 import {
-  AIR_STRING_CLIPS, AWAKEN_FORM_TAKE, AWAKEN_TAKE, FORM_AIR_STRING_CLIPS, FORM_NAMED_RUSH, Fighter, OWN_BODY_ULTIMATE, SLOT_CLIP_BEFORE, STAND_COMMAND, ULTIMATE_CLIPS,
+  AIR_STRING_CLIPS, AWAKEN_FORM_TAKE, AWAKEN_TAKE, FORM_AIR_STRING_CLIPS, FORM_NAMED_RUSH, Fighter, OWN_BODY_ULTIMATE, SLOT_CLIP_BEFORE, SPIRIT_COMMAND, ULTIMATE_CLIPS,
   VICTORY, VICTORY_ENTRY,
 } from '../../render/Fighter';
 import { TAISEI_MELEE_CONTACTS, TAISEI_TRANSMISSION } from '../../render/taiseiMeleeContact';
@@ -182,7 +182,7 @@ export function clipFor(id: FighterId, clips: readonly BodyClip[], action: Actio
     const clip = opener ? find([opener.clip]) : undefined;
     if (clip) return { clip, step: 'opener' };
   }
-  const command = action === 'light' && !form ? STAND_COMMAND[id] : undefined;
+  const command = action === 'light' && !form ? SPIRIT_COMMAND[id] : undefined;
   if (command) { const clip = find([command]); if (clip) return { clip, step: 'command' }; }
   // SUNRISE floats (gummy/sunrise.ts): a form with the float's clip stands, travels and blocks in the air.
   if (form && (action === 'idle' || action === 'run' || action === 'guard') && clips.some(clip => clip.name === SUNRISE_FLOAT.idle)) {
@@ -281,7 +281,7 @@ function clipProblems(id: FighterId, body: Body, form: boolean, formClips?: read
   const opener = form ? ULTIMATE_CLIPS[id]?.formOpener : ULTIMATE_CLIPS[id]?.opener;
   if (opener && !findClipIn(clips, [opener.clip]) && !(!form && formThrowsUltimate(id) && formClips?.some(clip => clipKey(clip.name).includes(clipKey(opener.clip)))))
     add(`the ultimate's opener names "${opener.clip}", which no clip answers to`);
-  const command = form ? undefined : STAND_COMMAND[id];
+  const command = form ? undefined : SPIRIT_COMMAND[id];
   if (command && !findClipIn(clips, [command])) add(`the spirit command names "${command}", which no clip answers to`);
   const take = form ? AWAKEN_FORM_TAKE[id] : AWAKEN_TAKE[id];
   if (take && !findClipIn(clips, [take])) add(`the awakening take names "${take}", which no clip answers to`);

@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import type { CombatEvent } from '../src/game/types';
 import { CombatEffects } from '../src/render/CombatEffects';
-import { SwordStandEffects } from '../src/render/SwordStandEffects';
+import { SwordSpiritEffects } from '../src/render/SwordSpiritEffects';
 
 const event = (patch: Partial<CombatEvent>): CombatEvent => ({ id: 1, kind: 'cast', serverTime: 10, actorId: 'swordsman', fighter: 'strix', slot: 'special', origin: { x: 0, y: 1.05, z: 0 }, endpoint: { x: 0, y: 1.05, z: 32 }, ...patch });
 describe('Strix authoritative flying cut', () => {
   it('does not throw a phantom wave during a cancelled wind-up or substitute a generic orb', () => {
-    const scene = new THREE.Scene(), effects = new CombatEffects(scene), swords = new SwordStandEffects(scene);
+    const scene = new THREE.Scene(), effects = new CombatEffects(scene), swords = new SwordSpiritEffects(scene);
     try {
       effects.handle([event({})]); swords.handle([event({})]);
       swords.update(11.5, 1 / 60, new Map());
@@ -16,7 +16,7 @@ describe('Strix authoritative flying cut', () => {
     } finally { swords.dispose(); effects.dispose(); }
   });
   it('follows the actual release aim and freezes at a confirmed collision, then returns its pooled planes', () => {
-    const scene = new THREE.Scene(), swords = new SwordStandEffects(scene);
+    const scene = new THREE.Scene(), swords = new SwordSpiritEffects(scene);
     try {
       swords.handle([event({ kind: 'release', id: 2, serverTime: 11.4, origin: { x: 2, y: 1.05, z: 3 }, endpoint: { x: 34, y: 1.05, z: 3 } })]);
       swords.update(11.5, 1 / 60, new Map());

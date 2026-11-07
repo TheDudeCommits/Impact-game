@@ -150,18 +150,18 @@ export function soundtrackQueue<T extends { id: string; url: string }>(tracks: R
   return [...ahead, ...queue.filter(track => !seen.has(track.url) && !!seen.add(track.url))];
 }
 
-export function applyOriginalStands<T extends { asset: string; punches?: string; fistMesh?: string }>(users: Partial<Record<FighterId, T>>) {
+export function applyOriginalSpirits<T extends { asset: string; punches?: string; fistMesh?: string }>(users: Partial<Record<FighterId, T>>) {
   for (const [id, original] of Object.entries(ORIGINALS) as [FighterId, NonNullable<(typeof ORIGINALS)[FighterId]>][]) {
     const user = users[id];
-    if (!user || !original.stand) continue;
-    users[id] = { ...user, asset: original.stand.model, punches: original.stand.punches, fistMesh: undefined };
+    if (!user || !original.companion) continue;
+    users[id] = { ...user, asset: original.companion.model, punches: original.companion.punches, fistMesh: undefined };
   }
 }
 
-export function applyOriginalStandShells<T extends { print: { glow?: RegExp; glowUv?: readonly number[] } }>(shells: Partial<Record<FighterId, T>>) {
+export function applyOriginalSpiritShells<T extends { print: { glow?: RegExp; glowUv?: readonly number[] } }>(shells: Partial<Record<FighterId, T>>) {
   for (const id of Object.keys(ORIGINALS) as FighterId[]) {
     const shell = shells[id];
-    if (!shell || !ORIGINALS[id]!.stand) continue;
+    if (!shell || !ORIGINALS[id]!.companion) continue;
     shells[id] = { ...shell, print: { ...shell.print, glow: undefined, glowUv: undefined } };
   }
 }

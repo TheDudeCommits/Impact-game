@@ -49,7 +49,7 @@ export interface OriginalFighter {
   knife?: string;
   sculpture?: string;
   spirit?: string;
-  stand?: { model: string; punches?: string };
+  companion?: { model: string; punches?: string };
   shop?: Record<string, { name: string; blurb: string; glyph?: string } | null>;
   hiddenNames?: Record<string, string>;
   /** Every other name the fighter's moves are known by in the tables (rush stages, air string, enders, the awakened
@@ -272,7 +272,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     moves: ['Iron Straight', 'Needle Finger', 'GAN GAN Barrage', 'Iron Lullaby: Hush'],
     shortMoves: ['IRON STRAIGHT', 'NEEDLE FINGER', 'GAN GAN', 'HUSH'],
     awakening: 'HUSH',
-    impactWord: 'ガァンッ', stand: { model: F + 'koko-stand-tr1.glb', punches: F + 'koko-stand-fanim1.glb' },
+    impactWord: 'ガァンッ', companion: { model: F + 'koko-spirit-tr1.glb', punches: F + 'koko-spirit-fanim1.glb' },
     coat: { thigh: .13, shin: .14, cone: 20 }, model: F + 'koko-tr1.glb', rushModel: F + 'koko-rush1.glb', extraModels: [F + 'koko-enders1.glb'],
     portrait: F + 'koko-portrait.png', idleModel: F + 'koko-idle1.glb',
     names: {
@@ -289,7 +289,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     moves: ['Gilded Punch', 'Clock-Hand Knives', 'NOROMA NOROMA Barrage', 'MIDNIGHT: Death Knell'],
     shortMoves: ['GILDED PUNCH', 'CLOCK-HAND KNIVES', 'NOROMA NOROMA', 'MIDNIGHT'],
     awakening: 'MIDNIGHT',
-    impactWord: 'のろまッ', knife: F + 'oro-knife1.glb', stand: { model: F + 'oro-stand-tr1.glb', punches: F + 'oro-stand-fanim1.glb' },
+    impactWord: 'のろまッ', knife: F + 'oro-knife1.glb', companion: { model: F + 'oro-spirit-tr1.glb', punches: F + 'oro-spirit-fanim1.glb' },
     model: F + 'oro-tr1.glb', extraModels: [F + 'oro-enders1.glb', F + 'oro-enders2.glb', F + 'oro-tr1-area1.glb'], // remake-areas: his Knife Rain cast (src/originals/areaCasts.ts)
     portrait: F + 'oro-portrait.png', idleModel: F + 'oro-idleb1.glb',
     names: {

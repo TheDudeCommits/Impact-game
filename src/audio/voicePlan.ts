@@ -47,7 +47,7 @@ interface VoiceKit {
   heavy?: Rationed;
   /** A special with no named callout. */
   special?: Rationed;
-  /** A Stand's barrage cry, looped across the special's blows and across the
+  /** A spirit's barrage cry, looped across the special's blows and across the
    *  time-stop ultimate's barrageWindow. */
   barrage?: AudioCue;
   /** Said as the ultimate's finisher lands, after the barrage; `lands` is how
@@ -232,7 +232,7 @@ const KITS: Record<FighterId, VoiceKit> = {
   kuon: { calls: { heavy: 'kuon-ao', special: 'kuon-violet', ultimate: 'kuon-boundless' }, efforts: ['vo-kuon-ha', 'vo-kuon-ya', 'vo-kuon-fu'],
     enders: { lllh: { cues: ['vo-kuon-ya'], chance: .5 }, airSpecial: { cues: ['vo-kuon-ha', 'vo-kuon-ya'], chance: .6 } } },
   // The two spirit fighters' lights are their battle cries, rationed as efforts;
-  // their specials and ultimates are scheduled by stand().
+  // their specials and ultimates are scheduled by spiritBarrage().
   koko: { calls: { heavy: 'vo-koko-needle-finger', special: 'koko-star', ultimate: 'vo-koko-the-hour' },
     efforts: ['vo-koko-ora-1', 'vo-koko-ora-2', 'vo-koko-ora-4', 'vo-koko-fun'],
     barrage: 'vo-koko-ora-barrage', finisher: { cue: 'vo-koko-gaaan', lands: .15 },
@@ -655,7 +655,7 @@ export function planVoice(event: CombatEvent, awakened = false, scene?: VoiceSce
   if (event.branch) { const ender = comboMove(fighter, event.branch, awakened); return ender ? rationed(event, kit.enders?.[event.branch], slot, ender) : []; }
   const move = moveFor(fighter, slot, awakened);
   if (slot === 'area') { const cue = move.area?.voice as AudioCue | undefined; return cue ? [voice(cue, .95, PRIORITY.area)] : []; }
-  if (kit.barrage && (slot === 'special' || slot === 'ultimate')) return stand(slot, move, kit);
+  if (kit.barrage && (slot === 'special' || slot === 'ultimate')) return spiritBarrage(slot, move, kit);
   const swapped = awakened ? FORM_CALLS[fighter]?.[slot] : undefined;
   const call = swapped ?? kit.calls[slot];
   if (!call) return rationed(event, slot === 'heavy' ? kit.heavy : slot === 'special' ? kit.special : undefined, slot, move);
@@ -684,9 +684,9 @@ function cinematicStart(move: MoveDefinition) {
  *  and by then the call made at the cast has been said (one man cannot say
  *  two things at once, and a line planned over one still being spoken cuts
  *  it). A line that must start sooner than that blow - Grand Tide's,
- *  whose cinematic is one blow - is laid out from the confirm. A Stand
+ *  whose cinematic is one blow - is laid out from the confirm. A spirit
  *  user's cinematic is its barrage: the GAN/GILDED_PUNCH loop across barrageWindow
- *  and the finisher's line after it (stand). Seconds on the move's own
+ *  and the finisher's line after it (spiritBarrage). Seconds on the move's own
  *  timeline, moved onto the event's: the confirm is `castAge` into the move,
  *  the release is its contact's time. */
 function cinematicVoice(event: CombatEvent, fighter: FighterId, awakened: boolean): CueLayer[] {
@@ -698,7 +698,7 @@ function cinematicVoice(event: CombatEvent, fighter: FighterId, awakened: boolea
   if (event.kind === 'confirm') { if (!kit.cinematic?.fromConfirm) return []; at = event.castAge ?? move.contacts[0]; }
   else { if (event.contactIndex !== first || kit.cinematic?.fromConfirm) return []; at = move.contacts[first]; }
   const priority = PRIORITY.ultimate, blow = move.contacts[move.contacts.length - 1];
-  if (kit.barrage) return shift(standCinematic(move, kit), at);
+  if (kit.barrage) return shift(spiritCinematic(move, kit), at);
   const line = kit.cinematic;
   if (!line) return [];
   return shift([voice(line.cue, .9, priority, Math.max(at, blow - line.lands))], at);
@@ -788,10 +788,10 @@ const BARRAGE_TAIL = .2;
  *  to the barrage) from its first blow through its last, and nothing may
  *  push it late: the call is cut to end as the barrage starts. The special's
  *  loop covers its blows but waits for the call to finish. */
-function stand(slot: 'special' | 'ultimate', move: MoveDefinition, kit: VoiceKit): CueLayer[] {
+function spiritBarrage(slot: 'special' | 'ultimate', move: MoveDefinition, kit: VoiceKit): CueLayer[] {
   const call = kit.calls[slot], loop = kit.barrage!, priority = PRIORITY[slot];
   // Round 3d (ULTS): a hit-confirm time stop's call goes out with the cast;
-  // its barrage and finisher's line are its cinematic (standCinematic), said
+  // its barrage and finisher's line are its cinematic (spiritCinematic), said
   // only when the stop catches somebody.
   if (slot === 'ultimate' && move.confirm) {
     const window = barrageWindow(move);
@@ -823,7 +823,7 @@ function stand(slot: 'special' | 'ultimate', move: MoveDefinition, kit: VoiceKit
 
 /** Round 3d (ULTS): a spirit fighter's time stop, inside it - the loop across
  *  barrageWindow and the finisher's line after it - on the move's timeline. */
-function standCinematic(move: MoveDefinition, kit: VoiceKit): CueLayer[] {
+function spiritCinematic(move: MoveDefinition, kit: VoiceKit): CueLayer[] {
   const window = barrageWindow(move), loop = kit.barrage!, priority = PRIORITY.ultimate;
   if (!window) return [];
   const start = Math.max(0, window.start - BARRAGE_LEAD), end = window.end + BARRAGE_TAIL;

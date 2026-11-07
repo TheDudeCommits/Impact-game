@@ -49,7 +49,7 @@ import { disposeSkeletons, shareSkeletons } from './sharedSkeletons';
 import { releaseTextures } from './sharedTextures';
 import { FIGHTERS } from '../config';
 import { originalBody, shownFighters } from '../originals/launch';
-import { companionPlacement } from '../originals/standLooks';
+import { companionPlacement } from '../originals/companionLooks';
 import { stanceSize } from '../originals/stanceSize';
 import { coatFlownWhileDown, coatFlownInKick } from '../originals/apply';
 import { originalAuthoredKick } from '../originals/authoredKicks';
@@ -601,10 +601,10 @@ const TUCK_AT=.6,TUCK_EASE=.07;
 /** Round 4b (COMBAT): an attack's eased turn (Fighter.attackTurn): none under ATTACK_TURN_MIN radians, otherwise as
  *  long as the turn takes at ATTACK_TURN_RATE rad/s, held between three and five sixtieths of a second. */
 const ATTACK_TURN_MIN=.12,ATTACK_TURN_RATE=13,ATTACK_TURN_FRAMES=[3,5] as const;
-/** Round 4b (FANIM): the spirit users' light string is thrown by their spirit (SwordStandEffects' STAND_USERS `string`),
- *  and they command it - KoKo pointing at his victim, LORD ORO with his arms folded (scripts/fanim/stands.py,
+/** Round 4b (FANIM): the spirit users' light string is thrown by their spirit (SwordSpiritEffects' SPIRIT_CALLERS `string`),
+ *  and they command it - KoKo pointing at his victim, LORD ORO with his arms folded (a fanim script since retired,
  *  <id>-fanim1.glb). Not awakened: their looming spirit strikes with their own blows then. */
-const STAND_COMMAND:Partial<Record<FighterId,string>>={gosu:'Gosu Command',koko:'Stand Command',oro:'Stand Command'};
+const SPIRIT_COMMAND:Partial<Record<FighterId,string>>={gosu:'Gosu Command',koko:'Spirit Command',oro:'Spirit Command'};
 const clipRoughness=new WeakMap<THREE.AnimationClip,number>();
 /** Fighters whose hair is already pale. The crown tint only reaches the dark
  *  vertices of a crown - black hair goes gold, a face stays a face - which on
@@ -1482,7 +1482,7 @@ type Cadence={step:number;speed:number;steps:number;duration:number;phase?:numbe
 const CADENCE=locomotion as Partial<Record<string,Partial<Record<'run'|'walk'|'dash',Cadence>>>>;
 const clean=clipKey;
 /** The clip tables the engine's fighter check reads (src/engine/client/fighterCheck.ts), as the game reads them. */
-export { VICTORY, VICTORY_ENTRY, FORM_NAMED_RUSH, STAND_COMMAND, SLOT_CLIP_BEFORE, ULTIMATE_CLIPS, OWN_BODY_ULTIMATE, AWAKEN_TAKE, AWAKEN_FORM_TAKE };
+export { VICTORY, VICTORY_ENTRY, FORM_NAMED_RUSH, SPIRIT_COMMAND, SLOT_CLIP_BEFORE, ULTIMATE_CLIPS, OWN_BODY_ULTIMATE, AWAKEN_TAKE, AWAKEN_FORM_TAKE };
 /** Geometry a fighter is carrying rather than standing in. Height normalisation
  *  asks how tall the fighter is; a katana worn over the shoulder and a fanned
  *  RAKSHASA blade both reach well above the head, and counting them shrinks the
@@ -3108,9 +3108,9 @@ export class Fighter {
   private crownAlways={value:0};
   private irisAlways={value:0};
   private awakenOff:THREE.Object3D[]=[];
-  private standHands:THREE.Mesh[]=[];
-  /** Round 4b (FANIM): a spirit drawn for its user (SwordStandEffects), which throws the light string its user commands. */
-  stand=false;
+  private spiritHands:THREE.Mesh[]=[];
+  /** Round 4b (FANIM): a spirit drawn for its user (SwordSpiritEffects), which throws the light string its user commands. */
+  isSpirit=false;
   private faceExpressions:{weights:number[];index:number;value:number}[]=[];
   /** Round 3e (MODELS2): morph targets named 'awaken-tuck' (Taisei's fused hair drawn in under the gold awakening hair), set with the swap. */
   private awakenTuck:{weights:number[];index:number}[]=[];
@@ -3129,7 +3129,7 @@ export class Fighter {
     this.outfitId=outfit;this.bodyFighter=state.fighter;this.outfit=form?undefined:outfitFor(outfit,state.fighter);
     this.crownAlways.value=this.outfit?.variant?.always?1:0;this.irisAlways.value=this.outfit?.variant?.goldHair?1:0;
     this.isForm=form;this.state=state;this.source=source;this.group.name=`fighter-${state.id}`;this.model=clone(source.scene);shareSkeletons(this.model);this.group.add(this.model);
-    // A body's joints are read whether it is drawn or not (another body's contact against a stand between its summons,
+    // A body's joints are read whether it is drawn or not (another body's contact against a spirit between its summons,
     // the sockets, the camera): the scene's matrix pass, which leaves hidden things alone, keeps walking it (hiddenMatrices.ts).
     passWhileHidden(this.group);
     this.clips=source.animations;this.mixer=new THREE.AnimationMixer(this.model);
@@ -3193,7 +3193,7 @@ export class Fighter {
     this.model.updateMatrixWorld(true);
     const garment=state.fighter==='nigo'&&[...this.bones.keys()].some(name=>name.startsWith('detailbone'))?'nightfall':GARMENT[state.fighter]??state.fighter;
     this.secondary=new SecondaryMotion(this.model,garment);
-    this.model.traverse(o=>{if((o as THREE.Mesh).isMesh&&/star-pointing-hand|star_closed_Right/.test(o.name))this.standHands.push(o as THREE.Mesh);});
+    this.model.traverse(o=>{if((o as THREE.Mesh).isMesh&&/star-pointing-hand|star_closed_Right/.test(o.name))this.spiritHands.push(o as THREE.Mesh);});
     this.model.traverse(o=>{if(o.name.includes('equipment-held'))this.heldWeapons.push(o);});
     if(state.fighter==='ward')this.model.traverse(o=>{if(/^weapon_lancet_sheath/.test(o.name))this.wardSheath.push(o);});
     this.model.traverse(o=>{
@@ -3609,7 +3609,7 @@ export class Fighter {
     pressure:()=>['beam-pressure-recovery'],
     ...Object.fromEntries(Object.entries(Fighter.REACTIONS).map(([name,patterns])=>[`reaction ${name}`,()=>patterns])),
     opener:(fighter,form)=>{const opener=form?ULTIMATE_CLIPS[fighter]?.formOpener:ULTIMATE_CLIPS[fighter]?.opener;return opener?[opener.clip]:[];},
-    command:(fighter,form)=>!form&&STAND_COMMAND[fighter]?[STAND_COMMAND[fighter]!]:[],
+    command:(fighter,form)=>!form&&SPIRIT_COMMAND[fighter]?[SPIRIT_COMMAND[fighter]!]:[],
     'float idle':(fighter,form)=>fighter==='gummy'&&form?[SUNRISE_FLOAT.idle]:[],
     'float run':(fighter,form)=>fighter==='gummy'&&form?[SUNRISE_FLOAT.run]:[],
     'float guard':(fighter,form)=>fighter==='gummy'&&form?[SUNRISE_FLOAT.guard]:[],
@@ -4213,9 +4213,9 @@ export class Fighter {
       const clip=this.clip('opener');
       if(clip)return clip;
     }
-    // Round 4b (FANIM): a spirit's user commands the light string his spirit throws (STAND_COMMAND) - on the ground: off it
+    // Round 4b (FANIM): a spirit's user commands the light string his spirit throws (SPIRIT_COMMAND) - on the ground: off it
     // he throws his own air string (AIR_RUSH names what it draws).
-    const command=state.action==='light'&&!state.branch&&state.grounded&&!this.stand&&!this.isForm&&(!state.awakened||state.fighter==='gosu')?STAND_COMMAND[state.fighter]:undefined;
+    const command=state.action==='light'&&!state.branch&&state.grounded&&!this.isSpirit&&!this.isForm&&(!state.awakened||state.fighter==='gosu')?SPIRIT_COMMAND[state.fighter]:undefined;
     if(command){const clip=this.clip('command');if(clip)return clip;}
     // A combo ender plays its own clip (comboClips.ts), off the floor as on it.
     const ender=this.enderClip(state);
@@ -6291,13 +6291,13 @@ export class Fighter {
     // under a spent move) and before the blend records it, so it is part of the animation (look/hands.ts). Not a spirit's
     // body, which is its user's fighter by id only; and not a body off the camera's view (`unseen`): in a twelve-fighter
     // match most are, and their fingers are cold memory nobody is looking at.
-    if(this.hands&&this.active&&!this.stand&&!this.unseen&&HANDS.on)this.hands.apply(this.active.getClip(),drawn,real);
+    if(this.hands&&this.active&&!this.isSpirit&&!this.unseen&&HANDS.on)this.hands.apply(this.active.getClip(),drawn,real);
     this.applyPoseBlend(real);
     this.pinHeldEquipment();
     this.turnWheel(state.timeStopped||state.hitstop?0:real,state);
     this.limitRootMotion(drawn,dt);
     this.driveRagdoll(state,real);
-    const finger=this.standHands.length>0&&state.action==='heavy'&&this.slotClip(state,['Needle Finger']);for(const hand of this.standHands){const pointing=hand.name==='star-pointing-hand';hand.visible=pointing?finger:!finger;if(pointing&&hand.morphTargetInfluences){const t=state.actionTime*state.actionDuration,c=MOVES.koko.heavy.contacts[0],d=state.actionDuration;/* Round 3d (PACE): out from the shot, back by the move's end (it was .35-.65 and .8-1.3 s of a .92 s move). */hand.morphTargetInfluences[0]=THREE.MathUtils.smoothstep(t,c-.01,c+.5*(d-c))*(1-THREE.MathUtils.smoothstep(t,c+.75*(d-c),d));}}
+    const finger=this.spiritHands.length>0&&state.action==='heavy'&&this.slotClip(state,['Needle Finger']);for(const hand of this.spiritHands){const pointing=hand.name==='star-pointing-hand';hand.visible=pointing?finger:!finger;if(pointing&&hand.morphTargetInfluences){const t=state.actionTime*state.actionDuration,c=MOVES.koko.heavy.contacts[0],d=state.actionDuration;/* Round 3d (PACE): out from the shot, back by the move's end (it was .35-.65 and .8-1.3 s of a .92 s move). */hand.morphTargetInfluences[0]=THREE.MathUtils.smoothstep(t,c-.01,c+.5*(d-c))*(1-THREE.MathUtils.smoothstep(t,c+.75*(d-c),d));}}
     this.previousAction=state.action;
     for(const expression of this.faceExpressions)expression.weights[expression.index]=expression.value;
     for(const hand of this.scaledHands)hand.scale.setScalar(this.handScale);
@@ -6364,7 +6364,7 @@ export class Fighter {
     // Hands drawn toward a knuckle, where the fighter's socket declaration says (Ouga's: src/engine/client/sockets.ts).
     {const hands=FIGHTER_SOCKETS[state.fighter]?.hands;if(hands){for(const [side,hand]of [['right',this.handR],['left',this.handL]]as const){const knuckle=this.bones.get(side+hands.toward);if(knuckle)hand.lerp(knuckle.getWorldPosition(this.fallback),hands.by);}}}
     // Round 3d (owner): an awakened spirit's user no longer steps out of the
-    // fight - the spirit looms over them instead (SwordStandEffects' LOOM), so
+    // fight - the spirit looms over them instead (SwordSpiritEffects' LOOM), so
     // the body stays drawn.
     if(this.gear4){
       // Awakening owns the form model now: Full Swell and the NIGHTFALL are
@@ -8494,7 +8494,7 @@ export class Fighter {
     return clip==='Pounce Heel'||clip==='Aerial Pounce Heel'||clip==='Rush 3'||clip==='Tailwhip Heel';
   }
   /** Visual companion only. Simulation still owns every damage receipt. */
-  standSource?:Fighter;
+  spiritSource?:Fighter;
   private shakudoBlade?:THREE.Object3D;
   private selectShakudoBlade(state:PlayerState){
     if(state.fighter!=='shakudo')return;
