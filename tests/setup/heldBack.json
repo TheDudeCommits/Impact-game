@@ -318,5 +318,32 @@
   "tsubute has something to celebrate with",
   "ward has something to celebrate with",
   "wataame has something to celebrate with"
+ ],
+ "tests/armoryRetention.test.ts": [
+  "lets go of the types a room does not draw - pool, scene objects, buffers - and keeps the ones it does"
+ ],
+ "tests/armorySoundWork.test.ts": [
+  "a room's sound is not one pass: its 262 s of synth are many renders of a few seconds"
+ ],
+ "tests/armoryWarmPasses.test.ts": [
+  "an effect with no rig is left alone",
+  "packs the atlas once its images are in and hands both of its textures to the GPU, at load",
+  "an effect with nothing of the kind is left alone",
+  "the Volumetric Inferno (Bellows's area look) runs one step of its simulation for the warm cast and lets its targets go",
+  "hands the warm draw its warm cast, and its first pooled instance once that has been cast whole in hiding",
+  "plays on the Armory's clock: an effect that steps once a frame, by the frame's time, is stepped on every step"
+ ],
+ "tests/engineArmoryForge.test.ts": [
+  "lists every vendored effect, each with a thumbnail on disk",
+  "registers the live Forge's runtime: every effect with its Essentials, and the ICE kit's"
+ ],
+ "tests/loadWarmup.test.ts": [
+  "every released fighter names its area look, and every effect named is one the game can build"
+ ],
+ "tests/originals-credits.test.ts": [
+  "credit every Armory model its file records as CC BY"
+ ],
+ "tests/senkoBunaIntegration.test.ts": [
+  "lets go of the Armory effects of the fighter who left as the next room is entered, and keeps the room's own"
  ]
 }

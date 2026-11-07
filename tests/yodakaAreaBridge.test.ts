@@ -12,7 +12,7 @@ import { ForgeFxDirector } from '../src/render/vfx/armory/forgeFx';
 import { yodakaFlameTigerReady } from '../src/render/signature/YodakaFlameTiger';
 import { lookLead } from '../src/engine/sim/areaDamage';
 import looks from '../src/engine/sim/areaLooks.json';
-import { ORIGINALS } from '../src/originals/roster';
+import { ORIGINALS } from '../src/originals/roster'; // originals fork: Yodaka's slot keeps the default area look, main's Flame Tiger drawing unloaded
 
 const cleanups: (() => void)[] = [];
 afterEach(() => {

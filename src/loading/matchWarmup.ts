@@ -51,7 +51,7 @@ export function prefetchRoomFx(players: readonly RoomPlayer[]) {
     const ids = roomChunkIds(players);
     void loadGlyphs();
     if (!ids.length) return;
-    void import('../render/vfx/armory/withheld').then(({ ARMORY_MANIFEST }) => {
+    void import('../render/vfx/armory/vendor/manifest').then(({ ARMORY_MANIFEST }) => {
       for (const id of ids) (ARMORY_MANIFEST as Record<string, { load(): Promise<unknown> } | undefined>)[id]?.load().catch(() => {});
     }, () => {});
   } catch (error) { console.warn('match warm-up: effects could not be fetched ahead', error); }

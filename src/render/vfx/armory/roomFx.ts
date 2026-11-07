@@ -7,7 +7,7 @@ import { presentationKit } from '../../../engine/client/forgeLive';
 import areaLooks from '../../../engine/sim/areaLooks.json';
 import { MOVE_SLOTS } from './fxLookup';
 import { forgeFxDirector } from './forgeFx';
-import { ARMORY_CASTINGS } from './withheld';
+import { ARMORY_CASTINGS } from './vendor/castings';
 import { armoryRollout } from './rollout';
 import { splitSettings } from './macros';
 import type { ForgeFx } from '../../../engine/sim/forge';

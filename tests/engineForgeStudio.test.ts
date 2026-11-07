@@ -11,9 +11,11 @@ import {
 import { forgeDraftKey, forgeJoinOption, forgeOnline, forgeOnlineKey } from '../src/engine/client/forgeJoin';
 import { libraryMoves, moveName } from '../src/ui/forge/studioLibrary';
 import { targetLabel } from '../src/ui/forge/studioDom';
-import { fighterShown } from '../src/originals/launch';
-import { displayMove } from '../src/originals/apply';
+import { fighterShown } from '../src/originals/launch'; // originals fork: the launch gate
+import { displayMove } from '../src/originals/apply'; // originals fork: names as shown
 
+/** The Forge Studio's state: a fighter tries out any effect in real time and, if the player likes it, it is assigned
+ *  to that fighter and saved: try, assign, original, undo - pure, no DOM. */
 const move = (from: FighterId, fromSlot: 'light' | 'heavy' | 'special' | 'ultimate'): StudioItem => ({ kind: 'move', from, fromSlot });
 const fx = (effect: string): StudioItem => ({ kind: 'fx', effect });
 const fresh = (): StudioState => startStudio('bellows', defaultKitName('Bellows'));
@@ -185,20 +187,20 @@ describe('the Forge Studio: the area slot (G, docs/engine/AREA.md)', () => {
     expect(STUDIO_TARGETS.map(targetLabel)).toEqual(['J · LIGHT', 'K · HEAVY', 'Q · SPECIAL', 'R · ULTIMATE', 'G · AREA', 'AURA']);
     expect(fresh().assigned.slots.area).toEqual({ from: 'bellows' });
     expect(changed(fresh().assigned, 'area')).toEqual({ move: false, look: false });                // ORIGINAL: the body's own (house) move
-    expect(moveName('bellows', 'area')).toBe(displayMove('bellows', MOVES.bellows.area.name));
+    expect(moveName('bellows', 'area')).toBe(displayMove('bellows', MOVES.bellows.area.name)); // originals fork: the original's name for it
   });
 
   it("lists every fighter's area move for the area slot alone, and no area move for any other target", () => {
     expect(libraryMoves('bellows')[0].id).toBe('bellows');                                         // the body's own first
     const areas = listed('area');
-    expect(areas.map(row => row.item.from).sort()).toEqual([...RELEASED_FIGHTERS].filter(fighterShown).sort());
+    expect(areas.map(row => row.item.from).sort()).toEqual([...RELEASED_FIGHTERS].filter(fighterShown).sort()); // one each (originals fork: of the fighters the gate shows)
     for (const { item, name } of areas) {
       expect(item.fromSlot).toBe('area');
       expect(simSpec(item.from)!.kit.slots.area.area, item.from).toBeTruthy();                       // an area move, as the simulation runs it
-      expect(name).toBe(displayMove(item.from, MOVES[item.from].area.name));
+      expect(name).toBe(displayMove(item.from, MOVES[item.from].area.name)); // originals fork: as shown
     }
     for (const target of STUDIO_TARGETS.filter(each => each !== 'area')) {
-      expect(listed(target), target).toHaveLength(rows.length - RELEASED_FIGHTERS.filter(fighterShown).length);
+      expect(listed(target), target).toHaveLength(rows.length - RELEASED_FIGHTERS.filter(fighterShown).length); // originals fork: the shown fighters' rows
       expect(listed(target).some(({ item }) => item.fromSlot === 'area' || !!simSpec(item.from)!.kit.slots[item.fromSlot].area), target).toBe(false);
     }
     for (const target of STUDIO_TARGETS) expect(libraryFits(target, fx('cosmos_meteorstorm')), target).toBe(true);  // an effect fits every target

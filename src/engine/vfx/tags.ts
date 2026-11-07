@@ -1,4 +1,12 @@
+/** What an Armory effect is, in the engine's words (docs/engine/VFX.md): its materials, the element kits it serves,
+ *  its role in a move, its look, its scale and cost, and any world it belongs to. Derived from the Armory's own
+ *  registry facts (school, label, blurb, cast shape) by rules, then corrected by hand where a person looked at it
+ *  (`curated.json`). The matcher (./matcher.ts) reads only these tags.
+ *
+ *  Pure data and functions: safe for tools, tests and the match server alike. */
 import type { ElementKitId } from '../sim/archetypes';
+import catalogJson from './armory/catalog.json';
+import curatedJson from './armory/curated.json';
 
 /** What an effect is made of. Finer than the kits: the windwater kit is wind and water, the strings kit metal threads
  *  and vines. */
@@ -13,6 +21,7 @@ export type Role = typeof ROLES[number];
 export type Look = 'cel' | 'painterly' | 'realistic' | 'neutral';
 export type Scale = 'small' | 'medium' | 'large' | 'huge';
 export type Cost = 'light' | 'medium' | 'heavy';
+/** Worlds an effect is tied to (an empty list: any). Last Sun's ki flame is Last Sun's. */
 export type World = 'last-sun' | 'dust-sea' | 'konta' | 'cinder-requiem' | 'hex-fallout' | 'beacon-ward' | 'black-snow' | 'blast-radius'
   | 'salvage-wilds' | 'scrap-pact' | 'gilded' | 'ropewalk' | 'red-cradle' | 'quiet-hunger';
 
@@ -41,11 +50,9 @@ export interface Catalog {
   shared: string[];
   effects: CatalogEffect[];
 }
-/** The VFX Armory's catalogue. The Armory is a separate library under its own licence and is not part of this
- *  repository (src/render/vfx/armory/withheld.ts), so the catalogue is empty: no effect is picked from it. */
-export const CATALOG: Catalog = { format: 1, armory: { commit: '', dirty: false, count: 0, schools: [] }, shared: [], effects: [] };
+export const CATALOG = catalogJson as Catalog;
 type Curated = Partial<Omit<EffectTags, 'curated'>>;
-const CURATED: Record<string, Curated> = {};
+const CURATED = curatedJson as unknown as Record<string, Curated>;
 
 /** Each material serves these kits. */
 export const MATERIAL_KITS: Readonly<Record<Material, readonly ElementKitId[]>> = {

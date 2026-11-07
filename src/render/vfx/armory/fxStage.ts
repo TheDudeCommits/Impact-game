@@ -13,8 +13,8 @@ import { auraFx, eventFx, kitOwner } from './fxLookup';
 import { FIGHTERS } from '../../../config';
 import { ArmoryHost } from './host';
 import { ArmoryEffectType, type ArmoryParams } from './effect';
-import { ARMORY_MANIFEST } from './withheld';
-import { ARMORY_CASTINGS } from './withheld';
+import { ARMORY_MANIFEST } from './vendor/manifest';
+import { ARMORY_CASTINGS } from './vendor/castings';
 import { AURA_SCALE, fxCues, type MoveSlot } from './castingSignature';
 import { splitSettings, type Macros } from './macros';
 import { soundBank } from './sound';
@@ -34,6 +34,9 @@ const MOVE_SLOTS: readonly MoveSlot[] = ['light', 'heavy', 'special', 'ultimate'
 const NATIVE_IDS = new Set(['ice/crystal-field', 'ice/lance', 'ice/freeze', 'ice/floor-freeze', 'ice/pheasant']);
 /** How many of one effect may run at once from Forge kits and previews. */
 const CAPACITY = 4;
+/** The most a first try waits for what a new effect still loads (ms): its images, an Effekseer effect's runtime and
+ *  files (the runtime, 1.5 MB, once a page). Long enough for a warm cache; on a cold one the rest comes in during the
+ *  throw rather than holding it (the transplant's EFFECTS_GRACE, docs/engine/ENGINE.md). */
 const LOAD_CAP = 150;
 /** A previewed aura is worn this long; a previewed move's effect is left to end on its own (at most this). */
 const PREVIEW_AURA = 3, PREVIEW_MAX = 8;
@@ -324,6 +327,11 @@ export class FxStage {
     return true;
   }
 
+  /** The area slot (docs/engine/AREA.md): `fx` laid on the floor at a circle's centre now, sized to the circle - the
+   *  thrower's kit's pick for its area slot, or the look the matcher found for its area move (areaLooks.json). A zone
+   *  effect is laid across the circle; a line effect is thrown from the caster to it. `preroll` seconds of it are played
+   *  at once (round 3: a look whose first strike comes later than the telegraph allows starts that far in, so its
+   *  strikes land with the simulation's); so is any time spent fetching it. */
   async zone(casterId: string, fx: ForgeFx, at: THREE.Vector3, radius: number, preroll = 0): Promise<boolean> {
     const asked = this.frame.time;
     if (!(await this.ensure(fx.effect)) || this.disposed) return false;

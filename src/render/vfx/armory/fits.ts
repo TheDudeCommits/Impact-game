@@ -1,5 +1,24 @@
 import * as THREE from 'three';
 
+/**
+ * What the adapter knows about each vendored Armory effect's settings block (docs/engine/armory/README.md).
+ *
+ * The Armory casts in its own world: a flat floor at y = 0 and a 1.8 m caster at the origin. Several of its shaders
+ * draw straight in world space (the Tube and Shell kits, CelFlame, the ribbon hulls ignore the model matrix), so an
+ * effect is never moved or scaled as a whole; it is fitted through its own settings, per cast, before it spawns and
+ * every frame it updates (the Armory reads its settings live):
+ *  - **colours** by heat: 0 is the fighter's core, .5 its main, 1 its rim; a key keeps its own brightness and takes the
+ *    palette's hue (`recolour`), so an effect's value structure (white heart, dark ember) survives any fighter's colours.
+ *    Keys not listed (smoke, ash, soot, scorch, ink outlines) keep the Armory's;
+ *  - the **launch point** (a hand, a blade's heel): set from the real one, as metres forward, to the right and up from
+ *    the thrower's feet along the throw;
+ *  - **size**: lengths, radii and heights of the look, scaled with the cast (the casting's scale and the fighter's
+ *    height); **counts** and rates, scaled with the quality tier and the density setting;
+ *  - **timing**: the key for the front's speed and the one for how long it holds;
+ *  - **set**: what the game needs other than the sandbox: no camera shake of its own, no screen-wide impact frame or
+ *    distortion (the game has its own; effect.ts bridges a flash to it), no prop the game supplies itself.
+ * An effect with no fit still runs, on the defaults and a colour guess by key name (`guessHeat`).
+ */
 export interface Fit {
   colours?: Readonly<Record<string, number>>;
   launch?: { readonly forward?: string; readonly side?: string; readonly height?: string };
@@ -44,6 +63,8 @@ export interface Fit {
   peak?: number;
   /** How far past a target a line thrown at it ends (metres), over the move's: a blow that detonates on its victim. */
   past?: number;
+  /** What one cast costs at High, 1080p, on an M4 laptop (scripts/engine/armory_perf.mjs): its draw calls and GPU
+   *  milliseconds, the VOL.2 type's `cost`. */
   cost?: { readonly draws: number; readonly gpuMs: number };
   /** Its `size` keys at this much more (1): an effect fitted by name is drawn smaller for the game's close camera. */
   sizeScale?: number;
@@ -55,6 +76,7 @@ import { classifyKey } from './macros';
 
 const EMBERS = (prefix: string, a = 0, b = .3, c = .64, d = .95) => ({ [`${prefix}A`]: a, [`${prefix}B`]: b, [`${prefix}C`]: c, [`${prefix}D`]: d });
 
+/** Each `cost` was measured by scripts/engine/armory_perf.mjs (docs/engine/armory/README.md, "What each costs"). */
 export const FITS: Readonly<Record<string, Fit>> = Object.freeze({
   extra_rageaura: {
     cost: { draws: 4, gpuMs: 0.3 },

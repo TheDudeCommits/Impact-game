@@ -10,6 +10,10 @@ import { needOf, rank } from './matcher';
 export const AREA_LOOKS_FILE = 'src/engine/sim/areaLooks.json';
 /** How many picks each fighter keeps, best first. */
 const KEEP = 3;
+/** Reviewed candidate picks take precedence over broad elemental matching. Ovid is a
+ * physical pressure fighter: the default mecha/space ranking incorrectly selected portals. Hagure's and Ovid's are
+ * their own (they had borrowed Kenzo's cyclone and Hawser's tectonic): Hagure's Cross Fang Dragon
+ * Slayer Fist is a column of wind blades, Ovid's hammer a fist that comes down on the circle. */
 const AUTHORED: Readonly<Partial<Record<FighterId, readonly string[]>>> = {
   'ovid': ['colossus_moltenfist'],
   hagure: ['breath_wind'],

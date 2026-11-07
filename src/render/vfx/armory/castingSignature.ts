@@ -3,7 +3,7 @@ import type { AttackSlot, CombatEvent, FighterId } from '../../../game/types';
 import { MOVES, type MoveDefinition } from '../../../game/moves';
 import { FIGHTERS } from '../../../config';
 import type { FighterCasting, SlotCasting } from '../../../engine/vfx/casting';
-import { ARMORY_CASTINGS, type RuntimeCasting } from './withheld';
+import { ARMORY_CASTINGS, type RuntimeCasting } from './vendor/castings';
 import type { ForgeFx } from '../../../engine/sim/forge';
 import { splitSettings, type Macros } from './macros';
 import { auraFx } from './fxLookup';
@@ -20,6 +20,31 @@ import { armoryRollout, CAST } from './rollout';
 import { clearArmoryDrawn, markArmoryDrawn, markArmoryHit, markArmoryOnly } from './drawn';
 import type { ArmoryParams } from './effect';
 
+/**
+ * A fighter drawn from its VFX casting (src/engine/vfx/casting.json; docs/engine/armory/README.md): the Jump Engine's
+ * signature for every fighter in the rollout (src/engine/vfx/rollout.json): the live list in every build, the preview
+ * rollout besides in a build made with it.
+ *
+ *  - **The moves.** Each move slot's pick becomes cues (VOL.2's CueDirector): an Armory id as `armory/<id>` (effect.ts),
+ *    a pick with a `/` as the engine's own type (`ice/crystal-field`, registered with `registerIce`). The pick is
+ *    tried first, then the casting's alternates: the first the game can run is drawn, so a pick the adapter cannot host
+ *    (an Effekseer effect) falls back to the casting's own next choice, and none leaves the slot to the game.
+ *    The casting's `on`, `anchor` and `scale` and the move itself (its contacts, range, speed, radius) say when, where
+ *    and how big: a `release` starts on the move's clock at its first contact, a `hit` on the last blow of a move with
+ *    several, a `confirm` when an ultimate's opener lands.
+ *  - **The body.** The body slot's aura is state-driven: worn while awakened, or always, as `when` says, following the
+ *    body (`AuraDriver`).
+ *  - **Everything else** is the fighter's existing signature module's, handed every event and flight as before. The
+ *    plain moves the casting draws are marked (drawn.ts); the module leaves their flights, finishers and hit impacts to
+ *    the casting, and keeps their wind-ups (a burning fist, a glowing blade), the combo enders and the impact frames.
+ *    A fighter with no module of its own (Kagari, an original) gets this one, so CombatEffects stops drawing his generic
+ *    projectiles and GummyEffects, which draws his fire, leaves the cast moves to it (drawn.ts) too.
+ *  - **Colours.** The casting's palette: an Armory effect's colour keys per cast (fits.ts), the ICE kit's look built
+ *    from it (`presetFromPalette`, unless the fighter has a tuned one).
+ *  - **Sound.** An Armory effect's own sound, through the game's audio (sound.ts): by default only its bed (its loop and
+ *    its tail, which the game's move sounds don't cover), the whole profile with the slot's `sound: true`, none with
+ *    `false`. A fan of casts sounds once.
+ */
 
 export type MoveSlot = Exclude<AttackSlot, 'body'>;
 /** The engine's own effect types a casting may pick (casting.ts `NATIVE_EFFECTS`: the ICE kit's), and the test for one.

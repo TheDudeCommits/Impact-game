@@ -1,6 +1,16 @@
 import type { FighterId } from '../../../game/types';
 import rollout from '../../../engine/vfx/rollout.json';
 
+/**
+ * Whose VFX casting is live in this build (docs/engine/armory/README.md).
+ *
+ * The lists are src/engine/vfx/rollout.json. `live` is drawn in every build, a release build too: a fighter goes on it
+ * once his casting is clearly closer to his anime than what it replaces (the fighter review, batch by batch).
+ * `fighters` is drawn besides in a build made with `VITE_ARMORY=on` (the Armory preview builds). The runtime is a lazy
+ * chunk the page fetches the first time a casting or a Forge kit asks for an effect. A dev server also reads
+ * `?armory=on|off` (both lists, or nobody as before the Armory), so the capture tools can film both from one server; a
+ * built page ignores the address.
+ */
 let built: unknown, devServer = false;
 // Written out in full so Vite replaces them at build time; outside Vite (a Node script or test) they are undefined.
 try { built = import.meta.env.VITE_ARMORY; devServer = import.meta.env.DEV === true; } catch { built = undefined; devServer = false; }

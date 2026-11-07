@@ -1,8 +1,14 @@
+/** The VFX matcher (docs/engine/VFX.md): for a fighter's move, the Armory effects that fit it best, ranked, each
+ *  with its reasons. It reads the move's own spec (its element, from its name or the fighter's kits; its slot and
+ *  style; its reach) and the effects' tags (./tags.ts). Its shortlists start every casting decision: a person (or an
+ *  agent looking at the stills) picks from them and writes the pick into the fighter's casting file (./casting.ts).
+ *
+ *  Pure data and functions: no renderer, safe for tools and tests. */
 import type { MoveDefinition } from '../../game/moves';
 import type { AttackSlot, FighterId } from '../../game/types';
 import { bodyTypeOf, elementKitsOf, type ElementKitId } from '../sim/archetypes';
 import { CATALOG, MATERIAL_KITS, tagsOf, type CatalogEffect, type EffectTags, type Material, type Role, type Scale, type World } from './tags';
-import { applyOriginalWorldPatterns } from '../../originals/apply';
+import { applyOriginalWorldPatterns } from '../../originals/apply'; // originals fork
 
 /** A fighter's effect slots: the four moves, and the body (its aura when awakened). */
 export type CastSlot = AttackSlot | 'body';
@@ -13,13 +19,14 @@ export interface Need {
 }
 export interface Match { effect: CatalogEffect; tags: EffectTags; score: number; reasons: string[] }
 
+// The clean (6 November 2026): each world by the fork's own series that stands for it (src/originals/apply.ts SERIES_WORLD).
 const SERIES_WORLDS: [RegExp, World][] = [
   [/^last sun$/i, 'last-sun'], [/^dust sea$/i, 'dust-sea'], [/^hidden ash$/i, 'konta'], [/^cinder requiem$/i, 'cinder-requiem'],
   [/^hex fallout$/i, 'hex-fallout'], [/^beacon ward$/i, 'beacon-ward'], [/^black snow$/i, 'black-snow'], [/^blast radius$/i, 'blast-radius'],
   [/^salvage wilds$/i, 'salvage-wilds'], [/^scrap pact$/i, 'scrap-pact'],
   [/^gilded ruin$/i, 'gilded'], [/^ropewalk$/i, 'ropewalk'], [/^red cradle$/i, 'red-cradle'], [/^quiet hunger$/i, 'quiet-hunger'],
 ];
-applyOriginalWorldPatterns(SERIES_WORLDS);
+applyOriginalWorldPatterns(SERIES_WORLDS); // originals fork: an original's series is its world (src/originals/apply.ts)
 export const worldOf = (series?: string): World | undefined => series ? SERIES_WORLDS.find(([re]) => re.test(series))?.[1] : undefined;
 
 /** Words in a move's name that name an element (Tancho's Scarlet Wing is fire, his Frostbeak ice). */
@@ -40,6 +47,7 @@ const NAME_MATERIALS: [RegExp, Material][] = [
   [/\b(string|thread|web|parasite)/i, 'metal'],
 ];
 
+/** The area slot's impacts (docs/engine/AREA.md), by the look its move asks for (AreaSpec.look). */
 const AREA_ROLES: Record<NonNullable<NonNullable<MoveDefinition['area']>['look']>, Role[]> = {
   burst: ['nova', 'ring', 'field', 'pillar'], zone: ['field', 'ring', 'ground', 'rain'], rain: ['rain', 'field', 'pillar'], pillar: ['pillar', 'nova', 'ring', 'field'],
 };

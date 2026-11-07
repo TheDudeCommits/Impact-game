@@ -9,12 +9,26 @@ import { ARMORY_RUNTIME } from './rollout';
 import { setFxDrawn } from './drawn';
 import { auraFx, eventFx, kitSlots } from './fxLookup';
 import { activeKit, armoryRuntime, registerArmory, setActiveKit, type ArmoryEffectInfo } from '../../../engine/client/forgeLive';
-import { ARMORY_EFFECTS } from './withheld';
+import { ARMORY_EFFECTS } from './vendor/forgeCatalog';
 import { ESSENTIALS } from './macros';
 import type { KitValues } from './fxStage';
-import { UNSHIPPED_ARMORY } from '../../../originals/credits';
-import { forgeLabel } from '../../../originals/forgeLabels';
+import { UNSHIPPED_ARMORY } from '../../../originals/credits'; // originals fork: effects whose files' licences keep them out
+import { forgeLabel } from '../../../originals/forgeLabels'; // originals fork: the effects' names as the fork shows them
 
+/**
+ * A Forge kit's Armory effects (kit v2 `fx`, src/engine/client/forgeLive.ts; docs/engine/armory/README.md, "The
+ * Forge"): any fighter's slot drawn by any vendored Armory effect, from the very next throw, and its aura worn.
+ *
+ * RosterSignatureSet holds one per scene, beside the fighters' own signatures:
+ *  - **What it draws** is read from the thrower's kit (`slotFx`: offline the body's active kit, online the forged kit
+ *    its state names) on every event, so a pick in the Forge shows on the next attack with no reload.
+ *  - **What it takes over.** For an event whose thrower's kit gives its slot an effect that is built, `covers` is true:
+ *    the set leaves the event out of the thrower's own module (its flight, finisher and hit), and the slot is marked
+ *    drawn (drawn.ts), so the common effects and GummyEffects leave it too. Until the effect is built the fighter's own
+ *    look plays, as it does with no kit at all.
+ *  - **The weight** (fxStage.ts: the Armory's runtime, the effect's chunk, its pool) loads the first time a kit or the
+ *    Forge asks for an effect. A page that never does fetches nothing.
+ */
 
 type Stage = import('./fxStage').FxStage;
 
@@ -97,6 +111,7 @@ export class ForgeFxDirector {
       await opts.between?.();
     }
   }
+  /** The area slot (docs/engine/AREA.md): an effect laid at a circle's centre now, `preroll` seconds in (FxStage.zone). */
   async zone(casterId: string, fx: ForgeFx, at: THREE.Vector3, radius: number, preroll = 0) { const stage = await this.load(); return stage ? stage.zone(casterId, fx, at, radius, preroll) : false; }
   /** The area looks laid and the hits each made as it played (FxStage.laidLooks): none before the runtime loads. */
   get laidLooks(): Stage['laidLooks'] { return this.stage?.laidLooks ?? []; }
@@ -129,14 +144,14 @@ let listed: readonly ArmoryEffectInfo[] | undefined;
  *  the Essentials here are the Armory inspector's other three dials, kept in `fx.settings` (macros.ts). */
 registerArmory({
   effects: () => listed ??= [
-    ...ARMORY_EFFECTS.filter(e => !UNSHIPPED_ARMORY.has(e.id)).map(e => ({ id: e.id, label: forgeLabel(e.id, e.label), school: e.school, kit: e.kit, cast: e.cast, thumb: e.thumb ?? '', essentials: ESSENTIALS })),
+    ...ARMORY_EFFECTS.filter(e => !UNSHIPPED_ARMORY.has(e.id)).map(e => ({ id: e.id, label: forgeLabel(e.id, e.label), school: e.school, kit: e.kit, cast: e.cast, thumb: e.thumb ?? '', essentials: ESSENTIALS })), // originals fork: less what may not ship (src/originals/credits.ts), named as the fork shows them (src/originals/forgeLabels.ts)
     ...NATIVE,
   ],
   async prepare(id: string) {
     const director = forgeFxDirector();
     if (director) { await director.prepare(id); return; }
     // No fight on yet: its code, fetched for when one is.
-    const entry = (await import('./withheld')).ARMORY_MANIFEST[id];
+    const entry = (await import('./vendor/manifest')).ARMORY_MANIFEST[id];
     if (entry) await entry.load();
   },
   preview(playerId: string, fx: ForgeFx) { void forgeFxDirector()?.preview(playerId, fx); },

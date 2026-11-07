@@ -1,5 +1,14 @@
 import { ARMORY_RUNTIME } from './rollout';
 
+/**
+ * Where the Armory's sound goes: the game's own audio (docs/engine/armory/README.md, "Sound").
+ *
+ * The Armory's effects play through CombatAudio's public one-shot path (`sample`, `preload`, `sampleSeconds`): the
+ * game's AudioContext and its effects bus, so the player's volume settings, the voice duck, the stage's reverb, the
+ * effects' voice cap and their placement in the world (distance and pan from the listener) all apply as to the game's
+ * own sounds. Nothing here reaches into CombatAudio (another session's): main.ts hands the game's audio over, once.
+ * CombatAudio keeps its bus to itself, so a loop is played as overlapping segments (render/vfx/armory/sound.ts).
+ */
 export interface SoundAt { readonly x: number; readonly y: number; readonly z: number }
 
 /** What the Armory's sound needs of the game's audio: CombatAudio has exactly this. */

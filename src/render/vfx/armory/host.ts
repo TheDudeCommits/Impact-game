@@ -1,15 +1,15 @@
 import * as THREE from 'three';
 import { sceneShown } from '../../emptyInstances';
-import { frame } from './withheld';
-import { LAYER } from './withheld';
-import { ParticleEngine } from './withheld';
-import { DecalSystem } from './withheld';
-import { BurstSystem } from './withheld';
-import { FissureSystem } from './withheld';
-import { sceneHooks } from './withheld';
-import { settings } from './withheld';
-import { patchOnBeforeCompile } from './withheld';
-import { noiseGLSL } from './withheld';
+import { frame } from './vendor/core/FrameUniforms.js';
+import { LAYER } from './vendor/core/Layers.js';
+import { ParticleEngine } from './vendor/particles/ParticleEngine.js';
+import { DecalSystem } from './vendor/effects/GroundDecals.js';
+import { BurstSystem } from './vendor/effects/BurstSphere.js';
+import { FissureSystem } from './vendor/effects/GroundFissures.js';
+import { sceneHooks } from './vendor/vfx/SceneHooks.js';
+import { settings } from './vendor/config/settings.js';
+import { patchOnBeforeCompile } from './vendor/utils/shaderPatch.js';
+import { noiseGLSL } from './vendor/shaders/lib/noise.glsl.js';
 import type { EffectLayer } from '../engine/Effect';
 import type { Fighter } from '../../Fighter';
 import { effekseerLoaded } from './effekseer';
@@ -17,6 +17,45 @@ import { skipHiddenChildren } from '../../hiddenMatrices';
 import { VFX } from '../../vfxLevel';
 import type { ArmoryContext, ArmoryFlashApi, ArmoryLightHandle, ArmoryLightsApi, ArmoryShakeApi } from './types';
 
+/**
+ * The VFX Armory's systems in the game: one host per scene (docs/engine/armory/README.md).
+ *
+ * The Armory runs every effect inside its sandbox App, which hands each ability a context of shared systems
+ * (`{ scene, camera, environment, particles, lights, decals, fissures, bursts, shake, flash }`) and steps them once a
+ * frame: the frame uniforms, then `abilities.update(dt)`, `particles.flush()`, `decals.update(dt)`,
+ * `fissures.update(dt)`, `bursts.update(dt)`, `lights.update(dt)`. The host builds the same systems from the vendored
+ * code (./vendor) and steps them in that order; nothing of the Armory's sandbox shell (its app, manager, UI, camera
+ * rig or post) comes with them.
+ *
+ * **Spaces.** Each effect instance draws into its own `ArmorySpace`: a group under the host's root with its own
+ * particle engine, decals, bursts, fissures and lights, through which the Armory's world (a floor at y = 0, a 1.8 m
+ * caster at the origin) is placed in the game's: on the floor under the thrower or the target, lifted to a hand or a
+ * blade, scaled to the fighter, and following a body when the effect does. Everything an Armory effect draws is a
+ * child of its space, so one matrix moves it all, particles and ground decals included. A space also keeps its own
+ * colours (the Armory keeps a particle system's gradient in uniforms, so two fighters sharing one system would share
+ * one colour) and its own clock: every material in it reads the instance's `uTime`, the move's clock (signature/
+ * castClock.ts), so an effect stops with the hit-stop like the blow it belongs to.
+ *
+ * **The game's rules, kept:**
+ *  - *Camera.* The game camera is never moved, nor handed to the Armory: `ctx.camera` is a stand-in the host keeps
+ *    in step with it (in the space's own frame), read from the scene's `onBeforeRender`. The Armory's camera shake has
+ *    no counterpart in the game (FollowCamera's trauma is main.ts's alone), so `ctx.shake` does nothing. Its screen
+ *    flash becomes the game's impact frame, through `SIGNATURE.screen` (signature/context.ts), and only for a cast that
+ *    involves the local player and asks for it (effect.ts).
+ *  - *Layers.* The game camera renders layer 0 only and never changes; the Armory draws on its own VFX layer. A space
+ *    moves everything it holds onto layer 0, except the distortion proxies (`LAYER.DISTORTION`), which the game has no
+ *    pass for: they stay where the camera never looks.
+ *  - *Lights.* The Armory's LightPool makes six PointLights; adding a light recompiles every lit program in the game.
+ *    The host makes none: a space's `ctx.lights` hands out handles, eases them as the Armory does, and asks the game's
+ *    fixed pool (VfxKit's, through `EffectFrame.light`) for that light every frame.
+ *  - *No compiles mid-match.* A space's systems are built at load, in the scene, so the room's load-time compile links
+ *    them (three compiles invisible objects too); the decal and burst pools, which the Armory fills lazily, are filled
+ *    by the effect type's dry run at load and one of each kind is kept in the scene (`hold`) for that compile.
+ *  - *Scene hooks.* `vfx/SceneHooks.js` is installed with nothing: no key light, grade, floor or renderer to borrow, so
+ *    an effect that asks for one gets a token that changes nothing in the game's world.
+ *  - *Soft particles.* The game has no depth prepass; `uSceneDepth` is a texture saying "nothing in front", so the
+ *    Armory's soft fade is off rather than reading garbage.
+ */
 
 /** The game camera's layer: everything an Armory effect draws is moved onto it. */
 export const GAME_LAYER = 0;

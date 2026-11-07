@@ -6,6 +6,8 @@ import { launchUnshipped } from '../src/originals/launchShip';
 import { armoryRuntime } from '../src/engine/client/forgeLive';
 import '../src/render/vfx/armory/forgeFx';
 
+/** Originals fork (3 November 2026): every open-licence work the package ships is credited on the LEGAL page as its licence
+ *  asks (src/originals/credits.ts), and what a licence forbids a commercial game is kept out. */
 const credited = (file: string) => [...ATTRIBUTIONS, ...OPEN_WORKS].some(c => c.files.some(f => f === file || (f.endsWith('/') && file.startsWith(f))));
 const glbExtras = (file: string) => { const b = fs.readFileSync(file), n = b.readUInt32LE(12); return JSON.parse(b.subarray(20, 20 + n).toString()).asset?.extras as { license?: string } | undefined; };
 
@@ -23,6 +25,12 @@ describe('the open-licence credits', () => {
     expect(owed.filter(file => !credited(file))).toEqual([]);
   });
 
+  it('credit every Armory model its file records as CC BY', () => {
+    const models = ['cinematic/models', 'extended/models', 'remake'].flatMap(dir => fs.readdirSync(`public/assets/armory/${dir}`).filter(f => f.endsWith('.glb')).map(f => `assets/armory/${dir}/${f}`));
+    const owed = models.filter(file => /CC-?BY/i.test(glbExtras(`public/${file}`)?.license ?? ''));
+    expect(owed).toEqual(['assets/armory/cinematic/models/magical_gyroscope.glb', 'assets/armory/extended/models/snake.glb']);
+    expect(owed.filter(file => !credited(file))).toEqual([]);
+  });
 
   it('credit the open code the Forge\'s effects are made of: Effekseer and its samples, the Elemental Sandbox, the p27 pack', () => {
     const page = legalPage();
@@ -32,4 +40,9 @@ describe('the open-licence credits', () => {
     expect(credited('assets/armory/fxlib/effekseer/fx/tktk01.efk')).toBe(true);
   });
 
+  it('keep the non-commercial dragon out: off the Forge\'s list and out of the package', () => {
+    expect(armoryRuntime()!.effects().some(e => UNSHIPPED_ARMORY.has(e.id))).toBe(false);
+    expect(armoryRuntime()!.effects().some(e => e.id === 'cin_gyro')).toBe(true);
+    expect(launchUnshipped([...UNSHIPPED_ARMORY_FILES, 'assets/armory/remake/phoenix.glb'])).toEqual([...UNSHIPPED_ARMORY_FILES]);
+  });
 });

@@ -1,0 +1,1235 @@
+{
+ "breath_flame": {
+  "worlds": [
+   "black-snow"
+  ],
+  "note": "A Black Snow breathing style, in the woodblock look."
+ },
+ "breath_insect": {
+  "worlds": [
+   "black-snow"
+  ],
+  "note": "A Black Snow breathing style, in the woodblock look."
+ },
+ "breath_mist": {
+  "worlds": [
+   "black-snow"
+  ],
+  "note": "A Black Snow breathing style, in the woodblock look."
+ },
+ "breath_moon": {
+  "worlds": [
+   "black-snow"
+  ],
+  "note": "A Black Snow breathing style, in the woodblock look."
+ },
+ "breath_sun": {
+  "worlds": [
+   "black-snow"
+  ],
+  "note": "A Black Snow breathing style, in the woodblock look."
+ },
+ "breath_thunder": {
+  "worlds": [
+   "black-snow"
+  ],
+  "note": "A Black Snow breathing style, in the woodblock look."
+ },
+ "breath_water": {
+  "worlds": [
+   "black-snow"
+  ],
+  "note": "A Black Snow breathing style, in the woodblock look."
+ },
+ "breath_wind": {
+  "worlds": [
+   "black-snow"
+  ],
+  "note": "A Black Snow breathing style, in the woodblock look."
+ },
+ "arts_clones": {
+  "worlds": [
+   "konta"
+  ],
+  "note": "Shadow clones."
+ },
+ "arts_domain": {
+  "note": "A sealed black dome with a staring eye: a Domain, or Red Moon Reverie. Open to any world."
+ },
+ "arts_purple": {
+  "worlds": [
+   "hex-fallout"
+  ],
+  "note": "Kuon's Singularity."
+ },
+ "arts_push": {
+  "note": "A sphere of force that blasts everything away (Cloudburst; also a Smash air-pressure blast). Open to any world."
+ },
+ "arts_windshuriken": {
+  "worlds": [
+   "konta"
+  ],
+  "note": "The Galewheel."
+ },
+ "ki_lightning_hand": {
+  "worlds": [
+   "konta"
+  ],
+  "note": "The Shrike Bolt / Lightning Cut: lightning chirping in one hand."
+ },
+ "ki_spiral": {
+  "worlds": [
+   "konta"
+  ],
+  "note": "The Senpugan: a spinning sphere driven from the palm."
+ },
+ "saga_void_ray": {
+  "worlds": [
+   "cinder-requiem"
+  ],
+  "note": "A Void Ray."
+ },
+ "saga_drillbeam": {
+  "worlds": [
+   "last-sun"
+  ],
+  "note": "The Sun-Seizing Spiral."
+ },
+ "saga_redaura": {
+  "worlds": [
+   "last-sun"
+  ],
+  "note": "Red Surge."
+ },
+ "saga_bigpunch": {
+  "note": "One punch, a colossal cone of air pressure: Ippon's Clean Slate, Full Beam's Foghorn Blast, Madake's Autumn Stag. Shonen-wide, open to any world."
+ },
+ "saga_silveraura": {
+  "worlds": [
+   "last-sun"
+  ],
+  "note": "Silver Mind."
+ },
+ "will_sovereign": {
+  "materials": [
+   "dark",
+   "lightning"
+  ],
+  "roles": [
+   "aura",
+   "nova",
+   "ground"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "dust-sea"
+  ],
+  "note": "Crimson Command itself: the manga flash, black-red lightning and a ring of will that cracks the floor."
+ },
+ "will_quakebubble": {
+  "materials": [
+   "impact"
+  ],
+  "roles": [
+   "impact",
+   "wave"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "dust-sea"
+  ],
+  "note": "Haldor's quake: a bubble of cracked air round the fist, shattered like glass."
+ },
+ "will_toonrubber": {
+  "materials": [
+   "light"
+  ],
+  "roles": [
+   "aura",
+   "buff"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "dust-sea"
+  ],
+  "note": "SUNRISE's toon ascension: bouncing cel clouds, a rubber shell and a sunburst."
+ },
+ "will_frostaura": {
+  "materials": [
+   "ice"
+  ],
+  "roles": [
+   "aura",
+   "buff"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [],
+  "note": "Orbiting ice shards and a frosted floor: any ice user awakened."
+ },
+ "will_voltaura_a": {
+  "materials": [
+   "lightning"
+  ],
+  "roles": [
+   "aura",
+   "buff"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [],
+  "note": "A blue plasma skin with crawling ridges: reads as Setsu's SETSUNA."
+ },
+ "will_voltaura_b": {
+  "materials": [
+   "lightning"
+  ],
+  "roles": [
+   "aura",
+   "buff"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [],
+  "note": "A cage of yellow lightning bars re-striking on twos."
+ },
+ "will_voltaura_c": {
+  "materials": [
+   "lightning"
+  ],
+  "roles": [
+   "aura",
+   "buff"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [],
+  "note": "A violet lightning crown studded with spinning drum-rings: Adad's thunder drums."
+ },
+ "will_steamaura": {
+  "materials": [
+   "fire"
+  ],
+  "roles": [
+   "aura",
+   "buff"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [],
+  "note": "Toon steam boiling off a red-hot body: the inner gates, a body heating up."
+ },
+ "will_blackflameaura": {
+  "materials": [
+   "blackfire",
+   "dark"
+  ],
+  "roles": [
+   "aura",
+   "buff"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [],
+  "note": "Ink-black flame with violet and crimson rims that stays black in daylight."
+ },
+ "colossus_spiritarmor": {
+  "materials": [
+   "spirit"
+  ],
+  "roles": [
+   "summon",
+   "slash"
+  ],
+  "look": "cel",
+  "scale": "huge",
+  "worlds": [
+   "konta"
+  ],
+  "note": "A translucent purple armoured giant built rib by rib: Shiden's Guardian."
+ },
+ "colossus_hundredpalm": {
+  "materials": [
+   "light",
+   "impact"
+  ],
+  "roles": [
+   "summon",
+   "impact"
+  ],
+  "look": "cel",
+  "scale": "huge",
+  "worlds": [
+   "salvage-wilds"
+  ],
+  "note": "Bonsho's golden many-armed statue: its palm."
+ },
+ "colossus_flamefist": {
+  "materials": [
+   "fire"
+  ],
+  "roles": [
+   "impact",
+   "projectile"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [],
+  "note": "A giant fist of banded toon fire punched down the line: Kagari's Taimatsu."
+ },
+ "colossus_moltenfist": {
+  "materials": [
+   "magma"
+  ],
+  "roles": [
+   "impact",
+   "rain"
+  ],
+  "look": "cel",
+  "scale": "huge",
+  "worlds": [],
+  "note": "A giant magma-veined rock fist from the sky: Shakugo's Final Sentence: Brimstone Rain."
+ },
+ "colossus_glacierdrop": {
+  "materials": [
+   "ice"
+  ],
+  "roles": [
+   "impact",
+   "field"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [],
+  "note": "A giant faceted ice block dropped on a zone, ringed with frost spikes."
+ },
+ "colossus_thundercloud": {
+  "materials": [
+   "lightning"
+  ],
+  "roles": [
+   "rain",
+   "field"
+  ],
+  "look": "cel",
+  "scale": "huge",
+  "worlds": [],
+  "note": "A boiling cel thundercloud firing forked strikes: Sorayomi's Storm Warning, Adad's Firmament Fall."
+ },
+ "colossus_thunderhound": {
+  "materials": [
+   "lightning",
+   "beast"
+  ],
+  "roles": [
+   "projectile",
+   "trail"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [],
+  "note": "A hound of lightning galloping down the line: Shirokane's lightning beast."
+ },
+ "colossus_pressurepillar": {
+  "materials": [
+   "spirit",
+   "energy"
+  ],
+  "roles": [
+   "pillar",
+   "aura"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "cinder-requiem"
+  ],
+  "note": "Pressure released to the sky as a flame-shaped pillar: a Unsealed coming out."
+ },
+ "edge_petalswarm": {
+  "materials": [
+   "metal",
+   "slash"
+  ],
+  "roles": [
+   "stream",
+   "slash"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "cinder-requiem"
+  ],
+  "note": "Thousands of pink petal-blades: Shidare's Steel Petal Cut scattering."
+ },
+ "edge_energyclaw": {
+  "materials": [
+   "energy",
+   "slash"
+  ],
+  "roles": [
+   "slash",
+   "impact"
+  ],
+  "look": "cel",
+  "scale": "huge",
+  "worlds": [
+   "cinder-requiem"
+  ],
+  "note": "Five energy talons raked down from the sky: Irbis's Avalanche Talons."
+ },
+ "edge_blackcrescent": {
+  "materials": [
+   "dark",
+   "slash"
+  ],
+  "roles": [
+   "slash",
+   "wave"
+  ],
+  "look": "cel",
+  "scale": "huge",
+  "worlds": [
+   "cinder-requiem"
+  ],
+  "note": "A pure-black crescent with a white rim, the world drained to black: Nigo's Nightfang in its final form."
+ },
+ "edge_onislash": {
+  "materials": [
+   "fire",
+   "slash"
+  ],
+  "roles": [
+   "slash",
+   "summon"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [],
+  "note": "A flame-fringed demon mask rising behind the swing: Kenzo's RAKSHASA."
+ },
+ "edge_scythe": {
+  "materials": [
+   "spirit",
+   "slash"
+  ],
+  "roles": [
+   "slash",
+   "ring"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [],
+  "note": "A pale spectral scythe reaping almost a full circle."
+ },
+ "edge_chainsaw": {
+  "materials": [
+   "metal",
+   "blood"
+  ],
+  "roles": [
+   "slash",
+   "impact"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [
+   "scrap-pact"
+  ],
+  "note": "Kuzu's chainsaw bar growing from the forearm and grinding in."
+ },
+ "edge_firearrow": {
+  "materials": [
+   "fire"
+  ],
+  "roles": [
+   "projectile",
+   "impact"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [],
+  "note": "A drawn bow glyph and a blazing arrow that bursts in a cel fire blast."
+ },
+ "edge_fingerbeam": {
+  "materials": [
+   "light",
+   "energy"
+  ],
+  "roles": [
+   "beam"
+  ],
+  "look": "cel",
+  "scale": "small",
+  "worlds": [],
+  "note": "A needle-thin fingertip ray: Jinlin's Pearl Needle, Senko's finger laser."
+ },
+ "edge_heartbeam": {
+  "materials": [
+   "light"
+  ],
+  "roles": [
+   "beam"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "dust-sea"
+  ],
+  "note": "Basilissa's Mero Mero fruit: a ray of spiralling hearts that turns the target to stone."
+ },
+ "edge_palmblast": {
+  "materials": [
+   "explosion"
+  ],
+  "roles": [
+   "impact",
+   "trail"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [],
+  "note": "Palm explosions walking down the line hand after hand: Pyroclast's blasts."
+ },
+ "seal_eboncoffin": {
+  "materials": [
+   "dark",
+   "arcane"
+  ],
+  "roles": [
+   "field",
+   "impact"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "cinder-requiem"
+  ],
+  "note": "Shiun's BLACK CONFESSIONAL: a black casket of crawling script, spears driven through."
+ },
+ "seal_stringcage": {
+  "materials": [
+   "metal"
+  ],
+  "roles": [
+   "field",
+   "thread"
+  ],
+  "look": "cel",
+  "scale": "huge",
+  "worlds": [
+   "dust-sea"
+  ],
+  "note": "Strappado's Big Top: glowing strings fall into a dome that contracts."
+ },
+ "seal_hexwall": {
+  "materials": [
+   "light",
+   "arcane"
+  ],
+  "roles": [
+   "barrier",
+   "wave"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "red-cradle"
+  ],
+  "note": "A hexagon-cell wall that stops shots: the A.T. Field."
+ },
+ "seal_trigrams": {
+  "materials": [
+   "impact",
+   "arcane"
+  ],
+  "roles": [
+   "field",
+   "impact"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "konta"
+  ],
+  "note": "Suzuran's (and Neji's) Eight Trigrams sixty-four palms: the diagram, then doubling volleys."
+ },
+ "seal_shrinedomain": {
+  "materials": [
+   "blood",
+   "slash"
+  ],
+  "roles": [
+   "field",
+   "summon",
+   "slash"
+  ],
+  "look": "cel",
+  "scale": "huge",
+  "worlds": [
+   "hex-fallout"
+  ],
+  "note": "Magatsu's Mirror Mere: the floor drowns crimson, the horned shrine heaves up and slashes."
+ },
+ "seal_timestop": {
+  "materials": [
+   "time"
+  ],
+  "roles": [
+   "nova",
+   "field"
+  ],
+  "look": "cel",
+  "scale": "huge",
+  "worlds": [
+   "gilded"
+  ],
+  "note": "THE HOUR / DEAD STOP: a colour-inverted sphere and a grey, stopped world."
+ },
+ "seal_elasticstrand": {
+  "materials": [
+   "ink"
+  ],
+  "roles": [
+   "thread",
+   "projectile"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [
+   "salvage-wilds"
+  ],
+  "note": "Unari's Bungee Gum: a pink strand that sticks, goes taut and snaps back."
+ },
+ "seal_sproutarms": {
+  "materials": [
+   "plant"
+  ],
+  "roles": [
+   "summon",
+   "impact"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [
+   "dust-sea"
+  ],
+  "note": "Psyche's Hana Hana: flowers open and arms sprout to clutch."
+ },
+ "seal_tentacles": {
+  "materials": [
+   "blood"
+  ],
+  "roles": [
+   "thread",
+   "projectile"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "quiet-hunger"
+  ],
+  "note": "Rakucho's tendrils tendril: segmented crimson tentacles from the back."
+ },
+ "seal_ghostrush": {
+  "materials": [
+   "spirit",
+   "impact"
+  ],
+  "roles": [
+   "summon",
+   "impact"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [],
+  "note": "A spectral double rises behind and rains ghost fists: a spirit-style rush. Draws copies of the caster only."
+ },
+ "seal_pull": {
+  "materials": [
+   "gravity"
+  ],
+  "roles": [
+   "thread",
+   "field"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [
+   "konta"
+  ],
+  "note": "Amagoi's pull: a gravity well in the palm hauls the target in."
+ },
+ "seal_teleportmark": {
+  "materials": [
+   "lightning"
+  ],
+  "roles": [
+   "projectile",
+   "trail"
+  ],
+  "look": "cel",
+  "scale": "small",
+  "worlds": [
+   "konta"
+  ],
+  "note": "Minase's Relay Leap: a seal-tagged kunai, then a blink to it. The engine moves the fighter."
+ },
+ "seal_grapple": {
+  "materials": [
+   "metal",
+   "wind"
+  ],
+  "roles": [
+   "thread",
+   "slash"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [
+   "ropewalk"
+  ],
+  "note": "Grapple Rig: wires bite, gas jets fire, a high arc and a spinning cut. The engine moves the fighter."
+ },
+ "seal_cursemark": {
+  "materials": [
+   "dark",
+   "blackfire"
+  ],
+  "roles": [
+   "aura",
+   "buff"
+  ],
+  "look": "cel",
+  "scale": "medium",
+  "worlds": [],
+  "note": "A seal at the neck and black flame marks crawling over the skin: Shiden's seal mark (his early look)."
+ },
+ "seal_snowcompass": {
+  "materials": [
+   "ice"
+  ],
+  "roles": [
+   "field",
+   "ground"
+  ],
+  "look": "cel",
+  "scale": "large",
+  "worlds": [
+   "cinder-requiem"
+  ],
+  "note": "Shijima's First Carol: Snow Halo: a snowflake circle on the floor, ice erupting along it."
+ },
+ "scifi_shieldbubble": {
+  "materials": [
+   "tech"
+  ],
+  "roles": [
+   "barrier"
+  ],
+  "look": "neutral",
+  "scale": "large",
+  "worlds": [],
+  "note": "Sci-fi: made for the Mecha pack, not an anime fighter."
+ },
+ "scifi_dissolveteleport": {
+  "materials": [
+   "tech"
+  ],
+  "roles": [
+   "trail"
+  ],
+  "look": "neutral",
+  "scale": "large",
+  "worlds": [],
+  "note": "Sci-fi: made for the Mecha pack, not an anime fighter."
+ },
+ "scifi_orbitalstrike": {
+  "materials": [
+   "tech",
+   "light"
+  ],
+  "roles": [
+   "pillar"
+  ],
+  "look": "neutral",
+  "scale": "large",
+  "worlds": [],
+  "note": "Sci-fi: made for the Mecha pack, not an anime fighter."
+ },
+ "scifi_hologram": {
+  "materials": [
+   "tech"
+  ],
+  "roles": [
+   "summon"
+  ],
+  "look": "neutral",
+  "scale": "large",
+  "worlds": [],
+  "note": "Sci-fi: made for the Mecha pack, not an anime fighter."
+ },
+ "scifi_railgun": {
+  "materials": [
+   "tech",
+   "lightning"
+  ],
+  "roles": [
+   "beam"
+  ],
+  "look": "neutral",
+  "scale": "large",
+  "worlds": [],
+  "note": "Sci-fi: made for the Mecha pack, not an anime fighter."
+ },
+ "scifi_emp": {
+  "materials": [
+   "tech",
+   "lightning"
+  ],
+  "roles": [
+   "nova"
+  ],
+  "look": "neutral",
+  "scale": "large",
+  "worlds": [],
+  "note": "Sci-fi: made for the Mecha pack, not an anime fighter."
+ },
+ "scifi_nanoswarm": {
+  "materials": [
+   "tech"
+  ],
+  "roles": [
+   "stream"
+  ],
+  "look": "neutral",
+  "scale": "large",
+  "worlds": [],
+  "note": "Sci-fi: made for the Mecha pack, not an anime fighter."
+ },
+ "scifi_lasergrid": {
+  "materials": [
+   "tech",
+   "light"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "neutral",
+  "scale": "large",
+  "worlds": [],
+  "note": "Sci-fi: made for the Mecha pack, not an anime fighter."
+ },
+ "scifi_plasmablade": {
+  "materials": [
+   "tech",
+   "energy"
+  ],
+  "roles": [
+   "slash"
+  ],
+  "look": "neutral",
+  "scale": "large",
+  "worlds": [],
+  "note": "Sci-fi: made for the Mecha pack, not an anime fighter."
+ },
+ "scifi_glitchrift": {
+  "materials": [
+   "tech"
+  ],
+  "roles": [
+   "wave"
+  ],
+  "look": "neutral",
+  "scale": "large",
+  "worlds": [],
+  "note": "Sci-fi: made for the Mecha pack, not an anime fighter."
+ },
+ "cosmos_blackhole": {
+  "materials": [
+   "space"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal cosmos: striking, but not the cel look the roster is drawn in."
+ },
+ "cosmos_supernova": {
+  "materials": [
+   "space"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal cosmos: striking, but not the cel look the roster is drawn in."
+ },
+ "cosmos_galaxy": {
+  "materials": [
+   "space"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal cosmos: striking, but not the cel look the roster is drawn in."
+ },
+ "cosmos_wormhole": {
+  "materials": [
+   "space"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal cosmos: striking, but not the cel look the roster is drawn in."
+ },
+ "cosmos_meteorstorm": {
+  "materials": [
+   "space"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal cosmos: striking, but not the cel look the roster is drawn in."
+ },
+ "cosmos_starfall": {
+  "materials": [
+   "space"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal cosmos: striking, but not the cel look the roster is drawn in."
+ },
+ "cosmos_nebulabloom": {
+  "materials": [
+   "space"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal cosmos: striking, but not the cel look the roster is drawn in."
+ },
+ "cosmos_pulsar": {
+  "materials": [
+   "space"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal cosmos: striking, but not the cel look the roster is drawn in."
+ },
+ "nature_firetornado": {
+  "materials": [
+   "earth"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal nature. Its cameraPull setting must be 0 in the game (the gameplay camera is the game's)."
+ },
+ "nature_tsunami": {
+  "materials": [
+   "earth"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal nature. Its cameraPull setting must be 0 in the game (the gameplay camera is the game's)."
+ },
+ "nature_volcano": {
+  "materials": [
+   "earth"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal nature. Its cameraPull setting must be 0 in the game (the gameplay camera is the game's)."
+ },
+ "nature_lightningstorm": {
+  "materials": [
+   "earth"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal nature. Its cameraPull setting must be 0 in the game (the gameplay camera is the game's)."
+ },
+ "nature_aurora": {
+  "materials": [
+   "earth"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal nature. Its cameraPull setting must be 0 in the game (the gameplay camera is the game's)."
+ },
+ "nature_sandstorm": {
+  "materials": [
+   "earth"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal nature. Its cameraPull setting must be 0 in the game (the gameplay camera is the game's)."
+ },
+ "nature_avalanche": {
+  "materials": [
+   "earth"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal nature. Its cameraPull setting must be 0 in the game (the gameplay camera is the game's)."
+ },
+ "nature_geyser_field": {
+  "materials": [
+   "earth"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal nature. Its cameraPull setting must be 0 in the game (the gameplay camera is the game's)."
+ },
+ "nature_quake_rift": {
+  "materials": [
+   "earth"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "huge",
+  "worlds": [],
+  "note": "Photoreal nature. Its cameraPull setting must be 0 in the game (the gameplay camera is the game's)."
+ },
+ "found_tornado": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_flamepillar": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_ragingsea": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_galaxy": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_attractor": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_linked": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_fluid": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_volumefire": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_blackhole": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_nebula": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_protoplanet": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_hologram": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_vortexorb": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_sentinels": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ },
+ "found_caustics": {
+  "materials": [
+   "energy"
+  ],
+  "roles": [
+   "field"
+  ],
+  "look": "realistic",
+  "scale": "large",
+  "worlds": [],
+  "note": "A port of open-source shader work (licence notice kept in its code): a tech showpiece more than an anime look."
+ }
+}

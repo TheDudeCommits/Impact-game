@@ -64,6 +64,37 @@ Each file in `public/assets/audio/survival/manifest.json` names its own source a
 
 The OFL texts are in `docs/provenance/fonts/`.
 
+## The VFX Armory (its open part)
+
+The Forge's effects and some fighters' effects run on the open part of the VFX Armory (`src/render/vfx/armory/vendor/`,
+assets in `public/assets/armory/`). Its own effects, sound recipes, generated textures and remade models are not in this
+repository. Every vendored file keeps the notices it carries; `vendor/NOTICE.md` lists the effects.
+`vendor/config/settings.js`, the settings shell every effect reads, carries the VFX Armory's own notice beside the
+Elemental Sandbox's MIT one: it is provided under the VFX Armory Licence, not this repository's MIT licence.
+
+| Part | Author | Source | Licence |
+|---|---|---|---|
+| Elemental Sandbox (the base: abilities, particles, decals, layers) | mohamedachrefelouafi | https://github.com/majidmanzarpour/threejs-vfx | MIT |
+| Ability casting packs (cinematic, hand-cast, linear extended, samurai melee, avatar bending) and the amethyst stones, arcane tome and wildroot reliquary models | mohamedachrefelouafi | https://github.com/achrefelouafi | MIT |
+| Ability Project 27 | itzmitto | https://github.com/itzmitto/Ability-ThreeJS-Project | MIT |
+| rollshade | tsuyatt | https://github.com/tsuyatt/rollshade | MIT |
+| three-nebula | a-jie & rohan-deshpande | https://github.com/creativelifeform/three-nebula | MIT |
+| three.quarks examples' textures | Forrest Sun | https://github.com/Alchemist0823/three.quarks | MIT |
+| Effekseer for WebGL | Effekseer Project | https://github.com/effekseer/EffekseerForWebGL | MIT |
+| Effekseer sample effects | Effekseer Project, AndrewFM, NextSoft, Pierre, Suzuki (ICS LAB), tktk | https://github.com/effekseer/Effekseer | CC0 1.0 |
+| Fire, magic circle and magma orb textures | ICS INC. | https://github.com/ics-creative | MIT |
+| Black hole textures | Otto Seiskari | https://github.com/oseiskar/black-hole | MIT |
+| Codrops sentinels and vortex sphere; holographic material; WebGL fluid; Godot shaders | Codrops; Anderson Mancini; Pavel Dobryakov; Serj | (as in `vendor/NOTICE.md`) | MIT |
+| WebGL water | Martin Renou | https://github.com/martinRenou/threejs-water | BSD-3-Clause |
+| MaterialX noise | Contributors to the MaterialX Project | https://github.com/AcademySoftwareFoundation/MaterialX | Apache-2.0 |
+| space-3d | Rye Terrell | https://github.com/wwwtyro/space-3d | Unlicense |
+| Simplex and classic noise | Ashima Arts, Stefan Gustavson | https://github.com/ashima/webgl-noise | MIT |
+| "Magical gyroscope" (`cinematic/models/magical_gyroscope.glb`) | reddification | https://sketchfab.com/3d-models/magical-gyroscope-a3f110c0d2944a2dbff78709eb8f3984 | CC BY 4.0 |
+| "Two-Headed Snake FBX" (`extended/models/snake.glb`) | Providence Secretary (NIEZDE) | https://sketchfab.com/3d-models/two-headed-snake-fbx-2154cfc2e43f4f959b917f4e1a1fa935 | CC BY 4.0 |
+| Rock 030 (`textures/cathedral/`) | ambientCG | https://ambientcg.com/view?id=Rock030 | CC0 1.0 |
+| Effect sprite sheets (`extra/sprites/`) | Inguz Media, Sinestesia, Pavel Kutejnikov, VSG, 13rice, Soluna Software, Rubberduck and others | `public/assets/armory/extra/CREDITS.md` | CC0 1.0 |
+| Sound samples (`sfx/`) | Kenney and others | `public/assets/armory/sfx/CREDITS.md` | CC0 1.0 |
+
 ## Made with
 
 The game's own art, models, motion and voices were made with these tools on the maintainer's accounts; what they

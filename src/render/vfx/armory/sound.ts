@@ -1,7 +1,40 @@
-import { ARMORY_SOUND_NAMES, ARMORY_SOUND_PROFILES, loadRecipes } from './withheld';
+import { ARMORY_SOUND_NAMES, ARMORY_SOUND_PROFILES, loadRecipes } from './vendor/sounds';
 import type { ArmorySoundLayer, ArmorySoundName, ArmorySoundProfile } from './types';
 import { armorySoundOut, type ArmorySoundOut, type SoundAt } from './soundOut';
 
+/**
+ * The Armory's sound in the game (docs/engine/armory/README.md, "Sound").
+ *
+ * Each cast of an Armory effect plays the effect's cue profile (the Armory's src/audio, as data in
+ * src/engine/vfx/armory/sounds.json, vendored to ./vendor/sounds.ts) the way the Armory's own director plays it (its
+ * src/audio/index.js): the cast and charge layers at the cast; the loop from its `at` (the cast, the first hit, the
+ * impact phase) to its `until` (the impact phase, the fade, the end) or for `max` seconds; a hit's layers at its
+ * intensity (gain × (0.45 + 0.55 I), a layer skipped outside its min and max), hits merged per frame and at least `gap`
+ * apart, the first one playing the `first` layers; the tail as the effect fades, or a while after its last hit.
+ *
+ * **Never doubled.** The game voices every move it draws already: the cast, the swings, the hits and, for the fire
+ * fighters, a fire bed under them (audio/sfxPlan.ts). So unless a slot's casting says otherwise (`sound`, casting.ts),
+ * an Armory effect plays only what those don't cover, its *bed*: the loop (the fire burning on for as long as the
+ * effect does, past the move's own sounds) and the tail (dying down), quietly (`LEVEL.bed`). `sound: true` plays the
+ * whole profile (`full`, for a slot the game leaves silent); `false`, nothing.
+ *
+ * **Through the game's one-shot path** (soundOut.ts), as CombatAudio exposes no bus:
+ *  - a synth recipe is rendered once a page, in OfflineAudioContexts, by the Armory's own recipes.js
+ *    (./vendor/audio/recipes.js), a few variants a layer (each recipe detunes itself a little), into WAV files held as
+ *    blob URLs, which the game loads and plays like any sample;
+ *  - **never long** (launch day 7, 13 October 2026: 140-440 ms hitches 2-48 s into a twelve-fighter match, and 200-400
+ *    files decoded in one frame, both from this bank finishing after FIGHT). A render costs more than its length - every node
+ *    still to start is visited on every quantum - so a room's 262 s of synth in ONE context took 26-49 s to come back, long
+ *    after the load's 3 s wait, and its callback cut and encoded all of it at once; in contexts of `CHUNK` s the same takes
+ *    1.1-1.6 s. Every step on the page (a context's graph, a piece's cut and encode) runs in slices of a few ms with the
+ *    page's idle time between (`Slices`), and the files are handed to the game's audio a few at a time (`pump`), so what is
+ *    still being made when the fight begins costs it no frame it can see;
+ *  - a loop plays as overlapping segments of itself, cross-faded at equal power and laid while it should run, so it
+ *    stops within one segment of its `until`. A noise-like loop (fire, wind, static, the tuned packs' surf, hiss and
+ *    rustle, a sample bank's loop) hides the seams; a pitched one (a beam's hum, an aura's partials, the chainsaw's
+ *    engine, the shield's hum, the black hole's and the magma's sub sines, a pad) would phase at them, so it is left
+ *    out.
+ */
 
 export type SoundMode = 'bed' | 'full';
 

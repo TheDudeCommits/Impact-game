@@ -1,5 +1,5 @@
 import type * as THREE from 'three';
-import { ARMORY_MANIFEST } from './withheld';
+import { ARMORY_MANIFEST } from './vendor/manifest';
 import { ArmoryHost } from './host';
 import { ArmoryEffectType, type ArmoryParams } from './effect';
 import { armorySound, soundBank } from './sound';

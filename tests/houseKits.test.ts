@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+/** House kits (src/engine/sim/houseKits.ts, docs/engine/AREA.md), with two entries made up for the test: Taisei and
+ *  Ouga trade specials (a swap both ways, which must neither chain nor loop), Taisei takes Magatsu's area move with an
+ *  Armory effect on it and wears an aura. The real data is checked in tests/areaSlotData.test.ts. */
 vi.mock('../src/engine/sim/houseKits.json', () => ({ default: {
   taisei: { slots: { special: { from: 'ouga', fromSlot: 'special' }, area: { from: 'magatsu', fromSlot: 'area', fx: { effect: 'test-burst' } } }, aura: { effect: 'test-aura', scale: 1.2 } },
   ouga: { slots: { special: { from: 'taisei', fromSlot: 'special', tune: { power: 1.1 } } } },

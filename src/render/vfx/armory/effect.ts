@@ -3,8 +3,8 @@ import { EffectPool, PooledEffect, type CancelReason, type CueContext, type Effe
 import { bodyCentre } from '../VfxKit';
 import { SIGNATURE } from '../../signature/context';
 import type { Fighter } from '../../Fighter';
-import { frame as armoryFrame } from './withheld';
-import { settings } from './withheld';
+import { frame as armoryFrame } from './vendor/core/FrameUniforms.js';
+import { settings } from './vendor/config/settings.js';
 import type { ArmoryHost, ArmorySpace } from './host';
 import type { ArmoryAbility, ArmoryAbilityClass } from './types';
 import { FITS, HeatRamp, autoFit, guessHeat, type Fit, type Palette } from './fits';
@@ -12,6 +12,37 @@ import { macroValue, turnHue, type Macros } from './macros';
 import { armorySound, type CastSound, type SoundMode } from './sound';
 import { effekseerHost } from './effekseer';
 
+/**
+ * An Armory effect as a VOL.2 effect type: `armory/<id>` (docs/engine/armory/README.md).
+ *
+ * The rules VOL.2 sets every effect (render/vfx/engine/Effect.ts), kept:
+ *  - **A fixed pool, made at load.** `prewarm` builds every instance (its Armory ability and the space it draws in,
+ *    host.ts) and runs each through a whole cast, hidden, so everything the Armory makes lazily (particle systems,
+ *    decal and burst pools, p27's upstream meshes) exists before the room's load-time compile; one more cast, the warm
+ *    one, is left standing mid-life, hidden, so its programs stay linked when a pooled cast disposes its own (three
+ *    deletes a program with its last material).
+ *  - **The move's clock.** `update(age)` steps the ability by the move's own step (`castAge`: the hit-stop and the
+ *    server's holds taken out), and every material in the instance's space runs on that clock.
+ *  - **Tiers.** Counts and rates in the effect's settings, and the Armory's global particle multipliers, are scaled by
+ *    the tier and the density (fits.ts `counts`, `levels`).
+ *
+ * **Where.** The cue's anchor and heading become the Armory's cast: `origin` the thrower's feet (the Armory's floor is
+ * the game's floor, y = 0), `direction` the heading, `distance` the move's reach, the distance to the body hit, or the
+ * zone's centre (`lay`). The launch point the Armory keeps in its settings (a hand height, a step forward) is set from
+ * the real hand or blade the cue is anchored to (fits.ts `launch`), so a breath leaves Bellows's fist and a lash
+ * Tancho's left hand, in the air as on the ground.
+ *
+ * **Colours.** The fighter's palette (casting.json) becomes the effect's colour keys per cast (fits.ts `HeatRamp`):
+ * the Armory reads its settings live, so before every spawn and update an instance writes its own values into the
+ * effect's block; two fighters can wear one effect at once in their own colours.
+ *
+ * **Screen.** The Armory's screen flash becomes the game's impact frame only for a cast that involves the local player
+ * and asks for one (`impactFrame`), once a cast; its camera shake has no counterpart (host.ts).
+ *
+ * **Sound.** A cast asked to (`sound`) plays the effect's own cue profile through the game's audio (sound.ts): told of
+ * the ability's phase changes as they happen and of every hit it makes (its bursts, flashes and shakes, the blade
+ * pack's sparks, impact frames and hit-stops), as the Armory's sound director is.
+ */
 
 /** How a cast is laid out from the thrower:
  *  - `line`: from the feet along the heading, `reach` metres (a breath, a lash, a flock);

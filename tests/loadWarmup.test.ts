@@ -4,13 +4,13 @@ import { MOVES } from '../src/game/moves';
 import { RELEASED_FIGHTERS } from '../src/game/rosterAvailability';
 import { NATIVE_EFFECTS } from '../src/engine/vfx/casting';
 import areaLooks from '../src/engine/sim/areaLooks.json';
-import { ARMORY_MANIFEST } from '../src/render/vfx/armory/withheld';
+import { ARMORY_MANIFEST } from '../src/render/vfx/armory/vendor/manifest';
 import { ArmoryHost } from '../src/render/vfx/armory/host';
 import { ArmoryEffectType } from '../src/render/vfx/armory/effect';
 import { SoundBank } from '../src/render/vfx/armory/sound';
-import { ARMORY_SOUND_NAMES } from '../src/render/vfx/armory/withheld';
+import { ARMORY_SOUND_NAMES } from '../src/render/vfx/armory/vendor/sounds';
 import { castingFx, playerFx, roomChunkIds, roomFxIds } from '../src/render/vfx/armory/roomFx';
-import { ARMORY_CASTINGS } from '../src/render/vfx/armory/withheld';
+import { ARMORY_CASTINGS } from '../src/render/vfx/armory/vendor/castings';
 import { armoryRollout, CAST, LIVE } from '../src/render/vfx/armory/rollout';
 import { nextFrame, prefetchRoomFx, warmEnabled, warmRoomAssets } from '../src/loading/matchWarmup';
 import { capTextures, currentTextureCap, setTextureCap, textureCapFor } from '../src/render/textureCap';
@@ -18,6 +18,16 @@ import { CombatAudio } from '../src/audio/CombatAudio';
 
 /** Launch night, 12 October 2026: what a match's load warms is read from the game's data, not from a list kept by hand. */
 describe('the effects a room warms', () => {
+  it('every released fighter names its area look, and every effect named is one the game can build', () => {
+    const known = new Set([...Object.keys(ARMORY_MANIFEST), ...NATIVE_EFFECTS]);
+    for (const fighter of RELEASED_FIGHTERS) {
+      const ids = playerFx({ fighter });
+      const look = MOVES[fighter]?.area?.area?.fx ?? (areaLooks as Record<string, string[]>)[fighter]?.[0];
+      expect(look, `${fighter} has an area look`).toBeTruthy();
+      expect(ids, `${fighter}'s area look is warmed`).toContain(look);
+      for (const id of ids) expect(known.has(id), `${fighter}: ${id} is vendored or native`).toBe(true);
+    }
+  });
 
   it('a room asks for each effect once, and never for an arcade enemy', () => {
     const room = [{ fighter: 'hinomoto' as const }, { fighter: 'hinomoto' as const }, { fighter: 'ampere' as const }, { fighter: 'taisei' as const, enemy: 'grunt' }];
@@ -27,11 +37,75 @@ describe('the effects a room warms', () => {
     expect(ids).not.toEqual(expect.arrayContaining(playerFx({ fighter: 'taisei' }).filter(id => !playerFx({ fighter: 'hinomoto' }).includes(id) && !playerFx({ fighter: 'ampere' }).includes(id))));
   });
 
+  it('reads the castings of every fighter live in the page, from the generated castings and the rollout, by no name', () => {
+    expect(LIVE.length).toBeGreaterThan(0);
+    const page = armoryRollout();
+    for (const fighter of LIVE) {
+      const slots = ARMORY_CASTINGS[fighter]?.slots ?? {};
+      const picks = Object.entries(slots).filter(([slot, c]) => c?.pick && !c.pick.includes('/') && !(slot === 'body' && (c as { when?: string }).when === 'never')).map(([, c]) => c!.pick as string);
+      // Launch day (12 October 2026): a fighter whose moves are staged by their own module (MoveStage: Bellows,
+      // Barrow) is live with every slot left to the game on purpose (casting.json's `why`), so there is nothing
+      // of the Armory's to warm for them. Live still means a casting is written for them.
+      expect(ARMORY_CASTINGS[fighter]?.slots, `${fighter} is live with a casting`).toBeTruthy();
+      expect(castingFx(fighter, page)).toEqual(expect.arrayContaining(picks));
+      expect(roomChunkIds([{ fighter }])).toEqual(expect.arrayContaining(picks));
+    }
+    // A fighter not live in this page draws no casting, so none is fetched for him.
+    const dark = (Object.keys(ARMORY_CASTINGS) as string[]).find(id => !page.has(id as never));
+    if (dark) expect(castingFx(dark, page)).toEqual([]);
+  });
 
+  it('follows the live list as it grows: fighters added to it tomorrow are warmed with no change here', () => {
+    // Every fighter that has slots in the generated castings, as if rollout.json's live list named them all.
+    const everyone = new Set(Object.entries(ARMORY_CASTINGS).filter(([, c]) => c.slots).map(([id]) => id));
+    expect(everyone.size).toBeGreaterThanOrEqual(CAST.length);
+    const room = [...everyone].slice(0, 12).map(fighter => ({ fighter: fighter as never }));
+    const ids = roomChunkIds(room, everyone);
+    for (const { fighter } of room) {
+      for (const id of castingFx(fighter, everyone)) expect(ids, `${fighter}'s casting effect ${id}`).toContain(id);
+      for (const id of playerFx({ fighter })) expect(ids).toContain(id);
+    }
+    // And a page whose live list is empty draws no casting at all.
+    expect(roomChunkIds(room, new Set())).toEqual(roomFxIds(room));
+  });
 });
 
+describe('an Armory effect built for a room, then cast whole in hiding', () => {
+  it('is warmed once, by one instance, and still hands out its pool', async () => {
+    const scene = new THREE.Scene(), host = ArmoryHost.for(scene);
+    try {
+      const type = new ArmoryEffectType(host, 'dragonbreath', await ARMORY_MANIFEST.dragonbreath.load(), 3);
+      type.prewarm(scene, true);
+      expect(type.warmed).toBe(false);
+      type.dryRun(1);
+      expect(type.warmed).toBe(true);
+      // Idempotent: a second ask has nothing to do (and nothing to throw).
+      type.dryRun(1);
+      expect(type.instances).toHaveLength(3);
+      const first = type.acquire();
+      expect(first).toBeTruthy();
+      first!.release();
+      // A type prewarmed whole is already warmed.
+      const whole = new ArmoryEffectType(host, 'dragonbreath', await ARMORY_MANIFEST.dragonbreath.load(), 2);
+      whole.prewarm(scene);
+      expect(whole.warmed).toBe(true);
+    } finally { host.dispose(); }
+  });
+});
 
 describe('the sound a room waits for', () => {
+  it('the Armory bank is settled when the game holds every file it made', () => {
+    const bank = new SoundBank(), held = new Set<string>();
+    const out = { sample() {}, preload() {}, sampleSeconds: (url: string) => held.has(url) ? 1 : undefined };
+    expect(bank.settled(out)).toBe(true);
+    const sound = Object.keys(ARMORY_SOUND_NAMES)[0];
+    bank.provide({ sound, gain: 1 } as never, ['a.wav', 'b.wav']);
+    expect(bank.settled(out)).toBe(false);
+    held.add('a.wav');
+    expect(bank.settled(out)).toBe(false);
+    held.add('b.wav');
+    expect(bank.settled(out)).toBe(true);
+  });
 
   it('CombatAudio.ready resolves at once with nothing asked, and at its cap with a load that never ends', async () => {
     const audio = new CombatAudio();

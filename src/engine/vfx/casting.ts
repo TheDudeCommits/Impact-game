@@ -1,3 +1,10 @@
+/** Every fighter's VFX casting (docs/engine/VFX.md): for its body and its four moves, the Armory effect picked, its
+ *  alternates, when and where it plays, at what size, and why, plus the fighter's palette (the look preset the
+ *  effects are drawn in). One data file (./casting.json), written by people and agents from the matcher's shortlists
+ *  and the stills, and by the workbench; read by the cue tracks the renderer plays, the casting pages, and the sync,
+ *  which flags where the Armory's newest effects now outrank a pick.
+ *
+ *  Pure data and functions: safe for tools and tests. */
 import type { FighterId } from '../../game/types';
 import { MOVES } from '../../game/moves';
 import { FIGHTERS } from '../../config';
@@ -6,6 +13,8 @@ import { needOf, rank, worldOf, type CastSlot } from './matcher';
 import castingJson from './casting.json';
 
 export const CAST_SLOTS: readonly CastSlot[] = ['body', 'light', 'heavy', 'special', 'ultimate'];
+/** The engine's own effect types a casting may pick besides Armory effects: an id with a `/` (VOL.2's kits; the ICE
+ *  kit is render/vfx/engine/ice, `ICE`). Ice uses the ICE kit's look (ice-a). */
 export const NATIVE_EFFECTS = ['ice/crystal-field', 'ice/lance', 'ice/freeze', 'ice/floor-freeze', 'ice/pheasant'] as const;
 export const isNative = (id: string) => id.includes('/');
 /** Where on the thrower or the target an effect plays. */
