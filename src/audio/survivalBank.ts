@@ -20,15 +20,15 @@ export type Voice = 'man' | 'beast' | 'brute' | 'imp' | 'zombie' | 'demon';
 export const VOICE_OF: Record<string, Voice> = {
   // (The Tribunal's guards are dead men walking now - their models are zombie sailors - and so are the husks.)
   'tribunal-guard': 'zombie', 'tribunal-guard-rifle': 'zombie', husk: 'zombie',
-  'beast-pirate': 'man', 'jinlin-soldier': 'man', 'rogue-ninja': 'man',
-  'ash-wraith': 'demon', 'hollow-void-ray': 'demon', 'white-pale-sapling': 'beast',
-  automaton: 'brute', 'beast-graft-brute': 'brute', 'great-wraith': 'brute', 'apostle-spawn': 'brute',
-  saibaman: 'imp', 'brood-spawn': 'imp',
+  'graft-raider': 'man', 'jinlin-soldier': 'man', 'cutthroat': 'man',
+  'ash-wraith': 'demon', 'ash-caster': 'demon', 'pale-sapling': 'beast',
+  automaton: 'brute', 'graft-brute': 'brute', 'great-wraith': 'brute', 'rift-spawn': 'brute',
+  'cinder-imp': 'imp', 'brood-spawn': 'imp',
 };
 /** Playback rate by kind: pitch without another take. */
 export const PITCH: Record<string, number> = {
-  automaton: .72, 'beast-graft-brute': .82, 'great-wraith': .7, 'apostle-spawn': .66, 'beast-pirate': .9, husk: .86, 'tribunal-guard': .96, 'tribunal-guard-rifle': 1.02,
-  'white-pale-sapling': 1.12, saibaman: 1.18, 'brood-spawn': 1.25, 'ash-wraith': .95, 'hollow-void-ray': 1.02,
+  automaton: .72, 'graft-brute': .82, 'great-wraith': .7, 'rift-spawn': .66, 'graft-raider': .9, husk: .86, 'tribunal-guard': .96, 'tribunal-guard-rifle': 1.02,
+  'pale-sapling': 1.12, 'cinder-imp': 1.18, 'brood-spawn': 1.25, 'ash-wraith': .95, 'ash-caster': 1.02,
 };
 
 // The fifth list's kinds speak as the bodies they wear (horde/kinds.ts WEARS).

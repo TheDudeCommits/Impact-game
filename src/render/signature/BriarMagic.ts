@@ -15,22 +15,22 @@ import { ANTI as ANTI_FLAME } from './FlameSprites';
 import { CastBook, Rifts, arc, type Gather } from './StageCraft';
 import { Crescents, crescentGeometry, DARK as DARK_BODY, ENERGY, type CrescentStyle } from './Crescent';
 import { FloorGashes } from './FloorGash';
-import { DRAGON_EYES, FUNNEL, Funnels, SeaDragons, SpaceTears } from './GrimoireShapes';
+import { DRAGON_EYES, FUNNEL, Funnels, SeaDragons, SpaceTears } from './BriarShapes';
 
-export type GrimoireId = 'cardo' | 'bruin' | 'aquilo' | 'svanhild';
-export const isGrimoire = (id: string | undefined): id is GrimoireId => id === 'cardo' || id === 'bruin' || id === 'aquilo' || id === 'svanhild';
+export type BriarId = 'cardo' | 'bruin' | 'aquilo' | 'svanhild';
+export const isBriar = (id: string | undefined): id is BriarId => id === 'cardo' || id === 'bruin' || id === 'aquilo' || id === 'svanhild';
 
-const MOVES: Record<GrimoireId, Record<CoreSlot, MoveDefinition>> = { cardo: CARDO_MOVES, bruin: BRUIN_MOVES, aquilo: AQUILO_MOVES, svanhild: SVANHILD_MOVES };
+const MOVES: Record<BriarId, Record<CoreSlot, MoveDefinition>> = { cardo: CARDO_MOVES, bruin: BRUIN_MOVES, aquilo: AQUILO_MOVES, svanhild: SVANHILD_MOVES };
 /** A look whose heart burns no hotter than `heat` (stageLook's is 3.2). */
 const cooled = (look: StageLook, heat: number): StageLook => ({ ...look, core: look.core.clone().multiplyScalar(heat / Math.max(look.core.r, look.core.g, look.core.b)) });
-/** Null Magic: black flame licked a thin dark crimson (FlameSprites ANTI) and smoke; its ball black, rimmed crimson;
+/** Lightless Magic: black flame licked a thin dark crimson (FlameSprites ANTI) and smoke; its ball black, rimmed crimson;
  *  what the stage draws in the look's main colour (the rim of the darkness it leaves on the floor) a dark red, not
- *  stageLook's white. Round 7: Null Magic gives off no light at all -
+ *  stageLook's white. Round 7: Lightless Magic gives off no light at all -
  *  matte black everywhere, no glow, no pale edge; its only colour is red rims, red trails and short red crackle (and a
  *  dark-crimson smoke smear behind Plowshare Drop). The pale grey it was edged in until round 6 is gone. */
 const ANTI_SPHERE = { body: new THREE.Color(.006, .004, .004), core: new THREE.Color(.05, .01, .01), rimA: new THREE.Color(.82, .05, .04), rimB: new THREE.Color(.24, .015, .012), spin: 1.5 };
 // (Round 20, blind critic 8: "glowing red streaks, white-hot orbs ... Target: matte black shapes with crisp red rims
-// and no bloom" - null magic gives off no light: the heart a third as hot, so the floor's split is a red line, not a laser.)
+// and no bloom" - lightless magic gives off no light: the heart a third as hot, so the floor's split is a red line, not a laser.)
 const ANTI: StageLook = { ...stageLook(0xc0261a, 0x3a0807, 0x020202, { flame: ANTI_FLAME, dark: true, sphere: ANTI_SPHERE }), core: new THREE.Color(1.05, .075, .05), main: new THREE.Color(.36, .03, .025), light: new THREE.Color(.06, .008, .006) };
 /** Bruin's darkness: the roster's, its violet kept to the edge. */
 const DARK: StageLook = { ...STAGE.dark, light: new THREE.Color(.08, .03, .12) };
@@ -41,11 +41,11 @@ const DARK: StageLook = { ...STAGE.dark, light: new THREE.Color(.08, .03, .12) }
 const WIND = cooled(stageLook(0xf2f9ff, 0xa8d8ee, 0x24506a), 1.5);
 const SYLPH = cooled(stageLook(0xf6fff8, 0x8ff0b4, 0x1c6b47), 1.7);
 const WATER = cooled(stageLook(0xf3fcff, 0x4fb8f5, 0x0b4a8c), 1.4);
-const LOOK: Record<GrimoireId, StageLook> = { cardo: ANTI, bruin: DARK, aquilo: WIND, svanhild: WATER };
+const LOOK: Record<BriarId, StageLook> = { cardo: ANTI, bruin: DARK, aquilo: WIND, svanhild: WATER };
 /** The thin bright line down a dark blade (linear, over the bloom threshold only a little). */
-const EDGE: Record<GrimoireId, THREE.Color> = { cardo: new THREE.Color(.5, .035, .025), bruin: new THREE.Color(.7, .28, 1.1), aquilo: WIND.core, svanhild: WATER.core };
-/** Each one's crescent: Null Magic black with a red rim, darkness black with a violet one, wind a white-cyan body. */
-const CRESCENT: Record<GrimoireId, CrescentStyle> = {
+const EDGE: Record<BriarId, THREE.Color> = { cardo: new THREE.Color(.5, .035, .025), bruin: new THREE.Color(.7, .28, 1.1), aquilo: WIND.core, svanhild: WATER.core };
+/** Each one's crescent: Lightless Magic black with a red rim, darkness black with a violet one, wind a white-cyan body. */
+const CRESCENT: Record<BriarId, CrescentStyle> = {
   cardo: { mode: DARK_BODY, edge: new THREE.Color(.85, .05, .035), body: new THREE.Color(.004, .003, .003), glow: new THREE.Color(.09, .006, .005), light: new THREE.Color(.12, .008, .006) },
   bruin: { mode: DARK_BODY, edge: new THREE.Color(1.9, .8, 3), body: new THREE.Color(.006, .002, .011), glow: new THREE.Color(.85, .22, 1.5), light: new THREE.Color(.6, .2, 1) },
   aquilo: { mode: ENERGY, edge: new THREE.Color(2.6, 3.0, 3.2), body: new THREE.Color(.55, .85, 1.05), glow: new THREE.Color(.36, .62, .85), light: new THREE.Color(.6, .95, 1.2) },
@@ -63,13 +63,13 @@ const FLURRY_LEAN = [-.75, 1.35, .75, -.35];
  *  pillar"; the cut is a thin white line): black, its edge white, almost no glow. */
 const SPACE_CUT: CrescentStyle = { ...CRESCENT.bruin, edge: new THREE.Color(2.4, 2.4, 2.6), glow: new THREE.Color(.08, .08, .1), light: new THREE.Color(.2, .2, .24) };
 /** What a cut leaves glowing in the floor. (Round 8, blind critic 2: Last Weed Standing's "glowing red laser runs along the
- *  floor ... target: a black cut line"; Null Magic gives off no light: Cardo's a dull red scar, where it was white-hot.) */
-const GASH: Record<GrimoireId, THREE.Color> = { cardo: new THREE.Color(.22, .02, .015), bruin: new THREE.Color(1.1, .3, 1.9), aquilo: new THREE.Color(.5, 1.7, .9), svanhild: new THREE.Color(.4, 1.1, 2) };
+ *  floor ... target: a black cut line"; Lightless Magic gives off no light: Cardo's a dull red scar, where it was white-hot.) */
+const GASH: Record<BriarId, THREE.Color> = { cardo: new THREE.Color(.22, .02, .015), bruin: new THREE.Color(1.1, .3, 1.9), aquilo: new THREE.Color(.5, 1.7, .9), svanhild: new THREE.Color(.4, 1.1, 2) };
 /** A thrown special's crescent: its size, how far it leans from upright (radians: Unspell stands on the floor, the
  *  Night Prowl lies wide), how high its middle flies (null: on the floor, its lower horn dragging), metres a second and
  *  how far it goes. Drawn at its own speed from the release, as the Nightfang is: a blade thrown accent still has to
  *  be seen to fly (critic pass 2: "no black crescent appears in any frame"). */
-const THROWN: Partial<Record<GrimoireId, { size: number; lean: number; height: number | null; speed: number; range: number }>> = {
+const THROWN: Partial<Record<BriarId, { size: number; lean: number; height: number | null; speed: number; range: number }>> = {
   // (Round 12, blind critic 4: "a blurred maroon slab clipping the frame edge ... target: several thin, crisp black crescents,
   // each several body-heights long": larger and slower, so they are seen crossing the floor.)
   cardo: { size: 2.4, lean: .32, height: null, speed: 10, range: 11 },
@@ -85,17 +85,17 @@ const THROWN: Partial<Record<GrimoireId, { size: number; lean: number; height: n
  *  fires 2-4 thin, pure-black crescents that skim the floor and cross in an X"), so Cardo's leaves as two, leaning
  *  either way; SKIMMING SWALLOW is one paper-thin sickle about three times Aquilo's height and the Night Prowl a band many
  *  body-lengths long (both were "too small to read": the sizes above, from 1.45 and 2.1). */
-const CROSSED: Partial<Record<GrimoireId, boolean>> = { cardo: true };
+const CROSSED: Partial<Record<BriarId, boolean>> = { cardo: true };
 /** Round 8 (blind critic 2: SKIMMING SWALLOW "a soft cloudy curtain ... target: a razor-thin white sickle about 3x his height,
  *  pointed at both ends with a bright rim"): how much of a thrown crescent's depth (along its flight) and breadth (across
  *  its face) it keeps - the Nightfang's own section is a third of its radius thick. */
-const FLAT: Partial<Record<GrimoireId, readonly [number, number]>> = { aquilo: [.42, .6] };
+const FLAT: Partial<Record<BriarId, readonly [number, number]>> = { aquilo: [.42, .6] };
 /** Round 12 (blind critic 4: SKIMMING SWALLOW "never appears"): a white sickle is light added to a pale hall, so it takes a dark
  *  ink edge to be seen at all (the dark ones keep theirs). */
-const INK: Partial<Record<GrimoireId, number>> = { aquilo: .07 };
+const INK: Partial<Record<BriarId, number>> = { aquilo: .07 };
 const SLASH_ARC = 1.1;
-const DARKNESS = (id: GrimoireId) => id === 'cardo' || id === 'bruin';
-const BLADE: Record<GrimoireId, string | undefined> = { cardo: 'Cardo', bruin: 'Bruin', aquilo: undefined, svanhild: 'Svanhild' };
+const DARKNESS = (id: BriarId) => id === 'cardo' || id === 'bruin';
+const BLADE: Record<BriarId, string | undefined> = { cardo: 'Cardo', bruin: 'Bruin', aquilo: undefined, svanhild: 'Svanhild' };
 const UP = new THREE.Vector3(0, 1, 0), DOWN = new THREE.Vector3(0, -1, 0);
 const clamp = (x: number) => x < 0 ? 0 : x > 1 ? 1 : x;
 const smooth = (x: number, a: number, b: number) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
@@ -174,7 +174,7 @@ interface Shot { kind: number; at: THREE.Vector3; lead: THREE.Vector3; tips: THR
 /** A thrown special's crescent in flight (see THROWN). */
 interface Thrown { key: string; actorId: string; from: THREE.Vector3; heading: THREE.Vector3; floor: number; born: number; hitAt?: number; gash?: THREE.Vector3 }
 
-export class GrimoireMagic {
+export class BriarMagic {
   private readonly stage: MoveStage;
   private readonly book: CastBook;
   private readonly rifts: Rifts;
@@ -201,7 +201,7 @@ export class GrimoireMagic {
   /** The Roar's arc: its pull, the head's heading, and a stretch of its body. */
   private pull = new THREE.Vector3(); private headed = new THREE.Vector3(); private from = new THREE.Vector3(); private to = new THREE.Vector3();
 
-  constructor(private readonly id: GrimoireId, scene: THREE.Scene, private readonly kit: Pick<VfxKit, 'budget'> & Partial<VfxKit>) {
+  constructor(private readonly id: BriarId, scene: THREE.Scene, private readonly kit: Pick<VfxKit, 'budget'> & Partial<VfxKit>) {
     this.stage = MoveStage.for(scene, kit);
     this.look = LOOK[id];
     this.edge = EDGE[id];
@@ -249,7 +249,7 @@ export class GrimoireMagic {
     if (e.slot === 'light') {
       if (this.dark && (e.chain ?? 0) >= 3) {
         // The string's last cut, theirs rather than the house's floor-breaker (critic pass 5: "a brown-rock and beige-dust
-        // explosion that hides both fighters. Nothing about it is null magic"): a great dark crescent through them, black
+        // explosion that hides both fighters. Nothing about it is lightless magic"): a great dark crescent through them, black
         // flame thrown off it; Cardo's splits the floor, Bruin's crosses a second cut over it.
         this.spray(point, dir, 1.3, t); this.mark(point, side, -.6 * tilt, 1.9, t, .4);
         if (id === 'cardo') this.rifts.add(this.c.copy(ground).addScaledVector(dir, .2), dir, 3.2, L, t, 1.2, .35, .09, false);
@@ -384,7 +384,7 @@ export class GrimoireMagic {
             _p.copy(s.at).addScaledVector(_d, s.size * (.15 + .75 * swell) * (.6 + .5 * hash(k * 5.7 + s.seed)));
             st.tongue(_p, _d, s.size * (.42 - .18 * u), s.size * (.75 + .85 * swell), L, (1 - u) * .9, s.seed + k);
           }
-          // The null magic's grey sparks, the darkness's violet: thin, few, short.
+          // The lightless magic's grey sparks, the darkness's violet: thin, few, short.
           if (age < .12) st.glow(s.at, s.size * .9, this.edge, 1.2 * (1 - age / .12));
           for (let k = 0; k < (detail ? 6 : 3); k++) {
             const ang = k * 1.9 + s.seed * 1.3;
@@ -551,7 +551,7 @@ export class GrimoireMagic {
         if (hasBlade && this.dark) flames(st, this.a, this.b, L, detail ? (id === 'cardo' ? 6 : 3) : 2, id === 'cardo' ? .085 : .042, .7, seed);
         if (hasBlade && id === 'bruin') st.streak(this.a, this.b, .009, this.edge, .55);
         else st.glow(this.p.copy(f.handL ?? hand), .14, L.main, .5);
-        // OVERGROWN: the null magic streaming up off his sword arm and shoulders as he stands (not from the floor: tongues
+        // OVERGROWN: the lightless magic streaming up off his sword arm and shoulders as he stands (not from the floor: tongues
         // there stood as "black stakes stuck in the floor around his feet" - critic pass 5).
         if (id === 'cardo' && hasBlade) for (let i = 0; i < (detail ? 3 : 2); i++) {
           const phase = (time * .9 + i * .37) % 1;
@@ -664,11 +664,11 @@ export class GrimoireMagic {
       this.floorDark(st, this.p.copy(feet), 1.8 + 1.6 * build, .4 + .6 * build, seed);
     }
     if (id === 'cardo' && this.blade(actor)) {
-      // The sword grows: Null Magic pushed out past its edge, a black slab three times its length, rimmed pale.
+      // The sword grows: Lightless Magic pushed out past its edge, a black slab three times its length, rimmed pale.
       this.axis.subVectors(this.b, this.a); const own = this.axis.length(); this.axis.normalize();
       // (Its ends burn away over the outer two-fifths of the crescent - Crescent.ts - so it is drawn 1.6 times as long and
       // its body runs from his hands to the tip: critic pass 6, "a slab floating at top-right that never touches his hands".)
-      // (Round 18b: through the flurry an edge of Null Magic half the blade again; three times its length only once the last
+      // (Round 18b: through the flurry an edge of Lightless Magic half the blade again; three times its length only once the last
       // cut is out and he leaps with it raised.)
       // (Round 20, blind critic 8: "the blade never grows": the play film's frames fell before the last fifth; full length from two
       // thirds of the way, through the last cut, the leap and the cleave.)

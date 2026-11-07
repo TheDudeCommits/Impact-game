@@ -24,7 +24,7 @@ describe('Hakushi candidate model and manual kit',()=>{
     }
    }
   },20000);
-  it.skipIf(!hasAsset(path))(`${path} keeps Senpugan hand in front and distinct awakening hand choreography`,async()=>{
+  it.skipIf(!hasAsset(path))(`${path} keeps the palm-sphere hand in front and distinct awakening hand choreography`,async()=>{
    const g=await loadRig(path),m=new THREE.AnimationMixer(g.scene),hand=g.scene.getObjectByName('RightHand')!,head=g.scene.getObjectByName('Head')!,a=new THREE.Vector3(),b=new THREE.Vector3();
    const heavy=g.animations.find(c=>c.name==='Lion\'s Pearl')!;m.clipAction(heavy).play();m.setTime(heavy.duration*.58);g.scene.updateMatrixWorld(true);hand.getWorldPosition(a);head.getWorldPosition(b);expect(a.z-b.z).toBeGreaterThan(.18);
    m.stopAllAction();const awake=g.animations.find(c=>c.name==='THE OLD LION')!;m.clipAction(awake).play();m.setTime(awake.duration*.35);g.scene.updateMatrixWorld(true);hand.getWorldPosition(a);m.setTime(awake.duration*.64);g.scene.updateMatrixWorld(true);hand.getWorldPosition(b);expect(a.distanceTo(b),'seal to kabuki release must actually move').toBeGreaterThan(.24);

@@ -11,7 +11,7 @@ import type { CombatEvent, FighterId, PlayerState } from '../src/game/types';
 
 /**
  * Round 3b (CAMERA): the blind critic's ultimate framing - "cameras often sit
- * behind the victim or inside geometry", Thunder Lord's Arrow "camera inside the
+ * behind the victim or inside geometry", Ikazuchi Arrow "camera inside the
  * Guardian", Grand Tide "the giant fist hides the target for about 4 s",
  * Kyokko-Ho "a bot's torso fills about 40% of the frame", the main victim
  * leaving a multi-victim time stop's frame on the resume, the Steamroller
@@ -86,7 +86,7 @@ describe('ultimate shots keep what the move summons out of the way', () => {
     expect(hidden / release.length, 'frames with the victim behind the fist').toBeLessThan(.05);
   });
 
-  it('Thunder Lord\'s Arrow: no lens inside the Guardian, and the victim seen past it', () => {
+  it('Ikazuchi Arrow: no lens inside the Guardian, and the victim seen past it', () => {
     const { frames, cast } = film('shiden', [[0, 2.2], [3.2, 2.9], [-2.1, 5]], 6);
     const shot = frames.filter(f => f.weight > .5 && f.t - cast < 4.5);
     expect(shot.some(f => f.phase === 'release')).toBe(true);

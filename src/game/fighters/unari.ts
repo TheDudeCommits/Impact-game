@@ -1,7 +1,7 @@
 import type {CoreSlot} from '../types';
 import type {MoveDefinition} from '../moves';
 import type {ComboRow} from '../combos';
-/** Every card and elastic strike follows a manual input. Bungee Gum's
+/** Every card and elastic strike follows a manual input. The elastic's
  * pull is a confirmed projectile impact; no persistent damaging trap. */
 export const UNARI_MOVES:Record<CoreSlot,MoveDefinition>={
  light:{name:'Fine Line',duration:.43,contacts:[.152],damage:21,range:2.45,radius:.74,stamina:9,cooldown:.43,stun:.31,knockback:3.0,lunge:3.7,style:'melee'},

@@ -78,7 +78,7 @@
    "voice": "konta",
    "text": "よっ!"
   },
-  "konta-senpugan": {
+  "konta-whirlsphere": {
    "file": "voice/originals/px/konta/konta-89f402e4.wav",
    "seconds": 1.17,
    "level": -9.1,
@@ -638,15 +638,15 @@
    "voice": "ward",
    "text": "ふん。"
   },
-  "vo-ward-room": {
-   "file": "voice/originals/ward/vo-ward-room.wav",
+  "vo-ward-theatre": {
+   "file": "voice/originals/ward/vo-ward-theatre.wav",
    "seconds": 1.24,
    "level": -16.5,
    "voice": "ward",
    "text": "術野、確保。"
   },
   "ward-crossmatch": {
-   "file": "voice/originals/ward/vo-ward-room.wav",
+   "file": "voice/originals/ward/vo-ward-theatre.wav",
    "seconds": 1.24,
    "level": -16.5,
    "voice": "ward",
@@ -666,8 +666,8 @@
    "voice": "ward",
    "text": "焼き切る……カウテリー。"
   },
-  "ward-counter-shock": {
-   "file": "voice/originals/ward/ward-counter-shock.wav",
+  "ward-flatline": {
+   "file": "voice/originals/ward/ward-flatline.wav",
    "seconds": 1.81,
    "level": -17.8,
    "voice": "ward",
@@ -1205,7 +1205,7 @@
    "voice": "setsu",
    "text": "へへ、ビリッときた?"
   },
-  "vo-taisei-golden-form": {
+  "vo-taisei-golden-sage": {
    "file": "voice/originals/taisei/taisei-47153c6b.wav",
    "seconds": 4.125,
    "level": -16.4,
@@ -2178,8 +2178,8 @@
    "voice": "rook",
    "text": "はっ。"
   },
-  "vo-rook-arise": {
-   "file": "voice/originals/rook/vo-rook-arise.wav",
+  "vo-rook-gather": {
+   "file": "voice/originals/rook/vo-rook-gather.wav",
    "seconds": 1.12,
    "level": -18.7,
    "voice": "rook",
@@ -2479,7 +2479,7 @@
    "voice": "gaku",
    "text": "うりゃあっ！"
   },
-  "vo-gaku-rock-paper": {
+  "vo-gaku-landslide": {
    "file": "voice/originals/gaku/gaku-92054b05.wav",
    "seconds": 2.24,
    "level": -15.3,
@@ -4705,7 +4705,7 @@
    "voice": "konta",
    "text": "いてて…ぜってえ倒れねえってばさ!"
   },
-  "vo-konta-odama-senpugan": {
+  "vo-konta-great-whirlsphere": {
    "file": "voice/originals/px/konta/konta-1fec9c95.wav",
    "seconds": 1.92,
    "level": -16.4,
@@ -9185,7 +9185,7 @@
    "voice": "hakushi",
    "text": "ぬおりゃっ！"
   },
-  "vo-hakushi-senpugan": {
+  "vo-hakushi-whirlsphere": {
    "file": "voice/originals/hakushi/hakushi-5f25f879.wav",
    "seconds": 1.25,
    "level": -16.5,
@@ -9213,8 +9213,8 @@
    "voice": "hakushi",
    "text": "さあさあ、お立ち会い！ 白き鬣の舞、とくと見よ！"
   },
-  "vo-hakushi-toad-mouth": {
-   "file": "voice/originals/hakushi/vo-hakushi-toad-mouth.wav",
+  "vo-hakushi-mane-cage": {
+   "file": "voice/originals/hakushi/vo-hakushi-mane-cage.wav",
    "seconds": 2.045,
    "level": -15.3,
    "voice": "hakushi",
@@ -9262,7 +9262,7 @@
    "voice": "kanata",
    "text": "届けるよ。"
   },
-  "vo-minase-senpugan": {
+  "vo-minase-whirlsphere": {
    "file": "voice/originals/kanata/minase-14a64bb6.wav",
    "seconds": 0.63,
    "level": -16.4,
@@ -9297,8 +9297,8 @@
    "voice": "kanata",
    "text": "まだ、届けなきゃいけないものがある。"
   },
-  "vo-minase-rasen-senko": {
-   "file": "voice/originals/kanata/vo-minase-rasen-senko.wav",
+  "vo-minase-great-lap": {
+   "file": "voice/originals/kanata/vo-minase-great-lap.wav",
    "seconds": 3.845,
    "level": -19,
    "voice": "kanata",
@@ -13483,8 +13483,8 @@
    "voice": "hawser",
    "text": "…まだだ。もっと先まで、綱を延ばす。"
   },
-  "vo-hawser-rumbling": {
-   "file": "voice/originals/hawser/vo-hawser-rumbling.wav",
+  "vo-hawser-uprooting": {
+   "file": "voice/originals/hawser/vo-hawser-uprooting.wav",
    "seconds": 2.47,
    "level": -16.1,
    "voice": "hawser",

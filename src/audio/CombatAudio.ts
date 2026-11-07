@@ -26,7 +26,7 @@ import { GIANT, STEPS, surfaceAt, weightGain, weightNow, weightRate } from './fl
 
 /** The power-up pass (10 October 2026) held one loop on a fighter, the ki flame's roar: through every entry, and after it
  *  under whoever the server's table marks `flames`. Launch day 5 (12 October): the loop is the fighter's own power's
- *  (audio/powerSound.ts, read from render/awakenedPower.ts) - Will's pressure and crackle, spiritual pressure's roar,
+ *  (audio/powerSound.ts, read from render/awakenedPower.ts) - Will's pressure and crackle, raw pressure's roar,
  *  chi's wind, a dark flame's low burn, Aura's hum, lightning, steam, frost, and the flame only where something burns.
  *
  *  What a fighter's power sounds like now, or nothing: its loop, swelling through the gather to the break (the swap) and

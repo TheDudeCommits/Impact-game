@@ -372,7 +372,7 @@ const HELD_SLACK=.25;
 /** A won match, in preference order. The loop is preferred over the one-shot
  *  because the round is over and he can hold it; four of the ten ship one and
  *  the rest fall back to their idle, which is what all ten did before. */
-const VICTORY=['Cardo Victory','Bruin Victory','Aquilo Victory','Svanhild Victory','Chohan Victory','Aqrab Victory','Tsubute Victory','Psyche Victory','Ovid Resolve','Hawser Victory','Colossus Victory','Rotfalke Victory','Gratitude','Synchronization Stable','Kinu Victory','Madake Victory','Shakudo Victory','Minase Victory','Onigawara Victory','Kubiwa Victory','Torsion Victory','Highsun Victory','Lanthorn Victory','Hikui Victory','Ume Victory','Tokan Victory','Strappado Victory','Unari Victory','Barrow Victory','Kusushi Victory','Hakushi Victory','Suzuran Victory','Wataame Victory','Senko Victory','Buna Victory','Oyashio Victory','Adad Victory','Shijima Victory','Akaito Victory','Tempo Victory','Tancho Victory','Bellows Victory','Mikage Victory','Captain Commander','victory_lp','victory','Konta pose','_Idle','Idle','taisei-ready','stance'];
+const VICTORY=['Cardo Victory','Bruin Victory','Aquilo Victory','Svanhild Victory','Chohan Victory','Aqrab Victory','Tsubute Victory','Psyche Victory','Ovid Resolve','Hawser Victory','Colossus Victory','Rotfalke Victory','Gratitude','Pilot Steady','Kinu Victory','Madake Victory','Shakudo Victory','Minase Victory','Onigawara Victory','Kubiwa Victory','Torsion Victory','Highsun Victory','Lanthorn Victory','Hikui Victory','Ume Victory','Tokan Victory','Strappado Victory','Unari Victory','Barrow Victory','Kusushi Victory','Hakushi Victory','Suzuran Victory','Wataame Victory','Senko Victory','Buna Victory','Oyashio Victory','Adad Victory','Shijima Victory','Akaito Victory','Tempo Victory','Tancho Victory','Bellows Victory','Mikage Victory','Old Fire Salute','victory_lp','victory','Konta pose','_Idle','Idle','taisei-ready','stance'];
 /** The feel pass, iteration twelve: a victory authored in two parts (scripts/fanim/victories.py) - this,
  *  the move into the pose, played once from the start of the win and held on its last frame, then the pose's own
  *  breathing loop (VICTORY's `victory_lp`), which starts on that frame. A clip that loops replays whatever it opens
@@ -399,7 +399,7 @@ export function dreamHurt(stage:number,side:number,lock=false):keyof typeof DREA
   return turn===0?'dream fold':turn===1?'dream back':side>0?'dream spin L':'dream spin R';
 }
 /** The dream loop, round 29 (scripts/fanim/dream_strings.py): a string's stages as Taisei throws
- *  them - his second blow a flying knee, his third a roundhouse to the head (taisei-fanim8), where his Jan-Ken drove an
+ *  them - his second blow a flying knee, his third a roundhouse to the head (taisei-fanim8), where his three-hand string drove an
  *  arm straight out three times. CLIP_RULES key per rush stage (1-based); each posed over the clip its stage plays and
  *  struck on that stage's measured contact (contactFrames.json rush1..), so the game draws it where the stage was. */
 const DREAM_STAGES=['DZ Rush 1','DZ Rush 2','DZ Rush 3'] as const;
@@ -878,7 +878,7 @@ const SLOT_CLIP_BEFORE:Partial<Record<FighterId,Record<string,{clip:string;conta
   kagari:{'Yuragi Blast':{clip:'Yuragi',contact:.866},'Taimatsu TAIMATSU':{clip:'Taimatsu',contact:.72}},
   gaunt:{'Scrap Cannon Arm Recoil':{clip:'Scrap Cannon Arm',contact:.5}},
 };
-const GRIMOIRE_GLOW:ReadonlySet<string>=new Set(['cardo','bruin','aquilo','svanhild']);
+const BRIAR_GLOW:ReadonlySet<string>=new Set(['cardo','bruin','aquilo','svanhild']);
 const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   chohan:{"opener":{"clip":"The House Wins","at":0.1375},"cine":{"from":0.1375,"at":0.825,"windows":[[0.1375,0.375,0.2875],[0.375,0.55,0.4625],[0.55,0.73125,0.6375],[0.73125,1,0.825]]}},
   aqrab:{"opener":{"clip":"Bone Dry","at":0.0829268292682927},"cine":{"from":0.0829268292682927,"at":0.7560975609756099,"windows":[[0.0829268292682927,0.5609756097560976,0.3609756097560976],[0.5609756097560976,1,0.7560975609756099]]}},
@@ -904,7 +904,7 @@ const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   akayuri:{"opener":{"clip":"Equinox: Lily Field","at":0.18},"cine":{"from":0.18,"at":0.82,"windows":[[0.18,0.65,0.48],[0.65,1,0.82]]}},
   hagure:{"opener":{"clip":"Pack of One","at":0.11640211640211641},"formOpener":{"clip":"Pack of One","at":0.11640211640211641},"cine":{"from":0.11640211640211641,"at":0.798941798941799,"windows":[[0.11640211640211641,0.3531746031746032,0.2751322751322752],[0.3531746031746032,0.5105820105820106,0.4312169312169312],[0.5105820105820106,0.6944444444444444,0.58994708994709],[0.6944444444444444,1,0.798941798941799]]}},
   hisame:{"opener":{"clip":"WHITEOUT: Glass Coffin","at":0.18},"cine":{"from":0.18,"at":0.8,"windows":[[0.18,1,0.8]]}},
-  svanhild:{"opener":{"clip":"Sea Dragon Roar","at":0.18},"cine":{"from":0.18,"at":0.8,"windows":[[0.18,1,0.8]]}},
+  svanhild:{"opener":{"clip":"Tidal Roar","at":0.18},"cine":{"from":0.18,"at":0.8,"windows":[[0.18,1,0.8]]}},
   mizuhiki:{"opener":{"clip":"Bitter End","at":0.13},"cine":{"from":0.13,"at":0.805,"windows":[[0.13,0.3625,0.295],[0.3625,0.515,0.445],[0.515,0.7,0.6],[0.7,1,0.805]]}},
   'shibuichi':{"opener":{"clip":"KINTSUGI: Golden Seam","at":0.1409090909090909},"cine":{"from":0.1409090909090909,"at":0.8090909090909091,"windows":[[0.1409090909090909,0.5,0.40454545454545454],[0.5,1,0.8090909090909091]]}},
   'rakucho':{"opener":{"clip":"Last Chapter","at":0.13333333333333333},"formOpener":{"clip":"Last Chapter","at":0.13333333333333333},"cine":{"from":0.13333333333333333,"at":0.8053333333333333,"windows":[[0.13333333333333333,0.42000000000000004,0.32],[0.42000000000000004,0.6626666666666667,0.52],[0.6626666666666667,1,0.8053333333333333]]}},
@@ -924,7 +924,7 @@ const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   hakushi:{"opener":{"clip":"Lion Dance: Over the Cliff","at":0.16},"cine":{"from":0.16,"at":0.8,"windows":[[0.16,0.66,0.56],[0.66,1,0.8]]}},
   suzuran:{...SUZURAN_CINEMATIC,cine:{...SUZURAN_CINEMATIC.cine,windows:SUZURAN_CINEMATIC.cine.windows.map(w=>[...w] as [number,number,number])}},
   wataame:{"opener":{"clip":"SHIMEKIRI: Past Due","at":0.14857142857142858},"cine":{"from":0.14857142857142858,"at":0.7942857142857143,"windows":[[0.14857142857142858,0.4514285714285714,0.3485714285714286],[0.4514285714285714,0.6742857142857143,0.5542857142857143],[0.6742857142857143,1,0.7942857142857143]]}},
-  bruin:{"opener":{"clip":"Dimension Slash","at":0.14857142857142858},"cine":{"from":0.14857142857142858,"at":0.7942857142857143,"windows":[[0.14857142857142858,0.4514285714285714,0.3485714285714286],[0.4514285714285714,0.6742857142857143,0.5542857142857143],[0.6742857142857143,1,0.7942857142857143]]}},
+  bruin:{"opener":{"clip":"Past Due Slash","at":0.14857142857142858},"cine":{"from":0.14857142857142858,"at":0.7942857142857143,"windows":[[0.14857142857142858,0.4514285714285714,0.3485714285714286],[0.4514285714285714,0.6742857142857143,0.5542857142857143],[0.6742857142857143,1,0.7942857142857143]]}},
   senko:{...SENKO_CINEMATIC,cine:{...SENKO_CINEMATIC.cine,windows:SENKO_CINEMATIC.cine.windows.map(w=>[...w] as [number,number,number])}},
   buna:{...BUNA_CINEMATIC,cine:{...BUNA_CINEMATIC.cine,windows:BUNA_CINEMATIC.cine.windows.map(w=>[...w] as [number,number,number])}},
   oyashio:{opener:{clip:'Grand Gyre',at:(.8*21/26)/3.9},cine:{from:(.8*21/26)/3.9,at:(2.6+1.3*26/55)/3.9,windows:[[(.8*21/26)/3.9,2.6/3.9,(1+1.4*41/58)/3.9],[2.6/3.9,1,(2.6+1.3*26/55)/3.9]]}},
@@ -940,7 +940,7 @@ const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   pyroclast:{opener:{clip:'Supervolcano',at:.16},cine:{from:.16,at:.78,windows:[[.16,.60,.48],[.60,1,.78]]}},
   ampere:{opener:{clip:'Lights Out Overdrive',at:.19},cine:{from:.19,at:.79,windows:[[.19,.62,.5],[.62,1,.79]]}},
   shanxiao:{opener:{clip:'Sun Chaser',at:.148},cine:{from:.148,at:.77,windows:[[.148,.5,.39],[.5,1,.77]]}},
-  kuzu:{opener:{clip:'Devils Engine',at:.48/2.8},cine:{from:.48/2.8,at:2.2/2.8,windows:[[.48/2.8,1.18/2.8,1/2.8],[1.18/2.8,1.7/2.8,1.4/2.8],[1.7/2.8,1,2.2/2.8]]}},
+  kuzu:{opener:{clip:'Bonegrinder',at:.48/2.8},cine:{from:.48/2.8,at:2.2/2.8,windows:[[.48/2.8,1.18/2.8,1/2.8],[1.18/2.8,1.7/2.8,1.4/2.8],[1.7/2.8,1,2.2/2.8]]}},
   shakugo: {...SHAKUGO_CINEMATIC,cine:{...SHAKUGO_CINEMATIC.cine,windows:SHAKUGO_CINEMATIC.cine.windows.map(w=>[...w] as [number,number,number])}},
   'basilissa':{opener:{clip:'Empress Opener',at:12/34},cine:{from:0,at:45/84,windows:[[0,1,45/84]]}},
   sorayomi:{opener:{clip:'Storm Warning',at:18/81},cine:{from:18/81,at:58/81,windows:[[18/81,1,58/81]]}},
@@ -952,7 +952,7 @@ const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   gummy:{opener:GRAND_TIDE_TAKE.open,formOpener:GRAND_TIDE_TAKE.open,cine:GRAND_TIDE_TAKE.cine},
   // Round 7 (WARD ULT): ROOM and Crossmatch are the opener now (ward/crossmatch.ts): his own take (ward-ult1.glb), the left hand
   // up open over the floor as the dome opens off it, turned up for the swap, and out on them on the blow - where his own
-  // 'Counter Shock' holds it through the cinematic, which goes on as it was. (It was the Cautery Blade's thrust.)
+  // 'Flatline Shock' holds it through the cinematic, which goes on as it was. (It was the Cautery Blade's thrust.)
   ward:{opener:CROSSMATCH_TAKE.open,cine:CROSSMATCH_TAKE.cine},
   // Hound Rampage is a string of blows (STRING_WINDOWS below): its first
   // is the base body's Cleave, the four after it the armour's.
@@ -990,7 +990,7 @@ function ultimateMove(fighter:FighterId,awakened:boolean):MoveDefinition{
 }
 /** An awakened form that fights in clips of its own: where their blows are drawn. A form otherwise shares its
  *  fighter's measured fractions (contactFrames.json) and string windows (STRING_WINDOWS), which were measured on
- *  the base body's clips. Gorai's man-beast hybrid (gorai-wyrm-br1.glb, scripts/economy/build_fighter.py), off
+ *  the base body's clips. Gorai's half-wyrm (gorai-wyrm-br1.glb, scripts/economy/build_fighter.py), off
  *  the mast-breaker's head at 24 frames a second: the lunge's swing at 0.25 s of 0.875, the leaping slam into the floor
  *  at 0.25 of 1.29, the spinning sweep down to the floor at 0.27 of 0.92; TIMBER: The Forest Falls twirls the mast-breaker over
  *  his head - its first pass at 0.42 s is the opener - and brings it down at 1.25 s of 2.25. */
@@ -1256,7 +1256,7 @@ const RUBBER_HANDS:Record<string,[string,number][]>={'light0':[['Right',1]],'lig
 const PALMS_WIND={out:.035,hold:.07,back:4.2,rise:[.05,.22] as const,shake:.025,rate:17,apart:.13};
 const JAB_WIND={out:.045,back:2.4,rise:[0,.05] as const,shake:.015,rate:17};
 const _palmsSide=new THREE.Vector3(),_palmsFacing=new THREE.Vector3(),_palmsTarget=new THREE.Vector3(),_palmsShoulder=new THREE.Vector3();
-/** Round 4b (GUMMY): the Gatling's real fists - the SUNSET BARRAGE's, and SUNRISE's Dawn Gatling's on the form. On each
+/** Round 4b (GUMMY): the Gatling's real fists - the SUNSET BARRAGE's, and SUNRISE's dawn barrage's on the form. On each
  *  contact a hand - right, left, right, as the authored clip throws them (characterMotion.ts `gatling`) - is shot down
  *  its forearm's line turned onto the body it is for (by up to `aim`), out to that body's skin however far off it is -
  *  the move's whole range, not RUBBER's few forearm lengths - held a beat on the blow and snapped back before that
@@ -3104,7 +3104,7 @@ export class Fighter {
    *  drawn again) keeps this body's model and clips while the server plays the new fighter's moves. */
   readonly bodyFighter:FighterId;
   private outfit?:OutfitDef;
-  /** An outfit's hair, worn all the time (not only awakened), and its Golden Form eyes with it. */
+  /** An outfit's hair, worn all the time (not only awakened), and its gold awakening eyes with it. */
   private crownAlways={value:0};
   private irisAlways={value:0};
   private awakenOff:THREE.Object3D[]=[];
@@ -3112,7 +3112,7 @@ export class Fighter {
   /** Round 4b (FANIM): a spirit drawn for its user (SwordStandEffects), which throws the light string its user commands. */
   stand=false;
   private faceExpressions:{weights:number[];index:number;value:number}[]=[];
-  /** Round 3e (MODELS2): morph targets named 'awaken-tuck' (Taisei's fused hair drawn in under the Golden Form hair), set with the swap. */
+  /** Round 3e (MODELS2): morph targets named 'awaken-tuck' (Taisei's fused hair drawn in under the gold awakening hair), set with the swap. */
   private awakenTuck:{weights:number[];index:number}[]=[];
   /** Round 3e (MODELS2): hand bones drawn at HAND_SCALE after the pose (look/proportions.ts). */
   private scaledHands:THREE.Bone[]=[];private handScale=1;
@@ -3274,7 +3274,7 @@ export class Fighter {
         for(let i=0;i<a.length;i++)for(let j=0;j<4;j++)if(/^(right|left)(forearm|hand)/.test(clean(skin.skeleton.bones[ids.getComponent(i,j)].name)))a[i]+=weights.getComponent(i,j);
         skin.geometry.setAttribute('willWeight',new THREE.BufferAttribute(a,1));
       }
-      // Golden Form is the same body with gold hair. The crown weight marks
+      // The gold awakening is the same body with gold hair. The crown weight marks
       // the head-bone vertices above the joint - hair, brows and pupils - and
       // the shader finishes the job by only tinting the dark ones, so the face
       // and the gi are untouched. Same trick as Gummy's Will attribute.
@@ -3308,7 +3308,7 @@ export class Fighter {
         if(/outline/i.test(mesh.name)){const outline=new THREE.MeshBasicMaterial({color:0x0d1b26,side:src.side});applyAuthoredInk(outline);applyThreatInk(outline,this.threatInk,false);this.outlineMaterials.push(outline);return outline;}
         const mat=new THREE.MeshToonMaterial({map:src.map??null,color:src.color??new THREE.Color(1,1,1),gradientMap:toonGradient,normalMap:src.normalMap??null,normalScale:src.normalScale??new THREE.Vector2(1,1),normalMapType:src.normalMapType??THREE.TangentSpaceNormalMap,bumpMap:src.bumpMap??null,bumpScale:src.bumpScale??1,aoMap:src.aoMap??null,aoMapIntensity:src.aoMapIntensity??1,side:src.side,alphaTest:src.alphaTest||0,transparent:src.transparent,opacity:src.opacity});
         mat.name=material.name;
-        // An outfit of a blue (or any) Golden Form: the hair the form swaps in, in the outfit's colour, its shading kept.
+        // An outfit of a blue (or any) gold awakening: the hair the form swaps in, in the outfit's colour, its shading kept.
         if(this.outfit?.variant?.goldHair&&this.outfit.variant.hair!==undefined&&/gold-hair/i.test(material.name)){
           const hue=new THREE.Color(this.outfit.variant.hair);
           addShaderPatch(mat,'outfit-gold-hair-v1',shader=>{shader.uniforms.uGoldHue={value:hue};shader.fragmentShader='uniform vec3 uGoldHue;\n'+shader.fragmentShader;
@@ -3332,7 +3332,7 @@ export class Fighter {
           // edit had been installed before.
           // Round 3e (MODELS2): the irises are marked in the texture's alpha
           // (scripts/r3e_models2.py; the material is opaque, so the alpha went
-          // nowhere) and turn a Golden Form's teal instead of gold.
+          // nowhere) and turn a gold awakening's teal instead of gold.
           addShaderPatch(mat,pale?'pale-crown-v1':'golden-crown-v2',shader=>{shader.uniforms.uAwaken=this.awaken;shader.uniforms.uCrownAlways=this.crownAlways;shader.uniforms.uIrisAlways=this.irisAlways;shader.uniforms.uGold={value:gold};
             shader.vertexShader='attribute float crownWeight;varying float vCrown;\n'+shader.vertexShader;
             shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvCrown=crownWeight;');
@@ -4276,7 +4276,7 @@ export class Fighter {
     }
     const isTaisei=state.fighter==='taisei';
     const authored=this.slotClips(state.fighter);
-    if(authored){const slot=['light','heavy','special','ultimate'].indexOf(state.action);const name=slot>=0?authored[slot]:(state.action==='victory'?this.findClip(state.fighter==='full-beam'?['Symbol of Peace',...VICTORY]:VICTORY)?.name:undefined)??({idle:'_Idle',run:'Run',dash:'Dash',jump:'jump',guard:'Block',hurt:'Hit 01',defeated:'Die fall'}as Record<string,string>)[state.action];const before=name?SLOT_CLIP_BEFORE[state.fighter]?.[name]:undefined;return this.findClip(before?[name!,before.clip]:[name??'_Idle'])??this.fallbackClip(state.action)??this.clips[0];}
+    if(authored){const slot=['light','heavy','special','ultimate'].indexOf(state.action);const name=slot>=0?authored[slot]:(state.action==='victory'?this.findClip(state.fighter==='full-beam'?['Lighthouse Salute',...VICTORY]:VICTORY)?.name:undefined)??({idle:'_Idle',run:'Run',dash:'Dash',jump:'jump',guard:'Block',hurt:'Hit 01',defeated:'Die fall'}as Record<string,string>)[state.action];const before=name?SLOT_CLIP_BEFORE[state.fighter]?.[name]:undefined;return this.findClip(before?[name!,before.clip]:[name??'_Idle'])??this.fallbackClip(state.action)??this.clips[0];}
     // (Round 5: his body throws no part of the GRAND TIDE - SUNRISE's does all of it - and stands in his stance for the
     // beats either side of it the form is not drawn for.)
     if(state.fighter==='gummy'){const names:Record<string,string[]>={idle:['_Idle'],victory:VICTORY,run:['Run'],dash:['Dash'],jump:['jump'],guard:['Block'],light:['Snapback Jab'],heavy:['Rogue Wave'],special:['SUNSET BARRAGE','Punch 01'],ultimate:[...(LUCY_TIDE?[TIDE_CLIP]:[]),'Sunrise Tide','_Idle'],hurt:['Hit 01'],defeated:['Die fall']};return this.findClip(names[state.action]??['_Idle'])??this.fallbackClip(state.action)??this.clips[0];}
@@ -4289,7 +4289,7 @@ export class Fighter {
     // computed for a 3.0 m/s one, which is a gait and a stride describing two
     // different animations. Where a properly named clip exists it wins.
     if(isTaisei&&['dash','jump','guard','light','heavy','hurt'].includes(state.action)){const adapted=this.findClip(['adapted_'+(state.action==='hurt'?'hit':state.action)]);if(adapted)return adapted;}
-    const table:Record<string,string[]>={idle:isTaisei?['taisei-ready','02-STANCE','stance','idle']:['_Idle','Idle'],victory:VICTORY,run:['Run','Walk'],dash:['Dash','Run'],jump:['jump','Jump Fall'],guard:['Block','Guard','02-STANCE'],light:['Punch 01','Punch','Light'],heavy:isTaisei?['Meteor','Kick 01','Punch 03']:['Senpugan Attack'],special:isTaisei?['03-SUNPALM-CANNON','Sunpalm Cannon']:['Senpugan Ready','Senpugan charge'],ultimate:isTaisei?['LAST SUN','Ultimate','01-OSSU']:['Senpugan charge Bushin','Senpugan charge'],hurt:['Hit 01','Hit','Hurt'],defeated:['Die fall','Fall','Defeated']};
+    const table:Record<string,string[]>={idle:isTaisei?['taisei-ready','02-STANCE','stance','idle']:['_Idle','Idle'],victory:VICTORY,run:['Run','Walk'],dash:['Dash','Run'],jump:['jump','Jump Fall'],guard:['Block','Guard','02-STANCE'],light:['Punch 01','Punch','Light'],heavy:isTaisei?['Meteor','Kick 01','Punch 03']:['Whirlsphere Attack'],special:isTaisei?['03-SUNPALM-CANNON','Sunpalm Cannon']:['Whirlsphere Ready','Whirlsphere charge'],ultimate:isTaisei?['LAST SUN','Ultimate','01-OSSU']:['Whirlsphere charge Clone','Whirlsphere charge'],hurt:['Hit 01','Hit','Hurt'],defeated:['Die fall','Fall','Defeated']};
     return this.findClip(table[state.action]??table.idle)??this.fallbackClip(state.action)??this.clips[0];
   }
   /** Map elapsed move time onto clip time so the clip's own contact frame lands
@@ -5038,7 +5038,7 @@ export class Fighter {
    *  (stride within a tenth of the run clip's either way) and the offset still
    *  takes their correlation from around -0.2 to around +0.3. */
   /** Which cadence table row this body reads: a transformation's body has its
-   *  own run and dash, measured separately - Bounceman's Run is not Gummy's. */
+   *  own run and dash, measured separately - the bouncing form's run is not Gummy's. */
   private get cadenceKey(){return (this.isForm?`${this.state.fighter}-form`:this.state.fighter) as FighterId;}
   private gaitTime(clip:THREE.AnimationClip,which:'run'|'walk'){
     const cadence=CADENCE[this.cadenceKey]?.[which];
@@ -5680,7 +5680,7 @@ export class Fighter {
     const seconds=this.recoilClock(clip,since);
     // Rocked (round 3b): a blow big enough to hold its victim for most of a
     // second and a half without knocking them down - Shirokane's Lightning
-    // Shadow Clone - used to stretch this recoil across the whole of it, and
+    // Clone - used to stretch this recoil across the whole of it, and
     // the victim stood there, arms out, "barely reacting". The recoil plays
     // at the rate it was drawn, and the body then doubles over, dazed, for
     // the rest of it.
@@ -6188,7 +6188,7 @@ export class Fighter {
       // (Launch night: whoever stands the aura, not only a definition that burns - standingAura.ts.)
       const rim=this.auraColor(),glow=this.awaken.value*(standingAura(state.fighter)??0)*.12,
         base=state.fighter==='ouga'?.2:0;
-      const ownGlow=GRIMOIRE_GLOW.has(state.fighter);
+      const ownGlow=BRIAR_GLOW.has(state.fighter);
       for(const m of this.outlineMaterials)if(m instanceof THREE.MeshToonMaterial&&!m.userData.ink&&!(ownGlow&&/^glow_/.test(m.name)))m.emissive.setRGB(base+rim.r*glow,base+rim.g*glow,base+rim.b*glow);
     }
     {
@@ -8484,7 +8484,7 @@ export class Fighter {
     if(state.fighter==='barrow')return barrowAuthoredKick(this.active?.getClip().name,this.outfitId??state.outfit,this.active?.time??0);
     if(state.fighter==='kusushi')return kusushiAuthoredKick(state.action,this.active?.time??0,this.active?.getClip().name);
     if(state.fighter==='senko')return senkoAuthoredKick(this.active?.getClip().name,this.active?.time??0);
-    // Ampere's Shoot Style (launch day, the rig audit: "at the frame it lands the leg is still chambered"): his heavy, his fourth
+    // Ampere's kicks (launch day, the rig audit: "at the frame it lands the leg is still chambered"): his heavy, his fourth
     // light and two enders are kicks thrown out of a lunge, and the stride mixed into a lunging body's legs until the blow
     // lands folded the kicking leg at the very frame of contact (the measure: the knee bent 75 degrees and the boot 8 cm off
     // the floor where the clip has the leg straight at chest height); the kick only showed in the follow-through.

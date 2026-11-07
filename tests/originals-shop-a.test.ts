@@ -72,7 +72,7 @@ describe('team A\'s originals (the Dust Sea\'s great captains)', () => {
     }
   });
 
-  it('awaken as their own: Gorai into the STORM WYRM, a body of his own in the man-beast form\'s place', () => {
+  it('awaken as their own: Gorai into the STORM WYRM, a body of his own in the half-wyrm form\'s place', () => {
     if (!built('gorai')) return;
     expect(AWAKENINGS.gorai.kind).toBe('form');
     expect(FIGHTERS.gorai.formModel).toBe('/assets/fighters/gorai-awakened-tr1.glb');

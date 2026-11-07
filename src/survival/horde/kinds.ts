@@ -93,11 +93,11 @@ export const GRUNTS: readonly GruntKind[] = [
       { ...shot('Palm Laser', 'roar', 2.2, 1.54, 46, { element: 'laser', speed: 40, radius: .45, knockback: 8, heavy: true, cooldown: 4 }) },
       melee('Iron Palm', 'uppercut', 1.7, 1, 52, { range: 2.6, arc: .1, knockback: 9, stun: .6, heavy: true, lunge: 2.2, cooldown: 2.6 }),
     ], xp: 8, score: 320, cost: 5, ichor: 'oil' },
-  { id: 'beast-pirate', name: 'Beast Raider', series: 'Dust Sea', role: 'fodder', hp: 150, speed: 5, radius: .46, height: 1.9, mass: 1.2,
+  { id: 'graft-raider', name: 'Graft Raider', series: 'Dust Sea', role: 'fodder', hp: 150, speed: 5, radius: .46, height: 1.9, mass: 1.2,
     moves: [KICK(22, { name: 'Iron Kick' }), UPPERCUT(30, { name: 'Horn Uppercut' })], xp: 1, score: 50, cost: 1, ichor: 'red' },
-  { id: 'chess-soldier', name: 'Chess Guard', series: 'Dust Sea', role: 'fodder', hp: 140, speed: 5, radius: .44, height: 1.95, mass: 1.1,
+  { id: 'iron-warden', name: 'Iron Warden', series: 'Dust Sea', role: 'fodder', hp: 140, speed: 5, radius: .44, height: 1.95, mass: 1.1,
     moves: [CLAW(24, { name: 'Pike Thrust', element: 'steel', range: 2.3, lunge: 1.8, clip: 'thrust' }), KICK(20)], xp: 1, score: 50, cost: 1, ichor: 'red' },
-  { id: 'beast-graft-brute', name: 'Graft Brute', series: 'Dust Sea', role: 'brute', hp: 820, speed: 3.4, radius: .85, height: 3.1, mass: 3.4, poise: 200,
+  { id: 'graft-brute', name: 'Graft Brute', series: 'Dust Sea', role: 'brute', hp: 820, speed: 3.4, radius: .85, height: 3.1, mass: 3.4, poise: 200,
     moves: [
       melee('Crushing Knuckle', 'hammer', 1.8, 1.5, 56, { range: 2.7, arc: .1, knockback: 10, stun: .6, heavy: true, lunge: 2.4, cooldown: 2.6 }),
       { ...melee('Stomp', 'kick', 1.6, .8, 46, { knockback: 8, heavy: true, cooldown: 3.4 }), kind: 'slam', radius: 2.6, range: 1.2 },
@@ -105,7 +105,7 @@ export const GRUNTS: readonly GruntKind[] = [
   // ---- Cinder Requiem ------------------------------------------------------------
   { id: 'ash-wraith', name: 'Ash Wraith', series: 'Cinder Requiem', role: 'fodder', hp: 130, speed: 5.6, radius: .44, height: 1.95, mass: 1,
     moves: [CLAW(20, { element: 'blood' }), FRENZY(16, { element: 'blood' })], xp: 1, score: 45, cost: 1, ichor: 'black' },
-  { id: 'hollow-void-ray', name: 'Wraith Caster', series: 'Cinder Requiem', role: 'gunner', hp: 100, speed: 5, radius: .44, height: 1.95, mass: 1,
+  { id: 'ash-caster', name: 'Wraith Caster', series: 'Cinder Requiem', role: 'gunner', hp: 100, speed: 5, radius: .44, height: 1.95, mass: 1,
     moves: [ROAR_SHOT('Ash Lance', 24, 'void-ray', { speed: 30, radius: .5 }), CLAW(16, { maxRange: 2.2 })], xp: 2, score: 70, cost: 2, ichor: 'black' },
   { id: 'great-wraith', name: 'Great Wraith', series: 'Cinder Requiem', role: 'brute', hp: 900, speed: 3.2, radius: .95, height: 3.6, mass: 3.8, poise: 220,
     moves: [
@@ -113,7 +113,7 @@ export const GRUNTS: readonly GruntKind[] = [
       melee('Crushing Claw', 'combo', 1.9, 1.1, 54, { range: 2.8, arc: .15, knockback: 9, stun: .6, heavy: true, lunge: 2.4, cooldown: 2.6 }),
     ], xp: 9, score: 340, cost: 5, ichor: 'black' },
   // ---- Last Sun ---------------------------------------------------------
-  { id: 'saibaman', name: 'Seedling', series: 'Last Sun', role: 'exploder', hp: 80, speed: 6.4, radius: .38, height: 1.35, mass: .8,
+  { id: 'cinder-imp', name: 'Cinder Imp', series: 'Last Sun', role: 'exploder', hp: 80, speed: 6.4, radius: .38, height: 1.35, mass: .8,
     moves: [
       CLAW(16, { name: 'Acid Claw' }),
       { ...melee('Self-Destruct', 'roar', 1.4, 1.2, 70, { knockback: 9, stun: .5, heavy: true, cooldown: 9, minRange: 0, maxRange: 1.8, weight: .6 }), kind: 'explode', radius: 2.6 },
@@ -122,15 +122,15 @@ export const GRUNTS: readonly GruntKind[] = [
     moves: [ROAR_SHOT('Ki Blast', 20, 'ki', { speed: 36, radius: .3 }), PUNCH(16, { maxRange: 2.2 })], xp: 2, score: 65, cost: 2, ichor: 'purple' },
   { id: 'brood-spawn', name: 'Brood Spawn', series: 'Last Sun', role: 'fodder', hp: 120, speed: 6.6, radius: .36, height: 1.4, mass: .8,
     moves: [PUNCH(18, { name: 'Rush' }), KICK(22, { name: 'Spin Kick' })], xp: 1, score: 55, cost: 1, ichor: 'purple' },
-  // ---- Konta ----------------------------------------------------------------
-  { id: 'white-pale-sapling', name: 'Pale Sapling', series: 'Hidden Ash', role: 'fodder', hp: 115, speed: 5.4, radius: .42, height: 1.8, mass: 1,
+  // ---- Hidden Ash ----------------------------------------------------------
+  { id: 'pale-sapling', name: 'Pale Sapling', series: 'Hidden Ash', role: 'fodder', hp: 115, speed: 5.4, radius: .42, height: 1.8, mass: 1,
     moves: [PUNCH(18, { name: 'Grasping Strike' }), KICK(22, { name: 'Wood Kick' })], xp: 1, score: 45, cost: 1, ichor: 'white' },
-  { id: 'rogue-ninja', name: 'Rogue Ninja', series: 'Hidden Ash', role: 'gunner', hp: 95, speed: 6, radius: .42, height: 1.78, mass: .9,
+  { id: 'cutthroat', name: 'Cutthroat', series: 'Hidden Ash', role: 'gunner', hp: 95, speed: 6, radius: .42, height: 1.78, mass: .9,
     moves: [shot('Kunai Volley', 'claw', 1.2, .55, 16, { element: 'steel', speed: 38, radius: .2, cooldown: 1.9, minRange: 3.5 }), KICK(18, { maxRange: 2.2 })], xp: 2, score: 60, cost: 2, ichor: 'red' },
   // ---- The Rift's own: what Grave Hound would call the damned ----------------------
   { id: 'husk', name: 'Ash Husk', series: 'The Rift', role: 'fodder', hp: 100, speed: 6, radius: .42, height: 1.8, mass: .9,
     moves: [CLAW(18, { element: 'dark' }), FRENZY(14, { element: 'dark' })], xp: 1, score: 40, cost: 1, ichor: 'black' },
-  { id: 'apostle-spawn', name: 'Rift Spawn', series: 'The Rift', role: 'brute', hp: 980, speed: 3.6, radius: 1, height: 3.4, mass: 4, poise: 240,
+  { id: 'rift-spawn', name: 'Rift Spawn', series: 'The Rift', role: 'brute', hp: 980, speed: 3.6, radius: 1, height: 3.4, mass: 4, poise: 240,
     moves: [
       melee('Rending Claws', 'combo', 1.9, 1.1, 58, { range: 2.9, arc: .15, knockback: 10, stun: .6, heavy: true, lunge: 2.6, cooldown: 2.4, element: 'blood' }),
       { ...melee('Ground Slam', 'slam', 1.8, 1.05, 50, { knockback: 9, heavy: true, cooldown: 3.6 }), kind: 'slam', radius: 3 },
@@ -151,33 +151,33 @@ const SHIELD_BASH = (damage: number, extra: Partial<GruntMove> = {}) => melee('S
 
 {
   const add = (kind: GruntKind) => (GRUNTS as GruntKind[]).push(kind);
-  // ---- Dust Sea: the Navy, the Beast Pirates, Mirabel's chess --------------
+  // ---- Dust Sea: the Salt Court, the Stitched Grafters, the Iron Wardens ----
   add({ id: 'tribunal-guard-shield', name: 'Tribunal Shieldbearer', series: 'Dust Sea', role: 'shield', hp: 170, speed: 4.4, radius: .48, height: 1.8, mass: 1.5, shield: true,
     moves: [SHIELD_BASH(20), CLAW(18, { name: 'Cutlass Slash', element: 'steel', clip: 'slash' })], xp: 2, score: 80, cost: 2, ichor: 'red' });
   add({ id: 'tribunal-guard-sniper', name: 'Tribunal Sharpshooter', series: 'Dust Sea', role: 'sniper', hp: 85, speed: 4.6, radius: .42, height: 1.75, mass: 1,
     moves: [SNIPE('Long Shot', 44, 'steel'), PUNCH(14, { name: 'Bayonet', maxRange: 2.2, clip: 'thrust' })], xp: 3, score: 90, cost: 2, ichor: 'red' });
-  add({ id: 'beast-leaper', name: 'Graft Leaper', series: 'Dust Sea', role: 'diver', hp: 140, speed: 5.4, radius: .46, height: 1.9, mass: 1.2,
+  add({ id: 'graft-leaper', name: 'Graft Leaper', series: 'Dust Sea', role: 'diver', hp: 140, speed: 5.4, radius: .46, height: 1.9, mass: 1.2,
     moves: [DIVE(29, { name: 'Leaping Stomp' }), KICK(20, { name: 'Iron Kick' })], xp: 2, score: 80, cost: 2, ichor: 'red' });
-  add({ id: 'beast-medic', name: 'Graft Doctor', series: 'Dust Sea', role: 'healer', hp: 110, speed: 4.6, radius: .44, height: 1.9, mass: 1,
+  add({ id: 'graft-doctor', name: 'Graft Doctor', series: 'Dust Sea', role: 'healer', hp: 110, speed: 4.6, radius: .44, height: 1.9, mass: 1,
     moves: [MEND(.3), KICK(16, { maxRange: 2.2 })], xp: 3, score: 110, cost: 2, ichor: 'red' });
-  add({ id: 'chess-rook', name: 'Chess Rook', series: 'Dust Sea', role: 'shield', hp: 200, speed: 4.2, radius: .5, height: 2, mass: 1.7, shield: true,
+  add({ id: 'iron-bulwark', name: 'Iron Bulwark', series: 'Dust Sea', role: 'shield', hp: 200, speed: 4.2, radius: .5, height: 2, mass: 1.7, shield: true,
     moves: [SHIELD_BASH(22), CLAW(22, { name: 'Pike Thrust', element: 'steel', range: 2.3, lunge: 1.8, clip: 'thrust' })], xp: 2, score: 90, cost: 2, ichor: 'red' });
-  add({ id: 'chess-bishop', name: 'Chess Bishop', series: 'Dust Sea', role: 'healer', hp: 120, speed: 4.4, radius: .44, height: 1.95, mass: 1,
+  add({ id: 'iron-chaplain', name: 'Iron Chaplain', series: 'Dust Sea', role: 'healer', hp: 120, speed: 4.4, radius: .44, height: 1.95, mass: 1,
     moves: [MEND(.32), KICK(16, { maxRange: 2.2 })], xp: 3, score: 110, cost: 2, ichor: 'red' });
   // ---- Cinder Requiem: wraiths that dive, and one that calls the rest -------------------
-  add({ id: 'hollow-diver', name: 'Bat Wraith', series: 'Cinder Requiem', role: 'diver', hp: 120, speed: 6, radius: .44, height: 1.95, mass: 1,
+  add({ id: 'bat-wraith', name: 'Bat Wraith', series: 'Cinder Requiem', role: 'diver', hp: 120, speed: 6, radius: .44, height: 1.95, mass: 1,
     moves: [DIVE(30, { name: 'Dive', element: 'blood' }), CLAW(18, { element: 'blood' })], xp: 2, score: 80, cost: 2, ichor: 'black' });
-  add({ id: 'hollow-caller', name: 'Wraith Caller', series: 'Cinder Requiem', role: 'summoner', hp: 130, speed: 4.6, radius: .44, height: 1.95, mass: 1,
+  add({ id: 'wraith-caller', name: 'Wraith Caller', series: 'Cinder Requiem', role: 'summoner', hp: 130, speed: 4.6, radius: .44, height: 1.95, mass: 1,
     moves: [SUMMON(3), CLAW(16, { maxRange: 2.2 })], xp: 4, score: 130, cost: 3, ichor: 'black' });
   // ---- Last Sun: a sniper, and sprouts out of the sky ------------------------
   add({ id: 'jinlin-sniper', name: 'Tyrant Sniper', series: 'Last Sun', role: 'sniper', hp: 90, speed: 4.8, radius: .44, height: 1.85, mass: 1,
     moves: [SNIPE('Visor Shot', 46, 'ki'), PUNCH(14, { maxRange: 2.2 })], xp: 3, score: 95, cost: 2, ichor: 'purple' });
-  add({ id: 'saibaman-diver', name: 'Leaping Seedling', series: 'Last Sun', role: 'diver', hp: 80, speed: 6.6, radius: .38, height: 1.35, mass: .8,
+  add({ id: 'cinder-imp-diver', name: 'Leaping Cinder Imp', series: 'Last Sun', role: 'diver', hp: 80, speed: 6.6, radius: .38, height: 1.35, mass: .8,
     moves: [DIVE(27, { name: 'Foxfire Pounce' }), CLAW(16, { name: 'Acid Claw' })], xp: 2, score: 75, cost: 2, ichor: 'green' });
-  // ---- Konta: a medic, and a summoner of Pale Sapling ----------------------------------
-  add({ id: 'medic-ninja', name: 'Medical Ninja', series: 'Hidden Ash', role: 'healer', hp: 100, speed: 5.6, radius: .42, height: 1.78, mass: .9,
+  // ---- Hidden Ash: a mender, and a caller of Pale Saplings ----------------------------
+  add({ id: 'cutthroat-mender', name: 'Cutthroat Mender', series: 'Hidden Ash', role: 'healer', hp: 100, speed: 5.6, radius: .42, height: 1.78, mass: .9,
     moves: [MEND(.3), KICK(16, { maxRange: 2.2 })], xp: 3, score: 110, cost: 2, ichor: 'red' });
-  add({ id: 'summoner-ninja', name: 'Summoning Ninja', series: 'Hidden Ash', role: 'summoner', hp: 110, speed: 5.2, radius: .42, height: 1.78, mass: .9,
+  add({ id: 'cutthroat-caller', name: 'Cutthroat Caller', series: 'Hidden Ash', role: 'summoner', hp: 110, speed: 5.2, radius: .42, height: 1.78, mass: .9,
     moves: [SUMMON(3), KICK(16, { maxRange: 2.2 })], xp: 4, score: 130, cost: 3, ichor: 'red' });
   // ---- The Rift's own: husks that fall on you, and a priest that calls them -----------
   add({ id: 'husk-diver', name: 'Falling Husk', series: 'The Rift', role: 'diver', hp: 95, speed: 6.2, radius: .42, height: 1.8, mass: .9,
@@ -186,15 +186,27 @@ const SHIELD_BASH = (damage: number, extra: Partial<GruntMove> = {}) => melee('S
     moves: [SUMMON(3), CLAW(14, { element: 'dark', maxRange: 2.2 })], xp: 4, score: 120, cost: 3, ichor: 'black' });
 }
 
+/** The kinds' old ids, renamed; old id -> new. No save holds a grunt id (progress keys the codex by boss, and the wire sends a
+ *  kind's index), but an old id still reads through these: a `?kinds=` probe or link, an escort table of an older server, an
+ *  event's enemy id from a server a deploy behind the client. */
+export const GRUNT_ALIASES: Readonly<Record<string, string>> = {
+  'beast-pirate': 'graft-raider', 'beast-graft-brute': 'graft-brute', 'beast-leaper': 'graft-leaper', 'beast-medic': 'graft-doctor',
+  'chess-soldier': 'iron-warden', 'chess-rook': 'iron-bulwark', 'chess-bishop': 'iron-chaplain',
+  saibaman: 'cinder-imp', 'saibaman-diver': 'cinder-imp-diver', 'white-pale-sapling': 'pale-sapling',
+  'rogue-ninja': 'cutthroat', 'medic-ninja': 'cutthroat-mender', 'summoner-ninja': 'cutthroat-caller',
+  'hollow-void-ray': 'ash-caster', 'hollow-diver': 'bat-wraith', 'hollow-caller': 'wraith-caller', 'apostle-spawn': 'rift-spawn',
+};
+export const canonicalGrunt = (id: string) => GRUNT_ALIASES[id] ?? id;
 export const GRUNT_INDEX = new Map(GRUNTS.map((kind, i) => [kind.id, i] as const));
+for (const [old, id] of Object.entries(GRUNT_ALIASES)) { const i = GRUNT_INDEX.get(id); if (i !== undefined) GRUNT_INDEX.set(old, i); }
 /** Each new kind's body: whose model it wears. */
 export const WEARS: Record<string, string> = {
-  'tribunal-guard-shield': 'tribunal-guard', 'tribunal-guard-sniper': 'tribunal-guard-rifle', 'beast-leaper': 'beast-pirate', 'beast-medic': 'beast-pirate', 'chess-rook': 'chess-soldier', 'chess-bishop': 'chess-soldier',
-  'hollow-diver': 'ash-wraith', 'hollow-caller': 'hollow-void-ray', 'jinlin-sniper': 'jinlin-soldier', 'saibaman-diver': 'saibaman', 'medic-ninja': 'rogue-ninja', 'summoner-ninja': 'rogue-ninja',
+  'tribunal-guard-shield': 'tribunal-guard', 'tribunal-guard-sniper': 'tribunal-guard-rifle', 'graft-leaper': 'graft-raider', 'graft-doctor': 'graft-raider', 'iron-bulwark': 'iron-warden', 'iron-chaplain': 'iron-warden',
+  'bat-wraith': 'ash-wraith', 'wraith-caller': 'ash-caster', 'jinlin-sniper': 'jinlin-soldier', 'cinder-imp-diver': 'cinder-imp', 'cutthroat-mender': 'cutthroat', 'cutthroat-caller': 'cutthroat',
   'husk-diver': 'husk', 'husk-priest': 'husk',
 };
 export function gruntKind(id: string): GruntKind {
-  const index = GRUNT_INDEX.get(id);
+  const index = GRUNT_INDEX.get(canonicalGrunt(id));
   if (index === undefined) throw new Error(`Unknown grunt kind ${id}`);
   return GRUNTS[index];
 }

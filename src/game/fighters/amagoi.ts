@@ -1,7 +1,7 @@
 import type {CoreSlot} from '../types';
 import type {MoveDefinition} from '../moves';
 import type {ComboRow} from '../combos';
-/** The player issues every receiver/gravity attack. No autonomous Six Paths,
+/** The player issues every receiver/gravity attack. No autonomous floating bodies,
  * damage aura, passive counter or lingering gravity-field damage. */
 export const AMAGOI_MOVES:Record<CoreSlot,MoveDefinition>={
  light:{name:'Rainrod Thrust',duration:.47,contacts:[.168],damage:20,range:2.75,radius:.80,stamina:10,cooldown:.47,stun:.35,knockback:3.2,lunge:3.2,style:'melee'},

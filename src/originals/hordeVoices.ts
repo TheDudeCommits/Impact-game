@@ -18,11 +18,11 @@ export const ORIGINAL_HORDE_VOICES: Readonly<Record<string, Readonly<Record<Mome
 };
 /** Who speaks with them, by grunt kind (src/survival/horde/kinds.ts), and at what playback rate. */
 export const ORIGINAL_HORDE_VOICE_OF: Readonly<Record<string, string>> = {
-  automaton: 'iron', 'beast-leaper': 'hyena', 'beast-medic': 'woman',
-  'tribunal-guard': 'masked', 'tribunal-guard-shield': 'masked', 'tribunal-guard-rifle': 'masked', 'tribunal-guard-sniper': 'masked', 'white-pale-sapling': 'wood',
+  automaton: 'iron', 'graft-leaper': 'hyena', 'graft-doctor': 'woman',
+  'tribunal-guard': 'masked', 'tribunal-guard-shield': 'masked', 'tribunal-guard-rifle': 'masked', 'tribunal-guard-sniper': 'masked', 'pale-sapling': 'wood',
 };
 const ORIGINAL_HORDE_PITCH: Readonly<Record<string, number>> = {
-  automaton: .9, 'beast-leaper': 1.1, 'beast-medic': 1, 'tribunal-guard': .96, 'tribunal-guard-shield': .92, 'tribunal-guard-rifle': 1.02, 'tribunal-guard-sniper': 1, 'white-pale-sapling': .95,
+  automaton: .9, 'graft-leaper': 1.1, 'graft-doctor': 1, 'tribunal-guard': .96, 'tribunal-guard-shield': .92, 'tribunal-guard-rifle': 1.02, 'tribunal-guard-sniper': 1, 'pale-sapling': .95,
 };
 
 export function applyOriginalHordeVoices(bank: Record<string, number>, voiceOf: Record<string, string>, pitch: Record<string, number>, lines: Record<string, Record<Moment, string>>) {

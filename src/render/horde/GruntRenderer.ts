@@ -42,7 +42,7 @@ import { nearestLens, secondFrustum } from '../lenses';
 
 const PER_KIND = 220;
 const GIBS = 72;
-const BRUTES = new Set(['automaton', 'beast-graft-brute', 'great-wraith', 'apostle-spawn', 'tusker']);
+const BRUTES = new Set(['automaton', 'graft-brute', 'great-wraith', 'rift-spawn']);
 const CROSSFADE = .12;
 export interface CrowdPose {clip?:string;progress?:number;key?:string;visibility:number}
 /** Each walk and run: the metres one loop covers at its own pace, and how far
@@ -61,10 +61,10 @@ const SOLDIER = { walks: ['walk', 'walk', 'walk-unsteady'], runs: ['run', 'run-c
 const MONSTER = { walks: ['walk-monster', 'walk-unsteady', 'walk'], runs: ['run-sprint', 'run-charge', 'run'] };
 const BRUTE = { walks: ['walk-orc', 'walk-monster'], runs: ['run-charge', 'run'] };
 const GAITS: Record<string, { walks: string[]; runs: string[] }> = {
-  'tribunal-guard': SOLDIER, 'tribunal-guard-rifle': SOLDIER, 'beast-pirate': SOLDIER, 'chess-soldier': SOLDIER, 'jinlin-soldier': SOLDIER, 'skiff-guard': SOLDIER,
-  'rogue-ninja': { walks: ['walk', 'walk-unsteady'], runs: ['run-sprint', 'run-sprint', 'run'] },
-  'ash-wraith': MONSTER, 'hollow-void-ray': MONSTER, saibaman: MONSTER, 'brood-spawn': MONSTER, 'white-pale-sapling': MONSTER, husk: MONSTER,
-  automaton: BRUTE, 'beast-graft-brute': BRUTE, 'great-wraith': BRUTE, 'apostle-spawn': BRUTE, tusker: BRUTE,
+  'tribunal-guard': SOLDIER, 'tribunal-guard-rifle': SOLDIER, 'graft-raider': SOLDIER, 'iron-warden': SOLDIER, 'jinlin-soldier': SOLDIER,
+  'cutthroat': { walks: ['walk', 'walk-unsteady'], runs: ['run-sprint', 'run-sprint', 'run'] },
+  'ash-wraith': MONSTER, 'ash-caster': MONSTER, 'cinder-imp': MONSTER, 'brood-spawn': MONSTER, 'pale-sapling': MONSTER, husk: MONSTER,
+  automaton: BRUTE, 'graft-brute': BRUTE, 'great-wraith': BRUTE, 'rift-spawn': BRUTE,
 };
 
 /** One level of detail of a kind: its body and ink hull, drawn from shared

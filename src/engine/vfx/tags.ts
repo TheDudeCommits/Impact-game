@@ -138,7 +138,7 @@ export function ruleTags(effect: CatalogEffect): Omit<EffectTags, 'curated'> {
   const scale: Scale = /\b(huge|colossal|world|sky|storm of|rain|meteor shower|moonfall|cathedral|colossus|apocalyp)/i.test(text) ? 'huge'
     : zone || roles.includes('nova') || roles.includes('pillar') ? 'large'
     : roles.includes('impact') || roles.includes('aura') || roles.includes('trail') ? 'small' : 'medium';
-  // The original ki pack is Last Sun's own (Sunpalm Cannon, the LAST SUN, the Golden Form flare); other auras that
+  // The original ki pack is Last Sun's own (Sunpalm Cannon, the LAST SUN, the gold awakening flare); other auras that
   // sit in the ki school (Fire Aura, Rage Aura) are anyone's.
   const worlds: World[] = /^ki_/.test(effect.id) ? ['last-sun'] : [];
   return {

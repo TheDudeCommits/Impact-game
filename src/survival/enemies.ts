@@ -325,16 +325,16 @@ const GRUNT_BODY = "The horde's own body (generated for Rift Arena with Meshy), 
 const HOLLOW_CREDIT = GRUNT_BODY;
 ENEMIES['ash-wraith'] = {
   id: 'ash-wraith', name: 'Ash Wraith', series: 'Cinder Requiem', role: 'fodder', brain: 'swarm',
-  model: '/assets/survival/motion/grunt-apostle-spawn.glb', motion: 'humanoid', height: 1.95, hp: 150, speed: .7,
+  model: '/assets/survival/motion/grunt-rift-spawn.glb', motion: 'humanoid', height: 1.95, hp: 150, speed: .7,
   moves: [
     melee('Snow Swipe', 'light', ['claw'], 1.2, .59, 26, { clipSeconds: 2.23, range: 2.1, cooldown: 1.2, knockback: 3.8, element: 'blood' }),
     multi(melee('Frenzy', 'heavy', ['combo'], 1.6, .69, 22, { clipSeconds: 2.33, range: 2.2, cooldown: 3, knockback: 5.5, stun: .45, weight: .35, element: 'blood' }), [.69, .93], 30),
   ],
   clips: hollowClips(), xp: 1, score: 45, cost: 1, color: 0x1a1a22,
 };
-ENEMIES['hollow-void-ray'] = {
-  id: 'hollow-void-ray', name: 'Wraith Caster', series: 'Cinder Requiem', role: 'gunner', brain: 'gunner',
-  model: '/assets/survival/motion/grunt-apostle-spawn.glb', motion: 'humanoid', height: 1.95, hp: 115, speed: .62,
+ENEMIES['ash-caster'] = {
+  id: 'ash-caster', name: 'Wraith Caster', series: 'Cinder Requiem', role: 'gunner', brain: 'gunner',
+  model: '/assets/survival/motion/grunt-rift-spawn.glb', motion: 'humanoid', height: 1.95, hp: 115, speed: .62,
   moves: [
     shot('Ash Lance', 'special', ['roar'], 2.2, 1.54, 26, { clipSeconds: 2.43, speed: 30, radius: .6, cooldown: 4.2, element: 'void-ray' }),
     melee('Snow Swipe', 'light', ['claw'], 1.2, .59, 22, { clipSeconds: 2.23, range: 2.1, cooldown: 1.4, maxRange: 2.2, element: 'blood' }),
@@ -344,7 +344,7 @@ ENEMIES['hollow-void-ray'] = {
 // A Great Wraith: the same body, grown huge and slow.
 ENEMIES['hollow-great-wraith'] = {
   id: 'hollow-great-wraith', name: 'Great Wraith', series: 'Cinder Requiem', role: 'brute', brain: 'brute',
-  model: '/assets/survival/motion/grunt-apostle-spawn.glb', motion: 'humanoid', height: 3.1, size: 1.55, hp: 640, poise: 200, speed: .45,
+  model: '/assets/survival/motion/grunt-rift-spawn.glb', motion: 'humanoid', height: 3.1, size: 1.55, hp: 640, poise: 200, speed: .45,
   knockbackIn: .4, stunIn: .7, breaker: true,
   moves: [
     melee('Crushing Claw', 'heavy', ['combo'], 1.9, 1.1, 60, { clipSeconds: 2.33, range: 3, radius: 1, cooldown: 2.4, knockback: 9, stun: .6, guardBreak: true, lunge: 3, maxRange: 3.4, telegraph: 'cone', element: 'blood' }),
@@ -560,7 +560,7 @@ ENEMIES.jirenga = {
 // ---- Act V: Warlord's Roof -----------------------------------------------------
 // The finale: the warlord's roof. Gifters by the hundred, Ashwing, Mirabel
 // and Kuromitsu as champions, and Gorai - who, felled, rises again as the
-// man-beast and has to be felled a second time.
+// half-wyrm and has to be felled a second time.
 const beastGraftClips = (extra: Partial<EnemyClips> = {}): EnemyClips => ({
   idle: ['idle'], run: ['run'], walk: ['walk'], hit: ['hit'], down: ['knockdown'], getup: ['getup'], stun: ['hit'],
   blown: ['knockdown'], land: ['knockdown'], death: ['die'], dash: ['run'], jump: ['run'], fall: ['knockdown'], taunt: ['roar'], ...extra,
@@ -568,7 +568,7 @@ const beastGraftClips = (extra: Partial<EnemyClips> = {}): EnemyClips => ({
 const BEAST_GRAFT_CREDIT = GRUNT_BODY;
 ENEMIES['beast-graft'] = {
   id: 'beast-graft', name: 'Beast-Graft', series: 'Dust Sea', role: 'fodder', brain: 'swarm',
-  model: '/assets/survival/motion/grunt-apostle-spawn.glb', motion: 'humanoid', height: 2, hp: 170, speed: .66,
+  model: '/assets/survival/motion/grunt-rift-spawn.glb', motion: 'humanoid', height: 2, hp: 170, speed: .66,
   moves: [
     melee('Iron Kick', 'light', ['kick'], 1.2, .5, 28, { clipSeconds: 1.43, range: 2.1, cooldown: 1.2, knockback: 4.5 }),
     melee('Horn Uppercut', 'heavy', ['uppercut'], 1.2, .7, 40, { clipSeconds: 1.03, range: 2, cooldown: 3, knockback: 6.5, stun: .5, weight: .35 }),
@@ -578,7 +578,7 @@ ENEMIES['beast-graft'] = {
 // A gift that made the voice a weapon: a roar that carries.
 ENEMIES['roaring-graft'] = {
   id: 'roaring-graft', name: 'Roaring Graft', series: 'Dust Sea', role: 'gunner', brain: 'gunner',
-  model: '/assets/survival/motion/grunt-apostle-spawn.glb', motion: 'humanoid', height: 2, hp: 130, speed: .6,
+  model: '/assets/survival/motion/grunt-rift-spawn.glb', motion: 'humanoid', height: 2, hp: 130, speed: .6,
   moves: [
     shot('Beast Roar', 'special', ['roar'], 2.2, 1.7, 24, { clipSeconds: 2.6, speed: 26, radius: .7, cooldown: 4.2, element: 'sound' }),
     melee('Iron Kick', 'light', ['kick'], 1.2, .5, 24, { clipSeconds: 1.43, range: 2.1, cooldown: 1.4, maxRange: 2.2 }),
@@ -587,7 +587,7 @@ ENEMIES['roaring-graft'] = {
 };
 ENEMIES['giant-graft'] = {
   id: 'giant-graft', name: 'Giant Graft', series: 'Dust Sea', role: 'brute', brain: 'brute',
-  model: '/assets/survival/motion/grunt-apostle-spawn.glb', motion: 'humanoid', height: 3.2, size: 1.6, hp: 700, poise: 220, speed: .45,
+  model: '/assets/survival/motion/grunt-rift-spawn.glb', motion: 'humanoid', height: 3.2, size: 1.6, hp: 700, poise: 220, speed: .45,
   knockbackIn: .4, stunIn: .7, breaker: true,
   moves: [
     melee('Crushing Knuckle', 'heavy', ['uppercut'], 1.8, 1.05, 62, { clipSeconds: 1.03, range: 3, radius: 1.1, cooldown: 2.4, knockback: 10, stun: .6, guardBreak: true, lunge: 3, maxRange: 3.4, telegraph: 'cone' }),

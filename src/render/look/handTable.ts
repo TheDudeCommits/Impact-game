@@ -37,7 +37,7 @@ export const HAND_ROWS: Partial<Record<FighterId, HandRow>> = {
   // ---- Konta
   // Cloudburst, Calling Water, Ash Moon: a palm pushed out. The right hand stays closed on what it holds.
   amagoi: { L: { guard: 'palm', light: 'relaxed', heavy: 'palm', cast: 'palm' }, R: HELD },
-  // The kunai in the right; the Senpugan is held in the left.
+  // The kunai in the right; the palm sphere is held in the left.
   minase: { L: { heavy: 'claw', area: 'claw' }, R: HELD },
   // Aquilo casts from open hands: the wind leaves his palm, a blade of it his knife hand.
   aquilo: { both: { blow: 'palm', cast: 'palm' } },
@@ -48,7 +48,7 @@ export const HAND_ROWS: Partial<Record<FighterId, HandRow>> = {
   // the run, the dash and the jump (rig audit, 15 October): there it runs with closed fists.
   hakushi: { L: { stand: 'palm', light: 'palm', heavy: 'relaxed', cast: 'palm' }, R: 'own', form: { both: { stand: 'palm', light: 'palm', cast: 'palm', move: 'fist' }, L: { heavy: 'relaxed' }, R: { heavy: 'claw' } } },
   ume: {},
-  // The Gentle Fist strikes, guards and stands with open palms.
+  // The soft palm strikes, guards and stands with open palms.
   suzuran: { both: { stand: 'palm', blow: 'palm', cast: 'palm' } },
   kusushi: {},
   // ---- Dust Sea

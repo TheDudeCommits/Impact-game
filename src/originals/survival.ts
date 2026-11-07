@@ -19,20 +19,20 @@ export function applyOriginalBossVoices(own: Record<string, unknown>, voices: Re
 
 export const ORIGINAL_GRUNT_BODIES: Readonly<Record<string, string>> = {
   // (modes-hordes, 4 November 2026: the Last Sun's three and the Automaton have bodies of their own now, OWN_GRUNT_MODELS.)
-  'great-wraith': 'apostle-spawn', 'white-pale-sapling': 'husk',
+  'great-wraith': 'rift-spawn', 'pale-sapling': 'husk',
 };
 
 const MOTION = (file: string) => `/assets/survival/motion/grunt-${file}.glb`;
 const MODES_HORDES: Readonly<Record<string, string>> = {
   'tribunal-guard': MOTION('salt-guard'), 'tribunal-guard-rifle': MOTION('salt-rifleman'), automaton: MOTION('salt-engine'),
-  'beast-pirate': MOTION('graft-raider'), 'beast-graft-brute': MOTION('graft-brute'), 'beast-leaper': MOTION('graft-leaper'),
-  'beast-medic': MOTION('graft-doctor'),
-  saibaman: MOTION('sun-imp'), 'brood-spawn': MOTION('sun-brood'), 'jinlin-soldier': MOTION('sun-trooper'), 'jinlin-sniper': MOTION('sun-sniper'),
+  'graft-raider': MOTION('graft-raider'), 'graft-brute': MOTION('graft-brute'), 'graft-leaper': MOTION('graft-leaper'),
+  'graft-doctor': MOTION('graft-doctor'),
+  'cinder-imp': MOTION('sun-imp'), 'brood-spawn': MOTION('sun-brood'), 'jinlin-soldier': MOTION('sun-trooper'), 'jinlin-sniper': MOTION('sun-sniper'),
 };
 
 export const OWN_GRUNT_MODELS: Readonly<Record<string, string>> = {
-  'rogue-ninja': '/assets/survival/motion/grunt-cutthroat.glb', 'ash-wraith': '/assets/survival/motion/grunt-ash-wraith.glb',
-  'hollow-void-ray': '/assets/survival/motion/grunt-ash-caster.glb', 'chess-soldier': '/assets/survival/motion/grunt-iron-warden.glb',
+  'cutthroat': '/assets/survival/motion/grunt-cutthroat.glb', 'ash-wraith': '/assets/survival/motion/grunt-ash-wraith.glb',
+  'ash-caster': '/assets/survival/motion/grunt-ash-caster.glb', 'iron-warden': '/assets/survival/motion/grunt-iron-warden.glb',
   ...MODES_HORDES,
 };
 /** horde/modelLooks.ts: a body of those four is a Tripo troop's, drawn natively and with its kind's gear in its hands. */

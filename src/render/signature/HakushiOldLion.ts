@@ -14,9 +14,9 @@ export const isHakushiSage=(id:string|undefined)=>id==='hakushi';
 export const HAKUSHI_SAGE_LIMITS=Object.freeze({flames:192,rings:96,streaks:192,licks:64,impacts:24,finales:8});
 /** His own shapes' colours, linear and over the bloom threshold (1.1): under it the technique's grade dimmed them with the room. */
 const UP=new THREE.Vector3(0,1,0),BLUE=new THREE.Color(.55,1.5,3),WHITE=new THREE.Color(2.5,2.8,3),GOLD=new THREE.Color(3,2.1,.5),FIRE=new THREE.Color(2.8,.85,.2),RED=new THREE.Color(1.9,.2,.12),GREEN=new THREE.Color(1,2,.85);
-/** The Senpugan's blue, a solid turning sphere; the fire he breathes; the toad oil it burns on, amber; and the wind and
+/** The palm sphere's blue, a solid turning sphere; the fire he breathes; the lamp oil it burns on, amber; and the wind and
  *  nature energy of the sages on his shoulders, toad green. */
-const RASEN=stageLook(0xe8fbff,0x59baff,0x1c58d8,{sphere:SPHERES.blue}),BLAZE=STAGE.fire,OIL=stageLook(0xfff3cf,0xffb52e,0x8a5a12),WIND=stageLook(0xf4fff0,0x9be08b,0x2f7a3a);
+const SPHERE_LOOK=stageLook(0xe8fbff,0x59baff,0x1c58d8,{sphere:SPHERES.blue}),BLAZE=STAGE.fire,OIL=stageLook(0xfff3cf,0xffb52e,0x8a5a12),WIND=stageLook(0xf4fff0,0x9be08b,0x2f7a3a);
 const HEAVY=HAKUSHI_MOVES.heavy,SPECIAL=HAKUSHI_MOVES.special,ULT=HAKUSHI_MOVES.ultimate,FORWARD=new THREE.Vector3(0,0,1);
 const clamp=(x:number)=>Math.max(0,Math.min(1,x));
 class SageBatch{
@@ -39,7 +39,7 @@ class SageBatch{
 }
 type Hit={actor:string;seq:number;born:number;seed:number;grade:number;fire:boolean;grind:number;point:THREE.Vector3};
 type Finale={actor:string;target:string;seq:number;finalHit:boolean;point:THREE.Vector3};
-export class HakushiToadSage{
+export class HakushiOldLion{
  private flames:SageBatch;private rings:SageBatch;private streaks:SageBatch;private licks:SageBatch;private texture?:THREE.Texture;private loading?:Promise<void>;private batches:SageBatch[];
  private impacts:Hit[]=Array.from({length:HAKUSHI_SAGE_LIMITS.impacts},()=>({actor:'',seq:-1,born:0,seed:0,grade:0,fire:false,grind:0,point:new THREE.Vector3()}));
  private finales:Finale[]=Array.from({length:HAKUSHI_SAGE_LIMITS.finales},()=>({actor:'',target:'',seq:-1,finalHit:false,point:new THREE.Vector3()}));
@@ -70,16 +70,16 @@ export class HakushiToadSage{
   const ground=this.ground.set(point.x,floor,point.z);
   if(e.slot==='light'){st.burst(point,OIL,.44,t,{dir,floor,clean:true});return;}
   if(e.slot==='heavy'){
-   // A palm of his lands as a blow; the Senpugan is ground in (`update` turns it there for a breath), then lets go
+   // A palm of his lands as a blow; the palm sphere is ground in (`update` turns it there for a breath), then lets go
    // in a shell of wind and a ring over the floor.
    if(e.branch&&e.branch!=='lllh'){st.burst(point,OIL,.9,t,{dir,floor});return;}
    const big=e.branch?.85:1;h.grind=.5*big;
-   st.burst(point,RASEN,1*big,t,{dir,floor});st.dome(point,RASEN,2.3*big,t,.4);st.shock(ground,RASEN,4.4*big,t,.45);st.scar(ground,RASEN,1.3*big,t+.05,1.2);
+   st.burst(point,SPHERE_LOOK,1*big,t,{dir,floor});st.dome(point,SPHERE_LOOK,2.3*big,t,.4);st.shock(ground,SPHERE_LOOK,4.4*big,t,.45);st.scar(ground,SPHERE_LOOK,1.3*big,t+.05,1.2);
    return;
   }
   if(e.slot==='special'){
-   // Old Lion Landing: the Senpugan driven into the floor from the air. Flame Palm: fire breathed into a palm's reach.
-   if(e.branch==='airSpecial'){h.grind=.9;st.burst(point,RASEN,2,t,{floor});st.dome(point,RASEN,3.2,t,.45);st.shock(ground,RASEN,4.8,t,.45);st.scar(ground,RASEN,2.2,t+.05,1.8);return;}
+   // Old Lion Landing: the palm sphere driven into the floor from the air. Flame Palm: fire breathed into a palm's reach.
+   if(e.branch==='airSpecial'){h.grind=.9;st.burst(point,SPHERE_LOOK,2,t,{floor});st.dome(point,SPHERE_LOOK,3.2,t,.45);st.shock(ground,SPHERE_LOOK,4.8,t,.45);st.scar(ground,SPHERE_LOOK,2.2,t+.05,1.8);return;}
    if(e.branch){st.burst(point,BLAZE,1.5,t,{dir,floor});st.scar(ground,BLAZE,1.5,t+.05,1.8);return;}
    // FLAME BOMB: the oil goes up where it lands. A blast, a pillar of fire over it, a ring of burning oil thrown
    // out over the floor, and the floor left burning under it and back along the way it came.
@@ -119,19 +119,19 @@ export class HakushiToadSage{
    if(s.action==='awaken'){this.awaken(f,age,detailed);continue;}
    if(s.action==='ultimate'&&s.confirmedAt!==undefined&&age>=.52&&age<.84)this.awaken(f,.576+age-.52,detailed);
    if(s.whiffedAt!==undefined)continue;
-   const senpugan=s.action==='heavy'||s.branch==='lllh'||s.branch==='airSpecial';
-   if(senpugan&&this.socket(f,'RightHand',this.a)){
-    // The Elder's Senpugan: a big one, wound up to the size of his chest (the stage's solid blue ball turning, his
+   const whirlsphere=s.action==='heavy'||s.branch==='lllh'||s.branch==='airSpecial';
+   if(whirlsphere&&this.socket(f,'RightHand',this.a)){
+    // The Elder's palm sphere: a big one, wound up to the size of his chest (the stage's solid blue ball turning, his
     // own flames and rings over it, the air drawn in to it, its light on the floor).
     const phase=s.actionTime,charge=clamp(phase/.32),wound=s.action==='heavy'&&!s.branch?clamp(age/HEAVY.contacts[0]):1,fade=clamp((1-phase)/.22),r=.12+.2*Math.max(charge*.5,wound);
     this.q.identity();this.flames.add(this.a,this.q,r*.5,r*.5,r*.5,BLUE,.34*fade);
     for(let k=0;k<(detailed?5:3);k++){this.direction.set(Math.sin(k*2.399),Math.cos(k*2.399),Math.sin(time*4+k)).normalize();this.q.setFromUnitVectors(UP,this.direction);this.rings.add(this.a,this.q,r*(1.12+k*.08),r*(1.12+k*.08),r*(1.12+k*.08),k%2?WHITE:BLUE,.6*fade);}
-    st.ball(this.a,r,RASEN,seed,Math.min(1,fade*2));st.glow(this.a,r*2.1,RASEN.main,.36*fade);
-    st.light(this.b.copy(this.a).setY(this.a.y+.15),1.4+r*6,RASEN,(.2+.4*Math.min(1,r/.4))*fade);
+    st.ball(this.a,r,SPHERE_LOOK,seed,Math.min(1,fade*2));st.glow(this.a,r*2.1,SPHERE_LOOK.main,.36*fade);
+    st.light(this.b.copy(this.a).setY(this.a.y+.15),1.4+r*6,SPHERE_LOOK,(.2+.4*Math.min(1,r/.4))*fade);
     if(wound<1)for(let i=0,n=st.n(7,4);i<n;i++){
      const turn=(time*1.9+i*.618)%1,ang=i*2.399963+seed+turn*2.4,far=r*(1.3+4.5*(1-turn)*(1-turn)),lift=Math.sin(i*1.7+seed)*.5,near=Math.max(r,far-r*1.6);
      this.p.set(this.a.x+Math.cos(ang)*far,this.a.y+lift*far*.5,this.a.z+Math.sin(ang)*far);this.b.set(this.a.x+Math.cos(ang+.5)*near,this.a.y+lift*near*.5,this.a.z+Math.sin(ang+.5)*near);
-     st.streak(this.p,this.b,r*.16,RASEN.main,Math.sin(Math.PI*turn)*wound*1.1);
+     st.streak(this.p,this.b,r*.16,SPHERE_LOOK.main,Math.sin(Math.PI*turn)*wound*1.1);
     }
    }else if(s.action==='light'&&this.socket(f,'LeftHand',this.a)){
     // Flourish Palm: a showman's palm, a flash of gold on it through the strike.
@@ -174,8 +174,8 @@ export class HakushiToadSage{
    if(!state?.alive||(state.actionSeq??-1)!==h.seq||state.whiffedAt!==undefined||age>=life){h.actor='';continue;}if(age<0)continue;const fade=1-age/life,n=detailed?h.grade*5:h.grade*2;
    for(let i=0;i<n;i++){const t=i*2.39996+h.seed*.2;this.p.copy(h.point);this.p.x+=Math.sin(t)*age*(2+h.grade);this.p.z+=Math.cos(t)*age*(2+h.grade);this.p.y+=age*(i%3+.5)-age*age*2;this.direction.set(Math.sin(t),.4,Math.cos(t)).normalize();this.q.setFromUnitVectors(UP,this.direction);this.streaks.add(this.p,this.q,.028*h.grade*fade,.19*h.grade*fade,.028*h.grade*fade,h.fire?(i%3?GOLD:FIRE):(i%3?BLUE:WHITE),fade);}
   }
-  // A Senpugan still turning where it was driven in.
-  for(const h of this.impacts){if(!h.actor||h.grind<=0)continue;const age=time-h.born;if(age<0||age>=.24)continue;const u=age/.24;st.ball(h.point,h.grind*(.6+.4*Math.min(1,age/.06))*(1-.25*u),RASEN,h.seed,1-u*u);st.glow(h.point,h.grind*2,RASEN.main,.4*(1-u));}
+  // A palm sphere still turning where it was driven in.
+  for(const h of this.impacts){if(!h.actor||h.grind<=0)continue;const age=time-h.born;if(age<0||age>=.24)continue;const u=age/.24;st.ball(h.point,h.grind*(.6+.4*Math.min(1,age/.06))*(1-.25*u),SPHERE_LOOK,h.seed,1-u*u);st.glow(h.point,h.grind*2,SPHERE_LOOK.main,.4*(1-u));}
   for(const b of this.batches)b.end();st.close();
  }
  /** Lion Dance: Over the Cliff from the confirm to the last blow, round the body it is poured over: the room to night; first

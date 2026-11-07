@@ -201,7 +201,7 @@ describe('his lines', () => {
 
 /** The feel pass's rule (tests/takeGuard.ts): the export leaves out a channel held at rest, and in the game a
  *  joint no playing clip keys keeps the last pose another clip gave it - SUNRISE floating on with a Grand Tide fist, or with
- *  the arms of the Dawn Gatling before it. So each round-5 take keys, at the rest it was posed at, every channel that
+ *  the arms of the dawn barrage before it. So each round-5 take keys, at the rest it was posed at, every channel that
  *  some clip its body plays moves off that rest (scripts/gummy/hold_rest.py). Read from the files as the game lists them. */
 describe('his round-5 takes hold what they leave at rest', () => {
   type Channels = Map<string, number[][]>;

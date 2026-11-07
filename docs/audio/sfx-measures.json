@@ -1538,7 +1538,7 @@
   "category": "accent",
   "tailDb": -91.92
  },
- "fx-sig-gaku-rock-paper": {
+ "fx-sig-gaku-landslide": {
   "seconds": 0.6107,
   "peakDbfs": -1.12,
   "clipped": 0,
@@ -1673,7 +1673,7 @@
   "category": "impact",
   "tailDb": -94.72
  },
- "fx-sig-magatsu-dismantle": {
+ "fx-sig-magatsu-flay": {
   "seconds": 0.2468,
   "peakDbfs": -1.0,
   "clipped": 0,

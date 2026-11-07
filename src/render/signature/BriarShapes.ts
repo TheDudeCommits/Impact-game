@@ -81,7 +81,7 @@ export class Funnels {
   private drawn = false;
   private readonly q = new THREE.Quaternion();
   constructor(scene: THREE.Scene, capacity = 4, name = 'bc-funnel') {
-    const base = new THREE.ShaderMaterial({ name: 'GrimoireFunnel', vertexShader: funnelVertex, fragmentShader: funnelFragment, side: THREE.DoubleSide, depthWrite: false, ...premultiplied,
+    const base = new THREE.ShaderMaterial({ name: 'BriarFunnel', vertexShader: funnelVertex, fragmentShader: funnelFragment, side: THREE.DoubleSide, depthWrite: false, ...premultiplied,
       uniforms: { uR0: { value: .1 }, uR1: { value: 1 }, uLen: { value: 1 }, uTime: { value: 0 }, uSeed: { value: 0 }, uCore: { value: new THREE.Color() }, uMain: { value: new THREE.Color() }, uDeep: { value: new THREE.Color() }, uK: { value: 0 }, uMode: { value: 0 }, uTurns: { value: 3 }, uSpin: { value: 4 }, uNear: { value: new THREE.Vector2(2, 4.6) } } });
     this.group.name = name + '-pool';
     skipHiddenChildren(this.group);
@@ -178,7 +178,7 @@ export class SeaDragons {
     if (this.ready) return;
     const geometry = await loadHead();
     if (!geometry || this.ready) return;
-    const base = new THREE.ShaderMaterial({ name: 'GrimoireSeaDragon', vertexShader: dragonVertex, fragmentShader: dragonFragment, depthWrite: true, ...premultiplied,
+    const base = new THREE.ShaderMaterial({ name: 'BriarSeaDragon', vertexShader: dragonVertex, fragmentShader: dragonFragment, depthWrite: true, ...premultiplied,
       uniforms: { uJaw: { value: 0 }, uTime: { value: 0 }, uSeed: { value: 0 }, uK: { value: 0 }, uCore: { value: FUNNEL.water.core.clone() }, uMain: { value: FUNNEL.water.main.clone() }, uDeep: { value: FUNNEL.water.deep.clone() } } });
     this.group.name = this.name + '-pool';
     skipHiddenChildren(this.group);

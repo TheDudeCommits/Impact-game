@@ -644,7 +644,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "body",
-    "why": "Left to the game: Raking Talon is staged by her module (MoveStage: amber gathered on the heel, the kick an arc round her, and the A.T. Field of what it lands on standing for an instant, three metres of rings, and breaking). The Armory's spin (extra_spin, now the first alternate) is white, and peaked 0.6 s after the blow, when the move was over (fx_presence, 12 October 2026: 11 % at 1.15 s, 0.5 % as the blow landed)."
+    "why": "Left to the game: Raking Talon is staged by her module (MoveStage: amber gathered on the heel, the kick an arc round her, and the ward of what it lands on standing for an instant, three metres of rings, and breaking). The Armory's spin (extra_spin, now the first alternate) is white, and peaked 0.6 s after the blow, when the move was over (fx_presence, 12 October 2026: 11 % at 1.15 s, 0.5 % as the blow landed)."
    },
    "special": {
     "pick": null,
@@ -674,7 +674,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "target",
-    "why": "Left to the game: Ten-Count Talons is staged by her module (MoveStage: the room to night with her A.T. Field standing eight metres across beyond her victim, the knife's cuts drawn through them one after another, each blow breaking a Field, and the last the cross: a pillar of light fourteen metres tall and its bar across the frame). Before, it changed 3 % of the frame (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Ten-Count Talons is staged by her module (MoveStage: the room to night with her ward standing eight metres across beyond her victim, the knife's cuts drawn through them one after another, each blow breaking a Field, and the last the cross: a pillar of light fourteen metres tall and its bar across the frame). Before, it changed 3 % of the frame (fx_presence, 12 October 2026)."
    }
   },
   "moveIdeas": [],
@@ -1173,7 +1173,7 @@
     "when": "never",
     "scale": "small",
     "anchor": "body",
-    "why": "Left to the game: his awakening is a different body (the Vigilante suit), and the Armory's electric aura did not read on it in the night's film (fx-b, 12 Oct 2026)."
+    "why": "Left to the game: his awakening is a different body (the hero suit), and the Armory's electric aura did not read on it in the night's film (fx-b, 12 Oct 2026)."
    },
    "light": {
     "pick": null,
@@ -2262,7 +2262,7 @@
     "on": "hit",
     "scale": "small",
     "anchor": "target",
-    "why": "A cel impact flower framed in anime speed lines where the fist lands: the plain 'Rock' of Jan-Ken."
+    "why": "A cel impact flower framed in anime speed lines where the fist lands: the plain fist."
    },
    "heavy": {
     "pick": "saga_blitz",
@@ -2539,7 +2539,7 @@
    "core": "#ffffff",
    "main": "#d6dde9",
    "rim": "#23142d",
-   "note": "White Hawk silver; the offering drains to Black Vespers black under a blood-red sky (#7a0c18)."
+   "note": "Pale Falcon silver; the offering drains to Black Vespers black under a blood-red sky (#7a0c18)."
   },
   "slots": {
    "body": {
@@ -2550,7 +2550,7 @@
     "when": "awakened",
     "scale": "small",
     "anchor": "body",
-    "why": "White Hawk: pale feathers drift and glide down around him, his hawk motif rather than a power aura."
+    "why": "Pale Falcon: pale feathers drift and glide down around him, his hawk motif rather than a power aura."
    },
    "light": {
     "pick": "efk_smashstar",
@@ -2929,7 +2929,7 @@
    "core": "#f5ffff",
    "main": "#71dfff",
    "rim": "#3f83ef",
-   "note": "Palm-style chi blue, matching SuzuranTwinLions; White Eye lavender #d4d0ff for the trigram seal"
+   "note": "Palm-style chi blue, matching SuzuranTwinLions; pale-eye lavender #d4d0ff for the trigram seal"
   },
   "slots": {
    "body": {
@@ -2994,7 +2994,7 @@
     "on": "confirm",
     "scale": "large",
     "anchor": "body",
-    "why": "Left to the game: Great Bell: Last Toll is staged by her module (MoveStage: the room to night, the Eight Trigrams' floor lit under her and the lions a metre across on her hands, a pop on every palm, then both lions through the victim as a pillar of their chi). Before, it changed 7.5 % of the frame and lit nothing (fx_presence, 12 October 2026). The Armory pick (seal_trigrams) was not verified in Training on 12 Oct (fx-a)."
+    "why": "Left to the game: Great Bell: Last Toll is staged by her module (MoveStage: the room to night, the palm diagram's floor lit under her and the lions a metre across on her hands, a pop on every palm, then both lions through the victim as a pillar of their chi). Before, it changed 7.5 % of the frame and lit nothing (fx_presence, 12 October 2026). The Armory pick (seal_trigrams) was not verified in Training on 12 Oct (fx-a)."
    }
   },
   "moveIdeas": [],
@@ -3008,7 +3008,7 @@
    "core": "#ffd9f2",
    "main": "#f072cc",
    "rim": "#3c123f",
-   "note": "stretch-gum magenta, matching UnariBungeeGum"
+   "note": "stretch-gum magenta, matching UnariElastic"
   },
   "slots": {
    "body": {
@@ -3086,7 +3086,7 @@
   },
   "moveIdeas": [],
   "confidence": "low",
-  "notes": "No Armory effect is an elastic, sticky Aura strand, so these are stand-ins. vinelash is stripped to a bare stem (no leaves, torn leaves, pollen or bark chips), and its engine still is covered by a lingering Arcane Vortex swirl. origami is set to fly flat, card-shaped, blank sheets instead of folded cranes; it is unverified in the sandbox. bubblecage is the weakest pick: realistic soap film rather than cel, and its film colour comes from filmThickness (about 320 nm reads magenta-gold), not the palette. extra_rageaura is shared with Konta's Kurobi cloak; the palettes keep them apart. 11 Oct: heavy now seal_elasticstrand (the Armory's seals and strings, made for this). Launch day (12 October 2026): the four moves are staged by UnariBungeeGum with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
+  "notes": "No Armory effect is an elastic, sticky Aura strand, so these are stand-ins. vinelash is stripped to a bare stem (no leaves, torn leaves, pollen or bark chips), and its engine still is covered by a lingering Arcane Vortex swirl. origami is set to fly flat, card-shaped, blank sheets instead of folded cranes; it is unverified in the sandbox. bubblecage is the weakest pick: realistic soap film rather than cel, and its film colour comes from filmThickness (about 320 nm reads magenta-gold), not the palette. extra_rageaura is shared with Konta's Kurobi cloak; the palettes keep them apart. 11 Oct: heavy now seal_elasticstrand (the Armory's seals and strings, made for this). Launch day (12 October 2026): the four moves are staged by UnariElastic with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
   "by": "casting agent batch 5",
   "at": "2026-10-11"
  },
@@ -3107,7 +3107,7 @@
     "when": "awakened",
     "scale": "large",
     "anchor": "body",
-    "why": "Spiritual pressure crushes in, then blasts from him to the sky as a flame-shaped pillar with a pressure ring: his Unsealed's pressure released."
+    "why": "Raw pressure crushes in, then blasts from him to the sky as a flame-shaped pillar with a pressure ring: his Unsealed's pressure released."
    },
    "light": {
     "pick": "sam_slashhit",
@@ -3332,7 +3332,7 @@
    "core": "#fff3cf",
    "main": "#ff6d1f",
    "rim": "#7a2a10",
-   "note": "The Senpugan keeps its chi blue (#69c3ff); the sage form's flare rings out toad-green (#6fbf4a)."
+   "note": "The palm sphere keeps its chi blue (#69c3ff); the old-lion form's flare rings out green (#6fbf4a)."
   },
   "slots": {
    "body": {
@@ -3367,7 +3367,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "hand",
-    "why": "Left to the game: Lion's Pearl is staged by his module (MoveStage: a big Senpugan wound up in his hand as a solid blue sphere turning in his rings, ground in and let go in a shell of wind). Before, it was a ball a hand wide: 4 % of the frame, lighting nothing (fx_presence, 12 October 2026). The first Armory pick, an orange magma orb, flew off beside it and did not belong."
+    "why": "Left to the game: Lion's Pearl is staged by his module (MoveStage: a big palm sphere wound up in his hand as a solid blue sphere turning in his rings, ground in and let go in a shell of wind). Before, it was a ball a hand wide: 4 % of the frame, lighting nothing (fx_presence, 12 October 2026). The first Armory pick, an orange magma orb, flew off beside it and did not belong."
    },
    "special": {
     "pick": null,
@@ -3398,7 +3398,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "arts_fireball has no engine still yet; its Armory pack still (armory-shots/arts_fireball.jpg) shows a bold cel fireball, and the hand signs are canon for him. The Armory's true Senpugan (ki_spiral) is locked to Last Sun by the ki_* rule, so fx_magmaorb, kept in its native chi blue, is his Senpugan. efk_toonhit's still is caught empty; judged from the blurb. Launch day (12 October 2026): the four moves are staged by HakushiToadSage with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
+  "notes": "arts_fireball has no engine still yet; its Armory pack still (armory-shots/arts_fireball.jpg) shows a bold cel fireball, and the hand signs are canon for him. The Armory's true spiral sphere (ki_spiral) is locked to Last Sun by the ki_* rule, so fx_magmaorb, kept in its native chi blue, is his sphere. efk_toonhit's still is caught empty; judged from the blurb. Launch day (12 October 2026): the four moves are staged by HakushiOldLion with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
   "by": "casting agent batch 1",
   "at": "2026-10-11"
  },
@@ -4236,7 +4236,7 @@
    "core": "#f4fcff",
    "main": "#8fd6ff",
    "rim": "#1f3f6b",
-   "note": "ROOM pale blue, matching OperatingTheatre; Counter Shock's jolt in #ffe45c, Cautery Blade's blade pale green #b8ffd9"
+   "note": "THEATRE pale blue, matching OperatingTheatre; Flatline Shock's jolt in #ffe45c, Cautery Blade's blade pale green #b8ffd9"
   },
   "slots": {
    "body": {
@@ -4248,7 +4248,7 @@
     "when": "never",
     "scale": "small",
     "anchor": "body",
-    "why": "None: the model's own ROOM dome plus OperatingTheatre's K-ROOM blade and membrane already are his awakening, and a second dome would double it."
+    "why": "None: the model's own THEATRE dome plus OperatingTheatre's SHEATH DOME blade and membrane already are his awakening, and a second dome would double it."
    },
    "light": {
     "pick": "nb_bladearc",
@@ -4281,7 +4281,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "hand",
-    "why": "A hard-edged cel beam lances out of his palm at point-blank range: Cautery Blade's blade of ROOM driven straight through the body."
+    "why": "A hard-edged cel beam lances out of his palm at point-blank range: Cautery Blade's blade of THEATRE driven straight through the body."
    },
    "ultimate": {
     "pick": "spellbreak",
@@ -4292,12 +4292,12 @@
     "on": "cast",
     "scale": "large",
     "anchor": "ground",
-    "why": "A bell of pale-blue glass closes over the zone, holds, and breaks along with everything inside it: the ROOM, with the Counter Shock that ends it."
+    "why": "A bell of pale-blue glass closes over the zone, holds, and breaks along with everything inside it: the THEATRE, with the Flatline Shock that ends it."
    }
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "spellbreak's engine still is buried under a lingering Arcane Vortex swirl from the capture session; its config confirms a glass dome with a #9fd8ff fresnel rim, already Ward's ROOM colour. To show Counter Shock's defibrillator jolt itself, layer snare (a pillar of current) on the confirm. Ward is not a sovereign will, so he gets no Will aura. efk_bluelaser's engine still is partial; the top-level capture shows the cel beam.",
+  "notes": "spellbreak's engine still is buried under a lingering Arcane Vortex swirl from the capture session; its config confirms a glass dome with a #9fd8ff fresnel rim, already Ward's THEATRE colour. To show Flatline Shock's defibrillator jolt itself, layer snare (a pillar of current) on the confirm. Ward is not a sovereign will, so he gets no Will aura. efk_bluelaser's engine still is partial; the top-level capture shows the cel beam.",
   "by": "casting agent batch 5",
   "at": "2026-10-11"
  },
@@ -4981,7 +4981,7 @@
    "core": "#ffffff",
    "main": "#ffcf50",
    "rim": "#4bd6ff",
-   "note": "Flash gold, with the game's Senpugan blue as the rim."
+   "note": "Flash gold, with the game's palm-sphere blue as the rim."
   },
   "slots": {
    "body": {
@@ -5015,7 +5015,7 @@
     "on": "hit",
     "scale": "medium",
     "anchor": "target",
-    "why": "Left to the game: Gale Palm is staged by his module (MoveStage: the Senpugan wound up in his palm as a blue sphere turning in its own arcs, then driven in with a shell of wind and a ring over the floor). The Armory's spiral (ki_spiral, now the first alternate) peaked 1.4 s after the palm landed, on a move 0.96 s long, and hid its victim for 1.2 s against a ceiling of 0.35 s (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Gale Palm is staged by his module (MoveStage: the palm sphere wound up in his palm as a blue sphere turning in its own arcs, then driven in with a shell of wind and a ring over the floor). The Armory's spiral (ki_spiral, now the first alternate) peaked 1.4 s after the palm landed, on a move 0.96 s long, and hid its victim for 1.2 s against a ceiling of 0.35 s (fx_presence, 12 October 2026)."
    },
    "special": {
     "pick": null,
@@ -5038,12 +5038,12 @@
     "on": "confirm",
     "scale": "large",
     "anchor": "target",
-    "why": "Left to the game: Fifty-Three Stations is staged by his module (MoveStage: the room to night, six marked daggers planted round the victim and flashes of gold from mark to mark, the Senpugan grown in his palm and driven home on the last blow). Before, it lit nothing and changed 0 to 3 % of the frame as its blows landed (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Fifty-Three Stations is staged by his module (MoveStage: the room to night, six marked daggers planted round the victim and flashes of gold from mark to mark, the palm sphere grown in his palm and driven home on the last blow). Before, it lit nothing and changed 0 to 3 % of the frame as its blows landed (fx_presence, 12 October 2026)."
    }
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "MinaseRaijin draws the Senpugan's spinning sphere in his palm and his seal, so the heavy's pick is only the detonation. blade_blink defaults to violet, and his palette turns it into the yellow flash. efk_cosmic judged from the older capture (a bright cyan-white orb with a flare). 11 Oct: special now seal_teleportmark (the Armory's seals and strings, made for this). Launch day (12 October 2026): the four moves are staged by MinaseRaijin with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
+  "notes": "MinaseRaijin draws the palm sphere spinning in his palm and his seal, so the heavy's pick is only the detonation. blade_blink defaults to violet, and his palette turns it into the yellow flash. efk_cosmic judged from the older capture (a bright cyan-white orb with a flare). 11 Oct: special now seal_teleportmark (the Armory's seals and strings, made for this). Launch day (12 October 2026): the four moves are staged by MinaseRaijin with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
   "by": "casting agent batch 2",
   "at": "2026-10-11"
  },
@@ -5235,7 +5235,7 @@
     "on": "release",
     "scale": "small",
     "anchor": "line",
-    "why": "The game's own: the Foxpack Barrage is a three-punch string, and the shadow clones are his enders' (Twin Clone Jab, Twin Clone Upper, Up You Go!!); a clone strike on every jab would bury the string."
+    "why": "The game's own: the Foxpack Barrage is a three-punch string, and the clones are his enders' (Twin Clone Jab, Twin Clone Upper, Up You Go!!); a clone strike on every jab would bury the string."
    },
    "heavy": {
     "pick": null,
@@ -5248,7 +5248,7 @@
     "on": "cast",
     "scale": "medium",
     "anchor": "hand",
-    "why": "The game's own: its Senpugan, the spinning sphere held in the palm and driven into the body, is already the anime's (approved); ki_spiral only draws it again."
+    "why": "The game's own: its Senpugan, the spinning sphere held in the palm and driven into the body, is already the reference's (approved); ki_spiral only draws it again."
    },
    "special": {
     "pick": "arts_windshuriken",
@@ -5967,7 +5967,7 @@
    "core": "#ece4ff",
    "main": "#140d1d",
    "rim": "#8b4dff",
-   "note": "Black Pyre black with a violet rim; Shrike Bolt's core white-violet, Thunder Lord's Arrow violet."
+   "note": "Black Pyre black with a violet rim; Shrike Bolt's core white-violet, Ikazuchi Arrow violet."
   },
   "slots": {
    "body": {
@@ -6033,7 +6033,7 @@
     "on": "cast",
     "scale": "huge",
     "anchor": "line",
-    "why": "The game's own: the purple Guardian drawing Thunder Lord's Arrow is already the anime's; colossus_spiritarmor would build a second one."
+    "why": "The game's own: the purple Guardian drawing Ikazuchi Arrow is already the anime's; colossus_spiritarmor would build a second one."
    }
   },
   "moveIdeas": [],
@@ -6132,7 +6132,7 @@
     "when": "awakened",
     "scale": "small",
     "anchor": "body",
-    "why": "A modest amber flame of the A.T. Field's charge rises off the Eva while it is awakened. (efk_barrier drew a teal hexagon dome twice his size that half hid him.)",
+    "why": "A modest amber flame of the ward's charge rises off the war-frame while it is awakened. (efk_barrier drew a teal hexagon dome twice his size that half hid him.)",
     "settings": {
      "displace": 0.45,
      "tongues": 1.2
@@ -6148,7 +6148,7 @@
     "on": "hit",
     "scale": "small",
     "anchor": "target",
-    "why": "Left to the game: Hooked Claw is staged by his module (MoveStage: a ring of his A.T. Field on the fist through the swing, the victim's flashing where it lands). The Armory's kick flash (sam_kick, now the first alternate) is yellow-white, takes no palette, and was at its most 0.4 s after the blow (fx_presence, 12 October 2026: 4 % at 0.60 s)."
+    "why": "Left to the game: Hooked Claw is staged by his module (MoveStage: a ring of his ward on the fist through the swing, the victim's flashing where it lands). The Armory's kick flash (sam_kick, now the first alternate) is yellow-white, takes no palette, and was at its most 0.4 s after the blow (fx_presence, 12 October 2026: 4 % at 0.60 s)."
    },
    "heavy": {
     "pick": null,
@@ -6160,7 +6160,7 @@
     "on": "hit",
     "scale": "medium",
     "anchor": "target",
-    "why": "Left to the game: Armored Hammer is staged by his module (MoveStage: amber gathered on the fists, the hammer an arc down across his front, the A.T. Field of what it lands on stood up and broken with a column of light behind it). The Armory's heel (extra_heel, now the first alternate) drew its column 0.55 s after the blow, when the move was over: 4 % of the frame (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Armored Hammer is staged by his module (MoveStage: amber gathered on the fists, the hammer an arc down across his front, the ward of what it lands on stood up and broken with a column of light behind it). The Armory's heel (extra_heel, now the first alternate) drew its column 0.55 s after the blow, when the move was over: 4 % of the frame (fx_presence, 12 October 2026)."
    },
    "special": {
     "pick": null,
@@ -6193,7 +6193,7 @@
     "on": "release",
     "scale": "huge",
     "anchor": "body",
-    "why": "Left to the game: Spinestorm is staged by his module (MoveStage: the room to night, his victim's Field, six metres of rings, taken hold of and pulled apart with white light spilling through the tear; on the last blow it shatters, a positron-white beam goes through where it stood, and the cross rises fourteen metres tall with its bar across the frame). Before, it changed 3 % of the frame (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Spinestorm is staged by his module (MoveStage: the room to night, his victim's Field, six metres of rings, taken hold of and pulled apart with white light spilling through the tear; on the last blow it shatters, a white beam goes through where it stood, and the cross rises fourteen metres tall with its bar across the frame). Before, it changed 3 % of the frame (fx_presence, 12 October 2026)."
    }
   },
   "moveIdeas": [],
@@ -6229,7 +6229,7 @@
     "on": "hit",
     "scale": "small",
     "anchor": "target",
-    "why": "A rake of hair-fine red-black lines slices across the foe in one beat, Dismantle's invisible cuts landing at once."
+    "why": "A rake of hair-fine red-black lines slices across the foe in one beat, Flaying Cut's unseen cuts landing at once."
    },
    "heavy": {
     "pick": "sumistroke",
@@ -6273,7 +6273,7 @@
     "idea": "Calamity Pyre ('Open')",
     "effect": "sunspear",
     "style": "projectile",
-    "why": "The light is already Dismantle, and Calamity Pyre, the flame arrow drawn between his hands, is his other signature; sunspear's white-fire javelin opening a sun on the floor gives the kit its fire (extra_celflame is the cel-fire alternative)."
+    "why": "The light is already Flaying Cut, and Calamity Pyre, the flame arrow drawn between his hands, is his other signature; sunspear's white-fire javelin opening a sun on the floor gives the kit its fire (extra_celflame is the cel-fire alternative)."
    }
   ],
   "confidence": "high",
@@ -6852,7 +6852,7 @@
    "core": "#fffbe0",
    "main": "#ffcf3a",
    "rim": "#7a2fe0",
-   "note": "gold form gold for the aura, Big Bang and Kyokko-Ho; the Shikou-Ha turns violet, #c48aff over this rim."
+   "note": "gold form gold for the aura, Haou-Dan and Kyokko-Ho; the Shikou-Ha turns violet, #c48aff over this rim."
   },
   "slots": {
    "body": {
@@ -7473,7 +7473,7 @@
     "core": "#c0261a",
     "main": "#2a0806",
     "rim": "#020202",
-    "note": "Anti Magic: matte black that gives off no light; its only colour a thin red rim, red trails and red crackle (round 7, the anime reference pack)."
+    "note": "Lightless Magic: matte black that gives off no light; its only colour a thin red rim, red trails and red crackle (round 7, the anime reference pack)."
    },
    "slots": {
     "body": {
@@ -7510,7 +7510,7 @@
       "ifSilColor": "#c8c8d0",
       "lightColor": "#b8b8c8"
      },
-     "why": "None from the armory (critic pass 2: its flame column hid his legs). OVERGROWN is a black haze worn close (awakenedPower.ts), the anti-magic arm and the horn (scripts/black-clover/props.py) and black flame off the sword (GrimoireMagic)."
+     "why": "None from the armory (critic pass 2: its flame column hid his legs). OVERGROWN is a black haze worn close (awakenedPower.ts), the lightless magic arm and the horn (scripts/briar-crown/props.py) and black flame off the sword (BriarMagic)."
     },
     "light": {
      "pick": null,
@@ -7520,7 +7520,7 @@
      "on": "hit",
      "scale": "small",
      "anchor": "target",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "heavy": {
      "pick": null,
@@ -7530,7 +7530,7 @@
      "on": "release",
      "scale": "medium",
      "anchor": "line",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "special": {
      "pick": null,
@@ -7540,7 +7540,7 @@
      "on": "hit",
      "scale": "large",
      "anchor": "target",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "ultimate": {
      "pick": null,
@@ -7550,7 +7550,7 @@
      "on": "confirm",
      "scale": "huge",
      "anchor": "line",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     }
    }
   },
@@ -7570,7 +7570,7 @@
      "when": "awakened",
      "scale": "medium",
      "anchor": "body",
-     "why": "None from the armory (critic pass 2: its flame column hid his legs). WIDE AWAKE is a dark haze worn close (awakenedPower.ts) and the zone of his darkness on the floor round him (GrimoireMagic)."
+     "why": "None from the armory (critic pass 2: its flame column hid his legs). WIDE AWAKE is a dark haze worn close (awakenedPower.ts) and the zone of his darkness on the floor round him (BriarMagic)."
     },
     "light": {
      "pick": null,
@@ -7580,7 +7580,7 @@
      "on": "hit",
      "scale": "small",
      "anchor": "target",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "heavy": {
      "pick": null,
@@ -7590,7 +7590,7 @@
      "on": "release",
      "scale": "medium",
      "anchor": "line",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "special": {
      "pick": null,
@@ -7600,7 +7600,7 @@
      "on": "hit",
      "scale": "large",
      "anchor": "target",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "ultimate": {
      "pick": null,
@@ -7610,7 +7610,7 @@
      "on": "confirm",
      "scale": "huge",
      "anchor": "line",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage). The alternative offered is the sky fracture (round 7): the void slash leans on a Mixamo FBX not cleared for a commercial game, and the anime's Dimension Slash splits space itself (the reference pack's eps. 96, 163, 166)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage). The alternative offered is the sky fracture (round 7): the void slash leans on a Mixamo FBX not cleared for a commercial game, and the anime's Past Due Slash splits space itself (the reference pack's eps. 96, 163, 166)."
     }
    }
   },
@@ -7645,7 +7645,7 @@
      "on": "hit",
      "scale": "small",
      "anchor": "target",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage). The alternative offered is a plain cyclone (round 7): the breath wind is Black Snow's, another world's power."
+     "why": "Left to the game: staged by BriarMagic (MoveStage). The alternative offered is a plain cyclone (round 7): the breath wind is Black Snow's, another world's power."
     },
     "heavy": {
      "pick": null,
@@ -7655,7 +7655,7 @@
      "on": "release",
      "scale": "medium",
      "anchor": "line",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "special": {
      "pick": null,
@@ -7665,7 +7665,7 @@
      "on": "hit",
      "scale": "large",
      "anchor": "target",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "ultimate": {
      "pick": null,
@@ -7675,7 +7675,7 @@
      "on": "confirm",
      "scale": "huge",
      "anchor": "line",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     }
    }
   },
@@ -7705,7 +7705,7 @@
      "on": "hit",
      "scale": "small",
      "anchor": "target",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "heavy": {
      "pick": null,
@@ -7715,7 +7715,7 @@
      "on": "hit",
      "scale": "medium",
      "anchor": "target",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "special": {
      "pick": null,
@@ -7725,7 +7725,7 @@
      "on": "hit",
      "scale": "large",
      "anchor": "target",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     },
     "ultimate": {
      "pick": null,
@@ -7735,7 +7735,7 @@
      "on": "confirm",
      "scale": "huge",
      "anchor": "line",
-     "why": "Left to the game: staged by GrimoireMagic (MoveStage)."
+     "why": "Left to the game: staged by BriarMagic (MoveStage)."
     }
    }
   }

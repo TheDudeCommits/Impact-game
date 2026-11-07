@@ -18,15 +18,15 @@ const lin = (r: number, g: number, b: number) => new THREE.Color(r, g, b);
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
 /** His barrier Field's amber: the rings' own gold-white outermost, orange inside it, and the light it throws. */
 const FIELD: StageLook = murexLook({ core: lin(3.3, 2.5, 1.2), main: lin(2.1, .95, .16), rim: lin(.9, .28, .05), light: lin(1.3, .74, .28), element: { spike: 0xffe6a3, rim: 0xffab38, light: 0xffb050, ink: 0x2a0d04 }, shell: 0xffab38, edge: 0x8a2a08, flame: -1, dark: false, heart: 0 });
-/** A positron beam: a blue-white heart in a violet edge. */
-const POSITRON: StageLook = { core: lin(2.9, 3, 3.3), main: lin(.95, 1.1, 2.3), rim: lin(.5, .2, .9), light: lin(.85, .9, 1.3), element: { spike: 0xffffff, rim: 0x9fb4ff, light: 0xd8e2ff, ink: 0x120a2a }, shell: 0xcfdcff, edge: 0x6a3ad0, flame: -1, dark: false, heart: 0 };
+/** A lance beam: a blue-white heart in a violet edge. */
+const BEAM_LOOK: StageLook = { core: lin(2.9, 3, 3.3), main: lin(.95, 1.1, 2.3), rim: lin(.5, .2, .9), light: lin(.85, .9, 1.3), element: { spike: 0xffffff, rim: 0x9fb4ff, light: 0xd8e2ff, ink: 0x120a2a }, shell: 0xcfdcff, edge: 0x6a3ad0, flame: -1, dark: false, heart: 0 };
 /** The cross a kill leaves standing: white at its heart, violet at its edge. */
 const CROSS: StageLook = { core: lin(3.2, 2.7, 3.3), main: lin(1.6, .5, 2.2), rim: lin(.5, .1, .8), light: lin(1.1, .62, 1.35), element: { spike: 0xf6e8ff, rim: 0x8a4ad8, light: 0xb478ff, ink: 0x14062a }, shell: 0xc58aff, edge: 0x4a1a8a, flame: -1, dark: false, heart: 0 };
 const nested = murexNested(fieldRings);
 const HEAVY = MUREX_MOVES.heavy, SPECIAL = MUREX_MOVES.special, ULT = MUREX_MOVES.ultimate;
 const FIRST = ULT.contacts[0], LAST = ULT.contacts[ULT.contacts.length - 1];
 /** How long the hammer's arc hangs after the blow, how long a struck Field stands before it breaks, and how long the
- *  positron beam burns (seconds). */
+ *  lance beam burns (seconds). */
 const ARC = .2, STAND = .16, BEAM = .5;
 const BROKEN = 0, CROSSED = 1, SHOT = 2;
 type Rupture = { actor: string; target: string; seq: number; final: boolean; floor: number };
@@ -205,8 +205,8 @@ export class MurexBarrier {
     nested(st, this.b.copy(prey).addScaledVector(across, -gap - shake), across, UP, radius, 8, 6, .06, FIELD, open, .95, 0, time, 2, 4);
     // White light through the tear, taller as it opens.
     this.p.copy(prey); this.p.y -= radius * g; this.d.copy(prey); this.d.y += radius * g;
-    st.streak(this.p, this.d, .1 + .3 * g, POSITRON.main, .5 + .7 * g); st.streak(this.p, this.d, .04 + .1 * g, POSITRON.core, 1.2 * g);
-    st.glow(prey, .5 + 1.1 * g, POSITRON.core, .35 + .4 * g); st.light(this.p.copy(prey).setY(prey.y + .4), 6 + 2 * g, FIELD, .3 + .3 * g);
+    st.streak(this.p, this.d, .1 + .3 * g, BEAM_LOOK.main, .5 + .7 * g); st.streak(this.p, this.d, .04 + .1 * g, BEAM_LOOK.core, 1.2 * g);
+    st.glow(prey, .5 + 1.1 * g, BEAM_LOOK.core, .35 + .4 * g); st.light(this.p.copy(prey).setY(prey.y + .4), 6 + 2 * g, FIELD, .3 + .3 * g);
     // The strain: from each hand to its half's torn edge, jogging.
     for (let i = -1; i <= 1; i += 2) bolt(st, i > 0 ? actor.handR : actor.handL, this.p.copy(prey).addScaledVector(across, i * (gap + .1)).setY(prey.y + .2 * i), .045, FIELD.core, .5 + .5 * g, Math.floor(time * 24) + i, .22, 5, 0);
     st.charge(actor.handR, FIELD, .18 + .12 * g, Math.max(.35, g), seed);
@@ -224,8 +224,8 @@ export class MurexBarrier {
       return;
     }
     if (m.kind === SHOT) {
-      // The positron beam: from his hands through where the Field stood and on, sixteen metres.
-      st.beam(m.from, this.p.copy(m.at).addScaledVector(m.dir, 16), .6, POSITRON, w, m.seed, .4);
+      // The lance beam: from his hands through where the Field stood and on, sixteen metres.
+      st.beam(m.from, this.p.copy(m.at).addScaledVector(m.dir, 16), .6, BEAM_LOOK, w, m.seed, .4);
       return;
     }
     // CROSSED: the bar of the cross (its pillar is the stage's, and runs out of the top of the frame): across the way

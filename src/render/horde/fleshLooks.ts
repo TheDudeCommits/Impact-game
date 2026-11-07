@@ -149,28 +149,36 @@ function claws(f: Flesh, color: number, length = .13) {
   }
 }
 
-// ---- Dust Sea -------------------------------------------------------------------------------
-// The Navy's whites gone grey with soot and worse, on men the rift has had:
-// ashen skin, a soldier's build hunched to spring (clean whites on slim pale
-// bodies read as "fake", shop mannequins in costume).
-const TRIBUNAL_GUARD_WHITE = 0x86827a, TRIBUNAL_GUARD_BLUE = 0x161f40, TRIBUNAL_GUARD_COLLAR = 0x1f3470;
-function guard(f: Flesh) {
-  sculptBody(f, { bulk: 1.16, limb: 1.12, belly: 1.04, skin: 0x8a6e60, top: TRIBUNAL_GUARD_WHITE, bottom: TRIBUNAL_GUARD_BLUE, boots: 0x121216, sleeves: 'short', legs: 'trousers', hunch: .35 });
-  sculptHead(f, 0x7e6356, 1, 1.18, true);
-  // The sailor collar over the shoulders, square at the back; the knotted neckerchief.
-  f.soft(.012).on(BONE.Spine, GROUP.UPPER).color(TRIBUNAL_GUARD_COLLAR).box(f.at(BONE.Spine, 0, .06, -.07), .3, .022, .16, 0, -.35, 0, .008)
-    .box(f.at(BONE.Spine, 0, -.02, .1), .1, .12, .02, 0, .1, 0, .008);
-  f.color(0xd29a2a).ellipsoid(f.at(BONE.Spine, 0, .02, .115), .03, .026, .022).capsule(f.at(BONE.Spine, 0, .0, .12), f.at(BONE.Spine, .015, -.12, .13), .016, .008);
-  // A belt with its buckle.
-  f.soft(.01).on(BONE.Hips).color(0x241a12).torus(f.at(BONE.Hips, 0, .075, .004), .145, .02);
-  f.kit.on(BONE.Hips).color(0xb89a4a).box(f.kit.at(BONE.Hips, 0, .075, .15), .06, .045, .02);
-  // The cap: a flat white crown on a blue band, the black peak pulled low - the eyes burn under it.
-  f.soft(.015).on(BONE.Head, GROUP.HEAD).head().color(TRIBUNAL_GUARD_WHITE)
-    .capsule(f.at(BONE.Head, 0, .18, -.005), f.at(BONE.Head, 0, .215, -.005), .108, .112)
-    .ellipsoid(f.at(BONE.Head, 0, .245, -.01), .118, .03, .116);
-  f.color(TRIBUNAL_GUARD_COLLAR).torus(f.at(BONE.Head, 0, .175, -.005), .106, .013);
-  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0x111318).ellipsoid(f.kit.at(BONE.Head, 0, .168, .095), .092, .012, .065);
-  eyes(f, 0xff2a1a, .108, .036, .096, .018);
+// ---- Dust Sea: the Salt Court ----------------------------------------------------------------
+// Every code-built look below is drawn after the kind's own model (src/originals/survival.ts MODES_HORDES / OWN_GRUNT_MODELS),
+// for when a model is off (?nomodels) or fails to load.
+const SALT = 0xc4baa2, SALT_DARK = 0xa49a82, SALT_CRUST = 0xeee8d8;
+function saltGuard(f: Flesh, bandolier = false) {
+  sculptBody(f, { bulk: 1.05, limb: 1, belly: 1, skin: 0x6e5a4c, top: SALT, bottom: SALT_DARK, boots: 0x5a4a38, hands: 0x6e5a4c, sleeves: 'long', legs: 'trousers', hunch: .3 });
+  // The robe to the shins, torn at the hem.
+  f.soft(.05).on(BONE.Hips).color(SALT_DARK).capsule(f.at(BONE.Hips, 0, .06, .01), f.at(BONE.Hips, 0, -.7, .02), .18, .25);
+  f.kit.on(BONE.Hips).color(0x8a8068);
+  for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2; f.kit.cone(f.kit.at(BONE.Hips, Math.cos(a) * .23, -.62, Math.sin(a) * .2), f.kit.at(BONE.Hips, Math.cos(a) * .25, -.8, Math.sin(a) * .22), .04, 4); }
+  // Salt crusted on the chest and the skirts; the rope belt.
+  f.soft(.008).on(BONE.Spine01, GROUP.UPPER).color(SALT_CRUST);
+  for (const [x, y] of [[.08, .06], [-.06, .1], [.02, -.02], [-.1, -.04]]) f.ellipsoid(f.at(BONE.Spine01, x, y, .15), .035, .025, .015);
+  f.soft(.01).on(BONE.Hips).color(0x6a5236).torus(f.at(BONE.Hips, 0, .09, .004), .16, .018);
+  f.kit.on(BONE.Hips).color(0x6a5236).limb(f.kit.at(BONE.Hips, .06, .08, .15), f.kit.at(BONE.Hips, .08, -.2, .17), .012, .01, 5);
+  // The cowl over the head and shoulders.
+  f.soft(.03).on(BONE.Spine, GROUP.UPPER).color(SALT).ellipsoid(f.at(BONE.Spine, 0, .1, -.02), .21, .08, .16);
+  f.soft(.025).on(BONE.Head, GROUP.HEAD).head().color(SALT).ellipsoid(f.at(BONE.Head, 0, .12, -.03), .125, .145, .13);
+  // The mask: a plain disc of iron, two eye holes; the eyes burn through.
+  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0x3c3c40).ellipsoid(f.kit.at(BONE.Head, 0, .115, .1), .085, .1, .022, 6, 14).color(0x0a0a0c)
+    .ellipsoid(f.kit.at(BONE.Head, .033, .125, .118), .016, .011, .006, 4, 8).ellipsoid(f.kit.at(BONE.Head, -.033, .125, .118), .016, .011, .006, 4, 8);
+  eyes(f, 0xff5a2a, .125, .033, .121, .012);
+  // Wrapped shins.
+  for (const s of [L, R]) { const j = side(s); for (let i = 0; i < 3; i++) f.soft(.006).on(j.leg).color(0x8a7a5e).torus(f.between(j.leg, j.foot, .35 + i * .18), .06, .012); }
+  if (bandolier) {
+    f.soft(.008).on(BONE.Spine01, GROUP.UPPER).color(0x4a3220).capsule(f.at(BONE.Spine, .14, .06, .12), f.at(BONE.Spine02, -.13, -.02, .14), .02, .02);
+    f.kit.on(BONE.Spine01, GROUP.UPPER).color(0xb08a3a);
+    for (let i = 0; i < 5; i++) { const t = i / 4; const a = f.kit.between(BONE.Spine, BONE.Spine02, t, .12 - t * .24, .02, .15); f.kit.box(a, .02, .04, .02); }
+    f.soft(.01).on(BONE.Hips).color(0x4a3220).box(f.at(BONE.Hips, -.15, .02, .06), .08, .1, .06, 0, 0, 0, .01);
+  }
 }
 // ---- what they carry: hard parts on one hand, the same on a sculpt and on a generated model ----
 const _grip = new THREE.Vector3();
@@ -197,37 +205,46 @@ function musket(k: GruntKit) {
     .color(0xb0b6c0).blade([h[0], h[1] + .025, h[2] + .82], [0, 0, 1], .22, .025, .01);
 }
 
-function automaton(f: Flesh) {
-  // The automaton's frame: a bear of a body in black, the steel showing where it split.
-  sculptBody(f, { bulk: 1.5, limb: 1.3, belly: 1.15, skin: 0x5a5048, top: 0x15171c, bottom: 0x15171c, boots: 0x0b0b0e, hands: 0x2a2a30, sleeves: 'long', legs: 'trousers', hunch: .3 });
-  f.soft(.04).on(BONE.Head, GROUP.HEAD).head().color(0x6a5a50).ellipsoid(f.at(BONE.Head, 0, .12, 0), .115, .12, .115)
-    .color(0x9aa4b0).box(f.at(BONE.Head, 0, .04, .07), .15, .07, .09, 0, 0, 0, .02);
-  sockets(f, .115, .045, .105, 1.1);
-  // The cap with its round ears.
-  f.soft(.02).color(0x0e0e12).capsule(f.at(BONE.Head, 0, .18, -.005), f.at(BONE.Head, 0, .27, -.01), .125, .1)
-    .ellipsoid(f.at(BONE.Head, .1, .29, 0), .05, .05, .032).ellipsoid(f.at(BONE.Head, -.1, .29, 0), .05, .05, .032);
-  eyes(f, 0xff3a2a, .115, .045, .11, .018);
-  // A reactor showing through the torn chest, ringed in steel; seams of metal down the arms.
-  f.soft(.015).on(BONE.Spine01, GROUP.UPPER).color(0x9aa4b0).torus(f.at(BONE.Spine01, 0, .05, .16), .07, .018, 0, Math.PI / 2, 0);
-  f.kit.on(BONE.Spine01, GROUP.UPPER).color(0xffb040).glow(.9).ellipsoid(f.kit.at(BONE.Spine01, 0, .05, .175), .05, .05, .02).glow(0);
-  for (const s of [L, R]) { const j = side(s); f.soft(.01).on(j.fore, j.group).color(0x8a929c).capsule(f.at(j.fore, 0, .04, .02), f.at(j.hand, -s * .03, .035, .02), .012, .01); }
+function saltEngine(f: Flesh) {
+  // A cast-iron executioner engine: riveted plates streaked with salt, a box head whose face is a furnace grate, huge forearms.
+  sculptBody(f, { bulk: 1.6, limb: 1.4, belly: 1.1, skin: 0x2e2a28, top: 0x34302c, bottom: 0x2e2a28, boots: 0x1c1a18, hands: 0x3a3632, sleeves: 'long', legs: 'trousers', hunch: .25 });
+  f.soft(.01).on(BONE.Head, GROUP.HEAD).head().color(0x3a3430).box(f.at(BONE.Head, 0, .12, 0), .25, .27, .24, 0, 0, 0, .025);
+  const k = f.kit;
+  k.on(BONE.Head, GROUP.HEAD).head().color(0x141210).box(k.at(BONE.Head, 0, .11, .125), .19, .17, .02, 0, 0, 0, .1).color(0xff7a1a).glow(.9);
+  for (let i = 0; i < 4; i++) k.box(k.at(BONE.Head, 0, .05 + i * .04, .13), .16, .012, .012, 0, 0, 0, .2);
+  k.glow(0);
+  // The plates and their rivets; salt down the seams.
+  f.soft(.012).on(BONE.Spine01, GROUP.UPPER).color(0x4a403a).box(f.at(BONE.Spine01, 0, .04, .16), .3, .26, .05, 0, 0, 0, .02);
+  k.on(BONE.Spine01, GROUP.UPPER).color(0x8a7a6a);
+  for (const [x, y] of [[-.13, .15], [.13, .15], [-.13, -.07], [.13, -.07], [0, .15]]) k.ellipsoid(k.at(BONE.Spine01, x, y, .19), .014, .014, .01, 4, 6);
+  f.soft(.006).color(0xd8d2c4).capsule(f.at(BONE.Spine01, .06, .14, .19), f.at(BONE.Spine01, .07, -.08, .19), .01, .006);
+  for (const s of [L, R]) {
+    const j = side(s);
+    f.soft(.02).on(j.arm, j.group).color(0x4a403a).ellipsoid(f.at(j.arm, s * .02, .06, 0), .12, .08, .11);
+    f.soft(.02).on(j.fore, j.group).color(0x3e3834).capsule(f.at(j.fore, s * .02, 0, 0), f.at(j.hand, -s * .02, 0, 0), .085, .1);
+    for (let i = 0; i < 3; i++) f.soft(.006).color(0x24201e).torus(f.between(j.fore, j.hand, .2 + i * .28), .095, .012, 0, 0, Math.PI / 2);
+  }
 }
 
-function beastPirate(f: Flesh) {
-  // Gorai's crew: an open vest with a fur collar over a scarred chest, a sash,
-  // wrapped shins, a bandana - and whatever the bad fruit left: horns.
-  const skin = 0x9a5e3e;
-  sculptBody(f, { bulk: 1.15, limb: 1.1, belly: 1.05, skin, top: skin, bottom: 0x3a1c4a, boots: 0x241612, sleeves: 'none', legs: 'trousers' });
-  f.soft(.014).on(BONE.Spine, GROUP.UPPER).color(0x2a1c14)
-    .box(f.at(BONE.Spine, .115, -.07, .01), .1, .32, .27, 0, 0, .1, .035).box(f.at(BONE.Spine, -.115, -.07, .01), .1, .32, .27, 0, 0, -.1, .035);
-  f.soft(.03).color(0x6a5238).torus(f.at(BONE.Spine, 0, .06, -.01), .13, .04, 0, .15, 0);
-  f.soft(.012).on(BONE.Hips).color(0xd8a028).torus(f.at(BONE.Hips, 0, .1, .005), .158, .032);
-  for (const s of [L, R]) { const j = side(s); f.on(j.leg).color(0x8a7a60).capsule(f.between(j.leg, j.foot, .15), f.between(j.leg, j.foot, .5), .062, .056); }
-  sculptHead(f, 0x8a5234, 1.02, 1.15);
-  f.soft(.012).on(BONE.Head, GROUP.HEAD).head().color(0x6a1a1a).torus(f.at(BONE.Head, 0, .165, -.01), .1, .02, 0, -.15, 0);
-  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0xe0d4b4).cone(f.kit.at(BONE.Head, .07, .2, .02), f.kit.at(BONE.Head, .19, .34, -.02), .034, 6).cone(f.kit.at(BONE.Head, -.07, .2, .02), f.kit.at(BONE.Head, -.19, .34, -.02), .034, 6);
-  eyes(f, 0xffb020);
-  falchion(f.kit);
+// ---- Dust Sea: the Stitched Grafters ----------------------------------------------------------
+function graftRaider(f: Flesh) {
+  // A ram's skull stitched over his face, a crab's claw sewn on for a left arm, a dust scarf and a ragged tunic.
+  sculptBody(f, { bulk: 1.1, limb: 1.05, belly: 1, skin: 0x8a6a50, top: 0x8a7454, bottom: 0x5e4c38, boots: 0x3a2a1e, sleeves: 'short', legs: 'trousers' });
+  f.soft(.05).on(BONE.Hips).color(0x7a664a).capsule(f.at(BONE.Hips, 0, .05, .01), f.at(BONE.Hips, 0, -.36, .02), .17, .21);
+  f.soft(.025).on(BONE.Spine, GROUP.UPPER).color(0xa08a66).torus(f.at(BONE.Spine, 0, .1, -.01), .12, .045);
+  f.soft(.02).on(BONE.Head, GROUP.HEAD).head().color(0xa08a66).ellipsoid(f.at(BONE.Head, 0, .12, -.05), .12, .13, .1);
+  f.soft(.015).color(0xe6dcc4).ellipsoid(f.at(BONE.Head, 0, .11, .055), .085, .1, .075).ellipsoid(f.at(BONE.Head, 0, .05, .12), .045, .05, .05);
+  sockets(f, .12, .036, .12, 1);
+  const k = f.kit;
+  k.on(BONE.Head, GROUP.HEAD).head().color(0xcfc2a2).torus(k.at(BONE.Head, .11, .13, -.01), .055, .02, [1, 0, 0], 5, 14).torus(k.at(BONE.Head, -.11, .13, -.01), .055, .02, [1, 0, 0], 5, 14);
+  eyes(f, 0xffb020, .12, .036, .118);
+  // The rusted plate over the right shoulder; the claw on the left.
+  f.soft(.012).on(BONE.RightArm, GROUP.ARM_R).color(0x7a4a2a).ellipsoid(f.at(BONE.RightArm, -.02, .06, 0), .09, .04, .09);
+  f.soft(.02).on(BONE.LeftForeArm, GROUP.ARM_L).color(0x9a3e24).capsule(f.at(BONE.LeftForeArm, .02, 0, 0), f.at(BONE.LeftHand, 0, 0, 0), .07, .085);
+  const c = grip(k, BONE.LeftHand, .02);
+  k.on(BONE.LeftHand, GROUP.ARM_L).color(0xa8482a).blade([c[0], c[1] + .03, c[2]], [1, .25, 0], .3, .12, .05, .5, [0, 0, 1])
+    .color(0x8a3820).blade([c[0], c[1] - .03, c[2]], [1, -.15, 0], .22, .08, .04, .5, [0, 0, 1]);
+  falchion(k);
 }
 /** A heavy curved blade. */
 function falchion(k: GruntKit) {
@@ -235,27 +252,22 @@ function falchion(k: GruntKit) {
   k.on(BONE.RightHand, GROUP.ARM_R).color(0x3a2a1a).limb([p[0], p[1], p[2] - .05], [p[0], p[1], p[2] + .06], .018, .018, 6).color(0xa0a6b0).blade([p[0], p[1], p[2] + .07], [0, .3, 1], .7, .11, .014, .3);
 }
 
-function chessSoldier(f: Flesh) {
-  // Mirabel's Chess Peacekeepers: a tabard of black and white squares over a
-  // lean body, a rook's tower for a helmet with a slit to burn through, a long
-  // pike - the Emperor's own, where the Navy had stood at her side.
-  sculptBody(f, { bulk: .95, limb: .95, belly: .9, skin: 0xd8b090, top: 0xece6d8, bottom: 0x18181c, boots: 0x0e0e10, hands: 0xece6d8, sleeves: 'long', legs: 'trousers' });
-  for (let row = 0; row < 3; row++) for (let col = -1; col <= 1; col++) {
-    const dark = Math.abs(row + col) % 2 === 1;
-    f.soft(.006).on(BONE.Spine, GROUP.UPPER).color(dark ? 0x131316 : 0xf2eee2)
-      .box(f.at(BONE.Spine, col * .088, .08 - row * .1, .118), .084, .094, .02, 0, 0, 0, .005)
-      .box(f.at(BONE.Spine, col * .088, .08 - row * .1, -.1), .084, .094, .02, 0, 0, 0, .005);
-  }
-  sculptHead(f, 0xc89a78);
-  // The rook: a tower over the head, its battlements round the top.
-  f.soft(.012).on(BONE.Head, GROUP.HEAD).head().color(0xf2eee2)
-    .capsule(f.at(BONE.Head, 0, .1, -.005), f.at(BONE.Head, 0, .31, -.005), .118, .104);
-  f.color(0x131316).torus(f.at(BONE.Head, 0, .27, -.005), .106, .014);
+function ironWarden(f: Flesh) {
+  // An undead pike guard of a ruined fortress: blackened plate over rusted mail, a flat-topped bucket helm with a slit and a
+  // horsehair plume, a torn oxblood surcoat.
+  sculptBody(f, { bulk: 1, limb: 1, belly: .95, skin: 0x3a3634, top: 0x2a2a2c, bottom: 0x4a4440, boots: 0x1e1e20, hands: 0x2a2a2c, sleeves: 'long', legs: 'trousers' });
+  f.soft(.012).on(BONE.Spine01, GROUP.UPPER).color(0x5a1a1a).box(f.at(BONE.Spine01, 0, -.04, .14), .26, .36, .03, 0, 0, 0, .01).box(f.at(BONE.Spine01, 0, -.04, -.13), .26, .36, .03, 0, 0, 0, .01);
+  f.soft(.02).on(BONE.Hips).color(0x5a1a1a).capsule(f.at(BONE.Hips, 0, .02, .01), f.at(BONE.Hips, 0, -.42, .02), .17, .2);
+  f.kit.on(BONE.Hips).color(0x3a1010);
+  for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2; f.kit.cone(f.kit.at(BONE.Hips, Math.cos(a) * .19, -.38, Math.sin(a) * .17), f.kit.at(BONE.Hips, Math.cos(a) * .2, -.52, Math.sin(a) * .18), .035, 4); }
+  for (const s of [L, R]) { const j = side(s); f.soft(.014).on(j.arm, j.group).color(0x232325).ellipsoid(f.at(j.arm, s * .02, .06, 0), .1, .06, .1); }
+  f.soft(.008).on(BONE.Spine01, GROUP.UPPER).color(0x6a3a22);
+  for (const [x, y] of [[.1, .1], [-.08, -.02]]) f.ellipsoid(f.at(BONE.Spine01, x, y, .158), .03, .02, .01);
+  f.soft(.01).on(BONE.Head, GROUP.HEAD).head().color(0x2a2a2c).box(f.at(BONE.Head, 0, .13, 0), .22, .27, .23, 0, 0, 0, .03);
   const k = f.kit;
-  k.on(BONE.Head, GROUP.HEAD).head().color(0xf2eee2);
-  for (let i = 0; i < 4; i++) { const a = i / 4 * Math.PI * 2 + Math.PI / 4; k.box(k.at(BONE.Head, Math.sin(a) * .075, .4, Math.cos(a) * .075 - .005), .055, .06, .055); }
-  k.color(0x08080a).box(k.at(BONE.Head, 0, .115, .105), .13, .026, .02);
-  eyes(f, 0xff4020, .115, .03, .1, .012);
+  k.on(BONE.Head, GROUP.HEAD).head().color(0x080808).box(k.at(BONE.Head, 0, .13, .118), .16, .022, .01, 0, 0, 0, .2).color(0xd8d2c0);
+  for (let i = 0; i < 5; i++) k.cone(k.at(BONE.Head, (i - 2) * .02, .27, -.02), k.at(BONE.Head, (i - 2) * .03, .2, -.3), .02, 4);
+  eyes(f, 0xff4020, .13, .03, .12, .01);
   pike(k);
 }
 /** The pike, carried forward like the rifles. */
@@ -265,18 +277,24 @@ function pike(k: GruntKit) {
     .color(0xb0b6c0).blade([h[0], h[1] + .02, h[2] + 1.13], [0, 0, 1], .3, .05, .012);
 }
 
-function beastGraftBrute(f: Flesh) {
-  // A Beast-Graft grown huge: a bull's head on a wrestler's body, a mast-breaker in hand.
-  sculptBody(f, { bulk: 1.6, limb: 1.45, belly: 1.25, skin: 0x9a5e40, top: 0x9a5e40, bottom: 0x3a1a4a, boots: 0x1a1010, sleeves: 'none', legs: 'trousers', hunch: .5 });
-  f.soft(.04).on(BONE.Head, GROUP.HEAD).head().color(0x6a3e28).ellipsoid(f.at(BONE.Head, 0, .12, .01), .12, .115, .125)
-    .ellipsoid(f.at(BONE.Head, 0, .07, .12), .085, .07, .08).color(0x2a1810).ellipsoid(f.at(BONE.Head, 0, .06, .19), .06, .045, .02);
+function graftBrute(f: Flesh) {
+  // A bull's horned head with a rhino's horn on a bear's furred body, sewn with black thread, broken manacles, a leather kilt.
+  sculptBody(f, { bulk: 1.6, limb: 1.45, belly: 1.25, skin: 0x4a3a30, top: 0x4a3a30, bottom: 0x3a2a1e, boots: 0x2a2018, sleeves: 'none', legs: 'bare', barefoot: true, hunch: .5 });
+  f.soft(.04).on(BONE.Spine, GROUP.UPPER).color(0x3a2c22).ellipsoid(f.at(BONE.Spine, .17, .07, -.04), .12, .1, .12).ellipsoid(f.at(BONE.Spine, -.17, .07, -.04), .12, .1, .12).ellipsoid(f.at(BONE.Spine, 0, .05, -.14), .2, .12, .08);
+  f.soft(.03).on(BONE.Hips).color(0x5a3e28).capsule(f.at(BONE.Hips, 0, .05, .01), f.at(BONE.Hips, 0, -.34, .02), .2, .24);
+  f.soft(.04).on(BONE.Head, GROUP.HEAD).head().color(0x3e2e24).ellipsoid(f.at(BONE.Head, 0, .12, .01), .12, .115, .125)
+    .ellipsoid(f.at(BONE.Head, 0, .07, .12), .085, .07, .08).color(0x1e1610).ellipsoid(f.at(BONE.Head, 0, .06, .19), .06, .045, .02);
   sockets(f, .13, .06, .1, 1.1);
-  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0xe0d4b8).cone(f.kit.at(BONE.Head, .1, .17), f.kit.at(BONE.Head, .3, .24, .05), .045, 7).cone(f.kit.at(BONE.Head, -.1, .17), f.kit.at(BONE.Head, -.3, .24, .05), .045, 7)
-    .color(0xc8a040).torus(f.kit.at(BONE.Head, 0, .06, .2), .03, .007, [0, 0, 1], 4, 10);
+  const k = f.kit;
+  k.on(BONE.Head, GROUP.HEAD).head().color(0xd8ccb0).cone(k.at(BONE.Head, .1, .17), k.at(BONE.Head, .28, .2, .1), .042, 7).cone(k.at(BONE.Head, -.1, .17), k.at(BONE.Head, -.28, .2, .1), .042, 7)
+    .color(0xcabfa0).cone(k.at(BONE.Head, 0, .1, .17), k.at(BONE.Head, 0, .25, .25), .035, 7);
   eyes(f, 0xff4a1a, .13, .06, .115, .018);
-  mastBreaker(f.kit);
+  k.on(BONE.Spine01, GROUP.UPPER).color(0x0e0a08);
+  for (let i = 0; i < 6; i++) k.box(k.at(BONE.Spine01, -.12 + i * .05, .12 - i * .03, .19), .006, .04, .006, 0, 0, .6);
+  for (const s of [L, R]) { const j = side(s); k.on(j.hand, j.group).color(0x6a4a30).torus(grip(k, j.hand, -.04), .07, .02, [1, 0, 0], 5, 12).color(0x5a5048).torus(grip(k, j.hand, -.04, -.08), .025, .008, [0, 0, 1], 4, 8); }
+  mastBreaker(k);
 }
-/** A 'mast-breaker': a spiked iron club. */
+/** A heavy spiked iron club. */
 function mastBreaker(k: GruntKit) {
   const h = grip(k, BONE.RightHand, .08);
   k.on(BONE.RightHand, GROUP.ARM_R).color(0x2e2624).limb([h[0], h[1], h[2] - .06], [h[0], h[1] + .08, h[2] + .95], .04, .1, 9);
@@ -284,172 +302,134 @@ function mastBreaker(k: GruntKit) {
   for (let i = 0; i < 9; i++) { const t = .32 + i * .075, a = i * 2.1; k.cone([h[0], h[1] + .08 * t, h[2] + .95 * t], [h[0] + Math.cos(a) * .15, h[1] + .08 * t + Math.sin(a) * .15, h[2] + .95 * t], .026, 4); }
 }
 
-// ---- Cinder Requiem --------------------------------------------------------------------------------------
-function wraithBase(f: Flesh, mouthGlow = 0) {
-  // A wraith: a lean black body, bone plates on the shoulders and shins, the
-  // mask, and the hole where the heart was.
-  sculptBody(f, { bulk: .95, limb: .92, belly: .85, skin: 0x121216, top: 0x121216, bottom: 0x121216, boots: 0x121216, sleeves: 'none', legs: 'bare', barefoot: true, hunch: .45 });
-  f.soft(.01).on(BONE.Spine01, GROUP.UPPER).color(0x020203).carve().capsule(f.at(BONE.Spine01, 0, .05, -.2), f.at(BONE.Spine01, 0, .05, .2), .055, .055);
-  f.soft(.012).color(0xe6e2d8).torus(f.at(BONE.Spine01, 0, .05, .105), .062, .014, 0, Math.PI / 2, 0);
+// ---- Cinder Requiem: the ash wraiths -----------------------------------------------------------------------
+/** Violet light in the cracks of an ash body: glowing slivers on a bone. */
+function cracks(f: Flesh, bone: number, group: number | undefined, color: number, spots: readonly (readonly [number, number, number, number])[]) {
+  f.kit.on(bone, group).color(color).glow(.8);
+  for (const [x, y, z, roll] of spots) f.kit.box(f.kit.at(bone, x, y, z), .008, .07, .006, 0, 0, roll, .3);
+  f.kit.glow(0);
+}
+function ashWraith(f: Flesh, caster = false, scale = 1) {
+  // A tall gaunt ghoul of grey ash, ribs and spine under cracked skin, violet light deep in the cracks; a hood and mantle of
+  // burnt cloth; long black hooked claws; its face its own. The caster: a tattered robe and a ragged high collar, two charred
+  // antler-horns, violet sigils down its cheeks, chains on its forearms.
+  sculptBody(f, { bulk: .85 * scale, limb: .85 * scale, belly: .75, skin: 0x6a6660, top: 0x6a6660, bottom: 0x3a3634, boots: 0x3a3634, sleeves: 'none', legs: 'bare', barefoot: true, starved: true, hunch: .55 });
+  cracks(f, BONE.Spine01, GROUP.UPPER, 0xa050ff, [[.06, .05, .13, .4], [-.08, .1, .12, -.3], [.02, -.06, .14, .1]]);
+  for (const s of [L, R]) { const j = side(s); cracks(f, j.arm, j.group, 0xa050ff, [[s * .05, .0, .03, .5]]); }
+  sculptHead(f, 0x5a5650, 1, .95, true);
+  f.soft(.025).on(BONE.Head, GROUP.HEAD).head().color(0x2a2624).ellipsoid(f.at(BONE.Head, 0, .14, -.04), .12, .13, .12);
+  f.soft(.03).on(BONE.Spine, GROUP.UPPER).color(0x2a2624).ellipsoid(f.at(BONE.Spine, 0, .07, -.03), .22, .08, .16);
+  eyes(f, 0xc080ff, .108, .036, .095, .014);
+  claws(f, 0x0e0c0c, .15);
+  if (!caster) return;
+  f.soft(.05).on(BONE.Hips).color(0x34302c).capsule(f.at(BONE.Hips, 0, .06, .01), f.at(BONE.Hips, 0, -.72, .02), .17, .25);
+  const k = f.kit;
+  k.on(BONE.Spine, GROUP.UPPER).color(0x2a2624);
+  for (let i = 0; i < 8; i++) { const a = Math.PI * (.15 + i / 7 * .7) + Math.PI; k.cone(k.at(BONE.Spine, Math.cos(a) * .12, .12, Math.sin(a) * -.1), k.at(BONE.Spine, Math.cos(a) * .17, .3, Math.sin(a) * -.14), .03, 4); }
+  k.on(BONE.Head, GROUP.HEAD).head().color(0x2a201a);
+  for (const s of [1, -1]) {
+    k.cone(k.at(BONE.Head, s * .06, .2, -.02), k.at(BONE.Head, s * .16, .38, -.08), .02, 5);
+    k.cone(k.at(BONE.Head, s * .12, .3, -.05), k.at(BONE.Head, s * .2, .34, .02), .012, 4);
+  }
+  k.color(0xa050ff).glow(.8);
+  for (const s of [1, -1]) k.box(k.at(BONE.Head, s * .05, .07, .095), .006, .05, .004, 0, 0, s * .2, .3);
+  k.glow(0);
+  for (const s of [L, R]) { const j = side(s); for (let i = 0; i < 3; i++) f.soft(.006).on(j.fore, j.group).color(0x5a4a6a).torus(f.between(j.fore, j.hand, .2 + i * .25), .05, .01, 0, 0, Math.PI / 2); }
+}
+
+// ---- Last Sun: the Sunburnt Legion ------------------------------------------------------------------
+function cinderImp(f: Flesh) {
+  // A small hunched imp of cracked charred skin, molten light in every crack and a bright belly, like a coal about to burst;
+  // big pointed ears, yellow eyes, long clawed arms.
+  sculptBody(f, { bulk: .9, limb: .95, belly: 1.2, skin: 0x2a1a14, top: 0x2a1a14, bottom: 0x2a1a14, boots: 0x2a1a14, sleeves: 'none', legs: 'bare', barefoot: true, neck: false, hunch: .6 });
+  f.kit.on(BONE.Spine02, GROUP.UPPER).color(0xffa040).glow(.9).ellipsoid(f.kit.at(BONE.Spine02, 0, .02, .14), .09, .1, .03, 5, 10).glow(0);
+  cracks(f, BONE.Spine01, GROUP.UPPER, 0xff6a1a, [[.08, .08, .13, .5], [-.07, .02, .14, -.4], [.0, .12, .12, .1]]);
+  for (const s of [L, R]) { const j = side(s); cracks(f, j.arm, j.group, 0xff6a1a, [[s * .06, 0, .03, .3]]); cracks(f, j.up, undefined, 0xff6a1a, [[0, -.1, .07, .2]]); }
+  f.soft(.03).on(BONE.Head, GROUP.HEAD).head().color(0x2a1a14).ellipsoid(f.at(BONE.Head, 0, .11, .02), .11, .1, .11).ellipsoid(f.at(BONE.Head, 0, .05, .09), .06, .045, .05);
+  sockets(f, .12, .045, .115, 1.15);
+  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0x22140f);
+  for (const s of [1, -1]) f.kit.cone(f.kit.at(BONE.Head, s * .09, .13, -.01), f.kit.at(BONE.Head, s * .25, .2, -.07), .035, 5);
+  eyes(f, 0xffd02a, .12, .045, .11, .02, -.008);
+  claws(f, 0x1a0e0a, .15);
+}
+
+function sunTrooper(f: Flesh) {
+  // Cracked dark red ceramic plate with bronze trim over a black bodysuit; a round bronze sun-disc over the whole face.
+  sculptBody(f, { bulk: 1.05, limb: 1, belly: 1, skin: 0x1a1416, top: 0x121014, bottom: 0x121014, boots: 0x5a1a14, hands: 0x121014, sleeves: 'long', legs: 'trousers' });
+  f.soft(.015).on(BONE.Spine01, GROUP.UPPER).color(0x6a1c16).capsule(f.at(BONE.Spine01, 0, -.03), f.at(BONE.Spine, 0, .05), .175, .19);
+  f.on(BONE.Spine02, GROUP.UPPER).color(0xa07a3a).torus(f.at(BONE.Spine02, 0, .02), .15, .016);
   for (const s of [L, R]) {
     const j = side(s);
-    f.soft(.012).on(j.arm, j.group).color(0xe6e2d8).ellipsoid(f.at(j.arm, s * .02, .045, -.01), .075, .03, .07, 0, 0, s * -.35);
-    f.on(j.leg).ellipsoid(f.between(j.leg, j.foot, .3, 0, 0, .04), .045, .11, .03);
+    f.soft(.012).on(j.arm, j.group).color(0x6a1c16).ellipsoid(f.at(j.arm, s * .03, .06, 0), .1, .04, .09, 0, 0, s * -.25);
+    f.soft(.01).on(j.leg).color(0x6a1c16).capsule(f.between(j.leg, j.foot, .15, 0, 0, .03), f.between(j.leg, j.foot, .7, 0, 0, .03), .045, .04);
   }
-  // The mask: a long pale skull-face, brow ridge, a jaw of teeth.
-  f.soft(.02).on(BONE.Head, GROUP.HEAD).head().color(0x121216).ellipsoid(f.at(BONE.Head, 0, .115, -.015), .095, .11, .1);
-  f.color(0xece8dc).ellipsoid(f.at(BONE.Head, 0, .12, .055), .098, .12, .07).box(f.at(BONE.Head, 0, .03, .085), .11, .06, .06, 0, 0, 0, .02)
-    .box(f.at(BONE.Head, 0, .155, .11), .14, .028, .03, 0, .2, 0, .01);
-  sockets(f, .125, .04, .115, 1);
-  f.soft(.006).color(0x050505).carve().box(f.at(BONE.Head, 0, .045, .13), .085, .012, .05);
-  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0xf8f6f0);
-  for (let i = -3; i <= 3; i++) { f.kit.cone(f.kit.at(BONE.Head, i * .013, .058, .12), f.kit.at(BONE.Head, i * .013, .036, .125), .006, 4); f.kit.cone(f.kit.at(BONE.Head, i * .013, .03, .12), f.kit.at(BONE.Head, i * .013, .048, .125), .006, 4); }
-  eyes(f, mouthGlow ? 0xff2244 : 0xffd21a, .125, .04, .11, .016, .006);
-  if (mouthGlow) f.kit.on(BONE.Head, GROUP.HEAD).color(0xff1a3a).glow(mouthGlow).ellipsoid(f.kit.at(BONE.Head, 0, .045, .115), .04, .008, .01).glow(0);
-  claws(f, 0xe8e2d6, .12);
-}
-
-function greatWraith(f: Flesh) {
-  // A great wraith: a black robe from shoulder to floor, a ring of spikes at the collar, the long pale nose.
-  sculptBody(f, { bulk: 1.2, limb: 1.1, belly: 1.1, skin: 0x0a0a0e, top: 0x0a0a0e, bottom: 0x0a0a0e, boots: 0x0a0a0e, sleeves: 'long', legs: 'trousers' });
-  f.soft(.06).on(BONE.Hips).color(0x0c0c10).capsule(f.at(BONE.Hips, 0, .1), f.at(BONE.Hips, 0, -.9), .19, .3);
-  f.soft(.04).on(BONE.Head, GROUP.HEAD).head().color(0x0a0a0e).ellipsoid(f.at(BONE.Head, 0, .12), .12, .14, .12);
-  f.color(0xece8dc).ellipsoid(f.at(BONE.Head, 0, .13, .06), .11, .12, .07);
-  sockets(f, .15, .05, .115, 1.1);
-  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0xece8dc).cone(f.kit.at(BONE.Head, 0, .09, .1), f.kit.at(BONE.Head, 0, .06, .44), .035, 8);
-  f.kit.on(BONE.Spine, GROUP.UPPER).color(0xe8e4dc);
-  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; f.kit.cone(f.kit.at(BONE.Spine, Math.cos(a) * .15, .07, Math.sin(a) * .11), f.kit.at(BONE.Spine, Math.cos(a) * .3, .17, Math.sin(a) * .23), .026, 4); }
-  eyes(f, 0xffd21a, .15, .05, .115, .018);
-}
-
-// ---- Last Sun ---------------------------------------------------------------------------------
-function saibaman(f: Flesh) {
-  sculptBody(f, { bulk: .9, limb: .85, belly: 1, skin: 0x4e8a3a, top: 0x4e8a3a, bottom: 0x3f7430, boots: 0x3f7430, sleeves: 'none', legs: 'bare', barefoot: true, neck: false, hunch: .5 });
-  // The bulb of a head, ridged like a seed, and the grinning slit.
-  f.soft(.03).on(BONE.Head, GROUP.HEAD).head().color(0x3a6a2a).ellipsoid(f.at(BONE.Head, 0, .12, .015), .15, .145, .15);
-  f.soft(.01).color(0x22401a);
-  for (let i = -2; i <= 2; i++) f.carve().capsule(f.at(BONE.Head, i * .045, .27, -.02), f.at(BONE.Head, i * .06, .06, .16), .01, .01);
-  sockets(f, .12, .06, .135, 1.3);
-  f.soft(.008).color(0x0a1206).carve().box(f.at(BONE.Head, 0, .045, .15), .09, .012, .06);
-  eyes(f, 0xff2a2a, .12, .06, .13, .024, -.01);
-  claws(f, 0xd8e0c8, .09);
-}
-
-function jinlinSoldier(f: Flesh) {
-  const skin = 0x8aa84a;
-  sculptBody(f, { bulk: 1.05, limb: 1, belly: 1, skin, top: 0x362660, bottom: 0x362660, boots: 0xeeeeea, hands: 0xeeeeea, sleeves: 'long', legs: 'trousers' });
-  // Battle armour: the white breastplate, and the yellow-tipped guards over the shoulders.
-  f.soft(.015).on(BONE.Spine01, GROUP.UPPER).color(0xf0f0ec).capsule(f.at(BONE.Spine01, 0, -.03), f.at(BONE.Spine, 0, .05), .175, .19);
-  f.on(BONE.Spine02, GROUP.UPPER).color(0x2a2a30).torus(f.at(BONE.Spine02, 0, .02), .15, .022);
-  for (const s of [L, R]) {
-    const j = side(s);
-    f.soft(.012).on(j.arm, j.group).color(0xf0f0ec).ellipsoid(f.at(j.arm, s * .03, .06, 0), .1, .035, .09, 0, 0, s * -.25)
-      .color(0xe0b820).ellipsoid(f.at(j.arm, s * .1, .05, 0), .05, .03, .08, 0, 0, s * -.35);
-  }
-  sculptHead(f, skin, 1.02);
-  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0xe0e0e0).box(f.kit.at(BONE.Head, .1, .12, .02), .03, .06, .08).color(0x3aff6a).glow(.8).box(f.kit.at(BONE.Head, .065, .12, .1), .06, .045, .01).glow(0);
-  eyes(f, 0xff3a8a);
-  const h = grip(f.kit, BONE.RightHand, .05);
-  f.kit.on(BONE.RightHand, GROUP.ARM_R).color(0x40404a).box([h[0], h[1] + .02, h[2] + .08], .07, .07, .22);
-}
-
-function broodSpawn(f: Flesh) {
-  sculptBody(f, { bulk: .88, limb: .88, belly: .9, skin: 0x3a6cb0, top: 0x1a2a4a, bottom: 0x3a6cb0, boots: 0x1a1a22, hands: 0x3a6cb0, sleeves: 'none', legs: 'bare', barefoot: true });
-  f.soft(.015).on(BONE.Spine01, GROUP.UPPER).color(0x2a5a9a);
-  for (let i = 0; i < 6; i++) { const a = i * 1.1; f.ellipsoid(f.at(BONE.Spine01, Math.cos(a) * .1, .06 + Math.sin(a) * .07, .1), .026, .026, .02); }
-  f.soft(.03).on(BONE.Head, GROUP.HEAD).head().color(0xcfdac6).ellipsoid(f.at(BONE.Head, 0, .105, .02), .09, .1, .095)
-    .color(0x1a2a4a).capsule(f.at(BONE.Head, .05, .17, -.01), f.at(BONE.Head, .15, .34, -.09), .045, .012).capsule(f.at(BONE.Head, -.05, .17, -.01), f.at(BONE.Head, -.15, .34, -.09), .045, .012);
-  sockets(f, .1, .035, .1, .9);
-  eyes(f, 0xff4ad8, .1, .035, .095, .016);
-  // The black wing-shell on its back.
-  f.soft(.02).on(BONE.Spine, GROUP.UPPER).color(0x10161e).ellipsoid(f.at(BONE.Spine, .1, -.08, -.13), .1, .2, .04, 0, .2, .25).ellipsoid(f.at(BONE.Spine, -.1, -.08, -.13), .1, .2, .04, 0, .2, -.25);
-}
-
-// ---- Konta -----------------------------------------------------------------------------------
-function whitePaleSapling(f: Flesh) {
-  sculptBody(f, { bulk: .95, limb: .95, belly: .95, skin: 0xd6dacb, top: 0xd6dacb, bottom: 0xcdd1c0, boots: 0xc2c6b4, sleeves: 'none', legs: 'bare', barefoot: true, hunch: .2 });
-  // Grown, not born: the wood it was grown from shows through the white as
-  // ridges of bark down the trunk and the thighs, and knots where they part
-  // (a smooth white body read as a shop's mannequin).
-  f.soft(.012).color(0x7e846a);
-  for (const a of [-.75, -.4, -.1, .22, .55, .85, 2.6, 3.0, 3.4, 3.75]) {
-    const x = Math.sin(a), z = Math.cos(a), w = .018 + Math.abs(Math.sin(a * 3.7)) * .008;
-    f.on(BONE.Spine01).capsule(f.at(BONE.Spine, x * .15, -.02, z * .14), f.at(BONE.Spine02, x * .155 + Math.sin(a * 5) * .02, .05, z * .15), w, w * .8);
-  }
-  for (const s of [L, R]) for (const a of [-.5, .4, 2.9]) f.on(s === L ? BONE.LeftUpLeg : BONE.RightUpLeg).capsule(f.at(s === L ? BONE.LeftUpLeg : BONE.RightUpLeg, Math.sin(a) * .085, -.04, Math.cos(a) * .085), f.at(s === L ? BONE.LeftLeg : BONE.RightLeg, Math.sin(a) * .07, .06, Math.cos(a) * .07), .016, .011);
-  f.soft(.015).color(0x6e745c);
-  for (const [bone, x, y, z] of [[BONE.Spine01, .08, .1, .13], [BONE.Spine02, -.1, .02, .13], [BONE.LeftArm, .12, .02, .04], [BONE.RightLeg, 0, -.1, .07]] as const) f.on(bone).ellipsoid(f.at(bone, x, y, z), .045, .035, .03);
-  f.soft(.03).on(BONE.Head, GROUP.HEAD).head().color(0xeef2ec).ellipsoid(f.at(BONE.Head, 0, .12, .01), .105, .13, .11);
-  sockets(f, .12, .04, .1, 1.25);
-  // The grin: wide and lipless, cut ear to ear, a row of small teeth in it.
-  f.soft(.008).color(0x1a1e18).carve().box(f.at(BONE.Head, 0, .05, .11), .11, .02, .06);
-  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0xf6f2e2);
-  for (let i = -5; i <= 5; i++) f.kit.cone(f.kit.at(BONE.Head, i * .0095, .061, .107 - Math.abs(i) * .002), f.kit.at(BONE.Head, i * .0095, .049, .109 - Math.abs(i) * .002), .0045, 4);
-  eyes(f, 0xffe07a, .12, .04, .1, .02);
-  kunai(f.kit, PALE_SAPLING_KUNAI);
-}
-interface Kunai { at: number; length: number; width: number; thickness: number; steel: number; ring: number; ringAt: number; ringRadius: number }
-const PALE_SAPLING_KUNAI: Kunai = { at: .06, length: .17, width: .045, thickness: .008, steel: 0x2c2e34, ring: 0x6a5a44, ringAt: .03, ringRadius: .016 };
-const NINJA_KUNAI: Kunai = { at: .07, length: .24, width: .055, thickness: .01, steel: 0x3a3a40, ring: 0x8a7a5a, ringAt: .04, ringRadius: .018 };
-/** A kunai, reversed in the fist. */
-function kunai(k: GruntKit, o: Kunai) {
-  const h = grip(k, BONE.RightHand, o.at);
-  k.on(BONE.RightHand, GROUP.ARM_R).color(o.steel).blade([h[0], h[1], h[2] + .02], [0, 0, 1], o.length, o.width, o.thickness, .45)
-    .color(o.ring).torus([h[0], h[1], h[2] - o.ringAt], o.ringRadius, .005, [0, 0, 1], 4, 8);
-}
-
-function rogueNinja(f: Flesh) {
-  sculptBody(f, { bulk: .95, limb: .95, belly: .95, skin: 0xd0a080, top: 0x1c2230, bottom: 0x1c2230, boots: 0x14161c, hands: 0x2a3040, sleeves: 'long', legs: 'trousers' });
-  // The flak vest with its scroll pockets.
-  f.soft(.012).on(BONE.Spine01, GROUP.UPPER).color(0x3a4a36).capsule(f.at(BONE.Spine01, 0, -.03), f.at(BONE.Spine, 0, .04), .168, .18);
-  for (const s of [L, R]) f.on(BONE.Spine01, GROUP.UPPER).box(f.at(BONE.Spine01, s * .07, .02, .165), .06, .1, .04, 0, 0, 0, .01);
-  sculptHead(f, 0xc08e6e);
-  // The mask over the jaw; the headband, its plate scratched through.
-  f.soft(.012).on(BONE.Head, GROUP.HEAD).head().color(0x1a1e2a).ellipsoid(f.at(BONE.Head, 0, .045, .05), .075, .055, .07).torus(f.at(BONE.Head, 0, .16, -.005), .1, .018);
-  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0xb8c0cc).box(f.kit.at(BONE.Head, 0, .16, .1), .1, .04, .012).color(0x151515).box(f.kit.at(BONE.Head, 0, .16, .107), .1, .005, .004);
-  eyes(f, 0xff3a2a);
-  kunai(f.kit, NINJA_KUNAI);
-}
-
-// ---- Boar-men ----------------------------------------------------------------------------------
-function tusker(f: Flesh) {
-  const skin = 0x5e7e34;
-  sculptBody(f, { bulk: 1.4, limb: 1.2, belly: 1.45, skin, top: skin, bottom: 0x4a3a2a, boots: 0x3a2a1a, sleeves: 'none', legs: 'trousers', hunch: .35 });
-  // Leather harness, a spiked collar.
-  f.soft(.01).on(BONE.Spine01, GROUP.UPPER).color(0x4a3420).capsule(f.at(BONE.Spine, .16, .05, 0), f.at(BONE.Spine02, -.13, -.02, .02), .022, .022).capsule(f.at(BONE.Spine, -.16, .05, 0), f.at(BONE.Spine02, .13, -.02, .02), .022, .022);
-  f.on(BONE.neck, GROUP.UPPER).color(0x3a2a18).torus(f.at(BONE.neck, 0, 0, .01), .085, .025);
-  // The pig's head: jowls, a snout, tusks, small horns.
-  f.soft(.035).on(BONE.Head, GROUP.HEAD).head().color(0x587630).ellipsoid(f.at(BONE.Head, 0, .1, .03), .13, .12, .13)
-    .ellipsoid(f.at(BONE.Head, 0, .05, .1), .1, .07, .08).ellipsoid(f.at(BONE.Head, 0, .065, .16), .065, .05, .05)
-    .color(0x3a4a20).ellipsoid(f.at(BONE.Head, 0, .065, .2), .045, .035, .02);
-  sockets(f, .14, .05, .12, 1);
-  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0xe8e0c8).cone(f.kit.at(BONE.Head, .045, .02, .15), f.kit.at(BONE.Head, .065, .11, .19), .015, 5).cone(f.kit.at(BONE.Head, -.045, .02, .15), f.kit.at(BONE.Head, -.065, .11, .19), .015, 5)
-    .color(0x4a3a2a).cone(f.kit.at(BONE.Head, .08, .2), f.kit.at(BONE.Head, .12, .29, -.03), .025, 5).cone(f.kit.at(BONE.Head, -.08, .2), f.kit.at(BONE.Head, -.12, .29, -.03), .025, 5);
-  eyes(f, 0xff5a1a, .14, .05, .125, .015);
-  axe(f.kit);
-}
-/** A long-hafted axe. */
-function axe(k: GruntKit) {
-  const h = grip(k, BONE.RightHand, .08);
-  k.on(BONE.RightHand, GROUP.ARM_R).color(0x5a3a22).limb([h[0], h[1] - .02, h[2] - .25], [h[0], h[1] + .05, h[2] + .72], .026, .026, 7)
-    .color(0x8e949c).blade([h[0], h[1] + .04, h[2] + .56], [0, 1, .15], .32, .3, .03, .3, [0, 0, 1]);
-}
-
-function skiffGuard(f: Flesh) {
-  sculptBody(f, { bulk: 1, limb: 1, belly: 1, skin: 0x8a6a4a, top: 0x5a4a3a, bottom: 0x4a3a2a, boots: 0x2a1e14, sleeves: 'long', legs: 'trousers' });
-  f.soft(.012).on(BONE.Spine01, GROUP.UPPER).color(0x6a5a44).capsule(f.at(BONE.Spine, .17, .06, 0), f.at(BONE.Spine02, -.14, 0, .02), .03, .03);
-  // A head wrapped in cloth bands to the eyes, a leather cap over it.
-  f.soft(.02).on(BONE.Head, GROUP.HEAD).head().color(0x7a5a3a).ellipsoid(f.at(BONE.Head, 0, .11, .01), .1, .12, .11);
-  for (let i = 0; i < 4; i++) f.soft(.006).color(i % 2 ? 0x8a6a48 : 0x6a4c30).torus(f.at(BONE.Head, 0, .03 + i * .03, .012), .098 - i * .004, .012);
-  f.soft(.015).color(0x4a3a28).capsule(f.at(BONE.Head, 0, .19, -.01), f.at(BONE.Head, 0, .23, -.015), .105, .08);
-  sockets(f, .12, .038, .105, 1);
-  eyes(f, 0xff7a1a, .12, .038, .1);
-  blaster(f.kit);
-}
-/** A blaster rifle, its barrel forward. */
-function blaster(k: GruntKit) {
+  f.soft(.02).on(BONE.Head, GROUP.HEAD).head().color(0x6a1c16).ellipsoid(f.at(BONE.Head, 0, .12, -.01), .11, .13, .115);
+  const k = f.kit;
+  k.on(BONE.Head, GROUP.HEAD).head().color(0xb08a3a).ellipsoid(k.at(BONE.Head, 0, .11, .1), .095, .095, .02, 6, 16).color(0x7a5a24);
+  for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; k.box(k.at(BONE.Head, Math.cos(a) * .06, .11 + Math.sin(a) * .06, .118), .006, .03, .004, 0, 0, a - Math.PI / 2, .3); }
+  k.color(0xff8a2a).glow(.6).box(k.at(BONE.Head, 0, .12, .121), .07, .006, .004, 0, 0, 0, .3).glow(0);
   const h = grip(k, BONE.RightHand, .05);
-  k.on(BONE.RightHand, GROUP.ARM_R).color(0x2a2a2e).box([h[0], h[1] + .02, h[2] + .1], .05, .08, .38).color(0x6a6a70).limb([h[0], h[1] + .04, h[2] + .28], [h[0], h[1] + .04, h[2] + .5], .014, .014, 6);
+  k.on(BONE.RightHand, GROUP.ARM_R).color(0x4a1612).box([h[0], h[1] + .02, h[2] + .08], .07, .07, .22).color(0xa07a3a).box([h[0], h[1] + .06, h[2] + .1], .03, .02, .16);
+}
+
+function sunBrood(f: Flesh) {
+  // A wiry spawn of burnt black plated skin with thin ember cracks, a blank bronze faceplate, short black spines on the
+  // shoulders and forearms.
+  sculptBody(f, { bulk: .88, limb: .9, belly: .9, skin: 0x161214, top: 0x161214, bottom: 0x161214, boots: 0x161214, hands: 0x161214, sleeves: 'none', legs: 'bare', barefoot: true, hunch: .35 });
+  cracks(f, BONE.Spine01, GROUP.UPPER, 0xff5a1a, [[.07, .06, .13, .5], [-.06, -.02, .14, -.3]]);
+  f.soft(.03).on(BONE.Head, GROUP.HEAD).head().color(0x161214).ellipsoid(f.at(BONE.Head, 0, .11, 0), .095, .11, .1);
+  const k = f.kit;
+  k.on(BONE.Head, GROUP.HEAD).head().color(0xa07a3a).ellipsoid(k.at(BONE.Head, 0, .1, .085), .075, .09, .03, 6, 14);
+  k.on(BONE.Spine, GROUP.UPPER).color(0x0a0808);
+  for (const s of [1, -1]) for (let i = 0; i < 3; i++) k.cone(k.at(BONE.Spine, s * (.12 + i * .04), .1, -.04), k.at(BONE.Spine, s * (.14 + i * .05), .22, -.08), .018, 4);
+  for (const s of [L, R]) { const j = side(s); k.on(j.fore, j.group).color(0x0a0808); for (let i = 0; i < 3; i++) { const a = k.between(j.fore, j.hand, .2 + i * .25, 0, .04); k.cone(a, [a[0], a[1] + .08, a[2] - .03], .014, 4); } }
+}
+
+// ---- Hidden Ash -----------------------------------------------------------------------------------
+function paleSapling(f: Flesh) {
+  // Grown, not born: a revenant of pale birch bark, black streaks across it, a crown of bare twigs, moss on the shoulders.
+  sculptBody(f, { bulk: .9, limb: .9, belly: .85, skin: 0xcfc8b4, top: 0xcfc8b4, bottom: 0xbfb8a2, boots: 0xb0a892, sleeves: 'none', legs: 'bare', barefoot: true, starved: true, hunch: .3 });
+  f.soft(.008).color(0x2a2622);
+  for (const [bone, x, y, z] of [[BONE.Spine01, .06, .1, .14], [BONE.Spine01, -.07, .02, .15], [BONE.Spine02, .05, -.02, .14], [BONE.Spine, -.1, .03, .1], [BONE.LeftUpLeg, .04, -.1, .07], [BONE.RightUpLeg, -.03, -.2, .07], [BONE.LeftArm, .1, 0, .04], [BONE.RightForeArm, -.1, 0, .04]] as const)
+    f.on(bone).capsule(f.at(bone, x - .03, y, z), f.at(bone, x + .03, y + .005, z), .008, .008);
+  f.soft(.02).on(BONE.Spine, GROUP.UPPER).color(0x5a6a3a).ellipsoid(f.at(BONE.Spine, .15, .08, 0), .07, .04, .07).ellipsoid(f.at(BONE.Spine, -.13, .07, -.02), .06, .035, .06);
+  f.soft(.03).on(BONE.Head, GROUP.HEAD).head().color(0xd8d2be).ellipsoid(f.at(BONE.Head, 0, .12, .0), .095, .12, .1);
+  sockets(f, .12, .036, .09, 1.1);
+  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0x5a4a38);
+  for (let i = 0; i < 6; i++) { const a = (i / 5 - .5) * 2.2; f.kit.cone(f.kit.at(BONE.Head, Math.sin(a) * .07, .2, -.02), f.kit.at(BONE.Head, Math.sin(a) * .16, .38, -.06), .012, 4); }
+  eyes(f, 0xffb84a, .12, .036, .09, .014);
+  thorn(f.kit);
+}
+/** A long thorn carried as a knife. */
+function thorn(k: GruntKit) {
+  const h = grip(k, BONE.RightHand, .05);
+  k.on(BONE.RightHand, GROUP.ARM_R).color(0x4a3a28).cone([h[0], h[1], h[2] - .04], [h[0], h[1], h[2] + .26], .02, 5);
+}
+interface Knife { at: number; length: number; width: number; thickness: number; steel: number; grip: number }
+const CUTTHROAT_KNIFE: Knife = { at: .07, length: .22, width: .04, thickness: .01, steel: 0x8a8e96, grip: 0x3a2418 };
+/** A straight throwing knife, its leather-wrapped grip in the fist. */
+function knife(k: GruntKit, o: Knife) {
+  const h = grip(k, BONE.RightHand, o.at);
+  k.on(BONE.RightHand, GROUP.ARM_R).color(o.grip).limb([h[0], h[1], h[2] - .05], [h[0], h[1], h[2] + .03], .013, .013, 6)
+    .color(o.steel).blade([h[0], h[1], h[2] + .03], [0, 0, 1], o.length, o.width, o.thickness, .3);
+}
+
+function cutthroat(f: Flesh) {
+  // A gaunt undead knife-thrower deserter: shaved head and one long braid, a ragged indigo sleeveless wrap-coat to the knees
+  // under a knotted red rope sash, a bandolier of throwing knives, black bracers and boots.
+  sculptBody(f, { bulk: .85, limb: .9, belly: .8, skin: 0x8a7e72, top: 0x2a2e4a, bottom: 0x2a2e4a, boots: 0x111114, hands: 0x8a7e72, sleeves: 'none', legs: 'trousers', starved: true, hunch: .3 });
+  f.soft(.04).on(BONE.Hips).color(0x262a44).capsule(f.at(BONE.Hips, 0, .06, .01), f.at(BONE.Hips, 0, -.5, .02), .17, .22);
+  f.soft(.01).on(BONE.Hips).color(0x8a1e1a).torus(f.at(BONE.Hips, 0, .12, .004), .155, .022);
+  f.kit.on(BONE.Hips).color(0x8a1e1a).limb(f.kit.at(BONE.Hips, -.08, .1, .15), f.kit.at(BONE.Hips, -.1, -.15, .17), .014, .01, 5);
+  f.soft(.008).on(BONE.Spine01, GROUP.UPPER).color(0x3a2a1e).capsule(f.at(BONE.Spine, -.14, .06, .12), f.at(BONE.Spine02, .13, -.02, .14), .02, .02);
+  f.kit.on(BONE.Spine01, GROUP.UPPER).color(0x8a8e96);
+  for (let i = 0; i < 4; i++) { const t = .15 + i * .22; const a = f.kit.between(BONE.Spine, BONE.Spine02, t, -.12 + t * .24, .02, .16); f.kit.blade(a, [0, 1, 0], .08, .02, .006, .3, [0, 0, 1]); }
+  for (const s of [L, R]) { const j = side(s); f.soft(.008).on(j.fore, j.group).color(0x111114).capsule(f.between(j.fore, j.hand, .35), f.between(j.fore, j.hand, .9), .042, .038); }
+  sculptHead(f, 0x7e7266, 1, .95);
+  f.kit.on(BONE.Head, GROUP.HEAD).head().color(0x141010);
+  for (let i = 0; i < 6; i++) f.kit.ellipsoid(f.kit.at(BONE.Head, 0, .14 - i * .07, -.11 - Math.min(i, 2) * .01), .02, .03, .02, 4, 6);
+  eyes(f, 0xff3a2a);
+  knife(f.kit, CUTTHROAT_KNIFE);
 }
 
 // ---- The Rift's own ----------------------------------------------------------------------------
@@ -466,7 +446,7 @@ function husk(f: Flesh) {
   claws(f, 0x1a1414, .1);
 }
 
-function apostleSpawn(f: Flesh) {
+function riftSpawn(f: Flesh) {
   // A lesser demon: swollen, horned, spined, its maw lit from inside.
   sculptBody(f, { bulk: 1.55, limb: 1.4, belly: 1.3, skin: 0x561c1c, top: 0x561c1c, bottom: 0x381212, boots: 0x280c0c, sleeves: 'none', legs: 'bare', barefoot: true, hunch: .6 });
   // Tumorous growths on the shoulders and back.
@@ -485,24 +465,22 @@ function apostleSpawn(f: Flesh) {
 }
 
 export const FLESH_LOOKS: Record<string, Sculptor> = {
-  'tribunal-guard': f => { guard(f); cutlass(f.kit); },
-  'tribunal-guard-rifle': f => { guard(f); musket(f.kit); },
-  automaton,
-  'beast-pirate': beastPirate,
-  'chess-soldier': chessSoldier,
-  'beast-graft-brute': beastGraftBrute,
-  'ash-wraith': f => wraithBase(f),
-  'hollow-void-ray': f => wraithBase(f, .9),
-  greatWraith,
-  saibaman,
-  'jinlin-soldier': jinlinSoldier,
-  'brood-spawn': broodSpawn,
-  'white-pale-sapling': whitePaleSapling,
-  'rogue-ninja': rogueNinja,
-  tusker,
-  'skiff-guard': skiffGuard,
+  'tribunal-guard': f => { saltGuard(f); cutlass(f.kit); },
+  'tribunal-guard-rifle': f => { saltGuard(f, true); musket(f.kit); },
+  automaton: saltEngine,
+  'graft-raider': graftRaider,
+  'iron-warden': ironWarden,
+  'graft-brute': graftBrute,
+  'ash-wraith': f => ashWraith(f),
+  'ash-caster': f => ashWraith(f, true),
+  'great-wraith': f => ashWraith(f, true, 1.4),
+  'cinder-imp': cinderImp,
+  'jinlin-soldier': sunTrooper,
+  'brood-spawn': sunBrood,
+  'pale-sapling': paleSapling,
+  'cutthroat': cutthroat,
   husk,
-  'apostle-spawn': apostleSpawn,
+  'rift-spawn': riftSpawn,
 };
 
 /** What a kind carries in its hands, for a generated model (modelLooks.ts):
@@ -543,26 +521,22 @@ function glowingHands(k: GruntKit, color: number, size = .06) {
 export const ARMS: Partial<Record<string, (k: GruntKit) => void>> = {
   'tribunal-guard-shield': k => { cutlass(k); towerShield(k, 0x34302c, 0x34302c); },
   'tribunal-guard-sniper': k => longRifle(k, 0x5a3a22, 0x2c2c30, 0x1a1a1e),
-  'beast-leaper': falchion,
-  'beast-medic': k => staff(k, 0x3a2418, 0x5aff8a),
-  'chess-rook': k => { pike(k); towerShield(k, 0x1a1a1e, 0xe8e0d0); },
-  'chess-bishop': k => staff(k, 0x1a1a1e, 0xfff2a0, true),
-  'hollow-caller': k => glowingHands(k, 0xa040ff, .08),
+  'graft-leaper': falchion,
+  'graft-doctor': k => staff(k, 0x3a2418, 0x5aff8a),
+  'iron-bulwark': k => { pike(k); towerShield(k, 0x1a1a1e, 0xe8e0d0); },
+  'iron-chaplain': k => staff(k, 0x1a1a1e, 0xfff2a0, true),
+  'wraith-caller': k => glowingHands(k, 0xa040ff, .08),
   'jinlin-sniper': k => longRifle(k, 0x4a1612, 0x8a6a3a, 0xff8a2a, 1),
-  'medic-ninja': k => glowingHands(k, 0x5aff8a),
-  'summoner-ninja': k => { kunai(k, NINJA_KUNAI); glowingHands(k, 0xff8a2a, .05); },
-  'tusker-shield': k => { axe(k); roundShield(k, 0x6a4a2a, 0x3a2a1a, 0x9aa0a8, .36); },
-  'skiff-sniper': k => longRifle(k, 0x2a2a2e, 0x6a6a70, 0xff4a2a, 1),
+  'cutthroat-mender': k => glowingHands(k, 0x5aff8a),
+  'cutthroat-caller': k => { knife(k, CUTTHROAT_KNIFE); glowingHands(k, 0xff8a2a, .05); },
   'husk-priest': k => staff(k, 0x1a1414, 0xb040ff),
   'tribunal-guard': k => cutlass(k),
   'tribunal-guard-rifle': musket,
-  'beast-pirate': falchion,
-  'chess-soldier': pike,
-  'beast-graft-brute': mastBreaker,
-  'white-pale-sapling': k => kunai(k, PALE_SAPLING_KUNAI),
-  'rogue-ninja': k => kunai(k, NINJA_KUNAI),
-  tusker: axe,
-  'skiff-guard': blaster,
+  'graft-raider': falchion,
+  'iron-warden': pike,
+  'graft-brute': mastBreaker,
+  'pale-sapling': thorn,
+  'cutthroat': k => knife(k, CUTTHROAT_KNIFE),
 };
 
 /** The sculpting grid step, metres: finer is rounder and costs triangles. */

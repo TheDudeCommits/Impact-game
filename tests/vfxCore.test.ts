@@ -56,8 +56,8 @@ describe('the impact language', () => {
     expect(impactClass(event({ slot: 'special', damage: 25, contactIndex: 0 }), ora)).toBe(0);
     expect(impactClass(event({ slot: 'special', damage: 25, contactIndex: ora.contacts.length - 1 }), ora)).toBe(2);
     expect(impactClass(event({ slot: 'ultimate', damage: 200, contactIndex: MOVES.koko.ultimate.contacts.length - 1 }), MOVES.koko.ultimate)).toBe(3);
-    // (The feel pass, 15 October) A special's last blow is class 2 whatever it dealt, as every original's is: Delaware
-    // Smash: Air Force deals 101.
+    // (The feel pass, 15 October) A special's last blow is class 2 whatever it dealt, as every original's is: Ampere's
+    // special deals 101.
     expect(impactClass(event({ slot: 'special', damage: 101, contactIndex: 0 }), MOVES.ampere.special)).toBe(2);
     // (The dream loop, 22 October) A combo ender is the blow its string was building to - class 2 at least, whatever it
     // dealt - and the launcher and the knockdown, which send the body away, class 3.

@@ -7,7 +7,7 @@ import { cueDuration, type AudioCue, type CueLayer } from './cueTypes';
 import { DODGE_SHARE, LOW_AGAIN, LOW_HEALTH, LOW_REARM, SITUATION_RULES, situationLayer, situationLines, type SituationLine, type VoiceSituation } from './voiceSituations';
 import { AWAKENING_LINES } from './awakeningLines';
 import { UNSEALED } from './unsealedTiming';
-import { GOLDEN_FORM, SUPER_OUGA } from './goldenFormTiming';
+import { GOLDEN_SAGE, SUPER_OUGA } from './goldAwakeningTiming';
 
 
 /** Seconds of server time a fighter's named light callout rests after it plays. */
@@ -87,7 +87,7 @@ const KITS: Record<FighterId, VoiceKit> = {
   kubiwa:{calls:{},efforts:['vo-kubiwa-effort-a','vo-kubiwa-effort-b'],heavy:{cues:['vo-kubiwa-beckon','vo-kubiwa-effort-c'],chance:.65},special:{cues:['vo-kubiwa-quiet'],chance:.9},cinematic:{cue:'vo-kubiwa-ultimate',lands:2.82,fromConfirm:true}},
   cardo:{calls:{special:'vo-cardo-special'},efforts:['vo-cardo-effort-a','vo-cardo-effort-b','vo-cardo-effort-c','vo-cardo-effort-d','vo-cardo-effort-e','vo-cardo-effort-f'],heavy:{cues:['vo-cardo-plowshare-drop'],chance:0.6},cinematic:{cue:'vo-cardo-last-weed-standing',lands:3.69,fromConfirm:true}},bruin:{calls:{},efforts:['vo-bruin-effort-a','vo-bruin-effort-b','vo-bruin-effort-c','vo-bruin-effort-d'],special:{cues:['vo-bruin-avidya-slash'],chance:0.35},cinematic:{cue:'vo-bruin-dimension-slash',lands:2.37,fromConfirm:true}},aquilo:{calls:{special:'vo-aquilo-skimming-swallow'},efforts:['vo-aquilo-effort-b','vo-aquilo-effort-c','vo-aquilo-effort-d','vo-aquilo-effort-e'],heavy:{cues:['vo-aquilo-wind-blade-shower'],chance:0.35},cinematic:{cue:'vo-aquilo-great-migration',lands:3.6,fromConfirm:true}},svanhild:{calls:{},efforts:['vo-svanhild-effort-a','vo-svanhild-effort-b','vo-svanhild-effort-d','vo-svanhild-effort-e'],cinematic:{cue:'vo-svanhild-sea-dragon-roar',lands:2.53,fromConfirm:true}},
   onigawara:{calls:{},efforts:['vo-onigawara-effort-a','vo-onigawara-effort-b'],heavy:{cues:['vo-onigawara-heavy'],chance:.65},special:{cues:['vo-onigawara-special'],chance:.85},cinematic:{cue:'vo-onigawara-ultimate',lands:2.79,fromConfirm:true}},
-  minase:{calls:{},efforts:['vo-minase-effort-b'],heavy:{cues:['vo-minase-senpugan','vo-minase-effort-a'],chance:.75},special:{cues:['vo-minase-flash-ready'],chance:.85},cinematic:{cue:'vo-minase-tempest',lands:2.8,fromConfirm:true}},
+  minase:{calls:{},efforts:['vo-minase-effort-b'],heavy:{cues:['vo-minase-whirlsphere','vo-minase-effort-a'],chance:.75},special:{cues:['vo-minase-flash-ready'],chance:.85},cinematic:{cue:'vo-minase-tempest',lands:2.8,fromConfirm:true}},
   'psyche':{calls:{special:'vo-psyche-spank'},efforts:['vo-psyche-effort-a','vo-psyche-effort-b'],heavy:{cues:['vo-psyche-try-this'],chance:.45},cinematic:{cue:'vo-psyche-another-job',lands:3.075,fromConfirm:true}},
   'ovid':{calls:{special:'vo-ovid-break'},efforts:[],heavy:{cues:['vo-ovid-break'],chance:.45},cinematic:{cue:'vo-ovid-maximum',lands:3.24,fromConfirm:true}},
   // (13 October: the Scout and the YUGE say the same lines - none names a move. "Kurai yagare!" on the Snap Line
@@ -118,7 +118,7 @@ const KITS: Record<FighterId, VoiceKit> = {
   sashigane:{calls:{light:'vo-sashigane-cut',heavy:'vo-sashigane-ratio'},efforts:[],special:{cues:['vo-sashigane-collapse'],chance:.8},cinematic:{cue:'vo-sashigane-finish',lands:2.05,fromConfirm:true}},
   gosu:{calls:{heavy:'vo-gosu-diamond'},efforts:['vo-gosu-effort-a','vo-gosu-effort-b','vo-gosu-effort-c'],special:{cues:['vo-gosu-dora'],chance:.8},cinematic:{cue:'vo-gosu-in-range',lands:2.76,fromConfirm:true}},
   kusushi:{calls:{},efforts:['vo-kusushi-effort-a','vo-kusushi-effort-b'],heavy:{cues:['vo-kusushi-effort-c','vo-kusushi-effort-d'],chance:.65},special:{cues:['vo-kusushi-strength'],chance:.8},cinematic:{cue:'vo-kusushi-pure-land',lands:1.1,fromConfirm:true}},
-  hakushi:{calls:{heavy:'vo-hakushi-senpugan'},efforts:['vo-hakushi-effort-a','vo-hakushi-effort-b'],special:{cues:['vo-hakushi-effort-b'],chance:.65},cinematic:{cue:'vo-hakushi-ultimate',lands:2.6,fromConfirm:true}},
+  hakushi:{calls:{heavy:'vo-hakushi-whirlsphere'},efforts:['vo-hakushi-effort-a','vo-hakushi-effort-b'],special:{cues:['vo-hakushi-effort-b'],chance:.65},cinematic:{cue:'vo-hakushi-ultimate',lands:2.6,fromConfirm:true}},
   suzuran:{calls:{},efforts:['vo-suzuran-effort-a','vo-suzuran-effort-c'],heavy:{cues:['vo-suzuran-palm'],chance:.65},special:{cues:['vo-suzuran-vacuum'],chance:.85},cinematic:{cue:'vo-suzuran-lions',lands:1.35,fromConfirm:true}},
   wataame:{calls:{},efforts:['vo-wataame-effort-a','vo-wataame-effort-b','vo-wataame-effort-c'],special:{cues:['vo-wataame-ready'],chance:.75},cinematic:{cue:'vo-wataame-lets-go',lands:1.52,fromConfirm:true}},
   senko:{calls:{},efforts:['vo-senko-effort-a','vo-senko-effort-b','vo-senko-effort-c'],heavy:{cues:['vo-senko-finish'],chance:.65},special:{cues:['vo-senko-slow'],chance:.85},cinematic:{cue:'vo-senko-hundred-lights',lands:2.06,fromConfirm:true}},
@@ -196,7 +196,7 @@ const KITS: Record<FighterId, VoiceKit> = {
     efforts: ['vo-ouga-ha', 'vo-ouga-da', 'vo-ouga-fun'], delays: { special: onRelease('ouga', 'special', .75) },
     // The scoff with Coronation; a cry as the Pride Burst goes off round him.
     enders: { llh: { cues: ['vo-ouga-fun'], chance: .5 }, airSpecial: { cues: ['vo-ouga-ha', 'vo-ouga-da'], chance: .6 } } },
-  konta: { calls: { heavy: 'konta-senpugan', special: 'konta-galewheel', ultimate: 'vo-konta-fox-bomb' },
+  konta: { calls: { heavy: 'konta-whirlsphere', special: 'konta-galewheel', ultimate: 'vo-konta-fox-bomb' },
     efforts: ['vo-konta-ura', 'vo-konta-ha', 'vo-konta-yo'],
     // Never "Senpugan!" over a Big Ball or a Planetary one: his cries, not his heavy's call.
     enders: { llh: { cues: ['vo-konta-ura'], chance: .5 }, airSpecial: { cues: ['vo-konta-ura', 'vo-konta-ha'], chance: .6 } } },
@@ -224,11 +224,11 @@ const KITS: Record<FighterId, VoiceKit> = {
     enders: { lllh: { cues: ['vo-nigo-da', 'vo-nigo-ha'], chance: .5 }, airSpecial: { cues: ['vo-nigo-ha', 'vo-nigo-da'], chance: .6 } } },
   kagari: { calls: { light: 'kagari-hinoko', heavy: 'kagari-yuragi', special: 'vo-kagari-taimatsu', ultimate: 'vo-kagari-taiyou-dama' }, efforts: ['vo-kagari-yo', 'vo-kagari-orya', 'vo-kagari-do'],
     enders: { llh: { cues: ['vo-kagari-orya'], chance: .5 }, airSpecial: { cues: ['vo-kagari-do', 'vo-kagari-orya'], chance: .6 } } },
-  // Round 3d: ROOM at the cast; "Counter Shock" inside the cinematic.
-  ward: { calls: { heavy: 'ward-stat-shot', special: 'ward-cautery-blade', ultimate: 'vo-ward-room' }, efforts: ['vo-ward-fun', 'vo-ward-se', 'vo-ward-che'],
-    cinematic: { cue: 'ward-counter-shock', lands: 1.2 },
-    // "ROOM" before Mes, as he opens it before every operation; a breath with Biopsy Strike.
-    enders: { llls: { cues: ['vo-ward-room'], chance: .5 }, airSpecial: { cues: ['vo-ward-che', 'vo-ward-se'], chance: .55 } } },
+  // Round 3d: THEATRE at the cast; "Flatline Shock" inside the cinematic.
+  ward: { calls: { heavy: 'ward-stat-shot', special: 'ward-cautery-blade', ultimate: 'vo-ward-theatre' }, efforts: ['vo-ward-fun', 'vo-ward-se', 'vo-ward-che'],
+    cinematic: { cue: 'ward-flatline', lands: 1.2 },
+    // "THEATRE" before Mes, as he opens it before every operation; a breath with Biopsy Strike.
+    enders: { llls: { cues: ['vo-ward-theatre'], chance: .5 }, airSpecial: { cues: ['vo-ward-che', 'vo-ward-se'], chance: .55 } } },
   kuon: { calls: { heavy: 'kuon-ao', special: 'kuon-violet', ultimate: 'kuon-boundless' }, efforts: ['vo-kuon-ha', 'vo-kuon-ya', 'vo-kuon-fu'],
     enders: { lllh: { cues: ['vo-kuon-ya'], chance: .5 }, airSpecial: { cues: ['vo-kuon-ha', 'vo-kuon-ya'], chance: .6 } } },
   // The two spirit fighters' lights are their battle cries, rationed as efforts;
@@ -292,7 +292,7 @@ const KITS: Record<FighterId, VoiceKit> = {
     efforts: ['vo-jinlin-effort-a', 'vo-jinlin-effort-b', 'vo-jinlin-effort-c', 'vo-jinlin-effort-d'],
     enders: { llls: { cues: ['vo-jinlin-die'], chance: .6 }, llh: { cues: ['vo-jinlin-vanish'], chance: .5 } } },
   // Gohaku and Ippon have no survival boss: their lines are their home screen's (public/assets/audio/home/manifest.json).
-  // Gohaku calls the Sun-Seizing Spiral as he casts it. Ippon says "Serious Series" as he gets serious, and "Clean Slate"
+  // Gohaku calls the Sun-Seizing Spiral as he casts it. Ippon calls his finisher as he gets serious, and "Clean Slate"
   // inside the cinematic, its "punch" (0.8 s into the cut) on the blow. Between blows (3 October), their own cries.
   'gohaku': { calls: { ultimate: 'vo-gohaku-piercing-beam' }, efforts: ['vo-gohaku-effort-a', 'vo-gohaku-effort-b', 'vo-gohaku-effort-c', 'vo-gohaku-effort-d'] },
   ippon: { calls: {}, efforts: ['vo-ippon-effort-a', 'vo-ippon-effort-b', 'vo-ippon-effort-c', 'vo-ippon-effort-d'], cinematic: { cue: 'vo-ippon-clean-slate', lands: .8, fromConfirm: true } },
@@ -316,10 +316,10 @@ const KITS: Record<FighterId, VoiceKit> = {
   asahi: { calls: {}, efforts: ['vo-asahi-effort-a', 'vo-asahi-effort-b', 'vo-asahi-effort-c', 'vo-asahi-effort-d'], cinematic: { cue: 'vo-asahi-sun-dance', lands: 1.1, fromConfirm: true } },
   levin: { calls: {}, efforts: ['vo-levin-effort-a', 'vo-levin-effort-b', 'vo-levin-effort-c', 'vo-levin-effort-d'] },
   'rook': { calls: {}, efforts: ['vo-rook-effort-a', 'vo-rook-effort-b', 'vo-rook-effort-c'],
-    cinematic: { cue: 'vo-rook-arise', lands: .4, fromConfirm: true } },
+    cinematic: { cue: 'vo-rook-gather', lands: .4, fromConfirm: true } },
   // Gaku, from his home line, inside Landslide: the move's last syllable (1.38 s into the cut) on the blow. Between
   // blows, his own cries (3 October).
-  gaku: { calls: {}, efforts: ['vo-gaku-effort-a', 'vo-gaku-effort-b', 'vo-gaku-effort-c', 'vo-gaku-effort-d'], cinematic: { cue: 'vo-gaku-rock-paper', lands: 1.38, fromConfirm: true } },
+  gaku: { calls: {}, efforts: ['vo-gaku-effort-a', 'vo-gaku-effort-b', 'vo-gaku-effort-c', 'vo-gaku-effort-d'], cinematic: { cue: 'vo-gaku-landslide', lands: 1.38, fromConfirm: true } },
 };
 /** Awakened Konta is the fox, with his own voice. kurobi-bite, which the
  *  fox's light used to play, holds no voice at all (Demucs: +50 dB of effect
@@ -327,17 +327,17 @@ const KITS: Record<FighterId, VoiceKit> = {
  *  the voice bus and the SFX half keeps whatever it wants of it. */
 const KUROBI: VoiceKit = { calls: { heavy: 'kurobi-taunt', special: 'kurobi-growl', ultimate: 'kurobi-growl' }, efforts: [] };
 /** Round 5 (GUMMY): calls that name a move the awakened form does not throw, swapped for what it says instead. SUNRISE's
- *  Q is the Dawn Gatling, not the 'SUNSET BARRAGE': his cry, as round 4b had it on both. */
+ *  Q is the dawn barrage, not the 'SUNSET BARRAGE': his cry, as round 4b had it on both. */
 const FORM_CALLS: Partial<Record<FighterId, Partial<Record<AttackSlot, AudioCue>>>> = { gummy: { special: 'vo-gummy-yo' } };
 
 const LEVEL = -16.5;
 const MEASURED: Partial<Record<AudioCue, number>> = {
-  'taisei-sunpalm-cannon-full': -14.6, 'taisei-spirit': -11.3, 'ouga-gale': -16.6, 'konta-senpugan': -8.8,
+  'taisei-sunpalm-cannon-full': -14.6, 'taisei-spirit': -11.3, 'ouga-gale': -16.6, 'konta-whirlsphere': -8.8,
   'konta-galewheel': -11.3, 'kurobi-link': -19.1, 'kurobi-taunt': -19.7, 'kurobi-growl': -21.5,
   'gummy-pistol': -17.7, 'gummy-bazooka': -17.4, 'gummy-grand-tide-fist': -15.8, 'kenzo-crossing': -16.3,
   'kenzo-phoenix': -16.8, 'kenzo-world': -15.4, 'koko-star': -16.7,
   'koko-world': -17.0, 'nigo-nightfall': -12.6, 'kagari-hinoko': -20.7, 'kagari-yuragi': -16.6,
-  'ward-stat-shot': -14.1, 'ward-cautery-blade': -17.3, 'ward-counter-shock': -18.0, 'kuon-ao': -16.8,
+  'ward-stat-shot': -14.1, 'ward-cautery-blade': -17.3, 'ward-flatline': -18.0, 'kuon-ao': -16.8,
   'kuon-violet': -13.5, 'kuon-boundless': -13.2, 'oro-steamroller': -18.8, 'gaunt-scream': -19.1,
   'setsu-ikazuchi': -16.8, 'setsu-gale-step': -15.3,
 };
@@ -349,7 +349,7 @@ function levelled(cue: AudioCue, gain: number) {
 
 /** How far each slot's call may push past another speaker. */
 const PRIORITY: Record<AttackSlot, number> = { light: 0, heavy: 0, special: 1, ultimate: 2, area: 1 };
-/** Taisei's Golden Form line (4.6 s) runs on well past the 0.9 s entry, and a released line keeps out every later line of
+/** Taisei's gold awakening line (4.6 s) runs on well past the 0.9 s entry, and a released line keeps out every later line of
  *  its speaker at or under its own priority (CombatAudio.play). Between his efforts (0) and his calls (1): no effort cuts
  *  in on it or keeps it out, and his calls - the Sunpalm Cannon, the LAST SUN - still speak over it, which ducks it. A
  *  Sunpalm Cannon call still ringing as he awakens (it outlasts the move by 0.44 s) keeps it out. */
@@ -360,7 +360,7 @@ export const SUPER_LINE_PRIORITY = .5;
 export const BIG_BANG_PRIORITY = .75;
 /** (The overnight pass, 9 October) The awakening lines named after the burst (awakeningLines.ts) are released at
  *  SUPER_LINE_PRIORITY too, so a named heavy call - Kenzo's Lion Cut, Gummy's Bazooka - would be kept out for the
- *  line's length as Ouga's Big Bang was. Awakened, the heavy call of a fighter with such a line goes out at Big Bang's
+ *  line's length as Ouga's Haou-Dan was. Awakened, the heavy call of a fighter with such a line goes out at Haou-Dan's
  *  priority, over the line (ducking it) and still under the special and the ultimate; in the base form it is as it was.
  *  Efforts, a light's callout and a heavy's cries stay under the line and do not cut it. */
 export const AWAKENED_HEAVY_PRIORITY = BIG_BANG_PRIORITY;
@@ -566,7 +566,7 @@ export function planVoice(event: CombatEvent, awakened = false, scene?: VoiceSce
     // Jirenga at full power: "come at me with everything you have". Emperor Jinlin: "the real fight starts now".
     if (fighter === 'jirenga') return [voice('vo-jirenga-come-all', .9, 2)];
     if (fighter === 'jinlin') return [voice('vo-jinlin-for-real', .9, 2)];
-    // Ippon, serious for once: "Hissatsu maji shirīzu" (Serious Series).
+    // Ippon, serious for once: his finisher's call.
     if (fighter === 'ippon') return [voice('vo-ippon-serious-series', .9, 2)];
     // Sekka: "Jutsushiki tenkai" (Technique Development).
     if (fighter === 'sekka') return [voice('vo-sekka-technique', .9, 2)];
@@ -578,12 +578,12 @@ export function planVoice(event: CombatEvent, awakened = false, scene?: VoiceSce
     // release phase, like the burst: the first cast after the entry must
     // not cut the shout.
     if (fighter === 'nigo') return [voice('vo-nigo-unsealed', .95, 2, UNSEALED.kai - UNSEALED.kaiInLine, { phase: 'release' })];
-    // Taisei names the form once the burst has passed (goldenFormTiming.ts): "見せてやる…これが黄金の大聖…タイセイだっ!!",
+    // Taisei names the form once the burst has passed (goldAwakeningTiming.ts): "見せてやる…これが黄金の大聖…タイセイだっ!!",
     // his own line. Released like Nigo's, so the first attack after the entry does not cut it; at SUPER_LINE_PRIORITY, so
     // his calls still speak over it.
-    if (fighter === 'taisei') return [voice('vo-taisei-golden-form', .95, SUPER_LINE_PRIORITY, GOLDEN_FORM.line, { phase: 'release' })];
-    // Ouga names his, on the same beat (goldenFormTiming.ts, SUPER_OUGA): "ひれ伏せ…ゴールデン・プライド!", his own line.
-    // Released, and at SUPER_LINE_PRIORITY, as Taisei's: his efforts do not cut it, and his calls - Big Bang
+    if (fighter === 'taisei') return [voice('vo-taisei-golden-sage', .95, SUPER_LINE_PRIORITY, GOLDEN_SAGE.line, { phase: 'release' })];
+    // Ouga names his, on the same beat (goldAwakeningTiming.ts, SUPER_OUGA): "ひれ伏せ…ゴールデン・プライド!", his own line.
+    // Released, and at SUPER_LINE_PRIORITY, as Taisei's: his efforts do not cut it, and his calls - Haou-Dan
     // (BIG_BANG_PRIORITY), the Gale, Kyokko-Ho - speak over it.
     if (fighter === 'ouga') return [voice('vo-ouga-super-ouga', .95, SUPER_LINE_PRIORITY, SUPER_OUGA.line, { phase: 'release' })];
     // (The overnight pass, 9 October) The rest name their form on Taisei's and Ouga's beat, once the burst has passed

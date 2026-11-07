@@ -114,8 +114,8 @@
   "is only switched on for real places"
  ],
  "tests/minaseSharedIntegration.test.ts": [
-  "actual signature draws a Senpugan only on current left-palm commands; awakened=false",
-  "actual signature draws a Senpugan only on current left-palm commands; awakened=true",
+  "actual signature draws a palm sphere only on current left-palm commands; awakened=false",
+  "actual signature draws a palm sphere only on current left-palm commands; awakened=true",
   "uses actual right kunai or left palm on every branch; awakened=false",
   "uses actual right kunai or left palm on every branch; awakened=true"
  ],
@@ -262,7 +262,7 @@
   "uses the air normals for airborne stages only where they are smooth"
  ],
  "tests/sashiganeGosuRuntime.test.ts": [
-  "human ground light commands while Crazy Diamond throws its own exact attack clip",
+  "human ground light commands while the mender throws its own exact attack clip",
   "retains all eight ultimate windows and alternates the real Stand hand only after confirmation"
  ],
  "tests/senkoBunaStrikePose.test.ts": [

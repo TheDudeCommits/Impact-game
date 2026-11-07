@@ -1,7 +1,7 @@
 import { awakeningSwapAt } from '../game/awakening';
 
 const burst = awakeningSwapAt('taisei');
-export const GOLDEN_FORM = {
+export const GOLDEN_SAGE = {
   /** Seconds from the awaken event to the burst and the swap. */
   burst,
   /** Seconds from the awaken event to the line: 0.26 s after the burst, as the blast's tail falls away, so the line's

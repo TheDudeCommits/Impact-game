@@ -24,7 +24,7 @@ function setup(patch: Partial<PlayerState> = {}, budget = 1) {
   return { scene, stage, fx, murex, foe, fighters, flights, drawn, starts, end() { fx.dispose(); stage.release(); } };
 }
 
-describe('Murex manually commanded A.T. fields', () => {
+describe('Murex manually commanded wards', () => {
   it('stages his own moves, so the baseline stands aside', () => { expect(STAGED_BY_MODULE.has(ID)).toBe(true); });
 
   it('does not create idle or unconfirmed ultimate fields', () => {

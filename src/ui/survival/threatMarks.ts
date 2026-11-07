@@ -12,7 +12,7 @@ export class ThreatMarks {
   private readonly marks: HTMLElement[] = [];
   private readonly heat = new Float32Array(SECTORS);
   private readonly boss = new Uint8Array(SECTORS);
-  /** A shot winding up in the sector (purple, as God of War marks the ranged). */
+  /** A shot winding up in the sector (purple, as action games mark the ranged). */
   private readonly ranged = new Uint8Array(SECTORS);
   /** What each mark shows: a blow's warning is a few tenths of a second, so a mark holds a moment and fades. */
   private readonly shown = new Float32Array(SECTORS);

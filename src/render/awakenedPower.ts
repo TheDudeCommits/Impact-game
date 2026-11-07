@@ -4,7 +4,7 @@ import type { FighterId } from '../game/types';
 import { homeSeries } from '../ui/HomeRosterOrder';
 import { applyOriginalWorlds } from '../originals/apply';
 import { applyOriginalPowers } from '../originals/akaganeBurst';
-import type { CoatPart } from './vfx/ArmamentCoat';
+import type { CoatPart } from './vfx/LacquerCoat';
 import { SHELL, type ShellLook } from './vfx/AuraShell';
 import type { MoteKind } from './vfx/powerup/Motes';
 
@@ -14,7 +14,7 @@ import type { MoteKind } from './vfx/powerup/Motes';
  *          smaller aura;
  *  will    Dust Sea's: black lightning in a crimson or purple glow, the floor cracking under the pressure, a dark haze
  *          lifting off them, never a flame;
- *  pressure Cinder Requiem's: spiritual pressure - a pillar of it standing out of them on the release, then a weight that
+ *  pressure Cinder Requiem's: raw pressure - a pillar of it standing out of them on the release, then a weight that
  *          streams upward off them like smoke while the floor rings under it and its grit lifts;
  *  chi  Konta's: it winds up off the floor round them and its wind is flung out, then it is worn as a cloak that
  *          clings and boils - never a flame;
@@ -22,7 +22,7 @@ import type { MoteKind } from './vfx/powerup/Motes';
  *  aura     Salvage Wilds's: Lion\'s Roar swelling out of them smooth and even, then a dense still shroud;
  *  plain   the floor gives way and the room goes dark; the transformation itself is the rest. */
 export type PowerKind = 'ki' | 'will' | 'pressure' | 'chi' | 'cursed' | 'aura' | 'plain';
-/** What hugs the body for as long as the awakening lasts (AuraShell's looks): `flame` is the Golden Form's shell;
+/** What hugs the body for as long as the awakening lasts (AuraShell's looks): `flame` is the gold awakening's shell;
  *  `haze` is Will's dark, a pressure standing off the outline with no flame and no light in it; `smoke` is pressure,
  *  thin against the body and streaming up off the shoulders in long torn wisps; `cloak` is chi, clinging and boiling;
  *  `curse` is hex energy's dark flame; `shroud` is Aura, smooth, dense and even. */
@@ -45,14 +45,14 @@ export interface AwakenedPower {
   onForm?: boolean;
   /** ki: the flame crackles with lightning while it burns (the Last Sun pair's and their rivals'). */
   electric?: boolean;
-  /** Lightning worn on the body itself for as long as it lasts, and its colour (sRGB hex): Ampere's Full Cowling. */
+  /** Lightning worn on the body itself for as long as it lasts, and its colour (sRGB hex): Ampere's full-body lightning. */
   arcs?: number;
   /** will: the glow round the black lightning (crimson unless said). */
   edge?: number;
   /** will: the commanding kind - the full crackle, the floor and the pressure. Without it the fighter has only the other two
    *  colours of Will (or none, in the story): it crackles thinner and more rarely, and the room is left alone. */
   sovereign?: boolean;
-  /** will: Armament, hardened - what the fighter strikes with gone lacquer black while it lasts (vfx/ArmamentCoat.ts):
+  /** will: lacquer, hardened - what the fighter strikes with gone lacquer black while it lasts (vfx/LacquerCoat.ts):
    *  the fists, the shins, the blade. Only where the story hardens it and the body shows it. */
   coat?: readonly CoatPart[];
   /** What comes off the body besides (vfx/powerup/Motes.ts) and the two colours it is drawn in: a fighter's own power's
@@ -79,7 +79,7 @@ const ELSEWHERE: AwakenedPower = { kind: 'plain' };
 /** Each world's power, by series (`homeSeries`). */
 export const WORLDS: Readonly<Record<string, AwakenedPower>> = {
   // The aura itself: the flame through the transformation, then the shell. As it was.
-  // (On a form's body as on a Golden's own: Shanxiao's golden form and BLACK TIDE stood nothing once the flame
+  // (On a form's body as on a Golden's own: Shanxiao's gold awakening and BLACK TIDE stood nothing once the flame
   // had come down, and the aura is this world's whole look.)
   'Last Sun': { kind: 'ki', shell: 'flame', electric: true, onForm: true },
   // Will, for all twenty-three, on a form's body too: no shell, no flame. The elemental powers keep their own signature
@@ -94,7 +94,7 @@ export const WORLDS: Readonly<Record<string, AwakenedPower>> = {
   'Hex Fallout': { kind: 'cursed', shell: 'curse', colours: [0x0a1030, 0x3f8cff] },
   // Aura: a smooth dense shroud.
   'Salvage Wilds': { kind: 'aura', shell: 'shroud' },
-  // A quirk is each hero's own, and none of them is an aura: nothing is worn by default (`OWN`).
+  // A power is each hero's own, and none of them is an aura: nothing is worn by default (`OWN`).
   'Beacon Ward': { kind: 'plain' },
   // The breathing's element round the blade, and no aura on the body.
   'Black Snow': { kind: 'plain', motes: ['flame', 0xffb441, 0xe84b26] },
@@ -115,7 +115,7 @@ applyOriginalWorlds(WORLDS as Record<string, AwakenedPower>);
 /** Where a fighter's own awakening is more specific than their world's. */
 const OWN: Readonly<Partial<Record<FighterId, Partial<AwakenedPower>>>> = {
   // ----- Last Sun
-  // (Shanxiao's golden form's ki does not crackle: as it was.)
+  // (Shanxiao's gold awakening's ki does not crackle: as it was.)
   shanxiao: { electric: false },
   cardo: { kind: 'cursed', shell: undefined, glow: 0, colours: [0x050506, 0x5a0a08], coat: ['arms'], motes: undefined },
   // (Round 7: WIDE AWAKE is a thin dark-violet outline round him, where the blind critic saw "a thick
@@ -154,16 +154,16 @@ const OWN: Readonly<Partial<Record<FighterId, Partial<AwakenedPower>>>> = {
   hakushi: { onForm: true, glow: .2, colours: [0xffa24a, 0xc8501a], motes: ['bubble', 0xffd0a0, 0xe86a20] },
   ume: { onForm: true, glow: .2, colours: [0xff9ccc, 0xc24a8a], motes: ['bubble', 0xffd0e6, 0xf06aa8] },
   kusushi: { onForm: true, glow: .2, colours: [0x8ff0c0, 0x2aa86a], motes: ['bubble', 0xd8ffe8, 0x4ad890] },
-  // The Eight Gates: not a cloak. The steam of a body burning itself, red at the EVERGREEN, streaming off him.
+  // EVERGREEN: not a cloak. The steam of a body burning itself, red at the EVERGREEN, streaming off him.
   'madake': { shell: 'smoke', onForm: true, colours: [0x7dffb0, 0x0f7a3c], motes: ['steam', 0xc8ffe0, 0x2fb86a] },
   akaito: { colours: [0x160c2c, 0xff9ee6] }, sashigane: { colours: [0x0a1030, 0x58b8ff] },
-  // The CALAMITY KING' is red, on the Heian body as it would be on Tempo's.
+  // The CALAMITY KING' is red, on the four-armed body as it would be on Tempo's.
   magatsu: { onForm: true, colours: [0x16040a, 0xff2a3a] },
   // ----- Salvage Wilds. (Imago's and Bonsho's and Unari's shrouds are their auras' colours.)
-  // ----- Beacon Ward: the quirk itself.
-  // Full Cowling: Inheritance's green lightning over the whole body, on the Vigilante suit.
+  // ----- Beacon Ward: the power itself.
+  // full-body lightning: green lightning over the whole body, on his hero suit.
   ampere: { arcs: 0x35ff8a },
-  // Hellflame is worn: his body burns, and that is a flame.
+  // furnace flame is worn: his body burns, and that is a flame.
   bellows: { shell: 'flame', motes: ['ember', 0xffc060, 0xe8421a] },
   // Explosion: sparks popping at the palms. Half-Cold Half-Hot: frost off him (his fire is his body casting's).
   pyroclast: { motes: ['pop', 0xffd27a, 0xff791e] }, tancho: { motes: ['frost', 0xf4ffff, 0x8fe0f5] },
@@ -207,7 +207,7 @@ const OWN: Readonly<Partial<Record<FighterId, Partial<AwakenedPower>>>> = {
   // (WHITE SILENCE is white from hair to hem: a white pressure on it is one white glare, so hers is the ice's blue
   // edged in white, and half as bright on her.)
   shijima: { colours: [0x9fdcf2, 0xf4feff], glow: .15, motes: ['frost', 0xffffff, 0x9fdcf2] },
-  // (HACKLES UP is kido worn on the back and the shoulders: white, and it crackles.)
+  // (HACKLES UP is a spell worn on the back and the shoulders: white, and it crackles.)
   mikage: { colours: [0xf6f0ff, 0xa663ee], electric: true },
   // ----- The originals whose own layer is the whole transformation, and stand no shell: Kuon's Infinity, Setsu's
   // SETSUNA. As they were.

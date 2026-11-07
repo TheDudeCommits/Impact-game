@@ -30,7 +30,7 @@
   "fx-claw-1": 0.224646,
   "fx-claw-2": 0.224062,
   "fx-combo-break": 0.567708,
-  "fx-counter-shock": 1.2,
+  "fx-defib-shock": 1.2,
   "fx-cut-1": 0.306458,
   "fx-cut-2": 0.301333,
   "fx-cut-3": 0.555979,
@@ -98,8 +98,8 @@
   "fx-poof-2": 0.499854,
   "fx-purple": 2.0,
   "fx-purple-charge": 1.56,
-  "fx-senpugan": 1.36,
-  "fx-senpugan-hit": 1.2,
+  "fx-whirlsphere": 1.36,
+  "fx-whirlsphere-hit": 1.2,
   "fx-red": 0.9,
   "fx-steamroller": 1.41,
   "fx-room": 1.8,
@@ -228,7 +228,7 @@
   "fx-sig-kosho-flambe": 0.691667,
   "fx-sig-kosho-sear": 0.46,
   "fx-sig-kagari-taimatsu": 1.0,
-  "fx-sig-magatsu-dismantle": 0.246771,
+  "fx-sig-magatsu-flay": 0.246771,
   "fx-sig-grapple": 0.56,
-  "fx-sig-gaku-rock-paper": 0.610688
+  "fx-sig-gaku-landslide": 0.610688
 }

@@ -12,9 +12,12 @@ import { applyOriginalGruntBodies, ownGruntModel } from '../../originals/surviva
 /** The kinds that wear a model - every one, now - and where it is (shipped
  *  with the motion library; its concept and rig are kept, unshipped, in
  *  assets/source/survival/grunts/<kind>). */
-const MODELLED = ['tribunal-guard', 'tribunal-guard-rifle', 'automaton', 'beast-pirate', 'chess-soldier', 'beast-graft-brute', 'ash-wraith', 'hollow-void-ray', 'great-wraith',
-  'saibaman', 'jinlin-soldier', 'brood-spawn', 'white-pale-sapling', 'rogue-ninja', 'skiff-guard', 'husk', 'apostle-spawn'];
-export const MODEL_LOOKS: Partial<Record<string, string>> = Object.fromEntries(MODELLED.map(id => [id, `/assets/survival/motion/grunt-${id}.glb`]));
+// The kinds' ids no longer name their files, so the two older bodies still worn are written out; every other kind wears its
+// own body (src/originals/survival.ts OWN_GRUNT_MODELS) or a stand-in's (ORIGINAL_GRUNT_BODIES).
+const MODELLED = ['tribunal-guard', 'tribunal-guard-rifle', 'automaton', 'graft-raider', 'iron-warden', 'graft-brute', 'ash-wraith', 'ash-caster', 'great-wraith',
+  'cinder-imp', 'jinlin-soldier', 'brood-spawn', 'pale-sapling', 'cutthroat', 'husk', 'rift-spawn'];
+const MAIN_BODIES: Partial<Record<string, string>> = { husk: '/assets/survival/motion/grunt-husk.glb', 'rift-spawn': '/assets/survival/motion/grunt-rift-spawn.glb' };
+export const MODEL_LOOKS: Partial<Record<string, string>> = Object.fromEntries(MODELLED.map(id => [id, MAIN_BODIES[id]]));
 // The fifth list's kinds wear bodies the horde already has (horde/kinds.ts WEARS), with gear of their own.
 for (const [kind, body] of Object.entries(WEARS)) MODEL_LOOKS[kind] = MODEL_LOOKS[body];
 applyOriginalGruntBodies(MODEL_LOOKS, WEARS);
@@ -108,7 +111,7 @@ export async function loadModelLook(kind: string, url: string, library: MotionLi
     E[i * 3 + 1] = .5;
     E[i * 3 + 2] = Math.max(0, Math.min(1, (.62 - y) / .58)) * (.3 + .25 * noise3(x * 7 + 3.1, y * 7, z * 7));
   }
-  const geometry = withArms(native&&!ownGruntModel(url)?(kind==='rogue-ninja'?ARMS[kind]:undefined):ARMS[kind], motion.rest, count, { P, N, U, C, B, B2, W, G, L, H, E }, source.index);
+  const geometry = withArms(native&&!ownGruntModel(url)?(kind==='cutthroat'?ARMS[kind]:undefined):ARMS[kind], motion.rest, count, { P, N, U, C, B, B2, W, G, L, H, E }, source.index);
   geometry.computeBoundingSphere();
   // One texture a model, however many kinds wear it (the fifth list's kinds
   // wear the bodies there were; sixteen more copies were 64 MB of the GPU).

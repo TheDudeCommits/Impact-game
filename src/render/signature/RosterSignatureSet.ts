@@ -15,7 +15,7 @@ import { KubiwaControl } from './KubiwaControl';
 import { TorsionPsychic } from './TorsionPsychic';
 import { LanthornLampblack } from './LanthornLampblack';
 import { StrappadoStrings } from './StrappadoStrings';
-import { UnariBungeeGum } from './UnariBungeeGum';
+import { UnariElastic } from './UnariElastic';
 import { BarrowEmperor } from './BarrowEmperor';
 import { WataameSilverSoul } from './WataameSilverSoul';
 import { SenkoGlint } from './SenkoGlint';
@@ -74,10 +74,10 @@ const factories: Partial<Record<FighterId, Factory>> = {
   torsion:(scene,kit)=>new TorsionPsychic(scene,kit),
   kubiwa:(scene,kit)=>new KubiwaControl(scene,kit),
   onigawara: lazy(() => import('./OnigawaraPressure').then(m => (scene, kit) => new m.OnigawaraPressure(scene, kit))),
-  cardo: lazy(() => import('./GrimoireMagic').then(m => (scene, kit) => new m.GrimoireMagic('cardo', scene, kit))),
-  bruin: lazy(() => import('./GrimoireMagic').then(m => (scene, kit) => new m.GrimoireMagic('bruin', scene, kit))),
-  aquilo: lazy(() => import('./GrimoireMagic').then(m => (scene, kit) => new m.GrimoireMagic('aquilo', scene, kit))),
-  svanhild: lazy(() => import('./GrimoireMagic').then(m => (scene, kit) => new m.GrimoireMagic('svanhild', scene, kit))),
+  cardo: lazy(() => import('./BriarMagic').then(m => (scene, kit) => new m.BriarMagic('cardo', scene, kit))),
+  bruin: lazy(() => import('./BriarMagic').then(m => (scene, kit) => new m.BriarMagic('bruin', scene, kit))),
+  aquilo: lazy(() => import('./BriarMagic').then(m => (scene, kit) => new m.BriarMagic('aquilo', scene, kit))),
+  svanhild: lazy(() => import('./BriarMagic').then(m => (scene, kit) => new m.BriarMagic('svanhild', scene, kit))),
   minase: lazy(() => import('./MinaseRaijin').then(m => (scene, kit) => new m.MinaseRaijin(scene, kit))),
   'psyche': lazy(() => import('./PsycheFleur').then(m => (scene, kit) => new m.PsycheFleur(scene, kit))),
   'ovid': lazy(() => import('./OvidFortitude').then(m => (scene, kit) => new m.OvidFortitude(scene, kit))),
@@ -101,12 +101,12 @@ const factories: Partial<Record<FighterId, Factory>> = {
   hikui: lazy(() => import('./HikuiDarknessFlame').then(m => (scene, kit) => new m.HikuiDarknessFlame(scene, kit))),
   tokan: lazy(() => import('../vfx/engine/pilots/tokan').then(m => (scene, kit) => m.tokanSignature(scene, kit))),
   strappado:(scene,kit)=>new StrappadoStrings(scene,kit),
-  unari:(scene,kit)=>new UnariBungeeGum(scene,kit),
+  unari:(scene,kit)=>new UnariElastic(scene,kit),
   barrow:(scene,kit)=>new BarrowEmperor(scene,kit),
   sashigane: lazy(() => import('./SashiganeRatio').then(m => (scene, kit) => new m.SashiganeRatio(scene, kit))),
   gosu: lazy(() => import('./GosuRestoration').then(m => (scene, kit) => new m.GosuRestoration(scene, kit))),
   kusushi: lazy(() => import('./KusushiStrength').then(m => (scene, kit) => new m.KusushiStrength(scene, kit))),
-  hakushi: lazy(() => import('./HakushiToadSage').then(m => (scene, kit) => new m.HakushiToadSage(scene, kit))),
+  hakushi: lazy(() => import('./HakushiOldLion').then(m => (scene, kit) => new m.HakushiOldLion(scene, kit))),
   suzuran: lazy(() => import('./SuzuranTwinLions').then(m => (scene, kit) => new m.SuzuranTwinLions(scene, kit))),
   wataame:(scene,kit)=>new WataameSilverSoul(scene,kit),
   senko:(scene,kit)=>new SenkoGlint(scene,kit),

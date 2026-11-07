@@ -92,7 +92,7 @@ describe('the game\'s sound effects: the wiring', () => {
     }
     expect(SIGNATURES.taisei?.heavy?.cast?.map(([cue]) => cue)).toEqual(['fx-sig-taisei-cloudstep']);
     expect(SIGNATURES.taisei?.special?.cast?.[0]?.[0]).toBe('fx-sig-sunpalm-charge');
-    expect(SIGNATURES.gaku?.ultimate?.cast?.[0]?.[0]).toBe('fx-sig-gaku-rock-paper');
+    expect(SIGNATURES.gaku?.ultimate?.cast?.[0]?.[0]).toBe('fx-sig-gaku-landslide');
   });
 
   it('fetches a slot\'s area, awakening and swapped sounds with it, and no other fighter\'s', () => {

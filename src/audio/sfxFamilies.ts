@@ -81,7 +81,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   kenzo: [null, null, null, 'wind'],                          // his own blades; Oni Wind: Great Sandspout is a twister of cuts
   kosho: [null, 'fire', 'fire', 'fire'],                     // Ember Leg burns
   kagari: ['fire', 'fire', 'fire', 'fire'],
-  ward: [null, null, null, 'psychic'],                        // ROOM is his own; Takt lifts the ground with it
+  ward: [null, null, null, 'psychic'],                        // THEATRE is his own; Takt lifts the ground with it
   sorayomi: [null, 'wind', 'lightning', 'lightning'],            // Gust Spinner, Storm Warning, Zeus
   strix: ['steel', 'steel', 'steel', 'steel'],
   'basilissa': ['stone', 'light', 'stone', 'light'],       // her kicks turn what they strike to stone; Sandrose Volley and Gaze of the Stone Rose are light
@@ -102,15 +102,15 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   shakugo: ['magma', 'magma', 'magma', 'magma'],
   // ----- Konta
   konta: [null, null, null, 'wind'],                        // the Senpugan is his own; a barrage of them is wind
-  shiden: [null, null, 'lightning', 'fire'],                 // Shrike Bolt and Black Pyre are his own; Thunder Lord's Arrow; the Great Fireball
+  shiden: [null, null, 'lightning', 'fire'],                 // Shrike Bolt and Black Pyre are his own; Ikazuchi Arrow; the great ember
   shirokane: [null, null, null, 'water'],                      // the Sickle Bolt is his own; the Great Waterfall
-  tobari: ['psychic', null, 'psychic', 'fire'],              // a crow clone and Red Moon Reverie are in the mind; Black Pyre is his own
+  tobari: ['psychic', null, 'psychic', 'fire'],              // a crow double and Red Moon Reverie are in the mind; Black Pyre is his own
   akagane: [null, 'fire', 'stone', 'fire'],                   // Cinder Art: Burning Sea; Heaven's Anvil is a meteor
-  minase: ['wind', 'light', 'light', 'wind'],                // the Senpugan; the Relay Leap is a flash
+  minase: ['wind', 'light', 'light', 'wind'],                // the palm sphere; the Relay Leap is a flash
   ume: ['stone', null, 'stone', 'stone'],                 // what her fist does to the ground
   kusushi: ['stone', 'stone', 'stone', 'acid'],              // the same strength; Katsuyu's acid
-  hakushi: ['wind', 'fire', 'fire', 'acid'],                 // his Senpugan; toad oil and flame; a toad's stomach
-  suzuran: ['ki', 'wind', 'beast', 'ki'],                     // the Gentle Fist's chi; a vacuum palm; the twin lions
+  hakushi: ['wind', 'fire', 'fire', 'acid'],                 // his palm sphere; lamp oil and flame; a beast's maw
+  suzuran: ['ki', 'wind', 'beast', 'ki'],                     // the soft palm's chi; a vacuum palm; the twin lions
   amagoi: ['gravity', 'gravity', 'gravity', 'gravity'],        // Cloudburst, Calling Water, Ash Moon
   'madake': ['wind', 'wind', 'blast', 'wind'],            // air struck so hard it is a weapon
   // ----- Cinder Requiem
@@ -132,7 +132,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   // ----- Salvage Wilds
   gaku: ['ki', 'ki', 'ki', 'ki'],
   setsu: [null, null, null, 'lightning'],                   // his own lightning
-  unari: ['elastic', 'knives', 'elastic', 'petal'],         // Bungee Gum; a card thrown; a storm of cards flutters and cuts as petals do
+  unari: ['elastic', 'knives', 'elastic', 'petal'],         // the elastic; a card thrown; a storm of cards flutters and cuts as petals do
   bonsho: [null, 'light', 'light', 'light'],                 // the Guanyin's golden hands
   imago: ['beast', 'ki', 'ki', 'light'],                    // the tail; Photon
   // ----- Last Sun
@@ -161,7 +161,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   hawser: ['blast', 'steel', 'steel', 'steel'],                // the Scout: a Fuse Lance, and steel (the YUGE's are FORM_FAMILY's)
   levin: ['blast', 'steel', 'steel', 'steel'],                // a Fuse Lance
   mizuhiki: ['steel', 'steel', 'steel', 'steel'],
-  // ----- The Seven Deadly Sins
+  // ----- The seven of round 5
   lanthorn: ['dark', 'fire', 'dark', 'steel'],               // Full Counter; LAMPBLACK; Closing Time cuts
   highsun: ['fire', 'fire', 'light', 'light'],               // the sun
   // ----- Scrap Pact
@@ -183,7 +183,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   koko: [null, null, null, 'stone'],                       // Iron Spirit is his own; the Ground Smash
   oro: [null, null, null, 'knives'],                         // HUSH is his own; a barrage of knives
   kinu: ['string', null, 'string', 'string'],              // her puppet's thread
-  gosu: [null, null, 'light', 'knives'],                   // things mending in light; a bearing shot
+  gosu: [null, null, 'light', 'knives'],                   // things mending in light; a shard shot
   gaunt: [null, null, null, 'knives'],                        // the Dragon Slayer and the cannon are his own; crossbow bolts
   vesper: ['steel', 'steel', 'dark', 'wind'],              // the offering; a flock of white hawks streaming in on their own wind
   'rook': ['steel', 'psychic', 'dark', 'dark'],       // daggers; Grave Grip; the shadows

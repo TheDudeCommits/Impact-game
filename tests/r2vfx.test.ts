@@ -247,7 +247,7 @@ describe('round 2: the aura hugs the body', () => {
       for (const f of fighters.values()) scene.add(f.group);
       aura.update(2, 1 / 60, fighters, 1);
       const drawn = shells();
-      expect(drawn, 'Golden Form has a shell, the Guardian does not').toHaveLength(1);
+      expect(drawn, 'gold awakening has a shell, the Guardian does not').toHaveLength(1);
       // The live skeleton, not a copy: the shell moves with every frame of the animation.
       expect(drawn[0].skeleton).toBe((taisei.group.getObjectByName('body') as THREE.SkinnedMesh).skeleton);
       expect((drawn[0].material as THREE.Material).side).toBe(THREE.BackSide);

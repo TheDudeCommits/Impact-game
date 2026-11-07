@@ -447,7 +447,7 @@ const hymn: Draw = (fx, c, f, time, take) => {
 };
 
 // ----------------------------------------------------------------------------------------------------------- Suzuran
-/** Suzuran's gentle fist: lilac with a white heart. */
+/** Suzuran's soft palm: lilac with a white heart. */
 const LILAC: StageLook = stageLook(0xfaf2ff, 0xdca4f4, 0x2c1438);
 /** A soft light on both palms through the flurry (0.5-1.1), a flash on each palm as it lands, and a ring off both palms
  *  driven out together on the strike. */

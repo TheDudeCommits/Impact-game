@@ -2,7 +2,7 @@ import type { CoreSlot } from '../types';
 import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 
-/** Manual Full Cowling pressure: glove-led jab, planted Shoot Style kick,
+/** Manual full-body lightning pressure: glove-led jab, planted kick,
  * aimed index-finger Air Force, and a confirmed three-beat Smash sequence.
  * Awakening changes presentation; lightning never creates automatic attacks. */
 export const AMPERE_MOVES: Record<CoreSlot, MoveDefinition> = {

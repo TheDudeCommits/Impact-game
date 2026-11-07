@@ -245,7 +245,7 @@ const STAGES: Record<FighterId, readonly [Blow, Blow, Blow, Blow]> = {
   'jinlin': ['fist', 'beast', 'fist', 'beast'],
   // Gohaku's: the punch, the jab, the flying kick, and both fists brought down.
   'gohaku': ['fist', 'fist', 'kick', 'fist'],
-  // Ippon's: the normal punch, the jab, the hook, and the knee into a kick.
+  // Ippon's: the plain punch, the jab, the hook, and the knee into a kick.
   ippon: ['fist', 'fist', 'fist', 'kick'],
   // Sekka's: the air struck, the jab, and two kicks.
   sekka: ['fist', 'fist', 'kick', 'kick'],
@@ -257,7 +257,7 @@ const STAGES: Record<FighterId, readonly [Blow, Blow, Blow, Blow]> = {
   asahi: ['blade', 'blade', 'blade', 'blade'],
   levin: ['blade', 'blade', 'kick', 'blade'],
   'rook': ['blade', 'blade', 'kick', 'fist'],
-  // Gaku's: Rock Paper's Rock and his jab, the kick, the rising paw.
+  // Gaku's: the Landslide's fist and his jab, the kick, the rising paw.
   gaku: ['fist', 'fist', 'kick', 'fist'],
 };
 /** The air normals the simulation announces as kicks (AIR_NORMAL_FIGHTERS). */
@@ -278,7 +278,7 @@ export const AIR_BLOWS: Readonly<Record<string, string>> = {
   'Spindrift Jab': 'rubber', 'Whitecap Punch': 'rubber',
   'Fouette': 'kick', 'Mille-Feuille': 'kick',
   'Rivet Breaker': 'stand', 'Gan Gan! Rush': 'stand',
-  'Weak! Weak!': 'stand', 'Clockwork Kick': 'kick',
+  'Kneel! Kneel!': 'stand', 'Clockwork Kick': 'kick',
   // Round 4b (COMBAT): every Vol.1 fighter's air string, stage 0 included (its own blow now, never the jab's).
   'Flying Kick': 'kick', 'Sky Elbow': 'fist', 'Breakwater Slam': 'rubber', 'Emince': 'kick',
   'Flying Side Kick': 'kick', 'Snap Kick': 'kick', 'Somersault Kick': 'kick',
@@ -331,7 +331,7 @@ const ULTIMATE_OPENERS: Partial<Record<FighterId, (c: Ctx) => CueLayer[]>> = {
   pyroclast: c => [onBeat('fx-fire-burst', .32, Math.max(.06, c0(c) - .12)), hugeOn(c, .36)],
   // The Legendary's ki surging up the arm before it lands.
   shanxiao: c => [bed('fx-ki-charge-big', .2, 0, c0(c)), hugeOn(c, .46)],
-  // Full Cowl crackling up the arm, the smash, the air it moves.
+  // Lightning crackling up the arm, the smash, the air it moves.
   ampere: c => [bed('fx-electric-bed', .12, 0, c0(c)), hugeOn(c, .38), onBeat('fx-wind-blast', .26, c0(c) + .03)],
   'full-beam': c => [hugeOn(c, .38), onBeat('fx-wind-blast', .26, c0(c) + .03)],
   aqrab: c => [onBeat('fx-wind-blast', .34, c0(c)), hugeOn(c, .26)],
@@ -626,7 +626,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   lanthorn:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-cut-2',.2,c0(c))],special:c=>[onBeat('fx-fire-burst',.24,c0(c))],ultimate:c=>meleeSwings(c)},
   highsun:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-swing-huge',.2,c0(c))],special:c=>[onBeat('fx-fire-burst',.24,c0(c))],ultimate:c=>meleeSwings(c)},
   torsion:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-wind-blast',.2,c0(c))],special:c=>[onBeat('fx-wind-blast',.24,c0(c))],ultimate:c=>meleeSwings(c)},
-  kubiwa:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-energy-hit-1',.18,c0(c))],special:c=>[onBeat('fx-counter-shock',.24,c0(c))],ultimate:c=>meleeSwings(c)},
+  kubiwa:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-energy-hit-1',.18,c0(c))],special:c=>[onBeat('fx-defib-shock',.24,c0(c))],ultimate:c=>meleeSwings(c)},
   onigawara:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-cut-2',.22,c0(c))],special:c=>[...meleeSwings(c),onBeat('fx-dash',.18,.08)],ultimate:c=>meleeSwings(c)},
   cardo:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-cut-2',.22,c0(c))],special:c=>[...meleeSwings(c),onBeat('fx-dash',.18,.08)],ultimate:c=>meleeSwings(c)},
   minase:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),held('fx-wind-swirl',.15,.08,c0(c))],special:c=>[...meleeSwings(c),onBeat('fx-dash',.22,.08)],ultimate:c=>meleeSwings(c)},
@@ -663,7 +663,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   strappado:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-cut-2',.2,c0(c))],special:c=>[onBeat('fx-clock-hand-knives-2',.24,c0(c)),onBeat('fx-cut-2',.18,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-stretch-2',.12,c0(c))]},
   unari:{heavy:c=>[...meleeSwings(c),onBeat('fx-snap-1',.21,c0(c))],special:c=>[onBeat('fx-clock-hand-knives-2',.27,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-stretch-2',.12,c0(c))]},
   // Left-hand darkness draws inward; right-hand quake strikes with a dry fracture.
-  barrow:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-counter-shock',.22,c0(c))],special:c=>[bed('fx-gather',.12,.04,c0(c)),onBeat('fx-room',.25,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-room',.15,c0(c))]},
+  barrow:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-defib-shock',.22,c0(c))],special:c=>[bed('fx-gather',.12,.04,c0(c)),onBeat('fx-room',.25,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-room',.15,c0(c))]},
   kusushi:{heavy:c=>[...meleeSwings(c),onBeat('fx-hit-finisher-1',.22,c0(c))],special:c=>[...meleeSwings(c),onBeat('fx-energy-hit-1',.19,c0(c))]},
   hakushi:{heavy:c=>[bed('fx-gather',.12,.03,c0(c)),onBeat('fx-energy-hit-1',.22,c0(c))],special:c=>[bed('fx-fire-bed',.11,.16,c0(c)),onBeat('fx-fire-whoosh-2',.24,c0(c))]},
   suzuran:{heavy:c=>[...meleeSwings(c),onBeat('fx-energy-hit-1',.14,c0(c))],special:c=>[bed('fx-gather',.12,.03,c0(c)),onBeat('fx-wind-blast',.24,c0(c))]},
@@ -733,22 +733,22 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     // Senpugan: the sphere whirs in the palm from .06, then he drives it in.
     heavy: c => c.awakened
       ? [onBeat(pick(FAMILY.beastSwipe, c.seed), .6, c0(c), 'cast', .86)]
-      : [bed('fx-senpugan', .3, .06, c0(c) + .06), onBeat(pick(FAMILY.heavy, c.seed), .36, c0(c))],
+      : [bed('fx-whirlsphere', .3, .06, c0(c) + .06), onBeat(pick(FAMILY.heavy, c.seed), .36, c0(c))],
     // Galewheel: its recorded sound is kept byte for byte on the voice
     // bus; this only adds the wind blades whirring under it and the throw.
     special: c => c.awakened
       ? [bed('fx-ki-charge', .16, 0, c0(c)), onBeat('fx-ki-launch', .5, c0(c))]
-      : [bed('fx-senpugan', .14, .05, c0(c)), onBeat('fx-wind-blast', .3, c0(c) + .05)],
+      : [bed('fx-whirlsphere', .14, .05, c0(c)), onBeat('fx-wind-blast', .3, c0(c) + .05)],
     ultimate: c => [bed('fx-ki-charge-big', .24, 0, c0(c)), onBeat('fx-ki-launch', .55, c0(c)), onBeat('fx-swing-huge', .34, c0(c) + .06),
       ...(c.awakened ? [{ cue: 'fx-beast-roar' as const, gain: .42, phase: 'cast' as const }] : [])],
   },
   shiden: {
-    // Shrike Bolt: a thousand birds in the left hand from the first frame.
+    // Shrike Bolt: a shrieking bolt in the left hand from the first frame.
     heavy: c => [{ cue: pick(FAMILY.zap, c.seed), gain: .3, phase: 'cast' }, bed('fx-shrike-bolt', .26, .02, c0(c))],
     // Black Pyre: black flames catch on the target at .85 and burn until 3.0.
     special: c => [onBeat('fx-fire-ignite', .42, c0(c), 'cast', .7),
       { cue: 'fx-black-flame', gain: .34, delay: c0(c), duration: round(c.move.duration - c0(c)), loop: true, phase: 'cast' }],
-    // Thunder Lord's Arrow: the Guardian takes shape, lightning crackles on the bow,
+    // Ikazuchi Arrow: the Guardian takes shape, lightning crackles on the bow,
     // and the arrow leaves on a crack of thunder. Round 3d: that is the
     // opener, let go at .5; what the arrow does to them is the cinematic.
     ultimate: c => [...(c.awakened ? [] : [{ cue: 'fx-guardian' as const, gain: .42, phase: 'cast' as const }]),
@@ -825,10 +825,10 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   ward: {
     // Stat Shot: a dash and a thrust.
     heavy: c => [onBeat(pick(FAMILY.zip, c.seed), .38, c0(c) - .2), onBeat(pick(FAMILY.nodachi, c.seed), .5, c0(c))],
-    // Cautery Blade: a ROOM, an energy blade held from .1, and a thrust.
+    // Cautery Blade: a THEATRE, an energy blade held from .1, and a thrust.
     special: c => [{ cue: 'fx-room', gain: .4, phase: 'cast' }, bed('fx-electric-bed', .14, .1, c0(c)),
       onBeat(pick(FAMILY.zip, c.seed), .34, c0(c) - .06)],
-    // THEATRE: Flatline. The ROOM opens and Crossmatch puts his palm on the
+    // THEATRE: Flatline. The THEATRE opens and Crossmatch puts his palm on the
     // target - the opener, at .45 (round 3d); the shock pulsing through them
     // and the full discharge are the cinematic.
     ultimate: c => [{ cue: 'fx-room', gain: .5, phase: 'cast' }, onBeat('fx-crossmatch', .46, c0(c) - .08),
@@ -1088,7 +1088,7 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
   lanthorn:c=>[onBeat('fx-cut-2',.22,c.move.contacts[1]),onBeat('fx-fire-whoosh-1',.2,c.move.contacts[2]),onBeat('fx-fire-burst',.26,last(c)),onBeat('fx-hit-finisher-1',.28,last(c))],
   highsun:c=>[onBeat('fx-energy-hit-1',.22,c.move.contacts[1]),onBeat('fx-fire-burst',.26,last(c)),onBeat('fx-hit-finisher-1',.28,last(c))],
   torsion:c=>[onBeat('fx-wind-blast',.22,c.move.contacts[1]),held('fx-gather',.1,c.move.contacts[1],last(c)),onBeat('fx-land-heavy',.26,last(c)),onBeat('fx-hit-finisher-1',.28,last(c))],
-  kubiwa:c=>[onBeat('fx-energy-hit-1',.18,c.move.contacts[1]),onBeat('fx-gather',.14,c.move.contacts[2]),onBeat('fx-counter-shock',.26,last(c)),onBeat('fx-hit-finisher-1',.28,last(c))],
+  kubiwa:c=>[onBeat('fx-energy-hit-1',.18,c.move.contacts[1]),onBeat('fx-gather',.14,c.move.contacts[2]),onBeat('fx-defib-shock',.26,last(c)),onBeat('fx-hit-finisher-1',.28,last(c))],
   onigawara:c=>[held('fx-gather',.13,c0(c),last(c)),onBeat('fx-swing-huge',.27,last(c)),onBeat('fx-hit-finisher-1',.28,last(c))],
   cardo:c=>[held('fx-gather',.13,c0(c),last(c)),onBeat('fx-swing-huge',.27,last(c)),onBeat('fx-hit-finisher-1',.28,last(c))],
   minase:c=>[onBeat('fx-dash',.20,c.move.contacts[1]),held('fx-wind-swirl',.14,c.move.contacts[1],last(c)),onBeat('fx-energy-hit-1',.28,last(c)),onBeat('fx-hit-finisher-1',.24,last(c))],
@@ -1121,22 +1121,22 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
   tokan:c=>[onBeat('fx-guard-shatter',.2,c.move.contacts[1]),held('fx-gather',.10,c.move.contacts[1],last(c)),onBeat('fx-wind-blast',.27,last(c)),onBeat('fx-hit-finisher-1',.28,last(c))],
   strappado:c=>[onBeat('fx-cut-2',.22,c.move.contacts[1]),held('fx-stretch-2',.12,c.move.contacts[1],last(c)),onBeat('fx-snap-2',.22,last(c)),onBeat('fx-hit-finisher-1',.28,last(c))],
   unari:c=>[...c.move.contacts.slice(1,-1).map((t,i)=>onBeat(i%2?'fx-snap-1':'fx-cut-2',.14,t)),onBeat('fx-stretch-2',.15,c.move.contacts[6]),onBeat('fx-snap-2',.23,last(c)),onBeat('fx-hit-finisher-1',.25,last(c))],
-  barrow:c=>[onBeat('fx-counter-shock',.24,c.move.contacts[1]),held('fx-gather',.1,c.move.contacts[1],last(c)),onBeat('fx-guard-shatter',.27,last(c)),onBeat('fx-land-heavy',.3,last(c))],
+  barrow:c=>[onBeat('fx-defib-shock',.24,c.move.contacts[1]),held('fx-gather',.1,c.move.contacts[1],last(c)),onBeat('fx-guard-shatter',.27,last(c)),onBeat('fx-land-heavy',.3,last(c))],
   kusushi:c=>[...c.move.contacts.slice(1).map(t=>onBeat('fx-hit-finisher-1',.2,t)),onBeat('fx-wind-blast',.28,last(c))],
   hakushi:c=>[bed('fx-fire-bed',.11,c.move.contacts[1],last(c)),onBeat('fx-fire-ignite',.18,c.move.contacts[1]),onBeat('fx-fire-roar',.28,last(c))],
   suzuran:c=>[...c.move.contacts.slice(1).map(t=>onBeat('fx-energy-hit-1',.13,t)),onBeat('fx-wind-blast',.24,last(c))],
   wataame:c=>[...c.move.contacts.slice(1).map(t=>onBeat('fx-swing-huge',.15,t)),onBeat('fx-hit-finisher-1',.28,last(c))],
   bruin:c=>[...c.move.contacts.slice(1).map(t=>onBeat('fx-swing-huge',.15,t)),onBeat('fx-hit-finisher-1',.28,last(c))],
   senko:c=>[onBeat('fx-ki-launch',.19,c.move.contacts[1]),onBeat('fx-ki-launch',.19,c.move.contacts[2]),held('fx-beam-big',.24,last(c),last(c)+.2),onBeat('fx-energy-hit-2',.3,last(c))],
-  buna:c=>[onBeat('fx-swing-huge',.25,c.move.contacts[1]),held('fx-will',.13,c.move.contacts[1],last(c)),onBeat('fx-counter-shock',.3,last(c)),onBeat('fx-land-heavy',.32,last(c))],
+  buna:c=>[onBeat('fx-swing-huge',.25,c.move.contacts[1]),held('fx-will',.13,c.move.contacts[1],last(c)),onBeat('fx-defib-shock',.3,last(c)),onBeat('fx-land-heavy',.32,last(c))],
   shijima:c=>[bed('fx-wind-swirl',.13,c.move.contacts[1],last(c)),onBeat('fx-guard-shatter',.24,c.move.contacts[1]),onBeat('fx-wind-blast',.32,last(c))],
   akaito:c=>[bed('fx-gather',.14,c.move.contacts[1],last(c)),held('fx-beam-big',.28,last(c),last(c)+.3),onBeat('fx-energy-hit-2',.25,last(c))],
   tempo:c=>[...c.move.contacts.slice(1).map(t=>onBeat('fx-energy-hit-1',.16,t)),onBeat('fx-hit-finisher-1',.28,last(c))],
   tancho:c=>[onBeat('fx-fire-burst',.22,c.move.contacts[1]),bed('fx-wind-swirl',.17,c.move.contacts[1],last(c)),onBeat('fx-guard-shatter',.32,last(c)),onBeat('fx-wind-blast',.3,last(c))],
   oyashio:c=>[held('fx-wind-swirl',.14,c.move.contacts[1],last(c)),onBeat('fx-hit-finisher-1',.3,last(c))],
-  adad:c=>[held('fx-electric-bed',.15,c.move.contacts[1],last(c)),onBeat('fx-lightning',.55,last(c)),onBeat('fx-counter-shock',.25,last(c))],
+  adad:c=>[held('fx-electric-bed',.15,c.move.contacts[1],last(c)),onBeat('fx-lightning',.55,last(c)),onBeat('fx-defib-shock',.25,last(c))],
   bellows:c=>[onBeat('fx-fire-ignite',.24,c.move.contacts[1]),bed('fx-fire-bed',.18,c.move.contacts[1],last(c)),onBeat('fx-fire-roar',.32,last(c)),onBeat('fx-fire-burst',.3,last(c))],
-  mikage:c=>[onBeat('fx-electric-bed',.17,c.move.contacts[1]),onBeat('fx-dash',.23,c.move.contacts[2]),onBeat('fx-counter-shock',.3,last(c))],
+  mikage:c=>[onBeat('fx-electric-bed',.17,c.move.contacts[1]),onBeat('fx-dash',.23,c.move.contacts[2]),onBeat('fx-defib-shock',.3,last(c))],
   'full-beam':c=>[onBeat('fx-swing-heavy-2',.28,c.move.contacts[1]),held('fx-wind-swirl',.22,c0(c)+.7,last(c)),onBeat('fx-wind-blast',.52,last(c)),onBeat('fx-land-heavy',.4,last(c))],
   pyroclast:c=>[held('fx-wind-swirl',.18,c0(c)+.15,last(c)),onBeat('fx-fire-burst',.28,c.move.contacts[1]),onBeat('fx-fire-burst',.55,last(c)),onBeat('fx-land-heavy',.35,last(c))],
   ampere:c=>[onBeat('fx-land-heavy',.2,c.move.contacts[1]),onBeat('fx-wind-blast',.38,last(c)),onBeat('fx-land-heavy',.35,last(c))],
@@ -1272,9 +1272,9 @@ if (LUCY_TIDE) SIGNATURE_CONFIRMS.gummy = c => [onBeat(pick(FAMILY.snap, c.seed)
 /** Release events: beams are drawn on them, so beams are heard on them. */
 /** Combo enders (game/combos.ts) with a sound of their own: Sekka's stun opens the Compass Needle's snowflake.
  *  (5 October) The main game's sixteen (combosVol1.ts): every blast and snare is heard as what it is - a style's default
- *  is a ki charge, and a snare's a fire igniting, which neither a ROOM nor a water dragon is - and the blows that carry
- *  their fighter's energy (a Shrike Bolt, a Senpugan, a Dark Spark, a ROOM) carry its sound over the swing. Kurobi throws
- *  Konta's enders as the fox, and the NIGHTFALL's stun is a blow, not the Hollow's Void Ray. */
+ *  is a ki charge, and a snare's a fire igniting, which neither a THEATRE nor a water dragon is - and the blows that carry
+ *  their fighter's energy (a Shrike Bolt, a Senpugan, a Dark Spark, a THEATRE) carry its sound over the swing. Kurobi throws
+ *  Konta's enders as the fox, and the NIGHTFALL's stun is a blow, not the mask's Void Ray. */
 const swung = (extra: (c: Ctx) => CueLayer[]) => (c: Ctx) => [...meleeSwings(c), ...extra(c)];
 // (15 October, the feel pass) Tsubute's enders are slingshot shots, Basilissa's stun a kiss shot: they were the default
 // projectile's one ki blast (-28 LUFS, 3 to 4 dB under every original's ender). Psyche's are her blows with the
@@ -1300,9 +1300,9 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
   },
   konta: {
     lh: c => c.awakened ? meleeSwings(c) : [...meleeSwings(c), onBeat('fx-wind-blast', .3, c0(c))],
-    lllh: c => c.awakened ? meleeSwings(c) : [bed('fx-senpugan', .3, 0, c0(c) + .1), ...meleeSwings(c)],
+    lllh: c => c.awakened ? meleeSwings(c) : [bed('fx-whirlsphere', .3, 0, c0(c) + .1), ...meleeSwings(c)],
     // The Mini Galewheel's whine as it leaves the fingertip; the fox's Great Roar.
-    llls: c => c.awakened ? [onBeat('fx-beast-roar', .62, c0(c))] : [bed('fx-senpugan', .2, 0, c0(c)), onBeat('fx-wind-blast', .4, c0(c))],
+    llls: c => c.awakened ? [onBeat('fx-beast-roar', .62, c0(c))] : [bed('fx-whirlsphere', .2, 0, c0(c)), onBeat('fx-wind-blast', .4, c0(c))],
     airHeavy: c => c.awakened ? meleeSwings(c) : [onBeat(pick(FAMILY.poof, c.seed), .26, .02), ...meleeSwings(c)],
   },
   gummy: {
@@ -1341,7 +1341,7 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
     llls: c => [bed('fx-wind-swirl', .3, 0, c0(c) + .1), onBeat('fx-stand', .3, .02)],
   },
   nigo: {
-    // The Hollow's Void Ray, gathered at the mask; the NIGHTFALL's stun is a blow.
+    // The mask's Void Ray, gathered at the mask; the NIGHTFALL's stun is a blow.
     llls: c => c.awakened ? meleeSwings(c) : [bed('fx-ki-charge', .18, 0, c0(c)), onBeat('fx-ki-launch', .5, c0(c)), onBeat('fx-black-flame', .24, c0(c) + .02)],
   },
   kagari: {
@@ -1353,9 +1353,9 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
     airHeavy: c => [onBeat('fx-fire-roar', .5, c0(c))],
   },
   ward: {
-    // ROOM opens, and the target is swapped away.
+    // THEATRE opens, and the target is swapped away.
     lh: c => [onBeat('fx-room', .4, .02), onBeat('fx-crossmatch', .48, c0(c))],
-    lllh: swung(c => [onBeat('fx-counter-shock', .42, c0(c) + .02)]),
+    lllh: swung(c => [onBeat('fx-defib-shock', .42, c0(c) + .02)]),
     llls: swung(c => [onBeat('fx-room', .3, .02), onBeat(pick(FAMILY.snap, c.seed), .3, c0(c) + .03)]),
   },
   kuon: {
@@ -1390,7 +1390,7 @@ const landed = (cue: AudioCue, gain: number, delay = 0): CueLayer => ({ cue, gai
 const ENDER_LANDS: Partial<Record<FighterId, (c: Ctx) => CueLayer[]>> = {
   taisei: () => [landed('fx-ki-launch', .5), landed('fx-explosion-huge', .42, .04)],
   ouga: () => [landed('fx-explosion-huge', .6)],
-  konta: c => c.awakened ? [landed('fx-explosion-huge', .54)] : [landed('fx-senpugan-hit', .6)],
+  konta: c => c.awakened ? [landed('fx-explosion-huge', .54)] : [landed('fx-whirlsphere-hit', .6)],
   gummy: () => [landed('fx-fire-burst', .5), landed(FAMILY.hitHeavy[0], .4, .02)],
   kosho: () => [landed('fx-fire-burst', .46)],
   shirokane: c => [landed('fx-lightning', .54), landed(pick(FAMILY.zap, c.seed), .3, .03)],
@@ -1399,7 +1399,7 @@ const ENDER_LANDS: Partial<Record<FighterId, (c: Ctx) => CueLayer[]>> = {
   koko: c => [landed(pick(FAMILY.barrage, c.seed), .44), landed(pick(FAMILY.barrage, c.seed, 1), .36, .06)],
   nigo: () => [landed('fx-nightfang', .56)],
   kagari: () => [landed('fx-fire-roar', .58)],
-  ward: () => [landed('fx-counter-shock', .5)],
+  ward: () => [landed('fx-defib-shock', .5)],
   kuon: () => [landed('fx-purple', .5)],
   oro: c => [landed(pick(FAMILY.knifeHit, c.seed), .42), landed(pick(FAMILY.knifeHit, c.seed, 1), .36, .05)],
   gaunt: () => [landed('fx-cannon', .58)],
@@ -1645,9 +1645,9 @@ const SIGNATURE_IMPACTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Im
   },
   konta: {
     heavy: c => c.awakened ? [{ cue: 'fx-beast-bite', gain: .7 }, { cue: pick(FAMILY.hitHeavy, c.seed), gain: .5, rate: .9 }]
-      : [{ cue: 'fx-senpugan-hit', gain: .78 }],
+      : [{ cue: 'fx-whirlsphere-hit', gain: .78 }],
     special: c => c.awakened ? [{ cue: pick(FAMILY.explosion, c.seed), gain: .62 }]
-      : [{ cue: 'fx-senpugan-hit', gain: .5, rate: 1.1 }, { cue: pick(FAMILY.explosion, c.seed), gain: .36 }],
+      : [{ cue: 'fx-whirlsphere-hit', gain: .5, rate: 1.1 }, { cue: pick(FAMILY.explosion, c.seed), gain: .36 }],
     ultimate: c => detonation(c.seed),
   },
   shiden: {
@@ -1692,7 +1692,7 @@ const SIGNATURE_IMPACTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Im
     special: () => [{ cue: 'fx-gamma', gain: .72 }, { cue: 'fx-hit-heavy-1', gain: .34 }],
     ultimate: confirmBlow(c => [{ cue: pick(FAMILY.hitHeavy, c.seed), gain: .56 }, { cue: pick(FAMILY.zap, c.seed), gain: .4 }],
       (c, index) => [{ cue: pick(FAMILY.zap, c.seed, index), gain: .46 }, { cue: pick(FAMILY.energyHit, c.seed, index), gain: .3 }],
-      () => [{ cue: 'fx-counter-shock', gain: .86 }]),
+      () => [{ cue: 'fx-defib-shock', gain: .86 }]),
   },
   koko: {
     heavy: c => [{ cue: pick(FAMILY.hitKick, c.seed), gain: .6, rate: 1.1 }, { cue: pick(FAMILY.knifeHit, c.seed), gain: .3 }],
@@ -1802,7 +1802,7 @@ function awakenLayers(fighter: FighterId): CueLayer[] {
 }
 
 /** Launch day 5 (12 October 2026): the fighter's own power arriving, on the swap (audio/powerSound.ts, from
- *  render/awakenedPower.ts) - Will's blow and its black lightning, the pillar of spiritual pressure, chi flung out,
+ *  render/awakenedPower.ts) - Will's blow and its black lightning, the pillar of raw pressure, chi flung out,
  *  a dark flame catching, Lion's Roar swelling, a bolt, a vent of steam, a flash freeze - over whatever the fighter's own entry
  *  already plays, and after it in the list, so those layers stay where every earlier pass put them. A cue the entry
  *  already plays is not played twice (Setsu's bolt, Gorai's), and under an awakening line said over the burst it steps
@@ -1830,8 +1830,8 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
     case 'konta': return [...base, add('fx-beast-roar', .5, .5)];
     // Round 4b (GUMMY): SUNRISE - pressure building, the burst of cloud, and the cartoon's boing as he lands in it.
     case 'gummy': return [...base, add('fx-gear4-inflate', .36), add('fx-poof-1', .46, .34), add('fx-poof-2', .36, .48), add('fx-gear4-bounce', .42, .62)];
-    // The Golden Form, Taisei's and Ouga's: the aura catching, ki drawn up, the burst on the swap, sparks (goldenForm).
-    case 'taisei': case 'ouga': return goldenForm(fighter);
+    // The gold awakening, Taisei's and Ouga's: the aura catching, ki drawn up, the burst on the swap, sparks (goldAwakening).
+    case 'taisei': case 'ouga': return goldAwakening(fighter);
     // The Stand looming up behind them: its ghostly swell, and the pressure it puts on the air.
     case 'koko': case 'oro': return [...base, add('fx-stand', .5, .1), on('fx-will', .46, swap + .06)];
     // The Guardian: the chi gathering into a giant - its swirl in the mids as the ribs rise. Akagane's Perfect one
@@ -1892,10 +1892,10 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
     case 'wataame': return [held('fx-gather',.08,.08,swap),on('fx-swing-huge',.15,swap)];
     case 'bruin': return [held('fx-gather',.08,.08,swap),on('fx-swing-huge',.15,swap)];
     case 'senko': return [held('fx-gather',.1,.08,swap),on('fx-energy-hit-2',.19,swap)];
-    case 'buna': return [held('fx-will',.13,.08,swap),on('fx-counter-shock',.23,swap)];
-    case 'adad': return [held('fx-electric-bed',.12,.08,swap),on('fx-counter-shock',.22,swap)];
+    case 'buna': return [held('fx-will',.13,.08,swap),on('fx-defib-shock',.23,swap)];
+    case 'adad': return [held('fx-electric-bed',.12,.08,swap),on('fx-defib-shock',.22,swap)];
     case 'bellows': return [held('fx-fire-bed',.12,.08,swap),on('fx-fire-ignite',.26,swap),on('fx-fire-roar',.21,swap)];
-    case 'mikage': return [held('fx-electric-bed',.13,.08,swap),on('fx-counter-shock',.23,swap)];
+    case 'mikage': return [held('fx-electric-bed',.13,.08,swap),on('fx-defib-shock',.23,swap)];
     case 'tempo': return [held('fx-gather',.12,.08,swap),on('fx-energy-hit-1',.2,swap)];
     case 'full-beam': return [held('fx-wind-swirl',.14,.12,swap),on('fx-wind-blast',.3,swap),on('fx-land-heavy',.16,swap)];
     case 'pyroclast': return [held('fx-fire-roar',.1,.12,swap),on('fx-fire-burst',.3,swap),on('fx-wind-blast',.17,swap)];
@@ -1928,7 +1928,7 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
     case 'gaunt': return [...base, add('fx-armour-1', .24, .5), add('fx-armour-2', .2, .72), on('fx-beast-roar', .46, swap + .2)];
     // SETSUNA: lightning through him, and the crackle it leaves.
     case 'setsu': return [...base, add('fx-lightning', .44, .42), add('fx-zap-2', .26, .6), held('fx-electric-bed', .16, swap, swap + .8)];
-    // The shop's fighters. Gorai's Man-Beast form: the dragon's roar and his thunder.
+    // The shop's fighters. Gorai's half-wyrm form: the dragon's roar and his thunder.
     case 'gorai': return [...base, on('fx-beast-roar', .5, swap + .1), on('fx-lightning', .34, swap + .02)];
     // The tremor: the air itself cracking like glass, and the ground giving.
     case 'haldor': return [...base, on('fx-guard-shatter', .5, swap + .02), on('fx-land-heavy', .5, swap + .04)];
@@ -1993,7 +1993,7 @@ function burst(fighter: FighterId): CueLayer[] {
   ];
 }
 
-/** The Golden Form transformation, Taisei's and Ouga's (goldenFormTiming.ts). The shared fx-awaken is mostly a rumble
+/** The gold awakening transformation, Taisei's and Ouga's (goldAwakeningTiming.ts). The shared fx-awaken is mostly a rumble
  *  (85% of it under 80 Hz) that a laptop or a phone barely reproduces, and two small zaps were all Taisei and Ouga had over
  *  it: the transformation was heard as nothing. Laid on the entry's beat - the aura drawn in, the burst on the swap:
  *  - the aura catching: a burning whoosh as the gather starts (their aura burns as flames: AwakeningDefinition.flames);
@@ -2006,7 +2006,7 @@ function burst(fighter: FighterId): CueLayer[] {
  *  the effects from the moment it is scheduled - and its peak meets the master's compressor at about -6 dBFS, the top of
  *  the bank's range. All on the release phase, as every awakening's layers: the entry cannot be interrupted, and the
  *  first cast after it must not cut the tail. */
-function goldenForm(fighter: FighterId): CueLayer[] {
+function goldAwakening(fighter: FighterId): CueLayer[] {
   const burst = awakeningSwapAt(fighter);
   return [
     { cue: 'fx-awaken', gain: .5, phase: 'release' },

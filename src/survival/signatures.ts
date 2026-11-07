@@ -128,18 +128,18 @@ export const SIGNATURES: Record<string, readonly Signature[]> = {
     { kind: 'blinks', name: 'THE GILDED HOUR', element: 'light', count: 3, gap: .5, lead: .7, radius: 2, damage: 50, every: 999, first: 999 },
     { kind: 'meteor', name: 'DEATH KNELL!', element: 'steel', count: 1, radius: 5.5, lead: 3, damage: 170, spread: 0, look: 'meteor', every: 20, first: 4, awakened: true },
   ],
-  // Magatsu: Dismantle's slashes, and awakened his domain - every direction cut at
+  // Magatsu: Flaying Cut's slashes, and awakened his ground - every direction cut at
   // once - and Calamity Pyre's arrow (break it, or run).
   magatsu: [
     { kind: 'fissure', name: 'REND: THOUSAND CUTS', element: 'blood', pattern: 'claws', count: 4, length: 16, width: .7, lead: .8, damage: 50, every: 11 },
     { kind: 'fissure', name: 'DOMAIN: CARRION ALTAR', element: 'blood', pattern: 'radial', count: 10, length: 18, width: .8, lead: 1.2, damage: 72, every: 15, awakened: true },
     { kind: 'charge', name: 'PYRE ARROW', element: 'fire', seconds: 3.2, breakShare: .06, radius: 7, damage: 230, at: 'target', every: 24, first: 9, awakened: true },
   ],
-  // Vesper: the White Hawk strikes from where you are not; awakened as Black Vespers,
+  // Vesper: the Pale Falcon strikes from where you are not; awakened as Black Vespers,
   // the Apostles come, and space itself pulls you in.
   vesper: [
     { kind: 'blinks', name: 'THE PALE FALCON', element: 'light', count: 3, gap: .45, lead: .65, radius: 1.8, damage: 54, every: 10 },
-    { kind: 'summon', name: 'THE WINGED HOST', element: 'dark', grunts: ['apostle-spawn'], count: 2, every: 20, first: 6, awakened: true },
+    { kind: 'summon', name: 'THE WINGED HOST', element: 'dark', grunts: ['rift-spawn'], count: 2, every: 20, first: 6, awakened: true },
     { kind: 'pull', name: 'THE OFFERING', element: 'dark', radius: 13, seconds: 2.4, damage: 96, every: 17, first: 12, awakened: true, release: 'THE BLACK WINGS FALL' },
   ],
   // Imago: his tail, and speed; awakened, the King learns - a string of blows is

@@ -241,7 +241,7 @@
   "seconds": 0.6,
   "peak": 0.1723
  },
- "fx-counter-shock": {
+ "fx-defib-shock": {
   "file": "sfx/originals/signatures/ward/defib-shock.wav",
   "seconds": 1.1999,
   "peak": 0.5223
@@ -1203,7 +1203,7 @@
   "seconds": 1.1,
   "peak": 0.0698
  },
- "fx-sig-gaku-rock-paper": {
+ "fx-sig-gaku-landslide": {
   "file": "sfx/originals/signatures/gaku/rock-fist.wav",
   "seconds": 1.8,
   "peak": 1.0296,
@@ -1888,7 +1888,7 @@
   "seconds": 1.0655,
   "peak": 0.0059
  },
- "fx-sig-magatsu-dismantle": {
+ "fx-sig-magatsu-flay": {
   "file": "sfx/originals/signatures/magatsu/carve.wav",
   "seconds": 0.1752,
   "peak": 0.0053

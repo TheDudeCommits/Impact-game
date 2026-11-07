@@ -19,7 +19,7 @@ const hold=(s:ArenaSimulation,seconds:number)=>{const a=s.actors.get('foe')!;a.r
 // half as long as it was, and the formation, the approach and the palm are
 // where they fall in it.
 const LION_S_PEARL=MOVES.konta.heavy,CONTACT=LION_S_PEARL.contacts[0],CONTACT_TICK=Math.round(CONTACT*60),STRUCK=1000-LION_S_PEARL.damage;
-describe('Senpugan charge and contact',()=>{
+describe('Whirlsphere charge and contact',()=>{
  it('keeps the measured energy reach scoped to grounded base Senpugan',()=>{
   expect(meleeReach('konta','heavy',MOVES.konta.heavy)).toBeCloseTo(1.5);
   expect(meleeReach('konta','heavy',MOVES.konta.heavy,false)).toBeCloseTo(1.3);

@@ -586,7 +586,7 @@ export class SurvivalGame {
   /** When the next health orb may drop (HEAL_GAP). */
   private nextHealOrb = 0;
   private nextChampion?: BossEntry;
-  private escort: Escort = ESCORTS.marines;
+  private escort: Escort = ESCORTS.tribunal;
   /** The army each round has fielded, in order (bosses.ts armyFor). */
   private armies: EscortId[] = [];
   private escortQueue = 0;
@@ -2651,7 +2651,7 @@ export class SurvivalGame {
     record.transformed = true;
     const next = enemy(record.def.transform!.into);
     const at = this.clear({ x: body.x, y: 0, z: body.z }) ?? this.spawnAround(6, .5, 9);
-    const entry = record.entry ?? { id: next.id, rank: record.rank ?? 'S', escort: 'beasts', epithet: next.title?.toUpperCase() ?? '', universe: next.series.toUpperCase() } as BossEntry;
+    const entry = record.entry ?? { id: next.id, rank: record.rank ?? 'S', escort: 'grafters', epithet: next.title?.toUpperCase() ?? '', universe: next.series.toUpperCase() } as BossEntry;
     const spawned = this.spawnBoss(next, { ...entry, id: next.id }, at);
     if (!spawned) return false;
     this.roundBosses.push(spawned);
@@ -3186,7 +3186,7 @@ export class SurvivalGame {
       }
       else if (id === 'magatsu' && hero.shrineUntil > now) {
         if (!player.awakened) { hero.shrineUntil = 0; continue; }
-        if (now >= hero.shrineNext) { hero.shrineNext = now + SHRINE_EVERY; this.dismantle(hero, player); }
+        if (now >= hero.shrineNext) { hero.shrineNext = now + SHRINE_EVERY; this.carve(hero, player); }
       }
     }
   }
@@ -3312,7 +3312,7 @@ export class SurvivalGame {
     this.push({ kind: 'relic', sub: 'mochi', text: 'kuromitsu', hero: hero.id, points: [{ x: player.x, y: player.y + 1.1, z: player.z }, { x: to.x, y: player.y + 1.1, z: to.z }] });
   }
   /** 'MIRROR MERE': the domain cuts the nearest of what stands in it. */
-  private dismantle(hero: Hero, player: PlayerState) {
+  private carve(hero: Hero, player: PlayerState) {
     const move = procMove('Hex Slashes', this.relicDamage(45), { knockback: 1.5, stun: .3, style: 'melee' });
     const points: Vec3[] = [];
     for (const foe of this.foes(player.x, player.z, 7, 3)) {

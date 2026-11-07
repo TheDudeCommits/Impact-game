@@ -94,7 +94,7 @@ export class WardEffects {
   private d = new THREE.Vector3();
 
   constructor(private scene: THREE.Scene) {
-    this.kit = new ElectricKit(scene, 'counter-shock-bolts', 1200);
+    this.kit = new ElectricKit(scene, 'flatline-bolts', 1200);
     // Lancet Slash: a pooled crescent per cut, drawn once at load to link it.
     for (let i = 0; i < CUTS; i++) {
       const mesh = new THREE.Mesh(this.cutGeometry, slashWaveMaterial()); mesh.name = 'lancet-cut'; mesh.frustumCulled = false; mesh.renderOrder = 4;

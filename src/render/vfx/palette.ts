@@ -55,8 +55,8 @@ const CURSE = E(0xffd8dc, 0xd81f3a, 0xff4a5a, 0x120204);
 const CALAMITY_PYRE = E(0xfff0c0, 0xff5a1e, 0xff8a3a, 0x1c0604);
 /** Vesper's sabre is white steel with the hawk's silver-blue in it; the offering is a black sun ringed in
  *  violet, as Black Vespers's dark is. */
-const WHITE_HAWK = E(0xffffff, 0xa9c4ff, 0xe4ecff, 0x0a0e18);
-/** Round 4b (GUMMY): SUNRISE, the sun god - white, a warm rim, a cartoon's ink. */
+const PALE_FALCON = E(0xffffff, 0xa9c4ff, 0xe4ecff, 0x0a0e18);
+/** Round 4b (GUMMY): SUNRISE - white, a warm rim, a cartoon's ink. */
 const SUNRISE_WHITE = E(0xffffff, 0xffd98a, 0xfff2d6, 0x120a04);
 const ECLIPSE = E(0xeee2ff, 0x4a2a8a, 0x8a5cff, 0x020006);
 /** Imago's aura is jade; the final molt comes down in it, brighter. */
@@ -96,10 +96,10 @@ const SUN_FIRE = E(0xfff4c8, 0xff5a1f, 0xffb040, 0x1a0602);
 const WINGS_STEEL = E(0xf4fff8, 0x4aa874, 0xc8f0d8, 0x06140c);
 /** Rook: the shadows' violet. */
 const SHADOW = E(0xf0e8ff, 0x6a3df0, 0xa88aff, 0x08021a);
-/** Gaku's aura: Rock Paper's gold. */
+/** Gaku's aura: the Landslide's gold. */
 const AURA = E(0xfff6d2, 0xf0a018, 0xffd062, 0x160c02);
 
-/** Per fighter, per slot. Awakened overrides follow below: Golden Form is
+/** Per fighter, per slot. Awakened overrides follow below: gold awakening is
  *  gold, Kurobi is orange chi, and so on. */
 const TABLE: Record<FighterId, Record<Exclude<AttackSlot, 'area'>, Element>> = {
   chohan:{light:E(0xe8f0ec,0x9aa7a2,0x171d24),heavy:E(0xe8f0ec,0x9aa7a2,0x171d24),special:E(0xe8f0ec,0x9aa7a2,0x171d24),ultimate:E(0xe8f0ec,0x9aa7a2,0x171d24)},
@@ -189,7 +189,7 @@ const TABLE: Record<FighterId, Record<Exclude<AttackSlot, 'area'>, Element>> = {
   dorado: { light: STEEL, heavy: HORIZON_GOLD, special: HORIZON_GOLD, ultimate: HORIZON_GOLD },
   shiun: { light: PALE_GEM, heavy: PALE_GEM, special: PALE_GEM, ultimate: BLACK_CONFESSIONAL },
   magatsu: { light: CURSE, heavy: CURSE, special: CURSE, ultimate: CALAMITY_PYRE },
-  vesper: { light: WHITE_HAWK, heavy: WHITE_HAWK, special: WHITE_HAWK, ultimate: ECLIPSE },
+  vesper: { light: PALE_FALCON, heavy: PALE_FALCON, special: PALE_FALCON, ultimate: ECLIPSE },
   imago: { light: ROYAL_JADE, heavy: ROYAL_JADE, special: ROYAL_JADE, ultimate: DECREE },
   'wuming': { light: ROSE, heavy: ROSE, special: ROSE, ultimate: ROSE },
   jirenga: { light: PRIDE_RED, heavy: PRIDE_RED, special: PRIDE_RED, ultimate: PRIDE_RED },
@@ -265,7 +265,7 @@ export const ENDER_ELEMENTS: Partial<Record<FighterId, { base: Element; keys?: P
   kosho: { base: FIRE, awakened: AWAKENED_KOSHO },
   kagari: { base: FIRE },
   ward: { base: ROOM_BLUE },
-  // Blue; Dark Spark's black lightning; Event Horizon's stillness; the 200% Singularity.
+  // Blue; Dark Spark's black lightning; Event Horizon's stillness; the Supermassive.
   kuon: { base: HEX_BLUE, keys: { lh: DARK_SPARK, llls: HORIZON_PALE, airSpecial: HEX_PURPLE } },
   koko: { base: SPIRIT_PURPLE },
   // HUSH's gold; the freezing touch.
@@ -336,7 +336,7 @@ const GRADE: Partial<Record<FighterId, Partial<Record<AttackSlot, number>>>> = {
   konta: { special: 0x3a8cff, ultimate: 0x8a4dff }, kuon: { special: 0x8a4dff, ultimate: 0x8a4dff },
   nigo: { special: 0xd0203a, ultimate: 0xd0203a }, gummy: { special: 0xd0203a }, shiden: { ultimate: 0x8a4dff },
   setsu: { special: 0x3a8cff, ultimate: 0x3a8cff },
-  // Briar Crown (31 October 2026): Null Magic drains the room to grey (no hue: a dark blade is read on grey, and was
+  // Briar Crown (31 October 2026): Lightless Magic drains the room to grey (no hue: a dark blade is read on grey, and was
   // nothing in a room gone violet); Bruin's darkness a muted violet (critic pass 3: "a frame washed entirely purple");
   // the wind white-cyan and only Sylph's (the ultimate) green; the sea blue. (Round 7.)
   cardo: { special: 0x9c9c9c, ultimate: 0x9c9c9c }, bruin: { special: 0x5a4a78, ultimate: 0x4e3e6e },

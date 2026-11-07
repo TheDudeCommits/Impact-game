@@ -12,7 +12,7 @@ import * as THREE from 'three';
  *  instanceColor is not a colour here: r is heat (0..1, how young and hot
  *  the tongue is), g a seed, b the palette - FIRE, BLACK ('Black Pyre': black
  *  bodies with a violet rim), BLOOD (Gaunt's HOUND ARMOR aura, dark crimson) or ABYSS
- *  (Nigo's pressure and the NIGHTFALL burn: black bodies licked crimson) or ANTI (Cardo's Null Magic: black bodies
+ *  (Nigo's pressure and the NIGHTFALL burn: black bodies licked crimson) or ANTI (Cardo's Lightless Magic: black bodies
  *  licked a thin dark crimson). Premultiplied alpha: the hot core adds light (alpha 0)
  *  while the smoke and the black flames occlude, all in one pass. */
 export const FIRE = 0, BLACK = 1, BLOOD = 2, ABYSS = 3, ANTI = 4;
@@ -65,7 +65,7 @@ void main(){
     col=vec3(.3,.04,.42)*rim*(.35+.65*heat)*body+vec3(.012,.004,.02)*body;
     alpha=body*(.88-.3*rim);
   }else if(pal==4){
-    // Null Magic: the flame is black; only a thin licking edge burns a dark crimson (it gives off no light: its
+    // Lightless Magic: the flame is black; only a thin licking edge burns a dark crimson (it gives off no light: its
     // one colour is a red rim and red crackle - round 7 - where until round 6 the edge was pale grey).
     // Thinner and darker at the rim than ABYSS's pressure, and the body more opaque.
     float rim=smoothstep(.66,.98,d)+smoothstep(.82,.99,y)*.45;

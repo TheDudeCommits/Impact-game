@@ -48,7 +48,7 @@ void main(){
   if (a < .004) discard;
   gl_FragColor = vec4(col * a, a);
 }`;
-/** Round 3c: Ward's own body, scanned by the ROOM. Front faces, over the
+/** Round 3c: Ward's own body, scanned by the THEATRE. Front faces, over the
  *  body's own depth (a hair toward the lens so they never lose to it). */
 const SCAN_FRAGMENT = /* glsl */`
 uniform vec3 uCore; uniform vec3 uEdge; uniform float uTime; uniform float uStrength; uniform float uBase;
@@ -91,7 +91,7 @@ void main(){
 }`;
 const premultiplied = { blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor } as const;
 
-/** ROOM blue, linear: the film's body and its white-blue edge. */
+/** THEATRE blue, linear: the film's body and its white-blue edge. */
 const CORE = new THREE.Color(.16, .5, 1.25), EDGE = new THREE.Color(.62, 1.05, 1.7);
 /** Crossmatch: how many cubes, how far out they turn, and how big they are. */
 const CUBES = 6, ORBIT = 1.05, CUBE = .2;
@@ -175,7 +175,7 @@ export class OperatingTheatre {
       if (blade) { const shell = skinnedCopy(mesh, filmMaterial, 'k-room', -1); this.scene.add(shell); film.push({ source: mesh, shell }); return; }
       if (/sheath|scabbard|hilt/i.test(mesh.name) || mesh.geometry.attributes.position.count < 150) return;
       const shell = skinnedCopy(mesh, membraneMaterial, 'room-membrane', -1); this.scene.add(shell); membrane.push({ source: mesh, shell });
-      // Under the dome like the rest of his ROOM (renderOrder -1): drawn on
+      // Under the dome like the rest of his THEATRE (renderOrder -1): drawn on
       // his own surfaces only (depth-equal, nudged toward the lens).
       const over = skinnedCopy(mesh, scanMaterial, 'room-scan', -1); this.scene.add(over); scan.push({ source: mesh, shell: over });
     });

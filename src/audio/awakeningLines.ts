@@ -18,7 +18,7 @@ export interface AwakeningLine {
   named: number;
 }
 
-/** How long after the burst a line starts: as Taisei's and Ouga's (goldenFormTiming.ts), as the blast's tail falls away. */
+/** How long after the burst a line starts: as Taisei's and Ouga's (goldAwakeningTiming.ts), as the blast's tail falls away. */
 export const AFTER_BURST = .26;
 
 const after = (fighter: FighterId, cue: AudioCue, form: string, words: readonly number[], named: number, wait = AFTER_BURST): AwakeningLine => {

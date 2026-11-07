@@ -5,7 +5,7 @@
  *  A horde that all attacks at once is not a fight, it is a blender: nobody
  *  can read it, and the player's guard and parry - the whole defensive game -
  *  stop meaning anything. So melee attacks are rationed by TOKENS, the way
- *  character-action games have done it since the first Devil May Cry: a
+ *  character-action games have long done it: a
  *  handful of enemies hold one and come in to fight, the rest keep a ring
  *  around the player, circling, closing the gaps, waiting for a turn. Shots
  *  are rationed the same way. The ration grows with the wave, which is most

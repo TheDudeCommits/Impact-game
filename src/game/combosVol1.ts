@@ -40,7 +40,7 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
     lllh: { name: 'Giant Senpugan', duration: .83, contacts: [.35], damage: 58, knock: 'slide', knockback: 9, down: .85 },
     // A wind shuriken spun on a fingertip, thrown.
     llls: { name: 'Mini Galewheel', ...blast(9, 30), duration: .86, contacts: [.35], damage: 49, daze: 1.35 },
-    // His shadow clones somersault down and land their heels on the target's head and shoulders.
+    // His clones somersault down and land their heels on the target's head and shoulders.
     airHeavy: { name: 'Pinwheel Drop', duration: .6, contacts: [.23], damage: 43, lift: 6 },
     // A giant Senpugan circled by three more, driven into the floor.
     airSpecial: { name: 'Senpugan Wreath', ...smash(4.4), duration: .77, contacts: [.21], damage: 63, knock: 'slide', knockback: 8, down: .9 },
@@ -65,7 +65,7 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
     airHeavy: { name: 'Sinker Heel', damage: 45, lift: 6.6 },
     // A cannon of a punch and Signal Fire in one: the flaming fist.
     airSpecial: { name: 'Beacon Crash', ...smash(4.2), damage: 66, knock: 'splat', knockback: 10, down: .85 },
-    // Round 4b (GUMMY): in SUNRISE the enders are the Sun God's own, drawn with the SUNRISE body's own takes
+    // Round 4b (GUMMY): in SUNRISE the enders are SUNRISE's own, drawn with the SUNRISE body's own takes
     // (comboClips.ts COMBO_FORM_CLIPS):
     awakened: {
       // He flings himself at them like a rocket (Dawn Rocket).
@@ -78,7 +78,7 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
       llls: { name: 'Thunderhead Hurl', ...blast(9, 34) },
       // A fist driven into the floor, and the floor stretched up under them: a spike.
       airHeavy: { name: 'Groundswell' },
-      // (The ground smash is the burning fist still, thrown by the Sun God.)
+      // (The ground smash is the burning fist still, thrown by SUNRISE.)
     },
   },
   kosho: {
@@ -141,11 +141,11 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
     // Iron Spirit's dashing straight.
     lh: { name: 'Rivet Strike', damage: 49, knockback: 9.5, lift: 3.2 },
     // An upward barrage that sends them flying.
-    llh: { name: "Here's your receipt!", damage: 42, lift: 8.6, down: .5 },
+    llh: { name: "Lights out!", damage: 42, lift: 8.6, down: .5 },
     // Iron Spirit lifts them, spins and slams them into the floor.
-    lllh: { name: 'This incredible power...!', damage: 68, knock: 'spike', down: 1 },
+    lllh: { name: 'Rock-a-bye...!', damage: 68, knock: 'spike', down: 1 },
     // Iron Spirit's inhale, pulling the opponent in helpless.
-    llls: { name: 'Beat in a single breath!', ...snare(6, 1.5), damage: 52, daze: 1.65 },
+    llls: { name: 'Not a sound.', ...snare(6, 1.5), damage: 52, daze: 1.65 },
     // Iron Spirit's diving punch.
     airHeavy: { name: 'Diving Punch', damage: 51, lift: 5 },
     // The barrage of a spirit gone grave-hound, down into the floor.
@@ -206,7 +206,7 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
     // The stomp on the head as the pull lifts them.
     airHeavy: { name: 'Crown Stomp', damage: 46, lift: 5 },
     // His opening move.
-    airSpecial: { name: '200% Singularity', ...smash(4.8), damage: 66, knock: 'splat', knockback: 12, down: .95 },
+    airSpecial: { name: 'Supermassive', ...smash(4.8), damage: 66, knock: 'splat', knockback: 12, down: .95 },
   },
   oro: {
     // Fluid fired from his eyes under pressure.

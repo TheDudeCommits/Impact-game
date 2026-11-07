@@ -22,7 +22,7 @@ describe('body traits', () => {
     for (const traits of Object.values(BODY_TRAITS)) expect(Object.isFrozen(traits)).toBe(true);
   });
 
-  it("puts the move's own rules on the move: Thunder Lord's Arrow from the bow, Senpugan's palm and aim, and not Kurobi's", () => {
+  it("puts the move's own rules on the move: Ikazuchi Arrow from the bow, Senpugan's palm and aim, and not Kurobi's", () => {
     expect(MOVES.shiden.ultimate.origin).toEqual({ right: .54, forward: .09, up: 2.94 });
     expect(MOVES.konta.heavy).toMatchObject({ name: 'Senpugan', palmHold: true, lockAim: true });
     expect(AWAKENED_MOVES.konta?.heavy).toMatchObject({ palmHold: undefined, lockAim: undefined });
@@ -59,7 +59,7 @@ describe('borrowed moves keep what they are (the Forge)', () => {
     return { sim, events, frozen };
   };
 
-  it("lets Thunder Lord's Arrow fly from the bow in any body", () => {
+  it("lets Ikazuchi Arrow fly from the bow in any body", () => {
     const session = new ForgeSession();
     try {
       expect(session.apply(kit('bellows', 'ultimate', 'shiden'))).toEqual({ ok: true });

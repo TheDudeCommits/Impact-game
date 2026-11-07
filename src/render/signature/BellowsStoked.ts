@@ -9,7 +9,7 @@ import { armoryDraws } from '../vfx/armory/drawn';
 import { MoveStage, STAGE, WAVE } from './MoveStage';
 import { blowFloor } from './blowFloor';
 
-/** Presentation of manual Hellflame casts, never an autonomous damage source. */
+/** Presentation of manual furnace flame casts, never an autonomous damage source. */
 export const BELLOWS_STOKED_ASSETS: readonly string[] = Object.freeze([]);
 export const BELLOWS_STOKED_LIMITS = Object.freeze({ burns: 8, threads: 6 });
 export const BELLOWS_STOKED_BEATS = Object.freeze({ compress: 1.55, charge: 2.088, burst: 2.808, end: 3.19 });

@@ -338,7 +338,7 @@ export class VfxKit {
   }
 
   private szImpact(x: number, y: number, z: number, own: Element, cls: ImpactClass, born: number, dir: THREE.Vector3 | undefined, priority: number, anchor: number, look: InkLook, tier?: HitTier, ownSteel = false) {
-    // (`ownSteel`: a blade whose cut is its own colour - Null Magic's black and red, Bruin's darkness - drawn as a cut, in that
+    // (`ownSteel`: a blade whose cut is its own colour - Lightless Magic's black and red, Bruin's darkness - drawn as a cut, in that
     // colour rather than the white-blue of bare steel.)
     const el = look === 'blast' || ownSteel ? own : look === 'slash' ? SZ_STEEL : SZ_WARM;
     const f = this.sparks, sp = f.spec, S = SZ.star[cls] * (look === 'slash' ? .9 : 1), near = SZ.near;
@@ -348,7 +348,7 @@ export class VfxKit {
     // A heavy blow's layers stay where it landed while the body is thrown out of them (the victim leaves
     // its burst behind); a jab's ride the body for the beat they last.
     const ride = cls >= 2 ? 0 : anchor;
-    // (A blade of its own colour has no white heart either: Briar Crown round 22, blind critic 8 on Cardo, "white-hot orbs ... null magic
+    // (A blade of its own colour has no white heart either: Briar Crown round 22, blind critic 8 on Cardo, "white-hot orbs ... lightless magic
     // gives off no light".)
     sp.reset(SPRITE.core, born, .05 + cls * .01).pos(x, y, z).sized(Math.min(.24, S * .2), Math.min(.32, S * .26), .3).hot(ownSteel ? el.spike : 0xffffff, ownSteel ? .8 : 1.1 + cls * .1).cool(el.spike); sp.bias = near; sp.anchor = ride; f.emit();
     // The red-pink bloom the bursts sit in: a soft glow behind the hard shapes, warmer than the burst.

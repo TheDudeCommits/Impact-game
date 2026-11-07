@@ -1,7 +1,7 @@
 import type {CoreSlot} from '../types';
 import type {MoveDefinition} from '../moves';
 import type {ComboRow} from '../combos';
-/** Classic two-arm Captain-Commander. Every flame is tied to a manual attack. */
+/** Classic two-arm old commander. Every flame is tied to a manual attack. */
 export const HINOMOTO_MOVES:Record<CoreSlot,MoveDefinition>={
  light:{name:'Ember Stroke',duration:.60,contacts:[.29],damage:25,range:3.0,radius:.79,stamina:12,cooldown:.60,stun:.35,knockback:3.5,lunge:4.1,style:'melee'},
  heavy:{name:'Pyre Cleave',duration:.98,contacts:[.46],damage:65,range:3.1,radius:.87,stamina:29,cooldown:1.26,stun:.83,knockback:8.8,lunge:4.0,style:'melee',outcome:'knockdown'},

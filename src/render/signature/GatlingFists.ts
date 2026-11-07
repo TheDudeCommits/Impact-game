@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
-/** Round 4b (GUMMY): the Gatling's fists - the SUNSET BARRAGE's, and SUNRISE's Dawn Gatling's blown up - every fist of
+/** Round 4b (GUMMY): the Gatling's fists - the SUNSET BARRAGE's, and SUNRISE's dawn barrage's blown up - every fist of
  *  the barrage the eye is meant to see beyond the two his own arms throw (Fighter.ts GATLING): each a fist and the
- *  rubber arm it flies out on from his shoulder, in armament black and crimson, three flat bands keyed from above with
+ *  rubber arm it flies out on from his shoulder, in lacquer black and crimson, three flat bands keyed from above with
  *  a hot rim (GiantFist's language), and an ink line round both (an inverted hull a constant few pixels wide).
  *
  *  Instanced, for every Gummy at once: one draw for the fists, one for the arms and one for each of their ink hulls,

@@ -25,7 +25,7 @@ describe('the lightning - and the Cautery Blade - stops where the blow does', ()
     expect(miss.drawn - miss.surface, 'drawn past the near side of a body the blow missed').toBeLessThanOrEqual(fighter === 'setsu' && slot === 'heavy' ? .15 : .02);
     expect(hit.drawn, 'drawn into the body it landed on').toBeGreaterThan(hit.surface + .4);
   });
-  it('Ward\'s Counter Shock charge stays about his palms', () => {
+  it('Ward\'s Flatline Shock charge stays about his palms', () => {
     const miss = measure({ fighter: 'ward', slot: 'ultimate', hand: 'handL' }, false);
     expect(miss.drawn).toBeLessThan(miss.surface);
   });

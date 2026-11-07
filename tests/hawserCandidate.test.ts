@@ -82,7 +82,7 @@ describe('the YUGE throws a kit of its own',()=>{
   for(const key of COMBO_KEYS){const base=comboMove('hawser',key)!,awake=comboMove('hawser',key,true)!;expect(awake.name,key).not.toBe(base.name);expect(awake.damage,key).toBeGreaterThan(base.damage);}
   // (The fists' enders on the clock adult Hawser's had: the template's times .44 / .46.)
   expect(comboMove('hawser','lh',true)).toMatchObject({name:'Knot Hook',duration:.67,contacts:[.268],damage:46,range:2.7,radius:.77});
-  const rumbling=moveFor('hawser','area',true);expect(rumbling).toMatchObject({name:'The Uprooting',damage:224,radius:4.4,outcome:'knockdown',knockback:10});expect(rumbling.area).toMatchObject({telegraph:.85,fx:'tectonic',voice:'vo-hawser-rumbling',ja:'地鳴らし',anim:{clip:'Freedom Hammer'}});expect(rumbling.area!.strikes).toBeUndefined();
+  const rumbling=moveFor('hawser','area',true);expect(rumbling).toMatchObject({name:'The Uprooting',damage:224,radius:4.4,outcome:'knockdown',knockback:10});expect(rumbling.area).toMatchObject({telegraph:.85,fx:'tectonic',voice:'vo-hawser-uprooting',ja:'地鳴らし',anim:{clip:'Freedom Hammer'}});expect(rumbling.area!.strikes).toBeUndefined();
  });
  it('keeps the hand bite and the reveal on the awakening\'s clock, and picks the blade or the fist that lands each blow',()=>{
   expect(HAWSER_AWAKENING.entryDuration*HAWSER_AWAKENING.formRevealFraction).toBeCloseTo(.594);

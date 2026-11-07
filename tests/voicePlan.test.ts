@@ -4,7 +4,7 @@ import { AUDIO_CUES, cueDuration, planCombatAudio, type AudioCue, type CueLayer 
 import { AWAKENED_HEAVY_PRIORITY, BIG_BANG_PRIORITY, EFFORT_CHANCE, LIGHT_CALL_CHANCE, LIGHT_CALL_COOLDOWN, planVoice, resetVoiceMemory, SUPER_LINE_PRIORITY, voiceRoll } from '../src/audio/voicePlan';
 import { VOICE_CUES } from '../src/audio/voiceCues';
 import { AFTER_BURST, AWAKENING_LINES } from '../src/audio/awakeningLines';
-import { GOLDEN_FORM, SUPER_OUGA } from '../src/audio/goldenFormTiming';
+import { GOLDEN_SAGE, SUPER_OUGA } from '../src/audio/goldAwakeningTiming';
 import { AWAKENING_ENTRY, awakeningSwapAt, moveFor } from '../src/game/awakening';
 import { MOVES, RUSH_STAGES } from '../src/game/moves';
 import { barrageWindow } from '../src/game/timeStopBarrage';
@@ -203,7 +203,7 @@ describe('the time-stop barrages', () => {
   }
   it('keeps the other chained lines - inside the cinematic, after the call', () => {
     for (const awakened of [false, true]) {
-      for (const [fighter, line] of [['ward', 'ward-counter-shock'], ['setsu', 'setsu-gale-step']] as const) {
+      for (const [fighter, line] of [['ward', 'ward-flatline'], ['setsu', 'setsu-gale-step']] as const) {
         expect(voices(planVoice(cast({ fighter, slot: 'ultimate' }), awakened)).map(l => l.cue), `${fighter}: not with the cast`).not.toContain(line);
         const said = cinematic(fighter, awakened), call = voices(planVoice(cast({ fighter, slot: 'ultimate' }), awakened))[0];
         expect(said.map(l => l.cue)).toContain(line);
@@ -301,27 +301,27 @@ async function fakeAudio() {
     restore: () => { audio.dispose(); g.AudioContext = saved.AudioContext; g.fetch = saved.fetch; } };
 }
 
-describe("Taisei's Golden Form", () => {
-  const awaken = (fighter: FighterId, id = 1): CombatEvent => ({ id, kind: 'awaken', serverTime: 1, actorId: 'g', fighter, move: 'GOLDEN FORM' });
+describe("Taisei's gold awakening", () => {
+  const awaken = (fighter: FighterId, id = 1): CombatEvent => ({ id, kind: 'awaken', serverTime: 1, actorId: 'g', fighter, move: 'GOLDEN SAGE' });
   it('names the form in his own recorded voice, on the voice bus, once the burst has passed', () => {
     const layers = planCombatAudio(awaken('taisei')), voice = voices(layers);
-    expect(voice.map(l => l.cue)).toEqual(['vo-taisei-golden-form']);
-    expect(layers.filter(l => l.cue === 'vo-taisei-golden-form').every(l => l.bus === 'voice'), 'never on the effects bus').toBe(true);
+    expect(voice.map(l => l.cue)).toEqual(['vo-taisei-golden-sage']);
+    expect(layers.filter(l => l.cue === 'vo-taisei-golden-sage').every(l => l.bus === 'voice'), 'never on the effects bus').toBe(true);
     const line = voice[0];
     expect(line.phase, 'released: the first attack after the entry does not cut it').toBe('release');
-    expect(GOLDEN_FORM.burst).toBe(awakeningSwapAt('taisei'));
-    expect(line.delay).toBe(GOLDEN_FORM.line);
-    expect(line.delay! - GOLDEN_FORM.burst, 'after the blast\'s crest').toBeGreaterThan(.15);
+    expect(GOLDEN_SAGE.burst).toBe(awakeningSwapAt('taisei'));
+    expect(line.delay).toBe(GOLDEN_SAGE.line);
+    expect(line.delay! - GOLDEN_SAGE.burst, 'after the blast\'s crest').toBeGreaterThan(.15);
     expect(line.delay!, 'while he is still powering up').toBeLessThan(AWAKENING_ENTRY);
-    expect(ORIGINAL_VOICES['vo-taisei-golden-form']?.text, 'his own line, naming the form').toMatch(/タイセイ/);
+    expect(ORIGINAL_VOICES['vo-taisei-golden-sage']?.text, 'his own line, naming the form').toMatch(/タイセイ/);
   });
 
   it('is registered: its length is the WAV\'s that plays', () => {
-    expect(VOICE_CUES['vo-taisei-golden-form']).toBe('voice/vo-taisei-golden-form.wav');
-    expect(cueDuration('vo-taisei-golden-form')).toBeCloseTo(words(`public/assets/audio/v2/${AUDIO_CUES['vo-taisei-golden-form']}`).seconds, 2);
+    expect(VOICE_CUES['vo-taisei-golden-sage']).toBe('voice/vo-taisei-golden-sage.wav');
+    expect(cueDuration('vo-taisei-golden-sage')).toBeCloseTo(words(`public/assets/audio/v2/${AUDIO_CUES['vo-taisei-golden-sage']}`).seconds, 2);
   });
 
-  it('leaves Golden Form Taisei\'s calls as they were, and sits between his efforts and his calls', () => {
+  it('leaves gold awakening Taisei\'s calls as they were, and sits between his efforts and his calls', () => {
     for (const slot of ['special', 'ultimate'] as const) {
       const base = voices(planVoice(cast({ fighter: 'taisei', slot, actionSeq: 7000 }))), awakened = voices(planVoice(cast({ fighter: 'taisei', slot, actionSeq: 7001 }), true));
       expect(awakened.map(l => l.cue), slot).toEqual(base.map(l => l.cue));
@@ -363,7 +363,7 @@ describe("Taisei's Golden Form", () => {
       audio.handle([cast({ id: 2_000_000_000 + seq, actionSeq: seq, actorId: 'g', fighter: 'taisei', serverTime: 50 })], 'g', [{ ...taisei, action: 'light', awakened: false }]);
       expect(Context.last.sources.filter(x => /vo-taisei-(ha|ya|fun)\.wav$/.test(x.buffer?.url ?? '')).length, 'an effort is ringing').toBe(1);
       audio.handle([{ ...awaken('taisei', 2_000_100_000), actorId: 'g', serverTime: 50.5 }], 'g', [taisei]);
-      const [line] = said(AUDIO_CUES['vo-taisei-golden-form']);
+      const [line] = said(AUDIO_CUES['vo-taisei-golden-sage']);
       expect(line?.starts, 'the line was scheduled').toBe(1);
       // A light after the entry does not cut it (only its own scheduled end is on it).
       audio.handle([cast({ id: 2_000_200_000, actionSeq: 9001, actorId: 'g', fighter: 'taisei', serverTime: 51.5 })], 'g', [{ ...taisei, action: 'light', actionStarted: 51.5 }]);
@@ -378,8 +378,8 @@ describe("Taisei's Golden Form", () => {
   });
 });
 
-describe("Ouga's Golden Form", () => {
-  const awaken = (id = 1): CombatEvent => ({ id, kind: 'awaken', serverTime: 1, actorId: 'v', fighter: 'ouga', move: 'GOLDEN FORM' });
+describe("Ouga's gold awakening", () => {
+  const awaken = (id = 1): CombatEvent => ({ id, kind: 'awaken', serverTime: 1, actorId: 'v', fighter: 'ouga', move: 'GOLDEN PRIDE' });
 
   it('names his form in his own recorded voice, on the voice bus, once the burst has passed', () => {
     const layers = planCombatAudio(awaken()), voice = voices(layers);
@@ -393,7 +393,7 @@ describe("Ouga's Golden Form", () => {
     expect(line.delay! - SUPER_OUGA.burst, 'after the blast\'s crest').toBeGreaterThan(.15);
     expect(line.delay!, 'while he is still powering up').toBeLessThan(AWAKENING_ENTRY);
     // On Taisei's beat: the two transform, then declare, alike.
-    expect(line.delay! - SUPER_OUGA.burst).toBeCloseTo(GOLDEN_FORM.line - GOLDEN_FORM.burst, 3);
+    expect(line.delay! - SUPER_OUGA.burst).toBeCloseTo(GOLDEN_SAGE.line - GOLDEN_SAGE.burst, 3);
     expect(line.voicePriority).toBe(SUPER_LINE_PRIORITY);
     expect(ORIGINAL_VOICES['vo-ouga-super-ouga']?.text, 'his own line, naming his form').toMatch(/ゴールデン・プライド/);
   });
@@ -410,14 +410,14 @@ describe("Ouga's Golden Form", () => {
     expect(SUPER_OUGA.line + SUPER_OUGA.super).toBeGreaterThan(AWAKENING_ENTRY);
   });
 
-  it('sits between his efforts and his calls: Big Bang, the Gale and Kyokko-Ho speak over it', () => {
+  it('sits between his efforts and his calls: Haou-Dan, the Gale and Kyokko-Ho speak over it', () => {
     for (const slot of ['heavy', 'special', 'ultimate'] as const) {
       const base = voices(planVoice(cast({ fighter: 'ouga', slot, actionSeq: 7100 }))), awakened = voices(planVoice(cast({ fighter: 'ouga', slot, actionSeq: 7101 }), true));
       expect(awakened.map(l => l.cue), slot).toEqual(base.map(l => l.cue));
       expect(awakened.length, slot).toBeGreaterThan(0);
       for (const l of awakened) expect(l.voicePriority!, `${slot}: speaks over the line`).toBeGreaterThan(SUPER_LINE_PRIORITY);
     }
-    // Big Bang under the beams, as a heavy is under a special.
+    // Haou-Dan under the beams, as a heavy is under a special.
     expect(voices(planVoice(cast({ fighter: 'ouga', slot: 'heavy', actionSeq: 7102 })))[0].voicePriority).toBe(BIG_BANG_PRIORITY);
     expect(BIG_BANG_PRIORITY).toBeLessThan(voices(planVoice(cast({ fighter: 'ouga', slot: 'special', actionSeq: 7103 })))[0].voicePriority!);
     const efforts = mash('ouga', 30, 'efforts', 1, true).flatMap(s => s.voice);
@@ -425,7 +425,7 @@ describe("Ouga's Golden Form", () => {
     for (const l of efforts) expect(l.voicePriority!, `${l.cue}: does not cut in on the line, or keep it out`).toBeLessThan(SUPER_LINE_PRIORITY);
   });
 
-  it('outlives his attacks after the entry, and his Big Bang and the Gale are still called over it', async () => {
+  it('outlives his attacks after the entry, and his Haou-Dan and the Gale are still called over it', async () => {
     const fake = await fakeAudio();
     try {
       const { audio, said } = fake;
@@ -442,7 +442,7 @@ describe("Ouga's Golden Form", () => {
       for (let n = 0; n < 4; n++)
         audio.handle([cast({ id: 2_100_200_000 + n, actionSeq: 9100 + n, actorId: 'v', fighter: 'ouga', chain: n, serverTime: 51.5 + n * .3 })], 'v', [{ ...ouga, action: 'light', actionStarted: 51.5 + n * .3 }]);
       expect(line.stops, 'a light does not cut the line').toHaveLength(1);
-      // Big Bang is called by name over it, the line ducked under the call rather than stopped...
+      // Haou-Dan is called by name over it, the line ducked under the call rather than stopped...
       audio.handle([cast({ id: 2_100_300_000, actionSeq: 9200, actorId: 'v', fighter: 'ouga', slot: 'heavy', serverTime: 52.8 })], 'v', [{ ...ouga, action: 'heavy', actionStarted: 52.8 }]);
       expect(said(AUDIO_CUES['vo-ouga-big-bang']).map(x => x.starts), 'the call speaks').toEqual([1]);
       expect(line.stops, 'the line is not cut').toHaveLength(1);
@@ -517,7 +517,7 @@ describe('the awakening lines (the overnight pass, 9 October)', () => {
       expect(named.burst).toBe(awakeningSwapAt(fighter));
       expect(line.delay).toBe(named.line);
       // On Taisei's and Ouga's beat or after it: the burst, then the line, while the entry is still playing.
-      expect(GOLDEN_FORM.line - GOLDEN_FORM.burst).toBeCloseTo(AFTER_BURST, 3);
+      expect(GOLDEN_SAGE.line - GOLDEN_SAGE.burst).toBeCloseTo(AFTER_BURST, 3);
       expect(line.delay! - named.burst, 'once the blast has crested').toBeGreaterThanOrEqual(AFTER_BURST - 1e-9);
       expect(line.delay!, 'while the entry is still playing').toBeLessThan(AWAKENING_ENTRY);
       // After the burst, so the burst stays the loud one the overnight audio pass made it (sfxPlan.ts, spokenOver).

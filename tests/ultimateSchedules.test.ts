@@ -121,7 +121,7 @@ describe('each ultimate\'s damage shape', () => {
     for (let i = 1; i < g.length; i++) expect(g[i], `gap ${i + 1}`).toBeLessThan(g[i - 1]);
     expect(damage.at(-1)!).toBeGreaterThan(kicks.reduce((a, b) => a + b, 0));
   });
-  it('the Hound Rampage builds as well; Thunder Lord\'s Arrow and Counter Shock strike hard, few and late', () => {
+  it('the Hound Rampage builds as well; Ikazuchi Arrow and Flatline Shock strike hard, few and late', () => {
     const swings = ALL.gaunt.damage.slice(2, -1);
     for (let i = 1; i < swings.length; i++) expect(swings[i]).toBeGreaterThan(swings[i - 1]);
     expect(ALL.shiden.damage[0], 'the arrow itself lands hard').toBeGreaterThanOrEqual(100);

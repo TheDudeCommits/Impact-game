@@ -189,7 +189,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     coat: { thigh: .12, shin: .11 }, model: F + 'shiden-tr1.glb', rushModel: F + 'shiden-rush1.glb', extraModels: [F + 'shiden-enders1.glb'],
     portrait: F + 'shiden-portrait.png', idleModel: F + 'shiden-idle1.glb',
     names: {
-      'Black Pyre': 'Black Sun', 'Thunder Lord’s Arrow': 'Ikazuchi Arrow',
+      'Black Pyre': 'Black Sun',
     },
   },
   kenzo: {
@@ -276,9 +276,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     coat: { thigh: .13, shin: .14, cone: 20 }, model: F + 'koko-tr1.glb', rushModel: F + 'koko-rush1.glb', extraModels: [F + 'koko-enders1.glb'],
     portrait: F + 'koko-portrait.png', idleModel: F + 'koko-idle1.glb',
     names: {
-      'Straight Punch': 'Iron Straight', 'Gan Gan!!': 'Gan Gan!', 'GAAAN!!': 'GAAAN!',
-      'Here\'s your receipt!': 'Lights out!', 'This incredible power...!': 'Rock-a-bye...!',
-      'Beat in a single breath!': 'Not a sound.', 'Diving Punch': 'Anvil Drop',
+      'Straight Punch': 'Iron Straight', 'Gan Gan!!': 'Gan Gan!', 'GAAAN!!': 'GAAAN!', 'Diving Punch': 'Anvil Drop',
     },
   },
   // LORD ORO - the Gilded Hour. A vampire lord who rules the ruins from a clock tower: swept-back gold hair, golden
@@ -295,8 +293,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     model: F + 'oro-tr1.glb', extraModels: [F + 'oro-enders1.glb', F + 'oro-enders2.glb', F + 'oro-tr1-area1.glb'], // remake-areas: his Knife Rain cast (src/originals/areaCasts.ts)
     portrait: F + 'oro-portrait.png', idleModel: F + 'oro-idleb1.glb',
     names: {
-      'Noroma!!': 'Noroma!', 'Noroma Noroma!!': 'Noroma Noroma!', 'KYAHAAA!!': 'KYAHAAA!', 'Die!': 'Perish!',
-      'Weak! Weak!': 'Kneel! Kneel!', 'Diving Kick': 'Steeple Drop', 'Checkmate': 'Last Chime',
+      'Noroma!!': 'Noroma!', 'Noroma Noroma!!': 'Noroma Noroma!', 'KYAHAAA!!': 'KYAHAAA!', 'Die!': 'Perish!', 'Diving Kick': 'Steeple Drop', 'Checkmate': 'Last Chime',
     },
     // His outfit, under the name his writer gave it: his own body in ivory and lit gold (parity2, 5 November 2026).
     shop: { 'outfit-oro-ascendant': { name: 'Lord ORO · Ascendant', blurb: 'Ivory where the black was and every gear of gold lit from within: the lord of the clock tower at his zenith, above the hour itself.', glyph: '昇' } },
@@ -311,7 +308,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     coat: { thigh: .13, shin: .14 }, model: F + 'kuon-px1.glb', extraModels: [F + 'kuon-pxenders1.glb', F + 'kuon-pxenders2.glb'],
     portrait: F + 'kuon-px-portrait.png', idleModel: F + 'kuon-pxidle1.glb',
     names: {
-      'Dark Spark': 'Dark Star', 'Flying Kick': 'Comet Kick', '200% Singularity': 'Supermassive',
+      'Dark Spark': 'Dark Star', 'Flying Kick': 'Comet Kick',
     },
   },
   // GAUNT - the Ash Hound. A scarred veteran who has walked the grave roads longer than anyone: long ash-grey hair, an

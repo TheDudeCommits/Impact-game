@@ -52,13 +52,13 @@ import { ShakudoAlchemy } from '../src/render/signature/ShakudoAlchemy';
 import { MinaseRaijin } from '../src/render/signature/MinaseRaijin';
 import { MadakeGates } from '../src/render/signature/MadakeGates';
 import { AmagoiGravity } from '../src/render/signature/AmagoiGravity';
-import { HakushiToadSage } from '../src/render/signature/HakushiToadSage';
+import { HakushiOldLion } from '../src/render/signature/HakushiOldLion';
 import { KusushiStrength } from '../src/render/signature/KusushiStrength';
 import { KubiwaControl } from '../src/render/signature/KubiwaControl';
 import { SuzuranTwinLions } from '../src/render/signature/SuzuranTwinLions';
 import { UmeBlossom } from '../src/render/signature/UmeBlossom';
 import { BonshoBodhisattva } from '../src/render/signature/BonshoBodhisattva';
-import { UnariBungeeGum } from '../src/render/signature/UnariBungeeGum';
+import { UnariElastic } from '../src/render/signature/UnariElastic';
 import { LanthornLampblack } from '../src/render/signature/LanthornLampblack';
 import { HighsunSun } from '../src/render/signature/HighsunSun';
 import { ShibuichiBastion } from '../src/render/signature/ShibuichiBastion';
@@ -146,13 +146,13 @@ describe('what a pilot\'s ultimate asks of the shared stage at its busiest frame
     ['minase', (scene: THREE.Scene) => new MinaseRaijin(scene, { budget: 1 })],
     ['madake', (scene: THREE.Scene) => new MadakeGates(scene, { budget: 1 })],
     ['amagoi', (scene: THREE.Scene) => new AmagoiGravity(scene, { budget: 1 })],
-    ['hakushi', (scene: THREE.Scene) => new HakushiToadSage(scene, { budget: 1 })],
+    ['hakushi', (scene: THREE.Scene) => new HakushiOldLion(scene, { budget: 1 })],
     ['kusushi', (scene: THREE.Scene) => new KusushiStrength(scene, { budget: 1 })],
     ['kubiwa', (scene: THREE.Scene) => new KubiwaControl(scene, { budget: 1 })],
     ['suzuran', (scene: THREE.Scene) => new SuzuranTwinLions(scene, { budget: 1 })],
     ['ume', (scene: THREE.Scene) => new UmeBlossom(scene, { budget: 1 })],
     ['bonsho', (scene: THREE.Scene) => new BonshoBodhisattva(scene, { budget: 1 })],
-    ['unari', (scene: THREE.Scene) => new UnariBungeeGum(scene, { budget: 1 })],
+    ['unari', (scene: THREE.Scene) => new UnariElastic(scene, { budget: 1 })],
     ['lanthorn', (scene: THREE.Scene) => new LanthornLampblack(scene, { budget: 1 })],
     ['highsun', (scene: THREE.Scene) => new HighsunSun(scene, { budget: 1 })],
     ['shibuichi', (scene: THREE.Scene) => new ShibuichiBastion(scene, { budget: 1 })],

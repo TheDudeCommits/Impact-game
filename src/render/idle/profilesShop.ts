@@ -6,7 +6,7 @@ import type { IdleProfile } from './profile';
  *  in whatever idle their build borrowed - the Rift's library stance, Emperor Jinlin's upright stand - and only the
  *  life layer's breath told them from the Rift's grunts. */
 export const PROFILES_SHOP: Partial<Record<FighterId, IdleProfile>> = {
-  // Rock Paper's ready stance, bouncing; Rock drawn to the hip as the fidget.
+  // The Landslide's ready stance, bouncing; the fist drawn to the hip as the fidget.
   gaku: { model: '/assets/fighters/gaku-idle1.glb', clip: 'Gaku idle', fidgets: ['Gaku idle fidget'], stance: 'guard', breath: 1.1, sway: .5, gaze: 1 },
   // Upright and still, the hands low round their daggers' grips; squared up to an opponent, his dagger stance (9 October
   // 2026, scripts/fanim/slj.py: low, the left dagger out before him, the right drawn back to strike).

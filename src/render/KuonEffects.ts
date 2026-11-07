@@ -68,7 +68,7 @@ export class KuonEffects{
    *  accent has been thrown, and the dark sparks still crackling. */
   private anchors=new Map<string,{key:number;at:THREE.Vector3}>();
   /** Zero Gravity (his Light x2, Heavy: a snare at range, combosVol1.ts): where each was cast at, and when its
-   *  pull lands. The 200% Singularity (his ground smash): where each came down, and when. */
+   *  pull lands. The Supermassive (his ground smash): where each came down, and when. */
   private blues:{event:CombatEvent;at:THREE.Vector3;release:number}[]=[];
   private wraiths=new Map<string,{cast:number;at:THREE.Vector3;since:number}>();
   /** The centre an ender's sphere is drawn round (`well` uses a, b and c as it goes). */
@@ -120,7 +120,7 @@ export class KuonEffects{
     this.lights.add(center,size*10,light,.6*power);
   }
   /** Zero Gravity where it was cast at - the well swelling to a man's size over the snare's pull and the matter
-   *  of the place streaking into it - and the 200% Singularity where he comes down: a violet sphere bigger than him
+   *  of the place streaking into it - and the Supermassive where he comes down: a violet sphere bigger than him
    *  driven into the floor, Red's streaks thrown out of it, for half a second. */
   private enders(time:number,fighters:ReadonlyMap<string,Fighter>,d:number){
     for(let i=this.blues.length-1;i>=0;i--){

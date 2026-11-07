@@ -38,7 +38,7 @@ export function cubeAt(age: number): { height: number; scale: number; opacity: n
 }
 
 /** The opener's take (see the top): its clip, and where in it the blow comes - the palm out on them, at the swap. The
- *  cinematic is his own 'Counter Shock', as it was (Fighter.ts ULTIMATE_CLIPS). */
+ *  cinematic is his own 'Flatline Shock', as it was (Fighter.ts ULTIMATE_CLIPS). */
 export const CROSSMATCH_TAKE = {
   open: { clip: 'Crossmatch', at: .4091 },
   cine: { from: .3, at: .7912 },

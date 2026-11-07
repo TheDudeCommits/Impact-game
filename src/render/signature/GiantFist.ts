@@ -7,7 +7,7 @@ import { taimatsuGeometry } from '../vfx/TaimatsuGeometry';
  *
  *  Round 1 had no fist at all - a cream cloud, then fourteen frames of Gummy's
  *  back. This is a solid, toon-shaded fist (the Taimatsu fist's volume, one
- *  continuous marching-cubes surface) in armament black and crimson, lit
+ *  continuous marching-cubes surface) in lacquer black and crimson, lit
  *  from above in three flat bands with a hot red-orange rim of steam heat,
  *  outlined by an inverted hull a constant few pixels wide - Manga Impact's
  *  ink - and a rubber arm of the same stuff back to the shoulder. The layer
@@ -19,7 +19,7 @@ const toonFragment = /* glsl */`uniform vec3 uHeat;uniform float uTime;varying v
 void main(){
   vec3 n=normalize(vN),v=normalize(vV);
   float key=dot(n,normalize(vec3(.35,.8,.45)));
-  // Three flat bands of armament black-crimson: cel shading, not a gradient.
+  // Three flat bands of lacquer black-crimson: cel shading, not a gradient.
   vec3 col=key>.55?vec3(.3,.045,.04):key>.05?vec3(.13,.018,.02):vec3(.035,.008,.012);
   // The Will's flame pattern, licking back from the knuckles.
   float lick=sin(vP.x*5.+sin(vP.z*3.+uTime*2.)*1.5)+sin(vP.z*4.-uTime*3.+vP.y*3.);

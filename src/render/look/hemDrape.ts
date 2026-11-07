@@ -66,7 +66,7 @@ export const HEM_SPECS:Record<string,Partial<HemSpec>>={
   // over it, on eight chains of three links over baggy trousers (11 cm at the thigh). Plates on cloth: stiffer and
   // steadier than a robe, it swings less, flutters little and settles quickly.
   akagane:{profile:{stiffness:18,drag:.5,gravity:3,maxAngle:22,tipLoose:.75,spread:.15,trail:.06,flutter:.05,chains:[{match:/^Detail_CLOTH_akagane_hem_/,profile:{}}]},hang:.8,legRadius:.11,clearance:.02},
-  // Round 5b (RIG3): the sash of Magatsu's Heian form (magatsu-heian-mx2.glb, scripts/rig/garment.py), wound round his
+  // Round 5b (RIG3): the sash of Magatsu's four-armed form (magatsu-heian-mx2.glb, scripts/rig/garment.py), wound round his
   // waist and flaring out over the hakama, on eight chains of two links. It keeps most of its modelled flare (a low
   // `hang`), swings and trails; the bulky hakama (13-19 cm at the thigh) push it out.
   'magatsu-heian':{profile:{stiffness:18,drag:.5,gravity:2.6,maxAngle:22,tipLoose:.7,spread:.25,trail:.07,flutter:.15,chains:[{match:/^Detail_CLOTH_magatsu-heian_hem_/,profile:{}}]},hang:.3,legRadius:.15,clearance:.02,maxLift:85},

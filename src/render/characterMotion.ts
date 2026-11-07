@@ -36,7 +36,7 @@ const clocked=(keys:Pose[],contact:number,duration:number,move:{contacts:number[
   return keys.map(k=>({...k,at:k.at>contact?now+(k.at-contact)*left/(duration-contact)
     :from>0&&k.at<=from?k.at*lead/from:lead+(k.at-from)*strike/(contact-from)}));
 };
-/** Round 4b (GUMMY): Gummy's Gatling - the SUNSET BARRAGE, and in SUNRISE the Dawn Gatling, on the same clock. Set low and
+/** Round 4b (GUMMY): Gummy's Gatling - the SUNSET BARRAGE, and in SUNRISE the dawn barrage, on the same clock. Set low and
  *  leaning into it, both fists cocked at his ribs, then a fist straight out on every contact - right, left, right, as
  *  the simulation throws them (moves.ts) - the other drawn back as it goes and his shoulders turning behind each one;
  *  the last thrown hardest. A fist a tenth of a second from the next goes straight into it, as Setsu's do: no ready
@@ -95,7 +95,7 @@ function plans(id:FighterId):Plan[]{
         keys.push({...pose(f-.26,[.23,.2,-.06],[-.13,.27,.18],-.36,.045),lean:.02},{...pose(f,[.04,.26,.43],[-.2,.2,.12],.32,.065),lean:.1},{...pose(f+.23,[.01,.23,.42],[-.2,.17,.1],.4,.04),lean:.08},pose(MOVES.kuon.ultimate.duration));return keys;})()),
     ];
   }
-  // Round 4b (GUMMY): the SUNSET BARRAGE, and SUNRISE's Dawn Gatling on the same clock (both bodies: see characterClips).
+  // Round 4b (GUMMY): the SUNSET BARRAGE, and SUNRISE's dawn barrage on the same clock (both bodies: see characterClips).
   if(id==='gummy')return [move('special',gatling())];
   if(id==='setsu'){
     // Round 3d (ULTS): the first strike is the opener, at 0.42 - chambered

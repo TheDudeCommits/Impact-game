@@ -60,8 +60,8 @@ describe('CombatAudio without cancelAndHoldAtTime (Firefox)', () => {
       let seq = 1; while (!voices(planVoice(cast({ actionSeq: seq, id: seq, serverTime: 50 }))).length) seq++;
       resetVoiceMemory();
       audio.handle([cast({ id: 2_000_000_000 + seq, actionSeq: seq, serverTime: 50 })], 'g', [{ ...taisei, action: 'light', awakened: false }]);
-      audio.handle([{ id: 2_000_100_000, kind: 'awaken', serverTime: 50.5, actorId: 'g', fighter: 'taisei', move: 'GOLDEN FORM' }], 'g', [taisei]);
-      const line = ctx().sources.find(x => x.buffer?.url.endsWith(AUDIO_CUES['vo-taisei-golden-form']));
+      audio.handle([{ id: 2_000_100_000, kind: 'awaken', serverTime: 50.5, actorId: 'g', fighter: 'taisei', move: 'GOLDEN SAGE' }], 'g', [taisei]);
+      const line = ctx().sources.find(x => x.buffer?.url.endsWith(AUDIO_CUES['vo-taisei-golden-sage']));
       expect(line?.starts, 'the line was scheduled').toBe(1);
       // The Sunpalm Cannon's call ducks the released line: the path that called cancelAndHoldAtTime unguarded.
       expect(() => audio.handle([cast({ id: 2_000_300_000, actionSeq: 9002, slot: 'special', serverTime: 52 })], 'g', [{ ...taisei, action: 'special', actionStarted: 52 }])).not.toThrow();

@@ -11,7 +11,7 @@ import {LABORATORY_FIGHTERS,RELEASED_FIGHTERS}from '../src/game/rosterAvailabili
 import {ROSTER_PROTOCOL}from '../src/game/rosterProtocol';
 import {mayPlay}from '../src/game/economy/fighters';
 import {factionOf}from '../src/game/objectives/model';
-import {UnariBungeeGum}from '../src/render/signature/UnariBungeeGum';
+import {UnariElastic}from '../src/render/signature/UnariElastic';
 import {hasRosterSignature}from '../src/render/signature/RosterSignatureSet';
 import type{PlayerState,AttackSlot,CombatEvent}from '../src/game/types';
 import {base,loadRig}from './rigHarness';
@@ -31,7 +31,7 @@ describe('Unari laboratory native gestures, card grip and manual receipts',()=>{
   for(const name of ['RightHandIndex1','RightHandIndex2','RightHandMiddle2'])expect(f.bones.get(name.toLowerCase())).toBeDefined();}finally{f.dispose();}
  });
  it('draws a held card at the actual convergent fingers through idle and entry',()=>{
-  const f=new Fighter(base('unari'),rig),scene=new THREE.Scene(),fx=new UnariBungeeGum(scene,{budget:1});
+  const f=new Fighter(base('unari'),rig),scene=new THREE.Scene(),fx=new UnariElastic(scene,{budget:1});
   try{for(const action of ['idle','awaken']as const){for(let i=0;i<60;i++)f.update(1/120,{...base('unari'),action,actionStarted:1,actionSeq:2,actionDuration:action==='awaken'?AWAKENING_ENTRY:0,actionTime:action==='awaken'?i/120/AWAKENING_ENTRY:0},true);
    fx.update(1.5,new Map([['m',f]]));const cards=scene.getObjectByName('unari-cards')as THREE.InstancedMesh;expect(cards.count).toBe(1);const matrix=new THREE.Matrix4();cards.getMatrixAt(0,matrix);const p=new THREE.Vector3().setFromMatrixPosition(matrix),a=f.bones.get('righthandindex2')!.getWorldPosition(new THREE.Vector3()),b=f.bones.get('righthandmiddle2')!.getWorldPosition(new THREE.Vector3());expect(p.distanceTo(a.lerp(b,.5))).toBeLessThan(.05);
   }}finally{fx.dispose();f.dispose();}

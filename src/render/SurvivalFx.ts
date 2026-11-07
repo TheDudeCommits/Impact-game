@@ -57,7 +57,7 @@ const STEEL = E(0xffffff, 0x9cc8ff, 0xc8e0ff, 0x08101c);
 /** Boss relics' own (survival/relics.ts): Kuromitsu's mochi, Haldor's quake. */
 const MOCHI = E(0xfff4f8, 0xd06a9a, 0xffc8e0);
 const QUAKE = E(0xfffcf0, 0xe8dcb0, 0xfff4d0);
-/** MIRROR MERE's reach, as the run cuts in it (SurvivalGame.dismantle). */
+/** MIRROR MERE's reach, as the run cuts in it (SurvivalGame.carve). */
 const SHRINE_REACH = 7;
 /** QUAKE's cracks in the air: ink, with a hot white line in each. */
 const QUAKE_INK = { core: 0xfffcf0, color: 0x14110e };
@@ -1021,7 +1021,7 @@ export class SurvivalFx {
         break;
       }
       case 'cut': {
-        // Dismantle's cuts across whatever stands in the domain (Magatsu's).
+        // Flaying Cut's cuts across whatever stands in his ground (Magatsu's).
         const points = item.points ?? [], share = Math.min(1, 1.4 / Math.sqrt(Math.max(1, points.length / 2))) * this.artBudget;
         for (let i = 0; i + 1 < points.length; i += 2) { this.arts.crack([points[i], points[i + 1]], time, NIGHTFANG_INK, .32, .3, false); this.slash(points[i], points[i + 1], BLOOD, time, share); }
         break;
@@ -1160,7 +1160,7 @@ export class SurvivalFx {
         // frame with twenty identical starbursts.
         if (time - this.victimAt > .1) { this.victimAt = time; this.victims = 0; }
         if (this.victims++ >= 3 || this.lensDim(at.x, at.y, at.z) < .5) continue;
-        const el = event.move === "Heaven's Wrath" ? BOLT : event.move === 'Frost Prison' ? ICE : event.move === 'Dimension Slash' ? VOID : event.move === 'Crimson Whirlwind' ? BLOOD : event.move === 'Flying Slash' ? STEEL : EMBER;
+        const el = event.move === "Heaven's Wrath" ? BOLT : event.move === 'Frost Prison' ? ICE : event.move === 'Past Due Slash' ? VOID : event.move === 'Crimson Whirlwind' ? BLOOD : event.move === 'Flying Slash' ? STEEL : EMBER;
         const sp = k.sparks.spec, size = .35 + Math.random() * .4;
         sp.reset(SPRITE.burst, time, .16).pos(at.x, at.y, at.z).sized(size * .4, size, .2).hot(el.spike, 1).cool(el.rim, .8); sp.rotation = Math.random() * 6.28; k.sparks.emit();
       } else if (event.kind === 'hit' && at && event.move === 'Burn') {

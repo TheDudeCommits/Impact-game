@@ -68,7 +68,7 @@ applyOriginalGuardianTint(GUARDIAN_TINT);
  *  He wakes into his true form under a dome of crimson.
  *  Vesper: the sabre cuts white. Raven Dive leaves its cut where he went
  *  through them; the offering closes the dark round whoever the thrust held,
- *  a black sun over them, and the last cut burns the Brand Of Offering into
+ *  a black sun over them, and the last cut burns the Offering Mark into
  *  them in crimson. He wakes as Black Vespers under a dome of the dark.
  *  Imago: jade. His claw leaves three marks where one hand went; Stinger Storm
  *  rings out round him at each sweep of the tail; the final molt cracks the
@@ -125,7 +125,7 @@ applyOriginalGuardianTint(GUARDIAN_TINT);
  *  Rook: the shadows' violet, his daggers' cuts black edged in it. Grave Grip lifts the ground where he
  *  looks and slams it down; Black Rookery calls the shadows of the fallen up out of the floor behind him, and they fall on
  *  whoever the cut held. He wakes the HOLLOW CROWN, under a dome of violet.
- *  Gaku: Rock Paper's gold. Rock goes off where the fist lands; Scissors draws the aura out of his two fingers into a
+ *  Gaku: the Landslide's gold. His fist goes off where it lands; his two-finger cut draws the aura out of his two fingers into a
  *  blade swept through them; Paper gathers in his palm before it is thrown. Landslide floods the fist he
  *  raises with aura until the Rock is brought down through them. He wakes as KOMAINU, under a dome of gold.
  *  Each of them crackles in their own colour while awakened, and bursts as
@@ -207,7 +207,7 @@ const CUT: Record<Emperor, SlashStyle> = {
 };
 /** Lantern Rite: First Light's crescent of fire. */
 const SUN_CUT: SlashStyle = {mode: ENERGY, edge: new THREE.Color(3.4, 2.6, 1.2), body: new THREE.Color(1.6, .5, .1), glow: new THREE.Color(1.1, .25, .04)};
-/** 'The Offering': the dark round them and the black sun over them, rimmed in Black Vespers's violet; the Brand Of Offering
+/** 'The Offering': the dark round them and the black sun over them, rimmed in Black Vespers's violet; the Offering Mark
  *  is crimson. */
 const ECLIPSE = new THREE.Color(.95, .32, 1.7), BRAND = new THREE.Color(3.2, .2, .3);
 /** Grog Gale's wind: white over violet. */
@@ -439,7 +439,7 @@ const ENDER_ACCENTS: Partial<Record<FighterId, Partial<Record<ComboKey, Accent>>
   nigo: { lllh: 'abyss', airSpecial: 'abyss' }, gaunt: { lllh: 'blood', airSpecial: 'fire' },
 };
 
-/** And the awakened forms' own (combosShop.ts `awakened`): Gorai's man-beast breathes Wyrm Breath's fire. */
+/** And the awakened forms' own (combosShop.ts `awakened`): Gorai's half-wyrm breathes Wyrm Breath's fire. */
 const AWAKENED_ACCENTS: Partial<Record<FighterId, Partial<Record<ComboKey, Accent>>>> = { gorai: { llls: 'fire' } };
 /** How tall an accent's fire stands, where it is more than the floor burning: Kagaribi is a pillar. */
 const FLAME_TALL: Partial<Record<FighterId, Partial<Record<ComboKey, number>>>> = { kagari: { airSpecial: 2.6 }, gaunt: { airSpecial: 1.6 } };
@@ -476,7 +476,7 @@ const MAIN_KEYS: Partial<Record<FighterId, Partial<Record<ComboKey, Flavour>>>> 
   shiden: { lllh: 'fire' }, kuon: { lh: 'darkSpark', llls: 'infinity' }, oro: { llls: 'frost', airSpecial: 'knives' },
   gaunt: { llls: 'explosion', airSpecial: 'explosion' }, setsu: { lh: 'spark', lllh: 'claw' }, koko: { llls: 'inhale' },
   kagari: { llls: 'fireflies' }, gummy: { llh: 'flurry', airSpecial: 'fire' }, kosho: { llls: 'flurry' },
-  // Cardiac Palm and Biopsy Strike release a shock inside the THEATRE: they land as his Counter Shock sounds (sfxPlan ENDER_LANDS).
+  // Cardiac Palm and Biopsy Strike release a shock inside the THEATRE: they land as his Flatline Shock sounds (sfxPlan ENDER_LANDS).
   ward: { lllh: 'bolt', airSpecial: 'bolt' },
 };
 const SOFT: ReadonlySet<Flavour> = new Set<Flavour>(['chi', 'slash', 'fire', 'room', 'stand', 'pressure', 'steel', 'flash', 'explosion', 'water', 'earth',
@@ -580,7 +580,7 @@ export class EmperorEffects {
   private warmWhirl?: BladeWhirl;
   private crowsAt = NaN;
   private crackWhite = new THREE.Color(2.2, 2.0, 2.6);
-  /** Heian Magatsu's lower hands and weapons, for the four-handed sign's glow (`fourHandedSign`), by the body that has them. */
+  /** Four-armed Magatsu's lower hands and weapons, for the four-handed sign's glow (`fourHandedSign`), by the body that has them. */
   private signs = new WeakMap<Fighter, {left?: THREE.Object3D; right?: THREE.Object3D; spear?: THREE.Object3D; dagger?: THREE.Object3D}>();
   /** Akagane's war-fan, one a Akagane, through his War Fan Sweep. */
   private gunbais: {fan: THREE.Group; owner: string}[] = [];
@@ -775,7 +775,7 @@ export class EmperorEffects {
           this.dome(event.targetId ?? '', event.serverTime, 1.35, ECLIPSE, held);
           this.dome(event.targetId ?? '', event.serverTime, .85, BRAND, held, 4.6);
         } else if (actor) {
-          // The sabre down out of the dark, and the Brand Of Offering burnt into them.
+          // The sabre down out of the dark, and the Offering Mark burnt into them.
           this.facing(actor);
           this.cut('vesper', this.a, actor.state.yaw, 5.6, .62, event.serverTime, .45, seed);
           this.crack(this.b.copy(this.a).setY(this.a.y + .25), this.forward, event.serverTime, seed, 2.8, 14, BRAND);
@@ -1373,7 +1373,7 @@ export class EmperorEffects {
     if (hammer) this.ring(this.b.copy(actor.group.position).addScaledVector(this.forward, 1.4).setY(actor.group.position.y + .05), time, 2.6);
   }
 
-  /** Ippon's fists, at the blow (`a`): the air breaks where they land; the Serious Uppercut cuts up through it, and
+  /** Ippon's fists, at the blow (`a`): the air breaks where they land; the Clock-Out Uppercut cuts up through it, and
    *  the Clock-In Kick that ends his string rings out over the floor. */
   private heroBlow(actor: Fighter, heavy: boolean, chain: number, key: number, time: number) {
     const colour = COLOR.ippon;
@@ -1389,7 +1389,7 @@ export class EmperorEffects {
     if (kick) this.ring(this.b.copy(actor.group.position).addScaledVector(this.forward, 1.4).setY(actor.group.position.y + .05), time, 2.8);
   }
 
-  /** Gaku's blows, at the blow (`a`): Rock Paper's Rock goes off in gold where the fist lands; Scissors draws the aura out of
+  /** Gaku's blows, at the blow (`a`): the Landslide's fist goes off in gold where it lands; the two-finger cut draws the aura out of
    *  his two fingers into a blade swept through them; the rising paw that ends his string goes off up through them. */
   private hunterBlow(actor: Fighter, heavy: boolean, chain: number, key: number, time: number) {
     const colour = COLOR.gaku;

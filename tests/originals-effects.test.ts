@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { SUZURAN_TWIN_LION_ASSETS } from '../src/render/signature/SuzuranTwinLions';
 import { TSUBUTE_POP_GREEN_TEXTURES } from '../src/render/signature/TsubutePopGreen';
-import { DRAGON_EYES, JAW_OPEN, SEA_DRAGON_ASSET } from '../src/render/signature/GrimoireShapes';
+import { DRAGON_EYES, JAW_OPEN, SEA_DRAGON_ASSET } from '../src/render/signature/BriarShapes';
 import { MAIN_EFFECT_FILES, OWN_EFFECT_FILES, SWAN_HEAD } from '../src/originals/effects';
 import { MADAKE_GATES_ASSETS } from '../src/render/signature/MadakeGates';
 import { launchUnshipped } from '../src/originals/launchShip';

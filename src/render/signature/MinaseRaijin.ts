@@ -16,7 +16,7 @@ export const MINASE_RAIJIN_LIMITS = Object.freeze({ arcs: 96, rings: 64, strokes
 /** The marks of 'Fifty-Three Stations': how many knives he plants round his victim, and how far out (metres). */
 export const MINASE_TEMPEST = Object.freeze({ marks: 6, radius: 3.1, beat: .22 });
 const UP = new THREE.Vector3(0, 1, 0), FORWARD = new THREE.Vector3(0, 0, 1), TAU = Math.PI * 2;
-/** His flash: white into gold. The Senpugan: white into the game's Senpugan blue, a solid turning sphere. */
+/** His flash: white into gold. The palm sphere: white into the game's palm sphere blue, a solid turning sphere. */
 const FLASH = stageLook(0xfff4c2, 0xffc93c, 0xc47a12), PALM = MINASE ? GALE : stageLook(0xe8fbff, 0x41b9ff, 0x1c58d8, { sphere: SPHERES.blue });
 /** His own shapes' colours, linear and over the bloom threshold (1.1). */
 const GOLD = new THREE.Color(2.5, 1.5, .24), PALE = new THREE.Color(3, 2.7, 1.9), WHITE = new THREE.Color(2.5, 2.9, 3.1), CYAN = new THREE.Color(.5, 1.7, 3);
@@ -26,12 +26,12 @@ const HEAVY = MINASE_MOVES.heavy, SPECIAL = MINASE_MOVES.special, ULT = MINASE_M
 const MARKS_LINGER = .6;
 /** How long the flash stands where he arrived (seconds). */
 const FLASH_LIFE = .45;
-/** Which blows are the palm's (a Senpugan) and which the knife's, as the events name them (game/fighters/minase.ts
+/** Which blows are the palm's (a palm sphere) and which the knife's, as the events name them (game/fighters/minase.ts
  *  `minaseStrikeSide`: Gale Palm, Rising Gale, Gale Descent, the rush's second and third stage, and the
  *  Tempest's second and last blow). */
 const palmBlow = (e: CombatEvent) => e.slot === 'ultimate' ? (e.contactIndex ?? 0) > 0 : e.slot === 'special' ? e.branch === 'airSpecial' : e.slot === 'heavy' ? !e.branch || e.branch === 'llh' : (e.chain ?? 0) >= 2;
 
-/** His own shapes, which the stage has none of: the Senpugan's spiralling arcs, the Relay Leap formula's rings on
+/** His own shapes, which the stage has none of: the palm sphere's spiralling arcs, the Relay Leap formula's rings on
  *  the floor, and strokes (the formula's script, a marked knife). Additive, over the bloom threshold, drawn over the
  *  stage's glows (render order 6). One draw call each, held drawable until drawn once, so its program links in the
  *  room's load and not on his first cast. */
@@ -60,7 +60,7 @@ class RaijinBatch {
 /** A formula left on the floor: where a knife marked it, where he arrived. `flash` is how tall the sliver of light
  *  stands over it in its first third of a second (metres; 0: none): the yellow flash itself, where he came to. */
 type Mark = { at: THREE.Vector3; born: number; life: number; size: number; flash: number; live: boolean };
-/** A Senpugan grinding where it was driven in, for as long as it turns. */
+/** A palm sphere grinding where it was driven in, for as long as it turns. */
 type Grind = { at: THREE.Vector3; born: number; life: number; size: number; live: boolean };
 /** A Relay Leap being thrown: where he stood, and where the marked knife is going. */
 type Track = { actor: string; seq: number; origin: THREE.Vector3; aim: THREE.Vector3 };
@@ -119,7 +119,7 @@ export class MinaseRaijin {
     }
     if (e.slot === 'heavy') {
       if (!palm) { st.burst(point, FLASH, .9, t, { dir, floor }); this.mark(ground, t, 1.1, .8); return; }
-      // The Senpugan driven in: it grinds on the body for a breath, throws a shell of wind and a ring over the floor.
+      // The palm sphere driven in: it grinds on the body for a breath, throws a shell of wind and a ring over the floor.
       const big = e.branch ? .85 : 1;
       st.burst(point, PALM, .9 * big, t, { dir, floor });
       this.grind(this.a.copy(point).addScaledVector(dir, -.25), t, .2, .34 * big);
@@ -129,7 +129,7 @@ export class MinaseRaijin {
       return;
     }
     if (e.slot === 'special') {
-      // Gale Descent: the Senpugan driven into the floor from the air.
+      // Gale Descent: the palm sphere driven into the floor from the air.
       if (e.branch === 'airSpecial') { st.burst(point, PALM, 2.1, t, { floor }); this.grind(point, t, .4, .9); st.shock(ground, PALM, 4.6, t, .45); st.scar(ground, PALM, 2.3, t + .05, 2); return; }
       // Relay Leap: he is there. A blast of gold, the flash itself standing where he arrived (a sliver of light the
       // height of the hall), a ring over the floor, and the formula he came to, blazing.
@@ -144,13 +144,13 @@ export class MinaseRaijin {
     }
     if (e.slot !== 'ultimate' || e.branch) return;
     if (e.contactIndex !== 2) {
-      // The opener is the knife's (it marks them); the second blow a Senpugan off the flash.
+      // The opener is the knife's (it marks them); the second blow a palm sphere off the flash.
       if (e.contactIndex) { st.burst(point, PALM, 1.5, t, { dir, floor }); this.grind(point, t, .3, .6); st.shock(ground, PALM, 4.6, t, .45); }
       else { st.burst(point, FLASH, 1.05, t, { dir, floor }); this.mark(ground, t, 3.4, 1.1); }
       return;
     }
     if (involvesLocal(e.actorId, e.targetId)) SIGNATURE.screen?.impactFrame?.(.52, point);
-    // FIFTY-THREE STATIONS's last blow: the Senpugan driven home, a sphere a man high grinding in a shell of wind six
+    // FIFTY-THREE STATIONS's last blow: the palm sphere driven home, a sphere a man high grinding in a shell of wind six
     // metres wide; the floor shaken; and three of his marks answering, each with a sliver of gold light.
     st.burst(point, PALM, 2.4, t, { dir, floor });
     this.grind(point, t, .45, 1);
@@ -171,9 +171,9 @@ export class MinaseRaijin {
     for (const track of this.tracks) if (track.actor === id) track.actor = '';
   }
 
-  /** The Senpugan at `at`, `radius` across its sphere: the stage's solid blue ball turning, his arcs spiralling over
+  /** The palm sphere at `at`, `radius` across its sphere: the stage's solid blue ball turning, his arcs spiralling over
    *  it, its halo, and its light on the floor and on him. */
-  private senpugan(at: THREE.Vector3, radius: number, fade: number, time: number, seed: number, spin = 1) {
+  private whirlsphere(at: THREE.Vector3, radius: number, fade: number, time: number, seed: number, spin = 1) {
     if (fade <= .02 || radius <= .02) return;
     const st = this.stage;
     st.ball(at, radius, PALM, seed, fade);
@@ -187,7 +187,7 @@ export class MinaseRaijin {
     }
     st.light(this.b.copy(at).setY(at.y + .15), 1.4 + radius * 6, PALM, (.2 + .4 * Math.min(1, radius / .45)) * fade);
   }
-  /** The air drawn in to a Senpugan being wound up: streaks spiralling in to it from all round, harder as it fills. */
+  /** The air drawn in to a palm sphere being wound up: streaks spiralling in to it from all round, harder as it fills. */
   private wind(at: THREE.Vector3, radius: number, k: number, time: number, seed: number) {
     const st = this.stage;
     for (let i = 0, n = st.n(7, 4); i < n; i++) {
@@ -237,11 +237,11 @@ export class MinaseRaijin {
       // the palm's or the knife's, branches, rush stages and air versions included.
       const strike = f.strikePoint(this.strike), left = (f.shownBody ?? f).joints?.get('LeftHand'), palm = !!left && left.getWorldPosition(this.d).distanceToSquared(strike) < 1e-8;
       if (palm) {
-        // The Senpugan in his palm: wound up through Gale Palm's wind-up, grown from the Tempest's second blow to its last.
+        // The palm sphere in his palm: wound up through Gale Palm's wind-up, grown from the Tempest's second blow to its last.
         const wind = s.action === 'heavy' && !s.branch ? clamp(elapsed / HEAVY.contacts[0]) : s.action === 'ultimate' ? clamp((elapsed - ULT.contacts[1]) / (ULT.contacts[2] - ULT.contacts[1])) : 1;
         const radius = (s.action === 'heavy' ? .1 + .14 * wind : s.action === 'ultimate' ? .16 + .22 * wind : s.action === 'special' ? .28 : .13) * boost;
         if (wind > 0 && wind < 1) this.wind(strike, radius, wind, time, seed);
-        this.senpugan(strike, radius, Math.min(1, swing * 4), time, seed);
+        this.whirlsphere(strike, radius, Math.min(1, swing * 4), time, seed);
         continue;
       }
       // The marked knife: a glint of gold on the blade and the line of its cut.
@@ -252,7 +252,7 @@ export class MinaseRaijin {
       else if (s.action === 'ultimate' && !s.branch && s.confirmedAt === undefined) st.charge(strike, FLASH, .3, clamp(elapsed / ULT.contacts[0]), seed);
     }
     for (const track of this.tracks) if (track.actor) { const s = fighters.get(track.actor)?.state; if (!s?.alive || s.action !== 'special' || (s.actionSeq ?? -1) !== track.seq) track.actor = ''; }
-    // What a blow left: the formula on the floor, and a Senpugan still turning where it was driven in.
+    // What a blow left: the formula on the floor, and a palm sphere still turning where it was driven in.
     for (const m of this.marks) {
       if (!m.live) continue;
       const age = time - m.born; if (age >= m.life) { m.live = false; continue; } if (age < 0) continue;
@@ -268,7 +268,7 @@ export class MinaseRaijin {
       if (!g.live) continue;
       const age = time - g.born; if (age >= g.life) { g.live = false; continue; } if (age < 0) continue;
       const u = age / g.life;
-      this.senpugan(g.at, g.size * (.55 + .45 * Math.min(1, age / .07)) * (1 - .25 * u), 1 - u * u, time, g.born, 1.6);
+      this.whirlsphere(g.at, g.size * (.55 + .45 * Math.min(1, age / .07)) * (1 - .25 * u), 1 - u * u, time, g.born, 1.6);
     }
     for (const c of this.confirms) {
       if (!c.actor) continue;

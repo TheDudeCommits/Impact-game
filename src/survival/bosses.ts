@@ -32,19 +32,20 @@ export const RANK_HORDE: Record<Rank, number> = { F: 1, E: 1.12, D: 1.25, C: 1.4
 export interface Escort { fodder: readonly (readonly [string, number])[]; gunners: readonly (readonly [string, number])[]; brutes: readonly (readonly [string, number])[];
   /** Its ways of fighting beyond swinging and shooting (the fifth list): shields, healers, summoners, snipers, divers. */
   specials?: readonly (readonly [string, number])[] }
+// The armies, keyed by name. Internal: no save or message holds an army's key.
 export const ESCORTS = {
-  marines: { fodder: [['tribunal-guard', 1]], gunners: [['tribunal-guard-rifle', 1]], brutes: [['automaton', 1]], specials: [['tribunal-guard-shield', 1], ['tribunal-guard-sniper', .7]] },
+  tribunal: { fodder: [['tribunal-guard', 1]], gunners: [['tribunal-guard-rifle', 1]], brutes: [['automaton', 1]], specials: [['tribunal-guard-shield', 1], ['tribunal-guard-sniper', .7]] },
   // (A table's weights share its own role only: a lone entry at .0001 is still
   // the whole of it - the captains' gunners were navy riflemen, "the Navy is
   // their enemy, not their escort", and the Last Sun's and Konta's brutes Grave
   // Hound's apostles. A crew with no one for a role fills it with its own.)
-  beasts: { fodder: [['beast-pirate', 1]], gunners: [['beast-pirate', 1]], brutes: [['beast-graft-brute', 1]], specials: [['beast-leaper', 1], ['beast-medic', .6]] },
+  grafters: { fodder: [['graft-raider', 1]], gunners: [['graft-raider', 1]], brutes: [['graft-brute', 1]], specials: [['graft-leaper', 1], ['graft-doctor', .6]] },
   // Mirabel's own: her chess soldiers, pikes forward.
-  chess: { fodder: [['chess-soldier', 1]], gunners: [['chess-soldier', 1]], brutes: [['chess-soldier', 1]], specials: [['chess-rook', 1], ['chess-bishop', .6]] },
-  wraiths: { fodder: [['ash-wraith', 1]], gunners: [['hollow-void-ray', 1]], brutes: [['great-wraith', 1]], specials: [['hollow-diver', 1], ['hollow-caller', .45]] },
-  saiyans: { fodder: [['saibaman', 1], ['brood-spawn', .8]], gunners: [['jinlin-soldier', 1]], brutes: [['brood-spawn', 1]], specials: [['jinlin-sniper', .8], ['saibaman-diver', 1]] },
-  ninja: { fodder: [['white-pale-sapling', 1]], gunners: [['rogue-ninja', 1]], brutes: [['white-pale-sapling', 1]], specials: [['medic-ninja', .6], ['summoner-ninja', .5]] },
-  damned: { fodder: [['husk', 1]], gunners: [['hollow-void-ray', .4]], brutes: [['apostle-spawn', 1]], specials: [['husk-diver', 1], ['husk-priest', .45]] },
+  wardens: { fodder: [['iron-warden', 1]], gunners: [['iron-warden', 1]], brutes: [['iron-warden', 1]], specials: [['iron-bulwark', 1], ['iron-chaplain', .6]] },
+  wraiths: { fodder: [['ash-wraith', 1]], gunners: [['ash-caster', 1]], brutes: [['great-wraith', 1]], specials: [['bat-wraith', 1], ['wraith-caller', .45]] },
+  legion: { fodder: [['cinder-imp', 1], ['brood-spawn', .8]], gunners: [['jinlin-soldier', 1]], brutes: [['brood-spawn', 1]], specials: [['jinlin-sniper', .8], ['cinder-imp-diver', 1]] },
+  cutthroats: { fodder: [['pale-sapling', 1]], gunners: [['cutthroat', 1]], brutes: [['pale-sapling', 1]], specials: [['cutthroat-mender', .6], ['cutthroat-caller', .5]] },
+  damned: { fodder: [['husk', 1]], gunners: [['ash-caster', .4]], brutes: [['rift-spawn', 1]], specials: [['husk-diver', 1], ['husk-priest', .45]] },
 } as const satisfies Record<string, Escort>;
 export type EscortId = keyof typeof ESCORTS;
 
@@ -61,35 +62,35 @@ export interface BossEntry {
 
 export const BOSSES: readonly BossEntry[] = [
   // F - the rift's first wave: agents and enforcers.
-  { id: 'takane', rank: 'F', escort: 'marines', epithet: 'THE KNIFE BRIDE · SHE DANCES IN STEEL', universe: 'THE DUST SEA' },
-  { id: 'harrow', rank: 'F', escort: 'marines', epithet: 'THE GRAVEHOUND MONK · HE PRAYS WITH HIS FISTS', universe: 'THE DUST SEA' },
-  { id: 'kanuki', rank: 'F', escort: 'marines', epithet: 'THE LOCKWARDEN · EVERY KEY OF THE PRISON', universe: 'THE DUST SEA' },
-  { id: 'gantry', rank: 'E', escort: 'marines', epithet: 'THE CHAIN ABBOT · WARDEN OF THE IRON CHOIR', universe: 'THE DUST SEA' },
+  { id: 'takane', rank: 'F', escort: 'tribunal', epithet: 'THE KNIFE BRIDE · SHE DANCES IN STEEL', universe: 'THE DUST SEA' },
+  { id: 'harrow', rank: 'F', escort: 'tribunal', epithet: 'THE GRAVEHOUND MONK · HE PRAYS WITH HIS FISTS', universe: 'THE DUST SEA' },
+  { id: 'kanuki', rank: 'F', escort: 'tribunal', epithet: 'THE LOCKWARDEN · EVERY KEY OF THE PRISON', universe: 'THE DUST SEA' },
+  { id: 'gantry', rank: 'E', escort: 'tribunal', epithet: 'THE CHAIN ABBOT · WARDEN OF THE IRON CHOIR', universe: 'THE DUST SEA' },
   { id: 'zarek', rank: 'E', escort: 'wraiths', epithet: 'THE OBSIDIAN PANTHER · GLASS THAT HUNTS', universe: 'CINDER REQUIEM' },
   { id: 'nightfall', rank: 'E', escort: 'wraiths', epithet: 'THE STARLESS EDGE', universe: 'CINDER REQUIEM' },
-  { id: 'kade', rank: 'D', escort: 'marines', epithet: 'THE SILK STALKER · NO FACE, NO SOUND', universe: 'THE DUST SEA' },
+  { id: 'kade', rank: 'D', escort: 'tribunal', epithet: 'THE SILK STALKER · NO FACE, NO SOUND', universe: 'THE DUST SEA' },
   { id: 'nihil', rank: 'D', escort: 'wraiths', epithet: 'THE FACELESS SERAPH · SIX WINGS, NO FACE', universe: 'CINDER REQUIEM' },
-  { id: 'ashwing', rank: 'D', escort: 'beasts', epithet: 'THE PYRE KNIGHT · HIS ARMOUR IS STILL BURNING', universe: 'THE DUST SEA' },
+  { id: 'ashwing', rank: 'D', escort: 'grafters', epithet: 'THE PYRE KNIGHT · HIS ARMOUR IS STILL BURNING', universe: 'THE DUST SEA' },
   { id: 'rakshasa', rank: 'C', escort: 'wraiths', epithet: 'THE ONI UNCHAINED', universe: 'THE DUST SEA' },
-  { id: 'kuromitsu', rank: 'C', escort: 'chess', epithet: 'THE TAR ORACLE · TWELVE EYES, NO MOUTH', universe: 'THE DUST SEA' },
-  { id: 'rime', rank: 'C', escort: 'marines', epithet: 'THE GLACIER HERMIT · THE COLD THAT WALKS', universe: 'THE DUST SEA' },
-  { id: 'lumen', rank: 'C', escort: 'marines', epithet: 'THE GLARE WIDOW · DO NOT LOOK AT HER', universe: 'THE DUST SEA' },
-  { id: 'caldera', rank: 'B', escort: 'marines', epithet: 'THE MOLTEN MONK · HE WEEPS FIRE', universe: 'THE DUST SEA' },
-  { id: 'mirabel', rank: 'B', escort: 'chess', epithet: 'THE STORM DOWAGER · SHE KEEPS YOUR SOUL IN A LOCKET', universe: 'THE DUST SEA' },
-  { id: 'wuming', rank: 'B', escort: 'saiyans', epithet: 'THE LIGHTLESS SAGE', universe: 'THE LAST SUN' },
-  { id: 'jinlin', rank: 'B', escort: 'saiyans', epithet: 'THE DRAGON-GATE TYRANT', universe: 'THE LAST SUN' },
+  { id: 'kuromitsu', rank: 'C', escort: 'wardens', epithet: 'THE TAR ORACLE · TWELVE EYES, NO MOUTH', universe: 'THE DUST SEA' },
+  { id: 'rime', rank: 'C', escort: 'tribunal', epithet: 'THE GLACIER HERMIT · THE COLD THAT WALKS', universe: 'THE DUST SEA' },
+  { id: 'lumen', rank: 'C', escort: 'tribunal', epithet: 'THE GLARE WIDOW · DO NOT LOOK AT HER', universe: 'THE DUST SEA' },
+  { id: 'caldera', rank: 'B', escort: 'tribunal', epithet: 'THE MOLTEN MONK · HE WEEPS FIRE', universe: 'THE DUST SEA' },
+  { id: 'mirabel', rank: 'B', escort: 'wardens', epithet: 'THE STORM DOWAGER · SHE KEEPS YOUR SOUL IN A LOCKET', universe: 'THE DUST SEA' },
+  { id: 'wuming', rank: 'B', escort: 'legion', epithet: 'THE LIGHTLESS SAGE', universe: 'THE LAST SUN' },
+  { id: 'jinlin', rank: 'B', escort: 'legion', epithet: 'THE DRAGON-GATE TYRANT', universe: 'THE LAST SUN' },
   // A
   { id: 'shiun', rank: 'A', escort: 'wraiths', epithet: 'CONDUCTOR OF THE CINDER REQUIEM', universe: 'CINDER REQUIEM' },
-  { id: 'kurobi', rank: 'A', escort: 'ninja', epithet: 'THE EMBER IN THE ASH', universe: 'HIDDEN ASH' },
-  { id: 'barrow', rank: 'A', escort: 'beasts', epithet: 'THE MAN WHO SWALLOWS THE DARK', universe: 'THE DUST SEA' },
-  { id: 'akagane', rank: 'A', escort: 'ninja', epithet: 'THE COPPER TYRANT · RISEN FROM THE EMBER TOMB', universe: 'HIDDEN ASH' },
+  { id: 'kurobi', rank: 'A', escort: 'cutthroats', epithet: 'THE EMBER IN THE ASH', universe: 'HIDDEN ASH' },
+  { id: 'barrow', rank: 'A', escort: 'grafters', epithet: 'THE MAN WHO SWALLOWS THE DARK', universe: 'THE DUST SEA' },
+  { id: 'akagane', rank: 'A', escort: 'cutthroats', epithet: 'THE COPPER TYRANT · RISEN FROM THE EMBER TOMB', universe: 'HIDDEN ASH' },
   { id: 'oro', rank: 'A', escort: 'damned', epithet: 'THE GILDED HOUR · LORD OF THE CLOCK TOWER', universe: 'GILDED RUIN' },
   { id: 'vesper', rank: 'A', escort: 'damned', epithet: 'THE UNCROWNED OF THE GRAVE ROADS', universe: 'GRAVE HOUND' },
-  { id: 'jirenga', rank: 'S', escort: 'saiyans', epithet: 'THE STONE GUARDIAN', universe: 'THE LAST SUN' },
-  { id: 'gorai', rank: 'S', escort: 'beasts', epithet: 'THE THUNDERHEAD OF THE DUST SEA', universe: 'THE DUST SEA' },
-  { id: 'haldor', rank: 'S', escort: 'beasts', epithet: 'THE OLD QUAKE OF THE DUST SEA', universe: 'THE DUST SEA' },
+  { id: 'jirenga', rank: 'S', escort: 'legion', epithet: 'THE STONE GUARDIAN', universe: 'THE LAST SUN' },
+  { id: 'gorai', rank: 'S', escort: 'grafters', epithet: 'THE THUNDERHEAD OF THE DUST SEA', universe: 'THE DUST SEA' },
+  { id: 'haldor', rank: 'S', escort: 'grafters', epithet: 'THE OLD QUAKE OF THE DUST SEA', universe: 'THE DUST SEA' },
   { id: 'magatsu', rank: 'S', escort: 'wraiths', epithet: 'THE CALAMITY OF HEX FALLOUT', universe: 'HEX FALLOUT' },
-  { id: 'imago', rank: 'S', escort: 'beasts', epithet: 'THE SWARM SOVEREIGN', universe: 'THE SALVAGE WILDS' },
+  { id: 'imago', rank: 'S', escort: 'grafters', epithet: 'THE SWARM SOVEREIGN', universe: 'THE SALVAGE WILDS' },
 ];
 
 export const bossEntry = (id: string) => BOSSES.find(entry => entry.id === id);
@@ -149,7 +150,7 @@ export function drawBoss(round: number, met: readonly string[], random: () => nu
  *  Mirabel's chess. (Across twelve seeds, letting in the Last Sun's exploders, the
  *  damned's apostles and the Gifters took rank D's lowest health from 42% to
  *  28%. Gorm's own come with Gorm the Glutted, who is resting.) */
-export const EARLY_ARMIES: readonly EscortId[] = ['wraiths', 'ninja', 'chess'];
+export const EARLY_ARMIES: readonly EscortId[] = ['wraiths', 'cutthroats', 'wardens'];
 export function armyFor(boss: BossEntry, round: number, fielded: readonly EscortId[], random: () => number): EscortId {
   const early = !loopOf(round) && RANKS.indexOf(rankFor(round)) <= RANKS.indexOf('E');
   if (!early || boss.escort !== fielded[fielded.length - 1]) return boss.escort;

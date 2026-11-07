@@ -85,7 +85,7 @@ const centreOf = (p: PlayerState): Vec3 => p.size ? { x: p.x, y: p.y + 1.05 * p.
 const radiusOf = (p: PlayerState) => p.size ? PLAYER_RADIUS * p.size : PLAYER_RADIUS;
 const areaBlow = (off: number, radius: number) => ({ scale: areaFalloff(off, radius), bullseye: isBullseye(off, radius) });
 const pushOf = (p: PlayerState) => p.girth ?? (p.size ? PUSH_RADIUS * p.size : PUSH_RADIUS);
-/** Where a shot leaves its thrower: the move's own `origin` (Thunder Lord's Arrow, from the Guardian's bow; once Shiden's by
+/** Where a shot leaves its thrower: the move's own `origin` (Ikazuchi Arrow, from the Guardian's bow; once Shiden's by
  *  name), else the body's centre. */
 const attackOrigin=(p:PlayerState,move:MoveDefinition):Vec3=>{const o=move.origin;return o?{x:p.x+Math.cos(p.yaw)*o.right+Math.sin(p.yaw)*o.forward,y:p.y+o.up,z:p.z-Math.sin(p.yaw)*o.right+Math.cos(p.yaw)*o.forward}:centre(p);};
 /** The harbour has a canal and buildings to miss; a themed stage's ring of
@@ -4039,7 +4039,7 @@ export class ArenaSimulation {
           if (!a.state.alive || a.state.id === shot.actorId || (shooter && !this.hostile(shooter, a.state))
             // Round 3c (LOCK): only the body it was thrown at, and what is in
             // front of where it was thrown from - along the floor, since a
-            // shot can leave from high over its thrower's shoulder (Thunder Lord's
+            // shot can leave from high over its thrower's shoulder (Ikazuchi
             // Arrow, off the Guardian's bow) and come down past the body
             // standing under it. Arcade survival's sides as in inBlowLane.
             || shooter?.team === undefined && a.state.id !== shot.aimId

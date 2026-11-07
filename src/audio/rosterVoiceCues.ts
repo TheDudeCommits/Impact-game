@@ -145,7 +145,7 @@ export const ROSTER_VOICE_CUES = {
   "vo-minase-tempest":"voice/vo-minase-tempest.wav",
   "vo-minase-sage":"voice/vo-minase-sage.wav",
   "vo-minase-flash-ready":"voice/vo-minase-flash-ready.wav",
-  "vo-minase-senpugan":"voice/vo-minase-senpugan.wav",
+  "vo-minase-whirlsphere":"voice/vo-minase-whirlsphere.wav",
   "vo-minase-effort-b":"voice/vo-minase-effort-b.wav",
   "vo-minase-effort-a":"voice/vo-minase-effort-a.wav",
   "vo-onigawara-ultimate":"voice/vo-onigawara-ultimate.wav",
@@ -239,7 +239,7 @@ export const ROSTER_VOICE_CUES = {
   "vo-kusushi-pure-land":"voice/vo-kusushi-pure-land.wav",
   "vo-hakushi-effort-a":"voice/vo-hakushi-effort-a.wav",
   "vo-hakushi-effort-b":"voice/vo-hakushi-effort-b.wav",
-  "vo-hakushi-senpugan":"voice/vo-hakushi-senpugan.wav",
+  "vo-hakushi-whirlsphere":"voice/vo-hakushi-whirlsphere.wav",
   "vo-hakushi-awaken":"voice/vo-hakushi-awaken.wav",
   "vo-hakushi-ultimate":"voice/vo-hakushi-ultimate.wav",
 

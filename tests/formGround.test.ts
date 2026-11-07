@@ -13,7 +13,7 @@ import { ORIGINALS } from '../src/originals/roster';
  *  correction for it used to be proportional with a gain of one, recomputed
  *  every frame from the lowest sole: any flight phase in the form's own clip
  *  became a vertical teleport of the whole body - measured, 0.44 m in one
- *  frame - and Bounceman's bounce, which IS his idle, was deleted. The hover
+ *  frame - and the bouncing form's bounce, which IS his idle, was deleted. The hover
  *  is a property of the rig, so it is measured once over the whole idle
  *  cycle; what is corrected per frame is sustained drift, rate limited. */
 async function loadRig(path: string) {
@@ -51,7 +51,7 @@ describe('a transformation stands on the floor', () => {
         if (sole !== undefined) lowest = Math.min(lowest, sole);
       }
       // Over three seconds of idle the soles come down to the floor - and
-      // not through it. A hover here was Bounceman standing forty
+      // not through it. A hover here was the bouncing form standing forty
       // centimetres in the air; a sink is the correction chasing a bounce.
       expect(lowest, `${id}'s form bottoms out ${lowest.toFixed(3)} m off the floor`).toBeLessThan(.06);
       expect(lowest).toBeGreaterThan(-.06);

@@ -11,7 +11,7 @@ import type { AttackSlot, FighterId, GameSnapshot, PlayerInput } from '../src/ga
  * The second blind critic hard-locked a dummy 2.4-2.9 m ahead with the
  * sparring bot 1.1 m off the fighter's side and fired eleven heavies and
  * specials: five hit the bot instead (Taimatsu, thousand mile eagle, Scrap Cannon Arm,
- * Big Bang, Yuragi), three hit both (Sunpalm Cannon, Shikou-Ha, Mirage Draw) and
+ * Haou-Dan, Yuragi), three hit both (Sunpalm Cannon, Shikou-Ha, Mirage Draw) and
  * Gaunt' Cleave, which this simulation also lands on both, was drawn as a hit
  * that did nothing. The aim was never the fault - every one of them turned to
  * the lock - but a shot, a beam and an iai cut were volumes measured from the

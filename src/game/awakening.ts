@@ -63,7 +63,7 @@ export interface AwakeningDefinition {
    *  material (one named for hair) is coloured this at rest, and its own colour comes back with the swap. Client-side. */
   baseHair?: number;
   /** Burn the aura as flames around the fighter. Only for a transformation with
-   *  no geometry of its own: a Golden Form is the same body with gold hair, and
+   *  no geometry of its own: a gold awakening is the same body with gold hair, and
    *  the flames are the transformation. Everyone else grew a form - a fox, a
    *  Guardian, six arms, burning legs - and a second set of flames around that
    *  reads as an effect stuck to them rather than as power. Client-side. */
@@ -161,7 +161,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   strix: define({ name: 'UNBLINKING', kind: 'aura', aura: [0xeaf5cf, 0x73a56d], auraGlow: .35, clips: ['Unblinking Focus'] }),
   'basilissa': define(BASILISSA_AWAKENING),
   sorayomi: define({ name: 'EYE OF THE STORM', kind: 'aura', aura: [0xd6f6ff, 0x54bde8], auraGlow: .25, clips: ['Storm Eye Awakening'], swapAt: .65 }),
-  // Round 3e (MODELS2): the Golden Form is a new silhouette, not a tint - the
+  // Round 3e (MODELS2): the gold awakening is a new silhouette, not a tint - the
   // Last Sun hair (awaken-on, scripts/r3e_models2.py) swaps in on
   // the burst, Taisei's own fused hair drawn in onto his skull by a morph target
   // - and the entry is a power-up clip keyed to the beat (taisei-awaken1.glb,
@@ -183,7 +183,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   // Align the front paws/muzzle with combat range. The source origin is behind
   // the hips; leaving it there puts a nearby opponent inside the fox's torso.
   konta: define({ name: 'HOMURA', kind: 'form', aura: [0xffd873, 0xff7d1c], formScale: 2.8, formForward: -1.5,
-    clips: ['Senpugan charge', 'Konta pose', '_Idle'] }),
+    clips: ['Whirlsphere charge', 'Konta pose', '_Idle'] }),
   gummy: define({ name: 'SUNRISE', kind: 'form', aura: [0xffffff, 0xcfd6ff], formScale: 1.08,
     clips: ['flagget_lp', 'flagget', '_Idle'] }),
   nigo: define({ name: 'NIGHTFALL', kind: 'form', aura: [0x9b6ad6, 0x1a1026], formScale: 1.06,
@@ -197,7 +197,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   // stay visible inside it, which is what being in a Guardian looks like.
   shiden: define({ name: 'IKAZUCHI', kind: 'summon', aura: [0xb469ff, 0x4a1a86],
     formScale: 4.2, formTint: 0x8a3ce0, formOpacity: .42,
-    clips: ['Indras Arrow', 'Black Pyre', '_Idle'] }),
+    clips: ['Ikazuchi Arrow', 'Black Pyre', '_Idle'] }),
   shirokane: define({ name: 'HARVEST WARDEN', kind: 'summon', aura: [0x6ad4ff, 0x123f7a],
     formScale: 4.2, formTint: 0x2f8ae0, formOpacity: .42,
     clips: ['Sickle Bolt', 'Void Eye: Sickle Bolt', '_Idle'] }),
@@ -323,7 +323,7 @@ export const AWAKENED_MOVES: Partial<Record<FighterId, Partial<Record<AttackSlot
     special:{name:'Foxfire Blast'},
     ultimate:{name:'Kitsunebi-Dama'},
   },
-  // Round 4b (GUMMY): in SUNRISE the Gatling is the Dawn Gatling - his fists
+  // Round 4b (GUMMY): in SUNRISE the barrage is a dawn barrage - his fists
   // blown up and hardened in Will, the barrage that put Saturn through the
   // buildings - on the same clock, the fists bigger (a wider line).
   gummy:{
@@ -368,7 +368,7 @@ export function moveFor(fighter: FighterId, slot: AttackSlot, awakened: boolean)
 
 /** What the transformation changes about the rush stages 1..3, the same way
  *  AWAKENED_MOVES does for the four slots. Only Kurobi renames them: the fox
- *  fights with his own kit, and a string announced as shadow clones while a
+ *  fights with his own kit, and a string announced as clones while a
  *  nine-beast spirit throws it would be a lie. Everyone else's awakened rush
  *  is their own string thrown harder, which the damage multiplier covers. */
 export const AWAKENED_RUSH: Partial<Record<FighterId, readonly (Partial<MoveDefinition> | undefined)[]>> = {

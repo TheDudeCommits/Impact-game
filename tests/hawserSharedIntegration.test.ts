@@ -61,7 +61,7 @@ describe.skipIf(!!ORIGINALS.hawser)('Hawser: the Scout and the YUGE, in the shar
    expect(said({...cast,slot:'light'},awakened)).toEqual([]);
   }
   // Each body's own area line: "Tug of War!" on the Scout's, the uprooting's declaration on the Colossus's.
-  expect(said({...cast,slot:'area'},false)).toEqual(['vo-hawser-strike']);expect(said({...cast,slot:'area'},true)).toEqual(['vo-hawser-rumbling']);
+  expect(said({...cast,slot:'area'},false)).toEqual(['vo-hawser-strike']);expect(said({...cast,slot:'area'},true)).toEqual(['vo-hawser-uprooting']);
   // Steel and the gear for the Scout (Levin's sounds), fists and stone for the Colossus (adult Hawser's, as they were).
   expect(heard({...cast,slot:'light'},false).some(c=>c.startsWith('fx-slash-katana'))).toBe(true);expect(heard({...cast,slot:'light'},true).some(c=>c.startsWith('fx-swing-jab'))).toBe(true);
   expect(heard({...cast,slot:'light',kind:'hit',targetId:'b'},false).some(c=>c.startsWith('fx-cut'))).toBe(true);expect(heard({...cast,slot:'light',kind:'hit',targetId:'b'},true).some(c=>c.startsWith('fx-hit-light'))).toBe(true);

@@ -36,14 +36,14 @@ function body(id: string, fighter: FighterId, props: Partial<PlayerState> = {}):
 describe('the standing aura of an awakened fighter', () => {
   it('is nobody\'s fallback any more: of the work-in-progress fighters only Bellows wears a flame, and it is his own', () => {
     for (const id of roster) {
-      // (Bellows's world has a row and his hellflame is a flame all the same: his own row's.)
+      // (Bellows's world has a row and his furnace flame is a flame all the same: his own row's.)
       const expected = id === 'bellows';
       expect(STANDING_AURA[id] !== undefined, `${id} stands the smaller aura`).toBe(expected);
       if (expected) expect(AWAKENINGS[id].flames, `${id} stands the aura without burning`).toBeFalsy();
     }
     // Thirty-nine the night before. Dust Sea's fourteen stand Will now, Cinder Requiem's three their pressure, Konta's two a
     // cloak of chi, Hex Fallout's three hex energy, Salvage Wilds's two a shroud of Aura, and My Hero
-    // Academia's four and Black Snow's one their quirk and their breath (Bellows's hellflame is a flame still, and
+    // Academia's four and Black Snow's one their power and their breath (Bellows's furnace flame is a flame still, and
     // is his row's).
     // ... and by the end of the day nobody falls back to it: a world with no power to show shows none.
     expect(Object.keys(STANDING_AURA)).toEqual(['bellows']);

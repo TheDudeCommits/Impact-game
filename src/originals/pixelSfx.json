@@ -1,11 +1,11 @@
 {
  "note": "Signature sounds in these characters' slots: cue -> file under audio/v2, and its length. Provenance: public/assets/audio/v2/sfx/px/manifest.json.",
  "cues": {
-  "fx-senpugan": {
+  "fx-whirlsphere": {
    "file": "sfx/px/wind-spin-held.wav",
    "seconds": 1.36
   },
-  "fx-senpugan-hit": {
+  "fx-whirlsphere-hit": {
    "file": "sfx/px/wind-spin-hit.wav",
    "seconds": 1.127
   },

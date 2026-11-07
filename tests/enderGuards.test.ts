@@ -126,14 +126,14 @@ describe('the signature layers leave an ender alone', () => {
     fx.update(1 + mid, new Map([['g', taisei]]), 1);
     expect(taisei.group.visible).toBe(true);
   });
-  it('tracks no Galewheel, Ikazuchi, Blue, ROOM, Phoenix or Nightfang for an ender cast off the special', () => {
+  it('tracks no Galewheel, Ikazuchi, Blue, THEATRE, Phoenix or Nightfang for an ender cast off the special', () => {
     const scene = new THREE.Scene();
     const fighters = (f: FighterId, slot: AttackSlot, branch?: ComboKey) => new Map([['a', body('a', f, { action: slot, branch })]]);
     const ninja = new NinjaEffects(scene);
     ninja.handle([cast('konta', 'special', 'llls')], fighters('konta', 'special', 'llls'));
-    expect((ninja as unknown as { rasen: unknown[] }).rasen).toHaveLength(0);
+    expect((ninja as unknown as { spirals: unknown[] }).spirals).toHaveLength(0);
     ninja.handle([cast('konta', 'special', undefined, 11)], fighters('konta', 'special'));
-    expect((ninja as unknown as { rasen: unknown[] }).rasen).toHaveLength(1);
+    expect((ninja as unknown as { spirals: unknown[] }).spirals).toHaveLength(1);
     const setsu = new SetsuEffects(scene);
     setsu.handle([cast('setsu', 'special', 'llls', 12)]);
     // An ender is tracked only when it is thrown, as lightning on its own move: never as the Ikazuchi.
@@ -145,11 +145,11 @@ describe('the signature layers leave an ender alone', () => {
     const ward = new WardEffects(scene);
     ward.handle([cast('ward', 'special', 'llls', 15)], fighters('ward', 'special', 'llls'));
     expect((ward as unknown as { rooms: { active: boolean }[] }).rooms.some(r => r.active)).toBe(false);
-    const santoryu = new ThreeBlade(scene), unsealed = new Unsealed(scene);
-    santoryu.handle([cast('kenzo', 'special', 'llls', 16)]); unsealed.handle([cast('nigo', 'special', 'airSpecial', 17)]);
-    expect((santoryu as unknown as { casts: unknown[] }).casts).toHaveLength(0);
+    const threeBlade = new ThreeBlade(scene), unsealed = new Unsealed(scene);
+    threeBlade.handle([cast('kenzo', 'special', 'llls', 16)]); unsealed.handle([cast('nigo', 'special', 'airSpecial', 17)]);
+    expect((threeBlade as unknown as { casts: unknown[] }).casts).toHaveLength(0);
     expect((unsealed as unknown as { casts: unknown[] }).casts).toHaveLength(0);
-    for (const fx of [ninja, setsu, kuon, ward, santoryu, unsealed]) fx.dispose();
+    for (const fx of [ninja, setsu, kuon, ward, threeBlade, unsealed]) fx.dispose();
   });
   it('fires no Scrap Cannon Arm and dresses no Signal Fire flame for an ender', () => {
     const scene = new THREE.Scene(), gaunt = new GauntEffects(scene), gummy = new GummyEffects(scene);

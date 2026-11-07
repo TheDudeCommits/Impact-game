@@ -19,7 +19,7 @@ const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),TAU=Math.PI*2;
  *  the room. The lions are painted and already bright: their tint only leans them to violet (lifted further they
  *  burn to two white blobs, measured 12 October 2026). */
 const CYAN=new THREE.Color(.55,1.85,2.6),PALE=new THREE.Color(1.9,1.85,2.7),WHITE=new THREE.Color(2.4,2.6,2.8),BLUE=new THREE.Color(.45,1,2.7),LION_TINT=new THREE.Color(1.02,1,1.3);
-/** The Gentle Fist's chi, pale blue; the Twin Lions' own, blue going to violet; and the lavender of the White Eye's
+/** The soft palm's chi, pale blue; the Twin Lions' own, blue going to violet; and the lavender of her pale eyes'
  *  trigram on the floor. */
 const CHI=stageLook(0xf5ffff,0x71dfff,0x3f83ef),LION=stageLook(0xf2f4ff,0x8f9bff,0x4b3fd0),TRIGRAM=stageLook(0xffffff,0xd4d0ff,0x6a5acd);
 const HEAVY=SUZURAN_MOVES.heavy,SPECIAL=SUZURAN_MOVES.special,ULT=SUZURAN_MOVES.ultimate,ULT_LAST=ULT.contacts[ULT.contacts.length-1];
@@ -136,7 +136,7 @@ export class SuzuranTwinLions{
   for(const duel of this.duels){if(!duel.actor)continue;const f=fighters.get(duel.actor),target=fighters.get(duel.target),s=f?.state;
    if(!f||!s?.alive||s.action!=='ultimate'||s.branch||(s.actionSeq??-1)!==duel.seq||s.whiffedAt!==undefined||!target?.state.alive&&!duel.finalHit){duel.actor='';continue;}
    const age=s.actionTime*s.actionDuration;if(age>SUZURAN_TWIN_LION_BEATS.end){duel.actor='';continue;}const fade=clamp((SUZURAN_TWIN_LION_BEATS.end-age)/.25);this.face.setFromAxisAngle(UP,f.group.rotation.y);
-   // The lions on her hands; the Eight Trigrams' floor under her.
+   // The lions on her hands; the palm diagram's floor under her.
    const g=clamp((age-ULT.contacts[0])/(ULT_LAST-ULT.contacts[0]));
    // (Led ahead of her fists: the move is filmed from her side, and lions sat on her wrists cover her arms.)
    this.hands(f,age>2.6?1:.76+.16*g,fade*.8,detail,.3);this.trigrams(f,2.5,fade*.8,detail);this.gather(f,duel,age,g,fade,time);
@@ -153,7 +153,7 @@ export class SuzuranTwinLions{
   }
   for(const b of this.batches)b.end();st.close();
  }
- /** Great Bell: Last Toll from the confirm on: the room to night, the Eight Trigrams' floor lit under her, chi
+ /** Great Bell: Last Toll from the confirm on: the room to night, the palm diagram's floor lit under her, chi
   *  rising off its eight signs, the lions' light on her hands and on what they strike. On the floor and on her hands:
   *  the pair is read through all of it. */
  private gather(f:Fighter,duel:Duel,age:number,g:number,fade:number,time:number){

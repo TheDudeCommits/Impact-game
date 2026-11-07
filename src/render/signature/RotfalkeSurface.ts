@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type {Fighter} from '../Fighter';
 
-/** Exterior native sole/palm triangles in the accepted EVA02 exports. The
+/** Exterior native sole/palm triangles in the accepted war-frame exports. The
  * white-eye material split removes88 eye vertices from Sync's body primitive;
  * its separately recorded indices address the identical native surfaces. */
 export const ROTFALKE_SURFACE_TRIANGLES=Object.freeze({

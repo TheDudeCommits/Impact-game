@@ -10,7 +10,7 @@ export const MUREX_MOVES:Record<CoreSlot,MoveDefinition>={
 };
 export const MUREX_COMBOS:ComboRow={lh:{name:'Twisting Claw',range:2.9,radius:.70},llh:{name:'Spine Breaker',range:3,radius:.83},lllh:{name:'Core Ram',range:3.1,radius:.75},llls:{name:'Leave Me Alone',range:3.0,radius:.94},airHeavy:{name:'Aerial Hammer',range:2.95,radius:.88},airSpecial:{name:'Mantis Drop',radius:3.2}};
 export const MUREX_CONTACTS={light:.43,heavy:.51,special:.59,ultimate:[.17,.81],rush:[.43,.43,.51],combos:{lh:.43,llh:.51,lllh:.43,llls:.59,airHeavy:.51,airSpecial:.51}}as const;
-export const MUREX_AWAKENING={name:'UNSTRAPPED',clip:'UNSTRAPPED',sourceDuration:2.80,runtimeDuration:.9,beats:{lock:.24,roar:.64,release:.77,settle:.93},sameBody:true,manualOnly:true,identity:'Native classic EVA01 opens its actual hinged jaw; Murex remains the pilot. Grave Hound does not enable autonomous attacks.'}as const;
+export const MUREX_AWAKENING={name:'UNSTRAPPED',clip:'UNSTRAPPED',sourceDuration:2.80,runtimeDuration:.9,beats:{lock:.24,roar:.64,release:.77,settle:.93},sameBody:true,manualOnly:true,identity:'Native classic war-frame opens its actual hinged jaw; Murex remains the pilot. Grave Hound does not enable autonomous attacks.'}as const;
 /** Clip identity overrides the button; Mantis Drop is a two-fist strike. */
 export function murexStrikeJoint(action:string,clip?:string,contactIndex=0):'RightHand'|'LeftHand'|'BothHands'{
  if(clip==='Spinestorm'||!clip&&action==='ultimate')return contactIndex===0?'LeftHand':'RightHand';

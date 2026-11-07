@@ -35,7 +35,7 @@ export interface PowerStyle { kind: PowerKind; colours: KiColours; bolt: THREE.C
   /** The colour its light, its rings and its streaks are (sRGB hex), their dark end, and how much of what is behind
    *  them the streaks cover: the power's own colour, or its edge's where the power itself is black (Nigo's). */
   tint?: number; shade?: number; cover?: number;
-  /** Lightning worn on the body itself for as long as it lasts, in `bolt`'s colour: Ampere's Full Cowling. */
+  /** Lightning worn on the body itself for as long as it lasts, in `bolt`'s colour: Ampere's full-body lightning. */
   arcs?: boolean }
 /** A pressure's colours as a flame's are given (KiAura): the edge it burns at, its body, its heart. A coloured one is
  *  drawn as written - its body the colour at full strength, its edge that colour toward white. A black one (its core
@@ -57,7 +57,7 @@ export function willStyle(edge: number | undefined, sovereign: boolean): WillSty
   return { glow: colours.glow, deep: colours.deep, hex: edge ?? 0xff2a3a, level: sovereign ? 1 : .6 };
 }
 const hue = new THREE.Color(), hsl = { h: 0, s: 0, l: 0 };
-/** Lightning that sets off a ki flame: a blue flame throws pink-white bolts, a Golden Form's gold the
+/** Lightning that sets off a ki flame: a blue flame throws pink-white bolts, a gold awakening's gold the
  *  classic blue-white. */
 export function boltFor(coreHex: number, out = new THREE.Color()) {
   hue.setHex(coreHex).getHSL(hsl);
@@ -212,7 +212,7 @@ export class PowerUp {
     else if (s.kind === 'pressure') this.pressureEntry(actor, e, time, elapsed, d);
     else if (s.kind === 'chi' || s.kind === 'aura') this.windEntry(actor, e, time, elapsed, d, s.kind === 'chi');
     else if (s.kind === 'cursed') this.cursedEntry(actor, e, time, elapsed, d);
-    // (Lightning worn on the body gathers with the power, whatever its kind: Full Cowling coming up.)
+    // (Lightning worn on the body gathers with the power, whatever its kind: full-body lightning coming up.)
     if (s.arcs) this.arcSkin(actor, e.seed, gather ? .4 + .6 * u : Math.max(0, 1 - after / .5), e.scale, 4, s.bolt);
     if (s.kind === 'will') {
       // Black lightning round them and down into the floor, thickening to the break and discharging after it.
@@ -368,7 +368,7 @@ export class PowerUp {
       }
       return;
     }
-    // Lightning worn on the body (Full Cowling): a few arcs a tick between its joints and off them, never still.
+    // Lightning worn on the body (full-body lightning): a few arcs a tick between its joints and off them, never still.
     if (s.arcs) this.arcSkin(fighter, state.seed, burn.strength * (.75 + .25 * flaring), burn.scale, flaring > 0 ? 6 : 4, s.bolt);
     if (s.kind === 'cursed') {
       // Hex Energy does not crackle of itself: the dark flame is the shell's. Its red-black sparks crack off it now
@@ -387,7 +387,7 @@ export class PowerUp {
       return;
     }
     if (s.kind === 'pressure') {
-      // Spiritual pressure standing on them. It streams upward off the body like smoke - the shell is AwakeningEffects',
+      // Raw pressure standing on them. It streams upward off the body like smoke - the shell is AwakeningEffects',
       // these are the wisps leaving it, faster on a swing; under that weight a ring runs out along the floor now and
       // then and its grit lifts and hangs; and it lights the floor round them in its colour.
       const kit = this.kit, strength = burn.strength, scale = burn.scale, tint = s.tint ?? 0xffffff, shade = s.shade ?? 0x202028;

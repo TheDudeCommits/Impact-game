@@ -11,7 +11,7 @@ import { healthReport } from '../src/server/health';
 
 afterEach(() => vi.restoreAllMocks());
 const rooms = [ArenaRoom, BotArenaRoom, DuelRoom, PrivateArenaRoom, PrivateDuelRoom, SurvivalRoom, RiftRoom, ObjectiveRoom, PartyRoom];
-const stale = [undefined, null, '', 1, 'old-roster', 'jump-roster-v19-eva01', { rosterProtocol: ROSTER_PROTOCOL }];
+const stale = [undefined, null, '', 1, 'old-roster', 'roster-v19-old', { rosterProtocol: ROSTER_PROTOCOL }];
 describe('the roster compatibility boundary', () => {
   it('advertises precisely the protocol accepted by the server', () => {
     expect(healthReport().rosterProtocol).toBe(ROSTER_PROTOCOL);

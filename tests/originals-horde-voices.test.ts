@@ -9,10 +9,10 @@ const rows = new Map((MANIFEST as unknown as { assets: { id: string; license?: s
 describe('the new bodies\' voices', () => {
   it('voices the Automaton in iron, the Leaper as a hyena, the Doctor as a woman, the Salt Court behind masks, the Sapling in wood', () => {
     expect(VOICE_OF.automaton as string).toBe('iron');
-    expect(VOICE_OF['beast-leaper'] as string).toBe('hyena');
-    expect(VOICE_OF['beast-medic'] as string).toBe('woman');
+    expect(VOICE_OF['graft-leaper'] as string).toBe('hyena');
+    expect(VOICE_OF['graft-doctor'] as string).toBe('woman');
     for (const kind of ['tribunal-guard', 'tribunal-guard-rifle', 'tribunal-guard-shield', 'tribunal-guard-sniper']) expect(VOICE_OF[kind] as string, kind).toBe('masked');
-    expect(VOICE_OF['white-pale-sapling'] as string).toBe('wood');
+    expect(VOICE_OF['pale-sapling'] as string).toBe('wood');
     for (const [kind, voice] of Object.entries(ORIGINAL_HORDE_VOICE_OF)) {
       const line = (LINES as unknown as Record<string, Record<string, string>>)[voice];
       for (const moment of ['swing', 'cry', 'hurt', 'die']) expect((BANK as Record<string, number>)[line[moment]], `${kind}: ${moment}`).toBeGreaterThan(0);

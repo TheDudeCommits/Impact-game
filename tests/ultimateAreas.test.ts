@@ -104,7 +104,7 @@ describe('stepping out of the ring gets you out of the blast', () => {
     expect(run(followed.land - .2).taken, 'the sidestep gets out').toBe(0);
   });
 
-  it('the Domain: from arm\'s length, a human reaction and a run away gets out before it closes', () => {
+  it('the dome: from arm\'s length, a human reaction and a run away gets out before it closes', () => {
     const { taken, events } = scene('kuon', { x: -1.8, z: 3.4 }, t => t >= .3 && t < 1.5 ? { moveX: 1 } : {});
     expect(taken('a')).toBe(0);
     expect(events.some(e => e.kind === 'whiff' && e.actorId === 'me'), 'a Domain that closes on nobody is a whiff').toBe(true);

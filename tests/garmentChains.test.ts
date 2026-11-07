@@ -27,7 +27,7 @@ const GARMENTS:Garment[]=[
   // The armour's skirt, closed, belt to knee, its tassets over it. His run tips the hips 46 degrees forward and lifts the
   // knee over the front hem, which the drape will not raise level over it (no boards): there it only does better.
   {id:'akagane',garment:'akagane',chains:8,links:3,vertices:1200,radii:[.1,.09],clears:'dash'},
-  // The sash of Magatsu's Heian form, flaring out well clear of the hakama: it stretched between the thighs' helper
+  // The sash of Magatsu's four-armed form, flaring out well clear of the hakama: it stretched between the thighs' helper
   // joints; the legs hardly reach it.
   {id:'magatsu',garment:'magatsu-heian',chains:8,links:2,vertices:1000,radii:[.15,.12],form:true},
 ];

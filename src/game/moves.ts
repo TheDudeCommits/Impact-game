@@ -97,7 +97,7 @@ export interface MoveDefinition {
   lungeDelay?: number;
   timeStop?: {contact:number;duration:number;radius:number;
     tour?: TourStyle};
-  /** Where a shot is let go from, from the thrower's feet: metres to its right, ahead of it and up (Thunder Lord's Arrow
+  /** Where a shot is let go from, from the thrower's feet: metres to its right, ahead of it and up (Ikazuchi Arrow
    *  from the Guardian's bow). Unset, the body's centre. A move property, so a borrowed move keeps it (VOL.3). */
   origin?: {right:number;forward:number;up:number};
   /** Senpugan (VOL.3; once Konta's by name): through its live contact frames the palm is held out and the approach
@@ -670,7 +670,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
   },
   // Ippon, laid out as the home-screen agent's move cards draw him.
   ippon:{
-    // Clock-In Punch: a straight right, low and lunging. It is only a normal punch.
+    // Clock-In Punch: a straight right, low and lunging. It is only a plain punch.
     light:{name:'Clock-In Punch',duration:.46,contacts:[.17],damage:19,range:2.3,radius:.55,stamina:9,cooldown:.44,stun:.25,knockback:3.5,lunge:5,style:'melee'},
     // Dust Allergy (4 October, combos.ts: every fighter at least one attack at range): the head back, and a sneeze
     // that blows a planet's sky away: a cone of wind that blows them into the wall.
@@ -822,10 +822,10 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // rather than 36, so it has crossed its whole forty metres by 0.86 -
   // before the cinematic's first beat at 1.05. Landed, its lightning drives
   // through them twice and bursts as the finisher at 1.95.
-  // Round 3e (ULTFIX): Thunder Lord's Arrow is one iconic strike. The arrow itself
+  // Round 3e (ULTFIX): Ikazuchi Arrow is one iconic strike. The arrow itself
   // lands hard (110), the Guardian's lightning gathers in them, and at 1.8
   // all of it goes off at once (180).
-  shiden:{name:'Thunder Lord’s Arrow',origin:{right:.54,forward:.09,up:2.94},duration:2.55,contacts:[.5,1.8],schedule:[110,198],damage:110,finisherDamage:258,range:40,radius:2,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:15,speed:110,guardBreak:true,style:'projectile',confirm:WHIFF},
+  shiden:{name:'Ikazuchi Arrow',origin:{right:.54,forward:.09,up:2.94},duration:2.55,contacts:[.5,1.8],schedule:[110,198],damage:110,finisherDamage:258,range:40,radius:2,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:15,speed:110,guardBreak:true,style:'projectile',confirm:WHIFF},
   kosho:{name:'Banquet Infernal',duration:2.95,contacts:[.45,.85,1.15,1.42,2.2],schedule:KOSHO_HELL,damage:40,finisherDamage:208,range:2.4,radius:1.2,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,lunge:5.5,guardBreak:true,style:'melee',confirm:WHIFF},
   // The beam let go at 0.52 is the opener (2.6); landed, it holds them in
   // the light and burns twice, and the blast is the finisher at 1.95.
@@ -857,7 +857,7 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   kagari:{name:'Taiyou-Dama',duration:2.4,contacts:[1.35],damage:290,range:16,radius:3,stamina:0,cooldown:20,stun:2.3,knockback:16,speed:16,guardBreak:true,style:'bomb',aimOnRelease:true},
   ward:{name:'THEATRE: Flatline',duration:2.44,contacts:[.45,1.52,1.74],schedule:[40,92,202],damage:40,finisherDamage:288,range:2.6,radius:1.6,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,lunge:12,lungeDelay:.45,guardBreak:true,style:'melee',confirm:WHIFF,
     teleport:{vanish:.45,appear:.45,reach:10.5,behind:1.15,miss:0,near:true}},
-  // Domain: everyone inside it is held, paralysed by the infinite,
+  // PLANETARIUM: everyone inside it is held, frozen under its stars,
   // and he is at each of them in turn, one strike a visit from another side
   // (timeStopBarrage.ts), the Dark Spark on the target as the Domain
   // collapses. The Domain is the opener, at 0.5 rather than 0.8, and one
@@ -958,7 +958,7 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // fall on whoever it held, one after another, the last of them with him.
   'rook':{name:'Black Rookery',duration:2.5,contacts:[.42,1.25,1.4,1.55,1.8],schedule:[50,20,22,24,291],damage:50,finisherDamage:168,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:.4,finisherKnockback:14,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
   // Landslide - "Saisho wa gū": his straight is the opener; landed, the fist raised over his head while the aura
-  // floods into it, and Rock Paper's Rock brought down through them with everything he has.
+  // floods into it, and the Landslide's fist brought down through them with everything he has.
   gaku:{name:'Landslide',duration:2.5,contacts:[.42,1.8],schedule:[68,244],damage:68,finisherDamage:300,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
   // Gravedigger: Shatter Art: Black Blizzard - the one-two out of his rush is the opener; landed, he goes through them in a
   // dash and drives everything he has into one blow.
@@ -1455,7 +1455,7 @@ export const AIR_RUSH: Partial<Record<FighterId, readonly [string | undefined, s
   kagari: ['Rising Ember', 'Ember Hook', 'Falling Ember'],
   ward: ['Vaulting Lancet', 'Lancet Sweep', 'Lancet Drop'],
   kuon: ['Sky Hex', 'Zenith Kick', 'Gravity Dive'],
-  oro: ['Midnight Straight', 'Weak! Weak!', 'Clockwork Kick'],
+  oro: ['Midnight Straight', 'Kneel! Kneel!', 'Clockwork Kick'],
   gaunt: ['Aerial Cleave', 'Rising Swing', 'Falling Chop'],
   setsu: ['Sleet Kick', 'Snow Swipe', 'Flurry Flip'],
 };
@@ -1861,7 +1861,7 @@ export const JUMP_HANG_SPEED = 1.8, JUMP_HANG_GRAVITY = 1;
  *  how they move in their series:
  *  - 3.5x, the acrobats: Setsu (SETSUNA, an assassin's footwork), Levin (the
  *    Grapple Rig's flyer, the most airborne fighter in his series), Gaku (a wild
- *    child's spring, the Rock-Paper-Scissors leap);
+ *    child's spring, the three-hand leap);
  *  - 3.4x, the light and quick: Kosho (Sky Walk), Konta and Shiden (ninja who
  *    fight from the rooftops), Gummy (rubber: a stretched spring);
  *  - 3.3x, the light swordsmen and speedsters: Shirokane, Sekka, Asahi (Water

@@ -28,7 +28,7 @@ const tinted = (Object.keys(FIGHTERS) as FighterId[]).filter(id => AWAKENINGS[id
 describe('a transformation that changes the hair', () => {
   it('has somebody to change it on', () => expect(tinted.length).toBeGreaterThan(0));
 
-  // Golden Form is a vertex tint, not a second model: the crown weight marks
+  // The gold awakening is a vertex tint, not a second model: the crown weight marks
   // the head-bone vertices above the joint and the shader golds the dark ones.
   // The head was found by matching `head` or `defhead` against a cleaned bone
   // name, which is two of the three spellings in the roster - on a Mixamo rig

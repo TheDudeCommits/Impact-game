@@ -3,55 +3,55 @@
   "worlds": [
    "black-snow"
   ],
-  "note": "A Black Snow breathing style, in the woodblock look."
+  "note": "A Black Snow sword form, in the woodblock look."
  },
  "breath_insect": {
   "worlds": [
    "black-snow"
   ],
-  "note": "A Black Snow breathing style, in the woodblock look."
+  "note": "A Black Snow sword form, in the woodblock look."
  },
  "breath_mist": {
   "worlds": [
    "black-snow"
   ],
-  "note": "A Black Snow breathing style, in the woodblock look."
+  "note": "A Black Snow sword form, in the woodblock look."
  },
  "breath_moon": {
   "worlds": [
    "black-snow"
   ],
-  "note": "A Black Snow breathing style, in the woodblock look."
+  "note": "A Black Snow sword form, in the woodblock look."
  },
  "breath_sun": {
   "worlds": [
    "black-snow"
   ],
-  "note": "A Black Snow breathing style, in the woodblock look."
+  "note": "A Black Snow sword form, in the woodblock look."
  },
  "breath_thunder": {
   "worlds": [
    "black-snow"
   ],
-  "note": "A Black Snow breathing style, in the woodblock look."
+  "note": "A Black Snow sword form, in the woodblock look."
  },
  "breath_water": {
   "worlds": [
    "black-snow"
   ],
-  "note": "A Black Snow breathing style, in the woodblock look."
+  "note": "A Black Snow sword form, in the woodblock look."
  },
  "breath_wind": {
   "worlds": [
    "black-snow"
   ],
-  "note": "A Black Snow breathing style, in the woodblock look."
+  "note": "A Black Snow sword form, in the woodblock look."
  },
  "arts_clones": {
   "worlds": [
    "konta"
   ],
-  "note": "Shadow clones."
+  "note": "Clones."
  },
  "arts_domain": {
   "note": "A sealed black dome with a staring eye: a Domain, or Red Moon Reverie. Open to any world."
@@ -539,7 +539,7 @@
   "worlds": [
    "red-cradle"
   ],
-  "note": "A hexagon-cell wall that stops shots: the A.T. Field."
+  "note": "A hexagon-cell wall that stops shots: a ward."
  },
  "seal_trigrams": {
   "materials": [
@@ -555,7 +555,7 @@
   "worlds": [
    "konta"
   ],
-  "note": "Suzuran's (and Neji's) Eight Trigrams sixty-four palms: the diagram, then doubling volleys."
+  "note": "Suzuran's palm flurry: the diagram, then doubling volleys."
  },
  "seal_shrinedomain": {
   "materials": [
@@ -602,7 +602,7 @@
   "worlds": [
    "salvage-wilds"
   ],
-  "note": "Unari's Bungee Gum: a pink strand that sticks, goes taut and snaps back."
+  "note": "Unari's elastic: a pink strand that sticks, goes taut and snaps back."
  },
  "seal_sproutarms": {
   "materials": [

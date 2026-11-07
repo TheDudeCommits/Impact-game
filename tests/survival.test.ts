@@ -166,7 +166,7 @@ describe('arcade survival', () => {
     expect([...firsts].sort()).toEqual([...OPENERS].sort());
     // Past rank E an army is its boss's own again.
     const lumen = BOSSES.find(b => b.id === 'lumen')!;
-    expect(armyFor(lumen, 7, ['marines'], Math.random)).toBe('marines');
+    expect(armyFor(lumen, 7, ['tribunal'], Math.random)).toBe('tribunal');
   });
 
   it('plays several rounds: bosses fall, the horde never stops, levels, skills and scores', async () => {
@@ -821,8 +821,8 @@ describe("the fifth list's rank and file: shields, healers, summoners, snipers, 
 
   it('has a healer mend its hurt kind round it', () => {
     const { horde, step, spawn } = make({ x: 0, z: 8 });
-    spawn('medic-ninja', 0, 0);
-    const hurt = spawn('white-pale-sapling', 1.5, 0);
+    spawn('cutthroat-mender', 0, 0);
+    const hurt = spawn('pale-sapling', 1.5, 0);
     horde.wake(1);
     horde.hp[hurt] = horde.maxHp[hurt] * .3;
     step(8);
@@ -831,7 +831,7 @@ describe("the fifth list's rank and file: shields, healers, summoners, snipers, 
 
   it('has a summoner call more of its army through a rift', () => {
     const { horde, summoned, step, spawn } = make({ x: 0, z: 12 });
-    spawn('hollow-caller', 0, 0); horde.wake(1);
+    spawn('wraith-caller', 0, 0); horde.wake(1);
     step(10);
     expect(summoned.length).toBeGreaterThan(0);
   });
@@ -845,7 +845,7 @@ describe("the fifth list's rank and file: shields, healers, summoners, snipers, 
 
   it('has a diver come down on its fighter out of the air', () => {
     const { horde, struck, step, spawn } = make({ x: 0, z: 7 });
-    const slot = spawn('hollow-diver', 0, 0); horde.wake(1);
+    const slot = spawn('bat-wraith', 0, 0); horde.wake(1);
     let highest = 0;
     for (let t = 0; t < 8 * 60; t++) { step(1 / 60); highest = Math.max(highest, horde.y[slot]); }
     expect(highest).toBeGreaterThan(1);

@@ -11,8 +11,8 @@ export interface Signature {
 }
 
 const SUNPALM_CANNON = 'ki gathered between two hands: a hum that pulses, each pulse quicker and higher than the last, sparks crowding in as it tightens';
-const DIABLE = 'a leg spun until it burns: a whirr that climbs turn after turn and catches with a flare; and where the kick lands, the hiss of scorched air';
-const DISMANTLE = 'a cut with no blade: two thin slices a twentieth of a second apart, cold and dry';
+const BURNING_LEG = 'a leg spun until it burns: a whirr that climbs turn after turn and catches with a flare; and where the kick lands, the hiss of scorched air';
+const UNSEEN_CUT = 'a cut with no blade: two thin slices a twentieth of a second apart, cold and dry';
 const GEAR = 'the gear firing: a burst of gas and the cable paying out, a thin whir that climbs as the reel spins up';
 
 export const SIGNATURES: Readonly<Partial<Record<FighterId, Partial<Record<AttackSlot, Signature>>>>> = {
@@ -26,22 +26,22 @@ export const SIGNATURES: Readonly<Partial<Record<FighterId, Partial<Record<Attac
     ultimate: { what: 'Kyokko-Ho: electricity tearing wider and wider between his hands, then the flash - a crack and a wide roar', cast: [['fx-sig-ouga-flash', .46, 'contact']] },
   },
   kosho: {
-    special: { what: DIABLE, cast: [['fx-sig-kosho-flambe', .42, 'contact']], hit: [['fx-sig-kosho-sear', .4]] },
-    ultimate: { what: DIABLE, cast: [['fx-sig-kosho-flambe', .42, 'contact']], hit: [['fx-sig-kosho-sear', .44]] },
+    special: { what: BURNING_LEG, cast: [['fx-sig-kosho-flambe', .42, 'contact']], hit: [['fx-sig-kosho-sear', .4]] },
+    ultimate: { what: BURNING_LEG, cast: [['fx-sig-kosho-flambe', .42, 'contact']], hit: [['fx-sig-kosho-sear', .44]] },
   },
   // (Kagari had one: Hinoko's embers.)
   kagari: { special: { what: 'Taimatsu, the TAIMATSU: a deep whoomp as the column of fire leaves his arm, and a jet\'s roar behind it', cast: [['fx-sig-kagari-taimatsu', .46, 'contact']] } },
   // ----- and of the rest of the roster, the best known
   'wuming': { special: { what: SUNPALM_CANNON + ' (his, darker: played slower)', cast: [['fx-sig-sunpalm-charge', .38, 'contact', .86]] } },
   magatsu: {
-    heavy: { what: DISMANTLE, cast: [['fx-sig-magatsu-dismantle', .38, 'contact']], hit: [['fx-sig-magatsu-dismantle', .42]] },
-    special: { what: DISMANTLE, cast: [['fx-sig-magatsu-dismantle', .4, 'contact']], hit: [['fx-sig-magatsu-dismantle', .44]] },
+    heavy: { what: UNSEEN_CUT, cast: [['fx-sig-magatsu-flay', .38, 'contact']], hit: [['fx-sig-magatsu-flay', .42]] },
+    special: { what: UNSEEN_CUT, cast: [['fx-sig-magatsu-flay', .4, 'contact']], hit: [['fx-sig-magatsu-flay', .44]] },
   },
   levin: { special: { what: GEAR, cast: [['fx-sig-grapple', .42, .05]] }, ultimate: { what: GEAR, cast: [['fx-sig-grapple', .4, .05]] } },
   mizuhiki: { special: { what: GEAR, cast: [['fx-sig-grapple', .42, .05, 1.06]] }, ultimate: { what: GEAR, cast: [['fx-sig-grapple', .4, .05, 1.06]] } },
   // (Scout Hawser, 13 October: the same gear on the Snap Line and Slipped Moorings, a touch lower.)
   hawser: { special: { what: GEAR, cast: [['fx-sig-grapple', .42, .05, .96]], base: true }, ultimate: { what: GEAR, cast: [['fx-sig-grapple', .4, .05, .96]], base: true } },
-  gaku: { ultimate: { what: 'Rock Paper, first comes rock: aura drawn into one fist - a hum swelling under a heavy double beat, like a heart, that comes quicker each time', cast: [['fx-sig-gaku-rock-paper', .44, 'contact']] } },
+  gaku: { ultimate: { what: 'The Landslide: aura drawn into one fist - a hum swelling under a heavy double beat, like a heart, that comes quicker each time', cast: [['fx-sig-gaku-landslide', .44, 'contact']] } },
 };
 
 applyOriginalSignatures(SIGNATURES);

@@ -5,7 +5,7 @@ export interface OutfitVariant {
   hair?: number;
   /** The hair is that colour all the time, not only while awakened. */
   always?: boolean;
-  /** The Golden Form hair (the body's `awaken-on-gold-hair`) is worn all the time. */
+  /** The gold awakening hair (the body's `awaken-on-gold-hair`) is worn all the time. */
   goldHair?: boolean;
   /** The awakening's aura, core then rim, in place of the fighter's own. */
   aura?: readonly [number, number];

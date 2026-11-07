@@ -27,7 +27,7 @@ export const POWER_SOUNDS: Readonly<Record<PowerSound, Voice>> = {
   flame: { loop: 'fx-aura-burn', entry: .3, hold: .13, entrance: [], underALine: 1 },
   // A will pressing on the room and black lightning cracking off the body. No flame in it.
   will: { loop: 'fx-aura-will', entry: .32, hold: .16, entrance: [['fx-enter-will', .5]], underALine: .6 },
-  // Spiritual pressure streaming upward: a pillar on the release, then a roar that keeps climbing.
+  // Raw pressure streaming upward: a pillar on the release, then a roar that keeps climbing.
   pressure: { loop: 'fx-aura-pressure', entry: .32, hold: .15, entrance: [['fx-enter-pressure', .5]], underALine: .6 },
   // Chi's wind: it winds up round them, is flung out, and turns round the cloak after.
   chi: { loop: 'fx-aura-chi', entry: .28, hold: .12, entrance: [['fx-enter-chi', .46]], underALine: .6 },
@@ -74,7 +74,7 @@ export function heard(power: AwakenedPower): PowerVoice | undefined {
     // Whatever stands over it (a cursed fruit's sand, its magma, its light), Dust Sea's awakened state is Will.
     case 'will': return power.sovereign ? voice('will') : voice('will', true, THIN.level, THIN.rate);
     case 'pressure': return voice('pressure', !!power.shell);
-    // The Eight Gates: not a cloak, the steam of a body burning itself.
+    // EVERGREEN: not a cloak, the steam of a body burning itself.
     case 'chi': return mote === 'steam' ? voice('steam') : voice('chi', !!power.shell);
     case 'cursed': return voice('cursed', !!power.shell);
     case 'aura': return voice('aura', !!power.shell);
@@ -109,7 +109,7 @@ export function powerVoice(fighter: FighterId): PowerVoice | undefined {
 }
 
 /** Whose own entry already is their power arriving, a recorded moment the plan times to the frame: Nigo's UNSEALED
- *  (fx-unsealed, "spiritual pressure let go all at once on KAI!"). No second pillar is laid over it. */
+ *  (fx-unsealed, "raw pressure let go all at once on KAI!"). No second pillar is laid over it. */
 const OWN_ARRIVAL: ReadonlySet<FighterId> = new Set<FighterId>(['nigo']);
 /** Whether the power's entrance is played: not for the two whose arrival is their own layer's (game/powerUp.ts), nor
  *  over an entry that is that arrival already. */

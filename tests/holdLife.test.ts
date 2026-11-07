@@ -16,8 +16,8 @@ import type { AttackSlot, FighterId } from '../src/game/types';
  *  the longest unbroken run of frames under 1.5 degrees before the move's last
  *  blow. Before the held-pose layer: Grand Tide 4.2 s, Kenzo 2.3 s, Kuon
  *  2.2 s, Kosho 1.8 s. The bar: under 0.4 s for a special, 0.8 s for an
- *  ultimate. Whichever body is drawn is measured - Full Swell's for King
- *  Kong Gun. */
+ *  ultimate. Whichever body is drawn is measured - Full Swell's for the
+ *  giant fist. */
 const SKIP = /finger|thumb|index|middle|ring|pinky|toe|eye|jaw/i;
 const rigs = new Map<string, GLTF>();
 const CASES: [FighterId, AttackSlot, number][] = [['gummy', 'ultimate', .8], ['kenzo', 'ultimate', .8], ['kuon', 'ultimate', .8], ['shirokane', 'special', .4]];

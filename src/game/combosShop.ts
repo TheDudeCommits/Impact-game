@@ -15,7 +15,7 @@ export const SHOP_COMBOS: Partial<Record<FighterId, ComboRow>> = {
     llls: { name: 'Great Roar', ...snare(5, 1.7) },
     airHeavy: { name: 'Drunken Skyfall', range: 3 },
     airSpecial: { name: 'Cloudbank Dive', ...smash(4.2) },
-    // The man-beast he wakes into breathes fire (its own Grog Gale take throws it).
+    // The half-wyrm he wakes into breathes fire (its own Grog Gale take throws it).
     awakened: { llls: { name: 'Wyrm Breath', ...snare(5, 1.7) } },
   },
   haldor: {

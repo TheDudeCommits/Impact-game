@@ -15,7 +15,7 @@ export const KUZU_MOVES: Record<CoreSlot, MoveDefinition> = {
   special: { name: 'Mad Dog Rush', duration: 1.2, contacts: [1.2 * .7 / 1.15], damage: 124,
     range: 2.65, radius: 1, stamina: 30, cooldown: 4.6, stun: .78,
     knockback: 10, lunge: 11, style: 'melee', outcome: 'wallBounce' },
-  ultimate: { name: 'Devil’s Engine', duration: 2.81, contacts: [.48, 1, 1.4, 2.2],
+  ultimate: { name: 'Bonegrinder', duration: 2.81, contacts: [.48, 1, 1.4, 2.2],
     schedule: [38, 34, 34, 265], damage: 38, finisherDamage: 176,
     range: 2.7, radius: 1.1, stamina: 0, cooldown: 22, stun: .6,
     finisherStun: 2.3, knockback: 0, finisherKnockback: 16, lunge: 5,
@@ -28,7 +28,7 @@ export const KUZU_COMBOS: ComboRow = {
   lllh: { name: 'Dovetail Drop', range: 2.55, radius: .9 },
   llls: { name: 'Mad Dog Drive', range: 2.65, radius: .9 },
   airHeavy: { name: 'Falling Handsaw', range: 2.5, radius: .9 },
-  airSpecial: { name: 'Devil’s Landing', radius: 3.1 },
+  airSpecial: { name: 'Dogpile Landing', radius: 3.1 },
 };
 
 

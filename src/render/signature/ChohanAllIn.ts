@@ -146,7 +146,7 @@ export class ChohanAllIn {
       return;
     }
     for (const kill of this.kills) if (kill.actor === e.actorId && kill.seq === seq) kill.final = true;
-    // The Inverted Spear of Heaven driven through: five cuts across the whole frame, one of them red, and the floor
+    // The forked knife driven through: five cuts across the whole frame, one of them red, and the floor
     // broken for nine metres round.
     this.fang(point, h.yaw, t, .7, 5.2, 5, e.id, true);
     st.burst(point, SPARK_LOOK, 2.4, t, { dir, floor, clean: true });
@@ -342,8 +342,8 @@ export class ChohanAllIn {
     this.stage.glow(tip, .14 + .22 * k, STEEL_LOOK.core, .35 + .65 * k, STAR, .2, Math.floor(time * 24));
   }
 
-  /** The House Wins between its first blow and its last: the Inverted Spear whipped round the victim on the Chain of
-   *  a Thousand Miles, two arcs of links with the blade at the head of each, drawn in as the kill comes; dust lifted
+  /** The House Wins between its first blow and its last: the forked knife whipped round the victim on the long
+   *  chain, two arcs of links with the blade at the head of each, drawn in as the kill comes; dust lifted
    *  in a ring under it and the room gone dark behind the steel. Round the pair, never over them. */
   private hunt(actor: Fighter, victim: Fighter, kill: Kill, elapsed: number, time: number) {
     const st = this.stage, g = clamp((elapsed - CHOHAN_RESTRICTION_BEATS.confirm) / (CHOHAN_RESTRICTION_BEATS.last - CHOHAN_RESTRICTION_BEATS.confirm));

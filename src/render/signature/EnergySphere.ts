@@ -8,7 +8,7 @@ import { noiseGLSL } from '../vfx/noise';
  *  and the release as a flat starburst: nothing read as a thing with volume.
  *  This is a lit-looking body - swirling bands over a noise-churned surface,
  *  a white-hot heart facing the eye, a bright rim split into two colours on
- *  either side (Purple is Blue and Red forced together, so its rim is red on
+ *  either side (two spheres forced together, so its rim is red on
  *  one flank and blue on the other) and a thin ink contour holding the
  *  silhouette, Manga Impact's line. It writes depth, so anything drawn later
  *  behind or inside it - the generic orb CombatEffects puts in the palm - is

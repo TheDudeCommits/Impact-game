@@ -45,7 +45,7 @@ export const GUARDIAN = { rise: .55, fall: .8, keepUser: .3, keepTarget: .14, ne
 /** Its takes: the seconds into each its blow (or release) lands on (scripts/fanim/build_guardian.py). */
 const TAKES = { idle: 'Guardian idle', rise: 'Guardian rise', strike: 'Guardian strike', strikeL: 'Guardian strike L', guard: 'Guardian guard', cast: 'Guardian cast', bow: 'Guardian bow' } as const;
 const CONTACT: Record<string, number> = { [TAKES.strike]: .3 * 1.2, [TAKES.strikeL]: .3 * 1.2, [TAKES.cast]: .35 * 1.5 };
-/** Thunder Lord's Arrow's release in the bow take, as a fraction of it, and the fighter's own (contactFrames.json). */
+/** Ikazuchi Arrow's release in the bow take, as a fraction of it, and the fighter's own (contactFrames.json). */
 const BOW_RELEASE = .6667;
 /** Its joints, by the rig's own names. */
 const JOINT = { hips: 'WAIST_04', chest: 'SPINE3_07', head: 'HEAD_09', armL: 'SHOULDER_L_033', armR: 'SHOULDER_R_055', foreL: 'ELBOW_L_034', foreR: 'ELBOW_R_056',
@@ -159,7 +159,7 @@ export class GuardianLooms {
     for (const [id, f] of fighters) {
       const s = f.state, look = GUARDIAN_LOOKS[s.fighter];
       if (!look) continue;
-      // Out for the awakening's window, and for Thunder Lord's Arrow when Shiden is not awakened.
+      // Out for the awakening's window, and for Ikazuchi Arrow when Shiden is not awakened.
       const elapsed = s.actionTime * s.actionDuration, arrow = s.fighter === 'shiden' && s.action === 'ultimate' && !s.awakened;
       const out = s.alive && (!!s.awakened || s.action === 'awaken' || arrow) && !id.startsWith('warm-');
       let loom = this.looms.get(id);
@@ -263,7 +263,7 @@ export class GuardianLooms {
   dispose() { this.reset(); for (const loom of this.spares.values()) this.drop(loom); this.spares.clear(); }
 }
 
-/** Thunder Lord's Arrow on the bow take: the draw laid over the move up to its release (MOVES.shiden.ultimate's contact) - the
+/** Ikazuchi Arrow on the bow take: the draw laid over the move up to its release (MOVES.shiden.ultimate's contact) - the
  *  head skipped so it draws no faster than 1.4 times - and the follow-through over the rest, as the fighter's own clip
  *  is (Fighter's ULTIMATE_CLIPS release) and as the Guardian summoned for it always was. Seconds into the take. */
 export function bowTime(elapsed: number) {

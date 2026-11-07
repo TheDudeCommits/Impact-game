@@ -5,7 +5,7 @@ import { ORIENT, SPRITE } from '../SparkField';
 
 /** What comes off an awakened body besides its world's power (awakenedPower.ts `motes`): a cursed fruit's own
  *  signature over the Will - Senko's light glinting, magma dripping off Shakugo's fists, Aqrab's sand turning
- *  round his coat, the dark lifting off Barrow - a captain's petals, a cloak of chi boiling, a quirk's sparks
+ *  round his coat, the dark lifting off Barrow - a captain's petals, a cloak of chi boiling, a power's sparks
  *  popping at the palms, the steam off a body past its limit, a blade breathing its element.
  *
  *  Small things, a few a second, from the shared kit's two sprite fields: nothing of its own to draw, nothing to

@@ -7,7 +7,7 @@ import { MoveStage, STAGE_LIMITS } from '../src/render/signature/MoveStage';
 
 const ID = 'minase' as FighterId;
 /** The module stages on the scene's shared MoveStage (the test holds it too, to read what is drawn) and keeps three
- *  pools of its own, read by name: the Senpugan's arcs, the formula's rings and its strokes. */
+ *  pools of its own, read by name: the palm sphere's arcs, the formula's rings and its strokes. */
 function harness(budget = 1) {
   const scene = new THREE.Scene(), stage = MoveStage.for(scene, { budget }), fx = new MinaseRaijin(scene, { budget });
   function make(id: string) {
@@ -36,7 +36,7 @@ describe('Minase manually committed presentation', () => {
       expect(h.own()).toEqual([0, 0, 0]); expect(h.staged()).toBe(0); expect(JSON.stringify(h.actor.state)).toBe(before);
     } finally { h.end(); }
   });
-  it('awakening is the bounded formula at his feet, without a Senpugan or a state mutation', () => {
+  it('awakening is the bounded formula at his feet, without a palm sphere or a state mutation', () => {
     const h = harness();
     try {
       Object.assign(h.actor.state, { action: 'awaken', actionTime: .6 }); const before = JSON.stringify(h.actor.state);
@@ -55,7 +55,7 @@ describe('Minase manually committed presentation', () => {
       expect(h.own()).toEqual([0, 0, 0]); expect(h.staged()).toBe(0);
     } finally { h.end(); }
   });
-  it('winds the Senpugan up at the true shown strike socket, with its halo and its light on the room', () => {
+  it('winds the palm sphere up at the true shown strike socket, with its halo and its light on the room', () => {
     const h = harness();
     try {
       h.actor.joints.get('LeftHand')!.position.set(-.4, 1.3, .8); h.scene.updateMatrixWorld(true);
@@ -69,7 +69,7 @@ describe('Minase manually committed presentation', () => {
       expect(h.stage.counts.glows).toBe(1); expect(h.stage.counts.bolts).toBeGreaterThan(3); expect(h.stage.counts.lights).toBe(1);
     } finally { h.end(); }
   });
-  it.each(['lh', 'lllh', 'airHeavy'])('keeps a right-kunai %s branch free of the Senpugan: a glint of gold on the blade', branch => {
+  it.each(['lh', 'lllh', 'airHeavy'])('keeps a right-kunai %s branch free of the palm sphere: a glint of gold on the blade', branch => {
     const h = harness();
     try {
       Object.assign(h.actor.state, { action: 'heavy', branch, actionTime: .5 }); h.kunai();
@@ -96,7 +96,7 @@ describe('Minase manually committed presentation', () => {
       expect(h.pool('spiral-arcs')).toBeGreaterThan(0);
     } finally { h.end(); }
   });
-  it('stages Relay Leap: the formula and the marked kunai through the wind-up, the flash once he has crossed the floor', () => {
+  it('stages Relay Leap: the formula and the waypoint kunai through the wind-up, the flash once he has crossed the floor', () => {
     const h = harness();
     try {
       Object.assign(h.actor.state, { action: 'special', actionTime: .3 / 1.05, actionDuration: 1.05 }); h.kunai();
@@ -130,7 +130,7 @@ describe('Minase manually committed presentation', () => {
       const before = JSON.stringify([...h.fighters.values()].map(f => f.state));
       h.fx.handle(event(), h.fighters); h.fx.update(10.12, h.fighters);
       const shots = h.stage.counts.shots, arcs = h.pool('spiral-arcs');
-      expect(shots).toBeGreaterThan(3); expect(arcs).toBeGreaterThan(6); // the palm's Senpugan and the one grinding where it landed
+      expect(shots).toBeGreaterThan(3); expect(arcs).toBeGreaterThan(6); // the palm's sphere and the one grinding where it landed
       h.fx.handle(event(), h.fighters); h.fx.update(10.12, h.fighters);
       expect(h.stage.counts.shots).toBe(shots); expect(h.pool('spiral-arcs')).toBe(arcs);
       expect(JSON.stringify([...h.fighters.values()].map(f => f.state))).toBe(before); expect(h.actor.group.position.toArray()).toEqual([0, 0, 0]);
@@ -173,7 +173,7 @@ describe('Minase manually committed presentation', () => {
       h.fx.handle(event({ id: 2, slot: 'ultimate', contactIndex: 2, serverTime: 12.8 }), h.fighters);
       h.foe.state.alive = false; h.fighters.delete('foe');
       h.fx.update(12.9, h.fighters);
-      // The Senpugan driven home among his marks (still standing), its shell of wind, the floor shaken, and what is left.
+      // The palm sphere driven home among his marks (still standing), its shell of wind, the floor shaken, and what is left.
       expect(h.stage.counts.shots).toBeGreaterThan(3); expect(h.pool('spiral-arcs')).toBeGreaterThan(3); expect(h.pool('seal-rings')).toBeGreaterThanOrEqual(MINASE_TEMPEST.marks * 2 + 2);
       Object.assign(h.actor.state, { action: 'idle', actionTime: 0 });
       h.fx.update(13.6, h.fighters);

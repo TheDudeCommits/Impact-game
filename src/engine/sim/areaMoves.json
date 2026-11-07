@@ -25,9 +25,9 @@
       "telegraph": 0.8,
       "look": "rain",
       "anim": {
-        "clip": "Senpugan charge Bushin"
+        "clip": "Whirlsphere charge Clone"
       },
-      "voice": "vo-konta-odama-senpugan",
+      "voice": "vo-konta-great-whirlsphere",
       "ja": "風術・旋風時雨",
       "card": "Senpu Shigure"
     }
@@ -495,7 +495,7 @@
       "anim": {
         "clip": "Relay Rush"
       },
-      "voice": "vo-minase-rasen-senko",
+      "voice": "vo-minase-great-lap",
       "ja": "疾風早馬・大周回・三番"
     }
   },
@@ -1067,7 +1067,7 @@
       "anim": {
         "clip": "Falling Lion Palm"
       },
-      "voice": "vo-hakushi-toad-mouth",
+      "voice": "vo-hakushi-mane-cage",
       "ja": "鬣の檻"
     }
   },
@@ -1644,7 +1644,7 @@
       "telegraph": 0.75,
       "look": "burst",
       "anim": {
-        "clip": "Serious Uppercut"
+        "clip": "Clock-Out Uppercut"
       },
       "voice": "vo-ippon-trump-card",
       "ja": "残業ちゃぶ台返し",

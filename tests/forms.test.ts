@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { MOVES } from '../src/game/moves';
-import { CombatEffects, BIJUDAMA } from '../src/render/CombatEffects';
+import { CombatEffects, FOXFIRE_ORB } from '../src/render/CombatEffects';
 import { applyToonShading, toonKind } from '../src/render/look/toonShading';
 import { SIGNATURE, gradeLocal, gradeOnce, SPECIAL_GRADE, GRADE } from '../src/render/signature/context';
 import { ROADROLLER_ASSETS, ROLLER_ASSET } from '../src/render/signature/Steamroller';
@@ -92,11 +92,11 @@ describe('ordinary specials grade a pool round their caster', () => {
 describe('the Kitsunebi-Dama and the steamroller', () => {
   it('holds a Kitsunebi-Dama near the size of what it hits', () => {
     const move = MOVES.konta.ultimate;
-    expect(BIJUDAMA.held * 2, 'Konta\'s ball is taller than he is').toBeGreaterThan(3.5);
-    expect(BIJUDAMA.kurobi).toBeGreaterThan(BIJUDAMA.held);
+    expect(FOXFIRE_ORB.held * 2, 'Konta\'s ball is taller than he is').toBeGreaterThan(3.5);
+    expect(FOXFIRE_ORB.kurobi).toBeGreaterThan(FOXFIRE_ORB.held);
     // Round 3e (ULTFIX): the burst is drawn at the blast's radius, which is
     // at least the ball it bursts from - Kurobi's too, as it flies (0.9 of it).
-    expect(move.radius, 'the blast at least the ball').toBeGreaterThanOrEqual(BIJUDAMA.held);
-    expect(move.radius).toBeGreaterThanOrEqual(BIJUDAMA.kurobi * .9);
+    expect(move.radius, 'the blast at least the ball').toBeGreaterThanOrEqual(FOXFIRE_ORB.held);
+    expect(move.radius).toBeGreaterThanOrEqual(FOXFIRE_ORB.kurobi * .9);
   });
 });

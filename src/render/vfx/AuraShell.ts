@@ -125,7 +125,7 @@ export const SHELL = {
   shroud: { thick: .095, lick: .08, grain: 1.2, climb: 1.2, boil: .45, soft: .85, torn: .1, tear: .6, hot: 0, ink: 0, band: .2, alpha: .8 },
 } as const satisfies Record<string, ShellLook>;
 
-/** A Golden Form's aura as a shell that hugs the body.
+/** A gold awakening's aura as a shell that hugs the body.
  *
  *  Each skinned part of the fighter is drawn a second time - its own vertex
  *  buffers and its own live skeleton, so it follows every frame of the

@@ -25,7 +25,7 @@ function sequence(f:ReturnType<typeof fixture>,slot:AttackSlot,end:number,extra:
  const move=MOVES.gosu[slot];for(let i=0;i<=Math.ceil(end*120);i++){const time=Math.min(end,i/120);f.tick({...f.state,action:slot,actionStarted:1,actionSeq:2,actionDuration:move.duration,actionTime:time/move.duration,...extra},1+time);}
  return f.inner.stands.get('owner')!;
 }
-describe('native Ratio blade and manually commanded Crazy Diamond',()=>{
+describe('native Ratio blade and manually commanded the mender',()=>{
  it.skipIf(!!ORIGINALS.sashigane)('Sashigane charge and contact stay on the actual rigid wrapped blade',()=>{
   const f=new Fighter(base('sashigane'),rigs.get('sashigane')!);f.prepareRush();
   try{for(const slot of ['light','heavy','special','ultimate']as const){const m=MOVES.sashigane[slot];for(let i=0;i<=60;i++)f.update(1/120,{...base('sashigane'),action:slot,actionStarted:1,actionSeq:2,actionDuration:m.duration,actionTime:i/60*m.contacts[0]/m.duration},true);

@@ -41,7 +41,7 @@ import { umeStrikeSide } from '../../game/fighters/ume';
 import { tokanStrikeJoint, TOKAN_SABER_SOCKET } from '../../game/fighters/tokan';
 import { strappadoStrikePoint } from '../../render/signature/StrappadoStrings';
 import { barrowStrikePoint } from '../../render/signature/BarrowEmperor';
-import { unariStrikeJoint } from '../../render/signature/UnariBungeeGum';
+import { unariStrikeJoint } from '../../render/signature/UnariElastic';
 import { hakushiStrikeSocket, HAKUSHI_MOUTH_OFFSET } from '../../game/fighters/hakushi';
 import { kusushiStrikeSocket } from '../../game/fighters/kusushi';
 import { suzuranStrikeSide } from '../../game/fighters/suzuran';
@@ -82,7 +82,7 @@ export interface SocketContext {
   /** Whether the body asked is an awakened form's, and whether the one drawn is. */
   readonly form: boolean;
   readonly shownForm: boolean;
-  /** The awakened form's body while its group is shown (Gorai's man-beast, Konta's Kurobi). */
+  /** The awakened form's body while its group is shown (Gorai's half-wyrm, Konta's Kurobi). */
   readonly formBody: Fighter | undefined;
   /** The contact a melee contact is asked for; undefined for a strike or a charge. */
   readonly index: number | undefined;
@@ -415,7 +415,7 @@ export const FIGHTER_SOCKETS: Readonly<Partial<Record<FighterId, FighterSockets>
   // Kosho's kicks land with his right foot; Tobari's Murder of Crows heavy with his left (its trail was drawn off the kunai).
   kosho: { contact: { always: { joint: 'RightFoot' } } },
   tobari: { contact: ctx => ctx.state.action === 'heavy' ? { always: { joint: 'LeftFoot' } } : undefined },
-  ward: { contact: ctx => (ctx.state.action === 'special' || ctx.state.action === 'ultimate') && ctx.body.slotClip(ctx.state, ['Cautery Blade', 'Counter Shock', CROSSMATCH_TAKE.open.clip]) ? 'handL' : undefined },
+  ward: { contact: ctx => (ctx.state.action === 'special' || ctx.state.action === 'ultimate') && ctx.body.slotClip(ctx.state, ['Cautery Blade', 'Flatline Shock', CROSSMATCH_TAKE.open.clip]) ? 'handL' : undefined },
   // Yuragi's fire leaves both palms; Gaunt' Cleave wave his GRAVEDIGGER's edge and his cannon his iron left arm; Dorado's
   // Sovereign Shot his flintlock; Shiun's GLASS LANCES gathers between his wings; Taisei's ki in both hands, and
   // Ouga's for his Shikou-Ha and Kyokko-Ho - drawn toward his knuckles, where his fists are.
@@ -429,7 +429,7 @@ export const FIGHTER_SOCKETS: Readonly<Partial<Record<FighterId, FighterSockets>
   }) : undefined },
   taisei: { charge: 'handRL' },
   ouga: { charge: ctx => ctx.state.action === 'special' || ctx.state.action === 'ultimate' ? 'handRL' : undefined, hands: { toward: 'handmiddle1', by: .65 } },
-  // Konta: Kurobi's beast bomb at his jaws; the Senpugan in his palm, the Galewheel held up over it, the Bushin's
+  // Konta: Kurobi's beast bomb at his jaws; the Senpugan in his palm, the Galewheel held up over it, the clone's
   // between both hands - a combo ender from his hand wherever its own take holds it.
   konta: {
     formHands: 'awakened',
@@ -458,7 +458,7 @@ export const FIGHTER_SOCKETS: Readonly<Partial<Record<FighterId, FighterSockets>
       return out.addScaledVector(forward.set(Math.sin(body.group.rotation.y), 0, Math.cos(body.group.rotation.y)), .08).addScaledVector(UP, .04);
     }),
   },
-  // Gorai's man-beast and Magatsu's Heian form carry weapons of their own: while the form is drawn in the body's place,
+  // Gorai's half-wyrm and Magatsu's four-armed form carry weapons of their own: while the form is drawn in the body's place,
   // the form's strike; on the form, Magatsu's lower arms strike with spear and dagger.
   gorai: { strike: 'form strike' },
   magatsu: { strike: { first: ['form strike', magatsuWeapon] } },

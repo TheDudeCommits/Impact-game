@@ -8,7 +8,7 @@ export const SHOP_A: Partial<Record<FighterId, OriginalFighter>> = {
   // braided crest, a forked braided beard, lightning scars down both arms, a sleeveless storm-violet sailcloth greatcoat
   // and an anchor chain for a belt. He fights with a colossal riveted iron club cut from a ship's mast-spar (carried on
   // Gorai's mast-breaker bone, scripts/originals/shop/build_a.sh), swigs storm-grog before a gale, and calls the lightning
-  // down it. Awakened, the STORM WYRM: a body of his own, scaled, antlered and tailed, in the man-beast form's place.
+  // down it. Awakened, the STORM WYRM: a body of his own, scaled, antlered and tailed, in the half-wyrm form's place.
   gorai: {
     name: 'Gorai', series: 'Dust Sea',
     homeArt: true,

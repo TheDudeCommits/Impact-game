@@ -24,7 +24,7 @@ import type { AttackSlot, CombatEvent, FighterId, GameSnapshot, PlayerInput } fr
  *  server lands it; and a preview the server turns away is let go of over a
  *  quarter of a second. Each case is a real ArenaSimulation for the server
  *  and the client's Prediction, LAG ticks apart each way, as in
- *  senpuganContact.test.ts. */
+ *  whirlsphereContact.test.ts. */
 const LAG = 6;
 type Foe = (tick: number, server: ArenaSimulation) => Partial<PlayerInput> | undefined;
 type Frame = { tick: number; action: string; x: number; y: number; z: number };

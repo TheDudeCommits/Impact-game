@@ -2,7 +2,7 @@ import type {CoreSlot} from '../types';
 import type {MoveDefinition} from '../moves';
 import type {ComboRow} from '../combos';
 
-/** Laboratory-only Flame Breathing: every damaging beat follows a manual input.
+/** Laboratory-only flame sword form: every damaging beat follows a manual input.
  * Fire is presentation, never a burn tick, autonomous summon or idle aura damage. */
 export const YODAKA_MOVES:Record<CoreSlot,MoveDefinition>={
  light:{name:'First Watch: Owl\'s Swoop',duration:.47,contacts:[.168],damage:19,range:2.65,radius:.62,stamina:9,cooldown:.47,stun:.32,knockback:3.2,lunge:4.2,style:'melee'},

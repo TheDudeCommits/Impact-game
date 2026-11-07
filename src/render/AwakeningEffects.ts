@@ -8,7 +8,7 @@ import { VfxKit } from './vfx/VfxKit';
 import { faceUpright, onLens } from './lenses';
 import { SPRITE, ORIENT } from './vfx/SparkField';
 import { AuraShell } from './vfx/AuraShell';
-import { ArmamentCoat } from './vfx/ArmamentCoat';
+import { LacquerCoat } from './vfx/LacquerCoat';
 import { KuonVoid } from './signature/KuonVoid';
 import { FeuBleu, LimbFire, KAGUTSUCHI } from './signature/FeuBleu';
 import { Setsuna } from './signature/Setsuna';
@@ -22,7 +22,7 @@ import { originalBurst } from '../originals/akaganeBurst';
 
 /** The aura a transformation burns while it lasts, and the burst it arrives on.
  *
- *  A flame transformation (Golden Form, Kagari's) burns as a shell hugging the
+ *  A flame transformation (gold awakening, Kagari's) burns as a shell hugging the
  *  body - see AuraShell - with a few tongues flicking off the crown and the
  *  shoulders, sparks rising off it and a light of its colour on the fighter
  *  and the floor. Bounded instanced geometry otherwise, in the same shape as
@@ -99,7 +99,7 @@ export class AwakeningEffects {
   private up = new THREE.Vector3(0, 1, 0);
   private shell: AuraShell;
   /** Iron Will, hardened: the black a Dust Sea fighter's fists, shins or blade go while awakened. */
-  private coat: ArmamentCoat;
+  private coat: LacquerCoat;
   /** The power-up pass: the power-up itself - the ki flame, its lightning, the floor and the break - and the flame a
    *  transformation burns while it lasts. */
   private power: PowerUp;
@@ -115,7 +115,7 @@ export class AwakeningEffects {
   private emperor: LimbFire;
   /** Setsu's SETSUNA as speed: a lightning trail, on standard joints only. */
   private setsuna: Setsuna;
-  /** Round 3b: Ward's awakening on Ward - K-ROOM, the membrane, Crossmatch. */
+  /** Round 3b: Ward's awakening on Ward - SHEATH DOME, the membrane, Crossmatch. */
   private room: OperatingTheatre;
   private nextSpark = new Map<Fighter, number>();
   private chest = new THREE.Vector3();
@@ -135,7 +135,7 @@ export class AwakeningEffects {
     this.kit = VfxKit.for(scene);
     // A split screen's half: the flame cards turned to its own lens about their upright axis (render/lenses.ts).
     onLens(camera => { if (this.flames.count) faceUpright(this.flames, camera.getWorldPosition(this.lensEye)); });
-    this.shell = new AuraShell(scene); this.coat = new ArmamentCoat(scene);
+    this.shell = new AuraShell(scene); this.coat = new LacquerCoat(scene);
     this.power = new PowerUp(scene, this.kit);
     this.infinity = new KuonVoid(scene); this.ifrit = new FeuBleu(scene); this.emperor = new LimbFire(scene, KAGUTSUCHI); this.setsuna = new Setsuna(scene); this.room = new OperatingTheatre(scene);
     this.flames.count = 0; this.flames.setColorAt(0, new THREE.Color(0xffffff));
@@ -209,7 +209,7 @@ export class AwakeningEffects {
    *  manga impact frame - the fighters drawn as ink for a frame or two, which
    *  is what hides the swap - with speed lines and the edge fringe. */
   private burst(id: string, fighter: FighterId, actor: Fighter, time: number) {
-    // (An outfit's own aura where it has one: a Golden Form Blue bursts blue.)
+    // (An outfit's own aura where it has one: a blue gold-awakening outfit bursts blue.)
     const [core, rim] = this.entryColours(actor);
     const ring = this.ring();
     ring.material.color.set(core);
@@ -292,7 +292,7 @@ export class AwakeningEffects {
     kit.pulse(p.x, p.y + 1.5, p.z, core, 3.2, 9, time, .45, 2.5);
   }
 
-  /** A fighter's power, in their outfit's colours where it has them (a Golden Form Blue burns blue). */
+  /** A fighter's power, in their outfit's colours where it has them (a blue gold-awakening outfit burns blue). */
   private styleOf(fighter: Fighter): PowerStyle {
     const forced = import.meta.env?.DEV ? (globalThis as unknown as { __auraColours?: readonly [number, number] }).__auraColours : undefined;
     const power = awakenedPower(fighter.state.fighter);
@@ -377,7 +377,7 @@ export class AwakeningEffects {
       const power = awakenedPower(state.fighter), glow = standingAura(state.fighter), worn = power.shell;
       // Round 3e: a low burn while the power gathers; the flare on the burst.
       const gathering = state.action === 'awaken' && state.actionTime * state.actionDuration < awakeningSwapAt(state.fighter);
-      // Armament comes up with the swap, in a breath, and goes as the window gutters out.
+      // The lacquer coat comes up with the swap, in a breath, and goes as the window gutters out.
       if (power.coat && !gathering) {
         const since = state.action === 'awaken' ? state.actionTime * state.actionDuration - awakeningSwapAt(state.fighter) : 1;
         this.coat.draw(fighter, time, THREE.MathUtils.clamp(left, 0, 1) * THREE.MathUtils.clamp(since / .18, 0, 1), power.coat, this.styleOf(fighter).will?.glow ?? this.colour.set(aura[1]));

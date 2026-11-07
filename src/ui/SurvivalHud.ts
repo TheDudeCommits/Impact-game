@@ -942,7 +942,7 @@ export class SurvivalHud {
       const kanji = document.createElement('b'); kanji.textContent = shown.kanji;
       // Its name beside the kanji: most players read the one, not the other.
       const name = document.createElement('small'); name.textContent = shown.name.toUpperCase();
-      // (A long one, set tighter: DIMENSION SLASH ran under its own ★.)
+      // (A long one, set tighter: a long name ran under its own ★.)
       if (shown.name.length > 12) name.className = 'long';
       const level = document.createElement('i'); level.textContent = def.max > 1 ? (n >= def.max ? '★' : String(n)) : '';
       chip.append(kanji, name, level);

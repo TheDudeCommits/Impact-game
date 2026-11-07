@@ -321,7 +321,7 @@ describe('the transformation table', () => {
   it('only changes a move for a fighter whose transformation is the move', () => {
     for (const id of roster) for (const slot of ['light', 'heavy', 'special', 'ultimate'] as const) {
       const changed = moveFor(id, slot, true) !== MOVES[id][slot];
-      // (Round 4b: SUNRISE's Gatling is the Dawn Gatling - his fists blown up. 13 October 2026: Hawser wakes as the Attack
+      // (Round 4b: SUNRISE's Gatling is the dawn barrage - his fists blown up. 13 October 2026: Hawser wakes as the Attack
       // Colossus, another body with a kit of its own, as Konta wakes as Kurobi.)
       expect(changed, `${id} ${slot}`).toBe(id === 'konta' || id === 'hawser' || (id === 'koko' || id === 'oro') && slot === 'ultimate' || id === 'gummy' && slot === 'special');
     }

@@ -134,7 +134,7 @@ describe('Setsu awakened: SETSUNA is a body of lightning', () => {
 });
 
 describe('Ward awakened: the ROOM on Ward', () => {
-  it('sheathes LANCET in a K-ROOM, films his outline and turns Crossmatch cubes round him - under the dome, off the floor', () => {
+  it('sheathes LANCET in a SHEATH DOME, films his outline and turns Crossmatch cubes round him - under the dome, off the floor', () => {
     const scene = new THREE.Scene(), fx = new OperatingTheatre(scene), ward = biped('l', 'ward', { awakened: true, awakenedUntil: 30 }, true);
     const fighters = new Map([['l', ward]]);
     try {

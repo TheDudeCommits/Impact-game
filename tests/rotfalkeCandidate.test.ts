@@ -1,6 +1,6 @@
 import {describe,it,expect} from 'vitest';
 import {ROTFALKE_MOVES,ROTFALKE_CINEMATIC,ROTFALKE_AWAKENING,rotfalkeStrikeSocket,rotfalkeAuthoredKick} from '../src/game/fighters/rotfalke';
-describe('Rotfalke manually controlled EVA02 contact contract',()=>{
+describe('Rotfalke manually controlled war-frame contact contract',()=>{
  it('balances the four manual contacts with the runtime repeated-hit scaling',()=>{const m=ROTFALKE_MOVES.ultimate;expect(m.contacts).toHaveLength(4);expect(m.contacts[0]).toBeLessThanOrEqual(.6);expect(m.schedule!.reduce((sum,n,i)=>sum+Math.round(n*(1-i*.09)),0)).toBe(290);expect(m.finisherDamage!+3*m.damage).toBe(290);expect(ROTFALKE_CINEMATIC.cine.windows).toHaveLength(3)});
  it('uses the right foot and left palm for their actual native rush and branch clips',()=>{for(const clip of['Raking Talon','Rush 2','Rising Talon Heel','Red Plummet'])expect(rotfalkeStrikeSocket('light',clip)).toBe('RightFoot');for(const clip of['Diving Stoop','Rush 3','Stoop Breach'])expect(rotfalkeStrikeSocket('heavy',clip)).toBe('LeftHand');for(const clip of['Feather Knife','Rush 1','Cross Talon Drive','Plate Splitter','Feather Drop'])expect(rotfalkeStrikeSocket('special',clip)).toBe('RightHand')});
  it('follows source montage clock and explicit authoritative contact index',()=>{expect([.14,.34,.56,.83].map(t=>rotfalkeStrikeSocket('ultimate','Ten-Count Talons',t))).toEqual(['RightHand','RightFoot','LeftHand','RightHand']);expect(rotfalkeStrikeSocket('ultimate','Ten-Count Talons',.1,2)).toBe('LeftHand')});

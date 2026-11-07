@@ -106,8 +106,8 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
     llls: seg('Sovereign Clash', .06, 1.23, .4), airHeavy: seg('Diving Gilded Cut', .52, 1.33, .38), airSpecial: seg('Horizon Slam', .48, 1.53, .28) },
   shiun: { lh: seg('Wing Blades', .4, 1, .45), llh: seg('BLACK CONFESSIONAL', .2, 1.2, .7), lllh: seg('False Encore', .2, 1.1, .55), llls: seg('awaken-pale-gem', .3, 1.38, .5),
     airHeavy: whole('Hymn Palm', .3409), airSpecial: seg('BLACK CONFESSIONAL', 1.6, 2.5, .4) },
-  magatsu: { lh: seg('Calamity Pyre', .6, 1.4, .55), llh: seg('Hachi', .6, 1.25, .45), lllh: seg('Kai', .6, 1.4, .35), llls: seg('awaken-shrine', 1.6, 2.8, .5),
-    airHeavy: seg('Hex Claw', .3, .9, .45), airSpecial: seg('Kai', .7, 1.63, .2) },
+  magatsu: { lh: seg('Calamity Pyre', .6, 1.4, .55), llh: seg('Calamity Maw', .6, 1.25, .45), lllh: seg('Thousand Cuts', .6, 1.4, .35), llls: seg('awaken-shrine', 1.6, 2.8, .5),
+    airHeavy: seg('Hex Claw', .3, .9, .45), airSpecial: seg('Thousand Cuts', .7, 1.63, .2) },
   // Vesper's (7 October 2026, scripts/fanim/vesper.py): each ender on the blow his take lays - Reverse Quill's backhand
   // at its pinned 0.4625, Updraft's rising cut at 0.4833, Raven's Drop's chop at the heavy's 0.4479 (they were
   // drawn on the library's: Reverse Quill at 0.65, past its cut).
@@ -124,8 +124,8 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   'gohaku': { lh: seg('Beast Rush 4', .3, .75, .4), llh: seg('Beast Rush 3', .05, .4, .5), lllh: seg('Rising Kick', .4, 1.08, .45), llls: whole('Beast Rush 2', .5333),
     airHeavy: seg('Star-Shifting Beam', .2, 1.2, .65), airSpecial: seg('awaken-beast', .9, 2, .4) },
   // Ippon's All-Nighter Headbutt and All-Nighter Shuffle are takes of their own (9 October 2026, scripts/fanim/slj.py), not his
-  // Clock-In Punch and Clock-In Hook; his All-Nighter Desk Flip is Serious Uppercut's take, laid again as the flip.
-  ippon: { lh: whole('All-Nighter Headbutt', .42), llh: whole('Serious Uppercut', .5), lllh: seg('Double Shift', .2, 1, .5), llls: whole('All-Nighter Shuffle', .4),
+  // Clock-In Punch and Clock-In Hook; his All-Nighter Desk Flip is Clock-Out Uppercut's take, laid again as the flip.
+  ippon: { lh: whole('All-Nighter Headbutt', .42), llh: whole('Clock-Out Uppercut', .5), lllh: seg('Double Shift', .2, 1, .5), llls: whole('All-Nighter Shuffle', .4),
     airHeavy: seg('Clean Slate', 1.5, 2.29, .3), airSpecial: seg('Clock-In Kick', .15, .58, .35) },
   sekka: { lh: whole('Sleet Kick', .5), llh: whole('Icefall Hammer', .3), lllh: seg('awaken-high-moon', .6, 1.71, .45), llls: whole('Compass Needle', .89),
     airHeavy: whole('Shatter Jab', .5), airSpecial: seg('Shatter Art: Black Blizzard', .4, 1.33, .35) },
@@ -158,7 +158,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   // Sunpalm Cannon is his special's own Sunpalm Cannon (03-SUNPALM-CANNON), drawn back at the hip as he drops and fired at the floor.
   taisei: { lh: v('Straight Palm', 0.7, 1.7, 0.4, 5.542), llh: v('Rising Axe', 0.95, 1.9, 0.47, 6.042), lllh: v('Flare Hammer', 2.6, 4.3, 0.57, 5.542), llls: v('Flare Hammer', 0.35, 2.35, 0.45, 5.542), airHeavy: v('Afterburn Chase', 0.75, 2.2, 0.3476, 4.042), airSpecial: v('03-SUNPALM-CANNON', 5.9, 7.3, 0.5, 10) },
   ouga: { lh: v('Rising Kick', 0.05, 0.95, 0.33, 6.042), llh: v('Elbow Palm', 1.85, 2.75, 0.39, 5.542), lllh: v('Axe Dive', 0.55, 1.5, 0.47, 6.542), llls: v('Elbow Palm', 0.4, 1.5, 0.41, 5.542), airHeavy: v('Rising Kick', 2.35, 3.3, 0.53, 6.042), airSpecial: v('Axe Dive', 3.3, 4.6, 0.32, 6.542) },
-  konta: { lh: v('Senpugan Attack', 1.75, 2.75, 0.42, 3.333), llh: v('Punch 01', 0.15, 1.05, 0.4, 4.167), lllh: v('Punch 01', 1.95, 3, 0.38, 4.167), llls: v('Senpugan Attack', 0.35, 1.6, 0.55, 3.333), airHeavy: v('Kick 02', 0.55, 1.35, 0.54, 2.333), airSpecial: v('Senpugan Dive', 0.75, 2.2, 0.28, 3.542) },
+  konta: { lh: v('Whirlsphere Attack', 1.75, 2.75, 0.42, 3.333), llh: v('Punch 01', 0.15, 1.05, 0.4, 4.167), lllh: v('Punch 01', 1.95, 3, 0.38, 4.167), llls: v('Whirlsphere Attack', 0.35, 1.6, 0.55, 3.333), airHeavy: v('Kick 02', 0.55, 1.35, 0.54, 2.333), airSpecial: v('Whirlsphere Dive', 0.75, 2.2, 0.28, 3.542) },
   // Round 4b (COMBAT): the Undertow Sweep is a take of its own (gummy-enders2.glb), the arm flung out wide and swept round
   // at neck height; the slam it used to borrow is his air string's.
   gummy: { lh: v('Grand Tide Fist', 0.9, 1.6, 0.2, 1.875), llh: v('Rising Axe', 2, 2.95, 0.42, 6.042), lllh: v('Sickle Sweep', 0.6, 2.6, 0.67, 5.042), llls: v('Slam Stubborn Headbutt', 3.35, 4.35, 0.6, 6.042), airHeavy: v('Rising Axe', 2.95, 3.75, 0.46, 6.042), airSpecial: v('Signal Fire', 2.9, 3.46, 0.36, 3.458) },
@@ -177,7 +177,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   // Round 4b (COMBAT): Biopsy Strike is the Cautery Blade's thrust carried through to the floor (the stun keeps its opening).
   ward: { llh: v('Rising Slash', 0.5, 1.5, 0.55, 6.042), llls: v('Cautery Blade', 0, 0.95, 0.25, 1.333), airHeavy: v('Rising Slash', 2.7, 3.5, 0.56, 6.042), airSpecial: v('Cautery Blade', 0.45, 1.333, 0.62, 1.333) },
   // Round 4b (COMBAT): the Crown Stomp and Infinity are a take of their own (kuon-enders2.glb) - the stomp, and the open
-  // hand held out that everything in front of stops at; the 200% Singularity is his Singularity's own. The critic found
+  // hand held out that everything in front of stops at; the Supermassive is his Singularity's own. The critic found
   // the stomp the Dark Spark's punch and the knockdown and the smash two halves of one take.
   kuon: { lh: v('Punch 01', 0.3, 1, 0.36, 1.000), llh: v('PLANETARIUM', 1.9, 2.9, 0.5, 4.292), lllh: v('Axe Dive', 0.9, 1.75, 0.59, 6.542), llls: v('Stomp Palm', 1.4, 2.6, 0.25, 5.542), airHeavy: v('Stomp Palm', 0.6, 1.6, 0.7, 5.542), airSpecial: v('Singularity', 0.8, 2.4, 0.7, 2.750) },
   // Round 4b (COMBAT): Checkmate is a take of its own (oro-enders2.glb): the leap, the knives flung down from both hands,

@@ -217,7 +217,7 @@ export function clipFor(id: FighterId, clips: readonly BodyClip[], action: Actio
     const adapted = find(['adapted_' + (action === 'hurt' ? 'hit' : action)]);
     if (adapted) return { clip: adapted, step: 'taisei' };
   }
-  const table: Record<string, string[]> = { idle: taisei ? ['taisei-ready', '02-STANCE', 'stance', 'idle'] : ['_Idle', 'Idle'], victory: VICTORY, run: ['Run', 'Walk'], dash: ['Dash', 'Run'], jump: ['jump', 'Jump Fall'], guard: ['Block', 'Guard', '02-STANCE'], light: ['Punch 01', 'Punch', 'Light'], heavy: taisei ? ['Meteor', 'Kick 01', 'Punch 03'] : ['Senpugan Attack'], special: taisei ? ['03-SUNPALM-CANNON', 'Sunpalm Cannon'] : ['Senpugan Ready', 'Senpugan charge'], ultimate: taisei ? ['LAST SUN', 'Ultimate', '01-OSSU'] : ['Senpugan charge Bushin', 'Senpugan charge'], hurt: ['Hit 01', 'Hit', 'Hurt'], defeated: ['Die fall', 'Fall', 'Defeated'] };
+  const table: Record<string, string[]> = { idle: taisei ? ['taisei-ready', '02-STANCE', 'stance', 'idle'] : ['_Idle', 'Idle'], victory: VICTORY, run: ['Run', 'Walk'], dash: ['Dash', 'Run'], jump: ['jump', 'Jump Fall'], guard: ['Block', 'Guard', '02-STANCE'], light: ['Punch 01', 'Punch', 'Light'], heavy: taisei ? ['Meteor', 'Kick 01', 'Punch 03'] : ['Whirlsphere Attack'], special: taisei ? ['03-SUNPALM-CANNON', 'Sunpalm Cannon'] : ['Whirlsphere Ready', 'Whirlsphere charge'], ultimate: taisei ? ['LAST SUN', 'Ultimate', '01-OSSU'] : ['Whirlsphere charge Clone', 'Whirlsphere charge'], hurt: ['Hit 01', 'Hit', 'Hurt'], defeated: ['Die fall', 'Fall', 'Defeated'] };
   const mine = find(table[action] ?? table.idle);
   if (mine) return { clip: mine, step: 'table' };
   return found(find(table.idle), 'table-idle');
@@ -231,9 +231,9 @@ export function idleClip(id: FighterId, clips: readonly BodyClip[], form = false
   return loop ? { clip: loop, step: 'entry' } : clipFor(id, clips, 'idle', form);
 }
 
-/** A won match's pose: the VICTORY entry the body first answers to (Full Beam's Symbol of Peace ahead of the list). */
+/** A won match's pose: the VICTORY entry the body first answers to (Full Beam's Lighthouse Salute ahead of the list). */
 export function victoryEntry(id: FighterId, clips: readonly BodyClip[]) {
-  for (const entry of id === 'full-beam' ? ['Symbol of Peace', ...VICTORY] : VICTORY) {
+  for (const entry of id === 'full-beam' ? ['Lighthouse Salute', ...VICTORY] : VICTORY) {
     const clip = findClipIn(clips, [entry]);
     if (clip) return { entry, clip };
   }

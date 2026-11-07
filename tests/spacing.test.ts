@@ -199,7 +199,7 @@ describe('charge-in moves are charged at a distance and land on arrival', () => 
 
 describe('an iai draw ends past the body it cuts', () => {
   const contact = MOVES.kenzo.heavy.contacts[0];
-  it.each([1.2, 2.4, 3.6, 4.5])('Lion\'s Song from %s m dashes past them, cuts them on the way and lands on the authored contact', gap => {
+  it.each([1.2, 2.4, 3.6, 4.5])('Mirage Draw from %s m dashes past them, cuts them on the way and lands on the authored contact', gap => {
     const fight = bout('kenzo', gap);
     fight.input({ attack: 'heavy' });
     fight.step(contact + .1);

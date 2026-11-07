@@ -7,7 +7,7 @@ import {SIGNATURE,involvesLocal} from './context';
 import {UNARI_MOVES} from '../../game/fighters/unari';
 import {MoveStage,stageLook} from './MoveStage';
 import { blowFloor } from './blowFloor';
-export const isUnariBungeeGum=(id:string|undefined)=>id==='unari';
+export const isUnariElastic=(id:string|undefined)=>id==='unari';
 /** Use the displayed native clip: heavy/third rush are left palms, while
  * the confirmed montage alternates hands and ends with a left release. */
 export function unariStrikeJoint(action:string,clip?:string,contactIndex=0):'LeftHand'|'RightHand'{
@@ -20,7 +20,7 @@ const NO_FLIGHTS:ReadonlyMap<string,Flight>=new Map();
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),RIGHT=new THREE.Vector3(1,0,0);
 /** His own shapes' colours: ink that covers, and the gum and the cards' faces linear and over the bloom threshold (1.1). */
 const PINK=new THREE.Color(2.7,.72,1.9),CORE=new THREE.Color(3,2.3,2.8),INK=new THREE.Color(0x3c123f),WHITE=new THREE.Color(0xfffcf7),CARD=new THREE.Color(1.9,1.84,1.8);
-/** Bungee Gum: it has the properties of both rubber and gum, and it is pink. */
+/** The elastic: it stretches, sticks and snaps back, and it is pink. */
 const GUM=stageLook(0xffd9f2,0xf072cc,0x7a1f6a);
 const HEAVY=UNARI_MOVES.heavy,SPECIAL=UNARI_MOVES.special,ULT=UNARI_MOVES.ultimate,ULT_LAST=ULT.contacts[ULT.contacts.length-1],TAU=Math.PI*2;
 const clamp=(v:number)=>Math.max(0,Math.min(1,v));
@@ -44,7 +44,7 @@ class GumBatch {
 }
 type Receipt={actor:string;target:string;born:number;seed:number;grade:number;point:THREE.Vector3};
 type Tether={actor:string;target:string;born:number;seq:number;ultimate:boolean;endpoint:THREE.Vector3};
-export class UnariBungeeGum {
+export class UnariElastic {
  private cards:GumBatch;private strokes:GumBatch;private rings:GumBatch;private sparks:GumBatch;private disposed=false;
  private receipts:Receipt[]=Array.from({length:UNARI_GUM_LIMITS.impacts},()=>({actor:'',target:'',born:-1e9,seed:0,grade:0,point:new THREE.Vector3()}));
  private tethers:Tether[]=Array.from({length:UNARI_GUM_LIMITS.tethers},()=>({actor:'',target:'',born:-1e9,seq:-1,ultimate:false,endpoint:new THREE.Vector3()}));
@@ -57,14 +57,14 @@ export class UnariBungeeGum {
  handle(e:CombatEvent,fighters?:ReadonlyMap<string,Fighter>){
   if(this.disposed)return;
   if(e.kind==='eliminated'||e.kind==='respawn'){for(const h of this.receipts)if(h.actor===e.actorId||h.target===e.actorId)h.actor='';for(const t of this.tethers)if(t.actor===e.actorId||t.target===e.actorId)t.actor='';for(const c of this.confirms)if(c.actor===e.actorId||c.target===e.actorId&&!c.final)c.actor='';return;}
-  if(isUnariBungeeGum(e.fighter)&&(e.kind==='whiff'||e.kind==='rejected')){for(const c of this.confirms)if(c.actor===e.actorId)c.actor='';return;}
-  if(isUnariBungeeGum(e.fighter)&&e.kind==='confirm'&&e.slot==='ultimate'&&!e.branch&&e.targetId){
+  if(isUnariElastic(e.fighter)&&(e.kind==='whiff'||e.kind==='rejected')){for(const c of this.confirms)if(c.actor===e.actorId)c.actor='';return;}
+  if(isUnariElastic(e.fighter)&&e.kind==='confirm'&&e.slot==='ultimate'&&!e.branch&&e.targetId){
    for(let i=0;i<this.seen.length;i++)if(this.seen[i]===e.id&&this.seenTime[i]===e.serverTime)return;
    const si=this.seenCursor++%this.seen.length;this.seen[si]=e.id;this.seenTime[si]=e.serverTime;
    const c=this.confirms[this.confirmCursor++%this.confirms.length],who=fighters?.get(e.actorId);c.actor=e.actorId;c.target=e.targetId;c.seq=e.actionSeq??who?.state.actionSeq??-1;c.final=false;c.turn=(who?.state.yaw??0)+.4;
    return;
   }
-  if(!isUnariBungeeGum(e.fighter)||e.kind!=='hit'||!e.endpoint)return;
+  if(!isUnariElastic(e.fighter)||e.kind!=='hit'||!e.endpoint)return;
   for(let i=0;i<this.seen.length;i++)if(this.seen[i]===e.id&&this.seenTime[i]===e.serverTime)return;
   const si=this.seenCursor++%this.seen.length;this.seen[si]=e.id;this.seenTime[si]=e.serverTime;
   const actor=fighters?.get(e.actorId);if(!actor)return;
@@ -101,7 +101,7 @@ export class UnariBungeeGum {
  update(time:number,fighters:ReadonlyMap<string,Fighter>,flights:ReadonlyMap<string,Flight>=NO_FLIGHTS){
   if(this.disposed)return;const st=this.stage.open(time);this.cards.begin();this.strokes.begin();this.rings.begin();this.sparks.begin();const detail=this.kit.budget>=.65;
   for(const f of fighters.values()){
-   const s=f.state;if(!isUnariBungeeGum(s.fighter)||!s.alive)continue;const elapsed=s.actionTime*s.actionDuration,seed=(s.actionSeq??0)*3.7;
+   const s=f.state;if(!isUnariElastic(s.fighter)||!s.alive)continue;const elapsed=s.actionTime*s.actionDuration,seed=(s.actionSeq??0)*3.7;
    if(s.whiffedAt===undefined&&(s.action==='light'||s.action==='heavy'||s.action==='special'||s.action==='ultimate')&&!(s.action==='ultimate'&&s.confirmedAt===undefined&&elapsed>ULT.contacts[0]+.1)){
     const power=Math.sin(clamp(s.actionTime)*Math.PI),strike=typeof f.strikePoint==='function'?f.strikePoint(this.hand):this.hand.copy(f.handR??f.group.position);
     st.glow(strike,.28,GUM.main,.45*power);st.glow(strike,.11,GUM.core,.8*power);st.light(strike,1.9,GUM,.2*power);
@@ -118,7 +118,7 @@ export class UnariBungeeGum {
    }
   }
   for(const flight of flights.values()){
-   if(!isUnariBungeeGum(flight.fighter)||flight.slot!=='special'||flight.branch||!flight.released)continue;
+   if(!isUnariElastic(flight.fighter)||flight.slot!=='special'||flight.branch||!flight.released)continue;
    this.q.setFromUnitVectors(FRONT,flight.heading);this.spin.setFromAxisAngle(FRONT,time*19);this.q.multiply(this.spin);this.cards.add(flight.position,this.q,.46,.66,1,CARD,1);
    // Paper Cut: ONE authoritative projectile, dealt as a fan of five (the four round it turn about its line).
    this.across.set(flight.heading.z,0,-flight.heading.x);
@@ -179,7 +179,7 @@ export class UnariBungeeGum {
   if(g>.8)st.speed(.5*(g-.8)/.2,c.actor,c.target);
  }
  private cardFrame(f:Fighter,out:THREE.Vector3,q:THREE.Quaternion){const index=f.bones?.get('righthandindex2'),middle=f.bones?.get('righthandmiddle2'),base=f.bones?.get('righthandindex1');if(!index||!middle||!base)return false;index.getWorldPosition(this.a);middle.getWorldPosition(this.b);base.getWorldPosition(this.p);this.along.subVectors(this.a,this.p).normalize();this.across.subVectors(this.b,this.a).normalize();this.normal.crossVectors(this.across,this.along).normalize();this.across.crossVectors(this.along,this.normal).normalize();this.matrix.makeBasis(this.across,this.along,this.normal);q.setFromRotationMatrix(this.matrix);out.copy(this.a).add(this.b).multiplyScalar(.5).addScaledVector(this.along,.034);return true;}
- /** A strand of Bungee Gum from `a` to `b`, sagging (or pulled up) by `sag` metres at its middle: his ink ribbon with
+ /** A strand of the elastic from `a` to `b`, sagging (or pulled up) by `sag` metres at its middle: his ink ribbon with
   *  its pink heart, and the stage's lit strokes over it, as thick as a wrist. */
  private ribbon(a:THREE.Vector3,b:THREE.Vector3,sag:number,alpha:number,steps:number){this.last.copy(a);for(let i=1;i<=steps;i++){const t=i/steps;this.next.copy(a).lerp(b,t);this.next.y+=Math.sin(t*Math.PI)*sag;this.segment(this.last,this.next,.05,INK,alpha*.75);this.segment(this.last,this.next,.026,PINK,alpha);this.stage.streak(this.last,this.next,.075,GUM.main,alpha*.9);this.stage.streak(this.last,this.next,.024,GUM.core,alpha*1.2);this.last.copy(this.next);}}
  private segment(a:THREE.Vector3,b:THREE.Vector3,width:number,color:THREE.Color,alpha:number){this.p.copy(a).add(b).multiplyScalar(.5);const length=a.distanceTo(b);if(length<1e-5)return;this.d.subVectors(b,a).normalize();this.q.setFromUnitVectors(UP,this.d);this.strokes.add(this.p,this.q,width,length,width,color,alpha);}

@@ -102,7 +102,7 @@ function markAll(bone: THREE.Object3D, at: Map<THREE.Object3D, number>, marked: 
 
 interface Rig { parts: { source: THREE.SkinnedMesh; coat: THREE.SkinnedMesh }[]; material: THREE.ShaderMaterial; used: number }
 
-export class ArmamentCoat {
+export class LacquerCoat {
   private rigs = new Map<Fighter, Rig>();
   private warm?: THREE.SkinnedMesh;
   private frame = 0;
@@ -110,7 +110,7 @@ export class ArmamentCoat {
 
   private material() {
     return new THREE.ShaderMaterial({
-      name: 'ArmamentCoat', vertexShader: VERTEX, fragmentShader: FRAGMENT, side: THREE.FrontSide,
+      name: 'LacquerCoat', vertexShader: VERTEX, fragmentShader: FRAGMENT, side: THREE.FrontSide,
       uniforms: { uTime: { value: 0 }, uStrength: { value: 0 }, uPush: { value: .003 }, uGrain: { value: 1.6 }, uEdge: { value: new THREE.Color() }, uNoise: { value: noiseTexture() } },
       transparent: true, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2,
     });
@@ -127,7 +127,7 @@ export class ArmamentCoat {
     geometry.setAttribute('aCoat', new THREE.Float32BufferAttribute([1, 1, 1], 1));
     const bone = new THREE.Bone(), mesh = new THREE.SkinnedMesh(geometry, this.material());
     mesh.add(bone); mesh.bind(new THREE.Skeleton([bone]));
-    mesh.name = 'armament-coat-warmup'; mesh.frustumCulled = false; mesh.visible = false;
+    mesh.name = 'lacquer-coat-warmup'; mesh.frustumCulled = false; mesh.visible = false;
     this.scene.add(mesh); this.warm = mesh;
   }
   hideWarmup() { if (this.warm) this.warm.visible = false; }
@@ -151,7 +151,7 @@ export class ArmamentCoat {
       if (from.boundingBox) span = Math.max(span, from.boundingBox.max.y - from.boundingBox.min.y);
       const coat = new THREE.SkinnedMesh(geometry, material);
       coat.bindMode = source.bindMode; coat.bindMatrix.copy(source.bindMatrix); coat.bindMatrixInverse.copy(source.bindMatrixInverse); coat.skeleton = source.skeleton;
-      coat.name = 'armament-coat'; coat.frustumCulled = false; coat.visible = false; coat.renderOrder = 2;
+      coat.name = 'lacquer-coat'; coat.frustumCulled = false; coat.visible = false; coat.renderOrder = 2;
       coat.castShadow = coat.receiveShadow = false;
       this.scene.add(coat);
       made.push({ source, coat });

@@ -43,7 +43,7 @@ describe('Rift War', () => {
     expect(fs.readFileSync('src/ui/moba/RiftWarUI.ts', 'utf8')).toContain("s.name==='Fighter'||s.bot?FIGHTERS[s.fighter].name:s.name");
     // The neutral camp is the Moss Revenant (modes-hordes' body), by name too.
     expect(riftUnitName({ team: 'heroes', kind: 'camp' })).toBe('Moss Revenant');
-    expect(RIFT_TROOP_MODELS['white-pale-sapling']).toBe('/assets/moba/troops/moss-revenant.glb');
+    expect(RIFT_TROOP_MODELS['pale-sapling']).toBe('/assets/moba/troops/moss-revenant.glb');
   });
 
   it('ships its troops, structures, floor and stage picture, and its own tile, never the earlier tile or the valley\'s model', () => {

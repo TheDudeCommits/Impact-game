@@ -81,7 +81,6 @@ export const SHOP_R6B: Partial<Record<FighterId, OriginalFighter>> = {
     model: F + 'kuzu-tr1.glb', extraModels: [],
     portrait: F + 'kuzu-portrait.png',
     names: {
-      'Devil’s Engine': 'Bonegrinder', 'Devil’s Landing': 'Dogpile Landing',
     },
     shop: { 'fighter-kuzu': shopItem('Kuzu', 'The scrapyard stray of Scrap Pact: a sawtooth swipe, a dovetail cut, a mad dog rush - and the Bonegrinder, all teeth, no brakes.', '錆') },
   },

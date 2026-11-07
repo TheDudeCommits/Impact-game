@@ -22,7 +22,7 @@ export const HAWSER_COLOSSUS_MOVES:Record<CoreSlot,MoveDefinition>={
 export const HAWSER_COLOSSUS_RUSH={names:['Bough Hook','Timber Cross','Felling Blow'],damage:[24,34,48],tempo:1,shape:'carry'}as const;
 /** The Colossus's area move, the uprooting, as the fighter's own was (src/engine/sim/areaMoves.json has the Scout's): the
  *  ground under the circle splits and the dust rides out over it (its look: `tectonic`, src/render/AreaTelegraph.ts). */
-export const HAWSER_COLOSSUS_AREA={element:'earth',name:'The Uprooting',damage:224,radius:4.4,outcome:'knockdown',knockback:10,area:{telegraph:.85,look:'burst',anim:{clip:'Freedom Hammer'},voice:'vo-hawser-rumbling',ja:'地鳴らし'}}as const;
+export const HAWSER_COLOSSUS_AREA={element:'earth',name:'The Uprooting',damage:224,radius:4.4,outcome:'knockdown',knockback:10,area:{telegraph:.85,look:'burst',anim:{clip:'Freedom Hammer'},voice:'vo-hawser-uprooting',ja:'地鳴らし'}}as const;
 export const HAWSER_COLOSSUS_AREA_LOOK='tectonic';
 /** That look in the uprooting's colours (client side: earth and dust, not the effect's own magma). */
 export const HAWSER_COLOSSUS_AREA_FX={effect:HAWSER_COLOSSUS_AREA_LOOK,settings:{colorMagma:'#4a3a2c',colorEmber:'#d8b48a',colorHot:'#fff1dc'}}as const;

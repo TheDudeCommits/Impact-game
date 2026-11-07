@@ -342,7 +342,7 @@ export class KuonVoid {
 
   private material() {
     return new THREE.ShaderMaterial({
-      name: 'InfinityShell', vertexShader: SHELL_VERTEX, fragmentShader: SHELL_FRAGMENT, side: THREE.BackSide,
+      name: 'VoidShell', vertexShader: SHELL_VERTEX, fragmentShader: SHELL_FRAGMENT, side: THREE.BackSide,
       uniforms: { uTime: { value: 0 }, uStrength: { value: 0 }, uThick: { value: THICK }, uPush: { value: PUSH }, uLick: { value: LICK },
         uHead: { value: new THREE.Vector3(0, -100, 0) }, uRipple: { value: [0, 1, 2, 3].map(() => new THREE.Vector4(0, -100, 0, 0)) },
         uCore: { value: new THREE.Color(CORE) }, uRim: { value: new THREE.Color(RIM) } },

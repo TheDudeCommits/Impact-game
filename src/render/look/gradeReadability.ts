@@ -9,7 +9,7 @@ import { frameUniforms, toonUniforms } from './toonShading';
  *  the fighters gave back half the dimming and took the technique's own hue
  *  as a rim - a violet line on a violet room, a crimson line on black armour
  *  in a crimson room, which is no line at all. Measured on the lock-on view
- *  (scripts/probe_grade_readability.mjs): under Thunder Lord's Arrow's grade Shiden
+ *  (scripts/probe_grade_readability.mjs): under Ikazuchi Arrow's grade Shiden
  *  kept 59% of his separation from the room behind him, Gaunt under his own
  *  57%.
  *
