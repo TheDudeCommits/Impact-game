@@ -2121,7 +2121,7 @@
   {
    "id": "voice-oro-rage-1",
    "file": "/assets/audio/survival/voice-oro-rage-1.m4a",
-   "source": "the fighter's own line vo-oro-saiko-ni-high (oro): Eleven v4 stock preset via Higgsfield",
+   "source": "the fighter's own line vo-oro-my-hour-begins (oro): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "時は満ちた……我が刻の始まりだァッ！",
    "sourceSha256": "8666bc5087fa88912fb93f49f0a9f17c7ef2f89f6edc565b637ca6057e752e14",
@@ -2181,7 +2181,7 @@
   {
    "id": "voice-oro-attack-2",
    "file": "/assets/audio/survival/voice-oro-attack-2.m4a",
-   "source": "the fighter's own line vo-oro-wasted (oro): Eleven v4 stock preset via Higgsfield",
+   "source": "the fighter's own line vo-oro-sluggish (oro): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "トロいッ！",
    "sourceSha256": "8518ae5c90dbad70ba0b864ad472c8b4d254cb51556b16847197162e73d2f474",

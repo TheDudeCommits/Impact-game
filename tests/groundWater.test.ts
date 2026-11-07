@@ -126,7 +126,7 @@ describe('the wave field', () => {
 });
 
 describe('the Mirror Mere\'s lake', () => {
-  it('simulates the fight\'s whole square and its margins, open water on every side, in the domain\'s reds', () => {
+  it('simulates the fight\'s whole square and its margins, open water on every side, in the lair\'s reds', () => {
     const { halfX, halfZ } = STAGES['mirror-mere'];
     const sim = SHRINE_WATER.sim;
     expect(sim.x0).toBeLessThan(-halfX); expect(sim.x1).toBeGreaterThan(halfX);

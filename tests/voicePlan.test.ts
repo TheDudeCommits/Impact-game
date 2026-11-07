@@ -20,7 +20,7 @@ const FIGHTERS = Object.keys(MOVES) as FighterId[];
 const LIGHT_CALLS: Partial<Record<FighterId, AudioCue>> = { 'rakucho':'vo-rakucho-my-turn', shidare:'vo-shidare-ready', kenzo: 'vo-kenzo-crossing', kagari: 'kagari-hinoko', gummy: 'gummy-pistol',
   'basilissa':'vo-basilissa-thorn-kiss', buna:'vo-buna-lets-go', adad:'vo-adad-enough',
   // The shop's four whose lights are named (voicePlan.ts): with efforts between their callouts since 5 October.
-  gorai: 'vo-gorai-ora', shiun: 'vo-shiun-weak', magatsu: 'vo-magatsu-tch', imago: 'vo-imago-i-can-read' };
+  gorai: 'vo-gorai-mast-breaker', shiun: 'vo-shiun-weak', magatsu: 'vo-magatsu-tch', imago: 'vo-imago-i-can-read' };
 
 let nextId = 1;
 const cast = (props: Partial<CombatEvent>): CombatEvent => {
@@ -187,7 +187,7 @@ describe('the time-stop barrages', () => {
       const layers = [...cast_, ...cinematic(fighter, awakened)];
       const loop = layers.find(l => l.loop)!;
       expect(loop, 'a looped GAN/GILDED_PUNCH').toBeDefined();
-      expect(loop.cue).toMatch(fighter === 'koko' ? /ora|barrage/ : /noroma/);
+      expect(loop.cue).toMatch(fighter === 'koko' ? /gan|barrage/ : /noroma/);
       expect(loop.delay!, 'starts right as the barrage does').toBeLessThanOrEqual(window.start);
       expect(loop.delay!).toBeGreaterThanOrEqual(window.start - .1);
       expect(loop.delay! + loop.duration!, 'and plays through it').toBeGreaterThanOrEqual(window.end);

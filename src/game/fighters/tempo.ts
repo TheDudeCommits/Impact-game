@@ -3,7 +3,7 @@ import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 
 /** EOS Tempo, never Magatsu: manual boxing, blood-assisted palm and Dark Spark.
- * Awakening only changes presentation and ordinary stats; no passive domain hits. */
+ * Awakening only changes presentation and ordinary stats; no passive field hits. */
 export const TEMPO_MOVES: Record<CoreSlot, MoveDefinition> = {
   light: { name: 'Street Jab', duration: .42, contacts: [.152], damage: 23,
     range: 2.15, radius: .64, stamina: 8, cooldown: .42, stun: .28,

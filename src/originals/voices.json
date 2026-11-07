@@ -680,29 +680,29 @@
    "voice": "koko",
    "text": "ふん。"
   },
-  "vo-koko-ora-1": {
-   "file": "voice/originals/koko/vo-koko-ora-1.wav",
+  "vo-koko-gan-1": {
+   "file": "voice/originals/koko/vo-koko-gan-1.wav",
    "seconds": 0.47,
    "level": -17,
    "voice": "koko",
    "text": "ガンッ！"
   },
-  "vo-koko-ora-2": {
-   "file": "voice/originals/koko/vo-koko-ora-2.wav",
+  "vo-koko-gan-2": {
+   "file": "voice/originals/koko/vo-koko-gan-2.wav",
    "seconds": 0.61,
    "level": -16.9,
    "voice": "koko",
    "text": "ガァンッ！"
   },
-  "vo-koko-ora-4": {
-   "file": "voice/originals/koko/vo-koko-ora-4.wav",
+  "vo-koko-gan-4": {
+   "file": "voice/originals/koko/vo-koko-gan-4.wav",
    "seconds": 0.42,
    "level": -17,
    "voice": "koko",
    "text": "ガンッ！"
   },
-  "vo-koko-ora-barrage": {
-   "file": "voice/originals/koko/vo-koko-ora-barrage.wav",
+  "vo-koko-gan-barrage": {
+   "file": "voice/originals/koko/vo-koko-gan-barrage.wav",
    "seconds": 1.79,
    "level": -16.4,
    "voice": "koko",
@@ -764,8 +764,8 @@
    "voice": "oro",
    "text": "のろまッ！"
   },
-  "vo-oro-wasted": {
-   "file": "voice/originals/oro/vo-oro-wasted.wav",
+  "vo-oro-sluggish": {
+   "file": "voice/originals/oro/vo-oro-sluggish.wav",
    "seconds": 0.61,
    "level": -16.9,
    "voice": "oro",
@@ -904,8 +904,8 @@
    "voice": "gaunt",
    "text": "がぁっ！"
   },
-  "vo-gaunt-dora": {
-   "file": "voice/originals/gaunt/vo-gaunt-dora.wav",
+  "vo-gaunt-goa": {
+   "file": "voice/originals/gaunt/vo-gaunt-goa.wav",
    "seconds": 0.98,
    "level": -16.4,
    "voice": "gaunt",
@@ -1240,8 +1240,8 @@
    "voice": "shirokane",
    "text": "出番だ、番人さん。"
   },
-  "vo-oro-saiko-ni-high": {
-   "file": "voice/originals/oro/vo-oro-saiko-ni-high.wav",
+  "vo-oro-my-hour-begins": {
+   "file": "voice/originals/oro/vo-oro-my-hour-begins.wav",
    "seconds": 3.69,
    "level": -16.4,
    "voice": "oro",
@@ -1275,8 +1275,8 @@
    "voice": "shiden",
    "text": "来い…雷！"
   },
-  "vo-koko-sabaku": {
-   "file": "voice/originals/koko/vo-koko-sabaku.wav",
+  "vo-koko-your-turn": {
+   "file": "voice/originals/koko/vo-koko-your-turn.wav",
    "seconds": 2.025,
    "level": -16.4,
    "voice": "koko",
@@ -1317,8 +1317,8 @@
    "voice": "gorai",
    "text": "ふんぬっ！"
   },
-  "vo-gorai-ora": {
-   "file": "voice/originals/gorai/vo-gorai-ora.wav",
+  "vo-gorai-mast-breaker": {
+   "file": "voice/originals/gorai/vo-gorai-mast-breaker.wav",
    "seconds": 1.29,
    "level": -14.9,
    "voice": "gorai",
@@ -12258,15 +12258,15 @@
    "voice": "kinu",
    "text": "らぁっ！"
   },
-  "vo-kinu-ora": {
-   "file": "voice/originals/kinu/vo-kinu-ora.wav",
+  "vo-kinu-thread-snap": {
+   "file": "voice/originals/kinu/vo-kinu-thread-snap.wav",
    "seconds": 0.865,
    "level": -16.9,
    "voice": "kinu",
    "text": "プツプツッ！"
   },
-  "vo-kinu-stone-free": {
-   "file": "voice/originals/kinu/vo-kinu-stone-free.wav",
+  "vo-kinu-turn-to-thread": {
+   "file": "voice/originals/kinu/vo-kinu-turn-to-thread.wav",
    "seconds": 0.79,
    "level": -16.4,
    "voice": "kinu",
@@ -12370,15 +12370,15 @@
    "voice": "gosu",
    "text": "セイッ！"
   },
-  "vo-gosu-diamond": {
-   "file": "voice/originals/gosu/vo-gosu-diamond.wav",
+  "vo-gosu-join-it-back": {
+   "file": "voice/originals/gosu/vo-gosu-join-it-back.wav",
    "seconds": 1.545,
    "level": -16.4,
    "voice": "gosu",
    "text": "金で、継いでやらァ！"
   },
-  "vo-gosu-dora": {
-   "file": "voice/originals/gosu/vo-gosu-dora.wav",
+  "vo-gosu-kin-barrage": {
+   "file": "voice/originals/gosu/vo-gosu-kin-barrage.wav",
    "seconds": 1.68,
    "level": -16.4,
    "voice": "gosu",

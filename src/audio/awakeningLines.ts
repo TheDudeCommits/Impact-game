@@ -50,7 +50,7 @@ export const AWAKENING_LINES: Partial<Record<FighterId, AwakeningLine>> = {
   // Shirokane: "出番だ、番人さん。" - "You're up, Warden", as his Guardian rises.
   shirokane: after('shirokane', 'vo-shirokane-pinwheel-eye', 'Guardian', [.03], 0),
   // LORD ORO: "時は満ちた……我が刻の始まりだァッ！" - "The time has come... my hour begins!", MIDNIGHT by name.
-  oro: after('oro', 'vo-oro-saiko-ni-high', 'MIDNIGHT', [.02, .7, 1.31, 1.87, 2.27], 1),
+  oro: after('oro', 'vo-oro-my-hour-begins', 'MIDNIGHT', [.02, .7, 1.31, 1.87, 2.27], 1),
   // Setsu: "行くよ…刹那!" - "Here I go... SETSUNA!". A fifth of a second later than the rest: the lightning that runs
   // through him (sfxPlan.ts, fx-lightning) crests over the burst's tail, and the short call said on it led it by 13 dB in
   // the speech band; once it has crested, by 17.
@@ -70,7 +70,7 @@ export const AWAKENING_LINES: Partial<Record<FighterId, AwakeningLine>> = {
   // Asahi: "燃えろ…夜明けだ！" - "Burn... it's daybreak!", DAYBREAK by name.
   asahi: after('asahi', 'vo-asahi-full-focus', 'DAYBREAK', [.03], 0),
   // KoKo: "お前の番だ……アイアン・ララバイ。" - "Your turn... Iron Lullaby", as his Iron Spirit rises over him.
-  koko: after('koko', 'vo-koko-sabaku', 'HUSH', [.05, 1.31, 1.93], 2),
+  koko: after('koko', 'vo-koko-your-turn', 'HUSH', [.05, 1.31, 1.93], 2),
   // Kagari: "燃え上がれ…カグツチ!" - "Blaze up... KAGUTSUCHI!", his form by name.
   kagari: after('kagari', 'vo-kagari-taimatsu-no-kagari', 'KAGUTSUCHI', [.01], 0),
   // Gohaku: "もう…止められません。白猿が、目を覚ます！" - "There's no stopping it now. The white ape wakes!"

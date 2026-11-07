@@ -1137,8 +1137,8 @@ const STRING_WINDOWS:Partial<Record<FighterId,Partial<Record<AttackSlot,[number,
   asahi:{ultimate:[[0,.5,.31],[.5,.62,.56],[.62,1,.794]]},
   levin:{ultimate:[[0,.356,.181],[.356,.457,.406],[.457,.558,.507],[.558,.658,.608],[.658,.759,.709],[.759,.86,.81],[.86,1,.915]]},
   'rook':{ultimate:[[0,.154,.106],[.154,.236,.195],[.236,.318,.277],[.318,.4,.359],[.4,1,.433]]},
-  // Magatsu's Mirror Mere, a Domain on PLANETARIUM's beat (moves.ts): the hand sign made (together at 0.4 s of
-  // the 2.55) as the Domain closes, held while its four cuts land - a sliver of the held sign each - and Calamity Pyre's bow,
+  // Magatsu's Mirror Mere, a dome on PLANETARIUM's beat (moves.ts): the hand sign made (together at 0.4 s of
+  // the 2.55) as the dome closes, held while its four cuts land - a sliver of the held sign each - and Calamity Pyre's bow,
   // already drawing, loosed (2.02) on the finisher.
   magatsu:{ultimate:[[0,.3,.16],[.3,.37,.335],[.37,.44,.405],[.44,.51,.475],[.51,.57,.54],[.57,1,.79]]},
   // Landslide is the jab that opens it (through at 0.28 s of 2.9), then Rock drawn back to the hip, held while
@@ -3193,7 +3193,7 @@ export class Fighter {
     this.model.updateMatrixWorld(true);
     const garment=state.fighter==='nigo'&&[...this.bones.keys()].some(name=>name.startsWith('detailbone'))?'nightfall':GARMENT[state.fighter]??state.fighter;
     this.secondary=new SecondaryMotion(this.model,garment);
-    this.model.traverse(o=>{if((o as THREE.Mesh).isMesh&&/star-pointing-hand|star_closed_Right/.test(o.name))this.spiritHands.push(o as THREE.Mesh);});
+    this.model.traverse(o=>{if((o as THREE.Mesh).isMesh&&/iron-pointing-hand|iron_closed_Right/.test(o.name))this.spiritHands.push(o as THREE.Mesh);});
     this.model.traverse(o=>{if(o.name.includes('equipment-held'))this.heldWeapons.push(o);});
     if(state.fighter==='ward')this.model.traverse(o=>{if(/^weapon_lancet_sheath/.test(o.name))this.wardSheath.push(o);});
     this.model.traverse(o=>{
@@ -6297,7 +6297,7 @@ export class Fighter {
     this.turnWheel(state.timeStopped||state.hitstop?0:real,state);
     this.limitRootMotion(drawn,dt);
     this.driveRagdoll(state,real);
-    const finger=this.spiritHands.length>0&&state.action==='heavy'&&this.slotClip(state,['Needle Finger']);for(const hand of this.spiritHands){const pointing=hand.name==='star-pointing-hand';hand.visible=pointing?finger:!finger;if(pointing&&hand.morphTargetInfluences){const t=state.actionTime*state.actionDuration,c=MOVES.koko.heavy.contacts[0],d=state.actionDuration;/* Round 3d (PACE): out from the shot, back by the move's end (it was .35-.65 and .8-1.3 s of a .92 s move). */hand.morphTargetInfluences[0]=THREE.MathUtils.smoothstep(t,c-.01,c+.5*(d-c))*(1-THREE.MathUtils.smoothstep(t,c+.75*(d-c),d));}}
+    const finger=this.spiritHands.length>0&&state.action==='heavy'&&this.slotClip(state,['Needle Finger']);for(const hand of this.spiritHands){const pointing=hand.name==='iron-pointing-hand';hand.visible=pointing?finger:!finger;if(pointing&&hand.morphTargetInfluences){const t=state.actionTime*state.actionDuration,c=MOVES.koko.heavy.contacts[0],d=state.actionDuration;/* Round 3d (PACE): out from the shot, back by the move's end (it was .35-.65 and .8-1.3 s of a .92 s move). */hand.morphTargetInfluences[0]=THREE.MathUtils.smoothstep(t,c-.01,c+.5*(d-c))*(1-THREE.MathUtils.smoothstep(t,c+.75*(d-c),d));}}
     this.previousAction=state.action;
     for(const expression of this.faceExpressions)expression.weights[expression.index]=expression.value;
     for(const hand of this.scaledHands)hand.scale.setScalar(this.handScale);

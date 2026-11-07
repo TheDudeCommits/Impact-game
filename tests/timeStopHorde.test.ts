@@ -5,7 +5,7 @@ import { MOVES } from '../src/game/moves';
 const sims: ArenaSimulation[] = [];
 afterEach(() => { for (const s of sims.splice(0)) s.dispose(); });
 
-describe("Kuon's Domain, closed on nobody", () => {
+describe("Kuon's dome, closed on nobody", () => {
   it('lets a fighter walk in, plays its barrage through and never asks the horde for nobody', () => {
     const sim = new ArenaSimulation({ roomMode: 'training', trainingBot: false }); sims.push(sim);
     const asked: unknown[] = [];
@@ -29,12 +29,12 @@ describe("Kuon's Domain, closed on nobody", () => {
       sim.submitInput('g', { seq: 2 + i, moveX: 0, moveZ: 0, yaw: 0 });
       sim.step();
       const tour = g.cast?.tour;
-      // Planned on nobody; then the fighter walks into the Domain while it stands.
+      // Planned on nobody; then the fighter walks into the dome while it stands.
       if (tour?.order && !walkedIn) { expect(tour.order).toEqual([]); expect(tour.visited).toBe(0); sim.place('b', { x: 0, y: 0, z: 2 }); walkedIn = true; }
       longest = Math.max(longest, tour?.order?.length ?? 0);
     }
     expect(walkedIn).toBe(true);
-    expect(longest, 'the Domain took in the fighter who walked in').toBe(1);
+    expect(longest, 'the dome took in the fighter who walked in').toBe(1);
     expect(asked.filter(id => typeof id !== 'string')).toEqual([]);
     expect(stop.radius).toBeGreaterThan(2);
   });

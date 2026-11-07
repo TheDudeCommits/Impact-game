@@ -279,7 +279,7 @@ export class StrikeTrails {
       }
       // The smear holds through the impact freeze, with a trickle so it still
       // reads as motion being held; stopped time does not hold it - it lasts
-      // seconds, and the arc hung across the Domain as a disc.
+      // seconds, and the arc hung across the dome as a disc.
       const step = s.hitstop && !s.timeStopped ? dt * .12 : dt;
       for (let i = 0; i < trail.ages.length; i++) trail.ages[i] += step;
       const life = LIFE * (trail.heavy ? HEAVY_LIFE : 1) * StrikeTrails.lifeScale;

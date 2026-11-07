@@ -149,7 +149,7 @@ describe('the launch gate: pages, music, voices and the package', () => {
   });
   it("leaves a hidden fighter's files, the withheld pages and the uncleared recordings out of the package, and keeps the originals'", () => {
     const files = ['assets/props/steamroller1.glb', 'assets/fighters/gorai-br1.glb', 'assets/home/portraits/gorai.webp', 'assets/ui/moves/gorai.webp', 'assets/audio/home/gorai.m4a',
-      'assets/audio/v2/voice/vo-gorai-ora.wav', 'assets/home/upcoming/index.html', 'assets/home/manga-home.png',
+      'assets/audio/v2/voice/vo-gorai-mast-breaker.wav', 'assets/home/upcoming/index.html', 'assets/home/manga-home.png',
       // (team G: every stage is safe now - src/originals/stages.ts - so a hidden fighter's second file stands where a gated
       // stage's model was: launchUnshipped still drops a stage's model while team G lists it as unsafe)
       'assets/music/home-main.m4a', 'assets/fighters/gorai-wyrm-br1.glb', // (yodaka until Yodaka opened)

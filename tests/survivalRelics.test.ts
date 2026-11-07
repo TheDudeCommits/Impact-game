@@ -146,7 +146,7 @@ describe('boss relics', () => {
     game.dispose();
   }, 60000);
 
-  it('opens the domain with the awakening and cuts while it is open (MIRROR MERE)', () => {
+  it('opens the dome with the awakening and cuts while it is open (MIRROR MERE)', () => {
     const game = fight('lumen', ['magatsu']);
     const hero = game.heroes.get(PLAYER_ID)!;
     const me = game.sim.actors.get(PLAYER_ID)!;

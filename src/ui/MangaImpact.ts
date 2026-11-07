@@ -10,8 +10,8 @@ import { applyOriginalImpactWords } from '../originals/apply';
  *  own: the spirits' cries, a blade's cut, lightning's crackle, a clone's pop. */
 const FINISHER_WORDS: Partial<Record<FighterId, string>> = {
   taisei: 'ドゴォッ', ouga: 'ズガァン', konta: 'ボボンッ', shiden: 'チチチッ', shirokane: 'バリィッ', gummy: 'ギュルルッ',
-  kenzo: 'ズバァッ', kosho: 'ドガァッ', koko: 'オラァッ', nigo: 'ザンッ', kagari: 'ゴォォッ', ward: 'スパッ',
-  kuon: 'ギュオッ', oro: '無駄ァッ', gaunt: 'ドガァン', setsu: 'バチィッ',
+  kenzo: 'ズバァッ', kosho: 'ドガァッ', koko: 'ガァンッ', nigo: 'ザンッ', kagari: 'ゴォォッ', ward: 'スパッ',
+  kuon: 'ギュオッ', oro: 'のろまッ', gaunt: 'ドガァン', setsu: 'バチィッ',
 };
 applyOriginalImpactWords(FINISHER_WORDS);
 

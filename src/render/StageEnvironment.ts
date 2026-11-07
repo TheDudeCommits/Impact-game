@@ -100,7 +100,7 @@ export class StageEnvironment {
       promise = this.build(stage).then(entry => {
         this.pending.delete(stage);
         if (this.disposed) { this.release(stage, entry); throw new Error('StageEnvironment disposed'); }
-        // A stage waits hidden (preloaded, or put away by a Domain) with the camera's occluders in it, hidden and never
+        // A stage waits hidden (preloaded, or put away by a dome) with the camera's occluders in it, hidden and never
         // drawn, and their world matrices come from the frame's matrix pass: the scene, which leaves hidden things
         // alone, keeps walking a stage (hiddenMatrices.ts).
         passWhileHidden(entry.root);

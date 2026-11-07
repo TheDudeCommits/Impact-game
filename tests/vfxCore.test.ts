@@ -52,9 +52,9 @@ describe('the impact language', () => {
     // A rush finisher is the blow the string was building to.
     expect(impactClass(event({ slot: 'light', damage: 30, chain: 3 }), MOVES.taisei.light)).toBeGreaterThanOrEqual(2);
     // The last contact of a barrage outranks its ticks.
-    const ora = MOVES.koko.special;
-    expect(impactClass(event({ slot: 'special', damage: 25, contactIndex: 0 }), ora)).toBe(0);
-    expect(impactClass(event({ slot: 'special', damage: 25, contactIndex: ora.contacts.length - 1 }), ora)).toBe(2);
+    const gan = MOVES.koko.special;
+    expect(impactClass(event({ slot: 'special', damage: 25, contactIndex: 0 }), gan)).toBe(0);
+    expect(impactClass(event({ slot: 'special', damage: 25, contactIndex: gan.contacts.length - 1 }), gan)).toBe(2);
     expect(impactClass(event({ slot: 'ultimate', damage: 200, contactIndex: MOVES.koko.ultimate.contacts.length - 1 }), MOVES.koko.ultimate)).toBe(3);
     // (The feel pass, 15 October) A special's last blow is class 2 whatever it dealt, as every original's is: Ampere's
     // special deals 101.

@@ -39,7 +39,7 @@ function shadeOverTime(stage: StageId) {
  *  lookCloud), on the stage's key light and, by a gentler share, the fighters'. */
 describe('cloud shadows', () => {
   const clouded = (Object.keys(STAGE_LOOKS) as StageId[]).filter(stage => lookFor(stage).cloudShadows);
-  it('drift over the sunny outdoor places only - not a hall, a domain, a night or a rift', () => {
+  it('drift over the sunny outdoor places only - not a hall, a lair, a night or a rift', () => {
     expect(clouded.sort()).toEqual(['dry-harbour', 'harbor', 'hollowmere-quarry', 'starfall-crater', 'sunfall-arena', 'sunward-summit', 'warlords-roof', 'wreckers-causeway']);
     for (const stage of clouded) {
       const look = lookFor(stage), clouds = look.cloudShadows!;

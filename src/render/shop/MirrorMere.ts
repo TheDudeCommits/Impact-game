@@ -6,7 +6,7 @@ uniform vec3 uCenter;uniform float uTime;uniform float uBright;uniform float uRa
 ${noiseGLSL}
 float h1(float n){return fract(sin(n*127.1)*43758.5453);}
 vec3 h3v(float n){return vec3(h1(n),h1(n+17.3),h1(n+41.9));}
-/** The Domain's cuts across the sky: K strokes live at a time, each on a great circle of its own, flashing and gone. */
+/** The dome's cuts across the sky: K strokes live at a time, each on a great circle of its own, flashing and gone. */
 /** The heaped bones round the horizon: their top, as a height over the horizon at each bearing - mounds, and the
  *  round bumps of skulls along them. */
 float bones(vec3 ray){
@@ -78,7 +78,7 @@ vec3 sea(vec3 ray,vec3 at){
   col+=vec3(1.9,.6,.5)*seaCuts(at.xz)*uBright;
   return col;
 }
-/** Where a ray from the eye leaves the Domain's sphere; the sea or the sky along it. */
+/** Where a ray from the eye leaves the dome's sphere; the sea or the sky along it. */
 float exitAt(vec3 ray){vec3 o=cameraPosition-uCenter;float b=dot(o,ray),c=dot(o,o)-uRadius*uRadius,h=b*b-c;return h<0.?0.:-b+sqrt(h);}
 vec3 domainAlong(vec3 ray){
   float t=exitAt(ray);
@@ -176,7 +176,7 @@ export class MirrorMereDomain {
       root.traverse(o => { const m = o as THREE.Mesh; if ((m.isMesh || (o as THREE.Points).isPoints) && o.visible) { o.visible = false; this.hidden.push(o); } });
     }
   }
-  /** The Domain of `id` this frame: centred on `center` (the caster's chest), standing on `floor`, `radius` metres,
+  /** The dome of `id` this frame: centred on `center` (the caster's chest), standing on `floor`, `radius` metres,
    *  `open` 0..1 how far it has grown. */
   show(id: string, center: THREE.Vector3, floor: number, radius: number, open: number, time: number, bright = 1) {
     let v = this.live.get(id);
@@ -191,7 +191,7 @@ export class MirrorMereDomain {
     // The room goes while the lens is inside (as of the last frame drawn).
     if (this.eye.distanceTo(center) < r * .98) this.inside = true;
   }
-  /** Every Domain not shown since `begin` is put away. */
+  /** Every dome not shown since `begin` is put away. */
   begin() { for (const v of this.live.values()) v.shown = false; this.inside = false; }
   end() { for (const [id, v] of this.live) if (!v.shown) { v.busy = false; this.hide(v); this.live.delete(id); } this.room(this.inside); }
   reset() { for (const v of this.live.values()) { v.busy = false; this.hide(v); } this.live.clear(); this.room(false); }

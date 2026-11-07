@@ -9,7 +9,7 @@ import { errorCounts } from './ops/errorCounts';
 /** v21 (7 October 2026): the combo-era stamina bar - Duel, Training, the royale and Bad Blood at 150 (COMBO_STAMINA). */
 /** v22 (8 October 2026): Gummy's GRAND TIDE opens with SUNRISE's stretched grab and lands to 10.5 m (PR #101). */
 /** v23 (8 October 2026): ground hits - a fighter down on the floor is hit (a normal for GROUND_HIT_SCALE, an ultimate whole), getting up dodges normals only, `floorUntil` rides the reaction keys. */
-/** v24 (8 October 2026): ground hits 2 - each ground hit of one stay on the floor worth less, the stay a budget of 5.5% of health (`floorHits`, `floorTaken` ride the reaction keys); Kuon's Flying Kick thrown inside his Domain. */
+/** v24 (8 October 2026): ground hits 2 - each ground hit of one stay on the floor worth less, the stay a budget of 5.5% of health (`floorHits`, `floorTaken` ride the reaction keys); Kuon's Flying Kick thrown inside his dome. */
 /** v25 (8 October 2026): Ward's THEATRE: Flatline opens with Crossmatch, a swap into touch range inside an 11 m ROOM (PR #112). */
 /** v26 (8 October 2026): Taisei's, Konta's, Kagari's and Emperor Jinlin's bombs aimed as they leave the hand and following in flight (PR #117). */
 /** v28: Rift authority and shared external-target allegiance/prediction (PR #129). */
@@ -24,7 +24,7 @@ import { errorCounts } from './ops/errorCounts';
  *  (scripts/combat/parry_humans.mts). */
 /** v36 (10 October 2026): statuses (VOL.3 part two): a landed finisher may leave a burn, a slow or a freeze
  *  (MoveDefinition.status, ArenaSimulation.afflict); no roster move carries one yet, the Forge offers them. */
-/** v37 (10 October 2026): Magatsu's Mirror Mere is a Domain as Kuon's PLANETARIUM is (TIME_STOP_TOURS'
+/** v37 (10 October 2026): Magatsu's Mirror Mere is a dome as Kuon's PLANETARIUM is (TIME_STOP_TOURS'
  *  `domain`): a wall is no shelter as it closes, whoever walks in while it stands is caught, and every grunt inside is
  *  struck as it opens. (v34 is PR #96's.) */
 /** v40 (11 October 2026): the fighter review's first batch (Taisei, Konta, Gummy, Kenzo, Kosho) - each fighter's own area

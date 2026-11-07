@@ -347,7 +347,7 @@ describe('the spirit looms over its awakened user', () => {
     try {
       const at = (elapsed: number, x: number) => { koko.state.actionTime = elapsed / move.duration; koko.state.x = x; koko.group.position.x = x; effects.update(elapsed, 1 / 60, new Map([['u', koko]])); };
       at(stopAt + .05, 0);
-      const dome = scene.getObjectByName('dead-stop-time-stop')!;
+      const dome = scene.getObjectByName('clock-spirit-time-stop')!;
       expect(dome.position.x).toBeCloseTo(0, 6);
       // He moves four metres across it: the bubble stays.
       for (let i = 1; i <= 20; i++) at(stopAt + .05 + i / 60, i * .2);

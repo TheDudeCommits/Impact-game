@@ -17,7 +17,7 @@ import type { PlayerState } from '../../game/types';
  *  Round 3e (ULTFIX): your own ultimate's verdict is the server's now too (a
  *  client's copy leaves it to the server: ArenaSimulation.follows). And a
  *  whiff shows as one at once: what the opener raised over the world - the
- *  time stop, the Domain, ROOM, the technique's grade, its light - is gone
+ *  time stop, the dome, ROOM, the technique's grade, its light - is gone
  *  WHIFF_CLEAR after the verdict is known (`whiffGone`), not held on through
  *  the recovery. The third critic watched MIDNIGHT's stop and SETSUNA's
  *  blue hold for a second and more over nothing. */

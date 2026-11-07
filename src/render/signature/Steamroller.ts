@@ -115,7 +115,7 @@ const INK_FRAGMENT = /* glsl */`uniform float uOpacity;void main(){gl_FragColor=
 const premultiplied = { blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor } as const;
 
 export const ROLLER_ASSET = '/assets/props/steamroller1.glb';
-export const ROADROLLER_ASSETS = [ROLLER_ASSET] as const;
+export const STEAMROLLER_ASSETS = [ROLLER_ASSET] as const;
 /** How each piece of the sourced roller flies when it comes apart: the drums
  *  roll off front and back, the hood and the roll bar go up, the rest scatters. */
 const PIECES: Record<string, { fly: [number, number, number]; spin: [number, number, number] }> = {
@@ -247,7 +247,7 @@ export class Steamroller {
 
 /** The rollers of a match: one per LORD ORO, built from shared geometry, the
  *  first of them made and drawn at load. */
-export class RoadRollers {
+export class Steamrollers {
   private specs = ORIGINAL_FINISHER_PROP.parts?.() ?? buildParts();
   private pool = new Map<string, Steamroller>();
   private spare: Steamroller[] = [];

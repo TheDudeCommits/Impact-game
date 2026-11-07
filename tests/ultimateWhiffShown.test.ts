@@ -34,7 +34,7 @@ const moment = (s: PlayerState, t: number, whiff: number, known: number) => {
   s.whiffedAt = t >= known ? 1 + whiff : undefined;
 };
 
-describe('the time stop and the Domain that caught nobody clear at once', () => {
+describe('the time stop and the dome that caught nobody clear at once', () => {
   let stops: number[] = [];
   beforeEach(() => { stops = []; SIGNATURE.screen = { timeStop: (amount: number) => { stops.push(amount); } } as typeof SIGNATURE.screen; });
   afterEach(() => { SIGNATURE.screen = undefined; });
@@ -49,7 +49,7 @@ describe('the time stop and the Domain that caught nobody clear at once', () => 
       for (let t = 0; t < 1.6; t += 1 / 60) {
         moment(s, t, whiff, known);
         spirit.update(1 + t, 1 / 60, fighters);
-        let dome = false; scene.traverse(o => { if (o.name === 'dead-stop-time-stop' && o.visible) dome = true; });
+        let dome = false; scene.traverse(o => { if (o.name === 'clock-spirit-time-stop' && o.visible) dome = true; });
         if (t > stopAt + .02 && t < known) expect(dome || stops.at(-1)! > 0, `the stop shows at ${t.toFixed(2)} until the whiff is known`).toBe(true);
         if (dome || stops.at(-1)! > 0) shownAfter = t;
       }

@@ -3762,7 +3762,7 @@ export class ArenaSimulation {
       if (cast.move.area) { this.releaseArea(a, cast, contact); continue; }
       if(cast.move.timeStop?.contact===contact){
         const stop=cast.move.timeStop,origin=centre(a.state);
-        // Round 4b (FMOVES): a Domain (TourStyle.domain) closes on everybody inside it - a pillar is no shelter.
+        // Round 4b (FMOVES): a dome (TourStyle.domain) closes on everybody inside it - a pillar is no shelter.
         const domain=!a.kit&&!!(stop.tour??TIME_STOP_TOURS[a.state.fighter])?.domain;
         this.emit({kind:'release',actorId:a.state.id,fighter:a.state.fighter,slot:cast.slot,origin,endpoint:position(origin),contactIndex:contact});
         for(const target of this.actors.values()){
@@ -5852,7 +5852,7 @@ export class ArenaSimulation {
    *  (the arena's ExternalTargets) as well as the roster - so a stop on a
    *  side among grunts no longer swings at the air in front with a melee
    *  reach of about a metre, and a stop that froze only grunts is no whiff.
-   *  A Domain (TourStyle.domain) holds what is inside it while it stands
+   *  A dome (TourStyle.domain) holds what is inside it while it stands
    *  (domainHold). */
   private timeStopTour(a: Actor, cast: Cast): boolean {
     const move = cast.move, stop = move.timeStop, p = a.state;
@@ -5956,7 +5956,7 @@ export class ArenaSimulation {
     tour.order = plan.order; tour.visited = plan.visited; tour.struck = plan.order.map(() => null);
   }
 
-  /** Round 4b (FMOVES): a Domain (TourStyle.domain), each tick it stands -
+  /** Round 4b (FMOVES): a dome (TourStyle.domain), each tick it stands -
    *  from the tick it closed until the clock starts again. Whoever is inside
    *  it and was not caught as it closed - shielded then by a dash's evasion,
    *  a getting-up, a respawn, or not yet inside - is caught on the first tick
@@ -6046,7 +6046,7 @@ export class ArenaSimulation {
 
   private finishTimeStopTour(a: Actor, cast: Cast, tour: TimeStopTour) {
     const move = cast.move, last = move.contacts.length - 1, p = a.state, order = tour.order!, primary = (tour.visited ?? 1) - 1;
-    // A Domain that closed on nobody has no primary (visited 0): whoever walked into it is released with the rest.
+    // A dome that closed on nobody has no primary (visited 0): whoever walked into it is released with the rest.
     const origin = centre(p), primaryId: string | undefined = order[primary], target = primaryId === undefined ? undefined : this.actors.get(primaryId);
     const primaryBody = target || primaryId === undefined ? undefined : this.external?.locate(primaryId);
     this.emit({ kind: 'release', actorId: p.id, fighter: p.fighter, slot: cast.slot, origin,

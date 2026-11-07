@@ -868,8 +868,8 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     heavy: c => [bed('fx-purple-charge', .14, 0, c0(c), .8), onBeat(pick(FAMILY.zip, c.seed), .36, c0(c) + .02)],
     // Singularity: Blue and Red held apart, merging from .73.
     special: c => [bed('fx-purple-charge', .24, 0, c0(c))],
-    // PLANETARIUM: the domain opens on the stop - the opener (round 3d);
-    // the strikes inside it, the domain closing inward and the Dark Spark
+    // PLANETARIUM: the dome opens on the stop - the opener (round 3d);
+    // the strikes inside it, the dome closing inward and the Dark Spark
     // are the cinematic (confirmLayers).
     ultimate: c => [onBeat('fx-domain', .7, c.move.contacts[c.move.timeStop!.contact])],
   },
@@ -1185,11 +1185,11 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
     onBeat('fx-lightning', .4, last(c) + .02)],
   // Inside the stop: the clock ticking, the barrage, time resuming.
   koko: c => timeStopCinematic(c, [onBeat(pick(FAMILY.heavy, c.seed), .5, last(c)),
-    // The overnight audio pass: Iron Spirit's last GAN breaks in the mids too, under the "オラァー!" said on it.
+    // The overnight audio pass: Iron Spirit's last GAN breaks in the mids too, under the cry said on it.
     onBeat('fx-explosion-1', .46, last(c))]),
   // ... and the steamroller dropped out of the sky as time resumes: it
   // falls for the half second before the finisher and crashes on it.
-  // (The overnight audio pass: the crash a little under the "ロードローラーだ!" said on it, which it covered.)
+  // (The overnight audio pass: the crash a little under the line said on it, which it covered.)
   oro: c => timeStopCinematic(c, [onBeat('fx-sig-lord-oro-death-knell-fall', .55, last(c) - .02), onBeat('fx-steamroller', .58, last(c))]),
   kuon: c => {
     const stop = c.move.timeStop!, close = c.move.contacts[stop.contact] + stop.duration;
@@ -1717,7 +1717,7 @@ const SIGNATURE_IMPACTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Im
     special: c => [{ cue: pick(FAMILY.explosion, c.seed), gain: .66 }],
     // PLANETARIUM: a strike on each trapped victim in turn (an Infinity
     // ring and a burst of hex energy), and the crimson Dark Spark as
-    // the Domain collapses - on every victim of the resume, one each.
+    // the dome collapses - on every victim of the resume, one each.
     ultimate: (c, index, final) => final ? volley(c, [{ cue: 'fx-dark-spark', gain: .66 }])
       : [{ cue: pick(FAMILY.hitHeavy, c.seed, index), gain: .55 }, { cue: pick(FAMILY.energyHit, c.seed, index), gain: .24 }],
   },

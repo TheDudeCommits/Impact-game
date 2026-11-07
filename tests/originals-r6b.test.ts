@@ -157,14 +157,14 @@ describe("round 6's new fighters, the second batch", () => {
     expect(away.has(own.slice(1))).toBe(!fighterShown('akaito'));
   });
 
-  it("Kinu fights through her own puppet, on the earlier spirit's joints and takes, and never ships the earlier spirit", () => companion('kinu', 'kinu-puppet1.glb', 'stone-free1.glb'));
+  it("Kinu fights through her own puppet, on the earlier spirit's joints and takes, and never ships the earlier spirit", () => companion('kinu', 'kinu-puppet1.glb', 'silk-spirit1.glb'));
 
   it("Kinu's puppet stands where the earlier spirit stood (the slot's own placement)", () => {
     expect(companionPlacement({ id: 'a-spirit', fighter: 'kinu' })).toEqual({ scale: 1, position: [0, 0, 0] });
     expect(companionPlacement({ id: 'a', fighter: 'kinu' })).toBeUndefined();   // Kinu herself is fit by her own height
   });
 
-  it("Gosu fights through his own mender, on the earlier spirit's joints and takes, and never ships the earlier spirit", () => companion('gosu', 'gosu-mender1.glb', 'crazy-diamond1.glb'));
+  it("Gosu fights through his own mender, on the earlier spirit's joints and takes, and never ships the earlier spirit", () => companion('gosu', 'gosu-mender1.glb', 'mender-spirit1.glb'));
 
 
   it("never draws or ships the earlier Flame Tiger in Yodaka's slot: his Fire Owl is drawn in its place", async () => {

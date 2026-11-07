@@ -71,18 +71,18 @@ describe('complete roster authority',()=>{
   expect(broken.landed).toBe(true);
   expect(broken.action).not.toBe('ultimate');
  });
- it('lands the full eight-hit GAN sequence and only launches on its finisher',()=>{const{sim,input,step}=fixture('koko');Object.assign(sim.actors.get('b')!.state,{z:2});input('a',{attack:'special',targetId:'b'});const ora=MOVES.koko.special;
+ it('lands the full eight-hit GAN sequence and only launches on its finisher',()=>{const{sim,input,step}=fixture('koko');Object.assign(sim.actors.get('b')!.state,{z:2});input('a',{attack:'special',targetId:'b'});const gan=MOVES.koko.special;
   // Round 3d (PACE): up to the seventh blow, then past the finisher, read off
   // the blows rather than a clock (each tick's freeze holds the ones after it).
   const landed=()=>sim.snapshot().events.filter(e=>e.kind==='hit'&&e.actorId==='a').length;
-  for(let i=0;i<240&&landed()<7;i++)step(1/60);expect(landed()).toBe(7);expect(sim.getPlayer('b')!.hp).toBe(1000-realised(ora,7));const before=sim.getPlayer('b')!.z;step(ora.duration);expect(sim.getPlayer('b')!.hp).toBe(1000-realised(ora,8));
+  for(let i=0;i<240&&landed()<7;i++)step(1/60);expect(landed()).toBe(7);expect(sim.getPlayer('b')!.hp).toBe(1000-realised(gan,7));const before=sim.getPlayer('b')!.z;step(gan.duration);expect(sim.getPlayer('b')!.hp).toBe(1000-realised(gan,8));
   // Eight scaled ticks have to be worth a special. Authored at eighteen a tick
   // the barrage realised 99 against the 135 to 140 every single-contact
   // special in the roster lands cold. Round 3d (PACE): read off the roster's
   // single-contact specials, which are 0.9 of what they were.
   const singles=(Object.keys(MOVES) as FighterId[]).map(f=>MOVES[f].special).filter(m=>m.contacts.length===1&&m.name!=='Wind Art: Galewheel').map(m=>m.damage);
-  expect(realised(ora,8),`GAN realises ${realised(ora,8)} cold`).toBeGreaterThanOrEqual(Math.min(...singles)-3);
-  expect(realised(ora,8)).toBeLessThanOrEqual(Math.max(...singles));expect(sim.getPlayer('b')!.z).toBeGreaterThan(before);expect(sim.snapshot().events.filter(e=>e.kind==='hit'&&e.actorId==='a')).toHaveLength(8);});
+  expect(realised(gan,8),`GAN realises ${realised(gan,8)} cold`).toBeGreaterThanOrEqual(Math.min(...singles)-3);
+  expect(realised(gan,8)).toBeLessThanOrEqual(Math.max(...singles));expect(sim.getPlayer('b')!.z).toBeGreaterThan(before);expect(sim.snapshot().events.filter(e=>e.kind==='hit'&&e.actorId==='a')).toHaveLength(8);});
  it('spawns Ikazuchi Arrow at the summoned bow height',()=>{const{sim,input,step}=fixture('shiden');sim.actors.get('a')!.state.ultimate=100;input('a',{attack:'ultimate',targetId:'b'});step(.1);const cast=sim.snapshot().events.find(e=>e.kind==='cast'&&e.actorId==='a')!;expect(cast.origin!.y).toBeCloseTo(2.94,2);expect(cast.origin!.x).toBeCloseTo(.54,2);});
 
  it('drives the Sickle Bolt in as the opener, and VOID SICKLE finishes the victim it holds',()=>{const{sim,input,step}=fixture('shirokane');sim.actors.get('a')!.state.ultimate=100;Object.assign(sim.actors.get('b')!.state,{z:3.6});const voidSickle=MOVES.shirokane.ultimate;input('a',{attack:'ultimate',targetId:'b'});step(voidSickle.contacts[0]-.35);expect(sim.getPlayer('a')!.z,'charged where he stands').toBeCloseTo(0,1);expect(sim.getPlayer('b')!.hp).toBe(1000);step(.45);expect(sim.getPlayer('a')!.z,'and driven in').toBeGreaterThan(1.5);expect(sim.getPlayer('b')!.hp).toBeLessThan(1000);expect(sim.getPlayer('b')!.heldBy).toBe('a');step(voidSickle.duration);expect(sim.getPlayer('b')!.hp).toBe(1000-realised(voidSickle,voidSickle.contacts.length));});

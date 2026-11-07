@@ -36,7 +36,7 @@ const walled: CollisionWorld = {
   },
 };
 
-describe.each(DOMAINS)("%s's Domain catches everyone inside it", user => {
+describe.each(DOMAINS)("%s's dome catches everyone inside it", user => {
   const STOP = MOVES[user].ultimate.timeStop!;
   const CLOSES = MOVES[user].ultimate.contacts[STOP.contact];
   it('a royale or training room: four opponents round him, in front, beside and behind - every one frozen and hurt', () => {
@@ -56,7 +56,7 @@ describe.each(DOMAINS)("%s's Domain catches everyone inside it", user => {
     const sim = new ArenaSimulation({ roomMode: 'training', trainingBot: false, seed: 4 });
     sim.addPlayer(user, user, user, false, { x: 0, y: 0, z: 0 });
     sim.addPlayer('anchor', 'taisei', 'Anchor', false, at(2.4, 0));
-    // Beside him, dashing in at him: the evasion is live on the tick the Domain closes, and the dash ends inside it.
+    // Beside him, dashing in at him: the evasion is live on the tick the dome closes, and the dash ends inside it.
     sim.addPlayer('dasher', 'konta', 'Dasher', false, at(3, Math.PI / 2));
     sim.actors.get(user)!.state.ultimate = 100;
     let seq = 0;
@@ -129,7 +129,7 @@ describe.each(DOMAINS)("%s's Domain catches everyone inside it", user => {
     expect(hits.some(h => h.slot === 'ultimate')).toBe(true);
   });
 
-  it('Arcade Survival: the horde frozen round him is struck, every grunt inside the Domain, and the crowd outside is not', () => {
+  it('Arcade Survival: the horde frozen round him is struck, every grunt inside the dome, and the crowd outside is not', () => {
     const game = new SurvivalGame({ fighter: user, seed: 9, god: true, quiet: true, hunt: false, slowMotion: false });
     try {
       let seq = 0;

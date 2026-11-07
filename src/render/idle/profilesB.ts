@@ -24,6 +24,6 @@ export const PROFILES_B: Partial<Record<FighterId, IdleProfile>> = {
   // Menace: leaning back, chin up, the right hand open in front of his face
   // and the left on his hip; slow. Now and then he throws his head back and
   // his arms wide - KYAHAAA! - and comes back down.
-  oro: { model: '/assets/fighters/oro-idleb1.glb', clip: 'Idle B', fidgets: ['Idle B wry'], stance: 'stand', breath: .9, sway: .5, gaze: .6 },
+  oro: { model: '/assets/fighters/oro-idleb1.glb', clip: 'Idle B', fidgets: ['Idle B laugh'], stance: 'stand', breath: .9, sway: .5, gaze: .6 },
   gaunt: { model: '/assets/fighters/gaunt-idleb1.glb', clip: '_Idle', fidgets: ['Idle B heave'], stance: 'weapon', breath: 1.5, dip: 2 },
 };

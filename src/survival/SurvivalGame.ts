@@ -3167,7 +3167,7 @@ export class SurvivalGame {
     }
   }
   /** Tick to tick: the relics a fighter's state sets off - a crowd closing in,
-   *  a dash ending, a blow foreseen, an open domain. */
+   *  a dash ending, a blow foreseen, an open dome. */
   private relicUpkeep(hero: Hero, player: PlayerState) {
     if (!hero.relics.length || this.phase !== 'fight') return;
     const now = this.now;
@@ -3311,7 +3311,7 @@ export class SurvivalGame {
     this.alongLine(from, to, 1.6, foe => this.smack(hero, foe, move, 'heavy', { x: player.x, y: player.y + 1, z: player.z }));
     this.push({ kind: 'relic', sub: 'mochi', text: 'kuromitsu', hero: hero.id, points: [{ x: player.x, y: player.y + 1.1, z: player.z }, { x: to.x, y: player.y + 1.1, z: to.z }] });
   }
-  /** 'MIRROR MERE': the domain cuts the nearest of what stands in it. */
+  /** 'MIRROR MERE': the dome cuts the nearest of what stands in it. */
   private carve(hero: Hero, player: PlayerState) {
     const move = procMove('Hex Slashes', this.relicDamage(45), { knockback: 1.5, stun: .3, style: 'melee' });
     const points: Vec3[] = [];

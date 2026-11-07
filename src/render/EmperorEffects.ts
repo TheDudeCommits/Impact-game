@@ -62,7 +62,7 @@ applyOriginalGuardianTint(GUARDIAN_TINT);
  *  wakes under a dome of it.
  *  Magatsu: crimson cuts in the air - Flaying Cut leaves several where one hand
  *  went - and Rend throws a flurry of them down the line. Mirror Mere,
- *  his Domain, replaces the room as PLANETARIUM does: a crimson sky over a
+ *  his dome, replaces the room as PLANETARIUM does: a crimson sky over a
  *  sea of blood, its cuts flashing through it and falling on whoever it holds,
  *  until Calamity Pyre, the fire gathered between his hands, bursts on the one it held.
  *  He wakes into his true form under a dome of crimson.
@@ -554,7 +554,7 @@ export class EmperorEffects {
   private risen = new Map<string, number>();
   /** The awakenings' own marks, each held through its beat (`drawSignatures`). */
   private signatures: {who: Emperor; actorId: string; since: number; seed: number}[] = [];
-  /** Mirror Mere, Magatsu's Domain (src/render/shop/MirrorMere.ts): the room replaced while it stands, and
+  /** Mirror Mere, Magatsu's dome (src/render/shop/MirrorMere.ts): the room replaced while it stands, and
    *  where each one opened (it stays there while he crosses it). */
   private domain: MirrorMereDomain;
   private lens = new THREE.Vector3();
@@ -2813,7 +2813,7 @@ export class EmperorEffects {
         // The opening: one crimson flash out of him as the hall goes.
         if (inside >= 0 && !anchor.flashed) { anchor.flashed = true; this.flash(this.a, 2.2, key, 1.3, COLOR.magatsu.glow, time); }
         // Its cuts, everywhere in it at once: strokes of white-hot red a few at a time, each gone in a sixth of a
-        // second - two kinds of cut falling on everything the Domain holds.
+        // second - two kinds of cut falling on everything the dome holds.
         const strokes = Math.round(9 * Math.min(1, kit.density) * open);
         for (let i = 0; i < strokes; i++) {
           const clock = time * 6 + i * .37, slot = Math.floor(clock), age = clock - slot, r = kit.painter.rng.seed(slot * 31 + i * 7 + key);

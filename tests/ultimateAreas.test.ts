@@ -48,7 +48,7 @@ function scene(fighter: FighterId, a: { x: number; z: number }, aMoves: (t: numb
 }
 
 describe('stepping out of the ring gets you out of the blast', () => {
-  it('kuon: a sidestep to the practice hall\'s wall (the critic\'s trial) escapes the Domain', () => {
+  it('kuon: a sidestep to the practice hall\'s wall (the critic\'s trial) escapes the dome', () => {
     // A 2.2 m in front, running at right angles on the press: the north wall
     // stops them 3.2 m on.
     const { taken } = scene('kuon', { x: -.8, z: 3.4 }, t => t < 1.5 ? { moveZ: 1 } : {});
@@ -107,10 +107,10 @@ describe('stepping out of the ring gets you out of the blast', () => {
   it('the dome: from arm\'s length, a human reaction and a run away gets out before it closes', () => {
     const { taken, events } = scene('kuon', { x: -1.8, z: 3.4 }, t => t >= .3 && t < 1.5 ? { moveX: 1 } : {});
     expect(taken('a')).toBe(0);
-    expect(events.some(e => e.kind === 'whiff' && e.actorId === 'me'), 'a Domain that closes on nobody is a whiff').toBe(true);
+    expect(events.some(e => e.kind === 'whiff' && e.actorId === 'me'), 'a dome that closes on nobody is a whiff').toBe(true);
   });
 
-  it('the radii fit what the practice hall allows, and the Domain closes with a window', () => {
+  it('the radii fit what the practice hall allows, and the dome closes with a window', () => {
     for (const f of BOMBS) expect(MOVES[f].ultimate.radius, f).toBeLessThanOrEqual(3);
     const kuon = MOVES.kuon.ultimate;
     expect(kuon.timeStop!.radius).toBeLessThanOrEqual(3.5);
@@ -137,7 +137,7 @@ describe('what is drawn is what hits', () => {
       expect(rings[0].radius).toBeCloseTo(reachOf(fighter), 6);
       if (move.timeStop) {
         expect(rings[0].x, 'round Kuon').toBe(0); expect(rings[0].z).toBe(0);
-        expect(rings[0].due, 'full as the Domain closes').toBeCloseTo(1 + move.contacts[move.timeStop.contact], 6);
+        expect(rings[0].due, 'full as the dome closes').toBeCloseTo(1 + move.contacts[move.timeStop.contact], 6);
       } else {
         expect(rings[0].z, 'round the spot it was thrown at').toBe(5);
         const flight = Math.hypot(0, 5) / (move.speed ?? 20);

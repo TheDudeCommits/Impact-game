@@ -38,7 +38,7 @@ describe('native Ratio blade and manually commanded the mender',()=>{
    for(let i=0;i<90;i++)f.tick({...f.state,action:'idle',actionSeq:3,actionStarted:2},2+i/120);expect(spirit.group.visible).toBe(false);
   }finally{f.dispose();}
  });
- it.each([false,true])('native airborne string and Dora contacts remain manual (awakened=%s)',awakened=>{
+ it.each([false,true])('native airborne string and KIN KIN contacts remain manual (awakened=%s)',awakened=>{
   const f=fixture();try{
    for(let stage=0;stage<3;stage++){
     const m=rushMove('gosu',stage,awakened);

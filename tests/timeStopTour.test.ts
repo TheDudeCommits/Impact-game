@@ -192,7 +192,7 @@ describe('every opponent the stop catches takes damage', () => {
       ], false, world);
       sim.actors.get('evading')!.evadeUntil = 1.2;
       const { frozen, damage, ticks } = cast(sim, 'open');
-      // Round 4b (FMOVES): a Domain (PLANETARIUM) is no stop that was over
+      // Round 4b (FMOVES): a dome (PLANETARIUM) is no stop that was over
       // in an instant - it stands until the clock starts again, and catches
       // whoever is inside it as soon as nothing shields them (domainHold).
       const domain = !!TIME_STOP_TOURS[user]?.domain;
@@ -274,7 +274,7 @@ describe('the user crosses the stop legally', () => {
 describe('prediction replays the tour the server plays', () => {
   it.each(USERS)('%s: the predicting client and the server put the user in the same places and land the same blows', user => {
     const local = (prediction: Prediction) => (prediction as unknown as { sim: ArenaSimulation }).sim;
-    // Inside the stop: HUSH's reaches 6 m, the Domain 3.5 (round 3e).
+    // Inside the stop: HUSH's reaches 6 m, the dome 3.5 (round 3e).
     const reach = MOVES[user].ultimate.timeStop!.radius / 6;
     const server = arena(user, [
       { id: 'a', distance: 2, angle: .1 },
@@ -332,7 +332,7 @@ describe('the moves as data', () => {
       expect(oro.damage).toBe(koko.damage);
     }
     const plain: MoveDefinition = moveFor('kuon', 'ultimate', false);
-    // Round 3e (ULTFIX): the Domain closes on 3.5 m, drawn from the cast.
+    // Round 3e (ULTFIX): the dome closes on 3.5 m, drawn from the cast.
     expect(plain.timeStop!.radius).toBe(3.5);
   });
 });

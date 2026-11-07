@@ -16,7 +16,7 @@ import {applyOriginalSpiritShells,applyOriginalSpirits} from '../originals/apply
 import {ORIGINALS} from '../originals/roster';
 import {applyCompanionGlows,applyCompanionShells} from '../originals/companionLooks';
 import {GhostShell,warmGhosts,type GhostPrint} from './signature/GhostShell';
-import {RoadRollers,rollerAt,ROLLER_TIMING,type RollerPose} from './signature/Steamroller';
+import {Steamrollers,rollerAt,ROLLER_TIMING,type RollerPose} from './signature/Steamroller';
 import {SIGNATURE} from './signature/context';
 import {whiffGone} from './signature/ultimateClock';
 import {setLoomTop,clearLoomTops} from './loomRegistry';
@@ -33,7 +33,7 @@ import {KINU_SPIRIT_STAGING,kinuFlankAroundContact,kinuViewFlank,kinuInitialFlan
  *
  *  The spirit is a Fighter of its own, built from `asset` and driven by the
  *  user's own state - so the asset has to carry the user's clip names, which
- *  is why dead-stop1.glb is built with LORD ORO's whole set (scripts/build_oro.py).
+ *  is why clock-spirit1.glb is built with LORD ORO's whole set (scripts/build_oro.py).
  *  Every branch below that used to read `fighter==='koko'` reads this table
  *  instead; KoKo's row is exactly what the class did before it existed. */
 export interface SpiritCaller{
@@ -50,8 +50,8 @@ export interface SpiritCaller{
   fist:number;
   /** Round 3b. The user's slot clips the spirit's file lacks, played by one it
    *  has: taking over, the spirit is driven by its user's state, and a light
-   *  that finds no clip of its name falls back to the idle - awakened Star
-   *  Platinum stood still through every light string. */
+   *  that finds no clip of its name falls back to the idle - the awakened Iron
+   *  Spirit stood still through every light string. */
   aliases?:Readonly<Record<string,string>>;
   punches?:string;
   /** Round 4b (a blind critic: "KoKo's light string is thrown by KoKo himself and Iron Spirit never appears"):
@@ -61,10 +61,10 @@ export interface SpiritCaller{
 }
 const authoredSpirit=(fighter:FighterId)=>fighter==='gosu'||fighter==='kinu';
 export const SPIRIT_CALLERS:Partial<Record<FighterId,SpiritCaller>>={
-  kinu:{asset:'/assets/fighters/stone-free1.glb',name:'stone-free',heavy:'punch',fist:0x6fdadd,string:true},
-  gosu:{asset:'/assets/fighters/crazy-diamond1.glb',name:'crazy-diamond',heavy:'punch',fist:0x80dcf2,string:true},
-  koko:{asset:'/assets/fighters/star-combat1.glb',name:'iron-spirit',heavy:'finger',fistMesh:'star_closed_Right',fist:0x8962ad,aliases:{'Straight Punch':'Iron Spirit Punch'},punches:'/assets/fighters/star-fanim1.glb',string:true},
-  oro:{asset:'/assets/fighters/dead-stop1.glb',name:'dead-stop',heavy:'knives',fist:0xd9b53c,punches:'/assets/fighters/dead-stop-fanim1.glb',string:true},
+  kinu:{asset:'/assets/fighters/silk-spirit1.glb',name:'silk-spirit',heavy:'punch',fist:0x6fdadd,string:true},
+  gosu:{asset:'/assets/fighters/mender-spirit1.glb',name:'mender-spirit',heavy:'punch',fist:0x80dcf2,string:true},
+  koko:{asset:'/assets/fighters/iron-spirit1.glb',name:'iron-spirit',heavy:'finger',fistMesh:'iron_closed_Right',fist:0x8962ad,aliases:{'Straight Punch':'Iron Spirit Punch'},punches:'/assets/fighters/iron-spirit-fanim1.glb',string:true},
+  oro:{asset:'/assets/fighters/clock-spirit1.glb',name:'clock-spirit',heavy:'knives',fist:0xd9b53c,punches:'/assets/fighters/clock-spirit-fanim1.glb',string:true},
 };
 applyOriginalSpirits(SPIRIT_CALLERS);
 /** Round 4b: where a spirit stands to throw its user's light string - between its user and the victim, a little to the
@@ -254,9 +254,9 @@ export class SwordSpiritEffects{
   private knifeAim=new THREE.Vector3();
   private knifeGrip=new THREE.Vector3();
   /** MIDNIGHT's steamroller, one per LORD ORO in the match (signature/Steamroller). */
-  private rollerSet?:RoadRollers;
+  private rollerSet?:Steamrollers;
   /** Built (and its model fetched) with the first LORD ORO a room has: see load. */
-  private get rollers(){return this.rollerSet??=new RoadRollers(this.scene);}
+  private get rollers(){return this.rollerSet??=new Steamrollers(this.scene);}
   private kit?:VfxKit;
   private get vfx(){return this.kit??=VfxKit.for(this.scene);}
   private seen=new Set<number>();
@@ -314,7 +314,7 @@ export class SwordSpiritEffects{
     for(const fighter of new Set(fighters)){
       const user=SPIRIT_CALLERS[fighter as FighterId];
       if(user)jobs.push(once(user.name,()=>this.loadSpirit(fighter as FighterId,user)));
-      // MIDNIGHT's roller is built with the first LORD ORO, so its programs link behind the loading screen (RoadRollers).
+      // MIDNIGHT's roller is built with the first LORD ORO, so its programs link behind the loading screen (Steamrollers).
       if(fighter==='oro'){void this.rollers;jobs.push(once('LORD ORO knife',()=>this.loadKnife()));}
       if(fighter==='kenzo')jobs.push(once('RAKSHASA phantom',()=>this.threeBlade.load()));
     }
@@ -338,7 +338,7 @@ export class SwordSpiritEffects{
     const bound=spiritClips(fighter,source,rush);if(bound)this.rushClips.set(fighter,bound);
     this.sources.set(fighter,source);
     const geometry=authoredSpirit(fighter)?undefined:fistGeometry(source,user);
-    if(geometry){if(!geometry.attributes.normal)geometry.computeVertexNormals();const look=SPIRIT_SHELL[fighter];const fists=new THREE.InstancedMesh(geometry,spiritFistMaterial(look?look.body:new THREE.Color(user.fist),look?look.rim:0xffffff),96);fists.count=0;fists.frustumCulled=false;fists.name=fighter==='koko'?'ora-sourced-fist-trails':user.name+'-fist-trails';this.fists.set(fighter,fists);this.scene.add(fists);}
+    if(geometry){if(!geometry.attributes.normal)geometry.computeVertexNormals();const look=SPIRIT_SHELL[fighter];const fists=new THREE.InstancedMesh(geometry,spiritFistMaterial(look?look.body:new THREE.Color(user.fist),look?look.rim:0xffffff),96);fists.count=0;fists.frustumCulled=false;fists.name=fighter==='koko'?'gan-sourced-fist-trails':user.name+'-fist-trails';this.fists.set(fighter,fists);this.scene.add(fists);}
   }
   /** The knife is dressing: a missing file leaves the box sliver in place. */
   private async loadKnife(){
@@ -426,9 +426,9 @@ export class SwordSpiritEffects{
    *  loop is short enough that Fighter reads it as the same action going on
    *  (a clock that runs back more than a quarter of the move is a new one). */
   private barrageState(into:PlayerState,s:PlayerState,fighter:FighterId,elapsed:number,from:number){
-    const ora=MOVES[fighter].special,first=ora.contacts[0],loop=ora.contacts[Math.min(BARRAGE_LOOP,ora.contacts.length-1)]-first,t=elapsed-from;
+    const flurry=MOVES[fighter].special,first=flurry.contacts[0],loop=flurry.contacts[Math.min(BARRAGE_LOOP,flurry.contacts.length-1)]-first,t=elapsed-from;
     const clock=t<BARRAGE_LEAD?first-BARRAGE_LEAD+t:first+(t-BARRAGE_LEAD)%loop;
-    into.action='special';into.actionStarted=s.actionStarted+from;into.actionDuration=ora.duration;into.actionTime=clock/ora.duration;into.actionSeq=s.actionSeq;into.chain=0;
+    into.action='special';into.actionStarted=s.actionStarted+from;into.actionDuration=flurry.duration;into.actionTime=clock/flurry.duration;into.actionSeq=s.actionSeq;into.chain=0;
   }
   /** The time-stop ultimate's numbers for a fighter, base and awakened, read
    *  once: moveFor and tourContacts build objects, and this is every frame. */
@@ -720,15 +720,15 @@ export class SwordSpiritEffects{
     const fists=this.fists.get(fighter);
     // Round 3d (PACE): the special's wall runs from 0.3 s before its first blow
     // to 0.3 s past its last - 0.8 to 2.6 s when those were 1.1 and 2.29.
-    const ora=MOVES[fighter].special;
+    const flurry=MOVES[fighter].special;
     // (Not through a combo ender thrown in the special's slot: that is one blow, not the barrage.)
-    if(!fists||!foe||!((s.action==='special'&&!Fighter.ender(s)&&elapsed>ora.contacts[0]-.3&&elapsed<ora.contacts[ora.contacts.length-1]+.3)||barrage))return;
+    if(!fists||!foe||!((s.action==='special'&&!Fighter.ender(s)&&elapsed>flurry.contacts[0]-.3&&elapsed<flurry.contacts[flurry.contacts.length-1]+.3)||barrage))return;
     let fistCount=this.fistCounts.get(fighter)??0;const wrist=spirit.bones.get('righthand');const target=this.barrageTarget;target.copy(foe.group.position).add(this.lift.set(0,1.12,0));if(wrist)wrist.getWorldQuaternion(this.fistPose.quaternion);
     // Round 3e (ULTFIX): into the victim only inside the barrage's own reach
     // (meleeReach, from its user): one standing past it - the lock across the
     // room - is not drawn pummelled while it takes nothing; the fists spend
     // themselves at the reach. The tour's victims are always inside it.
-    if(!barrage){const reach=meleeReach(fighter,'special',ora),dx=target.x-s.x,dz=target.z-s.z,d=Math.hypot(dx,dz);if(d>reach){const edge=reach-PLAYER_RADIUS;target.x=s.x+dx/d*edge;target.z=s.z+dz/d*edge;}}
+    if(!barrage){const reach=meleeReach(fighter,'special',flurry),dx=target.x-s.x,dz=target.z-s.z,d=Math.hypot(dx,dz);if(d>reach){const edge=reach-PLAYER_RADIUS;target.x=s.x+dx/d*edge;target.z=s.z+dz/d*edge;}}
     const glow=SPIRIT_GLOW[fighter]!;
     // A fan of fists from across the spirit's shoulders, bigger than a
     // man's and converging on the target, each with the ghost of where it
@@ -779,7 +779,7 @@ export class SwordSpiritEffects{
       if(!id.startsWith('warm-'))spent+=performance.now()-started;
       // The user's moves across the stopped field leave streaks of the spirit's light.
       this.trace(id,owner,fighter,s.alive&&s.action==='ultimate'&&s.confirmedAt!==undefined&&elapsed>stopFrom&&elapsed<finisher+.05,time);
-      let field=this.timeFields.get(id);if(!field){const dome=new THREE.Mesh(this.ringGeometry,this.domeMaterial.clone());dome.name='dead-stop-time-stop';dome.renderOrder=22;dome.frustumCulled=false;const still=new THREE.Mesh(this.ringGeometry,this.stillMaterial.clone());still.name='dead-stop-stillness';still.renderOrder=21;still.frustumCulled=false;field={dome,still,origin:new THREE.Vector3(),anchored:false};this.timeFields.set(id,field);this.scene.add(dome,still);}
+      let field=this.timeFields.get(id);if(!field){const dome=new THREE.Mesh(this.ringGeometry,this.domeMaterial.clone());dome.name='clock-spirit-time-stop';dome.renderOrder=22;dome.frustumCulled=false;const still=new THREE.Mesh(this.ringGeometry,this.stillMaterial.clone());still.name='clock-spirit-stillness';still.renderOrder=21;still.frustumCulled=false;field={dome,still,origin:new THREE.Vector3(),anchored:false};this.timeFields.set(id,field);this.scene.add(dome,still);}
       // The stopped-time shell is drawn from the move's own numbers, so the
       // longer awakened stop does not need a second set of constants here.
       // Round 3d (ULTS): one that caught nobody resumes with the move, half a

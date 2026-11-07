@@ -36,7 +36,7 @@ const PURPLE_RADIUS=1.25,PURPLE_SPEED=30;
 const RED_CONTACT=RUSH.kuon[2].contacts[0];
 /** Round 3: PLANETARIUM's tour (src/game/timeStopBarrage.ts). Kuon is at
  *  each trapped opponent in turn, a strike a visit: any frame he moves further
- *  than BLINK_STEP inside the Domain is a blink, and leaves a printed ghost
+ *  than BLINK_STEP inside the dome is a blink, and leaves a printed ghost
  *  where he was. A strike's accent lands on whoever he is turned to within
  *  STRIKE_REACH; the finisher is the Dark Spark, its lightning lasting
  *  DARK_SPARK seconds. */
@@ -63,7 +63,7 @@ export class KuonEffects{
   private blueAt=new THREE.Vector3();private redAt=new THREE.Vector3();
   private style:BoltStyle={width:.05,color:PURPLE,levels:4,jag:.3,branches:1,branchLength:.4,taper:.4,core:.25};
   private nextRock=0;
-  /** Round 3: where each Kuon's Domain opened (it stays there while he crosses
+  /** Round 3: where each Kuon's dome opened (it stays there while he crosses
    *  it), where he was drawn last frame, the last strike of the cast whose
    *  accent has been thrown, and the dark sparks still crackling. */
   private anchors=new Map<string,{key:number;at:THREE.Vector3}>();
@@ -202,8 +202,8 @@ export class KuonEffects{
         else if(after<.3){const k=1-after/.3;this.spheres.add(fighter.handR,(.24+after*4)*k,SPHERES.red,time,5,k);this.glows.add(fighter.handR,1.2+after*6,RED,k,RING,.05,9,.6);this.glows.add(fighter.handR,1+after*2,RED,k,STAR,.2,Math.floor(time*30));this.lights.add(fighter.handR,5,LIGHT.red,1.2*k);
           if(after<dt*1.5)this.kit.streaks(fighter.handR.x,fighter.handR.y,fighter.handR.z,SCARLET,this.kit.n(12,4),11,.028,time,this.dir.set(Math.sin(s.yaw),0,Math.cos(s.yaw)),.8);}
       }
-      // The Domain.
-      // Round 3d (ULTS): the Domain is the opener. One that closes on nobody
+      // The dome.
+      // Round 3d (ULTS): the dome is the opener. One that closes on nobody
       // collapses at once (round 3e: whiffGone, not with the move); the tour, its
       // strikes and the grade are the cinematic's - only once it has caught
       // somebody (landed).
@@ -282,7 +282,7 @@ export class KuonEffects{
       if(end>0&&end<.35){const k=1-end/.35;this.glows.add(this.a,radius*(2+end*8),PURPLE,k,STAR,.2,e.id);this.glows.add(this.a,radius*(1.5+end*10),PALE,.8*k,RING,.04,e.id,.8);}
     }
   }
-  /** Round 3: Kuon's blinks across the Domain. A frame that moves him further
+  /** Round 3: Kuon's blinks across the dome. A frame that moves him further
    *  than BLINK_STEP is one: a printed ghost of him where he was, a flash and
    *  a ring where he is. */
   private blink(id:string,fighter:Fighter,touring:boolean,time:number){

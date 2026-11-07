@@ -1027,7 +1027,7 @@ export class SurvivalFx {
         break;
       }
       case 'shrine':
-        // The domain opens: a ring of it round the fighter, and the room goes red a moment.
+        // The dome opens: a ring of it round the fighter, and the room goes red a moment.
         if (item.hero && item.value) this.shrines.set(item.hero, item.value);
         k.ring(x, (item.y ?? 0) + .1, z, 1, SHRINE_REACH * 2, time, .6, 0xffffff, BLOOD.rim, .3, 'flat');
         this.grade(0xd81f3a, .35, .8);
@@ -1045,7 +1045,7 @@ export class SurvivalFx {
   /** Who has MIRROR MERE open, and until when. */
   private readonly shrines = new Map<string, number>();
   private shrineBeat = 0;
-  /** Each open domain, drawn as a ring on the floor round its fighter, pulsing. */
+  /** Each open dome, drawn as a ring on the floor round its fighter, pulsing. */
   private domains(view: RunView | undefined, time: number) {
     if (!this.shrines.size) return;
     if (!view || view.phase === 'over') { this.shrines.clear(); return; }

@@ -2303,7 +2303,7 @@
   "peak": 0.0945
  },
  "fx-timestop": {
-  "file": "sfx/originals/signatures/koko/dead-stop.wav",
+  "file": "sfx/originals/signatures/koko/hush.wav",
   "seconds": 1.89,
   "peak": 0.788,
   "beat": 0.49

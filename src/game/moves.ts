@@ -859,11 +859,11 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
     teleport:{vanish:.45,appear:.45,reach:10.5,behind:1.15,miss:0,near:true}},
   // PLANETARIUM: everyone inside it is held, frozen under its stars,
   // and he is at each of them in turn, one strike a visit from another side
-  // (timeStopBarrage.ts), the Dark Spark on the target as the Domain
-  // collapses. The Domain is the opener, at 0.5 rather than 0.8, and one
+  // (timeStopBarrage.ts), the Dark Spark on the target as the dome
+  // collapses. The dome is the opener, at 0.5 rather than 0.8, and one
   // that closes on nobody ends the move half a second later; four strikes
   // (six) and the Dark Spark at 2.15 (3.42).
-  // Round 3e (ULTFIX): the Domain is drawn on the floor from the cast - the
+  // Round 3e (ULTFIX): the dome is drawn on the floor from the cast - the
   // ring it will close on, filling in (CombatEffects, signature/BlastArea) -
   // and closes 0.65 s after the press on everyone still inside 3.5 m of him:
   // time to see it and get out. It closed at 0.5 on everyone within 8 m,

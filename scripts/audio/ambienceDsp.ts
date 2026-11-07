@@ -139,7 +139,7 @@ export function drone(rate: number, seconds: number, seed: number) {
   const fade = Math.round(rate * 1.5), n = Math.round(rate * seconds), total = n + fade;
   const whole = (f: number) => Math.round(f * seconds) / seconds;
   // The fifths' upper octaves too, quieter and beating slower: a phone or a laptop plays nothing under ~150 Hz, and
-  // a domain must not go silent on one.
+  // a dark place must not go silent on one.
   const tones: [number, number][] = [[41.2, .5], [41.2 + .15, .32], [61.74, .3], [61.74 + .1, .2], [82.41, .22], [82.41 + .2, .14], [123.47, .06],
     [164.81, .075], [164.81 + .11, .05], [246.94, .05], [246.94 + .07, .035], [329.63, .028]];
   const out = new Float32Array(total);

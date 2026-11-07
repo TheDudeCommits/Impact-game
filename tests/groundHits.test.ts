@@ -236,8 +236,8 @@ describe('ground hits 2: one stay on the floor is a ledger', () => {
   });
 });
 
-describe('ground hits 2: Kuon\'s knockdown into his Domain', () => {
-  it('Light x3, Heavy - the Flying Kick - leaves the body down inside the Domain\'s reach, and R then confirms on it', () => {
+describe('ground hits 2: Kuon\'s knockdown into his dome', () => {
+  it('Light x3, Heavy - the Flying Kick - leaves the body down inside the dome\'s reach, and R then confirms on it', () => {
     const radius = MOVES.kuon.ultimate.timeStop!.radius;
     for (const victim of ['taisei', 'gorai', 'konta'] as FighterId[]) for (const delay of [.05, .4, .8]) {
       const fight = bout('kuon', victim, 1.6);
@@ -250,11 +250,11 @@ describe('ground hits 2: Kuon\'s knockdown into his Domain', () => {
       fight.input({ attack: 'ultimate' });
       fight.step(MOVES.kuon.ultimate.duration + .4);
       const mine = fight.events.filter(e => e.actorId === 'a' && e.slot === 'ultimate' && e.serverTime >= pressedAt);
-      expect(mine.some(e => e.kind === 'confirm' && e.targetId === 'b'), `${victim}, R +${delay}s: the Domain confirms`).toBe(true);
+      expect(mine.some(e => e.kind === 'confirm' && e.targetId === 'b'), `${victim}, R +${delay}s: the dome confirms`).toBe(true);
       expect(mine.some(e => e.kind === 'whiff')).toBe(false);
     }
   });
-  it('keeps the Flying Kick a splat, thrown back flat, and the Domain as it was', () => {
+  it('keeps the Flying Kick a splat, thrown back flat, and the dome as it was', () => {
     const kick = comboMove('kuon', 'lllh')!;
     expect(kick.knock).toBe('splat');
     expect(kick.outcome).toBe('knockdown');

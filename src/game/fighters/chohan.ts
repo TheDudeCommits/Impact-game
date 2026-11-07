@@ -27,7 +27,7 @@ export const CHOHAN_CONTACTS = {
 export const CHOHAN_AWAKENING = {
  name:'ALL IN',clip:'ALL IN',sourceDuration:2.2,entryDuration:.9,
  beats:{release:.18,focus:.40,stance:.65,settle:.83},manualOnly:true,formSwap:false,
- canonScope:'Physical focus and assassin stance on the same native body; ALL IN is innate, not a conjured domain, hex-energy form or passive attack.',
+ canonScope:'Physical focus and assassin stance on the same native body; ALL IN is innate, not a conjured field, hex-energy form or passive attack.',
 } as const;
 export const CHOHAN_CINEMATIC = {
  opener:{clip:'The House Wins',at:.55/4},

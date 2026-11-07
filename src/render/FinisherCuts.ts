@@ -25,7 +25,7 @@ const FINISH_HOLD = .45;
 const HERO_ANGLE = 1.2, HERO_TOWARD = .62, HERO_EYE = .78, HERO_LOOK = 1.25, HERO_FOV = 46, HERO_FILL_X = .72, HERO_FILL_Y = .7,
   HERO_TALL = 2.7, HERO_LEAST = 3.8, HERO_REACH = 9;
 /** Ultimates that raise something bigger than the thrower round them or over the victim - the RAKSHASA, a Guardian, a
- *  spirit, a Domain, the BLACK CONFESSIONAL - are framed WIDE times as tall, the look and the lens raised with it (WIDE_LOOK,
+ *  spirit, a dome, the BLACK CONFESSIONAL - are framed WIDE times as tall, the look and the lens raised with it (WIDE_LOOK,
  *  WIDE_EYE of the growth), so the summon is seen whole rather than as a mass over the lens; and what comes down from
  *  the sky - the Grand Tide fist, the steamroller, the meteor - TALLER still. */
 const WIDE = 1.45, TALLER = 1.7, WIDE_LOOK = .55, WIDE_EYE = .9;

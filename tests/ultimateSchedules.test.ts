@@ -80,7 +80,7 @@ describe('each ultimate lands its own schedule', () => {
 
   it.each(CONFIRM)('%s: the design\'s fast opener, and a cinematic long enough for its shot', f => {
     const move = MOVES[f].ultimate, open = move.contacts[0], finish = move.contacts.at(-1)!;
-    expect(open, 'out by 0.6 s (the Domains, drawn from the cast, by 0.7)').toBeLessThanOrEqual(f === 'kuon' || f === 'magatsu' ? .7 : .6);
+    expect(open, 'out by 0.6 s (the domes, drawn from the cast, by 0.7)').toBeLessThanOrEqual(f === 'kuon' || f === 'magatsu' ? .7 : .6);
     // The camera swings from the opener's push-in to the release shot over
     // half a second at least and holds it over the blows (CameraDirector).
     expect(finish - open, 'a second at least from the opener to the finisher').toBeGreaterThanOrEqual(1.05);

@@ -5,7 +5,7 @@ import { MOVES } from '../src/game/moves';
 import { CombatEffects, FOXFIRE_ORB } from '../src/render/CombatEffects';
 import { applyToonShading, toonKind } from '../src/render/look/toonShading';
 import { SIGNATURE, gradeLocal, gradeOnce, SPECIAL_GRADE, GRADE } from '../src/render/signature/context';
-import { ROADROLLER_ASSETS, ROLLER_ASSET } from '../src/render/signature/Steamroller';
+import { STEAMROLLER_ASSETS, ROLLER_ASSET } from '../src/render/signature/Steamroller';
 import type { Fighter } from '../src/render/Fighter';
 import type { CombatEvent, FighterId, PlayerState } from '../src/game/types';
 

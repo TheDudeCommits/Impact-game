@@ -80,11 +80,11 @@ function plans(id:FighterId):Plan[]{
         g(1.18,[.05,.25,.3],[-.05,.24,.28],-.08,.03,'two',0,'claw',[0,.3,1],{aimL:[.2,.3,1],palmL:[1,0,0]}),
         g(1.45,[.08,.28,.44],[-.17,.17,.06],.22,.05,'two',.09,'fist',[0,.1,1],{aimL:[0,-.3,1]}),
         g(1.75,[.08,.275,.43],[-.17,.17,.06],.2,.045,'two',.08,'fist',[0,.1,1],{aimL:[0,-.3,1]}),pose(2.7)],1.45,2.7,MOVES.kuon.special)),
-      // Round 3: PLANETARIUM's tour. The sign opens the Domain; then a strike
+      // Round 3: PLANETARIUM's tour. The sign opens the dome; then a strike
       // on every contact of the tour, right and left in turn (he is beside a
       // different victim for each: src/game/timeStopBarrage.ts), and the Black
-      // Flash on the last contact as the Domain collapses.
-      // Round 3d (ULTS): the Domain is the opener now, at 0.5 - the sign is
+      // Flash on the last contact as the dome collapses.
+      // Round 3d (ULTS): the dome is the opener now, at 0.5 - the sign is
       // made over the first three fifths of that, and held on it.
       // 8 October: the sign is his - index crossed over middle, held up before his face, the other hand at his side.
       move('ultimate',(()=>{const c=MOVES.kuon.ultimate.contacts,f=c[c.length-1],keys:Pose[]=[pose(0),g(c[0]*.6,sign,pocket,0,.015,'cross',-.02,'fist',[-.1,1,.05]),g(c[0],sign,pocket,0,.02,'cross',-.02,'fist',[-.1,1,.05])];

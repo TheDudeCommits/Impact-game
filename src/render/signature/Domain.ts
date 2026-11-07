@@ -33,7 +33,7 @@ vec3 mirror(vec3 ray,vec3 at){
   col+=vec3(.6,.35,1.4)*smoothstep(uRadius*.9,uRadius,r)*.35;
   return col;
 }
-/** Where a ray from the eye leaves the Domain's sphere; the floor or space along it. */
+/** Where a ray from the eye leaves the dome's sphere; the floor or space along it. */
 float exitAt(vec3 ray){vec3 o=cameraPosition-uCenter;float b=dot(o,ray),c=dot(o,o)-uRadius*uRadius,h=b*b-c;return h<0.?0.:-b+sqrt(h);}
 vec3 voidAlong(vec3 ray){
   float t=exitAt(ray);
@@ -130,7 +130,7 @@ export class Planetarium {
       root.traverse(o => { const m = o as THREE.Mesh; if ((m.isMesh || (o as THREE.Points).isPoints) && o.visible) { o.visible = false; this.hidden.push(o); } });
     }
   }
-  /** The Domain of `id` this frame: centred on `center` (the caster's chest),
+  /** The dome of `id` this frame: centred on `center` (the caster's chest),
    *  standing on `floor`, `radius` metres, `open` 0..1 how far it has grown. */
   show(id: string, center: THREE.Vector3, floor: number, radius: number, open: number, time: number, bright = 1) {
     let v = this.live.get(id);
@@ -146,7 +146,7 @@ export class Planetarium {
     if (this.eye.distanceTo(center) < r * .98) this.inside = true;
   }
   private inside = false;
-  /** Every Domain not shown since `begin` is put away. */
+  /** Every dome not shown since `begin` is put away. */
   begin() { for (const v of this.live.values()) v.shown = false; this.inside = false; }
   end() { for (const [id, v] of this.live) if (!v.shown) { v.busy = false; this.hide(v); this.live.delete(id); } this.room(this.inside); }
   reset() { for (const v of this.live.values()) { v.busy = false; this.hide(v); } this.live.clear(); this.room(false); }

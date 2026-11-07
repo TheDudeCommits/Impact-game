@@ -58,7 +58,7 @@ function film(user: FighterId, cinematics = true, spots: [number, number][] = [[
 
 describe('the time-stop ultimates are filmed as a sequence', () => {
   it.each(['koko', 'oro', 'kuon'] as FighterId[])('%s: the opener pushed in, then the frozen field holding everyone, then back to the fight', user => {
-    // Round 3e (ULTFIX): the Domain closes on 3.5 m, HUSH on 6; the three are inside either.
+    // Round 3e (ULTFIX): the dome closes on 3.5 m, HUSH on 6; the three are inside either.
     const { frames, cast } = film(user, true, user === 'kuon' ? [[.1, 2], [1.7, 2.35], [-2.3, 2.8]] : undefined);
     const move = moveFor(user, 'ultimate', false), stopAt = cast + move.contacts[0], finish = cast + move.contacts[move.contacts.length - 1];
     const phases = frames.map(f => f.phase);
