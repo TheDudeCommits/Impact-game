@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { FIGHTERS } from '../src/config';
 import { ENEMIES, SHADOW_RIVALS } from '../src/survival/enemies';
 import { BOSSES } from '../src/survival/bosses';
 import { AWAKENINGS, SIGNATURES } from '../src/survival/signatures';
@@ -49,7 +50,7 @@ describe('Arcade Survival in the the game', () => {
 
   it('turns the shadow rivals into shadows of the sixteen VOL.1 originals', () => {
     expect(SHADOW_RIVALS).toHaveLength(16);
-    for (const id of SHADOW_RIVALS) expect(ENEMIES[id].name, id).toMatch(/^Shadow (Taisei|Prince Mihou|Konta|Shiden|Shirokane|Gummy|Kenzo|Gigot|Kagari|Ward|Nigo|KoKo|Lord ORO|Mugen|Gaunt|Thunder Hawk)$/);
+    for (const id of SHADOW_RIVALS) expect(ENEMIES[id].name, id).toBe(`Shadow ${FIGHTERS[ENEMIES[id].rival as keyof typeof FIGHTERS].name}`); // each shadow named as the roster names its fighter
   });
 
 
