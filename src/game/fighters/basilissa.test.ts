@@ -24,7 +24,7 @@ describe('Basilissa laboratory combat authority', () => {
     expect(new Set(Object.values(MOVES['basilissa']).filter(move => !move.area).map(move => move.name)).size).toBe(4);
     for (const key of COMBO_KEYS) expect(comboMove('basilissa', key)?.name).toBeTruthy();
     expect(AWAKENINGS['basilissa'].kind).toBe('aura');
-    expect(AWAKENINGS['basilissa'].name).toBe('SERPENT CROWN');
+    expect(AWAKENINGS['basilissa'].name).toBe('STONE CROWN');
     expect(AWAKENINGS['basilissa'].formScale).toBeUndefined();
   });
   it('causes no damage without a manual attack, including while awakened', () => {

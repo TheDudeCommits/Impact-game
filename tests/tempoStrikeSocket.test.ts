@@ -14,7 +14,7 @@ describe.skipIf(!!ORIGINALS.tempo)('Tempo authored striking hands', () => {
   it.each([false,true])('keeps the left jab ahead of its shoulder with impact=%s', async impact => {
     const source=await loadRig(FIGHTERS.tempo.model);
     const state={...base('tempo'),id:'tempo',yaw:-3.1151555753,x:.04039228,y:.01,z:1.52743423};
-    const target={...base('basilissa'),id:'boa',x:0,y:.01,z:0};
+    const target={...base('basilissa'),id:'rose',x:0,y:.01,z:0};
     const actor=new Fighter(state,source),other=new Fighter(target,await loadRig(FIGHTERS['basilissa'].model));
     actor.prepareRush();actor.targetPoint=new THREE.Vector3(0,1.45,0);
     other.targetPoint=new THREE.Vector3(state.x,1.45,state.z);actor.targetDistance=other.targetDistance=1.53;

@@ -3,10 +3,9 @@ import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 import type { AwakeningDefinition } from '../awakening';
 
-/** Boa's native mounted OPBR choreography. Salome carries the body visually;
- * every damaging action is explicitly requested by the player. Petrification
- * is represented by bounded stun and stone VFX, never permanent crowd control.
- * Empress is a gameplay sequence label, not an invented canonical technique. */
+/** Basilissa fights on foot: long, upright kicks
+ * and rose casts. Every damaging action is explicitly requested by the player. Petrification is represented by
+ * bounded stun and stone VFX, never permanent crowd control. Empress is a gameplay sequence label. */
 export const BASILISSA_MOVES: Record<CoreSlot, MoveDefinition> = {
   light: { name: 'Thorn Kiss', duration: .44, contacts: [.152], damage: 19, range: 12, radius: .32,
     stamina: 10, cooldown: .44, stun: .26, knockback: 2.6, speed: 32, style: 'projectile', aimOnRelease: true },
@@ -23,17 +22,16 @@ export const BASILISSA_MOVES: Record<CoreSlot, MoveDefinition> = {
 
 export const BASILISSA_COMBOS: ComboRow = {
   lh: { name: 'Thorn Sweep', range: 2.25, radius: .8 },
-  llh: { name: 'Serpent Rising Heel', range: 2.1, radius: .72 },
+  llh: { name: 'Thornrise Heel', range: 2.1, radius: .72 },
   lllh: { name: 'Crown Heel Drop', range: 2.15, radius: .8 },
   llls: { name: 'Sandrose Barrage', range: 15, radius: .8, style: 'projectile', speed: 31, aimOnRelease: true },
   airHeavy: { name: 'Petal Air Kick', range: 2.25, radius: .8 },
-  airSpecial: { name: 'Coiled Landing', radius: 3.0 },
+  airSpecial: { name: 'Rosefall Landing', radius: 3.0 },
 };
 
-/** A game-adapted resolve state, not a claimed Mero Mero fruit awakening.
- * The full native activation belongs to Boa: gather, haughty head/hair flourish,
- * palm dismissal. Its heart/stone presentation is a separate authored effect. */
+/** Her resolve state: a gather, a haughty flourish of the head and hair, a palm
+ * dismissal. Its heart/stone presentation is a separate authored effect. */
 export const BASILISSA_AWAKENING: AwakeningDefinition = {
-  name: 'SERPENT CROWN', kind: 'aura', aura: [0xffe5ef, 0xe54b94], auraGlow: .22,
-  clips: ['SERPENT CROWN'], swapAt: .38,
+  name: 'STONE CROWN', kind: 'aura', aura: [0xffe5ef, 0xe54b94], auraGlow: .22,
+  clips: ['STONE CROWN'], swapAt: .38,
 };

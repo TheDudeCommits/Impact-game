@@ -1380,7 +1380,7 @@ export class CameraDirector {
         this.fitPoint(c.x,c.y+1.9*bulk,c.z,1,RELEASE_TOP,1,false);this.fitPoint(p.x,p.y,p.z,.8,RELEASE_TOP,1,false);
       }
       if(victim){const v=victim.group.position,vb=bodyBulk(victim.state);this.fitPoint(v.x,v.y+1.9*vb,v.z,.85,RELEASE_TOP,1,false);this.fitPoint(v.x,v.y,v.z,.85,1,RELEASE_FEET,false);}
-      // Boa's authored dismount rises above her grounded simulation capsule,
+      // Her ultimate's leap rises above her grounded simulation capsule,
       // and the heel drop briefly inverts her silhouette. Frame the joints
       // actually being drawn instead of losing the attacker above the HUD.
       if(caster.state.fighter==='basilissa')for(const name of ['Head','LeftHand','RightHand','LeftFoot','RightFoot']){

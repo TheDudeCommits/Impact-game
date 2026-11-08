@@ -51,24 +51,24 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
     shop: { 'fighter-senko': shopItem('Senko', 'The Tribunal\'s Warden of Glare: a glimmering kick, a searchlight heel, a beam from one lazy finger - and a troop of a hundred shrieking lights.', '輝') },
   },
   // BASILISSA バシリッサ (basilissa's slot, round 6's concept a; writer C):
-  // the Serpent Queen of the Wrecks.
+  // the Rose Queen of the Wrecks, on foot.
   'basilissa': {
-    name: 'Basilissa', series: 'Dust Sea', tagline: 'The serpent queen of the Dust Sea\'s wreck-gardens, who has never once looked up at anyone, and turns every man who stares too long into a rose of stone.',
+    name: 'Basilissa', series: 'Dust Sea', tagline: 'The stone-rose queen of the Dust Sea\'s wreck-gardens, who has never once looked up at anyone, and turns every man who stares too long into a rose of stone.',
     homeArt: true,
     color: '#e95e9b', height: 2.3,
     moves: ['Thorn Kiss', 'Rosestone Heel', 'Sandrose Volley', 'The Stone Garden'],
     shortMoves: ['THORN KISS', 'ROSESTONE HEEL', 'SANDROSE VOLLEY', 'STONE GARDEN'],
-    awakening: 'SERPENT CROWN',
+    awakening: 'STONE CROWN',
     // QA round (fix-cloth, 3 November 2026): her floor-length cape and the hair under it hang from her shoulders on chains of
-    // their own (scripts/originals/shop/cape_chains_r6.py), not welded to her hips: no leg capsules, for she sits on her
-    // serpent with it pooled on the floor, where a floor push fanned it into slats.
+    // their own (scripts/originals/shop/cape_chains_r6.py), not welded to her hips: no leg capsules (they were dropped while
+    // she sat with it pooled on the floor, where a floor push fanned it into slats; she now stands, and the cape hangs free).
     cape: { thigh: 0, droop: 40 },
     model: F + 'basilissa-tr1.glb', extraModels: [],
     portrait: F + 'basilissa-portrait.png',
     names: {
       'Crown Heel Drop': 'Crown Rook\'s Heel', 'Petal Air Kick': 'Petal Kick Loose',
     },
-    shop: { 'fighter-basilissa': shopItem('Basilissa', 'The serpent queen of the Dust Sea\'s wrecks: a thorned kiss, a heel that turns flesh to stone, a volley of desert roses - and the Stone Garden, where her admirers pose forever.', '薔') },
+    shop: { 'fighter-basilissa': shopItem('Basilissa', 'The stone-rose queen of the Dust Sea\'s wrecks: a thorned kiss, a heel that turns flesh to stone, a volley of desert roses - and the Stone Garden, where her admirers pose forever.', '薔') },
   },
   // BARROW バロウ (barrow's slot, round 6's concept b; writer C):
   // the Wrecker.

@@ -69,6 +69,8 @@ const BASE: Partial<Record<FighterId, number>> = {
   kinu: 1.02443,         // Kinu (-2.2%: her head)
   imago: 1.13122,         // Imago (+3.8%: his head)
   ampere: 1.02032,           // Ampere (aaa-a2, framed: -1.6%, his stance's hips rose 2.8 cm off its soles - not a lifted heel set down)
+  // Basilissa stands: her scale is the one her old seated stance had, so she stands at her own size.
+  basilissa: 0.83487,       // Basilissa (about 1.85 m on foot)
 };
 /** The awakened bodies whose own stance was swapped. */
 const FORM: Partial<Record<FighterId, number>> = {

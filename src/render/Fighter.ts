@@ -565,7 +565,7 @@ export const AIR_STRING_CLIPS:Partial<Record<FighterId,readonly [AirStage,AirSta
   shanxiao:[air('Rising Colossus',true,0,.75,.52,.75),air('Mauler Backfist',true,0,19/30,.48,19/30),air('Colossus Hammer',true,0,49/60,.54,49/60)],
   kuzu:[air('Saw Rising Reap',false,0,43/60,.55,43/60),air('Saw Reverse Quill',true,0,.6,.478,.6),air('Saw Downstroke',false,0,47/60,.553,47/60)],
   shakugo:[air('Fissure Uppercut',false,0,20/30,8/20,20/30),air('Cinder Backfist',true,0,23/30,8/23,23/30),air('Slag Descent',false,0,1,10/30,1)],
-  'basilissa':[air('Serpent Rising Heel',false,0,23/30,13/23,23/30),air('Petal Air Kick',false,0,25/30,.48,25/30),air('Crown Heel Drop',false,0,1,1/3,1)],
+  'basilissa':[air('Thornrise Heel',false,0,23/30,13/23,23/30),air('Petal Air Kick',false,0,25/30,.48,25/30),air('Crown Heel Drop',false,0,1,1/3,1)],
   sorayomi:[air('Staff Rising Reap',false,0,.6,11/18,.6),air('Staff Reverse Quill',true,0,17/30,9/17,17/30),air('Staff Downstroke',false,0,.6,11/18,.6)],
   strix:[air('Vigil Rising Reap',false,0,.4,.5,.4),air('Vigil Backcut',true,0,.6,7.5/18,.6),air('Gravefall',false,0,.6,11/18,.6)],
   // A knee driven into the jump, the cross with the legs tucked, and the axe kick of his rise-and-axe take.

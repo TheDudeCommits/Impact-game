@@ -27,7 +27,7 @@ import { ShakugoMagma } from '../src/render/signature/ShakugoMagma';
 import { TokanIce } from '../src/render/signature/TokanIce';
 import { AdadThunder } from '../src/render/signature/AdadThunder';
 import { BunaOni } from '../src/render/signature/BunaOni';
-import { BoaEmpress } from '../src/render/signature/BoaEmpress';
+import { RoseEmpress } from '../src/render/signature/RoseEmpress';
 import { SorayomiWeather } from '../src/render/signature/SorayomiWeather';
 import { PsycheFleur } from '../src/render/signature/PsycheFleur';
 import { OyashioKarate } from '../src/render/signature/OyashioKarate';
@@ -122,7 +122,7 @@ describe('what a pilot\'s ultimate asks of the shared stage at its busiest frame
     ['tokan', (scene: THREE.Scene) => new TokanIce(scene, { budget: 1 })],
     ['adad', (scene: THREE.Scene) => new AdadThunder(scene, { budget: 1 })],
     ['buna', (scene: THREE.Scene) => new BunaOni(scene, { budget: 1 })],
-    ['basilissa', (scene: THREE.Scene) => new BoaEmpress(scene, { budget: 1 })],
+    ['basilissa', (scene: THREE.Scene) => new RoseEmpress(scene, { budget: 1 })],
     ['sorayomi', (scene: THREE.Scene) => new SorayomiWeather(scene, VfxKit.for(scene))],
     ['psyche', (scene: THREE.Scene) => new PsycheFleur(scene, { budget: 1 })],
     ['oyashio', (scene: THREE.Scene) => new OyashioKarate(scene, { budget: 1 })],

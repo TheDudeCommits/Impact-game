@@ -312,7 +312,7 @@ export function guessHeat(key: string): number | undefined {
 const SCREEN = ['ifFrames', 'ifStrength', 'impactFrames', 'impactFrame', 'gradeWeight', 'stoneGrade', 'lines', 'distortion', 'haze', 'heatDistortion'];
 const WINDUP = ['charge', 'windup', 'windUp', 'startDelay', 'castDelay', 'revealTime', 'chargeTime', 'gather', 'gatherTime', 'buildUp', 'buildup'];
 /** Stand-ins the sandbox brings because it has no one to hit, which in the game would stand next to the real target:
- *  the heart beam's figure that it turns to stone (`edge_heartbeam`, Boa's Sandrose Volley), the seal pack's straw practice
+ *  the heart beam's figure that it turns to stone (`edge_heartbeam`, Basilissa's Sandrose Volley), the seal pack's straw practice
  *  post. Off; what the effect does to them still lands where they stood. */
 const STAND_INS = ['statueShow', 'showTarget'];
 /** The nature pack's camera pull-out (the Armory's orbit eased out for a ten-storey wave): the gameplay camera is

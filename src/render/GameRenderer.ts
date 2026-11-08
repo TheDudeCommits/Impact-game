@@ -288,7 +288,7 @@ export class GameRenderer {
    *  Which objects those are is textureWarmup.ts `showCasters`: every hidden object a caster hangs from, up to the scene
    *  (an Armory effect between casts hides its space and leaves its meshes as they were: a caster that was itself
    *  visible was never drawn here, and its depth program linked on the first cast - one program, 2 to 10 ms, on the
-   *  first G of Hawser, Minase, Bonsho, Buna, Tokan, Gosu and Ovid, and on Shakugo's and Boa's ultimates),
+   *  first G of Hawser, Minase, Bonsho, Buna, Tokan, Gosu and Ovid, and on Shakugo's and Basilissa's ultimates),
    *  each drawn wherever it lies. The roots are the spaces the Armory hands over (FxStage.warmRoots: casts left
    *  standing or finished, never an instance not yet cast), so what is shown with a caster is drawable.
    *  A skinned mesh under them is given its bone texture now, whether it casts or not (three makes one a skeleton, at

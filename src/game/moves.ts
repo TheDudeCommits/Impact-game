@@ -1437,7 +1437,7 @@ export const AIR_RUSH: Partial<Record<FighterId, readonly [string | undefined, s
   kuzu: ['Rising Tooth', 'Air Backtooth', 'Falling Dovetail'],
   shakugo: ['Fissure Uppercut', 'Aerial Cinder Backfist', 'Slag Descent'],
   strix: ['Vigil Ascent', 'Aerial Reverse Quill', 'Descending Wing'],
-  'basilissa': ['Serpent Rising Heel', 'Petal Air Kick', 'Crown Heel Drop'],
+  'basilissa': ['Thornrise Heel', 'Petal Air Kick', 'Crown Heel Drop'],
   sorayomi: ['Rising Vane', 'Aerial Staff Reverse Quill', 'Descending Vane'],
   taisei: ['Flying Kick', 'Ghost Step Strike', 'Wreckfall Crash'],
   ouga: ['Sky Elbow', 'Shikou Palm', 'Iron Sledge'],
@@ -1591,7 +1591,7 @@ const RUSH_SPECS: Record<FighterId, RushSpec> = {
   kuzu: { names: ['Backtooth Swipe', 'Rising Tooth', 'Dovetail Drop'], damage: [22, 24, 47], tempo: 1, shape: 'carry' },
   shakugo: { names: ['Slag Hook', 'Cinder Backfist', 'Verdict Hammer'], damage: [23, 25, 48], tempo: 1.08, shape: 'carry' },
   strix: { names: ['Vigil Return', 'Rising Wing', 'Graveward Stroke'], damage: [21, 23, 47], tempo: 1.08, shape: 'carry' },
-  'basilissa': { names: ['Thorn Sweep', 'Serpent Reverse Heel', 'Crown Heel Drop'], damage: [20, 22, 45], tempo: 1.08, shape: 'carry' },
+  'basilissa': { names: ['Thorn Sweep', 'Thorn Reverse Heel', 'Crown Heel Drop'], damage: [20, 22, 45], tempo: 1.08, shape: 'carry' },
   sorayomi: { names: ['Vane Backcut', 'Staff Whirl', 'Downpour Stroke'], damage: [20, 22, 44], tempo: 1.08, shape: 'carry' },
   // Round 3: back on the roster's numbers. The stages were cut to 24/26/50
   // because Meteor Combination realised only 71; Cloudstep lands 90.

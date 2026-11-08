@@ -14,15 +14,15 @@ import { blowFloor } from './blowFloor';
 
 /** All silhouettes are geometry authored here. There are no late image requests
  * or borrowed aura textures; the constructor prepares every GPU resource. */
-export const BOA_EMPRESS_ASSETS: readonly string[] = Object.freeze([]);
-export const BOA_EMPRESS_BEATS = Object.freeze({ opener: .42, leap: 1.05, heel: 1.86, flourish: .38 });
-export const BOA_EMPRESS_LIMITS = Object.freeze({ hearts: 96, contours: 96, arrows: 96, stones: 192, will: 96, shells: 8, impacts: 24 });
-export const isBoaEmpress = (id: string | undefined) => id === 'basilissa';
+export const ROSE_EMPRESS_ASSETS: readonly string[] = Object.freeze([]);
+export const ROSE_EMPRESS_BEATS = Object.freeze({ opener: .42, leap: 1.05, heel: 1.86, flourish: .38 });
+export const ROSE_EMPRESS_LIMITS = Object.freeze({ hearts: 96, contours: 96, arrows: 96, stones: 192, will: 96, shells: 8, impacts: 24 });
+export const isRoseEmpress = (id: string | undefined) => id === 'basilissa';
 
 const UP = new THREE.Vector3(0, 1, 0), FRONT = new THREE.Vector3(0, 0, 1);
 /** Her hearts and arrows themselves, over the bloom threshold (they were drawn in colours of 1 and under). */
 const PINK = new THREE.Color(2, .5, 1.1), PEARL = new THREE.Color(2.2, 1.9, 2);
-/** The Mero Mero no Mi as the stage lights it: pearl at the heart, the SERPENT CROWN's pink round it (her casting's
+/** Her casting as the stage lights it: pearl at the heart, the STONE CROWN's pink round it (her casting's
  *  palette). And what it does to a body: stone breaking, pale grey with no colour in it. */
 export const LOVE: StageLook = stageLook(0xffe5ef, 0xe54b94, 0x5a0f33);
 const PETRIFIED: StageLook = stageLook(0xf4f0ea, 0xbdb6bc, 0x3a3438);
@@ -40,7 +40,7 @@ const handOrigin = new THREE.Vector3(), forearmOrigin = new THREE.Vector3();
 /** The source rig has an open palm but no finger joints. Continue the actual
  * wrist/forearm direction by 10 cm instead of charging at the actor's centre.
  * CombatEffects' flight origin and this layer must use this same attachment. */
-export function boaFingertip(fighter: Fighter, out: THREE.Vector3): THREE.Vector3 {
+export function roseFingertip(fighter: Fighter, out: THREE.Vector3): THREE.Vector3 {
   const hand = fighter.joints?.get('RightHand');
   if (hand?.parent) {
     hand.getWorldPosition(handOrigin); hand.parent.getWorldPosition(forearmOrigin);
@@ -54,8 +54,8 @@ export function boaFingertip(fighter: Fighter, out: THREE.Vector3): THREE.Vector
 /** Source skill_a uses the left heel for all three sweeps; skill_b's descending
  * finisher uses the right. The native source does not alternate kicking feet.
  * The air string's last take must be Crown Heel Drop, as in the handoff. */
-export function boaHeelContact(fighter: Fighter, index: number, out: THREE.Vector3): boolean {
-  if (!isBoaEmpress(fighter.state.fighter)) return false;
+export function roseHeelContact(fighter: Fighter, index: number, out: THREE.Vector3): boolean {
+  if (!isRoseEmpress(fighter.state.fighter)) return false;
   const s = fighter.state;
   const drop = s.branch === 'lllh' || s.branch === 'airSpecial' ||
     s.action === 'ultimate' && index > 0 || s.action === 'light' && (s.chain ?? 0) >= (s.grounded ? 3 : 2);
@@ -111,7 +111,7 @@ class EmpressBatch {
   constructor(scene: THREE.Scene, name: string, geometry: THREE.BufferGeometry, readonly capacity: number, faceted = false) {
     this.tint = new THREE.InstancedBufferAttribute(new Float32Array(capacity * 4), 4).setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute('empressTint', this.tint);
-    const material = new THREE.ShaderMaterial({ name: 'BoaEmpressCel', transparent: true, depthWrite: false,
+    const material = new THREE.ShaderMaterial({ name: 'RoseEmpressCel', transparent: true, depthWrite: false,
       side: THREE.DoubleSide, toneMapped: false,
       uniforms: { faceted: { value: faceted ? 1 : 0 } },
       vertexShader: `attribute vec4 empressTint;varying vec4 vTint;varying float vFace;
@@ -122,7 +122,7 @@ class EmpressBatch {
         gl_FragColor=vec4(vTint.rgb*mix(1.,cel,faceted),vTint.a);}`,
     });
     this.mesh = new THREE.InstancedMesh(geometry, material, capacity);
-    this.mesh.name = `boa-empress-${name}`; this.mesh.frustumCulled = false;
+    this.mesh.name = `rose-empress-${name}`; this.mesh.frustumCulled = false;
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.mesh.renderOrder = 3;
     // One invisible instance lets the existing load-time compile see the program.
     this.object.scale.setScalar(0); this.object.updateMatrix();
@@ -144,7 +144,26 @@ class EmpressBatch {
 type Shell = { actor: string; target: string; seq: number; born: number; held: boolean };
 type Impact = { actor: string; seq: number; born: number; seed: number; stone: boolean; big: boolean; yaw: number; p: THREE.Vector3 };
 
-export class BoaEmpress {
+/**
+ * Basilissa's love and stone, staged with the shared parts (MoveStage; docs/engine/VFX_BAR.md). Launch day, 12 October
+ * 2026: from the gameplay camera Sandrose Volley changed 7 % of the frame, Rosestone Heel 7 %, and The Stone Garden
+ * 21 % in a room gone dark; the kiss's pick burst in a far corner of the frame and the kick's in orange a half second
+ * late. Her hearts, arrows and stone stay her own geometry; the stage gives them their light and their size. The stone
+ * column her casting raises round the victim of Empress stays.
+ *
+ *  - **Thorn Kiss** (light): a heart lit at her fingertip, flying in its own pink light, a pop of it where it lands.
+ *  - **Rosestone Heel** (heavy): her heel a point of pink light through each of the three kicks; each lands as a small
+ *    burst, the last cracking its victim like stone.
+ *  - **Sandrose Volley** (special): the heart she fires from gathered at her fingertip with light on the floor round her;
+ *    the arrows fly as lines of pink light; where they land a blast, the body cracked like stone, the floor left glowing.
+ *  - **The Stone Garden** (ultimate): from the confirm the room goes to a rose night, the floor veined with it
+ *    under her and hearts rising round her as her casting turns the victim to stone; the heel comes down in light and
+ *    the last blow breaks the stone across the frame, with a shell and a pillar of pink.
+ *
+ * STONE CROWN presentation. It reads manual combat and pose state only. No target search, damage, simulation
+ * mutation or attack lives here.
+ */
+export class RoseEmpress {
   /** The scene's shared stage, held while a Boa is in the room (`load`), so a room without her builds nothing. */
   private stage?: MoveStage;
   private gathers: Gather[] = Array.from({ length: 6 }, () => ({ actor: '', target: '', seq: -1, floor: 0, final: false }));
@@ -155,8 +174,8 @@ export class BoaEmpress {
   private stones: EmpressBatch;
   private will: EmpressBatch;
   private batches: EmpressBatch[];
-  private shells: Shell[] = Array.from({ length: BOA_EMPRESS_LIMITS.shells }, () => ({ actor: '', target: '', seq: -1, born: -1e9, held: false }));
-  private impacts: Impact[] = Array.from({ length: BOA_EMPRESS_LIMITS.impacts }, () => ({ actor: '', seq: -1, born: -1e9, seed: 0, stone: false, big: false, yaw: 0, p: new THREE.Vector3() }));
+  private shells: Shell[] = Array.from({ length: ROSE_EMPRESS_LIMITS.shells }, () => ({ actor: '', target: '', seq: -1, born: -1e9, held: false }));
+  private impacts: Impact[] = Array.from({ length: ROSE_EMPRESS_LIMITS.impacts }, () => ({ actor: '', seq: -1, born: -1e9, seed: 0, stone: false, big: false, yaw: 0, p: new THREE.Vector3() }));
   private shellCursor = 0;
   private impactCursor = 0;
   private eventCursor = 0;
@@ -170,16 +189,16 @@ export class BoaEmpress {
   private q = new THREE.Quaternion();
   private roll = new THREE.Quaternion();
   constructor(private scene: THREE.Scene, private kit: Pick<VfxKit, 'budget'> & Partial<VfxKit>) {
-    this.hearts = new EmpressBatch(scene, 'hearts', solid(heartShape()), BOA_EMPRESS_LIMITS.hearts);
-    this.contours = new EmpressBatch(scene, 'heart-contours', contourGeometry(), BOA_EMPRESS_LIMITS.contours);
-    this.arrows = new EmpressBatch(scene, 'slave-arrows', arrowGeometry(), BOA_EMPRESS_LIMITS.arrows);
-    this.stones = new EmpressBatch(scene, 'stone', new THREE.IcosahedronGeometry(1, 0), BOA_EMPRESS_LIMITS.stones, true);
-    this.will = new EmpressBatch(scene, 'regal-ink', willGeometry(), BOA_EMPRESS_LIMITS.will, true);
+    this.hearts = new EmpressBatch(scene, 'hearts', solid(heartShape()), ROSE_EMPRESS_LIMITS.hearts);
+    this.contours = new EmpressBatch(scene, 'heart-contours', contourGeometry(), ROSE_EMPRESS_LIMITS.contours);
+    this.arrows = new EmpressBatch(scene, 'thorn-arrows', arrowGeometry(), ROSE_EMPRESS_LIMITS.arrows);
+    this.stones = new EmpressBatch(scene, 'stone', new THREE.IcosahedronGeometry(1, 0), ROSE_EMPRESS_LIMITS.stones, true);
+    this.will = new EmpressBatch(scene, 'regal-ink', willGeometry(), ROSE_EMPRESS_LIMITS.will, true);
     this.batches = [this.hearts, this.contours, this.arrows, this.stones, this.will];
   }
   load(ids: readonly string[]): Promise<void> {
     // (The stage's pools are built with the room, so they link in its load and not on her first move.)
-    if (!this.disposed) { if (ids.some(isBoaEmpress)) this.stage ??= MoveStage.for(this.scene, this.kit); else if (this.stage) { this.stage.release(); this.stage = undefined; } }
+    if (!this.disposed) { if (ids.some(isRoseEmpress)) this.stage ??= MoveStage.for(this.scene, this.kit); else if (this.stage) { this.stage.release(); this.stage = undefined; } }
     return Promise.resolve();
   }
 
@@ -188,7 +207,7 @@ export class BoaEmpress {
     if (event.kind === 'eliminated' || event.kind === 'respawn') {
       this.cancel(event.actorId, true); return;
     }
-    if (!isBoaEmpress(event.fighter)) return;
+    if (!isRoseEmpress(event.fighter)) return;
     if (event.kind === 'whiff' || event.kind === 'rejected') { this.cancel(event.actorId); return; }
     if (event.kind !== 'hit' && event.kind !== 'confirm') return;
     // The renderer normally deduplicates events; keep our bounded pools safe if
@@ -276,7 +295,7 @@ export class BoaEmpress {
     let st = this.stage?.open(time);
     for (const fighter of fighters.values()) {
       const s = fighter.state;
-      if (!isBoaEmpress(s.fighter) || !s.alive) continue;
+      if (!isRoseEmpress(s.fighter) || !s.alive) continue;
       // (A room loaded without `load`: the stage is taken as she is first seen.)
       st ??= (this.stage = MoveStage.for(this.scene, this.kit)).open(time);
       const age = s.actionTime * s.actionDuration, yaw = fighter.group.rotation.y;
@@ -292,7 +311,7 @@ export class BoaEmpress {
         (MOVES[s.fighter] ?? BASILISSA_MOVES)[s.action as AttackSlot];
       const release = move?.contacts[0] ?? (kiss ? .19 : .54);
       if ((kiss || volley) && age < release && s.whiffedAt === undefined) {
-        boaFingertip(fighter, this.p);
+        roseFingertip(fighter, this.p);
         const k = clamp(age / release);
         this.heart(this.p, this.q, (kiss ? .12 : .34) * (.6 + k * .4), .65 + k * .3, .12);
         // The heart in her fingers lit: a point of pink for the kiss; for Sandrose Volley the charge it fires from, and
@@ -308,19 +327,19 @@ export class BoaEmpress {
           if (s.action === 'ultimate' && i > 0 && s.confirmedAt === undefined) continue;
           const distance = Math.abs(age - beats[i]);
           if (distance > .075) continue;
-          if (!boaHeelContact(fighter, i, this.p)) continue;
+          if (!roseHeelContact(fighter, i, this.p)) continue;
           this.heart(this.p, this.q, .23 + .06 * (i > 0 ? 1 : 0), (1 - distance / .075) * .85, .08);
         }
         // Her heel a point of pink light through each kick (the nearest contact's foot), brightest as it lands.
         let near = 0; for (let i = 1; i < beats.length; i++) if (Math.abs(age - beats[i]) < Math.abs(age - beats[near])) near = i;
-        if ((s.action !== 'ultimate' || near === 0 || s.confirmedAt !== undefined) && boaHeelContact(fighter, near, this.heel)) {
+        if ((s.action !== 'ultimate' || near === 0 || s.confirmedAt !== undefined) && roseHeelContact(fighter, near, this.heel)) {
           const k = clamp(1 - Math.abs(age - beats[near]) / .22);
           if (k > .02) { st.glow(this.heel, .32, LOVE.main, .6 * k); st.glow(this.heel, .4, LOVE.core, .5 * k, STAR, .2, Math.floor(time * 24)); st.light(this.heel, 2.4, LOVE, .26 * k); }
         }
       }
     }
     for (const flight of flights.values()) {
-      if (!isBoaEmpress(flight.fighter) || !flight.released) continue;
+      if (!isRoseEmpress(flight.fighter) || !flight.released) continue;
       if (flight.slot === 'light' && !flight.branch) {
         this.q.setFromUnitVectors(FRONT, flight.heading);
         this.heart(flight.position, this.q, .25, 1, .7);
@@ -356,10 +375,10 @@ export class BoaEmpress {
       const actor = fighters.get(shell.actor), target = fighters.get(shell.target), s = actor?.state;
       const age = s ? s.actionTime * s.actionDuration : 0, elapsed = time - shell.born;
       if (!s?.alive || !target?.state.alive || !attacking(s.action) || (s.actionSeq ?? -1) !== shell.seq || s.whiffedAt !== undefined ||
-        (shell.held ? s.action !== 'ultimate' || age >= BOA_EMPRESS_BEATS.heel : elapsed >= .32)) { shell.actor = ''; continue; }
+        (shell.held ? s.action !== 'ultimate' || age >= ROSE_EMPRESS_BEATS.heel : elapsed >= .32)) { shell.actor = ''; continue; }
       if (elapsed < 0) continue;
       bodyCentre(target, this.a);
-      const grow = shell.held ? clamp((age - BOA_EMPRESS_BEATS.opener) / .20) : clamp(elapsed / .055) * (1 - elapsed / .32);
+      const grow = shell.held ? clamp((age - ROSE_EMPRESS_BEATS.opener) / .20) : clamp(elapsed / .055) * (1 - elapsed / .32);
       const count = shell.held && detail ? 8 : 4;
       const size = Math.min(1.5, Math.max(.65, target.state.size ?? 1));
       for (let i = 0; i < count; i++) {
@@ -418,14 +437,14 @@ export class BoaEmpress {
       st.glow(this.p, .34 + .2 * k, LOVE.main, .4 * fade);
     }
     // The heel she will drop: pink light gathering on it through the leap.
-    if (age >= BOA_EMPRESS_BEATS.leap - .2 && boaHeelContact(actor, FINAL, this.heel)) st.charge(this.heel, LOVE, .3 + .2 * k, clamp((age - BOA_EMPRESS_BEATS.leap + .2) / (BOA_EMPRESS_BEATS.heel - BOA_EMPRESS_BEATS.leap + .2)), seed);
-    else { boaFingertip(actor, this.b); st.charge(this.b, LOVE, .26, Math.max(.4, k), seed); }
+    if (age >= ROSE_EMPRESS_BEATS.leap - .2 && roseHeelContact(actor, FINAL, this.heel)) st.charge(this.heel, LOVE, .3 + .2 * k, clamp((age - ROSE_EMPRESS_BEATS.leap + .2) / (ROSE_EMPRESS_BEATS.heel - ROSE_EMPRESS_BEATS.leap + .2)), seed);
+    else { roseFingertip(actor, this.b); st.charge(this.b, LOVE, .26, Math.max(.4, k), seed); }
     if (k > .8) st.speed(.5 * (k - .8) / .2, g.actor, g.target);
   }
   private flourish(fighter: Fighter, age: number, duration: number) {
     const fade = clamp((duration - age) / .2);
-    boaFingertip(fighter, this.p);
-    const gather = clamp(age / BOA_EMPRESS_BEATS.flourish);
+    roseFingertip(fighter, this.p);
+    const gather = clamp(age / ROSE_EMPRESS_BEATS.flourish);
     if (age < .65) this.heart(this.p, this.q, .16 + gather * .22, fade * clamp((.65 - age) / .18), .1);
     if (age < .26 || age > .86) return;
     const t = (age - .26) / .6;
@@ -452,14 +471,7 @@ export class BoaEmpress {
       this.roll.premultiply(this.q);
       this.will.add(this.p, this.roll, .28, .54 - tier * .06, .7, INK, .87 * strength);
     }
-    // Sparse stones at Salome's support. They are ornament, with no targeting,
-    // projectiles, contact events or pulse damage attached to the mount.
-    for (let i = 0; i < (detail ? 5 : 3); i++) {
-      const angle = time * .25 + i * TAU / (detail ? 5 : 3);
-      this.p.copy(fighter.group.position); this.p.x += Math.sin(angle) * .62; this.p.z += Math.cos(angle) * .62;
-      this.p.y += .11 + Math.sin(time * 1.4 + i) * .035;
-      this.stones.add(this.p, this.q, .045, .085, .035, i % 2 ? STONE : PINK, .65 * strength);
-    }
+    // (No stones circle her: she fights on foot.)
   }
   reset() {
     for (const shell of this.shells) shell.actor = '';

@@ -839,7 +839,7 @@
    "core": "#ffe5ef",
    "main": "#e54b94",
    "rim": "#5a0f33",
-   "note": "SERPENT CROWN pink; petrification stays stone-grey with only a pink rim."
+   "note": "STONE CROWN pink (#ffe5ef to #e54b94); petrification stays stone-grey with only a pink rim."
   },
   "slots": {
    "body": {
@@ -851,7 +851,7 @@
     "when": "awakened",
     "scale": "small",
     "anchor": "body",
-    "why": "No standing shell for now: filmed, the flame shell was huge on her mounted 2.3 m frame (the body is being looked at separately). It stays the first alternate.",
+    "why": "No standing shell for now: filmed, the flame shell was huge on her seated 2.3 m frame (the body is being looked at separately). It stays the first alternate.",
     "settings": {
      "brightness": 1.1,
      "innerBright": 0.9
@@ -867,7 +867,7 @@
     "on": "release",
     "scale": "small",
     "anchor": "line",
-    "why": "Left to the game: Thorn Kiss is staged by her module (BoaEmpress, with the shared MoveStage: a heart lit at her fingertip, flying in its own pink light, a pop of it where it lands). The pick (qk_trail) fanned its sparks into a far corner of the frame for a second after the kiss had landed (0.62 to 1.6 s on a shot that lands at 0.3 s; fx_presence, 12 October 2026). It stays the first alternate."
+    "why": "Left to the game: Thorn Kiss is staged by her module (RoseEmpress, with the shared MoveStage: a heart lit at her fingertip, flying in its own pink light, a pop of it where it lands). The pick (qk_trail) fanned its sparks into a far corner of the frame for a second after the kiss had landed (0.62 to 1.6 s on a shot that lands at 0.3 s; fx_presence, 12 October 2026). It stays the first alternate."
    },
    "heavy": {
     "pick": null,
@@ -879,7 +879,7 @@
     "on": "hit",
     "scale": "medium",
     "anchor": "target",
-    "why": "Left to the game: Rosestone Heel is staged by her module (BoaEmpress, with the shared MoveStage: her heel a point of pink light through each of the three kicks, each landing as a small burst and the last cracking its victim like stone). The pick (sam_kick) burst in orange at 1.0 to 1.3 s and in pink at 1.5 to 2.0 s, on kicks that land at 0.28, 0.52 and 0.78 s (fx_presence, 12 October 2026). It stays the first alternate."
+    "why": "Left to the game: Rosestone Heel is staged by her module (RoseEmpress, with the shared MoveStage: her heel a point of pink light through each of the three kicks, each landing as a small burst and the last cracking its victim like stone). The pick (sam_kick) burst in orange at 1.0 to 1.3 s and in pink at 1.5 to 2.0 s, on kicks that land at 0.28, 0.52 and 0.78 s (fx_presence, 12 October 2026). It stays the first alternate."
    },
    "special": {
     "pick": null,
@@ -892,7 +892,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Left to the game: Sandrose Volley is staged by her module (BoaEmpress, with the shared MoveStage: the heart she fires from gathered at her fingertip with light on the floor round her, the arrows flying as lines of pink light, and where they land a blast, the body cracked like stone and the floor left glowing). The pick (edge_heartbeam) was 7 % of the frame at its peak and 4.5 %s in all (fx_presence, 12 October 2026). It stays the first alternate."
+    "why": "Left to the game: Sandrose Volley is staged by her module (RoseEmpress, with the shared MoveStage: the heart she fires from gathered at her fingertip with light on the floor round her, the arrows flying as lines of pink light, and where they land a blast, the body cracked like stone and the floor left glowing). The pick (edge_heartbeam) was 7 % of the frame at its peak and 4.5 %s in all (fx_presence, 12 October 2026). It stays the first alternate."
    },
    "ultimate": {
     "pick": "petrify",
@@ -903,7 +903,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "target",
-    "why": "Grey facets gather round the victim into a stone column, then run out as sand: The Stone Garden turning them to stone. Kept on launch day (12 October 2026): it is the petrification the anime draws and it builds from the confirm, as a gather should; her module stages round it with the shared MoveStage (BoaEmpress: the room to a rose night, the floor veined under her and hearts rising round her, light gathered on the heel through the leap, and the last blow breaking the stone across the frame with a shell and a pillar of pink)."
+    "why": "Grey facets gather round the victim into a stone column, then run out as sand: The Stone Garden turning them to stone. Kept on launch day (12 October 2026): it is the petrification the anime draws and it builds from the confirm, as a gather should; her module stages round it with the shared MoveStage (RoseEmpress: the room to a rose night, the floor veined under her and hearts rising round her, light gathered on the heel through the leap, and the last blow breaking the stone across the frame with a shell and a pillar of pink)."
    }
   },
   "moveIdeas": [

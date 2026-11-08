@@ -32,13 +32,13 @@ export const AWAKENING_LINES: Partial<Record<FighterId, AwakeningLine>> = {
   bruin: after('bruin', 'vo-bruin-awaken', 'WIDE AWAKE', [0], 0),
   aquilo: after('aquilo', 'vo-aquilo-windborne', 'WINDBORNE', [0], 0),
   svanhild: after('svanhild', 'vo-svanhild-valkyrie', 'WHITE PLUMAGE', [0], 0),
-  // Native resolve quote; SERPENT CROWN is a gameplay state.
+  // Native resolve quote; STONE CROWN is a gameplay state.
   'full-beam': after('full-beam','vo-full-beam-embers','LAST WATCH',[.46],0,.15),
   pyroclast: after('pyroclast','vo-pyroclast-cluster-ready','Tephra Storm',[0],0,.06),
   ampere: after('ampere','vo-ampere-wrathful-guardian','LIGHTS ON',[0],0,.12),
   kuzu: after('kuzu','vo-kuzu-overdrive','OFF THE LEASH',[0],0),
   shakugo: after('shakugo','vo-shakugo-magma','NO QUARTER',[0],0),
-  'basilissa': after('basilissa','vo-basilissa-empress','SERPENT CROWN',[0],0),
+  'basilissa': after('basilissa','vo-basilissa-empress','STONE CROWN',[0],0),
   // Her recorded weather-science line; gameplay mastery, not a form.
   sorayomi: after('sorayomi','vo-sorayomi-storm-eye','EYE OF THE STORM',[.01],0),
   // Recorded challenge: 'Surpass me.' Unblinking Focus is a gameplay focus state.

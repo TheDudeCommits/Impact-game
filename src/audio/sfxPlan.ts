@@ -269,7 +269,7 @@ const AIR_KICKS = new Set(['Knee Hitch', 'Kick Loose', 'Drop Knot', 'Falling Kic
 export const AIR_BLOWS: Readonly<Record<string, string>> = {
   'Rising Tooth':'blade','Air Backtooth':'blade','Falling Dovetail':'blade',
   'Fissure Uppercut':'fist','Aerial Cinder Backfist':'fist','Slag Descent':'axe',
-  'Serpent Rising Heel': 'kick', 'Petal Air Kick': 'kick', 'Crown Heel Drop': 'kick',
+  'Thornrise Heel': 'kick', 'Petal Air Kick': 'kick', 'Crown Heel Drop': 'kick',
   'Rising Vane': 'axe', 'Aerial Staff Reverse Quill': 'axe', 'Descending Vane': 'axe',
   'Vigil Ascent': 'blade', 'Aerial Reverse Quill': 'blade', 'Descending Wing': 'blade',
   'Gust Strike': 'kick', 'Twin Knee': 'kick', 'Pack Flurry': 'kick',

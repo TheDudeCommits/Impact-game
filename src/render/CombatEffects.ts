@@ -30,7 +30,7 @@ import { OPENER_FEED, undecided } from './signature/ultimateClock';
 // Round 5 (PARRY): the guard aura and the block, parry and guard-break bursts.
 import { GuardFx } from './vfx/GuardFx';
 import { SorayomiWeather } from './signature/SorayomiWeather';
-import { BoaEmpress, isBoaEmpress } from './signature/BoaEmpress';
+import { RoseEmpress, isRoseEmpress } from './signature/RoseEmpress';
 import { bigBlowOf, cinematicBlowOf } from './bigBlowEvent';
 import { VFX } from './vfxLevel';
 import { LOCK_ESCAPE_WINDOW } from '../game/lockCombat';
@@ -475,7 +475,7 @@ export class CombatEffects {
   /** Round 5 (PARRY): the guard's own layer (vfx/GuardFx). */
   readonly guard: GuardFx;
   private weather: SorayomiWeather;
-  private empress: BoaEmpress;
+  private empress: RoseEmpress;
   private chainsaw: KuzuChainsaw;
   private berserker: ShanxiaoRampage;
   private rosterSignatures: RosterSignatureSet;
@@ -488,7 +488,7 @@ export class CombatEffects {
     this.kit = VfxKit.for(scene);
     this.guard = new GuardFx(scene, this.kit);
     this.weather = new SorayomiWeather(scene, this.kit);
-    this.empress = new BoaEmpress(scene, this.kit);
+    this.empress = new RoseEmpress(scene, this.kit);
     this.chainsaw = new KuzuChainsaw(scene, this.kit);
     this.berserker = new ShanxiaoRampage(scene, this.kit);
     this.rosterSignatures = new RosterSignatureSet(scene, this.kit);
@@ -763,7 +763,7 @@ export class CombatEffects {
     }
     const halo = new THREE.Mesh(this.sphere, this.halo); halo.name='cast-energy-halo'; halo.scale.setScalar(isSpirit ? 1.1 : 1.2); if(!ownedMaterial&&!palmWhirlsphere)group.add(halo); this.scene.add(group);
     // The group still travels - its position is the flight - it is only not drawn.
-    if(clockHandKnives(event)||(isBoaEmpress(fighterId)||isKuzuChainsaw(fighterId)||isShakugoMagma(fighterId)||isShanxiaoRampage(fighterId)||rosterFlight(fighterId,slot,event.branch,event.actorId)||isAmpereSurge(fighterId)||isPyroclastExplosions(fighterId)||isFullBeamPressure(fighterId)))group.visible=false;
+    if(clockHandKnives(event)||(isRoseEmpress(fighterId)||isKuzuChainsaw(fighterId)||isShakugoMagma(fighterId)||isShanxiaoRampage(fighterId)||rosterFlight(fighterId,slot,event.branch,event.actorId)||isAmpereSurge(fighterId)||isPyroclastExplosions(fighterId)||isFullBeamPressure(fighterId)))group.visible=false;
     const start = new THREE.Vector3(event.origin!.x, event.origin!.y, event.origin!.z), end = new THREE.Vector3(event.endpoint!.x, event.endpoint!.y, event.endpoint!.z);
     const palmCharges=fighterId==='ouga'&&slot==='ultimate'?[new THREE.Mesh(this.sphere,ownedMaterial),new THREE.Mesh(this.sphere,ownedMaterial)]:undefined;for(const palm of palmCharges??[])this.scene.add(palm);
     // The simulation shortens the endpoint to the first wall on the line, so
@@ -823,7 +823,7 @@ export class CombatEffects {
   /** The light of a technique another layer draws. Charges, beams and shots
    *  drawn here light themselves in `updateCast`. */
   private glow(event: CombatEvent, move: MoveDefinition, actor?: Fighter) {
-    if ((isBoaEmpress(event.fighter)||isKuzuChainsaw(event.fighter)||isShakugoMagma(event.fighter)||isShanxiaoRampage(event.fighter)||hasRosterSignature(event.fighter,event.slot,event.branch,event.actorId)||isAmpereSurge(event.fighter)||isPyroclastExplosions(event.fighter)||isFullBeamPressure(event.fighter))) return;
+    if ((isRoseEmpress(event.fighter)||isKuzuChainsaw(event.fighter)||isShakugoMagma(event.fighter)||isShanxiaoRampage(event.fighter)||hasRosterSignature(event.fighter,event.slot,event.branch,event.actorId)||isAmpereSurge(event.fighter)||isPyroclastExplosions(event.fighter)||isFullBeamPressure(event.fighter))) return;
     const slot = event.slot!, fighter = event.fighter!, awakened = !!actor?.state.awakened;
     const el = elementFor(fighter, slot, awakened, 0, event.branch);
     // Gaunt' enders are a man and a sword: steel, no light of their own.
@@ -1561,7 +1561,7 @@ export class CombatEffects {
   /** A shot that reached the end of its flight without touching anyone
    *  still goes off: against the wall it hit, on the floor, or in the air. */
   private miss(c: CastView, move: MoveDefinition, time: number) {
-    if ((isBoaEmpress(c.event.fighter)||isKuzuChainsaw(c.event.fighter)||isShakugoMagma(c.event.fighter)||isShanxiaoRampage(c.event.fighter)||rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||isAmpereSurge(c.event.fighter)||isPyroclastExplosions(c.event.fighter)||isFullBeamPressure(c.event.fighter))) return;
+    if ((isRoseEmpress(c.event.fighter)||isKuzuChainsaw(c.event.fighter)||isShakugoMagma(c.event.fighter)||isShanxiaoRampage(c.event.fighter)||rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||isAmpereSurge(c.event.fighter)||isPyroclastExplosions(c.event.fighter)||isFullBeamPressure(c.event.fighter))) return;
     const fighterId = c.event.fighter!, slot = c.event.slot!, el = elementFor(fighterId, slot, false, 0, c.event.branch);
     if (clockHandKnives(c.event)) { this.kit.streaks(c.end.x, c.end.y, c.end.z, el, this.kit.n(6, 3), 5, .015, time); this.kit.ring(c.end.x, c.end.y, c.end.z, .1, .6, time, .15, 0xffffff, el.rim, 0); return; }
     if (move.style === 'bomb') {
@@ -1762,7 +1762,7 @@ export class CombatEffects {
       c.group.position.lerp(visualEnd,p);
       // What the shot leaves behind it in flight: a trail of its own light,
       // unless another layer dresses it in fire or lightning.
-      if (time >= c.nextTrail && !clockHandKnives(c.event) && !(isBoaEmpress(c.event.fighter)||isKuzuChainsaw(c.event.fighter)||isShakugoMagma(c.event.fighter)||isShanxiaoRampage(c.event.fighter)||rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||isAmpereSurge(c.event.fighter)||isPyroclastExplosions(c.event.fighter)||isFullBeamPressure(c.event.fighter))) {
+      if (time >= c.nextTrail && !clockHandKnives(c.event) && !(isRoseEmpress(c.event.fighter)||isKuzuChainsaw(c.event.fighter)||isShakugoMagma(c.event.fighter)||isShanxiaoRampage(c.event.fighter)||rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||isAmpereSurge(c.event.fighter)||isPyroclastExplosions(c.event.fighter)||isFullBeamPressure(c.event.fighter))) {
         c.nextTrail = time + (move.style === 'bomb' ? .05 : .028);
         const sp = kit.sparks.spec, pos = c.group.position;
         if (!FLIGHT_DRESSED.has(c.event.fighter!)) {
@@ -1778,7 +1778,7 @@ export class CombatEffects {
       // Faded in over its first metre and a half: at release the shot is
       // still in the caster's hand, and a light there burns them white.
       const clear = Math.min(1, c.group.position.distanceTo(c.start) / 1.5);
-      if (!(isBoaEmpress(c.event.fighter)||isKuzuChainsaw(c.event.fighter)||isShakugoMagma(c.event.fighter)||isShanxiaoRampage(c.event.fighter)||rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||isAmpereSurge(c.event.fighter)||isPyroclastExplosions(c.event.fighter)||isFullBeamPressure(c.event.fighter))) kit.lights.request(c.group.position.x, c.group.position.y, c.group.position.z, el.light, (c.event.slot === 'ultimate' ? 30 : c.event.slot === 'special' ? 12 : 7) * clear, c.event.slot === 'ultimate' ? 14 : 8, c.event.slot === 'ultimate' ? 2.5 : 1.5);
+      if (!(isRoseEmpress(c.event.fighter)||isKuzuChainsaw(c.event.fighter)||isShakugoMagma(c.event.fighter)||isShanxiaoRampage(c.event.fighter)||rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||isAmpereSurge(c.event.fighter)||isPyroclastExplosions(c.event.fighter)||isFullBeamPressure(c.event.fighter))) kit.lights.request(c.group.position.x, c.group.position.y, c.group.position.z, el.light, (c.event.slot === 'ultimate' ? 30 : c.event.slot === 'special' ? 12 : 7) * clear, c.event.slot === 'ultimate' ? 14 : 8, c.event.slot === 'ultimate' ? 2.5 : 1.5);
     }
     // The broad charging halo would cross the floor before the actual core.
     // In flight the saturated source core and its light carry the silhouette.
@@ -1803,7 +1803,7 @@ export class CombatEffects {
         c.group.quaternion.setFromUnitVectors(FORWARD,flight.heading);
       }
     }
-    if (!fired && (move.style === 'beam' || c.event.slot === 'ultimate') && age > 0 && time >= c.nextGather && !clockHandKnives(c.event) && !(isBoaEmpress(c.event.fighter)||isKuzuChainsaw(c.event.fighter)||isShakugoMagma(c.event.fighter)||isShanxiaoRampage(c.event.fighter)||rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||isAmpereSurge(c.event.fighter)||isPyroclastExplosions(c.event.fighter)||isFullBeamPressure(c.event.fighter))) {
+    if (!fired && (move.style === 'beam' || c.event.slot === 'ultimate') && age > 0 && time >= c.nextGather && !clockHandKnives(c.event) && !(isRoseEmpress(c.event.fighter)||isKuzuChainsaw(c.event.fighter)||isShakugoMagma(c.event.fighter)||isShanxiaoRampage(c.event.fighter)||rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||isAmpereSurge(c.event.fighter)||isPyroclastExplosions(c.event.fighter)||isFullBeamPressure(c.event.fighter))) {
       // Energy drawn in toward the charge: streaks converging on the hands.
       c.nextGather = time + .05;
       const sp = kit.sparks.spec, reach = c.event.slot === 'ultimate' ? 3.2 : 1.6, span = .22;
@@ -1831,7 +1831,7 @@ export class CombatEffects {
           else{c.hitEnd=undefined;c.hitTargetId=undefined;}}
       }
       this.drawBeam(c, move, age, time, el, actor);
-    } else if (!fired && move.style !== 'melee' && !clockHandKnives(c.event) && !(isBoaEmpress(c.event.fighter)||isKuzuChainsaw(c.event.fighter)||isShakugoMagma(c.event.fighter)||isShanxiaoRampage(c.event.fighter)||rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||isAmpereSurge(c.event.fighter)||isPyroclastExplosions(c.event.fighter)||isFullBeamPressure(c.event.fighter))) {
+    } else if (!fired && move.style !== 'melee' && !clockHandKnives(c.event) && !(isRoseEmpress(c.event.fighter)||isKuzuChainsaw(c.event.fighter)||isShakugoMagma(c.event.fighter)||isShanxiaoRampage(c.event.fighter)||rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId)||isAmpereSurge(c.event.fighter)||isPyroclastExplosions(c.event.fighter)||isFullBeamPressure(c.event.fighter))) {
       // Rising to the release, not switched on: the room fills with the
       // technique's colour as the charge builds.
       const strength = Math.pow(Math.min(1, Math.max(0, age / c.release)), 1.4);

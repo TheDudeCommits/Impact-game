@@ -189,7 +189,7 @@ export const ORIGINAL_TECHNIQUES: Partial<Record<FighterId, Record<string, strin
   shakugo: { 'Dashing Strike': 'No Refunds Rush', 'Counter Stance': 'Verdict Counter' },
   tokan: { 'Lunging Thrust': 'Sleepwalk Lunge', 'Iai Counter': 'Half-Awake Counter' },
   senko: { 'Lunging Kick': 'Glare Lunge', 'Counter Spin Kick': 'Prism Counter' },
-  'basilissa': { 'Lunging Kick': 'Gliding Serpent Kick', 'Counter Spin Kick': 'Haughty Counter' },
+  'basilissa': { 'Lunging Kick': 'Gliding Thorn Kick', 'Counter Spin Kick': 'Haughty Counter' },
   barrow: { 'Dashing Strike': 'Glutton\'s Rush', 'Counter Stance': 'Salvage Counter' },
   strappado: { 'Blink Strike': 'Grand Entrance', 'Reflect Stance': 'Strings-Attached Counter' },
   adad: { 'Driving Thrust': 'Arc Thrust', 'Staff Counter': 'Foresight Counter' },

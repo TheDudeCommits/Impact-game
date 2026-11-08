@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { CombatEvent, FighterId, PlayerState } from '../src/game/types';
 import type { Fighter } from '../src/render/Fighter';
 import type { Flight } from '../src/render/CombatEffects';
-import { BOA_EMPRESS_ASSETS, BOA_EMPRESS_LIMITS, BoaEmpress, boaFingertip, boaHeelContact } from '../src/render/signature/BoaEmpress';
+import { ROSE_EMPRESS_ASSETS, ROSE_EMPRESS_LIMITS, RoseEmpress, roseFingertip, roseHeelContact } from '../src/render/signature/RoseEmpress';
 import { SIGNATURE } from '../src/render/signature/context';
 import { damageScale } from '../src/game/moves';
 import { BASILISSA_MOVES } from '../src/game/fighters/basilissa';
@@ -23,14 +23,14 @@ const receipt = (patch: Partial<CombatEvent> = {}): CombatEvent => ({ id: 1, kin
   actorId: 'boa', targetId: 'victim', fighter: BOA, slot: 'ultimate', actionSeq: 1,
   endpoint: { x: 3, y: 1.05, z: 0 }, ...patch });
 function harness(patch: Partial<PlayerState> = {}) {
-  const scene = new THREE.Scene(), fx = new BoaEmpress(scene, { budget: 1 });
+  const scene = new THREE.Scene(), fx = new RoseEmpress(scene, { budget: 1 });
   const actor = fighter('boa', patch), victim = fighter('victim'); victim.group.position.x = 3;
   const fighters = new Map([['boa', actor], ['victim', victim]]);
-  const mesh = (name: string) => scene.getObjectByName(`boa-empress-${name}`) as THREE.InstancedMesh;
+  const mesh = (name: string) => scene.getObjectByName(`rose-empress-${name}`) as THREE.InstancedMesh;
   return { scene, fx, actor, victim, fighters, mesh };
 }
 
-describe('Boa Empress manual presentation', () => {
+describe('Rose Empress manual presentation', () => {
   it('uses the authored contacts and runtime damage scaling rather than the raw schedule sum', () => {
     const move = BASILISSA_MOVES.ultimate;
     expect(move.contacts).toEqual([.42, 1.86]);
@@ -40,11 +40,11 @@ describe('Boa Empress manual presentation', () => {
   it('attaches the kiss to the live wrist direction, including a rotated native pose', () => {
     const actor = fighter('boa'), hand = actor.joints.get('RightHand')!;
     const out = new THREE.Vector3(), wrist = new THREE.Vector3();
-    boaFingertip(actor, out); hand.getWorldPosition(wrist);
+    roseFingertip(actor, out); hand.getWorldPosition(wrist);
     expect(out.distanceTo(wrist)).toBeCloseTo(.10);
     expect(out.z).toBeCloseTo(.4);
     hand.parent!.rotation.y = Math.PI / 2; actor.group.updateMatrixWorld(true);
-    boaFingertip(actor, out); hand.getWorldPosition(wrist);
+    roseFingertip(actor, out); hand.getWorldPosition(wrist);
     expect(out.distanceTo(wrist)).toBeCloseTo(.10);
     expect(out.x).toBeCloseTo(.6); expect(out.z).toBeCloseTo(0);
   });
@@ -54,19 +54,19 @@ describe('Boa Empress manual presentation', () => {
     left.position.set(-.3, 1.3, .8); actor.group.add(left); actor.joints.set('LeftFoot', left); actor.group.updateMatrixWorld(true);
     const out = new THREE.Vector3();
     for (let contact = 0; contact < 3; contact++) {
-      expect(boaHeelContact(actor, contact, out)).toBe(true); expect(out.toArray()).toEqual(left.position.toArray());
+      expect(roseHeelContact(actor, contact, out)).toBe(true); expect(out.toArray()).toEqual(left.position.toArray());
     }
-    actor.state.action = 'ultimate'; boaHeelContact(actor, 0, out); expect(out.toArray()).toEqual(left.position.toArray());
-    boaHeelContact(actor, 1, out); expect(out.toArray()).toEqual(right.position.toArray());
+    actor.state.action = 'ultimate'; roseHeelContact(actor, 0, out); expect(out.toArray()).toEqual(left.position.toArray());
+    roseHeelContact(actor, 1, out); expect(out.toArray()).toEqual(right.position.toArray());
     actor.state.action = 'light'; actor.state.chain = 2; actor.state.grounded = false;
-    boaHeelContact(actor, 0, out); expect(out.toArray()).toEqual(right.position.toArray());
+    roseHeelContact(actor, 0, out); expect(out.toArray()).toEqual(right.position.toArray());
   });
 
   it('prepares all resources before the fight without requesting any textures', async () => {
     const { scene, fx } = harness();
     try {
       const geometries = scene.children.map(o => (o as THREE.Mesh).geometry);
-      expect(BOA_EMPRESS_ASSETS).toEqual([]);
+      expect(ROSE_EMPRESS_ASSETS).toEqual([]);
       await fx.load([BOA]); await fx.load(['taisei']);
       expect(scene.children).toHaveLength(5);
       expect(scene.children.map(o => (o as THREE.Mesh).geometry)).toEqual(geometries);
@@ -78,16 +78,11 @@ describe('Boa Empress manual presentation', () => {
     try {
       for (const kind of ['cast', 'release', 'blocked', 'whiff'] as const) fx.handle(receipt({ kind }), fighters);
       fx.update(10.7, fighters, new Map());
-      expect(mesh('stone').count).toBe(0); expect(mesh('slave-arrows').count).toBe(0);
+      expect(mesh('stone').count).toBe(0); expect(mesh('thorn-arrows').count).toBe(0);
       actor.state.action = 'idle'; actor.state.awakened = true;
       fx.update(11, fighters, new Map());
-      // Five small decorative chips remain by the mount; none appear at the victim.
-      const stones = mesh('stone'), matrix = new THREE.Matrix4(), p = new THREE.Vector3();
-      expect(stones.count).toBe(5);
-      for (let i = 0; i < stones.count; i++) {
-        stones.getMatrixAt(i, matrix); p.setFromMatrixPosition(matrix);
-        expect(p.distanceTo(actor.group.position)).toBeLessThan(.7);
-      }
+      // No stones at all; none appear at the victim.
+      expect(mesh('stone').count).toBe(0);
       expect(mesh('regal-ink').count).toBe(6);
     } finally { fx.dispose(); }
   });
@@ -134,23 +129,23 @@ describe('Boa Empress manual presentation', () => {
       expect(mesh('hearts').count).toBe(1);
       mesh('hearts').getMatrixAt(0, matrix); expect(new THREE.Vector3().setFromMatrixPosition(matrix).toArray()).toEqual([5, 2, 3]);
       flight.slot = 'special'; fx.update(10.4, fighters, flights);
-      expect(mesh('hearts').count).toBe(0); expect(mesh('slave-arrows').count).toBe(5);
-      mesh('slave-arrows').getMatrixAt(2, matrix);
+      expect(mesh('hearts').count).toBe(0); expect(mesh('thorn-arrows').count).toBe(5);
+      mesh('thorn-arrows').getMatrixAt(2, matrix);
       expect(new THREE.Vector3(0, 1, 0).transformDirection(matrix).distanceTo(flight.heading)).toBeLessThan(1e-6);
       flights.clear(); fx.update(10.5, fighters, flights);
-      expect(mesh('slave-arrows').count).toBe(0); expect(mesh('heart-contours').count).toBe(0);
+      expect(mesh('thorn-arrows').count).toBe(0); expect(mesh('heart-contours').count).toBe(0);
     } finally { fx.dispose(); }
   });
 
   it('keeps the low-detail variant recognizable and bounded', () => {
-    const scene = new THREE.Scene(), fx = new BoaEmpress(scene, { budget: .3 });
+    const scene = new THREE.Scene(), fx = new RoseEmpress(scene, { budget: .3 });
     const actor = fighter('boa', { awakened: true }), fighters = new Map([['boa', actor]]);
     const flights = new Map([['shot', { fighter: BOA, slot: 'special', position: new THREE.Vector3(), heading: new THREE.Vector3(0, 0, 1), released: true, since: 1 } as Flight]]);
     try {
       fx.update(2, fighters, flights);
-      expect((scene.getObjectByName('boa-empress-slave-arrows') as THREE.InstancedMesh).count).toBe(3);
-      expect((scene.getObjectByName('boa-empress-regal-ink') as THREE.InstancedMesh).count).toBe(4);
-      expect((scene.getObjectByName('boa-empress-stone') as THREE.InstancedMesh).count).toBe(3);
+      expect((scene.getObjectByName('rose-empress-thorn-arrows') as THREE.InstancedMesh).count).toBe(3);
+      expect((scene.getObjectByName('rose-empress-regal-ink') as THREE.InstancedMesh).count).toBe(4);
+      expect((scene.getObjectByName('rose-empress-stone') as THREE.InstancedMesh).count).toBe(0);
     } finally { fx.dispose(); }
   });
 
@@ -183,9 +178,10 @@ describe('Boa Empress manual presentation', () => {
       expect(impactFrame).toHaveBeenCalledTimes(1); expect(mesh('stone').count).toBe(16);
       for (let id = 2; id < 1000; id++) fx.handle({ ...event, id }, fighters);
       fx.update(12, fighters, new Map());
-      expect(scene.children.filter(child => child.name.startsWith('boa-'))).toHaveLength(5);
-      expect(mesh('stone').count).toBeLessThanOrEqual(BOA_EMPRESS_LIMITS.stones);
-      expect(mesh('hearts').count).toBeLessThanOrEqual(BOA_EMPRESS_LIMITS.hearts);
+      // (Her own five pools: while she is in the room the scene also holds the shared stage's, `stage-*` - docs/engine/VFX_BAR.md.)
+      expect(scene.children.filter(child => child.name.startsWith('rose-'))).toHaveLength(5);
+      expect(mesh('stone').count).toBeLessThanOrEqual(ROSE_EMPRESS_LIMITS.stones);
+      expect(mesh('hearts').count).toBeLessThanOrEqual(ROSE_EMPRESS_LIMITS.hearts);
     } finally { SIGNATURE.screen = previous; fx.dispose(); }
   });
 

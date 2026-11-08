@@ -12063,292 +12063,292 @@
       "id": "basilissa",
       "file": "basilissa.webp",
       "sourceFile": "poses.png",
-      "scale": 1.3079019073569482,
-      "bytes": 891320,
+      "scale": 1.348314606741573,
+      "bytes": 487062,
       "frames": [
         {
           "frame": 0,
           "bounds": [
-            49,
-            20,
-            349,
+            65,
+            23,
+            321,
             500
           ],
-          "footX": 194.0,
+          "footX": 192.5,
           "sourceRect": [
-            36,
-            7,
-            265,
-            374
+            42,
+            14,
+            232,
+            368
           ]
         },
         {
           "frame": 1,
           "bounds": [
-            49,
-            20,
-            350,
+            56,
+            21,
+            330,
             500
           ],
-          "footX": 194.0,
+          "footX": 192.5,
           "sourceRect": [
-            324,
-            7,
-            554,
-            374
+            315,
+            14,
+            518,
+            369
           ]
         },
         {
           "frame": 2,
           "bounds": [
-            49,
-            20,
-            350,
+            54,
+            21,
+            332,
             500
           ],
-          "footX": 194.0,
+          "footX": 192.5,
           "sourceRect": [
-            611,
-            7,
-            841,
-            374
+            593,
+            14,
+            799,
+            369
           ]
         },
         {
           "frame": 3,
           "bounds": [
-            49,
-            20,
-            350,
+            51,
+            21,
+            331,
             500
           ],
-          "footX": 194.0,
+          "footX": 190.5,
           "sourceRect": [
-            899,
-            7,
-            1129,
-            374
+            875,
+            14,
+            1083,
+            369
           ]
         },
         {
           "frame": 4,
           "bounds": [
-            49,
+            40,
             21,
-            350,
+            323,
             500
           ],
-          "footX": 194.0,
+          "footX": 189.5,
           "sourceRect": [
-            36,
-            392,
-            266,
-            758
+            12,
+            398,
+            222,
+            753
           ]
         },
         {
           "frame": 5,
           "bounds": [
-            49,
+            46,
             21,
-            350,
+            325,
             500
           ],
-          "footX": 194.0,
+          "footX": 191.0,
           "sourceRect": [
-            324,
-            392,
-            554,
-            758
+            300,
+            398,
+            507,
+            753
           ]
         },
         {
           "frame": 6,
           "bounds": [
-            49,
-            21,
-            350,
+            44,
+            20,
+            373,
             500
           ],
-          "footX": 194.0,
+          "footX": 191.0,
           "sourceRect": [
-            611,
-            392,
-            841,
-            758
+            592,
+            398,
+            836,
+            754
           ]
         },
         {
           "frame": 7,
           "bounds": [
-            49,
-            23,
-            355,
+            46,
+            21,
+            378,
             500
           ],
-          "footX": 193.0,
+          "footX": 192.0,
           "sourceRect": [
-            899,
-            392,
-            1133,
-            757
+            889,
+            399,
+            1135,
+            754
           ]
         },
         {
           "frame": 8,
           "bounds": [
-            49,
-            20,
-            354,
+            50,
+            21,
+            344,
             500
           ],
-          "footX": 194.0,
+          "footX": 190.5,
           "sourceRect": [
-            36,
-            775,
-            269,
-            1142
+            29,
+            783,
+            247,
+            1138
           ]
         },
         {
           "frame": 9,
           "bounds": [
             48,
-            20,
-            355,
+            21,
+            314,
             500
           ],
-          "footX": 193.5,
+          "footX": 190.0,
           "sourceRect": [
-            323,
-            775,
-            558,
-            1142
+            317,
+            783,
+            514,
+            1138
           ]
         },
         {
           "frame": 10,
           "bounds": [
-            49,
+            59,
             20,
-            350,
+            326,
             500
           ],
-          "footX": 194.0,
+          "footX": 192.0,
           "sourceRect": [
-            611,
-            775,
-            841,
-            1142
+            603,
+            782,
+            801,
+            1138
           ]
         },
         {
           "frame": 11,
           "bounds": [
-            49,
-            20,
-            350,
+            58,
+            21,
+            328,
             500
           ],
-          "footX": 194.0,
+          "footX": 192.5,
           "sourceRect": [
-            899,
-            775,
-            1129,
-            1142
+            895,
+            782,
+            1095,
+            1137
           ]
         },
         {
           "frame": 12,
           "bounds": [
-            49,
-            23,
-            349,
+            62,
+            21,
+            324,
             500
           ],
-          "footX": 194.0,
+          "footX": 192.5,
           "sourceRect": [
-            36,
-            1160,
-            265,
-            1525
+            38,
+            1166,
+            232,
+            1521
           ]
         },
         {
           "frame": 13,
           "bounds": [
-            49,
-            23,
-            349,
+            64,
+            20,
+            322,
             500
           ],
-          "footX": 194.0,
+          "footX": 192.5,
           "sourceRect": [
-            324,
-            1160,
-            553,
-            1525
+            329,
+            1165,
+            520,
+            1521
           ]
         },
         {
           "frame": 14,
           "bounds": [
-            49,
-            23,
-            350,
+            65,
+            21,
+            321,
             500
           ],
-          "footX": 194.0,
+          "footX": 192.5,
           "sourceRect": [
-            611,
-            1160,
-            841,
-            1525
+            617,
+            1165,
+            807,
+            1520
           ]
         },
         {
           "frame": 15,
           "bounds": [
-            49,
-            20,
-            349,
+            65,
+            23,
+            321,
             500
           ],
-          "footX": 194.0,
+          "footX": 192.5,
           "sourceRect": [
-            900,
-            1159,
-            1129,
-            1526
+            906,
+            1166,
+            1096,
+            1520
           ]
         }
       ],
       "poster": "basilissa-poster.webp",
-      "posterBytes": 60502,
-      "sourceSha256": "2b94f6834195fb8a4c2f631a208c438e9ba10b4be0807f83f057bbd99853b916",
-      "sha256": "08bb18c2100ca09615e724df2ba37816757b3eb7f86ba3d02ab03ab7b060a0d8",
-      "posterSha256": "d899aaf96083c1dc065f323e4dadba6d818ecf0e88e680d3bd701f4aaa46575c",
+      "posterBytes": 31798,
+      "sourceSha256": "0ed892fd9438f6d98b68f1d47affd644432cf58d5ddc15a41e88226ce6d08a3d",
+      "sha256": "987d81d49c0ac394b72033dd98a2fc7d99fa3c07cb1e356bf254836363a48730",
+      "posterSha256": "31ddbd0f9528db4787a07c2057e9e2fae171e21cc5b94bf4b2f10531c8dec169",
       "registration": "white keyed from the border, free-floating ink dropped, one scale per sheet, one sole anchor.",
       "promptFile": "made for the game",
-      "runtimePagesSourceSha256": "08bb18c2100ca09615e724df2ba37816757b3eb7f86ba3d02ab03ab7b060a0d8",
+      "runtimePagesSourceSha256": "987d81d49c0ac394b72033dd98a2fc7d99fa3c07cb1e356bf254836363a48730",
       "runtimePages": [
         {
           "file": "basilissa-p1.webp",
-          "sha256": "1f9aef5d91beb3b6f145ff447a738b326c3174c6fbdb412da4213b20707daa1e",
+          "sha256": "d4d733584b24704177e4bdb70df5912ebac137ad36ead1a985936ee927266430",
           "firstFrame": 0,
           "frameCount": 8,
           "width": 1536,
           "height": 1024,
-          "bytes": 443056
+          "bytes": 249162
         },
         {
           "file": "basilissa-p2.webp",
-          "sha256": "9b5a28c9205688c4aaa888ee937b818af882ee1c3a0b1eaedcf517f47e1fcf01",
+          "sha256": "37be6856850068596f0947aaee2023e2294b88560c601cd64dd7747f5309c1eb",
           "firstFrame": 8,
           "frameCount": 8,
           "width": 1536,
           "height": 1024,
-          "bytes": 447450
+          "bytes": 237044
         }
       ]
     },

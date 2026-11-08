@@ -17,6 +17,9 @@ const KICKS: Readonly<Record<string, ReadonlySet<string>>> = {
   murex: new Set(['Rush 2']),     // Murex (fix-polish2)
   tancho: new Set(['Rush 2']),   // Tancho (fix-polish2)
   tempo: new Set(['Rush 2']),       // Tempo
+  // Basilissa's kicks on foot: Meshy text-to-motion bases, posed for her.
+  basilissa: new Set(['Rush 1', 'Rush 2', 'Rush 3', 'Rosestone Heel', 'Thorn Sweep', 'Thornrise Heel', 'Crown Heel Drop',
+    'Petal Air Kick', 'Empress Opener', 'Empress Finisher']),   // Basilissa
 };
 
 export const ORIGINAL_AUTHORED_KICKS = KICKS;

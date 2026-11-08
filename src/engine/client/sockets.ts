@@ -57,7 +57,7 @@ import { pyroclastContact, pyroclastPalm } from '../../render/signature/Pyroclas
 import { ampereContact, ampereSocket } from '../../render/signature/AmpereSurge';
 import { kuzuSawContact } from '../../render/signature/KuzuChainsaw';
 import { shakugoMagmaContact, shakugoMagmaSocket } from '../../render/signature/ShakugoMagma';
-import { boaFingertip, boaHeelContact } from '../../render/signature/BoaEmpress';
+import { roseFingertip, roseHeelContact } from '../../render/signature/RoseEmpress';
 import { CROSSMATCH_TAKE } from '../../render/ward/crossmatch';
 
 export type SocketKind = 'strike' | 'contact' | 'charge';
@@ -409,7 +409,7 @@ export const FIGHTER_SOCKETS: Readonly<Partial<Record<FighterId, FighterSockets>
   ampere: { charge: always((ctx, out) => ampereSocket(ctx.body, 'RightHandIndex3', out)), contact: solve((ctx, out) => ampereContact(ctx.body, ctx.index ?? 0, out, ctx.clip)) },
   shakugo: { charge: always((ctx, out) => shakugoMagmaSocket(ctx.body, 'Left', out)), contact: solve((ctx, out) => shakugoMagmaContact(ctx.body, out, ctx.clip)) },
   kuzu: { charge: solve((ctx, out) => kuzuSawContact(ctx.body, 0, out, ctx.clip)), contact: solve((ctx, out) => kuzuSawContact(ctx.body, ctx.index ?? 0, out, ctx.clip)) },
-  'basilissa': { charge: always((ctx, out) => boaFingertip(ctx.body, out)), contact: solve((ctx, out) => boaHeelContact(ctx.body, ctx.index ?? 0, out)) },
+  'basilissa': { charge: always((ctx, out) => roseFingertip(ctx.body, out)), contact: solve((ctx, out) => roseHeelContact(ctx.body, ctx.index ?? 0, out)) },
   // Sashigane's blade: his charge and his contacts are where it strikes.
   sashigane: { charge: 'strike', contact: 'strike' },
   // Kosho's kicks land with his right foot; Tobari's Murder of Crows heavy with his left (its trail was drawn off the kunai).
