@@ -108,7 +108,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   akagane: [null, 'fire', 'stone', 'fire'],                   // Cinder Art: Burning Sea; Heaven's Anvil is a meteor
   minase: ['wind', 'light', 'light', 'wind'],                // the palm sphere; the Relay Leap is a flash
   ume: ['stone', null, 'stone', 'stone'],                 // what her fist does to the ground
-  kusushi: ['stone', 'stone', 'stone', 'acid'],              // the same strength; Katsuyu's acid
+  kusushi: ['stone', 'stone', 'stone', 'acid'],              // the same strength; the slug's acid
   hakushi: ['wind', 'fire', 'fire', 'acid'],                 // his palm sphere; lamp oil and flame; a beast's maw
   suzuran: ['ki', 'wind', 'beast', 'ki'],                     // the soft palm's chi; a vacuum palm; the twin lions
   amagoi: ['gravity', 'gravity', 'gravity', 'gravity'],        // Cloudburst, Calling Water, Ash Moon
@@ -120,12 +120,12 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   onigawara: ['steel', 'steel', 'steel', 'steel'],
   irbis: ['beast', 'ki', 'beast', 'knives'],              // claws; the Crown Blast; BARED FANGS's needles in a hail
   hinomoto: ['fire', 'fire', 'magma', 'fire'],                // Old Fire; Funeral Pyre's pillars of flame break up through the ground
-  shijima: ['ice', 'ice', 'ice', 'fire'],                      // Snowfall; Sokatsui is blue fire
+  shijima: ['ice', 'ice', 'ice', 'fire'],                      // Snowfall; the blue-fire spell
   mikage: [null, 'lightning', 'lightning', 'lightning'],   // HACKLES UP
   // ----- Hex Fallout
   kuon: [null, null, null, 'void'],                          // Blue, Red and Purple are his own; Hex: Collapse
   magatsu: ['steel', 'steel', 'steel', 'fire'],               // Cleave and Flaying Cut; Calamity Pyre burns
-  tempo: ['dark', 'blood', 'flash', 'flash'],                 // hex energy; Piercing Blood; the Dark Spark
+  tempo: ['dark', 'blood', 'flash', 'flash'],                 // hex energy; the blood shot; the Dark Spark
   akaito: ['steel', 'sonic', 'dark', 'dark'],                  // Whispered Vow; Ghost Bride
   sashigane: ['steel', 'stone', 'steel', 'steel'],              // Collapse breaks what is round him
   chohan: ['steel', 'steel', 'steel', 'steel'],
@@ -152,17 +152,17 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   // ----- Black Snow
   asahi: ['steel', 'water', 'fire', 'water'],              // Tide Breath; Lantern Rite: First Light
   yodaka: ['fire', 'fire', 'fire', 'fire'],
-  sekka: [null, 'wind', 'blast', 'ice'],                     // Air Type; Shatter Art: Black Blizzard; his snowflake drawn on the floor, and everything on it shattering
+  sekka: [null, 'wind', 'blast', 'ice'],                     // Hailstone Fist; Shatter Art: Black Blizzard; his snowflake drawn on the floor, and everything on it shattering
   // ----- Blast Radius
   ippon: [null, null, 'blast', 'stone'],                   // the Dust Allergy is his own; the Table Flip
   torsion: ['psychic', 'stone', 'wind', 'wind'],           // her mind's grip; rubble thrown; the Tornado of Terror
-  hagure: ['water', 'wind', null, 'wind'],                    // Snap Bite Rock Smashing Fist; Whirlwind Iron Cutting Fist
+  hagure: ['water', 'wind', null, 'wind'],                    // Snap Bite Rock Smashing Fist; the whirlwind cutting fist
   // ----- Ropewalk
   hawser: ['blast', 'steel', 'steel', 'steel'],                // the Scout: a Fuse Lance, and steel (the YUGE's are FORM_FAMILY's)
   levin: ['blast', 'steel', 'steel', 'steel'],                // a Fuse Lance
   mizuhiki: ['steel', 'steel', 'steel', 'steel'],
   // ----- The seven of round 5
-  lanthorn: ['dark', 'fire', 'dark', 'steel'],               // Full Counter; LAMPBLACK; Closing Time cuts
+  lanthorn: ['dark', 'fire', 'dark', 'steel'],               // the counter; LAMPBLACK; Closing Time cuts
   highsun: ['fire', 'fire', 'light', 'light'],               // the sun
   // ----- Scrap Pact
   kuzu: [null, null, null, 'saw'],                          // the saws are his own, and so is the lasso's
@@ -184,11 +184,11 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   oro: [null, null, null, 'knives'],                         // HUSH is his own; a barrage of knives
   kinu: ['string', null, 'string', 'string'],              // her puppet's thread
   gosu: [null, null, 'light', 'knives'],                   // things mending in light; a shard shot
-  gaunt: [null, null, null, 'knives'],                        // the Dragon Slayer and the cannon are his own; crossbow bolts
+  gaunt: [null, null, null, 'knives'],                        // the great sword and the cannon are his own; crossbow bolts
   vesper: ['steel', 'steel', 'dark', 'wind'],              // the offering; a flock of white hawks streaming in on their own wind
   'rook': ['steel', 'psychic', 'dark', 'dark'],       // daggers; Grave Grip; the shadows
   'rakucho': ['blood', 'blood', 'blood', 'blood'],        // the tendril
-  hikui: ['fire', 'steel', 'fire', 'fire'],                   // the Darkness Flame, and its dragon
+  hikui: ['fire', 'steel', 'fire', 'fire'],                   // the witchfire, and its dragon
   'ovid': [null, 'blast', 'blast', 'stone'],           // shockwaves; the Wrecking Ball
   wataame: [null, null, null, 'blast'],                      // a wooden sword and no energy; a Justaway goes off
 };

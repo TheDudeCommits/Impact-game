@@ -6,14 +6,14 @@ import type { Flight } from '../CombatEffects';
 import type { VfxKit } from '../vfx/VfxKit';
 import { armoryDraws } from '../vfx/armory/drawn';
 import { versioned } from '../../loading/assetVersions';
-import { Roster96Batch, popGreenLeafGeometry } from './Roster96Batch';
+import { Roster96Batch, seedLeafGeometry } from './Roster96Batch';
 import { MoveStage, STAGE, SHEEN } from './MoveStage';
 import { blowFloor } from './blowFloor';
 import { SIGNATURE, involvesLocal } from './context';
 import { TSUBUTE_STONES } from '../../originals/effects';
 
-export const TSUBUTE_POP_GREEN_LIMITS = Object.freeze({ seeds: 144, leaves: 192, rings: 48, silhouettes: 12, impacts: 24, tracers: 16, barrages: 4, loadTimeoutMs: 4000 });
-export const TSUBUTE_POP_GREEN_TEXTURES = Object.freeze({ ...TSUBUTE_STONES });
+export const TSUBUTE_SEED_SHOT_LIMITS = Object.freeze({ seeds: 144, leaves: 192, rings: 48, silhouettes: 12, impacts: 24, tracers: 16, barrages: 4, loadTimeoutMs: 4000 });
+export const TSUBUTE_SEED_SHOT_TEXTURES = Object.freeze({ ...TSUBUTE_STONES });
 const UP = new T.Vector3(0, 1, 0), FORWARD = new T.Vector3(0, 0, 1);
 const GREEN = new T.Color(0x719d2e), LIME = new T.Color(0xd7f093), SEED = new T.Color(0xbf8b49);
 const RED = new T.Color(0xee4c20), GOLD = new T.Color(0xffbd43);
@@ -22,7 +22,7 @@ const RED = new T.Color(0xee4c20), GOLD = new T.Color(0xffbd43);
 const BRIGHT = new T.Color(1.55, 1.55, 1.55);
 /** The skull is the blast's smoke: dark in its fire, so it is read against it, and left hanging when the fire has gone. */
 const SOOT = new T.Color(.07, .05, .05);
-/** The looks his shots are staged in (MoveStage): a Pop Green, the Firebird's fire, and the Impact Dial's white shock. */
+/** The looks his shots are staged in (MoveStage): a seed shot, the Firebird's fire, and the impact shell's white shock. */
 const POP = STAGE.green, FIRE = STAGE.fire, IMPACT = STAGE.quake;
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 type Kind = 'seed' | 'wolf' | 'bird';
@@ -37,7 +37,7 @@ const ULT = TSUBUTE_MOVES.ultimate;
 const SKULL_LIFE = 1.15;
 
 /** The shared native socket follows the measured right-hand seed pouch at release,
- * not the separate Kabuto fork rim. Use the same endpoint as actual flights. */
+ * not the separate slingshot fork rim. Use the same endpoint as actual flights. */
 export function tsubuteMuzzle(f: Fighter, out: T.Vector3): boolean {
   f.strikePoint(out);
   return Number.isFinite(out.x) && Number.isFinite(out.y) && Number.isFinite(out.z);
@@ -59,7 +59,7 @@ function skullTexture(): T.DataTexture {
   return texture;
 }
 
-export class TsubutePopGreen {
+export class TsubuteSeedShot {
   private readonly seeds: Roster96Batch;
   private readonly leaves: Roster96Batch;
   private readonly rings: Roster96Batch;
@@ -70,9 +70,9 @@ export class TsubutePopGreen {
   private readonly batches: readonly Roster96Batch[];
   private readonly stage: MoveStage;
   private readonly textures: Record<'wolf' | 'bird', TextureState> = { wolf: { ready: false, aspect: 1 }, bird: { ready: false, aspect: 1.5 } };
-  private readonly bursts: Burst[] = Array.from({ length: TSUBUTE_POP_GREEN_LIMITS.impacts }, () => ({ actor: '', target: '', born: -Infinity, kind: 'seed', final: false, seed: 0, point: new T.Vector3(), yaw: 0 }));
-  private readonly tracers: Tracer[] = Array.from({ length: TSUBUTE_POP_GREEN_LIMITS.tracers }, () => ({ actor: '', born: -Infinity, from: new T.Vector3(), to: new T.Vector3() }));
-  private readonly barrages: Barrage[] = Array.from({ length: TSUBUTE_POP_GREEN_LIMITS.barrages }, () => ({ actor: '', target: '', seq: -1, born: 0, at: new T.Vector3(), floor: 0, live: false }));
+  private readonly bursts: Burst[] = Array.from({ length: TSUBUTE_SEED_SHOT_LIMITS.impacts }, () => ({ actor: '', target: '', born: -Infinity, kind: 'seed', final: false, seed: 0, point: new T.Vector3(), yaw: 0 }));
+  private readonly tracers: Tracer[] = Array.from({ length: TSUBUTE_SEED_SHOT_LIMITS.tracers }, () => ({ actor: '', born: -Infinity, from: new T.Vector3(), to: new T.Vector3() }));
+  private readonly barrages: Barrage[] = Array.from({ length: TSUBUTE_SEED_SHOT_LIMITS.barrages }, () => ({ actor: '', target: '', seq: -1, born: 0, at: new T.Vector3(), floor: 0, live: false }));
   private readonly seenIds = new Float64Array(128).fill(NaN);
   private readonly seenTimes = new Float64Array(128).fill(NaN);
   private readonly cancelled = Array.from({ length: 32 }, () => ({ actor: '', through: -Infinity }));
@@ -83,16 +83,16 @@ export class TsubutePopGreen {
   private readonly flat = new T.Quaternion().setFromAxisAngle(new T.Vector3(1, 0, 0), -Math.PI / 2);
 
   constructor(scene: T.Scene, private readonly kit: Pick<VfxKit, 'budget'> & Partial<VfxKit>) {
-    this.seeds = new Roster96Batch(scene, 'tsubute-seeds', new T.IcosahedronGeometry(1, 0), TSUBUTE_POP_GREEN_LIMITS.seeds);
-    this.leaves = new Roster96Batch(scene, 'tsubute-leaves', popGreenLeafGeometry(), TSUBUTE_POP_GREEN_LIMITS.leaves);
-    this.rings = new Roster96Batch(scene, 'tsubute-impact-rings', new T.RingGeometry(.90, 1, 28), TSUBUTE_POP_GREEN_LIMITS.rings);
+    this.seeds = new Roster96Batch(scene, 'tsubute-seeds', new T.IcosahedronGeometry(1, 0), TSUBUTE_SEED_SHOT_LIMITS.seeds);
+    this.leaves = new Roster96Batch(scene, 'tsubute-leaves', seedLeafGeometry(), TSUBUTE_SEED_SHOT_LIMITS.leaves);
+    this.rings = new Roster96Batch(scene, 'tsubute-impact-rings', new T.RingGeometry(.90, 1, 28), TSUBUTE_SEED_SHOT_LIMITS.rings);
     this.wolf = this.silhouette(scene, 'tsubute-ballast'); this.bird = this.silhouette(scene, 'tsubute-firebird'); this.skull = this.silhouette(scene, 'tsubute-skull');
     this.skullMap = skullTexture(); this.skull.mesh.material.uniforms.map.value = this.skullMap;
     this.batches = [this.seeds, this.leaves, this.rings, this.wolf, this.bird, this.skull];
     this.stage = MoveStage.for(scene, kit);
   }
   private silhouette(scene: T.Scene, name: string): Roster96Batch {
-    const batch = new Roster96Batch(scene, name, new T.PlaneGeometry(1, 1), TSUBUTE_POP_GREEN_LIMITS.silhouettes);
+    const batch = new Roster96Batch(scene, name, new T.PlaneGeometry(1, 1), TSUBUTE_SEED_SHOT_LIMITS.silhouettes);
     const material = batch.mesh.material;
     // Over the stage's glows (5): the wolf, the bird and the skull are the read, their light is behind them.
     batch.mesh.renderOrder = 6;
@@ -125,9 +125,9 @@ export class TsubutePopGreen {
         } else texture?.dispose();
         resolve();
       };
-      const timer = setTimeout(() => finish(), TSUBUTE_POP_GREEN_LIMITS.loadTimeoutMs);
+      const timer = setTimeout(() => finish(), TSUBUTE_SEED_SHOT_LIMITS.loadTimeoutMs);
       state.cancel = () => finish();
-      try { new T.TextureLoader().load(versioned(TSUBUTE_POP_GREEN_TEXTURES[kind]), finish, undefined, () => finish()); }
+      try { new T.TextureLoader().load(versioned(TSUBUTE_SEED_SHOT_TEXTURES[kind]), finish, undefined, () => finish()); }
       catch { finish(); }
     });
   }
@@ -195,7 +195,7 @@ export class TsubutePopGreen {
       return;
     }
     if (burst.kind === 'wolf') {
-      // The Ballast bites: the Pop Green's burst, the Impact Dial's white shock out of its jaws, a ring over the floor.
+      // The Ballast bites: the seed's burst, the impact shell's white shock out of its jaws, a ring over the floor.
       st.burst(point, POP, 1, t, { dir, floor });
       st.dome(point, IMPACT, 2.2, t, .35);
       st.shock(ground, IMPACT, 4.6, t, .45);
@@ -350,7 +350,7 @@ export class TsubutePopGreen {
     for (const batch of this.batches) batch.end();
     st.close();
   }
-  /** The charge on the seed pouch through a shot's wind-up: a glint for the Skimmer, a Pop Green's glow for the
+  /** The charge on the seed pouch through a shot's wind-up: a glint for the Skimmer, a seed's glow for the
    *  Ballast and the Barrage, fire for the Far Bank. */
   private windup(f: Fighter, time: number) {
     const s = f.state, st = this.stage;
@@ -377,7 +377,7 @@ export class TsubutePopGreen {
     if (s.action === 'light') { st.glow(this.center, .14 + .12 * k, POP.core, .5 + .5 * k); st.glow(this.center, .4, POP.main, .4 * k); }
     else st.charge(this.center, s.action === 'special' && !s.branch ? FIRE : POP, s.action === 'special' ? .32 : .26, k, seed + time * 0);
   }
-  /** Midori Boshi: Devil, between the Barrage's confirm and its last shot: jaws of great leaves grown out of the floor
+  /** The leaf jaws, between the Barrage's confirm and its last shot: jaws of great leaves grown out of the floor
    *  round the victim, open until the second shot and shut on it, over a floor lit green. Leaves and light: the body
    *  between them is read all the while. */
   private devil(barrage: Barrage, fighters: ReadonlyMap<string, Fighter>, time: number, detail: boolean) {

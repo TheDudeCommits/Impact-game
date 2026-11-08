@@ -2,7 +2,7 @@ import type { CoreSlot } from '../types';
 import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 
-/** Black Kabuto is a manually aimed weapon. Pop Greens exist only at an
+/** The black slingshot is a manually aimed weapon. Seed shots exist only at an
  * input-owned impact; MIZUKAGAMI never creates autonomous attacks. */
 export const TSUBUTE_MOVES: Record<CoreSlot, MoveDefinition> = {
   light: {name:'Skimmer',duration:.47,contacts:[.168],damage:17,range:12,radius:.35,stamina:10,cooldown:.47,stun:.28,knockback:2.8,speed:34,style:'projectile',aimOnRelease:true},

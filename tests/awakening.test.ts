@@ -310,7 +310,7 @@ describe('the transformation table', () => {
   it('keeps flame auras to fire and Golden energy without recoloring unrelated hair', () => {
     for (const id of roster) {
       const look = AWAKENINGS[id];
-      // The shop's power-ups burn too (3 October): Rose, Jirenga's full power, the Beast, the Ant King reborn, the Sun
+      // The shop's power-ups burn too (3 October): Rose, Jirenga's full power, the Beast, Imago reborn, the Sun
       // breathing and KOMAINU's aura - each the same body (or a form) with the power pouring off it.
       expect(!!look.flames, `${id} flames`).toBe(['taisei','ouga','kagari','wuming','jirenga','gohaku','imago','asahi','gaku','haldor','sorrel','dorado','ippon','sekka','levin'].includes(id));
       if(['kagari','kuon','setsu'].includes(id))expect(look.hair).toBeUndefined();

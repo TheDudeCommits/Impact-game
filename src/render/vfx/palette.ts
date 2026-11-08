@@ -76,7 +76,7 @@ const BEAST = E(0xf6f2ff, 0xc23a7a, 0xe08ad0, 0x10040c);
 const STAR_BEAM = E(0xfffbe0, 0xffd21e, 0xffe46a, 0x140f02);
 const BEAM_CANNON = E(0xfff4d6, 0xffae1e, 0xc890ff, 0x12060e);
 /** Ippon: his punches white into yellow, and the Clean Slate white into red. */
-const ONE_PUNCH = E(0xfffbe8, 0xffd23a, 0xfff0a0, 0x14100a);
+const PLAIN_PUNCH = E(0xfffbe8, 0xffd23a, 0xfff0a0, 0x14100a);
 const CLEAN_SLATE = E(0xffffff, 0xff4a2a, 0xffb080, 0x140404);
 /** Sekka: Gravedigger's pink, and the frost stance's ice-blue. */
 const DESTRUCTIVE = E(0xfff0f4, 0xff4a8a, 0xff9ac0, 0x14040a);
@@ -195,7 +195,7 @@ const TABLE: Record<FighterId, Record<Exclude<AttackSlot, 'area'>, Element>> = {
   jirenga: { light: PRIDE_RED, heavy: PRIDE_RED, special: PRIDE_RED, ultimate: PRIDE_RED },
   'jinlin': { light: PEARL_NEEDLE, heavy: GOLDEN, special: PEARL_NEEDLE, ultimate: DROWNED_SUN },
   'gohaku': { light: BEAST, heavy: BEAST, special: STAR_BEAM, ultimate: BEAM_CANNON },
-  ippon: { light: ONE_PUNCH, heavy: ONE_PUNCH, special: ONE_PUNCH, ultimate: CLEAN_SLATE },
+  ippon: { light: PLAIN_PUNCH, heavy: PLAIN_PUNCH, special: PLAIN_PUNCH, ultimate: CLEAN_SLATE },
   sekka: { light: DESTRUCTIVE, heavy: DESTRUCTIVE, special: COMPASS, ultimate: DESTRUCTIVE },
   tobari: { light: RED_EYE, heavy: RED_EYE, special: BLACK_FLAME, ultimate: RED_EYE },
   akagane: { light: CROW_CLAN, heavy: CROW_CLAN, special: MAJESTIC, ultimate: METEOR },

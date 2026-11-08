@@ -139,7 +139,7 @@ export class OperatingTheatre {
     scene.add(this.cubes);
   }
   private filmMaterial() {
-    return new THREE.ShaderMaterial({ name: 'KRoomFilm', vertexShader: SKIN_HEAD, fragmentShader: FILM_FRAGMENT, side: THREE.FrontSide,
+    return new THREE.ShaderMaterial({ name: 'TheatreFilm', vertexShader: SKIN_HEAD, fragmentShader: FILM_FRAGMENT, side: THREE.FrontSide,
       uniforms: { uStrength: { value: 0 }, uThick: { value: .034 }, uPush: { value: 0 }, uTime: { value: 0 }, uCore: { value: CORE.clone() }, uEdge: { value: EDGE.clone() } },
       transparent: true, depthWrite: false, toneMapped: false, ...premultiplied });
   }

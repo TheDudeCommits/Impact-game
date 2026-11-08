@@ -301,7 +301,7 @@
    "core": "#f1fdff",
    "main": "#39d0f4",
    "rim": "#d0408a",
-   "note": "Compass Needle snowflake in pale cyan; pink hair and dark-blue stripes."
+   "note": "Aurora Shards snowflake in pale cyan; pink hair and dark-blue stripes."
   },
   "slots": {
    "body": {
@@ -316,7 +316,7 @@
     "settings": {
      "element": 7
     },
-    "why": "Gravedigger: Compass Needle: a twelve-point sigil draws under his feet and a ring sweeps the floor as he reads his foe's fighting spirit."
+    "why": "The aurora snowflake: a twelve-point sigil draws under his feet and a ring sweeps the floor as he reads his foe's fighting spirit."
    },
    "light": {
     "pick": "efk_azureblow",
@@ -368,7 +368,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "Sekka is a High Moon demon, so no breath-style (breath_*) effects. extra_nova's light element draws a twelve-point star circle, the nearest thing to his snowflake compass; extra_rush is set to plain (its default is fire). thunderclap's engine still is muddied by the leftover swirl; the dome and pressure ripples show. Missing: the snowflake Compass Needle floor pattern itself.",
+  "notes": "Sekka is a High Moon demon, so no breath-style (breath_*) effects. extra_nova's light element draws a twelve-point star circle, the nearest thing to his snowflake compass; extra_rush is set to plain (its default is fire). thunderclap's engine still is muddied by the leftover swirl; the dome and pressure ripples show. Missing: the snowflake Aurora Shards floor pattern itself.",
   "by": "casting agent batch 4",
   "at": "2026-10-11"
  },
@@ -996,7 +996,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "line",
-    "why": "Left to the game: Sun Chaser is staged by his module (MoveStage: his ki standing off the floor round him from the confirm, the sphere swelling at his mouth, a beam of green on the last blow and the Omega Blaster growing where it lands). The Armory's beam (extra_fbmbeam, now the first alternate) fired on the second blow, 1.2 s before the roar itself, and had 8 % of the frame as the last blow landed (fx_presence, 12 October 2026).",
+    "why": "Left to the game: Sun Chaser is staged by his module (MoveStage: his ki standing off the floor round him from the confirm, the sphere swelling at his mouth, a beam of green on the last blow and the green blast growing where it lands). The Armory's beam (extra_fbmbeam, now the first alternate) fired on the second blow, 1.2 s before the roar itself, and had 8 % of the frame as the last blow landed (fx_presence, 12 October 2026).",
     "settings": {
      "handHeight": 1.95
     }
@@ -1138,7 +1138,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Left to the game: Sables is staged by his module (AqrabDesert, with the shared MoveStage: a twister grown in his palm, a sandstorm three metres tall turning on the simulation's own shot with gold light under it, and where it lands the storm stood up, a blast and the floor left dried). The pick (boulder) was a dark rock at 5 to 8 % of the frame, a boulder where the anime draws a sandstorm (fx_presence, 12 October 2026). It stays the first alternate."
+    "why": "Left to the game: Thirst Storm is staged by his module (AqrabDesert, with the shared MoveStage: a twister grown in his palm, a sandstorm three metres tall turning on the simulation's own shot with gold light under it, and where it lands the storm stood up, a blast and the floor left dried). The pick (boulder) was a dark rock at 5 to 8 % of the frame, a boulder where the anime draws a sandstorm (fx_presence, 12 October 2026). It stays the first alternate."
    },
    "ultimate": {
     "pick": null,
@@ -2829,7 +2829,7 @@
     "when": "awakened",
     "scale": "small",
     "anchor": "body",
-    "why": "The game's own: his awakening wears the black flame on his arm already (HikuiDarknessFlame); a second flame shell would double it."
+    "why": "The game's own: his awakening wears the black flame on his arm already (HikuiWitchfire); a second flame shell would double it."
    },
    "light": {
     "pick": null,
@@ -2851,7 +2851,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "weapon",
-    "why": "The game's own: HikuiDarknessFlame burns the Witchfire Blade's blade, as in the anime."
+    "why": "The game's own: HikuiWitchfire burns the Witchfire Blade's blade."
    },
    "special": {
     "pick": null,
@@ -2929,7 +2929,7 @@
    "core": "#f5ffff",
    "main": "#71dfff",
    "rim": "#3f83ef",
-   "note": "Palm-style chi blue, matching SuzuranTwinLions; pale-eye lavender #d4d0ff for the trigram seal"
+   "note": "Palm-style chi blue, matching SuzuranResonance; pale-eye lavender #d4d0ff for the trigram seal"
   },
   "slots": {
    "body": {
@@ -2999,7 +2999,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "ext_aura_fire's circling orbs and scorched floor are off, leaving only the limb flames in chi blue. extra_palm's element is set to plain, since his palm style is chi, not arcane magic. resonance's and runeseal's engine stills are partly covered by a lingering Arcane Vortex swirl; runeseal's ring of glyphs is visible and recolours to her chi blue. efk_sonicboom's engine still is off-frame; the top-level capture shows the shock ring. SuzuranTwinLions already draws the lion heads on her strikes. 11 Oct: ultimate now seal_trigrams (the Armory's seals and strings, made for this). Launch day (12 October 2026): her moves are staged by SuzuranTwinLions with the shared MoveStage (docs/engine/VFX_BAR.md). The special keeps its Armory pick (resonance: 52 % of the frame as the blow lands, on time), and the module stages round it (the charge, the blast's light, the floor left lit); the light's and the heavy's picks stay as first alternates.",
+  "notes": "ext_aura_fire's circling orbs and scorched floor are off, leaving only the limb flames in chi blue. extra_palm's element is set to plain, since his palm style is chi, not arcane magic. resonance's and runeseal's engine stills are partly covered by a lingering Arcane Vortex swirl; runeseal's ring of glyphs is visible and recolours to her chi blue. efk_sonicboom's engine still is off-frame; the top-level capture shows the shock ring. SuzuranResonance already draws the lion heads on her strikes. 11 Oct: ultimate now seal_trigrams (the Armory's seals and strings, made for this). Launch day (12 October 2026): her moves are staged by SuzuranResonance with the shared MoveStage (docs/engine/VFX_BAR.md). The special keeps its Armory pick (resonance: 52 % of the frame as the blow lands, on time), and the module stages round it (the charge, the blast's light, the floor left lit); the light's and the heavy's picks stay as first alternates.",
   "by": "casting agent batch 5",
   "at": "2026-10-11"
  },
@@ -3897,7 +3897,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Smoke poofs spawn copies of him that dash in and land one combined strike: his Static Scarecrow, tinted blue so the clones read as Raiton."
+    "why": "Smoke poofs spawn copies of him that dash in and land one combined strike: his Static Scarecrow, tinted blue so the clones read as lightning."
    },
    "ultimate": {
     "pick": "p27_worldrend",
@@ -3985,7 +3985,7 @@
     "settings": {
      "suckers": 0
     },
-    "why": "Left to the game: Last Chapter is staged by his module (MoveStage: the darkness flooding the floor and standing round him in black flames as the kakuja's centipede climbs out of his back and arches over him, then comes down through the victim on the last blow: the floor cracked crimson, a pillar of black flame). Before, it changed 4 % of the frame (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Last Chapter is staged by his module (MoveStage: the darkness flooding the floor and standing round him in black flames as the shell's centipede climbs out of his back and arches over him, then comes down through the victim on the last blow: the floor cracked crimson, a pillar of black flame). Before, it changed 4 % of the frame (fx_presence, 12 October 2026)."
    }
   },
   "moveIdeas": [],
@@ -4222,7 +4222,7 @@
     "on": "release",
     "scale": "huge",
     "anchor": "target",
-    "why": "Left to the game: Troop of a Hundred Lights is staged by his module (SenkoGlint, with the shared MoveStage: from the confirm the room to night, the Sacred Jewel turning round his hands as a ring of beads of light with rays fanned behind it; from the first volley the beads rain on his victim as bolts; the last blow a beam through them, a shell and a pillar of light). The authored pick (starfall, huge) was not verified in the game; it stays the first alternate."
+    "why": "Left to the game: Troop of a Hundred Lights is staged by his module (SenkoGlint, with the shared MoveStage: from the confirm the room to night, the jewel of light turning round his hands as a ring of beads of light with rays fanned behind it; from the first volley the beads rain on his victim as bolts; the last blow a beam through them, a shell and a pillar of light). The authored pick (starfall, huge) was not verified in the game; it stays the first alternate."
    }
   },
   "moveIdeas": [],
@@ -5116,14 +5116,14 @@
    {
     "slot": "heavy",
     "now": "Windcup Crash",
-    "idea": "Thunder Lance Tempo",
+    "idea": "a lance of lightning from the staff",
     "effect": "p27_thunderlance",
     "style": "beam",
-    "why": "'Windcup Crash' is a generic staff hit while her canon Thunder Lance Tempo (a lance of lightning fired from the Clima-Tact's tip) is missing; p27_thunderlance already plays exactly that."
+    "why": "'Windcup Crash' is a generic staff hit while a lance of lightning fired from the staff's tip is missing; p27_thunderlance already plays exactly that."
    }
   ],
   "confidence": "medium",
-  "notes": "Run balllightning short and fast for a 0.46 s light: its default orb walks downrange at walking pace. Storm Warning's bolt is fx_lightningstrike, so p27_verdict stays Adad's Glass Spire. fx_lightningstrike's engine still is empty; judged from the older capture. Nothing in the Armory draws her Zeus thundercloud or Mirage Tempo. 11 Oct: ultimate now colossus_thundercloud (the Armory's colossus pack, made for this). 12 Oct (fx-a, the orchestrator's audit: nothing stayed on an awakened WIP fighter's body): body aura added, worn while awakened only, small (to be checked in the AWAKENED Q row). 12 Oct (fx-a): special ext_bend_air to a small efk_tornado (scale 0.3) on the hit: filmed in Training, the wind ribbons were pale and thin against the stage and hardly read; a small tornado on the foe is Gust Spinner. 12 Oct (fx-a): no Armory aura: her own awakened storm cloud and lightning stand over her already, and ext_aura_electric was all but invisible in the AWAKEN row. 12 Oct (fx-a): special left to the game: neither ext_bend_air (pale, thin) nor a small efk_tornado was visible at the foe in Training.",
+  "notes": "Run balllightning short and fast for a 0.46 s light: its default orb walks downrange at walking pace. Storm Warning's bolt is fx_lightningstrike, so p27_verdict stays Adad's Glass Spire. fx_lightningstrike's engine still is empty; judged from the older capture. Nothing in the Armory draws her thundercloud or her mirage. 11 Oct: ultimate now colossus_thundercloud (the Armory's colossus pack, made for this). 12 Oct (fx-a, the orchestrator's audit: nothing stayed on an awakened WIP fighter's body): body aura added, worn while awakened only, small (to be checked in the AWAKENED Q row). 12 Oct (fx-a): special ext_bend_air to a small efk_tornado (scale 0.3) on the hit: filmed in Training, the wind ribbons were pale and thin against the stage and hardly read; a small tornado on the foe is Gust Spinner. 12 Oct (fx-a): no Armory aura: her own awakened storm cloud and lightning stand over her already, and ext_aura_electric was all but invisible in the AWAKEN row. 12 Oct (fx-a): special left to the game: neither ext_bend_air (pale, thin) nor a small efk_tornado was visible at the foe in Training.",
   "by": "casting agent batch 2",
   "at": "2026-10-11"
  },
@@ -5885,7 +5885,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "ground",
-    "why": "Left to the game: Magnolia Meteor is staged by her module (MoveStage: the seal let go from the confirm, her petals spiralling up round her, then the Cherry Blossom Impact: the floor broken to six and a half metres under a dome of force and a storm of petals). Before, it changed 8 % of the frame and lit nothing (fx_presence, 12 October 2026). The Armory pick (bloomburst) was not verified in Training on 12 Oct (fx-a)."
+    "why": "Left to the game: Magnolia Meteor is staged by her module (MoveStage: the seal let go from the confirm, her petals spiralling up round her, then the blossom blow: the floor broken to six and a half metres under a dome of force and a storm of petals). Before, it changed 8 % of the frame and lit nothing (fx_presence, 12 October 2026). The Armory pick (bloomburst) was not verified in Training on 12 Oct (fx-a)."
    }
   },
   "moveIdeas": [],
@@ -6059,7 +6059,7 @@
     "when": "awakened",
     "scale": "medium",
     "anchor": "body",
-    "why": "Crimson-and-black arcs crawl over him with coils at his feet: Crimson Command coming up as he lifts the Gryphon."
+    "why": "Crimson-and-black arcs crawl over him with coils at his feet: Crimson Command coming up as he lifts his sabre."
    },
    "light": {
     "pick": "nb_bladearc",
@@ -6070,7 +6070,7 @@
     "on": "hit",
     "scale": "small",
     "anchor": "target",
-    "why": "White-hot crescent ribbons whip across the target in alternating diagonals: quick cuts from the Gryphon."
+    "why": "White-hot crescent ribbons whip across the target in alternating diagonals: quick cuts from his sabre."
    },
    "heavy": {
     "pick": "thunder",
@@ -6727,7 +6727,7 @@
    {
     "slot": "ultimate",
     "now": "Double or Nothing",
-    "idea": "Cherry Blossom Impact",
+    "idea": "the blossom blow",
     "effect": "tectonic",
     "style": "melee",
     "why": "Double or Nothing is not a Kusushi technique; her real finisher is the seal-charged punch that splits the battlefield, which tectonic already shows (blade_quake if it should start with a leap)."
@@ -6743,7 +6743,7 @@
    "core": "#f7ffd9",
    "main": "#9cc43a",
    "rim": "#2c4513",
-   "note": "Pop Green olive over the cream of a star's flash (his #80a63a); the Far Bank burns its own orange (set outright in that slot)."
+   "note": "Seed-shot olive over the cream of a star's flash (his #80a63a); the Far Bank burns its own orange (set outright in that slot)."
   },
   "slots": {
    "body": {
@@ -6760,7 +6760,7 @@
      "displace": 0.45,
      "tongues": 1.2
     },
-    "why": "A modest olive-green flame licks up him while he is awakened, the Pop Green charge a sniper keeps about him. His awakening is not a new body, so without it nothing would stay on him."
+    "why": "A modest olive-green flame licks up him while he is awakened, the seed charge a sniper keeps about him. His awakening is not a new body, so without it nothing would stay on him."
    },
    "light": {
     "pick": null,
@@ -6787,7 +6787,7 @@
     "settings": {
      "tint": "#e8ffd0"
     },
-    "why": "Left to the game: the Ballast is staged by his module (the charge on the pouch, the leaf wolf grown out of its seed as it flies, and the Impact Dial's white shock where it bites). The Armory's shock (efk_sonicboom, now the first alternate) changed 2 % of the frame (fx_presence, 12 October 2026)."
+    "why": "Left to the game: the Ballast is staged by his module (the charge on the pouch, the leaf wolf grown out of its seed as it flies, and the impact shell's white shock where it bites). The Armory's shock (efk_sonicboom, now the first alternate) changed 2 % of the frame (fx_presence, 12 October 2026)."
    },
    "special": {
     "pick": null,
@@ -6843,7 +6843,7 @@
   },
   "moveIdeas": [],
   "confidence": "low",
-  "notes": "Authored in the launch night (12 Oct 2026): Tsubute had no casting and his shots drew nothing. The pellet and the Firebird fly as the effect draws them (the game draws no projectile for him); the Ballast is only its impact. Launch day (12 October 2026): the four moves are staged by TsubutePopGreen (its own wolf, firebird and skull cutouts at a size that reads, on the shared MoveStage: docs/engine/VFX_BAR.md), so every move slot is left to it and the Armory picks stay as alternates.",
+  "notes": "Authored in the launch night (12 Oct 2026): Tsubute had no casting and his shots drew nothing. The pellet and the Firebird fly as the effect draws them (the game draws no projectile for him); the Ballast is only its impact. Launch day (12 October 2026): the four moves are staged by TsubuteSeedShot (its own wolf, firebird and skull cutouts at a size that reads, on the shared MoveStage: docs/engine/VFX_BAR.md), so every move slot is left to it and the Armory picks stay as alternates.",
   "by": "fx-b launch night",
   "at": "2026-10-12"
  },
@@ -7150,7 +7150,7 @@
    "core": "#ffffff",
    "main": "#c9a6ff",
    "rim": "#6a3bea",
-   "note": "HACKLES UP's white-violet pressure lightning, as in TYBW's Raiju Senkei."
+   "note": "HACKLES UP's white-violet pressure lightning."
   },
   "slots": {
    "body": {

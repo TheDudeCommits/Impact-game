@@ -134,11 +134,11 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   strappado:define({name:'SHOWSTOPPER',kind:'aura',aura:[0xfffaf1,0xf074ad],auraGlow:.07,clips:['SHOWSTOPPER'],swapAt:.55}),
   unari:define({"name":"OPEN SEASON","kind":"aura","aura":[15692487,16767474],"auraGlow":0.08,"clips":["Magicians Malice"],"swapAt":0.62}),
   barrow:define({name:"BOTTOMLESS",kind:'aura',aura:[0xb074e5,0x89c9e0],auraGlow:.09,clips:['Emperor Ambition'],swapAt:.55}),
-  sashigane:define({name:'ZERO TOLERANCE',kind:'aura',aura:[0xc8e998,0x78c6b0],auraGlow:.08,clips:['Overtime Release'],swapAt:.378}),
+  sashigane:define({name:'ZERO TOLERANCE',kind:'aura',aura:[0xc8e998,0x78c6b0],auraGlow:.08,clips:['ZERO TOLERANCE Release'],swapAt:.378}),
   gosu:define({"name":"MENDED IN GOLD","kind":"spirit","aura":[15763125,8445170],"auraGlow":0.1,"formScale":1.15,"clips":["MENDED IN GOLD"],"swapAt":0.62}),
   kusushi:define({"name":"GRAND CHAMPION","kind":"form","aura":[15466487,6549427],"auraGlow":0.1,"clips":["GRAND CHAMPION"],"swapAt":0.504}),
   hakushi:define({"name":"THE OLD LION","kind":"form","aura":[10075800,16301691],"auraGlow":0.08,"clips":["THE OLD LION"],"swapAt":0.576}),
-  suzuran:define({name:'YOIN',kind:'aura',aura:[0xdbeeff,0xbaa9f0],auraGlow:.12,clips:['Twin Lion Release'],swapAt:.63}),
+  suzuran:define({name:'YOIN',kind:'aura',aura:[0xdbeeff,0xbaa9f0],auraGlow:.12,clips:['YOIN Release'],swapAt:.63}),
   wataame:define({"name":"MEZAMASHI","kind":"aura","aura":[10340333,15988991],"auraGlow":0.1,"clips":["MEZAMASHI"],"swapAt":0.62}),
   bruin:define({name:'WIDE AWAKE',kind:'aura',aura:[0x7a34c8,0x06020c],auraGlow:.08,clips:['WIDE AWAKE'],swapAt:.62}),
   senko:define(SENKO_AWAKENING),
@@ -242,7 +242,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   imago: define({ name: 'SWARM ASCENDANT', kind: 'aura', aura: [0x7affa8, 0x1ab866],
     flames: true, auraGlow: .3, clips: ['awaken-swarm', '_Idle'] }),
   // The shop's power-ups burn as Taisei's and Ouga's do (3 October): Wuming's Rose,
-  // Jirenga at full power, Gohaku's Beast, the Ant King reborn and Asahi breathing
+  // Jirenga at full power, Gohaku's Beast, Imago reborn and Asahi breathing
   // the Sun are each the same body with the power pouring off it, so their aura
   // burns as flames over the colour (`flames`), where before it was a glow.
   // Wuming goes LOTUS IN FLAME: the smug turn of his hand, his black
@@ -267,7 +267,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   ippon: define({ name: 'ALL-NIGHTER', kind: 'aura', aura: [0xffd060, 0xe8402a],
     flames: true, auraGlow: .3, clips: ['awaken-serious', '_Idle'] }),
   // Sekka, WHITEOUT: one arm thrown up, then dropped into Gravedigger's wide stance, arms flung out, and
-  // the Compass Needle's ice-blue round him.
+  // the Aurora Shards' ice-blue round him.
   sekka: define({ name: 'WHITEOUT', kind: 'aura', aura: [0x6a9cff, 0x1a3a9a],
     flames: true, auraGlow: .3, clips: ['awaken-high-moon', '_Idle'] }),
   // Tobari's Guardian, worn as Shiden's and Shirokane's are (3 October): his hands in a seal as the armoured warrior rises

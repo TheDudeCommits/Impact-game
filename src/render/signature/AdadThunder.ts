@@ -14,7 +14,7 @@ export const ADAD_THUNDER_LIMITS=Object.freeze({bolts:480,cores:48,rings:64,impa
 export const ADAD_THUNDER_BEATS=Object.freeze({glassSpire:.75,stormRise:1.15,'firmament-fall':3.15,end:3.75,awakening:.54});
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),WHITE=new THREE.Color(0xf5ffff),BLUE=new THREE.Color(0x39c7ff),GOLD=new THREE.Color(0xffd759),INK=new THREE.Color(0x151c39);
 const clamp=(v:number)=>Math.max(0,Math.min(1,v));
-/** The Goro Goro no Mi as the stage lights it: white at the heart, his cyan round it (his casting's palette); its strokes
+/** His thunder as the stage lights it: white at the heart, his cyan round it (his casting's palette); its strokes
  *  carry the bolts' blue-white heart, so a stroke is a bolt. And Firmament Fall's thundercloud: a dark look, a black ball of
  *  storm with a lit blue rim that covers what is behind it. */
 export const THUNDER:StageLook=stageLook(0xeaffff,0x70d9ff,0x1b3a8a,{heart:.5});

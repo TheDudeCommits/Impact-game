@@ -68,7 +68,7 @@ const CAST_CONFIRM = 1.2;
  *  none of which say the press was refused. */
 const NEUTRAL = new Set(['idle', 'run', 'jump', 'guard']);
 
-/** The fighter a cue speaks for, by its name - 'vo-gohaku-roar', 'koko-star' - or none: the impacts, whooshes
+/** The fighter a cue speaks for, by its name - 'vo-gohaku-roar', 'koko-iron-lullaby' - or none: the impacts, whooshes
  *  and shared effects, and Kurobi's growls (the fox boss's voice too) are every match's. No cue named for one fighter is
  *  planned for another (tests/assetLoads.test.ts walks every fighter through the plans). */
 const FIGHTER_IDS = Object.keys(FIGHTERS).sort((a, b) => b.length - a.length);

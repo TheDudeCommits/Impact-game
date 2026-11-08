@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ArenaSimulation } from '../src/game/simulation';
 import { CHASE_SECONDS, MOVES } from '../src/game/moves';
 import type { AttackSlot, FighterId, PlayerInput } from '../src/game/types';
-import { METEOR_COMBINATION, withMove } from './retiredMoves';
+import { THREE_BLOW_STRING, withMove } from './retiredMoves';
 
 function bout(fighter:FighterId,gap=1.6){
   const sim=new ArenaSimulation({trainingBot:false});
@@ -42,8 +42,8 @@ describe('combo and cancel rules', () => {
   it('lets a landed heavy carry on into anything', () => {
     // A heavy of three blows, after the first of which the target is still on
     // their feet. Round 3: Taisei's is Cloudstep now and every heavy
-    // in the roster launches, so the retired Meteor Combination is put back.
-    withMove('taisei','heavy',METEOR_COMBINATION,()=>{
+    // in the roster launches, so the retired three-blow string is put back.
+    withMove('taisei','heavy',THREE_BLOW_STRING,()=>{
     const {sim,input,step}=bout('taisei');
     input('a',{attack:'heavy',targetId:'b'});
     step(MOVES.taisei.heavy.contacts[0]+.06);

@@ -127,7 +127,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   // Clock-In Punch and Clock-In Hook; his All-Nighter Desk Flip is Clock-Out Uppercut's take, laid again as the flip.
   ippon: { lh: whole('All-Nighter Headbutt', .42), llh: whole('Clock-Out Uppercut', .5), lllh: seg('Double Shift', .2, 1, .5), llls: whole('All-Nighter Shuffle', .4),
     airHeavy: seg('Clean Slate', 1.5, 2.29, .3), airSpecial: seg('Clock-In Kick', .15, .58, .35) },
-  sekka: { lh: whole('Sleet Kick', .5), llh: whole('Icefall Hammer', .3), lllh: seg('awaken-high-moon', .6, 1.71, .45), llls: whole('Compass Needle', .89),
+  sekka: { lh: whole('Sleet Kick', .5), llh: whole('Icefall Hammer', .3), lllh: seg('awaken-high-moon', .6, 1.71, .45), llls: whole('Aurora Shards', .89),
     airHeavy: whole('Shatter Jab', .5), airSpecial: seg('Shatter Art: Black Blizzard', .4, 1.33, .35) },
   // Tobari's L-L-H plays Rookwing Rise's turn, the part of it the light string never shows: it ends (0.87 s, its blow where
   // it was, 0.55 s) before the take begins him from Shadow Kick's pose (0.88 s, scripts/fanim/lights.py ROOKWING_RISE).
@@ -200,7 +200,7 @@ export const COMBO_FORM_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey
   gummy: { lh: v('Dawn Rocket', 2.3, 3.2, .78, 4.958), llh: v('Dawn Rocket End', 0, .9, .5, 1.458), lllh: v('Giant Stomp', .1, 1.35, .4, 1.625),
     llls: v('Sunrise Leap', .45, 1.35, .73, 2.125), airHeavy: v('Sunrise Tide', 1.62, 2.3, .41, 2.458), airSpecial: v('Sunrise Leap', 1, 1.95, .74, 2.125) },
   // The NIGHTFALL's Last Rites: his afterimage cut, the warp and the slash.
-  nigo: { llls: v('skill_3_fenshen', 0, .958, .6, .958) },
+  nigo: { llls: v('skill_3_clone', 0, .958, .6, .958) },
 };
 
 export function comboClip(fighter: FighterId, key: ComboKey): ComboClip | undefined { return COMBO_CLIPS[fighter]?.[key]; }

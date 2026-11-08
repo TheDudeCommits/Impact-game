@@ -533,8 +533,8 @@
    "voice": "kosho",
    "text": "バンケ…アンフェルナル!"
   },
-  "kosho-collier": {
-   "file": "voice/originals/gigot/kosho-collier.wav",
+  "kosho-brunoise": {
+   "file": "voice/originals/gigot/kosho-brunoise.wav",
    "seconds": 0.96,
    "level": -18.4,
    "voice": "gigot",
@@ -729,8 +729,8 @@
    "voice": "koko",
    "text": "ハッシュ！"
   },
-  "koko-star": {
-   "file": "voice/originals/koko/koko-star.wav",
+  "koko-iron-lullaby": {
+   "file": "voice/originals/koko/koko-iron-lullaby.wav",
    "seconds": 0.99,
    "level": -16.6,
    "voice": "koko",
@@ -841,15 +841,15 @@
    "voice": "kuon",
    "text": "ふっ。"
   },
-  "kuon-ao": {
-   "file": "voice/originals/px/kuon/kuon-ao.wav",
+  "kuon-gravity": {
+   "file": "voice/originals/px/kuon/kuon-gravity.wav",
    "seconds": 1.05,
    "level": -16.6,
    "voice": "kuon",
    "text": "グラビティ。"
   },
-  "kuon-aka": {
-   "file": "voice/originals/px/kuon/kuon-aka.wav",
+  "kuon-nova": {
+   "file": "voice/originals/px/kuon/kuon-nova.wav",
    "seconds": 2.169,
    "level": -16.6,
    "voice": "kuon",
@@ -1387,8 +1387,8 @@
    "voice": "ippon",
    "text": "じゃ、まっさらに。"
   },
-  "vo-ippon-serious-series": {
-   "file": "voice/originals/ippon/vo-ippon-serious-series.wav",
+  "vo-ippon-all-nighter": {
+   "file": "voice/originals/ippon/vo-ippon-all-nighter.wav",
    "seconds": 1.77,
    "level": -15.9,
    "voice": "ippon",
@@ -1443,8 +1443,8 @@
    "voice": "shiun",
    "text": "拍がずれたね。"
   },
-  "vo-shiun-senju": {
-   "file": "voice/originals/shiun/vo-shiun-senju.wav",
+  "vo-shiun-hymn-twelve": {
+   "file": "voice/originals/shiun/vo-shiun-hymn-twelve.wav",
    "seconds": 2.65,
    "level": -13.8,
    "voice": "shiun",
@@ -1646,15 +1646,15 @@
    "voice": "magatsu",
    "text": "羽虫が。"
   },
-  "vo-magatsu-hachi": {
-   "file": "voice/originals/magatsu/vo-magatsu-hachi.wav",
+  "vo-magatsu-crunch": {
+   "file": "voice/originals/magatsu/vo-magatsu-crunch.wav",
    "seconds": 1.185,
    "level": -14.3,
    "voice": "magatsu",
    "text": "噛み砕いてやる！"
   },
-  "vo-magatsu-kai": {
-   "file": "voice/originals/magatsu/vo-magatsu-kai.wav",
+  "vo-magatsu-thousand-cuts": {
+   "file": "voice/originals/magatsu/vo-magatsu-thousand-cuts.wav",
    "seconds": 1.01,
    "level": -17,
    "voice": "magatsu",
@@ -2073,8 +2073,8 @@
    "voice": "sekka",
    "text": "そらっ！"
   },
-  "vo-sekka-compass-needle": {
-   "file": "voice/originals/sekka/vo-sekka-compass-needle.wav",
+  "vo-sekka-aurora-shards": {
+   "file": "voice/originals/sekka/vo-sekka-aurora-shards.wav",
    "seconds": 1.925,
    "level": -15.6,
    "voice": "sekka",
@@ -4229,8 +4229,8 @@
    "voice": "ward",
    "text": "その動き、もう診た。"
   },
-  "vo-ward-takt": {
-   "file": "voice/originals/ward/vo-ward-takt.wav",
+  "vo-ward-rise": {
+   "file": "voice/originals/ward/vo-ward-rise.wav",
    "seconds": 0.535,
    "level": -20,
    "voice": "ward",
@@ -4950,8 +4950,8 @@
    "voice": "kosho",
    "text": "皿を割るのは、ご法度だ。"
   },
-  "vo-kosho-spectre": {
-   "file": "voice/originals/px/kosho/vo-kosho-spectre.wav",
+  "vo-kosho-salamandre": {
+   "file": "voice/originals/px/kosho/vo-kosho-salamandre.wav",
    "seconds": 1.485,
    "level": -16.5,
    "voice": "kosho",
@@ -5174,8 +5174,8 @@
    "voice": "sorrel",
    "text": "……笑ってる場合じゃ、なさそうだ。"
   },
-  "vo-sorrel-new-world-blow": {
-   "file": "voice/originals/sorrel/vo-sorrel-new-world-blow.wav",
+  "vo-sorrel-crimson-wake": {
+   "file": "voice/originals/sorrel/vo-sorrel-crimson-wake.wav",
    "seconds": 2.67,
    "level": -15,
    "voice": "sorrel",
@@ -5769,15 +5769,15 @@
    "voice": "suzuran",
    "text": "ごめんなさいっ!"
   },
-  "vo-suzuran-vacuum": {
-   "file": "voice/originals/px/suzuran/vo-suzuran-vacuum.wav",
+  "vo-suzuran-resound": {
+   "file": "voice/originals/px/suzuran/vo-suzuran-resound.wav",
    "seconds": 0.93,
    "level": -16.5,
    "voice": "suzuran",
    "text": "響いて!"
   },
-  "vo-suzuran-lions": {
-   "file": "voice/originals/px/suzuran/vo-suzuran-lions.wav",
+  "vo-suzuran-last-bell": {
+   "file": "voice/originals/px/suzuran/vo-suzuran-last-bell.wav",
    "seconds": 1.47,
    "level": -16.5,
    "voice": "suzuran",
@@ -5797,8 +5797,8 @@
    "voice": "suzuran",
    "text": "まだ…鳴り止んでいません…!"
   },
-  "vo-suzuran-protective-palms": {
-   "file": "voice/originals/px/suzuran/vo-suzuran-protective-palms.wav",
+  "vo-suzuran-ring-out": {
+   "file": "voice/originals/px/suzuran/vo-suzuran-ring-out.wav",
    "seconds": 0.715,
    "level": -16.5,
    "voice": "suzuran",
@@ -6035,8 +6035,8 @@
    "voice": "buna",
    "text": "根は、まだ張ってる。"
   },
-  "vo-buna-oden": {
-   "file": "voice/originals/px/buna/vo-buna-oden.wav",
+  "vo-buna-wake-the-winter": {
+   "file": "voice/originals/px/buna/vo-buna-wake-the-winter.wav",
    "seconds": 1.44,
    "level": -16.5,
    "voice": "buna",
@@ -6070,8 +6070,8 @@
    "voice": "buna",
    "text": "…まだ、倒れない。"
   },
-  "vo-tsubute-green-star": {
-   "file": "voice/originals/px/tsubute/vo-tsubute-green-star.wav",
+  "vo-tsubute-river-rise": {
+   "file": "voice/originals/px/tsubute/vo-tsubute-river-rise.wav",
    "seconds": 1.965,
    "level": -16.5,
    "voice": "tsubute",
@@ -6441,8 +6441,8 @@
    "voice": "shakugo",
    "text": "極刑じゃ……硫黄の雨！"
   },
-  "vo-shakugo-crimson-hound": {
-   "file": "voice/originals/shakugo/vo-shakugo-crimson-hound.wav",
+  "vo-shakugo-molten-fang": {
+   "file": "voice/originals/shakugo/vo-shakugo-molten-fang.wav",
    "seconds": 1.62,
    "level": -16.4,
    "voice": "shakugo",
@@ -6483,8 +6483,8 @@
    "voice": "shakugo",
    "text": "這いつくばれ。それが、お前の席じゃ。"
   },
-  "vo-shakugo-kazan-bakuhatsu": {
-   "file": "voice/originals/shakugo/vo-shakugo-kazan-bakuhatsu.wav",
+  "vo-shakugo-molten-prison": {
+   "file": "voice/originals/shakugo/vo-shakugo-molten-prison.wav",
    "seconds": 1.99,
    "level": -14.9,
    "voice": "shakugo",
@@ -7015,8 +7015,8 @@
    "voice": "strappado",
    "text": "さあ、ショーの始まりだ！"
   },
-  "vo-strappado-parasite": {
-   "file": "voice/originals/strappado/vo-strappado-parasite.wav",
+  "vo-strappado-dance": {
+   "file": "voice/originals/strappado/vo-strappado-dance.wav",
    "seconds": 0.775,
    "level": -16.4,
    "voice": "strappado",
@@ -7029,8 +7029,8 @@
    "voice": "strappado",
    "text": "アハハハハ！ 主役のお出ましだ……ショーストッパー！"
   },
-  "vo-strappado-god-thread": {
-   "file": "voice/originals/strappado/vo-strappado-god-thread.wav",
+  "vo-strappado-final-bow": {
+   "file": "voice/originals/strappado/vo-strappado-final-bow.wav",
    "seconds": 2.2,
    "level": -16.4,
    "voice": "strappado",
@@ -7344,8 +7344,8 @@
    "voice": "aqrab",
    "text": "渇いて死ね。それが似合いだ。"
   },
-  "vo-aqrab-sables": {
-   "file": "voice/originals/aqrab/vo-aqrab-sables.wav",
+  "vo-aqrab-thirst-storm": {
+   "file": "voice/originals/aqrab/vo-aqrab-thirst-storm.wav",
    "seconds": 2.14,
    "level": -16.5,
    "voice": "aqrab",
@@ -7449,8 +7449,8 @@
    "voice": "oyashio",
    "text": "ぬうんっ！"
   },
-  "vo-oyashio-karate": {
-   "file": "voice/originals/oyashio/vo-oyashio-karate.wav",
+  "vo-oyashio-breakwater-fist": {
+   "file": "voice/originals/oyashio/vo-oyashio-breakwater-fist.wav",
    "seconds": 1.835,
    "level": -16.5,
    "voice": "oyashio",
@@ -7463,8 +7463,8 @@
    "voice": "oyashio",
    "text": "撃つぞ、潮弾！"
   },
-  "vo-oyashio-vagabond": {
-   "file": "voice/originals/oyashio/vo-oyashio-vagabond.wav",
+  "vo-oyashio-grand-gyre": {
+   "file": "voice/originals/oyashio/vo-oyashio-grand-gyre.wav",
    "seconds": 2.37,
    "level": -16.5,
    "voice": "oyashio",
@@ -7904,8 +7904,8 @@
    "voice": "psyche",
    "text": "お静かに。"
   },
-  "vo-psyche-spank": {
-   "file": "voice/originals/psyche/vo-psyche-spank.wav",
+  "vo-psyche-dig-it-up": {
+   "file": "voice/originals/psyche/vo-psyche-dig-it-up.wav",
    "seconds": 0.785,
    "level": -16.4,
    "voice": "psyche",
@@ -8401,8 +8401,8 @@
    "voice": "shidare",
    "text": "綻べ、鋼の花よ。……満開。"
   },
-  "vo-shidare-senkei": {
-   "file": "voice/originals/shidare/vo-shidare-senkei.wav",
+  "vo-shidare-steel-avenue": {
+   "file": "voice/originals/shidare/vo-shidare-steel-avenue.wav",
    "seconds": 3.645,
    "level": -14.2,
    "voice": "shidare",
@@ -9339,8 +9339,8 @@
    "voice": "madake",
    "text": "ダァッ！"
   },
-  "vo-madake-tiger": {
-   "file": "voice/originals/madake/vo-madake-tiger.wav",
+  "vo-madake-summer-wolf": {
+   "file": "voice/originals/madake/vo-madake-summer-wolf.wav",
    "seconds": 2.425,
    "level": -16.3,
    "voice": "madake",
@@ -9353,8 +9353,8 @@
    "voice": "madake",
    "text": "跳ね返せ……雪跳ね竹ェ！"
   },
-  "vo-madake-peacock": {
-   "file": "voice/originals/madake/vo-madake-peacock.wav",
+  "vo-madake-spring-crane": {
+   "file": "voice/originals/madake/vo-madake-spring-crane.wav",
    "seconds": 2.025,
    "level": -16.4,
    "voice": "madake",
@@ -9409,8 +9409,8 @@
    "voice": "madake",
    "text": "どうだ、この伸び！ 真似できるか？"
   },
-  "vo-madake-evening-beast": {
-   "file": "voice/originals/madake/vo-madake-evening-beast.wav",
+  "vo-madake-autumn-stag": {
+   "file": "voice/originals/madake/vo-madake-autumn-stag.wav",
    "seconds": 1.97,
    "level": -14.4,
    "voice": "madake",
@@ -9787,8 +9787,8 @@
    "voice": "ampere",
    "text": "受け取った光だ…ここで消すもんか！"
   },
-  "vo-ampere-air-force-effort": {
-   "file": "voice/originals/ampere/vo-ampere-air-force-effort.wav",
+  "vo-ampere-reach-effort": {
+   "file": "voice/originals/ampere/vo-ampere-reach-effort.wav",
    "seconds": 0.73,
    "level": -16.4,
    "voice": "ampere",
@@ -9801,8 +9801,8 @@
    "voice": "ampere",
    "text": "全回路…ライツ・オン！"
   },
-  "vo-ampere-plus-ultra": {
-   "file": "voice/originals/ampere/vo-ampere-plus-ultra.wav",
+  "vo-ampere-overcharge": {
+   "file": "voice/originals/ampere/vo-ampere-overcharge.wav",
    "seconds": 2.185,
    "level": -16.5,
    "voice": "ampere",
@@ -9990,8 +9990,8 @@
    "voice": "pyroclast",
    "text": "ぬぁあっ！"
   },
-  "vo-pyroclast-howitzer-effort": {
-   "file": "voice/originals/pyroclast/vo-pyroclast-howitzer-effort.wav",
+  "vo-pyroclast-supervolcano-effort": {
+   "file": "voice/originals/pyroclast/vo-pyroclast-supervolcano-effort.wav",
    "seconds": 4.44,
    "level": -16.3,
    "voice": "pyroclast",
@@ -11061,15 +11061,15 @@
    "voice": "highsun",
    "text": "影すら、私には落とせませんか。"
   },
-  "vo-highsun-sunshine": {
-   "file": "voice/originals/highsun/vo-highsun-sunshine.wav",
+  "vo-highsun-noon": {
+   "file": "voice/originals/highsun/vo-highsun-noon.wav",
    "seconds": 3.91,
    "level": -16.5,
    "voice": "highsun",
    "text": "正午です。…この刻、私の上には、何もない。"
   },
-  "vo-highsun-divine-sword": {
-   "file": "voice/originals/highsun/vo-highsun-divine-sword.wav",
+  "vo-highsun-zenith-sword": {
+   "file": "voice/originals/highsun/vo-highsun-zenith-sword.wav",
    "seconds": 1.915,
    "level": -16.3,
    "voice": "highsun",
@@ -11376,8 +11376,8 @@
    "voice": "tancho",
    "text": "千羽鶴…舞え！"
   },
-  "vo-tancho-phosphor": {
-   "file": "voice/originals/tancho/vo-tancho-phosphor.wav",
+  "vo-tancho-red-crown": {
+   "file": "voice/originals/tancho/vo-tancho-red-crown.wav",
    "seconds": 2.325,
    "level": -16.5,
    "voice": "tancho",
@@ -11677,8 +11677,8 @@
    "voice": "bonsho",
    "text": "ひと撞き！"
   },
-  "vo-bonsho-hundred-hands": {
-   "file": "voice/originals/bonsho/vo-bonsho-hundred-hands.wav",
+  "vo-bonsho-great-bell": {
+   "file": "voice/originals/bonsho/vo-bonsho-great-bell.wav",
    "seconds": 1.265,
    "level": -16.4,
    "voice": "bonsho",
@@ -11782,8 +11782,8 @@
    "voice": "murex",
    "text": "まだ…降りない…！"
   },
-  "vo-murex-nigecha-dame": {
-   "file": "voice/originals/murex/vo-murex-nigecha-dame.wav",
+  "vo-murex-wont-miss": {
+   "file": "voice/originals/murex/vo-murex-wont-miss.wav",
    "seconds": 2.99,
    "level": -17.7,
    "voice": "murex",
@@ -11817,8 +11817,8 @@
    "voice": "aquilo",
    "text": "負けるのは、風がやんだ時だけだ。"
   },
-  "vo-aquilo-wind-blade-shower": {
-   "file": "voice/originals/aquilo/vo-aquilo-wind-blade-shower.wav",
+  "vo-aquilo-forktail-gust": {
+   "file": "voice/originals/aquilo/vo-aquilo-forktail-gust.wav",
    "seconds": 2.55,
    "level": -16.4,
    "voice": "aquilo",
@@ -11943,8 +11943,8 @@
    "voice": "svanhild",
    "text": "ふ、ふんっ！ 見直したかしら？"
   },
-  "vo-svanhild-sea-dragon-roar": {
-   "file": "voice/originals/svanhild/vo-svanhild-sea-dragon-roar.wav",
+  "vo-svanhild-swan-song": {
+   "file": "voice/originals/svanhild/vo-svanhild-swan-song.wav",
    "seconds": 2.675,
    "level": -16.4,
    "voice": "svanhild",
@@ -12510,15 +12510,15 @@
    "voice": "sashigane",
    "text": "目盛り通りです。"
   },
-  "vo-sashigane-ratio": {
-   "file": "voice/originals/sashigane/vo-sashigane-ratio.wav",
+  "vo-sashigane-golden-ratio": {
+   "file": "voice/originals/sashigane/vo-sashigane-golden-ratio.wav",
    "seconds": 1.355,
    "level": -16.4,
    "voice": "sashigane",
    "text": "黄金比…ここです。"
   },
-  "vo-sashigane-collapse": {
-   "file": "voice/originals/sashigane/vo-sashigane-collapse.wav",
+  "vo-sashigane-condemned": {
+   "file": "voice/originals/sashigane/vo-sashigane-condemned.wav",
    "seconds": 1.665,
    "level": -16.3,
    "voice": "sashigane",
@@ -12531,8 +12531,8 @@
    "voice": "sashigane",
    "text": "最終検査…不合格。"
   },
-  "vo-sashigane-overtime": {
-   "file": "voice/originals/sashigane/vo-sashigane-overtime.wav",
+  "vo-sashigane-no-margin": {
+   "file": "voice/originals/sashigane/vo-sashigane-no-margin.wav",
    "seconds": 2.715,
    "level": -16.5,
    "voice": "sashigane",
@@ -12643,43 +12643,43 @@
    "voice": "yodaka",
    "text": "せいやっ！"
   },
-  "vo-yodaka-rising-sun": {
-   "file": "voice/originals/yodaka/vo-yodaka-rising-sun.wav",
+  "vo-yodaka-bonfire-rise": {
+   "file": "voice/originals/yodaka/vo-yodaka-bonfire-rise.wav",
    "seconds": 1.56,
    "level": -16.4,
    "voice": "yodaka",
    "text": "二番・焚火昇り！"
   },
-  "vo-yodaka-blooming-flame": {
-   "file": "voice/originals/yodaka/vo-yodaka-blooming-flame.wav",
+  "vo-yodaka-flaring-wings": {
+   "file": "voice/originals/yodaka/vo-yodaka-flaring-wings.wav",
    "seconds": 1.81,
    "level": -16.5,
    "voice": "yodaka",
    "text": "四番・燃える翼！"
   },
-  "vo-yodaka-ninth-form": {
-   "file": "voice/originals/yodaka/vo-yodaka-ninth-form.wav",
+  "vo-yodaka-ninth-watch": {
+   "file": "voice/originals/yodaka/vo-yodaka-ninth-watch.wav",
    "seconds": 2.75,
    "level": -16.3,
    "voice": "yodaka",
    "text": "奥の手…九番…夜鷹の星ッ！"
   },
-  "vo-yodaka-heart-ablaze": {
-   "file": "voice/originals/yodaka/vo-yodaka-heart-ablaze.wav",
+  "vo-yodaka-burn-out": {
+   "file": "voice/originals/yodaka/vo-yodaka-burn-out.wav",
    "seconds": 2.36,
    "level": -16.5,
    "voice": "yodaka",
    "text": "燃え尽きるまで、飛ぶぞ！"
   },
-  "vo-yodaka-flame-tiger": {
-   "file": "voice/originals/yodaka/vo-yodaka-flame-tiger.wav",
+  "vo-yodaka-fire-owl": {
+   "file": "voice/originals/yodaka/vo-yodaka-fire-owl.wav",
    "seconds": 1.355,
    "level": -16.4,
    "voice": "yodaka",
    "text": "五番・火梟！"
   },
-  "vo-yodaka-unknowing-fire": {
-   "file": "voice/originals/yodaka/vo-yodaka-unknowing-fire.wav",
+  "vo-yodaka-owls-swoop": {
+   "file": "voice/originals/yodaka/vo-yodaka-owls-swoop.wav",
    "seconds": 1.81,
    "level": -16.4,
    "voice": "yodaka",
@@ -13098,22 +13098,22 @@
    "voice": "bruin",
    "text": "逃げ足、遅えなあ。"
   },
-  "vo-bruin-dimension-slash": {
-   "file": "voice/originals/bruin/vo-bruin-dimension-slash.wav",
+  "vo-bruin-starless-cut": {
+   "file": "voice/originals/bruin/vo-bruin-starless-cut.wav",
    "seconds": 1.8,
    "level": -16.5,
    "voice": "bruin",
    "text": "星ごと、ぶった斬る！"
   },
-  "vo-bruin-dimension-slash-b": {
-   "file": "voice/originals/bruin/vo-bruin-dimension-slash-b.wav",
+  "vo-bruin-starless-cut-b": {
+   "file": "voice/originals/bruin/vo-bruin-starless-cut-b.wav",
    "seconds": 3.37,
    "level": -16.4,
    "voice": "bruin",
    "text": "空も星も、斬れる。…スターレス・カット！"
   },
-  "vo-bruin-dimension-slash-c": {
-   "file": "voice/originals/bruin/vo-bruin-dimension-slash-c.wav",
+  "vo-bruin-starless-cut-c": {
+   "file": "voice/originals/bruin/vo-bruin-starless-cut-c.wav",
    "seconds": 1.27,
    "level": -16.5,
    "voice": "bruin",
@@ -13161,8 +13161,8 @@
    "voice": "bruin",
    "text": "ぬんっ"
   },
-  "vo-bruin-avidya-slash": {
-   "file": "voice/originals/bruin/vo-bruin-avidya-slash.wav",
+  "vo-bruin-night-prowl": {
+   "file": "voice/originals/bruin/vo-bruin-night-prowl.wav",
    "seconds": 3.91,
    "level": -16.4,
    "voice": "bruin",

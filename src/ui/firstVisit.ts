@@ -1,8 +1,8 @@
 import './firstVisit.css';
-import { CONTACT, CREDITS_PAGE, FAN_MADE, GAME_NAME, PRIVACY_PAGE, TERMS_PAGE } from './legalLinks';
+import { CONTACT, CREDITS_PAGE, FAN_MADE, GAME_NAME, PRIVACY_PAGE, REPO_PAGE, TERMS_PAGE } from './legalLinks';
 import { UI_DIRECTION, type UiAction } from '../input/gamepad';
 import { nearest } from './spatialFocus';
-import { openPage } from './pageViewer';
+import { openPage, opensInGame } from './pageViewer';
 
 export const NOTICE_KEY = 'jump-fan-notice';
 /** '2' on 12 October 2026: the notice gained its line about the terms of use. */
@@ -32,10 +32,12 @@ export function noticeHtml(): string {
     <p class="first-visit-takedown">${NOTICE_LINES.takedown} <a href="mailto:${CONTACT}">${CONTACT}</a> ${NOTICE_LINES.promise}</p>
     <p class="first-visit-small">${FAN_MADE}</p>
     <p class="first-visit-small first-visit-terms">${NOTICE_LINES.terms} <a href="${TERMS_PAGE}" target="_blank" rel="noopener" data-focus="notice-terms">terms of use</a>.</p>
-    <nav class="first-visit-links" aria-label="More about the project">${out(PRIVACY_PAGE, 'LEGAL &amp; PRIVACY', 'notice-legal')}${out(CREDITS_PAGE, 'CREDITS', 'notice-credits')}</nav>
+    <nav class="first-visit-links" aria-label="More about the project">${out(PRIVACY_PAGE, 'LEGAL &amp; PRIVACY', 'notice-legal')}${out(CREDITS_PAGE, 'CREDITS', 'notice-credits')}${out(REPO_PAGE, 'SOURCE CODE', 'notice-source')}</nav>
     <button type="button" class="first-visit-go" data-focus="notice-go" data-pad-default>GOT IT, LET'S PLAY</button>`;
 }
 
+/** A link's words as the page viewer's title. */
+const labelOf = (link: HTMLElement) => (link.textContent ?? '').replace(/[↗→]/g, '').trim().toUpperCase();
 const write = (key: string, value: string) => { try { localStorage.setItem(key, value); } catch { /* a private window */ } };
 
 /** Shows the notice if it is due and returns its dialog (undefined where it is not). */
@@ -48,6 +50,13 @@ export function mountFirstVisit(doc: Document = document): HTMLDialogElement | u
   doc.body.append(dialog);
   const go = dialog.querySelector<HTMLButtonElement>('.first-visit-go')!;
   go.onclick = () => dialog.close();
+  // (Where the game's pages open over the game, as on Player Two, a click on one opens it in the page viewer, not a new tab.)
+  dialog.addEventListener('click', event => {
+    const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href]') : null;
+    if (!link || !opensInGame(link.href)) return;
+    event.preventDefault();
+    openPage(link.href, labelOf(link));
+  });
   dialog.addEventListener('close', () => { write(NOTICE_KEY, NOTICE_VERSION); dialog.remove(); if (notice === dialog) notice = undefined; }, { once: true });
   if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
   go.focus({ preventScroll: true });
@@ -66,7 +75,7 @@ export function noticeController(action: UiAction): boolean {
   const active = document.activeElement as HTMLElement | null;
   if (!active || !items.includes(active)) { dialog.querySelector<HTMLElement>('.first-visit-go')?.focus({ preventScroll: true }); return true; }
   if (action === 'confirm') {
-    if (active instanceof HTMLAnchorElement) openPage(active.href, (active.textContent ?? '').replace(/[↗→]/g, '').trim().toUpperCase(), true);
+    if (active instanceof HTMLAnchorElement) openPage(active.href, labelOf(active), true);
     else active.click();
     return true;
   }

@@ -104,9 +104,9 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
     lllh: { name: 'Dust Art: Burrow Grab', ...snare(4, 1.2), damage: 60, down: 1.1 },
     // His hounds burst out of the ground and pin the target.
     llls: { name: 'Dust Art: Hound Pack', ...snare(5, 1.6), damage: 51, daze: 1.6 },
-    // His Lightning Cutter thrown as a hound: the Storm Hound.
+    // His lightning bolt thrown as a hound: the Storm Hound.
     airHeavy: { name: 'Storm Hound', ...blast(9, 32), damage: 45 },
-    // A bolt of his own make, in place of the Lightning Cutter.
+    // A bolt of his own make, in place of the old lightning bolt.
     airSpecial: { name: 'Storm Art: Thistle Sparks', ...smash(3.8), damage: 66, down: .95 },
   },
   shiden: {

@@ -47,7 +47,7 @@ export const STAGE = {
   /** Darkness with a violet rim (the Bruin Bruin). */
   dark: { core: lin(1.9, 1.05, 2.7), main: lin(.8, .24, 1.55), rim: lin(.2, .05, .42), light: lin(.55, .22, .95), element: { spike: 0xd9b8ff, rim: 0x7a34c8, light: 0x9a5cff, ink: 0x06020c }, shell: 0x5a1e9a, edge: 0x0a0414, flame: BLACK, dark: true, heart: 0,
     sphere: { body: lin(.014, .006, .03), core: lin(.3, .1, .6), rimA: lin(1.7, .55, 2.5), rimB: lin(.75, .25, 1.9), spin: 1.5 } },
-  /** A Pop Green: lime over leaf green. */
+  /** A seed shot: lime over leaf green. */
   green: { core: lin(2.5, 3.1, 1.5), main: lin(.6, 1.75, .24), rim: lin(.1, .45, .06), light: lin(.62, 1.12, .36), element: { spike: 0xeaffc5, rim: 0x83b442, light: 0xb8e86a, ink: 0x0c1a06 }, shell: 0xa8e04a, edge: 0x1e4a10, flame: -1, dark: false, heart: 0 },
 } satisfies Record<string, StageLook>;
 

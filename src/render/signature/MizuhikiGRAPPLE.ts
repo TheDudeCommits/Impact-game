@@ -80,7 +80,7 @@ export class MizuhikiGRAPPLE{
    const n=blow.index;st.burst(point,BLADE,1.1+.15*n,t,{dir,floor});this.slash(point,side,dir,(n%2?.7:-.7),2.2+.3*n,.14,t,.34);if(n>=2)st.shock(ground,BLADE,3.6+.5*n,t,.45);this.haze(point,t,.8,1.2,st.n(5,3));
    return;
   }
-  // THE THUNDER SPEARS: the blast driven through them from her side, orange, the air broken, her last crosscut white
+  // THE FUSE LANCES: the blast driven through them from her side, orange, the air broken, her last crosscut white
   // across it, the floor shaken and left burning.
   this.axis.copy(dir).setY(.1).normalize();
   st.erupt(this.c.copy(point).addScaledVector(dir,-.4),this.axis,SPEAR,.95,11,t,.55);

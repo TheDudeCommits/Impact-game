@@ -4,7 +4,7 @@ import type { CombatEvent, FighterId, PlayerState } from '../src/game/types';
 import { HIKUI_MOVES } from '../src/game/fighters/hikui';
 import type { Fighter } from '../src/render/Fighter';
 import type { Flight } from '../src/render/CombatEffects';
-import { HikuiDarknessFlame, HIKUI_DARKNESS_LIMITS } from '../src/render/signature/HikuiDarknessFlame';
+import { HikuiWitchfire, HIKUI_DARKNESS_LIMITS } from '../src/render/signature/HikuiWitchfire';
 import { MoveStage, STAGE_LIMITS } from '../src/render/signature/MoveStage';
 import { STAGED_BY_MODULE } from '../src/render/signature/StagedMoves';
 
@@ -21,7 +21,7 @@ function body(id: string, patch: Partial<PlayerState> = {}) {
 const event = (patch: Partial<CombatEvent> = {}): CombatEvent => ({ id: 1, kind: 'confirm', fighter: ID, actorId: 'hikui', targetId: 'foe', actionSeq: 7, slot: 'ultimate', serverTime: 10 + ULT.contacts[0], ...patch });
 /** The module stages on the scene's shared MoveStage: the test holds it too, to read what is drawn. */
 function setup(patch: Partial<PlayerState> = {}, budget = 1) {
-  const scene = new THREE.Scene(), stage = MoveStage.for(scene, { budget }), fx = new HikuiDarknessFlame(scene, { budget }), hikui = body('hikui', patch), foe = body('foe').fighter; foe.group.position.z = 2.4;
+  const scene = new THREE.Scene(), stage = MoveStage.for(scene, { budget }), fx = new HikuiWitchfire(scene, { budget }), hikui = body('hikui', patch), foe = body('foe').fighter; foe.group.position.z = 2.4;
   const fighters = new Map([['hikui', hikui.fighter], ['foe', foe]]), flights = new Map<string, Flight>();
   const heads = () => (scene.getObjectByName('hikui-dragon-heads') as THREE.InstancedMesh).count;
   const drawn = () => { const c = stage.counts; return c.flames + c.glows + c.bolts + c.discs + c.shots + heads(); };

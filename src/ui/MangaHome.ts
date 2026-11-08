@@ -1,4 +1,5 @@
 import type { FighterId } from '../game/types';
+import { siteUrl } from '../loading/siteBase'; // asset addresses inside the page's own folder
 import { FIGHTERS } from '../config';
 import { mediaArt } from './mediaArt';
 import { LABORATORY_FIGHTERS, RELEASED_FIGHTERS, isReleasedFighter } from '../game/rosterAvailability';
@@ -110,7 +111,7 @@ export function mangaHome(selected:FighterId, botPlayers:number) {
       <div class="home-mode-rail"><div class="home-modes" role="group" aria-label="Choose game mode">
         ${HOME_MODES.filter(mode=>HOME_RAIL.includes(mode.id)).map((mode,i)=>`<div class="home-mode-panel" data-panel="${mode.id}" style="--tilt:${i===0?-2:i===1?1:i===2?-1.5:i===3?-2:0}deg">
           <button type="button" class="home-mode" data-mode="${mode.id}" aria-pressed="${mode.id==='bots'}" aria-label="${mode.label}">
-            <span class="home-mode-art"><img src="/assets/home/modes/${MODES[MODE_OF_HOME[mode.id].mode].art}.webp" alt="" draggable="false" fetchpriority="high"></span>
+            <span class="home-mode-art"><img src="${siteUrl(`/assets/home/modes/${MODES[MODE_OF_HOME[mode.id].mode].art}.webp`)}" alt="" draggable="false" fetchpriority="high"></span>
             <span class="home-mode-label">${mode.label.toUpperCase()}</span>
           </button>
           ${variantWords(mode.id)}

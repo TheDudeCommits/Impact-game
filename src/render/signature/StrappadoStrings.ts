@@ -16,7 +16,7 @@ export const STRAPPADO_STRINGS_LIMITS = Object.freeze({ threads: 384, needles: 6
 export const STRAPPADO_STRINGS_BEATS = Object.freeze({ overheat: .63, command: 2.10, final: 3.18 });
 /** Native contact selection uses the visible hand or foot, including rushes. */
 export function strappadoStrikeSocket(action: string, elapsed: number, clip?: string, contactIndex?: number): 'LeftHand' | 'RightHand' | 'LeftToeBase' | 'Both' {
-  if (clip === 'God Thread' || action === 'ultimate' && !clip) return (contactIndex ?? (elapsed > 2.85 ? 2 : 0)) === 2 ? 'Both' : 'RightHand';
+  if (clip === 'Curtain Call' || action === 'ultimate' && !clip) return (contactIndex ?? (elapsed > 2.85 ? 2 : 0)) === 2 ? 'Both' : 'RightHand';
   if (clip === 'Tightrope Kick' || clip === 'Highwire Heel' || action === 'heavy' && !clip) return 'LeftToeBase';
   if (clip === 'Rush 2' || clip === 'Marionette Reversal') return 'LeftHand';
   if (clip === 'Puppeteer\'s Snare' || clip === 'Trapdoor Drop') return 'Both';
@@ -39,7 +39,7 @@ const UP = new THREE.Vector3(0, 1, 0), FRONT = new THREE.Vector3(0, 0, 1), TAU =
 const INK = new THREE.Color(0x301425), ROSE = new THREE.Color(0xf074ad), HOT = new THREE.Color(0xf64d47), WHITE = new THREE.Color(0xfffaf1);
 const clamp = (v: number) => Math.min(1, Math.max(0, v));
 const B = STRAPPADO_STRINGS_BEATS;
-/** The Ito Ito no Mi's strings as light: white at the heart, his rose round it (his casting's palette). A string burns
+/** His strings as light: white at the heart, his rose round it (his casting's palette). A string burns
  *  in no flame; Overheat does: a string heated until it glows and bursts what it lands on (#f64d47, white-hot inside). */
 export const STRING: StageLook = stageLook(0xfffaf1, 0xf074ad, 0x301425);
 export const OVERHEAT: StageLook = stageLook(0xfff3d6, 0xf6593f, 0x5a100c, { flame: FIRE });
@@ -70,7 +70,7 @@ class StringBatch {
 }
 type Confirm = { actor: string; target: string; seq: number; floor: number; final: boolean; endpoint: THREE.Vector3 };
 type Impact = { actor: string; born: number; seed: number; grade: number; point: THREE.Vector3 };
-/** Goshikito's mark: five parallel cuts left across what the strings raked, for a fifth of a second. */
+/** The five-string mark: five parallel cuts left across what the strings raked, for a fifth of a second. */
 type Rake = { live: boolean; born: number; life: number; at: THREE.Vector3; dir: THREE.Vector3; size: number; tilt: number };
 /** Overheat in the air: the whip from the hand that threw it out to the shot. */
 type Whip = { live: boolean; actor: string; origin: THREE.Vector3; head: THREE.Vector3; heading: THREE.Vector3; seen: number; floor: number };
@@ -147,7 +147,7 @@ export class StrappadoStrings {
     if (event.slot !== 'ultimate' || event.branch) return;
     if (!final) { st.burst(point, STRING, event.contactIndex ? 1.2 : .9, t, { dir, floor }); this.rake(point, dir, event.contactIndex ? 3.2 : 2.3, lean, t, .3); if (event.contactIndex) st.shock(ground, STRING, 5, t, .5); return; }
     if (!confirmed) return;
-    // GOD THREAD: the sixteen driven through, the air broken into a web across the frame and the floor under it, a
+    // CURTAIN CALL: the sixteen driven through, the air broken into a web across the frame and the floor under it, a
     // pillar of string-light where they stood.
     st.shatter(point, dir, STRING, 7, t, .8);
     st.shatter(this.a.copy(ground).setY(floor + .06), UP, STRING, 7.5, t + .04, 1.3);
@@ -352,7 +352,7 @@ export class StrappadoStrings {
     st.light(this.p.copy(whip.origin).lerp(whip.head, .45).setY(whip.origin.y + .3), 5.5, OVERHEAT, .8 * fade);
   }
 
-  /** God Thread from the confirm to the last blow: the room to night, strings standing out of the floor round him to the
+  /** Curtain Call from the confirm to the last blow: the room to night, strings standing out of the floor round him to the
    *  height of the hall, a web hung in the air behind him, the floor threaded with light. Round him and behind him,
    *  never over the pair: both are read between the strings. */
   private gather(f: Fighter, c: Confirm, elapsed: number, time: number) {

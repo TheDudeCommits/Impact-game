@@ -1,7 +1,7 @@
 import type { CoreSlot } from '../types';
 import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
-/** Fish-Man Karate is always manually triggered; water is contact presentation. */
+/** His sea karate is always manually triggered; water is contact presentation. */
 export const OYASHIO_MOVES: Record<CoreSlot, MoveDefinition> = {
  light:{name:'Tide Palm',duration:.44,contacts:[.168],damage:21,range:2.6,radius:.74,stamina:11,cooldown:.44,stun:.32,knockback:3.5,lunge:4.2,style:'melee'},
  heavy:{name:'Breakwater Fist',duration:.93,contacts:[.41],damage:65,range:3.0,radius:.94,stamina:28,cooldown:1.21,stun:.75,knockback:8.8,lunge:4.8,style:'melee',outcome:'wallBounce'},

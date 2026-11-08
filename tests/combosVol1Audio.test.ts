@@ -33,7 +33,7 @@ describe('the main game\'s enders on the voice bus', () => {
     }
   });
 
-  it('never voices an ender with its slot\'s own call (Magatsu\'s Light + Heavy is not Hachi)', () => {
+  it('never voices an ender with its slot\'s own call (Magatsu\'s Light + Heavy is not the heavy\'s call)', () => {
     for (const fighter of VOL1) for (const key of COMBO_KEYS) {
       resetVoiceMemory();
       const slot = COMBO_SLOT[key];

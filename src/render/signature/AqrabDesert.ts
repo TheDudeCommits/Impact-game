@@ -13,7 +13,7 @@ import { blowFloor } from './blowFloor';
 export const AQRAB_DESERT_LIMITS = Object.freeze({ ribbons: 112, grains: 144, rings: 32, impacts: 24, confirms: 6 });
 const UP = new T.Vector3(0, 1, 0), Z = new T.Vector3(0, 0, 1);
 const INK = new T.Color(0x493221);
-/** The Suna Suna no Mi as the stage lights it: pale at the heart, desert gold round it, dark earth at its edge (his
+/** His sand as the stage lights it: pale at the heart, desert gold round it, dark earth at its edge (his
  *  casting's palette). Sand burns in no flame: its body is his own ribbons and the kit's dust, drawn in these. */
 export const SAND: StageLook = stageLook(0xfff3d6, 0xd9b46a, 0x5e4020);
 /** The ribbons themselves, over the bloom threshold (they were drawn in colours of 1 and under: a hand of pale sand
@@ -24,8 +24,8 @@ const DUST_LIT = 0xf2d9a0, DUST_SHADE = 0xa07a42;
 const HEAVY = AQRAB_MOVES.heavy, SPECIAL = AQRAB_MOVES.special, ULT = AQRAB_MOVES.ultimate;
 const FINAL = ULT.contacts.length - 1;
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
-/** What a blow raised: 1 a jab's grains, 2 the Spada's, 3 Sables bursting into a standing twister, 4 a blow of Ground
- *  Death, 5 its last (the floor's ring, and the storm where the victim stood). */
+/** What a blow raised: 1 a jab's grains, 2 the sand blade's, 3 Thirst Storm bursting into a standing twister, 4 a blow of Bone
+ *  Dry, 5 its last (the floor's ring, and the storm where the victim stood). */
 type Hit = { actor: string; target: string; born: number; seed: number; grade: number; final: boolean; point: T.Vector3; groundY: number; yaw: number };
 type Confirm = { actor: string; target: string; seq: number; floor: number; final: boolean };
 
@@ -107,7 +107,7 @@ export class AqrabDesert {
     }
     if (e.slot === 'special') {
       if (e.branch === 'airSpecial') { st.burst(point, SAND, 2, t, { floor: floorY }); st.shock(ground, SAND, 4.5, t, .45); st.scar(ground, SAND, 2.4, t + .05, 1.8); this.puffs(point.x, floorY + .2, point.z, 10, 1.3, 3.4, t); return; }
-      // Sables landing: the storm stands up where it struck (the twister is the hit's own: `update`), and the floor is dried.
+      // Thirst Storm landing: the storm stands up where it struck (the twister is the hit's own: `update`), and the floor is dried.
       const k = (e.branch ? .7 : 1) * big;
       st.burst(point, SAND, 1.9 * k, t, { dir, floor: floorY });
       st.erupt(ground, UP, SAND, .55 * k, 5 * k, t + .03, .55);
@@ -189,7 +189,7 @@ export class AqrabDesert {
       const elapsed = u * s.actionDuration, seed = (s.actionSeq ?? 0) * 4.7, big = s.awakened ? 1.15 : 1;
       if (s.action === 'ultimate' && s.confirmedAt === undefined && elapsed > .42) continue;
       if (s.action === 'special' && !s.branch) {
-        // Sables' wind-up: the twister grown in his palm, sand drawn to it.
+        // Thirst Storm's wind-up: the twister grown in his palm, sand drawn to it.
         const release = SPECIAL.contacts[0];
         if (elapsed < release) { const k = clamp(elapsed / release); this.center.copy(f.handR); this.vortex(this.center, .18 + u * .65, time, fade, detail); st.charge(f.handR, SAND, .34 * big, k, seed); st.disc(this.p.copy(f.group.position), 1.5 + 1.5 * k, SAND.main, .5 * k, SHEEN, 1, seed); }
         continue;
@@ -223,7 +223,7 @@ export class AqrabDesert {
         }
       } else if (s.action === 'ultimate' && !s.branch && s.confirmedAt === undefined) st.charge(f.handR, SAND, .28, clamp(elapsed / ULT.contacts[0]), seed);
     }
-    // Sables in flight: ONE authoritative shot, a sandstorm three metres tall turning on it.
+    // Thirst Storm in flight: ONE authoritative shot, a sandstorm three metres tall turning on it.
     for (const flight of flights.values()) {
       if (flight.fighter !== 'aqrab' || !flight.released || armoryDraws(flight.fighter, flight.slot, flight.branch, flight.actorId)) continue;
       const big = flight.awakened ? 1.2 : 1, floor = (flight.actorId ? fighters.get(flight.actorId)?.group.position.y : undefined) ?? flight.position.y - 1.2, phase = time + flight.since;

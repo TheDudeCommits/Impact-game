@@ -56,7 +56,7 @@ export function desertBladeGeometry(): T.BufferGeometry {
 }
 
 /** Folded pointed leaf with a raised central vein and an asymmetric tip. */
-export function popGreenLeafGeometry(): T.BufferGeometry {
+export function seedLeafGeometry(): T.BufferGeometry {
   const g = new T.BufferGeometry();
   g.setAttribute('position', new T.Float32BufferAttribute([0,-.5,0, -.28,-.05,0, 0,0,.08, .25,-.08,0, .08,.5,0], 3));
   g.setIndex([0,1,2,0,2,3,1,4,2,2,4,3]); return g;

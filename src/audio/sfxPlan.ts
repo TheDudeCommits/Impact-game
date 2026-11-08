@@ -137,7 +137,7 @@ const BLADE: Partial<Record<FighterId, Family>> = {
   strix: FAMILY.gravedigger,
   kenzo: FAMILY.katana, shiden: FAMILY.katana, nigo: FAMILY.cleaver, ward: FAMILY.nodachi,
   gaunt: FAMILY.gravedigger, shirokane: FAMILY.kunai, setsu: FAMILY.claw,
-  // The shop's fighters: the bisento swings like the GRAVEDIGGER, the Gryphon and Kagari like katanas.
+  // The shop's fighters: the bisento swings like the GRAVEDIGGER, Sorrel's sabre and Kagari like katanas.
   haldor: FAMILY.gravedigger, sorrel: FAMILY.katana, dorado: FAMILY.katana,
   // Shiun's flash step cuts with the wing blades; Magatsu's hands cut as blades do; Vesper's sabre is a katana's weight.
   shiun: FAMILY.katana, magatsu: FAMILY.katana, vesper: FAMILY.katana,
@@ -315,7 +315,7 @@ function castLayers(c: Ctx): CueLayer[] {
   // A ground smash is a rush of air as it drops; its landing is its release (releaseLayers).
   if (c.event.branch === 'airSpecial') return [{ cue: pick(FAMILY.heavy, c.seed), gain: .46, delay: .08, phase: 'cast', rate: .82 }];
   const special = c.event.branch ? ENDER_CASTS[c.fighter]?.[c.event.branch] : SIGNATURE_CASTS[c.fighter]?.[c.slot];
-  // The area slot gathers in its own element (launch day 5); a cast authored for it (Yodaka's Flame Tiger) is as it was.
+  // The area slot gathers in its own element (launch day 5); a cast authored for it (Yodaka's Fire Owl) is as it was.
   if (c.slot === 'area' && !special) return [...areaCast(c), ...originalAreaCast(c.fighter).map(([cue, gain]) => onBeat(cue as AudioCue, gain, c0(c) ?? 0, 'cast'))];
   const layers = special ? special(c) : c.move.style === 'melee' ? meleeSwings(c) : energyCast(c);
   return [...layers, ...awakenedCast(c), ...familyCast(c, layers), ...signatureCast(c), ...ultimateOpener(c)];
@@ -327,7 +327,7 @@ function castLayers(c: Ctx): CueLayer[] {
  *  layers stay its sound; these are its weight. On the cast phase: a cast cut short stops them. Not a combo ender. */
 const hugeOn = (c: Ctx, gain = .4) => onBeat('fx-swing-huge', gain, c0(c) + .02);
 const ULTIMATE_OPENERS: Partial<Record<FighterId, (c: Ctx) => CueLayer[]>> = {
-  // The blast he rides in on, then the Howitzer's spin.
+  // The blast he rides in on, then the Supervolcano's spin.
   pyroclast: c => [onBeat('fx-fire-burst', .32, Math.max(.06, c0(c) - .12)), hugeOn(c, .36)],
   // The Legendary's ki surging up the arm before it lands.
   shanxiao: c => [bed('fx-ki-charge-big', .2, 0, c0(c)), hugeOn(c, .46)],
@@ -789,7 +789,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     // thousand mile eagle: wind wound around him, then the flying slash.
     special: c => [bed('fx-wind-swirl', .24, .05, c0(c)), onBeat('fx-slash-wave', .55, c0(c)),
       onBeat(pick(FAMILY.katana, c.seed), .36, c0(c) - .02)],
-    // Great Thousand Worlds: nine blades sing, and cut. Round 3d: the RAKSHASA rising
+    // Dust Sea Sundered: nine blades sing, and cut. Round 3d: the RAKSHASA rising
     // behind him is the cinematic's (SIGNATURE_CONFIRMS), as it is drawn.
     ultimate: c => [{ cue: 'fx-sword-ring', gain: .3, delay: round(Math.max(0, c0(c) - .35)), phase: 'cast' },
       onBeat(pick(FAMILY.katana, c.seed), .46, c0(c)), onBeat(pick(FAMILY.katana, c.seed, 1), .4, c0(c) + .02),
@@ -913,7 +913,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   sorrel: {
     // Crimson Command: the will goes out, and a guard does not stop it.
     special: c => [{ cue: 'fx-will', gain: .52, phase: 'cast' }, onBeat('fx-guard-break', .3, c0(c))],
-    // Horizon Sunder: the Gryphon drawn back and the first cut let go - the
+    // Horizon Sunder: the sabre drawn back and the first cut let go - the
     // opener; the one that counts is the cinematic.
     ultimate: c => [{ cue: 'fx-will', gain: .4, phase: 'cast' }, onBeat('fx-draw', .36, Math.max(.05, c0(c) - .2)), onBeat('fx-slash-wave', .5, c0(c))],
   },
@@ -1270,7 +1270,7 @@ if (LUCY_TIDE) SIGNATURE_CONFIRMS.gummy = c => [onBeat(pick(FAMILY.snap, c.seed)
 // ---------------------------------------------------------------- releases
 
 /** Release events: beams are drawn on them, so beams are heard on them. */
-/** Combo enders (game/combos.ts) with a sound of their own: Sekka's stun opens the Compass Needle's snowflake.
+/** Combo enders (game/combos.ts) with a sound of their own: Sekka's stun opens the Aurora Shards' snowflake.
  *  (5 October) The main game's sixteen (combosVol1.ts): every blast and snare is heard as what it is - a style's default
  *  is a ki charge, and a snare's a fire igniting, which neither a THEATRE nor a water dragon is - and the blows that carry
  *  their fighter's energy (a Shrike Bolt, a Senpugan, a Dark Spark, a THEATRE) carry its sound over the swing. Kurobi throws
@@ -1315,11 +1315,11 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
     airHeavy: swung(c => [onBeat('fx-wind-swirl', .2, Math.max(.05, c0(c) - .1))]),
   },
   shirokane: {
-    // The water dragon rushing out; the earth giving way under them; the ninken bursting out of the ground.
+    // The water dragon rushing out; the earth giving way under them; the hounds bursting out of the ground.
     lh: c => [bed('fx-wind-swirl', .18, 0, c0(c)), onBeat('fx-swing-huge', .44, c0(c)), onBeat('fx-wind-blast', .3, c0(c) + .03)],
     lllh: c => [onBeat('fx-land-heavy', .5, c0(c)), onBeat('fx-ground-bounce', .34, c0(c) + .04)],
     llls: c => [onBeat(pick(FAMILY.poof, c.seed), .3, Math.max(.05, c0(c) - .1)), onBeat('fx-land-heavy', .34, c0(c)), onBeat('fx-beast-bite', .44, c0(c) + .03)],
-    // His Lightning Cutter thrown as a hound.
+    // His lightning bolt thrown as a hound.
     airHeavy: c => [bed('fx-shrike-bolt', .24, 0, c0(c)), onBeat('fx-lightning', .42, c0(c))],
   },
   shiden: {

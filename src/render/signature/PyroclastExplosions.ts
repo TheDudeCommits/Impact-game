@@ -11,7 +11,7 @@ import { MoveStage, STAGE, stageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 
 export const PYROCLAST_EXPLOSION_ASSETS: readonly string[] = Object.freeze([]);
-export const PYROCLAST_EXPLOSION_LIMITS = Object.freeze({ blasts: 64, smoke: 96, rings: 64, streaks: 128, impacts: 24, howitzers: 8 });
+export const PYROCLAST_EXPLOSION_LIMITS = Object.freeze({ blasts: 64, smoke: 96, rings: 64, streaks: 128, impacts: 24, eruptions: 8 });
 export const PYROCLAST_EXPLOSION_BEATS = Object.freeze({ spinStart: .816, spinEnd: 1.904, blast: 2.652, end: 3.05, cluster: PYROCLAST_AWAKENING.beats.release });
 export const isPyroclastExplosions = (id: string | undefined) => id === 'pyroclast';
 const SIDES = ['Left', 'Right'] as const;
@@ -87,7 +87,7 @@ class BlastBatch {
   dispose() { this.mesh.removeFromParent(); this.mesh.dispose(); this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
 }
 type Impact = { actor: string; born: number; seed: number; grade: number; point: THREE.Vector3; floor: number };
-type Howitzer = { actor: string; target: string; seq: number; final?: boolean };
+type Eruption = { actor: string; target: string; seq: number; final?: boolean };
 export class PyroclastExplosions {
   /** The scene's stage, held while a Pyroclast is in the room (CombatEffects builds this module for every room). */
   private stage?: MoveStage; private full?: VfxKit;
@@ -95,9 +95,9 @@ export class PyroclastExplosions {
   private blasts: BlastBatch; private smoke: BlastBatch; private rings: BlastBatch; private streaks: BlastBatch;
   private batches: BlastBatch[];
   private impacts: Impact[] = Array.from({ length: PYROCLAST_EXPLOSION_LIMITS.impacts }, () => ({ actor: '', born: -1e9, seed: 0, grade: 0, point: new THREE.Vector3(), floor: 0 }));
-  private howitzers: Howitzer[] = Array.from({ length: PYROCLAST_EXPLOSION_LIMITS.howitzers }, () => ({ actor: '', target: '', seq: -1 }));
+  private eruptions: Eruption[] = Array.from({ length: PYROCLAST_EXPLOSION_LIMITS.eruptions }, () => ({ actor: '', target: '', seq: -1 }));
   private seen = new Float64Array(128).fill(-1); private seenTime = new Float64Array(128).fill(-1);
-  private impactCursor = 0; private howitzerCursor = 0; private eventCursor = 0; private disposed = false;
+  private impactCursor = 0; private eruptionCursor = 0; private eventCursor = 0; private disposed = false;
   private p = new THREE.Vector3(); private a = new THREE.Vector3(); private b = new THREE.Vector3(); private direction = new THREE.Vector3();
   private q = new THREE.Quaternion(); private flat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
   constructor(private scene: THREE.Scene, private kit: Pick<VfxKit, 'budget'> & Partial<VfxKit>) {
@@ -126,7 +126,7 @@ export class PyroclastExplosions {
     const actor = fighters?.get(event.actorId), victim = event.targetId ? fighters?.get(event.targetId) : undefined;
     if (event.kind === 'confirm') {
       if (event.slot !== 'ultimate' || event.branch || !event.targetId) return;
-      Object.assign(this.howitzers[this.howitzerCursor++ % this.howitzers.length], { actor: event.actorId, target: event.targetId, seq: event.actionSeq ?? actor?.state.actionSeq ?? -1, final: false }); return;
+      Object.assign(this.eruptions[this.eruptionCursor++ % this.eruptions.length], { actor: event.actorId, target: event.targetId, seq: event.actionSeq ?? actor?.state.actionSeq ?? -1, final: false }); return;
     }
     const impact = this.impacts[this.impactCursor++ % this.impacts.length];
     impact.actor = event.actorId; impact.born = event.serverTime; impact.seed = event.id;
@@ -175,7 +175,7 @@ export class PyroclastExplosions {
       if (index) st.shock(ground, BLAST, 5, t, .5);
       return;
     }
-    for (const row of this.howitzers) if (row.actor === e.actorId && row.target === e.targetId) row.final = true;
+    for (const row of this.eruptions) if (row.actor === e.actorId && row.target === e.targetId) row.final = true;
     if (involvesLocal(e.actorId, e.targetId)) SIGNATURE.screen?.impactFrame?.(.45, point);
     // SUPERVOLCANO: the blast, a pillar of fire where it came down, three more going off round it one after another
     // (the spiral he wound, spent), the floor shaken and left burning, and a column of smoke.
@@ -201,7 +201,7 @@ export class PyroclastExplosions {
     }
   }
   private cancel(actor: string, target = false) {
-    for (const row of this.howitzers) if (row.actor === actor || target && row.target === actor) row.actor = '';
+    for (const row of this.eruptions) if (row.actor === actor || target && row.target === actor) row.actor = '';
     // Hit smoke/flash belongs to its receipt and decays even on a lethal hit.
   }
   update(time: number, fighters: ReadonlyMap<string, Fighter>, flights: ReadonlyMap<string, Flight>) {
@@ -249,11 +249,11 @@ export class PyroclastExplosions {
       if (flight.origin) { st.streak(flight.origin, this.a, .16, BLAST.main, .55); st.streak(flight.origin, this.a, .05, BLAST.core, 1.3); st.light(this.p.copy(flight.origin).lerp(this.a, .5).setY(flight.origin.y + .3), 5, BLAST, .5); }
       if (st.tick && this.full) this.full.smoke(this.a.x - this.direction.x * .8, this.a.y + .1, this.a.z - this.direction.z * .8, 0, .8, 0, .5, time, .7, SMOKE_LIT, SMOKE_SHADE);
     }
-    for (const row of this.howitzers) {
+    for (const row of this.eruptions) {
       if (!row.actor) continue; const actor = fighters.get(row.actor), target = fighters.get(row.target), s = actor?.state;
       if (!actor || !s?.alive || s.action !== 'ultimate' || s.branch || s.actionSeq !== row.seq || !target?.state.alive) { row.actor = ''; continue; }
       const age = s.actionTime * s.actionDuration;
-      if (st && !row.final && age < PYROCLAST_EXPLOSION_BEATS.blast && s.whiffedAt === undefined && !armoryDraws('pyroclast', 'ultimate', undefined, row.actor)) this.howitzer(st, actor, row, age, time);
+      if (st && !row.final && age < PYROCLAST_EXPLOSION_BEATS.blast && s.whiffedAt === undefined && !armoryDraws('pyroclast', 'ultimate', undefined, row.actor)) this.eruption(st, actor, row, age, time);
       if (age < PYROCLAST_EXPLOSION_BEATS.spinStart || age > PYROCLAST_EXPLOSION_BEATS.spinEnd) continue;
       bodyCentre(actor, this.a); const k = (age - PYROCLAST_EXPLOSION_BEATS.spinStart) / (PYROCLAST_EXPLOSION_BEATS.spinEnd - PYROCLAST_EXPLOSION_BEATS.spinStart);
       this.q.identity();
@@ -296,7 +296,7 @@ export class PyroclastExplosions {
   /** Supervolcano from its first blow to the impact: the tornado he winds of his own explosions. Fire turning round
    *  him and rising as it builds, the floor burning under him, the room gone dark, sparks of it going off in the turn.
    *  Round him and on the floor, never over the pair. */
-  private howitzer(st: MoveStage, actor: Fighter, row: Howitzer, age: number, time: number) {
+  private eruption(st: MoveStage, actor: Fighter, row: Eruption, age: number, time: number) {
     const B = PYROCLAST_EXPLOSION_BEATS, g = clamp((age - ULT.contacts[0]) / (B.blast - ULT.contacts[0])), spin = clamp((age - B.spinStart) / (B.spinEnd - B.spinStart)), feet = actor.group.position, seed = row.seq * 3.1;
     st.dim(.3 + .45 * g, row.actor, row.target);
     st.pool(this.c.copy(feet), 2.2 + 2.6 * g, BLAST, .3 + .7 * g, seed);
@@ -334,6 +334,6 @@ export class PyroclastExplosions {
       }
     }
   }
-  reset() { for (const row of this.impacts) row.actor = ''; for (const row of this.howitzers) row.actor = ''; this.seen.fill(-1); this.seenTime.fill(-1); this.impactCursor = 0; this.howitzerCursor = 0; this.eventCursor = 0; for (const batch of this.batches) { batch.begin(); batch.end(); } this.stage?.reset(); }
+  reset() { for (const row of this.impacts) row.actor = ''; for (const row of this.eruptions) row.actor = ''; this.seen.fill(-1); this.seenTime.fill(-1); this.impactCursor = 0; this.eruptionCursor = 0; this.eventCursor = 0; for (const batch of this.batches) { batch.begin(); batch.end(); } this.stage?.reset(); }
   dispose() { if (this.disposed) return; this.disposed = true; this.reset(); for (const batch of this.batches) batch.dispose(); this.stage?.release(); this.stage = undefined; }
 }

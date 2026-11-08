@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { STRIPPED_JSON, runtimeAssetManifest } from './scripts/build/provenance';
 import { bundledPackages, creditsPage, declaredPackages, readCredits } from './scripts/build/credits';
 import originalsBrand from './scripts/build/brandPlugin.ts'; // the game's name and pages from src/originals/brand.ts
+import originalsBoot from './scripts/build/bootPlugin.ts'; // the loading page's mark and the sizes of the files it waits for
 import originalsLaunch from './scripts/build/launchPlugin.ts'; // the launch gate in the bundle (src/originals/launch.ts)
 import audioFiles from './scripts/build/audioFiles.ts'; // the sound files this checkout carries
 
@@ -15,10 +16,11 @@ const sourceCommit=process.env.VITE_BUILD_SHA||execFileSync('git',['rev-parse','
 const builtOn=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
 
 export default defineConfig({
-  // originalsBrand fills index.html, privacy.html and site.webmanifest from brand.ts; originalsLaunch bundles no hidden
-  // fighter's manifest entry. The JSON the game bundles from public/assets (and the ambience list) loses its provenance
-  // fields in a build; the repository keeps them and tests read the files whole.
-  plugins: [originalsBrand(), originalsLaunch(), audioFiles(), {
+  // originalsBrand fills index.html, privacy.html and site.webmanifest from brand.ts; originalsBoot inlines the loading
+  // page's mark and writes in the sizes of the files it waits for; originalsLaunch bundles no hidden fighter's manifest
+  // entry. The JSON the game bundles from public/assets (and the ambience list) loses its provenance fields in a build;
+  // the repository keeps them and tests read the files whole.
+  plugins: [originalsBrand(), originalsBoot(), originalsLaunch(), audioFiles(), {
     // The first paint (the performance sweep, 24 October 2026): the entry's stylesheet goes into the body after #app, so the page's
     // inline boot mark (index.html) paints with the page's first bytes instead of waiting for 163 KB of CSS (and, until the
     // sweep, Google's font stylesheet behind it). A stylesheet the parser meets in the body still holds the page's module scripts
@@ -27,7 +29,7 @@ export default defineConfig({
     name: 'impact-style-after-app', apply: 'build',
     transformIndexHtml: { order: 'post', handler(html) {
       const links: string[] = [];
-      const page = html.replace(/\s*<link rel="stylesheet"[^>]*href="\/assets\/[^"]+\.css"[^>]*>/g, tag => { links.push(tag.trim()); return ''; });
+      const page = html.replace(/\s*<link rel="stylesheet"[^>]*href="\.?\/assets\/[^"]+\.css"[^>]*>/g, tag => { links.push(tag.trim()); return ''; });
       if (!links.length) return html;
       const app = /<div id="app"[^>]*><\/div>/;
       if (!app.test(page)) throw new Error('index.html has no <div id="app"></div> for the stylesheet to follow (vite.config.ts impact-style-after-app)');
@@ -50,6 +52,12 @@ export default defineConfig({
       this.emitFile({ type: 'asset', fileName: 'credits.html', source: creditsPage({ date: builtOn, commit: sourceCommit, software: bundledPackages(modules) }, readCredits(root)) });
     },
   }],
+  // The bundle's own addresses relative to the page (index.html's script, module preloads, stylesheet and icons, the chunks'
+  // imports of each other, the stylesheet's url()s), so a build works served under a folder of its own: Player Two serves
+  // each build under /~<build>/ and answers a root address with a redirect that is never cached, and a stale tab's
+  // root-addressed chunk with the newest build's. At a site's root they resolve as before. The game's own /assets/
+  // addresses go inside the page's folder at run time: src/loading/siteBase.ts.
+  base: './',
   define: { 'import.meta.env.VITE_BUILD_SHA': JSON.stringify(sourceCommit) },
   optimizeDeps: { entries: ['index.html'] },
   server: { port: 5173, strictPort: true, watch: { ignored: [heavy] }, proxy: {

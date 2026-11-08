@@ -165,12 +165,12 @@ const OWN: Readonly<Partial<Record<FighterId, Partial<AwakenedPower>>>> = {
   ampere: { arcs: 0x35ff8a },
   // furnace flame is worn: his body burns, and that is a flame.
   bellows: { shell: 'flame', motes: ['ember', 0xffc060, 0xe8421a] },
-  // Explosion: sparks popping at the palms. Half-Cold Half-Hot: frost off him (his fire is his body casting's).
+  // Explosion: sparks popping at the palms. Fire and frost: frost off him (his fire is his body casting's).
   pyroclast: { motes: ['pop', 0xffd27a, 0xff791e] }, tancho: { motes: ['frost', 0xf4ffff, 0x8fe0f5] },
   // Inheritance's embers: wind and steam off a body past its limit, and no aura.
   'full-beam': { motes: ['steam', 0xfffbee, 0xd8c890] },
   // ----- Black Snow. (Yodaka's flame and Asahi's sun are the row's; Sekka is a demon, with no breath: the
-  // snow of his Compass Needle drifts round him.)
+  // snow of his Aurora Shards drifts round him.)
   asahi: { motes: ['flame', 0xffa040, 0xff4a10] }, sekka: { motes: ['frost', 0xd8ecff, 0x6a9cff] },
   // ----- Everyone else, by the same rule: what their own story shows, and never Last Sun's flame for want of it.
   // Levin's and Mizuhiki's awakening is drawn as lightning through them: thin, pale, over the gear's gas.
@@ -190,7 +190,7 @@ const OWN: Readonly<Partial<Record<FighterId, Partial<AwakenedPower>>>> = {
   akayuri: { shell: 'curse', onForm: true, colours: [0x14040c, 0xdd2949] }, hisame: { motes: ['frost', 0xffffff, 0x9fe5ff] },
   // The HOUND ARMOR lets the Beast of Darkness out: a black dark off him, edged in the red of its eye.
   gaunt: { shell: 'curse', onForm: true, colours: [0x0a0508, 0xe0202a] },
-  // The Unbound: Violet Balefire, absorbed: black fire on him, edged in the Jagan's violet. (His form's body too
+  // The Unbound: Violet Balefire, absorbed: black fire on him, edged in the third eye's violet. (His form's body too
   // is drawn like his own.)
   hikui: { shell: 'curse', onForm: true, colours: [0x08050c, 0x9a55e0] },
   // The HOLLOW CROWN's shadow: black, edged in violet.

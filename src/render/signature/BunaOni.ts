@@ -51,7 +51,7 @@ const mastBreakerPoints = new WeakMap<Fighter, { bone: THREE.Object3D; local: TH
 export function bunaMastBreakerPoint(fighter: Fighter, out: THREE.Vector3): THREE.Vector3 {
   let held = mastBreakerPoints.get(fighter);
   if (!held) {
-    const bone = fighter.model?.getObjectByName('r_weapon_joint_060');
+    const bone = fighter.model?.getObjectByName('weapon_club_R');
     const mesh = fighter.model?.getObjectByName('weapon_buna_right_hand') as THREE.SkinnedMesh | undefined;
     if (!bone || !mesh?.isSkinnedMesh) return out.copy(fighter.handR);
     const inverse = new THREE.Matrix4().copy(bone.matrixWorld).invert(), point = new THREE.Vector3(), local = new THREE.Vector3();

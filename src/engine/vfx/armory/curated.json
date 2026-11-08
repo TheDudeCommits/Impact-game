@@ -479,7 +479,7 @@
   "worlds": [
    "dust-sea"
   ],
-  "note": "Basilissa's Mero Mero fruit: a ray of spiralling hearts that turns the target to stone."
+  "note": "Basilissa's heart fruit: a ray of spiralling hearts that turns the target to stone."
  },
  "edge_palmblast": {
   "materials": [
@@ -617,7 +617,7 @@
   "worlds": [
    "dust-sea"
   ],
-  "note": "Psyche's Hana Hana: flowers open and arms sprout to clutch."
+  "note": "Psyche's blooming arms: flowers open and arms sprout to clutch."
  },
  "seal_tentacles": {
   "materials": [

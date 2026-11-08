@@ -16,8 +16,8 @@ const clamp=(v:number)=>Math.max(0,Math.min(1,v));
 const PETAL=stageLook(0xfff5fa,0xff8db5,0xa8325e),HAKUTEI=stageLook(0xffffff,0xffe9f3,0xe0b8cc);
 const HOT=new THREE.Color(2.2,.62,1.12),HOT_PALE=new THREE.Color(2.4,1.45,1.8),HOT_WHITE=new THREE.Color(2.5,2.4,2.6);
 const HEAVY=SHIDARE_MOVES.heavy,SPECIAL=SHIDARE_MOVES.special,ULT=SHIDARE_MOVES.ultimate;
-/** Last Petal's own clock (seconds into the move): the opener, the second blow (Kageyoshi's rows scatter and
- *  Gokei begins to close), the last. */
+/** Last Petal's own clock (seconds into the move): the opener, the second blow (the blade rows scatter and
+ *  the sphere begins to close), the last. */
 export const SHIDARE_STEEL_PETAL_BEATS=Object.freeze({opener:ULT.contacts[0],close:ULT.contacts[1],final:ULT.contacts[2],end:ULT.duration});
 const SCATTER=0,VORTEX=1;
 /** Petals thrown off a blow, with a life of their own: scattered outward (SCATTER) or wound round what Scatter struck (VORTEX). */
@@ -59,7 +59,7 @@ export class ShidareSteelPetalCut{
  constructor(scene:THREE.Scene,private kit:Pick<VfxKit,'budget'>&Partial<VfxKit>){
   this.stage=MoveStage.for(scene,kit);
   this.petals=new PetalBatch(scene,'petal-cloud',petalGeometry(),SHIDARE_PETAL_LIMITS.petals);
-  this.blades=new PetalBatch(scene,'senkei-blades',new THREE.ConeGeometry(.055,1,4,1),SHIDARE_PETAL_LIMITS.blades);
+  this.blades=new PetalBatch(scene,'petal-blades',new THREE.ConeGeometry(.055,1,4,1),SHIDARE_PETAL_LIMITS.blades);
   this.rings=new PetalBatch(scene,'release-rings',new THREE.RingGeometry(.97,1,40),SHIDARE_PETAL_LIMITS.rings);this.batches=[this.petals,this.blades,this.rings];
  }
  load(_ids:readonly string[]):Promise<void>{return Promise.resolve();}
@@ -211,7 +211,7 @@ export class ShidareSteelPetalCut{
  /** The blade lit in Steel Petal Cut's pink: a wide stroke with a white line down it. */
  private lit(k:number,wide:number){this.stage.streak(this.root,this.tip,.07*wide,PETAL.main,.5*k);this.stage.streak(this.root,this.tip,.024*wide,PETAL.core,1.15*k);}
  /** LAST PETAL from the confirm to the last blow: the room to night; FULL BLOOM's two rows of blades risen
-  *  out of the floor to either side of the pair; on the second blow they scatter and Gokei closes round the victim as
+  *  out of the floor to either side of the pair; on the second blow they scatter and the sphere closes round the victim as
   *  a sphere of blades; the white gathers on his sword. To either side and round the victim: he is read through it. */
  private readonly gather=(actor:Fighter,g:Gather,elapsed:number,victim:Fighter|undefined)=>{
   const B=SHIDARE_STEEL_PETAL_BEATS;if(elapsed>=B.final+.1)return;
@@ -221,7 +221,7 @@ export class ShidareSteelPetalCut{
   if(dir.lengthSq()<.01){const yaw=actor.state.yaw??0;dir.set(Math.sin(yaw),0,Math.cos(yaw));}dir.normalize();this.side.set(dir.z,0,-dir.x);
   st.dim(.3+.4*build,g.actor,g.target);
   if(rows>.02){
-   // Kageyoshi: a row of blades to either side, each a tapered stroke of pink with a white line down it.
+   // The blade rows: a row of blades to either side, each a tapered stroke of pink with a white line down it.
    for(let r=-1;r<=1;r+=2){
     for(let i=0;i<5;i++){
      const h=(2.7+1.4*hash(seed+i*3+r))*rows;
@@ -235,7 +235,7 @@ export class ShidareSteelPetalCut{
    st.disc(this.p.copy(feet).addScaledVector(dir,1.9),4.6,PETAL.main,.55*rows,SHEEN,1);
   }
   if(close>0&&victim){
-   // Gokei: the blades close round the victim as a sphere, turning.
+   // The sphere: the blades close round the victim as a sphere, turning.
    const centre=bodyCentre(victim,this.m),radius=3.3-1.9*close,count=st.n(110,40);
    st.bubble(centre,radius,PETAL,.45+.4*close);
    for(let i=0;i<count;i++){const y=1-2*(i+.5)/count,rr=Math.sqrt(1-y*y),phi=i*2.39996+time*2.4;this.p.set(centre.x+Math.cos(phi)*rr*radius,centre.y+y*radius,centre.z+Math.sin(phi)*rr*radius);this.q.setFromAxisAngle(UP,phi);this.q2.setFromAxisAngle(FORWARD,time*5+i);this.q.multiply(this.q2);const w=.1+.06*hash(i*1.9);this.petals.add(this.p,this.q,w,w*1.7,1,i%3?HOT:HOT_PALE,.9);}

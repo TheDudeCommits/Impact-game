@@ -1,4 +1,5 @@
 import type { GameSnapshot } from '../../game/types';
+import { siteUrl } from '../../loading/siteBase'; // asset addresses inside the page's own folder
 import {riftOf} from '../../game/moba/model';
 import { objectiveOf, RULES } from '../../game/objectives/model';
 import { KO_HEAL, MAX_PLAYERS, MIN_MATCH_FIELD } from '../../game/moves';
@@ -56,7 +57,7 @@ export interface ModeInfo {
 }
 
 export type Panel = { src: string; at?: string } | { move: 'ultimate' | 'special' | 'awakening' };
-const art = (id: string, at?: string): Panel => ({ src: `/assets/home/modes/${id}.webp`, at });
+const art = (id: string, at?: string): Panel => ({ src: siteUrl(`/assets/home/modes/${id}.webp`), at });
 const revive = RULES.heroReviveSeconds, villains = RULES.villainMultiplier;
 export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
   'rift-war': {

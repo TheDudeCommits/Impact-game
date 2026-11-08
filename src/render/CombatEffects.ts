@@ -115,7 +115,7 @@ const KNIFE_THROWERS = new Set<FighterId>(['oro']);
 /** A cast that is that knife throw: never a combo ender, which is drawn as its own move (ENDER_THROWN for an ender
  *  that is steel thrown), not as LORD ORO's heavy - SwordSpiritEffects dresses only the heavy's flights. */
 const clockHandKnives = (event: CombatEvent) => !event.branch && !!event.fighter && KNIFE_THROWERS.has(event.fighter);
-/** Kagari's ultimate is a bomb drawn as a sun: the Great Flame Commandment is a
+/** Kagari's ultimate is a bomb drawn as a sun: the KAGUTSUCHI is a
  *  ball of fire the size of a house lifted over his head and thrown. Every
  *  other flame thrower's projectile is a fist or a foot with fire on it, so
  *  the ember-sized charge and the fist-sized flight are wrong for it. */
@@ -575,7 +575,7 @@ export class CombatEffects {
     return material;
   }
 
-  /** AreaTelegraph selects authored area events: Flame Tiger impact or Chohan's physical sweep.
+  /** AreaTelegraph selects authored area events: Yodaka's area impact or Chohan's physical sweep.
    * Forward only to that signature, without generic flight/charge or Forge cues. */
   handleAuthoredAreas(events: readonly CombatEvent[], fighters: ReadonlyMap<string, Fighter>) {
     for (const event of events) if (event.slot === 'area' && (
@@ -1921,7 +1921,7 @@ export class CombatEffects {
    *  rings racing down it, and at the far end a burst that does not stop
    *  until the beam does. It lights the room from both ends and the middle. */
   private drawBeam(c: CastView, move: MoveDefinition, age: number, time: number, el: Element, actor?: Fighter) {
-    // Tsubute uses a ranged confirm volume in the simulation. His three Kabuto
+    // Tsubute uses a ranged confirm volume in the simulation. His three slingshot
     // releases are seed tracers, never the common sustained energy tube.
     if(c.event.fighter==='tsubute'&&rosterFlight(c.event.fighter,c.event.slot,c.event.branch,c.event.actorId))return;
     const key = c.event.branch ? `${c.event.fighter}:${c.event.branch}` : `${c.event.fighter}:${c.event.slot}`, kit = this.kit, look = BEAM_LOOKS[key] ?? (BEAM_LOOKS[key] = { shell: el.rim, edge: el.ink, light: el.light, spike: el.spike, scale: .85 });

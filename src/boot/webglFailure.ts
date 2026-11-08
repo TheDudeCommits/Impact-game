@@ -59,7 +59,7 @@ export function showGraphicsFailure(parent: HTMLElement, agent = typeof navigato
 .graphics-failure li{margin:4px 0}
 .graphics-failure button{font:italic 900 18px/1 Impact,'Arial Narrow',sans-serif;letter-spacing:.04em;background:#cc202b;color:#fff;border:3px solid #111;padding:10px 26px;cursor:pointer;box-shadow:3px 3px 0 #111}
 .graphics-failure button:focus-visible{outline:3px solid #111;outline-offset:3px}
-</style><div><img src="/favicon.svg" alt=""><h1>3D graphics couldn’t start</h1>
+</style><div><img src="favicon.svg" alt=""><h1>3D graphics couldn’t start</h1>
 <p>${TITLE} draws its fights with WebGL, and this browser didn’t give the game a 3D graphics context.</p>
 <p><b>To fix it:</b></p><ol></ol><button type="button">RETRY</button></div>`;
   const list = box.querySelector('ol')!;

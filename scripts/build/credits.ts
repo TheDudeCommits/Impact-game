@@ -6,7 +6,8 @@
  *  repository never disagree. */
 import fs from 'node:fs';
 import path from 'node:path';
-import { CONTACT, FAN_MADE, PRIVACY_PAGE, SITE_TITLE } from '../../src/ui/legalLinks';
+import { CONTACT, FAN_MADE, PRIVACY_PAGE, REPO_PAGE, SITE_TITLE, TERMS_PAGE } from '../../src/ui/legalLinks';
+import { UNOPENABLE_SOURCES } from '../../src/ui/legalCredits';
 
 /** An npm package the client bundle carries. */
 export interface Software { readonly name: string; readonly version: string; readonly license: string; readonly author?: string; readonly url?: string; readonly text?: string }
@@ -45,7 +46,8 @@ export function declaredPackages(root = process.cwd()): Software[] {
 
 
 const esc = (text: string) => text.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
-const link = (url: string | undefined, html: string) => url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${html}</a>` : html;
+/** A source a visitor cannot open (legalCredits.ts UNOPENABLE_SOURCES) is named, not linked. */
+const link = (url: string | undefined, html: string) => url && !UNOPENABLE_SOURCES.has(url) ? `<a href="${esc(url)}" target="_blank" rel="noopener">${html}</a>` : html;
 
 /** CREDITS.md as the repository has it now (empty when there is none). */
 export function readCredits(root = process.cwd()): string {
@@ -188,16 +190,16 @@ export function creditsPage(build: CreditsBuild, credits = readCredits()): strin
 <meta name="theme-color" content="#cc202b">
 <title>Credits — ${esc(SITE_TITLE)}</title>
 <meta name="description" content="The artists, musicians, sound designers and programmers whose shared work the game is built with.">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>${STYLE}</style>
 </head>
 <body>
 <main>
-<a class="back" href="/">← BACK TO THE GAME</a>
+<a class="back" href="index.html">← BACK TO THE GAME</a>
 <h1>CREDITS</h1>
 <div class="short"><p>${esc(FAN_MADE)}</p><p>Creators: to correct or add a credit, email <a href="mailto:${CONTACT}">${CONTACT}</a>. Rights holders: to request the removal of any material, email the same address.</p></div>
 ${parts.join('\n')}
-<footer>Updated ${esc(build.date)}${build.commit ? ` · build ${esc(build.commit.slice(0, 9))}` : ''} · <a href="${PRIVACY_PAGE}">Privacy</a> · <a href="mailto:${CONTACT}">${CONTACT}</a></footer>
+<footer>Updated ${esc(build.date)}${build.commit ? ` · build ${esc(build.commit.slice(0, 9))}` : ''} · <a href="${PRIVACY_PAGE}">Privacy</a> · <a href="${TERMS_PAGE}">Terms of use</a> · <a href="${REPO_PAGE}">Source code</a> · <a href="mailto:${CONTACT}">${CONTACT}</a> · <a href="index.html">Back to the game</a></footer>
 </main>
 </body>
 </html>

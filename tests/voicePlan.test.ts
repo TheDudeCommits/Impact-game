@@ -468,12 +468,12 @@ describe('the awakening lines (the overnight pass, 9 October)', () => {
   // not a fabricated spoken name for every focus/awakening.
   const ENTRY_CUES: Partial<Record<FighterId, AudioCue>> = {
     chohan:'vo-chohan-power-gap',
-    tsubute:'vo-tsubute-resolve', aqrab:'vo-aqrab-to-sand', yodaka:'vo-yodaka-heart-ablaze',
+    tsubute:'vo-tsubute-resolve', aqrab:'vo-aqrab-to-sand', yodaka:'vo-yodaka-burn-out',
     'psyche':'vo-psyche-violet-swarm','ovid':'vo-ovid-resolve',hawser:'vo-hawser-stronger',rotfalke:'vo-rotfalke-sync',bonsho:'vo-bonsho-prayer',murex:'vo-murex-awaken',kinu:'vo-kinu-awakening','madake':'vo-madake-resolve',akayuri:'vo-akayuri-resolve',hagure:'vo-hagure-awakening',hisame:'vo-hisame-awaken',mizuhiki:'vo-mizuhiki-own-will','shibuichi':'vo-shibuichi-resolve','rakucho':'vo-rakucho-awakening',irbis:'vo-irbis-awaken',shidare:'vo-shidare-unsealed',
-    shanxiao:'vo-shanxiao-unbound-fury', tancho:'vo-tancho-phosphor', bellows:'vo-bellows-stoked',
+    shanxiao:'vo-shanxiao-unbound-fury', tancho:'vo-tancho-red-crown', bellows:'vo-bellows-stoked',
     mikage:'vo-mikage-hackles-up', akaito:'vo-akaito-ring-pact', shijima:'vo-shijima-unsealed', tempo:'vo-tempo-awakening',
-    oyashio:'vo-oyashio-sea', adad:'vo-adad-awakening', senko:'vo-senko-speed', buna:'vo-buna-oden',
-    ume:'vo-ume-grand-champion', lanthorn:'vo-lanthorn-awakening', highsun:'vo-highsun-sunshine', torsion:'vo-torsion-serious', kubiwa:'vo-kubiwa-awakening', onigawara:'vo-onigawara-awaken', minase:'vo-minase-sage', hinomoto:'vo-hinomoto-time-ripe',amagoi:'vo-amagoi-awakening','shakudo':'vo-shakudo-serious', hikui:'vo-hikui-awaken', tokan:'vo-tokan-justice', strappado:'vo-strappado-showstopper', unari:'vo-unari-awakening', barrow:'vo-barrow-strongest', sashigane:'vo-sashigane-overtime', gosu:'vo-gosu-awakening',
+    oyashio:'vo-oyashio-sea', adad:'vo-adad-awakening', senko:'vo-senko-speed', buna:'vo-buna-wake-the-winter',
+    ume:'vo-ume-grand-champion', lanthorn:'vo-lanthorn-awakening', highsun:'vo-highsun-noon', torsion:'vo-torsion-serious', kubiwa:'vo-kubiwa-awakening', onigawara:'vo-onigawara-awaken', minase:'vo-minase-sage', hinomoto:'vo-hinomoto-time-ripe',amagoi:'vo-amagoi-awakening','shakudo':'vo-shakudo-serious', hikui:'vo-hikui-awaken', tokan:'vo-tokan-justice', strappado:'vo-strappado-showstopper', unari:'vo-unari-awakening', barrow:'vo-barrow-strongest', sashigane:'vo-sashigane-no-margin', gosu:'vo-gosu-awakening',
     kusushi:'vo-kusushi-grand-champion', hakushi:'vo-hakushi-awaken',
     suzuran:'vo-suzuran-resolve', wataame:'vo-wataame-awakening',
   };

@@ -20,7 +20,7 @@ function groundRings(mesh:THREE.InstancedMesh){
  for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,m);const p=new THREE.Vector3().setFromMatrixPosition(m);if(p.y<.1)rows.push(p);}
  return rows;
 }
-describe('Strappado bounded manual threads and God Thread presentation', () => {
+describe('Strappado bounded manual threads and Curtain Call presentation', () => {
   it('uses native finger and dual-hand contact without recursive strike queries', () => {
     const h = harness(); try {
       h.actor.strikePoint = () => { throw new Error('Recursive strike query'); };

@@ -9,16 +9,16 @@ import { AreaTelegraph } from '../src/render/AreaTelegraph';
 import { CombatEffects } from '../src/render/CombatEffects';
 import { RosterSignatureSet } from '../src/render/signature/RosterSignatureSet';
 import { ForgeFxDirector } from '../src/render/vfx/armory/forgeFx';
-import { yodakaFlameTigerReady } from '../src/render/signature/YodakaFlameTiger';
+import { yodakaFireOwlReady } from '../src/render/signature/YodakaFireOwl';
 import { lookLead } from '../src/engine/sim/areaDamage';
 import looks from '../src/engine/sim/areaLooks.json';
-import { ORIGINALS } from '../src/originals/roster'; // originals fork: Yodaka's slot keeps the default area look, main's Flame Tiger drawing unloaded
+import { ORIGINALS } from '../src/originals/roster'; // Yodaka's slot keeps the default area look; the old area drawing never loads
 
 const cleanups: (() => void)[] = [];
 afterEach(() => {
   for (const clean of cleanups.splice(0)) clean();
   setActiveKit(undefined, 'yodaka'); vi.restoreAllMocks();
-  expect(yodakaFlameTigerReady()).toBe(false);
+  expect(yodakaFireOwlReady()).toBe(false);
 });
 const event = (kind: CombatEvent['kind'], serverTime: number, id: number): CombatEvent => ({
   id, kind, serverTime, actorId: 'r', fighter: 'yodaka', slot: 'area',

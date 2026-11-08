@@ -12,7 +12,7 @@ export function lanthornStrikeJoint(action:string,clip?:string):'LeftHand'|'Righ
 export const LANTHORN_LAMPBLACK_LIMITS=Object.freeze({flames:160,strokes:144,crescents:64,impacts:24,trails:16});
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),RIGHT=new THREE.Vector3(1,0,0),INK=new THREE.Color(0x130d20),VIOLET=new THREE.Color(1.5,.5,2.9),MAGENTA=new THREE.Color(2.3,1,3.1),WHITE=new THREE.Color(0xf7eaff);
 /** LAMPBLACK: flame that is black, lit only at its violet edge (the stage's darkness: it covers what is behind it).
- *  Full Counter is the blow it was struck with, thrown back: light, white going to violet, breaking like a mirror. */
+ *  The counter is the blow it was struck with, thrown back: light, white going to violet, breaking like a mirror. */
 const HELL=STAGE.dark,COUNTER=stageLook(0xffffff,0xd9a8ff,0x7a3fd0,{heart:.5});
 /** The violet at LAMPBLACK's edge, as light: what a black flame throws on the room when it goes off. */
 const EDGE=stageLook(0xf0d8ff,0xb060ff,0x5a1fa0);
@@ -113,7 +113,7 @@ export class LanthornLampblack{
     const seed=(s.actionSeq??0)*4.1,power=Math.sin(Math.PI*Math.min(1,s.actionTime)),tip=lanthornBladePoint(f,this.hand)?this.hand:f.strikePoint(this.hand);
     if(s.action==='light'){st.glow(tip,.26,HELL.core,.6*power);st.tongue(this.p.copy(tip).setY(tip.y+.15),UP,.3,.4+.5*power,HELL,power,seed);st.light(tip,1.9,HELL,.2*power);}
     else if(s.action==='heavy'&&!s.branch&&elapsed<HEAVY.contacts[0]){
-     // Full Counter held: a shell of light on the blade, waiting for the blow.
+     // The counter held: a shell of light on the blade, waiting for the blow.
      const k=clamp(elapsed/HEAVY.contacts[0]);st.bubble(tip,.3+.25*k,COUNTER,.4+.6*k);st.charge(tip,COUNTER,.16,k,seed);
     }else if(s.action==='special'&&!s.branch&&elapsed<SPECIAL.contacts[0]){
      // Lampblack Edge's wind-up: the darkness pours out round his feet and the black flame gathers in his right

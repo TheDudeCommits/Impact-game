@@ -1,5 +1,5 @@
 import { chohanPhysicalArea } from './signature/ChohanAllIn';
-import { yodakaFlameTigerReady } from './signature/YodakaFlameTiger';
+import { yodakaFireOwlReady } from './signature/YodakaFireOwl';
 import * as THREE from 'three';
 import { FIGHTERS } from '../config';
 import { MOVES, type MoveDefinition } from '../game/moves';
@@ -208,7 +208,7 @@ export class AreaTelegraph {
     this.circles.set(key, circle);
     // Its look is fetched now, so it is built by the time it is laid (the runtime loads on demand).
     const look = circle.look = this.lookOf(event);
-    if (look && !circle.monsoon && (!circle.tigerCandidate || !yodakaFlameTigerReady())) void forgeFxDirector()?.prepare(look.effect);
+    if (look && !circle.monsoon && (!circle.tigerCandidate || !yodakaFireOwlReady())) void forgeFxDirector()?.prepare(look.effect);
     return circle;
   }
   private hostile(actorId: string) {
@@ -239,7 +239,7 @@ export class AreaTelegraph {
       if (circle.monsoon) { circle.laid = true; circle.look = undefined; this.monsoon(circle, event.serverTime - .75, event.serverTime); }
       else if (circle.physical) {
         circle.laid = true; circle.look = undefined; onAuthoredImpact?.(event);
-      } else if (circle.tigerCandidate && this.tigerCandidate(event) && yodakaFlameTigerReady() && onAuthoredImpact) {
+      } else if (circle.tigerCandidate && this.tigerCandidate(event) && yodakaFireOwlReady() && onAuthoredImpact) {
         circle.laid = true; circle.look = undefined;
         onAuthoredImpact(event);
       } else {

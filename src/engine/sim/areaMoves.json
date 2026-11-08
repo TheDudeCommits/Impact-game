@@ -79,7 +79,7 @@
       "anim": {
         "clip": "Brasier: Coup de Feu"
       },
-      "voice": "vo-kosho-spectre",
+      "voice": "vo-kosho-salamandre",
       "ja": "ブラジエ・サラマンドル",
       "card": "Salamandre"
     }
@@ -237,7 +237,7 @@
       "telegraph": 0.8,
       "look": "zone",
       "anim": "special",
-      "voice": "vo-ward-takt",
+      "voice": "vo-ward-rise",
       "ja": "手術室・浮揚"
     }
   },
@@ -336,7 +336,7 @@
       "anim": {
         "clip": "Gavel Drop"
       },
-      "voice": "vo-shakugo-kazan-bakuhatsu",
+      "voice": "vo-shakugo-molten-prison",
       "ja": "刑・溶獄",
       "card": "Molten Prison"
     }
@@ -352,7 +352,7 @@
       "telegraph": 0.85,
       "look": "zone",
       "anim": "special",
-      "voice": "vo-shidare-senkei",
+      "voice": "vo-shidare-steel-avenue",
       "ja": "鋼並木"
     }
   },
@@ -603,7 +603,7 @@
       "anim": {
         "clip": "Leave Me Alone"
       },
-      "voice": "vo-murex-nigecha-dame",
+      "voice": "vo-murex-wont-miss",
       "ja": "炉心閃光"
     }
   },
@@ -642,7 +642,7 @@
       "anim": {
         "clip": "Autumn Stag"
       },
-      "voice": "vo-madake-evening-beast",
+      "voice": "vo-madake-autumn-stag",
       "ja": "秋の鹿"
     }
   },
@@ -932,10 +932,10 @@
       "look": "burst",
       "hits": 1,
       "anim": {
-        "clip": "Flame Tiger",
+        "clip": "Talon Stoop",
         "full": true
       },
-      "voice": "vo-yodaka-flame-tiger",
+      "voice": "vo-yodaka-fire-owl",
       "ja": "五番・火梟",
       "card": "Fire Owl"
     }
@@ -1084,7 +1084,7 @@
       "anim": {
         "clip": "Sunken Bell"
       },
-      "voice": "vo-suzuran-protective-palms",
+      "voice": "vo-suzuran-ring-out",
       "ja": "鈴の庭"
     }
   },
@@ -1471,7 +1471,7 @@
       "anim": {
         "clip": "Crimson Lightning Chop"
       },
-      "voice": "vo-sorrel-new-world-blow",
+      "voice": "vo-sorrel-crimson-wake",
       "ja": "紅の航跡",
       "card": "Crimson Wake"
     }
@@ -1777,7 +1777,7 @@
         "clip": "Spate",
         "full": true
       },
-      "voice": "vo-tsubute-green-star",
+      "voice": "vo-tsubute-river-rise",
       "ja": "鉄砲水"
     }
   },

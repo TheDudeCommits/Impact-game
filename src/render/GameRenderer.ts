@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { siteUrl } from '../loading/siteBase';
 import { DREAM_IMPACT } from './dreamFlag';
 import { VfxKit } from './vfx/VfxKit';
 import { originalLiquid } from '../originals/grounds';
@@ -34,6 +35,11 @@ import { loadInkImpacts } from './vfx/SparkField';
 import { VFX } from './vfxLevel';
 import { glRect, halves, type Rect } from '../couch/split';
 import { ContextGuard } from './contextGuard';
+
+// Every three loader made without a manager of its own (models, textures, files) asks for a root /assets/ address inside the
+// page's own folder: a build served under a folder of its own (Player Two's) answers a root address with a redirect on every
+// request (loading/siteBase.ts). At a site's root, nothing changes.
+THREE.DefaultLoadingManager.setURLModifier(url => siteUrl(url));
 
 /** How far the sun's shadow box reaches from the fight, per quality: tight
  *  enough for crisp, stable texels, wide enough for a lock-on shot. */

@@ -18,7 +18,7 @@ export const BONSHO_BODHISATTVA_ASSETS=Object.freeze([ORIGINALS.bonsho?.sculptur
 export const BONSHO_BODHISATTVA_LIMITS=Object.freeze({owners:4,armsPerSide:6,flights:8,confirmations:16});
 export const isBonsho=(id:string|undefined)=>id==='bonsho';
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),DOWN=new THREE.Vector3(0,-1,0),TAU=Math.PI*2;
-/** The Hundred-Type Guanyin's light: white-gold going to the gold of the statue, bronze where it cools. */
+/** The Bodhisattva's light: white-gold going to the gold of the statue, bronze where it cools. */
 const GOLD=stageLook(0xfffbe6,0xf2c14e,0x7a4a12);
 const HEAVY=BONSHO_MOVES.heavy,SPECIAL=BONSHO_MOVES.special,ULT=BONSHO_MOVES.ultimate,ULT_LAST=ULT.contacts[ULT.contacts.length-1];
 /** Where the sculpture stands by him (metres, in his own frame: beside and a little behind), and how high its halo is. */

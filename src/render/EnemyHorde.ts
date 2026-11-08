@@ -258,7 +258,7 @@ function contactShadow() {
 const _box = new THREE.Box3(), _v = new THREE.Vector3(), _sphere = new THREE.Sphere(), _frustum = new THREE.Frustum(), _matrix = new THREE.Matrix4(), _c = new THREE.Color(), _c2 = new THREE.Color();
 
 const FACE = { normal: /face_normal|normal_face/i, attack: /face_attack|attack_face/i, damage: /face_damage|damage_face/i };
-const VARIANT = /face_(attack|damage|sp\d*)|(attack|damage)_face|hand_(open|par|shigan|shugan|hundredLights|yubisashi|hold|sp_?\d+)|_sp\d*_fist|magma|light_(leg|shoes)|wing_open|_ele_|hair_sp|open_watch|tail_hair/i;
+const VARIANT = /face_(attack|damage|sp\d*)|(attack|damage)_face|hand_(open|par|hundredLights|yubisashi|hold|sp_?\d+)|_sp\d*_fist|magma|light_(leg|shoes)|wing_open|_ele_|hair_sp|open_watch|tail_hair/i;
 type Face = keyof typeof FACE;
 
 class EnemyBody {

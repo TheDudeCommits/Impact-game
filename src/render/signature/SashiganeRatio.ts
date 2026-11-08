@@ -17,7 +17,7 @@ export const isSashiganeRatio=(id:string|undefined)=>id==='sashigane';
 const UP=new THREE.Vector3(0,1,0),FORWARD=new THREE.Vector3(0,0,1),WHITE=new THREE.Color(0xf3fff4),GREEN=new THREE.Color(0x69c9a7),AMBER=new THREE.Color(0xecc77b),INK=new THREE.Color(0x1e332d);
 const clamp=(x:number)=>Math.max(0,Math.min(1,x));
 const hash=(x:number)=>{const v=Math.sin(x*12.9898+78.233)*43758.5453;return v-Math.floor(v);};
-/** The Ratio Technique's rule in linear light: the pale teal of its line and its divisions (a white heart to every
+/** The ratio marks' rule in linear light: the pale teal of its line and its divisions (a white heart to every
  *  stroke of it), and the amber of the seventh mark, the weak point it makes, and of Overtime. */
 const RATIO=stageLook(0xf3fff4,0x69c9a7,0x1e332d,{heart:.5}),CRITICAL=stageLook(0xfff6e0,0xe3ad3c,0x1a1a1a);
 const HEAVY=SASHIGANE_MOVES.heavy,SPECIAL=SASHIGANE_MOVES.special,ULT=SASHIGANE_MOVES.ultimate,TAU=Math.PI*2;

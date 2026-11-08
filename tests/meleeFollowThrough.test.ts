@@ -4,11 +4,11 @@ import { createRapierCollision } from '../src/game/rapierCollision';
 import { CONTACT_GAP, MAX_APPROACH, MOVES, PLAYER_RADIUS, PUSH_RADIUS, meleeReach } from '../src/game/moves';
 import { ENVIRONMENT_COLLIDERS, UME_TREES } from '../src/game/environmentLayout';
 import type { CombatEvent, FighterId, Vec3 } from '../src/game/types';
-import { METEOR_COMBINATION, withMove } from './retiredMoves';
+import { THREE_BLOW_STRING, withMove } from './retiredMoves';
 
 // Round 3: Taisei's heavy is Cloudstep, one kick after a teleport.
 // The heavy-string cases below pin the approach Taisei alone makes between the
-// blows of a melee string, so they put the retired Meteor Combination back;
+// blows of a melee string, so they put the retired three-blow string back;
 // tests/cloudstep.test.ts covers the new move's own approach.
 
 async function fixture(gap = 1.65, fighter: FighterId = 'taisei', origin: Vec3 = { x: 0, y: 0, z: 0 }) {
@@ -42,7 +42,7 @@ describe('a melee blow lands on a body that is actually there', () => {
     } finally { sim.dispose(); }
   });
 
-  it('follows real recoil between later heavy phases and stops approaching after the last contact', () => withMove('taisei', 'heavy', METEOR_COMBINATION, async () => {
+  it('follows real recoil between later heavy phases and stops approaching after the last contact', () => withMove('taisei', 'heavy', THREE_BLOW_STRING, async () => {
     const sim = await fixture();
     try {
       cast(sim); const hits: CombatEvent[] = []; let lastContactAttackerZ: number | undefined, firstContactTargetZ = 0;
@@ -76,7 +76,7 @@ describe('a melee blow lands on a body that is actually there', () => {
     } finally { sim.dispose(); }
   }));
 
-  it('leaves a distant locked target untouched and does not slide forward for the rest of a whiffed combo', () => withMove('taisei', 'heavy', METEOR_COMBINATION, async () => {
+  it('leaves a distant locked target untouched and does not slide forward for the rest of a whiffed combo', () => withMove('taisei', 'heavy', THREE_BLOW_STRING, async () => {
     const sim = await fixture(6);
     try {
       cast(sim); let endOfOpeningZ = 0; const hits: CombatEvent[] = [];
@@ -129,7 +129,7 @@ describe('a melee blow lands on a body that is actually there', () => {
     } finally { sim.dispose(); }
   });
 
-  it('respects a real source prop capsule sweep and wall visibility while a target is selected behind it', () => withMove('taisei', 'heavy', METEOR_COMBINATION, async () => {
+  it('respects a real source prop capsule sweep and wall visibility while a target is selected behind it', () => withMove('taisei', 'heavy', THREE_BLOW_STRING, async () => {
     // The trunk of the ume planted at (-34, 36): a post 0.4 m wide and
     // 2.68 m high, read from the collider list rather than restated here,
     // because it stands where the tree's stem is drawn, not on the tree's
@@ -150,7 +150,7 @@ describe('a melee blow lands on a body that is actually there', () => {
     } finally { sim.dispose(); }
   }));
 
-  it('does not sweep through a living intervening fighter to reach the locked target', () => withMove('taisei', 'heavy', METEOR_COMBINATION, async () => {
+  it('does not sweep through a living intervening fighter to reach the locked target', () => withMove('taisei', 'heavy', THREE_BLOW_STRING, async () => {
     const sim = await fixture(2.1);
     sim.addPlayer('blocker', 'konta', 'Intervening fighter', false, { x: 0, y: 0, z: 1.05 });
     try {

@@ -9,7 +9,7 @@ import { STAR } from './GlowBatch';
 import { BURN, MoveStage, SHEEN, stageLook, type StageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 
-/** Manual Fish-Man Karate contact/pressure presentation; never a damage owner. */
+/** Manual sea karate contact/pressure presentation; never a damage owner. */
 export const OYASHIO_KARATE_ASSETS: readonly string[] = Object.freeze([]);
 export const OYASHIO_KARATE_LIMITS = Object.freeze({ drops: 96, jets: 24, rings: 96, sprays: 128, impacts: 24, drills: 8 });
 export const OYASHIO_KARATE_BEATS = Object.freeze({ coil: 1.99, charge: 2.6, burst: 3.215, end: 3.63 });
@@ -17,7 +17,7 @@ export const isOyashioKarate = (id: string | undefined) => id === 'oyashio';
 const UP=new THREE.Vector3(0,1,0),FORWARD=new THREE.Vector3(0,0,1),TAU=Math.PI*2;
 /** His water itself, over the bloom threshold where it is foam and light (it was drawn in colours of 1 and under). */
 const BLUE=new THREE.Color(.05,.55,1.05),CYAN=new THREE.Color(.5,1.7,2),FOAM=new THREE.Color(2,2.25,2.3);
-/** Fish-Man Karate as the stage lights it: foam at the heart, the cyan of the DEEP CURRENT round it, cooling to deep
+/** His sea karate as the stage lights it: foam at the heart, the cyan of the DEEP CURRENT round it, cooling to deep
  *  water (his casting's palette); and the floor under it in a deep sea blue with little light. */
 export const SEA:StageLook=stageLook(0xe8fdff,0x42c4df,0x198bb5);
 const DEEP=new THREE.Color(.06,.5,1.1);

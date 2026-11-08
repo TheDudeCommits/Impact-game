@@ -3,7 +3,7 @@ import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 
 /** Manual full-body lightning pressure: glove-led jab, planted kick,
- * aimed index-finger Air Force, and a confirmed three-beat Smash sequence.
+ * aimed index-finger air bullet, and a confirmed three-beat Smash sequence.
  * Awakening changes presentation; lightning never creates automatic attacks. */
 export const AMPERE_MOVES: Record<CoreSlot, MoveDefinition> = {
   light: { name: 'Live Line Jab', duration: .42, contacts: [.152], damage: 21,

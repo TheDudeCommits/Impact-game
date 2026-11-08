@@ -19,11 +19,11 @@ const UP = new THREE.Vector3(0, 1, 0), RIGHT = new THREE.Vector3(1, 0, 0);
 const lin = (r: number, g: number, b: number) => new THREE.Color(r, g, b);
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
 const smooth = (v: number) => { v = clamp(v); return v * v * (3 - 2 * v); };
-/** The Darkness Flame: black fire that covers what is behind it, its licking edge violet (the stage's black flames). */
+/** The witchfire: black fire that covers what is behind it, its licking edge violet (the stage's black flames). */
 const FLAME: StageLook = { core: lin(2.3, 1.25, 3.1), main: lin(.95, .32, 1.95), rim: lin(.3, .08, .62), light: lin(.62, .28, 1.05), element: { spike: 0xe2c8ff, rim: 0x8240e5, light: 0x9a5cff, ink: 0x171020 }, shell: 0x6a2ac8, edge: 0x0c0616, flame: BLACK, dark: true, heart: 0, sphere: STAGE.dark.sphere };
-/** The Jagan's violet: the light the flame throws on a room, and the white-violet line his sword leaves. Its tongues
+/** The third eye's violet: the light the flame throws on a room, and the white-violet line his sword leaves. Its tongues
  *  are the same black flames. */
-const JAGAN: StageLook = { core: lin(2.9, 2.35, 3.3), main: lin(1.3, .48, 2.25), rim: lin(.36, .1, .8), light: lin(.92, .52, 1.38), element: { spike: 0xf4eaff, rim: 0x8240e5, light: 0xa878ff, ink: 0x171020 }, shell: 0x8240e5, edge: 0x2a0e5c, flame: BLACK, dark: false, heart: 0 };
+const WITCH_EYE: StageLook = { core: lin(2.9, 2.35, 3.3), main: lin(1.3, .48, 2.25), rim: lin(.36, .1, .8), light: lin(.92, .52, 1.38), element: { spike: 0xf4eaff, rim: 0x8240e5, light: 0xa878ff, ink: 0x171020 }, shell: 0x8240e5, edge: 0x2a0e5c, flame: BLACK, dark: false, heart: 0 };
 /** The dragon's head: its own colours (black, violet-edged, bone teeth), lit a little past 1 so the grade does not dim it. */
 const HEAD = new THREE.Color(1.3, 1.3, 1.3);
 const HEAVY = HIKUI_MOVES.heavy, SPECIAL = HIKUI_MOVES.special, ULT = HIKUI_MOVES.ultimate;
@@ -35,7 +35,7 @@ const CUT = 0, SEVERED = 1, RISE = 2;
 type Dragon = { actor: string; target: string; seq: number; final: boolean; floor: number };
 type Mark = { kind: number; born: number; life: number; size: number; seed: number; at: THREE.Vector3; dir: THREE.Vector3; floor: number; live: boolean };
 
-export class HikuiDarknessFlame {
+export class HikuiWitchfire {
   private readonly stage: MoveStage;
   private readonly heads: Roster96Batch;
   private texture?: THREE.Texture; private loading?: Promise<void>;
@@ -104,24 +104,24 @@ export class HikuiDarknessFlame {
     const dir = this.dir;
     if (actor) { dir.subVectors(point, actor.group.position).setY(0); if (dir.lengthSq() < .01) dir.set(Math.sin(actor.state.yaw ?? 0), 0, Math.cos(actor.state.yaw ?? 0)); dir.normalize(); } else dir.set(0, 0, 1);
     const ground = this.ground.set(point.x, floor, point.z);
-    if (e.slot === 'light') { st.burst(point, JAGAN, .45, t, { dir, floor, clean: true }); return; }
+    if (e.slot === 'light') { st.burst(point, WITCH_EYE, .45, t, { dir, floor, clean: true }); return; }
     if (e.slot === 'heavy') {
       // Witchfire Blade: the upward cut through the body, and the black fire it goes up in.
       const big = e.branch ? .85 : 1;
       this.mark(CUT, point, dir, floor, t, .32, 1.5 * big);
       // (Small and brief under the cut, and no column on the body: the one it struck is read again within a third of a
       // second. The black fire is the arc's, and what is left on the floor.)
-      st.burst(point, JAGAN, .62 * big, t, { dir, floor });
+      st.burst(point, WITCH_EYE, .62 * big, t, { dir, floor });
       st.scar(ground, FLAME, 1.7 * big, t + .05, 1.4);
       return;
     }
     if (e.slot === 'special') {
-      if (e.branch === 'airSpecial') { st.burst(point, JAGAN, 2, t, { floor }); st.shock(ground, JAGAN, 4.5, t, .45); st.scar(ground, FLAME, 3.2, t, 1.8); return; }
+      if (e.branch === 'airSpecial') { st.burst(point, WITCH_EYE, 2, t, { floor }); st.shock(ground, WITCH_EYE, 4.5, t, .45); st.scar(ground, FLAME, 3.2, t, 1.8); return; }
       // Heat Haze Cut: the line and its blast on the blow, and the line going up in black fire as he passes.
       const big = e.branch ? .7 : 1;
       this.mark(SEVERED, point, dir, floor, t, .62, big);
-      st.burst(point, JAGAN, 1.9 * big, t, { dir, floor });
-      st.shock(ground, JAGAN, 5.5 * big, t, .45);
+      st.burst(point, WITCH_EYE, 1.9 * big, t, { dir, floor });
+      st.shock(ground, WITCH_EYE, 5.5 * big, t, .45);
       st.erupt(ground, UP, FLAME, .8 * big, 4.8 * big, t + .06, .8);
       st.scar(ground, FLAME, 3.2 * big, t + .03, 1.9);
       return;
@@ -129,18 +129,18 @@ export class HikuiDarknessFlame {
     if (e.slot !== 'ultimate' || e.branch) return;
     if (!final) {
       // The opener is his sword; the second blow is the dragon's first strike.
-      st.burst(point, JAGAN, e.contactIndex ? 1.7 : 1, t, { dir, floor });
-      if (e.contactIndex) { st.shock(ground, JAGAN, 5, t, .5); st.scar(ground, FLAME, 2.2, t + .05, 1.2); } else this.mark(CUT, point, dir, floor, t, .32, 1.4);
+      st.burst(point, WITCH_EYE, e.contactIndex ? 1.7 : 1, t, { dir, floor });
+      if (e.contactIndex) { st.shock(ground, WITCH_EYE, 5, t, .5); st.scar(ground, FLAME, 2.2, t + .05, 1.2); } else this.mark(CUT, point, dir, floor, t, .32, 1.4);
       return;
     }
     if (involvesLocal(e.actorId, e.targetId)) SIGNATURE.screen?.impactFrame?.(.52, point);
     // THE DRAGON comes down: a pillar of black flame the height of the hall where it lands, the dragon rising through
     // it, the violet shock over the floor, and smaller fires thrown out round it a beat after.
     this.mark(RISE, ground, dir, floor, t, .75, 1);
-    st.burst(point, JAGAN, 2.6, t, { dir, floor });
+    st.burst(point, WITCH_EYE, 2.6, t, { dir, floor });
     st.erupt(ground, UP, FLAME, .85, 10, t + .03, .7);
-    st.dome(point, JAGAN, 4.5, t, .5);
-    st.shock(ground, JAGAN, 9, t, .6);
+    st.dome(point, WITCH_EYE, 4.5, t, .5);
+    st.shock(ground, WITCH_EYE, 9, t, .6);
     for (let i = 0; i < 3; i++) { const ang = i * 2.094 + .9; st.erupt(this.a.set(ground.x + Math.cos(ang) * 3.4, floor, ground.z + Math.sin(ang) * 3.4), UP, FLAME, .5, 4.2, t + .14 + i * .05, .45); }
     st.scar(ground, FLAME, 4.8, t + .1, 2);
   }
@@ -163,7 +163,7 @@ export class HikuiDarknessFlame {
         if (elapsed < contact) {
           const k = clamp(elapsed / contact);
           this.wreath(f, k, 1 + .6 * k, seed);
-          st.charge(this.hand, JAGAN, .2, k, seed);
+          st.charge(this.hand, WITCH_EYE, .2, k, seed);
         } else if (elapsed < contact + ARC) {
           const u = (elapsed - contact) / ARC, cut = clamp(u / .35), fade = 1 - u * u;
           this.wreath(f, fade, 1.4, seed);
@@ -171,14 +171,14 @@ export class HikuiDarknessFlame {
           // and does not stand over it.)
           this.p.copy(feet).addScaledVector(heading, .2).setY(feet.y + 1.05);
           this.c.copy(heading).multiplyScalar(.8).addScaledVector(side, .6).normalize(); this.d.copy(UP).addScaledVector(side, -.62).normalize();
-          sweep(st, this.p, this.c, this.d, 2, -.6, -.6 + 2.2 * cut, .24, JAGAN, 1.4 * fade, 11);
+          sweep(st, this.p, this.c, this.d, 2, -.6, -.6 + 2.2 * cut, .24, WITCH_EYE, 1.4 * fade, 11);
           // Black fire standing off the top of the arc: small, so the body it lands on is read under it.
           for (let i = 0, n = st.n(3, 2); i < n; i++) {
             const ang = .7 + .9 * cut * (i + .5) / n;
             this.a.copy(this.p).addScaledVector(this.c, Math.cos(ang) * 2).addScaledVector(this.d, Math.sin(ang) * 2); this.a.y += .2;
             st.tongue(this.a, UP, .3, .7 + .3 * fade, FLAME, fade * (.6 + .4 * i / n), seed + i);
           }
-          st.light(this.a.copy(this.p).addScaledVector(heading, 1.2).setY(feet.y + .5), 4.5, JAGAN, .45 * fade);
+          st.light(this.a.copy(this.p).addScaledVector(heading, 1.2).setY(feet.y + .5), 4.5, WITCH_EYE, .45 * fade);
         }
       } else if (s.action === 'special' && !s.branch) {
         const release = SPECIAL.contacts[0];
@@ -186,13 +186,13 @@ export class HikuiDarknessFlame {
           // Heat Haze Cut's wind-up: afterimages stand where he was, the flame gathers on the blade.
           const k = clamp(elapsed / release);
           this.wreath(f, k, 1 + .5 * k, seed);
-          st.charge(this.hand, JAGAN, .3, k, seed);
+          st.charge(this.hand, WITCH_EYE, .3, k, seed);
           for (let i = 1; i <= 3; i++) {
             // (Beside him and a step back: straight behind him is the lens.)
             const out = (i % 2 ? 1 : -1) * (.45 + .33 * i) * (.5 + .5 * k), ghost = k * (1 - i * .22);
             this.a.copy(feet).addScaledVector(heading, -.22 * i).addScaledVector(side, out).setY(feet.y + .12);
             this.b.copy(this.a).setY(feet.y + 1.5);
-            st.streak(this.a, this.b, .2, JAGAN.main, .55 * ghost); st.streak(this.a, this.b, .06, JAGAN.core, .5 * ghost);
+            st.streak(this.a, this.b, .2, WITCH_EYE.main, .55 * ghost); st.streak(this.a, this.b, .06, WITCH_EYE.core, .5 * ghost);
           }
           st.speed(.3 * k, s.id);
         } else if (elapsed < release + SEVER && !this.marked(SEVERED, time)) {
@@ -204,7 +204,7 @@ export class HikuiDarknessFlame {
         // The opener: his sword, the flame on it.
         const k = clamp(elapsed / FIRST);
         this.wreath(f, k, 1.2, seed);
-        st.charge(this.hand, JAGAN, .26, k, seed);
+        st.charge(this.hand, WITCH_EYE, .26, k, seed);
       }
     }
     for (const d of this.dragons) {
@@ -243,7 +243,7 @@ export class HikuiDarknessFlame {
   private wreath(f: Fighter, k: number, size: number, seed: number) {
     if (k <= .02) return;
     const st = this.stage; this.blade(f);
-    st.streak(this.hand, this.tip, .09, JAGAN.main, .9 * k); st.streak(this.hand, this.tip, .03, JAGAN.core, k);
+    st.streak(this.hand, this.tip, .09, WITCH_EYE.main, .9 * k); st.streak(this.hand, this.tip, .03, WITCH_EYE.core, k);
     this.d.subVectors(this.tip, this.hand).normalize();
     for (let i = 0, n = st.n(4, 2); i < n; i++) {
       const u = (i + .6) / n;
@@ -251,17 +251,17 @@ export class HikuiDarknessFlame {
       this.b.copy(this.d).multiplyScalar(.35).addScaledVector(UP, 1).normalize();
       st.tongue(this.a, this.b, .2 * size, (.34 + .2 * u) * size, FLAME, k * (.7 + .3 * u), seed + i);
     }
-    st.glow(this.tip, .2 * size, JAGAN.main, .6 * k);
-    st.light(this.p.copy(this.hand).lerp(this.tip, .5), 2 + size, JAGAN, .28 * k);
+    st.glow(this.tip, .2 * size, WITCH_EYE.main, .6 * k);
+    st.light(this.p.copy(this.hand).lerp(this.tip, .5), 2 + size, WITCH_EYE, .28 * k);
   }
   /** The sever: one line `reach` metres to either side of `at` along `across`, white-violet in a violet halo. */
   private line(at: THREE.Vector3, across: THREE.Vector3, reach: number, fade: number) {
     if (fade <= .02 || reach <= .05) return;
     const st = this.stage;
     this.a.copy(at).addScaledVector(across, -reach); this.b.copy(at).addScaledVector(across, reach);
-    st.streak(this.a, this.b, .22 * (.4 + .6 * fade), JAGAN.main, 1.2 * fade); st.streak(this.a, this.b, .06 * (.4 + .6 * fade), JAGAN.core, 1.6 * fade);
-    st.glow(at, .5, JAGAN.core, .7 * fade, STAR, .2, 3);
-    st.light(at, 5.5, JAGAN, .55 * fade);
+    st.streak(this.a, this.b, .22 * (.4 + .6 * fade), WITCH_EYE.main, 1.2 * fade); st.streak(this.a, this.b, .06 * (.4 + .6 * fade), WITCH_EYE.core, 1.6 * fade);
+    st.glow(at, .5, WITCH_EYE.core, .7 * fade, STAR, .2, 3);
+    st.light(at, 5.5, WITCH_EYE, .55 * fade);
   }
 
   /** Where the dragon's head is `e` seconds into the ultimate (`out`): out of his right hand and up round him in a
@@ -289,7 +289,7 @@ export class HikuiDarknessFlame {
     // (Never dimmed: black fire is read against a lit floor.)
     st.pool(this.p.copy(feet).setY(d.floor), 2.6 + 3 * g, FLAME, Math.min(1, .3 + g * 1.2), seed);
     this.blade(actor);
-    st.charge(this.hand, JAGAN, .24 + .12 * g, Math.max(.4, g), seed);
+    st.charge(this.hand, WITCH_EYE, .24 + .12 * g, Math.max(.4, g), seed);
     const grown = clamp((elapsed - FIRST) / .5), n = st.n(17, 9), length = n * LAG * grown;
     const head = this.flight(feet, d.floor, elapsed, this.root), a = this.a.copy(head), b = this.b, along = this.c;
     for (let i = 1; i <= n; i++) {
@@ -301,7 +301,7 @@ export class HikuiDarknessFlame {
         along.divideScalar(len);
         const s = i / n, girth = (.5 - .3 * s) * (.55 + .45 * grown);
         st.tongue(this.p.copy(a).lerp(b, .5), along, girth * 1.7, Math.max(.5, len * 2.6), FLAME, .95 - .4 * s, seed + i);
-        st.streak(a, b, girth * .42, JAGAN.main, .8 * (1 - s * .6)); st.streak(a, b, girth * .12, JAGAN.core, .7 * (1 - s));
+        st.streak(a, b, girth * .42, WITCH_EYE.main, .8 * (1 - s * .6)); st.streak(a, b, girth * .12, WITCH_EYE.core, .7 * (1 - s));
         // The fire it sheds: a lick off its back every other stretch.
         if (i % 2 === 0) st.tongue(this.p.copy(b).setY(b.y + girth), UP, girth * 1.3, girth * 2.6, FLAME, .6 - .3 * s, seed + i * 3);
       }
@@ -311,7 +311,7 @@ export class HikuiDarknessFlame {
     // Its head, turned the way it runs.
     this.flight(feet, d.floor, elapsed + .03, this.tip); along.subVectors(this.tip, head); if (along.lengthSq() < 1e-6) along.copy(this.heading); along.normalize();
     this.head(head, along, 1.5 + .9 * grown * (.6 + .4 * g), 1);
-    st.glow(head, 1.1, JAGAN.main, .55); st.light(this.p.copy(head).setY(head.y - .4), 6, JAGAN, .6);
+    st.glow(head, 1.1, WITCH_EYE.main, .55); st.light(this.p.copy(head).setY(head.y - .4), 6, WITCH_EYE, .6);
     if (g > .82) st.speed(.5 * (g - .82) / .18, d.actor, d.target);
   }
   private head(at: THREE.Vector3, along: THREE.Vector3, size: number, alpha: number) {
@@ -327,7 +327,7 @@ export class HikuiDarknessFlame {
       this.d.set(m.dir.z, 0, -m.dir.x).multiplyScalar(.62).addScaledVector(UP, .78).normalize();
       this.a.copy(m.at).addScaledVector(this.d, -reach); this.b.copy(m.at).addScaledVector(this.d, reach);
       // (No light of its own: the blast's is on the body already, and a body lit twice over is not read.)
-      st.streak(this.a, this.b, .2 * (.4 + .6 * fade), JAGAN.main, 1.2 * fade); st.streak(this.a, this.b, .06 * (.4 + .6 * fade), JAGAN.core, 1.6 * fade);
+      st.streak(this.a, this.b, .2 * (.4 + .6 * fade), WITCH_EYE.main, 1.2 * fade); st.streak(this.a, this.b, .06 * (.4 + .6 * fade), WITCH_EYE.core, 1.6 * fade);
       return;
     }
     if (m.kind === SEVERED) {
@@ -347,11 +347,11 @@ export class HikuiDarknessFlame {
     this.p.set(m.at.x, m.floor + climb, m.at.z);
     this.head(this.p, UP, 2.9 - u * .6, 1 - u * u);
     // (Its own light behind it: a black head in a pillar of black fire is read by its edge.)
-    st.glow(this.p, 2.3, JAGAN.main, 1 - u); st.glow(this.p, 1.1, JAGAN.core, .7 * (1 - u), STAR, .2, m.seed);
+    st.glow(this.p, 2.3, WITCH_EYE.main, 1 - u); st.glow(this.p, 1.1, WITCH_EYE.core, .7 * (1 - u), STAR, .2, m.seed);
   }
 
   /** FIRE-EATER's entrance, as it was laid out (black fire coiling round his right arm, the dragon's head
-   *  drawn down into the palm, the Jagan open), in the stage's parts. */
+   *  drawn down into the palm, the third eye open), in the stage's parts. */
   private awakening(f: Fighter, time: number) {
     const st = this.stage, phase = f.state.actionTime, fade = clamp(phase / .15) * clamp((1 - phase) / .17);
     if (fade <= .02) return;
@@ -361,11 +361,11 @@ export class HikuiDarknessFlame {
       this.p.set(hand.x + Math.sin(turn) * r, hand.y - .3 + u * .7, hand.z + Math.cos(turn) * r);
       st.tongue(this.p, UP, .16, .34, FLAME, fade * .8, i);
     }
-    st.glow(hand, .42, JAGAN.main, .6 * fade); st.light(hand, 3, JAGAN, .4 * fade);
+    st.glow(hand, .42, WITCH_EYE.main, .6 * fade); st.light(hand, 3, WITCH_EYE, .4 * fade);
     if (phase > .4 && phase < .78) { this.a.copy(this.heading).setY(.3).normalize(); this.head(this.p.copy(hand).setY(hand.y + .1), this.a, .7 * (1 - clamp((phase - .61) / .17) * .6), fade); }
     const brow = f.drawnJoint?.('Head');
-    if (brow) { brow.getWorldPosition(this.p); this.p.addScaledVector(this.heading, .09); this.p.y += .13; st.glow(this.p, .1, JAGAN.core, fade, STAR, .2, Math.floor(time * 24)); }
-    if (phase > .55) st.disc(this.p.copy(f.group.position), .5 + (phase - .55) * 5, JAGAN.core, fade * .7, WAVE, .96);
+    if (brow) { brow.getWorldPosition(this.p); this.p.addScaledVector(this.heading, .09); this.p.y += .13; st.glow(this.p, .1, WITCH_EYE.core, fade, STAR, .2, Math.floor(time * 24)); }
+    if (phase > .55) st.disc(this.p.copy(f.group.position), .5 + (phase - .55) * 5, WITCH_EYE.core, fade * .7, WAVE, .96);
   }
   reset() {
     for (const d of this.dragons) d.actor = ''; for (const m of this.marks) m.live = false;

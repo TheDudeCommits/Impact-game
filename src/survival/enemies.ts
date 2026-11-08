@@ -292,7 +292,7 @@ ENEMIES.gantry = {
     melee('Millstone Palm', 'heavy', ['_combo_c'], 1.37, .6, 88, { range: 2.5, radius: 1, lunge: 4.5, knockback: 13, stun: .7, guardBreak: true, maxRange: 3.2, rest: 3, telegraph: 'cone', callout: true }),
     melee('Bell-Tower Slam', 'special', ['_skill_a'], 2.4, 1.05, 104, { range: 1.6, radius: 2.8, lunge: 6, close: 7, knockback: 9, maxRange: 8, rest: 5, telegraph: 'ring' }),
   ],
-  hide: /\bweapon_pl|[lr]_weapon|hand_weapon|dendenmushi|wood_pl|icosphere/i,
+  hide: /\bweapon_pl|[lr]_weapon|hand_weapon|wood_pl|icosphere/i,
   clips: withClean(brClips({ intro: ['_opening'], death: ['_lose'], taunt: ['_victory'] })), xp: 18, score: 2400, cost: 6, color: 0xc0903a,
 };
 // Caldera: judgement in a magma fist. Final Sentence: Brimstone Rain comes
@@ -479,13 +479,13 @@ ENEMIES.imago = {
 };
 
 const szClips = (extra: Partial<EnemyClips> = {}): EnemyClips => ({
-  idle: ['STD_G_LP'], run: ['STD_F_LP'], hit: ['bw2_1in0'], down: ['bw2_3HT0'], getup: ['bw1_0DEM', 'STD_G_LP'], stun: ['bw2_1in0'],
-  blown: ['bw2_3HT0'], land: ['bw2_3HT0'], death: ['bw2_3HT0'], dash: ['STD_F_LP'], jump: ['STD_F_LP'], fall: ['STD_F_LP'], taunt: ['MKWME_LP'], intro: ['MKWME_LP'], ...extra,
+  idle: ['stand_loop'], run: ['float_loop'], hit: ['hurt_in'], down: ['hurt_down'], getup: ['hurt_getup', 'stand_loop'], stun: ['hurt_in'],
+  blown: ['hurt_down'], land: ['hurt_down'], death: ['hurt_down'], dash: ['float_loop'], jump: ['float_loop'], fall: ['float_loop'], taunt: ['pose_loop'], intro: ['pose_loop'], ...extra,
 });
-const rush = (n: number) => [`R1_${n}_IN`, `R1_${n}_HT`];
-const RUSH = [...rush(1), ...rush(2), ...rush(3), ...rush(4), ...rush(5), 'R1_5_OT'];
-const smash = (code: string) => [`${code}_1IN`, `${code}_2CG`, `${code}_3HT`, `${code}_4OT`];
-const BLAST = ['ry1_1IN1', 'ry1_2CG1', 'ry1_3HT1', 'ry1_6OT2'];
+const rush = (n: number) => [`rush_${n}_in`, `rush_${n}_hit`];
+const RUSH = [...rush(1), ...rush(2), ...rush(3), ...rush(4), ...rush(5), 'rush_5_out'];
+const smash = (move: string) => [`${move}_1_in`, `${move}_2_charge`, `${move}_3_hit`, `${move}_4_out`];
+const BLAST = ['blast_1_in', 'blast_2_charge', 'blast_3_hit', 'blast_6_out'];
 // The brood: small, quick and many.
 ENEMIES['brood-spawn'] = {
   id: 'brood-spawn', name: 'Brood Spawn', series: 'Last Sun', role: 'fodder', brain: 'swarm',
@@ -500,7 +500,7 @@ ENEMIES['brood-blaster'] = {
   id: 'brood-blaster', name: 'Brood Blaster', series: 'Last Sun', role: 'gunner', brain: 'gunner',
   model: '/assets/survival/motion/grunt-husk.glb', motion: 'humanoid', height: 1.45, size: .9, hp: 110, speed: .7,
   moves: [
-    shot('Ki Blast', 'special', ['roar'], 2.2, 1.3, 20, { speed: 36, radius: .55, cooldown: 4.2, element: 'ki' }),
+    shot('Spirit Blast', 'special', ['roar'], 2.2, 1.3, 20, { speed: 36, radius: .55, cooldown: 4.2, element: 'ki' }),
     multi(melee('Brood Rush', 'light', ['jab'], .95, .12, 12, { range: 1.9, cooldown: 1.4, maxRange: 2.1, element: 'ki' }), [.12, .4], 18),
   ],
   clips: hollowClips(), xp: 2, score: 75, cost: 2, color: 0x3a9cff, tint: 0xd8ecff,
@@ -521,10 +521,10 @@ ENEMIES['wuming'] = {
   model: '/assets/survival/enemies/wuming.glb', height: 2.0, size: 1.1, hp: 2600, poise: 320, speed: .92, knockbackIn: .4, stunIn: .7, breaker: true,
   blink: { every: 5, beyond: 6.5 },
   moves: [
-    multi(melee('Dusk Rush', 'light', ['R1_1_HT'], 2, .12, 26, { chain: RUSH, range: 2.4, radius: .8, lunge: 4, knockback: 2, maxRange: 3, rest: .3, element: 'dark' }), [.12, .46, .8, 1.14, 1.5], 50),
-    melee('Violent Rush', 'heavy', ['ex3FI'], 1.2, .7, 92, { chain: ['ex1IN', 'ex2CG', 'ex3FI', 'ex4OT'], range: 2.6, radius: .9, lunge: 9, close: 10, knockback: 10, minRange: 2, maxRange: 10, rest: 2.6, telegraph: 'line', element: 'dark' }),
-    melee('Divine Blade', 'special', ['SKL2_HT'], 2.15, 1.12, 120, { chain: ['SKL2_IN', 'SKL2_HT', 'SKL2_OT'], range: 3.6, radius: 1.5, lunge: 5, knockback: 11, guardBreak: true, maxRange: 4.4, rest: 6, telegraph: 'cone', element: 'dark', callout: true }),
-    { ...shot('Black Sun Beam', 'ultimate', ['ry1_3HT1'], 3.4, 1.7, 170, { chain: BLAST, range: 22, radius: 1.2, knockback: 13, guardBreak: true, minRange: 3, maxRange: 20, rest: 9, telegraph: 'line', element: 'dark', callout: true }), style: 'beam' },
+    multi(melee('Dusk Rush', 'light', ['rush_1_hit'], 2, .12, 26, { chain: RUSH, range: 2.4, radius: .8, lunge: 4, knockback: 2, maxRange: 3, rest: .3, element: 'dark' }), [.12, .46, .8, 1.14, 1.5], 50),
+    melee('Violent Rush', 'heavy', ['violent_3_finish'], 1.2, .7, 92, { chain: ['violent_1_in', 'violent_2_charge', 'violent_3_finish', 'violent_4_out'], range: 2.6, radius: .9, lunge: 9, close: 10, knockback: 10, minRange: 2, maxRange: 10, rest: 2.6, telegraph: 'line', element: 'dark' }),
+    melee('Divine Blade', 'special', ['skill_2_hit'], 2.15, 1.12, 120, { chain: ['skill_2_in', 'skill_2_hit', 'skill_2_out'], range: 3.6, radius: 1.5, lunge: 5, knockback: 11, guardBreak: true, maxRange: 4.4, rest: 6, telegraph: 'cone', element: 'dark', callout: true }),
+    { ...shot('Black Sun Beam', 'ultimate', ['blast_3_hit'], 3.4, 1.7, 170, { chain: BLAST, range: 22, radius: 1.2, knockback: 13, guardBreak: true, minRange: 3, maxRange: 20, rest: 9, telegraph: 'line', element: 'dark', callout: true }), style: 'beam' },
   ],
   clips: withClean(szClips()), xp: 22, score: 3200, cost: 6, color: 0xe86ad8,
 };
@@ -533,10 +533,10 @@ ENEMIES['jinlin'] = {
   model: '/assets/survival/enemies/jinlin.glb', height: 1.95, size: 1.05, hp: 2500, poise: 300, speed: .9, knockbackIn: .4, stunIn: .7, breaker: true,
   blink: { every: 5.5, beyond: 7 },
   moves: [
-    multi(melee("Tyrant's Rush", 'light', ['R1_1_HT'], 1.6, .08, 26, { chain: RUSH, range: 2.3, radius: .8, lunge: 4, knockback: 2, maxRange: 3, rest: .3, element: 'fire' }), [.08, .34, .6, .96, 1.24], 48),
-    melee('Tail Smash', 'heavy', ['SMF_3HT'], 1.2, .62, 84, { chain: smash('SMF'), range: 2.6, radius: .9, lunge: 5, knockback: 11, guardBreak: true, maxRange: 3.2, rest: 2.2, telegraph: 'cone', element: 'fire' }),
-    multi(shot('Needle Ray', 'special', ['SKL2_HT'], 2.1, 1.1, 40, { chain: ['SKL2_IN', 'SKL2_HT', 'SKL2_OT'], speed: 64, radius: .35, knockback: 3, stun: .4, minRange: 3, maxRange: 22, rest: 4.5, element: 'dark', callout: true }), [1.1, 1.28, 1.46], 60),
-    { ...shot('Doom Sphere', 'ultimate', ['ry1_3HT1'], 3.2, 1.9, 190, { chain: BLAST, speed: 13, range: 24, radius: 3.4, knockback: 14, guardBreak: true, minRange: 4, maxRange: 20, rest: 10, telegraph: 'target', element: 'fire', callout: true }), style: 'bomb' },
+    multi(melee("Tyrant's Rush", 'light', ['rush_1_hit'], 1.6, .08, 26, { chain: RUSH, range: 2.3, radius: .8, lunge: 4, knockback: 2, maxRange: 3, rest: .3, element: 'fire' }), [.08, .34, .6, .96, 1.24], 48),
+    melee('Tail Smash', 'heavy', ['smash_3_hit'], 1.2, .62, 84, { chain: smash('smash'), range: 2.6, radius: .9, lunge: 5, knockback: 11, guardBreak: true, maxRange: 3.2, rest: 2.2, telegraph: 'cone', element: 'fire' }),
+    multi(shot('Needle Ray', 'special', ['skill_2_hit'], 2.1, 1.1, 40, { chain: ['skill_2_in', 'skill_2_hit', 'skill_2_out'], speed: 64, radius: .35, knockback: 3, stun: .4, minRange: 3, maxRange: 22, rest: 4.5, element: 'dark', callout: true }), [1.1, 1.28, 1.46], 60),
+    { ...shot('Doom Sphere', 'ultimate', ['blast_3_hit'], 3.2, 1.9, 190, { chain: BLAST, speed: 13, range: 24, radius: 3.4, knockback: 14, guardBreak: true, minRange: 4, maxRange: 20, rest: 10, telegraph: 'target', element: 'fire', callout: true }), style: 'bomb' },
   ],
   clips: withClean(szClips()), xp: 22, score: 3200, cost: 6, color: 0xffc21e,
 };
@@ -545,16 +545,16 @@ ENEMIES.jirenga = {
   model: '/assets/survival/enemies/gandang.glb', height: 2.35, size: 1.3, hp: 8600, poise: 700, speed: .8, knockbackIn: .2, stunIn: .5, breaker: true,
   blink: { every: 4, beyond: 6 },
   moves: [
-    multi(melee('Colossus Rush', 'light', ['R1_1_HT'], 1.8, .1, 30, { chain: RUSH, range: 2.5, radius: .8, lunge: 4, knockback: 2, maxRange: 3.2, rest: .2, element: 'blood' }), [.1, .35, .6, 1.0, 1.35], 60),
-    melee('Power Smash', 'heavy', ['SMF_3HT'], 1.2, .62, 110, { chain: smash('SMF'), range: 2.8, radius: 1, lunge: 6, knockback: 12, guardBreak: true, maxRange: 3.6, rest: 2.4, telegraph: 'cone', element: 'blood' }),
-    melee('Dash Smash', 'heavy', ['DSM_3HT'], 1.55, .9, 120, { chain: smash('DSM'), range: 2.8, radius: 1, lunge: 10, close: 12, knockback: 13, minRange: 3, maxRange: 12, rest: 3, telegraph: 'line', element: 'blood' }),
-    melee('Glare', 'special', ['KAH_3HT'], 2.3, 1.25, 90, { chain: smash('KAH'), range: .5, radius: 4, lunge: 0, knockback: 12, guardBreak: true, maxRange: 4.2, rest: 6, telegraph: 'ring', element: 'blood', callout: true }),
-    { ...shot('Colossus Impact', 'ultimate', ['ry1_3HT1'], 3.4, 1.6, 200, { chain: BLAST, speed: 30, range: 26, radius: 2.6, knockback: 14, guardBreak: true, minRange: 3, maxRange: 22, rest: 9, telegraph: 'target', element: 'blood', callout: true }), style: 'bomb' },
-    melee('Endless Rush', 'special', ['R1_3_HT'], 2.4, .5, 40, { chain: [...RUSH], range: .5, radius: 2.4, knockback: 8, maxRange: 18, rest: 10, telegraph: 'ring', element: 'blood', callout: true, phase: 1,
+    multi(melee('Colossus Rush', 'light', ['rush_1_hit'], 1.8, .1, 30, { chain: RUSH, range: 2.5, radius: .8, lunge: 4, knockback: 2, maxRange: 3.2, rest: .2, element: 'blood' }), [.1, .35, .6, 1.0, 1.35], 60),
+    melee('Power Smash', 'heavy', ['smash_3_hit'], 1.2, .62, 110, { chain: smash('smash'), range: 2.8, radius: 1, lunge: 6, knockback: 12, guardBreak: true, maxRange: 3.6, rest: 2.4, telegraph: 'cone', element: 'blood' }),
+    melee('Dash Smash', 'heavy', ['dash_strike_3_hit'], 1.55, .9, 120, { chain: smash('dash_strike'), range: 2.8, radius: 1, lunge: 10, close: 12, knockback: 13, minRange: 3, maxRange: 12, rest: 3, telegraph: 'line', element: 'blood' }),
+    melee('Glare', 'special', ['glare_3_hit'], 2.3, 1.25, 90, { chain: smash('glare'), range: .5, radius: 4, lunge: 0, knockback: 12, guardBreak: true, maxRange: 4.2, rest: 6, telegraph: 'ring', element: 'blood', callout: true }),
+    { ...shot('Colossus Impact', 'ultimate', ['blast_3_hit'], 3.4, 1.6, 200, { chain: BLAST, speed: 30, range: 26, radius: 2.6, knockback: 14, guardBreak: true, minRange: 3, maxRange: 22, rest: 9, telegraph: 'target', element: 'blood', callout: true }), style: 'bomb' },
+    melee('Endless Rush', 'special', ['rush_3_hit'], 2.4, .5, 40, { chain: [...RUSH], range: .5, radius: 2.4, knockback: 8, maxRange: 18, rest: 10, telegraph: 'ring', element: 'blood', callout: true, phase: 1,
       rain: { count: 14, every: .14, lead: .85, spread: 5.5, radius: 1.6, damage: 70, start: .3, knockback: 8 } }),
   ],
   // He is found meditating, as he was in the tournament.
-  clips: withClean(szClips({ intro: ['SKL2_HT'] })), xp: 90, score: 24000, cost: 0, color: 0xe0142e,
+  clips: withClean(szClips({ intro: ['skill_2_hit'] })), xp: 90, score: 24000, cost: 0, color: 0xe0142e,
 };
 
 // ---- Act V: Warlord's Roof -----------------------------------------------------

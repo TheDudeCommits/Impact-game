@@ -142,7 +142,7 @@ export class AmpereSurge {
     }
     if (e.slot === 'special') {
       if (e.branch === 'airSpecial') { st.burst(point, OFA, 2, t, { floor }); st.shock(ground, WIND, 4.6, t, .45); this.discharge(point, t, .4, 2.4, 7, e.id); return; }
-      // AIR FORCE lands: the bullet of air bursts in a shell, the floor cracks under it, lightning jumps from it.
+      // THE AIR BULLET lands: the bullet of air bursts in a shell, the floor cracks under it, lightning jumps from it.
       const big = e.branch ? .7 : 1;
       st.burst(point, WIND, 1.8 * big, t, { dir, floor });
       st.dome(point, WIND, 3.2 * big, t, .5);

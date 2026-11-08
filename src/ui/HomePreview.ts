@@ -1,4 +1,5 @@
 import { FIGHTERS } from '../config';
+import { siteUrl } from '../loading/siteBase'; // asset addresses inside the page's own folder
 import type { FighterId } from '../game/types';
 import spriteManifest from '../../public/assets/home/sprites/manifest.json';
 import { packArt, packHas } from '../engine/packs/active';
@@ -14,8 +15,8 @@ const POSE_VERSIONS = new Map(spriteManifest.fighters.map(fighter=>[fighter.id,{
   poster:'posterSha256' in fighter?fighter.posterSha256?.slice(0,12)??'':'',
 }]));
 const versionSuffix=(hash:string|undefined)=>hash?`?v=${hash}`:'';
-export const spriteArt = (id:FighterId) => `/assets/home/sprites/${id}.webp${versionSuffix(POSE_VERSIONS.get(id)?.sheet)}`;
-export const posePoster = (id:FighterId) => packArt(id,'poster') ?? `/assets/home/sprites/${id}-poster.webp${versionSuffix(POSE_VERSIONS.get(id)?.poster)}`;
+export const spriteArt = (id:FighterId) => siteUrl(`/assets/home/sprites/${id}.webp${versionSuffix(POSE_VERSIONS.get(id)?.sheet)}`);
+export const posePoster = (id:FighterId) => packArt(id,'poster') ?? siteUrl(`/assets/home/sprites/${id}-poster.webp${versionSuffix(POSE_VERSIONS.get(id)?.poster)}`);
 /** @deprecated Historical shop-roster export. Sheet availability now comes from the asset manifest. */
 export const POSTER_ONLY:ReadonlySet<FighterId>=new Set(['gorai','haldor','sorrel','dorado','shiun']);
 const POSE_SHEETS:ReadonlySet<string>=new Set(spriteManifest.fighters.map(fighter=>fighter.id));
@@ -101,7 +102,7 @@ export function posePages(entry:{file:string;runtimePages?:PosePage[];cellWidth?
   return [{file:entry.file,firstFrame:0,frameCount:layout.frameCount,width:layout.columns*(entry.cellWidth??384),height:layout.rows*(entry.cellHeight??512)}];
 }
 const POSE_PAGES=new Map(spriteManifest.fighters.map(entry=>[entry.id,posePages(entry as Parameters<typeof posePages>[0])]));
-const pageArt=(page:PosePage,id:FighterId)=>page.sha256?`/assets/home/sprites/${page.file}${versionSuffix(page.sha256.slice(0,12))}`:spriteArt(id);
+const pageArt=(page:PosePage,id:FighterId)=>page.sha256?siteUrl(`/assets/home/sprites/${page.file}${versionSuffix(page.sha256.slice(0,12))}`):spriteArt(id);
 
 /** One live canvas, progressive selected-fighter pages, and a byte-bounded image cache. */
 export class HomePreview {

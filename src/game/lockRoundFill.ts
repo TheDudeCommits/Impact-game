@@ -91,7 +91,7 @@ export const LOCK_ROUND_FILL: Partial<Record<FighterId, readonly [LockFill | nul
   "jinlin": [null, null, null],
   "gohaku": [null, null, null],
   "ippon": [{"name":"All-Nighter Headbutt","clip":"All-Nighter Headbutt","contact":0.42}, {"name":"All-Nighter Desk Flip","clip":"Clock-Out Uppercut","contact":0.5}, {"name":"All-Nighter Shuffle","clip":"All-Nighter Shuffle","contact":0.4}],
-  "sekka": [{"name":"Last Art: Aurora Shards","clip":"Compass Needle","contact":0.89}, null, null],
+  "sekka": [{"name":"Last Art: Aurora Shards","clip":"Aurora Shards","contact":0.89}, null, null],
   "tobari": [null, null, null],
   "akagane": [null, null, null],
   "asahi": [{"name":"Lantern Wheel Cut","clip":"Water Wheel","contact":0.554}, null, null],

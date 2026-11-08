@@ -119,7 +119,7 @@ export const GRUNTS: readonly GruntKind[] = [
       { ...melee('Self-Destruct', 'roar', 1.4, 1.2, 70, { knockback: 9, stun: .5, heavy: true, cooldown: 9, minRange: 0, maxRange: 1.8, weight: .6 }), kind: 'explode', radius: 2.6 },
     ], xp: 1, score: 55, cost: 1, ichor: 'green' },
   { id: 'jinlin-soldier', name: 'Tyrant Trooper', series: 'Last Sun', role: 'gunner', hp: 100, speed: 5, radius: .44, height: 1.85, mass: 1,
-    moves: [ROAR_SHOT('Ki Blast', 20, 'ki', { speed: 36, radius: .3 }), PUNCH(16, { maxRange: 2.2 })], xp: 2, score: 65, cost: 2, ichor: 'purple' },
+    moves: [ROAR_SHOT('Spirit Blast', 20, 'ki', { speed: 36, radius: .3 }), PUNCH(16, { maxRange: 2.2 })], xp: 2, score: 65, cost: 2, ichor: 'purple' },
   { id: 'brood-spawn', name: 'Brood Spawn', series: 'Last Sun', role: 'fodder', hp: 120, speed: 6.6, radius: .36, height: 1.4, mass: .8,
     moves: [PUNCH(18, { name: 'Rush' }), KICK(22, { name: 'Spin Kick' })], xp: 1, score: 55, cost: 1, ichor: 'purple' },
   // ---- Hidden Ash ----------------------------------------------------------

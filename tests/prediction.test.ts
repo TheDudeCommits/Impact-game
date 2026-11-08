@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ArenaSimulation } from '../src/game/simulation';
 import { Prediction } from '../src/game/prediction';
-import { METEOR_COMBINATION, withMove } from './retiredMoves';
+import { THREE_BLOW_STRING, withMove } from './retiredMoves';
 import type { PlayerInput } from '../src/game/types';
 
 /** A server and a client of it, with a latency you choose in whole ticks. */
@@ -151,8 +151,8 @@ describe('your own fighter answers the frame you press', () => {
   // A standing attacker's heavy string, so the runner is pinned against the
   // body that hits them, as the case was built. Round 3 made Taisei's heavy
   // Cloudstep, which catches a runner in the open instead; the
-  // retired Meteor Combination is put back for this one.
-  it('does not teleport the body on the frame a hit takes it over, or on the way out', () => withMove('taisei', 'heavy', METEOR_COMBINATION, () => {
+  // retired three-blow string is put back for this one.
+  it('does not teleport the body on the frame a hit takes it over, or on the way out', () => withMove('taisei', 'heavy', THREE_BLOW_STRING, () => {
     // A real hit, not a synthetic one: the reaction has to go through the same
     // reconcile the drawn frame does, or the test proves nothing about either.
     const server = new ArenaSimulation({ trainingBot: false });

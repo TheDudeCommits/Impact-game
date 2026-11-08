@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { NOTICE_LINES, NOTICE_VERSION, noticeHtml } from '../src/ui/firstVisit';
-import { CONTACT, FAN_MADE, PRIVACY_PAGE, TERMS_PAGE } from '../src/ui/legalLinks';
+import { CONTACT, FAN_MADE, PRIVACY_PAGE, REPO_PAGE, TERMS_PAGE } from '../src/ui/legalLinks';
 import { legalPage } from '../src/ui/legal';
 import { EARNED_LINE } from '../src/game/economy/currency';
 import { brandPrivacyHtml, brandTermsHtml } from '../scripts/build/brandPlugin';
@@ -17,8 +17,9 @@ describe('the terms of use', () => {
     expect(text).toContain(FAN_MADE);
     expect(text).toMatch(/free to play/i);
     expect(text).toMatch(/no monetization whatsoever: nothing is sold, there are no ads, and there never will be/);
-    expect(text).toMatch(/It is open source\./);
-    expect(terms).not.toMatch(/github\.com/i);
+    expect(text).toMatch(/It is open source ?\./);
+    // The one GitHub address in the terms is the game's own repository (legalLinks.ts REPO_PAGE): "open source" and the footer.
+    expect([...terms.matchAll(/href="(https:\/\/github\.com[^"]*)"/g)].map(m => m[1])).toEqual([REPO_PAGE, REPO_PAGE]);
   });
 
   it('is provided as it is: no warranty, no liability, and it may change or go offline at any time', () => {
@@ -75,14 +76,14 @@ describe('the terms of use', () => {
   it("is in the privacy page's hand: the same stylesheet, a way back, and every section numbered", () => {
     const style = (page: string) => page.match(/<style>([\s\S]*?)<\/style>/)![1];
     expect(style(terms)).toBe(style(privacy));
-    expect(terms).toContain('<a class="back" href="/">← BACK TO THE GAME</a>');
+    expect(terms).toContain('<a class="back" href="index.html">← BACK TO THE GAME</a>'); // (relative to the page)
     expect([...terms.matchAll(/<h2 id="[a-z]+"><small>(\d\d)<\/small>/g)].map(m => m[1])).toEqual(['01', '02', '03', '04', '05', '06', '07', '08', '09']);
   });
 
   it('is linked from the legal and privacy page and links back', () => {
-    expect(TERMS_PAGE).toBe('/terms.html');
-    if (/terms\.html/.test(privacy)) expect(privacy.match(/href="\/terms\.html"/g)!.length).toBeGreaterThanOrEqual(2);
-    expect(terms.match(/href="\/privacy\.html(#keep)?"/g)!.length).toBeGreaterThanOrEqual(3);
+    expect(TERMS_PAGE).toBe('terms.html'); // relative to the game's own page
+    if (/terms\.html/.test(privacy)) expect(privacy.match(/href="terms\.html"/g)!.length).toBeGreaterThanOrEqual(2);
+    expect(terms.match(/href="privacy\.html(#keep)?"/g)!.length).toBeGreaterThanOrEqual(2);
     expect(privacy).toContain('id="keep"');
   });
 
@@ -102,7 +103,7 @@ describe('the terms of use', () => {
     expect(NOTICE_LINES.terms).toBe('By playing you accept the');
     expect(html.indexOf('first-visit-terms')).toBeGreaterThan(html.indexOf(FAN_MADE));
     expect(html.indexOf('first-visit-terms')).toBeLessThan(html.indexOf('first-visit-links'));
-    expect([...html.matchAll(/class="first-visit-link"/g)]).toHaveLength(2);
+    expect([...html.matchAll(/class="first-visit-link"/g)]).toHaveLength(3); // legal and privacy, credits, source code
     expect(html).toContain(`href="${PRIVACY_PAGE}"`);
     // (What the notice says changed, so it is shown once more to whoever read the first one.)
     expect(NOTICE_VERSION).toBe('2');

@@ -58,7 +58,7 @@ interface VoiceKit {
   delays?: Partial<Record<AttackSlot, number>>;
   /** (combos.ts, 4 October) The calls of the combo enders - a launcher, a knockdown, a stun, an air strike, a ground
    *  smash - rationed as a heavy's efforts are. An ender is never voiced with its slot's named call: Magatsu's Light +
-   *  Heavy is not Hachi. Without one it is silent on the voice bus. */
+   *  Heavy is not the heavy's call. Without one it is silent on the voice bus. */
   enders?: Partial<Record<ComboKey, Rationed>>;
   /** Round 3d (ULTS): a line inside a hit-confirm ultimate's cinematic,
    *  which is said only when the opener lands: `lands` seconds into it is
@@ -78,27 +78,27 @@ const onRelease = (fighter: FighterId, slot: AttackSlot, word: number) => Math.m
 const KITS: Record<FighterId, VoiceKit> = {
   chohan:{calls:{heavy:'vo-chohan-cut',special:'vo-chohan-blink'},efforts:['vo-chohan-effort-a','vo-chohan-effort-b'],cinematic:{cue:'vo-chohan-playtime-over',lands:1.2,fromConfirm:true}},
   tsubute:{calls:{heavy:'vo-tsubute-ballast',special:'vo-tsubute-far-bank'},efforts:['vo-tsubute-effort-a'],cinematic:{cue:'vo-tsubute-battle-begins',lands:2.4,fromConfirm:true}},
-  aqrab:{calls:{heavy:'vo-aqrab-stinger-line',special:'vo-aqrab-sables'},efforts:[],cinematic:{cue:'vo-aqrab-bone-dry',lands:1.3,fromConfirm:true}},
-  yodaka:{calls:{heavy:'vo-yodaka-rising-sun',special:'vo-yodaka-blooming-flame'},efforts:['vo-yodaka-effort-a','vo-yodaka-effort-b'],cinematic:{cue:'vo-yodaka-ninth-form',lands:2.69,fromConfirm:true}},
+  aqrab:{calls:{heavy:'vo-aqrab-stinger-line',special:'vo-aqrab-thirst-storm'},efforts:[],cinematic:{cue:'vo-aqrab-bone-dry',lands:1.3,fromConfirm:true}},
+  yodaka:{calls:{heavy:'vo-yodaka-bonfire-rise',special:'vo-yodaka-flaring-wings'},efforts:['vo-yodaka-effort-a','vo-yodaka-effort-b'],cinematic:{cue:'vo-yodaka-ninth-watch',lands:2.69,fromConfirm:true}},
   ume:{calls:{},efforts:['vo-ume-effort-c','vo-ume-effort-d'],heavy:{cues:['vo-ume-effort-a','vo-ume-effort-b'],chance:.65},special:{cues:['vo-ume-bloom-barrage'],chance:.8},cinematic:{cue:'vo-ume-hurricane',lands:2.747,fromConfirm:true}},
   lanthorn:{calls:{},efforts:['vo-lanthorn-effort-a','vo-lanthorn-effort-b','vo-lanthorn-effort-c'],heavy:{cues:['vo-lanthorn-counter'],chance:.75},special:{cues:['vo-lanthorn-lampblack'],chance:.85},cinematic:{cue:'vo-lanthorn-ultimate',lands:2.75,fromConfirm:true}},
-  highsun:{calls:{light:'vo-highsun-pride'},efforts:[],heavy:{cues:['vo-highsun-divider'],chance:.65},special:{cues:['vo-highsun-pocket-sun'],chance:.85},cinematic:{cue:'vo-highsun-divine-sword',lands:3.05,fromConfirm:true}},
+  highsun:{calls:{light:'vo-highsun-pride'},efforts:[],heavy:{cues:['vo-highsun-divider'],chance:.65},special:{cues:['vo-highsun-pocket-sun'],chance:.85},cinematic:{cue:'vo-highsun-zenith-sword',lands:3.05,fromConfirm:true}},
   torsion:{calls:{},efforts:['vo-torsion-effort-a','vo-torsion-effort-b'],heavy:{cues:['vo-torsion-crush'],chance:.7},special:{cues:['vo-torsion-return-fire'],chance:.85},enders:{lllh:{cues:['vo-torsion-disappear'],chance:.7}},cinematic:{cue:'vo-torsion-smithereens',lands:3.14,fromConfirm:true}},
   kubiwa:{calls:{},efforts:['vo-kubiwa-effort-a','vo-kubiwa-effort-b'],heavy:{cues:['vo-kubiwa-beckon','vo-kubiwa-effort-c'],chance:.65},special:{cues:['vo-kubiwa-quiet'],chance:.9},cinematic:{cue:'vo-kubiwa-ultimate',lands:2.82,fromConfirm:true}},
-  cardo:{calls:{special:'vo-cardo-special'},efforts:['vo-cardo-effort-a','vo-cardo-effort-b','vo-cardo-effort-c','vo-cardo-effort-d','vo-cardo-effort-e','vo-cardo-effort-f'],heavy:{cues:['vo-cardo-plowshare-drop'],chance:0.6},cinematic:{cue:'vo-cardo-last-weed-standing',lands:3.69,fromConfirm:true}},bruin:{calls:{},efforts:['vo-bruin-effort-a','vo-bruin-effort-b','vo-bruin-effort-c','vo-bruin-effort-d'],special:{cues:['vo-bruin-avidya-slash'],chance:0.35},cinematic:{cue:'vo-bruin-dimension-slash',lands:2.37,fromConfirm:true}},aquilo:{calls:{special:'vo-aquilo-skimming-swallow'},efforts:['vo-aquilo-effort-b','vo-aquilo-effort-c','vo-aquilo-effort-d','vo-aquilo-effort-e'],heavy:{cues:['vo-aquilo-wind-blade-shower'],chance:0.35},cinematic:{cue:'vo-aquilo-great-migration',lands:3.6,fromConfirm:true}},svanhild:{calls:{},efforts:['vo-svanhild-effort-a','vo-svanhild-effort-b','vo-svanhild-effort-d','vo-svanhild-effort-e'],cinematic:{cue:'vo-svanhild-sea-dragon-roar',lands:2.53,fromConfirm:true}},
+  cardo:{calls:{special:'vo-cardo-special'},efforts:['vo-cardo-effort-a','vo-cardo-effort-b','vo-cardo-effort-c','vo-cardo-effort-d','vo-cardo-effort-e','vo-cardo-effort-f'],heavy:{cues:['vo-cardo-plowshare-drop'],chance:0.6},cinematic:{cue:'vo-cardo-last-weed-standing',lands:3.69,fromConfirm:true}},bruin:{calls:{},efforts:['vo-bruin-effort-a','vo-bruin-effort-b','vo-bruin-effort-c','vo-bruin-effort-d'],special:{cues:['vo-bruin-night-prowl'],chance:0.35},cinematic:{cue:'vo-bruin-starless-cut',lands:2.37,fromConfirm:true}},aquilo:{calls:{special:'vo-aquilo-skimming-swallow'},efforts:['vo-aquilo-effort-b','vo-aquilo-effort-c','vo-aquilo-effort-d','vo-aquilo-effort-e'],heavy:{cues:['vo-aquilo-forktail-gust'],chance:0.35},cinematic:{cue:'vo-aquilo-great-migration',lands:3.6,fromConfirm:true}},svanhild:{calls:{},efforts:['vo-svanhild-effort-a','vo-svanhild-effort-b','vo-svanhild-effort-d','vo-svanhild-effort-e'],cinematic:{cue:'vo-svanhild-swan-song',lands:2.53,fromConfirm:true}},
   onigawara:{calls:{},efforts:['vo-onigawara-effort-a','vo-onigawara-effort-b'],heavy:{cues:['vo-onigawara-heavy'],chance:.65},special:{cues:['vo-onigawara-special'],chance:.85},cinematic:{cue:'vo-onigawara-ultimate',lands:2.79,fromConfirm:true}},
   minase:{calls:{},efforts:['vo-minase-effort-b'],heavy:{cues:['vo-minase-whirlsphere','vo-minase-effort-a'],chance:.75},special:{cues:['vo-minase-flash-ready'],chance:.85},cinematic:{cue:'vo-minase-tempest',lands:2.8,fromConfirm:true}},
-  'psyche':{calls:{special:'vo-psyche-spank'},efforts:['vo-psyche-effort-a','vo-psyche-effort-b'],heavy:{cues:['vo-psyche-try-this'],chance:.45},cinematic:{cue:'vo-psyche-another-job',lands:3.075,fromConfirm:true}},
+  'psyche':{calls:{special:'vo-psyche-dig-it-up'},efforts:['vo-psyche-effort-a','vo-psyche-effort-b'],heavy:{cues:['vo-psyche-try-this'],chance:.45},cinematic:{cue:'vo-psyche-another-job',lands:3.075,fromConfirm:true}},
   'ovid':{calls:{special:'vo-ovid-break'},efforts:[],heavy:{cues:['vo-ovid-break'],chance:.45},cinematic:{cue:'vo-ovid-maximum',lands:3.24,fromConfirm:true}},
   // (13 October: the Scout and the YUGE say the same lines - none names a move. "Kurai yagare!" on the Snap Line
-  // and the Burl Fist and on some Thunder Spears and uppercuts; "Kuchiku shite yaru!" from the confirm of Wings of
+  // and the Burl Fist and on some fuse lances and uppercuts; "Kuchiku shite yaru!" from the confirm of Wings of
   // Freedom and of the Colossus's rampage: `lands` is past the line's end, so it starts with the confirm under both clocks.)
   hawser:{calls:{special:'vo-hawser-drive'},efforts:[],heavy:{cues:['vo-hawser-drive'],chance:.45},cinematic:{cue:'vo-hawser-eradicate',lands:3.46,fromConfirm:true}},
   rotfalke:{calls:{special:'vo-rotfalke-field'},efforts:[],heavy:{cues:['vo-rotfalke-challenge','vo-rotfalke-take-that'],chance:.55},cinematic:{cue:'vo-rotfalke-finish',lands:2.988,fromConfirm:true}},
-  bonsho:{calls:{special:'vo-bonsho-hundred-hands'},efforts:['vo-bonsho-effort-b'],heavy:{cues:['vo-bonsho-drive'],chance:.45},cinematic:{cue:'vo-bonsho-hundred-hands',lands:3.444,fromConfirm:true}},
+  bonsho:{calls:{special:'vo-bonsho-great-bell'},efforts:['vo-bonsho-effort-b'],heavy:{cues:['vo-bonsho-drive'],chance:.45},cinematic:{cue:'vo-bonsho-great-bell',lands:3.444,fromConfirm:true}},
   murex:{calls:{special:'vo-murex-special'},efforts:[],heavy:{cues:['vo-murex-heavy'],chance:.55},cinematic:{cue:'vo-murex-ultimate',lands:3.078,fromConfirm:true}},
   kinu:{calls:{},efforts:['vo-kinu-effort-a'],heavy:{cues:['vo-kinu-effort-b'],chance:.65},special:{cues:['vo-kinu-turn-to-thread','vo-kinu-thread-snap'],chance:.75},cinematic:{cue:'vo-kinu-ultimate',lands:3.18,fromConfirm:true}},
-  'madake':{calls:{special:'vo-madake-tiger'},efforts:['vo-madake-effort-tap'],heavy:{cues:['vo-madake-pressure'],chance:.55},cinematic:{cue:'vo-madake-midwinter-bamboo',lands:1.0,fromConfirm:true},enders:{lh:{cues:['vo-madake-pressure'],chance:.55},llh:{cues:['vo-madake-chase'],chance:.55},llls:{cues:['vo-madake-peacock'],chance:.75}}},
+  'madake':{calls:{special:'vo-madake-summer-wolf'},efforts:['vo-madake-effort-tap'],heavy:{cues:['vo-madake-pressure'],chance:.55},cinematic:{cue:'vo-madake-midwinter-bamboo',lands:1.0,fromConfirm:true},enders:{lh:{cues:['vo-madake-pressure'],chance:.55},llh:{cues:['vo-madake-chase'],chance:.55},llls:{cues:['vo-madake-spring-crane'],chance:.75}}},
   akayuri:{calls:{},efforts:[],heavy:{cues:['vo-akayuri-eliminate'],chance:.55},special:{cues:['vo-akayuri-swift'],chance:.6},cinematic:{cue:'vo-akayuri-eliminate',lands:2.87,fromConfirm:true}},
   hagure:{calls:{},efforts:[],heavy:{cues:['vo-hagure-effort-a','vo-hagure-effort-b'],chance:.65},special:{cues:['vo-hagure-move-aside'],chance:.7},enders:{lllh:{cues:['vo-hagure-read-you'],chance:.6}},cinematic:{cue:'vo-hagure-ultimate',lands:3.02,fromConfirm:true}},
   hisame:{calls:{},efforts:[],heavy:{cues:['vo-hisame-heavy'],chance:.5},special:{cues:['vo-hisame-special'],chance:.7},cinematic:{cue:'vo-hisame-ultimate',lands:2.89,fromConfirm:true}},
@@ -112,18 +112,18 @@ const KITS: Record<FighterId, VoiceKit> = {
   'shakudo':{calls:{},efforts:['vo-shakudo-effort-tap'],heavy:{cues:['vo-shakudo-strike','vo-shakudo-effort-a'],chance:.65},special:{cues:['vo-shakudo-stay-back'],chance:.8},enders:{lllh:{cues:['vo-shakudo-no-refunds'],chance:.65}},cinematic:{cue:'vo-shakudo-transmute',lands:3.3,fromConfirm:true}},
   hikui:{calls:{},efforts:['vo-hikui-effort-a','vo-hikui-effort-b'],heavy:{cues:['vo-hikui-flame-sword'],chance:.65},special:{cues:['vo-hikui-effort-a'],chance:.75},cinematic:{cue:'vo-hikui-ultimate',lands:1.734,fromConfirm:true}},
   tokan:{calls:{},efforts:['vo-tokan-effort-a','vo-tokan-effort-b'],heavy:{cues:['vo-tokan-heel'],chance:.65},special:{cues:['vo-tokan-pheasant'],chance:.8},cinematic:{cue:'vo-tokan-winter-sleep',lands:1.15,fromConfirm:true}},
-  strappado:{calls:{},efforts:['vo-strappado-effort-a','vo-strappado-effort-b'],heavy:{cues:['vo-strappado-out-of-my-way'],chance:.65},special:{cues:['vo-strappado-small-fry'],chance:.75},enders:{llls:{cues:['vo-strappado-parasite'],chance:.75}},cinematic:{cue:'vo-strappado-god-thread',lands:3.18,fromConfirm:true}},
+  strappado:{calls:{},efforts:['vo-strappado-effort-a','vo-strappado-effort-b'],heavy:{cues:['vo-strappado-out-of-my-way'],chance:.65},special:{cues:['vo-strappado-small-fry'],chance:.75},enders:{llls:{cues:['vo-strappado-dance'],chance:.75}},cinematic:{cue:'vo-strappado-final-bow',lands:3.18,fromConfirm:true}},
   unari:{calls:{heavy:'vo-unari-gum'},efforts:['vo-unari-effort-a','vo-unari-effort-b','vo-unari-effort-c'],special:{cues:['vo-unari-gum'],chance:.8},cinematic:{cue:'vo-unari-encore',lands:2.89,fromConfirm:true}},
   barrow:{calls:{heavy:'vo-barrow-take-it-all'},efforts:['vo-barrow-effort-a','vo-barrow-effort-b'],special:{cues:['vo-barrow-sinkhole'],chance:.8},cinematic:{cue:'vo-barrow-liberation',lands:3.25,fromConfirm:true}},
-  sashigane:{calls:{light:'vo-sashigane-cut',heavy:'vo-sashigane-ratio'},efforts:[],special:{cues:['vo-sashigane-collapse'],chance:.8},cinematic:{cue:'vo-sashigane-finish',lands:2.05,fromConfirm:true}},
+  sashigane:{calls:{light:'vo-sashigane-cut',heavy:'vo-sashigane-golden-ratio'},efforts:[],special:{cues:['vo-sashigane-condemned'],chance:.8},cinematic:{cue:'vo-sashigane-finish',lands:2.05,fromConfirm:true}},
   gosu:{calls:{heavy:'vo-gosu-join-it-back'},efforts:['vo-gosu-effort-a','vo-gosu-effort-b','vo-gosu-effort-c'],special:{cues:['vo-gosu-kin-barrage'],chance:.8},cinematic:{cue:'vo-gosu-in-range',lands:2.76,fromConfirm:true}},
   kusushi:{calls:{},efforts:['vo-kusushi-effort-a','vo-kusushi-effort-b'],heavy:{cues:['vo-kusushi-effort-c','vo-kusushi-effort-d'],chance:.65},special:{cues:['vo-kusushi-strength'],chance:.8},cinematic:{cue:'vo-kusushi-pure-land',lands:1.1,fromConfirm:true}},
   hakushi:{calls:{heavy:'vo-hakushi-whirlsphere'},efforts:['vo-hakushi-effort-a','vo-hakushi-effort-b'],special:{cues:['vo-hakushi-effort-b'],chance:.65},cinematic:{cue:'vo-hakushi-ultimate',lands:2.6,fromConfirm:true}},
-  suzuran:{calls:{},efforts:['vo-suzuran-effort-a','vo-suzuran-effort-c'],heavy:{cues:['vo-suzuran-palm'],chance:.65},special:{cues:['vo-suzuran-vacuum'],chance:.85},cinematic:{cue:'vo-suzuran-lions',lands:1.35,fromConfirm:true}},
+  suzuran:{calls:{},efforts:['vo-suzuran-effort-a','vo-suzuran-effort-c'],heavy:{cues:['vo-suzuran-palm'],chance:.65},special:{cues:['vo-suzuran-resound'],chance:.85},cinematic:{cue:'vo-suzuran-last-bell',lands:1.35,fromConfirm:true}},
   wataame:{calls:{},efforts:['vo-wataame-effort-a','vo-wataame-effort-b','vo-wataame-effort-c'],special:{cues:['vo-wataame-ready'],chance:.75},cinematic:{cue:'vo-wataame-lets-go',lands:1.52,fromConfirm:true}},
   senko:{calls:{},efforts:['vo-senko-effort-a','vo-senko-effort-b','vo-senko-effort-c'],heavy:{cues:['vo-senko-finish'],chance:.65},special:{cues:['vo-senko-slow'],chance:.85},cinematic:{cue:'vo-senko-hundred-lights',lands:2.06,fromConfirm:true}},
   buna:{calls:{light:'vo-buna-lets-go',special:'vo-buna-heartshake'},efforts:['vo-buna-effort-a','vo-buna-effort-b'],heavy:{cues:['vo-buna-clear-the-way'],chance:.65},cinematic:{cue:'vo-buna-timber-the-forest-falls',lands:1.54,fromConfirm:true}},
-  oyashio:{calls:{},efforts:['vo-oyashio-effort-a','vo-oyashio-effort-b','vo-oyashio-effort-c'],heavy:{cues:['vo-oyashio-karate'],chance:.55},special:{cues:['vo-oyashio-water'],chance:.85},cinematic:{cue:'vo-oyashio-vagabond',lands:1.1,fromConfirm:true}},
+  oyashio:{calls:{},efforts:['vo-oyashio-effort-a','vo-oyashio-effort-b','vo-oyashio-effort-c'],heavy:{cues:['vo-oyashio-breakwater-fist'],chance:.55},special:{cues:['vo-oyashio-water'],chance:.85},cinematic:{cue:'vo-oyashio-grand-gyre',lands:1.1,fromConfirm:true}},
   // No clean Adad nonverbal bank exists: ration this speech as an opener call, never as an effort.
   adad:{calls:{light:'vo-adad-enough'},efforts:[],heavy:{cues:['vo-adad-silence'],chance:.55},special:{cues:['vo-adad-judgment'],chance:.8},cinematic:{cue:'vo-adad-firmament-fall',lands:.3,fromConfirm:true}},
   shijima:{calls:{},efforts:['vo-shijima-effort-a','vo-shijima-effort-b','vo-shijima-effort-c'],heavy:{cues:['vo-shijima-snow-halo'],chance:.7},special:{cues:['vo-shijima-hoarfrost'],chance:.85},cinematic:{cue:'vo-shijima-quip-resolve',lands:1.2,fromConfirm:true}},
@@ -145,11 +145,11 @@ const KITS: Record<FighterId, VoiceKit> = {
     enders:{lllh:{cues:['vo-full-beam-effort-d'],chance:.55},airSpecial:{cues:['vo-full-beam-effort-c'],chance:.5}}},
   pyroclast:{calls:{},efforts:['vo-pyroclast-effort-a','vo-pyroclast-effort-b'],
     heavy:{cues:['vo-pyroclast-effort-c','vo-pyroclast-effort-d'],chance:.65},special:{cues:['vo-pyroclast-ap-effort'],chance:.8},
-    cinematic:{cue:'vo-pyroclast-howitzer-effort',lands:2.8,fromConfirm:true},
+    cinematic:{cue:'vo-pyroclast-supervolcano-effort',lands:2.8,fromConfirm:true},
     enders:{lllh:{cues:['vo-pyroclast-effort-d'],chance:.55},airSpecial:{cues:['vo-pyroclast-effort-c'],chance:.5}}},
   ampere:{calls:{},efforts:['vo-ampere-effort-c','vo-ampere-effort-d'],
-    heavy:{cues:['vo-ampere-effort-a','vo-ampere-effort-b'],chance:.65},special:{cues:['vo-ampere-air-force-effort'],chance:.8},
-    cinematic:{cue:'vo-ampere-plus-ultra',lands:1.6,fromConfirm:true},
+    heavy:{cues:['vo-ampere-effort-a','vo-ampere-effort-b'],chance:.65},special:{cues:['vo-ampere-reach-effort'],chance:.8},
+    cinematic:{cue:'vo-ampere-overcharge',lands:1.6,fromConfirm:true},
     enders:{lllh:{cues:['vo-ampere-effort-a'],chance:.55},airSpecial:{cues:['vo-ampere-effort-c'],chance:.5}}},
   shanxiao:{calls:{},efforts:['vo-shanxiao-effort-a','vo-shanxiao-effort-b','vo-shanxiao-effort-c'],
     heavy:{cues:['vo-shanxiao-effort-d'],chance:.7},special:{cues:['vo-shanxiao-eraser-effort'],chance:.85},
@@ -159,7 +159,7 @@ const KITS: Record<FighterId, VoiceKit> = {
     heavy:{cues:['vo-kuzu-die','vo-kuzu-effort-b'],chance:.7},special:{cues:['vo-kuzu-dont-run'],chance:.8},
     cinematic:{cue:'vo-kuzu-engine',lands:1.2,fromConfirm:true},
     enders:{lllh:{cues:['vo-kuzu-hurts'],chance:.5},airSpecial:{cues:['vo-kuzu-effort-c'],chance:.65}}},
-  shakugo:{calls:{special:'vo-shakugo-crimson-hound'},efforts:['vo-shakugo-effort-b','vo-shakugo-effort-c'],
+  shakugo:{calls:{special:'vo-shakugo-molten-fang'},efforts:['vo-shakugo-effort-b','vo-shakugo-effort-c'],
     heavy:{cues:['vo-shakugo-effort-a','vo-shakugo-effort-c'],chance:.7},
     cinematic:{cue:'vo-shakugo-final-sentence-brimstone-rain',lands:1.65,fromConfirm:true},
     enders:{lllh:{cues:['vo-shakugo-effort-a'],chance:.55},airSpecial:{cues:['vo-shakugo-effort-c'],chance:.6}}},
@@ -229,11 +229,11 @@ const KITS: Record<FighterId, VoiceKit> = {
     cinematic: { cue: 'ward-flatline', lands: 1.2 },
     // "THEATRE" before Mes, as he opens it before every operation; a breath with Biopsy Strike.
     enders: { llls: { cues: ['vo-ward-theatre'], chance: .5 }, airSpecial: { cues: ['vo-ward-che', 'vo-ward-se'], chance: .55 } } },
-  kuon: { calls: { heavy: 'kuon-ao', special: 'kuon-violet', ultimate: 'kuon-boundless' }, efforts: ['vo-kuon-ha', 'vo-kuon-ya', 'vo-kuon-fu'],
+  kuon: { calls: { heavy: 'kuon-gravity', special: 'kuon-violet', ultimate: 'kuon-boundless' }, efforts: ['vo-kuon-ha', 'vo-kuon-ya', 'vo-kuon-fu'],
     enders: { lllh: { cues: ['vo-kuon-ya'], chance: .5 }, airSpecial: { cues: ['vo-kuon-ha', 'vo-kuon-ya'], chance: .6 } } },
   // The two spirit fighters' lights are their battle cries, rationed as efforts;
   // their specials and ultimates are scheduled by spiritBarrage().
-  koko: { calls: { heavy: 'vo-koko-needle-finger', special: 'koko-star', ultimate: 'vo-koko-the-hour' },
+  koko: { calls: { heavy: 'vo-koko-needle-finger', special: 'koko-iron-lullaby', ultimate: 'vo-koko-the-hour' },
     efforts: ['vo-koko-gan-1', 'vo-koko-gan-2', 'vo-koko-gan-4', 'vo-koko-fun'],
     barrage: 'vo-koko-gan-barrage', finisher: { cue: 'vo-koko-gaaan', lands: .15 },
     // Iron Spirit's GAN on the receipt's last blow and on the grave-hound barrage's.
@@ -245,7 +245,7 @@ const KITS: Record<FighterId, VoiceKit> = {
   gaunt: { calls: { special: 'vo-gaunt-kurai', ultimate: 'vo-gaunt-roar' }, efforts: ['vo-gaunt-ha', 'vo-gaunt-fu', 'vo-gaunt-sei', 'vo-gaunt-da'],
     heavy: { cues: ['vo-gaunt-goa', 'vo-gaunt-gah'] },
     enders: { lllh: { cues: ['vo-gaunt-gah', 'vo-gaunt-sei'], chance: .5 }, airSpecial: { cues: ['vo-gaunt-sei', 'vo-gaunt-ha'], chance: .6 } } },
-  // Round 3d: Kanmuru at the cast; "Shippū Jinrai" inside the cinematic.
+  // Round 3d: the crown call at the cast; the gale call inside the cinematic.
   setsu: { calls: { special: 'setsu-ikazuchi', ultimate: 'vo-setsu-thundercrown' }, efforts: ['vo-setsu-ha', 'vo-setsu-ta', 'vo-setsu-deya'],
     cinematic: { cue: 'setsu-gale-step', lands: 1.3 },
     enders: { llls: { cues: ['vo-setsu-ta'], chance: .45 }, airSpecial: { cues: ['vo-setsu-deya', 'vo-setsu-ha'], chance: .6 } } },
@@ -259,12 +259,12 @@ const KITS: Record<FighterId, VoiceKit> = {
   dorado: { calls: { ultimate: 'vo-dorado-horizon-sunder' }, efforts: ['vo-dorado-effort-a', 'vo-dorado-effort-b', 'vo-dorado-effort-c', 'vo-dorado-effort-d'] },
   // Shiun in the survival boss's own voice: the spells called, "weak" opening a string now and then, and between blows
   // his own cries.
-  shiun: { calls: { light: 'vo-shiun-weak', special: 'vo-shiun-senju', ultimate: 'vo-shiun-black-confessional' },
+  shiun: { calls: { light: 'vo-shiun-weak', special: 'vo-shiun-hymn-twelve', ultimate: 'vo-shiun-black-confessional' },
     efforts: ['vo-shiun-effort-a', 'vo-shiun-effort-b', 'vo-shiun-effort-c', 'vo-shiun-effort-d'] },
   // Magatsu in the survival boss's own voice: his heavy, his special and Calamity Pyre called, a click of the tongue
   // opening a string now and then, and between blows his own cries.
   // (Mirror Mere is his ultimate, a field as Kuon's is, called by name as Kuon's is.)
-  magatsu: { calls: { light: 'vo-magatsu-tch', heavy: 'vo-magatsu-hachi', special: 'vo-magatsu-kai', ultimate: 'vo-magatsu-domain' },
+  magatsu: { calls: { light: 'vo-magatsu-tch', heavy: 'vo-magatsu-crunch', special: 'vo-magatsu-thousand-cuts', ultimate: 'vo-magatsu-domain' },
     efforts: ['vo-magatsu-effort-a', 'vo-magatsu-effort-b', 'vo-magatsu-effort-c', 'vo-magatsu-effort-d'],
     enders: { airSpecial: { cues: ['vo-magatsu-calamity-pyre'], chance: .7 } } },
   // Vesper in the survival boss's own voice: "I won't allow it" as he dives, "you are mine" as the offering takes
@@ -296,11 +296,10 @@ const KITS: Record<FighterId, VoiceKit> = {
   // inside the cinematic, its "punch" (0.8 s into the cut) on the blow. Between blows (3 October), their own cries.
   'gohaku': { calls: { ultimate: 'vo-gohaku-piercing-beam' }, efforts: ['vo-gohaku-effort-a', 'vo-gohaku-effort-b', 'vo-gohaku-effort-c', 'vo-gohaku-effort-d'] },
   ippon: { calls: {}, efforts: ['vo-ippon-effort-a', 'vo-ippon-effort-b', 'vo-ippon-effort-c', 'vo-ippon-effort-d'], cinematic: { cue: 'vo-ippon-clean-slate', lands: .8, fromConfirm: true } },
-  // Sekka, from his home line: "Unmaking satsu: rashin" (Gravedigger: Compass Needle) with the Compass Needle, and
-  // "Jutsushiki tenkai" (Technique Development) as he wakes. His own cries between blows (3 October).
+  // Sekka, from his home line: the aurora-shards call with the Aurora Shards, and his waking call as he wakes. His own cries between blows (3 October).
   sekka: { calls: {}, efforts: ['vo-sekka-effort-a', 'vo-sekka-effort-b', 'vo-sekka-effort-c', 'vo-sekka-effort-d'],
-    // "Unmaking satsu: rashin" goes with the Compass Needle's snowflake, which opens under his stun now (combosShop.ts).
-    enders: { llls: { cues: ['vo-sekka-compass-needle'], chance: .8 } } },
+    // The aurora-shards call goes with the Aurora Shards' snowflake, which opens under his stun now (combosShop.ts).
+    enders: { llls: { cues: ['vo-sekka-aurora-shards'], chance: .8 } } },
   // Tobari, from his home line: "Sono genjitsu wa maboroshi kamo shirenai" (That reality might be an illusion) inside
   // Red Moon Reverie, said from the moment it catches them so that "maboroshi" (1.2 s into the cut) meets the finisher.
   // Between blows, his own battle cries (3 October).
@@ -335,9 +334,9 @@ const MEASURED: Partial<Record<AudioCue, number>> = {
   'taisei-sunpalm-cannon-full': -14.6, 'taisei-spirit': -11.3, 'ouga-gale': -16.6, 'konta-whirlsphere': -8.8,
   'konta-galewheel': -11.3, 'kurobi-link': -19.1, 'kurobi-taunt': -19.7, 'kurobi-growl': -21.5,
   'gummy-pistol': -17.7, 'gummy-bazooka': -17.4, 'gummy-grand-tide-fist': -15.8, 'kenzo-crossing': -16.3,
-  'kenzo-phoenix': -16.8, 'kenzo-world': -15.4, 'koko-star': -16.7,
+  'kenzo-phoenix': -16.8, 'kenzo-world': -15.4, 'koko-iron-lullaby': -16.7,
   'koko-world': -17.0, 'nigo-nightfall': -12.6, 'kagari-hinoko': -20.7, 'kagari-yuragi': -16.6,
-  'ward-stat-shot': -14.1, 'ward-cautery-blade': -17.3, 'ward-flatline': -18.0, 'kuon-ao': -16.8,
+  'ward-stat-shot': -14.1, 'ward-cautery-blade': -17.3, 'ward-flatline': -18.0, 'kuon-gravity': -16.8,
   'kuon-violet': -13.5, 'kuon-boundless': -13.2, 'oro-steamroller': -18.8, 'gaunt-scream': -19.1,
   'setsu-ikazuchi': -16.8, 'setsu-gale-step': -15.3,
 };
@@ -567,7 +566,7 @@ export function planVoice(event: CombatEvent, awakened = false, scene?: VoiceSce
     if (fighter === 'jirenga') return [voice('vo-jirenga-come-all', .9, 2)];
     if (fighter === 'jinlin') return [voice('vo-jinlin-for-real', .9, 2)];
     // Ippon, serious for once: his finisher's call.
-    if (fighter === 'ippon') return [voice('vo-ippon-serious-series', .9, 2)];
+    if (fighter === 'ippon') return [voice('vo-ippon-all-nighter', .9, 2)];
     // Sekka: "Jutsushiki tenkai" (Technique Development).
     if (fighter === 'sekka') return [voice('vo-sekka-technique', .9, 2)];
     // Levin: "Kui ga nokoranai hō o jibun de erabe" (Choose for yourself the one you won't regret).
@@ -590,11 +589,11 @@ export function planVoice(event: CombatEvent, awakened = false, scene?: VoiceSce
     // (awakeningLines.ts): Kenzo's "鬼面……羅刹ッ！", Gummy's "にっひひ…サンライズ!" and the others. Released, and at
     // SUPER_LINE_PRIORITY, as Taisei's and Ouga's lines: their efforts do not cut it, and their calls speak over it.
     // Native nonverbal strain/roar begins with the authored entry.
-    if (fighter === 'tancho') return [voice('vo-tancho-phosphor', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
+    if (fighter === 'tancho') return [voice('vo-tancho-red-crown', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'oyashio') return [voice('vo-oyashio-sea', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'ume') return [voice('vo-ume-grand-champion', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'lanthorn') return [voice('vo-lanthorn-awakening', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
-    if (fighter === 'highsun') return [voice('vo-highsun-sunshine', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
+    if (fighter === 'highsun') return [voice('vo-highsun-noon', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'torsion') return [voice('vo-torsion-serious', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'kubiwa') return [voice('vo-kubiwa-awakening', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'onigawara') return [voice('vo-onigawara-awaken', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
@@ -607,7 +606,7 @@ export function planVoice(event: CombatEvent, awakened = false, scene?: VoiceSce
     if (fighter === 'chohan') return [voice('vo-chohan-power-gap', .85, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'tsubute') return [voice('vo-tsubute-resolve', .85, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'aqrab') return [voice('vo-aqrab-to-sand', .85, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
-    if (fighter === 'yodaka') return [voice('vo-yodaka-heart-ablaze', .9, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
+    if (fighter === 'yodaka') return [voice('vo-yodaka-burn-out', .9, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'murex') return [voice('vo-murex-awaken', .85, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'kinu') return [voice('vo-kinu-awakening', .85, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'madake') return [voice('vo-madake-resolve', .85, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
@@ -627,14 +626,14 @@ export function planVoice(event: CombatEvent, awakened = false, scene?: VoiceSce
     if (fighter === 'strappado') return [voice('vo-strappado-showstopper', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'unari') return [voice('vo-unari-awakening', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'barrow') return [voice('vo-barrow-strongest', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
-    if (fighter === 'sashigane') return [voice('vo-sashigane-overtime', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
+    if (fighter === 'sashigane') return [voice('vo-sashigane-no-margin', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'gosu') return [voice('vo-gosu-awakening', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'kusushi') return [voice('vo-kusushi-grand-champion', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'hakushi') return [voice('vo-hakushi-awaken', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'suzuran') return [voice('vo-suzuran-resolve', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'wataame') return [voice('vo-wataame-awakening', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'senko') return [voice('vo-senko-speed', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
-    if (fighter === 'buna') return [voice('vo-buna-oden', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
+    if (fighter === 'buna') return [voice('vo-buna-wake-the-winter', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'adad') return [voice('vo-adad-awakening', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'bellows') return [voice('vo-bellows-stoked', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];
     if (fighter === 'mikage') return [voice('vo-mikage-hackles-up', .95, SUPER_LINE_PRIORITY, 0, { phase: 'release' })];

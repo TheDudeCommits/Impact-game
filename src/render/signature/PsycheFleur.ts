@@ -6,7 +6,7 @@ import type {Fighter} from '../Fighter';
 import type {Flight} from '../CombatEffects';
 import {bodyCentre,type VfxKit} from '../vfx/VfxKit';
 import {SIGNATURE,involvesLocal} from './context';
-import {psycheArmPose,robinArmPose,robinPlaceArm,ROBIN_COMMANDS,robinClamp,type RobinArmPose} from './PsycheBloomPose';
+import {psycheArmPose,newPsycheArmPose,psychePlaceArm,PSYCHE_ARM_COMMANDS,psycheArmClamp,type PsycheArmPose} from './PsycheBloomPose';
 import {PSYCHE_MOVES} from '../../game/fighters/psyche';
 import {BURN,MoveStage,SHEEN,stageLook,type StageLook} from './MoveStage';
 import { blowFloor } from './blowFloor';
@@ -15,7 +15,7 @@ export const isPsycheFleur=(id:string|undefined)=>id==='psyche';
 export const PSYCHE_FLEUR_ASSETS=Object.freeze(['/assets/fighters/psyche-grown-arm1.glb']);
 export const PSYCHE_FLEUR_LIMITS=Object.freeze({arms:24,petals:256,collars:24,receipts:16,impacts:24});
 const UP=new T.Vector3(0,1,0),Z=new T.Vector3(0,0,1),PINK=new T.Color(0xf8b7de),PLUM=new T.Color(0x834985),PALE=new T.Color(0xffeaf7);
-/** The Hana Hana no Mi as the stage lights it: pale petal white at the heart, her pink round it, cooling to plum (her
+/** Her blooming flowers as the stage lights them: pale petal white at the heart, her pink round it, cooling to plum (her
  *  casting's palette); the petals a bloom throws, over the bloom threshold; and the floor under it in a deep rose with
  *  little light. */
 export const FLEUR:StageLook=stageLook(0xffeaf7,0xf8b7de,0x834985);
@@ -37,7 +37,7 @@ class Petals{
   this.mesh=new T.InstancedMesh(geometry,material,capacity);this.mesh.name='psyche-'+name;this.mesh.count=0;this.mesh.frustumCulled=false;this.mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);this.upload=new SignaturePoolUpload(this.mesh,this.color);scene.add(this.mesh);
  }
  begin(){this.count=0;}
- add(p:T.Vector3,q:T.Quaternion,x:number,y:number,z:number,color:T.Color,alpha:number){if(this.count>=this.capacity||alpha<.005||Math.min(x,y,z)<=0)return;this.object.position.copy(p);this.object.quaternion.copy(q);this.object.scale.set(x,y,z);this.object.updateMatrix();this.mesh.setMatrixAt(this.count,this.object.matrix);this.color.setXYZW(this.count++,color.r,color.g,color.b,robinClamp(alpha));}
+ add(p:T.Vector3,q:T.Quaternion,x:number,y:number,z:number,color:T.Color,alpha:number){if(this.count>=this.capacity||alpha<.005||Math.min(x,y,z)<=0)return;this.object.position.copy(p);this.object.quaternion.copy(q);this.object.scale.set(x,y,z);this.object.updateMatrix();this.mesh.setMatrixAt(this.count,this.object.matrix);this.color.setXYZW(this.count++,color.r,color.g,color.b,psycheArmClamp(alpha));}
  end(){this.upload.end(this.count);}
  dispose(){this.mesh.removeFromParent();this.mesh.dispose();this.mesh.geometry.dispose();this.mesh.material.dispose();}
 }
@@ -57,7 +57,7 @@ export class PsycheFleur{
  private impacts:Impact[]=Array.from({length:24},()=>({actor:'',target:'',seq:-1,born:0,seed:0,grade:0,point:new T.Vector3()}));
  private cancelled=Array.from({length:24},()=>({actor:'',seq:-1}));private cancelCursor=0;private receiptCursor=0;private impactCursor=0;
  private seen=new Float64Array(128).fill(-1);private seenTime=new Float64Array(128).fill(-1);private seenCursor=0;
- private pose=robinArmPose();private p=new T.Vector3();private a=new T.Vector3();private b=new T.Vector3();private center=new T.Vector3();private head=new T.Vector3();private forward=new T.Vector3();private side=new T.Vector3();private dir=new T.Vector3();private scale=new T.Vector3();private q=new T.Quaternion();private spin=new T.Quaternion();private orientation=new T.Quaternion();
+ private pose=newPsycheArmPose();private p=new T.Vector3();private a=new T.Vector3();private b=new T.Vector3();private center=new T.Vector3();private head=new T.Vector3();private forward=new T.Vector3();private side=new T.Vector3();private dir=new T.Vector3();private scale=new T.Vector3();private q=new T.Quaternion();private spin=new T.Quaternion();private orientation=new T.Quaternion();
  constructor(private scene:T.Scene,private kit:Pick<VfxKit,'budget'>&Partial<VfxKit>){
   this.stage=MoveStage.for(scene,kit);
   this.petals=new Petals(scene,'fleur-petals',petalGeometry(),256);this.collars=new Petals(scene,'fleur-births',new T.CircleGeometry(1,10),24);
@@ -66,7 +66,7 @@ export class PsycheFleur{
   if(this.disposed||!ids.some(isPsycheFleur))return Promise.resolve();
   return this.loading??=new GLTFLoader().loadAsync(PSYCHE_FLEUR_ASSETS[0]).then(gltf=>{
    if(this.disposed){this.disposeSource(gltf);return;}this.source=gltf;
-   const source=gltf.scene.getObjectByName('Robin_Grown_Arm');if(!(source instanceof T.Mesh)||source.geometry.morphAttributes.position?.length!==7)throw Error('Robin native grown-arm contract is missing');
+   const source=gltf.scene.getObjectByName('Psyche_Grown_Arm');if(!(source instanceof T.Mesh)||source.geometry.morphAttributes.position?.length!==7)throw Error('Psyche native grown-arm contract is missing');
    this.armSource=source;const original=(Array.isArray(source.material)?source.material[0]:source.material)as T.MeshStandardMaterial;
    const material=new T.MeshToonMaterial({map:original.map,color:0xffffff,side:T.FrontSide});
    this.arms=new T.InstancedMesh(source.geometry,material,24);this.arms.name='psyche-grown-arms';this.arms.frustumCulled=false;this.arms.castShadow=false;this.arms.receiveShadow=false;this.arms.instanceMatrix.setUsage(T.DynamicDrawUsage);
@@ -115,7 +115,7 @@ export class PsycheFleur{
  }
  /** Petals thrown from `at`, `count` of them `size` across, going out at `speed` and turning as they fall, for `life`. */
  private bloom(at:T.Vector3,born:number,count:number,speed:number,size:number,life:number){const b=this.blooms[this.bloomCursor++%this.blooms.length];b.live=true;b.born=born;b.life=life;b.count=count;b.speed=speed;b.size=size;b.seed=Math.abs(at.x*13.1+at.z*7.7+born*5.3)%97;b.at.copy(at);}
- private addArm(pose:RobinArmPose,detail:boolean){
+ private addArm(pose:PsycheArmPose,detail:boolean){
   if(!this.arms||!this.armSource||pose.presence<.012||this.armCount>=24)return;
   this.arms.setMatrixAt(this.armCount,pose.matrix);for(let i=0;i<7;i++)this.armSource.morphTargetInfluences![i]=pose.weights[i];this.arms.setMorphAt(this.armCount++,this.armSource);
   pose.matrix.decompose(this.a,this.orientation,this.scale);this.dir.set(0,0,1).applyQuaternion(this.orientation);this.q.setFromUnitVectors(Z,this.dir);const radius=.078*pose.scale*pose.presence;
@@ -129,7 +129,7 @@ export class PsycheFleur{
    const s=f.state;if(!isPsycheFleur(s.fighter)||!s.alive||s.whiffedAt!==undefined||this.blocked(f))continue;
    if(!['light','heavy','special','ultimate','awaken'].includes(s.action))continue;
    this.swing(f,time,detail);
-   const shown=f as Displayed,clip=shown.displayedClipName??(s.action==='awaken'?'VIOLET SWARM':s.action==='light'?'Moth Palm':s.action==='heavy'?'Clasping Wings':s.action==='special'?'Ruin Palm':'Silk Cocoon'),command=ROBIN_COMMANDS[clip];if(!command)continue;
+   const shown=f as Displayed,clip=shown.displayedClipName??(s.action==='awaken'?'VIOLET SWARM':s.action==='light'?'Moth Palm':s.action==='heavy'?'Clasping Wings':s.action==='special'?'Ruin Palm':'Silk Cocoon'),command=PSYCHE_ARM_COMMANDS[clip];if(!command)continue;
    const seconds=shown.displayedClipTime??s.actionTime*command.duration;
    // The ordinary special hands off to its actual Flight at release. The
    // body gesture remains visible without a second phantom stationary palm.
@@ -146,7 +146,7 @@ export class PsycheFleur{
    const travel=Math.max(0,this.a.subVectors(flight.position,flight.origin??flight.position).dot(flight.heading));
    // (Gigantesco: the arm is seven times her own, as long behind its palm as the shot has room for.)
    const reach=Math.min(GIGANTESCO*(flight.awakened?1.15:1),travel);
-   this.a.copy(flight.position).addScaledVector(flight.heading,-reach);robinPlaceArm(this.pose,this.a,flight.position,1,1,0);this.addArm(this.pose,detail);
+   this.a.copy(flight.position).addScaledVector(flight.heading,-reach);psychePlaceArm(this.pose,this.a,flight.position,1,1,0);this.addArm(this.pose,detail);
    if(reach>.3){
     // The hand in pink light, petals streaming off the arm behind it, and its light on the floor it crosses.
     const floor=(flight.actorId?fighters.get(flight.actorId)?.group.position.y:undefined)??flight.position.y-1.2;
@@ -185,12 +185,12 @@ export class PsycheFleur{
    this.forward.set(Math.sin(s.yaw),0,Math.cos(s.yaw));this.side.crossVectors(UP,this.forward).normalize();this.center.copy(r.point);
    if(!r.final){const headJoint=v.drawnJoint?.('Head')??v.joints?.get('Head');if(headJoint)headJoint.getWorldPosition(r.head);else r.head.copy(this.center).addScaledVector(UP,.57);}
    this.head.copy(r.head);
-   const grow=robinClamp((t-.78)/.44),close=robinClamp((t-2.43)/.64),fade=1-robinClamp((t-3.15)/.55),count=detail?8:4;
+   const grow=psycheArmClamp((t-.78)/.44),close=psycheArmClamp((t-2.43)/.64),fade=1-psycheArmClamp((t-3.15)/.55),count=detail?8:4;
    for(let i=0;i<count;i++){
     // This exact primary surface also owns Fighter's confirmed contacts.
     // The remaining spokes frame it; they do not invent additional hits.
     if(i===0){const shown=f as Displayed;psycheArmPose(f,this.pose,'Silk Cocoon',shown.displayedClipTime??t,0);this.addArm(this.pose,detail);continue;}
-    // Hana Hana arms bloom on the victim, rather than exposing seven
+    // Blooming arms bloom on the victim, rather than exposing seven
     // detached shoulder ends in a floating wheel. Three paired restraints
     // climb from hip/torso to the outer shoulder/head silhouette. The palm
     // stays in front of that silhouette, so the clutch fingers remain legible.
@@ -214,8 +214,8 @@ export class PsycheFleur{
      this.p.copy(this.center).addScaledVector(this.side,.30).addScaledVector(UP,-.31).addScaledVector(this.forward,.10);this.a.lerp(this.p,close);
      this.p.copy(this.center).addScaledVector(this.side,-.20).addScaledVector(UP,-.05).addScaledVector(this.forward,-.21);this.b.lerp(this.p,close);
     }
-    const retract=robinClamp((t-2.35)/.48),hierarchy=i>=4?1-retract*retract*(3-2*retract):1;
-    robinPlaceArm(this.pose,this.a,this.b,grow,grow*fade*hierarchy,close);this.addArm(this.pose,detail);
+    const retract=psycheArmClamp((t-2.35)/.48),hierarchy=i>=4?1-retract*retract*(3-2*retract):1;
+    psychePlaceArm(this.pose,this.a,this.b,grow,grow*fade*hierarchy,close);this.addArm(this.pose,detail);
    }
   }
   for(const h of this.impacts){
@@ -232,17 +232,17 @@ export class PsycheFleur{
   const elapsed=s.actionTime*s.actionDuration,seed=(s.actionSeq??0)*5.1,big=s.awakened?1.15:1,wrists=wristsOf(f,this.wrists);
   if(s.action==='light'){
    // Moth Palm: pink light where the two arms land (her strike point is the grown arm's own palm).
-   const k=Math.sin(robinClamp(s.actionTime)*Math.PI),at=typeof f.strikePoint==='function'?f.strikePoint(this.p):this.p.copy(wrists);
+   const k=Math.sin(psycheArmClamp(s.actionTime)*Math.PI),at=typeof f.strikePoint==='function'?f.strikePoint(this.p):this.p.copy(wrists);
    st.glow(at,.3,FLEUR.main,.5*k);st.light(at,2.2,FLEUR,.2*k);
   }else if(s.action==='heavy'){
    // Clasping Wings: light gathered at her crossed wrists to the contact (the arms are her own and her casting's).
    const contact=s.branch?s.actionDuration*.5:HEAVY.contacts[0];
-   if(elapsed<contact)st.charge(wrists,FLEUR,.22*big,robinClamp(elapsed/contact),seed);
+   if(elapsed<contact)st.charge(wrists,FLEUR,.22*big,psycheArmClamp(elapsed/contact),seed);
   }else if(s.action==='special'&&!s.branch){
    // Ruin Palm's wind-up: light at her wrists, petals turning round her, rose light on the floor.
    const release=SPECIAL.contacts[0];
    if(elapsed<release){
-    const k=robinClamp(elapsed/release);st.charge(wrists,FLEUR,.36*big,k,seed);
+    const k=psycheArmClamp(elapsed/release);st.charge(wrists,FLEUR,.36*big,k,seed);
     for(let i=0,n=detail?16:9;i<n;i++){
      const ang=i*Math.PI*2/n+time*2.6,r=1.1+.5*Math.sin(i*1.9),y=f.group.position.y+.3+((time*.7+i*.37)%1)*2;
      this.p.set(f.group.position.x+Math.cos(ang)*r,y,f.group.position.z+Math.sin(ang)*r);
@@ -251,13 +251,13 @@ export class PsycheFleur{
     }
     st.disc(this.p.copy(f.group.position),1.6+1.6*k,ROSE,.5*k,SHEEN,1,seed);
    }
-  }else if(s.action==='ultimate'&&!s.branch&&s.confirmedAt===undefined&&elapsed<ULT.contacts[0]+.1)st.charge(wrists,FLEUR,.27,robinClamp(elapsed/ULT.contacts[0]),seed);
+  }else if(s.action==='ultimate'&&!s.branch&&s.confirmedAt===undefined&&elapsed<ULT.contacts[0]+.1)st.charge(wrists,FLEUR,.27,psycheArmClamp(elapsed/ULT.contacts[0]),seed);
  }
  /** Silk Cocoon from the confirm to the clutch: the room to a plum night, the floor veined with rose under the
   *  pair, petals rising in a ring round them, the light at her wrists. On the floor and round them: the arms on her
   *  victim are read through all of it. */
  private gather(f:Fighter,v:Fighter,g:Gather,elapsed:number,time:number,detail:boolean){
-  const st=this.stage,k=robinClamp((elapsed-ULT.contacts[0])/(ULT.contacts[FINAL]-ULT.contacts[0])),seed=g.seq*3.3;
+  const st=this.stage,k=psycheArmClamp((elapsed-ULT.contacts[0])/(ULT.contacts[FINAL]-ULT.contacts[0])),seed=g.seq*3.3;
   const mid=this.ground.copy(f.group.position).lerp(v.group.position,.5).setY(g.floor);
   st.dim(.3+.4*k,g.actor,g.target);
   st.disc(mid,(3+3.6*k)*(.6+.4*k),ROSE,.75,BURN,.3+.7*k,seed);

@@ -59,14 +59,14 @@ export const HAND_ROWS: Partial<Record<FighterId, HandRow>> = {
   // Her arms cross and her hands stay open while the hands she sprouts do the work.
   'psyche': { both: { guard: 'palm', blow: 'palm', cast: 'palm' } },
   // ---- Hex Fallout
-  // Piercing Blood is thrown from pressed palms.
+  // The blood shot is thrown from pressed palms.
   tempo: { both: { special: 'palm' } },
   sashigane: { R: HELD },
   // The left hand is raised open for Ghost Bride and Pinky Promise.
   akaito: { L: { special: 'relaxed', ultimate: 'palm', area: 'palm' }, R: HELD },
   chohan: { R: HELD },
   // ---- Cinder Requiem
-  // Hakuda's palm.
+  // The open palm.
   mikage: { both: { light: 'palm' } },
   // The free hand of a man who fights for the joy of it: open and hooked through his blows.
   onigawara: { L: { blow: 'claw', cast: 'claw' }, R: HELD },
@@ -78,7 +78,7 @@ export const HAND_ROWS: Partial<Record<FighterId, HandRow>> = {
   // clips that close the right hand on it, which are the clips' own. Filmed: a `held` right hand closed on nothing and shut the Void Ray's palm.)
   irbis: { both: { blow: 'claw', cast: 'claw', special: 'palm' } },
   shidare: { R: HELD },
-  // Sokatsui is cast from the open left hand.
+  // The blue-fire spell is cast from the open left hand.
   shijima: { L: { area: 'palm' }, R: HELD },
   // ---- Salvage Wilds
   unari: {},
