@@ -2,7 +2,7 @@ import type { CoreSlot } from '../types';
 import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 /** Native Adad staff choreography, manually aimed lightning, confirmed Firmament Fall.
- * Neither Mantra nor the four drums acquire targets or cause passive damage. */
+ * Neither his storm sense nor the four drums acquire targets or cause passive damage. */
 export const ADAD_MOVES: Record<CoreSlot,MoveDefinition>={
  light:{name:'Glasstip Jab',duration:.47,contacts:[.168],damage:20,range:2.95,radius:.8,stamina:9,cooldown:.47,stun:.30,knockback:3.2,lunge:3.6,style:'melee'},
  heavy:{name:'Lightning Rod',duration:.91,contacts:[.91*.58],damage:65,range:3.25,radius:1.05,stamina:26,cooldown:1.28,stun:.70,knockback:9,lunge:3.8,style:'melee',outcome:'knockdown'},

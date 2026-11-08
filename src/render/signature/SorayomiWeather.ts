@@ -25,7 +25,7 @@ export const CYCLONE: StageLook = stageLook(0xf2fcff, 0x7fd2f2, 0x1c5a8a);
 const UP = new THREE.Vector3(0, 1, 0);
 const HEAVY = SORAYOMI_MOVES.heavy, SPECIAL = SORAYOMI_MOVES.special, ULT = SORAYOMI_MOVES.ultimate, FINAL = ULT.contacts.length - 1;
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
-/** Where her charge gathers (the Clima-Tact's socket), else her hand. */
+/** Where her charge gathers (the staff's socket), else her hand. */
 const chargeOf = (fighter: Fighter, out: THREE.Vector3) => typeof fighter.chargePosition === 'function' ? fighter.chargePosition(out) : out.copy(fighter.handR);
 /** A gust left standing where Gust Spinner lands, for two thirds of a second. */
 type Gust = { live: boolean; born: number; seed: number; floor: number; at: THREE.Vector3 };
@@ -274,7 +274,7 @@ export class SorayomiWeather {
     this.bolts.end();
     st?.close();
   }
-  /** A swing's own weather, from the stage, at the Clima-Tact's tip (`strikePoint`, else her charge socket). */
+  /** A swing's own weather, from the stage, at the staff's tip (`strikePoint`, else her charge socket). */
   private swing(st: MoveStage, fighter: Fighter, age: number, time: number) {
     const s = fighter.state;
     if (s.whiffedAt !== undefined || s.action !== 'light' && s.action !== 'heavy' && s.action !== 'special' && s.action !== 'ultimate') return;

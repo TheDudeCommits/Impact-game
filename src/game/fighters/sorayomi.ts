@@ -2,7 +2,7 @@ import type { CoreSlot } from '../types';
 import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 
-/** Post-timeskip Sorcery Clima-Tact kit. The weather effects are emitted by
+/** Sorayomi's weather-staff kit. The weather effects are emitted by
  * deliberate player casts; neither awakening nor idle time creates attacks.
  * Native animation windows and visual contact anchors live beside the model
  * provenance; ordinary staff move names are descriptive gameplay labels. */
