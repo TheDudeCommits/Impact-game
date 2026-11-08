@@ -119,10 +119,6 @@
   "uses actual right kunai or left palm on every branch; awakened=false",
   "uses actual right kunai or left palm on every branch; awakened=true"
  ],
- "tests/onigawaraSharedIntegration.test.ts": [
-  "uses shown-body native right hand and matching rush/branch clips; awakened=false",
-  "uses shown-body native right hand and matching rush/branch clips; awakened=true"
- ],
  "tests/originals-authored-kicks.test.ts": [
   "name shown originals and clips in their body or rush file"
  ],
@@ -276,7 +272,6 @@
  ],
  "tests/victory.test.ts": [
   "adad has something to celebrate with",
-  "basilissa has something to celebrate with",
   "bruin has something to celebrate with",
   "buna has something to celebrate with",
   "dorado has something to celebrate with",
@@ -286,13 +281,11 @@
   "kenzo has something to celebrate with",
   "konta has something to celebrate with",
   "kosho has something to celebrate with",
-  "onigawara has something to celebrate with",
   "sashigane has something to celebrate with",
   "senko has something to celebrate with",
   "shakugo has something to celebrate with",
   "sorayomi has something to celebrate with",
   "sorrel has something to celebrate with",
-  "strix has something to celebrate with",
   "tsubute has something to celebrate with",
   "ward has something to celebrate with",
   "wataame has something to celebrate with"
