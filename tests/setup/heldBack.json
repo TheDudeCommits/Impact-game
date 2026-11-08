@@ -1,7 +1,6 @@
 {
  "tests/airNormals.test.ts": [
   "koko is announced as the air kick exactly when the air kick is what is drawn",
-  "konta is announced as the air kick exactly when the air kick is what is drawn",
   "kosho is announced as the air kick exactly when the air kick is what is drawn",
   "ouga is announced as the air kick exactly when the air kick is what is drawn",
   "taisei is announced as the air kick exactly when the air kick is what is drawn"
@@ -10,7 +9,6 @@
   "kagari: announces its air string by the names of what it draws",
   "kenzo: announces its air string by the names of what it draws",
   "koko: announces its air string by the names of what it draws",
-  "konta: announces its air string by the names of what it draws",
   "kosho: announces its air string by the names of what it draws",
   "kuon: announces its air string by the names of what it draws",
   "never draws Jump + Light with the grounded jab's clip (round 4b)",
@@ -55,25 +53,17 @@
  "tests/footContact.test.ts": [
   "cycles kenzo's legs into a lunge and leaves a standing swing alone",
   "kenzo does not skate at a run",
-  "konta does not skate at a run",
-  "konta walks, runs, and does something in between",
   "measures the whole roster",
   "ouga does not skate at a run",
   "ouga walks, runs, and does something in between",
   "reports a plausible number of steps for the ground covered",
   "taisei keeps a foot on the ground while blocking and walking"
  ],
- "tests/formGround.test.ts": [
-  "konta: the bottom of the idle is on the tile"
- ],
  "tests/gummyRound5.test.ts": [
   "is its own take, landing its blow on the move's contact"
  ],
  "tests/heldEquipment.test.ts": [
   "tsubute keeps hold of it through a run and a combo"
- ],
- "tests/impactPose.test.ts": [
-  "konta: a big blow throws the head along it, holds it, then lets go"
  ],
  "tests/kubiwaSharedIntegration.test.ts": [
   "reads actual native command fingers in every manual branch; awakened=false",
@@ -149,22 +139,20 @@
  "tests/reactionTakes.test.ts": [
   "gaku, a light string",
   "ippon Hit 01",
-  "ippon, Konta's light string, seed 7",
-  "ippon, Konta's light string, seed 8",
-  "konta Hit 01",
-  "konta shake",
   "kuon shake",
   "levin Hit 01",
   "levin shake",
   "oro shake",
   "ouga shake",
-  "ouga, Konta's light string",
   "ouga, a heavy, the knockdown and the get-up",
   "ouga, a light string",
   "rook, a heavy, the knockdown and the get-up",
   "shiden, a heavy, the knockdown and the get-up",
   "taisei, a heavy, the knockdown and the get-up",
-  "tobari, a heavy, the knockdown and the get-up"
+  "tobari, a heavy, the knockdown and the get-up",
+  "ippon, Konta's light string, seed 7",
+  "ippon, Konta's light string, seed 8",
+  "ouga, Konta's light string"
  ],
  "tests/runTakes.test.ts": [
   "kuon",
@@ -215,9 +203,7 @@
   "bruin has something to celebrate with",
   "dorado has something to celebrate with",
   "kenzo has something to celebrate with",
-  "konta has something to celebrate with",
   "sashigane has something to celebrate with",
-  "senko has something to celebrate with",
   "tsubute has something to celebrate with",
   "wataame has something to celebrate with"
  ],
