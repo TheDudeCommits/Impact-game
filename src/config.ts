@@ -162,6 +162,9 @@ export type CameraMode='arena'|'dynamic'|'lockon'|'free'|'smart';
 export const CAMERA_MODES:readonly CameraMode[]=['arena','dynamic','lockon','free','smart'];
 export const CAMERA_VERSION=4;
 export const ANIM_VERSION=2;
+/** A save from before this version holding 'inked' (the default before Halo) is moved to Halo once; a save at this
+ *  version keeps whatever it says. */
+export const HUD_VERSION=2;
 /** Round 4b (TARGETING): how a locked target is marked. 'glow' (the default)
  *  lights the target's whole silhouette in its threat colour - yellow idle,
  *  orange on a blockable attack, red on one that must be dodged
@@ -197,6 +200,7 @@ export interface Settings { sensitivity:number; shake:number; effects:number; vf
   /** How hard a controller rumbles, 0-1. */
   vibration:number;
   hudSkin:HudSkin;
+  hudVersion?:number;
   moveLayout:MoveLayout;
   errorReports?:boolean; }
 /** Every move-card layout (Settings.moveLayout), the default first; the third word is the note in the open list. */
@@ -219,7 +223,7 @@ export function chooseQuality(settings:Settings,value:string,machine?:Settings['
 }
 export function loadSettings():Settings {
   const vfx=defaultVfx();
-  const defaults:Settings={sensitivity:1,shake:.5,effects:VFX_DENSITY[vfx],vfx,volume:.7,sfxVolume:.85,voiceVolume:1,musicVolume:.75,musicEnabled:true,homeAnimations:true,audioMixVersion:3,quality:'high',powerMode:'auto',cameraMode:'dynamic',cameraStyle:'classic',cameraVersion:CAMERA_VERSION,cinematics:true,lockStyle:'glow',vibration:1,animStyle:'snap',animVersion:ANIM_VERSION,hudSkin:'halo',moveLayout:'row',errorReports:true};
+  const defaults:Settings={sensitivity:1,shake:.5,effects:VFX_DENSITY[vfx],vfx,volume:.7,sfxVolume:.85,voiceVolume:1,musicVolume:.75,musicEnabled:true,homeAnimations:true,audioMixVersion:3,quality:'high',powerMode:'auto',cameraMode:'dynamic',cameraStyle:'classic',cameraVersion:CAMERA_VERSION,cinematics:true,lockStyle:'glow',vibration:1,animStyle:'snap',animVersion:ANIM_VERSION,hudSkin:'halo',hudVersion:HUD_VERSION,moveLayout:'row',errorReports:true};
   try {
     const saved=JSON.parse(localStorage.getItem('rift-settings')||'{}');
     if(!saved||typeof saved!=='object')return defaults;
@@ -244,7 +248,8 @@ export function loadSettings():Settings {
     if(saved.lockStyle==='glow'||saved.lockStyle==='brackets')defaults.lockStyle=saved.lockStyle;
     // (A save from before ANIM_VERSION holding 'twos', the default of its day, is moved to Anime (smooth) once.)
     if((saved.animStyle==='twos'&&saved.animVersion===ANIM_VERSION)||saved.animStyle==='snap'||saved.animStyle==='classic')defaults.animStyle=saved.animStyle;
-    if((HUD_SKINS as readonly string[]).includes(saved.hudSkin))defaults.hudSkin=saved.hudSkin;
+    // (A save from before HUD_VERSION holding 'inked', the default of its day, is moved to Halo once.)
+    if((HUD_SKINS as readonly string[]).includes(saved.hudSkin)&&(saved.hudSkin!=='inked'||saved.hudVersion===HUD_VERSION))defaults.hudSkin=saved.hudSkin;
     if((MOVE_LAYOUTS as readonly string[]).includes(saved.moveLayout))defaults.moveLayout=saved.moveLayout;
     // VISUAL EFFECTS: the saved level, else the level nearest a saved density (the slider it replaced); the density is
     // the level's either way.

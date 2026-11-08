@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
-import { FIGHTERS, HUD_SKINS, HUD_SKIN_OPTIONS, loadSettings } from '../../../config';
+import { FIGHTERS, HUD_SKINS, HUD_SKIN_OPTIONS, HUD_VERSION, loadSettings } from '../../../config';
 import { PROTOS, PROTO_IDS } from './index';
 import { firstPicture, pictures, plateSwapped, tones } from './proto';
 
@@ -14,6 +14,20 @@ describe('the drawn HUD looks', () => {
       expect(HUD_SKINS).toContain(id);
       expect(HUD_SKIN_OPTIONS.some(([value]) => value === id)).toBe(true);
     }
+  });
+
+  it('move a save from before Halo was the default onto Halo once, and keep a later choice of Inked', () => {
+    const was = (globalThis as { localStorage?: unknown }).localStorage;
+    const store = (saved: object) => { (globalThis as { localStorage?: unknown }).localStorage = { getItem: () => JSON.stringify(saved), setItem: () => {} }; };
+    try {
+      store({ hudSkin: 'inked' });
+      expect(loadSettings().hudSkin).toBe('halo');
+      store({ hudSkin: 'inked', hudVersion: HUD_VERSION });
+      expect(loadSettings().hudSkin).toBe('inked');
+      store({ hudSkin: 'halo' });
+      expect(loadSettings().hudSkin).toBe('halo');
+      expect(loadSettings().hudVersion).toBe(HUD_VERSION);
+    } finally { (globalThis as { localStorage?: unknown }).localStorage = was; }
   });
 
   it('build both plates and a clock with the hooks the shared driver writes', () => {
