@@ -1,6 +1,5 @@
 {
  "tests/airNormals.test.ts": [
-  "gummy is announced as the air kick exactly when the air kick is what is drawn",
   "koko is announced as the air kick exactly when the air kick is what is drawn",
   "konta is announced as the air kick exactly when the air kick is what is drawn",
   "kosho is announced as the air kick exactly when the air kick is what is drawn",
@@ -8,7 +7,6 @@
   "taisei is announced as the air kick exactly when the air kick is what is drawn"
  ],
  "tests/airStrings.test.ts": [
-  "gummy: announces its air string by the names of what it draws",
   "kagari: announces its air string by the names of what it draws",
   "kenzo: announces its air string by the names of what it draws",
   "koko: announces its air string by the names of what it draws",
@@ -70,18 +68,11 @@
   "gaunt: the bottom of the idle is on the tile",
   "konta: the bottom of the idle is on the tile"
  ],
- "tests/gummy.test.ts": [
-  "plays a distinct authored clip per slot and keeps the arm attached"
- ],
  "tests/gummyRound5.test.ts": [
   "is its own take, landing its blow on the move's contact"
  ],
  "tests/heldEquipment.test.ts": [
   "tsubute keeps hold of it through a run and a combo"
- ],
- "tests/idleReady.test.ts": [
-  "kagari stands in his battle idle when it is a fight",
-  "ward stands in his battle idle when it is a fight"
  ],
  "tests/impactPose.test.ts": [
   "konta: a big blow throws the head along it, holds it, then lets go"
@@ -123,8 +114,7 @@
  ],
  "tests/originals-lucy-onset.test.ts": [
   "lucy-px1.glb: the Bazooka keeps its length (its blow stays on 0.42 s, contactFrames' 0.4667)",
-  "lucy-px1.glb: the jump opens at its stand, not on a crouch key it leaves on the next frame",
-  "sunrise-pxmoves1.glb: the Bazooka keeps its length (its blow stays on 0.42 s, contactFrames' 0.4667)"
+  "lucy-px1.glb: the jump opens at its stand, not on a crouch key it leaves on the next frame"
  ],
  "tests/originals-places-r8.test.ts": [
   "keeps the earlier model of each out of the package, unless what still loads it ships"
@@ -162,17 +152,11 @@
   "gaku, a light string",
   "gaunt shake",
   "gaunt, gorai's light string, seed 7",
-  "gummy, a heavy, the knockdown and the get-up",
   "ippon Hit 01",
   "ippon, Konta's light string, seed 7",
   "ippon, Konta's light string, seed 8",
-  "kagari Hit 01",
-  "kagari, a heavy, the knockdown and the get-up",
   "konta Hit 01",
   "konta shake",
-  "kosho Hit 01",
-  "kosho, Konta's light string",
-  "kosho, a heavy, the knockdown and the get-up",
   "kuon shake",
   "levin Hit 01",
   "levin shake",
@@ -188,11 +172,7 @@
   "sorrel, a heavy, the knockdown and the get-up",
   "sorrel, a light string",
   "taisei, a heavy, the knockdown and the get-up",
-  "tobari, a heavy, the knockdown and the get-up",
-  "ward Hit 01",
-  "ward, a heavy, the knockdown and the get-up",
-  "ward, a light string",
-  "ward, seven lights, a launch, a juggle and a second launch"
+  "tobari, a heavy, the knockdown and the get-up"
  ],
  "tests/runTakes.test.ts": [
   "kuon",
@@ -204,12 +184,8 @@
   "buna: the rush file binds onto the body, names its stages, and has their contacts",
   "gaunt: the rush clips stand on the idle's floor and stay near the capsule",
   "gaunt: the rush file binds onto the body, names its stages, and has their contacts",
-  "gummy: the rush file binds onto the body, names its stages, and has their contacts",
-  "kagari: the rush clips stand on the idle's floor and stay near the capsule",
-  "kagari: the rush file binds onto the body, names its stages, and has their contacts",
   "kenzo: the rush file binds onto the body, names its stages, and has their contacts",
   "koko: the rush file binds onto the body, names its stages, and has their contacts",
-  "kosho: the rush clips stand on the idle's floor and stay near the capsule",
   "kuon: the rush clips stand on the idle's floor and stay near the capsule",
   "kuon: the rush file binds onto the body, names its stages, and has their contacts",
   "oro: the rush clips stand on the idle's floor and stay near the capsule",
@@ -217,20 +193,16 @@
   "ouga: the rush clips stand on the idle's floor and stay near the capsule",
   "shirokane: the rush file binds onto the body, names its stages, and has their contacts",
   "tsubute: the rush clips stand on the idle's floor and stay near the capsule",
-  "tsubute: the rush file binds onto the body, names its stages, and has their contacts",
-  "ward: the rush file binds onto the body, names its stages, and has their contacts"
+  "tsubute: the rush file binds onto the body, names its stages, and has their contacts"
  ],
  "tests/rushContacts.test.ts": [
   "buna",
   "gaunt",
-  "kagari",
   "kenzo",
-  "kosho",
   "kuon",
   "oro",
   "ouga",
-  "tsubute",
-  "ward"
+  "tsubute"
  ],
  "tests/rushFlow.test.ts": [
   "goes from stage to stage without a tick of idle, hit or miss, at any mashing rate, for all sixteen"
@@ -262,13 +234,11 @@
   "haldor has something to celebrate with",
   "kenzo has something to celebrate with",
   "konta has something to celebrate with",
-  "kosho has something to celebrate with",
   "sashigane has something to celebrate with",
   "senko has something to celebrate with",
   "sorayomi has something to celebrate with",
   "sorrel has something to celebrate with",
   "tsubute has something to celebrate with",
-  "ward has something to celebrate with",
   "wataame has something to celebrate with"
  ],
  "tests/armoryRetention.test.ts": [

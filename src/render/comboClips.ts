@@ -173,9 +173,9 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   koko: { lh: v('Straight Body', 0.7, 1.75, 0.48, 5.542), llh: v('Upper Dive', 0.9, 1.9, 0.45, 6.042), lllh: v('Hammer Dive', 0.55, 1.45, 0.5, 6.542), llls: v('Straight Body', 2.6, 3.8, 0.5, 5.542), airHeavy: v('Upper Dive', 2.2, 3.3, 0.55, 6.042), airSpecial: v('Gan Gan Barrage', 0.3, 1.8, 0.45, 3.083) },
   nigo: { lh: v('skill_3_4_1', 0, 1.04, 0.3, 1.042), llh: v('Punch 02', 0.1, 0.9, 0.34, 1.833), lllh: v('skill_1_3_1', 1.75, 2.4, 0.35, 4.458), llls: v('strike_1_1', 0, 0.66, 0.3, 0.667), airHeavy: v('Punch 01', 0.75, 1.6, 0.52, 1.667), airSpecial: v('Scorched Earth', 0.6, 1.9, 0.4, 2.833) },
   // Round 4b (COMBAT): Kagaribi is his TAIMATSU (Taimatsu) thrown into the floor, not the second half of the stun's take.
-  kagari: { llh: v('Upper Dive', 1.15, 2.1, 0.53, 6.042), lllh: v('Taiyou-Dama', 1.2, 2.3, 0.46, 2.458), llls: v('Body Dive', 0.85, 1.75, 0.47, 6.542), airHeavy: v('Upper Dive', 2.2, 3.2, 0.5, 6.042), airSpecial: v('Taimatsu', 0.3, 1.25, 0.63, 1.25) },
+  kagari: { lh: v('skill_a', 1.8, 2.8, 0.46, 3.292), llh: v('Upper Dive', 1.15, 2.1, 0.53, 6.042), lllh: v('Taiyou-Dama', 1.2, 2.3, 0.46, 2.458), llls: v('Body Dive', 0.85, 1.75, 0.47, 6.542), airHeavy: v('Upper Dive', 2.2, 3.2, 0.5, 6.042), airSpecial: v('Taimatsu', 0.3, 1.25, 0.63, 1.25) },
   // Round 4b (COMBAT): Biopsy Strike is the Cautery Blade's thrust carried through to the floor (the stun keeps its opening).
-  ward: { llh: v('Rising Slash', 0.5, 1.5, 0.55, 6.042), llls: v('Cautery Blade', 0, 0.95, 0.25, 1.333), airHeavy: v('Rising Slash', 2.7, 3.5, 0.56, 6.042), airSpecial: v('Cautery Blade', 0.45, 1.333, 0.62, 1.333) },
+  ward: { lh: v('skill_a', 0, 1, 0.3, 1.000), llh: v('Rising Slash', 0.5, 1.5, 0.55, 6.042), lllh: v('skill_b', 0.05, 1.05, 0.3, 1.250), llls: v('Cautery Blade', 0, 0.95, 0.25, 1.333), airHeavy: v('Rising Slash', 2.7, 3.5, 0.56, 6.042), airSpecial: v('Cautery Blade', 0.45, 1.333, 0.62, 1.333) },
   // Round 4b (COMBAT): the Crown Stomp and Infinity are a take of their own (kuon-enders2.glb) - the stomp, and the open
   // hand held out that everything in front of stops at; the Supermassive is his Singularity's own. The critic found
   // the stomp the Dark Spark's punch and the knockdown and the smash two halves of one take.

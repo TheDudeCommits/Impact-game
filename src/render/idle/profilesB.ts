@@ -19,8 +19,12 @@ export const PROFILES_B: Partial<Record<FighterId, IdleProfile>> = {
   // of his starts from), so his swings keep their feet under them. Round 3c:
   // a home-screen idle is off duty in a fight, so with an opponent close he
   // drops into that battle idle - fists up - and back out once it cools.
-  kagari: { clip: '_Idle', stance: 'relaxed', ready: '_Idle' },
-  ward: { clip: '_Idle', stance: 'weapon', sway: .7, breath: 1.2, dip: 2.5, ready: '_Idle' },
+  kagari: { clip: 'idlehome_a', stance: 'relaxed', ready: '_Idle' },
+  // LANCET over the shoulder, the sheath held across him: his own victory
+  // loop, which is the pose the owner described. Round 3c: a victory loop is
+  // not how he faces someone, so with an opponent close he takes his battle
+  // idle - LANCET low and ready at his side - and the loop back once it cools.
+  ward: { clip: 'Ward Victory Loop', stance: 'weapon', sway: .7, breath: 1.2, dip: 2.5, ready: '_Idle' },
   // Menace: leaning back, chin up, the right hand open in front of his face
   // and the left on his hip; slow. Now and then he throws his head back and
   // his arms wide - KYAHAAA! - and comes back down.

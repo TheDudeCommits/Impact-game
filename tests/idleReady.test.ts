@@ -6,6 +6,8 @@ import { assembleFighter, popBase } from './popHarness';
 import type { FighterId } from '../src/game/types';
 
 /** Round 3c (ANIM), the second blind critic on the idles:
+ *   - "Ward's idle is literally a victory loop (Ward Victory Loop); Kagari's
+ *     is a home-screen idle" - relaxed poses held in the middle of a fight;
  *   - "Setsu 1.2 cm, hand 1.1 cm, statue-like between fidgets; Ouga 0.5 cm
  *     vertical; Shiden 0.4 cm" - the head's range over five seconds of
  *     standing at the lock-on distance.
@@ -41,7 +43,7 @@ async function standing(id: FighterId) {
 
 describe('a relaxed idle is not how a fighter faces an opponent', () => {
   // Taisei (8 October 2026): his relaxed idle, open hands and feet together, gives way to his fighting stance (taisei-ready).
-  it.each([['taisei', 'Taisei idle']] as const)('%s stands in his battle idle when it is a fight', async (id, relaxed) => {
+  it.each([['ward', 'Ward Victory Loop'], ['kagari', 'idlehome_a'], ['taisei', 'Taisei idle']] as const)('%s stands in his battle idle when it is a fight', async (id, relaxed) => {
     expect(IDLE_PROFILES[id]?.clip).toBe(relaxed);
     const { body, stand } = await standing(id);
     try {

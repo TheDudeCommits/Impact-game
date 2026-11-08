@@ -55,7 +55,7 @@ function biped(id: string, fighter: FighterId, props: Partial<PlayerState> = {},
   const top = new THREE.BoxGeometry(.3, .3, .3, 8, 8, 8); top.translate(0, 1.95, 0); skin(top, 'hair', hair);
   if (extras) {
     const blade = new THREE.BoxGeometry(.03, 1.3, .06, 1, 20, 1); blade.translate(-.8, 2.05, 0);
-    const weapon = new THREE.MeshToonMaterial(); weapon.name = 'ward_weapon';
+    const weapon = new THREE.MeshToonMaterial(); weapon.name = 'lancet_weapon';
     skin(blade, 'weapon_lancet_blade_hand_r', weapon);
     const dome = new THREE.Mesh(new THREE.SphereGeometry(2.5), new THREE.MeshToonMaterial({ transparent: true, opacity: .26 })); dome.name = 'awaken-on-0'; model.add(dome);
   }

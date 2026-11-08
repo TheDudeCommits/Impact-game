@@ -18,7 +18,7 @@ const NEW: Record<string, { fighter: FighterId; slot: AttackSlot; clip: string; 
 };
 /** The clips the combo enders cut segments out of, by name and length (comboClips.ts): left as they were. */
 const KEPT: [FighterId, string, number][] = [['kosho', 'Banquet Infernal', 1.708], ['kosho', 'Brasier: Coup de Feu', 3.292],
-  ['kagari', 'Taimatsu', 1.25], ['kagari', 'Yuragi', 1.042], ['gaunt', 'Scrap Cannon Arm', 2.292]];
+  ['kagari', 'skill_a', 3.292], ['kagari', 'Taimatsu', 1.25], ['kagari', 'Yuragi', 1.042], ['gaunt', 'Scrap Cannon Arm', 2.292]];
 const rigs = new Map<FighterId, GLTF>();
 beforeAll(async () => { for (const id of ['kosho', 'kagari', 'gaunt'] as FighterId[]) rigs.set(id, await loadRigWithExtras(id)); }, 120_000);
 const state = (id: FighterId, over: Partial<PlayerState> = {}): PlayerState => ({ ...base(id), ...over });
