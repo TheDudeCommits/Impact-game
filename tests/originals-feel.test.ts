@@ -16,7 +16,11 @@ const SPRINTS: Record<string, { run: number; shared: boolean }> = {
   shiden: { run: .2, shared: false },
   'gaunt-form': { run: .2222, shared: false },
   'nigo-form': { run: .141, shared: false },
-  'konta-form': { run: .0992, shared: false },
+  // (fixes-hawser-fox, 8 November 2026) Homura's run is no longer the leap its Dash is (that row read 8.4 steps off it and
+  // the cadence's floor played it at a walk): it is an authored trot with a four-beat walk on its clock, two hind footfalls
+  // a cycle, each step carrying the body the renderer's stride (scripts/originals/clips/author_fox.py GAITS), so its legs
+  // keep pace with its travel at any speed: 4.45 steps a second at the form's full 8.6 m/s.
+  'konta-form': { run: .4167, shared: true },
 };
 
 describe('the originals\' sprint keeps Impact\'s cadence', () => {

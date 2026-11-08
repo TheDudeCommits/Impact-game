@@ -49,8 +49,10 @@ export function hawserTrunkFist(clip:string,contactIndex?:number,sourceFraction=
  if(clip==='Advancing Rage'){const i=contactIndex??(sourceFraction<.23095238?0:sourceFraction<.44047619?1:sourceFraction<.68809524?2:3);return i===1?'LeftHand':'RightHand';}
  return clip==='Rising Rebellion'||clip==='Rush 1'||clip==='Rush 3'||clip==='Defiant Hook'||clip==='Rebel Uppercut'?'LeftHand':'RightHand';
 }
-/** Each blade's heel, tip and grip in its own joint's coordinates (`LeftBlade`, `RightBlade`: the joints the blades are
- *  bound to, under his hands; scripts/roster-expansion/hawser_scout_blades.py prints them). */
-export const HAWSER_SWORD_SOCKETS={"LeftBlade":{"bone":"LeftBlade","tip":[33.65466,3.18469,87.54656],"heel":[8.7906,1.23818,17.50709],"grip":[0,0,0]},"RightBlade":{"bone":"RightBlade","tip":[-47.60257,0.95873,80.87184],"heel":[-8.50958,1.39698,17.63353],"grip":[0,0,0]}} as const;
+/** Each blade's heel, tip and grip in its own joint's coordinates, metres (`LeftBlade`, `RightBlade`: the joints the blades
+ *  are bound to, under his hands). The blades are Levin's two short swords, seated in his closed fists clip by clip: the grip is the
+ *  joint's origin (the handle's middle), the heel where the blade leaves the guard, the tip its point, read off the blade
+ *  meshes in the joints' frames. */
+export const HAWSER_SWORD_SOCKETS={"LeftBlade":{"bone":"LeftBlade","tip":[-0.0315,0.7473,-0.0072],"heel":[-0.0065,0.095,-0.0016],"grip":[0,0,0]},"RightBlade":{"bone":"RightBlade","tip":[0.0256,0.7475,0.0064],"heel":[0.0052,0.095,0.0014],"grip":[0,0,0]}} as const;
 /** The Colossus's knuckles: measured exact exported striking skin vertices in its native hand coordinates. */
 export const HAWSER_COLOSSUS_KNUCKLES={"RightHand":[0.2155471577541368,0.0018955800906720888,-0.031404760125644415],"LeftHand":[0.20236690727864254,-0.023208751399481645,0.0354517831779454]} as const;

@@ -1623,6 +1623,13 @@ const STRIDE_SCALE:Partial<Record<FighterId,number>>={taisei:1.27};
 /** Where the gait is all walk and where it is all run, in metres a second.
  *  Between them it is a mix of the two read from one stride clock. */
 const GAIT_RANGE:[number,number]=[1.6,6];
+/** originals fork (fixes-hawser-fox, 8 November 2026): the transformations whose gait is read at the speed the world sees.
+ *  A form's own update is handed its speed in its own units (`carriedVelocity`: the parent's over the form's scale, so the
+ *  stride clock matches its legs), while GAIT_RANGE, the walk's two thresholds and the two-footfalls-a-second floor are a
+ *  man's. HOMURA, Konta's fox drawn 2.8 times over, read its 8.6 m/s run as 3.1 and would have walked through it, and the
+ *  floor stepped it faster than it travelled below 4.3 m/s. For these the thresholds take the world's speed and the floor
+ *  is divided by the scale. (Every other form is as it was; most are drawn within a quarter of their own size.) */
+const WORLD_GAIT_FORMS:ReadonlySet<FighterId>=new Set(['konta']);
 /** How much of the recent past the travel speed is read over.
  *
  *  Differentiating a 60 Hz snapshot position against a render frame is not a
@@ -5040,6 +5047,9 @@ export class Fighter {
   /** Which cadence table row this body reads: a transformation's body has its
    *  own run and dash, measured separately - the bouncing form's run is not Gummy's. */
   private get cadenceKey(){return (this.isForm?`${this.state.fighter}-form`:this.state.fighter) as FighterId;}
+  /** How many of the locomotion speed's units make a metre of the world's travel (see WORLD_GAIT_FORMS): 1 for everyone
+   *  but the forms listed there. */
+  private get gaitScale(){return this.isForm&&WORLD_GAIT_FORMS.has(this.state.fighter)?(this.group.scale.x||1):1;}
   private gaitTime(clip:THREE.AnimationClip,which:'run'|'walk'){
     const cadence=CADENCE[this.cadenceKey]?.[which];
     const step=cadence&&cadence.step>0?cadence.step:clip.duration/2;
@@ -5762,7 +5772,7 @@ export class Fighter {
     // Two thresholds rather than one: a single crossing point makes the clip
     // flicker between a walk and a run for anyone moving near it, and the
     // ground speed now ramps through that range on every start and stop.
-    this.walking=this.locomotionSpeed<(this.walking?3.6:2.8);
+    this.walking=this.locomotionSpeed*this.gaitScale<(this.walking?3.6:2.8);
     // The frame the floor arrives, not a fifty-millisecond average of the
     // descent: the window steadies the legs by flattening exactly the spike a
     // landing is made of, so the impact is read off the raw step instead.
@@ -6111,7 +6121,7 @@ export class Fighter {
       const stride=TARGET_STRIDE*(this.legLength||.85)*(STRIDE_SCALE[this.state.fighter]??1);
       const speed=Math.max(.5,this.locomotionSpeed);
       this.gaitBlend=this.blended?THREE.MathUtils.lerp(this.gaitBlend,
-        THREE.MathUtils.smoothstep(this.locomotionSpeed,GAIT_RANGE[0],GAIT_RANGE[1]),1-Math.exp(-dt*9)):1;
+        THREE.MathUtils.smoothstep(this.locomotionSpeed*this.gaitScale,GAIT_RANGE[0],GAIT_RANGE[1]),1-Math.exp(-dt*9)):1;
       // At a flat-out run there is no walk left in the mix, so the clip is
       // played the way it was before there was a gait to blend: by rate rather
       // than off the stride clock. Measured, the two agree - but the rate path
@@ -6130,7 +6140,7 @@ export class Fighter {
         // made Kenzo walk at 5.6 steps/second; no floor let Kagari hang in a lifted
         // pose. Two slow footfalls a second retain the walking rhythm.
         const step=CADENCE[this.cadenceKey]?.run?.step??this.runClip!.duration/2;
-        const rate=THREE.MathUtils.clamp(step*speed/Math.max(.2,stride),step*2.2,CADENCE_RANGE[1]);
+        const rate=THREE.MathUtils.clamp(step*speed/Math.max(.2,stride),step*2.2/this.gaitScale,CADENCE_RANGE[1]);
         this.gait+=runSign*rate*real/step;
         this.active.timeScale=0;
         this.active.time=this.gaitTime(this.runClip!,'run');

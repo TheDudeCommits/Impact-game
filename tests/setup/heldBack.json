@@ -16,7 +16,6 @@
   "kosho: announces its air string by the names of what it draws",
   "kuon: announces its air string by the names of what it draws",
   "never draws Jump + Light with the grounded jab's clip (round 4b)",
-  "nigo: announces its air string by the names of what it draws",
   "oro: announces its air string by the names of what it draws",
   "ouga: announces its air string by the names of what it draws",
   "shirokane: announces its air string by the names of what it draws",
@@ -49,9 +48,6 @@
   "every light blow he takes leaves his arms their own length (the flinch stretched them to three to five times)",
   "no clip he plays turns his missing arm (the empty sleeve on its stump holds still, as in all his own clips)"
  ],
- "tests/elderRuntimePoses.test.ts": [
-  "kusushi plays its entry and the exact named rush on its replacement body"
- ],
  "tests/fighterAssets.test.ts": [
   "names only files that exist, so the package step cannot fail on one"
  ],
@@ -65,7 +61,6 @@
   "konta does not skate at a run",
   "konta walks, runs, and does something in between",
   "measures the whole roster",
-  "nigo does not skate at a run",
   "ouga does not skate at a run",
   "ouga walks, runs, and does something in between",
   "reports a plausible number of steps for the ground covered",
@@ -73,8 +68,7 @@
  ],
  "tests/formGround.test.ts": [
   "gaunt: the bottom of the idle is on the tile",
-  "konta: the bottom of the idle is on the tile",
-  "nigo: the bottom of the idle is on the tile"
+  "konta: the bottom of the idle is on the tile"
  ],
  "tests/gummy.test.ts": [
   "plays a distinct authored clip per slot and keeps the arm attached"
@@ -168,10 +162,6 @@
   "gaku, a light string",
   "gaunt shake",
   "gaunt, gorai's light string, seed 7",
-  "gorai Hit 01",
-  "gorai shake",
-  "gorai, Konta's light string",
-  "gorai, a heavy, the knockdown and the get-up",
   "gummy, a heavy, the knockdown and the get-up",
   "ippon Hit 01",
   "ippon, Konta's light string, seed 7",
@@ -186,12 +176,6 @@
   "kuon shake",
   "levin Hit 01",
   "levin shake",
-  "nigo, Konta's light string, seed 7",
-  "nigo, Konta's light string, seed 8",
-  "nigo, a heavy, the knockdown and the get-up",
-  "nigo, a light string",
-  "nigo, gaunt's light string, seed 8",
-  "nigo, seven lights, a launch, a juggle and a second launch",
   "oro shake",
   "ouga shake",
   "ouga, Konta's light string",
@@ -228,7 +212,6 @@
   "kosho: the rush clips stand on the idle's floor and stay near the capsule",
   "kuon: the rush clips stand on the idle's floor and stay near the capsule",
   "kuon: the rush file binds onto the body, names its stages, and has their contacts",
-  "nigo: the rush file binds onto the body, names its stages, and has their contacts",
   "oro: the rush clips stand on the idle's floor and stay near the capsule",
   "oro: the rush file binds onto the body, names its stages, and has their contacts",
   "ouga: the rush clips stand on the idle's floor and stay near the capsule",
@@ -276,14 +259,12 @@
   "buna has something to celebrate with",
   "dorado has something to celebrate with",
   "gaunt has something to celebrate with",
-  "gorai has something to celebrate with",
   "haldor has something to celebrate with",
   "kenzo has something to celebrate with",
   "konta has something to celebrate with",
   "kosho has something to celebrate with",
   "sashigane has something to celebrate with",
   "senko has something to celebrate with",
-  "shakugo has something to celebrate with",
   "sorayomi has something to celebrate with",
   "sorrel has something to celebrate with",
   "tsubute has something to celebrate with",
