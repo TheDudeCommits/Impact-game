@@ -766,11 +766,11 @@ ENEMIES.kurobi = {
 };
 
 const RIVALS: readonly (readonly [FighterId, string, string])[] = [
-  ['taisei', 'Taisei', 'Last Sun'], ['ouga', 'Prince Mihou', 'Last Sun'], ['konta', 'Konta', 'Hidden Ash'],
+  ['taisei', 'Taisei', 'Last Sun'], ['ouga', 'Ouga', 'Last Sun'], ['konta', 'Konta', 'Hidden Ash'],
   ['shiden', 'Shiden', 'Hidden Ash'], ['shirokane', 'Shirokane', 'Hidden Ash'], ['gummy', 'Gummy', 'Dust Sea'],
-  ['kenzo', 'Kenzo', 'Dust Sea'], ['kosho', 'Gigot', 'Dust Sea'], ['kagari', 'Kagari', 'Dust Sea'], ['ward', 'Ward', 'Dust Sea'],
-  ['nigo', 'Nigo', 'Cinder Requiem'], ['koko', 'KoKo', 'Gilded Ruin'], ['oro', 'Lord ORO', 'Gilded Ruin'], ['kuon', 'Mugen', 'Hex Fallout'],
-  ['gaunt', 'Gaunt', 'Grave Hound'], ['setsu', 'Thunder Hawk', 'Salvage Wilds'],
+  ['kenzo', 'Kenzo', 'Dust Sea'], ['kosho', 'Kosho', 'Dust Sea'], ['kagari', 'Kagari', 'Dust Sea'], ['ward', 'Ward', 'Dust Sea'],
+  ['nigo', 'Nigo', 'Cinder Requiem'], ['koko', 'KoKo', 'Gilded Ruin'], ['oro', 'Lord ORO', 'Gilded Ruin'], ['kuon', 'Kuon', 'Hex Fallout'],
+  ['gaunt', 'Gaunt', 'Grave Hound'], ['setsu', 'Setsu', 'Salvage Wilds'],
 ];
 for (const [fighter, name, series] of RIVALS) {
   ENEMIES[`shadow-${fighter}`] = {

@@ -50,7 +50,6 @@
   "names only files that exist, so the package step cannot fail on one"
  ],
  "tests/fmovesClips.test.ts": [
-  "Gaunt' HOUND ARMOR, which has no new take, throws its own Scrap Cannon Arm",
   "keeps the clips the combo enders cut from, at their lengths"
  ],
  "tests/footContact.test.ts": [
@@ -65,7 +64,6 @@
   "taisei keeps a foot on the ground while blocking and walking"
  ],
  "tests/formGround.test.ts": [
-  "gaunt: the bottom of the idle is on the tile",
   "konta: the bottom of the idle is on the tile"
  ],
  "tests/gummyRound5.test.ts": [
@@ -150,8 +148,6 @@
  ],
  "tests/reactionTakes.test.ts": [
   "gaku, a light string",
-  "gaunt shake",
-  "gaunt, gorai's light string, seed 7",
   "ippon Hit 01",
   "ippon, Konta's light string, seed 7",
   "ippon, Konta's light string, seed 8",
@@ -176,8 +172,6 @@
   "ouga"
  ],
  "tests/rushClips.test.ts": [
-  "gaunt: the rush clips stand on the idle's floor and stay near the capsule",
-  "gaunt: the rush file binds onto the body, names its stages, and has their contacts",
   "kenzo: the rush file binds onto the body, names its stages, and has their contacts",
   "koko: the rush file binds onto the body, names its stages, and has their contacts",
   "kuon: the rush clips stand on the idle's floor and stay near the capsule",
@@ -190,7 +184,6 @@
   "tsubute: the rush file binds onto the body, names its stages, and has their contacts"
  ],
  "tests/rushContacts.test.ts": [
-  "gaunt",
   "kenzo",
   "kuon",
   "oro",
@@ -221,7 +214,6 @@
  "tests/victory.test.ts": [
   "bruin has something to celebrate with",
   "dorado has something to celebrate with",
-  "gaunt has something to celebrate with",
   "kenzo has something to celebrate with",
   "konta has something to celebrate with",
   "sashigane has something to celebrate with",
