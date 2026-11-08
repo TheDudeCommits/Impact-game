@@ -10,6 +10,8 @@ import { ashBanner } from './craterWreck';
 import { Forge, detail, noise2 } from './forge';
 import { drawn, rand, tinted } from './remake';
 
+/** The painted sky's turn that stands its sun (u .627) in the breach, 3 degrees west of north. */
+const SUN_TURN = Math.PI * 2 * (.627 - .5) + THREE.MathUtils.degToRad(3);
 /** The weir's face (z) at the breach, its back, its crest and the breach's sill and sides. */
 const FACE = -87, BACK = -97, CREST = 40, SILL = 27.5, NOTCH = [-14.6, 9.4] as const;
 /** The sluice temple's towers either side of the breach. */
@@ -39,7 +41,7 @@ export async function dress(c: DressContext) {
   const { kit, ambient } = c;
   const props = STAGE_PROPS['ashfall-weir'] ?? [];
   await Promise.all([
-    c.sky({ rotation: 0, drift: .0004 }),
+    c.sky({ rotation: SUN_TURN, drift: 0 }),
     kit.load(['br/rock-b', 'br/rock-c', 'br/podest', 'br/reeds', 'own/weir-blade', 'own/weir-temple', 'own/weir-tree']),
   ]);
   kit.grade = (material, piece) => {
@@ -205,14 +207,14 @@ function cleaved(c: DressContext) {
   return mesh;
 }
 
-/** First light: the sun's glow rising behind the breach through the smoke, mist boiling gold off the falls. */
+/** The painted sun's glow behind the breach through the smoke, the mist lit orange off the falls. */
 function firstLight(c: DressContext) {
   const glow = new Beacons(c.root, 3, c.ambient.time);
-  glow.add(-2.6, CREST + 10, BACK - 40, 170, 0xff8a40, -1, .2, 1);
-  glow.add(-2.6, SILL + 2, FACE - 4, 30, 0xffd0a0, -1, .6, 1);
+  glow.add(-2.6, CREST + 10, BACK - 40, 170, 0xff5a24, -1, .2, 1);
+  glow.add(-2.6, SILL + 2, FACE - 4, 30, 0xffa070, -1, .6, 1);
   glow.finish('weir first light', 1.1);
   const mist: { x: number; y: number; z: number; size: number }[] = [];
   const r = rand(141);
   for (let k = 0; k < 26; k++) mist.push({ x: -2.6 + (r() - .5) * 34, y: 1 + r() * 18, z: FACE + 10 + r() * 18, size: 9 + r() * 12 });
-  c.ambient.puffs({ spots: mist, color: 0xffe2c8, shade: 0xa8a8b8, opacity: .3, life: 6, rise: 6, drift: [.4, 0, 1.2], grow: 1.6, seed: 142, order: 1 });
+  c.ambient.puffs({ spots: mist, color: 0xffb490, shade: 0x6a5a60, opacity: .3, life: 6, rise: 6, drift: [.4, 0, 1.2], grow: 1.6, seed: 142, order: 1 });
 }

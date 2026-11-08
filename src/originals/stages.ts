@@ -88,7 +88,7 @@ export const STAGE_SKIES: Partial<Record<StageId, string>> = {
 export const SKY_OVERRIDES: Partial<Record<StageId, string>> = {
   'sunfall-arena': 'sky-sunfall-arena.webp', 
   'starfall-crater': 'sky-starfall-twilight.webp' /* places-epic-a: twilight after the star fell */, 'kuroyuki-hall': 'sky-kuroyuki-night.webp' /* places-epic-a: Kuroyuki by night */, 'cinder-flats': 'sky-cinder-ember.webp' /* places-epic-a: under the eruption */, 'mirror-mere': 'sky-mirror-mere-night.webp' /* places-epic-a: the mere at night */, 'drifting-isle': 'sky-drifting-isle.webp', 
-  'dry-harbour': 'sky-dry-harbour.webp', 'sunward-summit': 'sky-sunward-summit.webp', 'ashfall-weir': 'sky-ashfall-dawn.webp', 'thornwood-ward': 'sky-thornwood-night.webp',
+  'dry-harbour': 'sky-dry-harbour.webp', 'sunward-summit': 'sky-sunward-summit.webp', 'ashfall-weir': 'sky-ashfall-smoke.webp', 'thornwood-ward': 'sky-thornwood-night.webp',
   'hollowmere-quarry': 'sky-hollowmere-quarry.webp', 'wreckers-causeway': 'sky-wreckers-night.webp', 'scrap-pit': 'sky-scrap-pit.webp',
 };
 export const WITHHELD_SKIES: readonly string[] = [];

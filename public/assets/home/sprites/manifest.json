@@ -16,293 +16,293 @@
       "id": "taisei",
       "file": "taisei.webp",
       "sourceFile": "poses.png",
-      "scale": 1.2903225806451613,
-      "bytes": 670530,
+      "scale": 1.3714285714285714,
+      "bytes": 591130,
       "frames": [
         {
           "frame": 0,
           "bounds": [
-            88,
-            20,
-            346,
+            82,
+            36,
+            338,
             500
           ],
           "footX": 192.0,
           "sourceRect": [
-            70,
-            9,
-            270,
-            381
+            59,
+            18,
+            246,
+            356
           ]
         },
         {
           "frame": 1,
           "bounds": [
-            88,
-            35,
-            355,
+            75,
+            36,
+            340,
             500
           ],
           "footX": 192.0,
           "sourceRect": [
-            349,
-            21,
-            556,
-            381
+            340,
+            18,
+            533,
+            356
           ]
         },
         {
           "frame": 2,
           "bounds": [
-            84,
-            61,
-            352,
+            77,
+            36,
+            344,
             500
           ],
-          "footX": 192.5,
+          "footX": 193.0,
           "sourceRect": [
-            620,
-            41,
-            828,
-            381
+            626,
+            18,
+            821,
+            356
           ]
         },
         {
           "frame": 3,
           "bounds": [
-            71,
-            64,
-            342,
+            75,
+            30,
+            355,
             500
           ],
-          "footX": 192.0,
+          "footX": 194.0,
           "sourceRect": [
-            892,
-            42,
-            1102,
-            380
+            910,
+            18,
+            1114,
+            361
           ]
         },
         {
           "frame": 4,
           "bounds": [
-            68,
-            45,
-            349,
+            73,
+            28,
+            356,
             500
           ],
           "footX": 193.5,
           "sourceRect": [
-            53,
-            412,
-            271,
-            765
+            45,
+            402,
+            251,
+            746
           ]
         },
         {
           "frame": 5,
           "bounds": [
-            64,
-            45,
-            349,
+            69,
+            21,
+            356,
             500
           ],
           "footX": 193.5,
           "sourceRect": [
-            333,
-            412,
-            554,
-            765
+            329,
+            402,
+            538,
+            751
           ]
         },
         {
           "frame": 6,
           "bounds": [
-            44,
-            41,
-            349,
+            68,
+            23,
+            356,
             500
           ],
-          "footX": 194.5,
+          "footX": 194.0,
           "sourceRect": [
-            591,
-            411,
+            617,
+            402,
             827,
-            767
+            750
           ]
         },
         {
           "frame": 7,
           "bounds": [
-            31,
-            30,
-            355,
+            64,
+            20,
+            360,
             500
           ],
-          "footX": 192.5,
+          "footX": 193.5,
           "sourceRect": [
-            862,
-            404,
-            1113,
-            768
+            901,
+            403,
+            1117,
+            753
           ]
         },
         {
           "frame": 8,
           "bounds": [
-            36,
-            33,
-            357,
+            64,
+            21,
+            360,
             500
           ],
-          "footX": 193.5,
+          "footX": 194.0,
           "sourceRect": [
-            31,
-            788,
-            280,
-            1150
+            37,
+            787,
+            253,
+            1136
           ]
         },
         {
           "frame": 9,
           "bounds": [
-            47,
-            37,
-            344,
+            67,
+            32,
+            355,
             500
           ],
-          "footX": 194.0,
+          "footX": 194.5,
           "sourceRect": [
-            325,
-            790,
-            555,
-            1149
+            328,
+            787,
+            538,
+            1128
           ]
         },
         {
           "frame": 10,
           "bounds": [
-            46,
-            33,
-            339,
+            71,
+            34,
+            351,
             500
           ],
-          "footX": 192.0,
+          "footX": 193.5,
           "sourceRect": [
-            599,
+            622,
             787,
             826,
-            1149
+            1127
           ]
         },
         {
           "frame": 11,
           "bounds": [
-            53,
-            30,
-            339,
+            71,
+            35,
+            344,
             500
           ],
-          "footX": 193.0,
+          "footX": 193.5,
           "sourceRect": [
-            888,
-            782,
+            911,
+            788,
             1110,
-            1146
+            1127
           ]
         },
         {
           "frame": 12,
           "bounds": [
             74,
-            24,
+            38,
             341,
             500
           ],
           "footX": 193.5,
           "sourceRect": [
-            63,
-            1163,
-            270,
-            1532
+            52,
+            1172,
+            247,
+            1509
           ]
         },
         {
           "frame": 13,
           "bounds": [
-            80,
-            21,
-            341,
+            78,
+            41,
+            340,
             500
           ],
-          "footX": 192.0,
+          "footX": 193.5,
           "sourceRect": [
-            347,
-            1162,
-            549,
-            1533
+            343,
+            1172,
+            534,
+            1507
           ]
         },
         {
           "frame": 14,
           "bounds": [
-            90,
-            21,
-            344,
+            82,
+            38,
+            340,
             500
           ],
-          "footX": 192.0,
+          "footX": 194.5,
           "sourceRect": [
-            630,
-            1162,
-            827,
-            1533
+            634,
+            1171,
+            822,
+            1508
           ]
         },
         {
           "frame": 15,
           "bounds": [
-            88,
-            20,
-            346,
+            82,
+            36,
+            338,
             500
           ],
           "footX": 192.0,
           "sourceRect": [
-            934,
-            1161,
-            1134,
-            1533
+            923,
+            1170,
+            1110,
+            1508
           ]
         }
       ],
       "poster": "taisei-poster.webp",
-      "posterBytes": 43940,
-      "sourceSha256": "12bf2ecf199ba3c8e767086f30f8cb8738b7b168650800e17062ca3d46de8622",
-      "sha256": "767719c46e0579edf8e5124fe9d1ac79c0ad66c8d7c83dc2e2881a72e42c959b",
-      "posterSha256": "2914c6900c6f92b4697e62b03069c8c7d427c020080de73db11609886245e23b",
+      "posterBytes": 38632,
+      "sourceSha256": "573f78e4dbca37831b1ed4c8e4bb81f2684f6e3ed03f16f1e47c39a1347a6025",
+      "sha256": "5660e7bf9e6a415c60543ecbc452262ed7ee82488f8219da6ba3dcb4b4e50cf9",
+      "posterSha256": "d314e0633f4a571ec13417c004d08449201f153fdfc35b46b3f7e9ee7fa4cd6e",
       "pose": "His Sunpalm Cannon charge pose",
       "registration": "white keyed from the border, free-floating ink dropped, one scale per sheet, one sole anchor.",
       "promptFile": "made for the game",
-      "runtimePagesSourceSha256": "767719c46e0579edf8e5124fe9d1ac79c0ad66c8d7c83dc2e2881a72e42c959b",
+      "runtimePagesSourceSha256": "5660e7bf9e6a415c60543ecbc452262ed7ee82488f8219da6ba3dcb4b4e50cf9",
       "runtimePages": [
         {
           "file": "taisei-p1.webp",
-          "sha256": "bdcc8c9e74434307bfc5f551d9f5939021f6ceb65377acb31485e607285b7bba",
+          "sha256": "22ba90b5d27e49fca77700db168ce24560632fd2fd634b3fdd623bbaaa8e9339",
           "firstFrame": 0,
           "frameCount": 8,
           "width": 1536,
           "height": 1024,
-          "bytes": 331360
+          "bytes": 291698
         },
         {
           "file": "taisei-p2.webp",
-          "sha256": "b8cb9bd4112e99b6457465fcfaf2121d0baacd5d4ecbc58bd0f4250878636b99",
+          "sha256": "5c2437a99bea79af8cb689f7e7980cdb8db4899c7284db8b784e7b51be66abde",
           "firstFrame": 8,
           "frameCount": 8,
           "width": 1536,
           "height": 1024,
-          "bytes": 340102
+          "bytes": 299718
         }
       ]
     },
