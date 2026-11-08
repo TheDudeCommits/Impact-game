@@ -30,7 +30,7 @@ export const PROFILES_SHOP: Partial<Record<FighterId, IdleProfile>> = {
   imago: { model: '/assets/fighters/imago-idle2.glb', clip: 'Imago idle', fidgets: ['Imago idle fidget'], stance: 'relaxed', breath: .9, sway: .3, gaze: .9, dip: 2 },
   vesper: { model: '/assets/fighters/vesper-idle1.glb', clip: 'Vesper idle', fidgets: ['Vesper idle fidget'], stance: 'weapon', breath: .8, sway: .4, gaze: .9, dip: 2, fidgetEvery: [9, 15] },
   gorai: { stance: 'weapon', breath: 1.1, sway: .5, gaze: .7, dip: 2.2 },
-  haldor: { stance: 'weapon', breath: 1.1, sway: .5, gaze: .7, dip: 2.2, fidgets: ['idlehome_a'], fidgetEvery: [9, 16] },
+  haldor: { stance: 'weapon', breath: 1.1, sway: .5, gaze: .7, dip: 2.2, fidgets: ['Haldor Home Idle'], fidgetEvery: [9, 16] },
   sorrel: { stance: 'weapon', breath: .9, sway: .5, gaze: .9, dip: 2.2, fidgets: ['idlehome_a'], fidgetEvery: [8, 14] },
   dorado: { stance: 'weapon', breath: 1, sway: .5, gaze: .8, dip: 2.2 },
   shiun: { stance: 'weapon', breath: .7, sway: .4, gaze: .7, dip: 1.8 },

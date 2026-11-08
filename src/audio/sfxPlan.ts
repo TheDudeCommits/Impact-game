@@ -906,7 +906,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   haldor: {
     // Faultline Fist: a fist driven into the air, and the air breaking ahead of it.
     special: c => [onBeat(pick(FAMILY.heavy, c.seed), .46, c0(c) - .03), onBeat('fx-explosion-huge', .44, c0(c) + .02)],
-    // The Island Shaker: he takes hold of the air, and the first tremor is the
+    // World Tilt: he sets the glaive down and punches the air, and the first tremor is the
     // opener; the world tilting is the cinematic.
     ultimate: c => [{ cue: 'fx-gather', gain: .34, phase: 'cast' }, onBeat('fx-land-heavy', .52, c0(c))],
   },
@@ -1202,7 +1202,7 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
   // TIMBER: The Forest Falls: lightning gathers down the mast-breaker, and it comes down.
   gorai: c => [held('fx-electric-bed', .24, c0(c) + .1, last(c)), onBeat('fx-lightning', .58, last(c) - .04),
     onBeat('fx-swing-huge', .5, last(c) - .05), onBeat('fx-explosion-huge', .52, last(c) + .02)],
-  // The Island Shaker: a tremor for every tilt of the world, and the last breaks it.
+  // World Tilt: a tremor for every tilt of the world, and the last breaks it.
   haldor: c => [...middle(c).map((time, i) => onBeat(pick(FAMILY.explosion, c.seed, i), .4, time)),
     onBeat('fx-land-heavy', .5, last(c) - .02), onBeat('fx-explosion-huge', .62, last(c))],
   // Horizon Sunder: one cut, red lightning along it.

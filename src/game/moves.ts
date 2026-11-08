@@ -898,8 +898,8 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // impact is the opener, and the mast-breaker, lightning down its length, the one
   // that counts at 1.6 - Gorai's whole weight in it.
   gorai:{name:'Thunderhead: Sky Anvil',duration:2.3,contacts:[.5,1.6],schedule:[40,275],damage:40,finisherDamage:328,range:3.4,radius:2.2,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:17,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
-  // The Island Shaker builds: he takes hold of the air, the first tremor is
-  // the opener, the world tilts twice more, and the third quake throws them.
+  // World Tilt builds: the glaive set down beside him, his left fist punches the air - the first tremor is
+  // the opener, the world tilts twice more, and the last, biggest punch throws them.
   haldor:{name:'World Tilt: Seabed Rising',duration:3.1,contacts:[.55,1.25,1.8,2.35],schedule:[40,40,58,227],damage:40,finisherDamage:248,range:2.6,radius:4,stamina:0,cooldown:22,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,guardBreak:true,style:'melee',lunge:0,confirm:WHIFF},
   // Horizon Sunder is a one-cut, NIGHTFALL's way: the opener goes out down the
   // line, and the Gryphon comes down through whoever it held.

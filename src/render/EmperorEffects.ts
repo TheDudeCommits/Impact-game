@@ -45,7 +45,7 @@ applyOriginalGuardianTint(GUARDIAN_TINT);
  *  TIMBER: The Forest Falls is lightning - it crawls down the club through the charge,
  *  and comes out of the sky onto whoever the club comes down on.
  *  Haldor: the quake. A white bubble gathers on the fist for
- *  Faultline Fist and the air in front of it cracks like glass; the Island Shaker
+ *  Faultline Fist and the air in front of it cracks like glass; World Tilt
  *  breaks the air round him at every tremor, and the ground rings out.
  *  Sorrel: Crimson Command - a dark dome that goes out from him with crimson
  *  lightning running over the floor - and Horizon Sunder, the will
