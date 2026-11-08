@@ -6,11 +6,11 @@ import { SignaturePoolUpload } from './SignaturePoolUpload';
 import { ORIGINALS } from '../../originals/roster';
 import { YODAKA_FIRE_OWL, YODAKA_FIRE_OWL_SCALE } from '../../originals/effects';
 
-export const YODAKA_TIGER_ASSET = ORIGINALS.yodaka ? YODAKA_FIRE_OWL : '/assets/vfx/yodaka/flame-tiger.webp';
-export const YODAKA_TIGER_LIMITS = Object.freeze({ impacts: 6, crescents: 12, lifetime: .65, radius: 3.5, loadTimeoutMs: 4000 });
+export const YODAKA_OWL_ASSET = ORIGINALS.yodaka ? YODAKA_FIRE_OWL : '/assets/vfx/yodaka/flame-tiger.webp';
+export const YODAKA_OWL_LIMITS = Object.freeze({ impacts: 6, crescents: 12, lifetime: .65, radius: 3.5, loadTimeoutMs: 4000 });
 let readyInstances = 0;
 /** AreaTelegraph retains its default look until an owned texture is available. */
-export const yodakaFlameTigerReady = (): boolean => readyInstances > 0;
+export const yodakaFireOwlReady = (): boolean => readyInstances > 0;
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const smooth = (n: number) => { const u = clamp(n); return u * u * (3 - 2 * u); };
 const Z = new T.Vector3(0, 0, 1), RIGHT = new T.Vector3(1, 0, 0);
@@ -69,10 +69,10 @@ class TigerBatch {
 type TigerImpact = { actor: string; born: number; radius: number; yaw: number; point: T.Vector3 };
 
 /** A visual response to the server's manual area impact. Never schedules or applies damage. */
-export class YodakaFlameTiger {
+export class YodakaFireOwl {
   private readonly tiger: TigerBatch;
   private readonly crescents: TigerBatch;
-  private readonly impacts: TigerImpact[] = Array.from({ length: YODAKA_TIGER_LIMITS.impacts }, () => ({ actor: '', born: 0, radius: 0, yaw: 0, point: new T.Vector3() }));
+  private readonly impacts: TigerImpact[] = Array.from({ length: YODAKA_OWL_LIMITS.impacts }, () => ({ actor: '', born: 0, radius: 0, yaw: 0, point: new T.Vector3() }));
   private readonly seenIds = new Float64Array(64).fill(NaN);
   private readonly seenTimes = new Float64Array(64).fill(NaN);
   private readonly point = new T.Vector3();
@@ -83,8 +83,8 @@ export class YodakaFlameTiger {
   private ready = false; private disposed = false;
 
   constructor(scene: T.Scene, private readonly kit: Pick<VfxKit, 'budget'>) {
-    this.tiger = new TigerBatch(scene, 'yodaka-flame-tiger', new T.PlaneGeometry(1, 1), YODAKA_TIGER_LIMITS.impacts, true);
-    this.crescents = new TigerBatch(scene, 'yodaka-tiger-crescents', crescentGeometry(), YODAKA_TIGER_LIMITS.crescents, false);
+    this.tiger = new TigerBatch(scene, 'yodaka-flame-tiger', new T.PlaneGeometry(1, 1), YODAKA_OWL_LIMITS.impacts, true);
+    this.crescents = new TigerBatch(scene, 'yodaka-tiger-crescents', crescentGeometry(), YODAKA_OWL_LIMITS.crescents, false);
   }
 
   /** Failure/timeout leaves the existing wildfire fallback available; no fighter load can hang here. */
@@ -102,9 +102,9 @@ export class YodakaFlameTiger {
         } else texture?.dispose();
         resolve();
       };
-      const timer = setTimeout(() => finish(), YODAKA_TIGER_LIMITS.loadTimeoutMs);
+      const timer = setTimeout(() => finish(), YODAKA_OWL_LIMITS.loadTimeoutMs);
       this.cancelLoad = () => finish();
-      try { new T.TextureLoader().load(YODAKA_TIGER_ASSET, finish, undefined, () => finish()); }
+      try { new T.TextureLoader().load(YODAKA_OWL_ASSET, finish, undefined, () => finish()); }
       catch { finish(); }
     });
   }
@@ -126,7 +126,7 @@ export class YodakaFlameTiger {
     this.seenIds[index] = event.id; this.seenTimes[index] = event.serverTime;
     const impact = this.impacts[this.cursor++ % this.impacts.length];
     impact.actor = event.actorId; impact.born = event.serverTime;
-    impact.radius = Number.isFinite(event.radius) ? Math.min(YODAKA_TIGER_LIMITS.radius, Math.max(.35, event.radius!)) : YODAKA_TIGER_LIMITS.radius;
+    impact.radius = Number.isFinite(event.radius) ? Math.min(YODAKA_OWL_LIMITS.radius, Math.max(.35, event.radius!)) : YODAKA_OWL_LIMITS.radius;
     impact.yaw = fighters?.get(event.actorId)?.state.yaw ?? 0;
     impact.point.set(at.x, at.y, at.z);
   }
@@ -138,9 +138,9 @@ export class YodakaFlameTiger {
       if (!impact.actor) continue;
       const age = time - impact.born;
       // A released G outlives its cast animation and actionSeq, but never its owner or the finite impact.
-      if (!fighters.get(impact.actor)?.state.alive || age >= YODAKA_TIGER_LIMITS.lifetime) { impact.actor = ''; continue; }
+      if (!fighters.get(impact.actor)?.state.alive || age >= YODAKA_OWL_LIMITS.lifetime) { impact.actor = ''; continue; }
       if (age < 0 || !Number.isFinite(age)) continue;
-      const u = age / YODAKA_TIGER_LIMITS.lifetime;
+      const u = age / YODAKA_OWL_LIMITS.lifetime;
       const alpha = smooth(age / .045) * (1 - smooth((age - .16) / .49));
       const width = impact.radius * (.78 + .22 * smooth(age / .13)) * (ORIGINALS.yodaka ? YODAKA_FIRE_OWL_SCALE : 1), height = width / 1.5;
       this.point.copy(impact.point); this.point.y += height * .5 + .06;

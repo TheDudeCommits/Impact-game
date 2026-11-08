@@ -18,4 +18,4 @@ export const SVANHILD_COMBOS:ComboRow={
 };
 export const SVANHILD_AWAKENING={name:'WHITE PLUMAGE',clip:'WHITE PLUMAGE',sourceDuration:2.30,runtimeDuration:.9,beats:{mark:.31,cap:.57,coronation:.76,settle:.91},sameBody:true,manualOnly:true}as const;
 /** The hand a blow leaves from, as Hisame's set throws it: the lakeglass from the left, the rest from the right. */
-export function svanhildStrikeJoint(action:string,clip?:string):'LeftHand'|'RightHand'{if(clip)return clip==='Sea Dragon LAKEGLASS'||clip==='Lakeglass Pursuit'||clip==='Rush 1'?'LeftHand':'RightHand';return action==='special'?'LeftHand':'RightHand';}
+export function svanhildStrikeJoint(action:string,clip?:string):'LeftHand'|'RightHand'{if(clip)return clip==='LAKEGLASS'||clip==='Lakeglass Pursuit'||clip==='Rush 1'?'LeftHand':'RightHand';return action==='special'?'LeftHand':'RightHand';}

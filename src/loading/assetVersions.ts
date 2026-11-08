@@ -1,11 +1,17 @@
+import { SITE_BASE, siteUrl } from './siteBase';
+
+// Inside a build served under a folder of its own (Player Two's /~<build>/), every file under /assets/ is asked for in
+// the page's own folder (siteBase.ts), and the version list is not read at all: there the folder is the version, and a
+// build's files never change at their address. At a site's root, all as before.
 const LIST = '/asset-versions.json';
+const PREFIXED = SITE_BASE !== '/';
 const native = typeof window !== 'undefined' && typeof window.fetch === 'function' ? window.fetch.bind(window) : undefined;
 let versions: Record<string, string> | null = null;
 let reading: Promise<void> | null = null;
 let readAt = -Infinity;
 
 function read() {
-  if (!native) return Promise.resolve();
+  if (!native || PREFIXED) return Promise.resolve();
   readAt = performance.now();
   return reading ??= native(LIST)
     .then(r => r.ok && /json/.test(r.headers.get('content-type') ?? '') ? r.json() : null)
@@ -19,8 +25,11 @@ export function refreshAssetVersions() {
   if (performance.now() - readAt > 60_000) void read();
 }
 
-/** A same-origin /assets/ file's address with its content's hash; any other address as it is. */
+/** A same-origin /assets/ file's address with its content's hash, inside the page's folder; any other address as it is. */
 export function versioned(url: string): string {
+  return siteUrl(withVersion(url));
+}
+function withVersion(url: string): string {
   if (!versions || typeof location === 'undefined') return url;
   let u: URL; try { u = new URL(url, location.href); } catch { return url; }
   if (u.origin !== location.origin || u.search || !u.pathname.startsWith('/assets/')) return url;
@@ -29,12 +38,14 @@ export function versioned(url: string): string {
   return `${/^[a-z][a-z0-9+.-]*:/i.test(url) ? u.origin : ''}${u.pathname}?v=${v}${u.hash}`;
 }
 
+/** A path under /assets/, at the root or already inside the page's folder (a three loader's, siteBase.ts). */
+const assetPath = (path: string) => path.startsWith('/assets/') || path.startsWith(`${SITE_BASE}assets/`);
 function isAsset(url: string) {
-  try { const u = new URL(url, location.href); return u.origin === location.origin && !u.search && u.pathname.startsWith('/assets/'); } catch { return false; }
+  try { const u = new URL(url, location.href); return u.origin === location.origin && !u.search && assetPath(u.pathname); } catch { return false; }
 }
 /** A same-origin /assets/ address, its query or none: one a failed download of is tried again. */
 function underAssets(url: string) {
-  try { const u = new URL(url, location.href); return u.origin === location.origin && u.pathname.startsWith('/assets/'); } catch { return false; }
+  try { const u = new URL(url, location.href); return u.origin === location.origin && assetPath(u.pathname); } catch { return false; }
 }
 
 /** The waits before the second and the third try. */
@@ -65,7 +76,7 @@ if (native && typeof location !== 'undefined') {
     const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();
     if (method !== 'GET' || !underAssets(url)) return native(input, init);
     const go = () => {
-      const next = isAsset(url) ? versioned(url) : url; if (next === url) return native(input, init);
+      const next = siteUrl(isAsset(url) ? versioned(url) : url); if (next === url) return native(input, init);
       return native(input instanceof Request ? new Request(next, input) : next, init);
     };
     const signal = init?.signal ?? (input instanceof Request ? input.signal : undefined);

@@ -91,8 +91,10 @@ describe('the game is named by brand.ts', () => {
     expect(meta('property', 'og:url')).toBe(`${SITE_URL}/`);
     expect(html).toContain(`<link rel="canonical" href="${SITE_URL}/">`);
     for (const file of ['index.html', 'public/privacy.html', 'public/site.webmanifest']) expect(fs.readFileSync(file, 'utf8'), file).not.toMatch(/jump\.dude\.work|impact\.dude\.work|playertwo/i);
-    expect(fs.readFileSync('src/ui/legalLinks.ts', 'utf8')).not.toMatch(/export const REPO_PAGE/);
-    for (const file of ['public/privacy.html', 'public/terms.html', 'src/ui/firstVisit.ts']) expect(fs.readFileSync(file, 'utf8'), file).not.toMatch(/github\.com/i);
+    // The one GitHub address the pages carry is the game's own repository (legalLinks.ts REPO_PAGE).
+    expect(fs.readFileSync('src/ui/legalLinks.ts', 'utf8')).toMatch(/export const REPO_PAGE = 'https:\/\/github\.com\/TheDudeCommits\/Impact-game';/);
+    for (const file of ['public/privacy.html', 'public/terms.html']) expect([...fs.readFileSync(file, 'utf8').matchAll(/https:\/\/github\.com[^"' <]*/g)].map(m => m[0]).every(url => url === 'https://github.com/TheDudeCommits/Impact-game'), file).toBe(true);
+    expect(fs.readFileSync('src/ui/firstVisit.ts', 'utf8')).not.toMatch(/github\.com/i); // (through REPO_PAGE)
     expect(fs.readFileSync('src/ui/firstVisit.ts', 'utf8')).toContain("NOTICE_KEY = 'jump-fan-notice'");
   });
 
@@ -106,7 +108,7 @@ describe('the game is named by brand.ts', () => {
   });
 
   it('draws the name as brand.ts has it where it is drawn: the boot text, the share card and the sign-in panel', () => {
-    expect(fs.readFileSync('index.html', 'utf8')).toMatch(/#app:empty::after\{content:attr\(data-brand\)/);
+    expect(html).toContain(`<b class="boot-word">${TITLE.toUpperCase()}</b>`);
     expect(html).toContain(`<div id="app" data-brand="${TITLE.toUpperCase()}"></div>`);
     expect(fs.readFileSync('src/ui/survival/shareCard.ts', 'utf8')).toMatch(/fillText\(TITLE\.toUpperCase\(\),/);
     expect(fs.readFileSync('src/ui/shop/privy.ts', 'utf8')).toContain('landingHeader: `Sign in to ${TITLE}`');

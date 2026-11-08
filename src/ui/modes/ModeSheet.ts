@@ -1,4 +1,5 @@
 import { isReleasedFighter } from '../../game/rosterAvailability';
+import { siteUrl } from '../../loading/siteBase'; // asset addresses inside the page's own folder
 import { FIGHTERS } from '../../config';
 import type { FighterId, RoomMode } from '../../game/types';
 import type { NetworkAccess } from '../../network';
@@ -189,7 +190,7 @@ export class ModeSheet {
   private draw() {
     const info = this.info, v = info.variants[this.variant]!, fighter = this.fighter(), seen = explainerSeen(this.mode);
     const go = goLabel(this.mode, v.go, fighterCaption(fighter), this.locked(fighter), this.joining ? this.code : undefined);
-    const art = info.cover ?? `/assets/home/modes/${info.art}.webp`;
+    const art = siteUrl(info.cover ?? `/assets/home/modes/${info.art}.webp`);
     const facts = [info.facts.players, info.facts.length, info.facts.lives].map(f => `<span>${escape(f)}</span>`).join('');
     const howTo = this.panels
       ? `<div class="ms-panels">${info.howTo.map((line, i) => `<figure class="ms-panel"><span class="ms-pic" style="${this.panelArt(info.panels[i], fighter)}"><b>${i + 1}</b></span><figcaption class="ux-keys">${promptText(line)}</figcaption></figure>`).join('')}</div>`

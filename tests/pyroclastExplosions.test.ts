@@ -48,7 +48,7 @@ describe('Pyroclast manual explosion presentation', () => {
       h.flights.clear(); h.fx.update(10.2, h.fighters, h.flights); expect(h.mesh('streaks').count).toBe(0);
     } finally { h.fx.dispose(); }
   });
-  it('never starts a Howitzer spiral from elapsed time or a cast without confirmation', () => {
+  it('never starts a Supervolcano spiral from elapsed time or a cast without confirmation', () => {
     const h = harness({ action: 'ultimate', actionTime: 1.4 / 3.4 });
     try {
       h.fx.handle(receipt({ kind: 'cast' }), h.fighters); h.fx.update(11.4, h.fighters, h.flights); expect(h.mesh('smoke').count).toBe(0);

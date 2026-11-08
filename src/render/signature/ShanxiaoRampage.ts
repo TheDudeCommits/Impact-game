@@ -24,7 +24,7 @@ const attacks = (action: string) => ['light', 'heavy', 'special', 'ultimate'].in
  *  green round a white-lime heart. */
 const KI = stageLook(0xe5ff96, 0x7fd526, 0x163b22, { sphere: { body: new THREE.Color(.1, 1.15, .1), core: new THREE.Color(2.3, 3, 1.5), rimA: new THREE.Color(.5, 2.4, .3), rimB: new THREE.Color(1.3, 2.8, .6), spin: 1.2 } });
 const HEAVY = SHANXIAO_MOVES.heavy, SPECIAL = SHANXIAO_MOVES.special, ULT = SHANXIAO_MOVES.ultimate;
-/** A sphere of ki that grows where it lands, with a life of its own (the Jade Cannon's and the Omega Blaster's). */
+/** A sphere of ki that grows where it lands, with a life of its own (the Jade Cannon's and the green blast's). */
 type Sphere = { at: THREE.Vector3; born: number; life: number; from: number; to: number; live: boolean };
 const headPosition = new THREE.Vector3(), jawPosition = new THREE.Vector3();
 /** Both source forms have real Head/Jaw bones. Check the visible body, so the
@@ -167,7 +167,7 @@ export class ShanxiaoRampage {
     }
     if (e.slot !== 'ultimate' || e.branch) return;
     if (!blow.final) { st.burst(point, KI, blow.index ? 1.6 : 1.25, t, { dir, floor }); if (blow.index) { st.shock(ground, KI, 5, t, .5); st.shatter(this.c.copy(ground).setY(floor + .06), UP, KI, 3, t, .7); } return; }
-    // SUN CHASER landing: the Omega Blaster grows where it struck. A sphere five metres across, the dome of it,
+    // SUN CHASER landing: the green blast grows where it struck. A sphere five metres across, the dome of it,
     // the floor cracked wide and left glowing.
     this.grow(point, t, .62, .9, 2.4);
     st.dome(point, KI, 4.4, t, .44);

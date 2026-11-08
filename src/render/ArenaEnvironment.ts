@@ -1,5 +1,6 @@
 import {installCameraCutaway} from './CameraCutaway';
 import * as THREE from 'three';
+import { siteUrl } from '../loading/siteBase';
 import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js';
 
 import { AUTHORED_BUILDINGS, BACKDROP_CASTLE, CITY_TERRACES, PODIUM_DIMENSIONS, STONE_ARCH, HARBOR_BRIDGES, TORII, UME_TREES, GARDEN_TREES, PROP_CLUSTERS,
@@ -45,6 +46,7 @@ export class ArenaEnvironment {
     this.root.name = 'MangaHarborEnvironment';
     const manager = new THREE.LoadingManager();
     manager.onError = url => this.sourceErrors.add(url);
+    manager.setURLModifier(url => siteUrl(url)); // inside the page's own folder (loading/siteBase.ts)
     this.loader = new GLTFLoader(manager);
     this.textureLoader = new THREE.TextureLoader(manager);
     scene.add(this.root);

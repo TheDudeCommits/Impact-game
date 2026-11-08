@@ -46,8 +46,8 @@ const TENDRIL: StageLook = { core: lin(3.1, .8, .95), main: lin(1.9, .07, .17), 
 /** The same with nothing white in it, and barely past the bloom (a red that stays red): the tendril's veins, a cut's
  *  line, the cracks its last blow leaves. */
 const VEIN: StageLook = { ...TENDRIL, core: lin(2.2, .13, .25), main: lin(1.4, .045, .11) };
-/** The kakuja: black that covers what is behind it, its edge burning crimson (red on dark, as the centipede is drawn). */
-const KAKUJA: StageLook = { core: lin(2.9, .5, .7), main: lin(1.7, .1, .2), rim: lin(.55, .03, .08), light: lin(1, .14, .2), element: { spike: 0xff9bb0, rim: 0xc20a26, light: 0xd0102e, ink: 0x120709 }, shell: 0xc20a26, edge: 0x120709, flame: ABYSS, dark: true, heart: 0,
+/** The crimson shell: black that covers what is behind it, its edge burning crimson (red on dark, as the centipede is drawn). */
+const CRIMSON_SHELL: StageLook = { core: lin(2.9, .5, .7), main: lin(1.7, .1, .2), rim: lin(.55, .03, .08), light: lin(1, .14, .2), element: { spike: 0xff9bb0, rim: 0xc20a26, light: 0xd0102e, ink: 0x120709 }, shell: 0xc20a26, edge: 0x120709, flame: ABYSS, dark: true, heart: 0,
   sphere: { body: lin(.03, .004, .008), core: lin(.55, .03, .07), rimA: lin(2.6, .22, .3), rimB: lin(1.5, .06, .12), spin: 1.3 } };
 const HEAVY = RAKUCHO_MOVES.heavy, SPECIAL = RAKUCHO_MOVES.special, ULT = RAKUCHO_MOVES.ultimate;
 const FIRST = ULT.contacts[0], LAST = ULT.contacts[ULT.contacts.length - 1];
@@ -111,19 +111,19 @@ export class RakuchoTendrils {
       this.mark(CUT, e.actorId, point, dir, floor, t, .34, 1.5 * big);
       st.burst(point, TENDRIL, .95 * big, t, { dir, floor });
       st.shock(ground, TENDRIL, 4 * big, t, .4);
-      st.scar(ground, KAKUJA, 1.7 * big, t + .05, 1.3);
+      st.scar(ground, CRIMSON_SHELL, 1.7 * big, t + .05, 1.3);
       return;
     }
     if (e.slot === 'special') {
-      if (e.branch === 'airSpecial') { st.burst(point, TENDRIL, 2, t, { floor }); st.shock(ground, TENDRIL, 4.5, t, .45); st.scar(ground, KAKUJA, 3.2, t, 1.8); return; }
+      if (e.branch === 'airSpecial') { st.burst(point, TENDRIL, 2, t, { floor }); st.shock(ground, TENDRIL, 4.5, t, .45); st.scar(ground, CRIMSON_SHELL, 3.2, t, 1.8); return; }
       // Four Bookmarks: four lances through the body and out of its back, the blast, black flame standing where they
       // stood and the dark left on the floor.
       const big = e.branch ? .7 : 1;
       this.mark(PIERCE, e.actorId, point, dir, floor, t, .55, big);
       st.burst(point, TENDRIL, 2 * big, t, { dir, floor });
-      st.erupt(ground, UP, KAKUJA, .7 * big, 4.2 * big, t + .05, .75);
+      st.erupt(ground, UP, CRIMSON_SHELL, .7 * big, 4.2 * big, t + .05, .75);
       st.shock(ground, TENDRIL, 5.5 * big, t, .45);
-      st.scar(ground, KAKUJA, 3.2 * big, t + .05, 1.9);
+      st.scar(ground, CRIMSON_SHELL, 3.2 * big, t + .05, 1.9);
       return;
     }
     if (e.slot !== 'ultimate' || e.branch) return;
@@ -140,13 +140,13 @@ export class RakuchoTendrils {
     st.burst(point, TENDRIL, 2.6, t, { dir, floor });
     st.shatter(this.a.copy(ground).setY(floor + .06), UP, VEIN, 7, t + .03, 1.3);
     st.shock(ground, TENDRIL, 9, t, .6);
-    st.erupt(ground, UP, KAKUJA, 1.15, 9, t + .06, .8);
+    st.erupt(ground, UP, CRIMSON_SHELL, 1.15, 9, t + .06, .8);
     for (let i = 0; i < 3; i++) {
       const ang = i * 2.094 + .5;
       this.a.set(ground.x + Math.cos(ang) * 2.9, floor, ground.z + Math.sin(ang) * 2.9); this.b.set(Math.cos(ang) * .32, 1, Math.sin(ang) * .32).normalize();
       st.erupt(this.a, this.b, TENDRIL, .42, 5.2, t + .2 + i * .05, .55);
     }
-    st.scar(ground, KAKUJA, 5.5, t + .1, 2.2);
+    st.scar(ground, CRIMSON_SHELL, 5.5, t + .1, 2.2);
   }
 
   update(time: number, fighters: ReadonlyMap<string, Fighter>, _flights?: ReadonlyMap<string, Flight>) {
@@ -186,7 +186,7 @@ export class RakuchoTendrils {
           // Four Bookmarks's wind-up: four tails rise over his shoulders, the floor goes dark under him, and the red
           // gathers over his head, where his own back does not hide it from the lens behind him.
           const k = clamp(elapsed / release);
-          st.pool(this.p.copy(feet), 2.2 + 1.2 * k, KAKUJA, k, seed);
+          st.pool(this.p.copy(feet), 2.2 + 1.2 * k, CRIMSON_SHELL, k, seed);
           this.tails(f, k, 1, time, seed, this.a.copy(feet).addScaledVector(heading, .5).setY(feet.y + 2.75));
           st.charge(this.a, TENDRIL, .34, k, seed);
         } else if (elapsed < release + LANCE && !this.marked(s.id, PIERCE)) {
@@ -250,8 +250,8 @@ export class RakuchoTendrils {
   private gather(actor: Fighter, victim: Fighter | undefined, c: Confirm, elapsed: number, time: number) {
     const st = this.stage, g = clamp((elapsed - FIRST) / (LAST - FIRST)), seed = c.seq * 2.7, feet = this.ground.copy(actor.group.position).setY(c.floor), heading = this.face(actor);
     // (Never dimmed: darkness is read against a lit floor.)
-    st.pool(feet, 3 + 3.4 * g, KAKUJA, Math.min(1, .3 + g * 1.2), seed);
-    st.ring(feet, 2.5 + .5 * g, 1.1 + 1.3 * g, KAKUJA, .6 + .4 * g, seed, 8);
+    st.pool(feet, 3 + 3.4 * g, CRIMSON_SHELL, Math.min(1, .3 + g * 1.2), seed);
+    st.ring(feet, 2.5 + .5 * g, 1.1 + 1.3 * g, CRIMSON_SHELL, .6 + .4 * g, seed, 8);
     st.light(this.p.copy(feet).setY(feet.y + 1.2), 6 + 2.5 * g, TENDRIL, .28 + .32 * g);
     // The centipede: out of the small of his back, up behind his left shoulder and over, its head hanging above the
     // one it is for.
@@ -265,7 +265,7 @@ export class RakuchoTendrils {
     if (g > .8) st.speed(.5 * (g - .8) / .2, c.actor, c.target);
   }
 
-  /** The kakuja's centipede from `root` through `via` to `head` (a curve), drawn out to `k` of its length: a chain of
+  /** The shell's centipede from `root` through `via` to `head` (a curve), drawn out to `k` of its length: a chain of
    *  black plates edged in crimson, a red spine through them, a pair of legs raking back off every plate, a head with
    *  one red eye. It sways as it stands. */
   private centipede(root: THREE.Vector3, via: THREE.Vector3, head: THREE.Vector3, k: number, fade: number, time: number, seed: number, girth = .34) {
@@ -277,7 +277,7 @@ export class RakuchoTendrils {
       along.subVectors(b, a); const len = along.length(); if (len < .01) continue;
       along.divideScalar(len);
       const w = girth * (.55 + .45 * Math.sin(Math.PI * Math.min(1, s * 1.15)));
-      st.tongue(this.p.copy(a).lerp(b, .5), along, w * 2.5, len * 2.2, KAKUJA, (.5 + .45 * fade) * fade, seed + i);
+      st.tongue(this.p.copy(a).lerp(b, .5), along, w * 2.5, len * 2.2, CRIMSON_SHELL, (.5 + .45 * fade) * fade, seed + i);
       st.streak(a, b, w * .42, VEIN.main, .95 * fade); st.streak(a, b, w * .15, VEIN.core, fade);
       // Its legs: a pair to every plate, across the way it runs, raking back and walking.
       leg.copy(this.side).addScaledVector(along, -this.side.dot(along)); if (leg.lengthSq() < .01) leg.set(along.z, 0, -along.x); leg.normalize();

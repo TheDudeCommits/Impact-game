@@ -9,7 +9,7 @@ import { ORIGINAL_SFX_CUES, applyOriginalSfx } from '../originals/sfx';
 
 export const BASE_CUES = {
   'koko-world':'koko-world.wav','kenzo-phoenix':'kenzo-phoenix.wav',
-  'koko-star':'koko-star.wav',
+  'koko-iron-lullaby':'koko-iron-lullaby.wav',
   'ouga-gale':'ouga-gale.wav',
   'shirokane-resolve':'shirokane-resolve.wav',
   'kenzo-crossing':'kenzo-crossing.wav','kenzo-world':'kenzo-world.wav',
@@ -27,7 +27,7 @@ export const BASE_CUES = {
   // Round 16: the six new fighters. See scripts/register_round16_audio.py.
   'kagari-hinoko':'kagari-hinoko.wav','kagari-yuragi':'kagari-yuragi.wav',
   'ward-crossmatch':'ward-crossmatch.wav','ward-cautery-blade':'ward-cautery-blade.wav','ward-flatline':'ward-flatline.wav','ward-stat-shot':'ward-stat-shot.wav',
-  'kuon-ao':'kuon-ao.wav','kuon-aka':'kuon-aka.wav','kuon-violet':'kuon-violet.wav','kuon-boundless':'kuon-boundless.wav',
+  'kuon-gravity':'kuon-gravity.wav','kuon-nova':'kuon-nova.wav','kuon-violet':'kuon-violet.wav','kuon-boundless':'kuon-boundless.wav',
   'oro-noroma':'oro-noroma.wav','oro-noroma-noroma':'oro-noroma-noroma.wav','oro-the-hour':'oro-the-hour.wav','oro-steamroller':'oro-steamroller.wav',
   'gaunt-scream':'gaunt-scream.wav',
   'setsu-ikazuchi':'setsu-ikazuchi.wav','setsu-gale-step':'setsu-gale-step.wav',

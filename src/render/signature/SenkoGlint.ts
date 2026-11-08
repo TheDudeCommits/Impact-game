@@ -257,7 +257,7 @@ export class SenkoGlint {
     this.rays.end(); this.beads.end(); this.rings.end();
     st.close();
   }
-  /** Troop of a Hundred Lights from the confirm to the last blow: the room to night, the Sacred Jewel turning round his hands
+  /** Troop of a Hundred Lights from the confirm to the last blow: the room to night, the jewel of light turning round his hands
    *  as a ring of beads of light with rays fanned behind it, light lying on the floor under him; from the first volley
    *  the beads go to his victim as bolts and burst on them. Round his hands and along the line between the two, small
    *  on the victim: both are read through all of it. (`this.target` is the victim's centre.) */

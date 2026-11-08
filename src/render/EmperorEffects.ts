@@ -433,7 +433,7 @@ const ENDER_ACCENTS: Partial<Record<FighterId, Partial<Record<ComboKey, Accent>>
   tobari: { airHeavy: 'fire', airSpecial: 'fire' }, akagane: { airSpecial: 'fire' }, asahi: { lllh: 'fire' }, 'gohaku': { lh: 'bolt' },
   // The main game's sixteen (COMBOS-DATA's rows): lightning down out of the sky - Purple Electricity, Speed of
   // Lightning and the Icefall, Shrike Current, Thunder Hawk - and the floor burning under Noboribi, Kagaribi's pillar,
-  // Kosho's Reception and Spectre, Sunstroke's cut, Gummy's burning fist and the cannon; Nigo's pressure; Gaunt' blood.
+  // Kosho's Reception and Salamandre, Sunstroke's cut, Gummy's burning fist and the cannon; Nigo's pressure; Gaunt' blood.
   shirokane: { airSpecial: 'bolt' }, setsu: { llh: 'bolt', airSpecial: 'bolt' }, shiden: { llls: 'bolt', airSpecial: 'bolt' },
   kagari: { llh: 'fire', airSpecial: 'fire' }, kosho: { lllh: 'fire', airSpecial: 'fire' }, kenzo: { airHeavy: 'fire' }, gummy: { airSpecial: 'fire' },
   nigo: { lllh: 'abyss', airSpecial: 'abyss' }, gaunt: { lllh: 'blood', airSpecial: 'fire' },
@@ -468,7 +468,7 @@ const MAIN: Partial<Record<FighterId, {flavour: Flavour; cut?: SlashStyle}>> = {
   setsu: {flavour: 'bolt'}, shirokane: {flavour: 'bolt'}, shiden: {flavour: 'bolt'},
 };
 /** The enders whose element reads otherwise than their fighter's (COMBOS-DATA's names): the Blackout Flash's flash, Dirty
- *  Fireworks and the bomb going off, the Water Dragon, the Headhunter and the ninken out of the earth, a poke, Black
+ *  Fireworks and the bomb going off, the Water Dragon, the Headhunter and the hounds out of the earth, a poke, Black
  *  Flash, Infinity, LORD ORO's freezing touch, the Silent Claw, Iron Spirit's inhale, Tourou's fireflies, Checkmate's
  *  knives, the yo-yo's steel. */
 const MAIN_KEYS: Partial<Record<FighterId, Partial<Record<ComboKey, Flavour>>>> = {
@@ -1888,7 +1888,7 @@ export class EmperorEffects {
         v.ring(p.x, low, p.z, .3, 2.2, time, .3, 0xffffff, el.rim, .1);
         break;
       case 'earth':
-        // The Headhunter and the ninken: up out of the ground under them.
+        // The Headhunter and the hounds: up out of the ground under them.
         v.debris.burst(v.n(9, 4), p.x, floor, p.z, 0, 1, 0, 6, .9, .13, floor, 2.2);
         v.dustRing(p.x, floor, p.z, 9, .4, 3.4, .8, time);
         for (let i = 0; i < 4; i++) v.smoke(p.x + Math.cos(i * 1.57 + key) * .4, floor + .3, p.z + Math.sin(i * 1.57 + key) * .4, 0, 2.4, 0, .55, time + i * .03, .5, 0xe8d8b8, 0x9a8468);

@@ -9,7 +9,7 @@ export const ORIGINAL_OPEN_CREDITS = [
   {
     work: '“Hell”, “Monster’s Belly” and “Murder of Crows”, and the knife stabs, bone cracks, zombies, monsters, screams and evil laughs of the Horror Sound Effects Library',
     by: 'by Little Robot Sound Factory',
-    sources: [['www.littlerobotsoundfactory.com', 'https://www.littlerobotsoundfactory.com'], ['OpenGameArt', 'https://opengameart.org/content/horror-sound-effects-library']],
+    sources: [['littlerobotsoundfactory.com', 'https://littlerobotsoundfactory.com'], ['OpenGameArt', 'https://opengameart.org/content/horror-sound-effects-library']],
     licence: 'CC BY 3.0', licenceUrl: CC_BY_3,
     changes: 'trimmed, levelled and looped for Arcade Survival, and some layered into the horde’s crowd',
     files: ['gore-7', 'gore-8', 'gore-9', 'gore-10', 'gore-11', 'gore-12', 'gore-13', 'zombie-cry-3', 'zombie-cry-5', 'zombie-hurt-5', 'zombie-hurt-6',

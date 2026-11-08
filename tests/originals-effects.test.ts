@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { SUZURAN_TWIN_LION_ASSETS } from '../src/render/signature/SuzuranTwinLions';
-import { TSUBUTE_POP_GREEN_TEXTURES } from '../src/render/signature/TsubutePopGreen';
+import { SUZURAN_RESONANCE_ASSETS } from '../src/render/signature/SuzuranResonance';
+import { TSUBUTE_SEED_SHOT_TEXTURES } from '../src/render/signature/TsubuteSeedShot';
 import { DRAGON_EYES, JAW_OPEN, SEA_DRAGON_ASSET } from '../src/render/signature/BriarShapes';
 import { MAIN_EFFECT_FILES, OWN_EFFECT_FILES, SWAN_HEAD } from '../src/originals/effects';
 import { MADAKE_GATES_ASSETS } from '../src/render/signature/MadakeGates';
@@ -11,7 +11,7 @@ const glb = (file: string) => { const b = fs.readFileSync(file), n = b.readUInt3
 
 describe('the originals\' own effect files', () => {
   it('are what Suzuran\'s, Tsubute\'s and Svanhild\'s modules load, and are on disk', () => {
-    const urls = [...SUZURAN_TWIN_LION_ASSETS, TSUBUTE_POP_GREEN_TEXTURES.wolf, TSUBUTE_POP_GREEN_TEXTURES.bird, SEA_DRAGON_ASSET];
+    const urls = [...SUZURAN_RESONANCE_ASSETS, TSUBUTE_SEED_SHOT_TEXTURES.wolf, TSUBUTE_SEED_SHOT_TEXTURES.bird, SEA_DRAGON_ASSET];
     for (const url of urls) {
       expect(url).toMatch(/^\/assets\/vfx\/originals\/[a-z-]+\.(webp|glb)$/);
       expect(fs.existsSync(`public${url}`), url).toBe(true);

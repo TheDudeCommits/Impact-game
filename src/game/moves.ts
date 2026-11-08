@@ -548,7 +548,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
   // The shop's fighters (economy/fighters.ts). Bought, not better: each is
   // inside the roster's pace (the round 3d/3e figures above), heavy and
   // punishing like Gaunt - a club and a bisento as heavy as his sword - or
-  // precise like Ward, with the Gryphon's reach.
+  // precise like Ward, with the sabre's reach.
   gorai:{
     // The mast-breaker: as slow and as hard as Gaunt' sword, and a string that slams
     // them into the floor.
@@ -570,7 +570,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     special:{name:'Faultline Fist',duration:1.6,contacts:[.78],damage:132,range:14,radius:1.4,stamina:30,cooldown:4.7,stun:1.2,knockback:13,speed:34,guardBreak:true,style:'projectile',outcome:'wallBounce'},
   },
   sorrel:{
-    // Precise: the Gryphon on Ward's clock, a little short of his reach.
+    // Precise: the sabre on Ward's clock, a little short of his reach.
     light:{name:'Wake Cutter',duration:.46,contacts:[.17],damage:19,range:2.55,radius:.55,stamina:9,cooldown:.44,stun:.25,knockback:3,lunge:4.5,style:'melee'},
     heavy:{name:'Redline Thrust',duration:.86,contacts:[.38],damage:57,range:2.9,radius:.6,stamina:23,cooldown:1.1,active:HEAVY_ACTIVE,stun:.65,knockback:5,lunge:8,style:'melee',outcome:'stagger'},
     // Crimson Command: not a blow but his will, out round him - whoever it
@@ -578,7 +578,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     special:{name:"Crimson Command",duration:1.4,contacts:[.6],damage:112,range:1.2,radius:4.2,stamina:30,cooldown:4.7,stun:1.4,knockback:2,guardBreak:true,style:'melee',outcome:'crumple'},
   },
   dorado:{
-    // Kagari, his saber, on the Gryphon's clock: the man who taught Sorrel cuts
+    // Kagari, his saber, on the sabre's clock: the man who taught Sorrel cuts
     // as precisely, and a little harder.
     light:{name:'Gilded Cut',duration:.48,contacts:[.17],damage:20,range:2.55,radius:.6,stamina:9,cooldown:.46,stun:.26,knockback:3.2,lunge:4.5,style:'melee'},
     // The lunge, and the rising cut out of it that pops them off their feet.
@@ -617,8 +617,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     // Stinger Lash: the roundhouse, and the tail comes round with it - into the wall.
     heavy:{name:'Stinger Lash',duration:.86,contacts:[.4],damage:60,range:3,radius:1,stamina:24,cooldown:1.15,active:HEAVY_ACTIVE,stun:.7,knockback:6,lunge:6,style:'melee',outcome:'wallBounce'},
     // Hive Burst (4 October, combos.ts: every fighter at least one attack at range): the arm thrust out and an
-    // explosive blast of aura - his, after the Rose, from Youpi's (Salvage Wilds, chapter 302; the wiki marks the
-    // name unofficial). (Stinger Storm, the special it was, is his Jump + Special now: combosShop.ts.)
+    // explosive blast of aura - his, after the Rose, from a royal guard's (Salvage Wilds' own story). (Stinger Storm, the special it was, is his Jump + Special now: combosShop.ts.)
     special:{name:'Hive Burst',duration:1.3,contacts:[.56],damage:120,range:22,radius:1.2,stamina:30,cooldown:4.6,stun:1.1,knockback:10,speed:30,style:'projectile',outcome:'wallBounce'},
   },
   'wuming':{
@@ -681,13 +680,13 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
   },
   // Sekka, laid out as the home-screen agent's move cards draw him: Gravedigger in bare hands.
   sekka:{
-    // Air Type: a straight thrown at the air in front of him, and the air carries it on into them - a melee blow, as
+    // Hailstone Fist: a straight thrown at the air in front of him, and the air carries it on into them - a melee blow, as
     // every light is, drawn as the shock ahead of the fist (EmperorEffects).
     light:{name:'Straight Punch',duration:.44,contacts:[.16],damage:18,range:2.4,radius:.55,stamina:8,cooldown:.42,stun:.24,knockback:3.5,lunge:5,style:'melee'},
     heavy:{name:'Avalanche',duration:1,contacts:[.3,.48,.7],damage:19,finisherDamage:20,range:2.5,radius:.8,stamina:24,cooldown:1.2,active:HEAVY_ACTIVE,stun:.4,finisherStun:.7,knockback:.6,finisherKnockback:7,lunge:6,style:'melee',outcome:'wallBounce'},
     // Shatter Art: Frost Gale (4 October, combos.ts: every fighter at least one attack at range): a straight
     // thrown at the empty air, and the shock flies on into them - his one true projectile (Black Snow; the wiki). The
-    // light that wore the name is a plain straight now. The Compass Needle's snowflake opens under his stun (Final
+    // light that wore the name is a plain straight now. The Aurora Shards' snowflake opens under his stun (Final
     // Form: Blue Silver Chaotic Afterglow, combosShop.ts).
     special:{name:'Shatter Art: Frost Gale',duration:1.25,contacts:[.52],damage:112,range:18,radius:.9,stamina:30,cooldown:4.4,stun:1.1,knockback:9,speed:44,style:'projectile',outcome:'wallBounce'},
   },
@@ -716,7 +715,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     // Ripple Cut: one level cut, quick and clean.
     light:{name:'Ripple Cut',duration:.44,contacts:[.16],damage:18,range:2.7,radius:.55,stamina:8,cooldown:.42,stun:.24,knockback:3,lunge:5,style:'melee'},
     // Comet Throw (4 October, combos.ts: every fighter at least one attack at range): the katana hurled like a
-    // javelin, as he threw it at Sekka running for the shade (Black Snow, the Mugen Train), and back in his hand as
+    // javelin, as he threw it at Sekka running for the shade (Black Snow's night train), and back in his hand as
     // he recovers. (Water Wheel, the heavy it was, is his Jump + Heavy now: combosShop.ts.)
     heavy:{name:'Comet Throw',duration:.95,contacts:[.42],damage:58,range:18,radius:.8,stamina:24,cooldown:1.25,stun:.7,knockback:4,speed:36,style:'projectile',outcome:'stagger'},
     // Ashfall Waltz: three cuts flowing one into the next, the water ribbon round him, the last into the wall - each
@@ -844,7 +843,7 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // comes down, and following them in flight - as the LAST SUN is, and for the same reason (see there). It was aimed
   // at the press, a second before it was let go.
   konta:{name:'Kitsunebi-Dama',duration:2,contacts:[1],damage:270,range:34,radius:3,stamina:0,cooldown:20,stun:2.3,knockback:16,speed:24,style:'bomb',aimOnRelease:true},
-  // Great Flame Commandment: KAGUTSUCHI. A sun, thrown. Round 3b: the
+  // KAGUTSUCHI: a sun, thrown. Round 3b: the
   // blast is the sun as drawn - 2.2 m round with a corona of flame out to
   // about 3.1 m, set down on the floor over whoever it lands on. An area
   // ultimate, with no confirm: thrown at 1.35 rather than 3.0, at 16 m/s
@@ -902,7 +901,7 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // the opener, the world tilts twice more, and the last, biggest punch throws them.
   haldor:{name:'World Tilt: Seabed Rising',duration:3.1,contacts:[.55,1.25,1.8,2.35],schedule:[40,40,58,227],damage:40,finisherDamage:248,range:2.6,radius:4,stamina:0,cooldown:22,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,guardBreak:true,style:'melee',lunge:0,confirm:WHIFF},
   // Horizon Sunder is a one-cut, NIGHTFALL's way: the opener goes out down the
-  // line, and the Gryphon comes down through whoever it held.
+  // line, and the sabre comes down through whoever it held.
   sorrel:{name:'Horizon Sunder',duration:2.4,contacts:[.5,1.6],schedule:[45,269],damage:45,finisherDamage:323,range:30,radius:2.2,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,guardBreak:true,style:'beam',confirm:WHIFF},
   // HORIZON SUNDER, the cut that split the heavens over Dorado's clash with
   // Haldor: the cloak thrown round as Kagari goes up is the opener, and the
@@ -1187,7 +1186,7 @@ const REACH_OVERRIDE: Partial<Record<FighterId, Partial<Record<AttackSlot, numbe
   // 11 m centre to centre with the slack (ULTIMATES.gummy).
   gummy: { ultimate: 10.3 },
   // Crimson Command is not the blade: it goes out round Sorrel to its radius,
-  // wherever the Gryphon is at the time.
+  // wherever the sabre is at the time.
   sorrel: { special: 4.2 },
   // Nor are Shiun's blows his hand: False Encore's blade runs 0.79 m on past
   // his fist, and lands where the illusion breaks - measured, the hand itself
@@ -1594,7 +1593,7 @@ const RUSH_SPECS: Record<FighterId, RushSpec> = {
   'basilissa': { names: ['Thorn Sweep', 'Thorn Reverse Heel', 'Crown Heel Drop'], damage: [20, 22, 45], tempo: 1.08, shape: 'carry' },
   sorayomi: { names: ['Vane Backcut', 'Staff Whirl', 'Downpour Stroke'], damage: [20, 22, 44], tempo: 1.08, shape: 'carry' },
   // Round 3: back on the roster's numbers. The stages were cut to 24/26/50
-  // because Meteor Combination realised only 71; Cloudstep lands 90.
+  // because the retired three-blow string realised only 71; Cloudstep lands 90.
   // Round 3e: the balanced one keeps the classic string - launch and chase.
   taisei: { names: ['Chain Jab', 'Riot Palm', 'Skyfall Smash'], damage: [17, 18, 49], tempo: .9, shape: 'launch' },
   // Round 3: the light is his fist now (the Crown Straight), so the
@@ -1862,7 +1861,7 @@ export const JUMP_HANG_SPEED = 1.8, JUMP_HANG_GRAVITY = 1;
  *  - 3.5x, the acrobats: Setsu (SETSUNA, an assassin's footwork), Levin (the
  *    Grapple Rig's flyer, the most airborne fighter in his series), Gaku (a wild
  *    child's spring, the three-hand leap);
- *  - 3.4x, the light and quick: Kosho (Sky Walk), Konta and Shiden (ninja who
+ *  - 3.4x, the light and quick: Kosho (his air steps), Konta and Shiden (ninja who
  *    fight from the rooftops), Gummy (rubber: a stretched spring);
  *  - 3.3x, the light swordsmen and speedsters: Shirokane, Sekka, Asahi (Water
  *    Breathing's leaps), Rook;

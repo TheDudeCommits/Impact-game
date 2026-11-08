@@ -3,7 +3,7 @@ import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 import type { AwakeningDefinition } from '../awakening';
 
-/** Hakuda pressure and ASHSTEP closing speed. HACKLES UP is a manual combat state:
+/** Open-palm pressure and ASHSTEP closing speed. HACKLES UP is a manual combat state:
  * the shoulder corona never searches for victims, ticks damage or attacks. */
 export const MIKAGE_MOVES: Record<CoreSlot, MoveDefinition> = {
   light: { name: 'Velvet Palm', duration: .42, contacts: [.152], damage: 23,

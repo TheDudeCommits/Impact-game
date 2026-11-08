@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { NOTICE_LINES, noticeDue, noticeHtml } from '../src/ui/firstVisit';
-import { CONTACT, CREDITS_PAGE, FAN_MADE, PRIVACY_PAGE } from '../src/ui/legalLinks';
+import { CONTACT, CREDITS_PAGE, FAN_MADE, PRIVACY_PAGE, REPO_PAGE } from '../src/ui/legalLinks';
 import { brandPrivacyHtml } from '../scripts/build/brandPlugin';
 import { TITLE } from '../src/originals/brand';
 
@@ -21,11 +21,12 @@ describe('the first-visit notice', () => {
     expect(html).not.toMatch(/these characters|grew up watching|not affiliated/);
   });
 
-  it('carries its two ways out: legal and privacy, and the credits, each in a new tab; no GitHub button', () => {
+  // SOURCE CODE, the third: the game's repository.
+  it('carries its three ways out: legal and privacy, the credits and the source, each in a new tab', () => {
     const html = noticeHtml(), links = [...html.matchAll(/<a class="first-visit-link" href="([^"]+)" target="_blank" rel="noopener"/g)].map(m => m[1]);
-    expect(links).toEqual([PRIVACY_PAGE, CREDITS_PAGE]);
-    expect(html).not.toMatch(/github\.com/i);
-    expect(html).not.toMatch(/GITHUB/i);
+    expect(links).toEqual([PRIVACY_PAGE, CREDITS_PAGE, REPO_PAGE]);
+    expect(REPO_PAGE).toBe('https://github.com/TheDudeCommits/Impact-game');
+    expect(html).toContain('SOURCE CODE <span aria-hidden="true">↗</span>');
     expect(html).toContain('LEGAL &amp; PRIVACY');
     expect(html).toMatch(/class="first-visit-go"/);
   });
@@ -40,7 +41,7 @@ describe('the first-visit notice', () => {
     expect(readFileSync('src/main.ts', 'utf8')).toMatch(/mountFirstVisit\(\)/);
     const page = brandPrivacyHtml(readFileSync('public/privacy.html', 'utf8'));
     expect(page).toContain(`mailto:${CONTACT}`);
-    expect(page).not.toMatch(/github\.com/i);                 // no source link since 28 October 2026
+    expect([...page.matchAll(/href="(https:\/\/github\.com[^"]*)"/g)].map(m => m[1])).toEqual([REPO_PAGE]); // the source, and no other GitHub address
     const terms = readFileSync('public/terms.html', 'utf8');
     if (shows) for (const words of ['open-source', 'open source', 'no monetization', 'removed promptly']) expect(terms, words).toContain(words);
   });

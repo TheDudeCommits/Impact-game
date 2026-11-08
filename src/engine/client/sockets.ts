@@ -325,7 +325,7 @@ export const FIGHTER_SOCKETS: Readonly<Partial<Record<FighterId, FighterSockets>
   },
   suzuran: { points: { Both: 'handLR', Left: 'handL', Right: 'handR' }, socket: ctx => suzuranStrikeSide(ctx.state.action, ctx.elapsed, ctx.clip, ctx.index) },
   // 15 October 2026 ("rxc"): his first and fourth lights are baked takes thrown with the RIGHT hand (Jirenga's Bedrock Jab under
-  // Tide Palm, Sekka's Air Type under Rush 3: scripts/night/anim/picks.json), where the native clips struck with the left:
+  // Tide Palm, Sekka's Hailstone Fist under Rush 3: scripts/night/anim/picks.json), where the native clips struck with the left:
   // the blow's effect leaves the hand that throws it. The rest strike with the hand oyashioStrikeSide names.
   oyashio: { points: { Both: 'handLR', Left: 'handL', Right: 'handR' }, socket: ctx => ctx.state.action === 'light' && (ctx.clip === 'Tide Palm' || ctx.clip === 'Rush 3') ? 'Right' : oyashioStrikeSide(ctx.state.action, ctx.elapsed, ctx.clip) },
   // --- Hands and feet by clip ------------------------------------------------------------------------------------------

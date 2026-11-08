@@ -6,7 +6,7 @@ import type {CombatEvent} from '../src/game/types';
 import type {Fighter} from '../src/render/Fighter';
 import type {Flight} from '../src/render/CombatEffects';
 import {PsycheFleur,PSYCHE_FLEUR_LIMITS} from '../src/render/signature/PsycheFleur';
-import {psycheArmPose,psycheStrikePoint,robinArmPose,ROBIN_COMMANDS} from '../src/render/signature/PsycheBloomPose';
+import {psycheArmPose,psycheStrikePoint,newPsycheArmPose,PSYCHE_ARM_COMMANDS} from '../src/render/signature/PsycheBloomPose';
 import {PSYCHE_MOVES} from '../src/game/fighters/psyche';
 import {psycheReceiverArm} from '../src/render/signature/PsycheReceiver';
 import {loadRig} from './rigHarness';
@@ -31,8 +31,8 @@ async function setup(budget=1){
  return{scene,f,victim,fighters,fx,mesh:(name='grown-arms')=>scene.getObjectByName('psyche-'+name)as T.InstancedMesh};
 }
 const event=(kind:string,extra={})=>({id:1,kind,fighter:'psyche',actorId:'robin',targetId:'target',slot:'ultimate',serverTime:1,actionSeq:1,...extra}as unknown as CombatEvent);
-function vertex(a:Awaited<ReturnType<typeof setup>>,instance:number){const mesh=a.mesh(),sample=(original.scene.getObjectByName('Robin_Grown_Arm')as T.Mesh).clone(),m=new T.Matrix4(),out=new T.Vector3();mesh.getMorphAt(instance,sample);mesh.getMatrixAt(instance,m);sample.getVertexPosition(551,out);return out.applyMatrix4(m);}
-describe('Robin native manual limb presentation',()=>{
+function vertex(a:Awaited<ReturnType<typeof setup>>,instance:number){const mesh=a.mesh(),sample=(original.scene.getObjectByName('Psyche_Grown_Arm')as T.Mesh).clone(),m=new T.Matrix4(),out=new T.Vector3();mesh.getMorphAt(instance,sample);mesh.getMatrixAt(instance,m);sample.getVertexPosition(551,out);return out.applyMatrix4(m);}
+describe('Psyche native manual limb presentation',()=>{
  it.skipIf(!!ORIGINALS['psyche'])('keeps ordinary palms on the real receiver-facing skin with one bounded selection per command',async()=>{
   const model=await loadRig('/assets/fighters/minase-ff1.glb'),group=new T.Group();group.add(model.scene);const mixer=new T.AnimationMixer(model.scene),idle=model.animations.find(c=>c.name==='_Idle');if(idle){mixer.clipAction(idle).play();mixer.setTime(.2);}group.updateMatrixWorld(true);
   const joints=new Map<string,T.Object3D>();model.scene.traverse(o=>{if((o as T.Bone).isBone)joints.set(o.name,o);});const receiver={state:{alive:true},group,model:model.scene,drawnJoint:(name:string)=>joints.get(name)}as unknown as Fighter;Object.defineProperty(receiver,'shownBody',{get:()=>receiver});
@@ -42,10 +42,10 @@ describe('Robin native manual limb presentation',()=>{
    expect(psycheReceiverArm(a.f,receiver,'Moth Palm',0,root,end)).toBe(true);expect(calls()).toBeLessThanOrEqual(66);const first=calls();
    expect(psycheReceiverArm(a.f,receiver,'Moth Palm',1,root,end)).toBe(true);expect(calls()-first).toBe(2);
    const chest=joints.get('Spine2')!.getWorldPosition(new T.Vector3());expect(end.z).toBeGreaterThan(chest.z);expect(root.z).toBeGreaterThan(chest.z);
-   for(const clip of['Moth Palm','Clasping Wings','Rising Swarm']){const c=ROBIN_COMMANDS[clip];Object.assign(a.f.state,{action:'heavy',actionSeq:(a.f.state.actionSeq??0)+1});a.f.displayedClipName=clip;a.f.displayedClipTime=c.duration*c.peak;a.fx.update(1,a.fighters,new Map());const contact=new T.Vector3();psycheStrikePoint(a.f,contact,clip,a.f.displayedClipTime);expect(vertex(a,0).distanceTo(contact)).toBeLessThan(1e-6);expect(contact.z).toBeGreaterThan(chest.z);}
+   for(const clip of['Moth Palm','Clasping Wings','Rising Swarm']){const c=PSYCHE_ARM_COMMANDS[clip];Object.assign(a.f.state,{action:'heavy',actionSeq:(a.f.state.actionSeq??0)+1});a.f.displayedClipName=clip;a.f.displayedClipTime=c.duration*c.peak;a.fx.update(1,a.fighters,new Map());const contact=new T.Vector3();psycheStrikePoint(a.f,contact,clip,a.f.displayedClipTime);expect(vertex(a,0).distanceTo(contact)).toBeLessThan(1e-6);expect(contact.z).toBeGreaterThan(chest.z);}
    // Preserve the explicitly accepted ultimate instead of silently changing
    // its three-contact geometry with the ordinary receiver attachment.
-   const withReceiver=robinArmPose(),withoutReceiver=robinArmPose();psycheArmPose(a.f,withReceiver,'Silk Cocoon',3.75*.82);psycheArmPose({state:a.f.state,group:a.f.group},withoutReceiver,'Silk Cocoon',3.75*.82);expect(withReceiver.matrix.elements).toEqual(withoutReceiver.matrix.elements);
+   const withReceiver=newPsycheArmPose(),withoutReceiver=newPsycheArmPose();psycheArmPose(a.f,withReceiver,'Silk Cocoon',3.75*.82);psycheArmPose({state:a.f.state,group:a.f.group},withoutReceiver,'Silk Cocoon',3.75*.82);expect(withReceiver.matrix.elements).toEqual(withoutReceiver.matrix.elements);
   }finally{for(const s of spies)s.mockRestore();a.fx.dispose();mixer.stopAllAction();}
  });
  it('warms the native morph texture once and uploads it only while arms are visible',async()=>{const a=await setup();try{
@@ -57,12 +57,12 @@ describe('Robin native manual limb presentation',()=>{
    expect(activeVersion).toBeGreaterThan(version);mesh.instanceMatrix.clearUpdateRanges();a.f.state.action='idle';a.fx.update(time+.1,a.fighters,new Map());expect(mesh.visible).toBe(false);expect(texture.version).toBe(activeVersion);
   }
  }finally{a.fx.dispose();}});
- it('keeps the confirmed primary palm continuous across ultimate stage boundaries',async()=>{const a=await setup();try{const p=robinArmPose(),before=new T.Vector3();for(const boundary of[.285,.625]){psycheArmPose(a.f,p,'Silk Cocoon',(boundary-.0001)*3.75);before.copy(p.palm);psycheArmPose(a.f,p,'Silk Cocoon',(boundary+.0001)*3.75);expect(before.distanceTo(p.palm)).toBeLessThan(.001);expect(p.presence).toBe(1);}}finally{a.fx.dispose();}});
+ it('keeps the confirmed primary palm continuous across ultimate stage boundaries',async()=>{const a=await setup();try{const p=newPsycheArmPose(),before=new T.Vector3();for(const boundary of[.285,.625]){psycheArmPose(a.f,p,'Silk Cocoon',(boundary-.0001)*3.75);before.copy(p.palm);psycheArmPose(a.f,p,'Silk Cocoon',(boundary+.0001)*3.75);expect(before.distanceTo(p.palm)).toBeLessThan(.001);expect(p.presence).toBe(1);}}finally{a.fx.dispose();}});
  it.skipIf(!!ORIGINALS['psyche'])('has actual seven-target anatomy, allocates all24 morph rows and stays absent at idle',async()=>{const a=await setup();try{a.fx.update(1,a.fighters,new Map());expect(a.mesh().count).toBe(0);expect(a.mesh().morphTexture?.image.height).toBe(24);expect(a.mesh().geometry.morphAttributes.position).toHaveLength(7);expect(a.mesh().geometry.index!.count/3).toBe(1556);}finally{a.fx.dispose();}});
  it.skipIf(!!ORIGINALS['psyche'])('uses the identical animated native palm surface for drawing and contact',async()=>{const a=await setup();try{for(const clip of['Moth Palm','Clasping Wings','Rush 2','Rising Swarm','Moth Descent']){
-  const command=ROBIN_COMMANDS[clip];Object.assign(a.f.state,{action:'heavy',actionTime:command.peak});a.f.displayedClipName=clip;a.f.displayedClipTime=command.duration*command.peak;
+  const command=PSYCHE_ARM_COMMANDS[clip];Object.assign(a.f.state,{action:'heavy',actionTime:command.peak});a.f.displayedClipName=clip;a.f.displayedClipTime=command.duration*command.peak;
   a.fx.update(1,a.fighters,new Map());const contact=new T.Vector3();expect(psycheStrikePoint(a.f,contact,clip,a.f.displayedClipTime)).toBe(true);expect(vertex(a,0).distanceTo(contact)).toBeLessThan(1e-6);
-  const pose=robinArmPose();psycheArmPose(a.f,pose,clip,a.f.displayedClipTime);expect(pose.weights.reduce((sum,v)=>sum+v,0)).toBeLessThanOrEqual(1.00001);
+  const pose=newPsycheArmPose();psycheArmPose(a.f,pose,clip,a.f.displayedClipTime);expect(pose.weights.reduce((sum,v)=>sum+v,0)).toBeLessThanOrEqual(1.00001);
  }}finally{a.fx.dispose();}});
  it('requires an ultimate confirmation for the limb surround and deduplicates it',async()=>{const a=await setup();try{Object.assign(a.f.state,{action:'ultimate',actionDuration:3.75,actionTime:2/3.75});a.f.displayedClipName='Silk Cocoon';a.f.displayedClipTime=2;a.fx.handle(event('cast'),a.fighters);a.fx.update(2,a.fighters,new Map());expect(a.mesh().count).toBe(0);a.fx.handle(event('confirm'),a.fighters);a.fx.handle(event('confirm'),a.fighters);a.fx.update(2,a.fighters,new Map());expect(a.mesh().count).toBe(8);a.victim.state.alive=false;a.fx.update(2.01,a.fighters,new Map());expect(a.mesh().count).toBe(0);}finally{a.fx.dispose();}});
  it('clears whiffs, rejected casts, action changes, death and resets without idle recasts',async()=>{const a=await setup();try{Object.assign(a.f.state,{action:'light',actionTime:.44});a.f.displayedClipTime=.22;a.fx.update(1,a.fighters,new Map());expect(a.mesh().count).toBe(2);a.fx.handle(event('rejected',{slot:'light'}),a.fighters);a.fx.update(1.01,a.fighters,new Map());expect(a.mesh().count).toBe(0);a.f.state.actionSeq=2;a.fx.update(1.02,a.fighters,new Map());expect(a.mesh().count).toBe(2);a.f.state.action='hurt';a.fx.update(1.03,a.fighters,new Map());expect(a.mesh().count).toBe(0);a.f.state.action='light';a.f.state.alive=false;a.fx.update(1.04,a.fighters,new Map());expect(a.mesh().count).toBe(0);a.fx.reset();expect(a.scene.children.filter(o=>o.name.startsWith('psyche-')).every(o=>(o as T.InstancedMesh).count===0)).toBe(true);}finally{a.fx.dispose();}expect(a.scene.children).toHaveLength(0);});

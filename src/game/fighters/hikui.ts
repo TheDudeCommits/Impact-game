@@ -2,7 +2,7 @@ import type { CoreSlot } from '../types';
 import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 
-/** Hikui's katana, Jagan and Darkness Flame all require manual input.
+/** Hikui's katana, third eye and witchfire all require manual input.
  * The dragon is a finite presentation of confirmed ultimate contacts, never an
  * autonomous actor, homing pet or passive damage field. Candidate: laboratory only. */
 export const HIKUI_MOVES: Record<CoreSlot, MoveDefinition> = {

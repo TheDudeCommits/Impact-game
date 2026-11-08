@@ -10,10 +10,10 @@ import { blowFloor } from './blowFloor';
 import { STILL_BELL } from '../../originals/effects';
 import { suzuranAfterRing } from '../../originals/suzuranRing';
 
-export const isSuzuranTwinLions = (id: string | undefined) => id === 'suzuran';
-export const SUZURAN_TWIN_LION_LIMITS = Object.freeze({ lions: 32, rings: 96, jets: 16, marks: 192, impacts: 24, beams: 8, duels: 8 });
-export const SUZURAN_TWIN_LION_ASSETS = Object.freeze([STILL_BELL]);
-export const SUZURAN_TWIN_LION_BEATS = Object.freeze({ release: SUZURAN_AWAKENING.beats.release, finish: 3.1, end: 3.52 });
+export const isSuzuranResonance = (id: string | undefined) => id === 'suzuran';
+export const SUZURAN_RESONANCE_LIMITS = Object.freeze({ lions: 32, rings: 96, jets: 16, marks: 192, impacts: 24, beams: 8, duels: 8 });
+export const SUZURAN_RESONANCE_ASSETS = Object.freeze([STILL_BELL]);
+export const SUZURAN_RESONANCE_BEATS = Object.freeze({ release: SUZURAN_AWAKENING.beats.release, finish: 3.1, end: 3.52 });
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),TAU=Math.PI*2;
 /** Her own shapes' colours, linear and over the bloom threshold (1.1): under it the technique's grade dimmed them with
  *  the room. The lions are painted and already bright: their tint only leans them to violet (lifted further they
@@ -49,7 +49,7 @@ class ChiBatch{
 type Duel={actor:string;target:string;seq:number;finalHit:boolean;point:THREE.Vector3};
 type Beam={actor:string;born:number;from:THREE.Vector3;to:THREE.Vector3};
 type Impact={actor:string;seq:number;born:number;grade:number;seed:number;beam:boolean;point:THREE.Vector3};
-export class SuzuranTwinLions{
+export class SuzuranResonance{
  private lions:ChiBatch;private rings:ChiBatch;private jets:ChiBatch;private marks:ChiBatch;private batches:ChiBatch[];
  private duels:Duel[]=Array.from({length:8},()=>({actor:'',target:'',seq:-1,finalHit:false,point:new THREE.Vector3()}));
  private beams:Beam[]=Array.from({length:8},()=>({actor:'',born:0,from:new THREE.Vector3(),to:new THREE.Vector3()}));
@@ -64,13 +64,13 @@ export class SuzuranTwinLions{
   this.jets=new ChiBatch(scene,'jets',new THREE.CylinderGeometry(.48,.12,1,20,1,true),16);this.marks=new ChiBatch(scene,'marks',new THREE.BoxGeometry(1,1,1),192);this.batches=[this.lions,this.rings,this.jets,this.marks];
  }
  load(ids:readonly string[]){
-  if(this.disposed||!ids.some(isSuzuranTwinLions))return Promise.resolve();
-  return this.loading??=new THREE.TextureLoader().loadAsync(SUZURAN_TWIN_LION_ASSETS[0]).then(texture=>{
+  if(this.disposed||!ids.some(isSuzuranResonance))return Promise.resolve();
+  return this.loading??=new THREE.TextureLoader().loadAsync(SUZURAN_RESONANCE_ASSETS[0]).then(texture=>{
    if(this.disposed){texture.dispose();return;}this.texture=texture;texture.colorSpace=THREE.NoColorSpace;texture.generateMipmaps=true;texture.minFilter=THREE.LinearMipmapLinearFilter;texture.magFilter=THREE.LinearFilter;this.lions.mesh.material.uniforms.uMap.value=texture;this.lions.mesh.material.uniforms.ready.value=1;
   });
  }
  handle(e:CombatEvent,fighters?:ReadonlyMap<string,Fighter>){
-  if(this.disposed)return;if(e.kind==='eliminated'||e.kind==='respawn'){this.cancel(e.actorId,true);return;}if(!isSuzuranTwinLions(e.fighter))return;if(e.kind==='whiff'||e.kind==='rejected'){this.cancel(e.actorId);return;}
+  if(this.disposed)return;if(e.kind==='eliminated'||e.kind==='respawn'){this.cancel(e.actorId,true);return;}if(!isSuzuranResonance(e.fighter))return;if(e.kind==='whiff'||e.kind==='rejected'){this.cancel(e.actorId);return;}
   if(e.kind!=='release'&&e.kind!=='confirm'&&e.kind!=='hit')return;for(let i=0;i<128;i++)if(this.seen[i]===e.id&&this.seenTime[i]===e.serverTime)return;const next=this.eventCursor++%128;this.seen[next]=e.id;this.seenTime[next]=e.serverTime;
   const actor=fighters?.get(e.actorId),target=e.targetId?fighters?.get(e.targetId):undefined,seq=e.actionSeq??actor?.state.actionSeq??-1;
   if(e.kind==='release'){if(e.slot==='special'&&!e.branch&&e.origin&&e.endpoint){const beam=this.beams[this.beamCursor++%8];beam.actor=e.actorId;beam.born=e.serverTime;beam.from.set(e.origin.x,e.origin.y,e.origin.z);beam.to.set(e.endpoint.x,e.endpoint.y,e.endpoint.z);}return;}
@@ -91,7 +91,7 @@ export class SuzuranTwinLions{
   if(e.slot==='special'){
    // Sunken Bell: both lions driven down from the air.
    if(e.branch==='airSpecial'){st.burst(point,LION,2,t,{floor});st.dome(point,LION,3,t,.45);st.shock(ground,LION,5,t,.5);st.scar(ground,LION,2,t+.05,1.8);return;}
-   // The Vacuum Palm lands: the compressed air lets go, a blast, a shell of it and a ring over the floor, the floor
+   // The Kyoumei-Ha lands: the compressed air lets go, a blast, a shell of it and a ring over the floor, the floor
    // left lit. (Her casting's pressure rings stand in it where the Armory draws them: on time and at size, measured
    // 12 October 2026, so the blast is a little smaller under them.)
    const big=e.branch?.75:armoryDraws(e.fighter,e.slot,e.branch,e.actorId)?.85:1;
@@ -117,7 +117,7 @@ export class SuzuranTwinLions{
  update(time:number,fighters:ReadonlyMap<string,Fighter>){
   if(this.disposed)return;const st=this.stage.open(time);for(const b of this.batches)b.begin();this.lions.mesh.material.uniforms.clock.value=time;const detail=this.kit.budget>=.65;
   for(const f of fighters.values()){
-   const s=f.state;if(!isSuzuranTwinLions(s.fighter)||!s.alive)continue;const age=s.actionTime*s.actionDuration;this.face.setFromAxisAngle(UP,f.group.rotation.y);
+   const s=f.state;if(!isSuzuranResonance(s.fighter)||!s.alive)continue;const age=s.actionTime*s.actionDuration;this.face.setFromAxisAngle(UP,f.group.rotation.y);
    if(s.action==='awaken'){const grow=clamp((age-SUZURAN_AWAKENING.beats.focus)/.24),fade=clamp((.9-age)/.15);this.hands(f,grow*.46,fade*.66,detail);if(age>=SUZURAN_AWAKENING.beats.release)this.trigrams(f,.7+(age-.63)*3,fade,detail);continue;}
    if(!attacking(s.action)||s.whiffedAt!==undefined)continue;
    const alpha=Math.sin(clamp(s.actionTime)*Math.PI);
@@ -135,7 +135,7 @@ export class SuzuranTwinLions{
   }
   for(const duel of this.duels){if(!duel.actor)continue;const f=fighters.get(duel.actor),target=fighters.get(duel.target),s=f?.state;
    if(!f||!s?.alive||s.action!=='ultimate'||s.branch||(s.actionSeq??-1)!==duel.seq||s.whiffedAt!==undefined||!target?.state.alive&&!duel.finalHit){duel.actor='';continue;}
-   const age=s.actionTime*s.actionDuration;if(age>SUZURAN_TWIN_LION_BEATS.end){duel.actor='';continue;}const fade=clamp((SUZURAN_TWIN_LION_BEATS.end-age)/.25);this.face.setFromAxisAngle(UP,f.group.rotation.y);
+   const age=s.actionTime*s.actionDuration;if(age>SUZURAN_RESONANCE_BEATS.end){duel.actor='';continue;}const fade=clamp((SUZURAN_RESONANCE_BEATS.end-age)/.25);this.face.setFromAxisAngle(UP,f.group.rotation.y);
    // The lions on her hands; the palm diagram's floor under her.
    const g=clamp((age-ULT.contacts[0])/(ULT_LAST-ULT.contacts[0]));
    // (Led ahead of her fists: the move is filmed from her side, and lions sat on her wrists cover her arms.)

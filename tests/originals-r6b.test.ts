@@ -26,7 +26,7 @@ import { commandList } from '../src/ui/commandList';
 import { BONSHO_BODHISATTVA_ASSETS, BonshoBodhisattva } from '../src/render/signature/BonshoBodhisattva';
 import { AKAITO_GHOST_BRIDE_ASSETS, AkaitoGhostBride } from '../src/render/signature/AkaitoGhostBride';
 import { SPIRIT_CALLERS, SWORD_SPIRIT_ASSETS } from '../src/render/SwordSpiritEffects';
-import { YODAKA_TIGER_ASSET, YodakaFlameTiger } from '../src/render/signature/YodakaFlameTiger';
+import { YODAKA_OWL_ASSET, YodakaFireOwl } from '../src/render/signature/YodakaFireOwl';
 import { companionPlacement } from '../src/originals/companionLooks';
 import { launchUnshipped } from '../src/originals/launchShip';
 import { glbJson } from './extraClips';
@@ -167,14 +167,14 @@ describe("round 6's new fighters, the second batch", () => {
   it("Gosu fights through his own mender, on the earlier spirit's joints and takes, and never ships the earlier spirit", () => companion('gosu', 'gosu-mender1.glb', 'mender-spirit1.glb'));
 
 
-  it("never draws or ships the earlier Flame Tiger in Yodaka's slot: his Fire Owl is drawn in its place", async () => {
+  it("never draws or ships the earlier area drawing in Yodaka's slot: his Fire Owl is drawn in its place", async () => {
     expect(ORIGINALS.yodaka?.name).toBe('Yodaka');
-    expect(YODAKA_TIGER_ASSET).toBe('/assets/vfx/originals/fire-owl.webp');
-    expect(fs.existsSync(`public${YODAKA_TIGER_ASSET}`)).toBe(true);
-    expect(launchUnshipped([YODAKA_TIGER_ASSET.slice(1)])).toEqual([]);
+    expect(YODAKA_OWL_ASSET).toBe('/assets/vfx/originals/fire-owl.webp');
+    expect(fs.existsSync(`public${YODAKA_OWL_ASSET}`)).toBe(true);
+    expect(launchUnshipped([YODAKA_OWL_ASSET.slice(1)])).toEqual([]);
     const load = vi.spyOn(THREE.TextureLoader.prototype, 'load').mockImplementation(() => new THREE.Texture());
-    const fx = new YodakaFlameTiger(new THREE.Scene(), { budget: 1 });
-    try { void fx.load(['yodaka']); expect(load.mock.calls.map(call => call[0])).toEqual([YODAKA_TIGER_ASSET]); } finally { fx.dispose(); vi.restoreAllMocks(); }
+    const fx = new YodakaFireOwl(new THREE.Scene(), { budget: 1 });
+    try { void fx.load(['yodaka']); expect(load.mock.calls.map(call => call[0])).toEqual([YODAKA_OWL_ASSET]); } finally { fx.dispose(); vi.restoreAllMocks(); }
   });
 
   it("hold Yodaka's own blade where the earlier renderer reads Yodaka's by name", () => {

@@ -2911,7 +2911,7 @@
   {
    "id": "voice-magatsu-attack-1",
    "file": "/assets/audio/survival/voice-magatsu-attack-1.m4a",
-   "source": "the fighter's own line vo-magatsu-kai (magatsu): Eleven v4 stock preset via Higgsfield",
+   "source": "the fighter's own line vo-magatsu-thousand-cuts (magatsu): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "千裂き！",
    "sourceSha256": "24431693e5f71911790e9dde5c69ebeab2484d77610e6091227881903a86150d",
@@ -2921,7 +2921,7 @@
   {
    "id": "voice-magatsu-attack-2",
    "file": "/assets/audio/survival/voice-magatsu-attack-2.m4a",
-   "source": "the fighter's own line vo-magatsu-hachi (magatsu): Eleven v4 stock preset via Higgsfield",
+   "source": "the fighter's own line vo-magatsu-crunch (magatsu): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "噛み砕いてやる！",
    "sourceSha256": "8be8e0ab8507bc29aa08b60893f78baad812ee523187b180aaea90e728885e57",

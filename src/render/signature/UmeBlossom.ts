@@ -102,7 +102,7 @@ export class UmeBlossom{
   }
   if(e.slot!=='ultimate'||e.branch)return;
   if(!final){st.burst(point,BLOSSOM,e.contactIndex?1.6:1.2,t,{dir,floor});this.bloom(ground,t,1.1,12,1.8);if(e.contactIndex){st.shatter(broken,UP,BLOSSOM,2.6,t,.7);st.shock(ground,BLOSSOM,5,t,.5);}return;}
-  // CHERRY BLOSSOM IMPACT: the floor broken to six and a half metres, a dome of force thrown out, geysers of chi
+  // THE BLOSSOM BLOW: the floor broken to six and a half metres, a dome of force thrown out, geysers of chi
   // through the breaks, a storm of petals out of it, and what is left of the floor glowing in its cracks.
   st.burst(point,BLOSSOM,2.3,t,{dir,floor});
   st.shatter(broken,UP,BLOSSOM,6.5,t,1.4);

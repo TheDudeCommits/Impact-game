@@ -28,7 +28,7 @@ describe('new native palm and bokken sockets through actual Fighter layers',()=>
  });
  it.skipIf(!!ORIGINALS.wataame).each(['light','heavy','special','ultimate']as const)('Wataame %s keeps the physical strike point on his actual wooden blade',async slot=>{
   const state=base('wataame'),actor=new Fighter(state,await loadRig(FIGHTERS.wataame.model));actor.prepareRush();actor.targetPoint=new THREE.Vector3(0,1.4,4);actor.targetDistance=4;
-  try{for(let i=0;i<60;i++)actor.update(1/60,state,true);const m=MOVES.wataame[slot];advance(actor,{...state,action:slot,actionSeq:1,actionStarted:1,actionDuration:m.duration},m.contacts.at(-1)!);const blade=actor.model.getObjectByName('Wataame_LakeToya')as THREE.SkinnedMesh,p=new THREE.Vector3(),v=new THREE.Vector3();actor.strikePoint(p);let nearest=Infinity;
+  try{for(let i=0;i<60;i++)actor.update(1/60,state,true);const m=MOVES.wataame[slot];advance(actor,{...state,action:slot,actionSeq:1,actionStarted:1,actionDuration:m.duration},m.contacts.at(-1)!);const blade=actor.model.getObjectByName('weapon_bokken_hand_R')as THREE.SkinnedMesh,p=new THREE.Vector3(),v=new THREE.Vector3();actor.strikePoint(p);let nearest=Infinity;
    for(let i=0;i<blade.geometry.attributes.position.count;i++){blade.getVertexPosition(i,v).applyMatrix4(blade.matrixWorld);nearest=Math.min(nearest,p.distanceTo(v));}
    expect(actor.armed).toBe(true);expect(nearest).toBeLessThan(.016);expect(p.distanceTo(actor.handR)).toBeGreaterThan(.7);expect(actor.chargePosition(v).distanceTo(p)).toBeLessThan(1e-5);
   }finally{actor.dispose();}

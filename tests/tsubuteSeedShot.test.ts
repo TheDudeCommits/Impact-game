@@ -4,13 +4,13 @@ import type { CombatEvent, PlayerState } from '../src/game/types';
 import type { Fighter } from '../src/render/Fighter';
 import type { Flight } from '../src/render/CombatEffects';
 import { setFxDrawn } from '../src/render/vfx/armory/drawn';
-import { TsubutePopGreen, TSUBUTE_POP_GREEN_LIMITS, TSUBUTE_POP_GREEN_TEXTURES, tsubuteMuzzle } from '../src/render/signature/TsubutePopGreen';
+import { TsubuteSeedShot, TSUBUTE_SEED_SHOT_LIMITS, TSUBUTE_SEED_SHOT_TEXTURES, tsubuteMuzzle } from '../src/render/signature/TsubuteSeedShot';
 import { MoveStage } from '../src/render/signature/MoveStage';
 
-const effects: TsubutePopGreen[] = [];
+const effects: TsubuteSeedShot[] = [];
 afterEach(() => { for (const fx of effects.splice(0)) fx.dispose(); setFxDrawn([]); vi.restoreAllMocks(); vi.useRealTimers(); });
 function harness(budget = 1) {
-  const scene = new T.Scene(), fx = new TsubutePopGreen(scene, { budget }); effects.push(fx);
+  const scene = new T.Scene(), fx = new TsubuteSeedShot(scene, { budget }); effects.push(fx);
   const group = new T.Group(), head = new T.Object3D(); head.position.set(0, 1.65, .05); group.add(head); group.updateMatrixWorld(true);
   const fighter = { group, state: { id: 'u', fighter: 'tsubute', alive: true, action: 'idle', actionTime: 0, yaw: 0, actionSeq: 3 } as PlayerState,
     drawnJoint: (name: string) => name === 'Head' ? head : undefined,
@@ -31,7 +31,7 @@ const flight = (patch: Partial<Flight> = {}): Flight => ({ fighter: 'tsubute', s
   origin: new T.Vector3(0, 1.3, .62), heading: new T.Vector3(0, 0, 1), released: true, since: 9.8, ...patch });
 function position(mesh: T.InstancedMesh, index = 0) { const matrix = new T.Matrix4(); mesh.getMatrixAt(index, matrix); return new T.Vector3().setFromMatrixPosition(matrix); }
 
-describe('Tsubute manual Pop Green presentation', () => {
+describe('Tsubute manual seed shot presentation', () => {
   it('keeps six room-owned pools idle with no repeated GPU uploads or awakened passive attacks', () => {
     const h = harness(); h.fighter.state.awakened = true; const before = JSON.stringify(h.fighter.state);
     for (let i = 0; i < 60; i++) h.update(i / 60);
@@ -124,8 +124,8 @@ describe('Tsubute manual Pop Green presentation', () => {
   it('bounds simultaneous impacts and uploads across idle→active→idle→active', () => {
     const h = harness(.3); h.update();
     for (let i = 0; i < 100; i++) { h.flights.set(String(i), flight()); h.fx.handle(hit({ id: i + 1, slot: 'ultimate', contactIndex: 2 }), h.fighters); }
-    h.update(); expect(h.mesh('seeds').count).toBeLessThanOrEqual(TSUBUTE_POP_GREEN_LIMITS.seeds); expect(h.mesh('leaves').count).toBeLessThanOrEqual(TSUBUTE_POP_GREEN_LIMITS.leaves);
-    expect(h.mesh('impact-rings').count).toBeLessThanOrEqual(TSUBUTE_POP_GREEN_LIMITS.rings);
+    h.update(); expect(h.mesh('seeds').count).toBeLessThanOrEqual(TSUBUTE_SEED_SHOT_LIMITS.seeds); expect(h.mesh('leaves').count).toBeLessThanOrEqual(TSUBUTE_SEED_SHOT_LIMITS.leaves);
+    expect(h.mesh('impact-rings').count).toBeLessThanOrEqual(TSUBUTE_SEED_SHOT_LIMITS.rings);
     const version = h.mesh('seeds').instanceMatrix.version; h.flights.clear(); h.fx.reset(); h.update();
     expect(h.mesh('seeds').count).toBe(0); expect(h.mesh('seeds').instanceMatrix.version).toBe(version);
     h.flights.set('next', flight({ since: 11 })); h.update(11.1);
@@ -136,7 +136,7 @@ describe('Tsubute manual Pop Green presentation', () => {
     const load = vi.spyOn(T.TextureLoader.prototype, 'load').mockImplementation((_url, ready) => { const t = new T.Texture<HTMLImageElement>({ width: 200, height: 100 } as HTMLImageElement); ready?.(t); return t; });
     const h = harness(); await h.fx.load(['taisei']); expect(load).not.toHaveBeenCalled();
     const pending = h.fx.load(['tsubute']); expect(h.fx.load(['tsubute'])).toBe(pending); await pending;
-    expect(load.mock.calls.map(c => c[0])).toEqual([TSUBUTE_POP_GREEN_TEXTURES.wolf, TSUBUTE_POP_GREEN_TEXTURES.bird]);
+    expect(load.mock.calls.map(c => c[0])).toEqual([TSUBUTE_SEED_SHOT_TEXTURES.wolf, TSUBUTE_SEED_SHOT_TEXTURES.bird]);
     h.flights.set('wolf', flight({ slot: 'heavy' })); h.flights.set('bird', flight({ slot: 'special', position: new T.Vector3(2, 1.3, 6) })); h.update();
     expect(h.mesh('ballast').count).toBe(1); expect(h.mesh('firebird').count).toBe(1);
     expect(position(h.mesh('firebird')).toArray()).toEqual([2, 1.2999999523162842, 6]);
@@ -146,7 +146,7 @@ describe('Tsubute manual Pop Green presentation', () => {
   it('resolves failed and bounded slow loads, disposes late completions, and retains procedural projectiles', async () => {
     vi.useFakeTimers(); const completions: (((t: T.Texture<HTMLImageElement>) => void) | undefined)[] = [];
     vi.spyOn(T.TextureLoader.prototype, 'load').mockImplementation((_url, ready) => { completions.push(ready); return new T.Texture<HTMLImageElement>(); });
-    const h = harness(), pending = h.fx.load(['tsubute']); await vi.advanceTimersByTimeAsync(TSUBUTE_POP_GREEN_LIMITS.loadTimeoutMs); await pending;
+    const h = harness(), pending = h.fx.load(['tsubute']); await vi.advanceTimersByTimeAsync(TSUBUTE_SEED_SHOT_LIMITS.loadTimeoutMs); await pending;
     for (const ready of completions) { const t = new T.Texture<HTMLImageElement>(), dispose = vi.spyOn(t, 'dispose'); ready!(t); expect(dispose).toHaveBeenCalledOnce(); }
     h.flights.set('bird', flight({ slot: 'special' })); h.update(); expect(h.mesh('firebird').count).toBe(0); expect(h.mesh('leaves').count).toBe(7);
   });

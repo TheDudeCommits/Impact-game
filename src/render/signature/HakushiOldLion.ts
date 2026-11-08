@@ -179,8 +179,8 @@ export class HakushiOldLion{
   for(const b of this.batches)b.end();st.close();
  }
  /** Lion Dance: Over the Cliff from the confirm to the last blow, round the body it is poured over: the room to night; first
-  *  Fukasaku's wind (toad-green gusts turning round them) and the oil spreading amber over the floor under them;
-  *  from the second blow Shima's fire, standing in a ring round them and taller with every beat as the oil boils,
+  *  the elder toad's wind (toad-green gusts turning round them) and the oil spreading amber over the floor under them;
+  *  from the second blow the other toad's fire, standing in a ring round them and taller with every beat as the oil boils,
   *  with the fire gathered at his own mouth. Round the victim and on the floor: the two are read between the flames. */
  private gather(actor:Fighter,f:Finale,age:number,floor:number,time:number){
   const st=this.stage,g=clamp((age-ULT.contacts[0])/(ULT.contacts[2]-ULT.contacts[0])),boil=clamp((age-ULT.contacts[1])/(ULT.contacts[2]-ULT.contacts[1])),seed=f.seq*2.9;

@@ -65,7 +65,7 @@ class LazySignature implements Signature {
 }
 const factories: Partial<Record<FighterId, Factory>> = {
   chohan: (scene, kit) => new ChohanAllIn(scene, kit),
-  tsubute: lazy(() => import('./TsubutePopGreen').then(m => (scene, kit) => new m.TsubutePopGreen(scene, kit))),
+  tsubute: lazy(() => import('./TsubuteSeedShot').then(m => (scene, kit) => new m.TsubuteSeedShot(scene, kit))),
   aqrab: lazy(() => import('./AqrabDesert').then(m => (scene, kit) => new m.AqrabDesert(scene, kit))),
   yodaka: (scene, kit) => new YodakaFlameArt(scene, kit),
   ume: lazy(() => import('./UmeBlossom').then(m => (scene, kit) => new m.UmeBlossom(scene, kit))),
@@ -98,7 +98,7 @@ const factories: Partial<Record<FighterId, Factory>> = {
   hinomoto: lazy(() => import('./HinomotoBlaze').then(m => (scene, kit) => new m.HinomotoBlaze(scene, kit))),
   amagoi:(scene,kit)=>new AmagoiGravity(scene,kit),
   'shakudo':(scene,kit)=>new ShakudoAlchemy(scene,kit),
-  hikui: lazy(() => import('./HikuiDarknessFlame').then(m => (scene, kit) => new m.HikuiDarknessFlame(scene, kit))),
+  hikui: lazy(() => import('./HikuiWitchfire').then(m => (scene, kit) => new m.HikuiWitchfire(scene, kit))),
   tokan: lazy(() => import('../vfx/engine/pilots/tokan').then(m => (scene, kit) => m.tokanSignature(scene, kit))),
   strappado:(scene,kit)=>new StrappadoStrings(scene,kit),
   unari:(scene,kit)=>new UnariElastic(scene,kit),
@@ -107,7 +107,7 @@ const factories: Partial<Record<FighterId, Factory>> = {
   gosu: lazy(() => import('./GosuRestoration').then(m => (scene, kit) => new m.GosuRestoration(scene, kit))),
   kusushi: lazy(() => import('./KusushiStrength').then(m => (scene, kit) => new m.KusushiStrength(scene, kit))),
   hakushi: lazy(() => import('./HakushiOldLion').then(m => (scene, kit) => new m.HakushiOldLion(scene, kit))),
-  suzuran: lazy(() => import('./SuzuranTwinLions').then(m => (scene, kit) => new m.SuzuranTwinLions(scene, kit))),
+  suzuran: lazy(() => import('./SuzuranResonance').then(m => (scene, kit) => new m.SuzuranResonance(scene, kit))),
   wataame:(scene,kit)=>new WataameSilverSoul(scene,kit),
   senko:(scene,kit)=>new SenkoGlint(scene,kit),
   buna:(scene,kit)=>new BunaOni(scene,kit),

@@ -70,7 +70,7 @@ export class BellowsStoked {
     const ground = this.c.set(point.x, floor, point.z);
     if (e.slot === 'light') { st.burst(point, FIRE, .42, t, { dir, floor, clean: true }); return; }
     if (e.slot === 'heavy') {
-      // Jet Burn: the gout of flame the fist drives through its victim, and the floor burning past them.
+      // The fist jet: the gout of flame the fist drives through its victim, and the floor burning past them.
       st.burst(point, FIRE, e.branch ? .9 : 1, t, { dir, floor });
       this.a.copy(dir).setY(.14).normalize();
       // (Out of their back and away, and short: from behind him the victim stands in front of it, and is read again a
@@ -135,7 +135,7 @@ export class BellowsStoked {
         st.glow(hand, .34, FIRE.main, .6 * k); st.glow(hand, .14, FIRE.core, .8 * k);
         st.light(this.p.copy(hand).addScaledVector(heading, .4), 2.2, FIRE, .25 * k);
       } else if (s.action === 'heavy') {
-        // Jet Burn: fire gathers on the fist and jets out behind the elbow; at the blow the fist flares along its own
+        // The fist jet: fire gathers on the fist and jets out behind the elbow; at the blow the fist flares along its own
         // reach whether or not it lands (what it does to a body it lands on is the hit's: `handle`).
         const contact = s.branch ? s.actionDuration * .5 : HEAVY.contacts[0];
         if (elapsed < contact) {

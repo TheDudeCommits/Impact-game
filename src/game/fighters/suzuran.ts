@@ -34,12 +34,12 @@ export function suzuranStrikeSide(action:string,elapsed=0,clip?:string,contactIn
   return SUZURAN_ULT_SIDES[index];
  }
  if(clip==='Shumoku'||clip==='Rush 3'||clip==='Bell Drop'||clip==='Sunken Bell')return 'Both';
- if(clip==='Rush 1'||clip==='Vacuum Palm'||clip==='Overtone'||clip==='Handstroke')return 'Right';
+ if(clip==='Rush 1'||clip==='Kyoumei-Ha'||clip==='Overtone'||clip==='Handstroke')return 'Right';
  if(clip==='Chime Strike'||clip==='Rush 2'||clip==='Backswing'||clip==='Full Peal')return 'Left';
  return action==='heavy'?'Both':action==='special'?'Right':'Left';
 }
 export const SUZURAN_AWAKENING = {
-  name: 'YOIN', clip: 'Twin Lion Release', duration: 1.5, entryDuration: .9,
+  name: 'YOIN', clip: 'YOIN Release', duration: 1.5, entryDuration: .9,
   beats: { seal: .162, focus: .288, unfold: .459, release: .63 }, manualOnly: true,
   canonScope: 'Gameplay focus state; no new body transformation.',
 } as const;

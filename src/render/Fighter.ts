@@ -896,7 +896,7 @@ const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   'ovid':{"opener":{"clip":"Full Demolition","at":0.18},"cine":{"from":0.18,"at":0.81,"windows":[[0.18,0.56,0.415],[0.56,1,0.81]]}},
   hawser:{"formOnly":true,"formOpener":{"clip":"Advancing Rage","at":0.13333333333333333},"cine":{"from":0.13333333333333333,"at":0.8238095238095238,"windows":[[0.13333333333333333,0.43,0.3285714285714285],[0.43,0.69,0.5523809523809523],[0.69,1,0.8238095238095238]]}},
   rotfalke:{opener:{clip:"Ten-Count Talons",at:.14},cine:{from:.14,at:.83,windows:[[.14,.44,.34],[.44,.70,.56],[.70,1,.83]]}},
-  bonsho:{"opener":{"clip":"Ninety-Ninth Hand","at":0.13},"cine":{"from":0.13,"at":0.84,"windows":[[0.13,0.4,0.34],[0.4,0.53,0.46],[0.53,0.72,0.6],[0.72,1,0.84]]}},
+  bonsho:{"opener":{"clip":"Hundred and Eight Tolls","at":0.13},"cine":{"from":0.13,"at":0.84,"windows":[[0.13,0.4,0.34],[0.4,0.53,0.46],[0.53,0.72,0.6],[0.72,1,0.84]]}},
   yodaka:{opener:{clip:"Ninth Watch: Nighthawk Star",at:.55/4.2},cine:{from:.55/4.2,at:3.5/4.2,windows:[[.55/4.2,.47,89/252],[.47,.71,149/252],[.71,1,3.5/4.2]]}},
   murex:{"opener":{"clip":"Spinestorm","at":0.17},"cine":{"from":0.17,"at":0.81,"windows":[[0.17,1,0.81]]}},
   kinu:{"opener":{"clip":"Broken Shackles","at":0.125},"cine":{"from":0.125,"at":0.795,"windows":[[0.125,0.27875,0.2375],[0.27875,0.36125,0.32],[0.36125,0.44375,0.4025],[0.44375,0.52625,0.485],[0.52625,0.6125,0.5675],[0.6125,0.7262500000000001,0.6575],[0.7262500000000001,1,0.795]]}},
@@ -913,9 +913,9 @@ const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   hinomoto:{"opener":{"clip":"Funeral Pyre","at":0.125},"cine":{"from":0.125,"at":0.785,"windows":[[0.125,0.5,0.36],[0.5,1,0.785]]}},
   amagoi:{"opener":{"clip":"Ash Moon","at":0.14210526315789476},"formOpener":{"clip":"Ash Moon","at":0.14210526315789476},"cine":{"from":0.14210526315789476,"at":0.8105263157894738,"windows":[[0.14210526315789476,0.4565789473684211,0.36052631578947375],[0.4565789473684211,0.6815789473684211,0.5526315789473685],[0.6815789473684211,1,0.8105263157894738]]}},
   'shakudo':{"opener":{"clip":"TANREN: White Heat","at":0.13725490196078433},"cine":{"from":0.13725490196078433,"at":0.8088235294117646,"windows":[[0.13725490196078433,0.5269607843137255,0.3995098039215686],[0.5269607843137255,1,0.8088235294117646]]}},
-  hikui:{"opener":{"clip":"Darkness Dragon","at":0.14},"cine":{"from":0.14,"at":0.79,"windows":[[0.14,0.65,0.51],[0.65,1,0.79]]}},
+  hikui:{"opener":{"clip":"Violet Balefire","at":0.14},"cine":{"from":0.14,"at":0.79,"windows":[[0.14,0.65,0.51],[0.65,1,0.79]]}},
   tokan:{"opener":{"clip":"Winter Sleep","at":0.1217948717948718},"cine":{"from":0.1217948717948718,"at":0.7698561601000625,"windows":[[0.1217948717948718,0.5897435897435898,0.33760683760683763],[0.5897435897435898,1,0.7698561601000625]]}},
-  strappado:{"opener":{"clip":"God Thread","at":0.1443298969072165},"cine":{"from":0.1443298969072165,"at":0.8195876288659795,"windows":[[0.1443298969072165,0.58,0.4123711340206186],[0.58,1,0.8195876288659795]]}},
+  strappado:{"opener":{"clip":"Curtain Call","at":0.1443298969072165},"cine":{"from":0.1443298969072165,"at":0.8195876288659795,"windows":[[0.1443298969072165,0.58,0.4123711340206186],[0.58,1,0.8195876288659795]]}},
   unari:{"opener":{"clip":"AYATORI: Cat's Cradle","at":0.1611111111111111},"cine":{"from":0.1611111111111111,"at":0.8027777777777778,"windows":[[0.1611111111111111,0.28888888888888886,0.24166666666666667],[0.28888888888888886,0.3833333333333333,0.3361111111111111],[0.3833333333333333,0.47777777777777775,0.4305555555555556],[0.47777777777777775,0.5722222222222222,0.5249999999999999],[0.5722222222222222,0.6597222222222222,0.6194444444444445],[0.6597222222222222,0.7513888888888889,0.7],[0.7513888888888889,1,0.8027777777777778]]}},
   barrow:{"opener":{"clip":"Jettison: Full Hold","at":0.1326530612244898},"cine":{"from":0.1326530612244898,"at":0.8290816326530612,"windows":[[0.1326530612244898,0.58,0.3903061224489796],[0.58,1,0.8290816326530612]]}},
   sashigane:{opener:{clip:"Final Inspection",at:.45/3.8},cine:{from:.45/3.8,at:3.1/3.8,windows:[[.45/3.8,.43,1.2/3.8],[.43,.67,2.05/3.8],[.67,1,3.1/3.8]]}},
@@ -1157,7 +1157,7 @@ const CHARGE_TREMOR=.022,CHARGE_BREATH=.016;
  *  ultimates, Shirokane's seal and Konta's Senpugan as statues: eight to
  *  fourteen captured frames of one pose. Measured (scripts/probe_hold_length),
  *  Grand Tide held 4.2 s with no body joint turning 1.5 degrees in a
- *  frame, Kenzo's Billion-fold 2.3 s, Kuon's PLANETARIUM 2.2 s. A held
+ *  frame, Kenzo's Dust Sea Sundered 2.3 s, Kuon's PLANETARIUM 2.2 s. A held
  *  chamber is what those moves are - the clip has 1.9 s of footage for a
  *  7.8 s move - so the hold is kept and given life on top: a breath through
  *  the spine and the shoulders, the weight shifting from foot to foot, the
@@ -1370,7 +1370,7 @@ const HIT_SCALE={finisher:1.8,heavy:1.4,big:1.5,guarded:.35};
  *  The push is presentation: the group is drawn off its logical position by
  *  it, never further than PUSH_MOST (PUSH_MOST_ARMED for a blade, and
  *  PUSH_MOST_HOLD for blades held out through a body for a whole move - the
- *  Billion-fold's, where the whole blade pushes, not only its forte). The room an
+ *  Dust Sea Sundered's, where the whole blade pushes, not only its forte). The room an
  *  attacker's own swing is given (limitRootMotion) is measured against the
  *  body without it (`restCenter`), so the two cannot chase each other across
  *  the floor.
@@ -1489,7 +1489,7 @@ export { VICTORY, VICTORY_ENTRY, FORM_NAMED_RUSH, SPIRIT_COMMAND, SLOT_CLIP_BEFO
  *  whole body to fit. Kenzo measured 2.35 m that way and shipped two thirds the
  *  height of everyone else. These still render - they are only not him. Nor
  *  are Shiun's wings, which rise a third of a metre over his head. */
-const CARRIED=/weapon|equipment-held|^Wataame_LakeToya|^awaken-on|wings/i;
+const CARRIED=/weapon|equipment-held|^awaken-on|wings/i;
 const HELD=/weapon.*hand|equipment-held/i;
 /** Parts of a fighter that are supposed to be black. */
 const FEATURE=/face|eye|hair|weapon|equipment/i;
@@ -7730,7 +7730,7 @@ export class Fighter {
           // overhead through the air a body stands in is not one yet, and a
           // recovery is the arm coming away. A move that holds its blades out
           // through a body the whole time it plays (`spacing`, the
-          // Billion-fold) pushes throughout. A fist or a foot always does: a
+          // Dust Sea Sundered) pushes throughout. A fist or a foot always does: a
           // kick still in the body as the next stage takes over is still in it.
           const steel=!!move&&(move.spacing!==undefined||Fighter.aroundContact(move,s.actionTime*s.actionDuration));
           // Pushed straight back from whoever struck, level.
@@ -8376,7 +8376,7 @@ export class Fighter {
   }
   private pinHeldEquipment(){
     for(const pin of this.heldPins){
-      // Kageyoshi deliberately releases the native blade. Preserve that one
+      // The blade rows deliberately release the native blade. Preserve that one
       // authored drop; ordinary held equipment still follows its grip.
       if(this.state.fighter==='shidare'&&this.state.action==='awaken'&&pin.node.name==='Sword')continue;
       if(pin.node.position.distanceToSquared(pin.position)>HELD_SLACK*HELD_SLACK)pin.node.position.copy(pin.position);

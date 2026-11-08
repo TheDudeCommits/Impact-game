@@ -3,7 +3,7 @@ import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 import type { AwakeningDefinition } from '../awakening';
 
-/** Pika Pika pressure: every kick, ray and bead barrage belongs to a manual
+/** Glare pressure: every kick, ray and bead barrage belongs to a manual
  * action. BLINDING NOON is a presentation state with no automatic damage. */
 export const SENKO_MOVES: Record<CoreSlot, MoveDefinition> = {
   light: { name: 'Glimmer Kick', duration: .47, contacts: [.168], damage: 21,

@@ -27,8 +27,8 @@ import { ORIGINALS } from '../../originals/roster';
  *                       move's own speed and keep going through whatever
  *                       they hit - accent they still visibly travel -
  *                       and burn out over the next half second.
- *  Billion-fold World   the RAKSHASA rises behind him for the whole charge: his
- *  Great Thousand Worlds        own three-faced, six-armed form, twice his size, as a
+ *  Dust Sea Sundered    the RAKSHASA rises behind him for the whole charge: his
+ *                       own three-faced, six-armed form, twice his size, as a
  *                       translucent green phantom with a burning rim and an
  *                       ink line (signature/GhostShell), playing the same
  *                       technique in time with him and swelling as the cut

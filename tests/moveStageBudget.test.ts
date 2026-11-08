@@ -7,7 +7,7 @@ import type { Flight } from '../src/render/CombatEffects';
 import { MoveStage, STAGE_LIMITS } from '../src/render/signature/MoveStage';
 import { BellowsStoked } from '../src/render/signature/BellowsStoked';
 import { BarrowEmperor } from '../src/render/signature/BarrowEmperor';
-import { TsubutePopGreen } from '../src/render/signature/TsubutePopGreen';
+import { TsubuteSeedShot } from '../src/render/signature/TsubuteSeedShot';
 import { OnigawaraPressure } from '../src/render/signature/OnigawaraPressure';
 import { ShidareSteelPetalCut } from '../src/render/signature/ShidareSteelPetalCut';
 import { IrbisBaredFangs } from '../src/render/signature/IrbisBaredFangs';
@@ -43,7 +43,7 @@ import { FullBeamPressure } from '../src/render/signature/FullBeamPressure';
 import { YodakaFlameArt } from '../src/render/signature/YodakaFlameArt';
 import { KuzuChainsaw } from '../src/render/signature/KuzuChainsaw';
 import { RakuchoTendrils } from '../src/render/signature/RakuchoTendrils';
-import { HikuiDarknessFlame } from '../src/render/signature/HikuiDarknessFlame';
+import { HikuiWitchfire } from '../src/render/signature/HikuiWitchfire';
 import { AkayuriNightblade } from '../src/render/signature/AkayuriNightblade';
 import { HisameWhiteoutGlassCoffin } from '../src/render/signature/HisameWhiteoutGlassCoffin';
 import { RotfalkeField } from '../src/render/signature/RotfalkeField';
@@ -55,7 +55,7 @@ import { AmagoiGravity } from '../src/render/signature/AmagoiGravity';
 import { HakushiOldLion } from '../src/render/signature/HakushiOldLion';
 import { KusushiStrength } from '../src/render/signature/KusushiStrength';
 import { KubiwaControl } from '../src/render/signature/KubiwaControl';
-import { SuzuranTwinLions } from '../src/render/signature/SuzuranTwinLions';
+import { SuzuranResonance } from '../src/render/signature/SuzuranResonance';
 import { UmeBlossom } from '../src/render/signature/UmeBlossom';
 import { BonshoBodhisattva } from '../src/render/signature/BonshoBodhisattva';
 import { UnariElastic } from '../src/render/signature/UnariElastic';
@@ -102,7 +102,7 @@ describe('what a pilot\'s ultimate asks of the shared stage at its busiest frame
   it.each([
     ['bellows', (scene: THREE.Scene) => new BellowsStoked(scene, { budget: 1 })],
     ['barrow', (scene: THREE.Scene) => new BarrowEmperor(scene, { budget: 1 })],
-    ['tsubute', (scene: THREE.Scene) => new TsubutePopGreen(scene, { budget: 1 })],
+    ['tsubute', (scene: THREE.Scene) => new TsubuteSeedShot(scene, { budget: 1 })],
     ['onigawara', (scene: THREE.Scene) => new OnigawaraPressure(scene, { budget: 1 })],
     ['shidare', (scene: THREE.Scene) => new ShidareSteelPetalCut(scene, { budget: 1 })],
     ['irbis', (scene: THREE.Scene) => new IrbisBaredFangs(scene, { budget: 1 })],
@@ -137,7 +137,7 @@ describe('what a pilot\'s ultimate asks of the shared stage at its busiest frame
     ['yodaka', (scene: THREE.Scene) => new YodakaFlameArt(scene, { budget: 1 })],
     ['kuzu', (scene: THREE.Scene) => new KuzuChainsaw(scene, { budget: 1 })],
     ['rakucho', (scene: THREE.Scene) => new RakuchoTendrils(scene, { budget: 1 })],
-    ['hikui', (scene: THREE.Scene) => new HikuiDarknessFlame(scene, { budget: 1 })],
+    ['hikui', (scene: THREE.Scene) => new HikuiWitchfire(scene, { budget: 1 })],
     ['akayuri', (scene: THREE.Scene) => new AkayuriNightblade(scene, { budget: 1 })],
     ['hisame', (scene: THREE.Scene) => new HisameWhiteoutGlassCoffin(scene, { budget: 1 })],
     ['rotfalke', (scene: THREE.Scene) => new RotfalkeField(scene, { budget: 1 })],
@@ -149,7 +149,7 @@ describe('what a pilot\'s ultimate asks of the shared stage at its busiest frame
     ['hakushi', (scene: THREE.Scene) => new HakushiOldLion(scene, { budget: 1 })],
     ['kusushi', (scene: THREE.Scene) => new KusushiStrength(scene, { budget: 1 })],
     ['kubiwa', (scene: THREE.Scene) => new KubiwaControl(scene, { budget: 1 })],
-    ['suzuran', (scene: THREE.Scene) => new SuzuranTwinLions(scene, { budget: 1 })],
+    ['suzuran', (scene: THREE.Scene) => new SuzuranResonance(scene, { budget: 1 })],
     ['ume', (scene: THREE.Scene) => new UmeBlossom(scene, { budget: 1 })],
     ['bonsho', (scene: THREE.Scene) => new BonshoBodhisattva(scene, { budget: 1 })],
     ['unari', (scene: THREE.Scene) => new UnariElastic(scene, { budget: 1 })],

@@ -190,6 +190,7 @@ import {saveRejoin,takeRejoin} from './boot/rejoin';
 import {mountGraphicsNotice} from './ui/graphicsNotice';
 import {textureBytes} from './render/textureBytes';
 import {showStartFailure} from './ui/startFailure';
+import {bootDone} from './boot/bootScreen'; // index.html's loading page (#boot) goes once the home is ready
 
 const root=document.querySelector<HTMLElement>('#app')!;
 // The renderer, tried twice and else a message and a RETRY in place of the boot mark (boot/webglFailure.ts).
@@ -1440,7 +1441,7 @@ function watchSwaps(snapshot:GameSnapshot){
 }
 // Home is actionable independently of the full roster. Idle downloads use one worker;
 // selecting a fighter or entering a match promotes its assets ahead of that queue.
-startup.readyMs=Math.round(performance.now()-startup.started);hud.ready();
+startup.readyMs=Math.round(performance.now()-startup.started);hud.ready();bootDone(); // (the loading page's end: boot/bootScreen.ts)
 // Rapier, every match's collision (the offline modes' own simulation, the online one's prediction), is fetched once the home
 // screen is up and the page has its images, not with the page: in the entry (game/moba/LocalRift.ts imported it at the top)
 // it was 1.07 MB of a first visit's 3.3 MB of code before PLAY could be pressed. A start pressed before this imports it itself.

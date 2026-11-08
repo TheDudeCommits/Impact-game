@@ -6,7 +6,7 @@ const F = '/assets/fighters/';
 const shopItem = (name: string, blurb: string, glyph: string) => ({ name, blurb, glyph }) as { name: string; blurb: string };
 
 export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
-  // SHAKUGO 灼獒 (Shakugo / Sakazuki's slot, round 6's concept b; writer C):
+  // SHAKUGO 灼獒 (Shakugo's slot, round 6's concept b; writer C):
   // Warden of the Tribunal.
   shakugo: {
     name: 'Shakugo', series: 'Dust Sea', tagline: 'The harshest of the Tribunal\'s three Wardens: a man of molten rock with a hound at each fist, who has never let a single outlaw cross the next dune alive.',
@@ -346,7 +346,7 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
     shop: { 'fighter-minase': shopItem('Minase', 'The relay courier of the Hidden Ash: a relay knife, a palm of gale, a leap to wherever the knife lands - and the Fifty-Three Stations, run in one breath.', '駅') },
   },
   // MADAKE 真竹 (madake's slot, round 6's concept e; writer C):
-  // the Green Beast of the Ash.
+  // the green brawler of the Ash.
   'madake': {
     name: 'Madake', series: 'Hidden Ash', tagline: 'The Hidden Ash\'s bare-handed bamboo: a teacher who trains till his arms steam, grows back from every beating, and has never stopped calling the scarecrow his rival.',
     homeArt: true,

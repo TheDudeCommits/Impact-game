@@ -3,13 +3,13 @@ import * as T from 'three';
 import type { CombatEvent, PlayerState } from '../src/game/types';
 import type { Fighter } from '../src/render/Fighter';
 import { ArenaSimulation } from '../src/game/simulation';
-import { YODAKA_TIGER_ASSET, YODAKA_TIGER_LIMITS, YodakaFlameTiger, yodakaFlameTigerReady } from '../src/render/signature/YodakaFlameTiger';
+import { YODAKA_OWL_ASSET, YODAKA_OWL_LIMITS, YodakaFireOwl, yodakaFireOwlReady } from '../src/render/signature/YodakaFireOwl';
 import { ORIGINALS } from '../src/originals/roster';
 
-const live: YodakaFlameTiger[] = [];
-afterEach(() => { for (const fx of live) fx.dispose(); live.length = 0; vi.restoreAllMocks(); vi.useRealTimers(); expect(yodakaFlameTigerReady()).toBe(false); });
+const live: YodakaFireOwl[] = [];
+afterEach(() => { for (const fx of live) fx.dispose(); live.length = 0; vi.restoreAllMocks(); vi.useRealTimers(); expect(yodakaFireOwlReady()).toBe(false); });
 function harness(budget = 1) {
-  const scene = new T.Scene(), fx = new YodakaFlameTiger(scene, { budget }); live.push(fx);
+  const scene = new T.Scene(), fx = new YodakaFireOwl(scene, { budget }); live.push(fx);
   const fighter = { state: { id: 'r', fighter: 'yodaka', alive: true, yaw: .4, action: 'idle', actionSeq: 9 } as PlayerState } as Fighter;
   const fighters = new Map([['r', fighter]]);
   const tiger = scene.getObjectByName('yodaka-flame-tiger') as T.InstancedMesh;
@@ -24,12 +24,12 @@ function readyTexture() {
 const impact = (patch: Partial<CombatEvent> = {}): CombatEvent => ({ id: 21, kind: 'impact', actorId: 'r', fighter: 'yodaka', slot: 'area',
   serverTime: 10, endpoint: { x: 3, y: .25, z: -2 }, radius: 3.5, contactIndex: 0, ...patch });
 
-describe.skipIf(!!ORIGINALS.yodaka)('Yodaka manual Flame Tiger area impact', () => {
+describe.skipIf(!!ORIGINALS.yodaka)('Yodaka manual Fire Owl area impact', () => {
   it('loads only for Yodaka and shares one bounded request', async () => {
     const { load } = readyTexture(), h = harness();
-    await h.fx.load(['taisei']); expect(load).not.toHaveBeenCalled(); expect(yodakaFlameTigerReady()).toBe(false);
+    await h.fx.load(['taisei']); expect(load).not.toHaveBeenCalled(); expect(yodakaFireOwlReady()).toBe(false);
     const first = h.fx.load(['yodaka']); expect(h.fx.load(['yodaka'])).toBe(first); await first;
-    expect(load).toHaveBeenCalledTimes(1); expect(load.mock.calls[0][0]).toBe(YODAKA_TIGER_ASSET); expect(yodakaFlameTigerReady()).toBe(true);
+    expect(load).toHaveBeenCalledTimes(1); expect(load.mock.calls[0][0]).toBe(YODAKA_OWL_ASSET); expect(yodakaFireOwlReady()).toBe(true);
   });
   it('never draws during aim, cast, release, animation or one hit event per target', async () => {
     readyTexture(); const h = harness(); await h.fx.load(['yodaka']);
@@ -63,9 +63,9 @@ describe.skipIf(!!ORIGINALS.yodaka)('Yodaka manual Flame Tiger area impact', () 
   it('clears removed/dead owners and keeps global readiness valid for other live instances', async () => {
     readyTexture(); const a = harness(), b = harness(); await a.fx.load(['yodaka']); await b.fx.load(['yodaka']);
     a.fx.handle(impact(), a.fighters); a.fighters.clear(); a.fx.update(10.1, a.fighters); expect(a.tiger.count).toBe(0);
-    a.fx.dispose(); expect(yodakaFlameTigerReady()).toBe(true);
+    a.fx.dispose(); expect(yodakaFireOwlReady()).toBe(true);
     b.fx.handle(impact(), b.fighters); b.fighter.state.alive = false; b.fx.update(10.1, b.fighters); expect(b.tiger.count).toBe(0);
-    b.fx.dispose(); expect(yodakaFlameTigerReady()).toBe(false);
+    b.fx.dispose(); expect(yodakaFireOwlReady()).toBe(false);
   });
   it('caps six simultaneous crests and twelve crescents, with one crescent per low-budget impact', async () => {
     readyTexture(); const h = harness(.3); await h.fx.load(['yodaka']);
@@ -91,13 +91,13 @@ describe.skipIf(!!ORIGINALS.yodaka)('Yodaka manual Flame Tiger area impact', () 
     vi.useFakeTimers(); let complete: ((texture: T.Texture<HTMLImageElement>) => void) | undefined;
     vi.spyOn(T.TextureLoader.prototype, 'load').mockImplementation((_url, ready) => { complete = ready; return new T.Texture<HTMLImageElement>(); });
     const h = harness(), pending = h.fx.load(['yodaka']);
-    await vi.advanceTimersByTimeAsync(YODAKA_TIGER_LIMITS.loadTimeoutMs); await pending;
-    expect(yodakaFlameTigerReady()).toBe(false); const late = new T.Texture<HTMLImageElement>(), dispose = vi.spyOn(late, 'dispose'); complete!(late);
+    await vi.advanceTimersByTimeAsync(YODAKA_OWL_LIMITS.loadTimeoutMs); await pending;
+    expect(yodakaFireOwlReady()).toBe(false); const late = new T.Texture<HTMLImageElement>(), dispose = vi.spyOn(late, 'dispose'); complete!(late);
     expect(dispose).toHaveBeenCalledOnce(); h.fx.handle(impact(), h.fighters); h.fx.update(10.1, h.fighters); expect(h.tiger.count).toBe(0);
   });
   it('resolves an immediate load error and disposes pending/completed loads safely', async () => {
     const fail = vi.spyOn(T.TextureLoader.prototype, 'load').mockImplementation((_url, _ready, _progress, error) => { error?.(new Error('missing')); return new T.Texture<HTMLImageElement>(); });
-    const h = harness(); await h.fx.load(['yodaka']); expect(yodakaFlameTigerReady()).toBe(false); fail.mockRestore();
+    const h = harness(); await h.fx.load(['yodaka']); expect(yodakaFireOwlReady()).toBe(false); fail.mockRestore();
     let complete: ((texture: T.Texture<HTMLImageElement>) => void) | undefined;
     vi.spyOn(T.TextureLoader.prototype, 'load').mockImplementation((_url, ready) => { complete = ready; return new T.Texture<HTMLImageElement>(); });
     const pending = harness(), promise = pending.fx.load(['yodaka']); pending.fx.dispose(); await promise;

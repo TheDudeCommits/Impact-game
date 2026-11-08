@@ -35,7 +35,7 @@ describe('Yodaka reviewed manual kit',()=>{
  it('lands its own confirmed four-contact290 schedule',()=>{
   expect(run({attack:'ultimate',targetId:'b'}).hits.map(e=>e.damage)).toEqual([41,52,60,137]);
  });
- it('manual Flame Tiger warns then strikes exactly once at the aimed point',()=>{
+ it('manual Fire Owl warns then strikes exactly once at the aimed point',()=>{
   const {events,hits}=run({attack:'area',aim:{x:0,z:8}},8);
   const release=events.find(e=>e.kind==='release'&&e.slot==='area')!;
   const impacts=events.filter(e=>e.kind==='impact'&&e.slot==='area');

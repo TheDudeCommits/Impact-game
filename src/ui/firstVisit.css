@@ -11,12 +11,12 @@
 .first-visit a{color:#111;text-decoration-thickness:1px;text-underline-offset:3px}
 .first-visit p a{font-weight:700}
 .first-visit p a:is(:hover,:focus-visible){color:#cc202b}
-.first-visit-links{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0 12px}
+.first-visit-links{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0 12px}
 .first-visit .first-visit-link{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 10px;border:2px solid #111;background:#fff;font:400 12px/1.1 Electroharmonix,Impact,sans-serif;letter-spacing:.08em;text-decoration:none;text-align:center}
 .first-visit .first-visit-link:is(:hover,:focus-visible){background:#111;color:#fff;box-shadow:3px 3px 0 #cc202b;outline:none}
 .first-visit-go{display:block;width:100%;min-height:50px;padding:12px 16px;border:3px solid #111;background:#111;color:#fff;font:400 16px/1 Electroharmonix,Impact,sans-serif;letter-spacing:.1em;cursor:pointer;box-shadow:4px 4px 0 #cc202b}
 .first-visit-go:is(:hover,:focus-visible){background:#cc202b;border-color:#cc202b;box-shadow:4px 4px 0 #111;outline:none}
 @media(max-width:560px){.first-visit{padding:20px 16px 18px;font-size:14px;box-shadow:5px 5px 0 #cc202b}.first-visit-links{grid-template-columns:1fr;gap:8px}.first-visit h2{margin-bottom:12px}}
-@media(max-height:520px){.first-visit{padding:14px 18px}.first-visit p{margin-bottom:8px}.first-visit h2{font-size:22px;margin-bottom:10px;padding-bottom:6px}.first-visit-links{grid-template-columns:repeat(2,1fr);margin:10px 0 8px}.first-visit .first-visit-link{min-height:38px}.first-visit-go{min-height:42px}}
+@media(max-height:520px){.first-visit{padding:14px 18px}.first-visit p{margin-bottom:8px}.first-visit h2{font-size:22px;margin-bottom:10px;padding-bottom:6px}.first-visit-links{grid-template-columns:repeat(3,1fr);margin:10px 0 8px}.first-visit .first-visit-link{min-height:38px}.first-visit-go{min-height:42px}}
 /* "By playing you accept the terms of use." (12 October 2026): one line under the small print, close to it. */
 .first-visit .first-visit-terms{margin-top:-6px;color:#111}

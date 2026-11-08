@@ -28,7 +28,7 @@ describe('the horde\'s fallback looks', () => {
     }
   }, 120_000);
   it('keep no look of the retired kinds', () => {
-    for (const gone of ['skiff-guard', 'skiff-sniper', 'tusker', 'tusker-shield', 'gamorrean']) {
+    for (const gone of ['skiff-guard', 'skiff-sniper', 'tusker', 'tusker-shield']) {
       expect(FLESH_LOOKS[gone]).toBeUndefined(); expect(LOOKS[gone]).toBeUndefined(); expect(ARMS[gone]).toBeUndefined();
     }
     expect(fs.existsSync('public/assets/survival/motion/grunt-skiff-guard.glb')).toBe(false);

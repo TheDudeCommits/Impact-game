@@ -1,5 +1,6 @@
 import './accountPanel.css';
 import { openPage } from '../pageViewer';
+import { PRIVACY_PAGE } from '../legalLinks';
 import { CURRENCY, EARNED_LINE } from '../../game/economy/currency';
 import { ITEM, ITEMS } from '../../game/economy/catalog';
 import { PAY, levelOf } from '../../game/economy/earn';
@@ -209,7 +210,7 @@ export class AccountPanel {
       return true;
     }
     if (act === 'retry') { this.host.retry(); return true; }
-    if (act === 'privacy') { openPage('/privacy.html', 'PRIVACY'); return true; }
+    if (act === 'privacy') { openPage(PRIVACY_PAGE, 'PRIVACY'); return true; }
     if (act === 'delete') {
       // (Nothing is asked of the server: the shop draws the tab again, asking or not.)
       void this.host.attempt(async () => { this.deleting = !this.deleting; this.host.say(this.deleting ? 'Deleting an account cannot be undone.' : ''); });

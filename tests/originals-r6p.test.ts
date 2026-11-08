@@ -19,7 +19,7 @@ import VOICES from '../src/originals/voices.json';
 const STANDINS: Record<string, string> = {};
 import { commandList } from '../src/ui/commandList';
 import { glbJson } from './extraClips';
-import { ROBIN_PALM_SURFACES } from '../src/render/signature/PsycheBloomPose';
+import { PSYCHE_PALM_SURFACES } from '../src/render/signature/PsycheBloomPose';
 
 const ALL = { ...SHOP_R6P, ...R6P_WAITING } as Partial<Record<FighterId, OriginalFighter>>;
 const entries = (table: Partial<Record<FighterId, OriginalFighter>>) =>
@@ -82,12 +82,12 @@ describe("Round 6's new fighters (the Pixel port's batch)", () => {
     expect(textured(fist, fist.nodes.find(n => n.name === 'Shakugo_Magma_Left')!.mesh!)).toBe(true);
     // Psyche's ghost hand (PsycheFleur's arm): the node it looks up, seven morphs, its palm where the contact table puts it.
     const arm = json('/assets/fighters/psyche-grown-arm1.glb');
-    const node = arm.nodes.find(n => n.name === 'Robin_Grown_Arm')!;
+    const node = arm.nodes.find(n => n.name === 'Psyche_Grown_Arm')!;
     expect(node).toBeDefined();
     expect(arm.meshes[node.mesh!].primitives[0].targets).toHaveLength(7);
     expect(textured(arm, node.mesh!)).toBe(true);
     const [alo, ahi] = bounds(arm, node.mesh!);
-    const [x, y, z] = ROBIN_PALM_SURFACES[0];
+    const [x, y, z] = PSYCHE_PALM_SURFACES[0];
     expect(x).toBeGreaterThan(alo[0]); expect(x).toBeLessThan(ahi[0]);
     expect(Math.abs(y - ahi[1])).toBeLessThan(.02); expect(z).toBeGreaterThan(alo[2]); expect(z).toBeLessThan(ahi[2]);
   });

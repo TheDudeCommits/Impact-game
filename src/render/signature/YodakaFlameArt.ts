@@ -9,7 +9,7 @@ import { SIGNATURE, involvesLocal } from './context';
 import { STAR } from './GlowBatch';
 import { MoveStage, STAGE } from './MoveStage';
 import { SignaturePoolUpload } from './SignaturePoolUpload';
-import { YodakaFlameTiger } from './YodakaFlameTiger';
+import { YodakaFireOwl } from './YodakaFireOwl';
 import { blowFloor } from './blowFloor';
 
 /** His fire follows the real Sunsteel. Four pools plus two for Tiger; no combat writes. */
@@ -89,7 +89,7 @@ export class YodakaFlameArt {
   private spine: T.Vector3[] = Array.from({ length: YODAKA_FLAME_LIMITS.spine }, () => new T.Vector3());
   private bloomCursor = 0; private ninthCursor = 0;
   private heading = new T.Vector3(); private ground = new T.Vector3(); private c = new T.Vector3(); private d = new T.Vector3(); private side = new T.Vector3();
-  private tiger: YodakaFlameTiger;
+  private tiger: YodakaFireOwl;
   private tongues: FlameBatch; private arcs: FlameBatch; private sparks: FlameBatch; private hearts: FlameBatch;
   private batches: FlameBatch[];
   private impacts: Impact[] = Array.from({ length: YODAKA_FLAME_LIMITS.impacts }, () => ({ actor: '', target: '', born: -Infinity, seq: 0, final: false, seed: 0, yaw: 0, point: new T.Vector3() }));
@@ -100,7 +100,7 @@ export class YodakaFlameArt {
   private face = new T.Quaternion(); private q = new T.Quaternion(); private spin = new T.Quaternion();
   constructor(scene: T.Scene, private kit: Pick<VfxKit, 'budget'> & Partial<VfxKit>) {
     this.stage = MoveStage.for(scene, kit);
-    this.tiger = new YodakaFlameTiger(scene, kit);
+    this.tiger = new YodakaFireOwl(scene, kit);
     this.tongues = new FlameBatch(scene, 'blade-flames', yodakaFlameGeometry(), YODAKA_FLAME_LIMITS.tongues, true);
     this.arcs = new FlameBatch(scene, 'breathing-crescents', yodakaFlameGeometry(true), YODAKA_FLAME_LIMITS.arcs);
     this.sparks = new FlameBatch(scene, 'embers', yodakaFlameGeometry(), YODAKA_FLAME_LIMITS.sparks);
@@ -146,7 +146,7 @@ export class YodakaFlameArt {
     dir.subVectors(point, actor.group.position).setY(0); if (dir.lengthSq() < .01) dir.set(Math.sin(yaw), 0, Math.cos(yaw)); dir.normalize();
     if (e.slot === 'light') { st.burst(point, FLAME, .42, t, { dir, floor, clean: true }); return; }
     if (e.slot === 'heavy') {
-      // RISING SCORCHING SUN: the blast, a pillar of fire up under the body it lifts, the sun's crescents rising with it.
+      // BONFIRE RISE: the blast, a pillar of fire up under the body it lifts, the sun's crescents rising with it.
       const big = e.branch ? .85 : 1;
       // (The pillar and its burn a stride past the body, and short-lived: the body goes up in front of it and comes
       // down beside it. Under the body it kept it unreadable for 0.57 s against a heavy's 0.35 s.)
