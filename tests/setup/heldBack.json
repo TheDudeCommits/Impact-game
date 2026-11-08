@@ -176,8 +176,6 @@
   "ouga"
  ],
  "tests/rushClips.test.ts": [
-  "buna: the rush clips stand on the idle's floor and stay near the capsule",
-  "buna: the rush file binds onto the body, names its stages, and has their contacts",
   "gaunt: the rush clips stand on the idle's floor and stay near the capsule",
   "gaunt: the rush file binds onto the body, names its stages, and has their contacts",
   "kenzo: the rush file binds onto the body, names its stages, and has their contacts",
@@ -192,7 +190,6 @@
   "tsubute: the rush file binds onto the body, names its stages, and has their contacts"
  ],
  "tests/rushContacts.test.ts": [
-  "buna",
   "gaunt",
   "kenzo",
   "kuon",
@@ -223,7 +220,6 @@
  ],
  "tests/victory.test.ts": [
   "bruin has something to celebrate with",
-  "buna has something to celebrate with",
   "dorado has something to celebrate with",
   "gaunt has something to celebrate with",
   "kenzo has something to celebrate with",
