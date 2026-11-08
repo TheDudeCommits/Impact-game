@@ -73,6 +73,10 @@ const BASE: Partial<Record<FighterId, number>> = {
   basilissa: 0.83487,       // Basilissa (about 1.85 m on foot)
   // Gorai's stance is his clean idle, held at the scale his old one gave him, so he is drawn at his own size.
   gorai: 1.02973,           // Gorai
+  // clean-clips (9 November 2026, clean-konta-senko): Konta's stance swapped to the clean boxer's guard (live's crouched lower); held at
+  // the scale his stance gave him on originals/next (93570f035, r1_probe), so he is drawn at his own size (his match idle is his idle
+  // file's upright guard either way).
+  konta: 1.17202,           // Konta
 };
 /** The awakened bodies whose own stance was swapped. */
 const FORM: Partial<Record<FighterId, number>> = {
