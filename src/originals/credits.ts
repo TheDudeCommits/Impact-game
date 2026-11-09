@@ -64,9 +64,9 @@ export const ARMORY_OPEN_WORKS = [
   },
 ] as const satisfies readonly { work: string; by?: string; sources: readonly (readonly [string, string])[]; licence: string; licenceUrl?: string; changes?: string; files: readonly string[] }[];
 
-/** The Armory's effects the game may not offer (their files' licences forbid it), and their files. */
-export const UNSHIPPED_ARMORY = new Set(['cin_dragon']);
-export const UNSHIPPED_ARMORY_FILES = ['assets/armory/remake/dragon.glb', 'assets/armory/thumbs/cin_dragon.webp'] as const;
+/** The Armory's effects the game may not offer (their files' licences forbid it), and their files: unshippedArmory.ts (the
+ *  Forge's effects read it, so this page's credits stay in the chunk that carries the LEGAL page). */
+export { UNSHIPPED_ARMORY, UNSHIPPED_ARMORY_FILES } from './unshippedArmory';
 
 const PH = (id: string) => ['Poly Haven', `https://polyhaven.com/a/${id}`] as const;
 const CC0_URL = 'https://creativecommons.org/publicdomain/zero/1.0/';

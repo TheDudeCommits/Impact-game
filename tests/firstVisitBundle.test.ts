@@ -47,4 +47,20 @@ describe('the first visit downloads only what the home screen needs', () => {
     expect(lazy.length).toBeGreaterThanOrEqual(29);
     expect(lazy.filter(file => closure.includes(file))).toEqual([]);
   });
+
+  // The twenty-two RosterSignatureSet still imported (Fighter.ts and its sockets asked them for a
+  // point: those are their <Module>Contact.ts now), the old cast's own effects (render/castEffects.ts, made when a room asks or at
+  // idle on the home) and CombatEffects' own six layers (lazyLayer): about a third of what main.ts reached before.
+  it("leaves the old cast's effects, the twenty-two roster layers and CombatEffects' six to the rooms that have them", () => {
+    expect(fs.readFileSync('src/render/signature/RosterSignatureSet.ts', 'utf8').match(/lazy\(\(\) => import\('/g)?.length).toBeGreaterThanOrEqual(51);
+    const away = ['render/castEffects', 'render/GummyEffects', 'render/NinjaEffects', 'render/SwordSpiritEffects', 'render/SetsuEffects', 'render/WardEffects',
+      'render/EmperorEffects', 'render/KuonEffects', 'render/GauntEffects', 'render/signature/LastSun', 'originals/emperorFinales',
+      ...['FullBeamPressure', 'PyroclastExplosions', 'AmpereSurge', 'KuzuChainsaw', 'ShakugoMagma', 'RoseEmpress', 'TorsionPsychic', 'BonshoBodhisattva', 'StrappadoStrings',
+        'ChohanAllIn', 'KinuStoneThread', 'BunaOni', 'TempoDarkSpark'].map(id => `render/signature/${id}`)].map(file => `src/${file}.ts`);
+    for (const file of away) expect(fs.existsSync(file), file).toBe(true);
+    expect(away.filter(file => closure.includes(file))).toEqual([]);
+    // (What the engine asks of them where a blow lands stays in: their contact modules.)
+    expect(closure).toContain('src/render/signature/TorsionPsychicContact.ts');
+    expect(closure).toContain('src/render/signature/RoseEmpressContact.ts');
+  });
 });

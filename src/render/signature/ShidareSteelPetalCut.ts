@@ -7,6 +7,8 @@ import {SHIDARE_MOVES} from '../../game/fighters/shidare';
 import {SIGNATURE,involvesLocal} from './context';
 import {MoveStage,SHEEN,stageLook} from './MoveStage';
 import {CastBook,Cuts,arc,hash,jag,type Gather} from './StageCraft';
+import { SHIDARE_BLADE } from './ShidareSteelPetalCutContact';
+export { SHIDARE_BLADE } from './ShidareSteelPetalCutContact';
 export const isShidareSteelPetalCut=(id:string|undefined)=>id==='shidare';
 export const SHIDARE_PETAL_LIMITS=Object.freeze({petals:512,blades:128,rings:32,impacts:24});
 const UP=new THREE.Vector3(0,1,0),FORWARD=new THREE.Vector3(0,0,1),PINK=new THREE.Color(0xf794ca),PALE=new THREE.Color(0xffdbea),WHITE=new THREE.Color(0xf5f6ff);
@@ -23,10 +25,6 @@ const SCATTER=0,VORTEX=1;
 /** Petals thrown off a blow, with a life of their own: scattered outward (SCATTER) or wound round what Scatter struck (VORTEX). */
 type Flurry={kind:number;at:THREE.Vector3;born:number;life:number;reach:number;count:number;seed:number;white:boolean;live:boolean};
 const manual=(action:string)=>action==='light'||action==='heavy'||action==='special'||action==='ultimate';
-/** Actual native Sword-bone local blade points from the frozen source mesh.
- * The source joint drives the deliberate awakening drop; do not attach this
- * trail to an unrelated hand proxy. */
-export const SHIDARE_BLADE={root:[0,.085,0],tip:[-.05817198056684819,1.0146408727799212,-.11819259418722794]}as const;
 export function shidareBlade(f:Fighter,root:THREE.Vector3,tip:THREE.Vector3):boolean{
  const body=f.shownBody??f,bone=body.model?.getObjectByName('Sword');if(!bone)return false;
  root.fromArray(SHIDARE_BLADE.root).applyMatrix4(bone.matrixWorld);tip.fromArray(SHIDARE_BLADE.tip).applyMatrix4(bone.matrixWorld);return true;

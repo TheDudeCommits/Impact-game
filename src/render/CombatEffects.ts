@@ -1,12 +1,12 @@
-import { RosterSignatureSet, hasRosterSignature } from './signature/RosterSignatureSet';
+import { RosterSignatureSet, hasRosterSignature, lazyLayer, prefetchSignature, type LazyLayer } from './signature/RosterSignatureSet';
 import { AreaCastFx } from '../originals/areaCastFx';
 import { armoryDraws, flightKept } from './vfx/armory/drawn';
-import { FullBeamPressure, isFullBeamPressure } from './signature/FullBeamPressure';
-import { PyroclastExplosions, isPyroclastExplosions } from './signature/PyroclastExplosions';
-import { AmpereSurge, isAmpereSurge } from './signature/AmpereSurge';
+import { isFullBeamPressure } from './signature/FullBeamPressureContact';
+import { isPyroclastExplosions } from './signature/PyroclastExplosionsContact';
+import { isAmpereSurge } from './signature/AmpereSurgeContact';
 import { ShanxiaoRampage, isShanxiaoRampage } from './signature/ShanxiaoRampage';
-import { KuzuChainsaw, isKuzuChainsaw } from './signature/KuzuChainsaw';
-import { ShakugoMagma, isShakugoMagma } from './signature/ShakugoMagma';
+import { isKuzuChainsaw } from './signature/KuzuChainsawContact';
+import { isShakugoMagma } from './signature/ShakugoMagmaContact';
 import { comboMove, type ComboKey } from '../game/combos';
 import * as THREE from 'three';
 import { energyOrbMaterial, energyHaloMaterial, energyImpactMaterial, pressureWaveMaterial, groundDustMaterial } from './vfx/EnergyOrbMaterial';
@@ -30,7 +30,7 @@ import { OPENER_FEED, undecided } from './signature/ultimateClock';
 // Round 5 (PARRY): the guard aura and the block, parry and guard-break bursts.
 import { GuardFx } from './vfx/GuardFx';
 import { SorayomiWeather } from './signature/SorayomiWeather';
-import { RoseEmpress, isRoseEmpress } from './signature/RoseEmpress';
+import { isRoseEmpress } from './signature/RoseEmpressContact';
 import { bigBlowOf, cinematicBlowOf } from './bigBlowEvent';
 import { VFX } from './vfxLevel';
 import { LOCK_ESCAPE_WINDOW } from '../game/lockCombat';
@@ -475,27 +475,27 @@ export class CombatEffects {
   /** Round 5 (PARRY): the guard's own layer (vfx/GuardFx). */
   readonly guard: GuardFx;
   private weather: SorayomiWeather;
-  private empress: RoseEmpress;
-  private chainsaw: KuzuChainsaw;
+  private empress: LazyLayer;
+  private chainsaw: LazyLayer;
   private berserker: ShanxiaoRampage;
   private rosterSignatures: RosterSignatureSet;
-  private pressure: FullBeamPressure;
-  private explosions: PyroclastExplosions;
-  private cowling: AmpereSurge;
-  private magma: ShakugoMagma;
+  private pressure: LazyLayer;
+  private explosions: LazyLayer;
+  private cowling: LazyLayer;
+  private magma: LazyLayer;
   private areaCasts: AreaCastFx;
   constructor(private scene: THREE.Scene) {
     this.kit = VfxKit.for(scene);
     this.guard = new GuardFx(scene, this.kit);
     this.weather = new SorayomiWeather(scene, this.kit);
-    this.empress = new RoseEmpress(scene, this.kit);
-    this.chainsaw = new KuzuChainsaw(scene, this.kit);
+    this.empress = lazyLayer(isRoseEmpress, () => import('./signature/RoseEmpress').then(m => (s, k) => new m.RoseEmpress(s, k)), scene, this.kit);
+    this.chainsaw = lazyLayer(isKuzuChainsaw, () => import('./signature/KuzuChainsaw').then(m => (s, k) => new m.KuzuChainsaw(s, k)), scene, this.kit);
     this.berserker = new ShanxiaoRampage(scene, this.kit);
     this.rosterSignatures = new RosterSignatureSet(scene, this.kit);
-    this.pressure = new FullBeamPressure(scene, this.kit);
-    this.explosions = new PyroclastExplosions(scene, this.kit);
-    this.cowling = new AmpereSurge(scene, this.kit);
-    this.magma = new ShakugoMagma(scene, this.kit);
+    this.pressure = lazyLayer(isFullBeamPressure, () => import('./signature/FullBeamPressure').then(m => (s, k) => new m.FullBeamPressure(s, k)), scene, this.kit);
+    this.explosions = lazyLayer(isPyroclastExplosions, () => import('./signature/PyroclastExplosions').then(m => (s, k) => new m.PyroclastExplosions(s, k)), scene, this.kit);
+    this.cowling = lazyLayer(isAmpereSurge, () => import('./signature/AmpereSurge').then(m => (s, k) => new m.AmpereSurge(s, k)), scene, this.kit);
+    this.magma = lazyLayer(isShakugoMagma, () => import('./signature/ShakugoMagma').then(m => (s, k) => new m.ShakugoMagma(s, k)), scene, this.kit);
     this.areaCasts = new AreaCastFx(scene, this.kit);
     this.blast = new BlastAreas(scene);
     // Bursts borrow a slot instead of building a group, materials and three
@@ -508,6 +508,8 @@ export class CombatEffects {
   get density() { return this.kit.density; }
   /** Rooms past let go, as a room is entered (RosterSignatureSet.retainEffects): the Armory effect types but `keep` and the room's castings'. */
   retainEffects(keep: ReadonlySet<string>): string[] { return this.rosterSignatures.retainEffects(keep); }
+  /** Fetches `id`'s own layer ahead without building it (at idle on the home, and as a fighter is picked there). */
+  prefetch(id: FighterId) { prefetchSignature(id); for (const layer of [this.empress, this.chainsaw, this.pressure, this.explosions, this.cowling, this.magma]) layer.prefetchFor?.(id); }
   load(ids: readonly FighterId[]) { this.areaCasts.load(ids); return Promise.all([this.weather.load(ids), this.empress.load(ids), this.chainsaw.load(ids), this.magma.load(ids), this.berserker.load(ids), this.rosterSignatures.load(ids), this.cowling.load(ids), this.pressure.load(ids), this.explosions.load(ids)]).then(() => {}); }
   set density(value: number) { this.kit.density = value; }
   get quality() { return this.kit.quality; }
@@ -1620,7 +1622,7 @@ export class CombatEffects {
     this.glows.length = kept;
     this.weather.update(time, fighters, FLIGHTS);
     this.empress.update(time, fighters, FLIGHTS);
-    this.chainsaw.update(time, fighters);
+    this.chainsaw.update(time, fighters, FLIGHTS);
     this.berserker.update(time, fighters, FLIGHTS);
     this.rosterSignatures.update(time, fighters, FLIGHTS);
     this.areaCasts.update(time, fighters);

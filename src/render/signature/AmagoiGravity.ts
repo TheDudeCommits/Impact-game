@@ -9,13 +9,9 @@ import {RING} from './GlowBatch';
 import {SignaturePoolUpload} from './SignaturePoolUpload';
 import {MoveStage,STAGE,WAVE,stageLook} from './MoveStage';
 import { blowFloor } from './blowFloor';
+import { AMAGOI_RECEIVER_TIP } from './AmagoiGravityContact';
+export { amagoiStrikeJoint, AMAGOI_RECEIVER_TIP } from './AmagoiGravityContact';
 export const isAmagoiGravity=(id:string|undefined)=>id==='amagoi';
-export function amagoiStrikeJoint(action:string,clip?:string,contactIndex=0):'LeftHand'|'RightHand'{
- if(action==='ultimate'&&(!clip||clip==='Ash Moon'))return contactIndex===0?'RightHand':'LeftHand';
- return ['Cloudburst','Calling Water','Rush 2','Rain Rebuff','Drawing Rain','Falling Sky'].includes(clip??'')||(!clip&&(action==='heavy'||action==='special'))?'LeftHand':'RightHand';
-}
-/** Frozen final-r12 receiver tip, measured in the actual exported RightHand frame. */
-export const AMAGOI_RECEIVER_TIP=Object.freeze([-0.6008820533752441,-0.01629497855901718,0.40872931480407715]as const);
 export function amagoiReceiverTip(fighter:Pick<Fighter,'drawnJoint'>,out:THREE.Vector3):boolean{const hand=fighter.drawnJoint('RightHand');if(!hand)return false;out.set(...AMAGOI_RECEIVER_TIP);hand.localToWorld(out);return true;}
 export const AMAGOI_GRAVITY_LIMITS=Object.freeze({rings:160,rocks:96,streaks:144,impacts:24,cores:8});
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),RIGHT=new THREE.Vector3(1,0,0);

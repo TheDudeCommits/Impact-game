@@ -73,5 +73,9 @@ export default defineConfig({
   // page's entry they were downloaded again by every returning player after every release, a release changes the game's code
   // and never theirs; here the chunk keeps its name until they are upgraded (three already has its own two). The performance
   // sweep, 24 October 2026.
-  build: { target: 'es2022', chunkSizeWarningLimit: 1200, rolldownOptions: { output: { comments: { legal: true }, codeSplitting: { groups: [{ name: 'net', test: /[\\/]node_modules[\\/](@colyseus|msgpackr)[\\/]/ }] } } } },
+  // The fighters' effect layers are chunks of their own, fetched with the rooms that
+  // have them (render/signature/RosterSignatureSet.ts, CombatEffects' lazyLayer); what the engine asks of each where a blow lands
+  // is its <Module>Contact.ts, which the page imports and that layer too - and the bundler gave each of the twenty-eight a chunk
+  // of its own (55 bytes to 24 KB), twenty-eight more requests before the home. One chunk for them all.
+  build: { target: 'es2022', chunkSizeWarningLimit: 1200, rolldownOptions: { output: { comments: { legal: true }, codeSplitting: { groups: [{ name: 'net', test: /[\\/]node_modules[\\/](@colyseus|msgpackr)[\\/]/ }, { name: 'contacts', test: /[\\/]src[\\/]render[\\/]signature[\\/][A-Za-z]+Contact\.ts$/ }] } } } },
 });

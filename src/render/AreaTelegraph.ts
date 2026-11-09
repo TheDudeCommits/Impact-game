@@ -1,4 +1,4 @@
-import { chohanPhysicalArea } from './signature/ChohanAllIn';
+import { chohanPhysicalArea } from './signature/ChohanAllInContact';
 import { yodakaFireOwlReady } from './signature/YodakaFireOwl';
 import * as THREE from 'three';
 import { FIGHTERS } from '../config';

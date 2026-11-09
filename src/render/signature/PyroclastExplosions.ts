@@ -10,10 +10,11 @@ import { STAR } from './GlowBatch';
 import { MoveStage, STAGE, stageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 
+import { isPyroclastExplosions, pyroclastPalm } from './PyroclastExplosionsContact';
+export { isPyroclastExplosions, pyroclastPalm, pyroclastContact } from './PyroclastExplosionsContact';
 export const PYROCLAST_EXPLOSION_ASSETS: readonly string[] = Object.freeze([]);
 export const PYROCLAST_EXPLOSION_LIMITS = Object.freeze({ blasts: 64, smoke: 96, rings: 64, streaks: 128, impacts: 24, eruptions: 8 });
 export const PYROCLAST_EXPLOSION_BEATS = Object.freeze({ spinStart: .816, spinEnd: 1.904, blast: 2.652, end: 3.05, cluster: PYROCLAST_AWAKENING.beats.release });
-export const isPyroclastExplosions = (id: string | undefined) => id === 'pyroclast';
 const SIDES = ['Left', 'Right'] as const;
 const UP = new THREE.Vector3(0, 1, 0), FRONT = new THREE.Vector3(0, 0, 1), TAU = Math.PI * 2;
 const ORANGE = new THREE.Color(0xff6e14), GOLD = new THREE.Color(0xffc85d), WHITE = new THREE.Color(0xfff6d8), INK = new THREE.Color(0x35282c), SMOKE = new THREE.Color(0xc2b9ac);
@@ -23,24 +24,6 @@ const hash = (x: number) => { const v = Math.sin(x * 12.9898 + 78.233) * 43758.5
  *  with a breath of gold. The smoke of them is the kit's cel smoke in his grey-brown. */
 const BLAST = STAGE.fire, STUN = stageLook(0xffffff, 0xfff0b4, 0xff9a1f), SMOKE_LIT = 0xc2b9ac, SMOKE_SHADE = 0x55463e;
 const HEAVY = PYROCLAST_MOVES.heavy, SPECIAL = PYROCLAST_MOVES.special, ULT = PYROCLAST_MOVES.ultimate;
-/** Aim from the actual palm beyond the native grenade gauntlet. */
-export function pyroclastPalm(fighter: Fighter, side: 'Left' | 'Right', out: THREE.Vector3): THREE.Vector3 {
-  const body = fighter.shownBody ?? fighter;
-  const hand = body.joints?.get(`${side}Hand`);
-  return hand ? hand.getWorldPosition(out) : out.copy(side === 'Left' ? fighter.handL : fighter.handR);
-}
-
-const otherPalm = new THREE.Vector3();
-/** The actual authored contact hand, including the two-palm blast finish. */
-export function pyroclastContact(fighter: Fighter, index: number, out: THREE.Vector3, clip?: string): boolean {
-  if (!isPyroclastExplosions(fighter.state.fighter)) return false;
-  const both = clip === 'Lava Bomb' || clip === 'Magma Cannon' || clip === 'Airburst' || clip === 'Lava Flow Landing' ||
-    fighter.state.action === 'ultimate' && index >= 2;
-  pyroclastPalm(fighter, clip === 'Rush 1' || clip === 'Spitfire Cross' ? 'Left' : 'Right', out);
-  if (both) out.lerp(pyroclastPalm(fighter, 'Left', otherPalm), .5);
-  return true;
-}
-
 class BlastBatch {
   readonly mesh: THREE.InstancedMesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
   private tint: THREE.InstancedBufferAttribute;

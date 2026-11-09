@@ -11,22 +11,12 @@ import { RING } from './GlowBatch';
 import { MoveStage, stageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 
+import { isFullBeamPressure } from './FullBeamPressureContact';
+export { isFullBeamPressure, fullBeamContact } from './FullBeamPressureContact';
 /** Pressure and steam are pictures of manual Inheritance actions. This module
  * never searches for a victim, spawns a damaging cast, or changes simulation. */
 export const FULL_BEAM_PRESSURE_ASSETS: readonly string[] = Object.freeze([]);
 export const FULL_BEAM_PRESSURE_LIMITS = Object.freeze({ rings: 128, gusts: 96, debris: 128, impacts: 24, finishers: 8 });
-export const isFullBeamPressure = (id: string | undefined) => id === 'full-beam';
-/** Follow the actual striking glove, including the left cross in the confirmed
- * string. The chop and two-fisted hammer meet between the two hands. */
-export function fullBeamContact(fighter: Fighter, index: number, out: THREE.Vector3, clip = ''): boolean {
-  if (!isFullBeamPressure(fighter.state.fighter)) return false;
-  if (/Land's End Chop|Anchor Hammer|Aerial Hammer|Meteor Landing|Rush3/.test(clip)) {
-    out.copy(fighter.handR).lerp(fighter.handL, .5);
-  } else if (/Keeper's Backfist|Rush1/.test(clip) || fighter.state.action === 'ultimate' && index === 1) {
-    out.copy(fighter.handL);
-  } else out.copy(fighter.handR);
-  return true;
-}
 const UP = new THREE.Vector3(0, 1, 0), FRONT = new THREE.Vector3(0, 0, 1);
 const WHITE = new THREE.Color(0xfffbee), GOLD = new THREE.Color(0xf6c65a);
 const BLUE = new THREE.Color(0x31609c), STONE = new THREE.Color(0x807564);

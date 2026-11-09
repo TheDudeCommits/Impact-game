@@ -11,16 +11,10 @@ import {BLOOD} from './FlameSprites';
 import {MoveStage,STAGE,stageLook} from './MoveStage';
 import { blowFloor } from './blowFloor';
 import { MADAKE_BEASTS } from '../../originals/effects';
+export { madakeStrikePoint } from './MadakeGatesContact';
 export const isMadakeGates=(id:string|undefined)=>id==='madake';
 export const MADAKE_GATES_ASSETS:readonly string[]=Object.freeze([MADAKE_BEASTS]);
 export const MADAKE_GATES_LIMITS=Object.freeze({ribbons:640,rings:40,heads:16,impacts:20,confirms:8});
-const BRANCH={lh:'Rising Shoot',llh:'Flying Greeting',lllh:'Green Hurricane',llls:'Spring Crane',airHeavy:'Descending Fang',airSpecial:'Autumn Stag'}as const;
-const GUY_OTHER_HAND=new THREE.Vector3();
-function guyJointPoint(f:Fighter,name:string,out:THREE.Vector3){const joint=f.joints?.get(name)??f.bones?.get(name.toLowerCase());return joint?joint.getWorldPosition(out):bodyCentre(f,out);}
-export function madakeStrikePoint(f:Fighter,out:THREE.Vector3,clip?:string,sourceTime?:number,index?:number){
- const s=f.state;if(!clip&&isEnderKey(s.branch))clip=BRANCH[s.branch];if(!clip&&s.action==='light'&&s.chain)clip=`Rush ${s.chain}`;if(!clip)clip=s.action==='heavy'?'Green Gale Kick':s.action==='special'?'Summer Wolf':s.action==='ultimate'?'Midwinter Bamboo':'Bamboo Straight';
- const t=sourceTime??s.actionTime*s.actionDuration,j= madakeStrikeJoint(clip,index??(t>2?2:t>.8?1:0));if(j==='BothHands'){guyJointPoint(f,'LeftHand',out);guyJointPoint(f,'RightHand',GUY_OTHER_HAND);return out.lerp(GUY_OTHER_HAND,.5);}return guyJointPoint(f,j,out);
-}
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),RIGHT=new THREE.Vector3(1,0,0),CROSS=new THREE.Quaternion(0,Math.SQRT1_2,0,Math.SQRT1_2);
 /** His own shapes' colours, linear and over the bloom threshold (1.1): under it the technique's grade dims them with the room. */
 const WHITE=new THREE.Color(2.2,2.5,2.5),BLUE=new THREE.Color(.75,1.9,2.4),RED=new THREE.Color(2.5,.34,.32),HOT=new THREE.Color(2.7,1.3,1);

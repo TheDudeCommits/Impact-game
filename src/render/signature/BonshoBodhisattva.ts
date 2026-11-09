@@ -13,6 +13,8 @@ import {MoveStage,stageLook} from './MoveStage';
 import { blowFloor } from './blowFloor';
 import { ORIGINALS } from '../../originals/roster';
 import { BONSHO, BonshoTolls, bonshoSurface } from '../../originals/bonshoBell';
+import { drawnPalms } from './BonshoBodhisattvaContact';
+export { bonshoDrawnPalmPoint, bonshoDrawnPalmCount } from './BonshoBodhisattvaContact';
 
 export const BONSHO_BODHISATTVA_ASSETS=Object.freeze([ORIGINALS.bonsho?.sculpture??'/assets/fighters/bonsho-bodhisattva1.glb']);
 export const BONSHO_BODHISATTVA_LIMITS=Object.freeze({owners:4,armsPerSide:6,flights:8,confirmations:16});
@@ -31,11 +33,6 @@ const PART_NAMES=new Set(['BodhiTorso',...SIDES.flatMap(s=>['Upper','Fore','Hand
 type Part={name:string;mesh:THREE.InstancedMesh<THREE.BufferGeometry,THREE.MeshToonMaterial>;opacity:THREE.InstancedBufferAttribute;pivot:THREE.Vector3;centre:THREE.Vector3;palmVertex?:THREE.Vector3;count:number};
 type Receipt={actor:string;target:string;seq:number;final:boolean;point:THREE.Vector3};
 type PalmFrame={actor:string;target:string;fighter?:Fighter;seq:number;time:number;duration:number;beats:{count:number;matrices:THREE.Matrix4[];anchors:THREE.Vector3[]}[]};
-// Object identity matters: a respawn/replacement with the same player ID must
-// never borrow the previous body's rendered palms. No per-contact allocation.
-const drawnPalms=new WeakMap<Fighter,BonshoBodhisattva>();
-export function bonshoDrawnPalmPoint(fighter:Fighter,contactIndex:number,out:THREE.Vector3,palmIndex=0):boolean{return drawnPalms.get(fighter)?.ultimatePalmPoint(fighter.state.id,contactIndex,out,palmIndex)??false;}
-export function bonshoDrawnPalmCount(fighter:Fighter,contactIndex:number):number{return drawnPalms.get(fighter)?.ultimatePalmCount(fighter.state.id,contactIndex)??0;}
 export class BonshoBodhisattva{
  private visibility=new BonshoVisibility();
  private loading?:Promise<void>;private disposed=false;private source?:GLTF;

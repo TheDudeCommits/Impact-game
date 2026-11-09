@@ -7,14 +7,8 @@ import {SIGNATURE,involvesLocal} from './context';
 import {UNARI_MOVES} from '../../game/fighters/unari';
 import {MoveStage,stageLook} from './MoveStage';
 import { blowFloor } from './blowFloor';
+export { unariStrikeJoint } from './UnariElasticContact';
 export const isUnariElastic=(id:string|undefined)=>id==='unari';
-/** Use the displayed native clip: heavy/third rush are left palms, while
- * the confirmed montage alternates hands and ends with a left release. */
-export function unariStrikeJoint(action:string,clip?:string,contactIndex=0):'LeftHand'|'RightHand'{
- if(action==='ultimate'&&(!clip||clip==='AYATORI: Cat\'s Cradle'))return contactIndex%2?'LeftHand':'RightHand';
- if(clip==='Snag'||clip==='Rush 3'||clip==='Nosedive'||clip==='Tripwire'||action==='heavy'&&!clip)return 'LeftHand';
- return 'RightHand';
-}
 export const UNARI_GUM_LIMITS=Object.freeze({cards:48,strokes:240,rings:64,sparks:96,impacts:24,tethers:12});
 const NO_FLIGHTS:ReadonlyMap<string,Flight>=new Map();
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),RIGHT=new THREE.Vector3(1,0,0);

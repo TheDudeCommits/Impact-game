@@ -13,12 +13,13 @@ import { MoveStage, stageLook, type StageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 import { originalBody } from '../../originals/launch';
 
+import { isShakugoMagma, type Side, rigSockets, normalVolleyHands, shakugoMagmaSocket, shakugoMagmaContact } from './ShakugoMagmaContact';
+export { isShakugoMagma, shakugoMagmaSocket, shakugoMagmaContact } from './ShakugoMagmaContact';
 export const SHAKUGO_HOUND_ASSET = '/assets/fighters/shakugo-hound-projectile.glb';
 export const SHAKUGO_FIST_SOURCE = originalBody('shakugo') ? '/assets/fighters/shakugo-magma1.glb' : '/assets/fighters/shakugo-br1.glb';
 export const SHAKUGO_MAGMA_ASSETS = Object.freeze([SHAKUGO_HOUND_ASSET, SHAKUGO_FIST_SOURCE]);
 export const SHAKUGO_MAGMA_LIMITS = Object.freeze({ hounds: 16, fists: 48, basalt: 192, steam: 128, pressure: 32, volcanoes: 8, impacts: 24 });
 export const SHAKUGO_MAGMA_BEATS = Object.freeze({ opener: .44, eruption: 1.51, descent: 2.40, final: 3.15 });
-export const isShakugoMagma = (id: string | undefined) => id === 'shakugo';
 /** His magma as the stage lights it: yellow-white at the heart, molten red-orange round it, cooling to black
  *  crust (his casting's palette). It burns: its tongues are the stage's fire, redder than Bellows's. */
 export const MAGMA: StageLook = stageLook(0xffd27a, 0xe0380c, 0x2b0f09, { flame: FIRE });
@@ -26,41 +27,6 @@ const HEAVY = SHAKUGO_MOVES.heavy, SPECIAL = SHAKUGO_MOVES.special, ULT = SHAKUG
 const FRONT = new THREE.Vector3(0, 0, 1), UP = new THREE.Vector3(0, 1, 0), TAU = Math.PI * 2;
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const attacking = (action: string) => action === 'light' || action === 'heavy' || action === 'special' || action === 'ultimate';
-
-type Side = 'Left' | 'Right';
-type Sockets = { model: THREE.Object3D | undefined; Left?: THREE.Object3D; Right?: THREE.Object3D; LeftFore?: THREE.Object3D; RightFore?: THREE.Object3D };
-const sockets = new WeakMap<Fighter, Sockets>();
-function rigSockets(fighter: Fighter) {
-  let found = sockets.get(fighter);
-  if (!found || found.model !== fighter.model) {
-    found = { model: fighter.model, Left: fighter.model?.getObjectByName('LArm_Upper_Palm_Magma_041'), Right: fighter.model?.getObjectByName('RArm_Upper_Palm_Magma_054'),
-      LeftFore: fighter.model?.getObjectByName('LArm_Upper_Fore_Magma_038'), RightFore: fighter.model?.getObjectByName('RArm_Upper_Fore_Magma_051') };
-    sockets.set(fighter, found);
-  }
-  return found;
-}
-function normalVolleyHands(fighter: Fighter): boolean {
-  const s = fighter.state;
-  return s.action === 'ultimate' && shakugoArmVariants(s.action, s.actionTime * s.actionDuration, s.awakened)[0] === 'Normal';
-}
-/** Magma uses its articulated native arm chain, which can extend beyond the
- * ordinary hand. The source hound and plain jab are left-handed. */
-export function shakugoMagmaSocket(fighter: Fighter, side: Side, out: THREE.Vector3): THREE.Vector3 {
-  // Native skill_b stretches the hidden magma chain upward. Its projectiles
-  // must leave the visible ordinary hands during the released-volley segment.
-  const normal = fighter.joints?.get(side === 'Left' ? 'LeftHand' : 'RightHand');
-  const node = normalVolleyHands(fighter) ? normal : rigSockets(fighter)[side] ?? normal;
-  return node ? node.getWorldPosition(out) : out.copy(side === 'Left' ? fighter.handL : fighter.handR);
-}
-/** Root should pass the actual clip when available. The named native backfist,
- * uppercut and Rush 2 use the right magma chain, not the left jab chain. */
-export function shakugoMagmaContact(fighter: Fighter, out: THREE.Vector3, clip?: string): boolean {
-  if (!isShakugoMagma(fighter.state.fighter)) return false;
-  const s = fighter.state;
-  const right = clip === 'Rush 2' || clip === 'Cinder Backfist' || clip === 'Fissure Uppercut' ||
-    s.branch === 'lh' || s.branch === 'llh' || s.action === 'light' && s.chain === 2;
-  shakugoMagmaSocket(fighter, right ? 'Right' : 'Left', out); return true;
-}
 
 function meshIn(gltf: GLTF, name?: string): THREE.Mesh {
   let mesh = name ? gltf.scene.getObjectByName(name) as THREE.Mesh | undefined : undefined;

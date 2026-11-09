@@ -10,34 +10,11 @@ import { STAR } from './GlowBatch';
 import { MoveStage, stageLook } from './MoveStage';
 import { blowFloor, floorUnder } from './blowFloor';
 
-export const isKuzuChainsaw = (id: string | undefined) => id === 'kuzu';
+import { isKuzuChainsaw, type Blade, BLADES, kuzuBladeFrame, kuzuSawContact } from './KuzuChainsawContact';
+export { isKuzuChainsaw, kuzuBladeFrame, kuzuSawContact } from './KuzuChainsawContact';
 export const KUZU_ENGINE_BEATS = Object.freeze({ grip: .18, pull: .468, ignition: .63 });
 export const KUZU_ENGINE_LIMITS = Object.freeze({ teeth: 192, sparks: 192, impacts: 24 });
-type Blade = 'left' | 'right' | 'head';
-const BLADES:readonly Blade[]=['left','right','head'];
 const MANUAL=new Set(['light','heavy','special','ultimate']);
-/** Measured in each actual saw joint's bind frame. The uploaded skin has no
- * source animations; the authored clips preserve these attached blades. */
-const BLADE = {
-  left: { joint: 'LeftHand_Chainsaw', root: [0,.014,-.018], tip: [.418,.014,-.018] },
-  right: { joint: 'RightHand_Chainsaw', root: [0,.014,-.018], tip: [-.418,.014,-.018] },
-  head: { joint: 'Head_Chainsaw', root: [0,0,.075], tip: [0,0,.448] },
-} as const;
-const sockets = new WeakMap<Fighter, Partial<Record<Blade, THREE.Object3D>>>();
-export function kuzuBladeFrame(f: Fighter, blade: Blade, root: THREE.Vector3, tip: THREE.Vector3): boolean {
-  let cached = sockets.get(f);
-  if (!cached) { cached = {}; for (const key of BLADES) cached[key] = f.model?.getObjectByName(BLADE[key].joint); sockets.set(f,cached); }
-  const bone = cached[blade]; if (!bone) return false;
-  root.fromArray(BLADE[blade].root).applyMatrix4(bone.matrixWorld);
-  tip.fromArray(BLADE[blade].tip).applyMatrix4(bone.matrixWorld); return true;
-}
-const scratchRoot = new THREE.Vector3();
-export function kuzuSawContact(f: Fighter, index: number, out: THREE.Vector3, clip = ''): boolean {
-  if (!isKuzuChainsaw(f.state.fighter)) return false;
-  const blade: Blade = f.state.action === 'ultimate' && !f.state.branch && index >= 3 ? 'head' :
-    (f.state.action === 'ultimate' && index === 1 || clip === 'Saw Reverse Quill' || clip === 'Rush 1') ? 'left' : 'right';
-  return kuzuBladeFrame(f,blade,scratchRoot,out);
-}
 const UP = new THREE.Vector3(0,1,0), AMBER = new THREE.Color(0xffa847), STEEL = new THREE.Color(0xffefd0);
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
 const hash = (x: number) => { const v = Math.sin(x * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); };

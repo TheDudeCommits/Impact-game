@@ -11,18 +11,9 @@ import {RING} from './GlowBatch';
 import {MoveStage,stageLook} from './MoveStage';
 import {blowFloor,floorUnder} from './blowFloor';
 
+import { kubiwaCommandPoint } from './KubiwaControlContact';
+export { kubiwaStrikeJoint, kubiwaCommandPoint } from './KubiwaControlContact';
 export const isKubiwaControl=(id:string|undefined)=>id==='kubiwa';
-export function kubiwaStrikeJoint(action:string,clip?:string,contactIndex=0):'LeftHand'|'RightHand'{
- if(action==='ultimate'&&(!clip||clip==='Final Bar'))return contactIndex===1?'LeftHand':'RightHand';
- return clip==='Beckon'||clip==='Rush 2'?'LeftHand':'RightHand';
-}
-const fingerA=new THREE.Vector3(),fingerB=new THREE.Vector3();
-/** The runtime major-joints map omits fingers; read the real native bone map. */
-export function kubiwaCommandPoint(f:Pick<Fighter,'bones'|'drawnJoint'>,out:THREE.Vector3,side:'Left'|'Right'='Right'){
- const tip=f.bones?.get((side+'HandIndex3').toLowerCase()),middle=f.bones?.get((side+'HandIndex2').toLowerCase());
- if(tip&&middle){tip.getWorldPosition(fingerA);middle.getWorldPosition(fingerB);out.copy(fingerA).addScaledVector(fingerA.sub(fingerB),.65);return true;}
- const hand=f.drawnJoint(side+'Hand');if(!hand)return false;hand.getWorldPosition(out);return true;
-}
 export const KUBIWA_CONTROL_LIMITS=Object.freeze({rings:192,links:288,strokes:96,impacts:24,bindings:12});
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),RIGHT=new THREE.Vector3(1,0,0);
 const GOLD=new THREE.Color(0xd69b47),RED=new THREE.Color(0xd75336),INK=new THREE.Color(0x211616),WHITE=new THREE.Color(0xffedce);

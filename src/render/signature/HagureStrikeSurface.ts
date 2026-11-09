@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { hagureStrikeJoint } from './HagureSnapBite';
+import { hagureStrikeJoint } from './HagureSnapBiteContact';
 import { hagureSurfacePoint } from './HagureContactSurface';
 const point = new THREE.Vector3();
 const contacts = [.44, 1.04, 1.63, 2.23, 3.02] as const;
