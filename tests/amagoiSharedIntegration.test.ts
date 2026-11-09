@@ -10,6 +10,7 @@ import {FIGHTERS} from '../src/config';
 import {MOVES} from '../src/game/moves';
 import {rushMove,AWAKENING_ENTRY,awakeningSwapAt} from '../src/game/awakening';
 import {comboMove,type ComboKey} from '../src/game/combos';
+import {AMAGOI_RECEIVER_TIP} from '../src/render/signature/AmagoiGravityContact';
 import {ArenaSimulation} from '../src/game/simulation';
 import {LABORATORY_FIGHTERS,RELEASED_FIGHTERS} from '../src/game/rosterAvailability';
 import {ROSTER_PROTOCOL} from '../src/game/rosterProtocol';
@@ -25,7 +26,8 @@ beforeAll(async()=>{model=await loadRig(FIGHTERS.amagoi.model);});
 function actor(){const f=new Fighter(base('amagoi'),model);f.prepareRush();f.targetPoint=new THREE.Vector3(0,1.2,2.4);f.targetDistance=2.4;for(let i=0;i<60;i++)f.update(1/120,base('amagoi'),true);return f;}
 function advance(f:Fighter,state:PlayerState,end:number){for(let i=0;i<=Math.ceil(end*120);i++)f.update(1/120,{...state,actionTime:Math.min(end,i/120)/state.actionDuration},true);}
 const hand=(f:Fighter,left:boolean)=>f.drawnJoint(left?'LeftHand':'RightHand')!.getWorldPosition(new THREE.Vector3());
-const tip=(f:Fighter)=>f.drawnJoint('RightHand')!.localToWorld(new THREE.Vector3(-.6008820533752441,-.01629497855901718,.40872931480407715));
+// The receiver tip read from its module (the rod's seated point), not a copy of its numbers.
+const tip=(f:Fighter)=>f.drawnJoint('RightHand')!.localToWorld(new THREE.Vector3(...AMAGOI_RECEIVER_TIP));
 function receiverNearest(f:Fighter,p:THREE.Vector3){let distance=Infinity;f.group.updateWorldMatrix(true,true);f.model.traverse(o=>{if(!(o instanceof THREE.SkinnedMesh)||o.name.startsWith('body_'))return;o.skeleton.update();const v=new THREE.Vector3();for(let i=0;i<o.geometry.attributes.position.count;i++){o.getVertexPosition(i,v).applyMatrix4(o.matrixWorld);distance=Math.min(distance,v.distanceTo(p));}});return distance;}
 describe('Amagoi actual laboratory integration',()=>{
  it.skipIf(!!ORIGINALS.amagoi)('admits reviewed Amagoi with release75 and protocolv13',()=>{expect(RELEASED_FIGHTERS).toHaveLength(PINNED_RELEASED);expect(ROSTER_PROTOCOL).toBe(PINNED_ROSTER_PROTOCOL);expect(LABORATORY_FIGHTERS).not.toContain('amagoi');expect(mayPlay('amagoi',{items:{},allAccess:true})).toBe(fighterShown('amagoi'));expect(isBadBloodFighter('amagoi')).toBe(true);expect(factionOf('amagoi')).toBe('villains');expect(FIGHTERS.amagoi.shortMoves!.every(s=>s.length<=15)).toBe(true);expect(createHash('sha256').update(fs.readFileSync('public'+FIGHTERS.amagoi.model)).digest('hex')).toBe('934553d68815a7ce1ccbfa4ec48966b39f31441845584a582e39200a644ce845');for(const file of ['home/fighters/amagoi.webp','home/portraits/amagoi.webp','home/sprites/amagoi.webp','home/sprites/amagoi-poster.webp','ui/moves/amagoi.webp'])expect(fs.existsSync('public/assets/'+file)).toBe(true);const row=JSON.parse(fs.readFileSync('public/assets/home/sprites/manifest.json','utf8')).fighters.find((r:{id:string})=>r.id==='amagoi');expect(row.frames).toHaveLength(row.frameCount??16);for(const[key,hash]of [['file','sha256'],['poster','posterSha256']]as const)expect(createHash('sha256').update(fs.readFileSync('public/assets/home/sprites/'+row[key])).digest('hex')).toBe(row[hash]);});

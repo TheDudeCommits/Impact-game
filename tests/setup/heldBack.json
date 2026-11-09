@@ -8,6 +8,7 @@
   "kenzo: announces its air string by the names of what it draws",
   "koko: announces its air string by the names of what it draws",
   "kosho: announces its air string by the names of what it draws",
+  "shiden: announces its air string by the names of what it draws",
   "shirokane: announces its air string by the names of what it draws",
   "tucks the legs under a blow thrown with the arms in the air, and leaves a kick its own legs",
   "ward: announces its air string by the names of what it draws"
@@ -39,7 +40,8 @@
   "cycles kenzo's legs into a lunge and leaves a standing swing alone",
   "kenzo does not skate at a run",
   "measures the whole roster",
-  "reports a plausible number of steps for the ground covered"
+  "reports a plausible number of steps for the ground covered",
+  "shiden keeps a foot on the ground while blocking and walking"
  ],
  "tests/gummyRound5.test.ts": [
   "is its own take, landing its blow on the move's contact"
@@ -47,11 +49,6 @@
  "tests/kubiwaSharedIntegration.test.ts": [
   "reads actual native command fingers in every manual branch; awakened=false",
   "reads actual native command fingers in every manual branch; awakened=true"
- ],
- "tests/lightTakes.test.ts": [
-  "seed 7, a press every 20 ticks",
-  "seed 7, a press every 9 ticks",
-  "seed 8, a press every 9 ticks"
  ],
  "tests/lockStrikes.test.ts": [
   "every one fits its body: keyed on the body's own joints, finite, never refused"
@@ -113,14 +110,11 @@
  ],
  "tests/reactionTakes.test.ts": [
   "gaku, a light string",
-  "ippon Hit 01",
   "levin Hit 01",
   "levin shake",
   "rook, a heavy, the knockdown and the get-up",
   "shiden, a heavy, the knockdown and the get-up",
-  "tobari, a heavy, the knockdown and the get-up",
-  "ippon, Konta's light string, seed 7",
-  "ippon, Konta's light string, seed 8"
+  "shiden, seven lights, a launch, a juggle and a second launch"
  ],
  "tests/runTakes.test.ts": [
   "magatsu"

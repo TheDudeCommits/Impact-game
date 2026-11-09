@@ -37,10 +37,12 @@ export const AMPERE_CONTACTS = {
   ultimate: [.19, .5, .79], rush: [.46, .46, .53],
   combos: { lh: .46, llh: .51, lllh: .53, llls: .55, airHeavy: .53, airSpecial: .55 },
 } as const;
+/** Nothing imports this table: the game loads Ampere's two bodies from his roster entry (src/config.ts: model, formModel)
+ *  and his awakening from src/game/awakening.ts. Its two model paths name the bodies that ship. */
 export const AMPERE_AWAKENING = {
   name: 'Vigilante Resolve', clip: 'Vigilante Resolve', duration: 1.5,
-  baseModel: '/assets/fighters/ampere-base-df1.glb',
-  model: '/assets/fighters/ampere-vigilante-df1.glb',
+  baseModel: '/assets/fighters/ampere-tr1.glb',
+  model: '/assets/fighters/ampere-awakened-tr1.glb',
   baseHeight: 1.78, awakenedHeight: 1.84,
   beats: { gloveCheck: .285, resolve: .525, transform: .84, guard: 1.185 },
   transformAt: .56, manualOnly: true,
