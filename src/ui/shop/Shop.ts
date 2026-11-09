@@ -16,6 +16,7 @@ import { Refused, type AccountClient, type Wallet } from './account';
 import { fighterArt } from './art';
 import { AccountPanel, clock } from './accountPanel';
 import { goalOf, roadNext, savingFor, setGoal } from './goal';
+import { gearDetail, gearShelf, isGear } from './ballGear';
 
 type Tab = 'unlocks' | 'profile';
 const TABS: readonly [Tab, string][] = [['unlocks', 'UNLOCKS'], ['profile', 'PROFILE']];
@@ -57,6 +58,9 @@ export class Shop {
   /** The fighter whose UNLOCK has been pressed once (a second press unlocks). */
   private confirming?: FighterId;
   private confirmTimer = 0;
+  /** The ball modes' gear looked at instead of a fighter (ballGear.ts), and its UNLOCK pressed once. */
+  private gear?: string;
+  private gearSure = false;
   private busy = false;
   private wallet: Wallet;
   /** Where each tab was scrolled to, kept across a redraw. */
@@ -89,7 +93,8 @@ export class Shop {
     host.append(this.root);
     this.root.addEventListener('click', event => this.click(event.target as HTMLElement));
     // A card focused (a pad, the keyboard) is the one looked at.
-    this.root.addEventListener('focusin', event => { const card = (event.target as HTMLElement).closest<HTMLElement>('[data-item]'); if (card && !card.dataset.act) this.pick(card.dataset.item as FighterId); });
+    this.root.addEventListener('focusin', event => { const card = (event.target as HTMLElement).closest<HTMLElement>('[data-item]'); if (card && !card.dataset.act) this.pick(card.dataset.item as FighterId);
+      const gear = (event.target as HTMLElement).closest<HTMLElement>('[data-gear]'); if (gear && !gear.dataset.act) this.pickGear(gear.dataset.gear!); });
     // Escape closes it before anything under it hears the key.
     window.addEventListener('keydown', event => { if (!this.open || event.code !== 'Escape') return; event.preventDefault(); event.stopPropagation(); this.hide(); }, true);
     client.on(wallet => { this.wallet = wallet; if (this.open) this.render(); });
@@ -247,7 +252,8 @@ export class Shop {
         <div class="shop-filter" role="group" aria-label="Show">${filters.map(([id, label, n]) => `<button type="button" data-filter="${id}" aria-pressed="${this.filter === id}">${label}<b>${n}</b></button>`).join('')}
           <span class="shop-filter-note">${mine.length} of ${ENTRIES.length} fighters are yours. Unlock the rest with ${CURRENCY.name}, or free at their level.</span></div>
         ${shelf('locked', 'TO UNLOCK', locked, 'Every fighter is yours.')}
-        ${shelf('yours', 'YOURS', mine, 'None yet.')}` };
+        ${shelf('yours', 'YOURS', mine, 'None yet.')}
+        ${this.filter === 'all' ? gearShelf(this.account, this.gear) : ''}` };
   }
   /** Prices dropped (refunds.ts): what came back, said once in this browser. */
   private refundNotice(): string {
@@ -263,11 +269,18 @@ export class Shop {
 
   // ---- the fighter looked at -------------------------------------------------------------------
   private markPicked() {
-    for (const card of this.root.querySelectorAll<HTMLElement>('#shop-body [data-item]')) card.setAttribute('aria-pressed', String(card.dataset.item === this.picked));
+    for (const card of this.root.querySelectorAll<HTMLElement>('#shop-body [data-item]')) card.setAttribute('aria-pressed', String(!this.gear && card.dataset.item === this.picked));
+    for (const card of this.root.querySelectorAll<HTMLElement>('#shop-body [data-gear]')) card.setAttribute('aria-pressed', String(card.dataset.gear === this.gear));
+  }
+  /** A piece of ball gear looked at (ballGear.ts). */
+  private pickGear(id: string) {
+    if (this.gear === id || !isGear(id)) return;
+    this.gear = id; this.gearSure = false; this.confirming = undefined;
+    this.markPicked(); this.renderDetail();
   }
   private pick(fighter: FighterId) {
-    if (this.picked === fighter || !ENTRY.has(fighter)) return;
-    this.picked = fighter; this.confirming = undefined;
+    if ((this.picked === fighter && !this.gear) || !ENTRY.has(fighter)) return;
+    this.picked = fighter; this.confirming = undefined; this.gear = undefined;
     this.markPicked();
     this.renderDetail();
   }
@@ -276,6 +289,8 @@ export class Shop {
   private renderDetail() {
     const detail = this.root.querySelector<HTMLElement>('#shop-detail');
     if (!detail) return;
+    const gear = this.gear ? ITEM.get(this.gear) : undefined;
+    if (gear) { this.stage?.hide(); detail.className = `shop-detail r-${gear.rarity}`; detail.innerHTML = gearDetail(gear, this.account, this.wallet.sold[gear.id] ?? 0, this.gearSure); return; }
     // The focus on one of its buttons stays on that button as it is drawn again (SET AS YOUR GOAL, from a pad or the keys).
     const kept = detail.contains(document.activeElement) ? (document.activeElement as HTMLElement).closest<HTMLElement>('[data-act]')?.dataset.act : undefined;
     const entry = this.picked ? ENTRY.get(this.picked) : undefined, account = this.account;
@@ -324,6 +339,21 @@ export class Shop {
     if (button.dataset.filter) { this.filter = button.dataset.filter as Filter; this.scrolled.unlocks = 0; this.render(); return; }
     if (this.tab === 'profile' && this.accountTab.click(button)) return;
     if (button.dataset.item && !button.dataset.act) { this.pick(button.dataset.item as FighterId); return; }
+    if (button.dataset.gear && !button.dataset.act) { this.pickGear(button.dataset.gear); return; }
+    // The ball gear looked at: UNLOCK twice (once to say so, once to mean it), WEAR or TAKE OFF.
+    const gear = this.gear ? ITEM.get(this.gear) : undefined;
+    if (gear && (button.dataset.act === 'gear-buy' || button.dataset.act === 'gear-wear')) {
+      if (this.busy) return;
+      if (button.dataset.act === 'gear-buy') {
+        if (!this.gearSure) { this.gearSure = true; window.clearTimeout(this.confirmTimer); this.confirmTimer = window.setTimeout(() => { this.gearSure = false; this.renderDetail(); }, 5000); this.renderDetail(); this.root.querySelector<HTMLElement>('[data-act=gear-buy]')?.focus(); return; }
+        this.gearSure = false; window.clearTimeout(this.confirmTimer);
+        void this.attempt(async () => { await this.client.buy(gear.id); this.say(`${gear.name} is yours. Wear it to see it in Goal Rush and Sky Spike.`); });
+      } else {
+        const on = (this.account?.worn as Record<string, unknown> | undefined)?.[gear.kind] === gear.id;
+        void this.attempt(async () => { await this.client.wear(gear.kind, on ? undefined : gear.id); this.say(on ? `${gear.name} is off.` : `You wear ${gear.name} in the ball modes.`); });
+      }
+      return;
+    }
     const act = button.dataset.act, entry = this.picked ? ENTRY.get(this.picked) : undefined, item = entry?.item;
     if (act === 'notice') { try { localStorage.setItem(`${SEEN}:${this.account?.pk}`, String(refundTotal(this.account))); } catch { /* Said again next time. */ } this.render(); return; }
     if (!entry || this.busy) return;

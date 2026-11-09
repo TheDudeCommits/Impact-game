@@ -124,6 +124,39 @@ describe('Goal Rush', () => {
     expect(m.view.winner).toBe('blue');
     expect(m.view.mvp).not.toBeNull();
   });
+  it('heats the ball on a pass and a heavy, and cools it at every bounce and guard', () => {
+    const m = new BallMatch('goal-rush', { seed: 3, access: 'host', fillBots: false });
+    m.add('red-1', 'taisei', 'Red', false, 'red'); m.add('red-2', 'konta', 'Red 2', false, 'red'); m.add('blue-1', 'gorai', 'Blue', false, 'blue');
+    m.start(); steps(m, 3.1); until(m, () => m.view.phase === 'live');
+    m.ball.x = 0; m.ball.z = 0; m.ball.y = 3; m.ball.vx = m.ball.vy = m.ball.vz = 0;
+    aim(m, 'red-1', 0); m.receive(m.locate(BALL_ID)!, blow('red-1', 'light'));
+    const one = m.ball.heat;
+    expect(one).toBeCloseTo(BALL_RULES.heatPer.light * 2, 5);
+    // Red's team-mate takes it on: a pass, worth more than the blow alone.
+    m.ball.y = 3; m.ball.vx = m.ball.vy = m.ball.vz = 0; steps(m, .2);
+    aim(m, 'red-2', 0); m.receive(m.locate(BALL_ID)!, blow('red-2', 'heavy'));
+    expect(m.ball.heat - one).toBeGreaterThan(BALL_RULES.heatPer.heavy + GOAL_RULES.passHeat - .1);
+    // Down on the floor hard: a bounce cools it.
+    m.ball.x = 0; m.ball.z = 0; m.ball.y = 1; m.ball.vx = m.ball.vz = 0; m.ball.vy = -12; m.ball.heat = 2;
+    until(m, () => m.ball.vy > 0, 1);
+    expect(m.ball.heat).toBeLessThan(2 - BALL_RULES.bounceHeat + .02);
+  });
+  it('lets an OVERDRIVE ball stagger a body for a moment, never knock it down; a cooler ball runs into it', () => {
+    const run = (heat: number) => {
+      const m = pair('goal-rush');
+      until(m, () => m.view.phase === 'live');
+      m.sim.place('blue-1', { x: 0, y: 0, z: 6 }, Math.PI);
+      Object.assign(m.ball, { x: 0, y: 1.2, z: 2, vx: 0, vy: 0, vz: 30, heat, lastId: 'red-1', lastTeam: 'red', super: false });
+      steps(m, .25);
+      return { m, action: m.sim.actors.get('blue-1')!.state.action, event: m.view.events.find(e => e.kind === 'bowled') };
+    };
+    const hot = run(BALL_RULES.bowlTier + .3);
+    expect(hot.event?.text).toBe('STAGGERED');
+    expect(hot.action).not.toBe('knockdown');
+    steps(hot.m, BALL_RULES.staggerSeconds + .4);
+    expect(['idle', 'run']).toContain(hot.m.sim.actors.get('blue-1')!.state.action);
+    expect(run(3.5).event).toBeUndefined();
+  });
   it('never lets one fighter hurt another', () => {
     const m = pair('goal-rush');
     until(m, () => m.view.phase === 'live');
@@ -134,7 +167,7 @@ describe('Goal Rush', () => {
 });
 
 describe('Sky Spike', () => {
-  it('replays only the great points: a long rally, FEVER, a super shot, the match point', () => {
+  it('replays only the great points: FEVER, a super shot, a match point, the winning point', () => {
     const point = (rally: number, fever = false) => {
       const m = pair('sky-spike');
       const server = m.view.serverId!, team = m.view.servingTeam;
@@ -146,8 +179,21 @@ describe('Sky Spike', () => {
       return m.view.replay;
     };
     expect(point(1)).toBeNull();
-    expect(point(REPLAY.rally)?.text).toBe(`RALLY OF ${REPLAY.rally}`);
+    // A long rally alone is no longer shown again: its celebration plays on into the next serve instead.
+    expect(point(8)).toBeNull();
     expect(point(2, true)?.text).toBe('FEVER POINT');
+    // A match point saved is shown again; the side that was at match point lost it.
+    const saved = pair('sky-spike'), server = saved.view.serverId!, team = saved.view.servingTeam, other = team === 'red' ? 'blue' : 'red';
+    saved.view.score[other] = SPIKE_RULES.target - 1; saved.view.score[team] = 3;
+    aim(saved, server, team === 'red' ? 0 : Math.PI);
+    saved.receive(saved.locate(BALL_ID)!, blow(server));
+    steps(saved, .4);
+    // The serve comes down in the other side's court: the server's point.
+    Object.assign(saved.ball, { x: 0, y: 12, z: (other === 'red' ? -1 : 1) * 5, vx: 0, vy: 0, vz: 0, lastId: server, lastTeam: team });
+    until(saved, () => saved.view.phase === 'scored', 3);
+    expect(saved.view.score[team]).toBe(4);
+    expect(saved.view.replay?.text).toBe('MATCH POINT SAVED');
+
     // A couch match has no replays at all.
     const couch = new BallMatch('goal-rush', { seed: 3, access: 'bots', fillBots: false, replays: false });
     couch.add('a', 'taisei', 'A', false, 'red'); couch.add('b', 'konta', 'B', false, 'blue'); couch.start(); steps(couch, 3.1);
@@ -155,6 +201,21 @@ describe('Sky Spike', () => {
     couch.ball.x = 0; couch.ball.z = GOAL_RULES.halfZ - 6; couch.ball.y = 1; aim(couch, 'a', 0); couch.receive(couch.locate(BALL_ID)!, blow('a'));
     expect(until(couch, () => couch.view.phase === 'scored', 4)).toBe(true);
     expect(couch.view.replay).toBeNull();
+  });
+  it('plays the scorer’s celebration on into the next serve’s walk-up', () => {
+    const m = new BallMatch('sky-spike', { seed: 5, access: 'host', fillBots: false });
+    for (const [id, team] of [['red-1', 'red'], ['red-2', 'red'], ['blue-1', 'blue'], ['blue-2', 'blue']] as const) m.add(id, id.startsWith('red') ? 'taisei' : 'konta', id, false, team);
+    m.start(); steps(m, 3.1);
+    const server = m.view.serverId!, team = m.view.servingTeam, mate = [...m.seats.values()].find(s => s.team === team && s.id !== server)!.id;
+    aim(m, server, team === 'red' ? 0 : Math.PI); m.receive(m.locate(BALL_ID)!, blow(server)); steps(m, .3);
+    Object.assign(m.ball, { x: 0, y: 3, z: (team === 'red' ? 1 : -1) * 5, vx: 0, vy: 0, vz: 0, lastId: mate, lastTeam: team });
+    expect(until(m, () => m.view.phase === 'scored', 2)).toBe(true);
+    expect(until(m, () => m.view.phase === 'kickoff', 4)).toBe(true);
+    expect(m.view.serverId).toBe(server);
+    steps(m, .5);
+    expect(m.sim.actors.get(mate)!.state.action).toBe('victory');
+    steps(m, SPIKE_RULES.celebrateSeconds);
+    expect(m.sim.actors.get(mate)!.state.action).not.toBe('victory');
   });
   it('holds the serve for its server alone, and the serve is the side’s last touch', () => {
     const m = pair('sky-spike');

@@ -40,12 +40,12 @@ If you believe something here is yours and should not be, write to Hello@Dude.wo
 | Nature Ambient Pack Vol 1 | JC Sounds | https://opengameart.org/content/jc-sounds-nature-ambient-pack-vol-1 | CC BY 4.0 | `public/assets/audio/ambience/wind.m4a`, `fire.m4a`, `crackle.m4a`; `public/assets/audio/survival/` (entries marked so) |
 | 80 CC0 creature SFX, 80 CC0 creature SFX #2, 80 CC0 RPG SFX, 100 CC0 SFX #2 | rubberduck | https://opengameart.org/users/rubberduck | CC0 1.0 | `public/assets/audio/survival/` |
 | Zombies Sound Pack | artisticdude | https://opengameart.org/content/zombies-sound-pack | CC0 1.0 | `public/assets/audio/survival/` |
-| 20 Sword Sound Effects (Attacks and Clashes); Crowd Shouting Ambience | StarNinjas | https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes | CC0 1.0 | `public/assets/audio/survival/`, `public/assets/audio/ambience/crowd.m4a` |
+| 20 Sword Sound Effects (Attacks and Clashes); Crowd Shouting Ambience | StarNinjas | https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes | CC0 1.0 | `public/assets/audio/survival/`, `public/assets/audio/ambience/crowd.m4a` (also layered into the ball modes' crowd sounds in `public/assets/audio/ball/`) |
 | Monster Sound Pack Volume 1 | OpenGameArt | https://opengameart.org/content/monster-sound-pack-volume-1 | CC0 1.0 | `public/assets/audio/survival/` |
 | Male Grunt/Yelling sounds | OpenGameArt | https://opengameart.org/content/male-gruntyelling-sounds | CC0 1.0 | `public/assets/audio/survival/` |
 | Impact Sounds, RPG Audio | Kenney | https://kenney.nl/assets/impact-sounds | CC0 1.0 | `public/assets/audio/survival/` |
 | Wind in the reed (Funkelfang); HyenaLaugh2, Hyena Moan 2 (sounagix); Hyena-like Creature Noise | Freesound users | https://freesound.org | CC0 1.0 | `public/assets/audio/survival/` (named in its manifest) |
-| Impact Sounds 1.0, Interface Sounds 1.0, Sci-Fi Sounds 1.0 | Kenney | https://kenney.nl/assets/impact-sounds, https://kenney.nl/assets/interface-sounds, https://kenney.nl/assets/sci-fi-sounds | CC0 1.0 | `public/assets/audio/v2/cc0/` (cut, layered, varispeeded and levelled into the stand-ins) |
+| Impact Sounds 1.0, Interface Sounds 1.0, Sci-Fi Sounds 1.0 | Kenney | https://kenney.nl/assets/impact-sounds, https://kenney.nl/assets/interface-sounds, https://kenney.nl/assets/sci-fi-sounds | CC0 1.0 | `public/assets/audio/v2/cc0/` (cut, layered, varispeeded and levelled into the stand-ins), `public/assets/audio/ball/` (layered and levelled into the ball modes' sounds) |
 | bodyfall gym mat light impact pad.flac | kyles | https://freesound.org/people/kyles/sounds/637241/ | CC0 1.0 | `public/assets/audio/v2/cc0/` (the bodies falling and landing) |
 | Unsheathing sword, slow, dramatic.wav | mht23SD | https://freesound.org/people/mht23SD/sounds/707339/ | CC0 1.0 | `public/assets/audio/v2/cc0/` (the blades drawn) |
 
@@ -53,7 +53,9 @@ Each file in `public/assets/audio/survival/manifest.json` names its own source a
 
 The sound effects held back from this repository play CC0 stand-ins in `public/assets/audio/v2/cc0/`, made for this
 repository from the CC0 recordings above and from sound made in code; `public/assets/audio/v2/cc0/manifest.json` names
-each stand-in's sources (with their hashes) and the file it stands in for.
+each stand-in's sources (with their hashes) and the file it stands in for. The ball modes' sounds in `public/assets/audio/ball/`
+were synthesised for the game or layered from the CC0 recordings above; `public/assets/audio/ball/manifest.json` names each
+one's layers and their sources (with their hashes).
 
 ## Music
 
@@ -107,4 +109,4 @@ Elemental Sandbox's MIT one: it is provided under the VFX Armory Licence, not th
 The game's own art, models, motion and voices were made with these tools on the maintainer's accounts; what they
 made belongs to the project and is covered by its licence: Meshy (models, animation-library actions and text-to-motion
 takes), Tripo (models, rigs and troop animation), OpenAI image generation and Codex (2D art), FLUX.2 [klein] 4B (four
-chapter panels), Higgsfield (voices), Qwen3-TTS (the announcer), Blender (modelling, rigging and animation).
+chapter panels), Higgsfield (voices), Qwen3-TTS (the announcer), ElevenLabs (the ball modes' commentary, two designed voices), Blender (modelling, rigging and animation).

@@ -6,6 +6,7 @@ const F = '/assets/fighters/';
 /** A lock file: the copies it holds, each `source file: clips` (one body's files). */
 export const LOCK_TAKE_FILES: Readonly<Record<string, readonly (readonly [string, readonly string[]])[]>> = {
   [F + 'wukong-lock1.glb']: [[F + 'wukong-tr1.glb', ['DZ Rush 1', 'DZ Rush 2']], [F + 'wukong-enders1.glb', ['Straight Palm']]],
+  [F + 'shanxiao-lock1.glb']: [[F + 'shanxiao-tr1.glb', ['Mauler Backfist']]],
   [F + 'ampere-lock1.glb']: [[F + 'ampere-tr1.glb', ['Live Line Jab', 'Live Line Cross']]],
   [F + 'shirokane-lock1.glb']: [[F + 'shirokane-tr1.glb', ['Scrap Kunai']], [F + 'shirokane-enders1.glb', ['Rising Slash']]],
   [F + 'shidare-lock1.glb']: [[F + 'shidare-tr1.glb', ['Crossing Petals']]],
@@ -18,6 +19,7 @@ export const ORIGINAL_LOCK_TAKES: Readonly<Record<string, string>> = {
   'ouga:Elbow Palm': F + 'ouga-pxenders1.glb', 'ouga:Rising Kick': F + 'ouga-pxenders1.glb',
   'taisei:DZ Rush 1': F + 'wukong-lock1.glb', 'taisei:DZ Rush 2': F + 'wukong-lock1.glb', 'taisei:Straight Palm': F + 'wukong-lock1.glb',
   'taisei:Flare Hammer': F + 'wukong-enders2.glb',
+  'shanxiao:Mauler Backfist': F + 'shanxiao-lock1.glb',
   'gummy:Sickle Sweep': F + 'lucy-pxenders2.glb',
   'ampere:Live Line Jab': F + 'ampere-lock1.glb', 'ampere:Live Line Cross': F + 'ampere-lock1.glb',
   'shirokane:Scrap Kunai': F + 'shirokane-lock1.glb', 'shirokane:Rising Slash': F + 'shirokane-lock1.glb',

@@ -1,5 +1,6 @@
 import {RiftWarWorld} from './moba/RiftWarWorld';
 import {BallArena} from './ball/BallArena';
+import {ballArenaFor} from './ball/arenaChoice';
 import {BloodCitadel} from './objectives/BloodCitadel';
 import {HiddenAshVillage} from './objectives/HiddenAshVillage';
 import {coverStage,installCameraCutaway} from './CameraCutaway';
@@ -63,6 +64,11 @@ export class StageEnvironment {
   /** Show a stage, loading it first if necessary. Resolves once it is visible. */
   async show(requested: StageId): Promise<void> {
     const stage = previewStage(requested);
+    // A ball stage dressed as another arena than the match's is built again.
+    if (stage === 'ball-pitch' || stage === 'ball-court') {
+      const kept = this.loaded.get(stage);
+      if (kept && (kept.objective as BallArena | undefined)?.arena !== ballArenaFor(stage)) this.release(stage, kept);
+    }
     if (this.current === stage) return;
     const model = STAGES[stage].model;
     void model; // (a stage with no model is built in code, or stands on a plain floor: build)
@@ -134,7 +140,7 @@ export class StageEnvironment {
       return { root: harbour.root, occluders: harbour.occluders, harbour };
     }
     // The ball modes' arenas (render/ball/BallArena.ts): built in code, nothing to download.
-    if(stage==='ball-pitch'||stage==='ball-court'){const arena=new BallArena(stage);arena.root.visible=false;await arena.load();this.scene.add(arena.root);return {root:arena.root,occluders:arena.occluders,objective:arena};}
+    if(stage==='ball-pitch'||stage==='ball-court'){const arena=new BallArena(stage,ballArenaFor(stage));arena.root.visible=false;await arena.load();this.scene.add(arena.root);return {root:arena.root,occluders:arena.occluders,objective:arena};}
     if(stage==='rift-war'){const war=new RiftWarWorld();war.root.visible=false;try{await war.load();}catch(error){war.dispose();throw error;}this.scene.add(war.root);return {root:war.root,occluders:war.occluders,objective:war};}
     if(stage==='hidden-ash'||stage==='blood-citadel'){const village=stage==='hidden-ash'?new HiddenAshVillage():new BloodCitadel();village.root.visible=false;await village.load();this.scene.add(village.root);return {root:village.root,occluders:village.occluders,objective:village};}
     if (isRiftStage(stage)) {

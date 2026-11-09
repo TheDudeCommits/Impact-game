@@ -416,6 +416,8 @@ const OPEN_EDGE:Readonly<Record<string,number>>={
  *  past them, so the lens may stand out there - a view held inside the glass squeezed down onto the player's head at
  *  every wall. */
 const BALL_OUT=5;
+/** How far past the end walls the ball cam may stand (FollowCamera.keepInView): not at all, the goal's netting is there. */
+const BALL_CAM_ENDS=-.4;
 const boundOut=(b:{halfX:number;halfZ:number;doubleSided?:boolean;background?:number;id?:string},squad=false)=>b.id==='ball-pitch'||b.id==='ball-court'?BALL_OUT:b.doubleSided||b.background!==undefined||smallFloor(b)?ENCLOSED_OUT:(b.id!==undefined&&!squad?OPEN_EDGE[b.id]:undefined)??-BOUND_MARGIN;
 /** When a stage boundary prevents the boom moving back, a local jump needs
  * vertical room instead. Ease this in over the last metre before the lens
@@ -504,6 +506,11 @@ export class FollowCamera {
   /** Metres of extra boom (and a share of it in lift) for a mode that wants the field seen from further back and above:
    *  Goal Rush and Sky Spike (main.ts), so the ball and the far side are in view rather than the player's back. */
   wide = 0;
+  /** A point the lens tilts up to keep in the frame (the ball modes' ball camera sets it to the ball, render/ball/
+   *  BallCam.ts): the look rises after it - never so far that the player's own feet leave the bottom of the frame - and
+   *  only up and down, so the heading and every direction the keys point stay exactly what they were. Null: no tilt. */
+  keepInView:THREE.Vector3|null=null;
+  private keepTilt=0;
   yaw=Math.PI;
   /** Horizontal view direction before cosmetic shake, used only to map input. */
   movementYaw=Math.PI;
@@ -1195,6 +1202,9 @@ export class FollowCamera {
     // The room can shorten the boom substantially. Frame from that actual
     // lens, rather than solving a distant shot and then pushing through it.
     this.rig.bounded=this.dynBlend>0?this.keepInside():0;
+    // The ball cam (keepInView) never stands behind an end wall, where the goal's netting filled the view: it comes in
+    // along its line of sight (the side walls' glass it may still stand past).
+    if(this.keepInView)this.rig.bounded+=this.keepInside(false,1,BALL_CAM_ENDS);
     this.desired.copy(this.camera.position);
     let edgeGoal=0;
     if(this.dynBlend>0&&this.stageBounds){
@@ -1230,6 +1240,7 @@ export class FollowCamera {
     // Round 4b: inside the play bounds on an open stage (BOUND_*), along the line of sight.
     this.rig.bounded+=this.dynBlend>0?this.keepInside():0;
     this.movementYaw=Math.atan2(this.probe.x-this.camera.position.x,this.probe.z-this.camera.position.z);
+    this.tiltFor(dt,placed,position);
     this.camera.lookAt(this.probe);
     // Lock combat's preview (game/lockCombat.ts): an exchange filmed close on the pair (see comboFrame).
     this.comboFrame(dt,placed,self,foe,occluders);
@@ -1312,6 +1323,26 @@ export class FollowCamera {
     rig.brain=this.dynBlend>0?this.brain.mode:'off';rig.yieldTo=this.brain.yieldTo*this.dynBlend;rig.group=this.brain.group*this.dynBlend;rig.side=this.dynBlend>0?(this.arenaBlend>.5?this.sideEase:this.brain.side):1;rig.play=this.play??'none';rig.fov=this.baseFov;
     rig.focus=foe?.state.id??'';rig.styleBlend=this.styleBlend;rig.switching=this.brain.switching*this.dynBlend;rig.edge=this.edgeRoom;rig.small=smallFloor(this.stageBounds);rig.squeeze=this.squeeze;
     rig.arena=this.arenaBlend;rig.hold=this.holding*this.arenaBlend;rig.own=this.own;rig.away=this.away;
+  }
+
+  /** Raises the look (the probe, only in height) so `keepInView` sits inside the top of the frame, as far as the player's
+   *  feet allow; eased, so a ball bouncing about does not shake the view. */
+  private tiltFor(dt:number,placed:boolean,feet:THREE.Vector3){
+    const k=this.keepInView,c=this.camera.position,p=this.probe;
+    let want=0;
+    const flat=Math.hypot(p.x-c.x,p.z-c.z);
+    if(k&&flat>.5){
+      const fx=(p.x-c.x)/flat,fz=(p.z-c.z)/flat,ahead=(k.x-c.x)*fx+(k.z-c.z)*fz;
+      if(ahead>.5){
+        const half=THREE.MathUtils.degToRad(this.camera.fov)/2,look=Math.atan2(p.y-c.y,flat);
+        const ball=Math.atan2(k.y-c.y,Math.max(.5,Math.hypot(k.x-c.x,k.z-c.z))),floor=Math.atan2(feet.y-c.y,flat);
+        // The ball inside the top of the frame; the player's feet no lower than its bottom edge.
+        want=THREE.MathUtils.clamp(ball-half*.7-look,0,Math.max(0,floor+half*.97-look));
+      }
+    }
+    this.keepTilt=placed?want:this.keepTilt+(want-this.keepTilt)*blend(want>this.keepTilt?5:2.5,dt);
+    if(this.keepTilt<1e-4){this.keepTilt=0;return;}
+    p.y=c.y+Math.tan(Math.atan2(p.y-c.y,flat)+this.keepTilt)*flat;
   }
 
   /** 24 October 2026: the Smart camera's frame (SmartCamera.ts). Its rig decides where the lens stands, what it looks at
@@ -2126,12 +2157,12 @@ export class FollowCamera {
    *  by moving it along its line of sight toward the look point. (Launch night: the rig is squeezed toward the
    *  player's body first, see SQUEEZE_MOST; this is what is left for a lens that still stands outside - a fighter
    *  hard against the bound, a blow's kick.) */
-  private keepInside(after=false){
+  private keepInside(after=false,weight=this.dynBlend,ends?:number){
     const b=this.stageBounds,eye=this.camera.position;if(!b)return 0;
     // (Where the view is the squad's - Arcade Survival fights on the Drifting Isle, Cinder Flats and Warlord's Roof too -
     // the lens keeps the bound it always had: OPEN_EDGE is the main game's.)
     const out=boundOut(b,this.battlefield);
-    const hx=b.halfX+out,hz=b.halfZ+out;
+    const hx=b.halfX+out,hz=b.halfZ+(ends??out);
     if(Math.abs(eye.x)<=hx&&Math.abs(eye.z)<=hz)return 0;
     let ux:number,uy:number,uz:number,length:number;
     if(after){this.camera.getWorldDirection(this.axis);ux=this.axis.x;uy=this.axis.y;uz=this.axis.z;length=BOUND_AFTER+BOUND_NEAREST;}
@@ -2141,7 +2172,7 @@ export class FollowCamera {
     else if(eye.x<-hx){if(ux>1e-4)need=Math.max(need,(-hx-eye.x)/ux);else return 0;}
     if(eye.z>hz){if(uz<-1e-4)need=Math.max(need,(eye.z-hz)/-uz);else return 0;}
     else if(eye.z<-hz){if(uz>1e-4)need=Math.max(need,(-hz-eye.z)/uz);else return 0;}
-    const move=Math.min(need,Math.max(0,length-BOUND_NEAREST))*this.dynBlend;
+    const move=Math.min(need,Math.max(0,length-BOUND_NEAREST))*weight;
     eye.x+=ux*move;eye.y+=uy*move;eye.z+=uz*move;
     return move;
   }

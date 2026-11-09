@@ -464,8 +464,11 @@ export class CombatAudio {
       // have their own voices (RiftAudio) - and a line of the body acted on is theirs, from where they stand.
       const scene = { actor: actor && !actor.enemy ? actor.fighter : undefined, target: target && !target.enemy ? target.fighter : undefined,
         targetHealth: target && target.maxHp > 0 ? target.hp / target.maxHp : undefined };
+      // (A blow on a body `soften` names - the ball modes' ball - keeps its effects at that share, under the body's own sound.)
+      const soft = event.kind === 'hit' && event.targetId ? this.softBodies.get(event.targetId) : undefined;
       if (at) for (const layer of planCombatAudio(resolved, !!actor?.awakened, scene))
-        this.play(layer, (layer.speaker ? players.find(p => p.id === layer.speaker) : undefined) ?? at, local ? 4 : 1, layer.speaker ?? event.actorId, event.id);
+        this.play(soft !== undefined && (layer.bus ?? 'sfx') === 'sfx' ? { ...layer, gain: layer.gain * soft } : layer,
+          (layer.speaker ? players.find(p => p.id === layer.speaker) : undefined) ?? at, local ? 4 : 1, layer.speaker ?? event.actorId, event.id);
       if (self) {
         // Only speak in an actual gap. Never replace a move name, boss line or victory quote.
         // (The quip left to the director is the advantage line on a guard or a poise broken: QuipDirector.ts.)
@@ -657,6 +660,75 @@ export class CombatAudio {
   }
   /** The stands, where there are stands: a roar for the winner. */
   cheer(worth = 1, win = false) { this.ambience?.cheer(worth, win); }
+
+  // ---- The ball modes (src/audio/ballAudio.ts): a few general hooks ---------------------------------------------------
+  /** Blows on the external body `id` (the ball) keep their effects at `share` of their gain (none: as they are), so the
+   *  body's own sound leads and the fighter's blow is its colour underneath. */
+  soften(id: string, share?: number) { if (share === undefined) this.softBodies.delete(id); else this.softBodies.set(id, Math.max(0, share)); }
+  private softBodies = new Map<string, number>();
+  /** A one-shot by url heard centred on the listener, at a presentation sound's priority (a whistle, a horn, a riser: the
+   *  stadium's, not a place's). One not loaded yet is fetched for next time and skipped now. */
+  centred(url: string, gain: number, delay = 0, rate = 1, priority = 6) { this.sample(url, this.here(), gain, rate, 'ui', priority, delay); }
+  /** The stands react (a roar, an "ooh", a groan): a one-shot on the place's own bus beside its crowd bed, not ducked
+   *  under the voices and not counted against the effects' twenty, played wide (two copies panned apart, a few
+   *  milliseconds and a hair of pitch between them, as a wide bed is). */
+  stands(url: string, gain: number, delay = 0, rate = 1) {
+    const ctx = this.context, buffer = this.samples.get(url);
+    if (!buffer) { void this.loadSample(url); return; }
+    if (!ctx || ctx.state !== 'running' || !this.ambienceBus || this.dead || this.mix.master <= 0 || this.mix.sfx <= 0) return;
+    const start = ctx.currentTime + Math.max(0, delay);
+    [[-.6, 0, 1], [.6, .017, .992]].forEach(([side, late, bend]) => {
+      const source = ctx.createBufferSource(), level = ctx.createGain(), pan = ctx.createStereoPanner();
+      source.buffer = buffer; source.playbackRate.value = rate * bend; level.gain.value = gain * Math.SQRT1_2; pan.pan.value = side;
+      source.connect(level).connect(pan).connect(this.ambienceBus!);
+      source.onended = () => { source.disconnect(); level.disconnect(); pan.disconnect(); };
+      source.start(start + late);
+    });
+  }
+  /** How worked up the stands are (0-1): their bed held from quiet under play to loud at the peaks (StageAmbience.tension). */
+  crowdTension(level: number) { this.ambience?.tension(level); }
+  /** Held loops by key (the ball's OVERDRIVE roar, the stands' chant): started once the file is in, carried to `at` (none:
+   *  centred) at `gain` every call with the effects' distance and pan, and let go with a fade at gain 0. `loop`: the
+   *  seconds the file loops between (a seamless period of the file). `bus` 'ambience': the place's own. */
+  loopAt(key: string, url: string, gain: number, options: { at?: Vec3; loop?: readonly [number, number]; bus?: 'sfx' | 'ambience'; rate?: number } = {}) {
+    const ctx = this.context, held = this.loops.get(key);
+    if (!ctx || this.dead) return;
+    if (!(gain > .0005)) { if (held) this.letLoopGo(key, .5); return; }
+    const buffer = this.samples.get(url);
+    if (!buffer) { void this.loadSample(url); return; }
+    const out = options.bus === 'ambience' ? this.ambienceBus : this.sfx;
+    if (ctx.state !== 'running' || !out) return;
+    let level = gain, side = 0;
+    const listener = options.at && this.latestPlayers.find(p => p.id === this.selfId);
+    if (options.at && listener) {
+      const dx = options.at.x - listener.x, dz = options.at.z - listener.z, d2 = dx * dx + dz * dz;
+      level = d2 > 48 * 48 ? 0 : gain / (1 + d2 / 120);
+      side = Math.max(-.8, Math.min(.8, (dx * Math.cos(listener.yaw) - dz * Math.sin(listener.yaw)) / 12));
+    }
+    const now = ctx.currentTime;
+    if (held && held.url === url) {
+      held.gain.gain.setTargetAtTime(level, now, .08); held.pan.pan.setTargetAtTime(side, now, .08);
+      held.source.playbackRate.setTargetAtTime(options.rate ?? 1, now, .2);
+      return;
+    }
+    if (held) this.letLoopGo(key, .3);
+    const source = ctx.createBufferSource(), level0 = ctx.createGain(), pan = ctx.createStereoPanner();
+    source.buffer = buffer; source.loop = true; source.playbackRate.value = options.rate ?? 1;
+    const [from, to] = options.loop ?? [0, buffer.duration];
+    source.loopStart = Math.max(0, from); source.loopEnd = Math.min(buffer.duration, Math.max(from + .05, to));
+    level0.gain.setValueAtTime(0, now); level0.gain.setTargetAtTime(level, now, .12); pan.pan.value = side;
+    source.connect(level0).connect(pan).connect(out);
+    source.start(now, source.loopStart);
+    this.loops.set(key, { source, gain: level0, pan, url });
+  }
+  private loops = new Map<string, { source: AudioBufferSourceNode; gain: GainNode; pan: StereoPannerNode; url: string }>();
+  private letLoopGo(key: string, fade: number) {
+    const held = this.loops.get(key), now = this.context?.currentTime ?? 0;
+    if (!held) return;
+    this.loops.delete(key);
+    try { holdAt(held.gain.gain, now); held.gain.gain.linearRampToValueAtTime(0, now + fade); held.source.stop(now + fade + .05); } catch { /* Already stopped. */ }
+    held.source.onended = () => { held.source.disconnect(); held.gain.disconnect(); held.pan.disconnect(); };
+  }
   /** The stage the fight is in (audio/space.ts), or none: arcade survival and the objective modes keep their dry mix. */
   setSpace(stage: StageId | undefined) {
     if (spaceName(stage) === spaceName(this.stage) && this.reverbReady(stage)) { this.stage = stage; return; }
@@ -884,6 +956,6 @@ export class CombatAudio {
     try { const now = this.context?.currentTime ?? 0; holdAt(sound.gain.gain, now); sound.gain.gain.linearRampToValueAtTime(0, now + fade); sound.source.stop(now + fade + .005); } catch { /* Already ended. */ }
     this.updateVoiceActivity();
   }
-  reset() { for (const sound of this.sounds) this.stop(sound); this.auras.clear(); this.seen.clear(); this.dashStates.clear(); this.casts.clear(); this.quips.reset(); clearTimeout(this.bellTimer); this.bellTimer = undefined; this.saidAt.clear(); }
+  reset() { for (const key of [...this.loops.keys()]) this.letLoopGo(key, .3); for (const sound of this.sounds) this.stop(sound); this.auras.clear(); this.seen.clear(); this.dashStates.clear(); this.casts.clear(); this.quips.reset(); clearTimeout(this.bellTimer); this.bellTimer = undefined; this.saidAt.clear(); }
   dispose() { this.dead = true; clearTimeout(this.duckTimer); clearTimeout(this.bellTimer); this.abort.abort(); this.ambience?.dispose(); this.ambienceBus?.disconnect(); this.reset(); this.buffers.clear(); this.samples.clear(); this.reverb?.out.disconnect(); this.irs.clear(); this.master?.disconnect(); this.sfx?.disconnect(); this.speech?.disconnect(); this.compressor?.disconnect();for(const source of this.musicSources.values())source.disconnect();this.musicSources.clear(); void this.context?.close().catch(() => {}); }
 }

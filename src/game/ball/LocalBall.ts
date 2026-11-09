@@ -1,3 +1,4 @@
+import type {BallArenaId} from './arenas';
 import {keptSkill} from '../../boot/skill';
 import {requireReleasedFighter} from '../rosterAvailability';
 import type {FighterId, GameSnapshot, PlayerInput} from '../types';
@@ -6,6 +7,13 @@ import {SECOND} from '../couchSeat';
 import {DeviceMatch} from '../economy/device';
 import {BallMatch} from './BallMatch';
 import {BALL_STAGE, otherTeam, type BallModeId, type BallTeam} from './model';
+import type {BallMutator} from './mutators';
+import type {BallLook} from './look';
+import {DRILLS, isDrill, type DrillId} from './drills';
+
+/** What else a match on this device is played with: a mutator, a training drill (FREE PLAY's), and what the
+ *  page's own player wears in the ball modes (their seat's look: ball skin, trail, goal burst, celebration). */
+export interface BallExtras { mutator?: BallMutator; drill?: DrillId; look?: BallLook; /** The arena picked (arenas.ts); none: the mode's in turn. */ arena?: BallArenaId }
 
 /** A ball match played on this device: Goal Rush or Sky Spike against bots, or with a second person on the couch (on
  *  Player 1's team, or the other). It pays the account as the other on-device matches do (economy/device.ts). */
@@ -27,21 +35,22 @@ export class LocalBall {
   second: () => PlayerInput | undefined = () => undefined;
   private generation = 0;
   private rewards = new DeviceMatch();
-  private last?: {fighter: FighterId; name: string; partner?: FighterId; rivals?: boolean; rumble?: boolean; practice?: boolean};
+  private last?: {fighter: FighterId; name: string; partner?: FighterId; rivals?: boolean; rumble?: boolean; practice?: boolean; extras?: BallExtras};
   get id() { return this.match ? 'local-ball-fighter' : ''; }
-  async connect(mode: BallModeId, fighter: FighterId, name: string, partner?: FighterId, rivals = false, rumble = false, practice = false) {
+  async connect(mode: BallModeId, fighter: FighterId, name: string, partner?: FighterId, rivals = false, rumble = false, practice = false, extras: BallExtras = {}) {
     requireReleasedFighter(fighter);
     if (partner !== undefined) requireReleasedFighter(partner);
     await this.leave();
-    this.mode = mode; this.partner = partner; this.last = {fighter, name, partner, rivals, rumble, practice};
+    this.mode = mode; this.partner = partner; this.last = {fighter, name, partner, rivals, rumble, practice, extras};
     const generation = this.generation, {createRapierCollision} = await import('../rapierCollision'), collision = await createRapierCollision(BALL_STAGE[mode]);
     if (generation !== this.generation) { collision.dispose?.(); return; }
     // `?balllength=` on this machine: a shorter match (seconds of Goal Rush, Sky Spike's target), for checks of its end.
     const here = typeof location === 'object' && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) ? new URLSearchParams(location.search) : undefined;
     const length = Number(here?.get('balllength')) || undefined;
-    this.match = new BallMatch(mode, {collision, seed: Math.random() * 0x7fffffff | 0 || 1, access: 'bots', lockCombat: lockCombatOn(), length, replays: !partner, rumble, practice: practice && !partner});
+    this.match = new BallMatch(mode, {collision, seed: Math.random() * 0x7fffffff | 0 || 1, access: 'bots', lockCombat: lockCombatOn(), length, replays: !partner, rumble, arena: extras.arena, practice: practice && !partner,
+      mutator: rumble ? null : extras.mutator ?? null, drill: practice && !partner ? extras.drill : undefined});
     const team: BallTeam = 'red';
-    this.match.add(this.id, fighter, name, false, team); this.match.sim.setPlayerSkill(this.id, keptSkill());
+    this.match.add(this.id, fighter, name, false, team); this.match.sim.setPlayerSkill(this.id, keptSkill()); this.match.setLook(this.id, extras.look);
     // `?ballpilot` on this machine: a bot plays the page's own fighter (the captures and checks of the ball modes).
     if (here?.has('ballpilot')) this.match.pilot(this.id);
     if (partner) this.match.add(SECOND, partner, 'Player 2', false, rivals ? otherTeam(team) : team);
@@ -50,7 +59,7 @@ export class LocalBall {
     this.predictionReady = true; this.publish();
   }
   /** The same match again, with the same people (PLAY AGAIN on the results). */
-  async again() { if (this.last) await this.connect(this.mode, this.last.fighter, this.last.name, this.last.partner, this.last.rivals, this.last.rumble, this.last.practice); }
+  async again() { if (this.last) await this.connect(this.mode, this.last.fighter, this.last.name, this.last.partner, this.last.rivals, this.last.rumble, this.last.practice, this.last.extras); }
   startPrivateMatch() {}
   send(input: PlayerInput) {
     if (!this.match || this.paused) return;
@@ -60,6 +69,8 @@ export class LocalBall {
   }
   private act(type: string, _payload?: unknown): string | undefined {
     if (type === 'ball-rematch') { void this.again(); return undefined; }
+    // A drill's NEXT DRILL: the same FREE PLAY with the drill named (drills.ts), from its first ball.
+    if (type === 'ball-drill' && isDrill(_payload) && DRILLS[_payload].mode === this.mode && this.last) { this.last.extras = {...this.last.extras, drill: _payload}; void this.again(); return undefined; }
     if (type === 'ball-skip') { this.match?.skip(this.id); return undefined; }
     if (type === 'ball-reset') { this.match?.reset(this.id); return undefined; }
     if (type === 'ball-chat') { this.match?.chat(this.id, _payload); return undefined; }

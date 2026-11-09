@@ -1,3 +1,4 @@
+import {BALL_ARENAS, arenaFor, isBallArena, type BallArenaId} from './arenas';
 import {isReleasedFighter, requireReleasedFighter} from '../rosterAvailability';
 import {ArenaSimulation, validateInput, type ExternalBlow, type ExternalBody, type ExternalTargets} from '../simulation';
 import {COMBO_HP, COMBO_STAMINA, JUST_GUARD_WINDOW, MOVES, PLAYER_RADIUS, type MoveDefinition} from '../moves';
@@ -13,6 +14,10 @@ import {
 import {courtSide, freshBall, goalZ, landing, sideOf, speedCap, stepBall, type BallContact} from './physics';
 import {strikeBall} from './strike';
 import {REPLAY, replayLength, type BallReplay} from './replay';
+import {MUTATOR_RULES, baseGravity, baseSize, isMutator, type BallMutator} from './mutators';
+import {TRAIT_RULES, traitOf, withTrait} from './traits';
+import {DRILLS, DrillRunner, isDrill, type DrillFeed, type DrillHost, type DrillId} from './drills';
+import {CELEBRATE, celebrationOf, cleanLook, type Celebration} from './look';
 
 export interface BallOptions {
   collision?: CollisionWorld; seed?: number; access?: BallAccess; round?: number; fillBots?: boolean;
@@ -22,25 +27,34 @@ export interface BallOptions {
   length?: number;
   /** Replays of goals and great points (replay.ts); off for a couch match, whose split screen has no one lens to lend. */
   replays?: boolean;
-  /** RUMBLE: charms on the field. */
+  /** RUMBLE: charms on the field, picked up by running through them. */
   rumble?: boolean;
   /** FREE PLAY: the people seated and the ball, nobody else, no clock and no end. */
   practice?: boolean;
+  /** Which of the mode's arenas (game/ball/arenas.ts); none or one of the other mode's: the mode's arenas in turn by the seed. */
+  arena?: BallArenaId;
+  /** A mutator (mutators.ts): HEAT RUSH, LOW GRAVITY, GIANT BALL or SUDDEN DEATH. */
+  mutator?: BallMutator | null;
+  /** FREE PLAY's training drill (drills.ts), this mode's. */
+  drill?: DrillId;
 }
 
 /** Every fighter shares one side in the combat kernel, so no blow ever finds another fighter: blows find the ball,
  *  which this match puts in front of them as the kernel's one external body. The teams of the game live in the seats. */
 const PITCH = 'pitch';
 const POOL = (Object.keys(MOVES) as FighterId[]).filter(f => isReleasedFighter(f) && !HELD.has(f));
-/** The ball bowling somebody over: a heavy knockdown with no harm in it (nobody's health counts here). */
+/** A SUPER SHOT bulldozing somebody: a heavy knockdown with no harm in it (nobody's health counts here). */
 const BOWL: MoveDefinition = {name: 'Ball Impact', duration: .4, contacts: [0], damage: 1, range: 1, radius: 1, stamina: 0, cooldown: 0, stun: .8, knockback: 11, style: 'melee', outcome: 'knockdown'};
+/** An OVERDRIVE ball meeting somebody: a short stagger, never off their feet (only a SUPER SHOT
+ *  still bulldozes: a ball that bowled players over every few seconds took the match away from them). */
+const STAGGER: MoveDefinition = {name: 'Ball Impact', duration: .3, contacts: [0], damage: 1, range: 1, radius: 1, stamina: 0, cooldown: 0, stun: BALL_RULES.staggerSeconds, knockback: 3.5, style: 'melee', outcome: 'stagger'};
 /** Ultimate and awakening meter a touch is worth, by slot: a side that keeps the ball moving earns its super shot. */
 const TOUCH_METER: Record<string, [number, number]> = {light: [2, 2.5], heavy: [3.5, 3.5], special: [4, 4], ultimate: [0, 5], area: [3.5, 3.5]};
 /** Body contact: the capsule a fighter's body is to the ball, and how soft. */
 const BODY_LOW = .45, BODY_HIGH = 1.45, BODY_BOUNCE = .35;
 /** How much further than its body a guard meets the ball. */
 const GUARD_REACH = .7;
-/** Goal Rush's kickoff spots (on red's half; blue's mirror them): five, scaled to the pitch. */
+/** Goal Rush's kickoff spots (on red's half; blue's mirror them): five of them, scaled to the pitch. */
 const KICKOFF_SPOTS: readonly {x: number; z: number}[] = [{x: -8.1, z: 10.2}, {x: 8.1, z: 10.2}, {x: -1.6, z: 15.2}, {x: 1.6, z: 15.2}, {x: 0, z: 18.3}];
 
 interface Touch { id: string; team: BallTeam; at: number; x: number; y: number; z: number }
@@ -55,7 +69,7 @@ const CHAT = {
 /** One Goal Rush or Sky Spike match around the shared fighting kernel: its seats and teams, its ball and the rules of
  *  each game. A server room, a page's offline match and the tests all drive it the same way: `add`, `start`, then
  *  `submit` and `step` each tick, `snapshot` to publish. */
-export class BallMatch implements ExternalTargets {
+export class BallMatch implements ExternalTargets, DrillHost {
   readonly sim: ArenaSimulation;
   readonly seats = new Map<string, BallSeat>();
   readonly view: BallView;
@@ -92,6 +106,10 @@ export class BallMatch implements ExternalTargets {
   private endWait = false;
   /** When the bodies were last put on their marks: no replay reaches back past it. */
   private liveSince = 0;
+  /** When overtime began (its ball heats by itself from then), and when each seat was last staggered by the ball. */
+  private overtimeSince = 0;
+  private readonly staggeredAt = new Map<string, number>();
+  /** Sky Spike: the scorer whose celebration plays on into the next serve's walk-up, and until when. */
   /** The people who have voted to skip the replay showing now. */
   private readonly skips = new Set<string>();
   private readonly replays: boolean;
@@ -118,8 +136,13 @@ export class BallMatch implements ExternalTargets {
       score: {red: 0, blue: 0}, ball: this.ball, clock: mode === 'goal-rush' ? options.length ?? GOAL_RULES.matchSeconds : 0, overtime: false,
       touchTeam: null, touches: 0, rally: 0, servingTeam: 'red', serverId: null,
       target: mode === 'sky-spike' ? options.length ?? SPIKE_RULES.target : 0, fever: false, winner: null, reason: '', mvp: null, events: [], replay: null,
-      rumble: !!options.rumble, charms: [], effects: [], practice: !!options.practice, best: 0, aim: null, hits: 0, streak: 0, bestStreak: 0};
+      rumble: !!options.rumble, charms: [], effects: [], practice: !!options.practice, best: 0, aim: null, hits: 0, streak: 0, bestStreak: 0,
+      mutator: isMutator(options.mutator) ? options.mutator : null};
+    // SUDDEN DEATH: Goal Rush's clock is a minute, then the next goal wins.
+    if (mode === 'goal-rush' && this.view.mutator === 'sudden-death' && options.length === undefined) this.view.clock = MUTATOR_RULES.suddenSeconds;
     if (options.practice) { this.view.fillBots = false; if (mode === 'sky-spike') this.view.target = 999; }
+    this.view.arena = isBallArena(options.arena) && BALL_ARENAS[options.arena].mode === mode ? options.arena : arenaFor(mode, this.seed);
+    if (options.practice && isDrill(options.drill) && DRILLS[options.drill].mode === mode) { this.drill = new DrillRunner(options.drill, this.rng); this.view.drill = this.drill.view; }
     this.placeBallAtRest();
   }
 
@@ -130,7 +153,7 @@ export class BallMatch implements ExternalTargets {
     requireReleasedFighter(fighter);
     const side = team && this.count(team) < BALL_RULES.teamSize ? team : this.count('red') <= this.count('blue') ? 'red' : 'blue';
     if (this.count(side) >= BALL_RULES.teamSize) throw new Error('Both teams are full.');
-    const seat: BallSeat = {id, name: tidyName(name, 18), fighter, team: side, bot, goals: 0, assists: 0, saves: 0, shots: 0, touches: 0, kills: 0, aces: 0, blocks: 0, digs: 0, points: 0};
+    const seat: BallSeat = {id, name: tidyName(name, 18), fighter, team: side, bot, goals: 0, assists: 0, saves: 0, shots: 0, touches: 0, kills: 0, aces: 0, blocks: 0, digs: 0, points: 0, trait: traitOf(fighter)};
     this.seats.set(id, seat);
     this.sim.addPlayer(id, fighter, seat.name, bot, this.mark(seat));
     this.sim.setTeam(id, PITCH);
@@ -148,7 +171,20 @@ export class BallMatch implements ExternalTargets {
   /** A person's seat played by a bot (a page's demo and captures, `?ballpilot` on this machine): their fighter, the bot's hands. */
   pilot(id: string) { if (this.seats.has(id)) this.attachBrain(id); }
   /** A private room's host choosing RUMBLE or CLASSIC in the lobby. */
-  setRumble(id: string, on: unknown) { if (id !== this.view.hostId || this.view.phase !== 'lobby' || typeof on !== 'boolean') return false; this.view.rumble = on; return true; }
+  /** The host picks the arena in the lobby (one of the mode's). */
+  setArena(id: string, arena: unknown) {
+    if (id !== this.view.hostId || this.view.phase !== 'lobby' || !isBallArena(arena) || BALL_ARENAS[arena].mode !== this.mode) return false;
+    this.view.arena = arena; this.placeBallAtRest(); return true;
+  }
+  setRumble(id: string, on: unknown) { if (id !== this.view.hostId || this.view.phase !== 'lobby' || typeof on !== 'boolean') return false; if (on && this.view.mutator) this.setMutator(id, null); this.view.rumble = on; return true; }
+  /** A private room's host choosing a mutator (or none) in the lobby. */
+  setMutator(id: string, mutator: unknown) {
+    if (id !== this.view.hostId || this.view.phase !== 'lobby' || (mutator !== null && !isMutator(mutator))) return false;
+    this.view.mutator = mutator; if (mutator) this.view.rumble = false;
+    if (this.mode === 'goal-rush') this.view.clock = mutator === 'sudden-death' ? MUTATOR_RULES.suddenSeconds : GOAL_RULES.matchSeconds;
+    this.placeBallAtRest();
+    return true;
+  }
   setFill(id: string, fill: unknown) { if (id !== this.view.hostId || this.view.phase !== 'lobby' || typeof fill !== 'boolean') return false; this.view.fillBots = fill; return true; }
   /** A seat changing sides in the lobby, where the other side has room. */
   swap(id: string): boolean {
@@ -183,7 +219,8 @@ export class BallMatch implements ExternalTargets {
   /** FREE PLAY's target practice: a new ring somewhere to aim at - a corner or the middle of the goal the person shoots
    *  at, top or bottom; a spot on the far court's floor. */
   private newTarget() {
-    if (!this.view.practice) return;
+    // (A drill puts its own ring up, ball by ball.)
+    if (!this.view.practice || this.drill) return;
     const person = [...this.seats.values()].find(s => !s.bot), team = person?.team ?? 'red';
     if (this.mode === 'goal-rush') {
       const R = GOAL_RULES, z = goalZ(otherTeam(team)), xs = [-(R.goalHalfWidth - 1.25), 0, R.goalHalfWidth - 1.25], ys = [1.05, R.goalHeight - 1.15];
@@ -209,7 +246,7 @@ export class BallMatch implements ExternalTargets {
    *  next ball now. */
   reset(id: string): boolean {
     const seat = this.seats.get(id), a = this.sim.actors.get(id), b = this.ball, now = this.sim.serverTime;
-    if (!this.view.practice || !seat || !a || (this.view.phase !== 'live' && this.view.phase !== 'kickoff')) return false;
+    if (!this.view.practice || this.drill || !seat || !a || (this.view.phase !== 'live' && this.view.phase !== 'kickoff')) return false;
     if (this.mode === 'goal-rush') {
       const yaw = a.input.yaw ?? a.state.yaw, p = a.state, R = GOAL_RULES, r = this.radius * b.size;
       Object.assign(b, {vx: 0, vy: 0, vz: 0, sx: 0, sy: 0, sz: 0, heat: 0, super: false, held: false, frozenUntil: 0, clash: 0});
@@ -218,7 +255,7 @@ export class BallMatch implements ExternalTargets {
     } else { this.ball.held = true; this.serve(); this.view.phaseUntil = now + .4; }
     return true;
   }
-  /** A person voting to skip the replay showing now; when every person in the match has, it ends. */
+  /** A person voting to skip the replay showing now; when every person in the match has, it ends (a vote). */
   skip(id: string): boolean {
     const r = this.view.replay, seat = this.seats.get(id), now = this.sim.serverTime;
     if (!r || !seat || seat.bot || this.brains.has(id) || !this.replaying()) return false;
@@ -258,8 +295,8 @@ export class BallMatch implements ExternalTargets {
   // ─── Marks ────────────────────────────────────────────────────────────────────────────────────────────────────────
   private facing(team: BallTeam) { return team === 'red' ? 0 : Math.PI; }
   private order(seat: BallSeat) { return [...this.seats.values()].filter(s => s.team === seat.team).findIndex(s => s.id === seat.id); }
-  /** Where a seat stands for a kickoff or a serve. A kickoff's three spots are dealt from five each time (two
-   *  diagonals, two just off centre, one deep), the same for both sides, so who reaches the ball first changes. */
+  /** Where a seat stands for a kickoff or a serve. A kickoff's three spots are dealt from five each time
+   *  (two diagonals, two just off centre, one deep), the same for both sides, so who reaches the ball first changes. */
   private mark(seat: BallSeat): Vec3 {
     const i = Math.max(0, this.order(seat)), sign = seat.team === 'red' ? -1 : 1;
     if (this.mode === 'goal-rush') {
@@ -279,14 +316,24 @@ export class BallMatch implements ExternalTargets {
       if (!a) continue;
       if (!a.state.alive) this.sim.revive(seat.id, a.state.maxHp);
       this.sim.place(seat.id, this.mark(seat), this.facing(seat.team)); this.sim.clearPlayerInput(seat.id);
+      if (this.celebration?.id === seat.id) { a.cast = null; continue; }
       a.cast = null; a.state.action = 'idle'; a.state.actionStarted = this.sim.serverTime; a.state.actionDuration = 0;
     }
     this.last.clear();
   }
   private placeBallAtRest() {
-    const b = this.ball;
+    const b = this.ball, m = this.view.mutator;
     Object.assign(b, freshBall());
-    b.y = this.radius + .02;
+    // The mutators' ball: its weight and size all match, and HEAT RUSH's start at tier 3.
+    b.grav = baseGravity(m); b.size = baseSize(m);
+    if (m === 'heat-rush') b.heat = MUTATOR_RULES.heatStart;
+    b.y = this.radius * b.size + .02;
+    // The arena's twist on the ball: its ground, a wind that turns between points, a ball that starts warm.
+    const twist = BALL_ARENAS[this.view?.arena ?? arenaFor(this.mode, this.seed)].twist;
+    if (twist.groundFriction !== 1) b.ground = twist.groundFriction;
+    if (twist.groundBounce !== 1) b.spring = twist.groundBounce;
+    if (twist.wind) { const turn = ((this.seed + (this.view?.score.red ?? 0) * 7919 + (this.view?.score.blue ?? 0) * 104729) % 360) * Math.PI / 180; b.windX = Math.cos(turn) * twist.wind; b.windZ = Math.sin(turn) * twist.wind; }
+    if (twist.startHeat) b.heat = Math.max(b.heat, twist.startHeat);
     this.stack = null; this.lastStrike = null;
   }
 
@@ -304,12 +351,15 @@ export class BallMatch implements ExternalTargets {
       if (now >= this.rolesAt) { this.rolesAt = now + .3; this.assignRoles(); }
       const players = this.sim.playerStates();
       for (const [id, brain] of this.brains) {
+        // (A bot celebrating a goal stands for it.)
+        if (this.celebration?.id === id && this.view.phase === 'scored') continue;
         const seat = this.seats.get(id), me = this.sim.actors.get(id)?.state;
         if (seat && me) this.sim.command(id, brain.command(me, seat, players, this.view, now));
       }
     }
     this.sim.step(dt, waiting);
     this.tidyBodies();
+    if (this.celebration) this.holdCelebration();
     for (const seat of this.seats.values()) if (this.sim.actors.get(seat.id)?.state.action === 'dash') this.dashAt.set(seat.id, this.sim.serverTime);
     const t = this.sim.serverTime;
     if (this.view.phase === 'countdown' && t + 1e-6 >= (this.view.startsAt ?? Infinity)) this.begin();
@@ -321,7 +371,28 @@ export class BallMatch implements ExternalTargets {
     if (this.view.phase === 'live' || (this.view.phase === 'kickoff' && this.mode === 'sky-spike')) this.play(dt);
     else if (this.view.phase === 'scored') this.coast(dt);
     if (this.view.rumble && this.view.phase === 'live') this.rumbleStep(dt);
+    if (this.drill && this.view.phase !== 'lobby' && this.view.phase !== 'countdown') this.drill.step(this);
   }
+
+  // ─── Training drills (drills.ts): the host's side ───────────────────────────────────────────────────────────────
+  private drill?: DrillRunner;
+  now() { return this.sim.serverTime; }
+  person() {
+    const seat = [...this.seats.values()].find(s => !s.bot), p = seat && this.sim.actors.get(seat.id)?.state;
+    return seat && p ? {id: seat.id, team: seat.team, x: p.x, y: p.y, z: p.z, grounded: p.grounded} : undefined;
+  }
+  /** The ball machine's ball: placed and set going, whose it counts as, the touches spent, the person on their spot. */
+  feed(f: DrillFeed) {
+    const b = this.ball, now = this.sim.serverTime, m = this.view.mutator;
+    Object.assign(b, freshBall(), {x: f.ball.x, y: f.ball.y, z: f.ball.z, vx: f.ball.vx, vy: f.ball.vy, vz: f.ball.vz, held: false, lastTeam: f.team, shot: f.ball.shot ?? null});
+    b.grav = baseGravity(m); b.size = baseSize(m); b.heat = Math.max(f.ball.heat ?? 0, m === 'heat-rush' ? MUTATOR_RULES.heatStart : 0);
+    this.stack = null; this.lastStrike = null; this.touchesLog = []; this.flair = null; this.endWait = false;
+    this.view.phase = 'live'; this.view.phaseUntil = now; this.liveSince = now; this.view.aim = f.aim ?? null;
+    if (this.mode === 'sky-spike') { this.view.touchTeam = f.touchTeam ?? f.team; this.view.touches = f.touches ?? 0; this.view.rally = 1; }
+    const me = this.person();
+    if (me && f.at) { this.sim.place(me.id, {x: f.at.x, y: 0, z: f.at.z}, f.at.yaw); this.sim.clearPlayerInput(me.id); this.last.delete(me.id); }
+  }
+  serveNow() { if (this.mode !== 'sky-spike') return; this.ball.held = true; this.serve(); this.view.phaseUntil = this.sim.serverTime + .3; }
 
   /** Nobody's health counts here, and nobody stays down: a body knocked off the arena comes back on its mark. */
   private tidyBodies() {
@@ -342,6 +413,7 @@ export class BallMatch implements ExternalTargets {
   /** This kickoff's spots (mark). The match's first is the classic one: straight at the ball, two diagonals. */
   private kickSpots: readonly {x: number; z: number}[] = [{x: 0, z: 13}, {x: -8.5, z: 18}, {x: 8.5, z: 18}];
   private kickoff() {
+    this.celebration = null;
     if (this.view.score.red + this.view.score.blue > 0) this.kickSpots = this.sim.shuffle([...KICKOFF_SPOTS]).slice(0, 3);
     this.view.phase = 'kickoff'; this.view.phaseUntil = this.sim.serverTime + (this.view.practice ? .6 : GOAL_RULES.kickoffSeconds);
     this.placeBallAtRest(); this.ball.held = true; this.touchesLog = []; this.endWait = false;
@@ -360,8 +432,11 @@ export class BallMatch implements ExternalTargets {
     const servers = [...this.seats.values()].filter(s => s.team === team);
     const server = servers[this.serveRotation[team] % Math.max(1, servers.length)];
     this.view.serverId = server?.id ?? null;
+    if (this.celebration?.id === this.view.serverId) this.celebration = null;
     this.view.phase = 'kickoff'; this.view.phaseUntil = this.sim.serverTime + (this.view.practice ? 1 : R.serveSeconds);
     this.view.touchTeam = team; this.view.touches = 0; this.view.rally = 0; this.view.fever = false; this.feverTold = false;
+    // SUDDEN DEATH: every point is a FEVER point, worth two.
+    if (this.view.mutator === 'sudden-death') { this.view.fever = true; this.feverTold = true; }
     this.placeBallAtRest(); this.touchesLog = [];
     if (!this.view.practice) this.placeAll();
     this.liveSince = this.sim.serverTime; this.view.replay = null; this.skips.clear();
@@ -385,7 +460,9 @@ export class BallMatch implements ExternalTargets {
     // Heat: it cools when nobody heats it; a long rally and an overtime heat it by themselves.
     let floor = 0;
     if (this.mode === 'sky-spike' && this.view.rally >= SPIKE_RULES.rallyHeat) floor = Math.min(3.2, .6 + (this.view.rally - SPIKE_RULES.rallyHeat) * .32);
-    if (this.view.overtime) b.heat = Math.min(BALL_RULES.heatMax - .01, b.heat + GOAL_RULES.overtimeHeat * dt);
+    if (this.view.overtime) floor = Math.min(BALL_RULES.heatMax - .01, (now - this.overtimeSince) * GOAL_RULES.overtimeHeat);
+    floor = Math.max(floor, BALL_ARENAS[this.view.arena ?? arenaFor(this.mode, this.seed)].twist.heatFloor ?? 0);
+    if (this.view.mutator === 'heat-rush') floor = Math.max(floor, MUTATOR_RULES.heatFloor);
     if (b.heat > floor) b.heat = Math.max(floor, b.heat - BALL_RULES.heatCool * dt);
     else b.heat = floor;
     if (this.mode === 'goal-rush' && !this.view.overtime && !this.view.practice) {
@@ -394,6 +471,9 @@ export class BallMatch implements ExternalTargets {
     }
     const sideBefore = sideOf(b.z);
     stepBall(this.mode, b, dt, this.contacts);
+    // Every real bounce off the floor takes some of the heat away: a ball has to be kept in the air, passed and struck
+    // to burn.
+    for (const c of this.contacts) if (c.kind === 'floor' && c.speed > BALL_RULES.bounceFrom) b.heat = Math.max(floor, b.heat - BALL_RULES.bounceHeat);
     this.bodyContacts(dt);
     if (this.mode === 'goal-rush') this.judgeGoal(); else this.judgeSpike(sideBefore);
   }
@@ -420,7 +500,7 @@ export class BallMatch implements ExternalTargets {
       const lo = p.y + BODY_LOW * size, hi = p.y + BODY_HIGH * size, cy = Math.max(lo, Math.min(hi, b.y));
       let nx = b.x - p.x, ny = b.y - cy, nz = b.z - p.z;
       // A guard reaches further than a body (the keeper's dive, the blocker's arms).
-      const guardReach = (p.guarding || p.action === 'guard') ? GUARD_REACH : 0;
+      const guardReach = (p.guarding || p.action === 'guard') ? GUARD_REACH + (seat.trait === 'wall' ? TRAIT_RULES.guardReach : 0) : 0;
       const d = Math.hypot(nx, ny, nz), reach = r + PLAYER_RADIUS * size + guardReach;
       if (d >= reach) continue;
       if (d < 1e-5) { nx = Math.sin(p.yaw); ny = 0; nz = Math.cos(p.yaw); } else { nx /= d; ny /= d; nz /= d; }
@@ -455,10 +535,13 @@ export class BallMatch implements ExternalTargets {
       // A body running into the ball drives it on ahead of itself: the dribble.
       const run = fvx * nx + fvz * nz, ahead = b.vx * nx + b.vz * nz;
       if (run > 1 && ahead < run * 1.15 + .6) { const add = run * 1.15 + .6 - ahead; b.vx += nx * add; b.vz += nz * add; }
-      if (hostile && speed >= BALL_RULES.bowlSpeed && heatTier(b.heat) >= BALL_RULES.bowlTier && p.action !== 'knockdown') {
-        this.sim.strike(BALL_ID, seat.id, 'heavy', BOWL, {x: b.x, y: b.y, z: b.z});
+      // An OVERDRIVE ball at speed staggers whoever it meets on the other side (never knocks them down: that is a
+      // SUPER SHOT's alone).
+      if (hostile && speed >= BALL_RULES.bowlSpeed && heatTier(b.heat) >= BALL_RULES.bowlTier && p.action !== 'knockdown' && now - (this.staggeredAt.get(seat.id) ?? -Infinity) >= BALL_RULES.staggerGap) {
+        this.staggeredAt.set(seat.id, now);
+        this.sim.strike(BALL_ID, seat.id, 'light', STAGGER, {x: b.x, y: b.y, z: b.z});
         b.vx *= .62; b.vy *= .62; b.vz *= .62;
-        this.emit('bowled', {team: b.lastTeam!, actorId: b.lastId ?? undefined, targetId: seat.id, x: p.x, y: p.y + 1, z: p.z, value: Math.round(speed)});
+        this.emit('bowled', {team: b.lastTeam!, actorId: b.lastId ?? undefined, targetId: seat.id, x: p.x, y: p.y + 1, z: p.z, value: Math.round(speed), text: 'STAGGERED'});
       }
       if ((this.bodyTouch.get(seat.id) ?? -Infinity) + .35 <= now && Math.abs(rel) > 1.5) {
         this.bodyTouch.set(seat.id, now);
@@ -477,7 +560,7 @@ export class BallMatch implements ExternalTargets {
       // back over the net to the hitters' side: the rally goes on (a block is no touch).
       if (perfect) { b.vz = away * Math.max(7, Math.abs(b.vz) * .95); b.vy = -Math.max(3, Math.abs(b.vy) * .5) - 5; b.vx *= .5; }
       else { b.vz = away * (2.5 + this.rng() * 2.5); b.vy = 6 + this.rng() * 2.5; b.vx *= .35; }
-      b.heat = Math.min(BALL_RULES.heatMax, b.heat + (perfect ? .8 : 0));
+      b.heat = Math.max(0, b.heat - BALL_RULES.guardHeat * (perfect ? .5 : 1));
       seat.blocks++; seat.points += perfect ? 60 : 35;
       if (seat.blocks === 3) this.accolade(seat, 'THE WALL');
       this.emit(perfect ? 'perfect' : 'block', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot: 'block', text: perfect ? 'STUFF BLOCK' : 'BLOCK'});
@@ -493,7 +576,7 @@ export class BallMatch implements ExternalTargets {
       this.sim.addMeter(seat.id, 16, 10);
     } else {
       b.vx -= 1.45 * rel * nx; b.vy -= 1.45 * rel * ny; b.vz -= 1.45 * rel * nz;
-      b.heat = Math.max(0, b.heat - 1);
+      b.heat = Math.max(0, b.heat - BALL_RULES.guardHeat);
       if (b.super) { b.super = false; }
     }
     // A save straight off a dash is a dive (the keeper's lunge across the line).
@@ -551,9 +634,13 @@ export class BallMatch implements ExternalTargets {
     }) : undefined;
     const rivals = this.mode === 'sky-spike' ? [...this.seats.values()].filter(s => s.team !== seat.team).map(s => this.sim.actors.get(s.id)!.state) : undefined;
     const result = strikeBall(b, {mode: this.mode, slot: blow.slot, move: blow.move, knockback: blow.knockback, launch: blow.launch, finisher: blow.finisher,
-      pushX: blow.pushX, pushZ: blow.pushZ, mates, touches, serve, rivals,
+      pushX: blow.pushX, pushZ: blow.pushZ, mates, touches, serve, rivals, gravity: baseGravity(this.view.mutator),
       striker: {id: seat.id, team: seat.team, x: p.x, y: p.y, z: p.z, grounded: p.grounded, aimYaw: yaw, awakened: !!p.awakened,
         forward: mx * Math.sin(yaw) + mz * Math.cos(yaw), lateral: -mx * Math.cos(yaw) + mz * Math.sin(yaw), chain: p.chain ?? 0}});
+    // A pass completed (the side's last strike a team-mate's, a moment ago) heats the ball: passing is how it burns.
+    if (!again && !serve && this.passed(seat, now)) result.heat += this.mode === 'goal-rush' ? GOAL_RULES.passHeat : SPIKE_RULES.passHeat;
+    // The fighter's ball trait (traits.ts): a few percent on the shots their kit is made for.
+    withTrait(seat.trait, this.mode, b.heat, result);
     // RUMBLE's KI CHARGE: the strike flies at the ball's top speed, burning at OVERDRIVE (a Sky Spike lob keeps its arc).
     const charged = !again && !serve && (this.charge.get(seat.id) ?? 0) > now && result.shot !== 'bump' && result.shot !== 'set' && result.shot !== 'tap';
     if (charged) {
@@ -575,8 +662,8 @@ export class BallMatch implements ExternalTargets {
       return {damage: 1, reaction: 'flinch', killed: false};
     }
     // SKY SPIKE: a spike struck high over the net, the mode's own move, burns hotter and is named.
-    const skySpike = this.mode === 'sky-spike' && !again && result.shot === 'spike' && b.y > 3.6 && Math.abs(b.z) < 3.6;
-    if (skySpike) result.heat += .6;
+    const skySpike = this.mode === 'sky-spike' && !again && result.shot === 'spike' && b.y > (seat.trait === 'aerialist' ? TRAIT_RULES.skySpike : 3.6) && Math.abs(b.z) < 3.6;
+    if (skySpike) result.heat += SPIKE_RULES.skySpikeHeat;
     // The flair shots: Goal Rush's BICYCLE KICK (in the air, running away from
     // the goal it sends the ball at) and AERIAL (struck four metres up); Sky Spike's ROLL SPIKE (takraw's: spiked with the
     // back to the net, going away from it).
@@ -639,8 +726,9 @@ export class BallMatch implements ExternalTargets {
     const far = seat.team === 'red' ? 6 : -6, aimYaw = touches >= SPIKE_RULES.touches ? Math.atan2(-b.x * .5, far - b.z) : a.input.yaw;
     // Up in the air at the net on the last touch, the body spikes it (touching the ball hits it).
     const spike = !p.grounded && touches >= SPIKE_RULES.touches && b.y > SPIKE_RULES.netHeight && Math.abs(b.z) < 3.6;
-    const result = strikeBall(b, {mode: this.mode, slot: spike ? 'heavy' : 'light', move: BOWL, knockback: 1, launch: false, finisher: false, pushX: 0, pushZ: 0, touches,
+    const result = strikeBall(b, {mode: this.mode, slot: spike ? 'heavy' : 'light', move: BOWL, knockback: 1, launch: false, finisher: false, pushX: 0, pushZ: 0, touches, gravity: baseGravity(this.view.mutator),
       striker: {id: seat.id, team: seat.team, x: p.x, y: p.y, z: p.z, grounded: p.grounded, aimYaw, awakened: false, forward: 0, lateral: 0, chain: 0}});
+    withTrait(seat.trait, this.mode, b.heat, result);
     b.vx = result.vx; b.vy = result.vy; b.vz = result.vz; b.sx = b.sy = b.sz = 0; b.shot = result.shot;
     b.heat = Math.min(BALL_RULES.heatMax, b.heat + result.heat * .5);
     if (result.shot === 'bump' && incoming > 17) { b.shot = 'dig'; seat.digs++; seat.points += 15; }
@@ -681,6 +769,15 @@ export class BallMatch implements ExternalTargets {
     this.view.touches++;
     if (this.view.touches > SPIKE_RULES.touches) this.point(otherTeam(seat.team), 'touches', seat.id);
   }
+  /** Whether the last strike on the ball before this one was a team-mate's, inside BALL_RULES.passWithin: a pass. */
+  private passed(seat: BallSeat, now: number) {
+    for (let i = this.touchesLog.length - 1; i >= 0; i--) {
+      const t = this.touchesLog[i];
+      if (!t.strike) continue;
+      return t.team === seat.team && t.id !== seat.id && now - t.at <= BALL_RULES.passWithin;
+    }
+    return false;
+  }
   /** Sky Spike: the seat's side has spent its last touch and the ball is on its way over the net. */
   private sentBy(seat: BallSeat) {
     const b = this.ball;
@@ -693,7 +790,7 @@ export class BallMatch implements ExternalTargets {
     if (Math.sign(b.vz) !== Math.sign(gz) || Math.abs(b.vz) < 2) return false;
     const t = (gz - b.z) / b.vz;
     if (t < 0 || t > within) return false;
-    const x = b.x + b.vx * t, y = b.y + b.vy * t - .5 * R.gravity * t * t;
+    const x = b.x + b.vx * t, y = b.y + b.vy * t - .5 * R.gravity * (b.grav || 1) * t * t;
     return Math.abs(x) < R.goalHalfWidth + .4 && y < R.goalHeight + .5;
   }
 
@@ -713,6 +810,7 @@ export class BallMatch implements ExternalTargets {
     const b = this.ball, scorers = otherTeam(conceded), now = this.sim.serverTime;
     const worth = b.super ? GOAL_RULES.superGoal : 1;
     this.view.score[scorers] += worth;
+    if (this.view.overtime && this.view.mutator === 'sudden-death') this.decider = scorers;
     // The goal is the last striker's of the scoring side when the ball only bounced in off a defender after it (a
     // deflection); a defender's own blow into their own net is an own goal.
     const lastTouch = this.touchesLog[this.touchesLog.length - 1];
@@ -734,7 +832,7 @@ export class BallMatch implements ExternalTargets {
       else if (struck && Math.sign(struck.z) === Math.sign(goalZ(scorers)) && Math.abs(struck.z) > 3) this.accolade(scorer, 'LONG GOAL');
       if (this.endWait || (!this.view.overtime && this.view.clock <= 1)) this.accolade(scorer, 'BUZZER BEATER', 40);
       if (this.flair?.id === scorer.id && now - this.flair.at < 3 && this.flair.text === 'BICYCLE KICK') this.accolade(scorer, 'BICYCLE GOAL', 40);
-      this.celebrate(scorer.id);
+      this.celebrate(scorer.id, GOAL_RULES.goalSeconds + 8);
     }
     if (helper && helper.assists === 3) this.accolade(helper, 'PLAYMAKER', 40);
     this.chatter(scorers, own ? CHAT.gifted : helper ? CHAT.assisted : CHAT.scored, scorer?.id);
@@ -759,7 +857,9 @@ export class BallMatch implements ExternalTargets {
   }
   private timeUp() {
     const {red, blue} = this.view.score;
-    if (red === blue) { this.view.overtime = true; this.endWait = false; this.emit('overtime', {x: 0, y: 0, z: 0, text: 'OVERTIME · NEXT GOAL WINS'}); this.view.phase = 'scored'; this.view.phaseUntil = this.sim.serverTime + 2.2; this.ball.held = true; return; }
+    // SUDDEN DEATH: whatever the score, the next goal wins.
+    if (this.view.mutator === 'sudden-death') { this.view.overtime = true; this.overtimeSince = this.sim.serverTime; this.endWait = false; this.emit('overtime', {x: 0, y: 0, z: 0, text: 'SUDDEN DEATH · NEXT GOAL WINS'}); this.view.phase = 'scored'; this.view.phaseUntil = this.sim.serverTime + 2.2; this.ball.held = true; return; }
+    if (red === blue) { this.view.overtime = true; this.overtimeSince = this.sim.serverTime; this.endWait = false; this.emit('overtime', {x: 0, y: 0, z: 0, text: 'OVERTIME · NEXT GOAL WINS'}); this.view.phase = 'scored'; this.view.phaseUntil = this.sim.serverTime + 2.2; this.ball.held = true; return; }
     this.finish(red > blue ? 'red' : 'blue', 'Full time.');
   }
 
@@ -794,7 +894,10 @@ export class BallMatch implements ExternalTargets {
   }
   private point(winner: BallTeam, why: 'floor' | 'out' | 'touches' | 'serve', byId?: string) {
     if (this.view.phase !== 'live' && this.view.phase !== 'kickoff') return;
-    const b = this.ball, now = this.sim.serverTime, worth = this.view.fever ? 2 : 1;
+    const b = this.ball, now = this.sim.serverTime, worth = this.view.fever ? 2 : 1, R = SPIKE_RULES, target = this.view.target, cap = Math.max(target, R.cap + (target - R.target));
+    const won = (s: number, o: number) => s >= cap || (s >= target && s - o >= 2);
+    // A match point saved: the other side could have won the match with this point, and lost it.
+    const matchPoint = won(this.view.score[otherTeam(winner)] + worth, this.view.score[winner]);
     this.view.score[winner] += worth;
     const by = byId ? this.seats.get(byId) : undefined;
     if (why === 'floor' && by && by.team === winner) {
@@ -804,7 +907,7 @@ export class BallMatch implements ExternalTargets {
       if (this.streak.count === 3) this.accolade(by, 'ON FIRE');
       if (ace && by.aces === 3) this.accolade(by, 'ACE MACHINE');
       this.chatter(winner, CHAT.kill, by.id, .35);
-      this.celebrate(by.id);
+      this.celebrate(by.id, R.pointSeconds + R.celebrateSeconds);
       this.chatter(otherTeam(winner), CHAT.lost, undefined, .2);
       this.emit(ace ? 'ace' : 'kill', {team: winner, actorId: by.id, x: b.x, y: 0, z: b.z, value: worth, shot: b.shot ?? undefined, text: b.super ? 'SUPER SHOT' : undefined});
     } else if (why === 'touches') this.emit('touches', {team: winner, actorId: byId, x: b.x, y: b.y, z: b.z, value: worth, text: 'FOUR TOUCHES'});
@@ -814,23 +917,29 @@ export class BallMatch implements ExternalTargets {
     const sideOut = winner !== this.view.servingTeam;
     if (sideOut) { this.serveRotation[winner]++; this.view.servingTeam = winner; this.emit('side-out', {team: winner, x: 0, y: 0, z: 0}); }
     b.held = true; b.vx = b.vy = b.vz = 0;
-    const {red, blue} = this.view.score, R = SPIKE_RULES, target = this.view.target, cap = Math.max(target, R.cap + (target - R.target));
-    const won = (s: number, o: number) => s >= cap || (s >= target && s - o >= 2);
-    // The great points are shown again: a long rally, a FEVER point, a super shot, and the one that wins the match.
-    const last = won(red, blue) || won(blue, red), rally = this.view.rally;
-    const highlight = why !== 'touches' && (rally >= REPLAY.rally || this.view.fever || b.super || last);
+    const {red, blue} = this.view.score;
+    // The great points are shown again (only these, so play gets back under way): a FEVER point, a super shot,
+    // a match point saved and the one that wins the match. Every other point's celebration plays on into the next serve's
+    // walk-up instead of holding the match up.
+    const last = won(red, blue) || won(blue, red);
+    const highlight = why !== 'touches' && (this.view.fever || b.super || matchPoint || last);
     const decisive = [...this.touchesLog].reverse().find(t => t.strike)?.at;
-    const text = last ? 'WINNING POINT' : b.super ? 'SUPER SHOT' : this.view.fever ? 'FEVER POINT' : rally >= REPLAY.rally ? `RALLY OF ${rally}` : undefined;
-    if (last) { this.view.phase = 'scored'; this.view.phaseUntil = now + R.pointSeconds; this.pendingWinner = won(red, blue) ? 'red' : 'blue'; if (highlight) this.replay('point', decisive, {team: winner, actorId: by?.team === winner ? by.id : undefined, shot: b.shot ?? undefined, text}); return; }
+    const text = last ? 'WINNING POINT' : b.super ? 'SUPER SHOT' : this.view.fever ? 'FEVER POINT' : matchPoint ? 'MATCH POINT SAVED' : undefined;
+    if (last) { this.view.phase = 'scored'; this.view.phaseUntil = now + REPLAY.lastPoint; this.pendingWinner = won(red, blue) ? 'red' : 'blue'; if (highlight) this.replay('point', decisive, {team: winner, actorId: by?.team === winner ? by.id : undefined, shot: b.shot ?? undefined, text}); return; }
     for (const team of BALL_TEAMS) {
       const s = this.view.score[team], o = this.view.score[otherTeam(team)];
       if ((s + 1 >= target && s + 1 - o >= 2 || s + 1 >= cap) && this.matchPointTold !== s * 100 + o) { this.matchPointTold = s * 100 + o; this.emit('match-point', {team, x: 0, y: 0, z: 0, text: 'MATCH POINT'}); }
     }
     this.view.phase = 'scored'; this.view.phaseUntil = now + (this.view.practice ? 1.2 : R.pointSeconds);
     if (highlight) this.replay('point', decisive, {team: winner, actorId: by?.team === winner ? by.id : undefined, shot: b.shot ?? undefined, text});
+    if (this.celebration) this.celebration.until = this.view.phaseUntil + R.celebrateSeconds;
   }
   private pendingWinner: BallTeam | null = null;
+  /** SUDDEN DEATH: the side whose goal after the minute won the match. */
+  private decider: BallTeam | null = null;
   private autoServe() {
+    // A drill's ball machine feeds its own balls.
+    if (this.drill?.serve(this)) return;
     const b = this.ball, team = this.view.servingTeam, sign = team === 'red' ? -1 : 1, server = this.view.serverId ? this.seats.get(this.view.serverId) : undefined;
     b.held = false; this.view.phase = 'live';
     let target = {x: 0, z: -sign * 6};
@@ -838,7 +947,7 @@ export class BallMatch implements ExternalTargets {
     const person = this.view.practice ? [...this.seats.values()].find(s => s.team !== team) : undefined, p = person && this.sim.actors.get(person.id)?.state;
     if (p) target = {x: Math.max(-SPIKE_RULES.courtHalfX + 1, Math.min(SPIKE_RULES.courtHalfX - 1, p.x + (this.rng() - .5) * 5)), z: -sign * Math.max(2.5, Math.min(SPIKE_RULES.courtHalfZ - 1, Math.abs(p.z) + (this.rng() - .5) * 5))};
     // (The machine lobs higher, so a ball dropped short over the net still clears the cord.)
-    const t = p ? 2.1 : 1.6, g = SPIKE_RULES.gravity;
+    const t = p ? 2.1 : 1.6, g = SPIKE_RULES.gravity * (b.grav || 1);
     b.vx = (target.x - b.x) / t; b.vz = (target.z - b.z) / t; b.vy = ((SPIKE_RULES.ballRadius - b.y) + .5 * g * t * t) / t; b.shot = 'serve';
     if (server) this.touched(server, 'serve', 'serve', false, true);
     else { this.view.touchTeam = team; this.view.touches = SPIKE_RULES.touches; }
@@ -848,7 +957,8 @@ export class BallMatch implements ExternalTargets {
   private afterPoint() {
     if (this.mode === 'goal-rush') {
       const {red, blue} = this.view.score;
-      if (this.view.overtime && red !== blue) { this.finish(red > blue ? 'red' : 'blue', 'Golden goal.'); return; }
+      if (this.decider) { this.finish(this.decider, 'Sudden death.'); return; }
+      if (this.view.overtime && red !== blue && this.view.mutator !== 'sudden-death') { this.finish(red > blue ? 'red' : 'blue', 'Golden goal.'); return; }
       if (this.view.clock <= 0 && !this.view.overtime && red !== blue) { this.finish(red > blue ? 'red' : 'blue', 'Full time.'); return; }
       this.kickoff();
       return;
@@ -920,7 +1030,7 @@ export class BallMatch implements ExternalTargets {
   /** The fresh ball of a new serve takes on the charms still at work on the ball. */
   private carryRumble() {
     const b = this.ball;
-    for (const e of this.view.effects) { if (e.kind === 'feather') b.grav = RUMBLE.featherGravity; else if (e.kind === 'giant') b.size = RUMBLE.giantSize; }
+    for (const e of this.view.effects) { if (e.kind === 'feather') b.grav = RUMBLE.featherGravity * baseGravity(this.view.mutator); else if (e.kind === 'giant') b.size = Math.max(RUMBLE.giantSize, baseSize(this.view.mutator)); }
   }
   private rumbleStep(dt: number) {
     const v = this.view, b = this.ball, now = this.sim.serverTime;
@@ -960,8 +1070,8 @@ export class BallMatch implements ExternalTargets {
     v.effects = v.effects.filter(e => e.until > 0);
     if (seconds > 0) v.effects.push({kind, team: seat.team, id: seat.id, until: now + seconds});
     if (kind === 'charge') this.charge.set(seat.id, now + seconds);
-    else if (kind === 'feather') b.grav = RUMBLE.featherGravity;
-    else if (kind === 'giant') b.size = RUMBLE.giantSize;
+    else if (kind === 'feather') b.grav = RUMBLE.featherGravity * baseGravity(this.view.mutator);
+    else if (kind === 'giant') b.size = Math.max(RUMBLE.giantSize, baseSize(this.view.mutator));
     else if (kind === 'ice' && !b.held) b.frozenUntil = Math.max(b.frozenUntil, now + seconds);
     else if (kind === 'wall' && this.mode === 'goal-rush') b.wall = seat.team;
     else if (kind === 'surge') this.sim.addMeter(seat.id, 50, 25);
@@ -971,8 +1081,8 @@ export class BallMatch implements ExternalTargets {
   /** A charm's time is up, or it was used: what it changed put back. */
   private lapse(e: BallEffect) {
     const b = this.ball;
-    if (e.kind === 'feather') b.grav = 1;
-    else if (e.kind === 'giant') b.size = 1;
+    if (e.kind === 'feather') b.grav = baseGravity(this.view.mutator);
+    else if (e.kind === 'giant') b.size = baseSize(this.view.mutator);
     else if (e.kind === 'wall' && b.wall === e.team) b.wall = null;
     else if (e.kind === 'charge') this.charge.delete(e.id);
   }
@@ -990,12 +1100,29 @@ export class BallMatch implements ExternalTargets {
   }
 
   /** The scorer strikes their victory pose while the celebration is on (the next kickoff or serve puts them back). */
-  private celebrate(id: string) {
+  private celebrate(id: string, seconds: number) {
     const a = this.sim.actors.get(id);
     if (!a || !a.state.alive) return;
     this.sim.clearPlayerInput(id); a.cast = null;
     a.state.action = 'victory'; a.state.actionStarted = this.sim.serverTime; a.state.actionDuration = 0;
+    // Held for the celebration (holdCelebration), as the seat's look says: the pose, or a spin, a stand or a swing first.
+    this.celebration = {id, kind: celebrationOf(this.seats.get(id)?.look), at: this.sim.serverTime, yaw: a.state.yaw, until: this.sim.serverTime + seconds};
   }
+  /** The scorer celebrating, and how (look.ts): the kernel would hand an idle body back to its idle stance on the next
+   *  tick, so the pose is put back after every one until the next kickoff or serve - or until the scorer moves. */
+  private celebration: {id: string; kind: Celebration; at: number; yaw: number; until: number} | null = null;
+  private holdCelebration() {
+    const c = this.celebration, a = c && this.sim.actors.get(c.id);
+    if (!c || !a || (this.view.phase !== 'scored' && this.sim.serverTime >= c.until) || !a.state.alive || a.cast || (a.state.action !== 'idle' && a.state.action !== 'victory' && a.state.action !== 'guard' && a.state.action !== 'heavy')) { this.celebration = null; return; }
+    const p = a.state, t = this.sim.serverTime - c.at, swing = Math.min(CELEBRATE.showboatMost, MOVES[p.fighter]?.heavy.duration ?? .6);
+    const pose = (action: typeof p.action, from: number, duration = 0) => { if (p.action !== action || p.actionStarted !== from) { p.action = action; p.actionStarted = from; } p.actionDuration = duration; p.actionTime = duration > 0 ? Math.min(1, (this.sim.serverTime - from) / duration) : 0; };
+    if (c.kind === 'stand-tall') { pose('guard', c.at); return; }
+    if (c.kind === 'showboat' && t < swing) { pose('heavy', c.at, swing); return; }
+    pose('victory', c.kind === 'showboat' ? c.at + swing : c.at);
+    if (c.kind === 'spin') { const k = Math.min(1, t / CELEBRATE.spinSeconds), eased = k * k * (3 - 2 * k); p.yaw = c.yaw + eased * CELEBRATE.spinTurns * Math.PI * 2; }
+  }
+  /** What a seat wears in the ball modes (look.ts), as a room read it off the account or a page off its own. */
+  setLook(id: string, look: unknown) { const seat = this.seats.get(id); if (!seat) return false; seat.look = cleanLook(look); this.view.seats = [...this.seats.values()]; return true; }
   /** A feat named on every screen (an accolade), worth a few points toward MVP. */
   private accolade(seat: BallSeat, text: string, points = 25) { seat.points += points; (seat.feats ??= []).push(text); this.emit('accolade', {team: seat.team, actorId: seat.id, x: 0, y: 0, z: 0, text}); }
   /** A save's feats: the third (SAVIOR), one off a ball at full tilt (EPIC SAVE); and the saver's side says so. */
@@ -1032,7 +1159,7 @@ export class BallMatch implements ExternalTargets {
     const recent = this.sim.serverTime - 3;
     const view: BallView = {...this.view, seats: [...this.seats.values()].map(s => ({...s, feats: s.feats?.slice()})), score: {...this.view.score}, ball: {...this.ball},
       events: this.view.events.filter(e => e.at >= recent).map(e => ({...e})), replay: this.view.replay ? {...this.view.replay} : null, aim: this.view.aim ? {...this.view.aim} : null,
-      charms: this.view.charms.map(c => ({...c})), effects: this.view.effects.map(e => ({...e}))};
+      charms: this.view.charms.map(c => ({...c})), effects: this.view.effects.map(e => ({...e})), drill: this.view.drill ? {...this.view.drill, results: this.view.drill.results.slice()} : undefined};
     if (consume) this.events = [];
     return {...base, roomMode: 'match', events, ball: view};
   }

@@ -8,7 +8,7 @@ export const MADE_HERE: readonly { what: string; how: string }[] = [
   { what: 'Fighters', how: 'Designed for this game. Their 2D art was drawn with AI image models (Gemini 3 Pro and GPT Image 2 through Tripo, and an OpenAI image model), and their 3D bodies and rigs were made with Tripo from the game\'s own concept art.' },
   { what: 'Voices', how: 'Japanese lines written for each character, voiced with text-to-speech: Qwen3-TTS VoiceDesign, run locally, and Qwen TTS preset voices on Higgsfield. Each voice was designed from a written description; none was cloned from, or made to imitate, an actor.' },
   { what: 'Music', how: 'The home screen\'s theme, the fighters\' world themes and the Rift\'s are original pieces written note by note for this game and played through the GeneralUser GS SoundFont by S. Christian Collins.' },
-  { what: 'Scenery and sound', how: 'Some props, statues, skies and paintings were made for this game with Tripo, with Meshy and with AI image models; some of its ambient sounds were synthesised for it.' },
+  { what: 'Scenery and sound', how: 'Some props, statues, skies and paintings were made for this game with Tripo, with Meshy and with AI image models; some of its ambient sounds were synthesised for it, and so were the ball modes\' sounds, some layered with CC0 recordings.' },
 ];
 
 /** A work the game ships under its author's licence, credited as the licence asks (CC BY: the title, the author, where it
@@ -32,7 +32,7 @@ export const ATTRIBUTIONS: readonly Credit[] = [
 /** Works free of any condition (CC0) or under an open licence, credited with thanks. */
 export const OPEN_WORKS: readonly Credit[] = [
   { work: 'Stylized Asia Environment Megapack', by: 'by RG Poly', sources: [['itch.io', 'https://rg-poly.itch.io/stylized-asia-enviroment-megapack-unity-urp']], licence: 'CC0', licenceUrl: CC0, files: ['assets/environment/asian/', 'assets/environment/br/'] },
-  { work: 'Pirate Kit, Fantasy Town Kit, Impact Sounds, Interface Sounds, Sci-Fi Sounds and RPG Audio', by: 'by Kenney', sources: [['www.kenney.nl', 'https://www.kenney.nl']], licence: 'CC0', licenceUrl: CC0, files: ['assets/environment/harbor/', 'assets/environment/br/', 'assets/audio/v2/'] },
+  { work: 'Pirate Kit, Fantasy Town Kit, Impact Sounds, Interface Sounds, Sci-Fi Sounds and RPG Audio', by: 'by Kenney', sources: [['www.kenney.nl', 'https://www.kenney.nl']], licence: 'CC0', licenceUrl: CC0, files: ['assets/environment/harbor/', 'assets/environment/br/', 'assets/audio/v2/', 'assets/audio/ball/'] },
   { work: 'Pavement 01', by: 'by Rob Tuytel', sources: [['Poly Haven', 'https://polyhaven.com/a/pavement_01']], licence: 'CC0', licenceUrl: CC0, files: ['assets/environment/paving/'] },
   { work: 'Kloofendal 48d Partly Cloudy (Pure Sky)', by: 'by Greg Zaal and Jarod Guest', sources: [['Poly Haven', 'https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky']], licence: 'CC0', licenceUrl: CC0, files: ['assets/environment/sky/partly-cloudy-2k.hdr'] },
   { work: 'Crowd Shouting Ambience', by: 'by StarNinjas', sources: [['OpenGameArt', 'https://opengameart.org']], licence: 'CC0', licenceUrl: CC0, files: ['assets/audio/ambience/crowd.m4a'] },

@@ -19,6 +19,8 @@ export interface StrikeContext {
   mates?: readonly {x: number; z: number; vx: number; vz: number}[];
   /** Sky Spike: this side's touches including this one; a serve; where the other side stands (a super shot finds the gap). */
   touches?: number; serve?: boolean; rivals?: readonly Vec3[];
+  /** The ball's share of its gravity all match (a mutator's LOW GRAVITY; 1 unset), so the help on target arcs it right. */
+  gravity?: number;
 }
 export interface StrikeResult { vx: number; vy: number; vz: number; sx: number; sy: number; sz: number; shot: ShotKind; heat: number; super: boolean }
 
@@ -26,17 +28,17 @@ const DEG = Math.PI / 180;
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
 /** How a blow drives the ball. The direction is the striker's aim (the view they pressed with: a ball goes where it was
- *  aimed, never where an animation happened to point - Rematch's lesson), helped on target the way the arcade sports
+ *  aimed, never where an animation happened to point: a ball game's lesson), helped on target the way the arcade sports
  *  games help it: a Goal Rush shot near the frame is put in the frame, a pass near a team-mate finds their run, a Sky
  *  Spike attack into the far half comes down inside the court. What the blow was decides the shot: a light taps or
  *  bumps, a heavy drives, a launcher pops it into the sky, an air blow volleys or spikes, a special bends it, a shot or
  *  beam blasts it along its line, an area move erupts under it, an ultimate is a super shot. */
 export function strikeBall(ball: BallState, c: StrikeContext): StrikeResult {
   const kind = classify(ball, c);
-  const heatAdd = c.slot === 'ultimate' ? BALL_RULES.heatMax : (BALL_RULES.heatPer[c.slot] ?? .3) * (c.finisher && c.slot === 'light' ? 2 : 1);
+  const heatAdd = c.slot === 'ultimate' ? BALL_RULES.heatMax : (BALL_RULES.heatPer[c.slot] ?? .3) * (c.finisher && c.slot === 'light' ? 2 : 1) * (c.mode === 'sky-spike' ? SPIKE_RULES.heatShare : 1);
   const heat = Math.min(BALL_RULES.heatMax, ball.heat + heatAdd);
   const power = (1 + .1 * heat) * (c.striker.awakened ? 1.12 : 1);
-  const out = c.mode === 'goal-rush' ? goalShot(ball, c, kind, power) : spikeShot(ball, c, kind, power);
+  const out = c.mode === 'goal-rush' ? goalShot(ball, c, kind, power, speedCap(c.mode, heat)) : spikeShot(ball, c, kind, power);
   // A hotter ball may fly faster, never faster than its heat allows.
   const cap = c.slot === 'ultimate' ? speedCap(c.mode, BALL_RULES.heatMax) : speedCap(c.mode, heat);
   const s = Math.hypot(out.vx, out.vy, out.vz);
@@ -71,8 +73,8 @@ function arc(from: Vec3, toX: number, toY: number, toZ: number, t: number, g: nu
 
 type Flight = {vx: number; vy: number; vz: number; sx: number; sy: number; sz: number; shot?: ShotKind};
 
-function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: number): Flight {
-  const R = GOAL_RULES, s = c.striker;
+function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: number, cap = Infinity): Flight {
+  const R = GOAL_RULES, s = c.striker, g = R.gravity * (c.gravity ?? 1);
   // A blast from a shot or a beam goes where its thrower aimed, as every other strike does.
   const yaw = s.aimYaw;
   const enemy = s.team === 'red' ? 'blue' : 'red', gz = goalZ(enemy);
@@ -90,11 +92,13 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
     // The super shot goes for the frame wherever it was struck from: the far side of the mouth from the keeper's end, low.
     const tx = Math.max(-R.goalHalfWidth + 1.1, Math.min(R.goalHalfWidth - 1.1, ball.x + Math.sin(yaw) * Math.abs(gz - ball.z) * .35));
     const d = Math.hypot(tx - ball.x, gz - ball.z), speed = R.speedCap[4] * .96, t = Math.max(.25, d / speed);
-    const v = arc(ball, tx, 1.6, gz, t, R.gravity, R.drag);
+    const v = arc(ball, tx, 1.6, gz, t, g, R.drag);
     return {...v, sx: 0, sy: 0, sz: 0};
   }
   const [base, lift, side, top] = table[kind] ?? table.tap;
-  let speed = base * power + (kind === 'power' ? Math.min(6, c.knockback * .35) : 0);
+  // (Never faster than the ball's tier lets it fly: a shot helped on target is aimed for the speed it will really have,
+  // or a cool ball's shot would sink under the height it was laid for.)
+  let speed = Math.min(cap, base * power + (kind === 'power' ? Math.min(6, c.knockback * .35) : 0));
   let dx = Math.sin(yaw), dz = Math.cos(yaw);
   // A tap toward a team-mate is a pass to where they are running.
   if (kind === 'tap' && c.mates?.length) {
@@ -109,7 +113,7 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
     }
     if (best) {
       const d = Math.hypot(best.x - ball.x, best.z - ball.z), t = Math.max(.35, d / (speed * .9));
-      const v = arc(ball, best.x, R.ballRadius + .4, best.z, t, R.gravity, R.drag);
+      const v = arc(ball, best.x, R.ballRadius + .4, best.z, t, g, R.drag);
       return {...v, sx: 0, sy: 0, sz: 0};
     }
   }
@@ -123,10 +127,15 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
       const tx = Math.max(-R.goalHalfWidth + .6, Math.min(R.goalHalfWidth - .6, hitX));
       const flat = Math.hypot(tx - ball.x, gz - ball.z);
       dx = (tx - ball.x) / flat; dz = (gz - ball.z) / flat;
-      const time = Math.max(.2, flat / speed), aimY = kind === 'spike' ? 1 : kind === 'sinker' ? 1.4 : 2.1;
-      const v = arc(ball, tx, aimY, gz, time, R.gravity, R.drag);
+      const aimY = kind === 'spike' ? 1 : kind === 'sinker' ? 1.4 : 2.1;
+      let time = Math.max(.2, flat / speed), v = arc(ball, tx, aimY, gz, time, g, R.drag);
+      // The flight as a whole (its lift included) stays under the tier's cap: a flight over it would be slowed by the
+      // match and come in low, so a longer, slower one is laid instead.
+      for (let i = 0; i < 4 && Math.hypot(v.vx, v.vy, v.vz) > cap * .99; i++) { time *= Math.hypot(v.vx, v.vy, v.vz) / (cap * .97); v = arc(ball, tx, aimY, gz, time, g, R.drag); }
       // A curve still bends: aimed off the post it was, it swings back across.
-      if (kind === 'curve') { const sign = s.lateral < -.2 ? -1 : 1; sy = sign * side * .55; const back = -sign * Math.min(3, flat * .07); v.vx += -dz * back / time; v.vz += dx * back / time; }
+      // (The aim is laid off the far side of the target by as much as the spin will bend it back: the bend is the Magnus
+      // pull, spin across the flight, over the flight's time, its spin dying a little on the way - physics.ts's flight.)
+      if (kind === 'curve') { const sign = s.lateral < -.2 ? -1 : 1; sy = sign * side * .55; const bend = .5 * .018 * Math.abs(sy) * Math.hypot(v.vx, v.vz) * time * time * .8, back = sign * Math.min(3, bend); v.vx += -dz * back / time; v.vz += dx * back / time; }
       if (kind === 'sinker') { sx = -dz * top * .5; sz = dx * top * .5; }
       return {vx: v.vx, vy: v.vy, vz: v.vz, sx, sy, sz};
     }
@@ -144,7 +153,7 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
  *  third touch, which has to go over; anything heavier goes over at once: a spike if struck from the air, a drive or a
  *  lob from the floor, a bending shot, a super shot into the court's emptiest corner. */
 function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: number): Flight {
-  const R = SPIKE_RULES, s = c.striker, own = s.team, sign = own === 'red' ? -1 : 1, g = R.gravity;
+  const R = SPIKE_RULES, s = c.striker, own = s.team, sign = own === 'red' ? -1 : 1, g = R.gravity * (c.gravity ?? 1);
   const touches = c.touches ?? 1;
   const keep = !c.serve && touches < R.touches && (c.slot === 'light' || (kind === 'eruption' && touches < 2)) && kind !== 'spike';
   if (keep) {

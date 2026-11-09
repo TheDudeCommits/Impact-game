@@ -43,7 +43,7 @@ function flight(mode: BallModeId, b: BallState, h: number) {
   const drag = mode === 'goal-rush' ? GOAL_RULES.drag : SPIKE_RULES.drag;
   // Spin across the flight bends it: a curve's sidespin, a sinker's topspin.
   const mx = b.sy * b.vz - b.sz * b.vy, my = b.sz * b.vx - b.sx * b.vz, mz = b.sx * b.vy - b.sy * b.vx;
-  b.vx += mx * MAGNUS * h; b.vy += (my * MAGNUS - g) * h; b.vz += mz * MAGNUS * h;
+  b.vx += (mx * MAGNUS + (b.windX ?? 0)) * h; b.vy += (my * MAGNUS - g) * h; b.vz += (mz * MAGNUS + (b.windZ ?? 0)) * h;
   const keep = 1 - drag * h;
   b.vx *= keep; b.vy *= keep; b.vz *= keep;
   const spin = 1 - SPIN_DECAY * h;
@@ -54,7 +54,9 @@ function flight(mode: BallModeId, b: BallState, h: number) {
 function bounceFloor(b: BallState, r: number, e: number, roll: number, h: number, out: BallContact[], team?: BallTeam) {
   if (b.y >= r) return;
   b.y = r;
-  if (b.vy < -SETTLE) { out.push({kind: 'floor', x: b.x, y: 0, z: b.z, speed: -b.vy, team}); b.vy = -b.vy * e; b.vx *= .9; b.vz *= .9; }
+  // The arena's ground (BallState.ground, .spring): sand drags and deadens the bounce, wet slate lets the ball run.
+  const ground = b.ground ?? 1; e *= b.spring ?? 1; roll *= ground;
+  if (b.vy < -SETTLE) { out.push({kind: 'floor', x: b.x, y: 0, z: b.z, speed: -b.vy, team}); b.vy = -b.vy * e; const slide = Math.max(.6, 1 - .1 * ground); b.vx *= slide; b.vz *= slide; }
   else {
     if (b.vy < 0) b.vy = 0;
     // Rolling: friction along the floor, and the spin it rolls with.

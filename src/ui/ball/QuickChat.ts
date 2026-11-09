@@ -14,7 +14,7 @@ const PAD_OPEN = 8;
 const OPEN_MS = 3500;
 
 /**
- * The ball modes' quick chat: C (T when C is bound to a move), or the pad's View button, opens four
+ * The ball modes' quick chat (set lines, no free text): C (T when C is bound to a move), or the pad's View button, opens four
  * menus - INFO, PRAISE, REACT, SORRY - and 1-4 (the D-pad) picks a menu and then a line. The room relays the line's
  * index into every page's feed (BallHud's, beside the bots' lines). While it is open the keys 1-4 and the D-pad are its,
  * not the emote wheel's (ui/shop/boot.ts canEmote reads `.ball-chat-wheel.open`).

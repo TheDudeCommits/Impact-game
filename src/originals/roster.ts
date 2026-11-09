@@ -104,7 +104,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     shortMoves: ['SNAPBACK', 'ROGUE WAVE', 'SUNSET BARRAGE', 'GRAND TIDE'],
     awakening: 'SUNRISE',
     model: F + 'lucy-px1.glb', rushModel: F + 'lucy-pxrush1.glb', extraModels: [F + 'lucy-pxenders1.glb', F + 'lucy-pxenders2.glb', F + 'lucy-pxtide1.glb'],
-    formModel: F + 'sunrise-px1.glb', formExtraModels: [F + 'sunrise-pxmoves1.glb', F + 'sunrise-pxtide1.glb'],
+    formModel: F + 'sunrise-px1.glb', formExtraModels: [F + 'sunrise-pxmoves1.glb', F + 'sunrise-pxreact1.glb', F + 'sunrise-pxtide1.glb'],
     // (lucy-moves, 5 November: `*-pxtide1.glb` hold his own Grand Tide and Monsoon takes, scripts/originals/clips/author_lucy_tide.py.)
     portrait: F + 'lucy-px-portrait.png', idleModel: F + 'lucy-pxidleb1.glb',
     names: {
@@ -147,7 +147,8 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     // QA round (fix-cloth, 3 November 2026): his cape hangs from his shoulders on chains of its own (shop/cape_chains_r6.py),
     // not welded to his chest, so his guard and his run no longer stand it out behind him as a board.
     cape: { hang: .8, cone: 20, droop: 45, stiffness: 16, thigh: .11, shin: .1 },
-    model: F + 'ouga-px1.glb', extraModels: [F + 'ouga-pxstraight1.glb', F + 'ouga-pxawaken1.glb', F + 'ouga-pxenders1.glb', F + 'ouga-pxhurts1.glb'],
+    model: F + 'ouga-px1.glb', rushModel: F + 'ouga-pxrush1.glb',
+    extraModels: [F + 'ouga-pxstraight1.glb', F + 'ouga-pxawaken1.glb', F + 'ouga-pxenders1.glb', F + 'ouga-pxhurts1.glb'],
     portrait: F + 'ouga-px-portrait.png', idleModel: F + 'ouga-pxidle1.glb',
     names: {
       'Double Axe Handle': 'Throne Breaker',
@@ -218,7 +219,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     moves: ['Amuse-Bouche', 'Hachoir', 'Brasier: Coup de Feu', 'Banquet Infernal'],
     shortMoves: ['AMUSE-BOUCHE', 'HACHOIR', 'COUP DE FEU', 'BANQUET INFERNAL'],
     awakening: 'FEU BLEU',
-    model: F + 'kosho-px1.glb', extraModels: [F + 'kosho-pxenders1.glb', F + 'kosho-pxfmoves1.glb'],
+    model: F + 'kosho-px1.glb', rushModel: F + 'kosho-pxrush1.glb', extraModels: [F + 'kosho-pxenders1.glb', F + 'kosho-pxfmoves1.glb'],
     portrait: F + 'kosho-px-portrait.png', idleModel: F + 'kosho-pxidleb1.glb',
     names: {
       'Brasier: Salamandre': 'Gratin',
@@ -236,7 +237,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     moves: ['Hinoko', 'Yuragi', 'Taimatsu', 'Taiyou-Dama'],
     shortMoves: ['HINOKO', 'YURAGI', 'TAIMATSU', 'TAIYOU-DAMA'],
     awakening: 'KAGUTSUCHI',
-    model: F + 'kagari-px1.glb', extraModels: [F + 'kagari-pxenders1.glb', F + 'kagari-pxfmoves1.glb'],
+    model: F + 'kagari-px1.glb', rushModel: F + 'kagari-pxrush1.glb', extraModels: [F + 'kagari-pxenders1.glb', F + 'kagari-pxfmoves1.glb'],
     portrait: F + 'kagari-px-portrait.png',
     names: {
       'Rising Ember': 'Rising Spark', 'Kagaribi': 'Funka',
@@ -256,7 +257,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     moves: ['Lancet Slash', 'Stat Shot', 'Cautery Blade', 'THEATRE: Flatline'],
     shortMoves: ['LANCET', 'STAT SHOT', 'CAUTERY', 'FLATLINE'],
     awakening: 'OPERATING THEATRE',
-    coat: { thigh: .12, shin: .11 }, model: F + 'ward-tr1.glb', extraModels: [F + 'ward-enders1.glb'],
+    coat: { thigh: .12, shin: .11 }, model: F + 'ward-tr1.glb', rushModel: F + 'ward-rush1.glb', extraModels: [F + 'ward-enders1.glb', F + 'ward-ult1.glb'],
     portrait: F + 'ward-portrait.png',
     names: {},
     // His two outfits, under the names his writer gave them: his own body in two palettes (parity2, 5 November 2026).
@@ -321,7 +322,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     moves: ['Gravedigger Slash', 'Butcher Cleave', 'Scrap Cannon Arm', 'Hound Rampage'],
     shortMoves: ['GRAVEDIGGER', 'BUTCHER CLEAVE', 'SCRAP CANNON', 'HOUND RAMPAGE'],
     awakening: 'HOUND ARMOR',
-    coat: { thigh: .13, shin: .14 }, model: F + 'gaunt-tr1.glb', extraModels: [F + 'gaunt-enders2.glb'],
+    coat: { thigh: .13, shin: .14 }, model: F + 'gaunt-tr1.glb', rushModel: F + 'gaunt-rush1.glb', extraModels: [F + 'gaunt-enders2.glb'],
     formModel: F + 'gaunt-awakened-tr1.glb',
     portrait: F + 'gaunt-portrait.png', idleModel: F + 'gaunt-idleb1.glb',
     names: {

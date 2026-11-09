@@ -1,9 +1,7 @@
 {
  "tests/airNormals.test.ts": [
   "koko is announced as the air kick exactly when the air kick is what is drawn",
-  "kosho is announced as the air kick exactly when the air kick is what is drawn",
-  "ouga is announced as the air kick exactly when the air kick is what is drawn",
-  "taisei is announced as the air kick exactly when the air kick is what is drawn"
+  "kosho is announced as the air kick exactly when the air kick is what is drawn"
  ],
  "tests/airStrings.test.ts": [
   "kagari: announces its air string by the names of what it draws",
@@ -13,9 +11,7 @@
   "kuon: announces its air string by the names of what it draws",
   "never draws Jump + Light with the grounded jab's clip (round 4b)",
   "oro: announces its air string by the names of what it draws",
-  "ouga: announces its air string by the names of what it draws",
   "shirokane: announces its air string by the names of what it draws",
-  "taisei: announces its air string by the names of what it draws",
   "tucks the legs under a blow thrown with the arms in the air, and leaves a kick its own legs",
   "ward: announces its air string by the names of what it draws"
  ],
@@ -35,11 +31,6 @@
  "tests/drawnSeparation.test.ts": [
   "kuon keeps its torso off the opponent's through its rush"
  ],
- "tests/dreamHurts.test.ts": [
-  "ouga carries them at its own hurt's and flinch's lengths, every core joint keyed",
-  "ouga under taisei's string",
-  "taisei under ouga's string"
- ],
  "tests/dustSeaCaptainsAnim.test.ts": [
   "every light blow he takes leaves his arms their own length (the flinch stretched them to three to five times)",
   "no clip he plays turns his missing arm (the empty sleeve on its stump holds still, as in all his own clips)"
@@ -54,10 +45,7 @@
   "cycles kenzo's legs into a lunge and leaves a standing swing alone",
   "kenzo does not skate at a run",
   "measures the whole roster",
-  "ouga does not skate at a run",
-  "ouga walks, runs, and does something in between",
-  "reports a plausible number of steps for the ground covered",
-  "taisei keeps a foot on the ground while blocking and walking"
+  "reports a plausible number of steps for the ground covered"
  ],
  "tests/gummyRound5.test.ts": [
   "is its own take, landing its blow on the move's contact"
@@ -129,9 +117,6 @@
   "draw only their own bodies, clips, idles and portraits, and every one of them ships",
   "key every joint the transfer moves in every clip, so the renderer's layers never pile up on a stale pose"
  ],
- "tests/reactClips.test.ts": [
-  "Black Pyre crumples Taisei after a string has launched him, without laying him down in a frame"
- ],
  "tests/reactionTakes.test.ts": [
   "gaku, a light string",
   "ippon Hit 01",
@@ -139,21 +124,15 @@
   "levin Hit 01",
   "levin shake",
   "oro shake",
-  "ouga shake",
-  "ouga, a heavy, the knockdown and the get-up",
-  "ouga, a light string",
   "rook, a heavy, the knockdown and the get-up",
   "shiden, a heavy, the knockdown and the get-up",
-  "taisei, a heavy, the knockdown and the get-up",
   "tobari, a heavy, the knockdown and the get-up",
   "ippon, Konta's light string, seed 7",
-  "ippon, Konta's light string, seed 8",
-  "ouga, Konta's light string"
+  "ippon, Konta's light string, seed 8"
  ],
  "tests/runTakes.test.ts": [
   "kuon",
-  "magatsu",
-  "ouga"
+  "magatsu"
  ],
  "tests/rushClips.test.ts": [
   "kenzo: the rush file binds onto the body, names its stages, and has their contacts",
@@ -162,14 +141,12 @@
   "kuon: the rush file binds onto the body, names its stages, and has their contacts",
   "oro: the rush clips stand on the idle's floor and stay near the capsule",
   "oro: the rush file binds onto the body, names its stages, and has their contacts",
-  "ouga: the rush clips stand on the idle's floor and stay near the capsule",
   "shirokane: the rush file binds onto the body, names its stages, and has their contacts"
  ],
  "tests/rushContacts.test.ts": [
   "kenzo",
   "kuon",
-  "oro",
-  "ouga"
+  "oro"
  ],
  "tests/rushFlow.test.ts": [
   "goes from stage to stage without a tick of idle, hit or miss, at any mashing rate, for all sixteen"
@@ -193,7 +170,6 @@
   "plays its own DEAD OF WINTER entry with moving hands and no body swap"
  ],
  "tests/victory.test.ts": [
-  "bruin has something to celebrate with",
   "kenzo has something to celebrate with",
   "wataame has something to celebrate with"
  ],

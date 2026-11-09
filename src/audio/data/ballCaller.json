@@ -1,0 +1,459 @@
+{
+ "note": "The ball modes' commentary: each voice's prepared lines by moment; the player picks the voice in Settings (COMMENTARY). A moment a voice has no line for borrows the Rift announcer's (src/audio/ballCaller.ts).",
+ "voices": {
+  "grandpa": {
+   "name": "GRANDPA",
+   "lines": {
+    "kickoff": [
+     "/assets/audio/ball/caller/grandpa/kickoff-1.m4a",
+     "/assets/audio/ball/caller/grandpa/kickoff-2.m4a",
+     "/assets/audio/ball/caller/grandpa/kickoff-3.m4a",
+     "/assets/audio/ball/caller/grandpa/kickoff-4.m4a",
+     "/assets/audio/ball/caller/grandpa/kickoff-5.m4a"
+    ],
+    "serve": [
+     "/assets/audio/ball/caller/grandpa/serve-1.m4a",
+     "/assets/audio/ball/caller/grandpa/serve-2.m4a",
+     "/assets/audio/ball/caller/grandpa/serve-3.m4a"
+    ],
+    "goal": [
+     "/assets/audio/ball/caller/grandpa/goal-1.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-2.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-3.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-4.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-5.m4a"
+    ],
+    "goal-power": [
+     "/assets/audio/ball/caller/grandpa/goal-power-1.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-power-2.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-power-3.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-power-4.m4a"
+    ],
+    "goal-volley": [
+     "/assets/audio/ball/caller/grandpa/goal-volley-1.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-volley-2.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-volley-3.m4a"
+    ],
+    "goal-aerial": [
+     "/assets/audio/ball/caller/grandpa/goal-aerial-1.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-aerial-2.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-aerial-3.m4a"
+    ],
+    "goal-curve": [
+     "/assets/audio/ball/caller/grandpa/goal-curve-1.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-curve-2.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-curve-3.m4a"
+    ],
+    "goal-long": [
+     "/assets/audio/ball/caller/grandpa/goal-long-1.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-long-2.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-long-3.m4a"
+    ],
+    "goal-bicycle": [
+     "/assets/audio/ball/caller/grandpa/goal-bicycle-1.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-bicycle-2.m4a",
+     "/assets/audio/ball/caller/grandpa/goal-bicycle-3.m4a"
+    ],
+    "super-goal": [
+     "/assets/audio/ball/caller/grandpa/super-goal-1.m4a",
+     "/assets/audio/ball/caller/grandpa/super-goal-2.m4a",
+     "/assets/audio/ball/caller/grandpa/super-goal-3.m4a",
+     "/assets/audio/ball/caller/grandpa/super-goal-4.m4a",
+     "/assets/audio/ball/caller/grandpa/super-goal-5.m4a"
+    ],
+    "own-goal": [
+     "/assets/audio/ball/caller/grandpa/own-goal-1.m4a",
+     "/assets/audio/ball/caller/grandpa/own-goal-2.m4a",
+     "/assets/audio/ball/caller/grandpa/own-goal-3.m4a"
+    ],
+    "clash": [
+     "/assets/audio/ball/caller/grandpa/clash-1.m4a",
+     "/assets/audio/ball/caller/grandpa/clash-2.m4a",
+     "/assets/audio/ball/caller/grandpa/clash-3.m4a",
+     "/assets/audio/ball/caller/grandpa/clash-4.m4a"
+    ],
+    "clash-win": [
+     "/assets/audio/ball/caller/grandpa/clash-win-1.m4a",
+     "/assets/audio/ball/caller/grandpa/clash-win-2.m4a"
+    ],
+    "save": [
+     "/assets/audio/ball/caller/grandpa/save-1.m4a",
+     "/assets/audio/ball/caller/grandpa/save-2.m4a",
+     "/assets/audio/ball/caller/grandpa/save-3.m4a",
+     "/assets/audio/ball/caller/grandpa/save-4.m4a"
+    ],
+    "save-perfect": [
+     "/assets/audio/ball/caller/grandpa/save-perfect-1.m4a",
+     "/assets/audio/ball/caller/grandpa/save-perfect-2.m4a",
+     "/assets/audio/ball/caller/grandpa/save-perfect-3.m4a"
+    ],
+    "save-diving": [
+     "/assets/audio/ball/caller/grandpa/save-diving-1.m4a",
+     "/assets/audio/ball/caller/grandpa/save-diving-2.m4a",
+     "/assets/audio/ball/caller/grandpa/save-diving-3.m4a"
+    ],
+    "post": [
+     "/assets/audio/ball/caller/grandpa/post-1.m4a",
+     "/assets/audio/ball/caller/grandpa/post-2.m4a",
+     "/assets/audio/ball/caller/grandpa/post-3.m4a",
+     "/assets/audio/ball/caller/grandpa/post-4.m4a"
+    ],
+    "crossbar": [
+     "/assets/audio/ball/caller/grandpa/crossbar-1.m4a",
+     "/assets/audio/ball/caller/grandpa/crossbar-2.m4a"
+    ],
+    "near-miss": [
+     "/assets/audio/ball/caller/grandpa/near-miss-1.m4a",
+     "/assets/audio/ball/caller/grandpa/near-miss-2.m4a",
+     "/assets/audio/ball/caller/grandpa/near-miss-3.m4a"
+    ],
+    "overtime": [
+     "/assets/audio/ball/caller/grandpa/overtime-1.m4a",
+     "/assets/audio/ball/caller/grandpa/overtime-2.m4a",
+     "/assets/audio/ball/caller/grandpa/overtime-3.m4a",
+     "/assets/audio/ball/caller/grandpa/overtime-4.m4a"
+    ],
+    "overtime-win": [
+     "/assets/audio/ball/caller/grandpa/overtime-win-1.m4a",
+     "/assets/audio/ball/caller/grandpa/overtime-win-2.m4a",
+     "/assets/audio/ball/caller/grandpa/overtime-win-3.m4a"
+    ],
+    "fever": [
+     "/assets/audio/ball/caller/grandpa/fever-1.m4a",
+     "/assets/audio/ball/caller/grandpa/fever-2.m4a",
+     "/assets/audio/ball/caller/grandpa/fever-3.m4a",
+     "/assets/audio/ball/caller/grandpa/fever-4.m4a"
+    ],
+    "rally": [
+     "/assets/audio/ball/caller/grandpa/rally-1.m4a",
+     "/assets/audio/ball/caller/grandpa/rally-2.m4a",
+     "/assets/audio/ball/caller/grandpa/rally-3.m4a"
+    ],
+    "match-point": [
+     "/assets/audio/ball/caller/grandpa/match-point-1.m4a",
+     "/assets/audio/ball/caller/grandpa/match-point-2.m4a",
+     "/assets/audio/ball/caller/grandpa/match-point-3.m4a",
+     "/assets/audio/ball/caller/grandpa/match-point-4.m4a"
+    ],
+    "serve-winner": [
+     "/assets/audio/ball/caller/grandpa/serve-winner-1.m4a",
+     "/assets/audio/ball/caller/grandpa/serve-winner-2.m4a",
+     "/assets/audio/ball/caller/grandpa/serve-winner-3.m4a",
+     "/assets/audio/ball/caller/grandpa/serve-winner-4.m4a"
+    ],
+    "kill": [
+     "/assets/audio/ball/caller/grandpa/kill-1.m4a",
+     "/assets/audio/ball/caller/grandpa/kill-2.m4a",
+     "/assets/audio/ball/caller/grandpa/kill-3.m4a",
+     "/assets/audio/ball/caller/grandpa/kill-4.m4a"
+    ],
+    "sky-spike": [
+     "/assets/audio/ball/caller/grandpa/sky-spike-1.m4a",
+     "/assets/audio/ball/caller/grandpa/sky-spike-2.m4a",
+     "/assets/audio/ball/caller/grandpa/sky-spike-3.m4a",
+     "/assets/audio/ball/caller/grandpa/sky-spike-4.m4a",
+     "/assets/audio/ball/caller/grandpa/sky-spike-5.m4a"
+    ],
+    "roll-spike": [
+     "/assets/audio/ball/caller/grandpa/roll-spike-1.m4a",
+     "/assets/audio/ball/caller/grandpa/roll-spike-2.m4a"
+    ],
+    "stuff-block": [
+     "/assets/audio/ball/caller/grandpa/stuff-block-1.m4a",
+     "/assets/audio/ball/caller/grandpa/stuff-block-2.m4a",
+     "/assets/audio/ball/caller/grandpa/stuff-block-3.m4a",
+     "/assets/audio/ball/caller/grandpa/stuff-block-4.m4a"
+    ],
+    "comeback": [
+     "/assets/audio/ball/caller/grandpa/comeback-1.m4a",
+     "/assets/audio/ball/caller/grandpa/comeback-2.m4a",
+     "/assets/audio/ball/caller/grandpa/comeback-3.m4a",
+     "/assets/audio/ball/caller/grandpa/comeback-4.m4a"
+    ],
+    "hat-trick": [
+     "/assets/audio/ball/caller/grandpa/hat-trick-1.m4a",
+     "/assets/audio/ball/caller/grandpa/hat-trick-2.m4a",
+     "/assets/audio/ball/caller/grandpa/hat-trick-3.m4a"
+    ],
+    "on-fire": [
+     "/assets/audio/ball/caller/grandpa/on-fire-1.m4a",
+     "/assets/audio/ball/caller/grandpa/on-fire-2.m4a"
+    ],
+    "overdrive": [
+     "/assets/audio/ball/caller/grandpa/overdrive-1.m4a",
+     "/assets/audio/ball/caller/grandpa/overdrive-2.m4a",
+     "/assets/audio/ball/caller/grandpa/overdrive-3.m4a"
+    ],
+    "super-shot": [
+     "/assets/audio/ball/caller/grandpa/super-shot-1.m4a",
+     "/assets/audio/ball/caller/grandpa/super-shot-2.m4a"
+    ],
+    "mvp": [
+     "/assets/audio/ball/caller/grandpa/mvp-1.m4a",
+     "/assets/audio/ball/caller/grandpa/mvp-2.m4a",
+     "/assets/audio/ball/caller/grandpa/mvp-3.m4a"
+    ],
+    "win": [
+     "/assets/audio/ball/caller/grandpa/win-1.m4a",
+     "/assets/audio/ball/caller/grandpa/win-2.m4a",
+     "/assets/audio/ball/caller/grandpa/win-3.m4a",
+     "/assets/audio/ball/caller/grandpa/win-4.m4a"
+    ],
+    "shutout": [
+     "/assets/audio/ball/caller/grandpa/shutout-1.m4a",
+     "/assets/audio/ball/caller/grandpa/shutout-2.m4a"
+    ],
+    "loss": [
+     "/assets/audio/ball/caller/grandpa/loss-1.m4a",
+     "/assets/audio/ball/caller/grandpa/loss-2.m4a",
+     "/assets/audio/ball/caller/grandpa/loss-3.m4a"
+    ],
+    "target": [
+     "/assets/audio/ball/caller/grandpa/target-1.m4a",
+     "/assets/audio/ball/caller/grandpa/target-2.m4a",
+     "/assets/audio/ball/caller/grandpa/target-3.m4a",
+     "/assets/audio/ball/caller/grandpa/target-4.m4a"
+    ],
+    "new-record": [
+     "/assets/audio/ball/caller/grandpa/new-record-1.m4a",
+     "/assets/audio/ball/caller/grandpa/new-record-2.m4a"
+    ],
+    "last-minute": [
+     "/assets/audio/ball/caller/grandpa/last-minute-1.m4a",
+     "/assets/audio/ball/caller/grandpa/last-minute-2.m4a"
+    ],
+    "final-seconds": [
+     "/assets/audio/ball/caller/grandpa/final-seconds-1.m4a",
+     "/assets/audio/ball/caller/grandpa/final-seconds-2.m4a"
+    ]
+   }
+  },
+  "arena": {
+   "name": "ARENA CALLER",
+   "lines": {
+    "kickoff": [
+     "/assets/audio/ball/caller/arena/kickoff-1.m4a",
+     "/assets/audio/ball/caller/arena/kickoff-2.m4a",
+     "/assets/audio/ball/caller/arena/kickoff-3.m4a",
+     "/assets/audio/ball/caller/arena/kickoff-4.m4a",
+     "/assets/audio/ball/caller/arena/kickoff-5.m4a"
+    ],
+    "serve": [
+     "/assets/audio/ball/caller/arena/serve-1.m4a",
+     "/assets/audio/ball/caller/arena/serve-2.m4a",
+     "/assets/audio/ball/caller/arena/serve-3.m4a"
+    ],
+    "goal": [
+     "/assets/audio/ball/caller/arena/goal-1.m4a",
+     "/assets/audio/ball/caller/arena/goal-2.m4a",
+     "/assets/audio/ball/caller/arena/goal-3.m4a",
+     "/assets/audio/ball/caller/arena/goal-4.m4a",
+     "/assets/audio/ball/caller/arena/goal-5.m4a"
+    ],
+    "goal-power": [
+     "/assets/audio/ball/caller/arena/goal-power-1.m4a",
+     "/assets/audio/ball/caller/arena/goal-power-2.m4a",
+     "/assets/audio/ball/caller/arena/goal-power-3.m4a",
+     "/assets/audio/ball/caller/arena/goal-power-4.m4a"
+    ],
+    "goal-volley": [
+     "/assets/audio/ball/caller/arena/goal-volley-1.m4a",
+     "/assets/audio/ball/caller/arena/goal-volley-2.m4a",
+     "/assets/audio/ball/caller/arena/goal-volley-3.m4a"
+    ],
+    "goal-aerial": [
+     "/assets/audio/ball/caller/arena/goal-aerial-1.m4a",
+     "/assets/audio/ball/caller/arena/goal-aerial-2.m4a",
+     "/assets/audio/ball/caller/arena/goal-aerial-3.m4a"
+    ],
+    "goal-curve": [
+     "/assets/audio/ball/caller/arena/goal-curve-1.m4a",
+     "/assets/audio/ball/caller/arena/goal-curve-2.m4a",
+     "/assets/audio/ball/caller/arena/goal-curve-3.m4a"
+    ],
+    "goal-long": [
+     "/assets/audio/ball/caller/arena/goal-long-1.m4a",
+     "/assets/audio/ball/caller/arena/goal-long-2.m4a",
+     "/assets/audio/ball/caller/arena/goal-long-3.m4a"
+    ],
+    "goal-bicycle": [
+     "/assets/audio/ball/caller/arena/goal-bicycle-1.m4a",
+     "/assets/audio/ball/caller/arena/goal-bicycle-2.m4a",
+     "/assets/audio/ball/caller/arena/goal-bicycle-3.m4a"
+    ],
+    "super-goal": [
+     "/assets/audio/ball/caller/arena/super-goal-1.m4a",
+     "/assets/audio/ball/caller/arena/super-goal-2.m4a",
+     "/assets/audio/ball/caller/arena/super-goal-3.m4a",
+     "/assets/audio/ball/caller/arena/super-goal-4.m4a",
+     "/assets/audio/ball/caller/arena/super-goal-5.m4a"
+    ],
+    "own-goal": [
+     "/assets/audio/ball/caller/arena/own-goal-1.m4a",
+     "/assets/audio/ball/caller/arena/own-goal-2.m4a",
+     "/assets/audio/ball/caller/arena/own-goal-3.m4a"
+    ],
+    "clash": [
+     "/assets/audio/ball/caller/arena/clash-1.m4a",
+     "/assets/audio/ball/caller/arena/clash-2.m4a",
+     "/assets/audio/ball/caller/arena/clash-3.m4a",
+     "/assets/audio/ball/caller/arena/clash-4.m4a"
+    ],
+    "clash-win": [
+     "/assets/audio/ball/caller/arena/clash-win-1.m4a",
+     "/assets/audio/ball/caller/arena/clash-win-2.m4a"
+    ],
+    "save": [
+     "/assets/audio/ball/caller/arena/save-1.m4a",
+     "/assets/audio/ball/caller/arena/save-2.m4a",
+     "/assets/audio/ball/caller/arena/save-3.m4a",
+     "/assets/audio/ball/caller/arena/save-4.m4a"
+    ],
+    "save-perfect": [
+     "/assets/audio/ball/caller/arena/save-perfect-1.m4a",
+     "/assets/audio/ball/caller/arena/save-perfect-2.m4a",
+     "/assets/audio/ball/caller/arena/save-perfect-3.m4a"
+    ],
+    "save-diving": [
+     "/assets/audio/ball/caller/arena/save-diving-1.m4a",
+     "/assets/audio/ball/caller/arena/save-diving-2.m4a",
+     "/assets/audio/ball/caller/arena/save-diving-3.m4a"
+    ],
+    "post": [
+     "/assets/audio/ball/caller/arena/post-1.m4a",
+     "/assets/audio/ball/caller/arena/post-2.m4a",
+     "/assets/audio/ball/caller/arena/post-3.m4a",
+     "/assets/audio/ball/caller/arena/post-4.m4a"
+    ],
+    "crossbar": [
+     "/assets/audio/ball/caller/arena/crossbar-1.m4a",
+     "/assets/audio/ball/caller/arena/crossbar-2.m4a"
+    ],
+    "near-miss": [
+     "/assets/audio/ball/caller/arena/near-miss-1.m4a",
+     "/assets/audio/ball/caller/arena/near-miss-2.m4a",
+     "/assets/audio/ball/caller/arena/near-miss-3.m4a"
+    ],
+    "overtime": [
+     "/assets/audio/ball/caller/arena/overtime-1.m4a",
+     "/assets/audio/ball/caller/arena/overtime-2.m4a",
+     "/assets/audio/ball/caller/arena/overtime-3.m4a",
+     "/assets/audio/ball/caller/arena/overtime-4.m4a"
+    ],
+    "overtime-win": [
+     "/assets/audio/ball/caller/arena/overtime-win-1.m4a",
+     "/assets/audio/ball/caller/arena/overtime-win-2.m4a",
+     "/assets/audio/ball/caller/arena/overtime-win-3.m4a"
+    ],
+    "fever": [
+     "/assets/audio/ball/caller/arena/fever-1.m4a",
+     "/assets/audio/ball/caller/arena/fever-2.m4a",
+     "/assets/audio/ball/caller/arena/fever-3.m4a",
+     "/assets/audio/ball/caller/arena/fever-4.m4a"
+    ],
+    "rally": [
+     "/assets/audio/ball/caller/arena/rally-1.m4a",
+     "/assets/audio/ball/caller/arena/rally-2.m4a",
+     "/assets/audio/ball/caller/arena/rally-3.m4a"
+    ],
+    "match-point": [
+     "/assets/audio/ball/caller/arena/match-point-1.m4a",
+     "/assets/audio/ball/caller/arena/match-point-2.m4a",
+     "/assets/audio/ball/caller/arena/match-point-3.m4a",
+     "/assets/audio/ball/caller/arena/match-point-4.m4a"
+    ],
+    "serve-winner": [
+     "/assets/audio/ball/caller/arena/serve-winner-1.m4a",
+     "/assets/audio/ball/caller/arena/serve-winner-2.m4a",
+     "/assets/audio/ball/caller/arena/serve-winner-3.m4a",
+     "/assets/audio/ball/caller/arena/serve-winner-4.m4a"
+    ],
+    "kill": [
+     "/assets/audio/ball/caller/arena/kill-1.m4a",
+     "/assets/audio/ball/caller/arena/kill-2.m4a",
+     "/assets/audio/ball/caller/arena/kill-3.m4a",
+     "/assets/audio/ball/caller/arena/kill-4.m4a"
+    ],
+    "sky-spike": [
+     "/assets/audio/ball/caller/arena/sky-spike-1.m4a",
+     "/assets/audio/ball/caller/arena/sky-spike-2.m4a",
+     "/assets/audio/ball/caller/arena/sky-spike-3.m4a",
+     "/assets/audio/ball/caller/arena/sky-spike-4.m4a",
+     "/assets/audio/ball/caller/arena/sky-spike-5.m4a"
+    ],
+    "roll-spike": [
+     "/assets/audio/ball/caller/arena/roll-spike-1.m4a",
+     "/assets/audio/ball/caller/arena/roll-spike-2.m4a"
+    ],
+    "stuff-block": [
+     "/assets/audio/ball/caller/arena/stuff-block-1.m4a",
+     "/assets/audio/ball/caller/arena/stuff-block-2.m4a",
+     "/assets/audio/ball/caller/arena/stuff-block-3.m4a",
+     "/assets/audio/ball/caller/arena/stuff-block-4.m4a"
+    ],
+    "comeback": [
+     "/assets/audio/ball/caller/arena/comeback-1.m4a",
+     "/assets/audio/ball/caller/arena/comeback-2.m4a",
+     "/assets/audio/ball/caller/arena/comeback-3.m4a",
+     "/assets/audio/ball/caller/arena/comeback-4.m4a"
+    ],
+    "hat-trick": [
+     "/assets/audio/ball/caller/arena/hat-trick-1.m4a",
+     "/assets/audio/ball/caller/arena/hat-trick-2.m4a",
+     "/assets/audio/ball/caller/arena/hat-trick-3.m4a"
+    ],
+    "on-fire": [
+     "/assets/audio/ball/caller/arena/on-fire-1.m4a",
+     "/assets/audio/ball/caller/arena/on-fire-2.m4a"
+    ],
+    "overdrive": [
+     "/assets/audio/ball/caller/arena/overdrive-1.m4a",
+     "/assets/audio/ball/caller/arena/overdrive-2.m4a",
+     "/assets/audio/ball/caller/arena/overdrive-3.m4a"
+    ],
+    "super-shot": [
+     "/assets/audio/ball/caller/arena/super-shot-1.m4a",
+     "/assets/audio/ball/caller/arena/super-shot-2.m4a"
+    ],
+    "mvp": [
+     "/assets/audio/ball/caller/arena/mvp-1.m4a",
+     "/assets/audio/ball/caller/arena/mvp-2.m4a",
+     "/assets/audio/ball/caller/arena/mvp-3.m4a"
+    ],
+    "win": [
+     "/assets/audio/ball/caller/arena/win-1.m4a",
+     "/assets/audio/ball/caller/arena/win-2.m4a",
+     "/assets/audio/ball/caller/arena/win-3.m4a",
+     "/assets/audio/ball/caller/arena/win-4.m4a"
+    ],
+    "shutout": [
+     "/assets/audio/ball/caller/arena/shutout-1.m4a",
+     "/assets/audio/ball/caller/arena/shutout-2.m4a"
+    ],
+    "loss": [
+     "/assets/audio/ball/caller/arena/loss-1.m4a",
+     "/assets/audio/ball/caller/arena/loss-2.m4a",
+     "/assets/audio/ball/caller/arena/loss-3.m4a"
+    ],
+    "target": [
+     "/assets/audio/ball/caller/arena/target-1.m4a",
+     "/assets/audio/ball/caller/arena/target-2.m4a",
+     "/assets/audio/ball/caller/arena/target-3.m4a",
+     "/assets/audio/ball/caller/arena/target-4.m4a"
+    ],
+    "new-record": [
+     "/assets/audio/ball/caller/arena/new-record-1.m4a",
+     "/assets/audio/ball/caller/arena/new-record-2.m4a"
+    ],
+    "last-minute": [
+     "/assets/audio/ball/caller/arena/last-minute-1.m4a",
+     "/assets/audio/ball/caller/arena/last-minute-2.m4a"
+    ],
+    "final-seconds": [
+     "/assets/audio/ball/caller/arena/final-seconds-1.m4a",
+     "/assets/audio/ball/caller/arena/final-seconds-2.m4a"
+    ]
+   }
+  }
+ }
+}

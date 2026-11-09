@@ -3,6 +3,8 @@
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .mode-hud{--bh-red:#ff3b52;--bh-blue:#2f8cff;--bh-gold:#ffcf5a}
 /* Nobody's health counts here: the own plate keeps its meters and drops its health track. */
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .fighter-meter.own :is(#own-health,#own-hp,.hl-hpnum,.hl-hp){visibility:hidden!important}
+/* Nor a round clock (its ∞ over the middle of the top edge): the scoreboard's clock is the match's. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .hd-clock{display:none!important}
 /* Nor is there a foe here to plate: the ball is the only target. */
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .fighter-meter.foe{display:none!important}
 

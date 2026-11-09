@@ -1,3 +1,5 @@
+import {BALL_ARENAS, MODE_ARENAS, isBallArena} from '../../game/ball/arenas';
+import type {BallModeId} from '../../game/ball/model';
 import { isReleasedFighter } from '../../game/rosterAvailability';
 import { siteUrl } from '../../loading/siteBase'; // asset addresses inside the page's own folder
 import { FIGHTERS } from '../../config';
@@ -17,6 +19,8 @@ import { padKey } from '../../input/glyphs';
 import { preloadLoadingArt, type LoadingMode } from '../LoadingScreen';
 import { readInvite } from '../roomInvite';
 import { modeOpen } from '../../originals/launch';
+import { ballChoice, ballPlayRow, ballRulesRow, ballStart, traitBadge } from '../ball/ballSheet';
+import { onRanks } from '../ball/ranks';
 import { nearest, type Direction } from '../spatialFocus';
 import { MODES, VARIANT_ORDER, modeHere, type ModeId, type Panel, type VariantId } from './catalogue';
 import { defenceBasics } from './defence';
@@ -138,6 +142,8 @@ export class ModeSheet {
     // Couch: a controller plugged in or taken out while the sheet is up moves the seats (and the sheet polls the pads too:
     // a browser shows a pad only once a button on it is pressed, with or without an event - `watch`).
     for(const type of ['gamepadconnected','gamepaddisconnected'])window.addEventListener(type,()=>{if(this.dialog.open&&this.variant==='couch')this.checkPads();});
+    // RANKED's stamp, once the server has said where the account stands (ui/ball/ranks.ts).
+    onRanks(() => { if (this.dialog.open && this.variant === 'online' && (this.mode === 'goal-rush' || this.mode === 'sky-spike')) this.draw(); });
     this.dialog.addEventListener('input', event => this.input(event));
     this.dialog.addEventListener('paste', event => this.paste(event));
     this.dialog.addEventListener('close', () => { if (this.editing) { const code = this.dialog.querySelector<HTMLInputElement>('.ms-join input'); if (code) showEntry(code, undefined); } this.editing = false; });
@@ -272,10 +278,13 @@ export class ModeSheet {
     // Couch: Player 2's options - with the royale's field size, and Bad Blood's and the Rift's sides and Player 1's own pick.
     // The ball modes' rules: CLASSIC, or RUMBLE with its charms (matchmaking is always classic).
     const ball = this.mode === 'goal-rush' || this.mode === 'sky-spike';
-    const rules = ball && this.variant !== 'online' && !this.joining ? `<div class="ms-option" role="group" aria-label="Rules"><b>RULES</b><button type="button" data-ms-rumble="false" aria-pressed="${!prefs.rumble}">CLASSIC</button><button type="button" data-ms-rumble="true" aria-pressed="${!!prefs.rumble}">RUMBLE</button></div>${prefs.rumble ? '<p class="ms-note">Charms appear on the field. Run through one: a KI CHARGE shot, a GIANT BALL, an IRON WALL over your goal and more.</p>' : ''}` : '';
+    // The ARENA row (game/ball/arenas.ts): any (the mode's arenas in turn) or one of the three.
+    const arenaRow = ball ? `<div class="ms-option ms-arena" role="group" aria-label="Arena"><b>ARENA</b><button type="button" data-ms-arena="" aria-pressed="${!isBallArena(prefs.arena)}">ANY</button>${MODE_ARENAS[this.mode as BallModeId].map(id => `<button type="button" data-ms-arena="${id}" aria-pressed="${prefs.arena === id}">${BALL_ARENAS[id].name.replace(/^The /, '').toUpperCase()}</button>`).join('')}</div>` : '';
+    // (the mutators beside them, ONLINE's queues - the weekly playlist and RANKED - and BOTS' drills: ui/ball/ballSheet.ts.)
+    const rules = ball && !this.joining ? (this.variant !== 'online' ? arenaRow : '') + ballRulesRow(this.mode as 'goal-rush' | 'sky-spike', this.variant, prefs) : '';
     if (this.variant === 'couch') return `${rules}${this.mode === 'royale' ? row('FIGHTERS', 'data-ms-fighters', FIGHTER_COUNTS, prefs.fighters ?? defaultRoyaleFighters()) : ''}${this.mode === 'bad-blood' || this.mode === 'rift-war' ? this.sideOptions() : ''}${this.couchOptions()}`;
     // BOTS: a 3 v 3 match, or FREE PLAY alone with the ball.
-    const play = ball && this.variant === 'offline' ? `<div class="ms-option" role="group" aria-label="Play"><b>PLAY</b><button type="button" data-ms-practice="false" aria-pressed="${!prefs.practice}">3 V 3 MATCH</button><button type="button" data-ms-practice="true" aria-pressed="${!!prefs.practice}">FREE PLAY</button></div>${prefs.practice ? `<p class="ms-note">Just you and the ball: no clock, no bots. ${this.mode === 'sky-spike' ? 'A ball machine keeps sending balls over to spike.' : 'The ball goes back on the spot after each goal.'} Backspace resets the ball.</p>` : ''}` : '';
+    const play = ball && this.variant === 'offline' ? ballPlayRow(this.mode as 'goal-rush' | 'sky-spike', prefs) : '';
     if (rules) return play + rules;
     if (this.mode === 'duel' && this.variant === 'offline') return rival('Bot opponent', 'Random rival');
     if (this.mode === 'training') return rival('Opponent', 'Random opponent');
@@ -446,7 +455,7 @@ export class ModeSheet {
   }
   private you(fighter: FighterId) {
     const swapped = (this.mode === 'bad-blood' || this.mode === 'rift-war') && fighter !== this.host.fighter();
-    return `<div class="ms-you"><span class="ms-face">${mangaPortrait(fighter)}</span><div><small>YOUR FIGHTER${swapped ? ' · FOR THIS MODE' : ''}${this.locked(fighter) ? ' · <b class="ms-locked">LOCKED</b>' : ''}</small><strong>${escape(FIGHTERS[fighter].name)}</strong></div>${(this.mode === 'bad-blood' || this.mode === 'rift-war') ? '' : '<button type="button" class="ms-link" data-ms-change>CHANGE</button>'}</div>`;
+    return `<div class="ms-you"><span class="ms-face">${mangaPortrait(fighter)}</span><div><small>YOUR FIGHTER${swapped ? ' · FOR THIS MODE' : ''}${this.locked(fighter) ? ' · <b class="ms-locked">LOCKED</b>' : ''}</small><strong>${escape(FIGHTERS[fighter].name)}</strong>${this.mode === 'goal-rush' || this.mode === 'sky-spike' ? traitBadge(fighter) : ''}</div>${(this.mode === 'bad-blood' || this.mode === 'rift-war') ? '' : '<button type="button" class="ms-link" data-ms-change>CHANGE</button>'}</div>`;
   }
   /** The fighter is not this account's to play here (economy/fighters.ts): the start would open the shop on them
    *  (shop/boot.ts lockedStart). Training takes every fighter. */
@@ -485,7 +494,11 @@ export class ModeSheet {
     let room: RoomMode = 'match', access: NetworkAccess | undefined;
     const couch: CouchStart | undefined = this.variant === 'couch' && !join ? { partner: this.partnerOf(fighter), screen: screenFor(mode, prefs.couchScreen), ...(mode === 'bad-blood' || mode === 'rift-war' || mode === 'goal-rush' || mode === 'sky-spike' ? { sides: this.sides() } : {}), ...(this.seats ? { seats: [...this.seats] } : {}) } : undefined;
     switch (mode) {
-      case 'goal-rush': case 'sky-spike': access = couch ? { kind: 'ball', mode, access: 'bots', couch, rumble: !!prefs.rumble } : { kind: 'ball', mode, access: join ? 'join' : this.variant === 'offline' ? 'bots' : this.variant === 'online' ? 'quick' : 'host', code: join ? this.code : undefined, rumble: this.variant !== 'online' && !join && !!prefs.rumble, practice: this.variant === 'offline' && !!prefs.practice }; break;
+      case 'goal-rush': case 'sky-spike': {
+        // The ARENA row's pick rides with BOTS, COUCH and FRIENDS (matchmaking takes the mode's in turn).
+        const start = ballStart(mode, this.variant, prefs, join, this.code, couch);
+        access = isBallArena(prefs.arena) && BALL_ARENAS[prefs.arena].mode === mode && this.variant !== 'online' && !join ? { ...start, arena: prefs.arena } : start; break;
+      }
       case 'rift-war': access = couch ? { kind: 'rift-war', access: 'bots', couch } : {kind:'rift-war',access:join?'join':this.variant==='offline'?'bots':this.variant==='online'?'quick':'host',code:join?this.code:undefined}; break;
       case 'duel': access = couch ? { kind: 'duel', access: 'couch', rival: couch.partner, place, couch } : { kind: 'duel', access: join ? 'join' : this.variant === 'offline' ? 'bot' : this.variant === 'online' ? 'online' : 'host', code: join ? this.code : undefined, rival: prefs.rival, place }; break;
       case 'royale': access = join ? { kind: 'join-private', code: this.code } : couch ? { kind: 'bots', players: prefs.fighters ?? defaultRoyaleFighters(), place, couch } : this.variant === 'offline' ? { kind: 'bots', players: prefs.fighters ?? defaultRoyaleFighters(), place } : this.variant === 'online' ? { kind: 'public' } : { kind: 'create-private', players: prefs.roomSize ?? 8, place }; break;
@@ -539,7 +552,9 @@ export class ModeSheet {
     else if (d.msRoom) { saveModePrefs(this.mode, { roomSize: Number(d.msRoom) }); this.redrawKeeping(b); }
     else if (d.msLone) { saveModePrefs(this.mode, { lone: d.msLone === 'true' }); this.redrawKeeping(b); }
     else if (d.msRumble) { saveModePrefs(this.mode, { rumble: d.msRumble === 'true' }); this.redrawKeeping(b); }
+    else if (d.msArena !== undefined) { saveModePrefs(this.mode, { arena: d.msArena || undefined }); this.redrawKeeping(b); }
     else if (d.msPractice) { saveModePrefs(this.mode, { practice: d.msPractice === 'true' }); this.redrawKeeping(b); }
+    else if (d.msBall) { const choice = ballChoice(d.msBall); if (choice) { saveModePrefs(this.mode, choice); this.redrawKeeping(b); } }
     else if (d.msSwap !== undefined) { saveModePrefs(this.mode, { couchSwap: !this.prefs().couchSwap }); if (this.seats) this.seats = [this.seats[1], this.seats[0]]; this.redrawSeats(); this.focus('[data-ms-swap]'); }
     // Couch: Player 2's face, or a step along their picks with the arrows on their card.
     else if (d.msP2pick) this.setP2(d.msP2pick as PartnerPick);

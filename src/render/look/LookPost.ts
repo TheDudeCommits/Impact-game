@@ -172,6 +172,7 @@ uniform float uShadowDesat;
 uniform float uToe;
 uniform float uVignette;
 uniform float uSharpen;
+uniform float uInkEdge;
 uniform vec3 uVignetteColor;
 uniform vec2 uCenter;
 uniform float uPunch;
@@ -188,6 +189,8 @@ uniform float uTechLocal;
 uniform vec2 uTechFocus;
 uniform float uTechRadius;
 uniform float uStop;
+uniform float uInk;
+uniform vec3 uInkBall;
 uniform vec3 uStopDark;
 uniform vec3 uStopLight;
 uniform float uBlur;
@@ -307,6 +310,26 @@ void main() {
 	// is: this is the key that keeps silhouettes ink while the world is
 	// repainted around them.
 	float ink = 1. - smoothstep( .0015, .02, luma( c ) );
+	// The ball arenas: ink outlines from the depth (the ball arenas' grade.inkEdge). Inverse depth is flat across any plane
+	// on screen, so its Laplacian is zero on a floor or a wall and large where a surface folds or one thing stands in front
+	// of another: there the frame gets a brush line, thinning out into the distance.
+	if ( uInkEdge > .0005 ) {
+		vec2 o = vec2( max( 1., uResolution.y / 1080. ) ) / max( uResolution, vec2( 1. ) );
+		float d0 = texture2D( tDepth, uv ).r, z0 = lookViewZ( d0 );
+		float w0 = 1. / z0;
+		float wl = 1. / lookViewZ( texture2D( tDepth, uv - vec2( o.x, 0. ) ).r ), wr = 1. / lookViewZ( texture2D( tDepth, uv + vec2( o.x, 0. ) ).r );
+		float wd = 1. / lookViewZ( texture2D( tDepth, uv - vec2( 0., o.y ) ).r ), wu = 1. / lookViewZ( texture2D( tDepth, uv + vec2( 0., o.y ) ).r );
+		float fold = abs( wl + wr + wd + wu - 4. * w0 ) * z0;
+		float inkLine = smoothstep( .035, .11, fold ) * ( 1. - smoothstep( 45., 130., z0 ) ) * step( d0, .99999 );
+		c = mix( c, c * .04, inkLine * uInkEdge );
+	}
+	// The INK FLASH's keep (see below): what burns (the scene's HDR over its white) and the ball's own disc stay in colour.
+	float inkKeep = 0.;
+	if ( uInk > .0005 ) {
+		float hot = smoothstep( 1., 1.7, max( c.r, max( c.g, c.b ) ) );
+		float disc = uInkBall.z > 0. ? 1. - smoothstep( uInkBall.z, uInkBall.z * 1.35 + .004, length( ( uv - uInkBall.xy ) * aspect ) ) : 0.;
+		inkKeep = max( hot, disc );
+	}
 	// How far behind the fight a pixel is (0 in the focus band .. 1 the far blur's whole): the grade below gives the
 	// background less contrast and colour than the fighters, as a compositor flattens a background painting.
 	float lookBg = 0.;
@@ -421,6 +444,24 @@ void main() {
 		world = mix( world, c, .1 ) * ( 1. - ink );
 		c = mix( c, world, uStop );
 	}
+	if ( uInk > .0005 ) {
+		// The INK FLASH (the ball modes' SUPER SHOT and goals, render/ball/BallMoments.ts): for a breath the frame is a
+		// two-tone manga print - paper in the light, screentone dots growing through the mid shade, solid ink in the dark
+		// and an ink line on every edge, lines thrown out from the ball - while the ball and what burns round it keep their
+		// colour.
+		vec2 px = 1. / max( uResolution, vec2( 1. ) );
+		float ln = luma( texture2D( tScene, uv + vec2( 0., px.y ) ).rgb ), ls = luma( texture2D( tScene, uv - vec2( 0., px.y ) ).rgb );
+		float le = luma( texture2D( tScene, uv + vec2( px.x, 0. ) ).rgb ), lw = luma( texture2D( tScene, uv - vec2( px.x, 0. ) ).rgb );
+		float edge = smoothstep( .18, .4, ( abs( ln - ls ) + abs( le - lw ) ) / ( .08 + ln + ls + le + lw ) * 2. );
+		float l = luma( c );
+		float pitch = max( 3., uResolution.y / 170. );
+		float dotR = length( fract( mat2( .7071, -.7071, .7071, .7071 ) * gl_FragCoord.xy / pitch ) - .5 );
+		float shade = 1. - smoothstep( .3, .62, l );
+		float inked = max( max( 1. - smoothstep( .1, .17, l ), step( dotR, .5 * shade ) * step( .06, shade ) ), max( edge, ink ) );
+		inked = max( inked, speedPattern( ( uv - uInkBall.xy ) * aspect, uSeed * 2.3 + 5., 1., .2 ) * .92 );
+		vec3 print = mix( vec3( .96, .94, .88 ), vec3( .03, .028, .04 ), inked );
+		c = mix( c, mix( print, c, inkKeep ), uInk );
+	}
 	if ( uPunch > .0005 ) {
 		// A hit on you: the frame bites - it drains a little colour, darkens
 		// at the edges and throws ink lines at the blow - but never lifts or
@@ -470,7 +511,7 @@ export class LookFinalPass extends Pass {
     uLift: { value: new THREE.Vector3() }, uGamma: { value: new THREE.Vector3(1, 1, 1) }, uGain: { value: new THREE.Vector3(1, 1, 1) },
     uSaturation: { value: 1 }, uContrast: { value: 1 },
     uShadowTint: { value: new THREE.Color(.5, .5, .5) }, uHighlightTint: { value: new THREE.Color(.5, .5, .5) }, uSplit: { value: 0 }, uShadowDesat: { value: 0 }, uToe: { value: 1 },
-    uVignette: { value: 0 }, uVignetteColor: { value: new THREE.Color(0, 0, 0) }, uSharpen: { value: 0 },
+    uVignette: { value: 0 }, uVignetteColor: { value: new THREE.Color(0, 0, 0) }, uSharpen: { value: 0 }, uInkEdge: { value: 0 },
     uCenter: { value: new THREE.Vector2(.5, .5) },
     uPunch: { value: 0 }, uCinema: { value: 0 }, uChroma: { value: 0 }, uSpeed: { value: 0 }, uSpeedColor: { value: new THREE.Color(1, .98, .94) },
     uSeed: { value: 0 },
@@ -478,6 +519,9 @@ export class LookFinalPass extends Pass {
     uTech: { value: 0 }, uTechColor: { value: new THREE.Color(1, 1, 1) },
     uTechLocal: { value: 0 }, uTechFocus: { value: new THREE.Vector2(.5, .5) }, uTechRadius: { value: .3 },
     uStop: { value: 0 },
+    /** The INK FLASH (0..1), and where the ball is on the screen whose colour it keeps (x, y in uv; radius in the
+     *  frame's heights, 0 for none). */
+    uInk: { value: 0 }, uInkBall: { value: new THREE.Vector3() },
     uBlur: { value: 0 }, uBlurCenter: { value: new THREE.Vector2(.5, .5) }, uBlurKeep: { value: [new THREE.Vector4(), new THREE.Vector4()] },
     // The stopped world's two tones, display-referred: a mid teal and a pale
     // cyan, far enough from black that the fighters' ink stands apart.
@@ -523,6 +567,7 @@ export class LookFinalPass extends Pass {
     u.uToe.value = g.toe ?? .5;
     u.uVignette.value = g.vignette;
     u.uSharpen.value = g.sharpen ?? 0;
+    u.uInkEdge.value = g.inkEdge ?? 0;
     u.uVignetteColor.value.setHex(g.vignetteColor, THREE.LinearSRGBColorSpace);
     u.toneMappingExposure.value = look.exposure;
     u.uToneMap.value = TONE_MAPS[look.toneMapping];

@@ -150,6 +150,25 @@ describe('a short throw is not drawn as a launch (VARIETY\'s outcomes)', () => {
   }, 120_000);
 });
 
+describe('a launch its blow gave no heading to starts its own', () => {
+  it('Black Pyre crumples Taisei after a string has launched him, without laying him down in a frame', async () => {
+    // A field centred on the body (Black Pyre's crumple) has no way across the
+    // ground, and its launch used to be drawn on the last one's layer - landed
+    // and on its back: a 104 cm head drop on the frame it was first drawn.
+    const script: Press[] = [30, 42, 54, 66, 78].map(tick => ({ tick, attack: 'light' as const }));
+    script.push({ tick: 240, attack: 'special' });
+    for (const seed of [7, 8]) {
+      const victim = await buildBody('taisei', 'b'), shiden = await buildBody('shiden', 'a');
+      try {
+        const { samples, events } = victimRun(victim, shiden, script, 450, { seed });
+        const thrown = events.filter(e => e.kind === 'hit' && e.targetId === 'b' && e.reaction === 'launched').map(e => e.slot);
+        expect(thrown, 'the string and then the burn threw him').toEqual(['light', 'light', 'special']);
+        expect(allPops(samples).map(p => `seed ${seed} ${p.key} ${p.cm} cm ${p.action}`)).toEqual([]);
+      } finally { victim.dispose(); shiden.dispose(); }
+    }
+  }, 120_000);
+});
+
 
 describe('a blow on a reaction the server has not started again', () => {
   it('is cross-faded: the recoil\'s clock going back moves the hand no more than the recoil does', async () => {

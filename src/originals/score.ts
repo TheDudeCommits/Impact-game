@@ -60,7 +60,7 @@ export interface SoundtrackTrack { readonly id: string; readonly url: string; re
 const ost = (file: string, title: string, artist: string, credit: SoundtrackCredit): SoundtrackTrack => ({ id: `ost-${file}`, url: `${M}${file}.m4a`, title, artist, credit });
 
 /** The modes as the music knows them (src/ui/modes/catalogue.ts ModeId, read through modeOfSnapshot). */
-export type SoundtrackMode = 'duel' | 'royale' | 'training' | 'arcade' | 'last-stand' | 'bad-blood' | 'rift-war';
+export type SoundtrackMode = 'duel' | 'royale' | 'training' | 'arcade' | 'last-stand' | 'bad-blood' | 'rift-war' | 'goal-rush' | 'sky-spike';
 
 /** Every track, by its file (scripts/originals/music/soundtrack.json lists each one's source and licence). */
 const OST = {
@@ -117,6 +117,9 @@ const OST = {
   'maoudamashii-sting-defeat': ost('maoudamashii-sting-defeat', 'Defeat', 'MaouDamashii · Neo Rock 46',
     { work: 'ネオロック46 (Neo Rock 46)', by: 'by 魔王魂 (MaouDamashii, Koichi Morita)', page: 'https://maou.audio/bgm_neorock46/', changes: 'its last nine seconds, levelled, as the defeat sting' }),
 } as const;
+/** A song of the home screen's rotation as a battle theme of its own (the ball modes): the same file and
+ *  credit under an id of its own, so the table holds it in the gameplay scope as well as the home screen's. */
+const asTheme = (track: SoundtrackTrack, mode: SoundtrackMode): SoundtrackTrack => ({ ...track, id: `${track.id}--${mode}` });
 /** The soundtrack's playlists (src/originals/apply.ts applyOriginalMusic and soundtrackQueue): the home screen's rotation; each
  *  mode's battle themes (a match opens on the next of them, turned by the match's number); Arcade Survival's boss rounds;
  *  the results after a win or a loss; and the sting each end opens on. */
@@ -130,7 +133,14 @@ export const SOUNDTRACK = {
     'last-stand': [OST['maoudamashii-neorock83'], OST['maoudamashii-orchestra24']],
     'bad-blood': [OST['maoudamashii-neorock75'], OST['maoudamashii-neorock68']],
     'rift-war': [OST['maoudamashii-fantasy12'], OST['maoudamashii-orchestra20']],
+    // The ball modes: songs of the home screen's rotation as their battle themes (every instrumental piece is another
+    // mode's), and a boss theme as each one's climax (`peak`).
+    'goal-rush': [asTheme(OST['maoudamashii-burning-heart'], 'goal-rush'), asTheme(OST['maoudamashii-hikari-trigger'], 'goal-rush')],
+    'sky-spike': [asTheme(OST['maoudamashii-12345'], 'sky-spike'), asTheme(OST['maoudamashii-shining-star'], 'sky-spike')],
   } satisfies Record<SoundtrackMode, readonly SoundtrackTrack[]>,
+  /** A match's climax, cutting in over its battle theme (CharacterMusic.peak; src/audio/ballAudio.ts): Goal Rush's
+   *  OVERTIME, Sky Spike's match point and FEVER. Boss themes, so the queue's boss rule cuts to them at once. */
+  peak: { 'goal-rush': OST['maoudamashii-neorock71'], 'sky-spike': OST['maoudamashii-orchestra25'] } as Partial<Record<SoundtrackMode, SoundtrackTrack>>,
   boss: [OST['maoudamashii-neorock71'], OST['maoudamashii-orchestra25']],
   results: { win: [OST['maoudamashii-neorock49']], loss: [OST['maoudamashii-orchestra26']] },
   stinger: { win: OST['maoudamashii-sting-victory'], loss: OST['maoudamashii-sting-defeat'] },
