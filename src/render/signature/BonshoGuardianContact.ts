@@ -1,9 +1,9 @@
-/** What the engine asks of BonshoBodhisattva.ts outside its effect layer (where the
+/** What the engine asks of BonshoGuardian.ts outside its effect layer (where the
  *  sculpture's palm lands: engine/client/sockets.ts), moved out of it unchanged, so that the layer is fetched only with a room
- *  that has the fighter (RosterSignatureSet's lazy factories). BonshoBodhisattva.ts re-exports it, and fills `drawnPalms`. */
+ *  that has the fighter (RosterSignatureSet's lazy factories). BonshoGuardian.ts re-exports it, and fills `drawnPalms`. */
 import type * as THREE from 'three';
 import type { Fighter } from '../Fighter';
-/** The layer's palms, as the engine reads them (BonshoBodhisattva's own two methods). */
+/** The layer's palms, as the engine reads them (BonshoGuardian's own two methods). */
 interface DrawnPalms { ultimatePalmPoint(actor: string, contactIndex: number, out: THREE.Vector3, palmIndex?: number): boolean; ultimatePalmCount(actor: string, contactIndex: number): number }
 // Object identity matters: a respawn/replacement with the same player ID must
 // never borrow the previous body's rendered palms. No per-contact allocation.

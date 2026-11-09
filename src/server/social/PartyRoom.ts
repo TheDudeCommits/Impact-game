@@ -2,6 +2,7 @@ import { ROSTER_PROTOCOL, ROSTER_REFRESH_MESSAGE, requireRosterProtocol, type Ro
 import { isReleasedFighter } from '../../game/rosterAvailability';
 import { ARENAS_FULL_MESSAGE, isArenasFull } from '../../game/arenasFull';
 import {RIFT_PROTOCOL} from '../../game/moba/model';
+import {BALL_PROTOCOL} from '../../game/ball/model';
 import {SURVIVAL_PROTOCOL} from '../../survival/coopNet';
 import {OBJECTIVE_PROTOCOL,isRole} from '../../game/objectives/model';
 import {Room,generateId,matchMaker,type Client} from 'colyseus';
@@ -19,7 +20,7 @@ import {partyModeAllowed} from '../../originals/server';
 /** A fighter id, as a page must send one: a string that names a fighter (`''` used to slip past a truthy check and break
  *  every member's party screen on FIGHTERS['']). */
 const fighterOk=(fighter:unknown)=>fighter===undefined||isReleasedFighter(fighter);
-interface Options extends RosterProtocolOptions {riftProtocol?:number;objectiveProtocol?:number;survivalProtocol?:number;code?:string;creationToken?:string;fighter?:FighterId;name?:string;account?:string;unlocked?:unknown;bonus?:unknown;skill?:unknown;}
+interface Options extends RosterProtocolOptions {riftProtocol?:number;ballProtocol?:number;objectiveProtocol?:number;survivalProtocol?:number;code?:string;creationToken?:string;fighter?:FighterId;name?:string;account?:string;unlocked?:unknown;bonus?:unknown;skill?:unknown;}
 /** How long a party's seats in its match are held: each member loads the match before taking one (Colyseus holds 15 s). */
 export const PARTY_SEAT_SECONDS=90;
 /** One member's seat in the party's match, held PARTY_SEAT_SECONDS: matchMaker.reserveSeatFor, with the time given to the
@@ -107,19 +108,20 @@ export class PartyRoom extends Room {
     const check=startCheck(this.view);if(check.reason){this.notice(c,check.reason+'.');return;}
     for(const m of this.view.members){const error=lockedOut(m.fighter,sharedEconomy()?.book.find(this.credentials.get(m.id)?.account));if(error){this.notice(c,`${m.name}: ${error}`);return;}}
     if((this.view.mode==='bad-blood'||this.view.mode==='last-stand')&&this.view.members.some(m=>this.credentials.get(m.id)?.objectiveProtocol!==OBJECTIVE_PROTOCOL)){this.notice(c,'Everyone must refresh the page before entering the updated team modes.');return;}
+    if((this.view.mode==='goal-rush'||this.view.mode==='sky-spike')&&this.view.members.some(m=>this.credentials.get(m.id)?.ballProtocol!==BALL_PROTOCOL)){this.notice(c,'Everyone must refresh the page before entering the ball modes.');return;}
     if(this.view.mode==='rift-war'&&this.view.members.some(m=>this.credentials.get(m.id)?.riftProtocol!==RIFT_PROTOCOL)){this.notice(c,'Everyone must refresh the page before entering Rift War.');return;}
     if(this.view.mode==='survival'&&this.view.members.some(m=>this.credentials.get(m.id)?.survivalProtocol!==SURVIVAL_PROTOCOL)){this.notice(c,'Everyone must refresh the page before entering the updated Arcade.');return;}
     this.view.launching=true;this.launchId=randomUUID();this.publish();const generation=this.launchId;
     // The place: the one chosen, the vote's winner, or one dealt now (RANDOM); the royale's RANDOM is its room's own deal.
     const mode=this.view.mode,creationToken=randomUUID(),arena=launchArena(this.view,pool=>pool[randomInt(pool.length)]);
     const rules=roomRules(this.view.rules,arena);
-    const roomName=mode==='rift-war'?'rift_war':mode==='duel'?'private_duel':mode==='royale'?'private_arena':mode==='survival'?'survival_arena':'objective_arena';
+    const roomName=mode==='goal-rush'||mode==='sky-spike'?'ball_arena':mode==='rift-war'?'rift_war':mode==='duel'?'private_duel':mode==='royale'?'private_arena':mode==='survival'?'survival_arena':'objective_arena';
     // A Duel is the private Duel's own room (rounds, results, the runback), on the place chosen (PrivateDuelRoom checks it).
     // `party`: the members sent, so the room starts by itself once they are all in and loaded (PartyStart); `fill`: Last
     // Stand's bot allies as the party chose them (no lobby to choose them in any more).
     const party=this.view.members.length;
     const options=mode==='duel'?{rosterProtocol:ROSTER_PROTOCOL,creationToken,assetGate:true,readyGate:true,mode:'match',stage:arena,party}
-      :{rosterProtocol:ROSTER_PROTOCOL,creationToken,assetGate:true,readyGate:true,riftProtocol:RIFT_PROTOCOL,survivalProtocol:SURVIVAL_PROTOCOL,objectiveProtocol:OBJECTIVE_PROTOCOL,mode:'match',objective:mode,access:'host',players:rules.players,rules,party,...(mode==='last-stand'?{fill:this.view.rules.fill}:{})};
+      :{rosterProtocol:ROSTER_PROTOCOL,creationToken,assetGate:true,readyGate:true,riftProtocol:RIFT_PROTOCOL,survivalProtocol:SURVIVAL_PROTOCOL,objectiveProtocol:OBJECTIVE_PROTOCOL,ballProtocol:BALL_PROTOCOL,...(mode==='goal-rush'||mode==='sky-spike'?{ball:mode}:{}),mode:'match',objective:mode,access:'host',players:rules.players,rules,party,...(mode==='last-stand'?{fill:this.view.rules.fill}:{})};
     const room=await matchMaker.createRoom(roomName,options);if(generation!==this.launchId){await matchMaker.remoteRoomCall(room.roomId,'disconnect').catch(()=>{});return;}this.matchId=room.roomId;
     for(const m of [...this.view.members]){if(generation!==this.launchId)break;const reservation=await partySeat(room,{...this.credentials.get(m.id),...options,fighter:m.fighter,name:m.name,role:m.role});if(generation===this.launchId)this.tickets.set(m.id,reservation);}
     if(generation!==this.launchId){await matchMaker.remoteRoomCall(room.roomId,'disconnect').catch(()=>{});return;}

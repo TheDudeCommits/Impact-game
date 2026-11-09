@@ -32,6 +32,9 @@ export interface MatchReport {
   friends?: boolean; couch?: boolean;
   /** Rift War: the structures this fighter brought down (towers, barracks, guardians, the core). */
   towers?: number;
+  /** A ball match (game/ball): which, what this fighter scored (goals; Sky Spike's kills and aces), and their saves (Goal
+   *  Rush's saves; Sky Spike's blocks and digs). Its place is its side's: 1 won, 2 lost - never a royale's. */
+  ball?: 'goal-rush' | 'sky-spike'; scored?: number; saves?: number;
   fighter: string;
   seconds: number;
   /** Where this fighter finished (1 the winner) among how many, and their knockouts. */
@@ -94,8 +97,13 @@ export function plausible(raw: Report, verified = false): { report: Report } | {
     const rounds = verified || raw.mode !== 'last-stand' ? int(raw.rounds, 100) : Math.min(int(raw.rounds, 100), Math.floor(seconds / 10) + 1);
     // Rift War: a side has twelve structures, and none falls quicker than one every twenty seconds.
     const towers = raw.mode !== 'rift-war' ? undefined : verified ? int(raw.towers, 24) : Math.min(int(raw.towers, 12), Math.floor(seconds / 20));
+    // A ball match: no goal quicker than one every eight seconds, no Sky Spike point than one every four, no save than one
+    // every three.
+    const ball = raw.mode !== 'rift-war' && (raw.ball === 'goal-rush' || raw.ball === 'sky-spike') ? raw.ball : undefined;
+    const scored = ball ? verified ? int(raw.scored, 200) : Math.min(int(raw.scored, 60), Math.floor(seconds / (ball === 'goal-rush' ? 8 : 4))) : undefined;
+    const saves = ball ? verified ? int(raw.saves, 200) : Math.min(int(raw.saves, 60), Math.floor(seconds / 3)) : undefined;
     return { report: { id: raw.id, mode: raw.mode, fighter, seconds, players, practice: !!raw.practice, rounds, revives: int(raw.revives, 20), repairs: int(raw.repairs, 100000), bossDamage: int(raw.bossDamage, 1e7), assists: int(raw.assists, 1000), rescues: int(raw.rescues, 20), supplies: int(raw.supplies, 20), place: Math.max(1, Math.min(players, int(raw.place, 12) || players)), kos,
-      ...company(raw), ...(towers !== undefined ? { towers } : {}) } };
+      ...company(raw), ...(towers !== undefined ? { towers } : {}), ...(ball ? { ball, scored, saves } : {}) } };
   }
   return { refused: 'That is not a match this game plays.' };
 }
@@ -139,6 +147,16 @@ export function payFor(report: Report): PayLine[] {
     add(`${report.assists ?? 0} teamwork assists`, Math.min(10, report.assists ?? 0) * k);
     add(`${report.rescues ?? 0} civilian rescues`, Math.min(8, (report.rescues ?? 0) * 4));
     add(`${report.supplies ?? 0} supply recoveries`, Math.min(8, (report.supplies ?? 0) * 4));
+    if (friends) add('Played with a friend', PAY.friend);
+    return lines;
+  }
+  // A ball match (Goal Rush, Sky Spike): a team battle's pay, and what this fighter scored and saved.
+  if (report.ball) {
+    const k = report.mode === 'match' || friends ? 1 : PAY.practice, goal = report.ball === 'goal-rush', scored = report.scored ?? 0, saves = report.saves ?? 0;
+    add(`${goal ? 'Goal Rush' : 'Sky Spike'} match completed`, 8 * k);
+    if (report.place === 1) add('Team victory', 12 * k);
+    add(goal ? `${scored} goal${scored === 1 ? '' : 's'}` : `${scored} point${scored === 1 ? '' : 's'} of your own`, Math.min(10, scored * (goal ? 3 : 1)) * k);
+    add(goal ? `${saves} save${saves === 1 ? '' : 's'}` : `${saves} block${saves === 1 ? '' : 's'} and digs`, Math.min(6, saves) * k);
     if (friends) add('Played with a friend', PAY.friend);
     return lines;
   }

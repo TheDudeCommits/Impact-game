@@ -12,9 +12,9 @@ function harness(budget = 1) {
   const scene = new T.Scene(), fx = new YodakaFireOwl(scene, { budget }); live.push(fx);
   const fighter = { state: { id: 'r', fighter: 'yodaka', alive: true, yaw: .4, action: 'idle', actionSeq: 9 } as PlayerState } as Fighter;
   const fighters = new Map([['r', fighter]]);
-  const tiger = scene.getObjectByName('yodaka-flame-tiger') as T.InstancedMesh;
-  const crescents = scene.getObjectByName('yodaka-tiger-crescents') as T.InstancedMesh;
-  return { scene, fx, fighter, fighters, tiger, crescents };
+  const owl = scene.getObjectByName('yodaka-fire-owl') as T.InstancedMesh;
+  const crescents = scene.getObjectByName('yodaka-owl-crescents') as T.InstancedMesh;
+  return { scene, fx, fighter, fighters, owl, crescents };
 }
 function readyTexture() {
   const texture = new T.Texture<HTMLImageElement>();
@@ -36,56 +36,56 @@ describe.skipIf(!!ORIGINALS.yodaka)('Yodaka manual Fire Owl area impact', () => 
     for (const kind of ['cast','release','hit','confirm','blocked'] as const) h.fx.handle(impact({ kind }), h.fighters);
     h.fx.handle(impact({ slot: 'special' }), h.fighters); h.fx.handle(impact({ fighter: 'kagari' }), h.fighters);
     const before = JSON.stringify(h.fighter.state); h.fx.update(10.1, h.fighters);
-    expect(h.tiger.count).toBe(0); expect(h.crescents.count).toBe(0); expect(JSON.stringify(h.fighter.state)).toBe(before);
+    expect(h.owl.count).toBe(0); expect(h.crescents.count).toBe(0); expect(JSON.stringify(h.fighter.state)).toBe(before);
   });
-  it('draws one finite tiger at the real area endpoint despite ended cast/actionSeq', async () => {
+  it('draws one finite owl at the real area endpoint despite ended cast/actionSeq', async () => {
     readyTexture(); const h = harness(); await h.fx.load(['yodaka']);
     const e = impact({ actionSeq: 2 }), before = JSON.stringify(e); h.fx.handle(e, h.fighters);
-    h.fx.update(9.99, h.fighters); expect(h.tiger.count).toBe(0);
-    h.fx.update(10.15, h.fighters); expect(h.tiger.count).toBe(1); expect(h.crescents.count).toBe(2);
-    const matrix = new T.Matrix4(); h.tiger.getMatrixAt(0, matrix);
+    h.fx.update(9.99, h.fighters); expect(h.owl.count).toBe(0);
+    h.fx.update(10.15, h.fighters); expect(h.owl.count).toBe(1); expect(h.crescents.count).toBe(2);
+    const matrix = new T.Matrix4(); h.owl.getMatrixAt(0, matrix);
     const p = new T.Vector3().setFromMatrixPosition(matrix), scale = new T.Vector3().setFromMatrixScale(matrix);
     expect(p.x).toBe(3); expect(p.z).toBe(-2); expect(p.y).toBeCloseTo(.25 + .06 + scale.y / 2, 6);
     expect(scale.x).toBeLessThanOrEqual(3.5); expect(scale.y).toBeCloseTo(scale.x / 1.5, 6); expect(JSON.stringify(e)).toBe(before);
-    h.fighter.state.actionSeq = 20; h.fx.update(10.3, h.fighters); expect(h.tiger.count).toBe(1);
-    h.fx.update(10.651, h.fighters); expect(h.tiger.count).toBe(0); expect(h.crescents.count).toBe(0);
+    h.fighter.state.actionSeq = 20; h.fx.update(10.3, h.fighters); expect(h.owl.count).toBe(1);
+    h.fx.update(10.651, h.fighters); expect(h.owl.count).toBe(0); expect(h.crescents.count).toBe(0);
   });
   it('deduplicates exact id/time while permitting a later valid event with reused id', async () => {
     readyTexture(); const h = harness(); await h.fx.load(['yodaka']);
-    h.fx.handle(impact(), h.fighters); h.fx.handle(impact(), h.fighters); h.fx.update(10.1, h.fighters); expect(h.tiger.count).toBe(1);
-    h.fx.handle(impact({ serverTime: 10.01 }), h.fighters); h.fx.update(10.1, h.fighters); expect(h.tiger.count).toBe(2);
+    h.fx.handle(impact(), h.fighters); h.fx.handle(impact(), h.fighters); h.fx.update(10.1, h.fighters); expect(h.owl.count).toBe(1);
+    h.fx.handle(impact({ serverTime: 10.01 }), h.fighters); h.fx.update(10.1, h.fighters); expect(h.owl.count).toBe(2);
   });
   it.each(['eliminated','respawn','rejected','whiff','winner'] as const)('cancels on %s without replaying an old event', async kind => {
     readyTexture(); const h = harness(); await h.fx.load(['yodaka']); h.fx.handle(impact(), h.fighters);
-    h.fx.handle(impact({ id: 22, kind }), h.fighters); h.fx.update(10.1, h.fighters); expect(h.tiger.count).toBe(0);
-    if (kind !== 'winner') { h.fx.handle(impact(), h.fighters); h.fx.update(10.2, h.fighters); expect(h.tiger.count).toBe(0); }
+    h.fx.handle(impact({ id: 22, kind }), h.fighters); h.fx.update(10.1, h.fighters); expect(h.owl.count).toBe(0);
+    if (kind !== 'winner') { h.fx.handle(impact(), h.fighters); h.fx.update(10.2, h.fighters); expect(h.owl.count).toBe(0); }
   });
   it('clears removed/dead owners and keeps global readiness valid for other live instances', async () => {
     readyTexture(); const a = harness(), b = harness(); await a.fx.load(['yodaka']); await b.fx.load(['yodaka']);
-    a.fx.handle(impact(), a.fighters); a.fighters.clear(); a.fx.update(10.1, a.fighters); expect(a.tiger.count).toBe(0);
+    a.fx.handle(impact(), a.fighters); a.fighters.clear(); a.fx.update(10.1, a.fighters); expect(a.owl.count).toBe(0);
     a.fx.dispose(); expect(yodakaFireOwlReady()).toBe(true);
-    b.fx.handle(impact(), b.fighters); b.fighter.state.alive = false; b.fx.update(10.1, b.fighters); expect(b.tiger.count).toBe(0);
+    b.fx.handle(impact(), b.fighters); b.fighter.state.alive = false; b.fx.update(10.1, b.fighters); expect(b.owl.count).toBe(0);
     b.fx.dispose(); expect(yodakaFireOwlReady()).toBe(false);
   });
   it('caps six simultaneous crests and twelve crescents, with one crescent per low-budget impact', async () => {
     readyTexture(); const h = harness(.3); await h.fx.load(['yodaka']);
     for (let i = 0; i < 100; i++) h.fx.handle(impact({ id: i + 100, radius: 400 }), h.fighters);
-    h.fx.update(10.15, h.fighters); expect(h.scene.children).toHaveLength(2); expect(h.tiger.count).toBe(6); expect(h.crescents.count).toBe(6);
-    const matrix = new T.Matrix4(); h.tiger.getMatrixAt(0, matrix); expect(new T.Vector3().setFromMatrixScale(matrix).x).toBeLessThanOrEqual(3.5);
+    h.fx.update(10.15, h.fighters); expect(h.scene.children).toHaveLength(2); expect(h.owl.count).toBe(6); expect(h.crescents.count).toBe(6);
+    const matrix = new T.Matrix4(); h.owl.getMatrixAt(0, matrix); expect(new T.Vector3().setFromMatrixScale(matrix).x).toBeLessThanOrEqual(3.5);
   });
   it('preserves warmup and bounded uploads across idle→active→idle→active', async () => {
     readyTexture(); const h = harness(); await h.fx.load(['yodaka']);
     for (let i = 0; i < 60; i++) h.fx.update(i / 60, h.fighters);
-    expect(h.tiger.instanceMatrix.version).toBe(0); expect(h.tiger.visible).toBe(true);
-    h.tiger.onAfterRender(null!, null!, null!, null!, null!, null!);
-    h.fx.update(2, h.fighters); expect(h.tiger.visible).toBe(false);
+    expect(h.owl.instanceMatrix.version).toBe(0); expect(h.owl.visible).toBe(true);
+    h.owl.onAfterRender(null!, null!, null!, null!, null!, null!);
+    h.fx.update(2, h.fighters); expect(h.owl.visible).toBe(false);
     h.fx.handle(impact(), h.fighters); h.fx.update(10.1, h.fighters);
-    expect(h.tiger.visible).toBe(true); expect(h.tiger.instanceMatrix.updateRanges).toEqual([{ start: 0, count: 16 }]);
-    const tint = h.tiger.geometry.getAttribute('tigerTint') as T.InstancedBufferAttribute;
+    expect(h.owl.visible).toBe(true); expect(h.owl.instanceMatrix.updateRanges).toEqual([{ start: 0, count: 16 }]);
+    const tint = h.owl.geometry.getAttribute('owlTint') as T.InstancedBufferAttribute;
     expect(tint.updateRanges).toEqual([{ start: 0, count: 4 }]);
-    const version = h.tiger.instanceMatrix.version; h.fx.reset(); h.fx.update(11, h.fighters);
-    expect(h.tiger.count).toBe(0); expect(h.tiger.instanceMatrix.version).toBe(version);
-    h.fx.handle(impact({ serverTime: 12 }), h.fighters); h.fx.update(12.1, h.fighters); expect(h.tiger.count).toBe(1);
+    const version = h.owl.instanceMatrix.version; h.fx.reset(); h.fx.update(11, h.fighters);
+    expect(h.owl.count).toBe(0); expect(h.owl.instanceMatrix.version).toBe(version);
+    h.fx.handle(impact({ serverTime: 12 }), h.fighters); h.fx.update(12.1, h.fighters); expect(h.owl.count).toBe(1);
   });
   it('falls back on failed/slow loads, disposes late textures, and does not hang fighter loading', async () => {
     vi.useFakeTimers(); let complete: ((texture: T.Texture<HTMLImageElement>) => void) | undefined;
@@ -93,7 +93,7 @@ describe.skipIf(!!ORIGINALS.yodaka)('Yodaka manual Fire Owl area impact', () => 
     const h = harness(), pending = h.fx.load(['yodaka']);
     await vi.advanceTimersByTimeAsync(YODAKA_OWL_LIMITS.loadTimeoutMs); await pending;
     expect(yodakaFireOwlReady()).toBe(false); const late = new T.Texture<HTMLImageElement>(), dispose = vi.spyOn(late, 'dispose'); complete!(late);
-    expect(dispose).toHaveBeenCalledOnce(); h.fx.handle(impact(), h.fighters); h.fx.update(10.1, h.fighters); expect(h.tiger.count).toBe(0);
+    expect(dispose).toHaveBeenCalledOnce(); h.fx.handle(impact(), h.fighters); h.fx.update(10.1, h.fighters); expect(h.owl.count).toBe(0);
   });
   it('resolves an immediate load error and disposes pending/completed loads safely', async () => {
     const fail = vi.spyOn(T.TextureLoader.prototype, 'load').mockImplementation((_url, _ready, _progress, error) => { error?.(new Error('missing')); return new T.Texture<HTMLImageElement>(); });
@@ -114,7 +114,7 @@ describe.skipIf(!!ORIGINALS.yodaka)('Yodaka manual Fire Owl area impact', () => 
       sim.submitInput('v', { seq: i + 1, moveX: 0, moveZ: 0, yaw: Math.PI }); sim.step(1 / 60);
       const snapshot = sim.snapshot(true); h.fighter.state = snapshot.players.find(p => p.id === 'r')!;
       for (const e of snapshot.events) { events.push(e); h.fx.handle(e, h.fighters); if (e.kind === 'impact') seenImpact = true; }
-      h.fx.update(snapshot.serverTime + .02, h.fighters); peakCount = Math.max(peakCount, h.tiger.count); if (!seenImpact) expect(h.tiger.count).toBe(0);
+      h.fx.update(snapshot.serverTime + .02, h.fighters); peakCount = Math.max(peakCount, h.owl.count); if (!seenImpact) expect(h.owl.count).toBe(0);
     }
     const releases = events.filter(e => e.kind === 'release' && e.slot === 'area');
     const impacts = events.filter(e => e.kind === 'impact' && e.slot === 'area');
@@ -127,6 +127,6 @@ describe.skipIf(!!ORIGINALS.yodaka)('Yodaka manual Fire Owl area impact', () => 
     expect(impacts[0].serverTime).toBeLessThanOrEqual(releases[0].due! + 1 / 60);
     expect(peakCount).toBe(1);
     expect(events.filter(e => e.kind === 'hit' && e.slot === 'area').map(e => e.damage)).toEqual([204]);
-    expect(h.tiger.count).toBe(0);
+    expect(h.owl.count).toBe(0);
   });
 });

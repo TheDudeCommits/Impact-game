@@ -205,7 +205,7 @@ function canEmote() {
   if (document.querySelector('#interface[data-hud="training"]')) return false; // Round 5 (UX, WP2): 1-4 / D-pad are Training's tools there.
   if (performance.now() - fighting > 400 && !document.querySelector('.combat-hud:not(.hidden)')) return false;
   const typing = document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement;
-  return !typing && !document.querySelector('.sv-hud.modal, .settings-scrim:not(.hidden), .sv-tree:not(.hidden), .sv-paused:not(.hidden), .shop:not(.hidden)');
+  return !typing && !document.querySelector('.sv-hud.modal, .settings-scrim:not(.hidden), .sv-tree:not(.hidden), .sv-paused:not(.hidden), .shop:not(.hidden), .ball-chat-wheel.open'); // (the ball modes' quick chat has 1-4 while it is open)
 }
 export function emote(slot: number) {
   const id = account.account?.worn.emotes?.[slot];

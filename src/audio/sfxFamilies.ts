@@ -103,7 +103,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   // ----- Konta
   konta: [null, null, null, 'wind'],                        // the Senpugan is his own; a barrage of them is wind
   shiden: [null, null, 'lightning', 'fire'],                 // Shrike Bolt and Black Pyre are his own; Ikazuchi Arrow; the great ember
-  shirokane: [null, null, null, 'water'],                      // the Sickle Bolt is his own; the Great Waterfall
+  shirokane: [null, null, null, 'water'],                      // the Sickle Bolt is his own; the Great Dust Fall
   tobari: ['psychic', null, 'psychic', 'fire'],              // a crow double and Red Moon Reverie are in the mind; Black Pyre is his own
   akagane: [null, 'fire', 'stone', 'fire'],                   // Cinder Art: Burning Sea; Heaven's Anvil is a meteor
   minase: ['wind', 'light', 'light', 'wind'],                // the palm sphere; the Relay Leap is a flash
@@ -133,7 +133,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   gaku: ['ki', 'ki', 'ki', 'ki'],
   setsu: [null, null, null, 'lightning'],                   // his own lightning
   unari: ['elastic', 'knives', 'elastic', 'petal'],         // the elastic; a card thrown; a storm of cards flutters and cuts as petals do
-  bonsho: [null, 'light', 'light', 'light'],                 // the Guanyin's golden hands
+  bonsho: [null, 'light', 'light', 'light'],                 // the guardian's golden hands
   imago: ['beast', 'ki', 'ki', 'light'],                    // the tail; Photon
   // ----- Last Sun
   taisei: [null, null, null, 'ki'],

@@ -139,7 +139,7 @@ export class LucyTideFx {
   }
   /** The arms of a body whose forearms are stretched past `min` of their length (the grab, the hammer). */
   private rubberArms(f: Fighter, min = .55) {
-    const form = (f as unknown as { gear4?: Fighter }).gear4, body = form && form.group.visible && !f.model.visible ? form : f;
+    const form = (f as unknown as { awakenedForm?: Fighter }).awakenedForm, body = form && form.group.visible && !f.model.visible ? form : f;
     for (const side of ['Right', 'Left']) {
       const fore = body.joints.get(side + 'ForeArm'), hand = body.joints.get(side + 'Hand');
       if (!fore || !hand) continue;

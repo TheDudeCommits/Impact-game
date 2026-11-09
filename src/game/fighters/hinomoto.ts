@@ -10,7 +10,7 @@ export const HINOMOTO_MOVES:Record<CoreSlot,MoveDefinition>={
 };
 export const HINOMOTO_COMBOS:ComboRow={lh:{name:'Old General\'s Reversal',range:3.05,radius:.87},llh:{name:'Rising Spark',range:3.0,radius:.88},lllh:{name:'Ashen Divider',range:3.2,radius:.92},llls:{name:'Cinder Reprisal',range:3.2,radius:1.02},airHeavy:{name:'Aerial Cleave',range:3.05,radius:.9},airSpecial:{name:'Falling Ember',radius:3.6}};
 export const HINOMOTO_CONTACTS={light:.435,heavy:.495,special:.58,ultimate:.125,rush1:.435,rush2:.53,rush3:.495,combos:{lh:.53,llh:.55,lllh:.495,llls:.58,airHeavy:.495,airSpecial:.58}}as const;
-export const HINOMOTO_AWAKENING={name:'THE OLD FIRE',clip:'THE OLD FIRE',duration:2.3,entryDuration:.9,beats:{lower:.20,compress:.42,release:.64,settle:.86},manualOnly:true,canonScope:'Unsealed on the classic two-armed captain costume. Heat is presentation only; no passive burn or autonomous attacks.'}as const;
+export const HINOMOTO_AWAKENING={name:'THE OLD FIRE',clip:'THE OLD FIRE',duration:2.3,entryDuration:.9,beats:{lower:.20,compress:.42,release:.64,settle:.86},manualOnly:true,canonScope:'Unsealed on his own two-armed costume. Heat is presentation only; no passive burn or autonomous attacks.'}as const;
 export const hinomotoStrikeJoint=()=> 'RightHand' as const;
 /** Measured actual sword endpoints in the exported RightHand joint coordinates. */
 export const HINOMOTO_SWORD_SOCKET={"bone":"RightHand","tip":[0.14236698759756772,0.24956964307522972,0.9367059995696284],"heel":[9.150698868465312e-05,0.1336377974888034,0.15291268431425065],"grip":[-0.028225480932581704,0.10018940842495866,-0.007304677982070851]}as const;

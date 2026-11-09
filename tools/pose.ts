@@ -68,7 +68,7 @@ async function main() {
         for (let s = 0; s < t + STEP; s += STEP) fighter.update(STEP, { ...state, actionTime: Math.min(.999, Math.min(t, s) / duration) }, true);
       }
       // A cut-out has no floor: the pool of shade under the feet (the body's own and its form's) is left out.
-      for (const body of [fighter, (fighter as unknown as { gear4?: Fighter }).gear4]) { const shade = (body as unknown as { contactShadow?: THREE.Object3D } | undefined)?.contactShadow; if (shade) shade.visible = false; }
+      for (const body of [fighter, (fighter as unknown as { awakenedForm?: Fighter }).awakenedForm]) { const shade = (body as unknown as { contactShadow?: THREE.Object3D } | undefined)?.contactShadow; if (shade) shade.visible = false; }
       fighter.group.updateMatrixWorld(true);
       const span = shot.span ?? 2.1, fov = shot.fov ?? 22, turn = shot.turn ?? .5, lift = shot.lift ?? .08;
       const camera = new THREE.PerspectiveCamera(fov, width / height, .05, 200);

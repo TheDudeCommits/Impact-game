@@ -4,8 +4,9 @@ Impact is a free, open-source arena fighter that runs in the browser. Every figh
 for the game: their names, faces, outfits, moves, voices and themes are its own.
 
 You pick a fighter and fight in one of the game's modes: one-on-one Duels, twelve-player battle royales against people or
-bots, private rooms, a Training Ground, co-op Arcade Survival against waves and bosses, and the objective modes Last Stand,
-Bad Blood and Rift War. It plays with a keyboard and mouse, a controller or touch.
+bots, private rooms, a Training Ground, co-op Arcade Survival against waves and bosses, the objective modes Last Stand,
+Bad Blood and Rift War, and the ball modes Goal Rush (three-a-side football) and Sky Spike (three-a-side volleyball over a
+net), where every move strikes the ball. It plays with a keyboard and mouse, a controller or touch.
 
 ![The home screen: the modes above, the fighter select below](docs/screenshots/home.jpg)
 

@@ -39,7 +39,7 @@ describe('the places\' ambience: recipes and files', () => {
   });
   it('puts the stands only where there are stands, and keeps a place under the fight', () => {
     const crowds = Object.entries(AMBIENCES).filter(([, recipe]) => recipe!.beds.some(bed => bed.crowd)).map(([stage]) => stage).sort();
-    expect(crowds).toEqual(['ash-colosseum', 'scrap-pit', 'sunfall-arena', 'zenith-coliseum']);
+    expect(crowds).toEqual(['ash-colosseum', 'ball-court', 'ball-pitch', 'scrap-pit', 'sunfall-arena', 'zenith-coliseum']);
     expect(AMBIENCE_LEVEL).toBeLessThanOrEqual(-8);
     for (const [stage, recipe] of Object.entries(AMBIENCES)) for (const bed of recipe!.beds) expect(bed.gain, `${stage} ${bed.file}`).toBeLessThanOrEqual(0);
     expect(CHEER.win).toBeGreaterThan(CHEER.blow);

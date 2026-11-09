@@ -6,9 +6,9 @@ import { VFX } from '../vfxLevel';
  *
  *  GLOW    a soft coloured falloff around a white-hot core: halos, embers.
  *  SPARK   an electric ball: a hot core with a jagged, re-seeded crackle rim
- *          and a fan of radial filaments - the ShrikeBolt/LightningCut in the palm.
+ *          and a fan of radial filaments - the Shrike Bolt or Sickle Bolt in the palm.
  *  RING    a thin bright annulus at `p1` of the radius, `core` thick.
- *  SWIRL   a spinning spiral sphere of `core` radius with a turbulent wind
+ *  SWIRL   a spinning whirl of `core` radius with a turbulent wind
  *          shell around it - the Senpugan's surface currents.
  *  STAR    a four-ray lens starburst with a core: flashes and discharges.
  *

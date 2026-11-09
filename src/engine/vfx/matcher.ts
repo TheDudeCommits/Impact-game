@@ -35,7 +35,7 @@ const NAME_MATERIALS: [RegExp, Material][] = [
   [/\b(magma|lava|volcan|eruption)/i, 'magma'],
   [/\b(blackPyre|lampblack|black flame)/i, 'blackfire'],
   [/\b(ice|frost|freez|glaci|snow|cold|frozen|pheasant)/i, 'ice'],
-  [/\b(lightning|thunder|shrikeBolt|lightningCut|thunderHawk|bolt|electr|volt|setsuna)/i, 'lightning'],
+  [/\b(lightning|thunder|shrikeBolt|thunderHawk|bolt|electr|volt|setsuna)/i, 'lightning'],
   [/\b(water|wave|tide|sea|torrent|aqua)/i, 'water'],
   [/\b(wind|gale|tornado|cyclone)/i, 'wind'],
   [/\b(explo|blast|bomb|howitzer|grenade)/i, 'explosion'],

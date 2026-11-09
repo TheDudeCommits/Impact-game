@@ -1,6 +1,7 @@
 import { keptSkill } from '../boot/skill';
 import { ROSTER_PROTOCOL } from '../game/rosterProtocol';
 import {RIFT_PROTOCOL} from '../game/moba/model';
+import {BALL_PROTOCOL} from '../game/ball/model';
 import {OBJECTIVE_PROTOCOL} from '../game/objectives/model';
 import {Client,type Room,type SeatReservation} from '@colyseus/sdk';
 import type {FighterId} from '../game/types';
@@ -15,7 +16,7 @@ export class PartyClient {
   constructor(private profile:()=>{fighter:FighterId;name:string}){}
   get id(){return this.room?.sessionId??'';}
   get joined(){return !!this.room;}
-  private identity(){const p=this.profile();return {...p,rosterProtocol:ROSTER_PROTOCOL,riftProtocol:RIFT_PROTOCOL,objectiveProtocol:OBJECTIVE_PROTOCOL,survivalProtocol:SURVIVAL_PROTOCOL,account:COOP_LINK.token,skill:keptSkill(),...carried(p.fighter)};}
+  private identity(){const p=this.profile();return {...p,rosterProtocol:ROSTER_PROTOCOL,riftProtocol:RIFT_PROTOCOL,ballProtocol:BALL_PROTOCOL,objectiveProtocol:OBJECTIVE_PROTOCOL,survivalProtocol:SURVIVAL_PROTOCOL,account:COOP_LINK.token,skill:keptSkill(),...carried(p.fighter)};}
   async connect(code?:string){
     if(this.connecting||this.room)return;this.connecting=true;this.onChange();
     try{const url=import.meta.env.VITE_MATCH_SERVER||`${location.protocol==='https:'?'https':'http'}://${location.hostname}:2567`,client=new Client(url);

@@ -13,9 +13,12 @@ export interface ModeStats {
   bestWaves: number;
   /** Matches (and runs) played with a friend - in a private or party room, or on the couch - and on the couch, and couch wins. */
   friends: number; couch: number; couchWins: number;
+  /** The ball modes: Goal Rush's wins and goals and the most in one match; Sky Spike's wins and points. Counted ahead of
+   *  any feat that reads them. */
+  goalRushWins: number; goals: number; bestGoals: number; skySpikeWins: number; spikePoints: number;
 }
-const COUNTS = ['duelWins', 'royaleWins', 'badBloodWins', 'riftWins', 'towers', 'friends', 'couch', 'couchWins'] as const;
-export const noModes = (): ModeStats => ({ duelWins: 0, royaleWins: 0, badBloodWins: 0, riftWins: 0, towers: 0, bestWaves: 0, friends: 0, couch: 0, couchWins: 0 });
+const COUNTS = ['duelWins', 'royaleWins', 'badBloodWins', 'riftWins', 'towers', 'friends', 'couch', 'couchWins', 'goalRushWins', 'goals', 'skySpikeWins', 'spikePoints'] as const;
+export const noModes = (): ModeStats => ({ duelWins: 0, royaleWins: 0, badBloodWins: 0, riftWins: 0, towers: 0, bestWaves: 0, friends: 0, couch: 0, couchWins: 0, goalRushWins: 0, goals: 0, bestGoals: 0, skySpikeWins: 0, spikePoints: 0 });
 /** An account's, as its feats read them: none yet reads as all nothing. */
 export const modesOf = (stats: { modes?: ModeStats }): ModeStats => ({ ...noModes(), ...stats.modes });
 
@@ -29,7 +32,10 @@ export function tallyModes(stats: { modes?: ModeStats }, report: Report) {
   if (won && report.mode === 'duel') m.duelWins++;
   if (won && report.mode === 'bad-blood') m.badBloodWins++;
   if (won && report.mode === 'rift-war') m.riftWins++;
-  if (won && (report.mode === 'match' || report.mode === 'bots' || report.mode === 'private') && report.players > 2) m.royaleWins++;
+  // A ball match is a side's win, never a royale's.
+  if (report.ball === 'goal-rush') { if (won) m.goalRushWins++; m.goals += report.scored ?? 0; m.bestGoals = Math.max(m.bestGoals, report.scored ?? 0); }
+  else if (report.ball === 'sky-spike') { if (won) m.skySpikeWins++; m.spikePoints += report.scored ?? 0; }
+  else if (won && (report.mode === 'match' || report.mode === 'bots' || report.mode === 'private') && report.players > 2) m.royaleWins++;
   if (report.mode === 'rift-war') m.towers += report.towers ?? 0;
   if (report.mode === 'last-stand') m.bestWaves = Math.max(m.bestWaves, report.rounds ?? 0);
 }
@@ -39,6 +45,6 @@ export function mergeModes(into: { modes?: ModeStats }, from: { modes?: ModeStat
   if (!into.modes && !from.modes) return;
   const a = modesOf(into), b = modesOf(from);
   for (const key of COUNTS) a[key] += b[key];
-  a.bestWaves = Math.max(a.bestWaves, b.bestWaves);
+  a.bestWaves = Math.max(a.bestWaves, b.bestWaves); a.bestGoals = Math.max(a.bestGoals, b.bestGoals);
   into.modes = a;
 }

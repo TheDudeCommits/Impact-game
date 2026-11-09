@@ -40,7 +40,7 @@ function scene(gap: number, verdict: { confirmed?: boolean; whiffed?: boolean; a
     f.targetPoint = new THREE.Vector3(0, 1.45, gap);
     f.update(1 / 60, { ...base('gummy'), id: 'gummy', awakened: !!verdict.awakened, action: 'ultimate', actionStarted: 1, actionDuration: ult.duration,
       actionTime: t / ult.duration, target: 'v', ...(on && verdict.confirmed ? { confirmedAt: decided } : {}), ...(on && verdict.whiffed ? { whiffedAt: decided } : {}) } as PlayerState, true);
-    const form = (f as unknown as { gear4: Fighter }).gear4, body = verdict.awakened ? form : f;
+    const form = (f as unknown as { awakenedForm: Fighter }).awakenedForm, body = verdict.awakened ? form : f;
     const own = (body.joints.get('Spine2') ?? body.joints.get('Hips'))!.getWorldPosition(new THREE.Vector3());
     return { body, form, own, right: body.joints.get('RightHand')!.getWorldPosition(new THREE.Vector3()), left: body.joints.get('LeftHand')!.getWorldPosition(new THREE.Vector3()), chest: new THREE.Vector3(0, 1.1, gap) };
   };
@@ -119,7 +119,7 @@ describe('Lucy\'s Grand Tide', () => {
     const ev = (kind: CombatEvent['kind'], slot: AttackSlot): CombatEvent => ({ id, actionSeq: id++, kind, serverTime: id, actorId: 'p1', fighter: 'gummy', slot, chain: 0 });
     for (const [awakened, kinds] of [[false, ['cast', 'confirm', 'hit']], [true, ['confirm', 'hit']]] as [boolean, CombatEvent['kind'][]][]) for (const kind of kinds) {
       const cues = planCombatAudio(ev(kind, 'ultimate'), awakened).map(l => l.cue);
-      expect(cues.filter(c => /poof|gear4|electric-bed/.test(c)), `${kind}${awakened ? ' awakened' : ''}`).toEqual([]);
+      expect(cues.filter(c => /poof|rubber|electric-bed/.test(c)), `${kind}${awakened ? ' awakened' : ''}`).toEqual([]);
     }
   });
 });

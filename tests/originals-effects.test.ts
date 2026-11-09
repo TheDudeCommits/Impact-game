@@ -11,7 +11,7 @@ const glb = (file: string) => { const b = fs.readFileSync(file), n = b.readUInt3
 
 describe('the originals\' own effect files', () => {
   it('are what Suzuran\'s, Tsubute\'s and Svanhild\'s modules load, and are on disk', () => {
-    const urls = [...SUZURAN_RESONANCE_ASSETS, TSUBUTE_SEED_SHOT_TEXTURES.wolf, TSUBUTE_SEED_SHOT_TEXTURES.bird, SEA_DRAGON_ASSET];
+    const urls = [...SUZURAN_RESONANCE_ASSETS, TSUBUTE_SEED_SHOT_TEXTURES.ballast, TSUBUTE_SEED_SHOT_TEXTURES.farBank, SEA_DRAGON_ASSET];
     for (const url of urls) {
       expect(url).toMatch(/^\/assets\/vfx\/originals\/[a-z-]+\.(webp|glb)$/);
       expect(fs.existsSync(`public${url}`), url).toBe(true);

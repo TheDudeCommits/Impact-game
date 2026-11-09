@@ -57,8 +57,8 @@ describe('the game\'s sound effects: files and tables', () => {
   it('plays none of Impact\'s synthesised files left in the moves, nor its crack: each is a recording of the set', () => {
     const last = ['armour-1', 'armour-2', 'beast-bite', 'beast-roar', 'beast-swipe-1', 'beast-swipe-2', 'dark-spark', 'blue', 'cannon-prep', 'domain',
       'el-blood-hit', 'el-blood-rush', 'el-grav-cast', 'el-grav-hit', 'el-petal-cast', 'el-petal-hit', 'el-petal-rush', 'el-plant-cast', 'el-plant-hit',
-      'el-psy-cast', 'el-psy-hit', 'el-sand-cast', 'el-sand-hit', 'el-sand-rush', 'el-sand-tail', 'el-sonic-cast', 'el-sonic-hit', 'gear4-bounce',
-      'gear4-inflate', 'poof-1', 'poof-2', 'purple-charge', 'sig-grapple', 'snap-1', 'snap-2', 'steam', 'stretch-1', 'stretch-2', 'timestop-resume',
+      'el-psy-cast', 'el-psy-hit', 'el-sand-cast', 'el-sand-hit', 'el-sand-rush', 'el-sand-tail', 'el-sonic-cast', 'el-sonic-hit', 'rubber-bounce',
+      'rubber-swell', 'poof-1', 'poof-2', 'purple-charge', 'sig-grapple', 'snap-1', 'snap-2', 'steam', 'stretch-1', 'stretch-2', 'timestop-resume',
       'timestop-tick'].map(name => `fx-${name}`);
     expect(last.length).toBe(40);
     for (const cue of [...last, 'crack']) expect(AUDIO_CUES[cue as AudioCue], cue).toMatch(/^sfx\/originals\/families\//);

@@ -75,7 +75,7 @@ describe('the cinematic\'s effects wait for the confirm', () => {
         if (clock >= move.contacts[0]) { if (confirm) s.confirmedAt = 1 + move.contacts[0]; else s.whiffedAt = 1 + move.contacts[0]; }
         if (!confirm && clock > move.contacts[0] + WHIFF_RECOVERY) { s.action = 'idle'; s.whiffedAt = undefined; }
         fx.update(1 + clock, fighters, 1);
-        open = false; scene.traverse(o => { if (o.name.startsWith('ward-room-') && o.visible) open = true; });
+        open = false; scene.traverse(o => { if (o.name.startsWith('ward-theatre-') && o.visible) open = true; });
       }
       return open;
     };

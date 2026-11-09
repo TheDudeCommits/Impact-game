@@ -122,7 +122,7 @@ export class WardEffects {
           float alpha=(.10+rim*.55+lines+foot)*uOpacity;
           gl_FragColor=vec4(mix(uColour,vec3(1.0),rim*.6+lines+foot*.5)*(1.0+rim*1.4+foot*1.2),alpha);}`,
       });
-      const mesh = new THREE.Mesh(this.sphere, material); mesh.name = `ward-room-${i}`; mesh.visible = false; mesh.frustumCulled = false; mesh.renderOrder = 3;
+      const mesh = new THREE.Mesh(this.sphere, material); mesh.name = `ward-theatre-${i}`; mesh.visible = false; mesh.frustumCulled = false; mesh.renderOrder = 3;
       scene.add(mesh);
       this.rooms.push({mesh, material, actorId: '', since: 0, until: 0, radius: 1, active: false, pulse: false,
         anchored: false, anchor: new THREE.Vector3(), opens: OPEN, closeAt: NaN, toward: '', ward: 0});

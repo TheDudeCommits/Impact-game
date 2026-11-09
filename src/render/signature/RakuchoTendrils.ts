@@ -24,7 +24,7 @@ const TENDRIL: StageLook = { core: lin(3.1, .8, .95), main: lin(1.9, .07, .17), 
 /** The same with nothing white in it, and barely past the bloom (a red that stays red): the tendril's veins, a cut's
  *  line, the cracks its last blow leaves. */
 const VEIN: StageLook = { ...TENDRIL, core: lin(2.2, .13, .25), main: lin(1.4, .045, .11) };
-/** The crimson shell: black that covers what is behind it, its edge burning crimson (red on dark, as the centipede is drawn). */
+/** The crimson shell: black that covers what is behind it, its edge burning crimson (red on dark, as the spire is drawn). */
 const CRIMSON_SHELL: StageLook = { core: lin(2.9, .5, .7), main: lin(1.7, .1, .2), rim: lin(.55, .03, .08), light: lin(1, .14, .2), element: { spike: 0xff9bb0, rim: 0xc20a26, light: 0xd0102e, ink: 0x120709 }, shell: 0xc20a26, edge: 0x120709, flame: ABYSS, dark: true, heart: 0,
   sphere: { body: lin(.03, .004, .008), core: lin(.55, .03, .07), rimA: lin(2.6, .22, .3), rimB: lin(1.5, .06, .12), spin: 1.3 } };
 const HEAVY = RAKUCHO_MOVES.heavy, SPECIAL = RAKUCHO_MOVES.special, ULT = RAKUCHO_MOVES.ultimate;
@@ -33,7 +33,7 @@ const FIRST = ULT.contacts[0], LAST = ULT.contacts[ULT.contacts.length - 1];
 const REAP = .26, LANCE = .34;
 const CUT = 0, PIERCE = 1, STRIKE = 2;
 type Confirm = { actor: string; target: string; seq: number; final: boolean; floor: number };
-/** What a blow leaves in the air for a moment: the cut across a body, the four lances through it, the centipede's fall. */
+/** What a blow leaves in the air for a moment: the cut across a body, the four lances through it, the spire's fall. */
 type Mark = { kind: number; actor: string; born: number; life: number; size: number; seed: number; at: THREE.Vector3; dir: THREE.Vector3; floor: number; live: boolean };
 
 export class RakuchoTendrils {
@@ -112,7 +112,7 @@ export class RakuchoTendrils {
       return;
     }
     if (involvesLocal(e.actorId, e.targetId)) SIGNATURE.screen?.impactFrame?.(.42, point);
-    // LAST CHAPTER: the centipede comes down through them. The floor cracked crimson, a pillar of black flame where
+    // LAST CHAPTER: the spire comes down through them. The floor cracked crimson, a pillar of black flame where
     // they stood, tails driven up out of the stone round it a beat after (by then they are thrown), the dark left.
     this.mark(STRIKE, e.actorId, point, dir, floor, t, .6, 1);
     st.burst(point, TENDRIL, 2.6, t, { dir, floor });
@@ -223,7 +223,7 @@ export class RakuchoTendrils {
   }
 
   /** Last Chapter from the confirm to the last blow: the darkness flooding the floor and standing round him in
-   *  black flames, the room lit red, and the centipede climbing out of his back and arching over him toward its victim.
+   *  black flames, the room lit red, and the plated spire climbing over his back and arching over him toward its victim.
    *  On the floor, round him and above him: the pair is read under it. */
   private gather(actor: Fighter, victim: Fighter | undefined, c: Confirm, elapsed: number, time: number) {
     const st = this.stage, g = clamp((elapsed - FIRST) / (LAST - FIRST)), seed = c.seq * 2.7, feet = this.ground.copy(actor.group.position).setY(c.floor), heading = this.face(actor);
@@ -231,22 +231,22 @@ export class RakuchoTendrils {
     st.pool(feet, 3 + 3.4 * g, CRIMSON_SHELL, Math.min(1, .3 + g * 1.2), seed);
     st.ring(feet, 2.5 + .5 * g, 1.1 + 1.3 * g, CRIMSON_SHELL, .6 + .4 * g, seed, 8);
     st.light(this.p.copy(feet).setY(feet.y + 1.2), 6 + 2.5 * g, TENDRIL, .28 + .32 * g);
-    // The centipede: out of the small of his back, up behind his left shoulder and over, its head hanging above the
+    // The spire: out of the small of his back, up behind his left shoulder and over, its head hanging above the
     // one it is for.
     const reach = victim ? Math.min(4.5, Math.max(1.6, Math.hypot(victim.group.position.x - feet.x, victim.group.position.z - feet.z))) : 2.4;
     this.root.copy(feet).addScaledVector(heading, -.25).setY(feet.y + 1.05);
     this.via.copy(feet).addScaledVector(heading, -1.5).addScaledVector(this.side, -1.1).setY(feet.y + 3.4 + 2.6 * g);
     this.tip.copy(feet).addScaledVector(heading, reach * (.25 + .6 * g)).setY(feet.y + 2.5 + 1.6 * g + .25 * Math.sin(time * 2.3));
     if (rakuchoRibbonsOn(actor)) rakuchoTip(actor, 'Tendrils1_8', this.tip); else
-    this.centipede(this.root, this.via, this.tip, clamp(.15 + g * 1.9), 1, time, seed);
+    this.spire(this.root, this.via, this.tip, clamp(.15 + g * 1.9), 1, time, seed);
     st.charge(this.tip, TENDRIL, .26 + .2 * g, Math.max(.35, g), seed);
     if (g > .8) st.speed(.5 * (g - .8) / .2, c.actor, c.target);
   }
 
-  /** The shell's centipede from `root` through `via` to `head` (a curve), drawn out to `k` of its length: a chain of
+  /** The shell's plated spire from `root` through `via` to `head` (a curve), drawn out to `k` of its length: a chain of
    *  black plates edged in crimson, a red spine through them, a pair of legs raking back off every plate, a head with
    *  one red eye. It sways as it stands. */
-  private centipede(root: THREE.Vector3, via: THREE.Vector3, head: THREE.Vector3, k: number, fade: number, time: number, seed: number, girth = .34) {
+  private spire(root: THREE.Vector3, via: THREE.Vector3, head: THREE.Vector3, k: number, fade: number, time: number, seed: number, girth = .34) {
     if (k <= .03 || fade <= .02) return;
     const st = this.stage, a = this.a.copy(root), b = this.b, along = this.c, leg = this.d, n = st.n(16, 9);
     for (let i = 1; i <= n; i++) {
@@ -295,13 +295,13 @@ export class RakuchoTendrils {
       }
       return;
     }
-    // STRIKE: the centipede come down through its victim, out of the air over him, and going into the floor.
+    // STRIKE: the spire come down through its victim, out of the air over him, and going into the floor.
     if (actor && rakuchoRibbonsOn(actor)) return;
     const fall = clamp(age / .09), right = this.side.set(m.dir.z, 0, -m.dir.x);
     this.root.copy(m.at).addScaledVector(m.dir, -3.4).addScaledVector(right, -.8).setY(m.floor + 5.4);
     this.via.copy(m.at).addScaledVector(m.dir, -.6).setY(m.floor + 6.4);
     this.tip.set(m.at.x, m.floor + .15, m.at.z);
-    this.centipede(this.root, this.via, this.tip, fall, 1 - u * u, time, m.seed, .42);
+    this.spire(this.root, this.via, this.tip, fall, 1 - u * u, time, m.seed, .42);
   }
 
   /** STARVING's entrance, as it was laid out (a ring opening at his feet from the eye's reveal, and the one red

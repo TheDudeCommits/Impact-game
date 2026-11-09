@@ -1,6 +1,7 @@
 import type { GameSnapshot } from '../../game/types';
 import { siteUrl } from '../../loading/siteBase'; // asset addresses inside the page's own folder
 import {riftOf} from '../../game/moba/model';
+import {ballOf, GOAL_RULES, SPIKE_RULES} from '../../game/ball/model';
 import { objectiveOf, RULES } from '../../game/objectives/model';
 import { KO_HEAL, MAX_PLAYERS, MIN_MATCH_FIELD } from '../../game/moves';
 import type { HomeMode } from '../MangaHome';
@@ -9,10 +10,10 @@ import { phone } from '../../input/device';
 import { DUEL_KICKER, LAST_STAND } from '../../originals/stages';
 import { gateModes } from '../../originals/launch';
 
-export type ModeId = 'duel' | 'royale' | 'training' | 'arcade' | 'last-stand' | 'bad-blood' | 'rift-war';
+export type ModeId = 'duel' | 'royale' | 'training' | 'arcade' | 'last-stand' | 'bad-blood' | 'rift-war' | 'goal-rush' | 'sky-spike';
 export type VariantId = 'offline' | 'couch' | 'online' | 'friends';
 export const VARIANT_ORDER: readonly VariantId[] = ['offline', 'couch', 'online', 'friends'];
-export const MODE_ORDER: readonly ModeId[] = ['duel', 'royale', 'training', 'arcade', 'last-stand', 'bad-blood', 'rift-war'];
+export const MODE_ORDER: readonly ModeId[] = ['duel', 'goal-rush', 'sky-spike', 'royale', 'training', 'arcade', 'last-stand', 'bad-blood', 'rift-war'];
 
 /** Round 5 corrections (the blind critic): one vocabulary for the ways to play, in every mode, on the cards, the
  *  sheets and PLAY's line - BOTS · ONLINE · FRIENDS - with each mode's own one-line subtitle under the word. A mode
@@ -60,6 +61,45 @@ export type Panel = { src: string; at?: string } | { move: 'ultimate' | 'special
 const art = (id: string, at?: string): Panel => ({ src: siteUrl(`/assets/home/modes/${id}.webp`), at });
 const revive = RULES.heroReviveSeconds, villains = RULES.villainMultiplier;
 export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
+  // The ball modes: every kind of attack is allowed in both, on the ball only.
+  'goal-rush': {
+    id: 'goal-rush', name: 'GOAL RUSH', art: 'goal-rush', rulesVersion: 1, kicker: 'THE INK BOWL · 3 V 3 FOOTBALL',
+    tagline: 'Blast the ball into their goal.',
+    goal: 'Three against three in a walled bowl. Every move you have hits the ball, never a player: outscore the other side.',
+    win: `Lead when the ${Math.round(GOAL_RULES.matchSeconds / 60)} minutes run out (the match ends when the ball next touches the ground). Tied: the next goal wins.`,
+    facts: { players: '3 V 3', length: `${Math.round(GOAL_RULES.matchSeconds / 60)} MIN + OVERTIME`, lives: 'BALL ONLY · NO KOS' },
+    howTo: [
+      'Every move strikes the ball where you look: {light} taps and passes, {heavy} drives a power shot, a launcher pops it high. Jump and strike to volley or spike it.',
+      'Each touch heats the ball. A hot ball flies faster and bowls over anyone in its way. {guard} blocks it; time it perfectly to kill its heat. {target} locks the camera on the ball.',
+      `Touch the ball to fill your bar, then {ultimate}: a SUPER SHOT. A super shot's goal counts ${GOAL_RULES.superGoal}.`,
+    ],
+    panels: [art('goal-rush', '30% 40%'), art('goal-rush', '60% 50%'), { move: 'ultimate' }],
+    variants: {
+      offline: { label: 'BOTS', card: 'BOTS', tag: 'YOU + 2 BOTS VS 3', onDevice: true, note: 'A full 3 v 3 on this device, bots on both sides.', go: 'KICK OFF' },
+      couch: { label: 'COUCH', card: 'COUCH', tag: '2 PLAYERS + BOTS', onDevice: true, note: 'Player 2 on this device, the screen split in two: on your team or the other. Bots fill both sides.', go: 'KICK OFF' },
+      online: { label: 'ONLINE', card: 'ONLINE', tag: 'REAL PLAYERS + BOTS', note: 'Matched with other players; bots fill empty seats.', go: 'FIND MATCH' },
+      friends: { label: 'FRIENDS', card: 'FRIENDS', tag: 'PRIVATE ROOM', note: 'A private room for up to six, three a side.', go: 'HOST ROOM' },
+    },
+  },
+  'sky-spike': {
+    id: 'sky-spike', name: 'SKY SPIKE', art: 'sky-spike', rulesVersion: 1, kicker: 'THE SKY COURT · 3 V 3 TAKRAW',
+    tagline: 'Spike it into their court.',
+    goal: 'Three against three across a net. Keep the ball off your floor and smash it into theirs with every move you have.',
+    win: `First to ${SPIKE_RULES.target}, win by two (${SPIKE_RULES.cap} caps it). A point in a FEVER rally counts double.`,
+    facts: { players: '3 V 3', length: '~5–8 MIN', lives: `FIRST TO ${SPIKE_RULES.target}` },
+    howTo: [
+      `{light} keeps the ball on your side: a bump, then a set up at the net. ${SPIKE_RULES.touches} touches a side, and the last has to go over.`,
+      '{heavy} and {special} send it over: jump for a SPIKE. {guard} in the air at the net BLOCKS. A ball landing in a court scores; out is the hitter’s fault. {target} locks the camera on the ball.',
+      `Every crossing heats the rally; past ${SPIKE_RULES.fever} it is a FEVER rally and the point counts double. {ultimate} is a SUPER SHOT into their emptiest corner.`,
+    ],
+    panels: [art('sky-spike', '30% 40%'), art('sky-spike', '60% 50%'), { move: 'ultimate' }],
+    variants: {
+      offline: { label: 'BOTS', card: 'BOTS', tag: 'YOU + 2 BOTS VS 3', onDevice: true, note: 'A full 3 v 3 on this device, bots on both sides.', go: 'SERVE' },
+      couch: { label: 'COUCH', card: 'COUCH', tag: '2 PLAYERS + BOTS', onDevice: true, note: 'Player 2 on this device, the screen split in two: on your team or the other. Bots fill both sides.', go: 'SERVE' },
+      online: { label: 'ONLINE', card: 'ONLINE', tag: 'REAL PLAYERS + BOTS', note: 'Matched with other players; bots fill empty seats.', go: 'FIND MATCH' },
+      friends: { label: 'FRIENDS', card: 'FRIENDS', tag: 'PRIVATE ROOM', note: 'A private room for up to six, three a side.', go: 'HOST ROOM' },
+    },
+  },
   'rift-war': {
     id:'rift-war',name:'RIFT WAR',art:'rift-war',rulesVersion:1,kicker:'THE TORN PLAIN · THREE-LANE WAR',
     tagline:'Push the lanes. Break their core.',goal:'Heroes against Villains. Lead your army through three lanes and destroy the enemy core.',
@@ -198,12 +238,15 @@ export const MODE_OF_HOME: Readonly<Record<HomeMode, { mode: ModeId; variant?: V
   duel: { mode: 'duel' }, players: { mode: 'royale', variant: 'online' }, bots: { mode: 'royale' },
   private: { mode: 'royale', variant: 'friends' }, training: { mode: 'training' }, arcade: { mode: 'arcade' },
   'last-stand': { mode: 'last-stand' }, 'bad-blood': { mode: 'bad-blood' }, 'rift-war': {mode:'rift-war'},
+  'goal-rush': { mode: 'goal-rush' }, 'sky-spike': { mode: 'sky-spike' },
 };
 
 /** Which mode a running match is (`survival`: the arcade's run is on, solo or co-op). */
 export function modeOfSnapshot(snapshot: GameSnapshot, survival: boolean): ModeId {
   if (survival) return 'arcade';
   if (riftOf(snapshot)) return 'rift-war';
+  const ball = ballOf(snapshot);
+  if (ball) return ball.mode;
   const objective = objectiveOf(snapshot);
   if (objective) return objective.kind;
   if (snapshot.roomMode === 'training') return 'training';

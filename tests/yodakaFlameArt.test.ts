@@ -24,7 +24,7 @@ describe('Yodaka manual flame presentation',()=>{
  });
  it('does not dirty GPU buffers during repeated empty updates',()=>{
   const h=setup();for(let i=0;i<60;i++)h.fx.update(i/60,h.fighters,h.flights);
-  for(const mesh of h.own()){expect(mesh.instanceMatrix.version).toBe(0);expect(((mesh.geometry.getAttribute('flameTint') ?? mesh.geometry.getAttribute('tigerTint')) as T.InstancedBufferAttribute).version).toBe(0);}h.fx.dispose();
+  for(const mesh of h.own()){expect(mesh.instanceMatrix.version).toBe(0);expect(((mesh.geometry.getAttribute('flameTint') ?? mesh.geometry.getAttribute('owlTint')) as T.InstancedBufferAttribute).version).toBe(0);}h.fx.dispose();
  });
  it('draws only released projectile flights, at the server flight position',()=>{
   const h=setup(),flight={fighter:'yodaka',slot:'special',released:false,position:new T.Vector3(3,2,4),heading:new T.Vector3(0,0,1)}as Flight;

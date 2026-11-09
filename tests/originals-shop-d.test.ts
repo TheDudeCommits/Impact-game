@@ -64,7 +64,7 @@ const SPECS: Partial<Record<FighterId, Spec>> = {
       [['gaku-tr1', 'gaku-idle1'], ['gaku-mx1', 'gaku-fanim1', 'gaku-fanim3', 'gaku-idle1']],
       [['gaku-awakened-tr1'], ['gaku-adult-mx1', 'gaku-adult-react1', 'gaku-adult-fanim1']],
     ],
-    clips: ['down_lp', 'Cub Jab', 'Scav Kick', 'Rising Paw', 'awaken-adult'],
+    clips: ['down_lp', 'Cub Jab', 'Scav Kick', 'Rising Paw', 'awaken-gaku'],
   },
   levin: {
     name: 'Levin', series: 'Ropewalk', awakening: 'KEPPEKI', own: /\/levin-/,
@@ -79,7 +79,7 @@ const SPECS: Partial<Record<FighterId, Spec>> = {
 const GLYPH: Partial<Record<FighterId, string>> = { vesper: '鴉', imago: '蟲', gaku: '獅', levin: '掃' };
 const FORM_CLIPS: Partial<Record<FighterId, string[]>> = {
   vesper: ['Feather Slash', 'Reverse Quill', 'Updraft', 'Pale Lance', 'down_lp', 'awaken-black-vespers'],
-  gaku: ['down_lp', 'jump', 'Jump Fall', 'Block', 'Rock', 'awaken-adult'],
+  gaku: ['down_lp', 'jump', 'Jump Fall', 'Block', 'Lion Fist', 'awaken-gaku'],
 };
 
 const IDS = (Object.keys(SHOP_D) as FighterId[]).filter(id => SPECS[id]);

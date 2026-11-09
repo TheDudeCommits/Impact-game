@@ -45,7 +45,7 @@ const TAKES: Take[] = [
   ['gaunt', 'gaunt-fanim2.glb', ['Rush 2']],
   ['magatsu', 'magatsu-fanim2.glb', ['Flaying Cut', 'Hex Slash', 'Hex Rise']],
   ['imago', 'imago-fanim3.glb', ['Chitin Jab', 'Mantis Hook', 'Rising Barb'], ['imago-fanim2.glb']],
-  ['gaku', 'gaku-fanim3.glb', ['Rock', 'Cub Jab', 'Rising Paw'], ['gaku-fanim2.glb']],
+  ['gaku', 'gaku-fanim3.glb', ['Lion Fist', 'Cub Jab', 'Rising Paw'], ['gaku-fanim2.glb']],
   ['akagane', 'akagane-fanim3.glb', ['Warlord Jab', 'Warlord Rise', 'War Fan Sweep']],
   ['tobari', 'tobari-fanim3.glb', ['Kunai Slash', 'Quill Slice', 'Rookwing Rise']],
   ['shiun', 'shiun-fanim3.glb', ['Hymn Palm', 'Presence Turn', 'Flash Dash', 'Relic Rise'], ['shiun-fanim2.glb']],

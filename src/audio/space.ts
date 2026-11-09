@@ -55,6 +55,9 @@ export const STAGE_SPACES: Partial<Record<StageId, SpaceName>> = {
   'kuroyuki-hall': 'open',
   'starfall-crater': 'canyon',
   'scrap-pit': 'keep',
+  // The ball modes: Goal Rush's floodlit bowl answers as a stadium; Sky Spike's court floats in open sky.
+  'ball-pitch': 'stadium',
+  'ball-court': 'open',
 };
 
 export function spaceFor(stage: StageId | undefined): Space | undefined {

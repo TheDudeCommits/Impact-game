@@ -13,11 +13,12 @@ import { currentDevice, promptKey, touchKey } from './prompts';
 
 
 /** `party`: a party's Battle Royale (loadingMode.ts) - its own page, never PRIVATE ROOM. */
-export type LoadingMode = 'duel' | 'bots' | 'players' | 'private' | 'party' | 'training' | 'arcade' | 'bad-blood' | 'last-stand' | 'rift-war';
+export type LoadingMode = 'duel' | 'bots' | 'players' | 'private' | 'party' | 'training' | 'arcade' | 'bad-blood' | 'last-stand' | 'rift-war' | 'goal-rush' | 'sky-spike';
 export type LoadingStep = 'prepare' | 'connect' | 'room' | 'assets' | 'warm';
 
 const MODE_TITLE: Record<LoadingMode, [string, string]> = {
   'rift-war':['RIFT WAR','THREE LANES. ONE CORE.'],
+  'goal-rush': ['GOAL RUSH', 'THREE A SIDE. ONE BALL.'], 'sky-spike': ['SKY SPIKE', 'THREE TOUCHES. ONE NET.'],
   duel: ['DUEL', 'ONE FIGHTER. ONE RIVAL.'], bots: ['BATTLE ROYALE', 'BOTS'], players: ['BATTLE ROYALE', 'ONLINE'], private: ['BATTLE ROYALE', 'PRIVATE ROOM'], party: ['BATTLE ROYALE', 'PARTY MATCH'],
   training: ['TRAINING GROUND', 'NO STAKES'], arcade: ['ARCADE SURVIVAL', 'THE RIFT'], 'bad-blood': ['BAD BLOOD', 'HEROES VS VILLAINS'], 'last-stand': ['LAST STAND', LAST_STAND.loading],
 };
@@ -61,6 +62,8 @@ function tipsFor(fighter: FighterId, mode: LoadingMode) {
   ];
   // Round 5 (UX): the ring was removed on 5 October (simulation.ts); a fighter who hides is hunted instead.
   if (mode === 'bots' || mode === 'players' || mode === 'private' || mode === 'party') rules.unshift(`One life each, last one standing. Stay in the action: fighters who hide get hunted.`);
+  if (mode === 'goal-rush') rules.unshift('Every move you have hits the ball, never a player: it goes where you look.','A launcher pops the ball into the sky: jump after it and strike it again for a volley or a spike.','Guard just as the ball reaches you for a perfect save: its heat is gone.');
+  if (mode === 'sky-spike') rules.unshift('A light keeps the ball on your side; a heavy or a special sends it over.','Three touches a side. Jump for a spike; guard in the air at the net to block.','Long rallies heat the ball: past twelve crossings every point counts double.');
   if (mode === 'rift-war') rules.unshift('Push with your wave. Towers prefer grunts until you attack an enemy fighter under their protection.','Recall to your fountain to heal and buy equipment. Movement or damage cancels the channel.');
   if (mode === 'duel') rules.unshift('A straight 1v1. Best of three: win two rounds to take the set. Run it back with the same rival.');
   if (mode === 'last-stand') rules.unshift('Defend the village and keep one ally standing. Stand beside a fallen teammate to revive them.', 'Your squad shares its points. Visit the quartermaster inside the gate to repair and upgrade the village.');

@@ -1,4 +1,5 @@
 import { keptSkill } from './boot/skill';
+import {BALL_PROTOCOL,type BallModeId} from './game/ball/model';
 import { ROSTER_PROTOCOL, ROSTER_REFRESH_MESSAGE } from './game/rosterProtocol';
 import { ARENAS_FULL_MESSAGE, isArenasFull } from './game/arenasFull';
 import { isReleasedFighter, requireReleasedFighter } from './game/rosterAvailability';
@@ -34,7 +35,9 @@ import { roomEmote, socialLeft, socialWelcome } from './social/roomSocial';
 
 export interface CouchStart { partner: FighterId; screen: CouchScreen; sides?: 'same' | 'rivals'; /** The seats the mode sheet showed (P1's device, P2's), pads that came and went while it was up already counted (couch/seats.ts reseat); none: the start seats them (couch.ts plannedSeats). */ seats?: readonly SeatDevice[] }
 export type CouchScreen = 'shared' | 'split-v' | 'split-h';
-export type NetworkAccess={kind:'rift-war';access:'quick'|'bots'|'host'|'join';code?:string;couch?:CouchStart}|{kind:'duel';access:'online'|'bot'|'host'|'join'|'couch';code?:string;couch?:CouchStart;/** A bot duel's rival, kept for PLAY AGAIN (Round 5 UX); a couch duel's, Player 2's fighter. */rival?:FighterId;/** The place the player named on the sheet (a bot Duel's, or the one a friends' room is opened on); none: dealt. */place?:StageId}|{kind:'party';travel:PartyTravel}|{kind:'objective';objective:ObjectiveKind;access:ObjectiveAccess;role?:RolePreference;fighter?:FighterId;code?:string;couch?:CouchStart;/** Bad Blood's place, when the player named one (bots, or a room the host opens). */place?:StageId}|{kind:'public'}|{kind:'create-private';players?:number;/** The place the host named for the room; none: the room deals it. */place?:StageId}|{kind:'join-private';code:string}|{kind:'bots';players:number;couch?:CouchStart;/** The place the player named; none: the royale's deck deals it. */place?:StageId;/** The bots, when a public room the page left had drafted them (loneQueue: their files already fetched); none: drafted here. */field?:FighterId[];/** Played on the device because nobody else queued (loneQueue): its place and field are that room's, not kept for PLAY AGAIN. */lone?:true}
+export type NetworkAccess={kind:'rift-war';access:'quick'|'bots'|'host'|'join';code?:string;couch?:CouchStart}
+  /** The ball modes (game/ball): Goal Rush and Sky Spike, on this device against bots or in a ball room. */
+  |{kind:'ball';mode:BallModeId;access:'quick'|'bots'|'host'|'join';code?:string;couch?:CouchStart;/** RUMBLE's charms (on this device, or a room the page opens). */rumble?:boolean;/** FREE PLAY: alone with the ball, on this device. */practice?:boolean}|{kind:'duel';access:'online'|'bot'|'host'|'join'|'couch';code?:string;couch?:CouchStart;/** A bot duel's rival, kept for PLAY AGAIN (Round 5 UX); a couch duel's, Player 2's fighter. */rival?:FighterId;/** The place the player named on the sheet (a bot Duel's, or the one a friends' room is opened on); none: dealt. */place?:StageId}|{kind:'party';travel:PartyTravel}|{kind:'objective';objective:ObjectiveKind;access:ObjectiveAccess;role?:RolePreference;fighter?:FighterId;code?:string;couch?:CouchStart;/** Bad Blood's place, when the player named one (bots, or a room the host opens). */place?:StageId}|{kind:'public'}|{kind:'create-private';players?:number;/** The place the host named for the room; none: the room deals it. */place?:StageId}|{kind:'join-private';code:string}|{kind:'bots';players:number;couch?:CouchStart;/** The place the player named; none: the royale's deck deals it. */place?:StageId;/** The bots, when a public room the page left had drafted them (loneQueue: their files already fetched); none: drafted here. */field?:FighterId[];/** Played on the device because nobody else queued (loneQueue): its place and field are that room's, not kept for PLAY AGAIN. */lone?:true}
   /** Arcade survival: no room at all - the arena runs in the browser (LocalArena). */
   |{kind:'survival';/** Couch co-op (couch/seats.ts): the second person's hero, beside the first. */partner?:FighterId;couch?:CouchStart}
   /** Training on this device with a second person in the ground (couch): none, it is the solo Training it always was. */
@@ -136,6 +139,13 @@ export class Network {
         if(access.access==='join'){const code=access.code?.trim();if(!code||!/^\d{6}$/.test(code))throw new Error('Enter the 6-digit room code.');activeRoom=await client.joinById(`rift-${code}`,{...options,code});}
         else if(access.access==='quick')activeRoom=await joinRiftPublic(client,url,options);
         else activeRoom=await client.create('rift_war',{...options,creationToken:crypto.randomUUID()});
+      }
+      else if(access.kind==='ball'){
+        const options={rosterProtocol:ROSTER_PROTOCOL,assetGate:true,ballProtocol:BALL_PROTOCOL,fighter,account,skill,name,ball:access.mode,access:access.access};
+        if(access.access==='join'){const code=access.code?.trim();if(!code||!/^\d{6}$/.test(code))throw new Error('Enter the 6-digit room code.');activeRoom=await client.joinById(`ball-${code}`,{...options,code});}
+        else if(access.access==='quick')activeRoom=await client.joinOrCreate('ball_arena',options);
+        else if(access.access==='host')activeRoom=await client.create('ball_arena',{...options,creationToken:crypto.randomUUID(),rumble:!!access.rumble});
+        else throw new Error('A match against bots runs on this device.');
       }
       else if(access.kind==='objective'){
         const options={rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,objectiveProtocol:OBJECTIVE_PROTOCOL,fighter,account,skill,name,objective:access.objective,access:access.access,role:access.role};
@@ -259,7 +269,7 @@ export class Network {
    *  page's word that its fight is on screen (`ready`, ReadyGate) - a versus room's only: the co-op and team rooms
    *  have their own start. */
   control(request:{type:'pause'|'resume';n:number}){if(this.room?.connection.isOpen)this.room.send(request.type,{n:request.n});}
-  ready(){if(!this.coop&&this.room?.connection.isOpen&&!(this.snapshot&&('objective' in this.snapshot||'rift' in this.snapshot)))this.room.send('ready');}
+  ready(){if(!this.coop&&this.room?.connection.isOpen&&!(this.snapshot&&('objective' in this.snapshot||'rift' in this.snapshot||'ball' in this.snapshot)))this.room.send('ready');}
   objectiveCommand(action:'start'|'role'|'rematch',role?:RolePreference){if(this.room?.connection.isOpen)this.room.send('objective-'+action,role);}
   startPrivateMatch(){if(this.room?.connection.isOpen)this.room.send('start-private-match');}
   /** Co-op: take a card (or none), say the next act is loaded, take the party back to the lobby. */

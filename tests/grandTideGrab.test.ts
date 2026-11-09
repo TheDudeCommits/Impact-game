@@ -43,7 +43,7 @@ function scene(gap: number, verdict: { confirmed?: boolean; whiffed?: boolean; a
     f.targetPoint = new THREE.Vector3(0, 1.45, gap);
     f.update(1 / 60, { ...base('gummy'), id: 'gummy', awakened: !!verdict.awakened, action: 'ultimate', actionStarted: 1, actionDuration: move.duration,
       actionTime: t / move.duration, target: 'v', ...(on && verdict.confirmed ? { confirmedAt: decided } : {}), ...(on && verdict.whiffed ? { whiffedAt: decided } : {}) } as PlayerState, true);
-    const body = LUCY_TIDE && !verdict.awakened ? f : (f as unknown as { gear4: Fighter }).gear4;
+    const body = LUCY_TIDE && !verdict.awakened ? f : (f as unknown as { awakenedForm: Fighter }).awakenedForm;
     const own = (body.joints.get('Spine2') ?? body.joints.get('Spine1') ?? body.joints.get('Hips'))!.getWorldPosition(new THREE.Vector3());
     return { hand: body.joints.get('RightHand')!.getWorldPosition(new THREE.Vector3()), body, own, chest: new THREE.Vector3(0, 1.1, gap) };
   };
@@ -116,7 +116,7 @@ describe('SUNRISE\'s arm', () => {
   it.skipIf(!!ORIGINALS.gummy)('flies open and shuts on them: the right hand alone', () => {
     const s = scene(5, { confirmed: true });
     try {
-      const sunrise = (s.f as unknown as { gear4: Fighter }).gear4;
+      const sunrise = (s.f as unknown as { awakenedForm: Fighter }).awakenedForm;
       const right = sunrise.model.getObjectByName(openHandName('gummy-g5', 'R'))!, left = sunrise.model.getObjectByName(openHandName('gummy-g5', 'L'))!;
       expect(right && left, 'SUNRISE carries his open hands').toBeTruthy();
       s.at(contact - .03);

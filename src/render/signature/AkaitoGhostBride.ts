@@ -173,7 +173,7 @@ export class AkaitoGhostBride {
     }
     if (e.slot === 'special') {
       if (e.branch === 'airSpecial') { st.burst(point, CURSED, 2, t, { floor }); st.shock(ground, CURSED, 4.4, t, .45); st.scar(ground, CURSED, 2.2, t + .05, 2); return; }
-      // Whispered Vow: "Don't move." The word lands as a blast and holds them in a shell of force, its rings going out.
+      // Whispered Vow: "Stay there." The word lands as a blast and holds them in a shell of force, its rings going out.
       const big = e.branch ? .7 : 1, word = this.words[this.wordCursor++ % this.words.length];
       word.p.copy(point); word.born = t; word.live = true;
       st.burst(point, CURSED, 1.8 * big, t, { dir, floor });

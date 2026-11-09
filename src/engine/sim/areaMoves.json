@@ -111,7 +111,7 @@
       "telegraph": 0.75,
       "look": "pillar",
       "anim": "special",
-      "voice": "vo-shirokane-great-waterfall",
+      "voice": "vo-shirokane-dust-fall",
       "ja": "灰遁・大塵瀑",
       "card": "Dust Fall"
     }
@@ -584,7 +584,7 @@
       "telegraph": 0.9,
       "look": "pillar",
       "anim": {
-        "clip": "Gratitude"
+        "clip": "Bonsho Victory"
       },
       "voice": "vo-bonsho-last-toll",
       "ja": "終の鐘"
@@ -852,7 +852,7 @@
       "anim": {
         "clip": "Icicle Thrust"
       },
-      "voice": "vo-tokan-partisan",
+      "voice": "vo-tokan-icicle-spear",
       "ja": "氷柱槍"
     }
   },

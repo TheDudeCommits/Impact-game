@@ -1,6 +1,6 @@
 import type { IRoomCache } from 'colyseus';
 
-export const QUEUE_MODES = ['royale', 'duel', 'last-stand', 'bad-blood', 'rift-war', 'arcade'] as const;
+export const QUEUE_MODES = ['royale', 'duel', 'last-stand', 'bad-blood', 'rift-war', 'arcade', 'goal-rush', 'sky-spike'] as const;
 export type QueueMode = typeof QUEUE_MODES[number];
 export type PageAt = 'home' | 'local' | 'standby';
 export interface ModeCount { queue: number; playing: number; standby: number }
@@ -33,6 +33,7 @@ export function countRooms(rooms: readonly Pick<IRoomCache, 'name' | 'clients' |
     else if (room.name === 'private_duel') mode = 'duel';
     else if (room.name === 'objective_arena' && isMode(meta.objective)) { mode = meta.objective; open = meta.access === 'quick' && !room.locked; }
     else if (room.name === 'rift_war') { mode = 'rift-war'; open = meta.access === 'quick' && !room.locked; }
+    else if (room.name === 'ball_arena' && (meta.ball === 'goal-rush' || meta.ball === 'sky-spike')) { mode = meta.ball; open = meta.access === 'quick' && !room.locked; }
     else if (room.name === 'survival_arena') { mode = 'arcade'; open = meta.visibility === 'public' && !room.locked; }
     if (!mode) continue;
     modes[mode][open ? 'queue' : 'playing'] += clients;

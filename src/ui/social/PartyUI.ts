@@ -21,8 +21,8 @@ import './party.css';
 
 export const escape=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 /** The mode catalogue's words and art for each party mode (the co-op run is the Arcade's). */
-const INFO:Record<PartyMode,ModeId>={'rift-war':'rift-war',duel:'duel',royale:'royale','bad-blood':'bad-blood','last-stand':'last-stand',survival:'arcade'};
-const SEATS:Record<PartyMode,string>={'rift-war':'5 V 5 · BOTS FILL',duel:'1 V 1',royale:'2–12 PLAYERS','bad-blood':'3 V 3 · BOTS FILL','last-stand':'1–4 DEFENDERS',survival:'1–4 PLAYERS'};
+const INFO:Record<PartyMode,ModeId>={'goal-rush':'goal-rush','sky-spike':'sky-spike','rift-war':'rift-war',duel:'duel',royale:'royale','bad-blood':'bad-blood','last-stand':'last-stand',survival:'arcade'};
+const SEATS:Record<PartyMode,string>={'goal-rush':'3 V 3 · BOTS FILL','sky-spike':'3 V 3 · BOTS FILL','rift-war':'5 V 5 · BOTS FILL',duel:'1 V 1',royale:'2–12 PLAYERS','bad-blood':'3 V 3 · BOTS FILL','last-stand':'1–4 DEFENDERS',survival:'1–4 PLAYERS'};
 /** A party of five or more (the party holds up to PARTY_MAX): its cards are drawn tighter (party.css [data-crowd]), so six
  *  friends stand in THE PARTY's column without scrolling - two to a row on a phone on its side. */
 const CROWD=5;
@@ -31,6 +31,8 @@ const FIXED:Partial<Record<PartyMode,{name:string;scene:string;tag:string}>>={
   'rift-war':{name:shownStage('rift-war')!.name,scene:shownStage('rift-war')!.scene,tag:'THREE LANES'},
   'last-stand':{name:shownStage('hidden-ash')!.name,scene:shownStage('hidden-ash')!.scene,tag:'FIXED'},
   survival:{name:'The Rift',scene:'A new world every act, dealt by the run',tag:'SET BY THE RUN'},
+  'goal-rush':{name:shownStage('ball-pitch')!.name,scene:shownStage('ball-pitch')!.scene,tag:'3 V 3 FOOTBALL'},
+  'sky-spike':{name:shownStage('ball-court')!.name,scene:shownStage('ball-court')!.scene,tag:'3 V 3 TAKRAW'},
 };
 const DIFFICULTY_NAMES:Record<Difficulty,string>={easy:'EASY',normal:'NORMAL',hard:'HARD'};
 const time=(s:number)=>s?`${s/60} MIN`:'NO LIMIT';

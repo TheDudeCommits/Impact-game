@@ -23,7 +23,7 @@ import { ORIGINALS } from '../src/originals/roster';
 import { R6B_ART, R6B_HOLD, R6B_VOICES_PENDING, R6B_WAITING, SHOP_R6B } from '../src/originals/shop/r6b';
 import VOICES from '../src/originals/voices.json';
 import { commandList } from '../src/ui/commandList';
-import { BONSHO_BODHISATTVA_ASSETS, BonshoBodhisattva } from '../src/render/signature/BonshoBodhisattva';
+import { BONSHO_GUARDIAN_ASSETS, BonshoGuardian } from '../src/render/signature/BonshoGuardian';
 import { AKAITO_GHOST_BRIDE_ASSETS, AkaitoGhostBride } from '../src/render/signature/AkaitoGhostBride';
 import { SPIRIT_CALLERS, SWORD_SPIRIT_ASSETS } from '../src/render/SwordSpiritEffects';
 import { YODAKA_OWL_ASSET, YodakaFireOwl } from '../src/render/signature/YodakaFireOwl';
@@ -128,10 +128,10 @@ describe("round 6's new fighters, the second batch", () => {
 
   it("raise Bonsho's own bell guardian in the sculpture's place, with the earlier seven parts at the earlier joints, and never ship the earlier", async () => {
     const own = '/assets/fighters/bonsho-guardian1.glb', main = '/assets/fighters/bonsho-bodhisattva1.glb';
-    expect([...BONSHO_BODHISATTVA_ASSETS]).toEqual([own]);
+    expect([...BONSHO_GUARDIAN_ASSETS]).toEqual([own]);
     expect(glbJson(own).images ?? []).toEqual([]);   // plain bronze: the renderer colours it, nothing painted
     vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(url => loadRig(url) as never);
-    const scene = new THREE.Scene(), fx = new BonshoBodhisattva(scene, { budget: 1 });
+    const scene = new THREE.Scene(), fx = new BonshoGuardian(scene, { budget: 1 });
     try {
       await fx.load(['bonsho']);
       for (const part of ['BodhiTorso', ...['Left', 'Right'].flatMap(s => ['Upper', 'Fore', 'Hand'].map(p => `Bodhi${s}${p}`))])

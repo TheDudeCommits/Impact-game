@@ -171,7 +171,7 @@ export async function formFighter(id: FighterId, name: string) {
   fighter.attachForm(form);
   return fighter;
 }
-type FormView = { gear4?: { group: THREE.Group; joints: Map<string, THREE.Bone>; active?: THREE.AnimationAction; locomotionSpeed: number } };
+type FormView = { awakenedForm?: { group: THREE.Group; joints: Map<string, THREE.Bone>; active?: THREE.AnimationAction; locomotionSpeed: number } };
 export type FormRunRow = { fighter: FighterId; shown: number; clip: string; pace: number; speed: number; hands: number; reach: number; parentHands: number };
 /** The awakened fighter running flat out (`speed` m/s along +z) for `seconds`: its form body's run clip and how fast it
  *  plays (clip seconds a second), the speed the form reads, and how far the form's hands travel in its own space - a
@@ -181,7 +181,7 @@ export function measureFormRun(fighter: Fighter, seconds = 2, speed = 7.5): Form
   const row: FormRunRow = { fighter: id, shown: 0, clip: '', pace: 0, speed: 0, hands: 0, reach: 0, parentHands: 0 };
   const awake: PlayerState = { ...popBase(id, fighter.state.id), awakened: true };
   for (let f = 0; f < 90; f++) fighter.update(dt, awake, true, dt);
-  const form = (fighter as unknown as FormView).gear4;
+  const form = (fighter as unknown as FormView).awakenedForm;
   if (!form) return row;
   const clips = new Map<string, number>();
   const hands: THREE.Vector3[][] = [[], []], own: THREE.Vector3[] = [];
@@ -222,7 +222,7 @@ export function measureFormJump(fighter: Fighter): FormJumpRow {
   sim.addPlayer('a', id, 'A', false, { x: 0, y: 0, z: 0 });
   sim.addPlayer('b', 'taisei', 'B', false, { x: 0, y: 0, z: 6 });
   sim.startMatch(); sim.trainingCommand('a', 'awakening');
-  const form = (fighter as unknown as { gear4?: { group: THREE.Group; active?: THREE.AnimationAction; falling: boolean } }).gear4;
+  const form = (fighter as unknown as { awakenedForm?: { group: THREE.Group; active?: THREE.AnimationAction; falling: boolean } }).awakenedForm;
   const clips = new Set<string>();
   try {
     for (let tick = 0, seq = 0; tick < 260; tick++) {
@@ -360,7 +360,7 @@ export type FormLaunchRow = { fighter: FighterId; flown: number; sole: number; u
  *  under, and the most FLOOR_GUARD lifted it (cm). */
 export function measureFormLaunch(victim: Fighter, striker: Fighter): FormLaunchRow {
   const row: FormLaunchRow = { fighter: victim.state.fighter, flown: 0, sole: 0, under: 0, lift: 0 };
-  const form = (victim as unknown as { gear4?: { group: THREE.Group; lowestSupport(): number } }).gear4, hover = () => (victim as unknown as { formHover: number }).formHover;
+  const form = (victim as unknown as { awakenedForm?: { group: THREE.Group; lowestSupport(): number } }).awakenedForm, hover = () => (victim as unknown as { formHover: number }).formHover;
   driveBoth(victim, striker, [{ tick: 150, attack: 'heavy' }], [{ tick: 20, awaken: true }], 330, (body, shown) => {
     if (!/launched|knockdown/.test(shown.action) || !form?.group.visible) return;
     row.flown++;

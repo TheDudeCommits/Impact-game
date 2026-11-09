@@ -122,7 +122,7 @@ export function baseBody(id: FighterId, files: FighterFiles): Body {
 }
 
 /** The awakened form's clips (Fighter.attachForm): the form's own, its extra files joined on (gummy/sunrise.ts
- *  bindFormExtras), Gummy's authored Gatling, and for a worn shell (`formTint`) the fighter's combo enders' takes it has
+ *  bindFormExtras), Gummy's authored barrage, and for a worn shell (`formTint`) the fighter's combo enders' takes it has
  *  none of, bound onto it by joint name. */
 export function formBody(id: FighterId, files: FighterFiles, base: Body): Body | undefined {
   const definition = FIGHTERS[id];

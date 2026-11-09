@@ -30,12 +30,12 @@ import { BunaOni } from '../src/render/signature/BunaOni';
 import { RoseEmpress } from '../src/render/signature/RoseEmpress';
 import { SorayomiWeather } from '../src/render/signature/SorayomiWeather';
 import { PsycheFleur } from '../src/render/signature/PsycheFleur';
-import { OyashioKarate } from '../src/render/signature/OyashioKarate';
+import { OyashioCurrent } from '../src/render/signature/OyashioCurrent';
 import { VfxKit } from '../src/render/vfx/VfxKit';
 import { ChohanAllIn } from '../src/render/signature/ChohanAllIn';
 import { TempoDarkSpark } from '../src/render/signature/TempoDarkSpark';
 import { AkaitoGhostBride } from '../src/render/signature/AkaitoGhostBride';
-import { SashiganeRatio } from '../src/render/signature/SashiganeRatio';
+import { SashiganeRule } from '../src/render/signature/SashiganeRule';
 import { AmpereSurge } from '../src/render/signature/AmpereSurge';
 import { PyroclastExplosions } from '../src/render/signature/PyroclastExplosions';
 import { TanchoPhosphor } from '../src/render/signature/TanchoPhosphor';
@@ -57,7 +57,7 @@ import { KusushiStrength } from '../src/render/signature/KusushiStrength';
 import { KubiwaControl } from '../src/render/signature/KubiwaControl';
 import { SuzuranResonance } from '../src/render/signature/SuzuranResonance';
 import { UmeBlossom } from '../src/render/signature/UmeBlossom';
-import { BonshoBodhisattva } from '../src/render/signature/BonshoBodhisattva';
+import { BonshoGuardian } from '../src/render/signature/BonshoGuardian';
 import { UnariElastic } from '../src/render/signature/UnariElastic';
 import { LanthornLampblack } from '../src/render/signature/LanthornLampblack';
 import { HighsunSun } from '../src/render/signature/HighsunSun';
@@ -125,11 +125,11 @@ describe('what a pilot\'s ultimate asks of the shared stage at its busiest frame
     ['basilissa', (scene: THREE.Scene) => new RoseEmpress(scene, { budget: 1 })],
     ['sorayomi', (scene: THREE.Scene) => new SorayomiWeather(scene, VfxKit.for(scene))],
     ['psyche', (scene: THREE.Scene) => new PsycheFleur(scene, { budget: 1 })],
-    ['oyashio', (scene: THREE.Scene) => new OyashioKarate(scene, { budget: 1 })],
+    ['oyashio', (scene: THREE.Scene) => new OyashioCurrent(scene, { budget: 1 })],
     ['chohan', (scene: THREE.Scene) => new ChohanAllIn(scene, { budget: 1 })],
     ['tempo', (scene: THREE.Scene) => new TempoDarkSpark(scene, { budget: 1 })],
     ['akaito', (scene: THREE.Scene) => new AkaitoGhostBride(scene, { budget: 1 })],
-    ['sashigane', (scene: THREE.Scene) => new SashiganeRatio(scene, { budget: 1 })],
+    ['sashigane', (scene: THREE.Scene) => new SashiganeRule(scene, { budget: 1 })],
     ['ampere', (scene: THREE.Scene) => new AmpereSurge(scene, { budget: 1 })],
     ['pyroclast', (scene: THREE.Scene) => new PyroclastExplosions(scene, { budget: 1 })],
     ['tancho', (scene: THREE.Scene) => new TanchoPhosphor(scene, { budget: 1 })],
@@ -151,7 +151,7 @@ describe('what a pilot\'s ultimate asks of the shared stage at its busiest frame
     ['kubiwa', (scene: THREE.Scene) => new KubiwaControl(scene, { budget: 1 })],
     ['suzuran', (scene: THREE.Scene) => new SuzuranResonance(scene, { budget: 1 })],
     ['ume', (scene: THREE.Scene) => new UmeBlossom(scene, { budget: 1 })],
-    ['bonsho', (scene: THREE.Scene) => new BonshoBodhisattva(scene, { budget: 1 })],
+    ['bonsho', (scene: THREE.Scene) => new BonshoGuardian(scene, { budget: 1 })],
     ['unari', (scene: THREE.Scene) => new UnariElastic(scene, { budget: 1 })],
     ['lanthorn', (scene: THREE.Scene) => new LanthornLampblack(scene, { budget: 1 })],
     ['highsun', (scene: THREE.Scene) => new HighsunSun(scene, { budget: 1 })],

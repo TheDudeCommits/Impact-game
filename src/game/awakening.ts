@@ -227,10 +227,10 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
     flames: true, auraGlow: .3, clips: ['awaken-quake', '_Idle'] }),
   sorrel: define({ name: 'CRIMSON WILL', kind: 'aura', aura: [0xff2a3a, 0x1a0006],
     flames: true, auraGlow: .3, clips: ['awaken-will', '_Idle'] }),
-  // Dorado raises Kagari over his head, and his will comes up gold round black
-  // lightning: the man who reached the end of the sea.
+  // Dorado raises his cutlass to the sky, and his will comes up gold round black
+  // lightning: LAST HORIZON.
   dorado: define({ name: 'LAST HORIZON', kind: 'aura', aura: [0xffb020, 0x140800],
-    flames: true, auraGlow: .3, clips: ['awaken-kagari', '_Idle'] }),
+    flames: true, auraGlow: .3, clips: ['awaken-dorado', '_Idle'] }),
   shiun: define({ name: 'PALE SERAPH', kind: 'form', aura: [0xb070ff, 0x24083f], formScale: 1.08,
     clips: ['awaken-pale-gem', '_Idle'] }),
   magatsu: define({ name: 'CALAMITY KING', kind: 'form', aura: [0xff2a3a, 0x1c0204], formScale: 1.24,
@@ -256,7 +256,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   // the gold of his plates gone glossy black and his gems magenta (jinlin-black1.glb,
   // scripts/economy/recolor_form.py), under a violet aura.
   'jinlin': define({ name: 'BLACK TIDE', kind: 'form', aura: [0xf0d4ff, 0x7a2bd8], formScale: 1,
-    clips: ['awaken-golden', '_Idle'] }),
+    clips: ['awaken-jinlin', '_Idle'] }),
   // Gohaku: the roar he wakes it with, and white light round him with red-violet in it.
   // His body is the Beast's, silver hair and all: before, he woke from Beast into Beast ("the hair gets bigger and
   // nothing else transforms", the blind critic, 3 October). He fights as Gohaku, his hair black, and the Beast's silver
@@ -289,7 +289,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   'rook': define({ name: 'HOLLOW CROWN', kind: 'form', aura: [0xeee2ff, 0x6a3df0], formScale: 1.12,
     clips: ['awaken-rookery', '_Idle'] }),
   gaku: define({ name: 'KOMAINU', kind: 'form', aura: [0xffc83a, 0xe08a0c], formScale: 2.0, flames: true, auraGlow: .3,
-    clips: ['awaken-adult', '_Idle'] }),
+    clips: ['awaken-gaku', '_Idle'] }),
 };
 
 /** What the transformation changes about a move.

@@ -26,6 +26,7 @@ export function queueModeOf(access: NetworkAccess | undefined): QueueMode | unde
   if (access.kind === 'duel') return 'duel';
   if (access.kind === 'objective') return access.objective;
   if (access.kind === 'rift-war') return 'rift-war';
+  if (access.kind === 'ball') return access.mode;
   return undefined;
 }
 /** The online way to queue for `mode` again: the challenger's JOIN. */
@@ -34,6 +35,7 @@ export function queueAccess(mode: QueueMode, fighter?: FighterId): NetworkAccess
   if (mode === 'duel') return { kind: 'duel', access: 'online' };
   if (mode === 'last-stand' || mode === 'bad-blood') return { kind: 'objective', objective: mode, access: 'quick', ...(fighter ? { fighter } : {}) };
   if (mode === 'rift-war') return { kind: 'rift-war', access: 'quick' };
+  if (mode === 'goal-rush' || mode === 'sky-spike') return { kind: 'ball', mode, access: 'quick' };
   return undefined;
 }
 

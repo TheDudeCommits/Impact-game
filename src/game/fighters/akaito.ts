@@ -2,7 +2,7 @@ import type { CoreSlot } from '../types';
 import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 
-/** Katana and copied Whispered Vow. Ghost Bride is presentation of confirmed manual
+/** Katana and Whispered Vow. Ghost Bride is presentation of confirmed manual
  * moves only: she never acquires targets, ticks damage, or attacks on a timer. */
 export const AKAITO_MOVES: Record<CoreSlot, MoveDefinition> = {
   light: { name: 'Thread Draw', duration: .44, contacts: [.168], damage: 20, range: 2.65, radius: .67,

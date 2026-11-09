@@ -66,7 +66,7 @@ const DECREE = E(0xf4fff8, 0x3ae88a, 0xb8ffd8, 0x02100a);
 const ROSE = E(0xffe2f6, 0xe83aa8, 0xff8ad8, 0x14020e);
 /** Jirenga's power is red. */
 const PRIDE_RED = E(0xffe2dc, 0xe8202a, 0xff5a4a, 0x140204);
-/** 'Emperor Jinlin': the gold of him, his death beams' magenta, and the Drowned Sun's red. */
+/** 'Emperor Jinlin': the gold of him, his needle rays' magenta, and the Drowned Sun's red. */
 const GOLDEN = E(0xfff4cc, 0xffb21e, 0xffd86a, 0x140e02);
 const PEARL_NEEDLE = E(0xffe8fb, 0xd82ab0, 0xff6ad8, 0x12020e);
 const DROWNED_SUN = E(0xffe2cc, 0xff4a12, 0xff8a3a, 0x1a0602);
@@ -327,7 +327,7 @@ export function techniqueColour(fighter: FighterId, slot: AttackSlot, awakened =
 /** The hue the look pass grades the room toward while a signature special
  *  or ultimate plays: deeper than the light the technique throws, since the
  *  grade tints a whole frame and the light only what it reaches. One blue
- *  for the Sunpalm Cannon, Lightning Cut and Galewheel family, one violet for
+ *  for the Sunpalm Cannon, Sickle Bolt and Galewheel family, one violet for
  *  Singularity, PLANETARIUM and VOID SICKLE, one crimson for Nightfang, NIGHTFALL
  *  and the SUNSET BARRAGE's Will, one orange for Kurobi; the rest follow the
  *  palette. */

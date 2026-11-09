@@ -74,6 +74,10 @@ export const AMBIENCES: Partial<Record<StageId, AmbienceRecipe>> = {
   // The Kuroyuki Hall: a great hall's own air, the void's low hum under it, a draught through the castle's endless rooms.
   'kuroyuki-hall': { beds: [{ file: 'room', gain: -2, wide: true, rate: .9 }, { file: 'drone', gain: -8, rate: .7 }, { file: 'wind', gain: -14, lowpass: 520, rate: .8 }] },
   'scrap-pit': { beds: [stands(-1), { file: 'room', gain: -9, wide: true }] },
+  // The ball modes: Goal Rush's floodlit bowl full to the roof; Sky Spike's crowd on the rim of a court in the clouds, the
+  // high wind, the banners and the birds. Both have stands, so a goal or a point lifts them (CHEER).
+  'ball-pitch': { beds: [stands(0), { file: 'wind', gain: -14, highpass: 160 }], accents: [flags([7, 14], -13)] },
+  'ball-court': { beds: [stands(-3), { file: 'wind', gain: -6, highpass: 240, rate: 1.1, wide: true }], accents: [flags([6, 12], -11), birds([12, 26], -15)] },
 };
 
 export const ambienceUrl = (file: AmbienceFile) => `/assets/audio/ambience/${file}.m4a`;

@@ -4,7 +4,7 @@ import { VFX } from '../vfxLevel';
 /** Light from a technique without adding a light to the scene.
  *
  *  Three recompiles every lit program when the number of lights changes, and
- *  every light costs every lit fragment, so a Lightning Cut cannot bring a point
+ *  every light costs every lit fragment, so a Sickle Bolt cannot bring a point
  *  light with it. This fakes one after the opaque pass instead: a sphere of
  *  the light's radius is drawn by its back faces with the depth test
  *  inverted, which passes exactly where some surface sits in front of the

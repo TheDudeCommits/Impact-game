@@ -1,6 +1,6 @@
 import { ALL_FIGHTERS, GATED_FIGHTERS, LAUNCH, NEUTRAL_STAGES, RENAMED_ITEMS, SHOWN_FIGHTERS, duelStage, fighterShown, homeCardOpen,
   isOriginal, launchInvite, launchStage, modeOpen, partyModeOpen, shownFighter, stageSafe, unroutedVoices, wayOpen, gateFighterManifest } from '../src/originals/launch';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -88,6 +88,18 @@ describe('the launch gate: modes and stages', () => {
     for (const card of ['arcade', 'last-stand', 'bad-blood', 'rift-war']) expect(HOME_RAIL.includes(card as 'arcade'), card).toBe(modeOpen(card)); // (Rift War: LAUNCH.riftWar, open since rift-war)
     expect(HOME_RAIL).toEqual(expect.arrayContaining(['duel', 'bots', 'training']));
   });
+  it('shows the ball modes on play.example.com and the match server, never in Player Two\'s copy while LAUNCH.ballModes is "site"', () => {
+    expect(LAUNCH.ballModes).toBe('site');
+    expect(modeOpen('goal-rush')).toBe(true); expect(modeOpen('sky-spike')).toBe(true); // (node: the match server serves their rooms)
+    expect(HOME_RAIL).toEqual(expect.arrayContaining(['goal-rush', 'sky-spike']));
+    try {
+      vi.stubGlobal('location', new URL('https://impact.playertwo.cc/~b1/index.html'));
+      for (const mode of ['goal-rush', 'sky-spike']) { expect(modeOpen(mode), mode).toBe(false); expect(homeCardOpen(mode), mode).toBe(false); expect(partyModeOpen(mode), mode).toBe(false); }
+      expect(modeOpen('duel')).toBe(true);
+      vi.stubGlobal('location', new URL('https://play.example.com/'));
+      expect(modeOpen('goal-rush')).toBe(true); expect(homeCardOpen('sky-spike')).toBe(true);
+    } finally { vi.unstubAllGlobals(); }
+  });
   it('offers the ways to play that need a match server only while LAUNCH.online is on (on by default; off in a build for no server)', () => {
     for (const [mode, info] of Object.entries(MODES)) if (modeOpen(mode)) {
       for (const [way, variant] of Object.entries(info.variants)) if (!variant?.onDevice) expect(LAUNCH.online, `${mode} ${way}`).toBe(true);
@@ -155,7 +167,7 @@ describe('the launch gate: pages, music, voices and the package', () => {
       'assets/music/home-main.m4a', 'assets/fighters/gorai-wyrm-br1.glb', // (yodaka until Yodaka opened)
       'assets/fighters/wukong-tr1.glb', 'assets/home/portraits/taisei.webp', 'assets/audio/home/taisei.m4a', 'assets/music/originals/set-sail.m4a',
       'assets/audio/v2/voice/originals/wukong/vo-taisei-ha.wav', 'assets/audio/v2/swing-a.wav',
-      'assets/audio/v2/shirokane-lightning-cut.wav'];
+      'assets/audio/v2/shirokane-sickle-bolt.wav'];
     const away = new Set(launchUnshipped(files));
     for (const file of files.slice(0, 10)) expect(away.has(file) || (fighterShown('gorai') && file.includes('gorai')), file).toBe(true);
     for (const file of files.slice(10)) expect(away.has(file), file).toBe(false);

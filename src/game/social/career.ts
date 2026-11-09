@@ -3,9 +3,9 @@ import type {FighterId,GameSnapshot} from '../types';
 import {MOVES} from '../moves';
 import {objectiveOf} from '../objectives/model';
 import type {RunResult} from '../../survival/SurvivalGame';
-export type CareerMode='duel'|'royale'|'bots'|'private'|'boss-hunt'|'rift-control'|'last-stand'|'bad-blood'|'survival'|'coop'|'rift-war';
+export type CareerMode='duel'|'royale'|'bots'|'private'|'boss-hunt'|'rift-control'|'last-stand'|'bad-blood'|'survival'|'coop'|'rift-war'|'goal-rush'|'sky-spike';
 /** Every mode a career can hold, the retired ones too, so an old save still reads (and still counts in the totals). */
-export const CAREER_MODES:Record<CareerMode,string>={'rift-war':'Rift War',duel:'Duel',royale:'BR vs Players',bots:'BR vs Bots',private:'Private Royale','boss-hunt':'Boss Hunt','rift-control':'Rift Control','last-stand':'Last Stand','bad-blood':'Bad Blood',survival:'Arcade Survival',coop:'Co-op Survival'};
+export const CAREER_MODES:Record<CareerMode,string>={'goal-rush':'Goal Rush','sky-spike':'Sky Spike','rift-war':'Rift War',duel:'Duel',royale:'BR vs Players',bots:'BR vs Bots',private:'Private Royale','boss-hunt':'Boss Hunt','rift-control':'Rift Control','last-stand':'Last Stand','bad-blood':'Bad Blood',survival:'Arcade Survival',coop:'Co-op Survival'};
 /** The modes the Career page shows, in the home's order: the ones that exist (Boss Hunt and Rift Control never
  *  shipped). Duels were filed under BR vs Bots and Private Royale until 8 October 2026; they have their own now. */
 export const CAREER_SHOWN:readonly CareerMode[]=['duel','royale','bots','private','survival','coop','last-stand','bad-blood','rift-war'];

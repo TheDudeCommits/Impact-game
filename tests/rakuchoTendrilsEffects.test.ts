@@ -80,7 +80,7 @@ describe('Rakucho manually triggered bounded presentation', () => {
     } finally { h.end(); }
   });
 
-  it('requires a confirmed hit before Last Chapter gathers, and grows the centipede as it builds', () => {
+  it('requires a confirmed hit before Last Chapter gathers, and grows the spire as it builds', () => {
     const h = setup({ action: 'ultimate', actionTime: 1 / ULT.duration });
     try {
       h.fx.update(11, h.fighters, h.flights);
@@ -88,7 +88,7 @@ describe('Rakucho manually triggered bounded presentation', () => {
       h.fx.handle(event(), h.fighters);
       h.fx.update(11, h.fighters, h.flights);
       const early = { ...h.stage.counts };
-      // The pool, the ring of black flame, the centipede's first plates.
+      // The pool, the ring of black flame, the spire's first plates.
       expect(early.discs).toBe(1); expect(early.flames).toBeGreaterThan(12); expect(early.bolts).toBeGreaterThan(20); expect(early.lights).toBeGreaterThan(2);
       h.rakucho.state.actionTime = 2.8 / ULT.duration;
       h.fx.update(12.8, h.fighters, h.flights);

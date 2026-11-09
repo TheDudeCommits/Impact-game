@@ -17,23 +17,23 @@ export const TSUBUTE_SEED_SHOT_TEXTURES = Object.freeze({ ...TSUBUTE_STONES });
 const UP = new T.Vector3(0, 1, 0), FORWARD = new T.Vector3(0, 0, 1);
 const GREEN = new T.Color(0x719d2e), LIME = new T.Color(0xd7f093), SEED = new T.Color(0xbf8b49);
 const RED = new T.Color(0xee4c20), GOLD = new T.Color(0xffbd43);
-/** The cutouts' tint: over 1, so the wolf's leaves and the bird's fire pass the bloom threshold instead of being dimmed
+/** The cutouts' tint: over 1, so the Ballast's stone and the Far Bank's fire pass the bloom threshold instead of being dimmed
  *  with the room by the technique's grade. */
 const BRIGHT = new T.Color(1.55, 1.55, 1.55);
 /** The skull is the blast's smoke: dark in its fire, so it is read against it, and left hanging when the fire has gone. */
 const SOOT = new T.Color(.07, .05, .05);
-/** The looks his shots are staged in (MoveStage): a seed shot, the Firebird's fire, and the impact shell's white shock. */
+/** The looks his shots are staged in (MoveStage): a seed shot, the Far Bank's fire, and the impact shell's white shock. */
 const POP = STAGE.green, FIRE = STAGE.fire, IMPACT = STAGE.quake;
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
-type Kind = 'seed' | 'wolf' | 'bird';
+type Kind = 'seed' | 'ballast' | 'farBank';
 type Burst = { actor: string; target: string; born: number; kind: Kind; final: boolean; seed: number; point: T.Vector3; yaw: number };
 type Tracer = { actor: string; born: number; from: T.Vector3; to: T.Vector3 };
 /** A INJI: Both Banks that confirmed: who, on whom, and where they stood (the plant grows there). */
 type Barrage = { actor: string; target: string; seq: number; born: number; at: T.Vector3; floor: number; live: boolean };
 type TextureState = { texture?: T.Texture; ready: boolean; aspect: number; cancel?: () => void };
-const kindOf = (slot?: string, branch?: string): Kind => branch ? 'seed' : slot === 'heavy' ? 'wolf' : slot === 'special' ? 'bird' : 'seed';
+const kindOf = (slot?: string, branch?: string): Kind => branch ? 'seed' : slot === 'heavy' ? 'ballast' : slot === 'special' ? 'farBank' : 'seed';
 const ULT = TSUBUTE_MOVES.ultimate;
-/** How long the Skull Bomb Grass's skull hangs in its fire (seconds). */
+/** How long the last shot's skull hangs in its fire (seconds). */
 const SKULL_LIFE = 1.15;
 
 /** The shared native socket follows the measured right-hand seed pouch at release,
@@ -43,7 +43,7 @@ export function tsubuteMuzzle(f: Fighter, out: T.Vector3): boolean {
   return Number.isFinite(out.x) && Number.isFinite(out.y) && Number.isFinite(out.z);
 }
 
-/** The Skull Bomb Grass's skull, as the explosion's smoke draws it: a white cutout on nothing, built once (no image to
+/** The last shot's skull, as the explosion's smoke draws it: a white cutout on nothing, built once (no image to
  *  fetch): a cranium, a jaw with teeth cut into it, two sockets and a nose. */
 function skullTexture(): T.DataTexture {
   const size = 64, data = new Uint8Array(size * size * 4);
@@ -63,13 +63,13 @@ export class TsubuteSeedShot {
   private readonly seeds: Roster96Batch;
   private readonly leaves: Roster96Batch;
   private readonly rings: Roster96Batch;
-  private readonly wolf: Roster96Batch;
-  private readonly bird: Roster96Batch;
+  private readonly ballast: Roster96Batch;
+  private readonly farBank: Roster96Batch;
   private readonly skull: Roster96Batch;
   private readonly skullMap: T.DataTexture;
   private readonly batches: readonly Roster96Batch[];
   private readonly stage: MoveStage;
-  private readonly textures: Record<'wolf' | 'bird', TextureState> = { wolf: { ready: false, aspect: 1 }, bird: { ready: false, aspect: 1.5 } };
+  private readonly textures: Record<'ballast' | 'farBank', TextureState> = { ballast: { ready: false, aspect: 1 }, farBank: { ready: false, aspect: 1.5 } };
   private readonly bursts: Burst[] = Array.from({ length: TSUBUTE_SEED_SHOT_LIMITS.impacts }, () => ({ actor: '', target: '', born: -Infinity, kind: 'seed', final: false, seed: 0, point: new T.Vector3(), yaw: 0 }));
   private readonly tracers: Tracer[] = Array.from({ length: TSUBUTE_SEED_SHOT_LIMITS.tracers }, () => ({ actor: '', born: -Infinity, from: new T.Vector3(), to: new T.Vector3() }));
   private readonly barrages: Barrage[] = Array.from({ length: TSUBUTE_SEED_SHOT_LIMITS.barrages }, () => ({ actor: '', target: '', seq: -1, born: 0, at: new T.Vector3(), floor: 0, live: false }));
@@ -86,15 +86,15 @@ export class TsubuteSeedShot {
     this.seeds = new Roster96Batch(scene, 'tsubute-seeds', new T.IcosahedronGeometry(1, 0), TSUBUTE_SEED_SHOT_LIMITS.seeds);
     this.leaves = new Roster96Batch(scene, 'tsubute-leaves', seedLeafGeometry(), TSUBUTE_SEED_SHOT_LIMITS.leaves);
     this.rings = new Roster96Batch(scene, 'tsubute-impact-rings', new T.RingGeometry(.90, 1, 28), TSUBUTE_SEED_SHOT_LIMITS.rings);
-    this.wolf = this.silhouette(scene, 'tsubute-ballast'); this.bird = this.silhouette(scene, 'tsubute-firebird'); this.skull = this.silhouette(scene, 'tsubute-skull');
+    this.ballast = this.silhouette(scene, 'tsubute-ballast'); this.farBank = this.silhouette(scene, 'tsubute-far-bank'); this.skull = this.silhouette(scene, 'tsubute-skull');
     this.skullMap = skullTexture(); this.skull.mesh.material.uniforms.map.value = this.skullMap;
-    this.batches = [this.seeds, this.leaves, this.rings, this.wolf, this.bird, this.skull];
+    this.batches = [this.seeds, this.leaves, this.rings, this.ballast, this.farBank, this.skull];
     this.stage = MoveStage.for(scene, kit);
   }
   private silhouette(scene: T.Scene, name: string): Roster96Batch {
     const batch = new Roster96Batch(scene, name, new T.PlaneGeometry(1, 1), TSUBUTE_SEED_SHOT_LIMITS.silhouettes);
     const material = batch.mesh.material;
-    // Over the stage's glows (5): the wolf, the bird and the skull are the read, their light is behind them.
+    // Over the stage's glows (5): the two stones and the skull are the read, their light is behind them.
     batch.mesh.renderOrder = 6;
     material.uniforms.map = { value: null };
     material.vertexShader = `attribute vec4 effectTint;varying vec4 tint;varying vec2 tex;
@@ -108,9 +108,9 @@ export class TsubuteSeedShot {
   }
   load(ids: readonly string[]): Promise<void> {
     if (this.disposed || !ids.includes('tsubute')) return Promise.resolve();
-    return this.loading ??= Promise.all([this.loadTexture('wolf', this.wolf), this.loadTexture('bird', this.bird)]).then(() => {});
+    return this.loading ??= Promise.all([this.loadTexture('ballast', this.ballast), this.loadTexture('farBank', this.farBank)]).then(() => {});
   }
-  private loadTexture(kind: 'wolf' | 'bird', batch: Roster96Batch): Promise<void> {
+  private loadTexture(kind: 'ballast' | 'farBank', batch: Roster96Batch): Promise<void> {
     const state = this.textures[kind];
     return new Promise(resolve => {
       let finished = false;
@@ -183,7 +183,7 @@ export class TsubuteSeedShot {
     const dir = this.direction.set(Math.sin(burst.yaw), 0, Math.cos(burst.yaw)), ground = this.ground.set(point.x, floor, point.z);
     if (e.slot === 'ultimate' && !e.branch) {
       if (burst.final) {
-        // The Skull Bomb Grass: the blast, a pillar of fire with the skull in it, the floor shaken and left burning.
+        // The last shot: the blast, a pillar of fire with the skull in it, the floor shaken and left burning.
         for (const barrage of this.barrages) if (barrage.actor === e.actorId) barrage.live = false;
         if (involvesLocal(e.actorId, e.targetId)) SIGNATURE.screen?.impactFrame?.(.45, point);
         st.burst(point, FIRE, 2.2, t, { floor });
@@ -194,13 +194,13 @@ export class TsubuteSeedShot {
       else st.burst(point, POP, 1.2, t, { dir, floor });
       return;
     }
-    if (burst.kind === 'wolf') {
-      // The Ballast bites: the seed's burst, the impact shell's white shock out of its jaws, a ring over the floor.
+    if (burst.kind === 'ballast') {
+      // The Ballast lands: the seed's burst, the impact shell's white shock, a ring over the floor.
       st.burst(point, POP, 1, t, { dir, floor });
       st.dome(point, IMPACT, 2.2, t, .35);
       st.shock(ground, IMPACT, 4.6, t, .45);
-    } else if (burst.kind === 'bird') {
-      // The Firebird lands: a blast, a pillar of fire where it came down, the floor left burning.
+    } else if (burst.kind === 'farBank') {
+      // The Far Bank lands: a blast, a pillar of fire where it came down, the floor left burning.
       st.burst(point, FIRE, 2, t, { dir, floor });
       st.erupt(ground, UP, FIRE, .8, 5.5, t + .04, .75);
       st.scar(ground, FIRE, 2.2, t + .05, 2.6);
@@ -219,27 +219,27 @@ export class TsubuteSeedShot {
     return false;
   }
   /** A cutout `width` metres across at `point`, its own shape kept, lit past the bloom threshold. */
-  private crest(kind: 'wolf' | 'bird', point: T.Vector3, width: number, alpha: number) {
+  private crest(kind: 'ballast' | 'farBank', point: T.Vector3, width: number, alpha: number) {
     const aspect = this.textures[kind].aspect, height = width / aspect;
-    (kind === 'bird' ? this.bird : this.wolf).add(point, this.identity, height * aspect, height, 1, BRIGHT, alpha);
+    (kind === 'farBank' ? this.farBank : this.ballast).add(point, this.identity, height * aspect, height, 1, BRIGHT, alpha);
   }
   private flight(flight: Flight, time: number, detail: boolean) {
-    const kind = kindOf(flight.slot, flight.branch), bird = kind === 'bird', wolf = kind === 'wolf', st = this.stage;
+    const kind = kindOf(flight.slot, flight.branch), farBank = kind === 'farBank', ballast = kind === 'ballast', st = this.stage;
     this.direction.copy(flight.heading); if (this.direction.lengthSq() < 1e-8) this.direction.copy(FORWARD); else this.direction.normalize();
     this.q.setFromUnitVectors(UP, this.direction);
-    const radius = bird ? .16 : wolf ? .18 : .09;
-    this.seeds.add(flight.position, this.q, radius, radius * 1.45, radius, bird ? GOLD : SEED, 1);
+    const radius = farBank ? .16 : ballast ? .18 : .09;
+    this.seeds.add(flight.position, this.q, radius, radius * 1.45, radius, farBank ? GOLD : SEED, 1);
     const travelled = flight.origin ? Math.max(0, this.center.subVectors(flight.position, flight.origin).dot(this.direction)) : 0;
     for (let i = 1; i <= (detail ? 3 : 2); i++) {
       const back = Math.min(travelled, i * .22); if (back < .025) continue;
       this.p.copy(flight.position).addScaledVector(this.direction, -back);
-      const r = radius * (1 - i * .18); this.seeds.add(this.p, this.q, r, r * 1.2, r, bird ? RED : LIME, .7 - i * .12);
+      const r = radius * (1 - i * .18); this.seeds.add(this.p, this.q, r, r * 1.2, r, farBank ? RED : LIME, .7 - i * .12);
     }
     // What it grows into as it flies: out of the seed over its first three metres.
     const grown = clamp(.3 + travelled / 3);
-    if ((bird || wolf) && this.textures[bird ? 'bird' : 'wolf'].ready) {
-      this.crest(bird ? 'bird' : 'wolf', flight.position, (bird ? 3.6 : 2.6) * grown, .95);
-    } else if (bird) {
+    if ((farBank || ballast) && this.textures[farBank ? 'farBank' : 'ballast'].ready) {
+      this.crest(farBank ? 'farBank' : 'ballast', flight.position, (farBank ? 3.6 : 2.6) * grown, .95);
+    } else if (farBank) {
       // A compact fan of pointed flame feathers remains visible when the optional cutout fails.
       this.q.setFromUnitVectors(FORWARD, this.direction);
       for (let i = -3; i <= 3; i++) {
@@ -249,7 +249,7 @@ export class TsubuteSeedShot {
       }
     } else {
       this.q.setFromUnitVectors(FORWARD, this.direction);
-      const count = wolf ? (detail ? 5 : 3) : 2, wide = wolf ? 2.4 : 1.5;
+      const count = ballast ? (detail ? 5 : 3) : 2, wide = ballast ? 2.4 : 1.5;
       for (let i = 0; i < count; i++) {
         const a = i * Math.PI * 2 / count + time * 5;
         this.p.set(Math.cos(a) * .11 * wide, Math.sin(a) * .11 * wide, -.08).applyQuaternion(this.q).add(flight.position);
@@ -257,15 +257,15 @@ export class TsubuteSeedShot {
         this.leaves.add(this.p, this.spin, .10 * wide, .19 * wide, 1, GREEN, .84);
       }
     }
-    // The shot's own light, in the air and on the floor it crosses: a tracer for a seed, the stage's fire for the bird.
-    const tail = Math.min(travelled, bird ? 3 : wolf ? 2.4 : 1.8);
+    // The shot's own light, in the air and on the floor it crosses: a tracer for a seed, the stage's fire for the Far Bank.
+    const tail = Math.min(travelled, farBank ? 3 : ballast ? 2.4 : 1.8);
     if (tail > .1) {
       this.p.copy(flight.position).addScaledVector(this.direction, -tail);
-      st.streak(this.p, flight.position, bird ? .3 : wolf ? .26 : .16, bird ? FIRE.main : POP.main, .7);
-      st.streak(this.p, flight.position, bird ? .1 : .07, bird ? FIRE.core : POP.core, 1.4);
+      st.streak(this.p, flight.position, farBank ? .3 : ballast ? .26 : .16, farBank ? FIRE.main : POP.main, .7);
+      st.streak(this.p, flight.position, farBank ? .1 : .07, farBank ? FIRE.core : POP.core, 1.4);
     }
-    if (bird) st.orb(flight.position, this.direction, .5 * grown, FIRE, flight.since);
-    else { st.glow(flight.position, wolf ? 1.1 * grown : .42, POP.main, wolf ? .7 : .8); st.glow(flight.position, wolf ? .4 : .16, POP.core, 1); st.light(this.p.copy(flight.position).setY(flight.position.y + .2), wolf ? 5 : 3, POP, wolf ? .5 : .32); }
+    if (farBank) st.orb(flight.position, this.direction, .5 * grown, FIRE, flight.since);
+    else { st.glow(flight.position, ballast ? 1.1 * grown : .42, POP.main, ballast ? .7 : .8); st.glow(flight.position, ballast ? .4 : .16, POP.core, 1); st.light(this.p.copy(flight.position).setY(flight.position.y + .2), ballast ? 5 : 3, POP, ballast ? .5 : .32); }
   }
   update(time: number, fighters: ReadonlyMap<string, Fighter>, flights: ReadonlyMap<string, Flight>) {
     if (this.disposed) return;
@@ -313,7 +313,7 @@ export class TsubuteSeedShot {
       st.streak(this.center, this.p, .2, POP.main, .8 * fade); st.streak(this.center, this.p, .07, POP.core, 1.5 * fade);
       st.glow(tracer.from, .5, POP.core, .9 * fade * (1 - head)); st.light(this.p, 4, POP, .4 * fade);
     }
-    for (const barrage of this.barrages) if (barrage.live) this.devil(barrage, fighters, time, detail);
+    for (const barrage of this.barrages) if (barrage.live) this.leafJaws(barrage, fighters, time, detail);
     for (const burst of this.bursts) {
       if (!burst.actor) continue;
       // (The last shot's skull outlives its bloom: it rises out of the fire and thins away over a second.)
@@ -329,9 +329,9 @@ export class TsubuteSeedShot {
       const u = age / life, fade = 1 - u, scale = burst.final ? 2.6 : burst.kind === 'seed' ? .6 : 1.9;
       this.q.setFromAxisAngle(UP, burst.yaw);
       const r = (.15 + u * .70) * scale;
-      this.rings.add(burst.point, this.q, r, r, 1, burst.kind === 'bird' ? GOLD : LIME, fade * .8);
+      this.rings.add(burst.point, this.q, r, r, 1, burst.kind === 'farBank' ? GOLD : LIME, fade * .8);
       if (burst.kind !== 'seed' && this.textures[burst.kind].ready) {
-        // (Thinning fast: the body it bit is read through it within a third of a second.)
+        // (Thinning fast: the body it hit is read through it within a third of a second.)
         this.crest(burst.kind, burst.point, scale * (1.2 + u * .45), fade * fade * .9);
       }
       const count = detail ? (burst.final ? 18 : 8) : (burst.final ? 9 : 4);
@@ -340,7 +340,7 @@ export class TsubuteSeedShot {
         this.p.set(Math.cos(a) * radius, Math.sin(a) * radius + age * .7 - age * age * 1.5, Math.sin(a * 1.7) * radius * .45).applyQuaternion(this.q).add(burst.point);
         this.spin.setFromAxisAngle(FORWARD, a + u * 3).premultiply(this.q);
         const leaf = .14 * Math.sqrt(scale) * fade;
-        this.leaves.add(this.p, this.spin, leaf, (.28 + (i % 3) * .05) * Math.sqrt(scale) * fade, 1, burst.kind === 'bird' ? (i % 2 ? RED : GOLD) : (i % 3 ? GREEN : LIME), fade);
+        this.leaves.add(this.p, this.spin, leaf, (.28 + (i % 3) * .05) * Math.sqrt(scale) * fade, 1, burst.kind === 'farBank' ? (i % 2 ? RED : GOLD) : (i % 3 ? GREEN : LIME), fade);
       }
       if (burst.final) {
         this.p.copy(burst.point); this.p.y -= .35;
@@ -358,7 +358,7 @@ export class TsubuteSeedShot {
     if (armoryDraws('tsubute', s.action, s.branch, s.id) || !tsubuteMuzzle(f, this.center)) return;
     const elapsed = s.actionTime * s.actionDuration, seed = (s.actionSeq ?? 0) * 3.1;
     if (s.action === 'ultimate') {
-      // Each of the three shots is drawn back in turn: the last is the Skull Bomb Grass, and burns.
+      // Each of the three shots is drawn back in turn: the last one burns.
       if (s.branch) return;
       const next = ULT.contacts.findIndex(c => elapsed < c), from = next <= 0 ? 0 : ULT.contacts[next - 1];
       if (next < 0 || (next > 0 && s.confirmedAt === undefined)) return;
@@ -380,7 +380,7 @@ export class TsubuteSeedShot {
   /** The leaf jaws, between the Barrage's confirm and its last shot: jaws of great leaves grown out of the floor
    *  round the victim, open until the second shot and shut on it, over a floor lit green. Leaves and light: the body
    *  between them is read all the while. */
-  private devil(barrage: Barrage, fighters: ReadonlyMap<string, Fighter>, time: number, detail: boolean) {
+  private leafJaws(barrage: Barrage, fighters: ReadonlyMap<string, Fighter>, time: number, detail: boolean) {
     const actor = fighters.get(barrage.actor), s = actor?.state, victim = fighters.get(barrage.target);
     if (!s?.alive || s.action !== 'ultimate' || s.branch || (s.actionSeq ?? -1) !== barrage.seq || s.whiffedAt !== undefined || !victim?.state.alive) { barrage.live = false; return; }
     const elapsed = s.actionTime * s.actionDuration, st = this.stage;
@@ -414,7 +414,7 @@ export class TsubuteSeedShot {
   dispose() {
     if (this.disposed) return;
     this.reset(); this.disposed = true;
-    for (const key of ['wolf', 'bird'] as const) { const state = this.textures[key]; state.cancel?.(); state.texture?.dispose(); state.texture = undefined; state.ready = false; }
+    for (const key of ['ballast', 'farBank'] as const) { const state = this.textures[key]; state.cancel?.(); state.texture?.dispose(); state.texture = undefined; state.ready = false; }
     this.skullMap.dispose();
     for (const batch of this.batches) batch.dispose();
     this.stage.release();

@@ -4,6 +4,7 @@ import type { ModeId } from '../ui/modes/catalogue';
 export const SCREENS: Readonly<Record<ModeId, readonly CouchScreen[]>> = {
   duel: ['shared', 'split-h', 'split-v'], arcade: ['split-h', 'split-v', 'shared'], training: ['shared', 'split-h', 'split-v'],
   royale: ['split-h', 'split-v'], 'last-stand': ['split-h', 'split-v'], 'bad-blood': ['split-h', 'split-v'], 'rift-war': ['split-h', 'split-v'],
+  'goal-rush': ['split-h', 'split-v'], 'sky-spike': ['split-h', 'split-v'],
 };
 /** The screen a mode's couch opens on: the one chosen last, if the mode has it, else the mode's first. */
 export function screenFor(mode: ModeId, chosen?: CouchScreen): CouchScreen {

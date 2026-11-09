@@ -13,14 +13,14 @@ import {MoveStage,stageLook} from './MoveStage';
 import { blowFloor } from './blowFloor';
 import { ORIGINALS } from '../../originals/roster';
 import { BONSHO, BonshoTolls, bonshoSurface } from '../../originals/bonshoBell';
-import { drawnPalms } from './BonshoBodhisattvaContact';
-export { bonshoDrawnPalmPoint, bonshoDrawnPalmCount } from './BonshoBodhisattvaContact';
+import { drawnPalms } from './BonshoGuardianContact';
+export { bonshoDrawnPalmPoint, bonshoDrawnPalmCount } from './BonshoGuardianContact';
 
-export const BONSHO_BODHISATTVA_ASSETS=Object.freeze([ORIGINALS.bonsho?.sculpture??'/assets/fighters/bonsho-bodhisattva1.glb']);
-export const BONSHO_BODHISATTVA_LIMITS=Object.freeze({owners:4,armsPerSide:6,flights:8,confirmations:16});
+export const BONSHO_GUARDIAN_ASSETS=Object.freeze([ORIGINALS.bonsho?.sculpture??'/assets/fighters/bonsho-bodhisattva1.glb']);
+export const BONSHO_GUARDIAN_LIMITS=Object.freeze({owners:4,armsPerSide:6,flights:8,confirmations:16});
 export const isBonsho=(id:string|undefined)=>id==='bonsho';
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),DOWN=new THREE.Vector3(0,-1,0),TAU=Math.PI*2;
-/** The Bodhisattva's light: white-gold going to the gold of the statue, bronze where it cools. */
+/** The guardian's light: white-gold going to the gold of the statue, bronze where it cools. */
 const GOLD=stageLook(0xfffbe6,0xf2c14e,0x7a4a12);
 const HEAVY=BONSHO_MOVES.heavy,SPECIAL=BONSHO_MOVES.special,ULT=BONSHO_MOVES.ultimate,ULT_LAST=ULT.contacts[ULT.contacts.length-1];
 /** Where the sculpture stands by him (metres, in his own frame: beside and a little behind), and how high its halo is. */
@@ -33,13 +33,13 @@ const PART_NAMES=new Set(['BodhiTorso',...SIDES.flatMap(s=>['Upper','Fore','Hand
 type Part={name:string;mesh:THREE.InstancedMesh<THREE.BufferGeometry,THREE.MeshToonMaterial>;opacity:THREE.InstancedBufferAttribute;pivot:THREE.Vector3;centre:THREE.Vector3;palmVertex?:THREE.Vector3;count:number};
 type Receipt={actor:string;target:string;seq:number;final:boolean;point:THREE.Vector3};
 type PalmFrame={actor:string;target:string;fighter?:Fighter;seq:number;time:number;duration:number;beats:{count:number;matrices:THREE.Matrix4[];anchors:THREE.Vector3[]}[]};
-export class BonshoBodhisattva{
+export class BonshoGuardian{
  private visibility=new BonshoVisibility();
  private loading?:Promise<void>;private disposed=false;private source?:GLTF;
  private parts=new Map<string,Part>();private ownedGeometry:THREE.BufferGeometry[]=[];private ownedMaterials:THREE.Material[]=[];
- private receipts:Receipt[]=Array.from({length:BONSHO_BODHISATTVA_LIMITS.confirmations},()=>({actor:'',target:'',seq:-1,final:false,point:new THREE.Vector3()}));private cursor=0;
+ private receipts:Receipt[]=Array.from({length:BONSHO_GUARDIAN_LIMITS.confirmations},()=>({actor:'',target:'',seq:-1,final:false,point:new THREE.Vector3()}));private cursor=0;
  private seen=new Float64Array(64).fill(-1);private seenAt=new Float64Array(64).fill(-1);private seenCursor=0;
- private palmFrames:PalmFrame[]=Array.from({length:BONSHO_BODHISATTVA_LIMITS.owners},()=>({actor:'',target:'',seq:-1,time:0,duration:0,beats:Array.from({length:4},()=>({count:0,matrices:[new THREE.Matrix4(),new THREE.Matrix4()],anchors:[new THREE.Vector3(),new THREE.Vector3()]}))}));
+ private palmFrames:PalmFrame[]=Array.from({length:BONSHO_GUARDIAN_LIMITS.owners},()=>({actor:'',target:'',seq:-1,time:0,duration:0,beats:Array.from({length:4},()=>({count:0,matrices:[new THREE.Matrix4(),new THREE.Matrix4()],anchors:[new THREE.Vector3(),new THREE.Vector3()]}))}));
  private base=new THREE.Matrix4();private upper=new THREE.Matrix4();private fore=new THREE.Matrix4();private hand=new THREE.Matrix4();private temp=new THREE.Matrix4();private elongation=new THREE.Matrix4();
  private goalPoint=new THREE.Vector3();private routingPoint=new THREE.Vector3();private position=new THREE.Vector3();private target=new THREE.Vector3();private shoulder=new THREE.Vector3();private elbow=new THREE.Vector3();private wrist=new THREE.Vector3();private direction=new THREE.Vector3();private pole=new THREE.Vector3();private rest=new THREE.Vector3();private scale=new THREE.Vector3();private q=new THREE.Quaternion();private yaw=new THREE.Quaternion();
  private readonly stage:MoveStage;private hits=new Float64Array(64).fill(-1);private hitsAt=new Float64Array(64).fill(-1);private hitCursor=0;
@@ -49,7 +49,7 @@ export class BonshoBodhisattva{
  constructor(private scene:THREE.Scene,private kit:Pick<VfxKit,'budget'>&Partial<VfxKit>){this.stage=MoveStage.for(scene,kit);if(BONSHO)this.tolls=new BonshoTolls(kit);}
  load(ids:readonly string[]):Promise<void>{
   if(this.disposed||!ids.some(isBonsho))return Promise.resolve();
-  return this.loading??=new GLTFLoader().loadAsync(BONSHO_BODHISATTVA_ASSETS[0]).then(gltf=>{
+  return this.loading??=new GLTFLoader().loadAsync(BONSHO_GUARDIAN_ASSETS[0]).then(gltf=>{
    if(this.disposed){this.disposeSource(gltf);return;}this.source=gltf;gltf.scene.updateMatrixWorld(true);
    for(const name of PART_NAMES){
     const node=gltf.scene.getObjectByName(name);if(!node)throw Error('Bonsho sculpture missing '+name);
@@ -68,7 +68,7 @@ export class BonshoBodhisattva{
     const geometry=mergeGeometries(surfaces,false);for(const g of surfaces)g.dispose();if(!geometry)throw Error('Bonsho sculpture geometry mismatch '+name);
     geometry.computeBoundingBox();const centre=geometry.boundingBox!.getCenter(new THREE.Vector3());let palmVertex:THREE.Vector3|undefined;
     if(name.endsWith('Hand')){centre.z=geometry.boundingBox!.max.z;const vertices=geometry.attributes.position,point=new THREE.Vector3();let nearest=Infinity;palmVertex=new THREE.Vector3();for(let i=0;i<vertices.count;i++){point.fromBufferAttribute(vertices,i);const distance=point.distanceToSquared(centre);if(Number.isFinite(distance)&&distance<nearest){nearest=distance;palmVertex.copy(point);}}if(!Number.isFinite(nearest))throw Error('Bonsho sculpture missing finite native palm '+name);}
-    const capacity=name==='BodhiTorso'?BONSHO_BODHISATTVA_LIMITS.owners:BONSHO_BODHISATTVA_LIMITS.owners*BONSHO_BODHISATTVA_LIMITS.armsPerSide+BONSHO_BODHISATTVA_LIMITS.flights;
+    const capacity=name==='BodhiTorso'?BONSHO_GUARDIAN_LIMITS.owners:BONSHO_GUARDIAN_LIMITS.owners*BONSHO_GUARDIAN_LIMITS.armsPerSide+BONSHO_GUARDIAN_LIMITS.flights;
     const opacity=new THREE.InstancedBufferAttribute(new Float32Array(capacity),1).setUsage(THREE.DynamicDrawUsage);geometry.setAttribute('bodhiPresence',opacity);
     const material=new THREE.MeshToonMaterial({map,color:0xffffff,emissive:0x35220b,emissiveIntensity:.10,side:THREE.DoubleSide});
     material.onBeforeCompile=shader=>{
@@ -110,7 +110,7 @@ export class BonshoBodhisattva{
   const palm=e.contactIndex??0;
   if(palm===0){st.burst(point,GOLD,1.1,t,{dir,floor});return;}
   if(palm<4){
-   // One of the Bodhisattva's palms come down on them: a shaft of gold from above, a blast, its print in the floor.
+   // One of the guardian's palms come down on them: a shaft of gold from above, a blast, its print in the floor.
    st.erupt(this.a.copy(point).setY(floor+6.5),DOWN,GOLD,.5,6.5-(point.y-floor)*.5,t-.03,.3);
    st.burst(point,GOLD,1.1+.15*palm,t,{dir,floor});st.shock(ground,GOLD,4.2+.4*palm,t,.45);st.scar(ground,GOLD,1.2,t+.05,1.1);
    return;
@@ -244,7 +244,7 @@ export class BonshoBodhisattva{
   this.visibility.reset();
   this.clearPalmFrames();if(this.disposed||!this.parts.size)return;for(const p of this.parts.values())p.count=0;let owners=0;
   for(const f of fighters.values()){
-   const s=f.state;if(!isBonsho(s.fighter)||!s.alive||owners>=BONSHO_BODHISATTVA_LIMITS.owners)continue;
+   const s=f.state;if(!isBonsho(s.fighter)||!s.alive||owners>=BONSHO_GUARDIAN_LIMITS.owners)continue;
    const t=s.actionTime*s.actionDuration;let alpha=0,opening=1,goal:THREE.Vector3|undefined;
    if(s.action==='awaken'){alpha=ease((t-.23)/.18)*(1-ease((t-.77)/.13));opening=ease((t-.30)/.38);}
    else if(s.action==='special'&&!s.branch){alpha=ease((t-.24)/.17)*(1-ease((t-.9)/.34));opening=.65;}
@@ -258,7 +258,7 @@ export class BonshoBodhisattva{
   for(const r of this.receipts){const s=fighters.get(r.actor)?.state;if(!s?.alive||s.action!=='ultimate'||s.branch||(s.actionSeq??-1)!==r.seq||s.whiffedAt!==undefined)r.actor='';}
   const hand=this.parts.get('BodhiRightHand');let count=0;
   if(hand)for(const flight of flights.values()){
-   if(!isBonsho(flight.fighter)||flight.slot!=='special'||flight.branch||!flight.released||count++>=BONSHO_BODHISATTVA_LIMITS.flights)continue;
+   if(!isBonsho(flight.fighter)||flight.slot!=='special'||flight.branch||!flight.released||count++>=BONSHO_GUARDIAN_LIMITS.flights)continue;
    this.q.setFromUnitVectors(FRONT,flight.heading);this.position.copy(hand.centre).multiplyScalar(1.2).applyQuaternion(this.q).negate().add(flight.position);this.temp.compose(this.position,this.q,this.scale.setScalar(1.2));this.put(hand.name,this.temp,1);
   }
   for(const p of this.parts.values()){p.mesh.count=p.count;p.mesh.visible=p.count>0;p.mesh.instanceMatrix.needsUpdate=true;p.opacity.needsUpdate=true;}

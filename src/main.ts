@@ -7,6 +7,13 @@ import './boot/playerTwoJoin';
 import {activePack,activePackRoster,packHas,packRefuses} from './engine/packs/active';
 import { laboratoryFighter, laboratoryOutfit, isLaboratoryPreviewFighter } from './fighterLab';
 import {LocalRift} from './game/moba/LocalRift';
+import {LocalBall} from './game/ball/LocalBall';
+import {ballOf,BALL_ID} from './game/ball/model';
+import {BallTargets} from './game/ball/BallTargets';
+import {BallField} from './render/ball/BallField';
+import {BallReplayer} from './render/ball/BallReplay';
+import {QuickChat} from './ui/ball/QuickChat';
+import {BallUI} from './ui/ball/BallUI';
 import {RiftTargets} from './game/moba/RiftTargets';
 import {RiftAssets} from './game/moba/RiftAssets';
 import {RiftPredictionTargets} from './game/moba/RiftPredictionTargets';
@@ -277,8 +284,8 @@ if(lockCombatOn()){document.documentElement.dataset.lockCombat='1';CombatEffects
 if(lockPreview()){const tag=document.createElement('div');tag.id='lock-combat-tag';tag.textContent='LOCK COMBAT · EXPERIMENT';tag.title='Offline Duel and Training, every fighter: strings that dash in and run on, a finisher, and a ring to guard in to vanish out of one. Camera style Chase (settings) films an exchange up close. Add ?combat=live to the address for the live rules.';
   Object.assign(tag.style,{position:'fixed',top:'6px',left:'50%',transform:'translateX(-50%)',zIndex:'2147483000',padding:'3px 10px',borderRadius:'999px',background:'rgba(12,12,16,.72)',color:'#ffd34d',font:'700 11px/1.4 system-ui,sans-serif',letterSpacing:'.12em',pointerEvents:'none'});document.body.append(tag);}
 const royale=new LocalRoyale();
-const localObjective=new LocalObjective(),localRift=new LocalRift();
-let network:Network|LocalArena|LocalTraining|LocalObjective|LocalDuel|LocalRoyale|LocalRift=online;
+const localObjective=new LocalObjective(),localRift=new LocalRift(),localBall=new LocalBall();
+let network:Network|LocalArena|LocalTraining|LocalObjective|LocalDuel|LocalRoyale|LocalRift|LocalBall=online;
 /** A co-op run: a party's arcade survival, stepped on the match server. */
 const coop=()=>network===online&&online.coop;
 const survival=()=>network===arcade||coop();
@@ -286,11 +293,11 @@ const survival=()=>network===arcade||coop();
  *  frame has it - and what the renderer asks of it either way. */
 const runView=():RunView|undefined=>network===arcade?arcade.view:online.run;
 hud.modes.runView=runView; // Round 5 (UX): the arcade's run for its mode HUD (src/ui/hud).
-hud.modes.local=()=>network===practice||network===duel||network===royale||network===arcade||network===localObjective||network===localRift; // Round 5 (UX): the menu tells the truth about pausing.
+hud.modes.local=()=>network===practice||network===duel||network===royale||network===arcade||network===localObjective||network===localRift||network===localBall; // Round 5 (UX): the menu tells the truth about pausing.
 // Round 5 (SOLOPAUSE): a room whose one human this page is pauses for real (src/game/pauseLink.ts, src/server/SoloPause.ts);
 // a local match holds until a frame of it has been drawn (`fightShown`). hud.modes.paused/pausable: the truth, for the menu.
 const pauseLink=new PauseLink();let fightShown=false,roomFrozen=false,hudCovered=false,drawnSize=0;
-const localNetwork=()=>network===royale?royale:network===duel?duel:network===arcade?arcade:network===practice?practice:network===localObjective?localObjective:network===localRift?localRift:undefined;
+const localNetwork=()=>network===royale?royale:network===duel?duel:network===arcade?arcade:network===practice?practice:network===localObjective?localObjective:network===localRift?localRift:network===localBall?localBall:undefined;
 hud.modes.paused=()=>network===online?pauseLink.state==='paused':!!localNetwork()?.paused;
 hud.modes.pausable=()=>network===online?pauseLink.pausable||pauseLink.holding:!!localNetwork();
 const isBoss=(id:string)=>network===arcade?!!arcade.game?.isBoss(id):!!online.run?.marked.bosses.includes(id);
@@ -325,6 +332,17 @@ let localClock=0;
 let lastEntrance=0,lastRoar=0;
 const objectiveField=new ObjectiveField(view.scene,root);
 const riftField=new RiftField(view.scene,grunts),riftUI=new RiftWarUI(root.querySelector<HTMLElement>('#interface')??root);
+// The ball modes (game/ball): the ball, its trail and its moments in the world; the lobby and results over it.
+const ballField=new BallField(view.scene),ballUI=new BallUI(root.querySelector<HTMLElement>('#interface')??root),ballTargets=new BallTargets();
+// A goal's replay, and a great point's (render/ball/BallReplay.ts): the page plays the room's window again from what it kept.
+const ballReplay=new BallReplayer();ballReplay.onSkip=()=>network.room?.send('ball-skip');let ballReplayBars=0,ballReplayed=false;
+// FREE PLAY's reset (game/ball/BallMatch.ts reset): Backspace, or the pad's View/Share button.
+let ballResetHeld=false;
+// Quick chat (ui/ball/QuickChat.ts): C, or the pad's View button; the room relays the line.
+const quickChat=new QuickChat(root.querySelector<HTMLElement>('#interface')??root);quickChat.onSend=index=>network.room?.send('ball-chat',index);
+window.addEventListener('keydown',e=>{if(e.code==='Backspace'&&!e.repeat&&ballOf(network.snapshot)?.practice&&!(e.target instanceof HTMLInputElement)){e.preventDefault();network.room?.send('ball-reset');}});
+window.addEventListener('ball-reset',()=>{if(ballOf(network.snapshot)?.practice)network.room?.send('ball-reset');}); // the HUD's RESET BALL, tapped
+function ballResetPad(){if(!ballOf(network.snapshot)?.practice){ballResetHeld=false;return;}let held=false;for(const pad of navigator.getGamepads?.()??[])if(pad?.connected&&pad.buttons[8]?.pressed)held=true;if(held&&!ballResetHeld)network.room?.send('ball-reset');ballResetHeld=held;}
 const environment=new ArenaEnvironment(view.scene),stages=new StageEnvironment(view.scene),library=new FighterLibrary(),camera=new FollowCamera(view.camera),effects=new CombatEffects(view.scene),fighters=new Map<string,Fighter>();
 // The dream loop's films (scripts/dream/film.mjs --fixed; the dev server only): the view and the lens started afresh at a
 // scene's start, as a match's bell starts them, so the keys a film presses - read against the view - carry nothing of
@@ -372,7 +390,7 @@ if(lockCombatOn())void installBorrowedStrikes();
 void installStyleMoves();
 riftField.glows=riftTargets.glows;
 grunts.threats=survivalTargets.glows;
-const targetPlayers=(snapshot:GameSnapshot)=>{const self=snapshot.players.find(p=>p.id===network.id);return riftOf(snapshot)&&self?riftTargets.update(snapshot,self):survival()&&self?survivalTargets.update(snapshot.players,hordeFrames()?.around(snapshot.serverTime)?.b,self):snapshot.players;};
+const targetPlayers=(snapshot:GameSnapshot)=>{const self=snapshot.players.find(p=>p.id===network.id);return ballOf(snapshot)?ballTargets.update(snapshot,ballField.ballPosition()):riftOf(snapshot)&&self?riftTargets.update(snapshot,self):survival()&&self?survivalTargets.update(snapshot.players,hordeFrames()?.around(snapshot.serverTime)?.b,self):snapshot.players;};
 const gruntPosition=(id:string,out:THREE.Vector3)=>{const at=grunts.centre(id,out);if(at)at.y-=(grunts.heightOf(id)??1.8)*.55;return at;};
 // Round 4 (CAMERA): the main game's keyboard view keys (src/render/viewKeys.ts).
 const viewKeys=new ViewKeys();
@@ -554,6 +572,11 @@ party.onReturn=()=>{returnToLobby();partyUI.show();};
 party.onTravel=async travel=>{partyUI.close();returnToLobby(false);await hud.onStart(hud.selected,'match',hud.playerName(),{kind:'party',travel});return started;};
 
 Object.defineProperty(window,'jumpLoading',{get:()=>startup.snapshot()});
+// (and hand the checks the match on this device, to set a moment up: `__ballMatch().view.fever = true`).
+if(import.meta.env.DEV||['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__ballMatch:()=>unknown}).__ballMatch=()=>localBall.match;
+// A development build (or one served from this machine) can start a ball match straight away, for the captures and checks
+// that look at the ball modes: `__ballStart('goal-rush')`, `__ballStart('sky-spike', 'konta', 'quick')`, `__ballStart('goal-rush', undefined, 'bots', true)` (RUMBLE).
+if(import.meta.env.DEV||['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__ballStart:(mode:'goal-rush'|'sky-spike',fighter?:string,access?:'bots'|'quick'|'host',rumble?:boolean,practice?:boolean,couch?:'shared'|'split-v'|'split-h')=>unknown}).__ballStart=(mode,fighter,access='bots',rumble=false,practice=false,couch)=>hud.onStart((fighter as typeof hud.selected)??hud.selected,'match',hud.playerName(),{kind:'ball',mode,access,rumble,practice,...(couch?{couch:{partner:'taisei',screen:couch,sides:'same'}}:{})});
 let reportCapture:((image:string)=>void)|undefined;
 const bugReport=new BugReport(root,()=>({fighter:hud.selected,mode:started?(survival()?'survival':network.snapshot?.roomMode??'match'):'home',connection:(!started?'not connected':network.predictionReady?'connected':'reconnecting')+(started&&network===online?online.link.summary(performance.now()):''),input:input.mode,performance:view.perf(),loading:startup.snapshot()}),()=>new Promise<string>((resolve,reject)=>{
   const timer=setTimeout(()=>{reportCapture=undefined;reject(new Error('No arena frame'));},3000);
@@ -605,12 +628,13 @@ input.onUiAction=action=>{hud.focusBy('pad');/* A page opened from a pad (pageVi
  *  they are on now - "PLAYER 2 · XBOX PAD 1" - and on a shared screen both on one line. */
 couch.onReseat=notices=>{if(couch.split)for(const n of notices)personal(couch.ids[n.seat],n.text,2.6);else if(notices.length)hud.notify(notices.map(n=>n.text).join('   '),2.6);};
 hud.onPrivateStart=()=>network.startPrivateMatch();
-for(const each of [online,arcade,practice,duel,royale,localObjective,localRift])each.onNotice=message=>{if(riftOf(network.snapshot))riftUI.notice(message);else hud.notify(message);};
+for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onNotice=message=>{if(riftOf(network.snapshot))riftUI.notice(message);else hud.notify(message);};
 // A split screen's halves (couch/CouchHud.ts): Player 2's target as drawn and their lens, and each seat's own shop - the
 // purchase goes to that seat's fighter, and a refusal is said in that half.
 couchHud.host={rift:riftUI,body:id=>fighters.get(id),camera:()=>camera2?.camera,act:(seat,type,payload)=>{const id=couch.ids[seat];if(!id)return undefined;if(network===localRift)return localRift.act(id,type,payload);if(network===localObjective&&type==='objective-buy')return localObjective.buy(id,payload);return undefined;}};
 riftUI.onCustom=(type,payload)=>{if(type==='rift-requeue'||type==='rift-rematch'&&network===localRift)hud.onPlayAgain();else network.room?.send(type,payload);};
 riftUI.onLeave=()=>hud.onLeave();riftUI.onPause=()=>hud.toggleSettings();
+ballUI.onSend=(type,payload)=>network.room?.send(type,payload);ballUI.onAgain=()=>hud.onPlayAgain();ballUI.onLeave=()=>hud.onLeave();
 localRift.onDisconnect=message=>{returnToLobby();hud.error(message);};
 // Training's tools go to the room as they are - but a switch of fighter (the bar's FIGHTER and OPPONENT, the picker, and
 // on this device the LABORATORY's own OPPONENT list) goes by way of `switchTraining`, which has the body here first.
@@ -623,7 +647,7 @@ const finale=new Finale(),seconds=()=>performance.now()/1000;
 let finaleSelf='';
 const skipFinale=(force=false)=>finale.skip(seconds(),force);
 const finaleSkip=new FinaleSkip(root.querySelector<HTMLElement>('#interface')??root,()=>skipFinale());
-hud.finale=hud.objectives.finale=riftUI.finale=()=>finale.holding(seconds());
+hud.finale=hud.objectives.finale=riftUI.finale=ballUI.finale=()=>finale.holding(seconds());
 /** The winner's line's length: as decoded, else as the manifest has it (the finale is timed on it). */
 // (The voice situations: a winner with a win line of their own says that, and the finale is timed on it - CombatAudio.winLine.)
 const lineSeconds=(fighter:FighterId)=>{const url=HOME_VOICES[fighter];return audio.winSeconds(fighter)??(url?audio.sampleSeconds(url):undefined)??HOME_VOICE_SECONDS[fighter];};
@@ -658,6 +682,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
   let openAudio=()=>{};if(thinLine()&&!(access?.kind==='survival'||access?.kind==='coop-create'||access?.kind==='coop-join'||access?.kind==='party'&&access.travel.mode==='survival'))audio.holdFetches(new Promise<void>(open=>{openAudio=open;}),60_000);
   void audio.unlock().then(()=>audio.preload([FIGHT_LINE,VICTORY_LINE,FLAWLESS_LINE])).catch(console.warn);try{hud.busy(true);
     const riftRun=access?.kind==='rift-war'&&access.access==='bots';
+    const ballRun=access?.kind==='ball'&&access.access==='bots';
     const arcadeRun=access?.kind==='survival',coopRun=access?.kind==='coop-create'||access?.kind==='coop-join'||access?.kind==='party'&&access.travel.mode==='survival';
     let firstWorld:Promise<void>=Promise.resolve(),story:Promise<void>=Promise.resolve();
     // Training on its own is played here: there is nobody to connect to (see LocalTraining).
@@ -667,7 +692,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     // Couch (couch/couch.ts): the Duel's versus and Training's (the two face to face, no dummy: LocalTraining), the arcade's
     // co-op, and every other mode's field - Player 2 among the others.
     const couchStart=couchOf(access);
-    const couchKind:CouchKind|undefined=access?.kind==='duel'&&access.access==='couch'||couchStart&&access?.kind==='training'?'versus':access?.kind==='survival'&&access.partner?'coop':couchStart&&(access?.kind==='bots'||access?.kind==='objective'||access?.kind==='rift-war')?'field':undefined;
+    const couchKind:CouchKind|undefined=access?.kind==='duel'&&access.access==='couch'||couchStart&&access?.kind==='training'?'versus':access?.kind==='survival'&&access.partner?'coop':couchStart&&(access?.kind==='bots'||access?.kind==='objective'||access?.kind==='rift-war'||access?.kind==='ball')?'field':undefined;
     couch.end();endSplit();
     const lesson=access?.kind==='training'&&!!access.tutorial;
     const practiceRun=mode==='training'&&(!access||access.kind==='public'||access.kind==='training')&&(LocalTraining.wanted()||!!couchStart||lesson);
@@ -686,8 +711,8 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     // A new session's players are numbered afresh (sparring-bot, bot-1 ...): the last session's bodies go with it.
     clearFighters();resetSwaps();
     pauseLink.reset();roomFrozen=false;fightShown=false;
-    network=riftRun?localRift:royaleRun?royale:duelRun?duel:arcadeRun?arcade:practiceRun?practice:objectiveRun?localObjective:online;timeline.delayMs=riftRun||royaleRun||duelRun||arcadeRun||practiceRun||objectiveRun?LOCAL_DELAY:ONLINE_DELAY;
-    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();camera.reset();
+    network=riftRun?localRift:ballRun?localBall:royaleRun?royale:duelRun?duel:arcadeRun?arcade:practiceRun?practice:objectiveRun?localObjective:online;timeline.delayMs=riftRun||ballRun||royaleRun||duelRun||arcadeRun||practiceRun||objectiveRun?LOCAL_DELAY:ONLINE_DELAY;
+    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();camera.reset();
     horde.clear();grunts.clear();gore.clear();survivalFx.reset();techniques.reset();lastEntrance=0;lastRoar=0;bossesWanted='';lastHordeVoice=0;lastBossVoice=0;lastSmash=0;bossShoutAt.clear();stages.rift?.restore();
     if(arcadeRun||coopRun)audio.preload(everyTake());
     if(access?.kind==='objective'&&access.objective==='last-stand'||access?.kind==='party'&&access.travel.mode==='last-stand')objectiveAudio.preload();
@@ -696,7 +721,9 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     /** The couch's seats for this mode - the ones its sheet showed (CouchStart.seats), else planned now (swapped as the sheet
      *  says) - Player 1 under the mode's own id for the page. */
     const seatCouch=(kind:CouchKind,sheet:ModeId)=>couch.begin(kind,couchStart?.seats??plannedSeats(!!modePrefs(sheet).couchSwap),{ids:[network.id,SECOND],screen:couchStart?.screen});
-    if(riftRun){await localRift.connect(fighter,name,1,couchKind==='field'?couchStart?.partner:undefined);localClock=localRift.snapshot?.serverTime??0;
+    if(ballRun&&access?.kind==='ball'){await localBall.connect(access.mode,fighter,name,couchKind==='field'?couchStart?.partner:undefined,couchStart?.sides==='rivals',!!access.rumble,!!access.practice);localClock=localBall.snapshot?.serverTime??0;
+      if(couchKind==='field'){seatCouch('field',access.mode);localBall.second=()=>couch.command(SECOND);}
+    }else if(riftRun){await localRift.connect(fighter,name,1,couchKind==='field'?couchStart?.partner:undefined);localClock=localRift.snapshot?.serverTime??0;
       if(couchKind==='field'){seatCouch('field','rift-war');localRift.second=()=>couch.command(SECOND);}
     }else if(arcadeRun){
       // The horde's meshes and any probe boss, before the first rift opens
@@ -725,7 +752,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
       if(coopRun){coopRunSeen=-1;coopTravel='';survivalHud.enter(fighter);firstWorld=prepareRound(1,[]);}
     }
     if(epoch!==startEpoch)return;
-    const careerMode:CareerMode=access?.kind==='rift-war'?'rift-war':access?.kind==='duel'?'duel':arcadeRun?'survival':coopRun?'coop':access?.kind==='party'?(access.travel.mode==='royale'?'private':access.travel.mode) as CareerMode:access?.kind==='objective'?access.objective:access?.kind==='bots'?'bots':access?.kind==='create-private'||access?.kind==='join-private'?'private':'royale';
+    const careerMode:CareerMode=access?.kind==='ball'?access.mode:access?.kind==='rift-war'?'rift-war':access?.kind==='duel'?'duel':arcadeRun?'survival':coopRun?'coop':access?.kind==='party'?(access.travel.mode==='royale'?'private':access.travel.mode) as CareerMode:access?.kind==='objective'?access.objective:access?.kind==='bots'?'bots':access?.kind==='create-private'||access?.kind==='join-private'?'private':'royale';
     if(mode!=='training')career.start(careerMode);
     playerTwoPresence(mode==='training'?'Training':CAREER_MODES[careerMode]);
     loadingScreen.progress('room');
@@ -848,7 +875,8 @@ function sendCommand(){
   // with the first, through the local mode's `second` (LocalDuel, LocalArena).
   if(couch.on){const own=couch.command(couch.ids[0]);if(own&&network.send(own))prediction.submit(own);return;}
   const moving=movementMask(input.keys);
-  let command=input.command(targetId,viewKeys.movementBasis(camera.movementBasis(moving),moving));
+  // A ball match aims every press at the ball, as its room does (BallMatch.submit): the page's prediction homes the same way.
+  let command=input.command(ballOf(network.snapshot)?BALL_ID:targetId,viewKeys.movementBasis(camera.movementBasis(moving),moving));
   // Launch day (the arena camera, FollowCamera ARENA): with an opponent held, what the simulation aims by - a swing, a
   // guard's facing, a dash with no direction - is the line to them, as the keys above are read against it; the view
   // itself in every other mode, and with nobody held.
@@ -909,16 +937,37 @@ function pausePump(){
 document.addEventListener('visibilitychange',pausePump);
 // Prediction.stop frees its Rapier world. Invalidate the cached pointer and
 // pending loads as well, so reopening the same stage never reuses freed WASM.
-function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
+/** The ball modes' big moments, heard: the crowd on a goal, a point, a save; the bell at a kickoff; the cut-in's sting for
+ *  a super shot (each event once: a snapshot repeats its recent ones). */
+let ballHeard=0,ballHeardAt=-Infinity,ballMark='';
+function ballSounds(snapshot:GameSnapshot){
+  const view=ballOf(snapshot);if(!view)return;
+  if(snapshot.serverTime<ballHeardAt-1)ballHeard=0;ballHeardAt=snapshot.serverTime;
+  for(const e of view.events){if(e.id<=ballHeard)continue;ballHeard=e.id;
+    if(e.kind==='goal'||e.kind==='own-goal'){audio.cheer(1.5,true);audio.ui(UI_SFX.ko,.5);}
+    else if(e.kind==='kill'||e.kind==='ace'){audio.cheer(1.1);audio.ui(UI_SFX.stamp,.45);}
+    else if(e.kind==='save'||e.kind==='perfect'||e.kind==='block'){audio.cheer(.8);audio.ui(UI_SFX.stamp,.35);}
+    else if(e.kind==='super')audio.ui(UI_SFX.cutIn,.6);
+    else if(e.kind==='kickoff'||e.kind==='serve'&&view.rally===0&&e.id<=2)audio.ui(UI_SFX.slam,.4);
+    else if(e.kind==='overtime'||e.kind==='fever'||e.kind==='match-point'){audio.cheer(1.2);audio.ui(UI_SFX.slam,.45);}
+    else if(e.kind==='post'||e.kind==='out')audio.cheer(.5);
+    else if(e.kind==='charm')audio.ui(UI_SFX.confirm,e.actorId===network.id?.55:.3);
+    else if(e.kind==='target'){audio.ui(UI_SFX.stamp,.45);audio.cheer(.4+Math.min(.6,(e.value??1)*.1));}
+    else if(e.kind==='strike'&&e.text==='SKY SPIKE'&&e.actorId===network.id){audio.ui(UI_SFX.slam,.35);camera.impact(.7);}
+    else if(e.kind==='clash'){audio.cheer(1.1);audio.ui(UI_SFX.ko,.42);const me=snapshot.players.find(p=>p.id===network.id);if(me&&Math.hypot(me.x-e.x,me.z-e.z)<18)camera.impact(.9);}
+    else if(e.kind==='shield'){audio.cheer(.9);audio.ui(UI_SFX.stamp,.45);}
+  }
+}
+function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
 // Out of a party's match: home, and back on the party's sheet, where the others are seen coming home too.
 hud.onLeave=()=>{returnToLobby();if(party.joined)partyUI.show();};
-for(const each of [online,arcade,practice,duel,royale,localObjective,localRift])each.onDisconnect=(reason,code)=>{
+for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onDisconnect=(reason,code)=>{
   const over=code===4006;
   // (Drawn here once, as the frame no longer finds the page's own fighter: its id went with the room.)
   const shown=started&&finale.ended?timeline.sample(performance.now())?.snapshot:undefined,self=shown?.players.find(p=>p.id===finaleSelf);
   if(shown&&self){skipFinale(true);hud.roomGone=true;hud.update(shown,self,undefined,over);if(over)hud.link(undefined);riftUI.update(shown,finaleSelf);if(!over)hud.banner(reason);return;}
   returnToLobby();hud.banner(reason);};
-for(const each of [online,arcade,practice,duel,royale,localObjective,localRift])each.onControlReset=()=>{unacked.length=0;input.clear();input.enabled=false;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;inputClock.reset();};
+for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onControlReset=()=>{unacked.length=0;input.clear();input.enabled=false;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;inputClock.reset();};
 let objectiveRound=0,objectivePhase='',duelRoundKey='';
 const matchBell=new MatchBell();
 const onSnapshot=(snapshot:GameSnapshot)=>{
@@ -947,20 +996,25 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   if((modeView?.phase??warView?.phase)==='active'&&objectivePhase!=='active'){input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;input.clear();camera.reset();}
   if(modeView?.kind==='last-stand')wantBosses([...new Set([...(modeView.village?.incoming??[]),...snapshot.players.flatMap(p=>p.enemy?[p.enemy]:[])])],false);
   objectivePhase=modeView?.phase??warView?.phase??'';
-  timeline.push(snapshot,performance.now());
+  // A ball match puts everyone back on their marks for each kickoff and serve: the view turns with the body, behind it.
+  {const ball=ballOf(snapshot),mark=ball&&(ball.phase==='kickoff'||ball.phase==='countdown')?`${ball.phase}:${ball.phaseUntil}:${ball.startsAt}`:'';
+    if(mark&&mark!==ballMark){ballMark=mark;input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??input.yaw;camera.reset();}else if(!ball)ballMark='';}
+  timeline.push(snapshot,performance.now());if(ballOf(snapshot))ballReplay.record(snapshot);
   // Lock combat (the fight's snapshots say it plays it, whichever mode, here or online): what it is, once a session.
   if(snapshot.lockCombat&&!lockTold&&snapshot.players.some(p=>p.id===network.id)){lockTold=true;hud.notify('LOCK COMBAT · MASH TO COMBO · GUARD WHEN THE RING CLOSES TO VANISH',4.5);}
   if(!started||!network.id||!network.predictionReady)return;
   inputClock.report(snapshot.queued);
   // Nothing to predict when the arena is in this browser: the command is
   // simulated the moment it is sent. A co-op room is online like any other.
-  if(network===arcade||network===practice||network===localObjective||network===localRift||network===duel||network===royale)return;
+  if(network===arcade||network===practice||network===localObjective||network===localRift||network===localBall||network===duel||network===royale)return;
   riftPredictionTargets.update(snapshot,network.id);
-  const external=warView?riftPredictionTargets:undefined,assist=warView?{magnet:RIFT_RULES.aimMagnet}:undefined;
+  // A ball room: the page's prediction swings at the ball as the room last placed it (BallTargets), as it does at Rift War's armies.
+  const ballView=ballOf(snapshot);if(ballView)ballTargets.update(snapshot);
+  const external=warView?riftPredictionTargets:ballView?ballTargets:undefined,assist=warView?{magnet:RIFT_RULES.aimMagnet}:ballView?{magnet:.9,airExternal:true}:undefined;
   if(!prediction.enabled){if(snapshot.players.some(p=>p.id===network.id)){ensureLocalCollision(snapshot.stage??'harbor');prediction.lockCombat=!!snapshot.lockCombat||!!(network===duel?duel.sim:network===practice?practice.sim:null)?.lockCombat;prediction.start(network.id,snapshot,localCollision);prediction.setExternalTargets(external,assist);}}
   else {prediction.setExternalTargets(external,assist);prediction.receive(snapshot);}
 };
-online.onSnapshot=onSnapshot;arcade.onSnapshot=onSnapshot;practice.onSnapshot=onSnapshot;localObjective.onSnapshot=onSnapshot;duel.onSnapshot=onSnapshot;royale.onSnapshot=onSnapshot;localRift.onSnapshot=onSnapshot;
+online.onSnapshot=onSnapshot;arcade.onSnapshot=onSnapshot;practice.onSnapshot=onSnapshot;localObjective.onSnapshot=onSnapshot;duel.onSnapshot=onSnapshot;royale.onSnapshot=onSnapshot;localRift.onSnapshot=onSnapshot;localBall.onSnapshot=onSnapshot;
 // Programs are linked the first time something is drawn, and a transformation
 // is drawn for the first time in the middle of a fight - so the frame the
 // player pressed for is the frame that pays for it. Compiling once, as soon as
@@ -1121,6 +1175,7 @@ function applyCombatFrame(snapshot:GameSnapshot){
   audio.handle(roster.filter(event=>!echoed.has(event.id)&&!prediction.impactWasPresented(event)),network.id,presentPlayers(bodies));manga.handle(roster,network.id,bodies);
   if(objectiveOf(snapshot))objectiveAudio.update(snapshot,network.id);
   if(riftOf(snapshot))riftAudio.update(snapshot,network.id);
+  if(ballOf(snapshot))ballSounds(snapshot);
   if(hordeMode)survivalSounds(snapshot);if(survival())hordeVoices();
   for(const event of snapshot.events){if(event.id<=lastEvent)continue;lastEvent=event.id;
     // Tallied here rather than by polling: the server drains its event buffer
@@ -1479,7 +1534,7 @@ let againSeen=0;
  *  camera reads only its group, state, joints and model. The director's own
  *  shots (a knockout, an ultimate's impact) are kept for bosses: on fodder
  *  they would fire on every other kill. */
-const bodyOf=(id:string)=>fighters.get(id)??riftTargets.body(id)??(survival()||objectiveOf(network.snapshot)?.kind==='last-stand'?(horde.body(id) as unknown as Fighter|undefined)??survivalTargets.body(id):undefined);
+const bodyOf=(id:string)=>fighters.get(id)??riftTargets.body(id)??(ballTargets.stand(id) as unknown as Fighter|undefined)??(survival()||objectiveOf(network.snapshot)?.kind==='last-stand'?(horde.body(id) as unknown as Fighter|undefined)??survivalTargets.body(id):undefined);
 const fighterById=(id:string)=>fighters.get(id)??(survival()&&isBoss(id)?(horde.body(id) as unknown as Fighter|undefined)??survivalTargets.body(id):undefined);
 function cinematics(snapshot:GameSnapshot){
   // The director's own shots: the local player's KO pushes toward the victim,
@@ -1493,7 +1548,7 @@ function cinematics(snapshot:GameSnapshot){
   // team's win the orbit holds a fighter of the side still standing (the room names its first seat, standing or not),
   // who says their line too, and the announcer calls the win for the whole side.
   const champion=snapshot.status==='finished'?finaleWinner(snapshot):undefined;
-  if(champion&&victoryFor!==champion.id){const winner=fighters.get(champion.id);if(winner){victoryFor=champion.id;const mine=finaleMine(snapshot,network.id),team=!!objectiveOf(snapshot)||!!riftOf(snapshot);audio.cheer(1,true);if(!survival())audio.ui(UI_SFX.victory,.45,.3);if(!survival()){const line=HOME_VOICES[winner.state.fighter],own=audio.winLine(winner.state.fighter,mine?1.9:.8);if(own===undefined&&line)audio.quote(line,.85,mine?1.9:.8);if(!mine)audio.lossLine(.8+(own??lineSeconds(winner.state.fighter)??0)+.4);}camera.victory(winner,6);
+  if(champion&&victoryFor!==champion.id){const winner=fighters.get(champion.id);if(winner){victoryFor=champion.id;const mine=finaleMine(snapshot,network.id),team=!!objectiveOf(snapshot)||!!riftOf(snapshot)||!!ballOf(snapshot);audio.cheer(1,true);if(!survival())audio.ui(UI_SFX.victory,.45,.3);if(!survival()){const line=HOME_VOICES[winner.state.fighter],own=audio.winLine(winner.state.fighter,mine?1.9:.8);if(own===undefined&&line)audio.quote(line,.85,mine?1.9:.8);if(!mine)audio.lossLine(.8+(own??lineSeconds(winner.state.fighter)??0)+.4);}camera.victory(winner,6);
     // The feel pass, iteration four: the announcer calls the player's own win in the main game -
     // FLAWLESS! when nothing touched them - over the K.O. (MangaImpact) and the results.
     const self=snapshot.players.find(p=>p.id===network.id);if(mine&&!survival()&&self)audio.announce(self.damageTaken||team?VICTORY_LINE:FLAWLESS_LINE,.95,.55);}}
@@ -1583,20 +1638,22 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   const steps=frameSteps((now-previous)/1000);previous=now;const dt=steps.world,rawDt=steps.camera;
   pausePump(); // Round 5 (SOLOPAUSE): and a room that pauses for this page.
   let presented:ReturnType<CombatTimeline['sample']>;
-  if(network===arcade||network===practice||network===localObjective||network===localRift||network===duel||network===royale){
+  if(network===arcade||network===practice||network===localObjective||network===localRift||network===localBall||network===duel||network===royale){
     // A clock the arena's own time scale drives, a tick behind the newest
     // state it has produced, so two states are always there to blend.
-    const local=network===royale?royale:network===duel?duel:network===arcade?arcade:network===practice?practice:network===localRift?localRift:localObjective,newest=timeline.newest??0,scale=network===arcade?arcade.game?.timeScale??1:1;
+    const local=network===royale?royale:network===duel?duel:network===arcade?arcade:network===practice?practice:network===localRift?localRift:network===localBall?localBall:localObjective,newest=timeline.newest??0,scale=network===arcade?arcade.game?.timeScale??1:1;
     localClock=Math.min(newest,Math.max(newest-3/60,localClock+rawDt*(local.paused?0:scale)));
     presented=timeline.at(localClock-LOCAL_DELAY/1000);
   }else presented=timeline.sample(now);
   prediction.visualTime=presented?.time??NaN; // Round 5 (PARRY): a parry's vanish is drawn with the parry (Prediction.visualTime).
   const snapshot=presentSnapshot(started?presented?.snapshot:undefined);
+  // A replay showing (Goal Rush's goals, Sky Spike's great points): the fighters and the ball are drawn from it, through its lens.
+  const replayed=ballReplay.frame(snapshot);if(ballReplayed&&!replayed)camera.cut();ballReplayed=!!replayed;ballResetPad();quickChat.update(started?network.snapshot:undefined);
   // The finale: what the frame shows as over holds its results back for the winner's pose (src/ui/results/finale.ts).
   {const reading=finaleStateOf(snapshot,id=>fighters.has(id),lineSeconds);if(reading.end&&network.id)finaleSelf=network.id;finale.observe(reading.end,reading.running,seconds());finaleSkip.update(finale.holding(seconds()),finale.elapsed(seconds()));}
   view.setHordeWorkload(survival()||!!riftOf(snapshot)||objectiveOf(snapshot)?.kind==='last-stand');
   hud.presentMatch(network.snapshot,network.id,bugReport.open);
-  input.enabled=!couch.on&&started&&!finale.holding(seconds())&&(!riftOf(network.snapshot)||riftOf(network.snapshot)?.phase==='active')&&!riftUI.blocking&&!vsSplash.open&&!partyUI.open&&!careerUI.open&&(!objectiveOf(network.snapshot)||objectiveOf(network.snapshot)?.phase==='active')&&!hud.objectives.blocking&&network.predictionReady&&!hud.introOpen&&!hud.resultsOpen&&!bugReport.open&&!hud.settingsOpen&&!swapPicker.open&&!shell.dockChoice&&!document.hidden&&!riftIntro.open&&!(snapshot?.lobby?.visibility==='private'&&snapshot.status==='waiting')&&!(survival()&&(survivalHud.draftOpen||survivalHud.resultsOpen||runView()?.phase==='travel'));
+  input.enabled=!couch.on&&started&&!finale.holding(seconds())&&(!riftOf(network.snapshot)||riftOf(network.snapshot)?.phase==='active')&&!riftUI.blocking&&!ballUI.blocking&&!replayed&&!vsSplash.open&&!partyUI.open&&!careerUI.open&&(!objectiveOf(network.snapshot)||objectiveOf(network.snapshot)?.phase==='active')&&!hud.objectives.blocking&&network.predictionReady&&!hud.introOpen&&!hud.resultsOpen&&!bugReport.open&&!hud.settingsOpen&&!swapPicker.open&&!shell.dockChoice&&!document.hidden&&!riftIntro.open&&!(snapshot?.lobby?.visibility==='private'&&snapshot.status==='waiting')&&!(survival()&&(survivalHud.draftOpen||survivalHud.resultsOpen||runView()?.phase==='travel'));
   // Couch play: the same gate opens the two seats; the single player's own input stays off for the fight (its pause keys
   // and the menus are still its own).
   if(couch.on)couch.live=started&&!finale.holding(seconds())&&network.predictionReady&&!hud.introOpen&&!hud.resultsOpen&&!bugReport.open&&!hud.settingsOpen&&!document.hidden&&!vsSplash.open&&!(survival()&&(survivalHud.draftOpen||survivalHud.resultsOpen||runView()?.phase==='travel'));
@@ -1607,6 +1664,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   if(view.frames.frame(rawDt,started&&!hud.settingsOpen&&!document.hidden,settings.powerMode)){view.applySettings(settings);frameRateToast();}
   objectiveField.update(snapshot,presented?.time??0,network.id,view.camera);
   riftField.setTarget(targeting.locked?targetId:null);riftField.update(snapshot,network.id,view.camera,dt,couch.split?couch.ids[1]:undefined);riftUI.update(snapshot,network.id,targeting.locked?targetId:null);
+  ballField.update(replayed?.snapshot??snapshot,network.id,view.camera,replayed?dt*replayed.rate:dt,performance.now());ballUI.update(snapshot,network.id);
   if(snapshot){const serverTime=presented!.time;wantStage(snapshot.stage??'harbor');
     const localImpacts=presentEvents(prediction.takeImpacts(),snapshot.players).map(event=>({...event,id:predictedImpactId++,serverTime}));
     applyCombatFrame(snapshot);prediction.markAuthoritativeImpacts(snapshot.events);let self:PlayerState|undefined;
@@ -1618,7 +1676,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // split screen has two: a body Player 2's half shows is seen, as one Player 1's shows is (couch/split.ts).
     viewProjection.multiplyMatrices(view.camera.projectionMatrix,view.camera.matrixWorldInverse);viewFrustum.setFromProjectionMatrix(viewProjection);
     const lens2=couch.split?camera2?.camera:undefined;if(lens2){viewProjection.multiplyMatrices(lens2.projectionMatrix,lens2.matrixWorldInverse);secondFrustum.setFromProjectionMatrix(viewProjection);}
-    for(const p of snapshot.players){if(p.enemy||!fighters.has(p.id))continue;const fighter=fighters.get(p.id)!,opponent=snapshot.players.find(o=>o.id===(p.id===network.id?targetId:p.target));const shown=p.id===network.id?(prediction.sample(steps.correction,p,renderAlpha)??p):prediction.sampleRemote(steps.correction,p,renderAlpha);fighter.targetDistance=opponent?Math.hypot(opponent.x-shown.x,opponent.z-shown.z):Infinity;fighter.targetPoint=opponent?(fighter.targetPoint??new THREE.Vector3()).set(opponent.x,opponent.y+1.45,opponent.z):undefined;fighter.cameraPoint=view.camera.position;fighter.unseen=p.id!==network.id&&p.id!==targetId&&p.id!==spectating&&!fighter.inView(viewFrustum,view.camera.position)&&!(lens2&&fighter.inView(secondFrustum,lens2.position));fighter.update(dt,shown,true,rawDt);if(p.id===network.id){self=shown;shownSelf=shown;}}
+    for(const p of snapshot.players){if(p.enemy||!fighters.has(p.id))continue;const fighter=fighters.get(p.id)!,opponent=snapshot.players.find(o=>o.id===(p.id===network.id?targetId:p.target));const shown=replayed?replayed.snapshot.players.find(q=>q.id===p.id)??p:p.id===network.id?(prediction.sample(steps.correction,p,renderAlpha)??p):prediction.sampleRemote(steps.correction,p,renderAlpha);fighter.targetDistance=opponent?Math.hypot(opponent.x-shown.x,opponent.z-shown.z):Infinity;fighter.targetPoint=opponent?(fighter.targetPoint??new THREE.Vector3()).set(opponent.x,opponent.y+1.45,opponent.z):undefined;fighter.cameraPoint=view.camera.position;fighter.unseen=p.id!==network.id&&p.id!==targetId&&p.id!==spectating&&!fighter.inView(viewFrustum,view.camera.position)&&!(lens2&&fighter.inView(secondFrustum,lens2.position));fighter.update(dt,shown,true,rawDt);if(p.id===network.id){self=shown;shownSelf=shown;}}
     // The arcade's horde: its bosses, its grunts, the rifts and orbs, and its HUD.
     if(objectiveOf(snapshot)?.kind==='last-stand'){survivalFx.uploadNextTexture();horde.update(snapshot.players,dt,serverTime,view.camera);horde.handle(snapshot.events);techniques.handle(snapshot.events,serverTime);techniques.feed(objectiveOf(snapshot)?.village?.warnings??[],serverTime);}
     if(survival()){
@@ -1694,7 +1752,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
       // Couch versus: Player 1's target is Player 2 (and the HUD's right-hand plate theirs); co-op leaves the aim soft.
       if(couch.on)targetId=couch.kind==='versus'?SECOND:couch.kind==='field'?couch.targetOf(couch.ids[0]):null;
       const focusing=!couch.on&&(settings.cameraMode==='dynamic'||settings.cameraMode==='arena'||settings.cameraMode==='smart')&&self.alive&&!subject;
-      if(focusing){const picked=camera.picker.update(rawDt,riftOf(snapshot)?riftTargets.players:survival()?survivalTargets.players:snapshot.players,self,camera.movementYaw,snapshot.events,targeting.locked?targetId:null,targetId);if(!targeting.locked)targetId=picked;camera.focusHint.pending=camera.picker.pending??'';camera.focusHint.share=camera.picker.pendingShare;}
+      if(focusing){const picked=camera.picker.update(rawDt,ballOf(snapshot)?ballTargets.players:riftOf(snapshot)?riftTargets.players:survival()?survivalTargets.players:snapshot.players,self,camera.movementYaw,snapshot.events,targeting.locked?targetId:null,targetId);if(!targeting.locked)targetId=picked;camera.focusHint.pending=camera.picker.pending??'';camera.focusHint.share=camera.picker.pendingShare;}
       else{camera.focusHint.pending='';camera.focusHint.share=0;}
       camera.stageBounds=STAGES[snapshot.stage??'harbor'];
       // The stage's reverb (a convolver for the whole fight): dry on the low quality setting, the weak machines' choice.
@@ -1710,9 +1768,9 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
       camera.sole=rivals===1;const held=targetId||(camera.sole&&(settings.cameraMode==='arena'||settings.cameraMode==='smart')&&!camera.battlefield?rival:'');
       // The Chase camera style (HomePanels CAMERA_STYLE_OPTIONS): the combo shot while an exchange is on, in a 1v1.
       camera.comboShot=settings.cameraStyle==='chase'&&camera.sole&&!camera.battlefield&&performance.now()-lockExchangeAt<LOCK_EXCHANGE_MS;
-      camera.mode=settings.cameraMode;camera.style=settings.cameraStyle;camera.cinematics=settings.cinematics;camera.finisherCuts=roanEnabled();camera.cuts.arena=carded();camera.battlefield=survival()||!!objectiveOf(snapshot)||!!riftOf(snapshot);
+      camera.mode=settings.cameraMode;camera.style=settings.cameraStyle;camera.cinematics=settings.cinematics;camera.finisherCuts=roanEnabled();camera.cuts.arena=carded();camera.battlefield=survival()||!!objectiveOf(snapshot)||!!riftOf(snapshot)||!!ballOf(snapshot);camera.wide=ballOf(snapshot)?.mode==='sky-spike'?4.2:ballOf(snapshot)?2.6:0;
       if(survival()){survivalTargets.present(gruntPosition,targetId,camera.picker.pending);for(const [id,body] of horde.cameraBodies)survivalTargets.crowd.set(id,body);}
-      camera.extraSubjects=riftOf(snapshot)?riftTargets.crowd:survival()?survivalTargets.crowd:objectiveOf(snapshot)?.kind==='last-stand'?horde.cameraBodies:undefined;
+      camera.extraSubjects=ballOf(snapshot)?ballTargets.crowd:riftOf(snapshot)?riftTargets.crowd:survival()?survivalTargets.crowd:objectiveOf(snapshot)?.kind==='last-stand'?horde.cameraBodies:undefined;
       camera.movementBasis(movementMask(input.keys,!input.arrowsLook));
       if(couch.split){splitFrame(rawDt,snapshot);if(now-lastCouchHud>70){couchHud.update(snapshot,couch.ids,[couch.targetOf(couch.ids[0]),couch.targetOf(couch.ids[1])]);lastCouchHud=now;}}
       else if(couch.on){couchFrame(rawDt,snapshot);if(now-lastCouchHud>70){couchHud.update(snapshot,couch.ids,[couch.targetOf(couch.ids[0]),couch.targetOf(couch.ids[1])]);lastCouchHud=now;}}
@@ -1725,7 +1783,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
       // Round 4: and the pitch, which the dynamic camera levels once it is left alone.
       if(!couch.on)input.pitch=camera.inputPitch;
       touch.meters(self,snapshot.serverTime);
-      const target=(riftOf(snapshot)?riftTargets.players:survival()?survivalTargets.players:snapshot.players).find(p=>p.id===targetId);if(now-lastHud>70){hud.update(snapshot,self,target,network!==online||now-network.receivedAt<1500);hud.link(network===online?online.link.note(now):undefined);const phase=snapshot.status==='finished'?'results':'combat';
+      const target=(ballOf(snapshot)?ballTargets.players:riftOf(snapshot)?riftTargets.players:survival()?survivalTargets.players:snapshot.players).find(p=>p.id===targetId);if(now-lastHud>70){hud.update(snapshot,self,target,network!==online||now-network.receivedAt<1500);hud.link(network===online?online.link.note(now):undefined);const phase=snapshot.status==='finished'?'results':'combat';
         // An arcade enemy is not a matchup. The run plays its act's world's
         // score first - one piece under Shiun, another on Gorai's roof -
         // then the fighter's own.
@@ -1753,8 +1811,9 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // After CombatEffects has opened this frame's beam slots.
     if(survival()||objectiveOf(snapshot)?.kind==='last-stand')techniques.update(serverTime);
   }
-  if(shownSelf)view.setFocus(shownSelf);// look: the sun's shadow box and the screen effects follow the fight
-  hud.tick();damageNumbers.update(view.camera);manga.update(view.camera);letterbox.set(couch.on?0:camera.cuts.bars);view.cinemaGrade(couch.on?0:camera.cuts.grade);if(camera.cuts.opened!==heardCinema){heardCinema=camera.cuts.opened;if(camera.cuts.openedKind==='confirm'&&camera.cuts.active)audio.ui('fx-swing-huge',.22,.1);}
+  if(replayed){const at=ballField.ballPosition();ballReplay.aim(view.camera,at,replayed.snapshot.serverTime,rawDt);if(at)view.setFocus(at);}else if(shownSelf)view.setFocus(shownSelf);// look: the sun's shadow box and the screen effects follow the fight (a replay's, the ball)
+  ballReplayBars+=((replayed?1:0)-ballReplayBars)*Math.min(1,rawDt*7);
+  hud.tick();damageNumbers.update(view.camera);manga.update(view.camera);letterbox.set(couch.on?0:Math.max(camera.cuts.bars,ballReplayBars));view.cinemaGrade(couch.on?0:camera.cuts.grade);if(camera.cuts.opened!==heardCinema){heardCinema=camera.cuts.opened;if(camera.cuts.openedKind==='confirm'&&camera.cuts.active)audio.ui('fx-swing-huge',.22,.1);}
   if(((started||!hud.homeVisible)&&!survivalHud.treeShown)||reportCapture){if(!couch.split)grunts.prepareCamera(view.camera);view.render(rawDt);drawnSize=view.renderer.domElement.width*65536+view.renderer.domElement.height;}
   // Training's switch, measured: the frame that drew the new body (swapLog).
   for(let i=swapLanding.length-1;i>=0;i--){const landing=swapLanding[i];if(fighters.get(landing.actor)?.bodyFighter===landing.fighter){landing.entry.shownMs=Math.round(performance.now()-landing.askedAt);swapLanding.splice(i,1);}}

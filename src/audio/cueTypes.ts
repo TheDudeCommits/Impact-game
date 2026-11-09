@@ -8,18 +8,18 @@ import { applyOriginalCues } from '../originals/apply';
 import { ORIGINAL_SFX_CUES, applyOriginalSfx } from '../originals/sfx';
 
 export const BASE_CUES = {
-  'koko-world':'koko-world.wav','kenzo-phoenix':'kenzo-phoenix.wav',
+  'koko-hush':'koko-hush.wav','kenzo-eagle':'kenzo-eagle.wav',
   'koko-iron-lullaby':'koko-iron-lullaby.wav',
   'ouga-gale':'ouga-gale.wav',
   'shirokane-resolve':'shirokane-resolve.wav',
-  'kenzo-crossing':'kenzo-crossing.wav','kenzo-world':'kenzo-world.wav',
+  'kenzo-crossing':'kenzo-crossing.wav','kenzo-dust-sea':'kenzo-dust-sea.wav',
   'nigo-nightfall':'nigo-nightfall.wav','nigo-haizan':'nigo-haizan.wav','nigo-unsealed':'nigo-unsealed.wav',
   'swing-a': 'swing-a.wav', 'swing-b': 'swing-b.wav', cloth: 'cloth.wav',
   'body-a': 'body-a.wav', 'body-b': 'body-b.wav', crack: 'crack.wav', ground: 'ground.wav',
   'charge-chi': 'charge-chi.wav', 'release-ki': 'release-ki.wav',
   'energy-tail': 'energy-tail.wav', bomb: 'bomb.wav',
   'taisei-sunpalm-cannon-full': 'taisei-sunpalm-cannon-full.wav',
-  'gummy-pistol':'gummy-pistol.wav', 'gummy-bazooka':'gummy-bazooka.wav', 'gummy-grand-tide-fist':'gummy-grand-tide-fist.wav',
+  'gummy-snapback':'gummy-snapback.wav', 'gummy-rogue-wave':'gummy-rogue-wave.wav', 'gummy-grand-tide-fist':'gummy-grand-tide-fist.wav',
   'taisei-spirit': 'taisei-spirit.wav', 'konta-whirlsphere': 'konta-whirlsphere.wav',
   'konta-galewheel': 'konta-galewheel.wav',
   'kurobi-link':'kurobi-link.wav','kurobi-taunt':'kurobi-taunt.wav',

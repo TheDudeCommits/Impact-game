@@ -91,7 +91,7 @@ export class ElectricKit {
     }
   }
   /** A jagged streak along where `id`'s point has been over the last quarter
-   *  second: the Lightning Cut dragged through a charge. */
+   *  second: the Sickle Bolt dragged through a charge. */
   trail(id: string, point: THREE.Vector3, power: number, salt: number, color = LIGHTNING.glow) {
     let t = this.trails.get(id);
     if (!t) { t = { points: Array.from({ length: TRAIL }, () => new THREE.Vector3()), times: new Array(TRAIL).fill(-9), head: 0, size: 0, last: -9 }; this.trails.set(id, t); }

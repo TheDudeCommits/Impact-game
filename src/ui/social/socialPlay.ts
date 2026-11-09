@@ -4,7 +4,7 @@ import { getBindings } from '../../input/bindings';
 import { population, type PageWhere, type PopulationView, type QueueMode } from '../../social/population';
 import './socialPlay.css';
 
-const MODE_NAMES: Record<QueueMode, string> = { royale: 'BATTLE ROYALE', duel: 'DUEL', 'last-stand': 'LAST STAND', 'bad-blood': 'BAD BLOOD', 'rift-war': 'RIFT WAR', arcade: 'ARCADE SURVIVAL' };
+const MODE_NAMES: Record<QueueMode, string> = { royale: 'BATTLE ROYALE', duel: 'DUEL', 'last-stand': 'LAST STAND', 'bad-blood': 'BAD BLOOD', 'rift-war': 'RIFT WAR', arcade: 'ARCADE SURVIVAL', 'goal-rush': 'GOAL RUSH', 'sky-spike': 'SKY SPIKE' };
 /** A home card's mode, as the population counts it (Training is played on the device and counted by nobody). */
 export function cardMode(card: string): QueueMode | undefined {
   const mode = MODE_OF_HOME[card as HomeMode]?.mode;
@@ -13,7 +13,9 @@ export function cardMode(card: string): QueueMode | undefined {
 /** A card's line: everyone playing the mode or queued for it. Empty when nobody is (an empty mode says nothing). */
 export function cardLine(view: PopulationView | undefined, mode: QueueMode | undefined): string {
   if (!view || !mode) return '';
-  const m = view.modes[mode], n = m.queue + m.playing;
+  const m = view.modes[mode];
+  if (!m) return '';
+  const n = m.queue + m.playing;
   return n ? `${n} PLAYING` : '';
 }
 /** The home's line: the people online, the page itself among them. */
@@ -22,6 +24,7 @@ export const onlineLine = (view: PopulationView | undefined) => view && view.onl
 export function dockLine(view: PopulationView | undefined, mode: QueueMode): string {
   if (!view) return '';
   const m = view.modes[mode];
+  if (!m) return '';
   return `${m.queue} IN QUEUE · ${m.playing} PLAYING${m.standby ? ` · ${m.standby} FIGHTING BOTS ASKED TO JOIN` : ''}`;
 }
 
@@ -66,7 +69,7 @@ export class ChallengerPrompt {
     parent.append(this.el);
   }
   update(view: PopulationView | undefined, where: PageWhere) {
-    const mode = where.at === 'standby' ? where.mode : undefined, waiting = mode && view ? view.modes[mode].queue : 0;
+    const mode = where.at === 'standby' ? where.mode : undefined, waiting = mode && view ? view.modes[mode]?.queue ?? 0 : 0;
     if (!mode || mode !== this.mode) this.dismissed = false;
     this.mode = mode;
     if (!waiting) { this.dismissed = false; this.hide(); return; }
