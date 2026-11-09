@@ -12,7 +12,7 @@ import { activeKit, armoryRuntime, registerArmory, setActiveKit, type ArmoryEffe
 import { ARMORY_EFFECTS } from './vendor/forgeCatalog';
 import { ESSENTIALS } from './macros';
 import type { KitValues } from './fxStage';
-import { UNSHIPPED_ARMORY } from '../../../originals/credits'; // originals fork: effects whose files' licences keep them out
+import { UNSHIPPED_ARMORY } from '../../../originals/unshippedArmory'; // effects whose files' licences keep them out
 import { forgeLabel } from '../../../originals/forgeLabels'; // originals fork: the effects' names as the fork shows them
 
 /**

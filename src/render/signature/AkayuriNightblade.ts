@@ -12,9 +12,10 @@ import { blowFloor } from './blowFloor';
 import { Roster96Batch } from './Roster96Batch';
 import { sweep } from './StageStrokes';
 
+import { AKAYURI_BLADE } from './AkayuriNightbladeContact';
+export { AKAYURI_BLADE } from './AkayuriNightbladeContact';
 export const isAkayuriNightblade = (id: string | undefined) => id === 'akayuri';
 export const AKAYURI_VFX_LIMITS = Object.freeze({ ink: 192, marks: 16, burials: 6 });
-export const AKAYURI_BLADE = { root: [-.015, .13500000536441803, .010], tip: [-.01509892135858535767, .9346148371696472, .06012013018131256] } as const;
 const UP = new THREE.Vector3(0, 1, 0);
 const lin = (r: number, g: number, b: number) => new THREE.Color(r, g, b);
 const clamp = (v: number) => Math.max(0, Math.min(1, v));

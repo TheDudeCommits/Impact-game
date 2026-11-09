@@ -10,27 +10,12 @@ import { MoveStage, SHEEN, stageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 import { CastBook, Rifts, arc, flare, hash, sheenAhead, type Gather } from './StageCraft';
 
+export { torsionStrikeSocket, torsionAuthoredHover, torsionStrikePoint } from './TorsionPsychicContact';
 export const isTorsionPsychic = (id: string | undefined) => id === 'torsion';
 export const TORSION_PSYCHIC_ASSETS: readonly string[] = Object.freeze([]);
 export const TORSION_PSYCHIC_LIMITS = Object.freeze({ threads: 384, needles: 96, rings: 48, impacts: 20, confirms: 8 });
 export const TORSION_PSYCHIC_BEATS = Object.freeze({ release: .61, command: 1.2, final: 3.14 });
-const GROUNDED_CLIPS = new Set(['Hit 01','shake','stun','Die fall','down_end','slammed','blownback_end','Landing']);
 const AURA_ACTIONS = new Set(['light','heavy','special','ultimate','guard']);
-const BRANCH_CLIPS = Object.freeze({lh:'About-Face',llh:'Hoist Up',lllh:'Cave-In',llls:'Corkscrew',airHeavy:'Air Rebuff',airSpecial:'Rubble Rain'});
-/** Cached visible hand sockets; no motionEvidence() or per-frame traversal. */
-export function torsionStrikeSocket(action:string,elapsed:number,clip?:string,contactIndex?:number):'LeftHand'|'RightHand'|'Both'{
- if(clip==='Full Torque'||action==='ultimate'&&!clip)return(contactIndex??(elapsed>2.8?2:elapsed>1.2?1:0))===2?'Both':'RightHand';
- if(clip==='Wring Out'||clip==='Rush 2'||clip==='About-Face'||clip==='Cave-In'||clip==='Rubble Rain'||action==='heavy'&&!clip)return'LeftHand';
- return'RightHand';
-}
-export function torsionAuthoredHover(clip?:string){return !!clip&&!GROUNDED_CLIPS.has(clip);}
-export function torsionStrikePoint(fighter:Fighter,out:THREE.Vector3,clip?:string,sourceTime?:number,contactIndex?:number){
- const s=fighter.state;
- if(!clip&&isEnderKey(s.branch))clip=BRANCH_CLIPS[s.branch];
- if(!clip&&s.action==='light'&&s.chain)clip=`Rush ${s.chain}`;
- const joint=torsionStrikeSocket(s.action,sourceTime??s.actionTime*s.actionDuration,clip,contactIndex);
- return joint==='Both'?out.copy(fighter.handL).lerp(fighter.handR,.5):out.copy(joint==='LeftHand'?fighter.handL:fighter.handR);
-}
 const UP = new THREE.Vector3(0, 1, 0), FRONT = new THREE.Vector3(0, 0, 1), TAU = Math.PI * 2;
 const GREEN = new THREE.Color(0x5dffac), ROCK = new THREE.Color(0x6c847a), WHITE = new THREE.Color(0xeaffef);
 const clamp = (v: number) => Math.min(1, Math.max(0, v));

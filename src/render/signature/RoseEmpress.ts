@@ -12,13 +12,13 @@ import { STAR } from './GlowBatch';
 import { BURN, MoveStage, SHEEN, stageLook, type StageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 
+import { isRoseEmpress, roseFingertip, roseHeelContact } from './RoseEmpressContact';
+export { isRoseEmpress, roseFingertip, roseHeelContact } from './RoseEmpressContact';
 /** All silhouettes are geometry authored here. There are no late image requests
  * or borrowed aura textures; the constructor prepares every GPU resource. */
 export const ROSE_EMPRESS_ASSETS: readonly string[] = Object.freeze([]);
 export const ROSE_EMPRESS_BEATS = Object.freeze({ opener: .42, leap: 1.05, heel: 1.86, flourish: .38 });
 export const ROSE_EMPRESS_LIMITS = Object.freeze({ hearts: 96, contours: 96, arrows: 96, stones: 192, will: 96, shells: 8, impacts: 24 });
-export const isRoseEmpress = (id: string | undefined) => id === 'basilissa';
-
 const UP = new THREE.Vector3(0, 1, 0), FRONT = new THREE.Vector3(0, 0, 1);
 /** Her hearts and arrows themselves, over the bloom threshold (they were drawn in colours of 1 and under). */
 const PINK = new THREE.Color(2, .5, 1.1), PEARL = new THREE.Color(2.2, 1.9, 2);
@@ -35,35 +35,6 @@ const STONE = new THREE.Color(0xc5c3d0), SHADE = new THREE.Color(0x666071), INK 
 const TAU = Math.PI * 2;
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
 const attacking = (action: string) => action === 'light' || action === 'heavy' || action === 'special' || action === 'ultimate';
-const handOrigin = new THREE.Vector3(), forearmOrigin = new THREE.Vector3();
-
-/** The source rig has an open palm but no finger joints. Continue the actual
- * wrist/forearm direction by 10 cm instead of charging at the actor's centre.
- * CombatEffects' flight origin and this layer must use this same attachment. */
-export function roseFingertip(fighter: Fighter, out: THREE.Vector3): THREE.Vector3 {
-  const hand = fighter.joints?.get('RightHand');
-  if (hand?.parent) {
-    hand.getWorldPosition(handOrigin); hand.parent.getWorldPosition(forearmOrigin);
-    out.copy(handOrigin).sub(forearmOrigin);
-    if (out.lengthSq() > 1e-8) return out.normalize().multiplyScalar(.10).add(handOrigin);
-    return out.copy(handOrigin);
-  }
-  return out.copy(fighter.handR);
-}
-
-/** Source skill_a uses the left heel for all three sweeps; skill_b's descending
- * finisher uses the right. The native source does not alternate kicking feet.
- * The air string's last take must be Crown Heel Drop, as in the handoff. */
-export function roseHeelContact(fighter: Fighter, index: number, out: THREE.Vector3): boolean {
-  if (!isRoseEmpress(fighter.state.fighter)) return false;
-  const s = fighter.state;
-  const drop = s.branch === 'lllh' || s.branch === 'airSpecial' ||
-    s.action === 'ultimate' && index > 0 || s.action === 'light' && (s.chain ?? 0) >= (s.grounded ? 3 : 2);
-  const foot = fighter.joints?.get(drop ? 'RightFoot' : 'LeftFoot');
-  if (!foot) return false;
-  foot.getWorldPosition(out); return true;
-}
-
 function heartShape() {
   const s = new THREE.Shape();
   s.moveTo(0, -.5);

@@ -62,7 +62,7 @@ const mainOgImage = (file: string) => file === 'og-image.jpg' && existsSync('pub
 const WITHHELD_PROPS = new Set(['assets/props/steamroller1.glb']);
 
 const OWN_ART_DIRS: [RegExp, Record<string, string>][] = [[/^assets\/hud\/busts\/([^/]+)$/, OWN_ART.busts], [/^assets\/ui\/moves\/area\/([^/]+)$/, OWN_ART.areaCards],
-  [/^assets\/home\/modes\/(rift-war\.webp)$/, OWN_ART.modeTiles]];
+  [/^assets\/home\/modes\/(rift-war(?:-\d+)?\.webp)$/, OWN_ART.modeTiles]];
 function withheldArt(file: string) {
   for (const [folder, own] of OWN_ART_DIRS) {
     const name = folder.exec(file)?.[1];

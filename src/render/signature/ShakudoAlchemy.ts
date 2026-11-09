@@ -12,29 +12,11 @@ import { MoveStage, type StageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 import { bolt, sweep } from './StageStrokes';
 
+export { SHAKUDO_BLADE_SOCKET, shakudoStrikeSocket, shakudoAuthoredKick, shakudoAuthoredGround, shakudoStrikePoint } from './ShakudoAlchemyContact';
 export const isShakudoAlchemy = (id: string | undefined) => id === 'shakudo';
 export const SHAKUDO_ALCHEMY_ASSETS: readonly string[] = Object.freeze([]);
 export const SHAKUDO_ALCHEMY_LIMITS = Object.freeze({ stones: 96, marks: 10, lances: 4, confirms: 8 });
 export const SHAKUDO_ALCHEMY_BEATS = Object.freeze({ clap: .294, release: .72, final: 3.3 });
-const BRANCH = Object.freeze({ lh: 'Swage', llh: 'Upset', lllh: 'Drop Forge', llls: 'Stone Breaker', airHeavy: 'Anvil Drop', airSpecial: 'Slag Fall' });
-export const SHAKUDO_BLADE_SOCKET = Object.freeze({ joint: 'ShakudoBladeTip', tip: Object.freeze([-.0895596656990405, -.32976020227090624, .11274550202276012]), sourceVertex: 196 });
-export function shakudoStrikeSocket(action: string, elapsed: number, clip?: string, index?: number): 'RightHand' | 'LeftHand' | 'LeftToeBase' | 'Both' | 'Blade' {
-  if (clip === 'TANREN: White Heat' || action === 'ultimate' && !clip) { const contact = index ?? (elapsed > 2.9 ? 2 : elapsed > .95 ? 1 : 0); return contact === 2 ? 'Both' : contact === 1 ? 'Blade' : 'RightHand'; }
-  if (clip === 'Hot Edge' || clip === 'Drop Forge' || action === 'heavy' && !clip) return 'Blade';
-  if (clip === 'Bedrock Pike' || clip === 'Stone Breaker' || clip === 'Slag Fall' || action === 'special' && !clip) return 'Both';
-  if (clip === 'Anvil Drop') return 'LeftToeBase'; if (clip === 'Rush 2') return 'LeftHand'; return 'RightHand';
-}
-export function shakudoAuthoredKick(clip?: string) { return clip === 'Anvil Drop'; }
-export function shakudoAuthoredGround(clip?: string) { return clip === 'Bedrock Pike' || clip === 'Stone Breaker' || clip === 'Slag Fall' || clip === 'TANREN: White Heat'; }
-export function shakudoStrikePoint(f: Fighter, out: THREE.Vector3, clip?: string, sourceTime?: number, index?: number) {
-  const s = f.state; if (!clip && isEnderKey(s.branch)) clip = BRANCH[s.branch]; if (!clip && s.action === 'light' && s.chain) clip = `Rush ${s.chain}`;
-  const joint = shakudoStrikeSocket(s.action, sourceTime ?? s.actionTime * s.actionDuration, clip, index);
-  if (joint === 'Both') return out.copy(f.handL).lerp(f.handR, .5);
-  if (joint === 'Blade') { const b = f.bones?.get('shakudobladetip'); if (b) return b.localToWorld(out.set(SHAKUDO_BLADE_SOCKET.tip[0], SHAKUDO_BLADE_SOCKET.tip[1], SHAKUDO_BLADE_SOCKET.tip[2])); }
-  if (joint === 'LeftToeBase') { const b = f.bones?.get('lefttoebase') ?? f.bones?.get('leftfoot'); if (b) return b.getWorldPosition(out); }
-  return out.copy(joint === 'LeftHand' ? f.handL : f.handR);
-}
-
 const UP = new THREE.Vector3(0, 1, 0);
 const lin = (r: number, g: number, b: number) => new THREE.Color(r, g, b);
 const clamp = (v: number) => Math.max(0, Math.min(1, v));

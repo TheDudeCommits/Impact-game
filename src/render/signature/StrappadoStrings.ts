@@ -10,31 +10,12 @@ import { STAR } from './GlowBatch';
 import { MoveStage, stageLook, type StageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 
+import { strappadoStrikePoint } from './StrappadoStringsContact';
+export { strappadoStrikeSocket, strappadoAuthoredKick, strappadoStrikePoint } from './StrappadoStringsContact';
 export const isStrappadoStrings = (id: string | undefined) => id === 'strappado';
 export const STRAPPADO_STRINGS_ASSETS: readonly string[] = Object.freeze([]);
 export const STRAPPADO_STRINGS_LIMITS = Object.freeze({ threads: 384, needles: 64, rings: 48, impacts: 20, confirms: 8, rakes: 12, whips: 4 });
 export const STRAPPADO_STRINGS_BEATS = Object.freeze({ overheat: .63, command: 2.10, final: 3.18 });
-/** Native contact selection uses the visible hand or foot, including rushes. */
-export function strappadoStrikeSocket(action: string, elapsed: number, clip?: string, contactIndex?: number): 'LeftHand' | 'RightHand' | 'LeftToeBase' | 'Both' {
-  if (clip === 'Curtain Call' || action === 'ultimate' && !clip) return (contactIndex ?? (elapsed > 2.85 ? 2 : 0)) === 2 ? 'Both' : 'RightHand';
-  if (clip === 'Tightrope Kick' || clip === 'Highwire Heel' || action === 'heavy' && !clip) return 'LeftToeBase';
-  if (clip === 'Rush 2' || clip === 'Marionette Reversal') return 'LeftHand';
-  if (clip === 'Puppeteer\'s Snare' || clip === 'Trapdoor Drop') return 'Both';
-  return 'RightHand';
-}
-export function strappadoAuthoredKick(clip?: string) { return clip === 'Tightrope Kick' || clip === 'Highwire Heel'; }
-export function strappadoStrikePoint(fighter: Fighter, out: THREE.Vector3, clip?: string, sourceTime?: number, contactIndex?: number): THREE.Vector3 {
-  const s = fighter.state;
-  if (!clip && isEnderKey(s.branch)) clip = ({ lh: 'Marionette Reversal', llh: 'Wire Guillotine', lllh: 'Spool Burst', llls: 'Puppeteer\'s Snare', airHeavy: 'Highwire Heel', airSpecial: 'Trapdoor Drop' } as const)[s.branch];
-  if (!clip && s.action === 'light' && s.chain) clip = `Rush ${s.chain}`;
-  const socket = strappadoStrikeSocket(s.action, sourceTime ?? s.actionTime * s.actionDuration, clip, contactIndex);
-  if (socket === 'LeftToeBase') {
-    const foot = fighter.bones.get('lefttoebase') ?? fighter.bones.get('leftfoot');
-    if (foot) return foot.getWorldPosition(out);
-  }
-  if (socket === 'Both') return out.copy(fighter.handL).lerp(fighter.handR, .5);
-  return out.copy(socket === 'LeftHand' ? fighter.handL : fighter.handR);
-}
 const UP = new THREE.Vector3(0, 1, 0), FRONT = new THREE.Vector3(0, 0, 1), TAU = Math.PI * 2;
 const INK = new THREE.Color(0x301425), ROSE = new THREE.Color(0xf074ad), HOT = new THREE.Color(0xf64d47), WHITE = new THREE.Color(0xfffaf1);
 const clamp = (v: number) => Math.min(1, Math.max(0, v));

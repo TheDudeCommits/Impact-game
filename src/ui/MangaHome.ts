@@ -48,13 +48,27 @@ export const HOME_PAGES = homeRosterPages(HOME_ROSTER);
 export const HOME_VOLUMES = HOME_PAGES.map(page=>page.fighters);
 export const homeVolumeOf = (id:FighterId) => Math.max(0,HOME_VOLUMES.findIndex(page=>page.includes(id)))+1;
 export const fighterArt = (id:FighterId) => mediaArt(`/assets/home/fighters/${id}.webp`);
+/** The mode cards at the size the home draws them. Measured:
+ *  229 CSS px wide at 1440x900, 313 at 1920x1080, 426 at 2560 - 458 device pixels at 1440x900 and a device
+ *  pixel ratio of 2 - so a card <art>-480.webp (480x640, 140 KB) covers every desktop at 1x and the usual one at 2x, where the
+ *  900x1200 master (400 KB) drew at half its size: a first visit's seven cards 2.7 MB -> 0.95 MB. The master stays for denser or
+ *  larger screens (srcset: a 1920x1080 screen at 2x, a phone at 3x, a tablet) and for the loading screen and the mode sheet,
+ *  which draw it up to 720 CSS px wide. `sizes` is the card's width from home.css's rails (over, not under: a borderline screen
+ *  takes the master). */
+export const CARD_WIDTH = 480;
+/** The masters' widths where not 900 (their heights are all 1200; a small card keeps its master's aspect: 480x720 here). */
+export const CARD_MASTER_WIDTH: Readonly<Record<string, number>> = { 'last-stand': 800 };
+export const cardSmall = (art:string) => `/assets/home/modes/${art}-${CARD_WIDTH}.webp`;
+const CARD_SIZES = '(max-width: 600px) calc(79vw - 27px), (max-width: 1000px) 36vw, calc(17.6vw - 17px)';
+const cardImage = (art:string) => { const small=siteUrl(cardSmall(art)),master=siteUrl(`/assets/home/modes/${art}.webp`);
+  return `<img src="${small}" srcset="${small} ${CARD_WIDTH}w, ${master} ${CARD_MASTER_WIDTH[art] ?? 900}w" sizes="${CARD_SIZES}" alt="" draggable="false" fetchpriority="high">`; };
 const portraitArt = (id:FighterId) => packArt(id,'portrait') ?? mediaArt(`/assets/home/portraits/${id}.webp`);
 export const HOME_ASSETS = [
   // Ship the prepared art library before gameplay agents activate these fighters.
   ...upcomingArt.fighters.flatMap(fighter=>Object.values(fighter.assets)),
   '/assets/home/upcoming/index.html', '/assets/home/upcoming/manifest.json',
   '/assets/home/upcoming/README.md', '/assets/home/upcoming/production.json',
-  ...HOME_MODES.map(m=>`/assets/home/modes/${m.id}.webp`),
+  ...HOME_MODES.map(m=>`/assets/home/modes/${m.id}.webp`), ...HOME_MODES.map(m=>cardSmall(m.id)),
   ...HOME_ROSTER.map(fighterArt),
   ...HOME_ROSTER.filter(hasPoseSheet).map(spriteArt), ...HOME_FIGHTERS.map(posePoster), '/assets/home/sprites/manifest.json',
   ...spriteManifest.fighters.filter(fighter=>HOME_ROSTER.includes(fighter.id as FighterId)).flatMap(fighter=>
@@ -111,7 +125,7 @@ export function mangaHome(selected:FighterId, botPlayers:number) {
       <div class="home-mode-rail"><div class="home-modes" role="group" aria-label="Choose game mode">
         ${HOME_MODES.filter(mode=>HOME_RAIL.includes(mode.id)).map((mode,i)=>`<div class="home-mode-panel" data-panel="${mode.id}" style="--tilt:${i===0?-2:i===1?1:i===2?-1.5:i===3?-2:0}deg">
           <button type="button" class="home-mode" data-mode="${mode.id}" aria-pressed="${mode.id==='bots'}" aria-label="${mode.label}">
-            <span class="home-mode-art"><img src="${siteUrl(`/assets/home/modes/${MODES[MODE_OF_HOME[mode.id].mode].art}.webp`)}" alt="" draggable="false" fetchpriority="high"></span>
+            <span class="home-mode-art">${cardImage(MODES[MODE_OF_HOME[mode.id].mode].art)}</span>
             <span class="home-mode-label">${mode.label.toUpperCase()}</span>
           </button>
           ${variantWords(mode.id)}

@@ -7,8 +7,9 @@ import {SIGNATURE,involvesLocal} from './context';
 import {LANTHORN_MOVES} from '../../game/fighters/lanthorn';
 import {MoveStage,POOL,STAGE,stageLook} from './MoveStage';
 import { blowFloor } from './blowFloor';
+import { lanthornBladePoint } from './LanthornLampblackContact';
+export { lanthornStrikeJoint, lanthornBladePoint } from './LanthornLampblackContact';
 export const isLanthornLampblack=(id:string|undefined)=>id==='lanthorn';
-export function lanthornStrikeJoint(action:string,clip?:string):'LeftHand'|'RightHand'{return clip==='Lampblack Edge'||clip==='Lampblack Drive'||action==='special'&&!clip?'RightHand':'LeftHand';}
 export const LANTHORN_LAMPBLACK_LIMITS=Object.freeze({flames:160,strokes:144,crescents:64,impacts:24,trails:16});
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),RIGHT=new THREE.Vector3(1,0,0),INK=new THREE.Color(0x130d20),VIOLET=new THREE.Color(1.5,.5,2.9),MAGENTA=new THREE.Color(2.3,1,3.1),WHITE=new THREE.Color(0xf7eaff);
 /** LAMPBLACK: flame that is black, lit only at its violet edge (the stage's darkness: it covers what is behind it).
@@ -20,9 +21,6 @@ const HEAVY=LANTHORN_MOVES.heavy,SPECIAL=LANTHORN_MOVES.special,ULT=LANTHORN_MOV
 const clamp=(v:number)=>Math.max(0,Math.min(1,v));
 type Confirm={actor:string;target:string;seq:number;final:boolean;floor:number};
 const NO_FLIGHTS:ReadonlyMap<string,Flight>=new Map();
-// Measured from the two exported native Wick Cut skins.
-const ROOT=new THREE.Vector3(.107978,-.002969,-.239428),TIP=new THREE.Vector3(.066096,.004871,.280593),FORM_ROOT=new THREE.Vector3(.048711,.067633,-.258463),FORM_TIP=new THREE.Vector3(.006830,.075473,.261558);
-export function lanthornBladePoint(f:Pick<Fighter,'drawnJoint'|'shownBody'>,out:THREE.Vector3,tip=true){const hand=f.drawnJoint('LeftHand');if(!hand)return false;out.copy(f.shownBody!==f?(tip?FORM_TIP:FORM_ROOT):(tip?TIP:ROOT)).applyMatrix4(hand.matrixWorld);return true;}
 /** Two curved, tapered sheets retain a legible curling silhouette from both sides.
  * Geometry is built once; the shader bends only the upper tongue over time. */
 export function lanthornFlameGeometry(){

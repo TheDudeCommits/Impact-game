@@ -1,26 +1,4 @@
-import { ChohanAllIn } from './ChohanAllIn';
 import { YodakaFlameArt } from './YodakaFlameArt';
-import { RotfalkeField } from './RotfalkeField';
-import { BonshoBodhisattva } from './BonshoBodhisattva';
-import { KinuStoneThread } from './KinuStoneThread';
-import { MadakeGates } from './MadakeGates';
-import { AkayuriNightblade } from './AkayuriNightblade';
-import { HagureSnapBite } from './HagureSnapBite';
-import { ShibuichiBastion } from './ShibuichiBastion';
-import { RakuchoTendrils } from './RakuchoTendrils';
-import { ShidareSteelPetalCut } from './ShidareSteelPetalCut';
-import { AmagoiGravity } from './AmagoiGravity';
-import { ShakudoAlchemy } from './ShakudoAlchemy';
-import { KubiwaControl } from './KubiwaControl';
-import { TorsionPsychic } from './TorsionPsychic';
-import { LanthornLampblack } from './LanthornLampblack';
-import { StrappadoStrings } from './StrappadoStrings';
-import { UnariElastic } from './UnariElastic';
-import { BarrowEmperor } from './BarrowEmperor';
-import { WataameSilverSoul } from './WataameSilverSoul';
-import { SenkoGlint } from './SenkoGlint';
-import { BunaOni } from './BunaOni';
-import { TempoDarkSpark } from './TempoDarkSpark';
 import type * as THREE from 'three';
 import type { CombatEvent, FighterId } from '../../game/types';
 import type { Fighter } from '../Fighter';
@@ -39,22 +17,36 @@ interface Signature {
   update(time: number, fighters: ReadonlyMap<string, Fighter>, flights: ReadonlyMap<string, Flight>): void;
   reset(): void;
   dispose(): void;
+  /** A lazy one's module fetched ahead (LazySignature). */
+  prefetchFor?(id: FighterId): void;
 }
 type Factory = (scene: THREE.Scene, kit: VfxKit) => Signature;
 /** A fighter's own module, fetched when a room has them (the performance sweep, 24 October 2026): imported here, these
- *  twenty-nine were about 700 KB of a first visit's code before minifying, for fighters the visit may never meet. (The other
- *  modules below stay imported: Fighter.ts and its sockets import them too; Yodaka's, whose tests build it as `load` is
+ *  twenty-nine were about 700 KB of a first visit's code before minifying, for fighters the visit may never meet. (And the
+ *  twenty-two Fighter.ts and its sockets asked for a point of: those points are their
+ *  <Module>Contact.ts now, the layers about 550 KB more. Yodaka's stays imported: its tests build it as `load` is
  *  called, before its texture arrives - tests/yodakaAreaBridge.test.ts.) `load` - which a room's loading screen waits for before anything is
  *  compiled (main.ts roomExtras, CombatEffects.load) - imports and builds it, then loads it as before; until then it draws
  *  nothing, and nothing is in the air before a room has loaded. The factory stays synchronous: wireArmory wraps it as any. */
-const lazy = (module: () => Promise<Factory>): Factory => (scene, kit) => new LazySignature(module, scene, kit);
+const lazy = (module: () => Promise<Factory>): Factory => Object.assign((scene: THREE.Scene, kit: VfxKit) => new LazySignature(module, scene, kit), { prefetch: module });
+/** The layers CombatEffects keeps of its own (Rose's, Kuzu's, Shakugo's, Full Beam's, Pyroclast's,
+ *  Ampere's), the same way: fetched and built by the first room whose ids have `owner`'s fighter (a room's ids carry the donors
+ *  of the moves its kits borrow too), and loaded as before by every room after it. Until then there is nothing of theirs in the
+ *  air; their <Module>Contact.ts says whose a move is, so CombatEffects leaves those moves to them from the first frame. */
+export type LazyLayer = Signature;
+export const lazyLayer = (owner: (id: string) => boolean, module: () => Promise<Factory>, scene: THREE.Scene, kit: VfxKit): LazyLayer => new LazySignature(module, scene, kit, owner);
+const markLayer = () => { try { performance.mark('jump:lazy-ready:layer'); } catch { /* no timeline */ } };
 class LazySignature implements Signature {
   private real?: Signature;
   private building?: Promise<Signature>;
   private disposed = false;
-  constructor(private readonly module: () => Promise<Factory>, private readonly scene: THREE.Scene, private readonly kit: VfxKit) {}
+  constructor(private readonly module: () => Promise<Factory>, private readonly scene: THREE.Scene, private readonly kit: VfxKit, private readonly owner?: (id: string) => boolean) {}
+  /** The module fetched ahead (at idle on the home, for the fighter picked there), built only when a room loads it. */
+  prefetchFor(id: FighterId) { if (!this.building && (!this.owner || this.owner(id))) void this.module().catch(() => {}); }
   load(ids: readonly FighterId[]): Promise<unknown> {
-    this.building ??= this.module().then(factory => { const real = factory(this.scene, this.kit); if (this.disposed) real.dispose(); else this.real = real; return real; });
+    if (this.owner && !this.building && !ids.some(id => this.owner!(id))) return Promise.resolve();
+
+    this.building ??= this.module().then(factory => { markLayer(); const real = factory(this.scene, this.kit); if (this.disposed) real.dispose(); else this.real = real; return real; });
     return this.building.then(real => this.disposed ? undefined : real.load(ids));
   }
   handle(event: CombatEvent, fighters?: ReadonlyMap<string, Fighter>) { this.real?.handle(event, fighters); }
@@ -64,15 +56,15 @@ class LazySignature implements Signature {
   dispose() { this.disposed = true; this.real?.dispose(); this.real = undefined; }
 }
 const factories: Partial<Record<FighterId, Factory>> = {
-  chohan: (scene, kit) => new ChohanAllIn(scene, kit),
+  chohan: lazy(() => import('./ChohanAllIn').then(m => (scene, kit) => new m.ChohanAllIn(scene, kit))),
   tsubute: lazy(() => import('./TsubuteSeedShot').then(m => (scene, kit) => new m.TsubuteSeedShot(scene, kit))),
   aqrab: lazy(() => import('./AqrabDesert').then(m => (scene, kit) => new m.AqrabDesert(scene, kit))),
   yodaka: (scene, kit) => new YodakaFlameArt(scene, kit),
   ume: lazy(() => import('./UmeBlossom').then(m => (scene, kit) => new m.UmeBlossom(scene, kit))),
-  lanthorn:(scene,kit)=>new LanthornLampblack(scene,kit),
+  lanthorn: lazy(() => import('./LanthornLampblack').then(m => (scene, kit) => new m.LanthornLampblack(scene, kit))),
   highsun: lazy(() => import('./HighsunSun').then(m => (scene, kit) => new m.HighsunSun(scene, kit))),
-  torsion:(scene,kit)=>new TorsionPsychic(scene,kit),
-  kubiwa:(scene,kit)=>new KubiwaControl(scene,kit),
+  torsion: lazy(() => import('./TorsionPsychic').then(m => (scene, kit) => new m.TorsionPsychic(scene, kit))),
+  kubiwa: lazy(() => import('./KubiwaControl').then(m => (scene, kit) => new m.KubiwaControl(scene, kit))),
   onigawara: lazy(() => import('./OnigawaraPressure').then(m => (scene, kit) => new m.OnigawaraPressure(scene, kit))),
   cardo: lazy(() => import('./BriarMagic').then(m => (scene, kit) => new m.BriarMagic('cardo', scene, kit))),
   bruin: lazy(() => import('./BriarMagic').then(m => (scene, kit) => new m.BriarMagic('bruin', scene, kit))),
@@ -82,45 +74,49 @@ const factories: Partial<Record<FighterId, Factory>> = {
   'psyche': lazy(() => import('./PsycheFleur').then(m => (scene, kit) => new m.PsycheFleur(scene, kit))),
   'ovid': lazy(() => import('./OvidFortitude').then(m => (scene, kit) => new m.OvidFortitude(scene, kit))),
   hawser: lazy(() => import('./HawserColossus').then(m => (scene, kit) => new m.HawserColossus(scene, kit))),
-  rotfalke:(scene,kit)=>new RotfalkeField(scene,kit),
-  bonsho:(scene,kit)=>new BonshoBodhisattva(scene,kit),
+  rotfalke: lazy(() => import('./RotfalkeField').then(m => (scene, kit) => new m.RotfalkeField(scene, kit))),
+  bonsho: lazy(() => import('./BonshoBodhisattva').then(m => (scene, kit) => new m.BonshoBodhisattva(scene, kit))),
   murex: lazy(() => import('./MurexBarrier').then(m => (scene, kit) => new m.MurexBarrier(scene, kit))),
-  kinu:(scene,kit)=>new KinuStoneThread(scene,kit),
-  'madake':(scene,kit)=>new MadakeGates(scene,kit),
-  akayuri:(scene,kit)=>new AkayuriNightblade(scene,kit),
-  hagure:(scene,kit)=>new HagureSnapBite(scene,kit),
+  kinu: lazy(() => import('./KinuStoneThread').then(m => (scene, kit) => new m.KinuStoneThread(scene, kit))),
+  'madake': lazy(() => import('./MadakeGates').then(m => (scene, kit) => new m.MadakeGates(scene, kit))),
+  akayuri: lazy(() => import('./AkayuriNightblade').then(m => (scene, kit) => new m.AkayuriNightblade(scene, kit))),
+  hagure: lazy(() => import('./HagureSnapBite').then(m => (scene, kit) => new m.HagureSnapBite(scene, kit))),
   hisame: lazy(() => import('./HisameWhiteoutGlassCoffin').then(m => (scene, kit) => new m.HisameWhiteoutGlassCoffin(scene, kit))),
   mizuhiki: lazy(() => import('./MizuhikiGRAPPLE').then(m => (scene, kit) => new m.MizuhikiGRAPPLE(scene, kit))),
-  'shibuichi':(scene,kit)=>new ShibuichiBastion(scene,kit),
-  'rakucho':(scene,kit)=>new RakuchoTendrils(scene,kit),
+  'shibuichi': lazy(() => import('./ShibuichiBastion').then(m => (scene, kit) => new m.ShibuichiBastion(scene, kit))),
+  'rakucho': lazy(() => import('./RakuchoTendrils').then(m => (scene, kit) => new m.RakuchoTendrils(scene, kit))),
   irbis: lazy(() => import('./IrbisBaredFangs').then(m => (scene, kit) => new m.IrbisBaredFangs(scene, kit))),
-  shidare:(scene,kit)=>new ShidareSteelPetalCut(scene,kit),
+  shidare: lazy(() => import('./ShidareSteelPetalCut').then(m => (scene, kit) => new m.ShidareSteelPetalCut(scene, kit))),
   hinomoto: lazy(() => import('./HinomotoBlaze').then(m => (scene, kit) => new m.HinomotoBlaze(scene, kit))),
-  amagoi:(scene,kit)=>new AmagoiGravity(scene,kit),
-  'shakudo':(scene,kit)=>new ShakudoAlchemy(scene,kit),
+  amagoi: lazy(() => import('./AmagoiGravity').then(m => (scene, kit) => new m.AmagoiGravity(scene, kit))),
+  'shakudo': lazy(() => import('./ShakudoAlchemy').then(m => (scene, kit) => new m.ShakudoAlchemy(scene, kit))),
   hikui: lazy(() => import('./HikuiWitchfire').then(m => (scene, kit) => new m.HikuiWitchfire(scene, kit))),
   tokan: lazy(() => import('../vfx/engine/pilots/tokan').then(m => (scene, kit) => m.tokanSignature(scene, kit))),
-  strappado:(scene,kit)=>new StrappadoStrings(scene,kit),
-  unari:(scene,kit)=>new UnariElastic(scene,kit),
-  barrow:(scene,kit)=>new BarrowEmperor(scene,kit),
+  strappado: lazy(() => import('./StrappadoStrings').then(m => (scene, kit) => new m.StrappadoStrings(scene, kit))),
+  unari: lazy(() => import('./UnariElastic').then(m => (scene, kit) => new m.UnariElastic(scene, kit))),
+  barrow: lazy(() => import('./BarrowEmperor').then(m => (scene, kit) => new m.BarrowEmperor(scene, kit))),
   sashigane: lazy(() => import('./SashiganeRatio').then(m => (scene, kit) => new m.SashiganeRatio(scene, kit))),
   gosu: lazy(() => import('./GosuRestoration').then(m => (scene, kit) => new m.GosuRestoration(scene, kit))),
   kusushi: lazy(() => import('./KusushiStrength').then(m => (scene, kit) => new m.KusushiStrength(scene, kit))),
   hakushi: lazy(() => import('./HakushiOldLion').then(m => (scene, kit) => new m.HakushiOldLion(scene, kit))),
   suzuran: lazy(() => import('./SuzuranResonance').then(m => (scene, kit) => new m.SuzuranResonance(scene, kit))),
-  wataame:(scene,kit)=>new WataameSilverSoul(scene,kit),
-  senko:(scene,kit)=>new SenkoGlint(scene,kit),
-  buna:(scene,kit)=>new BunaOni(scene,kit),
+  wataame: lazy(() => import('./WataameSilverSoul').then(m => (scene, kit) => new m.WataameSilverSoul(scene, kit))),
+  senko: lazy(() => import('./SenkoGlint').then(m => (scene, kit) => new m.SenkoGlint(scene, kit))),
+  buna: lazy(() => import('./BunaOni').then(m => (scene, kit) => new m.BunaOni(scene, kit))),
   oyashio: lazy(() => import('./OyashioKarate').then(m => (scene, kit) => new m.OyashioKarate(scene, kit))),
   adad: lazy(() => import('./AdadThunder').then(m => (scene, kit) => new m.AdadThunder(scene, kit))),
   shijima: lazy(() => import('./ShijimaSnowfall').then(m => (scene, kit) => new m.ShijimaSnowfall(scene, kit))),
   akaito: lazy(() => import('./AkaitoGhostBride').then(m => (scene, kit) => new m.AkaitoGhostBride(scene, kit))),
-  tempo:(scene,kit)=>new TempoDarkSpark(scene,kit),
+  tempo: lazy(() => import('./TempoDarkSpark').then(m => (scene, kit) => new m.TempoDarkSpark(scene, kit))),
   mikage: lazy(() => import('./MikageHacklesUp').then(m => (scene, kit) => new m.MikageHacklesUp(scene, kit))),
   tancho: lazy(() => import('./TanchoPhosphor').then(m => (scene, kit) => new m.TanchoPhosphor(scene, kit))),
   bellows: lazy(() => import('./BellowsStoked').then(m => (scene, kit) => new m.BellowsStoked(scene, kit))),
   strix: lazy(() => import('./StrixBearpawCut').then(m => (scene, kit) => new m.StrixBearpawCut(scene, kit))),
 };
+/** A fighter's own module fetched ahead without building it (main.ts: at idle once the home is up, and as a fighter
+ *  is picked there), so a room that has them finds it in. Before the Armory wraps the factories. */
+const prefetchers = new Map(Object.entries(factories).flatMap(([id, factory]) => { const module = (factory as { prefetch?: () => Promise<unknown> }).prefetch; return module ? [[id, module] as const] : []; }));
+export const prefetchSignature = (id: FighterId) => { void prefetchers.get(id)?.().catch(() => {}); };
 // The Armory casting: fighters drawn from src/engine/vfx/casting.json (rollout.json's live list in every build, its preview
 // rollout besides in VITE_ARMORY builds).
 wireArmory(factories);

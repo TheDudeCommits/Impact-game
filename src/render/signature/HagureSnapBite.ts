@@ -8,15 +8,9 @@ import {HAGURE_MOVES} from '../../game/fighters/hagure';
 import {STAR} from './GlowBatch';
 import {MoveStage,SHEEN,stageLook,type StageLook} from './MoveStage';
 import {CastBook,Cuts,arc,hash,type Gather} from './StageCraft';
+export { hagureStrikeJoint } from './HagureSnapBiteContact';
 export const isHagureSnapBite=(id:string|undefined)=>id==='hagure';
 export const HAGURE_STREAM_LIMITS=Object.freeze({rings:64,slashes:128,shards:96,impacts:24});
-/** Explicit native strike side; selected combo clip overrides generic slot. */
-export function hagureStrikeJoint(action:string,clip?:string,contactIndex=0):'LeftHand'|'RightHand'{
- if(action==='ultimate'&&(!clip||clip==='Pack of One'))return contactIndex%2?'LeftHand':'RightHand';
- if(['Mauling Palm','Rush 2','Turnaside Hand','Falling Maul'].includes(clip??''))return'LeftHand';
- if(action==='heavy'&&!clip)return'LeftHand';
- return'RightHand';
-}
 /** A curved, tapered ink slash; actual silhouette is tested, not a box streak. */
 export function hagureFlowGeometry(){const positions:number[]=[],uv:number[]=[],indices:number[]=[];const steps=24;for(let i=0;i<=steps;i++){const u=i/steps,t=(u-.5)*3.8,r=.75+.06*Math.sin(u*Math.PI*2),width=.075*Math.pow(Math.sin(u*Math.PI),.8);for(const side of[-1,1]){positions.push(Math.cos(t)*(r+side*width)-.43,Math.sin(t)*(r+side*width),0);uv.push(u,(side+1)/2);}if(i<steps){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g;}
 class Batch{

@@ -57,6 +57,12 @@ describe('Rift War', () => {
     expect(pageShipped('/assets/home/modes/rift-war.webp')).toBe(true);
     expect(launchUnshipped(['assets/home/modes/rift-war.webp'])).toEqual([]);
     expect(HOME_ASSETS).toContain('/assets/home/modes/rift-war.webp');
+
+    const small = 'public/assets/home/modes/rift-war-480.webp';
+    expect(OWN_ART.modeTiles['rift-war-480.webp']).toBe(sha(small));
+    expect(HOME_ASSETS).toContain('/assets/home/modes/rift-war-480.webp');
+    expect(launchUnshipped(['assets/home/modes/rift-war-480.webp'])).toEqual([]);
+    expect(launchUnshipped(['assets/home/modes/rift-war-960.webp'])).toEqual(['assets/home/modes/rift-war-960.webp']);
     // (The Torn Plain is built in code and loads no stage model. The valley's model ships again since stages-old, as the
     // Ashfall Weir with r7's changes: its statues gone, a gatehouse dam in their place; tests/originals-places-*.test.ts.)
   });

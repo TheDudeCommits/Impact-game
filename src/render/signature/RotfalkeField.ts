@@ -10,9 +10,10 @@ import { MoveStage, WAVE, type StageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 import { nested, sweep } from './StageStrokes';
 
+import { ROTFALKE_KNIFE } from './RotfalkeFieldContact';
+export { ROTFALKE_KNIFE } from './RotfalkeFieldContact';
 export const isRotfalkeField = (id: string | undefined) => id === 'rotfalke';
 export const ROTFALKE_VFX_LIMITS = Object.freeze({ marks: 14, executions: 6 });
-export const ROTFALKE_KNIFE = { root: [0, .17, 0], tip: [-.049, .80, 0] } as const;
 const UP = new THREE.Vector3(0, 1, 0);
 const lin = (r: number, g: number, b: number) => new THREE.Color(r, g, b);
 const clamp = (v: number) => Math.max(0, Math.min(1, v));

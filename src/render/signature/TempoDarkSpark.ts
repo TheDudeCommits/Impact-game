@@ -8,15 +8,9 @@ import { SIGNATURE, involvesLocal } from './context';
 import { MoveStage, stageLook, type StageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 
+import { tempoStrikeJoint } from './TempoDarkSparkContact';
+export { tempoStrikeJoint } from './TempoDarkSparkContact';
 export const isTempoDarkSpark = (id: string | undefined) => id === 'tempo';
-/** Base jab is left; authored rush/air/ender clips all strike with the right.
- * The confirmed Eightfold montage alternates R/L and finishes on the left. */
-export function tempoStrikeJoint(action:string,clip?:string,contactIndex=0):'LeftHand'|'RightHand'{
- if(clip==='Street Jab'||action==='light'&&!clip)return 'LeftHand';
- if(action==='ultimate'&&(!clip||clip==='Perfect Timing'))return contactIndex%2?'LeftHand':'RightHand';
- return 'RightHand';
-}
-
 export const TEMPO_FLASH_LIMITS = Object.freeze({ bolts: 384, cores: 64, rings: 48, impacts: 20, folds: 6 });
 export const TEMPO_FLASH_BEATS = Object.freeze({ palms: .20, focus: .43, ignition: .58 });
 /** 'Double Tap': how long after the fist the hex energy that lagged behind it arrives (seconds). */

@@ -13,6 +13,8 @@ import { STAR } from './GlowBatch';
 import { MoveStage, stageLook, type StageLook } from './MoveStage';
 import { blowFloor, floorUnder } from './blowFloor';
 
+import { chohanPhysicalArea } from './ChohanAllInContact';
+export { chohanPhysicalArea } from './ChohanAllInContact';
 export const CHOHAN_RESTRICTION_LIMITS = Object.freeze({ cuts: 96, chips: 96, pressure: 24, hits: 24, fangs: 12, kills: 6 });
 /** The House Wins's beats (seconds into the move): the chain goes out on the confirm and is hauled in as the last blow lands. */
 export const CHOHAN_RESTRICTION_BEATS = Object.freeze({ confirm: CHOHAN_MOVES.ultimate.contacts[0], last: CHOHAN_MOVES.ultimate.contacts[4] });
@@ -37,11 +39,6 @@ type Fang = { p: T.Vector3; yaw: number; born: number; life: number; size: numbe
 type Kill = { actor: string; target: string; seq: number; final: boolean };
 /** Where a Sleight of Hand began: the line of his going is drawn from here. */
 type Dash = { seq: number; origin: T.Vector3 };
-
-/** Only Chohan's own uncustomized G has physical presentation; Forge remains explicit. */
-export function chohanPhysicalArea(state: Pick<PlayerState, 'fighter' | 'forge'>): boolean {
-  return state.fighter === 'chohan' && !slotFx(state, 'area') && !moveSource(state, 'area');
-}
 
 export class ChohanAllIn {
   private readonly cuts: Roster96Batch; private readonly chips: Roster96Batch; private readonly pressure: Roster96Batch;

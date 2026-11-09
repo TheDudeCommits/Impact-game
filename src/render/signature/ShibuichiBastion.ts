@@ -12,21 +12,12 @@ import { MoveStage, type StageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 import { bolt } from './StageStrokes';
 
+export { shibuichiStrikePoint } from './ShibuichiBastionContact';
 export { shibuichiAuthoredKick, shibuichiAuthoredGround } from '../../game/fighters/shibuichi';
 export const isShibuichiBastion = (id: string | undefined) => id === 'shibuichi';
 export const SHIBUICHI_BASTION_ASSETS: readonly string[] = Object.freeze([]);
 export const SHIBUICHI_BASTION_LIMITS = Object.freeze({ stones: 96, marks: 10, ridges: 4, confirms: 8 });
 export const SHIBUICHI_BASTION_BEATS = Object.freeze({ clap: .3, release: .85, final: 3.56 });
-const BRANCH = Object.freeze({ lh: 'Backhand Peen', llh: 'Raised Seam', lllh: 'Elbow Peen', llls: 'Ground Quench', airHeavy: 'Heel Set', airSpecial: 'Falling Mantle' });
-export function shibuichiStrikePoint(f: Fighter, out: THREE.Vector3, clip?: string, sourceTime?: number, index?: number) {
-  const s = f.state; if (!clip && isEnderKey(s.branch)) clip = BRANCH[s.branch]; if (!clip && s.action === 'light' && s.chain) clip = `Rush ${s.chain}`;
-  if (!clip) clip = s.action === 'heavy' ? 'Billet Ram' : s.action === 'special' ? 'Quench Palm' : s.action === 'ultimate' ? 'KINTSUGI: Golden Seam' : 'Planish';
-  const i = index ?? ((sourceTime ?? s.actionTime * s.actionDuration) > 3.2 ? 2 : (sourceTime ?? s.actionTime * s.actionDuration) > 1 ? 1 : 0);
-  const joint = shibuichiStrikeJoint(clip, i); if (joint === 'BothHands') return out.copy(f.handL).lerp(f.handR, .5);
-  if (joint === 'RightHand' || joint === 'LeftHand') return out.copy(joint === 'RightHand' ? f.handR : f.handL);
-  const bone = f.bones?.get(joint.toLowerCase()); if (bone) return bone.getWorldPosition(out); return out.copy(f.handR);
-}
-
 const UP = new THREE.Vector3(0, 1, 0);
 const lin = (r: number, g: number, b: number) => new THREE.Color(r, g, b);
 const clamp = (v: number) => Math.max(0, Math.min(1, v));

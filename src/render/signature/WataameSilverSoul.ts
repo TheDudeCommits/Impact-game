@@ -9,16 +9,10 @@ import { STAR } from './GlowBatch';
 import { MoveStage, WAVE, type StageLook } from './MoveStage';
 import { sweep } from './StageStrokes';
 
+export { wataameBokkenPoint } from './WataameSilverSoulContact';
 export const isWataameSilverSoul = (id: string | undefined) => id === 'wataame';
 export const WATAAME_SILVER_LIMITS = Object.freeze({ marks: 14, rampages: 6 });
 const UP = new THREE.Vector3(0, 1, 0);
-const TIP = new THREE.Vector3(0.8921814254969536, 0.07761142948204301, 0.36734193544408766), ROOT = new THREE.Vector3(0.08432913028509417, 0.0845028866437481, 0.04410362272019319);
-/** Points measured from the exported wooden sword in the actual hand's frame (13 October 2026: the sword was turned end for end in
- *  the fist, scripts/night/ol1/wataame_bokken.py, which prints these two; the blade leaves the hand past the thumb now). */
-export function wataameBokkenPoint(f: Pick<Fighter, 'joints'>, out: THREE.Vector3, tip = true): boolean {
-  const hand = f.joints.get('RightHand'); if (!hand) return false;
-  out.copy(tip ? TIP : ROOT).applyMatrix4(hand.matrixWorld); return true;
-}
 const lin = (r: number, g: number, b: number) => new THREE.Color(r, g, b);
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
 const hash = (x: number) => { const v = Math.sin(x * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); };

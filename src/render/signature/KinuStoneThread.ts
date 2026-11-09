@@ -10,13 +10,9 @@ import { fistRush } from './SpiritRush';
 import { limb, polygon } from './StageStrokes';
 import { applyCompanionStageLooks } from '../../originals/companionLooks';
 
+export { kinuStrikeJoint } from './KinuStoneThreadContact';
 export const isKinuStoneThread = (id: string | undefined) => id === 'kinu';
 export const KINU_THREAD_LIMITS = Object.freeze({ marks: 12, links: 8 });
-export function kinuStrikeJoint(action: string, clip?: string, index = 0): 'RightHand' | 'LeftHand' {
-  if ((action === 'ultimate' && (!clip || clip === 'Broken Shackles')) || (action === 'special' && (!clip || clip === 'BUCHI BUCHI Barrage'))) return index % 2 ? 'LeftHand' : 'RightHand';
-  if (['Reeling Hook', 'Rush 3', 'Whip Stitch', 'Jailbreak Slam', 'Descending Spool', 'Shackle Crash'].includes(clip ?? '')) return 'LeftHand';
-  return action === 'heavy' && !clip ? 'LeftHand' : 'RightHand';
-}
 const ULTIMATE_CONTACTS = KINU_MOVES.ultimate.contacts, SPECIAL_CONTACTS = KINU_MOVES.special.contacts;
 /** Human command coating follows manual state without allocating motion evidence.
  * Physical damage still belongs to the separately integrated spirit's socket. */
