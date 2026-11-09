@@ -15,7 +15,7 @@ import type {AimAssist, SportFeel} from '../simulation';
 export type BallModeId = 'goal-rush' | 'sky-spike';
 export const BALL_MODES: readonly BallModeId[] = ['goal-rush', 'sky-spike'];
 /** Bumped whenever a page and a room would disagree about the ball, its view or its messages. */
-export const BALL_PROTOCOL = 4;
+export const BALL_PROTOCOL = 5;
 export type BallTeam = 'red' | 'blue';
 export const BALL_TEAMS: readonly BallTeam[] = ['red', 'blue'];
 export const otherTeam = (team: BallTeam): BallTeam => team === 'red' ? 'blue' : 'red';
@@ -28,11 +28,13 @@ export type BallPhase = 'lobby' | 'countdown' | 'kickoff' | 'live' | 'scored' | 
 
 /** What kind of shot a strike made, as it is named on screen. */
 export type ShotKind = 'tap' | 'drive' | 'power' | 'pop' | 'volley' | 'spike' | 'curve' | 'sinker' | 'blast'
-  | 'eruption' | 'super' | 'bump' | 'set' | 'serve' | 'dig' | 'block' | 'save' | 'header';
+  | 'eruption' | 'super' | 'bump' | 'set' | 'serve' | 'dig' | 'block' | 'save' | 'header'
+  /** Sky Spike: a light from the air on the attacking touch, soft over the block and down short behind it. */
+  | 'tip';
 export const SHOT_NAMES: Record<ShotKind, string> = {
   tap: 'TAP', drive: 'DRIVE', power: 'POWER SHOT', pop: 'SKY POP', volley: 'VOLLEY', spike: 'SPIKE', curve: 'CURVE',
   sinker: 'SINKER', blast: 'BLAST', eruption: 'ERUPTION', super: 'SUPER SHOT', bump: 'BUMP', set: 'SET', serve: 'SERVE',
-  dig: 'DIG', block: 'BLOCK', save: 'SAVE', header: 'HEADER',
+  dig: 'DIG', block: 'BLOCK', save: 'SAVE', header: 'HEADER', tip: 'TIP',
 };
 
 /** The ball as every page draws it. `heat` 0-4.6 (its tier is the floor, 4 and over OVERDRIVE): passes and heavy blows
@@ -96,6 +98,8 @@ export interface BallSeat {
   lock?: string;
   /** Goal Rush: the takedowns this seat has made (GOAL_STANCE.tackle). */
   tackles?: number;
+  /** Goal Rush: the PERFECT STRIKEs and PERFECT HEADERs this seat has struck (BallMatch PERFECT_STRIKE). */
+  perfects?: number;
 }
 
 export interface BallEvent {
@@ -127,7 +131,15 @@ export interface BallEvent {
     | 'dig'
     /** Goal Rush's FIGHT stance (GOAL_STANCE.tackle): a fighter locked on the one on the ball put them down - actorId the
      *  tackler, targetId the striker, text TACKLE (knocked down or sent flying) or TAKEDOWN (wiped out), x/y/z where. */
-    | 'tackle';
+    | 'tackle'
+    /** Sky Spike: a set that is a choice - actorId the setter, text QUICK SET (a jump set, at the hitter's hand
+     *  on the way up: no PERFECT SPIKE, but no time for the block) or BACK SET (to the wing across the court). The
+     *  floating set has none (it comes every rally). */
+    | 'set'
+    /** Sky Spike: the swings of a match. 'deuce': the score tied at one short of the target or later, text
+     *  DEUCE, value the score each side has. 'comeback': a side that trailed by four or more has drawn level - team the
+     *  side, value the deepest deficit it came back from, text COMEBACK. */
+    | 'deuce' | 'comeback';
   team?: BallTeam; actorId?: string; assistId?: string; targetId?: string;
   x: number; y: number; z: number;
   /** A shot's speed (m/s), a rally's length, a point's worth. */
@@ -136,7 +148,10 @@ export interface BallEvent {
   text?: string;
   /** A charm grabbed or used (RUMBLE). */
   charm?: CharmKind;
-  /** Sky Spike: a strike that was a PERFECT SPIKE (struck from the top of the jump, at the net; its text is SKY SPIKE). */
+  /** Sky Spike: a strike that was a PERFECT SPIKE (struck from the top of the jump, at the net; its text is SKY SPIKE).
+   *  Goal Rush: a strike that was a PERFECT STRIKE (a ball coming in, met just as it arrived: BallMatch
+   *  PERFECT_STRIKE) - text PERFECT STRIKE, PERFECT VOLLEY (in the air), PERFECT HEADER (shot `header`), or a flair's
+   *  name (BICYCLE KICK). A plain HEADER is a strike too: shot `header`, text HEADER. */
   perfect?: boolean;
 }
 
@@ -188,7 +203,9 @@ export interface BallView {
    *  frame's time (render/ball/BallField) instead of where it was at the last snapshot. */
   sampledAt?: number; next?: BallState | null; nextAt?: number;
 }
-export interface BallIntro { seconds: number; skips?: number; people?: number; skipped?: boolean }
+export interface BallIntro { seconds: number; skips?: number; people?: number; skipped?: boolean;
+  /** The short intro (ceremony.ts SHORT_INTRO) - a rematch's, or an arena's this page has seen: no flyover. */
+  short?: boolean }
 /** The events that end a Sky Spike rally, by how (a page's sound reads them: src/audio/ballAudio.ts): a point won outright -
  *  a kill, an ace off the serve, a point - and a point given away (out, four touches, a fault). */
 export const POINT_WON: ReadonlySet<BallEvent['kind']> = new Set(['kill', 'ace', 'point']);
@@ -371,7 +388,7 @@ export const SPIKE_RULES = {
   speedCap: [22, 26, 31, 37, 46],
   touches: 3,
   /** The rally at which the ball starts to heat by itself, and at which FEVER makes every point worth two. */
-  rallyHeat: 5, fever: 10,
+  rallyHeat: 5, fever: 8,
   target: 11, cap: 15,
   /** Heat a completed pass adds (a bump to a set, a set to a spike); every blow's own heat counts this share of what it
    *  would in Goal Rush (a rally crosses the net with three touches, all of them in the air); a SKY SPIKE's own heat. A

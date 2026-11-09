@@ -1,4 +1,5 @@
 import {BALL_ID, GOAL_STANCE, type BallSeat, type BallView} from './model';
+import {DRILLS} from './drills';
 import type {PlayerState, Vec3} from '../types';
 
 /**
@@ -17,8 +18,9 @@ import type {PlayerState, Vec3} from '../types';
  *   pitch or gets out of reach, when play stops (a goal, a kickoff), or when the room did not take it.
  */
 export type Stance = 'ball' | 'fight';
-/** Whether a match has the two stances: Goal Rush outside FREE PLAY (Sky Spike never fights). */
-export const hasStances = (view: BallView | undefined): view is BallView => !!view && view.mode === 'goal-rush' && !view.practice;
+/** Whether a match has the two stances: Goal Rush outside FREE PLAY (Sky Spike never fights), and FREE PLAY's drill with
+ *  a carrier to take the ball off (drills.ts TACKLE). */
+export const hasStances = (view: BallView | undefined): view is BallView => !!view && view.mode === 'goal-rush' && (!view.practice || !!(view.drill && DRILLS[view.drill.id]?.rival));
 
 /** A flick: the view swept this far (radians) inside FLICK_WINDOW seconds moves the lock; then FLICK_REST before another. */
 const FLICK = .32, FLICK_WINDOW = .28, FLICK_REST = .35;

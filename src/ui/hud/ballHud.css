@@ -195,21 +195,6 @@
   #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .combat-hud .mode-hud>[data-zone="7"]{top:26%!important}
 }
 @media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) #controls-hint{animation:none;opacity:0;visibility:hidden}}
-/* Touch, the sports names: in a ball match the buttons say what they do to the ball - a light passes (Sky
-   Spike: sets), a heavy shoots (spikes), a special curves it, the ultimate is the SUPER SHOT, guard saves (blocks), the
-   target key is the ball cam. The new name is drawn over the move's own, which the button's label and prompts keep. */
-body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-btn:is(.tc-light,.tc-heavy,.tc-special,.tc-ultimate,.tc-guard,.tc-target)>b{font-size:0;letter-spacing:0}
-body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-btn:is(.tc-light,.tc-heavy,.tc-special,.tc-ultimate,.tc-guard,.tc-target)>b::after{font-size:calc(9px * var(--tc-k));letter-spacing:.07em}
-body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-light>b::after{font-size:calc(11px * var(--tc-k))}
-body:has(#interface[data-hud="goal-rush"]) .touch-controls .tc-light>b::after{content:'PASS'}
-body:has(#interface[data-hud="goal-rush"]) .touch-controls .tc-heavy>b::after{content:'SHOOT'}
-body:has(#interface[data-hud="goal-rush"]) .touch-controls .tc-guard>b::after{content:'SAVE'}
-body:has(#interface[data-hud="sky-spike"]) .touch-controls .tc-light>b::after{content:'SET'}
-body:has(#interface[data-hud="sky-spike"]) .touch-controls .tc-heavy>b::after{content:'SPIKE'}
-body:has(#interface[data-hud="sky-spike"]) .touch-controls .tc-guard>b::after{content:'BLOCK'}
-body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-special>b::after{content:'CURVE'}
-body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-ultimate>b::after{content:'SUPER'}
-body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-target>b::after{content:'BALL CAM'}
 /* The sports HUD's meter (BallHud.gauges): under the play, over the cards' line - health (Goal Rush, where the
    sides fight; red under a third) over the boost (gold, bright while boosting). And the count back in from a wipe-out. */
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter{display:flex;flex-direction:column;gap:3px;width:calc(210px * var(--hk-k,1));pointer-events:none;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.6))}
@@ -227,6 +212,10 @@ body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-co
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-out.on{display:block}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-ball-replay] :is(.bh-meter,.bh-out){opacity:0!important}
 @media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter.low .bh-hp>b{animation:none}}
+/* On a touch screen on its side the meter and the stance badge stand left of the middle, between the stick's ring and
+   the sports set's far column (input/sportTouch.ts: BOOST and SUPER reach 300 px in from the right, which on a 667 px
+   phone is past the middle). */
+@media(max-height:520px) and (orientation:landscape){#interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .combat-hud .mode-hud>[data-zone="9"]{left:40%}}
 /* Goal Rush's two stances (BallHud.stanceBadge; game/ball/stance.ts): a small badge over the meter - BALL in
    gold on ink, FIGHT in red with the one locked and their health - flashing as it changes. */
 #interface[data-hud="goal-rush"] .bh-stance{display:none;align-items:center;gap:6px;align-self:flex-start;margin-bottom:4px;padding:3px 10px 4px 7px;background:rgba(11,12,14,.84);color:#fff9ef;pointer-events:none;
@@ -257,13 +246,15 @@ body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-co
 #interface[data-hud="goal-rush"] .bh-banner[data-kind="tackle"]{background:linear-gradient(100deg,#0b0c0e 62%,#c8102e 63% 67%,#0b0c0e 68%)}
 #interface[data-hud="goal-rush"] .bh-banner[data-kind="tackle"] strong{color:#fff;text-shadow:4px 4px 0 #c8102e,-2px -2px 0 #0b0c0e}
 #interface[data-hud="goal-rush"] .bh-ticker[data-kind="tackle"]{border-left-color:#ff2a3c;background:linear-gradient(90deg,#0b0c0e 72%,#3a0a10)}
-/* The touch layer's target button says what a tap does in Goal Rush: FIGHT from the ball, BALL from a fight. */
-body:has(#interface[data-hud="goal-rush"][data-ball-stance="ball"]) .touch-controls .tc-target>b::after{content:'FIGHT'}
-body:has(#interface[data-hud="goal-rush"][data-ball-stance="fight"]) .touch-controls .tc-target>b::after{content:'BALL'}
-body:has(#interface[data-hud="goal-rush"][data-ball-stance="fight"]) .touch-controls .tc-target{box-shadow:0 0 0 3px #ff2a3c,0 0 16px rgba(255,42,60,.6)}
 @media(prefers-reduced-motion:reduce){#interface[data-hud="goal-rush"] .bh-stance{animation:none!important}}
 /* A goal's banner: the explosion first, the word after. From the ball cam the far goal sits right under the
    banner's place, so the banner waits seven tenths of a second (held invisible by its first keyframe) and comes in lower,
    off the goal mouth. */
 #interface:is([data-hud="goal-rush"]) .bh-banner.on[data-kind="goal"]{animation-delay:.7s;animation-fill-mode:both;translate:0 26vh}
 @media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"]) .bh-banner.on[data-kind="goal"]{animation:none;translate:0 26vh}}
+/* The halo skin sets a slip's small line in its display face at 9 px, which in the ball modes' prompt lane drew
+   the hints' second line as unreadable glyphs: here it reads in the HUD's own condensed face. */
+#interface[data-skin="halo"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .mode-hud :is(.hk-slip,.hk-slip.ink) small{font:800 .7em/1 'Barlow Condensed',sans-serif;letter-spacing:.06em}
+/* Your own PERFECT STRIKE (PERFECT VOLLEY, PERFECT HEADER) - a short gold banner. */
+#interface[data-hud="goal-rush"] .bh-banner[data-kind="perfect"]{background:linear-gradient(100deg,#0b0c0e 62%,#ffcf5a 63% 67%,#0b0c0e 68%)}
+#interface[data-hud="goal-rush"] .bh-banner[data-kind="perfect"] strong{color:#ffcf5a;text-shadow:4px 4px 0 #0b0c0e,-2px -2px 0 #c8102e}

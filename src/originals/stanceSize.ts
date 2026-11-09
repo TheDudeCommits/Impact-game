@@ -81,6 +81,9 @@ const BASE: Partial<Record<FighterId, number>> = {
   // scale each stance gave them on originals/next (b2a264b99, r1_probe), so both are drawn at their own size.
   tsubute: 1.00365,         // Tsubute
   dorado: 1.01279,          // Dorado
+  // Kuzu's stance is a relaxed breath, crouched with both saws held out ahead, held at the scale his old one gave him (off
+  // the new one he would be drawn 0.6% larger), so he is drawn at his own size. (Ampere's two rows already hold his.)
+  kuzu: 1.09553,            // Kuzu
 };
 /** The awakened bodies whose own stance was swapped. */
 const FORM: Partial<Record<FighterId, number>> = {

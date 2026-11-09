@@ -21,7 +21,11 @@ export type CallerMoment = 'kickoff' | 'serve' | 'goal' | 'goal-power' | 'goal-v
   | 'stuff-block' | 'comeback' | 'hat-trick' | 'on-fire' | 'overdrive' | 'super-shot' | 'mvp' | 'win' | 'shutout' | 'loss'
   | 'target' | 'new-record' | 'last-minute' | 'final-seconds'
   /** A LINK SHOT, a TECHNIQUE DUEL's beat and a keeper winning it. */
-  | 'link-shot' | 'technique-duel' | 'duel-won';
+  | 'link-shot' | 'technique-duel' | 'duel-won'
+  /** Goal Rush's TACKLE and TAKEDOWN (FIGHT stance), a fighter wiped out, a boosting BUMP, a save OFF THE LINE; Sky
+   *  Spike's PERFECT SPIKE, a DIG and a DIVING DIG; a perfect strike, and a clever set or touch (ballAudio.ts CALLED_TEXT
+   *  names the events that call them). */
+  | 'tackle' | 'takedown' | 'wipeout' | 'bump' | 'off-the-line' | 'perfect-spike' | 'dig' | 'diving-dig' | 'perfect-strike' | 'clever-touch';
 
 export interface CallerRule { priority: number; chance: number; rest: number }
 const rule = (priority: number, chance = 1, rest = 12): CallerRule => ({ priority, chance, rest });
@@ -38,6 +42,13 @@ export const CALLER: Readonly<Record<CallerMoment, CallerRule>> = {
   mvp: rule(6, 1, 0), win: rule(10, 1, 0), shutout: rule(10, 1, 0), loss: rule(10, 1, 0),
   target: rule(2, 1, 6), 'new-record': rule(3, 1, 8), 'last-minute': rule(4, 1, 0), 'final-seconds': rule(5, 1, 0),
   'link-shot': rule(5, .8, 10), 'technique-duel': rule(6, 1, 8), 'duel-won': rule(8, 1, 0),
+  // A bot match has about eleven TACKLEs and ten BUMPs (Goal Rush), sixteen PERFECT SPIKEs and two dozen DIGs,
+  // nearly all DIVING (Sky Spike), so those are called some of the time and rest long; a TAKEDOWN (three), a save OFF THE
+  // LINE (four) or a perfect strike every time it is free to; a plain wipe-out (a TAKEDOWN's own is the TAKEDOWN's:
+  // ballAudio.ts) most times. Over five bot matches each he says 9.3 lines a minute in Goal Rush and 9.4 in Sky
+  // Spike, talking a quarter of the time, never more than six lines in any 20 s.
+  tackle: rule(4, .5, 14), takedown: rule(6, 1, 10), wipeout: rule(5, .8, 10), bump: rule(3, .45, 16), 'off-the-line': rule(6, 1, 8),
+  'perfect-spike': rule(6, .7, 12), dig: rule(2, .25, 20), 'diving-dig': rule(5, .6, 16), 'perfect-strike': rule(6, 1, 8), 'clever-touch': rule(4, .6, 14),
 };
 /** A moment at this priority or more is never held back by SPACING. */
 export const BIG = 5;

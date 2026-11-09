@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type {GameSnapshot, FighterId} from '../../game/types';
 import {FIGHTERS} from '../../config';
 import {BALL_STAGE, GOAL_RULES, SPIKE_RULES, ballOf, type BallEvent, type BallTeam, type BallView} from '../../game/ball/model';
-import {MODE_ARENAS} from '../../game/ball/arenas';
+import {BALL_ARENAS, MODE_ARENAS} from '../../game/ball/arenas';
 import {INTRO, PODIUM, podiumOf, type PodiumLayout} from '../../game/ball/ceremony';
 import {REPLAY} from '../../game/ball/replay';
 import {signatureShot, superShotName} from '../../game/ball/superShots';
@@ -140,7 +140,8 @@ export class BallCeremony {
       this.moment(e, view, selfId, one);
     }
     let show: CeremonyShow = null;
-    const intro = one && view.phase === 'countdown' && view.intro && view.startsAt !== null && !view.intro.skipped ? view.intro.seconds - (view.startsAt - now) : -1;
+    // (The short intro is the full one's tail - SHORT_INTRO - so it is timed as the full one's last seconds.)
+    const intro = one && view.phase === 'countdown' && view.intro && view.startsAt !== null && !view.intro.skipped ? (view.intro.short ? INTRO.seconds : view.intro.seconds) - (view.startsAt - now) : -1;
     if (intro >= 0) show = 'intro';
     else if (one && view.phase === 'over' && view.winner) show = 'podium';
     else if (one && this.sequence && view.phase === 'scored' && now >= this.sequence.at + CLOSE_FROM && now < this.sequence.until && !view.practice) show = 'close';
@@ -167,7 +168,9 @@ export class BallCeremony {
     if (shot !== this.shotIndex) { this.shotIndex = shot; this.cut = true; }
     if (elapsed < INTRO.splash) this.ui.introTitle(view); else this.ui.introTitle(null);
     if (elapsed >= INTRO.splash && elapsed < INTRO.whistle) {
-      this.ui.introSplash(view, selfId);
+      // The short intro has no title card, so its splash page says what this is - a REMATCH, and where.
+      const arenaName = (BALL_ARENAS[arena]?.name ?? '').toUpperCase();
+      this.ui.introSplash(view, selfId, view.intro?.short ? [view.mode === 'goal-rush' ? 'GOAL RUSH' : 'SKY SPIKE', view.round > 1 ? 'REMATCH' : '', arenaName].filter(Boolean).join(' · ') : undefined);
       this.once('panels', () => this.hooks.beat('panels'));
       if (elapsed >= INTRO.splash + .42) this.once('stamp', () => this.hooks.beat('stamp'));
     } else if (elapsed >= INTRO.whistle) {

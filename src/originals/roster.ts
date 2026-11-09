@@ -306,7 +306,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     moves: ['Hex Strike', 'Gravity', 'Singularity', 'Planetarium'],
     shortMoves: ['HEX STRIKE', 'GRAVITY', 'SINGULARITY', 'PLANETARIUM'],
     awakening: 'TENGAN',
-    coat: { thigh: .13, shin: .14 }, model: F + 'kuon-px1.glb', extraModels: [F + 'kuon-pxenders1.glb', F + 'kuon-pxenders2.glb'],
+    coat: { thigh: .13, shin: .14 }, model: F + 'kuon-px1.glb', rushModel: F + 'kuon-pxrush1.glb', extraModels: [F + 'kuon-pxenders1.glb', F + 'kuon-pxenders2.glb'],
     portrait: F + 'kuon-px-portrait.png', idleModel: F + 'kuon-pxidle1.glb',
     names: {
       'Dark Spark': 'Dark Star', 'Flying Kick': 'Comet Kick',

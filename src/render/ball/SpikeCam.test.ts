@@ -90,6 +90,26 @@ describe("Sky Spike's broadcast camera", () => {
     expect(cam.pose().fov).toBeCloseTo(rest, 1);
   });
 
+  it('closes in, never turning, at match point and DEUCE and as a long rally climbs', () => {
+    const settle = (v: BallView) => {
+      const cam = new SpikeCam(), r = rig(), l = lens(), self = {x: 0, y: 0, z: -4}, ball = new THREE.Vector3(0, 3, 2);
+      let yaw = 0;
+      for (let i = 0; i < 240; i++) yaw = cam.steer(r, 1 / 60, yaw, NaN, true, self, ball, v, 'red', 16 / 9);
+      cam.aim(r, l, 0);
+      return {fov: cam.pose().fov, eye: cam.pose().eye.clone(), yaw};
+    };
+    expect(SpikeCam.onTheEdge(view({score: {red: 10, blue: 8}}))).toBe(true);
+    expect(SpikeCam.onTheEdge(view({score: {red: 10, blue: 10}}))).toBe(true);
+    expect(SpikeCam.onTheEdge(view({score: {red: 9, blue: 9}}))).toBe(false);
+    expect(SpikeCam.onTheEdge(view({score: {red: 7, blue: 3}}))).toBe(false);
+    const calm = settle(view({score: {red: 4, blue: 3}})), edge = settle(view({score: {red: 10, blue: 9}})), long = settle(view({rally: 9}));
+    for (const tense of [edge, long]) {
+      expect(tense.fov).toBeLessThan(calm.fov - 2);
+      expect(Math.abs(tense.eye.z)).toBeLessThan(Math.abs(calm.eye.z) - .5);
+      expect(Math.abs(tense.yaw - calm.yaw)).toBeLessThan(1e-6);
+    }
+  });
+
   it("steps aside for the ball cam's heading when toggled off, in Goal Rush, and out of play", () => {
     const cam = new SpikeCam(), r = rig(), l = lens(), self = {x: 0, y: 0, z: -4}, ball = new THREE.Vector3(0, 3, 0);
     expect(cam.steer(r, 1 / 60, .3, .7, false, self, ball, view(), 'red', 16 / 9)).toBe(.7);

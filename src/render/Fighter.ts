@@ -2082,6 +2082,9 @@ export class Fighter {
   /** This body's rig - its file's scene, untouched - its clips, and the take it draws `state` with, as `update` would
    *  (Taisei's measured melee first): what the transplant fits another fighter's move from and onto. */
   take(state:PlayerState){return {scene:this.source.scene,clips:this.clips,clip:this.groundedMelee(state)?.clip??this.clipFor(state),form:this.awakenedForm};}
+  /** The move `state`'s action is timed by on this body (its rush stage, ender, kit or slot), as `update` reads it: the
+   *  ball modes' sports moves (render/ball/ballMoves.ts) land a take of their own on the simulation's contact by it. */
+  movePlayed(state:PlayerState):MoveDefinition{return this.moveFor(state);}
   /** The 30 Hz pose grid every body steps on together (see AnimStyle 'twos'):
    *  set once a frame, before the bodies update, by `beginFrame`. */
   static stepTick=0;
@@ -5217,7 +5220,8 @@ export class Fighter {
   private airTuck(real:number,state:PlayerState){
     const own=this.usesAuthoredAirString?this.airStages(state.fighter):undefined;
     const stage=this.rushStage(state);
-    const legs=isTechnique(state.branch)&&!!Fighter.styleLegs?.(state.fighter,state.branch);
+    // (And a borrowed take that throws with its own legs - the ball modes' volleys and headers: render/ball/ballMoves.ts.)
+    const legs=!!this.swap?.legs||isTechnique(state.branch)&&!!Fighter.styleLegs?.(state.fighter,state.branch);
     const wanted=own&&state.action==='light'&&!state.grounded&&!legs&&stage<own.length&&own[stage].tuck?1:0;
     this.tuckWeight+=THREE.MathUtils.clamp(wanted-this.tuckWeight,-real/TUCK_EASE,real/TUCK_EASE);
     if(this.tuckWeight<.004||!this.dynamics||!this.legs.length)return;

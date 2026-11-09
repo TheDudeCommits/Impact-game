@@ -15,6 +15,17 @@ function seen(cam: THREE.PerspectiveCamera, p: THREE.Vector3, margin = .95) {
   return v.z < 1 && Math.abs(v.x) < margin && Math.abs(v.y) < margin;
 }
 const R = GOAL_RULES;
+/** The share of the frame's centre line (bottom up) that is the pitch's floor, inside its walls and goal mouths. */
+function floorShare(cam: THREE.PerspectiveCamera) {
+  const v = new THREE.Vector3(), o = cam.position, deep = R.halfZ + R.goalDepth;
+  let floor = 0;
+  for (let i = 0; i < 30; i++) {
+    v.set(0, -1 + (i + .5) / 15, .5).unproject(cam).sub(o).normalize();
+    const tx = Math.abs(v.x) > 1e-6 ? ((v.x > 0 ? R.halfX : -R.halfX) - o.x) / v.x : Infinity, tz = Math.abs(v.z) > 1e-6 ? ((v.z > 0 ? deep : -deep) - o.z) / v.z : Infinity;
+    if (v.y < 0 && -o.y / v.y < Math.min(tx, tz)) floor++;
+  }
+  return floor / 30;
+}
 const inside = (p: THREE.Vector3) => (Math.abs(p.z) <= R.halfZ - .5 || (Math.abs(p.x) < R.goalHalfWidth && p.y < R.goalHeight)) && Math.abs(p.x) <= R.halfX - .5
   && Math.abs(p.x) + Math.abs(p.z) <= R.halfX + R.halfZ - R.corner;
 
@@ -45,15 +56,36 @@ describe("Goal Rush's ball cam rig", () => {
     }
     expect(worst).toBeLessThan(.45);
   });
-  it('tilts up after a high ball, keeping your chest in the frame', () => {
+  it('frames a high ball by standing back, up and wider - the ball, your chest and the pitch all in the frame', () => {
     const rig = new BallChase(), cam = camera(), f = frame({ ball: new THREE.Vector3(0, 1, 12) });
     run(rig, cam, f, 60);
-    const flat = look(cam).pitch;
+    const flat = look(cam).pitch, rest = cam.position.clone(), restFov = cam.fov;
     (f.ball as THREE.Vector3).set(0, 14, 9);
     run(rig, cam, f, 90);
-    expect(look(cam).pitch).toBeGreaterThan(flat + .2);
+    expect(look(cam).pitch).toBeGreaterThan(flat);
     expect(seen(cam, f.ball as THREE.Vector3)).toBe(true);
     expect(seen(cam, new THREE.Vector3(0, 1.15, 0), 1)).toBe(true);
+    // The lens stood back, a little up and opened, rather than tilting into the roof...
+    expect(cam.position.z).toBeLessThan(rest.z - 2);
+    expect(cam.position.y).toBeGreaterThan(rest.y);
+    expect(cam.fov).toBeGreaterThan(restFov + 6);
+    // ...so the pitch keeps a good share of the frame.
+    expect(floorShare(cam)).toBeGreaterThan(.25);
+  });
+  it('keeps the pitch in the frame through a lob dropping over you, never mostly roof', () => {
+    const rig = new BallChase(), cam = camera(), f = frame({ ball: new THREE.Vector3(0, .8, 6) });
+    run(rig, cam, f, 60);
+    const ball = f.ball as THREE.Vector3, v = new THREE.Vector3(0, 17, -5);
+    let worst = 1, top = -1;
+    for (let i = 0; i < 150; i++) {
+      v.y -= 13 / 60; ball.addScaledVector(v, 1 / 60); if (ball.y < .8) { ball.y = .8; v.y = Math.abs(v.y) * .6; }
+      if (Math.hypot(ball.x, ball.z) > 2.5) f.heading = Math.atan2(ball.x, ball.z);
+      rig.aim(cam, 1 / 60, true, f);
+      worst = Math.min(worst, floorShare(cam)); top = Math.max(top, look(cam).pitch);
+    }
+    // (A rig tilting 22 degrees up into the roof would leave none of the pitch at the lob's top.)
+    expect(worst).toBeGreaterThan(.18);
+    expect(top).toBeLessThan(.1);
   });
   it('keeps inside the walls wherever you stand and whichever way you face, and lets a keeper be filmed from the goal mouth, under the bar', () => {
     const rig = new BallChase(), cam = camera();

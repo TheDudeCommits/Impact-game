@@ -135,7 +135,8 @@ export class BallRoom extends Room {
     this.setFixedTimestep(({dt}) => this.faults.guard(() => this.tick(dt)), SIMULATION_HZ);
   }
   private fresh(collision: ReturnType<typeof buildCollision>, round: number) {
-    const game = new BallMatch(this.mode, {collision, seed: Math.random() * 0x7fffffff | 0 || 1, access: this.access, round, fillBots: true, lockCombat: LOCK_ONLINE, rumble: this.rumble, mutator: this.mutator, arena: this.arena, intro: true});
+    // (A rematch - the room's next round - opens with the short intro, ceremony.ts SHORT_INTRO.)
+    const game = new BallMatch(this.mode, {collision, seed: Math.random() * 0x7fffffff | 0 || 1, access: this.access, round, fillBots: true, lockCombat: LOCK_ONLINE, rumble: this.rumble, mutator: this.mutator, arena: this.arena, intro: round > 1 ? 'short' : true});
     game.sim.rewind = LAG_COMPENSATION; game.view.code = this.code;
     // A ranked queue's room: ranked or not is settled at kickoff, by the people seated then.
     if (this.queue === 'ranked') game.view.ranked = false;

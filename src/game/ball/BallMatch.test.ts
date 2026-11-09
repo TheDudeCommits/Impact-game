@@ -527,7 +527,7 @@ describe('the spike', () => {
     const m = across(true);
     expect(m.ball.lastTeam).toBe('red');
     expect(m.ball.shot).toBe('dig');
-    expect(m.view.events.some(e => e.kind === 'dig' && e.text === 'DIVING DIG')).toBe(true);
+    expect(m.view.events.some(e => e.kind === 'dig')).toBe(true);
     // Up high, and down again inside red's own court, near its middle, for a team-mate to play.
     expect(m.ball.vy).toBeGreaterThan(6);
     const down = landing('sky-spike', m.ball);

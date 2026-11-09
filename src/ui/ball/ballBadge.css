@@ -14,6 +14,20 @@
 .ball-badge .bb-drill u{text-decoration:none;display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;color:#0b0c0e;font:900 10px/1 'Noto Serif JP',serif}
 .ball-badge u.bronze{background:#c98a52}.ball-badge u.silver{background:#d9dde2}.ball-badge u.gold{background:#ffcf5a}
 #interface[data-input="touch"] .ball-badge{top:calc(150px + env(safe-area-inset-top,0px))}
+/* A drill: in play after its first ball the card is the count, the dots and the next medal - the line is read
+   between balls. On a phone on its side it goes to the top left corner under PAUSE, a size down (FREE PLAY has no quick
+   chat button there): in the middle it stood on the play, and under the scoreboard on Sky Spike's set, which floats up
+   to the top of the frame. */
+.ball-badge .bb-drill[data-state="live"]:not([data-first]) b{display:none}
+@media(max-height:520px) and (orientation:landscape){
+  #interface .ball-badge.drill{left:calc(14px + env(safe-area-inset-left,0px));top:calc(62px + env(safe-area-inset-top,0px));transform:none;align-items:flex-start}
+  .ball-badge.drill .bb-drill{justify-items:start}
+  .ball-badge.drill .bb-drill b{text-align:left}
+  .ball-badge .bb-drill{gap:2px;padding:4px 12px 5px}
+  .ball-badge .bb-drill b{max-width:min(380px,60vw);font-size:12px}
+  .ball-badge .bb-drill small,.ball-badge .bb-drill em{font-size:10px}
+  .ball-badge .bb-dots i{width:8px;height:8px}
+}
 /* The lobby's and results' lines (BallUI.ts): a seat's trait, the rules' line, a drill's card. */
 .ball-ui .bu-trait{font:800 10px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;color:#ff8a98}
 .ball-ui .bu-rules{margin:8px auto 0;max-width:560px;font:700 13px/1.3 'Barlow Condensed',sans-serif;letter-spacing:.04em;color:#3a3832}

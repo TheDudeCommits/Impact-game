@@ -47,6 +47,11 @@
 .bs-vs svg{position:absolute;inset:-24%;width:148%;height:148%;fill:var(--ink);overflow:visible}
 .bs-vs b{position:relative;font:italic 900 clamp(60px,13vmin,160px)/1 Impact,'Barlow Condensed',sans-serif;color:var(--red);-webkit-text-stroke:.075em #fff;paint-order:stroke fill;text-shadow:.045em .055em 0 var(--ink);padding-right:.1em}
 .bs-flash{position:absolute;inset:0;background:#fff;opacity:0}
+/* The short intro's kicker beside the VS (what this match is, and where: no title card comes before it). */
+.bs-kicker{position:absolute;z-index:4;right:3vw;top:50%;translate:0 -50%;max-width:34vw}
+.bs-kicker span{display:block;padding:.45em .9em .4em;background:var(--red);color:var(--paper);font:800 clamp(11px,1.15vw,19px)/1.1 'Barlow Condensed',sans-serif;letter-spacing:.18em;transform:skewX(-10deg);box-shadow:3px 3px 0 var(--ink),0 0 0 1px #fff9ef55}
+.bs-splash.bs-on .bs-kicker span{animation:bs-slide-in .3s .5s cubic-bezier(.2,.9,.3,1.15) both}
+.bs-splash.bs-out .bs-kicker{animation:bs-fade-out .18s ease-in forwards}
 .bs-splash.bs-on .bs-page:before{content:'';position:absolute;inset:0}
 .bs-splash.bs-on .bs-top{animation:bs-slam-left .28s cubic-bezier(.2,.85,.3,1.15) both}
 .bs-splash.bs-on .bs-bottom{animation:bs-slam-right .28s .1s cubic-bezier(.2,.85,.3,1.15) both}

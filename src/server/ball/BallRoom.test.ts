@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { Client, FixedTimestepCallback } from 'colyseus';
 import { BallRoom } from './BallRoom';
 import { BALL_PROTOCOL, BALL_SPORT, type BallModeId, type BallSnapshot } from '../../game/ball/model';
-import {INTRO} from '../../game/ball/ceremony';
+import {INTRO, SHORT_INTRO} from '../../game/ball/ceremony';
 
 const TOKEN = '01234567-89ab-cdef-0123-456789abcdef';
 const client = (sessionId: string) => ({ sessionId, send: vi.fn() } as unknown as Client);
@@ -79,6 +79,8 @@ describe('the ball room', () => {
       f.send(a, 'ball-rematch');
       expect(f.room.game.view.phase).toBe('lobby');
       expect(f.room.game.view.round).toBe(2);
+      // The rematch opens with the short intro (ceremony.ts SHORT_INTRO).
+      expect(f.room.game.view.intro).toMatchObject({seconds: SHORT_INTRO.seconds, short: true});
     } finally { f.room.onDispose(); }
   }, 30000); // a whole match with its replays, on a busy machine
   it('lets the host choose RUMBLE in the lobby, relays quick chat, and ends a replay when everyone skips', async () => {

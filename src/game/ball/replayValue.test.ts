@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BallMatch } from './BallMatch';
+import { BallMatch, DRILL_RIVAL } from './BallMatch';
+import { hasStances } from './stance';
 import { BALL_ID, GOAL_RULES, RUMBLE, SPIKE_RULES } from './model';
 import { BALL_MUTATORS, MUTATOR_RULES, isMutator, weeklyMutator, weeklyTurnover } from './mutators';
 import { BALL_TRAITS, TRAIT_RULES, traitOf, withTrait } from './traits';
@@ -154,8 +155,8 @@ describe('training drills', () => {
   };
   /** Steps until the machine feeds the next ball; returns its number. */
   const nextBall = (m: BallMatch) => { const was = m.view.drill!.ball; until(m, () => m.view.drill!.ball > was && m.view.drill!.state === 'live', 30); return m.view.drill!.ball; };
-  it('has five drills a mode, ten balls each, and bronze, silver and gold within them', () => {
-    expect(MODE_DRILLS['goal-rush']).toHaveLength(5); expect(MODE_DRILLS['sky-spike']).toHaveLength(5);
+  it('has six drills a mode, ten balls each, and bronze, silver and gold within them', () => {
+    expect(MODE_DRILLS['goal-rush']).toHaveLength(6); expect(MODE_DRILLS['sky-spike']).toHaveLength(6);
     for (const id of DRILL_IDS) {
       const [b, s, g] = DRILLS[id].medals;
       expect(b).toBeGreaterThan(0); expect(s).toBeGreaterThan(b); expect(g).toBeGreaterThan(s); expect(g).toBeLessThanOrEqual(DRILLS[id].balls);
@@ -235,6 +236,51 @@ describe('training drills', () => {
     expect(m.ball.vz).toBeLessThan(0);
     expect(until(m, () => m.view.drill!.results.length > 0, 4)).toBe(true);
     expect(m.view.drill!.results[0]).toBe(false);
+  });
+  it('TACKLE: a bot of the other side runs the ball at the person\'s goal; locked on, a knockdown wins it', () => {
+    const m = drill('gr-tackle');
+    // The drill fights (GOAL_FIGHT): the carrier is a seat of the other side, and the stances are on.
+    const rival = m.view.seats.find(s => s.id === DRILL_RIVAL)!;
+    expect(rival).toMatchObject({ bot: true, team: 'blue' });
+    expect(hasStances(m.snapshot().ball)).toBe(true); expect(hasStances(drill('gr-long').snapshot().ball)).toBe(false);
+    nextBall(m);
+    const r = () => m.sim.actors.get(DRILL_RIVAL)!.state, me = () => m.sim.actors.get('me')!.state;
+    // It runs at red's goal (-z) with the ball at its feet.
+    const z0 = r().z; until(m, () => false, .6);
+    expect(r().z).toBeLessThan(z0 - 2); expect(Math.hypot(m.ball.x - r().x, m.ball.z - r().z)).toBeLessThan(1.6); expect(m.ball.lastId).toBe(DRILL_RIVAL);
+    // Locked on (FIGHT), run in and string lights until it is down.
+    let seq = 0, last = -1;
+    for (let i = 0; i < 300 && m.view.drill!.results.length === 0; i++) {
+      const dx = r().x - me().x, dz = r().z - me().z, d = Math.hypot(dx, dz), now = m.sim.serverTime;
+      const attack = d < 2.2 && now - last > .2 ? 'light' as const : undefined; if (attack) last = now;
+      m.submit('me', { seq: ++seq, moveX: dx / Math.max(1, d), moveZ: dz / Math.max(1, d), yaw: Math.atan2(dx, dz), guard: false, targetId: DRILL_RIVAL, lock: true, attack } as never);
+      m.step(1 / 60);
+    }
+    expect(m.view.drill!.results).toEqual([true]);
+    expect(m.view.events.some(e => e.kind === 'tackle' && e.actorId === 'me')).toBe(true);
+  });
+  it('TACKLE: left alone, the carrier shoots from in front of the goal - the ball is lost', () => {
+    const m = drill('gr-tackle');
+    nextBall(m);
+    expect(until(m, () => m.view.drill!.results.length > 0, 8)).toBe(true);
+    expect(m.view.drill!.results[0]).toBe(false);
+    expect(m.ball.lastId).toBe(DRILL_RIVAL);
+  });
+  it('PERFECT SPIKE: the machine sets; a jump as it peaks and a swing at the top counts, a swing on takeoff does not', () => {
+    const attempt = (swingAfter: number) => {
+      const m = drill('ss-perfect');
+      nextBall(m);
+      expect(m.ball.shot).toBe('set'); expect(m.view.touches).toBe(2); expect(m.view.aim).toBeNull();
+      until(m, () => m.ball.vy < 1, 2);
+      for (let i = 0; i < 70 && m.view.drill!.results.length === 0; i++) {
+        m.submit('me', { seq: i + 1, moveX: 0, moveZ: 0, yaw: 0, jump: i === 0, jumpHeld: i < 30, attack: i === Math.round(swingAfter * 60) ? 'heavy' : undefined, targetId: BALL_ID });
+        m.step(1 / 60);
+      }
+      until(m, () => m.view.drill!.results.length > 0, 3);
+      return m.view.drill!.results[0];
+    };
+    expect(attempt(.3)).toBe(true);
+    expect(attempt(.05)).toBe(false);
   });
   it('takes no FREE PLAY reset during a drill, and keeps its ring where it put it', () => {
     const m = drill('gr-curve');

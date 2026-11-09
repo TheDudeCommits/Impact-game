@@ -1,7 +1,7 @@
 import type { GameSnapshot } from '../../game/types';
 import { siteUrl } from '../../loading/siteBase'; // asset addresses inside the page's own folder
 import {riftOf} from '../../game/moba/model';
-import {ballOf, GOAL_RULES, SPIKE_RULES} from '../../game/ball/model';
+import {ballOf, GOAL_FIGHT, GOAL_RULES, SPIKE_RULES} from '../../game/ball/model';
 import { objectiveOf, RULES } from '../../game/objectives/model';
 import { KO_HEAL, MAX_PLAYERS, MIN_MATCH_FIELD } from '../../game/moves';
 import type { HomeMode } from '../MangaHome';
@@ -63,15 +63,17 @@ const revive = RULES.heroReviveSeconds, villains = RULES.villainMultiplier;
 export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
   // The ball modes: every kind of attack is allowed in both, on the ball only.
   'goal-rush': {
-    id: 'goal-rush', name: 'GOAL RUSH', art: 'goal-rush', rulesVersion: 1, kicker: 'THE INK BOWL · 3 V 3 FOOTBALL',
+    // (rulesVersion 2: the stances, the tackle and the boost are taught, so the first-time
+    // explainer shows once more.)
+    id: 'goal-rush', name: 'GOAL RUSH', art: 'goal-rush', rulesVersion: 2, kicker: 'THE INK BOWL · 3 V 3 FOOTBALL',
     tagline: 'Blast the ball into their goal.',
-    goal: 'Three against three in a walled bowl. Every move you have hits the ball, never a player: outscore the other side.',
+    goal: 'Three against three in a walled bowl. Play the ball with every move you have, or fight for it: outscore the other side.',
     win: `Lead when the ${Math.round(GOAL_RULES.matchSeconds / 60)} minutes run out (the match ends when the ball next touches the ground). Tied: the next goal wins.`,
-    facts: { players: '3 V 3', length: `${Math.round(GOAL_RULES.matchSeconds / 60)} MIN + OVERTIME`, lives: 'BALL ONLY · NO KOS' },
+    facts: { players: '3 V 3', length: `${Math.round(GOAL_RULES.matchSeconds / 60)} MIN + OVERTIME`, lives: `WIPE-OUTS · ${GOAL_FIGHT.seconds} S` },
     howTo: [
-      'Every move strikes the ball where you look: {light} taps and passes, {heavy} drives a power shot, a launcher pops it high. Jump and strike to volley or spike it.',
-      'Passes and heavy blows heat the ball; bounces and guards cool it. A hot ball flies faster, and an OVERDRIVE ball staggers whoever it meets. {guard} blocks it; time it perfectly to kill its heat. The camera follows the ball: {target} turns the ball cam off and on.',
-      `Touch the ball to fill your bar, then {ultimate}: your own SUPER SHOT, bulldozing anyone but a perfect guard. A super shot's goal counts ${GOAL_RULES.superGoal}.`,
+      'Every swing hits the ball where you look: {light} passes to a team-mate, {heavy} shoots, a launcher pops it high. Jump (twice) and strike to volley it in. {dash} on the run BOOSTS on the gold bar.',
+      '{target} switches stance. BALL: your swings play the ball and never hurt anyone. FIGHT: you lock on to the one on the ball and every move is theirs. Knock them down: a TACKLE wins it back.',
+      `Passes and big hits heat the ball; a hot one flies faster. Touch it to charge {ultimate}: your SUPER SHOT, bulldozing all but a perfect guard. Its goal counts ${GOAL_RULES.superGoal}.`,
     ],
     panels: [art('goal-rush', '30% 40%'), art('goal-rush', '60% 50%'), { move: 'ultimate' }],
     variants: {
@@ -82,15 +84,16 @@ export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
     },
   },
   'sky-spike': {
-    id: 'sky-spike', name: 'SKY SPIKE', art: 'sky-spike', rulesVersion: 1, kicker: 'THE SKY COURT · 3 V 3 TAKRAW',
+    // (rulesVersion 2: the PERFECT SPIKE's timing and the dig are taught.)
+    id: 'sky-spike', name: 'SKY SPIKE', art: 'sky-spike', rulesVersion: 2, kicker: 'THE SKY COURT · 3 V 3 TAKRAW',
     tagline: 'Spike it into their court.',
     goal: 'Three against three across a net. Keep the ball off your floor and smash it into theirs with every move you have.',
     win: `First to ${SPIKE_RULES.target}, win by two (${SPIKE_RULES.cap} caps it). A point in a FEVER rally counts double.`,
     facts: { players: '3 V 3', length: '~5–8 MIN', lives: `FIRST TO ${SPIKE_RULES.target}` },
     howTo: [
-      `{light} keeps the ball on your side: a bump, then a set up at the net. ${SPIKE_RULES.touches} touches a side, and the last has to go over.`,
-      '{heavy} and {special} send it over: jump for a SPIKE. {guard} in the air at the net BLOCKS. A ball landing in a court scores; out is the hitter’s fault. The camera follows the ball: {target} turns the ball cam off and on.',
-      `Every crossing heats the rally; past ${SPIKE_RULES.fever} it is a FEVER rally and the point counts double. {ultimate} is a SUPER SHOT into their emptiest corner.`,
+      `{light} keeps the ball on your side: a BUMP, then a SET floating high at the net. ${SPIKE_RULES.touches} touches a side, the last has to go over; a ball that hits you is bumped for you.`,
+      'From a step behind the set, {jump} as it peaks and swing {heavy} at the top of your jump: a PERFECT SPIKE, faster and hotter. Swing early and it is an ordinary spike. {guard} in the air at the net BLOCKS.',
+      `A hard ball into your court: {dash} at it to DIVE and dig it up for your side. Past rally ${SPIKE_RULES.fever} it is a FEVER rally, worth double. {ultimate}: a SUPER SHOT into their emptiest corner.`,
     ],
     panels: [art('sky-spike', '30% 40%'), art('sky-spike', '60% 50%'), { move: 'ultimate' }],
     variants: {

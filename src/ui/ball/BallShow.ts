@@ -69,10 +69,12 @@ export class BallShow {
     this.restart(this.title, 'bs-on');
   }
 
-  /** The splash page: your side over the seam, the other under it, three panels each, the VS stamped between. */
-  introSplash(v: BallView | null, selfId: string) {
+  /** The splash page: your side over the seam, the other under it, three panels each, the VS stamped between.
+   *  `kicker`: a line beside the VS (the short intro's - GOAL RUSH · REMATCH · THE INK BOWL - with no title card
+   *  before it). */
+  introSplash(v: BallView | null, selfId: string, kicker?: string) {
     if (!v) { if (this.splashKey) { this.splash.classList.add('bs-out'); window.setTimeout(() => { if (!this.splashKey) this.splash.hidden = true; }, 380); } this.splashKey = ''; return; }
-    const key = `${v.startedAt}:${v.round}`;
+    const key = `${v.startedAt}:${v.round}:${kicker ?? ''}`;
     if (key === this.splashKey) return;
     this.splashKey = key;
     const own = v.seats.find(s => s.id === selfId)?.team ?? 'red', other: BallTeam = own === 'red' ? 'blue' : 'red';
@@ -88,7 +90,7 @@ export class BallShow {
     };
     this.splash.innerHTML = `<div class="bs-page">${band(own, 'bs-top')}${band(other, 'bs-bottom')}
       <svg class="bs-seam" viewBox="0 0 1000 200" preserveAspectRatio="none"><path d="${SEAM}"/></svg>
-      <div class="bs-vs"><svg viewBox="-50 -50 100 100"><path d="${inkSplats()[3]}"/></svg><b>VS</b></div></div><div class="bs-flash"></div>`;
+      <div class="bs-vs"><svg viewBox="-50 -50 100 100"><path d="${inkSplats()[3]}"/></svg><b>VS</b></div>${kicker ? `<div class="bs-kicker"><span>${esc(kicker)}</span></div>` : ''}</div><div class="bs-flash"></div>`;
     for (const img of this.splash.querySelectorAll<HTMLImageElement>('img')) img.addEventListener('error', () => {
       const span = document.createElement('span'); span.className = 'bs-fallback'; span.innerHTML = mangaPortrait(img.dataset.fighter as FighterId); img.replaceWith(span);
     }, { once: true });

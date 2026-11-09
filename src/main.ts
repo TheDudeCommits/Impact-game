@@ -18,9 +18,11 @@ import {BallReplayer} from './render/ball/BallReplay';
 import {BallCam,ballShadowFocus,teamOf} from './render/ball/BallCam';
 import {BallMoments} from './render/ball/BallMoments';
 import {SpikeCam} from './render/ball/SpikeCam';
+import {SpikeCues} from './render/ball/SpikeCues';
 import {BallChase,type ChaseFrame} from './render/ball/BallChase';
 import {StanceMarks} from './render/ball/StanceMarks';
 import {StanceControl,hasStances} from './game/ball/stance';
+import {ballMovesReady,ballMovesWanted,installBallMoves} from './render/ball/ballMoves';
 import {BallCeremony} from './render/ball/BallCeremony';
 import {BallShow} from './ui/ball/BallShow';
 import {QuickChat} from './ui/ball/QuickChat';
@@ -105,7 +107,7 @@ import {modeOfSnapshot,type ModeId} from './ui/modes/catalogue';
 import {DamageNumbers} from './ui/DamageNumbers';
 import {MangaImpact} from './ui/MangaImpact';
 import {UI_SFX} from './originals/sfx';
-import {BallAudio} from './audio/ballAudio'; // the ball modes' own sound
+import {BallAudio,ballSfxUrl} from './audio/ballAudio'; // the ball modes' own sound
 import {MusicPanel} from './ui/MusicPanel';
 import {Hud} from './ui/Hud';
 import {Finale,FinaleSkip,finaleMine,finaleStateOf,finaleWinner} from './ui/results/finale';
@@ -363,6 +365,13 @@ const spikeCams=[new SpikeCam(),new SpikeCam()] as const;
 const ballStances=[new StanceControl(),new StanceControl()] as const,ballChases=[new BallChase(),new BallChase()] as const,stanceMarks=new StanceMarks(view.scene);
 const chaseFrame:ChaseFrame={self:new THREE.Vector3(),heading:0,ball:null,fight:false,mode:'goal-rush',boosting:false,shake:1},NO_FOCUS:readonly (Fighter|undefined)[]=[];let stanceYaw=NaN;
 const stanceBody=(id:string)=>fighters.get(id)?.group.position;
+// Sky Spike's timing cues (render/ball/SpikeCues.ts): the jump's beat, the PERFECT window's glint at the top, the
+// other side's hitter at the top (the block's beat), a dive to make; each with a short tick on the ball's own takes.
+const spikeCues=new SpikeCues(view.scene);
+spikeCues.onTick=k=>{const [id,gain,rate]=({jump:['strike-tap-2',.42,2.2],apex:['target-hit',.5,1.25],block:['target-hit',.3,.82],dive:['strike-tap-1',.38,1.7]} as const)[k];audio.centred(ballSfxUrl(id),gain,0,rate);
+  (window as unknown as {__spikeTicks?:unknown[][]}).__spikeTicks?.push([performance.now(),k]);};
+// (A check on this machine reads the cues: `__spikeCues.state`, and `__spikeTicks = []` logs each tick.)
+if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__spikeCues:SpikeCues}).__spikeCues=spikeCues;
 /** `?ballpilot` on this machine (a bot plays the page's fighter, LocalBall): the page films the bot's stance. */
 const ballPiloted=['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).has('ballpilot');
 // A TACKLE (game/ball/model.ts GOAL_STANCE): the lens punches for the tackler and the one tackled, the frame's ink for a
@@ -432,6 +441,9 @@ void installBorrowedHurts();
 if(lockCombatOn())void installBorrowedStrikes();
 // Techniques (game/techniques.ts): each style's takes, fitted to the bodies that throw them (engine/client/styleMoves.ts).
 void installStyleMoves();
+// Ball modes, sports moves (render/ball/ballMoves.ts): a pass, a header, a dig, a spike drawn for a ball match's swings -
+// only with `?ballmoves` in the address, so the game as played is untouched.
+if(ballMovesWanted(location))installBallMoves(()=>{const view=ballOf(network.snapshot);return view?{view,ball:ballField.ballPosition()}:undefined;});
 riftField.glows=riftTargets.glows;
 grunts.threats=survivalTargets.glows;
 const targetPlayers=(snapshot:GameSnapshot)=>{const self=snapshot.players.find(p=>p.id===network.id);return ballOf(snapshot)?ballTargets.update(snapshot,ballField.ballPosition()):riftOf(snapshot)&&self?riftTargets.update(snapshot,self):survival()&&self?survivalTargets.update(snapshot.players,hordeFrames()?.around(snapshot.serverTime)?.b,self):snapshot.players;};
@@ -690,7 +702,8 @@ for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,l
 couchHud.host={rift:riftUI,body:id=>fighters.get(id),camera:()=>camera2?.camera,act:(seat,type,payload)=>{const id=couch.ids[seat];if(!id)return undefined;if(network===localRift)return localRift.act(id,type,payload);if(network===localObjective&&type==='objective-buy')return localObjective.buy(id,payload);return undefined;}};
 riftUI.onCustom=(type,payload)=>{if(type==='rift-requeue'||type==='rift-rematch'&&network===localRift)hud.onPlayAgain();else network.room?.send(type,payload);};
 riftUI.onLeave=()=>hud.onLeave();riftUI.onPause=()=>hud.toggleSettings();
-ballUI.onSend=(type,payload)=>network.room?.send(type,payload);ballUI.onAgain=()=>hud.onPlayAgain();ballUI.onLeave=()=>hud.onLeave();
+// (PLAY AGAIN on a ball match on this device is the same match again in place - LocalBall.rematch - with no loading screen.)
+ballUI.onSend=(type,payload)=>network.room?.send(type,payload);ballUI.onAgain=()=>{if(network===localBall&&localBall.rematch())return;hud.onPlayAgain();};ballUI.onLeave=()=>hud.onLeave();
 localRift.onDisconnect=message=>{returnToLobby();hud.error(message);};
 // Training's tools go to the room as they are - but a switch of fighter (the bar's FIGHTER and OPPONENT, the picker, and
 // on this device the LABORATORY's own OPPONENT list) goes by way of `switchTraining`, which has the body here first.
@@ -768,7 +781,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     clearFighters();resetSwaps();
     pauseLink.reset();roomFrozen=false;fightShown=false;
     network=riftRun?localRift:ballRun?localBall:royaleRun?royale:duelRun?duel:arcadeRun?arcade:practiceRun?practice:objectiveRun?localObjective:online;timeline.delayMs=riftRun||ballRun||royaleRun||duelRun||arcadeRun||practiceRun||objectiveRun?LOCAL_DELAY:ONLINE_DELAY;
-    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();camera.reset();
+    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();spikeCues.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();camera.reset();
     horde.clear();grunts.clear();gore.clear();survivalFx.reset();techniques.reset();lastEntrance=0;lastRoar=0;bossesWanted='';lastHordeVoice=0;lastBossVoice=0;lastSmash=0;bossShoutAt.clear();stages.rift?.restore();
     if(arcadeRun||coopRun)audio.preload(everyTake());
     if(access?.kind==='objective'&&access.objective==='last-stand'||access?.kind==='party'&&access.travel.mode==='last-stand')objectiveAudio.preload();
@@ -1009,7 +1022,7 @@ function ballSounds(snapshot:GameSnapshot){
     else if(e.kind==='clash'){const me=snapshot.players.find(p=>p.id===network.id);if(me&&Math.hypot(me.x-e.x,me.z-e.z)<18)camera.impact(.9);}
   }
 }
-function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
+function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();spikeCues.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
 // Out of a party's match: home, and back on the party's sheet, where the others are seen coming home too.
 hud.onLeave=()=>{returnToLobby();if(party.joined)partyUI.show();};
 for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onDisconnect=(reason,code)=>{
@@ -1018,6 +1031,12 @@ for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,l
   const shown=started&&finale.ended?timeline.sample(performance.now())?.snapshot:undefined,self=shown?.players.find(p=>p.id===finaleSelf);
   if(shown&&self){skipFinale(true);hud.roomGone=true;hud.update(shown,self,undefined,over);if(over)hud.link(undefined);riftUI.update(shown,finaleSelf);if(!over)hud.banner(reason);return;}
   returnToLobby();hud.banner(reason);};
+// A ball match restarted in place on this device (PLAY AGAIN, a drill's AGAIN: LocalBall.onRestart)
+// begins its clock and its events again from nothing, so the page lets go of the last one's, as for a Duel's next set; the
+// bodies are built again under the short intro's splash page.
+// An online ball room's rematch (its next round, BallRoom.rematch) is let go of the same way (onSnapshot).
+function ballRestart(){clearFighters();timeline.reset();lastEvent=0;localClock=0;camera.reset();introFor=null;victoryFor=null;finale.reset();targetId=null;targeting.reset();ballField.clear();ballUI.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;ballMark='';network.onControlReset();}
+localBall.onRestart=ballRestart;let ballRound='';
 for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onControlReset=()=>{unacked.length=0;input.clear();input.enabled=false;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;inputClock.reset();};
 let objectiveRound=0,objectivePhase='',duelRoundKey='';
 const matchBell=new MatchBell();
@@ -1047,6 +1066,8 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   if((modeView?.phase??warView?.phase)==='active'&&objectivePhase!=='active'){input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;input.clear();camera.reset();}
   if(modeView?.kind==='last-stand')wantBosses([...new Set([...(modeView.village?.incoming??[]),...snapshot.players.flatMap(p=>p.enemy?[p.enemy]:[])])],false);
   objectivePhase=modeView?.phase??warView?.phase??'';
+  // An online ball room's next round (its rematch) starts its clock again: the last one let go.
+  {const ball=network===online?ballOf(snapshot):undefined,key=ball?`${ball.code??''}:${ball.round}`:'';if(key&&ballRound&&key!==ballRound&&key.split(':')[0]===ballRound.split(':')[0])ballRestart();ballRound=key;}
   // A ball match puts everyone back on their marks for each kickoff and serve: the view turns with the body, behind it.
   {const ball=ballOf(snapshot),mark=ball&&(ball.phase==='kickoff'||ball.phase==='countdown')?`${ball.phase}:${ball.phaseUntil}:${ball.startsAt}`:'';
     if(mark&&mark!==ballMark){ballMark=mark;input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??input.yaw;camera.reset();ballChases[0].cut();ballChases[1].cut();}else if(!ball)ballMark='';}
@@ -1396,7 +1417,7 @@ async function ensureSnapshotAssets(snapshot:GameSnapshot,onWarm?:()=>void,also?
   const prepareEarly=(id:FighterId)=>{if(started)return;const go=()=>{if(!current()||started)return;try{for(const root of library.prepare(id))view.uploadTextures(root);}catch(error){console.warn('Fighter prepared on the warm-up instead',id,error);}};
     const idle=(globalThis as {requestIdleCallback?:(work:()=>void,options?:{timeout:number})=>number}).requestIdleCallback;if(idle)idle(go,{timeout:400});else setTimeout(go,0);};
   // (Techniques: the style takes come with the room's files, so its bodies fit theirs as they are built - styleMoves.ts.)
-  await Promise.all([stylesReady(),Promise.all(ids.map(id=>library.ensure([id]).then(()=>prepareEarly(id)))).then(()=>stamp('bodies')),loadStage(snapshot.stage??'harbor').then(()=>stamp('stage')),extras,warmFx,...(also?[also]:[]),...(incoming?[horde.load(incoming),objectiveField.prepare()]:[]),...(riftOf(snapshot)?[riftField.load()]:[])]);
+  await Promise.all([stylesReady(),...(ballOf(snapshot)?[ballMovesReady()]:[]),Promise.all(ids.map(id=>library.ensure([id]).then(()=>prepareEarly(id)))).then(()=>stamp('bodies')),loadStage(snapshot.stage??'harbor').then(()=>stamp('stage')),extras,warmFx,...(also?[also]:[]),...(incoming?[horde.load(incoming),objectiveField.prepare()]:[]),...(riftOf(snapshot)?[riftField.load()]:[])]);
   stamp('assets-loaded');
   if(!current()){horde.collect();return;}
   if(incoming)horde.warm(view.scene,incoming);
@@ -1724,7 +1745,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   // and the menus are still its own).
   if(couch.on)couch.live=started&&!finale.holding(seconds())&&network.predictionReady&&!hud.introOpen&&!hud.resultsOpen&&!bugReport.open&&!hud.settingsOpen&&!document.hidden&&!vsSplash.open&&!(survival()&&(survivalHud.draftOpen||survivalHud.resultsOpen||runView()?.phase==='travel'));
   input.update(dt);hud.keepPadFocus();pushInput();environment.update(now/1000);stages.update(now/1000);
-  touch.update(input.enabled,started&&network.snapshot?.status!=='waiting'&&!hud.objectives.blocking); // a room's lobby may be read upright; its fight asks for landscape
+  touch.update(input.enabled,started&&network.snapshot?.status!=='waiting'&&!hud.objectives.blocking,!!ceremony); // a room's lobby may be read upright; its fight asks for landscape; a ball match's ceremony pages (its intro, the podium) are not drawn over
   if(qualityWatch.frame(rawDt,started&&!settings.qualityChosen&&settings.quality!=='low'&&!hud.settingsOpen&&!document.hidden,view.resolutionSpent,view.frames.target(settings.powerMode))){stepDown(settings);view.applySettings(settings);}
   // A phone on Balanced that cannot hold sixty draws an even thirty (render/framePolicy.ts).
   if(view.frames.frame(rawDt,started&&!hud.settingsOpen&&!document.hidden,settings.powerMode)){view.applySettings(settings);frameRateToast();}
@@ -1732,7 +1753,8 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   riftField.setTarget(targeting.locked?targetId:null);riftField.update(snapshot,network.id,view.camera,dt,couch.split?couch.ids[1]:undefined);riftUI.update(snapshot,network.id,targeting.locked?targetId:null);
   ballField.update(replayed?.snapshot??snapshot,network.id,view.camera,replayed?dt*replayed.rate:dt,performance.now(),!!replayed);
   // Goal Rush's stances under the feet (render/ball/StanceMarks.ts), and its tackles felt.
-  {const v=ballOf(snapshot);stanceMarks.update(rawDt,v,network.id,hasStances(v)?ballStances[0].lock:null,ballField.ballPosition(),stanceBody,!!v&&started&&!replayed&&!ceremony);}
+  {const v=ballOf(snapshot);stanceMarks.update(rawDt,v,network.id,hasStances(v)?ballStances[0].lock:null,ballField.ballPosition(),stanceBody,!!v&&started&&!replayed&&!ceremony);
+    spikeCues.update(rawDt,v,network.id,snapshot?.players??[],stanceBody,ballField.ballPosition(),!!v&&started&&!replayed&&!ceremony);}
   // A check's trace of the drawn ball (window.__ballTrace = [] on this machine): page ms, frame time, the ball, the newest snapshot's time.
   {const trace=(window as unknown as {__ballTrace?:number[][]}).__ballTrace,p=trace&&presented&&ballField.ballPosition();if(p)trace!.push([performance.now(),presented!.time,p.x,p.y,p.z,timeline.newest??0]);}ballMoments.update(rawDt);ballUI.update(snapshot,network.id);
   if(snapshot){const serverTime=presented!.time;
@@ -1874,7 +1896,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
       input.yaw=couch.on?couch.yaw:camera.inputYaw;stanceYaw=input.yaw;
       // Round 4: and the pitch, which the dynamic camera levels once it is left alone.
       if(!couch.on)input.pitch=camera.inputPitch;
-      touch.meters(self,snapshot.serverTime);
+      touch.meters(self,snapshot.serverTime,couch.on?undefined:ballOf(snapshot)); // (A ball match: its own sports set, input/sportTouch.ts.)
       const target=(ballOf(snapshot)?ballTargets.players:riftOf(snapshot)?riftTargets.players:survival()?survivalTargets.players:snapshot.players).find(p=>p.id===targetId);if(now-lastHud>70){hud.update(snapshot,self,target,network!==online||now-network.receivedAt<1500);hud.link(network===online?online.link.note(now):undefined);const phase=snapshot.status==='finished'?'results':'combat';
         // An arcade enemy is not a matchup. The run plays its act's world's
         // score first - one piece under Shiun, another on Gorai's roof -

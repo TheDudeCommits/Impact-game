@@ -969,5 +969,13 @@
    "steps": 2,
    "duration": 0.5833
   }
+ },
+ "kuzu": {
+  "run": {
+   "duration": 0.5,
+   "speed": 4.439,
+   "step": 0.1667,
+   "steps": 3
+  }
  }
 }

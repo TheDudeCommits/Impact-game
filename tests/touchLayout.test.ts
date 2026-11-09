@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { ATTACK, CLUSTER_GAP, CLUSTER_TOP, clusterBoxes, coolSeconds, DASH_STAMINA, EDGE_GAP, FAR_TOP, MOVE_RING, RIGHT_COLUMN, RIGHT_TOP, SKILL_RING, spotStyle, TOUCH_LAYOUT, touchMeters, type ClusterButton } from '../src/input/touchLayout';
 import { STICK_SHARE, TOUCH_BUTTONS } from '../src/input/touch';
+import { SPORT_FAR_TOP, SPORT_LAYOUT, SPORT_REACH, SUPER_CHARGING, type SportSlot } from '../src/input/sportTouch';
+import type { Spot } from '../src/input/touchLayout';
 import { touchLabel, type PromptAction } from '../src/ui/prompts';
 import type { PlayerState } from '../src/game/types';
 
@@ -132,5 +134,49 @@ describe('the buttons keep the names the prompts give them (prompts.ts touchKey)
   it('LIGHT, HEAVY, SPECIAL, ULT, AREA, AWAKEN, JUMP, DASH, GUARD and LOCK', () => {
     const action: Record<string, PromptAction> = { light: 'light', heavy: 'heavy', special: 'special', ultimate: 'ultimate', area: 'area', awaken: 'awaken', jump: 'jump', dash: 'dash', guard: 'guard', target: 'target', pause: 'menu' };
     for (const [id, label] of TOUCH_BUTTONS) if (action[id]) expect(touchLabel(action[id]), id).toBe(label);
+  });
+});
+
+describe('the ball modes\' own set (input/sportTouch.ts)', () => {
+  const slots = Object.entries(SPORT_LAYOUT) as [SportSlot, Spot][];
+  const charging: Spot = { ...SPORT_LAYOUT.super, d: SUPER_CHARGING };
+  it('is six buttons at most, every one clear of every other by CLUSTER_GAP and inside the safe area', () => {
+    expect(slots).toHaveLength(6);
+    for (let i = 0; i < slots.length; i++) for (let j = i + 1; j < slots.length; j++) {
+      const [a, s] = slots[i], [b, t] = slots[j];
+      expect(Math.hypot(s.x - t.x, s.y - t.y) - (s.d + t.d) / 2, `${a} - ${b}`).toBeGreaterThanOrEqual(CLUSTER_GAP);
+    }
+    for (const [id, s] of [...slots, ['super', charging] as const]) { expect(s.x - s.d / 2, id).toBeGreaterThanOrEqual(EDGE_GAP); expect(s.y - s.d / 2, id).toBeGreaterThanOrEqual(EDGE_GAP); }
+  });
+  it('is sized for a thumb, the shot the largest and in the corner', () => {
+    for (const [id, s] of slots) expect(s.d * .88, id).toBeGreaterThanOrEqual(44);
+    for (const [id, s] of slots) if (id !== 'main') { expect(s.d, id).toBeLessThan(SPORT_LAYOUT.main.d); expect(Math.hypot(s.x, s.y), id).toBeGreaterThan(Math.hypot(SPORT_LAYOUT.main.x, SPORT_LAYOUT.main.y)); }
+    // The pass beside the shot, the jump over it: the nearest two.
+    const reach = (id: SportSlot) => Math.hypot(SPORT_LAYOUT[id].x - SPORT_LAYOUT.main.x, SPORT_LAYOUT[id].y - SPORT_LAYOUT.main.y);
+    for (const id of ['run', 'side', 'super'] as const) { expect(reach('pass')).toBeLessThan(reach(id)); expect(reach('jump')).toBeLessThan(reach(id)); }
+  });
+  it('stays low and near: under CLUSTER_TOP, the right-most column under RIGHT_TOP, the far column under the prompt lane, all within SPORT_REACH', () => {
+    for (const [id, s] of slots) {
+      expect(s.y + s.d / 2, id).toBeLessThanOrEqual(CLUSTER_TOP);
+      if (s.x - s.d / 2 < RIGHT_COLUMN) expect(s.y + s.d / 2, id).toBeLessThanOrEqual(RIGHT_TOP);
+      expect(s.x + s.d / 2, id).toBeLessThanOrEqual(SPORT_REACH);
+    }
+    for (const id of ['run', 'super'] as const) expect(SPORT_LAYOUT[id].y + SPORT_LAYOUT[id].d / 2, id).toBeLessThanOrEqual(SPORT_FAR_TOP);
+  });
+  for (const s of SCREENS) it(`fits ${s.name} (${s.w}x${s.h}): clear of the stick, the prompt lane and the sports HUD's meter`, () => {
+    const right = s.w - s.r, bottom = s.h - s.b;
+    const box = (p: Spot): Box => [right - (p.x + p.d / 2) * s.k, bottom - (p.y + p.d / 2) * s.k, right - (p.x - p.d / 2) * s.k, bottom - (p.y - p.d / 2) * s.k];
+    const home: Box = [40 * s.k + s.l, s.h - s.b - (34 + 116) * s.k, (40 + 116) * s.k + s.l, s.h - s.b - 34 * s.k];
+    const foot = s.h * (1 - .38), lane: Box = [s.w * .4 - 158, foot - 37, s.w * .4 + 158, foot];
+    // ballHud.css: on a touch phone the meter and its stance badge stand at 40% of the width (zone 9), 14vh + 26 px up,
+    // 210 px wide, the badge over it (about 50 px in all).
+    const meterFoot = s.h - (s.h * .14 + 26), meter: Box = [s.w * .4 - 105, meterFoot - 50, s.w * .4 + 105, meterFoot];
+    for (const [id, p] of [...slots, ['super', charging] as const]) {
+      const b = box(p);
+      expect(b[0], id).toBeGreaterThan(s.w * STICK_SHARE);
+      expect(b[2], id).toBeLessThanOrEqual(s.w - s.r); expect(b[3], id).toBeLessThanOrEqual(s.h - s.b);
+      expect(overlap(b, home), id).toBe(false);
+      if (s.h < 600) { expect(overlap(b, lane), `${id} - the prompt lane`).toBe(false); expect(overlap(b, meter), `${id} - the meter`).toBe(false); }
+    }
   });
 });

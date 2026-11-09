@@ -33,14 +33,12 @@ const parry: Tip = { id: 'parry', fire: (f, s) => !s.parried && s.blockedAt !== 
 /** Each mode's tips, in the order they may fire: each once, at most four shown (MAX_TIPS). */
 export const TIPS: Readonly<Record<ModeId, readonly Tip[]>> = {
   'rift-war':[opening('lanes',()=> 'PUSH WITH YOUR WAVE · DESTROY THEIR CORE'),lockOn,ultimate,awaken],
-  // The ball modes: what the moves do to the ball, then the super shot and the awakening (both fill from touching it).
-  'goal-rush': [opening('goal-goal', () => 'EVERY MOVE HITS THE BALL · IT GOES WHERE YOU LOOK'),
-    { id: 'pop', fire: (f, s) => f.now - s.activeAt > 9000, text: () => ({ action: 'heavy', verb: 'POWER SHOT', detail: 'A LAUNCHER POPS IT HIGH: JUMP AND STRIKE' }) },
-    { id: 'save', fire: (f, s) => f.now - s.activeAt > 20000, text: () => ({ action: 'guard', verb: 'SAVE', detail: 'GUARD AS THE BALL ARRIVES' }) },
+  // The ball modes: the goal at the whistle, then the super shot and the awakening (both fill from touching it). The
+  // skills - the stances and the tackle, the boost, the spike's timing, the dig, the block - are taught when they are the
+  // play, by the ball modes' own hints in the same lane (ui/ball/ballHints.ts), not on a clock.
+  'goal-rush': [opening('goal-goal', () => 'EVERY SWING HITS THE BALL · IT GOES WHERE YOU LOOK'),
     { ...ultimate, text: () => ({ action: 'ultimate', verb: 'SUPER SHOT READY', detail: 'A SUPER GOAL COUNTS TWO' }) }, awaken],
-  'sky-spike': [opening('spike-goal', () => 'LIGHT KEEPS IT ON YOUR SIDE · HEAVY SENDS IT OVER'),
-    { id: 'spike', fire: (f, s) => f.now - s.activeAt > 9000, text: () => ({ action: 'jump', verb: 'SPIKE', detail: 'JUMP, THEN HEAVY OR SPECIAL' }) },
-    { id: 'block', fire: (f, s) => f.now - s.activeAt > 20000, text: () => ({ action: 'guard', verb: 'BLOCK', detail: 'GUARD IN THE AIR AT THE NET' }) },
+  'sky-spike': [opening('spike-goal', () => 'THREE TOUCHES A SIDE · BUMP, SET, SPIKE'),
     { ...ultimate, text: () => ({ action: 'ultimate', verb: 'SUPER SHOT READY', detail: 'INTO THEIR EMPTIEST CORNER' }) }, awaken],
   // No lock-on tip in a duel: there is nobody to switch to (the critic: "again to switch target" against one rival).
   duel: [opening('duel-goal', () => 'BEST OF THREE · WIN TWO ROUNDS'), techniques, parry, ultimate, awaken],

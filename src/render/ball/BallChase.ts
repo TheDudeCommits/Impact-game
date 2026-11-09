@@ -35,11 +35,19 @@ const RIG = {
   height: 3.3, heightNear: 4, heightPerBall: .06, heightMost: 5,
   /** Over the right shoulder: metres to the side, at rest and with the ball at the feet. */
   shoulder: .55, shoulderNear: .95,
-  /** The tilt at rest (down), the most it climbs after a high ball (up), and the margins kept: the ball under the top of
-   *  the frame, the player's chest over the bottom (degrees). */
+  /** The tilt at rest (down), the most it ever climbs after a high ball (up), and the margins kept: the ball under the
+   *  top of the frame, the player's chest over the bottom (degrees). */
   pitch: -12, pitchMost: 13, topMargin: 7, chestMargin: 6,
-  /** A ball high over you (`loft`): the boom this much longer, the lens down to this height, the tilt this much freer. */
-  loftBoom: 2.6, loftHeight: 2.4, loftPitch: 14,
+  /** The pitch keeps this share of the frame's height at the bottom, measured to a point on the floor `floorAhead` metres
+   *  out from the lens - the tilt never climbs past it (`floorKeepLoft` under a ball high over you, the lens stood well
+   *  back: the floor beyond that point fills more of the frame). A high ball is framed by standing the lens back, up and
+   *  opening it (`loft`), never by tilting into the roof; at the top of a big lob the ball may leave the frame for a
+   *  moment (the landing sight and the edge arrow find it), the pitch, you and its fall never do. */
+  floorKeep: .32, floorKeepLoft: .22, floorAhead: 16,
+  /** A ball high over you, or about to be (`loft`, read off where its flight is going over the next `loftLead` s): the
+   *  boom this much longer, the lens up to this height, the lens this much wider. (A lens dropped low and
+   *  looking up frames the stands and the roof.) */
+  loftBoom: 4.4, loftHeight: 5.4, loftFov: 12, loftLead: .7,
   /** The lens: at rest, opened on the boost, opened further at full pelt, closed by a strike's punch (most). */
   fov: 64, fovBoost: 6, fovSpeed: 3, punchMost: 4.5,
   /** The springs: the body along the floor and in height, the boom, the tilt, the lens. */
@@ -115,6 +123,10 @@ export class BallChase {
   private punch = 0;
   private trauma = 0;
   private age = 0;
+  /** The drawn ball's last place and its climb (m/s, sprung off the frames' steps): where its flight is going. */
+  private readonly ballPrev = new THREE.Vector3();
+  private ballVy = 0;
+  private ballSeen = false;
   /** The hand-over: the pose on screen when the lens changed hands, and how far into the blend from it. */
   private readonly fromPos = new THREE.Vector3();
   private readonly fromQuat = new THREE.Quaternion();
@@ -188,15 +200,22 @@ export class BallChase {
     const b = this.body;
     // The ball's reach: how near it is along the floor, and how high.
     const dx = ball ? ball.x - b.x : 0, dz = ball ? ball.z - b.z : 0, d = ball ? Math.hypot(dx, dz) : 20, hb = ball ? Math.max(0, ball.y - 1) : 0;
-    // A ball high over you (a lob dropping, a clearance overhead): the lens drops back and down so you and it both fit
-    // the frame as it climbs - the tilt may then climb further, and your chest come nearer the bottom.
-    const loft = ball && !f.fight && ball.y > 3 ? smooth(Math.atan2(ball.y - b.y - 1.2, Math.max(d, .5)), .45, 1.05) : 0;
+    // The ball's climb, off the drawn ball's steps (sprung: a bounce is a turn, not a spike), and the height its flight
+    // reaches over the next RIG.loftLead s: the lens starts standing back as a lob leaves the boot, not as it peaks.
+    if (ball && this.ballSeen && dt > 0 && Math.abs(ball.y - this.ballPrev.y) < 3) this.ballVy += ((ball.y - this.ballPrev.y) / dt - this.ballVy) * Math.min(1, dt * 14);
+    else this.ballVy = 0;
+    if (ball) this.ballPrev.set(ball.x, ball.y, ball.z);
+    this.ballSeen = !!ball;
+    const g = GOAL_RULES.gravity, rise = Math.max(0, Math.min(this.ballVy / g, RIG.loftLead)), peak = ball ? ball.y + Math.max(0, this.ballVy * rise - .5 * g * rise * rise) : 0;
+    // A ball high over you (a lob dropping, a clearance overhead, a cross): the lens stands back, rises a little and opens
+    // so the ball's flight, you and the pitch share the frame (never low and looking up into the roof).
+    const loft = ball && !f.fight && peak > 2.8 ? smooth(Math.atan2(peak - b.y - 1.2, Math.max(d, .5)), .3, .95) : 0;
     const near = ball ? (1 - smooth(d, 2.5, 9)) * (1 - loft) : 0, far = f.fight ? 0 : smooth(d, 12, 32);
     const boomWant = f.fight ? FIGHT.boom + (FIGHT.boomNear - FIGHT.boom) * near : RIG.boom + (RIG.boomNear - RIG.boom) * near + (RIG.boomFar - RIG.boom) * far + RIG.loftBoom * loft;
     const heightWant = f.fight ? FIGHT.height + (FIGHT.heightNear - FIGHT.height) * near
       : THREE.MathUtils.lerp(Math.min(RIG.heightMost, RIG.height + (RIG.heightNear - RIG.height) * near + RIG.heightPerBall * Math.min(hb, 14) * (1 - near)), RIG.loftHeight, loft);
     const shoulderWant = f.fight ? FIGHT.shoulder + (FIGHT.shoulderNear - FIGHT.shoulder) * near : RIG.shoulder + (RIG.shoulderNear - RIG.shoulder) * near;
-    const fovWant = (f.fight ? FIGHT.fov : RIG.fov) + (f.boosting ? RIG.fovBoost : 0) + RIG.fovSpeed * smooth(Math.hypot(this.bodyVel.x, this.bodyVel.z), 9, 14);
+    const fovWant = (f.fight ? FIGHT.fov : RIG.fov) + (f.boosting ? RIG.fovBoost : 0) + RIG.fovSpeed * smooth(Math.hypot(this.bodyVel.x, this.bodyVel.z), 9, 14) + RIG.loftFov * loft;
     // (A narrow frame - a split screen's half, a phone held upright - stands further back and less over the shoulder.)
     const narrow = clamp((1.5 - camera.aspect) / .7, 0, 1);
     if (fresh) { this.boom.snap(boomWant * (1 + .3 * narrow)); this.height.snap(heightWant); this.shoulder.snap(shoulderWant * (1 - .6 * narrow)); this.fov.snap(fovWant); this.held.set(0, 0, 0); this.heldVel.set(0, 0, 0); }
@@ -249,10 +268,13 @@ export class BallChase {
     }
     // The heading on screen: along the heading, turned to the play ahead when the walls moved the lens off its line.
     const lookX = b.x + hx * 9 - hz * shoulder, lookZ = b.z + hz * 9 + hx * shoulder, view = Math.atan2(lookX - at.x, lookZ - at.z);
-    // The tilt: at rest a little down on the play ahead; up after a high ball as far as the chest stays in the frame.
+    // The tilt: at rest a little down on the play ahead; up after a high ball as far as the chest stays in the frame and
+    // the pitch keeps its share of the frame (RIG.floorKeep: the floor RIG.floorAhead out from the lens no higher than
+    // that share from the bottom - on a frame's centre line, tan(angle off the axis) / tan(half the lens) up from the middle).
     const fovNow = this.fov.to(fovWant, RIG.fovRate, dt), half = fovNow * D2R / 2, lifted = Math.max(0, at.y - (b.y + height));
     const chest = Math.atan2(b.y + 1.15 - at.y, Math.max(.5, Math.hypot(b.x - at.x, b.z - at.z)));
-    const most = Math.min((RIG.pitchMost + RIG.loftPitch * loft) * D2R, chest + half - (RIG.chestMargin - (RIG.chestMargin - 2) * loft) * D2R);
+    const floor = -Math.atan2(at.y, RIG.floorAhead) + Math.atan(Math.tan(half) * (1 - 2 * THREE.MathUtils.lerp(RIG.floorKeep, RIG.floorKeepLoft, loft)));
+    const most = Math.min(RIG.pitchMost * D2R, f.fight ? Infinity : floor, chest + half - RIG.chestMargin * D2R);
     let pitchWant = (f.fight ? FIGHT.pitch : RIG.pitch) * D2R - Math.atan2(lifted, 9) - (f.fight ? 0 : near * 4 * D2R);
     if (ball) {
       // (The opponent: their head kept under the top of the frame, as the ball is.)

@@ -21,6 +21,10 @@ const SPRINTS: Record<string, { run: number; shared: boolean }> = {
   // a cycle, each step carrying the body the renderer's stride (scripts/originals/clips/author_fox.py GAITS), so its legs
   // keep pace with its travel at any speed: 4.45 steps a second at the form's full 8.6 m/s.
   'konta-form': { run: .4167, shared: true },
+  // Kuzu's run is a clean sprint: three steps a cycle, as Kuon's and Jirenga's clean sprints, 4.0-4.3 steps a second at
+  // 7.5 m/s; its planted foot slides 0.33-0.42 of travel there, 0.16-0.19 at 4.5 m/s and 0.07 at 2.4. With no row (two
+  // steps a cycle) it slid 0.43 and, where the walk mixes in at 4.5 m/s, 0.50. His walk keeps no row (not on the run's clock).
+  kuzu: { run: .1667, shared: false },
 };
 
 describe('the originals\' sprint keeps Impact\'s cadence', () => {

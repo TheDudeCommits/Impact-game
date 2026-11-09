@@ -15,6 +15,10 @@ export const INTRO = {
   /** Once everyone has voted to skip: the kickoff this soon. */
   skipTo: .45,
 } as const;
+/** The short intro, for a rematch (PLAY AGAIN with the same
+ *  people, a room's next match) or an arena this page has flown over already. No flyover: it is the full intro's tail -
+ *  the splash page at once, the whistle, the kickoff - so it holds the countdown this long, and is skipped the same way. */
+export const SHORT_INTRO = {seconds: INTRO.seconds - INTRO.splash} as const;
 
 /** The podium at the end (Goal Rush on the centre spot facing the broadcast side line, Sky Spike in the winners' court
  *  with its back to the net): the winners' best in the middle on the top step, the other two either side. The room

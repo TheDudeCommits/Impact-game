@@ -32,6 +32,17 @@ const SERVE = {in: 1.4, out: 1.6, push: 1.6, down: 1.1, look: -.25, back: 2.6};
 const SET = {in: 1.8, out: 1.3, push: 1.2, lift: 1.1};
 const POINT = {in: 1.7, out: 1.1, push: 3, toward: .38, fov: 5, big: 1.6};
 const FOLLOW = {seconds: .9, share: .12, in: 6, out: 2};
+/** The stand's few purposeful moves for the match's swings, all along the lens and none turning it (the view's heading
+ *  holds):
+ *  - TENSE: match point or DEUCE - the stand creeps `push` metres in and the lens closes `fov` degrees, eased in over the
+ *    serve's walk-up (`in`) and held through the rally; the walk-up's own step in is `serve` times longer.
+ *  - CRESCENDO: a long rally - from `from` crossings on, over `span` more - closes in the same way by up to `push` and
+ *    `fov` (FEVER is all of it), so the frame tightens as the rally climbs, and lets go at the point.
+ *  - The point that ends a rally of `long` crossings or more (or a FEVER rally, a match point) is the big one, `big` times
+ *    a point's move (a PERFECT SPIKE's is POINT.big). */
+const TENSE = {push: 1.6, fov: 3, in: .9, out: 1.2, serve: 1.8} as const;
+const CRESCENDO = {from: 4, span: 6, push: 1.4, fov: 2.6, in: 1.2, out: 1.6} as const;
+const LONG = {long: 7, big: 1.9} as const;
 /** A strike's punch (degrees off the lens, in at PUNCH_IN a second - a few frames, not a step - and back at PUNCH_BACK) and shake (trauma, falling at 2.6 a
  *  second; the noise is its square). A broadcast lens takes them far smaller than the fight's follow camera does. */
 const PUNCH = {spike: 2.5, skySpike: 3.5, perfect: 5, super: 6, kill: 2, block: 2.5, dig: 1.5, dive: 2.5};
@@ -73,6 +84,7 @@ export class SpikeCam {
   private x = 0; private vx = 0; private goalX = 0;
   private lift = 0;
   private serveW = 0; private setW = 0; private pointW = 0; private followW = 0; private followUntil = -Infinity;
+  private tenseW = 0; private climbW = 0;
   /** The rally's last strike was a PERFECT SPIKE or a SUPER SHOT (its point, if it wins one, is the big one). */
   private big = false; private pointBig = 1;
   private punch = 0; private punchGoal = 0; private trauma = 0; private age = 0;
@@ -85,7 +97,7 @@ export class SpikeCam {
   reset() { this.active = false; this.match = NaN; this.seen = 0; this.forget(); }
   private forget() {
     this.handed = NaN; this.away = this.still = 0; this.vx = 0; this.lift = 0; this.placed = false;
-    this.serveW = this.setW = this.pointW = this.followW = 0; this.followUntil = -Infinity; this.punch = this.punchGoal = this.trauma = 0;
+    this.serveW = this.setW = this.pointW = this.followW = this.tenseW = this.climbW = 0; this.followUntil = -Infinity; this.punch = this.punchGoal = this.trauma = 0;
   }
 
   /**
@@ -133,6 +145,13 @@ export class SpikeCam {
     this.pointW = this.weigh(this.pointW, pointGoal, POINT.in, POINT.out, dt);
     if (this.pointW < .01) this.pointBig = 1;
     this.followW = this.weigh(this.followW, follow, FOLLOW.in, FOLLOW.out, dt);
+    // The match's swings: match point or DEUCE, and a long rally climbing.
+    const tense = (view.phase === 'kickoff' || view.phase === 'live') && SpikeCam.onTheEdge(view) ? 1 : 0;
+    const climb = view.phase === 'live' ? (view.fever ? 1 : clamp((view.rally - CRESCENDO.from) / CRESCENDO.span, 0, 1)) : 0;
+    this.tenseW = this.weigh(this.tenseW, tense, TENSE.in, TENSE.out, dt);
+    this.climbW = this.weigh(this.climbW, climb, CRESCENDO.in, CRESCENDO.out, dt);
+    // (The point that ends a long rally is the big one.)
+    if (view.phase === 'scored' && this.pointBig < LONG.big && (view.rally >= LONG.long || view.fever)) this.pointBig = LONG.big;
     // The pose: the stand, then each occasion laid over it.
     const back = (R.courtHalfZ + STAND.back) * wide, up = STAND.up * wide;
     const eye = this.eye.set(this.x, up, -s * back), look = this.look.set(this.x * (1 - DRIFT.look), STAND.lookY + this.lift, s * STAND.lookZ);
@@ -143,7 +162,8 @@ export class SpikeCam {
     if (this.followW > 0) { const k = FOLLOW.share * this.followW; look.x += (b.x - look.x) * k; look.y += (b.y - look.y) * k; look.z += (b.z - look.z) * k; }
     // Pushed in along the view, and lowered for the walk-up.
     let dx = look.x - eye.x, dy = look.y - eye.y, dz = look.z - eye.z;
-    const d = Math.hypot(dx, dy, dz) || 1, push = SERVE.push * this.serveW + SET.push * this.setW + POINT.push * this.pointW * this.pointBig;
+    const d = Math.hypot(dx, dy, dz) || 1, push = SERVE.push * this.serveW * (1 + (TENSE.serve - 1) * this.tenseW) + SET.push * this.setW + POINT.push * this.pointW * this.pointBig
+      + TENSE.push * this.tenseW + CRESCENDO.push * this.climbW * (1 - this.tenseW * .5);
     eye.x += dx / d * push; eye.y += dy / d * push - SERVE.down * this.serveW; eye.z += dz / d * push;
     // The player's pan: the look turned about the eye.
     dx = look.x - eye.x; dz = look.z - eye.z;
@@ -156,7 +176,7 @@ export class SpikeCam {
     this.punch += (this.punchGoal - this.punch) * ease(this.punch < this.punchGoal ? PUNCH_IN : PUNCH_BACK * 2, dt);
     this.trauma = Math.max(0, this.trauma - 2.6 * dt);
     const base = aspect > WIDE_ASPECT ? STAND.fov - 12 : aspect < NARROW_ASPECT ? STAND.fov + 6 : STAND.fov;
-    this.fov = base - POINT.fov * this.pointW * this.pointBig - this.punch;
+    this.fov = base - POINT.fov * this.pointW * this.pointBig - this.punch - TENSE.fov * this.tenseW - CRESCENDO.fov * this.climbW * (1 - this.tenseW * .5);
     this.placed = true;
     this.handed = heading;
     return heading;
@@ -173,6 +193,14 @@ export class SpikeCam {
     rig.movementYaw = this.yaw;
   }
 
+  /** Whether a side is a point from the match (match point), or the score is tied at one short of the target or past it
+   *  (DEUCE). */
+  static onTheEdge(view: BallView) {
+    const {red, blue} = view.score, target = view.target, cap = Math.max(target, SPIKE_RULES.cap + (target - SPIKE_RULES.target));
+    if (view.practice || target >= 99) return false;
+    const point = (s: number, o: number) => s + 1 >= cap || (s + 1 >= target && s + 1 - o >= 2);
+    return point(red, blue) || point(blue, red) || (red === blue && red >= target - 1);
+  }
   /** The eye and look this frame, for checks. */
   pose() { return {eye: this.eye, look: this.look, fov: this.fov, yaw: this.yaw}; }
 

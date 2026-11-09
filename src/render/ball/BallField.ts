@@ -663,7 +663,8 @@ export class BallField {
     this.tags.update(view.seats,selfId,this.where,!replaying&&view.phase!=='lobby'&&view.phase!=='over');
     this.charms.update(view,snapshot.players,this.shown?this.drawn:null,step,serverTime);
     // FEVER (Sky Spike) and OVERTIME (Goal Rush): the place at its peak while they last, the crowd on its feet.
-    const peak=(view.mode==='sky-spike'?view.fever:view.overtime)&&view.phase!=='over'?1:0;
+    // (Goal Rush's FINAL PUSH too - its `fever`.)
+    const peak=(view.mode==='sky-spike'?view.fever:view.overtime||view.fever)&&view.phase!=='over'?1:0;
     arenaMood.value+=(peak-arenaMood.value)*Math.min(1,step*2.5);
     crowdHype.value=Math.max(arenaMood.value*.45,crowdHype.value-step*.3);
   }
@@ -990,8 +991,10 @@ export class BallField {
         // it, sparks flung on with the ball, all by how hard it was struck - a tap's a spark, a power shot's a blast. A
         // spike struck high over the net is struck as hard as anything. (The ink puffs that stood over the striker like
         // black rocks for half a second are gone: paper clouds kicked back off the ball instead.)
-        const sky=e.text==='SKY SPIKE'||e.text==='ROLL SPIKE',s=sky?.9:strikePower(e.value),d=this.shotDirection(view,e);
-        this.hit(e.x,e.y,e.z,d.x,d.y,d.z,s,team,s>.45);
+        // (Goal Rush's PERFECT STRIKE is struck gold, a blast whatever its speed, with a gold burst and shock.)
+        const sky=e.text==='SKY SPIKE'||e.text==='ROLL SPIKE',gold=!!e.perfect&&!sky,s=sky?.9:gold?Math.max(.95,strikePower(e.value)):strikePower(e.value),d=this.shotDirection(view,e);
+        this.hit(e.x,e.y,e.z,d.x,d.y,d.z,s,gold?GOLD:team,s>.45);
+        if(gold){this.fx.spawn(K.burst,e.x,e.y,e.z,0,0,0,.35,1.2,3.6,GOLD,1);this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.5,.8,6,GOLD,1);}
         this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.16,1+s*1.6,.4,WHITE,.9);this.flash=Math.max(this.flash,.45+.45*Math.min(1,s));
         // A LINK SHOT's setter's colour through it; a flair shot's gold.
         if(e.text==='LINK SHOT'){const setter=this.fighterOf(view,e.assistId);if(setter)this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.4,.6,4.5,fighterColour(setter,this.linkB),1);}
@@ -1067,6 +1070,8 @@ export class BallField {
       case 'net':this.fx.spawn(K.shock,e.x,e.y,0,0,0,0,.35,.4,2.8,WHITE,.9);this.clouds(e.x,e.y,0,n(3),PAPER,2,.3,.9);break;
       case 'rally':this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.5,1,4.5,GOLD,1);this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.35,3,1,GOLD,1);break;
       case 'fever':{
+        // (Goal Rush's FINAL PUSH has the place at its peak, not Sky Spike's petals.)
+        if(view.mode==='goal-rush')break;
         // FEVER: petals burst from the ball and blow in off all four trees.
         this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.8,2,12,PINK,1);
         for(let i=0;i<n(70);i++){const v=this.randomDirection(4+Math.random()*7),o=this.fx.spawn(K.petal,e.x,e.y,e.z,v.x,v.y,v.z,3+Math.random()*1.5,.2,.18,PINK,1);const d=this.fx.data;d[o+DRAG]=1.8;d[o+GRAV]=1.2;d[o+FLAGS]=FLUTTER;d[o+SPIN]=(Math.random()-.5)*8;}

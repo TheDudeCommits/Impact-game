@@ -56,3 +56,38 @@
 @keyframes bu-chat-in{from{opacity:0;transform:translate(-14px,-50%)}to{opacity:1;transform:translateY(-50%)}}
 .ball-ui button:focus-visible,.ball-ui button:hover{filter:brightness(1.2);outline:none;box-shadow:inset 0 -4px 0 #ffcf5a}
 @media(max-width:640px){.ball-ui .bu-teams,.ball-ui .bu-teams.results{grid-template-columns:1fr}.ball-ui .bu-vs{display:none}.ball-ui .bu-card{padding:16px 14px}}
+/* The results read at a glance - what the match paid (the shop's pay block, ballPay.ts) in
+   a band over PLAY AGAIN, and how near the next ranked stamp or drill medal is, under the score. */
+.ball-ui .bu-pay{flex:1 1 100%;order:-1;min-width:0}
+.ball-ui .bu-pay.hidden{display:none}
+.ball-ui .bu-pay .pay{box-sizing:border-box;width:100%;border:0;background:#0b0c0e;clip-path:polygon(.8% 0,100% 0,99.2% 100%,0 100%);padding:10px 22px}
+.ball-ui .bu-next{display:grid;grid-template-columns:auto auto minmax(90px,12vw);align-items:center;gap:4px 10px;width:max-content;max-width:100%;margin:10px auto 0;font:italic 900 17px/1 Impact,sans-serif}
+.ball-ui .bu-next b{font:800 13px/1 'Barlow Condensed',sans-serif;letter-spacing:.18em;color:#d51d34}
+.ball-ui .bu-next span{display:flex;align-items:center;gap:6px}
+.ball-ui .bu-next em{font:800 12px/1 'Barlow Condensed',sans-serif;font-style:normal;letter-spacing:.08em;padding:2px 5px;color:#fff}
+.ball-ui .bu-next em.up{background:#2b6e3f}.ball-ui .bu-next em.down{background:#d51d34}
+.ball-ui .bu-next i{display:block;height:8px;border:2px solid #0b0c0e;background:#fff}
+.ball-ui .bu-next u{display:block;height:100%;background:#0b0c0e}
+.ball-ui .bu-next small{grid-column:1/-1;justify-self:center;font:800 12px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;color:#5b554b}
+@media(max-width:640px){.ball-ui .bu-pay .pay{grid-template-columns:auto minmax(0,1fr);padding:8px 12px}}
+/* A phone on its side (390 px tall) would have PLAY AGAIN two screens down the card: the header packs into a line or
+   two, and the buttons (with what the match paid, its lines folded away) stay pinned to the card's foot. */
+@media(max-height:500px){
+  .ball-ui{padding:6px 10px}
+  .ball-ui .bu-card{padding:10px 16px 0}
+  .ball-ui header{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:2px 14px;margin-bottom:8px}
+  .ball-ui header small{flex-basis:100%}
+  .ball-ui header h2{margin:0;font-size:34px}
+  .ball-ui .bu-final{margin:0;font-size:30px}
+  .ball-ui .bu-mvp,.ball-ui .bu-next{margin:0}
+  .ball-ui .bu-next{grid-template-columns:auto auto minmax(70px,14vw) auto}
+  .ball-ui .bu-next small{grid-column:auto}
+  .ball-ui .bu-side h3{font-size:18px;margin-bottom:5px}
+  .ball-ui .bu-side li{min-height:34px;padding:3px 8px 3px 3px}
+  .ball-ui .bu-face{width:28px;height:28px}
+  .ball-ui footer{position:sticky;bottom:0;z-index:2;margin:8px -16px 0;padding:8px 16px 10px;background:#fff9ef;box-shadow:0 -8px 12px -8px rgba(11,12,14,.35)}
+  .ball-ui .bu-pay .pay{padding:6px 14px}
+  .ball-ui .bu-pay :is(.pay-lines,.pay-next){display:none}
+  .ball-ui .bu-pay .pay-note{font-size:11px}
+  .ball-ui button{padding:9px 18px 10px;font-size:16px}
+}
