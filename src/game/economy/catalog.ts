@@ -22,6 +22,11 @@ export const KINDS = {
   announcer: { name: 'Announcers', one: 'Announcer', blurb: 'A different voice calling the fight.' },
   music: { name: 'Music', one: 'Album', blurb: "The game's own score." },
   place: { name: 'Places', one: 'Place', blurb: 'Stages and variants to start a run in.' },
+  // The ball modes' own: Goal Rush and Sky Spike only (game/ball/look.ts reads them).
+  ball: { name: 'Ball skins', one: 'Ball skin', blurb: 'How the ball looks to you in Goal Rush and Sky Spike: the ink football and the woven ball both.' },
+  balltrail: { name: 'Ball trails', one: 'Ball trail', blurb: 'What the ball leaves behind while it is yours. Everyone in the match sees it.' },
+  goalburst: { name: 'Goal bursts', one: 'Goal burst', blurb: 'What bursts from the net when you score, or from the court when you put a point away. Everyone sees it.' },
+  celebration: { name: 'Celebrations', one: 'Celebration', blurb: 'How you celebrate a goal or a point in the ball modes, before your victory pose.' },
 } as const;
 export type ItemKind = keyof typeof KINDS;
 /** The wheel: how many emotes are worn at once. Every other kind is worn one at a time. */
@@ -247,6 +252,24 @@ const CATALOGUE: readonly Item[] = [
   item('fighter', "bruin", "Bruin", 'epic', 'Briar Crown\'s bear from the far islands: a bearpaw cut, a grizzly thrust, a prowl in the dark - and the starless cut.', { glyph: '熊', fighter: "bruin" }),
   item('fighter', "aquilo", "Aquilo", 'epic', 'The north wind of Briar Crown: darts of air that fly like swallows, a forktail gust, a blade that skims the ground - and the Great Migration.', { glyph: '燕', fighter: "aquilo" }),
   item('fighter', "svanhild", "Svanhild", 'epic', 'The swan of Briar Crown\'s silver house: a quill of water, a wing that breaks bones, an orb of lake glass - and her swan song.', { glyph: '鵠', fighter: "svanhild" }),
+  // ---- The ball modes' gear: Goal Rush and Sky Spike only, each
+  // drawn in code (render/ball/ballCosmetics.ts, game/ball/look.ts). Appended, as everything here is: nothing above moves.
+  item('ball', 'vermilion', 'Vermilion Seal', 'rare', 'Red and paper-white panels; the woven ball lacquered red.', { glyph: '朱' }),
+  item('ball', 'night-ink', 'Night Ink', 'rare', 'White ink on black: the panels and the weave printed in reverse.', { glyph: '夜' }),
+  item('ball', 'indigo', 'Indigo Dye', 'rare', 'Indigo and undyed cotton, as a dyer\'s cloth.', { glyph: '藍' }),
+  item('ball', 'jade', 'Jade', 'epic', 'Green stone and white: the panels cut from jade, the weave from its rind.', { glyph: '翠' }),
+  item('ball', 'gold-leaf', 'Gold Leaf', 'epic', 'Black lacquer and gold leaf on every panel and strip.', { glyph: '金' }),
+  item('balltrail', 'brush', 'Brushstroke', 'rare', 'The ball\'s wake drawn as one wide stroke of black ink, your colour at its heart.', { glyph: '筆' }),
+  item('balltrail', 'embers', 'Ember Wake', 'rare', 'Sparks shaken off the ball all along its flight.', { glyph: '火' }),
+  item('balltrail', 'petals', 'Petal Wake', 'epic', 'Petals spun off behind it as it flies.', { glyph: '花' }),
+  item('balltrail', 'gold-thread', 'Gold Thread', 'epic', 'A ribbon of gold behind the ball, glinting.', { glyph: '糸' }),
+  item('goalburst', 'ink-bomb', 'Ink Bomb', 'rare', 'Black ink bursts out of the net and splashes the floor.', { glyph: '墨' }),
+  item('goalburst', 'paper-storm', 'Paper Storm', 'rare', 'Torn pages of a weekly blown out in a storm.', { glyph: '紙' }),
+  item('goalburst', 'cranes', 'Paper Cranes', 'epic', 'A flock of folded cranes takes off from the net.', { glyph: '鶴' }),
+  item('goalburst', 'thunder', 'Thunderclap', 'epic', 'Lightning strikes where the ball went in.', { glyph: '雷' }),
+  item('celebration', 'spin', 'Spin', 'rare', 'Two turns on the spot, then your victory pose.', { glyph: '回' }),
+  item('celebration', 'stand-tall', 'Stand Tall', 'rare', 'Guard up and unmoved: the wall nobody gets past.', { glyph: '壁' }),
+  item('celebration', 'showboat', 'Showboat', 'epic', 'Your own heavy blow at nothing, then your victory pose.', { glyph: '誇' }),
 ];
 
 /** An item as the shop now has it (unlocks.ts): sold for its price (`live`, and the road's too where it has a

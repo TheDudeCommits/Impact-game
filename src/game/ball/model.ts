@@ -1,5 +1,11 @@
+import type {BallArenaId} from './arenas';
 import type {FighterId, GameSnapshot, StageId, Vec3} from '../types';
 import type {BallReplay} from './replay';
+import type {BallMutator} from './mutators';
+import type {BallTrait} from './traits';
+import type {DrillView} from './drills';
+import type {SeatRank} from './ranked';
+import type {BallLook} from './look';
 
 /** The two ball modes: Goal Rush, three a side scoring on each other's goal, and Sky Spike, three a side over a net
  *  (volleyball and sepak takraw). Every attack and ability lands on the ball and only on the ball: fighters never hurt
@@ -7,7 +13,7 @@ import type {BallReplay} from './replay';
 export type BallModeId = 'goal-rush' | 'sky-spike';
 export const BALL_MODES: readonly BallModeId[] = ['goal-rush', 'sky-spike'];
 /** Bumped whenever a page and a room would disagree about the ball, its view or its messages. */
-export const BALL_PROTOCOL = 1;
+export const BALL_PROTOCOL = 2;
 export type BallTeam = 'red' | 'blue';
 export const BALL_TEAMS: readonly BallTeam[] = ['red', 'blue'];
 export const otherTeam = (team: BallTeam): BallTeam => team === 'red' ? 'blue' : 'red';
@@ -27,8 +33,9 @@ export const SHOT_NAMES: Record<ShotKind, string> = {
   dig: 'DIG', block: 'BLOCK', save: 'SAVE', header: 'HEADER',
 };
 
-/** The ball as every page draws it. `heat` 0-4 (its tier is the floor): every touch heats it, heavier blows more, and a
- *  hotter ball flies faster, burns brighter and bowls over whoever it hits. */
+/** The ball as every page draws it. `heat` 0-4.6 (its tier is the floor, 4 and over OVERDRIVE): passes and heavy blows
+ *  heat it, bounces and guards cool it, and a hotter ball flies faster and burns brighter; an OVERDRIVE ball staggers
+ *  whoever it hits. */
 export interface BallState extends Vec3 {
   vx: number; vy: number; vz: number;
   /** Spin (rad/s, a world-space axis times its rate): curves and dips the flight, and turns the drawn ball. */
@@ -47,6 +54,9 @@ export interface BallState extends Vec3 {
   /** RUMBLE's charms on the ball: its size (GIANT BALL), its gravity (FEATHER BALL), and the goal an IRON WALL seals.
    *  The flight reads them, so every page runs the same ball on. */
   size: number; grav: number; wall: BallTeam | null;
+  /** The arena's ground and air (game/ball/arenas.ts twist): the floor's friction and bounce as multipliers, and a wind
+   *  (m/s², across the place). Absent: as the mode always was. */
+  ground?: number; spring?: number; windX?: number; windZ?: number;
   /** A CLASH holds the ball until this server time (0: none): two sides' blows met it at once, and the stronger one
    *  sends it on when the clash breaks. */
   clash: number;
@@ -64,6 +74,12 @@ export interface BallSeat {
   points: number;
   /** The accolades earned this match (HAT TRICK, SAVIOR...), in the order earned, and the clashes won. */
   feats?: string[]; clashes?: number;
+  /** The fighter's ball trait (traits.ts: AERIALIST, STRIKER, WALL, PLAYMAKER), read off their kit. */
+  trait?: BallTrait;
+  /** RANKED: a person's standing when the match began, and at the end the change (ranked.ts). */
+  rank?: SeatRank;
+  /** The ball gear the seat wears (look.ts): ball skin, trail, goal burst, celebration. */
+  look?: BallLook;
 }
 
 export interface BallEvent {
@@ -71,7 +87,7 @@ export interface BallEvent {
   kind: 'goal' | 'own-goal' | 'save' | 'shot' | 'post' | 'kickoff' | 'overtime' | 'point' | 'ace' | 'kill' | 'block' | 'fault'
     | 'out' | 'net' | 'touches' | 'rally' | 'fever' | 'super' | 'bowled' | 'perfect' | 'serve' | 'side-out' | 'match-point'
     | 'demo' | 'strike' | 'win'
-    /** A feat (HAT TRICK, AERIAL GOAL, SAVIOR...: the accolades), and a bot's line (its quick chat). */
+    /** A feat (HAT TRICK, AERIAL GOAL, SAVIOR...: the match's accolades), and a bot's line (its quick chat). */
     | 'accolade' | 'chat'
     /** RUMBLE: a charm grabbed, and one that saved a goal or a point (IRON WALL, SAFETY NET). */
     | 'charm' | 'shield'
@@ -114,6 +130,8 @@ export interface BallView {
   /** RUMBLE: charms appear on the field and fire for whoever runs
    *  through one. The charms lying there, and the ones working now. */
   rumble: boolean; charms: BallCharm[]; effects: BallEffect[];
+  /** Which of the mode's arenas the match is played in (game/ball/arenas.ts): its look, and its twist on the ball. */
+  arena?: BallArenaId;
   /** FREE PLAY: one person and the ball, no clock, no end. Goal Rush puts the ball back on
    *  the spot after each goal; Sky Spike's ball machine on the far side keeps sending balls over. `best` is the fastest
    *  strike so far (m/s). */
@@ -122,7 +140,19 @@ export interface BallView {
    *  onto (Sky Spike: on the far court's floor), and the targets hit, the streak and the best streak. */
   aim: {x: number; y: number; z: number; r: number; floor: boolean} | null; hits: number; streak: number; bestStreak: number;
   party?: boolean; autoStart?: boolean;
+  /** A mutator (mutators.ts: HEAT RUSH, LOW GRAVITY, GIANT BALL, SUDDEN DEATH), or none: CLASSIC or RUMBLE. */
+  mutator?: BallMutator | null;
+  /** FREE PLAY's training drill (drills.ts): which, which ball, the results, the medal once it is over. */
+  drill?: DrillView | null;
+  /** RANKED (ranked.ts): a ranked queue's room, and whether the people at kickoff made the match ranked. */
+  ranked?: boolean;
 }
+/** The events that end a Sky Spike rally, by how (a page's sound reads them: src/audio/ballAudio.ts): a point won outright -
+ *  a kill, an ace off the serve, a point - and a point given away (out, four touches, a fault). */
+export const POINT_WON: ReadonlySet<BallEvent['kind']> = new Set(['kill', 'ace', 'point']);
+export const POINT_GIVEN: ReadonlySet<BallEvent['kind']> = new Set(['out', 'touches', 'fault']);
+/** A point won straight off the serve. */
+export const servedPoint = (e: Pick<BallEvent, 'kind'>) => e.kind === 'ace';
 export type BallSnapshot = GameSnapshot & {ball: BallView; receipt?: {matchId: string; reward?: GameSnapshot['reward']}};
 export const ballOf = (snapshot: GameSnapshot | null | undefined): BallView | undefined => (snapshot as BallSnapshot | undefined)?.ball;
 /** What a ball match adds to a seat's match report (economy/earn.ts MatchReport): the mode, what they scored (Goal Rush's
@@ -179,11 +209,20 @@ export const BALL_STAGE: Record<BallModeId, StageId> = {'goal-rush': 'ball-pitch
 /** Shared numbers. Every speed is metres a second, every time seconds. */
 export const BALL_RULES = {
   capacity: 6, teamSize: 3, countdown: 3, snapshotHz: 30,
-  /** Heat each slot adds to the ball, the most it holds, and how fast it cools when nobody heats it. */
-  heatPer: {light: .22, heavy: .8, special: 1.15, ultimate: 4, area: .9} as Record<string, number>,
-  heatMax: 4, heatCool: .22,
-  /** A tier-2 ball at this speed bowls over an opponent who is not guarding. */
-  bowlSpeed: 24, bowlTier: 3,
+  /** Heat each slot adds to the ball, the most it holds, and how fast it cools when nobody heats it. The most is past
+   *  tier 4 (OVERDRIVE starts at 4), so an OVERDRIVE ball burns for a moment before it cools back under it. Heat builds from
+   *  passes and heavies and falls at every bounce and guard, so OVERDRIVE is a few moments a match, not the ball's usual
+   *  state. */
+  heatPer: {light: .15, heavy: .65, special: .85, ultimate: 4.6, area: .7} as Record<string, number>,
+  heatMax: 4.6, heatCool: .22,
+  /** What a bounce off the floor (harder than `bounceFrom` m/s) and a guard (a save, a block) take off the ball's heat. */
+  bounceHeat: .25, bounceFrom: 2.5, guardHeat: 1,
+  /** A pass completed: a strike by a team-mate of the side's last striker, inside `passWithin` s (the heat it adds is
+   *  each mode's `passHeat`). */
+  passWithin: 3.5,
+  /** An OVERDRIVE ball (tier 4) at this speed staggers an opponent who is not guarding for `staggerSeconds` (a SUPER
+   *  SHOT bulldozes instead: GOAL_RULES and BallMatch). Once a body is staggered, not again for `staggerGap`. */
+  bowlSpeed: 24, bowlTier: 4, staggerSeconds: .4, staggerGap: 1.2,
   /** How long a blow on the ball has to wait before the same cast may strike it again. */
   restrike: .1,
 } as const;
@@ -193,8 +232,8 @@ export const BALL_RULES = {
  *  more; a little luck either way) sends it on `boost` times harder and `heat` hotter. The next can't come for `gap` s. */
 export const CLASH = {window: .22, hold: .5, freeze: .34, boost: 1.2, heat: 1, gap: 2} as const;
 
-/** Goal Rush. The pitch is a walled box with chamfered corners and a goal sunk into each end wall,
- *  sized to a fighter's run (7.5 m/s). */
+/** Goal Rush. The pitch is a walled box with chamfered corners and a goal sunk into each end wall, sized to
+ *  a fighter's run (7.5 m/s). */
 export const GOAL_RULES = {
   halfX: 18, halfZ: 26, wall: 10, ceiling: 17, corner: 4.5,
   goalHalfWidth: 4.6, goalHeight: 4.3, goalDepth: 3.4, post: .28,
@@ -202,8 +241,11 @@ export const GOAL_RULES = {
   /** The ball's top speed at each heat tier. */
   speedCap: [24, 29, 34, 41, 50],
   matchSeconds: 240, kickoffSeconds: 3, goalSeconds: 4.2,
-  /** Overtime's ball heats by itself, so a tied match always ends. */
+  /** Overtime's ball heats by itself (its heat can't fall under this many a second of overtime), so a tied match
+   *  always ends. */
   overtimeHeat: .05,
+  /** Heat a completed pass adds (BALL_RULES.passWithin). */
+  passHeat: .5,
   /** A super shot's goal counts twice. */
   superGoal: 2,
 } as const;
@@ -220,7 +262,14 @@ export const SPIKE_RULES = {
   /** The rally at which the ball starts to heat by itself, and at which FEVER makes every point worth two. */
   rallyHeat: 5, fever: 10,
   target: 11, cap: 15,
-  serveSeconds: 7, pointSeconds: 3.2,
+  /** Heat a completed pass adds (a bump to a set, a set to a spike); every blow's own heat counts this share of what it
+   *  would in Goal Rush (a rally crosses the net with three touches, all of them in the air); a SKY SPIKE's own heat. A
+   *  rally builds to OVERDRIVE around FEVER, not by its third crossing. */
+  passHeat: .1, heatShare: .75, skySpikeHeat: .4,
+  /** The serve's walk-up (it serves itself after this), and the point's beat before the next serve. The scorer's
+   *  celebration plays on into the walk-up for `celebrateSeconds` (Sky Spike was live for only 53-56% of a
+   *  match). */
+  serveSeconds: 5, pointSeconds: .8, celebrateSeconds: 2,
   /** Where a serve's ball hangs: this far in front of the server, this high. */
   serveAhead: 1.1, serveHeight: 1.75,
 } as const;

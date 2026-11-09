@@ -1,0 +1,1346 @@
+{
+ "version": 1,
+ "note": "Goal Rush and Sky Spike: every sound made for the ball modes, synthesised or layered from CC0 sources (Kenney's Impact, Sci-Fi and Interface Sounds; the game's crowd bed). Public-safe.",
+ "assets": [
+  {
+   "id": "strike-tap-1",
+   "file": "/assets/audio/ball/strike-tap-1.m4a",
+   "family": "light",
+   "design": "A light touch: a pass, a bump or a set. The leather pocked off a foot or a forearm.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactSoft_medium_000.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "7d3ba0bb5e60a11b5d3e558c141303dcf494256675fbf753c0d252d2cf0481e3"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.213,
+   "lufsMomentaryMax": -21.9,
+   "lufsIntegrated": -22.0,
+   "truePeakDbfs": -1.9,
+   "sha256": "45b69376bc4ef0eb506bc3bd179c0af5477bcd2a356c10f4e629741295ea4e20"
+  },
+  {
+   "id": "strike-tap-2",
+   "file": "/assets/audio/ball/strike-tap-2.m4a",
+   "family": "light",
+   "design": "A light touch, a second take: a little lower and softer.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactSoft_medium_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "5069e3571a77d7f7aae9ef71d0364aa245fb7d64a7c8cc9956f221d03088c089"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.235,
+   "lufsMomentaryMax": -22.1,
+   "lufsIntegrated": -22.1,
+   "truePeakDbfs": -1.7,
+   "sha256": "25c63c5b6781b33c79feea4ee9811410448aa2eab3589bc7e4050493793faef0"
+  },
+  {
+   "id": "strike-power-1",
+   "file": "/assets/audio/ball/strike-power-1.m4a",
+   "family": "impact",
+   "design": "A power shot: a full boot through the ball, the thump of it in the chest and the air torn behind it.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactPunch_heavy_000.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "b33a8f14068aec24ec69ba85e5e87fdc41228975f6a1a3e44a6e7d6fc3d9f8d8"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.661,
+   "lufsMomentaryMax": -15.8,
+   "lufsIntegrated": -19.6,
+   "truePeakDbfs": -1.6,
+   "sha256": "f700ab838134e6348d1cb5643ca79416ad7fa5db9dee05e53953f6f053d513a9"
+  },
+  {
+   "id": "strike-power-2",
+   "file": "/assets/audio/ball/strike-power-2.m4a",
+   "family": "impact",
+   "design": "A power shot, a second take: heavier in the low end.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactPunch_heavy_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "7993dd4c156b9979ad69f17be5ebe31850b16039a3857f8477141be54dfee1b3"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.683,
+   "lufsMomentaryMax": -15.9,
+   "lufsIntegrated": -19.0,
+   "truePeakDbfs": -1.8,
+   "sha256": "8f1f3b8261927a858ca8ff2ece0dc30fb7d44c9040791117217371be06577110"
+  },
+  {
+   "id": "strike-volley",
+   "file": "/assets/audio/ball/strike-volley.m4a",
+   "family": "impact",
+   "design": "A volley: struck in the air, crisp and high, the ball snapping away.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactPunch_medium_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "e71d23abcc3f10d9d6bc9615b2a431fff70b12333a5fcdd9964457564ace4349"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.661,
+   "lufsMomentaryMax": -15.7,
+   "lufsIntegrated": -18.6,
+   "truePeakDbfs": -1.6,
+   "sha256": "5a1fd2c563c6d49c57e9cae7ed6203286ccb73806afbbb866f253a03455d9109"
+  },
+  {
+   "id": "strike-curve",
+   "file": "/assets/audio/ball/strike-curve.m4a",
+   "family": "impact",
+   "design": "A curve or a sinker: the strike, then the spin whirring the ball round its bend.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactPunch_medium_003.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "2d7c719c05999e0532f4384e1018e04cd916db715140bf16dee2dff3f820e908"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.981,
+   "lufsMomentaryMax": -14.5,
+   "lufsIntegrated": -18.6,
+   "truePeakDbfs": -1.9,
+   "sha256": "02f868b37afaf684b5cae174fe4e56cf662bc0b212054c8f8429cb15cd0a5b02"
+  },
+  {
+   "id": "strike-blast",
+   "file": "/assets/audio/ball/strike-blast.m4a",
+   "family": "impact",
+   "design": "A blast: a beam or a shot of energy striking the ball, a zap over the thump.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/forceField_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "5574e69dd04e5f59322c5ddffde5978f077b09170ae5e29cec0bd9901828cd90"
+    },
+    {
+     "file": "kenney-sci-fi/laserLarge_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "e678aca631495b7dfef4ac625f0349875ccac81a60f538d530e072241af3e4bd"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.661,
+   "lufsMomentaryMax": -14.5,
+   "lufsIntegrated": -17.7,
+   "truePeakDbfs": -1.6,
+   "sha256": "85bcb90b0546e41ec13a57b287de8df1c8ee390f88b822e99f6936660c4af47f"
+  },
+  {
+   "id": "strike-eruption",
+   "file": "/assets/audio/ball/strike-eruption.m4a",
+   "family": "impact",
+   "design": "An eruption: an area move under the ball, the ground going up with it.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactMining_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "059558ec751115ca6b1441e00f0adc837c1a3eeb0a066b109e0fd879fc5d0b0c"
+    },
+    {
+     "file": "kenney-sci-fi/lowFrequency_explosion_000.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "3cb48d86dab63140cfb9aaeea4d4a6846abaca5831d157d8adbec0490da26343"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.259,
+   "lufsMomentaryMax": -14.8,
+   "lufsIntegrated": -18.6,
+   "truePeakDbfs": -1.5,
+   "sha256": "9f8957016d4a857f89b507623faad8ea0044df2b74c67d6b6e1b221cb1ffa26e"
+  },
+  {
+   "id": "strike-super",
+   "file": "/assets/audio/ball/strike-super.m4a",
+   "family": "impact",
+   "design": "SUPER SHOT: an ultimate driven through the ball. A sub drop, a detonation, a whip-crack and a ring that hangs.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactPunch_heavy_004.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "f4c0c3eb8ab6517583b8218ed03f28923d1b687379aab4c1d5a6d4c10cf8e500"
+    },
+    {
+     "file": "kenney-sci-fi/explosionCrunch_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "be2b8ddc62e4a24c91e2e77793de98549ce216faf2f323a917e7d6f34321ff97"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 2.069,
+   "lufsMomentaryMax": -14.3,
+   "lufsIntegrated": -19.0,
+   "truePeakDbfs": -1.5,
+   "sha256": "bc744edec529834fc00bedb49878633b28a93e5c83f12a73581deed554c3304a"
+  },
+  {
+   "id": "strike-dig",
+   "file": "/assets/audio/ball/strike-dig.m4a",
+   "family": "light",
+   "design": "A dig: a hard ball taken low on the forearms, a dull slap and a lift.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactSoft_heavy_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "4d0096364ba9e46119d2ff6df493fdc101bd2e1efae061da5e5f77a53b3fdcb6"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.384,
+   "lufsMomentaryMax": -21.5,
+   "lufsIntegrated": -23.9,
+   "truePeakDbfs": -1.6,
+   "sha256": "b9b517a2664bb5e608bf64d68d420ad2d9af97414e46c9a3999716d85346ff1d"
+  },
+  {
+   "id": "bounce-turf-soft",
+   "file": "/assets/audio/ball/bounce-turf-soft.m4a",
+   "family": "bounce",
+   "design": "The ball dropping onto the Ink Bowl's turf: a soft thud and the grass under it.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/footstep_grass_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "fb28781bd22b2eefdc14077f1adf5c94d7fe9c3a130194633b55f3e0d39d9f04"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.256,
+   "lufsMomentaryMax": -20.1,
+   "lufsIntegrated": -22.6,
+   "truePeakDbfs": -1.8,
+   "sha256": "2c180df937568011cb8e5b7f04d96fe39f2337f6c928987a977d2912f32be9a4"
+  },
+  {
+   "id": "bounce-turf-hard",
+   "file": "/assets/audio/ball/bounce-turf-hard.m4a",
+   "family": "bounce",
+   "design": "A fast ball slammed into the turf: a heavier thud, the ball's skin ringing.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/footstep_grass_003.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "0546e1d8ab2def714425701a18bd34c5ee2794b12e858e5b595aabcf38a34137"
+    },
+    {
+     "file": "kenney-impact/impactSoft_heavy_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "d130ae541951243d3f6ed963d0057450a445ffe117fbf9a084d34eb1635cb563"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.405,
+   "lufsMomentaryMax": -19.6,
+   "lufsIntegrated": -21.6,
+   "truePeakDbfs": -1.9,
+   "sha256": "01f3d9d77197d020419581d509f2e5e34ffcb635d104f342807d1c5f2c326788"
+  },
+  {
+   "id": "bounce-glass-1",
+   "file": "/assets/audio/ball/bounce-glass-1.m4a",
+   "family": "bounce",
+   "design": "Off the Ink Bowl's glass walls: the thump of the ball, the pane shivering in its frame.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactGlass_medium_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "d3d806cb3012c9ddd87010b30295ccb74d6d8b690077d19e67afd09a9d8feb03"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.661,
+   "lufsMomentaryMax": -17.2,
+   "lufsIntegrated": -21.2,
+   "truePeakDbfs": -1.9,
+   "sha256": "7ba652d74d3fc0440e41ea4c245d96d5d8902b65ae94b64399718a6c6607025f"
+  },
+  {
+   "id": "bounce-glass-2",
+   "file": "/assets/audio/ball/bounce-glass-2.m4a",
+   "family": "bounce",
+   "design": "Off the glass, a second take: a bigger pane, lower.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactGlass_heavy_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "4978654ac840ad519692d5d5ba48a8101cabce13b9a577be73ad589185e5e9ed"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.853,
+   "lufsMomentaryMax": -17.2,
+   "lufsIntegrated": -21.2,
+   "truePeakDbfs": -1.8,
+   "sha256": "aa36623cccfb710bec25288d212b009096eb0998ce0b3e0456d95d11c6637d92"
+  },
+  {
+   "id": "bounce-wood-soft",
+   "file": "/assets/audio/ball/bounce-wood-soft.m4a",
+   "family": "bounce",
+   "design": "The Sky Court's planks: a ball coming down soft, the hollow boom of a sprung floor.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactWood_medium_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "3f3f1917428b828f733a963167833c707bf88296ff158e1559c57c5cb813d799"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.448,
+   "lufsMomentaryMax": -17.3,
+   "lufsIntegrated": -19.1,
+   "truePeakDbfs": -1.6,
+   "sha256": "f7cdd444ff8e23c48c7449885da159d84141dad7ea88338d75943838fc7d6f46"
+  },
+  {
+   "id": "bounce-wood-hard",
+   "file": "/assets/audio/ball/bounce-wood-hard.m4a",
+   "family": "bounce",
+   "design": "A spike hammered into the planks: a sharp crack of wood and the floor booming under it.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactPlank_medium_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "d7c304319f8beac616231b62041fa8da74045b62d7155965516efb9b19303df4"
+    },
+    {
+     "file": "kenney-impact/impactWood_heavy_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "f1b07a53ac10c615fff9ba470511fdeb722b5902e1a8520759fc20ad6f546015"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.491,
+   "lufsMomentaryMax": -17.8,
+   "lufsIntegrated": -21.1,
+   "truePeakDbfs": -1.8,
+   "sha256": "e6a3883d4aa3c5da7e6c33115e8e216164387aba3d4f5928df6ec7a63c05d86c"
+  },
+  {
+   "id": "bounce-net",
+   "file": "/assets/audio/ball/bounce-net.m4a",
+   "family": "bounce",
+   "design": "Into the net: the mesh taking the ball with a rattling swish.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.747,
+   "lufsMomentaryMax": -16.8,
+   "lufsIntegrated": -20.3,
+   "truePeakDbfs": -1.5,
+   "sha256": "7a52894555c843d48c5c7e6fe3e893a55c43c102c839630de12d1080921519b3"
+  },
+  {
+   "id": "bounce-cord",
+   "file": "/assets/audio/ball/bounce-cord.m4a",
+   "family": "bounce",
+   "design": "Off the net's top cord: a taut rope twanging.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.853,
+   "lufsMomentaryMax": -16.3,
+   "lufsIntegrated": -19.7,
+   "truePeakDbfs": -1.6,
+   "sha256": "47c8cc4f603aaf1e4d95a2f7659f525050f2041e5327fce54424873ecd582696"
+  },
+  {
+   "id": "bounce-dome",
+   "file": "/assets/audio/ball/bounce-dome.m4a",
+   "family": "bounce",
+   "design": "Off the Sky Court's stone dome: a hard knock rolling round the vault.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactMining_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "61235a18de3f3d92118235398222dbf51d448f1be70b1c8bc962b10b86f2d9c6"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.984,
+   "lufsMomentaryMax": -16.2,
+   "lufsIntegrated": -21.6,
+   "truePeakDbfs": -1.8,
+   "sha256": "d2b630c3abbad4fef6b4104db575dabfd6b4e43d6bb3262b05583a3d4cb89cbd"
+  },
+  {
+   "id": "post",
+   "file": "/assets/audio/ball/post.m4a",
+   "family": "impact",
+   "design": "OFF THE POST: the ball rings the steel post, a clang that sings on.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactBell_heavy_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "9df61e3ae9a83dc65e5a1fd3ed19d480876f3b22b963a1b9ef6fa293592dcec4"
+    },
+    {
+     "file": "kenney-impact/impactMetal_heavy_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "b914c8f1eb7c0f34bb165d7c77f4be0351f6be0660c13c53e65424e262e2c093"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.856,
+   "lufsMomentaryMax": -14.0,
+   "lufsIntegrated": -19.8,
+   "truePeakDbfs": -1.1,
+   "sha256": "da20a1c571688521c521bdf7bab5dacf301c7cdfe85991a7e7d85be5d1c2a242"
+  },
+  {
+   "id": "bar",
+   "file": "/assets/audio/ball/bar.m4a",
+   "family": "impact",
+   "design": "CROSSBAR: higher and longer, the bar humming across the goal's mouth.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactBell_heavy_003.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "5572ccdeb3b62373b86fa955355b3a222c36e815f0636ba16165189a21cf2514"
+    },
+    {
+     "file": "kenney-impact/impactMetal_heavy_000.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "e07045693e4a2b3d165c424e3dab4c781d9ff8880a386880ac89a51315d7f831"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 2.048,
+   "lufsMomentaryMax": -14.0,
+   "lufsIntegrated": -20.1,
+   "truePeakDbfs": -1.2,
+   "sha256": "7cf338940b5ca39205f277b2ee71ff34801813790ed1c9e76ba1e5745f93c1cd"
+  },
+  {
+   "id": "goal-net",
+   "file": "/assets/audio/ball/goal-net.m4a",
+   "family": "bounce",
+   "design": "The ball in the back of the net: the netting billowing, its ropes rustling, a soft thump of the give.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.152,
+   "lufsMomentaryMax": -16.2,
+   "lufsIntegrated": -20.9,
+   "truePeakDbfs": -1.2,
+   "sha256": "bb7599e19d0c4384ad3cc56d6d9241bf7cbb556a12ac26b111aa04f0ff74123c"
+  },
+  {
+   "id": "whistle-kickoff",
+   "file": "/assets/audio/ball/whistle-kickoff.m4a",
+   "family": "whistle",
+   "design": "Kickoff: one firm blast.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.981,
+   "lufsMomentaryMax": -16.0,
+   "lufsIntegrated": -18.0,
+   "truePeakDbfs": -11.4,
+   "sha256": "3eaecdf602a4c508c22ba3115e9830a9c522cff8ed8bb7aac965c524d203131e"
+  },
+  {
+   "id": "whistle-goal",
+   "file": "/assets/audio/ball/whistle-goal.m4a",
+   "family": "whistle",
+   "design": "A goal: one long blast.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.6,
+   "lufsMomentaryMax": -16.0,
+   "lufsIntegrated": -17.3,
+   "truePeakDbfs": -11.8,
+   "sha256": "5db3b5921b3429db483e4e0a3173abe685d57f01f50b170e0ead1c0a54f203f3"
+  },
+  {
+   "id": "whistle-overtime",
+   "file": "/assets/audio/ball/whistle-overtime.m4a",
+   "family": "whistle",
+   "design": "OVERTIME: two short and a long.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.792,
+   "lufsMomentaryMax": -16.0,
+   "lufsIntegrated": -18.0,
+   "truePeakDbfs": -12.8,
+   "sha256": "f5e135297ad859ee17f02f88200243f1085a6e14a10eccf1a03afeb568eb811a"
+  },
+  {
+   "id": "whistle-fulltime",
+   "file": "/assets/audio/ball/whistle-fulltime.m4a",
+   "family": "whistle",
+   "design": "Full time: short, short, long.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 2.304,
+   "lufsMomentaryMax": -16.0,
+   "lufsIntegrated": -17.5,
+   "truePeakDbfs": -11.5,
+   "sha256": "37bcc9d465e1a6799d43e36d3bdfba57e57b7f2dd256e7480a1f02fefe31c7d9"
+  },
+  {
+   "id": "whistle-serve",
+   "file": "/assets/audio/ball/whistle-serve.m4a",
+   "family": "whistle",
+   "design": "Sky Spike's serve: a quick chirp, a little higher.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.747,
+   "lufsMomentaryMax": -16.0,
+   "lufsIntegrated": -19.0,
+   "truePeakDbfs": -9.0,
+   "sha256": "1cbbc7d01b11daf672ce914cd18c5bad01955d34f04acbe82b9027e4295f64fc"
+  },
+  {
+   "id": "whistle-point",
+   "file": "/assets/audio/ball/whistle-point.m4a",
+   "family": "whistle",
+   "design": "A point down: one short blast.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.853,
+   "lufsMomentaryMax": -16.0,
+   "lufsIntegrated": -17.7,
+   "truePeakDbfs": -9.9,
+   "sha256": "945d9689949a87c75ccb9d9bd27371bde37c7ea9bf5a55c93695271e48e4f668"
+  },
+  {
+   "id": "whistle-sideout",
+   "file": "/assets/audio/ball/whistle-sideout.m4a",
+   "family": "whistle",
+   "design": "A side-out: the serve changes hands, two quick blasts.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.896,
+   "lufsMomentaryMax": -16.0,
+   "lufsIntegrated": -18.8,
+   "truePeakDbfs": -8.7,
+   "sha256": "27e54be8c827ef09c144a1ff8152c8191bf8f56f3b0559bb402f63b0e8741ade"
+  },
+  {
+   "id": "heat-1",
+   "file": "/assets/audio/ball/heat-1.m4a",
+   "family": "accent",
+   "design": "The ball catching heat, tier 1: a small flame taking.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/thrusterFire_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "924636edc923fe4aab5829b69dc5dc1c5d659dec5739865434dabee752a3bb79"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.811,
+   "lufsMomentaryMax": -17.1,
+   "lufsIntegrated": -21.8,
+   "truePeakDbfs": -3.8,
+   "sha256": "80a507c9e4a56b7a106416975dc727b54418991599cf4801c386eac85b12f3ad"
+  },
+  {
+   "id": "heat-2",
+   "file": "/assets/audio/ball/heat-2.m4a",
+   "family": "accent",
+   "design": "Tier 2: the flame climbing, brighter.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/thrusterFire_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "924636edc923fe4aab5829b69dc5dc1c5d659dec5739865434dabee752a3bb79"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.045,
+   "lufsMomentaryMax": -17.1,
+   "lufsIntegrated": -22.7,
+   "truePeakDbfs": -3.8,
+   "sha256": "8d6898acf085a43d7672b133144028c29d973bb95572da8298a7e74c697a82d9"
+  },
+  {
+   "id": "heat-3",
+   "file": "/assets/audio/ball/heat-3.m4a",
+   "family": "accent",
+   "design": "Tier 3: a roar going up round the ball. It bowls fighters over now.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/thrusterFire_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "924636edc923fe4aab5829b69dc5dc1c5d659dec5739865434dabee752a3bb79"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.301,
+   "lufsMomentaryMax": -17.0,
+   "lufsIntegrated": -23.4,
+   "truePeakDbfs": -4.5,
+   "sha256": "695ca03330a9cd5357931b9d45e0e02d734c79afda3cedc2e171ed29ff073897"
+  },
+  {
+   "id": "heat-4",
+   "file": "/assets/audio/ball/heat-4.m4a",
+   "family": "impact",
+   "design": "OVERDRIVE: the ball going up in a blast of flame, a sub drop under it.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/explosionCrunch_000.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "4b597d658d0ae101f0a030fbeea5fc3a4292ab85f017470a8254a8e7959cbd69"
+    },
+    {
+     "file": "kenney-sci-fi/thrusterFire_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "924636edc923fe4aab5829b69dc5dc1c5d659dec5739865434dabee752a3bb79"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.557,
+   "lufsMomentaryMax": -14.1,
+   "lufsIntegrated": -21.1,
+   "truePeakDbfs": -1.2,
+   "sha256": "88a7888715fc9b00cdb34a3555efc501b43715527899d7804a514c10b3eb7030"
+  },
+  {
+   "id": "overdrive-loop",
+   "file": "/assets/audio/ball/overdrive-loop.m4a",
+   "family": "loop",
+   "loop": [
+    0.3,
+    3.3
+   ],
+   "design": "OVERDRIVE's roar, held on the ball while it burns: a furnace and a turbine's whine, looped seamlessly.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/thrusterFire_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "5f7731c30196d73777d62eec7cb36a28bf63852e70244057b7625b888e71a3a8"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -19.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 3.648,
+   "lufsMomentaryMax": -19.1,
+   "lufsIntegrated": -20.5,
+   "truePeakDbfs": -6.7,
+   "sha256": "e4a69a4ee90f5eb7447e2178a199e74b4aee60314f8b4ef609b39f697fc75d83"
+  },
+  {
+   "id": "clash-charge",
+   "file": "/assets/audio/ball/clash-charge.m4a",
+   "family": "accent",
+   "design": "CLASH: two blows meeting in the ball, crackling and climbing while it hangs.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/forceField_003.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "15e3fe971ffd3415e5ab641d3a4d043fb31f6712b0956315b524ba29c3889cda"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.747,
+   "lufsMomentaryMax": -17.2,
+   "lufsIntegrated": -20.2,
+   "truePeakDbfs": -4.2,
+   "sha256": "bc61b0acb382b9b30847b22da038bb5181031ccdf6b7aa492d7d20292c94bea3"
+  },
+  {
+   "id": "clash-break",
+   "file": "/assets/audio/ball/clash-break.m4a",
+   "family": "impact",
+   "design": "The CLASH breaking: the stronger blow tearing through, a blast and the ball shot clear.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactGlass_heavy_000.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "b44b39a940e8948e74b9bd3776bff980df43cf220abdaf0d467dc4c43c0244a5"
+    },
+    {
+     "file": "kenney-sci-fi/explosionCrunch_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "fdd04d6f0032d4d57c134ad37f3587d2d00e58c9572715275bd8cf4f43593576"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.536,
+   "lufsMomentaryMax": -14.4,
+   "lufsIntegrated": -19.4,
+   "truePeakDbfs": -1.4,
+   "sha256": "5cf44f335be6852b6f199782cfa93b730186345538af5be8943367418245b598"
+  },
+  {
+   "id": "spike-crack",
+   "file": "/assets/audio/ball/spike-crack.m4a",
+   "family": "impact",
+   "design": "SKY SPIKE: the ball whipped down from above the net, a crack like a bolt and the thunder after it.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactPunch_heavy_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "f92f5cb6ba4ff2766497292ffd90865654317eeca976f5652e0708dbdcdc0dd9"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.515,
+   "lufsMomentaryMax": -14.6,
+   "lufsIntegrated": -19.8,
+   "truePeakDbfs": -0.9,
+   "sha256": "a7a2a333c0af2cfa720fada3e34ce97ac623c4b1d0c96093cf85efeef6ad434d"
+  },
+  {
+   "id": "block",
+   "file": "/assets/audio/ball/block.m4a",
+   "family": "impact",
+   "design": "A block: hands slapped up at the net, the ball smacked back.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactPunch_medium_000.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "486988aa2d6440ffc4c62a0e8ccf3c23673ba84424bd4723378d451b7255eb5c"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.277,
+   "lufsMomentaryMax": -18.8,
+   "lufsIntegrated": -21.4,
+   "truePeakDbfs": -1.6,
+   "sha256": "e1a3bb253233d5e10edd34980eb55921edc622d6ab1ce667b80170b3a4a8fde2"
+  },
+  {
+   "id": "block-stuff",
+   "file": "/assets/audio/ball/block-stuff.m4a",
+   "family": "impact",
+   "design": "STUFF BLOCK: the spike driven straight back down, a slam and the planks booming.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactPunch_heavy_003.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "4ab53b26f4ea575120dcc1348526c9e0db2afc6af7a442aa0489bdead2ca80b6"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.512,
+   "lufsMomentaryMax": -16.1,
+   "lufsIntegrated": -19.4,
+   "truePeakDbfs": -1.7,
+   "sha256": "6db57caa7494996454a486b715bff1be0f14345ea900f04f959244cbb1f0b988"
+  },
+  {
+   "id": "bowled",
+   "file": "/assets/audio/ball/bowled.m4a",
+   "family": "impact",
+   "design": "A hot ball bowling a fighter over: the body hit and thrown, the air knocked out of them.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactPunch_heavy_004.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "f4c0c3eb8ab6517583b8218ed03f28923d1b687379aab4c1d5a6d4c10cf8e500"
+    },
+    {
+     "file": "kenney-impact/impactSoft_heavy_003.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "d00286a2dc62ee5cb4d42bf56120e7050a855f69e655fc1294410aadd337eba3"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.619,
+   "lufsMomentaryMax": -15.8,
+   "lufsIntegrated": -19.2,
+   "truePeakDbfs": -1.6,
+   "sha256": "ac7c678da2692084026f2529372068296faa2590909877ccfc12afba1a7b6467"
+  },
+  {
+   "id": "charm-power",
+   "file": "/assets/audio/ball/charm-power.m4a",
+   "family": "accent",
+   "design": "KI CHARGE, KI SURGE: power welling up into the taker, a rising hum and a bright note at the top.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/forceField_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "051b0eafc479695af4ca3607d41fd4be41bae7c21f4f9508d004722b09f1bd63"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.045,
+   "lufsMomentaryMax": -17.0,
+   "lufsIntegrated": -19.0,
+   "truePeakDbfs": -3.9,
+   "sha256": "6f85c733ba5a217eeba418771133fb4446061bcf5bb9771901c80dfdd06f9c71"
+  },
+  {
+   "id": "charm-feather",
+   "file": "/assets/audio/ball/charm-feather.m4a",
+   "family": "accent",
+   "design": "FEATHER BALL: the ball going light, a shimmer floating upward.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.088,
+   "lufsMomentaryMax": -17.0,
+   "lufsIntegrated": -20.2,
+   "truePeakDbfs": -4.3,
+   "sha256": "b435379793ae5e544003c7efd2abec00c682947752b85cee144078a3c4f4568f"
+  },
+  {
+   "id": "charm-giant",
+   "file": "/assets/audio/ball/charm-giant.m4a",
+   "family": "accent",
+   "design": "GIANT BALL: the ball swelling, a deep stretching groan going down.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.152,
+   "lufsMomentaryMax": -17.0,
+   "lufsIntegrated": -21.4,
+   "truePeakDbfs": -4.5,
+   "sha256": "b649d5ff47c7faefa67246f3b7e113d1c232148d275febad76fca0ef6a37cad1"
+  },
+  {
+   "id": "charm-ice",
+   "file": "/assets/audio/ball/charm-ice.m4a",
+   "family": "accent",
+   "design": "ICE SEAL: the ball frozen in the air, frost crackling and glass chiming.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactGlass_light_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "710db7451bb7857b9140dfe6afe4621ea2188ad65eda3919c569d1bb285b933d"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.853,
+   "lufsMomentaryMax": -17.1,
+   "lufsIntegrated": -20.8,
+   "truePeakDbfs": -3.7,
+   "sha256": "2364ba0ffa2e87a8553054b03d4cec3213cdbd3f5fc55e05569ae7eb7bc53c8d"
+  },
+  {
+   "id": "charm-guard",
+   "file": "/assets/audio/ball/charm-guard.m4a",
+   "family": "accent",
+   "design": "IRON WALL, SAFETY NET: a guard going up, a field humming and a low bell.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/forceField_000.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "c2916f2a062c8ddd1aca2826d134fe90847037db31342726ffb0f9097afe339c"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.195,
+   "lufsMomentaryMax": -17.0,
+   "lufsIntegrated": -21.6,
+   "truePeakDbfs": -4.9,
+   "sha256": "526609f6a27a70c554fe32932bfe8f07c3ad5ac192a401e5c3104eca2a8228e7"
+  },
+  {
+   "id": "charm-hook",
+   "file": "/assets/audio/ball/charm-hook.m4a",
+   "family": "accent",
+   "design": "SPIRIT HOOK: a tether thrown and pulled taut, a twang and a whoosh toward the taker.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/laserSmall_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "e70139466c3e801358c9041ee17db7ff82c0e9a9cdf44647ad0ea6b9f8458f63"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.853,
+   "lufsMomentaryMax": -17.1,
+   "lufsIntegrated": -21.8,
+   "truePeakDbfs": -3.5,
+   "sha256": "d97e0bb010d334711ed2e5dfc3c9a935ab9474af9e50db7ac93622382498e41d"
+  },
+  {
+   "id": "shield-hit",
+   "file": "/assets/audio/ball/shield-hit.m4a",
+   "family": "impact",
+   "design": "A ball off an IRON WALL or a SAFETY NET: the field flaring as it throws the ball back.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/forceField_004.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "05609bb296cbc287ae95ac8924c89809d69c89d7bb357cc6a117ec1b1ef65e09"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.853,
+   "lufsMomentaryMax": -14.2,
+   "lufsIntegrated": -17.2,
+   "truePeakDbfs": -1.5,
+   "sha256": "8c0247f7cf49a2a9e46a88eb7a0e0445fe5769088c3ab69b90480feb440eee76"
+  },
+  {
+   "id": "machine-launch",
+   "file": "/assets/audio/ball/machine-launch.m4a",
+   "family": "accent",
+   "design": "The ball machine: a pneumatic thunk and a hiss of air as it lobs the next ball over.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-impact/impactMetal_light_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "fba69c467ddd85da7b1d82e259f936b876d9ba6a3d6f1b24bdd10468e46bfe08"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 0.555,
+   "lufsMomentaryMax": -18.6,
+   "lufsIntegrated": -21.1,
+   "truePeakDbfs": -1.6,
+   "sha256": "2cfb64e015a9e1e589de99f4ecba3effe7043cf6fccde3b725d8f3a0702d28b4"
+  },
+  {
+   "id": "target-hit",
+   "file": "/assets/audio/ball/target-hit.m4a",
+   "family": "accent",
+   "design": "A target hit in FREE PLAY: two bright notes going up (the game plays it higher for a streak).",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-interface/confirmation_002.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "33b17a9a9a2397c62b285c52c33a907fdffb476909c99e42dde603f6a7a8b12c"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -17.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.045,
+   "lufsMomentaryMax": -17.0,
+   "lufsIntegrated": -20.9,
+   "truePeakDbfs": -7.6,
+   "sha256": "a6bd5602adda546f15a94b8d5bf1c6108470c3019b8664a3ee43e026b36cc17c"
+  },
+  {
+   "id": "crowd-ooh-1",
+   "file": "/assets/audio/ball/crowd-ooh-1.m4a",
+   "family": "crowd",
+   "design": "The stands: \"ooooh\", a near miss or a big save, rising then falling away.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "ambience/crowd.m4a",
+     "author": "StarNinjas (the game's crowd bed)",
+     "license": "CC0 1.0"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 2.859,
+   "lufsMomentaryMax": -18.0,
+   "lufsIntegrated": -20.6,
+   "truePeakDbfs": -6.6,
+   "sha256": "f4ac7b76c1b8696f14da97af12585f147c09ddb2183b3a30cba291372d214a48"
+  },
+  {
+   "id": "crowd-ooh-2",
+   "file": "/assets/audio/ball/crowd-ooh-2.m4a",
+   "family": "crowd",
+   "design": "\"Ooooh\", a second take: shorter, more voices.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "ambience/crowd.m4a",
+     "author": "StarNinjas (the game's crowd bed)",
+     "license": "CC0 1.0"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 2.453,
+   "lufsMomentaryMax": -18.0,
+   "lufsIntegrated": -20.2,
+   "truePeakDbfs": -6.5,
+   "sha256": "7d44a38cc13f41f08159bd60450d260d5f1035af73b372880f53b686d7a00546"
+  },
+  {
+   "id": "crowd-gasp",
+   "file": "/assets/audio/ball/crowd-gasp.m4a",
+   "family": "crowd",
+   "design": "The stands gasp: a sharp breath in at the post, then a short \"oh!\".",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "ambience/crowd.m4a",
+     "author": "StarNinjas (the game's crowd bed)",
+     "license": "CC0 1.0"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.856,
+   "lufsMomentaryMax": -18.0,
+   "lufsIntegrated": -20.7,
+   "truePeakDbfs": -5.1,
+   "sha256": "dd1ac2ecad8ad105c4fd1baa46a3cc25025260da79d11561900787d1231eda07"
+  },
+  {
+   "id": "crowd-roar-1",
+   "file": "/assets/audio/ball/crowd-roar-1.m4a",
+   "family": "crowd",
+   "design": "The stands erupt: a goal or a kill, thousands on their feet shouting, clapping, whistling.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "ambience/crowd.m4a",
+     "author": "StarNinjas (the game's crowd bed)",
+     "license": "CC0 1.0"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 4.843,
+   "lufsMomentaryMax": -18.0,
+   "lufsIntegrated": -21.3,
+   "truePeakDbfs": -9.0,
+   "sha256": "ae63b343846806bb1d7904b0cde994ec92292aa40892be1c1c42d2ece0e6ae64"
+  },
+  {
+   "id": "crowd-roar-2",
+   "file": "/assets/audio/ball/crowd-roar-2.m4a",
+   "family": "crowd",
+   "design": "The roar, a second take: a bigger, longer one for the biggest goals.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "ambience/crowd.m4a",
+     "author": "StarNinjas (the game's crowd bed)",
+     "license": "CC0 1.0"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 5.44,
+   "lufsMomentaryMax": -18.1,
+   "lufsIntegrated": -21.7,
+   "truePeakDbfs": -8.9,
+   "sha256": "97ddac388d88f8726d0dcb5f99e8368addcae17f201f7d9fa872c3bef0021b77"
+  },
+  {
+   "id": "crowd-applause",
+   "file": "/assets/audio/ball/crowd-applause.m4a",
+   "family": "crowd",
+   "design": "Applause round the stands: a good save, a point won the hard way.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "ambience/crowd.m4a",
+     "author": "StarNinjas (the game's crowd bed)",
+     "license": "CC0 1.0"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 3.456,
+   "lufsMomentaryMax": -18.1,
+   "lufsIntegrated": -22.1,
+   "truePeakDbfs": -4.1,
+   "sha256": "5d46ba63005a286b5f3c0023e125dceb0eca768b8ebfcb3635aded9907bc30b4"
+  },
+  {
+   "id": "crowd-groan",
+   "file": "/assets/audio/ball/crowd-groan.m4a",
+   "family": "crowd",
+   "design": "The home stands groan: \"awww\", a chance gone or a point given away.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "ambience/crowd.m4a",
+     "author": "StarNinjas (the game's crowd bed)",
+     "license": "CC0 1.0"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 2.56,
+   "lufsMomentaryMax": -18.0,
+   "lufsIntegrated": -19.9,
+   "truePeakDbfs": -6.7,
+   "sha256": "d55d0be4ad71771a8cd1c25f63b4e3ec57200d50aafd690c2b0712ed558e2cc4"
+  },
+  {
+   "id": "crowd-jeer",
+   "file": "/assets/audio/ball/crowd-jeer.m4a",
+   "family": "crowd",
+   "design": "The home stands whistle and boo the other side's SUPER SHOT.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "ambience/crowd.m4a",
+     "author": "StarNinjas (the game's crowd bed)",
+     "license": "CC0 1.0"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 3.221,
+   "lufsMomentaryMax": -18.0,
+   "lufsIntegrated": -20.7,
+   "truePeakDbfs": -10.0,
+   "sha256": "d912fa203a100ea760c2dfb9ad86afb587f1319a963df083c8ef665ba7e5c9ee"
+  },
+  {
+   "id": "crowd-chant",
+   "file": "/assets/audio/ball/crowd-chant.m4a",
+   "family": "loop",
+   "loop": [
+    0.3,
+    4.3
+   ],
+   "design": "The stands under pressure: a drum, two claps and a \"HEY!\", looped (120 bpm, two bars).",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -19.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 4.651,
+   "lufsMomentaryMax": -19.0,
+   "lufsIntegrated": -24.7,
+   "truePeakDbfs": -6.7,
+   "sha256": "c0320c33720b4e211a7618996b758cf32a6d3b56686746d8176f55c28b216abb"
+  },
+  {
+   "id": "goal-horn",
+   "file": "/assets/audio/ball/goal-horn.m4a",
+   "family": "stadium",
+   "design": "The Ink Bowl's goal horn: a big three-note air horn, sounded for every goal.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "synthesised",
+     "license": "original"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -15.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 3.861,
+   "lufsMomentaryMax": -15.0,
+   "lufsIntegrated": -16.5,
+   "truePeakDbfs": -4.8,
+   "sha256": "981de4cd2a32a1901004290fc780f6a24c552041fb1906dc8e09f91aa6f165a7"
+  },
+  {
+   "id": "goal-burst",
+   "file": "/assets/audio/ball/goal-burst.m4a",
+   "family": "impact",
+   "design": "A goal's burst: the net lit up by a blast of colour, the boom of it.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/explosionCrunch_003.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "8c7197bb3a1c504690319c3abe0e62a5423ee246dd70caab57963d0b7aa8144f"
+    },
+    {
+     "file": "kenney-sci-fi/lowFrequency_explosion_001.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "cdda50600a4928f2f1b8371224d53c171ac799c1cf2c30b11999508985250b3b"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 2.197,
+   "lufsMomentaryMax": -14.1,
+   "lufsIntegrated": -19.8,
+   "truePeakDbfs": -1.1,
+   "sha256": "55a65626436da1c98421f63e9c87337a572e3734399d4520c863554958dd800d"
+  },
+  {
+   "id": "riser-overtime",
+   "file": "/assets/audio/ball/riser-overtime.m4a",
+   "family": "stadium",
+   "design": "OVERTIME: a rush climbing to a slam, as the clock's gone and the next goal wins.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/explosionCrunch_000.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "4b597d658d0ae101f0a030fbeea5fc3a4292ab85f017470a8254a8e7959cbd69"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -15.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 2.88,
+   "lufsMomentaryMax": -15.5,
+   "lufsIntegrated": -19.6,
+   "truePeakDbfs": -2.6,
+   "sha256": "a6c59fe7ff977c8e97e58f5dae43e07bf8236b5b46883b5827c3b7e84415431d"
+  },
+  {
+   "id": "riser-fever",
+   "file": "/assets/audio/ball/riser-fever.m4a",
+   "family": "stadium",
+   "design": "FEVER: a shimmering climb to a slam, as a rally turns every point to two.",
+   "license": "CC0-derived",
+   "sources": [
+    {
+     "file": "kenney-sci-fi/explosionCrunch_000.ogg",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "sha256": "4b597d658d0ae101f0a030fbeea5fc3a4292ab85f017470a8254a8e7959cbd69"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -15.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 2.731,
+   "lufsMomentaryMax": -15.4,
+   "lufsIntegrated": -19.6,
+   "truePeakDbfs": -3.0,
+   "sha256": "41c5e292bd1373e327e829247b35b25084034c8103eeb15ac81f7ceaf0339a7e"
+  }
+ ]
+}

@@ -110,7 +110,7 @@ export class Couch {
     // bottom, the default split: couch/split.ts SCREENS).
     this.screen = kind === 'field' && (options.screen ?? 'shared') === 'shared' ? 'split-h' : options.screen ?? 'shared';
     this.seats.seat(devices, this.ids); this.seats.attach();
-    this.rig.coop = kind === 'coop'; this.rig.reset(options.yaw); this.viewYaw = this.rig.yaw; this.aims = {}; this.targets = {}; this.locks = {}; this.where = {};
+    this.rig.coop = kind === 'coop'; this.rig.reset(options.yaw); this.viewYaw = this.rig.yaw; this.aims = {}; this.targets = {}; this.locks = {}; this.where = {}; this.presses = {};
     for (const view of this.views) { view.yaw = options.yaw ?? Math.PI; view.pitch = .02; view.basis = undefined; }
     if (typeof document === 'object') document.body.classList.add('couch-play');
   }
@@ -123,6 +123,9 @@ export class Couch {
    *  its TARGET button holds them. */
   targetOf(id: string) { return this.targets[id] ?? null; }
   lockedOf(id: string) { return !!this.locks[id]; }
+  /** How many times a seat has pressed its TARGET button in a field fight (the ball modes' ball camera toggles on it). */
+  pressesOf(id: string) { return this.presses[id] ?? 0; }
+  private presses: Record<string, number> = {};
   /** Whom each seat aims at, and along which line (main.ts updates it each frame from the snapshot). */
   aimAt(players: readonly PlayerState[]) {
     if (!this.kind) return;
@@ -137,7 +140,7 @@ export class Couch {
         let target = this.targets[seat.id] ?? null, locked = !!this.locks[seat.id];
         const held = target ? players.find(p => p.id === target) : undefined;
         if (locked && (!held || !opponentOf(me, held) || Math.hypot(held.x - me.x, held.z - me.z) > LOCK_RANGE)) locked = false;
-        if (seat.takeTarget()) locked = !locked && !!target;
+        if (seat.takeTarget()) { locked = !locked && !!target; this.presses[seat.id] = (this.presses[seat.id] ?? 0) + 1; }
         if (!locked) target = softTarget(me, players, view, target);
         const foe = target ? players.find(p => p.id === target) : undefined;
         this.targets[seat.id] = foe ? foe.id : null; this.locks[seat.id] = locked && !!foe;

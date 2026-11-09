@@ -2677,12 +2677,16 @@ export class ArenaSimulation {
       const approach = this.approach(a);
       // Held at the fighter the swing is going for, the stick is a chase, not a step away: the step-in and the
       // steering stay on (CHASE_STICK_COS), and the stick's own run is kept wherever it is the faster of the two.
+      // And held at the mode's own body the swing is aimed at (cast.externalAim: a Rift
+      // camp, a horde body), likewise. Only fighters counted, so the stick's run went on at full speed through a body
+      // with no pushbox: a Rush Strike thrown toward a camp 2 m off ran its thrower past the camp's middle before a
+      // slow tempo's contact (Konta's Foxpack Rush, 0.31 s) and the blow, behind him now, whiffed (RiftBrain.test.ts).
       const stick = Math.hypot(input.moveX, input.moveZ);
       let pursuing = false;
       if (approach && stick >= .05) {
         const chased = approach.acquired ?? (p.target ? this.actors.get(p.target)?.state : undefined);
-        if (chased?.alive && this.actors.has(chased.id)) {
-          const seen = this.seenBy(a, chased), dx = seen.x - p.x, dz = seen.z - p.z, gap = Math.hypot(dx, dz) || 1;
+        if (chased?.alive) {
+          const seen = this.actors.has(chased.id) ? this.seenBy(a, chased) : chased, dx = seen.x - p.x, dz = seen.z - p.z, gap = Math.hypot(dx, dz) || 1;
           pursuing = (input.moveX * dx + input.moveZ * dz) / (gap * stick) >= CHASE_STICK_COS;
         }
       }
@@ -2791,6 +2795,12 @@ export class ArenaSimulation {
             // The run along the swing's line is topped up to the step-in, never added to it; across it, it stands.
             const along = vx * cast.direction.x + vz * cast.direction.z, top = Math.max(0, approachSpeed - along);
             vx += cast.direction.x * top; vz += cast.direction.z * top;
+            // A fighter chased is held off by the pushbox (separateBodies); a mode's body has none, so the run is held
+            // at the swing's own stop instead - where the step-in would have stood - until the blow.
+            if (target && !this.actors.has(target.id)) {
+              const over = along + top - space / dt;
+              if (over > 0) { vx -= cast.direction.x * over; vz -= cast.direction.z * over; }
+            }
           } else {
             vx += cast.direction.x * approachSpeed;
             vz += cast.direction.z * approachSpeed;

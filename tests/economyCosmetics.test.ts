@@ -12,6 +12,8 @@ import { TRAIL_IDS } from '../src/render/cosmetics/trails';
 import { KNOCKOUT_IDS } from '../src/render/cosmetics/knockouts';
 import { ENTRANCE_IDS, STAMP_IDS, entranceHtml, stampHtml } from '../src/render/cosmetics/pages';
 import { EMOTE_IDS } from '../src/render/cosmetics/emotes';
+import { BALL_SKIN_IDS, BALL_TRAIL_IDS, GOAL_BURST_IDS } from '../src/render/ball/ballCosmetics';
+import { CELEBRATION_IDS } from '../src/game/ball/look';
 
 /** What draws each kind that is worn. Titles are words: the HUD letters them. */
 const DRAWN: Partial<Record<ItemKind, readonly string[]>> = {
@@ -20,6 +22,8 @@ const DRAWN: Partial<Record<ItemKind, readonly string[]>> = {
   // A fighter is drawn by the game itself - a body in the roster, a panel on the home screen. Every one past the first
   // volume's sixteen is sold (28 October 2026).
   fighter: RELEASED_FIGHTERS.filter(id => FIGHTERS[id] && !HOME_FIGHTERS.includes(id)).map(id => `fighter-${id}`),
+  // The ball modes' gear: the ball and its moments draw the skins, trails and bursts; the match holds the celebrations.
+  ball: BALL_SKIN_IDS, balltrail: BALL_TRAIL_IDS, goalburst: GOAL_BURST_IDS, celebration: CELEBRATION_IDS,
 };
 
 describe('the economy: what is sold is drawn', () => {

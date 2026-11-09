@@ -426,6 +426,10 @@ export class GameRenderer {
    *  is. The centre is snapped to whole shadow texels in the light's own
    *  basis, so a moving box never makes the shadow edges crawl. */
   private updateShadow(){this.placeSun(this.shadowAim(this.camera,this.shadowCenter),2*SHADOW_HALF[this.settings.quality]/this.sun.shadow.mapSize.x);}
+  /** The ball modes (main.ts): the focus is the box's own centre - between the player and the ball (render/ball/BallCam.ts
+   *  ballShadowFocus) - not a point the box is led ahead of, and it is trusted further from the lens, which stands well
+   *  back in those modes. */
+  shadowCentred=false;
   /** Where the box's centre is for `camera` (unsnapped): the fight's focus, a third of the box ahead along the view. */
   private shadowAim(camera:THREE.Camera,c:THREE.Vector3){
     const half=SHADOW_HALF[this.settings.quality];
@@ -433,9 +437,10 @@ export class GameRenderer {
     if(forward.lengthSq()<1e-6)forward.set(0,0,-1);forward.normalize();
     // The focus is only trusted while it is fresh and near the lens: a dead
     // player spectating someone else still reports their own body.
-    if(this.focusAt>=0&&this.time-this.focusAt<.5&&this.focus.distanceToSquared(camera.position)<half*half*.5)c.copy(this.focus);
+    const trusted=this.focusAt>=0&&this.time-this.focusAt<.5&&this.focus.distanceToSquared(camera.position)<half*half*(this.shadowCentred?2.2:.5);
+    if(trusted)c.copy(this.focus);
     else c.copy(camera.position).addScaledVector(forward,6).setY(0);
-    return c.addScaledVector(forward,half*.33);
+    return trusted&&this.shadowCentred?c:c.addScaledVector(forward,half*.33);
   }
   /** The sun and its target on `c`, snapped to whole texels (`texel` metres) in the light's own basis. */
   private placeSun(c:THREE.Vector3,texel:number){
@@ -595,6 +600,27 @@ export class GameRenderer {
   }
   /** Stopped time; see the API notes above. */
   timeStop(amount:number){this.stopFeed=THREE.MathUtils.clamp(amount,0,1);this.stopAt=this.time;}
+  /** The ball modes' INK FLASH (render/ball/BallMoments.ts: a SUPER SHOT, a goal): for `seconds` (0.3-0.6) the frame is
+   *  a two-tone manga print in paper, screentone and ink, while the ball - the world point `inkKeep` is fed, of `radius`
+   *  metres - and whatever burns brighter than white keep their colour. Snaps in, lets go over a tenth of a second.
+   *  Off under prefers-reduced-motion and on the VISUAL EFFECTS levels that print no impact frame. */
+  inkFlash(seconds:number){
+    if(this.reducedMotion||!(VFX.impactFrame>0)||!(seconds>0))return;
+    this.inkLeft=Math.max(this.inkLeft,Math.min(.8,seconds));
+  }
+  /** The world point the INK FLASH keeps in colour this frame (the ball), and its radius; null for none. */
+  inkKeep(point:{x:number;y:number;z:number}|null,radius=1){if(point){this.inkPoint.set(point.x,point.y,point.z);this.inkRadius=radius;}else this.inkRadius=0;}
+  private inkLeft=0;private inkLevel=0;private inkRadius=0;private readonly inkPoint=new THREE.Vector3();
+  /** Where the INK FLASH's kept point falls on the screen for the lens drawing now (a split screen's each half). */
+  private placeInk(u:typeof this.finalPass.uniforms){
+    const k=u.uInkBall.value;k.set(0,0,0);
+    if(this.inkLevel<.002||!(this.inkRadius>0))return;
+    this.projected.copy(this.inkPoint).applyMatrix4(this.camera.matrixWorldInverse);
+    const depth=-this.projected.z;
+    if(depth<.3)return;
+    this.projected.copy(this.inkPoint).project(this.camera);
+    k.set(this.projected.x*.5+.5,this.projected.y*.5+.5,THREE.MathUtils.clamp(this.inkRadius/(depth*2*Math.tan(THREE.MathUtils.degToRad(this.camera.fov)/2)),.01,.3));
+  }
   /** The power-up pass: a power-up's night, 0..1, fed every frame it holds (the strongest feed of a frame wins). The
    *  place goes dark - the room's albedo and key (look/stageMaterials.ts setRoomDim), the sky, the haze and the hall's
    *  panes - and nothing else: the fighters and every effect keep their light, so the flame is the brightest thing on
@@ -654,6 +680,10 @@ export class GameRenderer {
     u.uTech.value=tech;u.uTechColor.value.copy(this.techColor);
     this.placeTechFocus(u);
     u.uStop.value=impact?0:this.stopLevel;
+    // The INK FLASH: in at once, out over about a tenth of a second (an impact frame, a frame or two of paper, wins).
+    if(this.inkLeft>0){this.inkLeft=Math.max(0,this.inkLeft-step);this.inkLevel=this.inkLeft>0?1:this.inkLevel;}
+    else{this.inkLevel*=Math.exp(-step*16);if(this.inkLevel<.01)this.inkLevel=0;}
+    u.uInk.value=impact?0:this.inkLevel;this.placeInk(u);
     // The fighters' share of it (their rim in its colour, the lift) goes
     // with how whole-frame it is: a local pool does not re-light the crowd.
     const fighterTech=tech*(1-.7*this.techLocal);

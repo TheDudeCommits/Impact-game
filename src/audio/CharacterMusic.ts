@@ -13,6 +13,9 @@ const VOICE_RELEASE_MS = 1200;
  *  and swells back under the blow's tail, so everything seems to stop for the hit. Short and rare - the last blow of
  *  a special, an ultimate, an ender or a rush finisher - so the voice dip above stays the score's only steady one. */
 const PUNCH_GAIN = .5, PUNCH_ATTACK_MS = 30, PUNCH_RELEASE_MS = 480;
+/** The ball modes' intensity at its most (heat 1: src/audio/ballAudio.ts): the track this much quicker, pitch kept, and this
+ *  much louder; how fast it gets there (ms, a time constant), and the least step of rate a media element is asked for. */
+const HEAT_RATE = .05, HEAT_GAIN = 1.22, HEAT_TAU_MS = 1400, HEAT_RATE_STEP = .004;
 
 /** Two local streaming decks. Nothing is requested until the user enables music. */
 export class CharacterMusic {
@@ -72,6 +75,10 @@ export class CharacterMusic {
   getStatus(): MusicStatus { return this.status; }
   setContext(localFighter: string, opponentFighter?: string, phase: MusicPhase = 'combat', context?: SoundtrackContext) {
     if (this.dead) return;
+    // The ball modes: a match's climax (`peak`) and heat last while its fight does.
+    this.asked = [localFighter, opponentFighter, phase, context];
+    if (phase !== 'combat') { this.peaking = false; this.heat(0); }
+    if (this.peaking) context = { ...context, peak: true };
     let next = selectMusicTracks(localFighter, opponentFighter, phase, context);
     if (phase === 'lobby' && this.phase !== 'lobby' && this.lastHome && this.awayFromHome) { const at = next.findIndex(t => t.id === this.lastHome); if (at >= 0) next = [...next.slice(at + 1), ...next.slice(0, at + 1)]; }
     const phaseChanged = phase !== this.phase; this.phase = phase; this.queue = next;
@@ -88,6 +95,25 @@ export class CharacterMusic {
       if (this.enabled) void this.switchTrack(next[0]);
     } else this.preloadNext();
   }
+  /** The ball modes (src/audio/ballAudio.ts): the match's climax - OVERTIME, a match point - puts its mode's
+   *  hotter track at the head of the queue (src/originals/score.ts SOUNDTRACK.peak), which cuts in; off, the queue is the
+   *  match's own again. Over with the fight (a phase other than combat). */
+  peak(on: boolean) {
+    if (this.dead || on === this.peaking) return;
+    this.peaking = on;
+    if (this.asked) this.setContext(...this.asked);
+  }
+  private peaking = false;
+  private asked?: Parameters<CharacterMusic['setContext']>;
+  /** And its heat, 0-1: the playing track eased a little quicker (pitch kept) and louder as a match peaks (HEAT_*). */
+  heat(level: number) {
+    const target = Math.max(0, Math.min(1, Number.isFinite(level) ? level : 0));
+    if (this.dead || Math.abs(target - this.heatTarget) < .01) return;
+    this.heatTarget = target; this.heatAt = performance.now(); this.ensureTimer();
+  }
+  private heatTarget = 0;
+  private heatNow = 0;
+  private heatAt = 0;
   async setEnabled(value: boolean): Promise<void> {
     if (this.dead) return;
     this.enabled = value; this.heldByPlayer = false;
@@ -251,10 +277,22 @@ export class CharacterMusic {
         if (queued && queued.id !== this.decks[this.active].track?.id) void this.switchTrack(queued); else this.preloadNext();
       }
     }
+    if (this.heatNow !== this.heatTarget) {
+      const k = 1 - Math.exp(-Math.max(0, now - this.heatAt) / HEAT_TAU_MS); this.heatAt = now;
+      this.heatNow += (this.heatTarget - this.heatNow) * k;
+      if (Math.abs(this.heatTarget - this.heatNow) < .002) this.heatNow = this.heatTarget;
+    }
     this.applyLevels();
-    if (!this.fade && !this.levelRamp && !this.punchAt) { clearInterval(this.timer); this.timer = undefined; }
+    if (!this.fade && !this.levelRamp && !this.punchAt && this.heatNow === this.heatTarget) { clearInterval(this.timer); this.timer = undefined; }
   }
-  private applyLevels() { const punch = this.punchGain(); for (const deck of this.decks) deck.audio.volume = Math.max(0, Math.min(1, deck.weight * this.level * punch)); }
+  private applyLevels() {
+    const punch = this.punchGain(), heat = 1 + (HEAT_GAIN - 1) * this.heatNow;
+    for (const deck of this.decks) deck.audio.volume = Math.max(0, Math.min(1, deck.weight * this.level * punch * heat));
+    // (The rate on a grid of steps: a media element asked for a new rate every 25 ms can glitch. Per deck, as a load puts
+    // an element's rate back to 1.)
+    const rate = 1 + Math.round(HEAT_RATE * this.heatNow / HEAT_RATE_STEP) * HEAT_RATE_STEP;
+    for (const deck of this.decks) if (Math.abs(deck.audio.playbackRate - rate) > 1e-6) { deck.audio.preservesPitch = true; deck.audio.playbackRate = rate; }
+  }
   private clearDeck(deck: Deck) { deck.audio.pause(); deck.audio.removeAttribute('src'); deck.audio.preload = 'none'; deck.audio.load(); deck.track = undefined; deck.weight = 0; deck.token = ++this.generation; }
   private publish(state: MusicStatus['state'], message: string) { if (this.dead) return; this.status = { state, message, track: this.desired ?? this.decks[this.active].track }; this.onStatus?.(this.status); }
   dispose() {

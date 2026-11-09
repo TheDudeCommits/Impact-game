@@ -1,20 +1,23 @@
 import * as THREE from 'three';
+import {BallGear,patchBallSkin,type Emit} from './ballCosmetics';
 import type {GameSnapshot} from '../../game/types';
 import {BALL_TEAM_COLOURS,CHARM_COLOURS,GOAL_RULES,SPIKE_RULES,ballOf,ballRadius,heatTier,type BallEvent,type BallModeId,type BallState,type BallTeam,type BallView} from '../../game/ball/model';
 import {courtSide,landing,stepBall,type BallContact} from '../../game/ball/physics';
 import {noiseTexture} from '../vfx/noiseTexture';
 import {VFX} from '../vfxLevel';
+import {VfxKit} from '../vfx/VfxKit';
 import {BallCharms} from './BallCharms';
+import {BallTags} from './BallTags';
 import {arenaMood,crowdHype} from './hype';
 
 /** Points in the trail, effects in the pool, and the instances drawn each frame beyond the pool (the shadow, the
  *  landing ring, the stopped clock). */
-const TRAIL=40,CAP=720,EXTRA=4;
+const TRAIL=40,CAP=720,EXTRA=10;
 /** One pooled effect's floats: where, its velocity, its age and life, its size from and to, colour and alpha, its
  *  kind, turn and spin, drag, gravity, a seed, how far it stretches and along what, and its flags. */
 const F=25,PX=0,PY=1,PZ=2,VX=3,VY=4,VZ=5,AGE=6,LIFE=7,S0=8,S1=9,CR=10,CG=11,CB=12,CA=13,KIND=14,ROT=15,SPIN=16,DRAG=17,GRAV=18,SEED=19,STRETCH=20,FLAGS=21,AX=22,AY=23,AZ=24;
 /** What each pooled effect is drawn as (the fragment shader's branches). 20 and up lie flat on the floor. */
-const K={spark:0,smoke:1,burst:2,ring:3,petal:4,confetti:5,streak:6,shield:7,chunk:8,glint:9,clock:10,bolt:11,groundRing:20,splat:21,shadow:22,landing:23,dust:24} as const;
+const K={spark:0,smoke:1,burst:2,ring:3,petal:4,confetti:5,streak:6,shield:7,chunk:8,glint:9,clock:10,bolt:11,groundRing:20,splat:21,shadow:22,landing:23,dust:24,side:25} as const;
 /** Stretched along its own flight, stretched along a fixed axis, stopped by the floor, fluttering as paper falls. */
 const ALONG_FLIGHT=1,ALONG_AXIS=2,FLOOR=4,FLUTTER=8;
 /** Seconds the drawn ball may run ahead of its last snapshot; the time constant a correction is blended out over
@@ -24,6 +27,11 @@ const AHEAD=.12,BLEND=.028,SNAP=4;
 const TEAM:Record<BallTeam,THREE.Color>={red:new THREE.Color(BALL_TEAM_COLOURS.red),blue:new THREE.Color(BALL_TEAM_COLOURS.blue)};
 const NEUTRAL=new THREE.Color(.9,.92,1),WHITE=new THREE.Color(1,1,1),INK=new THREE.Color(.012,.012,.016),GOLD=new THREE.Color(1,.72,.28);
 const DUST=new THREE.Color(.42,.38,.33),PINK=new THREE.Color(1,.62,.76),PALE=new THREE.Color(.75,.9,1),WOOD=new THREE.Color(.55,.34,.18),CLOCK=new THREE.Color(.92,.92,.96);
+/** How bright the fire round a hot ball burns (its HDR; the frame's bloom and diffusion spread anything much over one
+ *  across the ball itself, which is what washed it out), scaled down on the lower VISUAL EFFECTS levels. */
+const FIRE_GLOW=.55;
+/** The light a burning ball throws, by heat tier (none cold). */
+const HEAT_LIGHT=[0,0xffb060,0xff7a1a,0xff3a1a,0xb46bff] as const;
 const TREES:readonly (readonly [number,number])[]=[[1,1],[1,-1],[-1,1],[-1,-1]].map(([sx,sz])=>[sx*(SPIKE_RULES.halfX+1.6),sz*(SPIKE_RULES.halfZ+1.7)] as const);
 
 const blankBall=():BallState=>({x:0,y:0,z:0,vx:0,vy:0,vz:0,sx:0,sy:0,sz:0,heat:0,lastId:null,lastTeam:null,shot:null,held:true,frozenUntil:0,super:false,size:1,grav:1,wall:null,clash:0});
@@ -230,12 +238,20 @@ class InkFx{
             float fill=(1.-smoothstep(0.,.9,r))*.18;
             cover=fill*al;
             rgb=col*(ring*1.6+inner*.7+xmark*1.4+fill*.5)*al;
-          }else{
+          }else if(kind<24.5){
             // Dust thrown out along the floor in a broken ring.
             float n=texture2D(uNoise,vec2(a*.6+seed,r*.8-t*.5)).g;
             float band=1.-smoothstep(0.,.22+n*.15,abs(r-mix(.25,.92,sqrt(t)))+(n-.5)*.15);
             cover=band*al*(1.-t);
             rgb=col*cover;
+          }else{
+            // A fighter's side, on the floor under them: a ring in the side's colour on an ink edge - brighter and with a
+            // second, finer ring outside it under your own (vAxis.x).
+            float own=vAxis.x,px=max(fwidth(r),.004);
+            float band=1.-smoothstep(.055,.055+px,abs(r-.8)),edge=1.-smoothstep(.1,.1+px,abs(r-.8));
+            float outer=own*(1.-smoothstep(.022,.022+px,abs(r-.95)));
+            cover=max(edge*.6,outer*.5)*al;
+            rgb=col*(band*(.85+own*.75)+outer*1.3)*al;
           }
           gl_FragColor=vec4(rgb,cover);
         }`,
@@ -315,8 +331,9 @@ export class BallField {
   private readonly ball=new THREE.Group();private readonly spinner=new THREE.Group();
   private readonly bodyMaterial:THREE.ShaderMaterial;
   private readonly outlineMaterial=new THREE.MeshBasicMaterial({color:0x050506,side:THREE.BackSide,name:'Ball ink outline'});
-  private readonly auraMaterial:THREE.ShaderMaterial;private readonly aura:THREE.Mesh;
   private readonly sphere=new THREE.SphereGeometry(1,40,28);
+  private readonly outline=new THREE.Mesh(this.sphere,this.outlineMaterial);
+  private readonly auraMaterial:THREE.ShaderMaterial;private readonly aura:THREE.Mesh;
   private readonly trail=new Trail();private readonly ribbon:Ribbon;private readonly superTrail:Ribbon;
   /** The effects' clock (s): it stands still while the ball's time is stopped. */
   private readonly time={value:0};
@@ -334,8 +351,25 @@ export class BallField {
   private readonly contacts:BallContact[]=[];
   private readonly eye=new THREE.Vector3();private readonly omega=new THREE.Vector3();private readonly axis=new THREE.Vector3();private readonly turn=new THREE.Quaternion();
   private readonly tint=new THREE.Color();
+  /** The shared effects kit, for its pooled lights (vfx/LightPool). */
+  private readonly kit:VfxKit;
+  /** Where a fighter is drawn (main.ts hands it the drawn bodies), for the rings and tags under and over them; without
+   *  it, where the snapshot puts them. */
+  bodyOf:(id:string)=>THREE.Vector3|undefined=()=>undefined;
+  private readonly tags=new BallTags();
+  private players:GameSnapshot['players']=[];
+  /** The ball gear (ballCosmetics.ts): your ball skin, the striker's trail, the scorer's goal burst. */
+  private readonly gear=new BallGear();
+  private readonly emit:Emit=(kind,x,y,z,vx,vy,vz,life,size0,size1,colour,alpha,how)=>{
+    const o=this.fx.spawn(K[kind],x,y,z,vx,vy,vz,life,size0,size1,colour,alpha),d=this.fx.data;
+    if(!how)return;
+    d[o+DRAG]=how.drag??0;d[o+GRAV]=how.grav??0;d[o+SPIN]=how.spin??0;d[o+STRETCH]=how.stretch??0;
+    d[o+FLAGS]=(how.flutter?FLUTTER:0)|(how.floor?FLOOR:0)|(how.along?ALONG_FLIGHT:0)|(how.axis?ALONG_AXIS:0);
+    if(how.axis){d[o+AX]=how.axis[0];d[o+AY]=how.axis[1];d[o+AZ]=how.axis[2];}
+  };
 
   constructor(scene:THREE.Scene){
+    this.kit=VfxKit.for(scene);
     this.root.name='Ball modes · the ball and its moments';this.root.visible=false;scene.add(this.root);this.root.add(this.charms.root);
     // The football's panels: twelve black pentagons on an icosahedron's corners, twenty white hexagons on its faces.
     const ico=[[0,1,golden],[0,1,-golden],[0,-1,golden],[0,-1,-golden],[1,golden,0],[-1,golden,0],[1,-golden,0],[-1,-golden,0],[golden,0,1],[golden,0,-1],[-golden,0,1],[-golden,0,-1]].map(([x,y,z])=>unit(x,y,z));
@@ -390,25 +424,29 @@ export class BallField {
           vec3 N=normalize(vN),V=normalize(vV),L=normalize(vec3(.35,.8,.48));
           float lit=mix(.58,1.,smoothstep(-.08,.08,dot(N,L))),facing=max(dot(N,V),0.),rim=pow(1.-facing,2.5);
           vec3 c=base*lit+vec3(.25)*rim*(1.-uFreeze);
-          // Heat: a warm cast from tier one, glowing seams or holes from two, a burning skin at three, a violet-white
-          // heart at four.
+          // Heat (from tier two the burning skin and the fire in front of it hid the ball, and at three it read
+          // as a pink blob): the ball stays ink and paper at every heat. Its pale panels take a warm cast, its black ones
+          // stay black, and the heat is in its seams (or the weave's holes), glowing from two, crackling violet and white
+          // at OVERDRIVE, and in a thin hot rim inside its ink outline. The fire is round it (the aura), never over it.
           float h=uHeat;vec3 hc=heatColour(h);
-          c=mix(c,c*hc*1.4,smoothstep(.6,1.6,h)*.45);
-          c+=hc*glow*smoothstep(1.5,2.6,h)*(2.+h);
-          c+=hc*rim*smoothstep(.8,3.,h)*2.2;
-          c=mix(c,vec3(2.6,2.4,3.),smoothstep(3.5,4.,h)*pow(facing,3.)*.6);
-          c+=uTeam*rim*uSuper*(2.+sin(uTime*14.));
+          // (Every term here stays under the frame's bloom: a glowing ball spreads its glow over its own panels.)
+          c=mix(c,c*mix(vec3(1.),hc*1.1,.5),smoothstep(.6,2.2,h)*.35);
+          c+=hc*glow*smoothstep(1.4,2.4,h)*.85;
+          c+=vec3(.75,.6,1.2)*glow*smoothstep(3.7,4.2,h)*(.55+.45*sin(uTime*31.+vObj.y*9.));
+          c+=hc*rim*smoothstep(.8,3.,h)*.45;
+          c+=uTeam*rim*uSuper*(1.2+.6*sin(uTime*14.));
           c=mix(c,vec3(3.),uFlash*.7);
           float grey=dot(c,vec3(.3,.59,.11));
           c=mix(c,vec3(1.-min(grey,1.)*.92),uFreeze);
           gl_FragColor=vec4(c,1.);
         }`,
     });
-    const body=new THREE.Mesh(this.sphere,this.bodyMaterial),outline=new THREE.Mesh(this.sphere,this.outlineMaterial);
+    patchBallSkin(this.bodyMaterial);
+    const body=new THREE.Mesh(this.sphere,this.bodyMaterial),outline=this.outline;
     body.name='Ball';outline.name='Ball ink outline';outline.scale.setScalar(1.075);this.spinner.add(body,outline);
     this.auraMaterial=new THREE.ShaderMaterial({
       name:'Ball heat aura',...PREMULTIPLIED,toneMapped:false,
-      uniforms:{uHeat:{value:0},uTime:this.time,uSuper:{value:0},uFreeze:{value:0},uR:{value:.4},uSize:{value:1},uLift:{value:.6},uVel:{value:new THREE.Vector3()},uTeam:{value:new THREE.Color()},uNoise:{value:noiseTexture()}},
+      uniforms:{uHeat:{value:0},uTime:this.time,uSuper:{value:0},uFreeze:{value:0},uR:{value:.4},uSize:{value:1},uLift:{value:.6},uVel:{value:new THREE.Vector3()},uTeam:{value:new THREE.Color()},uNoise:{value:noiseTexture()},uGlow:{value:1}},
       vertexShader:`uniform float uSize,uLift;uniform vec3 uVel;varying vec2 vP;varying vec2 vDir;varying float vSpeed;
         void main(){
           vP=position.xy;
@@ -418,7 +456,7 @@ export class BallField {
           c.xyz+=normalize(-c.xyz)*uLift;c.xy+=position.xy*uSize;
           gl_Position=projectionMatrix*c;
         }`,
-      fragmentShader:`uniform float uHeat,uTime,uSuper,uFreeze,uR;uniform vec3 uTeam;uniform sampler2D uNoise;
+      fragmentShader:`uniform float uHeat,uTime,uSuper,uFreeze,uR,uGlow;uniform vec3 uTeam;uniform sampler2D uNoise;
         varying vec2 vP;varying vec2 vDir;varying float vSpeed;
         float h1(float n){return fract(sin(n)*43758.5453);}
         void main(){
@@ -427,17 +465,20 @@ export class BallField {
           float n=texture2D(uNoise,vec2(ang*.32+uTime*.05,r*.9-uTime*1.7)).g,n2=texture2D(uNoise,vec2(ang*.95-uTime*.11,r*2.1-uTime*3.)).b;
           // Flames lick out past the ball and stream back along its flight, longer the hotter and faster it goes.
           float reach=uR*(1.12+h*.1)+tail*tail*stretch*(.25+h*.07)+(n*.65+n2*.35-.5)*(.16+h*.05);
-          float flame=1.-smoothstep(reach-.06,reach+.02,r),outside=smoothstep(uR*.82,uR*1.04,r);
+          // Outside the ball's ink outline only (the plane stands a little in front of the ball, so uR is a shade over the
+          // ball's own drawn size): the fire wraps the ball and never covers its face.
+          float flame=1.-smoothstep(reach-.06,reach+.02,r),outside=smoothstep(uR*1.04,uR*1.14,r);
           vec3 rgb=vec3(0.);float cover=0.;
           // One: a warm halo.
           rgb+=vec3(1.,.55,.2)*exp(-max(r-uR,0.)*7.)*outside*smoothstep(.6,1.2,h)*(1.-smoothstep(2.,2.6,h))*.8;
           // Two and up: fire, yellow to orange at two, red at three, violet at four.
-          vec3 core=mix(vec3(2.4,1.8,.7),vec3(2.6,.9,.25),smoothstep(1.,2.5,h));core=mix(core,vec3(2.6,.45,.18),smoothstep(2.5,3.2,h));core=mix(core,vec3(1.7,.8,3.),smoothstep(3.4,3.9,h));
-          vec3 tip=mix(vec3(1.6,.35,.05),vec3(1.2,.06,.03),smoothstep(2.5,3.2,h));tip=mix(tip,vec3(.6,.15,1.6),smoothstep(3.4,3.9,h));
+          // (Kept near the bloom's threshold: hotter, its glow spread over the ball and washed it out.)
+          vec3 core=mix(vec3(1.45,1.1,.45),vec3(1.55,.6,.16),smoothstep(1.,2.5,h));core=mix(core,vec3(1.55,.3,.12),smoothstep(2.5,3.2,h));core=mix(core,vec3(1.05,.5,1.75),smoothstep(3.4,3.9,h));
+          vec3 tip=mix(vec3(1.1,.25,.04),vec3(.85,.05,.03),smoothstep(2.5,3.2,h));tip=mix(tip,vec3(.45,.12,1.1),smoothstep(3.4,3.9,h));
           float k=clamp((r-uR*.9)/max(reach-uR*.9,.01),0.,1.);
-          rgb+=mix(core,tip,k)*flame*(.25+.75*outside)*smoothstep(1.6,2.2,h);
+          rgb+=mix(core,tip,k)*flame*outside*smoothstep(1.6,2.2,h);
           // Three: black ink smoke at the flame's tips and rings of heat shimmer round it.
-          float smoke=smoothstep(reach-.14,reach-.02,r)*flame*smoothstep(2.6,3.1,h)*(1.-smoothstep(3.4,3.9,h));
+          float smoke=smoothstep(reach-.14,reach-.02,r)*flame*outside*smoothstep(2.6,3.1,h)*(1.-smoothstep(3.4,3.9,h));
           rgb=mix(rgb,vec3(.02,.01,.01)*smoke,smoke*.8);cover+=smoke*.8;
           rgb+=vec3(1.,.8,.6)*pow(.5+.5*sin((r-uTime*.6)*38.+n*5.),18.)*smoothstep(reach,reach+.05,r)*(1.-smoothstep(.75,.98,r))*smoothstep(2.7,3.2,h)*.35;
           // Four, OVERDRIVE: a white heart and lightning striking out from it.
@@ -449,12 +490,24 @@ export class BallField {
               float along=dot(p,dir),jag=(texture2D(uNoise,vec2(along*1.3+fi*.37,frame*.073)).r-.5)*.22*along;
               bolts=max(bolts,(1.-smoothstep(.008,.035,abs(dot(p,perp)-jag)))*step(uR,along)*(1.-smoothstep(.75,.95,along)));
             }
-            rgb+=vec3(2.2,1.9,3.2)*bolts*over+vec3(2.,1.7,2.8)*exp(-max(r-uR,0.)*14.)*outside*over*.9;
+            rgb+=vec3(1.1,.95,1.6)*bolts*over+vec3(1.1,.9,1.6)*exp(-max(r-uR,0.)*14.)*outside*over*.7;
+          }
+          // The heat tier, counted in rings round the ball (one a tier, dashed and turning, each in its tier's colour on an
+          // ink edge), so a glance tells how hot it is however small it is on screen.
+          float tier=floor(h+.001),px=max(fwidth(r),1e-4);
+          for(int i=0;i<4;i++){
+            float fi=float(i);if(fi>=tier)break;
+            float rr=uR*(1.62+fi*.2),d=abs(r-rr),w=max(uR*.05,px*1.1);
+            float turn=ang*.15915494*(9.+fi*3.)+uTime*(.22+fi*.07)*(mod(fi,2.)*2.-1.);
+            float dash=smoothstep(.2,.28,fract(turn))*(1.-smoothstep(.78,.86,fract(turn)));
+            float edge=(1.-smoothstep(w*1.9,w*1.9+px,d))*dash,line=(1.-smoothstep(w,w+px,d))*dash;
+            vec3 tc=fi<.5?vec3(1.,.74,.3):fi<1.5?vec3(1.,.45,.12):fi<2.5?vec3(1.,.16,.07):vec3(.75,.42,1.);
+            rgb=rgb*(1.-edge*.85)+tc*line;cover=max(cover,edge*.85);
           }
           // A super shot: a pulsing ring and glow in the striker's colour.
           float pulse=.5+.5*sin(uTime*13.);
           rgb+=uTeam*((1.-smoothstep(.03,.09,abs(r-uR*(1.55+.12*pulse))))*2.4+exp(-max(r-uR,0.)*5.)*outside*.9)*uSuper*(1.+pulse*.5);
-          rgb*=1.-smoothstep(.9,1.,r);
+          rgb*=(1.-smoothstep(.9,1.,r))*uGlow;
           rgb=mix(rgb,vec3(dot(rgb,vec3(.3,.59,.11))*.8),uFreeze);
           gl_FragColor=vec4(rgb,cover);
         }`,
@@ -483,7 +536,7 @@ export class BallField {
         }`,
     });
     this.ribbon=new Ribbon(ribbon(0),'Ball trail');this.superTrail=new Ribbon(ribbon(1),'Ball super trail');this.superTrail.mesh.visible=false;
-    this.root.add(this.ball,this.ribbon.mesh,this.superTrail.mesh,this.fx.mesh);
+    this.root.add(this.ball,this.ribbon.mesh,this.superTrail.mesh,this.fx.mesh,this.tags.mesh);
   }
 
   /** Where the ball is drawn now - smoothed and run on from its snapshot - or null when no ball is up. The vector is
@@ -492,7 +545,7 @@ export class BallField {
 
   /** Every frame. `now` is the page's clock in milliseconds (performance.now(), as main.ts passes it); `dt` the frame's
    *  seconds. Hides everything when the snapshot carries no ball. */
-  update(snapshot:GameSnapshot|null|undefined,selfId:string,camera:THREE.Camera,dt:number,now:number){
+  update(snapshot:GameSnapshot|null|undefined,selfId:string,camera:THREE.Camera,dt:number,now:number,replaying=false){
     const view=ballOf(snapshot);
     if(!view||!snapshot){if(this.root.visible||this.shown)this.clear();return;}
     const seconds=now/1000,step=Math.min(Math.max(dt,0),.1),serverTime=snapshot.serverTime;
@@ -501,7 +554,10 @@ export class BallField {
     this.receive(view.ball,serverTime,seconds);
     this.place(serverTime,seconds);
     this.moments(view,serverTime);
+    this.players=snapshot.players;
     this.dress(view,selfId,camera,step,seconds,serverTime);
+    // The name tags: in play, not over a replay (its tag names the goal) nor the results.
+    this.tags.update(view.seats,selfId,this.where,!replaying&&view.phase!=='lobby'&&view.phase!=='over');
     this.charms.update(view,snapshot.players,this.shown?this.drawn:null,step,serverTime);
     // FEVER (Sky Spike) and OVERTIME (Goal Rush): the place at its peak while they last, the crowd on its feet.
     const peak=(view.mode==='sky-spike'?view.fever:view.overtime)&&view.phase!=='over'?1:0;
@@ -517,7 +573,7 @@ export class BallField {
   }
 
   dispose(){
-    this.clear();this.charms.dispose();this.root.removeFromParent();
+    this.clear();this.charms.dispose();this.tags.dispose();this.root.removeFromParent();
     this.sphere.dispose();this.aura.geometry.dispose();this.fx.mesh.geometry.dispose();this.ribbon.mesh.geometry.dispose();this.superTrail.mesh.geometry.dispose();
     for(const m of [this.bodyMaterial,this.outlineMaterial,this.auraMaterial,this.fx.mesh.material,this.ribbon.mesh.material,this.superTrail.mesh.material])m.dispose();
   }
@@ -614,6 +670,7 @@ export class BallField {
     }
     const u=this.bodyMaterial.uniforms;
     u.uHeat.value=this.heat;u.uFreeze.value=frozen?1:0;u.uSuper.value=b.super?1:0;u.uFlash.value=this.flash;(u.uTeam.value as THREE.Color).copy(team);
+    this.gear.dress(this.bodyMaterial,view,selfId);
     // A CLASH holds it: white-hot and shuddering, throwing both sides' sparks, lightning crawling over it.
     if(b.clash>serverTime){
       u.uFlash.value=Math.max(this.flash,.55+.45*Math.sin(seconds*44));
@@ -625,19 +682,21 @@ export class BallField {
         fx.data[o+FLAGS]=ALONG_AXIS;fx.data[o+AX]=ax/l;fx.data[o+AY]=ay/l;fx.data[o+AZ]=az/l;fx.data[o+STRETCH]=reach/(r*.4)*.6;}
     }
     this.outlineMaterial.color.setHex(frozen?0xf2f2f4:0x050506);
-    const a=this.auraMaterial.uniforms,size=r*(2.8+tier*.5)+(b.super?r*1.2:0);
+    // The ink outline thickens a little as the ball heats, so its edge holds against the fire round it.
+    this.outline.scale.setScalar(1.075+Math.min(1,this.heat/4)*.05);
+    const a=this.auraMaterial.uniforms,size=r*(3.2+tier*.5)+(b.super?r*1.2:0);
     this.aura.visible=this.heat>=.9||b.super;
-    a.uHeat.value=this.heat;a.uSuper.value=b.super?1:0;a.uFreeze.value=frozen?1:0;a.uSize.value=size;a.uR.value=r/size;a.uLift.value=r*1.05;
+    a.uHeat.value=this.heat;a.uSuper.value=b.super?1:0;a.uFreeze.value=frozen?1:0;a.uGlow.value=FIRE_GLOW*(.55+.45*VFX.glow);a.uSize.value=size;a.uR.value=r/size;a.uLift.value=r*1.05;
     (a.uVel.value as THREE.Vector3).copy(this.velocity);(a.uTeam.value as THREE.Color).copy(team);
     // The trail: a point wherever the ball has gone a fifth of a metre, the newest following it every frame, the
     // oldest let go after its life; wider for a faster, hotter ball, nothing at a roll.
-    const life=.3+tier*.06+(b.super?.25:0),width=Math.min(1,Math.max(0,(speed-3)/14))*r*2*(1+tier*.22)*(b.super?1.35:1);
+    const life=.3+tier*.06+(b.super?.25:0),width=Math.min(1,Math.max(0,(speed-3)/14))*r*2*(1+tier*.22)*(b.super?1.35:1),stroke=this.gear.trailColour(view,b,team);
     if(!frozen){
       this.trailClock+=dt;const trail=this.trail;
-      if(trail.count<2){trail.push(this.drawn,this.trailClock,width,team);trail.push(this.drawn,this.trailClock,width,team);}
+      if(trail.count<2){trail.push(this.drawn,this.trailClock,width,stroke);trail.push(this.drawn,this.trailClock,width,stroke);}
       else{
         const s=trail.slot(1),d=Math.hypot(this.drawn.x-trail.x[s],this.drawn.y-trail.y[s],this.drawn.z-trail.z[s]);
-        if(d>.2)trail.push(this.drawn,this.trailClock,width,team);else trail.set(0,this.drawn,this.trailClock,width,team);
+        if(d>.2)trail.push(this.drawn,this.trailClock,width,stroke);else trail.set(0,this.drawn,this.trailClock,width,stroke);
       }
       while(trail.count>2&&this.trailClock-trail.t[trail.slot(trail.count-1)]>life)trail.count--;
     }
@@ -648,15 +707,16 @@ export class BallField {
     // What a hot ball throws off: embers from two, sparks from three, lightning at four; white streaks when it flies.
     const vx=this.velocity.x,vy=this.velocity.y,vz=this.velocity.z,{x,y,z}=this.drawn,gain=VFX.spriteGain;
     if(hot){
-      this.embers+=(tier>=2?14:0)*dt*gain;this.sparks+=(tier>=3?(tier>=4?70:42):0)*dt*gain;this.bolts+=(tier>=4?16:0)*dt*gain;
+      this.embers+=(tier>=2?14:0)*dt*gain;this.sparks+=(tier>=3?(tier>=4?48:36):0)*dt*gain;this.bolts+=(tier>=4?16:0)*dt*gain;
       this.streaks+=(speed>16?Math.min(60,(speed-14)*2.2):0)*dt*VFX.speedLines;
-      for(;this.embers>=1;this.embers--){const o=fx.spawn(K.spark,x,y,z,-vx*.08+(Math.random()-.5)*2,-vy*.08+Math.random()*2.5,-vz*.08+(Math.random()-.5)*2,.5,r*.22,r*.08,tier>=4?PINK:GOLD,.9);fx.data[o+DRAG]=1.5;}
+      for(;this.embers>=1;this.embers--){const off=this.rim(r*1.05),o=fx.spawn(K.spark,x+off.x,y+off.y,z+off.z,-vx*.08+(Math.random()-.5)*2,-vy*.08+Math.random()*2.5,-vz*.08+(Math.random()-.5)*2,.5,r*.22,r*.08,tier>=4?PINK:GOLD,.9);fx.data[o+DRAG]=1.5;}
       for(;this.sparks>=1;this.sparks--){
-        const o=fx.spawn(K.spark,x+(Math.random()-.5)*r,y+(Math.random()-.5)*r,z+(Math.random()-.5)*r,-vx*.18+(Math.random()-.5)*7,-vy*.18+(Math.random()-.2)*7,-vz*.18+(Math.random()-.5)*7,.32,r*.2,r*.1,tier>=4?(Math.random()<.5?WHITE:PINK):this.tint.setRGB(1,.35+Math.random()*.4,.1),1);
+        const off=this.rim(r*1.15);
+        const o=fx.spawn(K.spark,x+off.x,y+off.y,z+off.z,-vx*.18+(Math.random()-.5)*7,-vy*.18+(Math.random()-.2)*7,-vz*.18+(Math.random()-.5)*7,.32,r*.2,r*.1,tier>=4?(Math.random()<.5?WHITE:PINK):this.tint.setRGB(1,.35+Math.random()*.4,.1),1);
         fx.data[o+GRAV]=9;fx.data[o+DRAG]=2;fx.data[o+STRETCH]=3;fx.data[o+FLAGS]=ALONG_FLIGHT;
       }
       for(;this.bolts>=1;this.bolts--){
-        const ax=Math.random()-.5,ay=Math.random()-.5,az=Math.random()-.5,l=Math.hypot(ax,ay,az)||1,reach=r*(1.6+Math.random()*1.4);
+        const ax=Math.random()-.5,ay=Math.random()-.5,az=Math.random()-.5,l=Math.hypot(ax,ay,az)||1,reach=r*(1.9+Math.random()*1.2);
         const o=fx.spawn(K.bolt,x+ax/l*reach*.6,y+ay/l*reach*.6,z+az/l*reach*.6,vx*.6,vy*.6,vz*.6,.09,r*.35,r*.35,this.tint.setRGB(.7,.45,1),1);
         fx.data[o+FLAGS]=ALONG_AXIS;fx.data[o+AX]=ax/l;fx.data[o+AY]=ay/l;fx.data[o+AZ]=az/l;fx.data[o+STRETCH]=reach/(r*.35)*.6;
       }
@@ -668,12 +728,21 @@ export class BallField {
         fx.data[o+FLAGS]=ALONG_AXIS;fx.data[o+AX]=dx;fx.data[o+AY]=dy;fx.data[o+AZ]=dz;fx.data[o+STRETCH]=Math.min(70,speed*.9);
       }
       if(b.super&&this.time.value>=this.pulseAt){this.pulseAt=this.time.value+.14;fx.spawn(K.ring,x,y,z,vx*.3,vy*.3,vz*.3,.42,r*1.2,r*4,team,.9);}
+      // A burning ball lights the turf and the fighters round it through the pooled lights (vfx/LightPool, at the VISUAL
+      // EFFECTS level's share), more and further the hotter it is; none on the LOW quality.
+      if(this.heat>=1&&this.kit.quality!=='low'){const k=Math.min(1,(this.heat-.9)/3.3);this.kit.lights.request(x,Math.max(y,.7),z,HEAT_LIGHT[tier],5+k*19,5+k*5,1.6+k*1.4);}
     }else this.embers=this.sparks=this.bolts=this.streaks=0;
+    if(!frozen)this.gear.trail(this.emit,view,b,this.drawn,this.velocity,speed,r,dt,gain);
     fx.step(frozen?0:dt);
     fx.begin();
     // The shadow straight under the ball, softer and wider the higher it is; a fine ring to find it by when high.
     const height=Math.max(0,y-r);
     fx.put(K.shadow,x,.035,z,r*(1.15+height*.06),INK,.55/(1+height*.22),Math.min(1,Math.max(0,(height-1.5)/4))*.6);
+    // Each fighter's side, in a ring on the floor under them (yours brighter, and doubled).
+    if(view.phase!=='lobby')for(let i=0;i<view.seats.length;i++){
+      const seat=view.seats[i],at=this.where(seat.id,this.spot);if(!at)continue;
+      const own=seat.id===selfId;fx.put(K.side,at.x,.04,at.z,own?1.05:.95,TEAM[seat.team],own?1:.72,own?1:0);
+    }
     // Where it comes down, closing in as it falls: Sky Spike's in the colour of the court it lands in (urgent on your
     // own side), a cross when it lands out; Goal Rush's a quiet ring.
     const land=this.land,left=land.t-Math.max(0,seconds-this.baseAt);
@@ -692,6 +761,7 @@ export class BallField {
 
   private moment(e:BallEvent,view:BallView){
     // The crowd: on its feet for a goal, up for a clash, a save, a post, a super shot.
+    this.gear.burst(this.emit,e,view,VFX.spriteGain);
     const hype=({goal:1,'own-goal':1,clash:.75,super:.7,save:.55,perfect:.55,post:.5,shield:.6,win:1} as Partial<Record<BallEvent['kind'],number>>)[e.kind];
     if(hype)crowdHype.value=Math.max(crowdHype.value,hype);
     const team=e.team?TEAM[e.team]:WHITE,n=(k:number)=>Math.max(1,Math.round(k*VFX.spriteGain)),r=ballRadius(view.mode);
@@ -817,6 +887,20 @@ export class BallField {
     for(let i=0;i<count;i++){const v=this.randomDirection(speed*(.4+Math.random()*.6)),o=this.fx.spawn(K.chunk,x,y,z,v.x,Math.abs(v.y)+speed*.3,v.z,1+Math.random()*.5,.18+Math.random()*.14,.12,colour,1);const d=this.fx.data;d[o+GRAV]=18;d[o+FLAGS]=FLOOR;d[o+SPIN]=(Math.random()-.5)*16;}
   }
   private readonly direction=new THREE.Vector3();
+  private readonly spot=new THREE.Vector3();
+  /** Where a seat's fighter stands: its drawn body, else the snapshot's place for it; null if neither. */
+  private readonly where=(id:string,out:THREE.Vector3):THREE.Vector3|null=>{
+    const drawn=this.bodyOf(id);if(drawn)return out.copy(drawn);
+    for(let i=0;i<this.players.length;i++){const p=this.players[i];if(p.id===id)return p.alive?out.set(p.x,p.y,p.z):null;}
+    return null;
+  };
+  /** A point `length` out from the ball's centre on the ring of its silhouette (square to the lens), a little behind it:
+   *  what the ball throws off is seen round it, never over its face. */
+  private rim(length:number){
+    const d=this.randomDirection(1),vx=this.drawn.x-this.eye.x,vy=this.drawn.y-this.eye.y,vz=this.drawn.z-this.eye.z,l=Math.hypot(vx,vy,vz)||1;
+    const along=(d.x*vx+d.y*vy+d.z*vz)/l;d.x-=vx/l*along;d.y-=vy/l*along;d.z-=vz/l*along;
+    const k=length/(d.length()||1);return d.set(d.x*k+vx/l*length*.3,d.y*k+vy/l*length*.3,d.z*k+vz/l*length*.3);
+  }
   private randomDirection(length:number){
     const u=Math.random()*2-1,a=Math.random()*Math.PI*2,s=Math.sqrt(1-u*u);
     return this.direction.set(Math.cos(a)*s*length,u*length,Math.sin(a)*s*length);

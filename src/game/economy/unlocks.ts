@@ -60,6 +60,12 @@ export const UNLOCKS: Readonly<Record<string, Unlock>> = {
   'kill-cranes': { level: 14 }, 'kill-screentone': { level: 28 }, 'kill-seal': { level: 44 }, 'kill-kintsugi': { level: 55 },
   'banner-taiko': { level: 34 },
   'emote-don': { level: 4 }, 'emote-menacing': { level: 24 }, 'emote-speed-lines': { level: 46 },
+  // ---- The ball modes' gear: Goal Rush and Sky Spike only, by Sumi alone - a ball skin a
+  // few matches, a goal burst about a week of a regular's play. Hidden on Player Two while the modes are (LAUNCH.ballModes).
+  'ball-vermilion': { price: 300 }, 'ball-night-ink': { price: 300 }, 'ball-indigo': { price: 300 }, 'ball-jade': { price: 500 }, 'ball-gold-leaf': { price: 600 },
+  'balltrail-brush': { price: 400 }, 'balltrail-embers': { price: 400 }, 'balltrail-petals': { price: 600 }, 'balltrail-gold-thread': { price: 700 },
+  'goalburst-ink-bomb': { price: 500 }, 'goalburst-paper-storm': { price: 500 }, 'goalburst-cranes': { price: 700 }, 'goalburst-thunder': { price: 700 },
+  'celebration-spin': { price: 300 }, 'celebration-stand-tall': { price: 300 }, 'celebration-showboat': { price: 500 },
 };
 
 /** The road's items by level, lowest first. */

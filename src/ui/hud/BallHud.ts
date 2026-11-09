@@ -5,6 +5,7 @@ import { el, Text, Flag, Data, Face, Markup, clockOf, pulse } from './kit';
 import { hudView } from './hudView';
 import { readEdge, type EdgeRead } from './EdgeMarkers';
 import { promptText } from '../prompts';
+import { DRILLS } from '../../game/ball/drills';
 import { padKey } from '../../input/glyphs';
 import './ballHud.css';
 
@@ -70,7 +71,8 @@ class BallHud implements ModeHud {
     el('small', '', this.touches, 'TOUCHES');
     for (let i = 0; i < SPIKE_RULES.touches; i++) this.touchDots.push(el('i', '', this.touches));
     this.serve = new Text(el('span', 'bh-serve', this.strip));
-    // The ball cam (Tab, the pad's target button): the lock on the ball.
+    // The ball cam's key (Tab, the pad's target button): the ball cam is on by default (render/ball/BallCam.ts), and the
+    // key turns it off for the follow camera.
     this.cam = new Markup(el('span', 'bh-cam', this.strip));
     // RUMBLE: the charms at work, each a chip in its colour with whose it is and the seconds it has left.
     this.charms = el('div', 'bh-charms', m.zone('2b'));
@@ -112,8 +114,10 @@ class BallHud implements ModeHud {
     if (score !== this.shownScore) { if (this.shownScore) for (const t of ['red', 'blue'] as BallTeam[]) pulse(this.scoreNodes[t], 'pulse'); this.shownScore = score; }
     // The middle: the clock, OVERTIME, or the rally and what the next point is worth.
     if (v.practice) {
-      this.middle.set('FREE PLAY'); this.middleKind.set('clock');
-      this.sub.set([v.hits ? `TARGETS ${v.hits}${v.streak > 1 ? ` · STREAK ${v.streak}` : ''}` : v.mode === 'goal-rush' ? 'SHOOT THROUGH THE GOLD RING' : 'SPIKE IT ONTO THE GOLD RING', v.best > 0 ? `FASTEST ${Math.round(v.best * KMH)} KM/H` : ''].filter(Boolean).join(' · '));
+      this.middle.set(v.drill ? 'DRILL' : 'FREE PLAY'); this.middleKind.set('clock');
+      // (A training drill: its name; its progress is ui/ball/BallBadge.ts's.)
+      if (v.drill) this.sub.set(DRILLS[v.drill.id].name);
+      else this.sub.set([v.hits ? `TARGETS ${v.hits}${v.streak > 1 ? ` · STREAK ${v.streak}` : ''}` : v.mode === 'goal-rush' ? 'SHOOT THROUGH THE GOLD RING' : 'SPIKE IT ONTO THE GOLD RING', v.best > 0 ? `FASTEST ${Math.round(v.best * KMH)} KM/H` : ''].filter(Boolean).join(' · '));
     } else if (v.mode === 'goal-rush') {
       const ending = v.clock <= 0 && !v.overtime && v.phase === 'live';
       this.middle.set(v.overtime ? 'OVERTIME' : clockOf(Math.ceil(v.clock)));
@@ -141,11 +145,11 @@ class BallHud implements ModeHud {
     // the match's first half minute and at each kickoff or serve, when nobody is busy, and out of the way otherwise.
     const teach = f.snapshot.serverTime - v.startedAt < 30 || v.phase === 'kickoff' || v.phase === 'countdown';
     const chat = v.practice ? '' : ` · ${f.input === 'controller' ? padKey(f.family, 'select') : '<kbd>C</kbd>'} CHAT`;
-    this.cam.set(f.input === 'touch' || !teach ? '' : promptText('{target} BALL CAM', { device: f.input, family: f.family }) + chat);
+    this.cam.set(f.input === 'touch' || !teach ? '' : promptText(hudView.ballCam() ? '{target} FREE CAM' : '{target} BALL CAM', { device: f.input, family: f.family }) + chat);
     // The prompt: your serve, or a KI CHARGE waiting in your boots.
     const serving = spike && v.phase === 'kickoff' && v.serverId === f.self.id;
     const charged = v.rumble && v.effects.some(e => e.kind === 'charge' && e.id === f.self.id);
-    const practice = v.practice && (v.phase === 'live' || v.phase === 'kickoff');
+    const practice = v.practice && !v.drill && (v.phase === 'live' || v.phase === 'kickoff');
     this.promptOn.set(!serving && !charged && !practice);
     if (serving) this.promptText.set(promptText('YOUR SERVE · {light} LOB · {heavy} POWER SERVE', { device: f.input, family: f.family }));
     else if (charged) this.promptText.set(promptText('KI CHARGE · YOUR NEXT {heavy} FLIES AT OVERDRIVE', { device: f.input, family: f.family }));
@@ -237,7 +241,7 @@ class BallHud implements ModeHud {
         this.chatLines.push({ node: line, until: now + CHAT_MS });
         break;
       }
-      case 'bowled': this.tick(now, e.team, `${who || 'THE BALL'} BOWLS OVER ${nameOf(seat(e.targetId))} · ${Math.round((e.value ?? 0) * KMH)} KM/H`); break;
+      case 'bowled': this.tick(now, e.team, `${who || 'THE BALL'} ${e.text === 'STAGGERED' ? 'STAGGERS' : 'BOWLS OVER'} ${nameOf(seat(e.targetId))} · ${Math.round((e.value ?? 0) * KMH)} KM/H`); break;
       case 'strike': if (e.shot && e.shot !== 'tap' && e.shot !== 'bump' && e.shot !== 'set') this.tick(now, e.team, [who, e.text ?? shot, speed].filter(Boolean).join(' · ')); break;
       case 'win': {
         const winner = e.team;

@@ -126,7 +126,9 @@ export function applyOriginalMusic<T extends { id: string; url: string; title: s
 /** What a match's music knows of it (4 November 2026): its mode (src/ui/modes/catalogue.ts modeOfSnapshot), how it ended
  *  for this page (src/ui/results/finale.ts finaleMine; an Arcade Survival run's `victory`), and the match's number, which
  *  turns the mode's playlist so the next match opens on its next theme. */
-export interface SoundtrackContext { mode?: SoundtrackMode | string; outcome?: 'win' | 'loss'; turn?: number }
+export interface SoundtrackContext { mode?: SoundtrackMode | string; outcome?: 'win' | 'loss'; turn?: number;
+  /** The match's climax (the ball modes: CharacterMusic.peak): its fight opens on the mode's SOUNDTRACK.peak. */
+  peak?: boolean }
 
 /** src/audio/musicTracks.ts selectMusicTracks (4 November 2026): a match's music by its mode, ahead of the queue the
  *  fighters' worlds make (which keeps playing after it). A fight opens on its mode's battle themes (an Arcade Survival
@@ -143,8 +145,8 @@ export function soundtrackQueue<T extends { id: string; url: string }>(tracks: R
     const outcome = context?.outcome ?? 'loss';
     first = [SOUNDTRACK.stinger[outcome], ...SOUNDTRACK.results[outcome]];
   } else {
-    const boss = lead.startsWith('rift:') && lead.split(':')[2] === 'boss';
-    first = boss ? [...spin(SOUNDTRACK.boss), ...spin(SOUNDTRACK.modes[mode])] : spin(SOUNDTRACK.modes[mode]);
+    const boss = lead.startsWith('rift:') && lead.split(':')[2] === 'boss', peak = context?.peak ? SOUNDTRACK.peak[mode] : undefined;
+    first = boss ? [...spin(SOUNDTRACK.boss), ...spin(SOUNDTRACK.modes[mode])] : peak ? [peak, ...spin(SOUNDTRACK.modes[mode])] : spin(SOUNDTRACK.modes[mode]);
   }
   const ahead = first.map(track => tracks[track.id]).filter((track): track is T => !!track);
   const seen = new Set(ahead.map(track => track.url));

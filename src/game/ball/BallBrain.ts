@@ -154,12 +154,13 @@ export class BallBrain {
     const home = seat.role === 'back' ? {x: 0, z: sign * 7.4} : {x: this.flank * 3.4, z: sign * 3.2};
     if (view.phase === 'kickoff') {
       if (view.serverId !== seat.id) { this.run(me, home, input, now, .5, 30); return input; }
-      // The serve: walk up behind the ball, a breath, then strike it over.
+      // The serve: walk up behind the ball, a breath, then strike it over (a short one: the point's celebration plays
+      // on meanwhile, and the match gets back under way).
       const spot = {x: b.x, z: b.z + sign * 1.1};
       const d = this.run(me, spot, input, now, .25, 30);
       if (d < .6) {
         input.yaw = sendYaw(b);
-        if (this.serveAt < 0) this.serveAt = now + .7 + this.rng() * 1.2;
+        if (this.serveAt < 0) this.serveAt = now + .25 + this.rng() * .45;
         if (now >= this.serveAt && now >= this.nextPress) { this.press(input, this.rng() < .55 ? 'heavy' : 'light', sendYaw(b), now, .6); this.serveAt = -1; }
       }
       return input;

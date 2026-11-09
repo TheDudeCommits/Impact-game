@@ -1,3 +1,5 @@
+import {COMMENTARY_OPTIONS} from '../audio/ballCaller';
+import {modeOpen} from '../originals/launch';
 import {HUD_SKIN_OPTIONS,MOVE_LAYOUT_OPTIONS,qualityChoice,VFX_OPTIONS,type Settings} from '../config';
 import {CAMERA_OPTIONS,CAMERA_STYLE_OPTIONS,errorReportsOption,optionValue,POWER_OPTIONS,QUALITY_OPTIONS} from './HomePanels';
 import './inkSelect';
@@ -8,7 +10,7 @@ export function pauseMenu(settings:Settings){
   const slider=(key:'sensitivity'|'shake'|'vibration'|'effects'|'volume'|'sfxVolume'|'voiceVolume'|'musicVolume',label:string,min=0,max=1,step=.05)=>`<label class="pause-slider" for="pause-${key}"><span>${label}</span><output data-option-value="${key}" for="pause-${key}">${optionValue(key,settings[key])}</output><input id="pause-${key}" data-setting="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${settings[key]}"></label>`;
   // The game's own picker (inkSelect.ts) where a native select stood; Hud sets each one's value from the settings.
   // (A third word is the option's note in the list - RECOMMENDED, 60 FPS - keeping the button's value short.)
-  const pick=(key:'cameraMode'|'cameraStyle'|'lockStyle'|'quality'|'powerMode'|'animStyle'|'hudSkin'|'moveLayout'|'vfx',id:string,label:string,options:readonly (readonly [string,string,string?])[])=>`<label><span>${label}</span><ink-select id="${id}" data-setting="${key}" label="${label}">${options.map(([value,text,tag])=>`<option value="${value}"${tag?` data-tag="${tag}"`:''}${value===(key==='quality'?qualityChoice(settings):settings[key]??options[0][0])?' selected':''}>${text}</option>`).join('')}</ink-select></label>`;
+  const pick=(key:'cameraMode'|'cameraStyle'|'lockStyle'|'quality'|'powerMode'|'animStyle'|'hudSkin'|'moveLayout'|'vfx'|'commentary',id:string,label:string,options:readonly (readonly [string,string,string?])[])=>`<label><span>${label}</span><ink-select id="${id}" data-setting="${key}" label="${label}">${options.map(([value,text,tag])=>`<option value="${value}"${tag?` data-tag="${tag}"`:''}${value===(key==='quality'?qualityChoice(settings):settings[key]??options[0][0])?' selected':''}>${text}</option>`).join('')}</ink-select></label>`;
   const toggle=(key:'cinematics'|'musicEnabled',label:string)=>`<label class="pause-toggle" for="pause-${key}"><span>${label}</span><input id="pause-${key}" data-setting="${key}" type="checkbox" ${settings[key]?'checked':''}></label>`;
   return `<section class="settings-scrim hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title"><div class="settings-card pause-menu">
     <header class="pause-header"><div class="pause-heading"><span class="pause-symbol" aria-hidden="true">Ⅱ</span><div><p id="pause-mode">IN THE ARENA</p><h2 id="pause-title">PAUSE MENU</h2></div></div><div class="pause-fighter"><span id="pause-portrait" aria-hidden="true"></span><strong id="pause-fighter-name"></strong></div><button id="settings-close" type="button" aria-label="Close pause menu">×</button></header>
@@ -24,6 +26,7 @@ export function pauseMenu(settings:Settings){
       </section>
       <section class="pause-group" aria-labelledby="pause-audio-title"><h3 id="pause-audio-title"><span>02</span> AUDIO</h3>
         ${slider('volume','Master volume')}${slider('sfxVolume','Sound effects')}${slider('voiceVolume','Character voices')}${slider('musicVolume','Music volume')}${toggle('musicEnabled','Play music')}
+        ${modeOpen('goal-rush')?`<div class="pause-selects">${pick('commentary','pause-commentary','Commentary',COMMENTARY_OPTIONS)}</div>`:''}
         ${errorReportsOption('pause-toggle','pause-errorReports','data-setting','Send error reports',settings)}
         <button type="button" class="pause-report" data-report-bug>Report a bug <span aria-hidden="true">↗</span></button>
       </section>

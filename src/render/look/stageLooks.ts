@@ -1,3 +1,5 @@
+import type {BallArenaId} from '../../game/ball/arenas';
+import {ballArenaFor} from '../ball/arenaChoice';
 import { roanLook } from './roanPass';
 import { powerupLook } from './powerupLook';
 import type { StageId } from '../../game/stages';
@@ -42,6 +44,9 @@ export interface GradeLook {
   vignette: number; vignetteColor: number;
   /** The power-up pass (look/powerupLook.ts): a light, contrast-adaptive sharpen of the frame (0..1; unset none). */
   sharpen?: number;
+  /** Ink outlines drawn from the scene's depth (LookPost's final pass) where surfaces
+   *  break or fold, 0..1; the ball arenas' paper-and-ink look. 0 or absent: none. */
+  inkEdge?: number;
 }
 
 /** Light shafts through openings, drawn as soft additive billboards. Each
@@ -936,7 +941,7 @@ STAGE_LOOKS['ball-pitch']={
   sky:{...STAGE_LOOKS['cinder-flats'].sky,zenith:0x02040c,horizon:0x1c2550,ground:0x090b14,stars:1,nebula:.15,
     cloudCoverage:.18,cloudLit:0x2c3560,cloudShade:0x0a0d1c,cloudRim:0x5a6aa0,cloudScale:1.1,cloudSpeed:.004},
   ibl:.42,exposure:1.12,
-  grade:{...STAGE_LOOKS['cinder-flats'].grade,saturation:1.12,contrast:1.16,shadowTint:0x1a2050,highlightTint:0xf2f6ff,split:.2,vignette:.28},
+  grade:{...STAGE_LOOKS['cinder-flats'].grade,saturation:1.12,contrast:1.16,shadowTint:0x1a2050,highlightTint:0xf2f6ff,split:.2,vignette:.28,inkEdge:1},
   bloom:{strength:.8,radius:.6,threshold:1,knee:.4},
   atmosphere:{kind:'dust',count:120,color:0xe8eeff,color2:0xffffff,size:.02},
   room:{albedo:1,key:1},
@@ -955,7 +960,7 @@ STAGE_LOOKS['ball-court']={
     sunDir:dir(-.62,.1,.7),sunColor:0xffd59a,sunIntensity:13,sunSize:.05,sunGlow:1.1,sunGlowWidth:6,
     cloudCoverage:.42,cloudLit:0xffc4a4,cloudShade:0x8c6aa4,cloudRim:0xffe4b8,cloudScale:1.2,cloudSpeed:.006},
   ibl:.36,exposure:1.06,
-  grade:{...STAGE_LOOKS.harbor.grade,saturation:1.14,contrast:1.15,shadowTint:0x4a3a8a,highlightTint:0xffcc9a,split:.3,vignette:.22},
+  grade:{...STAGE_LOOKS.harbor.grade,saturation:1.14,contrast:1.15,shadowTint:0x4a3a8a,highlightTint:0xffcc9a,split:.3,vignette:.22,inkEdge:1},
   bloom:{strength:.6,radius:.55,threshold:1,knee:.4},
   atmosphere:{kind:'petals',count:70,color:0xffb8d0,color2:0xfff0f4,size:.055},
 };
@@ -964,9 +969,44 @@ STAGE_LOOKS['ball-court']={
 // of them at load.
 Object.assign(STAGE_LOOKS, { 'rift-frost': RIFT_LOOKS['rift-fortress'], 'rift-grove': RIFT_LOOKS['rift-eclipse'], 'rift-wastes': RIFT_LOOKS['rift-swords'], 'rift-harbor': RIFT_LOOKS['rift-fortress'] });
 
+// The ball modes' other arenas (game/ball/arenas.ts), each its own light. lookFor
+// reads the arena the match asked for (render/ball/arenaChoice.ts) when the stage is a ball stage.
+export const BALL_ARENA_LOOKS: Partial<Record<BallArenaId, LookPreset>> = {
+  // The Wreck Yard: the Dust Sea at sundown, low gold sun and dust in the air.
+  'dust-yard': {...STAGE_LOOKS['sunfall-arena'], fog: {...STAGE_LOOKS['sunfall-arena'].fog, near: 140, far: 410},
+    sky: {...STAGE_LOOKS['ball-court'].sky, zenith: 0x3a4a86, horizon: 0xffb27a, ground: 0xc08a5a, cloudCoverage: .35,
+      cloudLit: 0xffd2a0, cloudShade: 0x9a6a7a, cloudRim: 0xffe6b8},
+    key: {...STAGE_LOOKS['sunfall-arena'].key, color: 0xffd2a8},
+    grade: {...STAGE_LOOKS['sunfall-arena'].grade, saturation: .92, inkEdge: 1},
+    atmosphere: {kind: 'dust', count: 110, color: 0xf0c890, color2: 0xffe6c0, size: .025}},
+  // Rain Roof: a wet night, the cloud down on the city, the floodlights cold.
+  'rain-roof': {...STAGE_LOOKS['ball-pitch'], key: {...STAGE_LOOKS['ball-pitch'].key, intensity: 2.9},
+    fog: {color: 0x151b26, near: 70, far: 330},
+    sky: {...STAGE_LOOKS['ball-pitch'].sky, stars: 0, nebula: 0, cloudCoverage: .85, cloudLit: 0x2a3346, cloudShade: 0x0c0f16, cloudRim: 0x3c4a66},
+    grade: {...STAGE_LOOKS['ball-pitch'].grade, saturation: .96, inkEdge: 1},
+    atmosphere: {kind: 'none', count: 0, color: 0xffffff, color2: 0xffffff, size: .02}},
+  // Tide Court: dusk on the beach, the sun down on the sea.
+  'tide-court': {...STAGE_LOOKS['ball-court'], key: {...STAGE_LOOKS['ball-court'].key, color: 0xffa070, intensity: 3.3},
+    fog: {color: 0xe89a86, near: 160, far: 420},
+    sky: {...STAGE_LOOKS['ball-court'].sky, zenith: 0x2a3a78, horizon: 0xff9a7a, cloudCoverage: .3},
+    atmosphere: {kind: 'sparkles', count: 30, color: 0xfff0d0, color2: 0xffffff, size: .02}},
+  // Ember Rim: night on the volcano, the light coming up from the lava.
+  'ember-rim': {...STAGE_LOOKS['ball-court'], key: {color: 0xff8a50, intensity: 2.5, dir: dir(-.4, .5, .6)},
+    hemi: {sky: 0x3a2228, ground: 0xb04a20, intensity: .9},
+    rim: {...STAGE_LOOKS['ball-court'].rim, color: 0xff7a40},
+    fog: {color: 0x2a1310, near: 110, far: 380},
+    sky: {...STAGE_LOOKS['ball-court'].sky, zenith: 0x0d0709, horizon: 0x5a1e12, ground: 0x2a0c08, sunIntensity: 2, sunColor: 0xff6a30,
+      cloudCoverage: .6, cloudLit: 0x6a2a1a, cloudShade: 0x140a0a, cloudRim: 0xff7a40},
+    grade: {...STAGE_LOOKS['ball-court'].grade, saturation: 1.1, shadowTint: 0x2a0c10, highlightTint: 0xffb070, inkEdge: 1},
+    bloom: {strength: .9, radius: .6, threshold: 1, knee: .4},
+    atmosphere: {kind: 'embers', count: 90, color: 0xff7a30, color2: 0xffc060, size: .03}},
+};
+
 /** The preset a stage is drawn with. */
 export function lookFor(stage: StageId): LookPreset {
   // The colour pass is laid over the tuned table (roanPass.ts), and the power-up look chosen with
   // ?look= over that (powerupLook.ts).
-  return originalLook(stage, powerupLook(stage, roanLook(stage, STAGE_LOOKS[stage] ?? STAGE_LOOKS.harbor)));
+  // A ball stage is lit as the arena the match plays in.
+  const arena = stage === 'ball-pitch' || stage === 'ball-court' ? BALL_ARENA_LOOKS[ballArenaFor(stage)] : undefined;
+  return originalLook(stage, powerupLook(stage, roanLook(stage, arena ?? STAGE_LOOKS[stage] ?? STAGE_LOOKS.harbor)));
 }

@@ -34,6 +34,9 @@ export const AMBIENCE_LEVEL = -10;
 export const AMBIENCE_FADE = { in: 2.4, out: 1.2 };
 /** A crowd's swell over its bed for a big blow of worth 1 (dB), and for the winner. */
 export const CHEER = { blow: 7, win: 10, hold: .9, release: 2.6 } as const;
+/** The ball modes' stands (StageAmbience.tension): the crowd beds from `calm` dB at no tension to `peak` at the most, and
+ *  how fast they follow it (s, a time constant). Quiet under play, loud at the peaks; `cheer` swells on top. */
+export const TENSION = { calm: -3, peak: 5, follow: .7 } as const;
 
 const BIRDS: AmbienceFile[] = ['bird-1', 'bird-2', 'bird-3', 'bird-4', 'bird-5', 'bird-6'];
 const FLAGS: AmbienceFile[] = ['flag-1', 'flag-2', 'flag-3'];
@@ -95,7 +98,7 @@ export function filesOf(recipe: AmbienceRecipe) {
 }
 const db = (value: number) => 10 ** (value / 20);
 
-interface Playing { fader: GainNode; sources: AudioBufferSourceNode[]; crowd: GainNode[]; timers: Set<ReturnType<typeof setTimeout>> }
+interface Playing { fader: GainNode; sources: AudioBufferSourceNode[]; crowd: GainNode[]; tension: GainNode[]; timers: Set<ReturnType<typeof setTimeout>> }
 
 /** The place's sound, played into `output` (CombatAudio's ambience bus). `load` returns a decoded file, or nothing. */
 export class StageAmbience {
@@ -110,7 +113,7 @@ export class StageAmbience {
   set(stage: StageId | undefined) {
     if (stage === this.stage) return;
     const before = ambienceFor(this.stage);
-    this.stage = stage;
+    this.stage = stage; this.tensionLevel = undefined; // (a new place's stands start at their own level)
     const generation = ++this.generation;
     this.stop();
     const recipe = ambienceFor(stage);
@@ -136,13 +139,23 @@ export class StageAmbience {
       gain.gain.setTargetAtTime(1, now + (win ? CHEER.hold * 2.5 : CHEER.hold), CHEER.release / 3);
     }
   }
-  dispose() { this.generation++; this.stage = undefined; this.stop(); }
+  /** How worked up the stands are, 0-1 (the ball modes, src/audio/ballAudio.ts): the crowd beds ride TENSION's range under
+   *  any cheer. Nothing where there are no stands; kept for a place that is still loading. */
+  tension(level: number) {
+    this.tensionLevel = Math.max(0, Math.min(1, level));
+    const playing = this.playing;
+    if (!playing?.tension.length) return;
+    const now = this.context.currentTime, gain = db(TENSION.calm + (TENSION.peak - TENSION.calm) * this.tensionLevel);
+    for (const node of playing.tension) node.gain.setTargetAtTime(gain, now, TENSION.follow);
+  }
+  private tensionLevel?: number;
+  dispose() { this.generation++; this.stage = undefined; this.tensionLevel = undefined; this.stop(); }
 
   private start(recipe: AmbienceRecipe, buffers: Map<AmbienceFile, AudioBuffer>) {
     const ctx = this.context, now = ctx.currentTime, fader = ctx.createGain();
     fader.gain.value = 0; fader.connect(this.output);
     fader.gain.setTargetAtTime(db(AMBIENCE_LEVEL), now, AMBIENCE_FADE.in / 3);
-    const playing: Playing = { fader, sources: [], crowd: [], timers: new Set() };
+    const playing: Playing = { fader, sources: [], crowd: [], tension: [], timers: new Set() };
     this.playing = playing;
     for (const bed of recipe.beds) {
       const buffer = buffers.get(bed.file), loop = loopOf(bed.file);
@@ -151,7 +164,12 @@ export class StageAmbience {
       const level = ctx.createGain(), swell = ctx.createGain();
       level.gain.value = db(bed.gain) * levelOf(bed.file) * (bed.wide ? db(-3) : 1);
       let into: AudioNode = level;
-      level.connect(swell).connect(fader);
+      if (bed.crowd) {
+        // The stands' tension (the ball modes) on a gain of its own, under the swell: unity until `tension` is asked for.
+        const tension = ctx.createGain();
+        tension.gain.value = this.tensionLevel === undefined ? 1 : db(TENSION.calm + (TENSION.peak - TENSION.calm) * this.tensionLevel);
+        level.connect(tension).connect(swell).connect(fader); playing.tension.push(tension);
+      } else level.connect(swell).connect(fader);
       if (bed.crowd) playing.crowd.push(swell);
       for (const [type, frequency] of [['lowpass', bed.lowpass], ['highpass', bed.highpass]] as const) {
         if (!frequency || typeof ctx.createBiquadFilter !== 'function') continue;

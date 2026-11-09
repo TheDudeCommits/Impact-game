@@ -1,7 +1,14 @@
+import {BALL_ARENAS, MODE_ARENAS} from '../../game/ball/arenas';
 import { FIGHTERS } from '../../config';
 import { ballOf, BALL_TEAM_NAMES, type BallSeat, type BallTeam, type BallView } from '../../game/ball/model';
 import type { GameSnapshot } from '../../game/types';
 import { mangaPortrait } from '../MangaHome';
+import { BALL_MUTATORS, MUTATOR_NAMES, mutatorLine } from '../../game/ball/mutators';
+import { DRILLS, MODE_DRILLS } from '../../game/ball/drills';
+import { TRAIT_NAMES } from '../../game/ball/traits';
+import { BallBadge } from './BallBadge';
+import { MEDAL_MARK, recordDrill } from './drillMedals';
+import { refreshRanks, stampHtml } from './ranks';
 import './ballUi.css';
 
 const escape = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
@@ -21,10 +28,17 @@ export class BallUI {
   finale: () => boolean = () => false;
   private key = '';
   private view?: BallView;
+  /** The mutator, RANKED and a drill's progress during play (BallBadge.ts). */
+  private readonly badge: BallBadge;
+  /** The drill whose result was last kept (ui/ball/drillMedals.ts), and what keeping it said. */
+  private drillKept = ''; private drillBest?: ReturnType<typeof recordDrill>;
+  /** A ranked match's end, once asked of the server again for the new standing. */
+  private rankedAsked = '';
   constructor(parent: HTMLElement) {
     this.root = document.createElement('div');
     this.root.className = 'ball-ui hidden';
     parent.append(this.root);
+    this.badge = new BallBadge(parent);
     this.root.addEventListener('click', event => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-act]');
       if (!button || button.disabled) return;
@@ -33,6 +47,12 @@ export class BallUI {
       else if (act === 'swap') this.onSend('ball-swap');
       else if (act === 'fill') this.onSend('ball-fill', !(this.view?.fillBots ?? true));
       else if (act === 'rumble') this.onSend('ball-rumble', !(this.view?.rumble ?? false));
+      else if (act === 'arena' && this.view) { const list = MODE_ARENAS[this.view.mode], at = list.indexOf(this.view.arena ?? list[0]); this.onSend('ball-arena', list[(at + 1) % list.length]); }
+      // The host's RULES: CLASSIC, RUMBLE, then each mutator, and round (BallRoom's 'ball-rules').
+      else if (act === 'rules') { const order = ['classic', 'rumble', ...BALL_MUTATORS], now = this.view?.rumble ? 'rumble' : this.view?.mutator ?? 'classic'; this.onSend('ball-rules', order[(order.indexOf(now) + 1) % order.length]); }
+      // A drill's AGAIN and NEXT DRILL (LocalBall: the same FREE PLAY, that drill from its first ball).
+      else if (act === 'drill-again') this.onSend('ball-rematch');
+      else if (act === 'drill-next' && button.dataset.drill) this.onSend('ball-drill', button.dataset.drill);
       else if (act === 'again') this.onAgain();
       else if (act === 'leave') this.onLeave();
     });
@@ -44,10 +64,21 @@ export class BallUI {
     this.view = v;
     const lobby = !!v && v.phase === 'lobby' && v.access !== 'bots';
     const results = !!v && v.phase === 'over' && !this.finale();
-    const show = lobby || results;
+    // A drill's ten balls done: its card (no match result: a drill is FREE PLAY's).
+    const drill = !!v && v.practice && v.drill?.state === 'over';
+    const show = lobby || results || drill;
     this.root.classList.toggle('hidden', !show);
+    this.badge.update(snapshot, show);
+    if (v && drill && this.drillKept !== `${v.drill!.id}:${v.startedAt}`) { this.drillKept = `${v.drill!.id}:${v.startedAt}`; this.drillBest = recordDrill(v.drill!.id, v.drill!.done); }
+    // After a ranked match, the account's standing is asked again (the sheet's stamp).
+    if (v && results && v.ranked && this.rankedAsked !== `${v.code}:${v.round}`) { this.rankedAsked = `${v.code}:${v.round}`; void refreshRanks(true); }
     if (!v || !show) { this.key = ''; return; }
-    const key = `${v.phase}|${v.code}|${v.fillBots}|${v.rumble}|${v.hostId}|${v.startsAt ? Math.ceil(v.startsAt - (snapshot?.serverTime ?? 0)) : ''}|${v.seats.map(s => `${s.id}:${s.team}:${s.goals}:${s.kills}:${s.points}`).join(',')}|${v.score.red}-${v.score.blue}`;
+    if (drill) {
+      const key = `drill|${v.drill!.id}|${v.startedAt}`;
+      if (key !== this.key) { this.key = key; this.root.dataset.mode = v.mode; this.root.innerHTML = this.drillCard(v); this.root.querySelector<HTMLButtonElement>('button[data-act="drill-again"]')?.focus({ preventScroll: true }); }
+      return;
+    }
+    const key = `${v.phase}|${v.code}|${v.fillBots}|${v.rumble}|${v.mutator}|${v.arena}|${v.ranked}|${v.seats.map(s => s.rank ? `${s.rank.rating}:${s.rank.delta}` : '').join(',')}|${v.hostId}|${v.startsAt ? Math.ceil(v.startsAt - (snapshot?.serverTime ?? 0)) : ''}|${v.seats.map(s => `${s.id}:${s.team}:${s.goals}:${s.kills}:${s.points}`).join(',')}|${v.score.red}-${v.score.blue}`;
     if (key === this.key) return;
     this.key = key;
     this.root.dataset.mode = v.mode;
@@ -59,7 +90,10 @@ export class BallUI {
     const counts = new Map<string, number>();
     for (const f of feats ? seat.feats ?? [] : []) counts.set(f, (counts.get(f) ?? 0) + 1);
     const badges = counts.size ? `<span class="bu-feats">${[...counts].map(([f, n]) => `<i>${escape(f)}${n > 1 ? ` ×${n}` : ''}</i>`).join('')}</span>` : '';
-    return `<li class="${seat.id === selfId ? 'self' : ''}"><span class="bu-face">${mangaPortrait(seat.fighter)}</span><span class="bu-who"><b>${escape(nameOf(seat))}</b>${badges}</span>${seat.bot ? '<small>BOT</small>' : ''}${stats}</li>`;
+    // The fighter's ball trait under the name, and a ranked match's stamps (with the change, at the end).
+    const trait = seat.trait ? `<span class="bu-trait">${TRAIT_NAMES[seat.trait]}</span>` : '';
+    const rank = this.view?.ranked !== undefined && seat.rank && !seat.bot ? stampHtml(seat.rank, seat.rank.delta) : '';
+    return `<li class="${seat.id === selfId ? 'self' : ''}"><span class="bu-face">${mangaPortrait(seat.fighter)}</span><span class="bu-who"><b>${escape(nameOf(seat))}</b>${trait}${badges}</span>${rank}${seat.bot ? '<small>BOT</small>' : ''}${stats}</li>`;
   }
   private lobby(v: BallView, selfId: string, now: number) {
     const host = v.hostId === selfId, title = v.mode === 'goal-rush' ? 'GOAL RUSH' : 'SKY SPIKE';
@@ -69,9 +103,10 @@ export class BallUI {
       return `<section class="bu-side ${team}"><h3>${BALL_TEAM_NAMES[team]}</h3><ul>${seats.map(s => this.seatRow(s, selfId, '')).join('')}${empty}</ul></section>`;
     }).join('<div class="bu-vs">VS</div>');
     const starts = v.startsAt !== null ? `<p class="bu-count">KICKING OFF IN ${Math.max(0, Math.ceil(v.startsAt - now))}</p>` : '';
-    return `<div class="bu-card"><header><small>${v.access === 'host' ? 'PRIVATE ROOM' : 'MATCHMAKING'}${v.rumble ? ' · RUMBLE' : ''}</small><h2>${title}</h2>${v.code && v.access === 'host' ? `<p class="bu-code">ROOM CODE <b>${escape(v.code)}</b></p>` : ''}</header>
+    const rules = v.rumble ? 'RUMBLE' : v.mutator ? MUTATOR_NAMES[v.mutator] : 'CLASSIC';
+    return `<div class="bu-card"><header><small>${v.access === 'host' ? 'PRIVATE ROOM' : v.ranked !== undefined ? 'RANKED MATCHMAKING' : 'MATCHMAKING'}${v.rumble ? ' · RUMBLE' : v.mutator ? ` · ${MUTATOR_NAMES[v.mutator]}` : ''}${v.arena ? ` · ${escape(BALL_ARENAS[v.arena].name.toUpperCase())}` : ''}</small><h2>${title}</h2>${v.code && v.access === 'host' ? `<p class="bu-code">ROOM CODE <b>${escape(v.code)}</b></p>` : ''}${v.mutator ? `<p class="bu-rules">${escape(mutatorLine(v.mutator, v.mode))}</p>` : ''}${v.ranked !== undefined ? '<p class="bu-rules">Rated against the people on the other side; bots don\'t count. People on both sides at kickoff, or it\'s unranked.</p>' : ''}</header>
       <div class="bu-teams">${columns}</div>${starts}
-      <footer><button data-act="swap">SWITCH SIDES</button>${host ? `<button data-act="fill" class="${v.fillBots ? 'on' : ''}">BOTS FILL: ${v.fillBots ? 'ON' : 'OFF'}</button><button data-act="rumble" class="${v.rumble ? 'on' : ''}">RULES: ${v.rumble ? 'RUMBLE' : 'CLASSIC'}</button><button data-act="start" class="go">START</button>` : v.access === 'host' ? '<span>WAITING FOR THE HOST</span>' : ''}<button data-act="leave">LEAVE</button></footer></div>`;
+      <footer><button data-act="swap">SWITCH SIDES</button>${host ? `<button data-act="fill" class="${v.fillBots ? 'on' : ''}">BOTS FILL: ${v.fillBots ? 'ON' : 'OFF'}</button>${v.access === 'host' ? `<button data-act="rules" class="${rules !== 'CLASSIC' ? 'on' : ''}">RULES: ${rules}</button><button data-act="arena">ARENA: ${escape(BALL_ARENAS[v.arena ?? MODE_ARENAS[v.mode][0]].name.replace(/^The /, '').toUpperCase())}</button>` : ''}<button data-act="start" class="go">START</button>` : v.access === 'host' ? '<span>WAITING FOR THE HOST</span>' : ''}<button data-act="leave">LEAVE</button></footer></div>`;
   }
   private results(v: BallView, selfId: string) {
     const own = v.seats.find(s => s.id === selfId)?.team, won = v.winner && v.winner !== 'draw' && v.winner === own;
@@ -84,10 +119,19 @@ export class BallUI {
       const seats = v.seats.filter(s => s.team === team).sort((a, b) => b.points - a.points);
       return `<section class="bu-side ${team}${v.winner === team ? ' won' : ''}"><h3>${BALL_TEAM_NAMES[team]} <b>${v.score[team]}</b></h3><div class="bu-head">${header}</div><ul>${seats.map(s => this.seatRow(s, selfId, (s.id === v.mvp ? '<em>MVP</em>' : '') + stat(s), true)).join('')}</ul></section>`;
     }).join('');
-    return `<div class="bu-card results ${won ? 'won' : 'lost'}"><header><small>${goal ? 'GOAL RUSH' : 'SKY SPIKE'}${v.rumble ? ' RUMBLE' : ''} · ${escape(v.reason.toUpperCase())}</small><h2>${head}</h2>
+    return `<div class="bu-card results ${won ? 'won' : 'lost'}"><header><small>${goal ? 'GOAL RUSH' : 'SKY SPIKE'}${v.rumble ? ' RUMBLE' : v.mutator ? ` ${MUTATOR_NAMES[v.mutator]}` : ''}${v.ranked ? ' · RANKED' : v.ranked === false ? ' · UNRANKED' : ''} · ${escape(v.reason.toUpperCase())}</small><h2>${head}</h2>
       <p class="bu-final"><span class="red">${v.score.red}</span> – <span class="blue">${v.score.blue}</span></p>${mvp ? `<p class="bu-mvp">MVP <b>${escape(nameOf(mvp))}</b> · ${mvp.points} PTS</p>` : ''}</header>
       <div class="bu-teams results">${columns}</div>
       <footer><button data-act="again" class="go">PLAY AGAIN</button><button data-act="leave">LEAVE</button></footer></div>`;
   }
-  clear() { this.root.classList.add('hidden'); this.root.innerHTML = ''; this.key = ''; this.view = undefined; }
+  /** A drill's ten balls done: how many were right, the medal, the best kept, and AGAIN, NEXT DRILL, LEAVE. */
+  private drillCard(v: BallView) {
+    const d = v.drill!, def = DRILLS[d.id], list = MODE_DRILLS[v.mode], next = list[(list.indexOf(d.id) + 1) % list.length], best = this.drillBest;
+    const medal = d.medal ? `<p class="bu-medal ${d.medal}"><i>${MEDAL_MARK[d.medal]}</i>${d.medal.toUpperCase()} MEDAL</p>` : `<p class="bu-medal none">NO MEDAL · BRONZE AT ${def.medals[0]}</p>`;
+    const dots = d.results.map(r => `<i class="${r ? 'hit' : 'miss'}"></i>`).join('');
+    return `<div class="bu-card results ${d.medal ? 'won' : 'lost'}"><header><small>${v.mode === 'goal-rush' ? 'GOAL RUSH' : 'SKY SPIKE'} · DRILL</small><h2>${escape(def.name)}</h2>
+      <p class="bu-final">${d.done} / ${d.balls}</p><p class="bu-dots">${dots}</p>${medal}${best?.improved && d.done > 0 ? '<p class="bu-rules">YOUR BEST YET</p>' : best ? `<p class="bu-rules">YOUR BEST: ${best.best} / ${d.balls}</p>` : ''}</header>
+      <footer><button data-act="drill-again" class="go">AGAIN</button><button data-act="drill-next" data-drill="${next}">NEXT: ${escape(DRILLS[next].name)}</button><button data-act="leave">LEAVE</button></footer></div>`;
+  }
+  clear() { this.root.classList.add('hidden'); this.root.innerHTML = ''; this.key = ''; this.view = undefined; this.badge.clear(); }
 }

@@ -1,0 +1,14 @@
+/* The ball modes' gear in Account (ballGear.ts): its shelf's kinds, a skin's ball drawn in its inks, the marks. */
+.bg-shelf .bg-kind{margin:14px 0 8px;font:800 12px/1 'Barlow Condensed',sans-serif;letter-spacing:.2em;color:var(--s-grey,#5b564e)}
+.bg-art{background:#f3eee4}
+.bg-art.k-balltrail{background:linear-gradient(160deg,#fff 30%,#f3eee4)}
+.bg-art.k-goalburst{background:radial-gradient(circle at 50% 60%,#fff 0 30%,#f3eee4 31%)}
+.bg-art.k-celebration{background:repeating-linear-gradient(135deg,#fff 0 9px,#f3eee4 9px 18px)}
+.bg-art>b{color:var(--s-ink,#0b0c0e)}
+/* A skin: the ball as its panels would print - the light panel, the dark pentagons, an ink seam. */
+.bg-ball{position:absolute;inset:16%;border-radius:50%;border:3px solid #050506;
+  background:radial-gradient(circle at 50% 50%,var(--bg-a) 0 13%,transparent 14%),radial-gradient(circle at 18% 30%,var(--bg-a) 0 10%,transparent 11%),radial-gradient(circle at 82% 30%,var(--bg-a) 0 10%,transparent 11%),
+    radial-gradient(circle at 30% 84%,var(--bg-a) 0 10%,transparent 11%),radial-gradient(circle at 70% 84%,var(--bg-a) 0 10%,transparent 11%),radial-gradient(circle at 35% 30%,var(--bg-c) 0 40%,var(--bg-b) 100%);
+  box-shadow:inset -8px -10px 0 rgba(0,0,0,.12)}
+.bg-stage{position:relative;min-height:220px}
+.bg-stage>.shop-art{position:absolute;inset:0;aspect-ratio:auto}
