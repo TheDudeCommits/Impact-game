@@ -412,7 +412,11 @@ const OPEN_EDGE:Readonly<Record<string,number>>={
  *  ENCLOSED_OUT, and a small floor's (SMALL_FLOOR) the same; a floor with room whose edge is open, what OPEN_EDGE
  *  says - not in a mode whose view is the squad's (`squad`: Arcade Survival, the objectives, the rift), whose camera
  *  stays as it is; any other BOUND_MARGIN inside. */
-const boundOut=(b:{halfX:number;halfZ:number;doubleSided?:boolean;background?:number;id?:string},squad=false)=>b.doubleSided||b.background!==undefined||smallFloor(b)?ENCLOSED_OUT:(b.id!==undefined&&!squad?OPEN_EDGE[b.id]:undefined)??-BOUND_MARGIN;
+/** The ball modes' places (render/ball/BallArena.ts): their walls are glass and their stands start six to seven metres
+ *  past them, so the lens may stand out there - a view held inside the glass squeezed down onto the player's head at
+ *  every wall. */
+const BALL_OUT=5;
+const boundOut=(b:{halfX:number;halfZ:number;doubleSided?:boolean;background?:number;id?:string},squad=false)=>b.id==='ball-pitch'||b.id==='ball-court'?BALL_OUT:b.doubleSided||b.background!==undefined||smallFloor(b)?ENCLOSED_OUT:(b.id!==undefined&&!squad?OPEN_EDGE[b.id]:undefined)??-BOUND_MARGIN;
 /** When a stage boundary prevents the boom moving back, a local jump needs
  * vertical room instead. Ease this in over the last metre before the lens
  * reaches the boundary, not after the wall has already shortened the shot.
@@ -497,6 +501,9 @@ export function framingHeading(bearing:number,distance:number,shoulder:number,ba
 export class FollowCamera {
   /** Extra breathing room for squad modes. Zero preserves the established duel/Survival rig. */
   battlefield = false;
+  /** Metres of extra boom (and a share of it in lift) for a mode that wants the field seen from further back and above:
+   *  Goal Rush and Sky Spike (main.ts), so the ball and the far side are in view rather than the player's back. */
+  wide = 0;
   yaw=Math.PI;
   /** Horizontal view direction before cosmetic shake, used only to map input. */
   movementYaw=Math.PI;
@@ -1159,6 +1166,8 @@ export class FollowCamera {
       }
     }else{this.lockLook=0;this.lockAhead=0;this.foxness=0;}
     if(this.battlefield){size.boom+=1.5;size.lift+=.15;size.focus+=.3;}
+    // The ball modes' broadcast lift (main.ts sets it): further back and higher, looking down on the play.
+    if(this.wide>0){size.boom+=this.wide;size.lift+=this.wide*.55;size.focus+=this.wide*.12;}
     if(this.styleBlend>0)closeStyleRig(size,this.styleBlend,Math.tan(THREE.MathUtils.degToRad(this.baseFov)/2)*this.camera.aspect);
     this.boom=THREE.MathUtils.lerp(this.boom,size.boom,alpha);
     this.lift=THREE.MathUtils.lerp(this.lift,size.lift,alpha);

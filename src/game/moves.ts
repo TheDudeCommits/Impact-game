@@ -223,7 +223,7 @@ export interface AreaSpec {
   /** The move's name in Japanese, for the stamp's ring (presentation only). Unset: its element's kanji. */
   ja?: string;
   /** The move's name on its G card (src/ui/hud/cardNames.ts; presentation only): 16 characters or fewer, the name
-   *  players know where its own is longer ("Great Waterfall"). Unset: its name. The cast banner and the seal's ring
+   *  players know where its own is longer ("Dust Fall"). Unset: its name. The cast banner and the seal's ring
    *  keep the full name. */
   card?: string;
   /** What the impact looks like, for the effect the page picks for it (src/engine/vfx/matcher.ts): one blast
@@ -451,7 +451,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     special: { name: 'Sunpalm Cannon', duration: 1.75, contacts: [.75], damage: 122, range: 38, radius: 1.05, stamina: 30, cooldown: 4.2, stun: 1.12, knockback: 10, style: 'beam', outcome: 'wallBounce' },
   },
   gummy: {
-    // Round 3e (VARIETY): the rubber jab stays quick; the Bazooka is the
+    // Round 3e (VARIETY): the snapback jab stays quick; the Rogue Wave is the
     // heavy and punishing half of him - it winds up longer and lands harder
     // than anyone's but Gaunt'. The string carries a body back and off the
     // wall. (Round 4b: the special is a barrage now, the SUNSET BARRAGE.)
@@ -1243,7 +1243,7 @@ const REACH_OVERRIDE: Partial<Record<FighterId, Partial<Record<AttackSlot, numbe
   // measured at the blades' tips.)
   akagane: { light: 1, heavy: 1.35 },
   asahi: { light: 1.25, heavy: 1.3, special: 1.25 },
-  // Gaku's Scissors is the aura drawn out of his two fingers into a blade: the cut lands where the blade does, about a
+  // Gaku's Chain Jab is the aura drawn out of his two fingers into a blade: the cut lands where the blade does, about a
   // blade's length past the hand the measurement watches (0.44 m). His guard's straight (his own, 3 October) is a
   // small boy's: the fist out at its furthest 0.44 m ahead of him, a centimetre inside the pushbox, so his string
   // whiffed at touching distance (seen in Chrome). It takes the pushbox floor, as Konta's Senpugan does. First Comes

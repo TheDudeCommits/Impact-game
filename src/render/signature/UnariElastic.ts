@@ -9,25 +9,25 @@ import {MoveStage,stageLook} from './MoveStage';
 import { blowFloor } from './blowFloor';
 export { unariStrikeJoint } from './UnariElasticContact';
 export const isUnariElastic=(id:string|undefined)=>id==='unari';
-export const UNARI_GUM_LIMITS=Object.freeze({cards:48,strokes:240,rings:64,sparks:96,impacts:24,tethers:12});
+export const UNARI_STRAND_LIMITS=Object.freeze({cards:48,strokes:240,rings:64,sparks:96,impacts:24,tethers:12});
 const NO_FLIGHTS:ReadonlyMap<string,Flight>=new Map();
 const UP=new THREE.Vector3(0,1,0),FRONT=new THREE.Vector3(0,0,1),RIGHT=new THREE.Vector3(1,0,0);
-/** His own shapes' colours: ink that covers, and the gum and the cards' faces linear and over the bloom threshold (1.1). */
+/** His own shapes' colours: ink that covers, and the strand and the cards' faces linear and over the bloom threshold (1.1). */
 const PINK=new THREE.Color(2.7,.72,1.9),CORE=new THREE.Color(3,2.3,2.8),INK=new THREE.Color(0x3c123f),WHITE=new THREE.Color(0xfffcf7),CARD=new THREE.Color(1.9,1.84,1.8);
 /** The elastic: it stretches, sticks and snaps back, and it is pink. */
-const GUM=stageLook(0xffd9f2,0xf072cc,0x7a1f6a);
+const STRAND=stageLook(0xffd9f2,0xf072cc,0x7a1f6a);
 const HEAVY=UNARI_MOVES.heavy,SPECIAL=UNARI_MOVES.special,ULT=UNARI_MOVES.ultimate,ULT_LAST=ULT.contacts[ULT.contacts.length-1],TAU=Math.PI*2;
 const clamp=(v:number)=>Math.max(0,Math.min(1,v));
 /** AYATORI: Cat's Cradle's web: how many strands are strung to its victim, from how far out and how high (metres). */
 export const UNARI_ENCORE=Object.freeze({strands:6,radius:3.4,height:2.4,cards:10});
 type Confirm={actor:string;target:string;seq:number;final:boolean;turn:number};
-class GumBatch {
+class StrandBatch {
  readonly mesh:THREE.InstancedMesh<THREE.BufferGeometry,THREE.ShaderMaterial>;
  private tint:THREE.InstancedBufferAttribute;private pose=new THREE.Object3D();private count=0;
  constructor(scene:THREE.Scene,name:string,geometry:THREE.BufferGeometry,private capacity:number,card=false){
-  this.tint=new THREE.InstancedBufferAttribute(new Float32Array(capacity*4),4).setUsage(THREE.DynamicDrawUsage);geometry.setAttribute('gumTint',this.tint);
+  this.tint=new THREE.InstancedBufferAttribute(new Float32Array(capacity*4),4).setUsage(THREE.DynamicDrawUsage);geometry.setAttribute('strandTint',this.tint);
   const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false,
-   vertexShader:'attribute vec4 gumTint;varying vec4 vTint;varying vec2 vUv;void main(){vTint=gumTint;vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.);}',
+   vertexShader:'attribute vec4 strandTint;varying vec4 vTint;varying vec2 vUv;void main(){vTint=strandTint;vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.);}',
    fragmentShader:card?'varying vec4 vTint;varying vec2 vUv;void main(){vec2 p=abs(vUv-.5);float edge=step(.455,p.x)+step(.475,p.y);float suit=1.-step(.19,p.x+p.y*.72);vec2 corner=abs(vUv-vec2(.18,.81));float dot=1.-step(.065,corner.x+corner.y*.72);vec3 c=mix(vTint.rgb,vec3(.12,.025,.14),clamp(edge+suit+dot,0.,1.));gl_FragColor=vec4(c,vTint.a);}':'varying vec4 vTint;void main(){if(vTint.a<.004)discard;gl_FragColor=vTint;}'});
   this.mesh=new THREE.InstancedMesh(geometry,material,capacity);this.mesh.name='unari-'+name;this.mesh.frustumCulled=false;this.mesh.renderOrder=6;this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.mesh.count=0;scene.add(this.mesh);
  }
@@ -39,14 +39,14 @@ class GumBatch {
 type Receipt={actor:string;target:string;born:number;seed:number;grade:number;point:THREE.Vector3};
 type Tether={actor:string;target:string;born:number;seq:number;ultimate:boolean;endpoint:THREE.Vector3};
 export class UnariElastic {
- private cards:GumBatch;private strokes:GumBatch;private rings:GumBatch;private sparks:GumBatch;private disposed=false;
- private receipts:Receipt[]=Array.from({length:UNARI_GUM_LIMITS.impacts},()=>({actor:'',target:'',born:-1e9,seed:0,grade:0,point:new THREE.Vector3()}));
- private tethers:Tether[]=Array.from({length:UNARI_GUM_LIMITS.tethers},()=>({actor:'',target:'',born:-1e9,seq:-1,ultimate:false,endpoint:new THREE.Vector3()}));
+ private cards:StrandBatch;private strokes:StrandBatch;private rings:StrandBatch;private sparks:StrandBatch;private disposed=false;
+ private receipts:Receipt[]=Array.from({length:UNARI_STRAND_LIMITS.impacts},()=>({actor:'',target:'',born:-1e9,seed:0,grade:0,point:new THREE.Vector3()}));
+ private tethers:Tether[]=Array.from({length:UNARI_STRAND_LIMITS.tethers},()=>({actor:'',target:'',born:-1e9,seq:-1,ultimate:false,endpoint:new THREE.Vector3()}));
  private seen=new Float64Array(128).fill(-1);private seenTime=new Float64Array(128).fill(-1);private cursor=0;private tetherCursor=0;private seenCursor=0;
  private readonly stage:MoveStage;private dir=new THREE.Vector3();private ground=new THREE.Vector3();private centre=new THREE.Vector3();private hand=new THREE.Vector3();private confirmCursor=0;
  private confirms:Confirm[]=Array.from({length:8},()=>({actor:'',target:'',seq:-1,final:false,turn:0}));
  private a=new THREE.Vector3();private b=new THREE.Vector3();private p=new THREE.Vector3();private d=new THREE.Vector3();private along=new THREE.Vector3();private across=new THREE.Vector3();private normal=new THREE.Vector3();private last=new THREE.Vector3();private next=new THREE.Vector3();private q=new THREE.Quaternion();private spin=new THREE.Quaternion();private matrix=new THREE.Matrix4();
- constructor(scene:THREE.Scene,private kit:Pick<VfxKit,'budget'>&Partial<VfxKit>){this.stage=MoveStage.for(scene,kit);this.cards=new GumBatch(scene,'cards',new THREE.PlaneGeometry(1,1),UNARI_GUM_LIMITS.cards,true);this.strokes=new GumBatch(scene,'gum-ribbons',new THREE.BoxGeometry(1,1,1),UNARI_GUM_LIMITS.strokes);this.rings=new GumBatch(scene,'ink-cuts',new THREE.RingGeometry(.87,1,28,1,.15,Math.PI*1.45),UNARI_GUM_LIMITS.rings);this.sparks=new GumBatch(scene,'gum-shards',new THREE.BoxGeometry(1,1,1),UNARI_GUM_LIMITS.sparks);}
+ constructor(scene:THREE.Scene,private kit:Pick<VfxKit,'budget'>&Partial<VfxKit>){this.stage=MoveStage.for(scene,kit);this.cards=new StrandBatch(scene,'cards',new THREE.PlaneGeometry(1,1),UNARI_STRAND_LIMITS.cards,true);this.strokes=new StrandBatch(scene,'strand-ribbons',new THREE.BoxGeometry(1,1,1),UNARI_STRAND_LIMITS.strokes);this.rings=new StrandBatch(scene,'ink-cuts',new THREE.RingGeometry(.87,1,28,1,.15,Math.PI*1.45),UNARI_STRAND_LIMITS.rings);this.sparks=new StrandBatch(scene,'strand-shards',new THREE.BoxGeometry(1,1,1),UNARI_STRAND_LIMITS.sparks);}
  load(_ids:readonly string[]){return Promise.resolve();}
  handle(e:CombatEvent,fighters?:ReadonlyMap<string,Fighter>){
   if(this.disposed)return;
@@ -70,27 +70,27 @@ export class UnariElastic {
   const st=this.stage,t=e.serverTime,point=h.point,dir=this.dir,target=e.targetId?fighters?.get(e.targetId):undefined,floor=blowFloor(actor,target,actor.group.position.y);
   dir.subVectors(point,actor.group.position).setY(0);if(dir.lengthSq()<.01)dir.set(Math.sin(actor.state.yaw??0),0,Math.cos(actor.state.yaw??0));dir.normalize();
   const ground=this.ground.set(point.x,floor,point.z);
-  if(e.slot==='light'){st.burst(point,GUM,.42,t,{dir,floor,clean:true});return;}
+  if(e.slot==='light'){st.burst(point,STRAND,.42,t,{dir,floor,clean:true});return;}
   if(e.slot==='heavy'){
-   // The gum lands with the palm: a blast and a shell of it (the strand it leaves, stretching and snapping, is `update`'s).
-   const big=e.branch?.85:1;st.burst(point,GUM,.95*big,t,{dir,floor,clean:true});st.dome(this.a.copy(point).addScaledVector(dir,.35),GUM,2*big,t,.38);
+   // The strand lands with the palm: a blast and a shell of it (the strand it leaves, stretching and snapping, is `update`'s).
+   const big=e.branch?.85:1;st.burst(point,STRAND,.95*big,t,{dir,floor,clean:true});st.dome(this.a.copy(point).addScaledVector(dir,.35),STRAND,2*big,t,.38);
    return;
   }
   if(e.slot==='special'){
-   // Tripwire: the gum snapped down from the air. Tailspin: the rush's ender.
-   if(e.branch==='airSpecial'){st.burst(point,GUM,2,t,{floor});st.dome(point,GUM,3,t,.45);st.shock(ground,GUM,4.8,t,.45);st.scar(ground,GUM,2,t+.05,1.7);return;}
-   if(e.branch){st.burst(point,GUM,1.5,t,{dir,floor});return;}
-   // PAPER CUT lands: a blast (thrown back toward him: the gum is pulling), a shell of gum closing on them, a
+   // Tripwire: the strand snapped down from the air. Tailspin: the rush's ender.
+   if(e.branch==='airSpecial'){st.burst(point,STRAND,2,t,{floor});st.dome(point,STRAND,3,t,.45);st.shock(ground,STRAND,4.8,t,.45);st.scar(ground,STRAND,2,t+.05,1.7);return;}
+   if(e.branch){st.burst(point,STRAND,1.5,t,{dir,floor});return;}
+   // PAPER CUT lands: a blast (thrown back toward him: the strand is pulling), a shell of strand closing on them, a
    // ring over the floor, and the floor left pink.
-   st.burst(point,GUM,1.8,t,{dir:this.d.copy(dir).multiplyScalar(-1),floor});st.dome(point,GUM,2.5,t,.42);st.shock(ground,GUM,4.8,t,.5);st.scar(ground,GUM,1.7,t+.05,1.7);
+   st.burst(point,STRAND,1.8,t,{dir:this.d.copy(dir).multiplyScalar(-1),floor});st.dome(point,STRAND,2.5,t,.42);st.shock(ground,STRAND,4.8,t,.5);st.scar(ground,STRAND,1.7,t+.05,1.7);
    return;
   }
   if(!ultimate)return;
-  if(h.grade!==3){st.burst(point,GUM,.75+.1*(e.contactIndex??0),t,{dir,floor,clean:true});if((e.contactIndex??0)>=4)st.shock(ground,GUM,3.6+.3*(e.contactIndex??0),t,.4);return;}
+  if(h.grade!==3){st.burst(point,STRAND,.75+.1*(e.contactIndex??0),t,{dir,floor,clean:true});if((e.contactIndex??0)>=4)st.shock(ground,STRAND,3.6+.3*(e.contactIndex??0),t,.4);return;}
   for(const c of this.confirms)if(c.actor===e.actorId)c.final=true;
-  // AYATORI: CAT'S CRADLE's last blow: every strand lets go at once. A blast, a shell of gum thrown out, the floor
+  // AYATORI: CAT'S CRADLE's last blow: every strand lets go at once. A blast, a shell of strand thrown out, the floor
   // shaken and left pink (the storm of cards is `update`'s, from the receipt).
-  st.burst(point,GUM,2.6,t,{dir,floor});st.dome(point,GUM,4.6,t,.5);st.shock(ground,GUM,9,t,.6);st.scar(ground,GUM,3,t+.15,2.1);
+  st.burst(point,STRAND,2.6,t,{dir,floor});st.dome(point,STRAND,4.6,t,.5);st.shock(ground,STRAND,9,t,.6);st.scar(ground,STRAND,3,t+.15,2.1);
  }
  update(time:number,fighters:ReadonlyMap<string,Fighter>,flights:ReadonlyMap<string,Flight>=NO_FLIGHTS){
   if(this.disposed)return;const st=this.stage.open(time);this.cards.begin();this.strokes.begin();this.rings.begin();this.sparks.begin();const detail=this.kit.budget>=.65;
@@ -98,12 +98,12 @@ export class UnariElastic {
    const s=f.state;if(!isUnariElastic(s.fighter)||!s.alive)continue;const elapsed=s.actionTime*s.actionDuration,seed=(s.actionSeq??0)*3.7;
    if(s.whiffedAt===undefined&&(s.action==='light'||s.action==='heavy'||s.action==='special'||s.action==='ultimate')&&!(s.action==='ultimate'&&s.confirmedAt===undefined&&elapsed>ULT.contacts[0]+.1)){
     const power=Math.sin(clamp(s.actionTime)*Math.PI),strike=typeof f.strikePoint==='function'?f.strikePoint(this.hand):this.hand.copy(f.handR??f.group.position);
-    st.glow(strike,.28,GUM.main,.45*power);st.glow(strike,.11,GUM.core,.8*power);st.light(strike,1.9,GUM,.2*power);
+    st.glow(strike,.28,STRAND.main,.45*power);st.glow(strike,.11,STRAND.core,.8*power);st.light(strike,1.9,STRAND,.2*power);
     if(s.action==='heavy'&&!s.branch&&elapsed<HEAVY.contacts[0]){
-     // Snag's wind-up: the gum stretched between his hands, gathered on the palm that will plant it.
-     const k=clamp(elapsed/HEAVY.contacts[0]);st.charge(strike,GUM,.22,k,seed);if(f.handL&&f.handR)this.ribbon(f.handL,f.handR,-.12*Math.sin(k*Math.PI),.9*k,detail?8:5);
-    }else if(s.action==='special'&&!s.branch&&elapsed<SPECIAL.contacts[0])st.charge(strike,GUM,.3,clamp(elapsed/SPECIAL.contacts[0]),seed);
-    else if(s.action==='ultimate'&&!s.branch&&s.confirmedAt===undefined)st.charge(strike,GUM,.28,clamp(elapsed/ULT.contacts[0]),seed);
+     // Snag's wind-up: the strand stretched between his hands, gathered on the palm that will plant it.
+     const k=clamp(elapsed/HEAVY.contacts[0]);st.charge(strike,STRAND,.22,k,seed);if(f.handL&&f.handR)this.ribbon(f.handL,f.handR,-.12*Math.sin(k*Math.PI),.9*k,detail?8:5);
+    }else if(s.action==='special'&&!s.branch&&elapsed<SPECIAL.contacts[0])st.charge(strike,STRAND,.3,clamp(elapsed/SPECIAL.contacts[0]),seed);
+    else if(s.action==='ultimate'&&!s.branch&&s.confirmedAt===undefined)st.charge(strike,STRAND,.28,clamp(elapsed/ULT.contacts[0]),seed);
    }
    const held=s.action!=='special'||s.branch||elapsed<.42;
    if(held&&this.cardFrame(f,this.a,this.q))this.cards.add(this.a,this.q,.075,.115,1,WHITE,1);
@@ -117,7 +117,7 @@ export class UnariElastic {
    // Paper Cut: ONE authoritative projectile, dealt as a fan of five (the four round it turn about its line).
    this.across.set(flight.heading.z,0,-flight.heading.x);
    for(let i=0;i<4;i++){const ang=time*7+i*TAU/4;this.p.copy(flight.position).addScaledVector(flight.heading,-.25-.12*i).addScaledVector(this.across,Math.cos(ang)*.55);this.p.y+=Math.sin(ang)*.42;this.spin.setFromAxisAngle(FRONT,time*(15+i*3)+i);this.q.setFromUnitVectors(FRONT,flight.heading).multiply(this.spin);this.cards.add(this.p,this.q,.34,.49,1,CARD,.95);}
-   st.glow(flight.position,.85,GUM.main,.55);st.glow(flight.position,.3,GUM.core,.8);st.light(this.p.copy(flight.position).setY(flight.position.y+.2),5,GUM,.5);
+   st.glow(flight.position,.85,STRAND.main,.55);st.glow(flight.position,.3,STRAND.core,.8);st.light(this.p.copy(flight.position).setY(flight.position.y+.2),5,STRAND,.5);
    // The strand they are tied to: out behind them to the hand that dealt them, stretching as they fly.
    const dealer=flight.actorId?fighters.get(flight.actorId):undefined;
    if(dealer?.handR)this.ribbon(dealer.handR,flight.position,-.3,.85,detail?10:6);else{this.a.copy(flight.position).addScaledVector(flight.heading,-.7);this.ribbon(this.a,flight.position,.025,.7,detail?6:3);}
@@ -148,8 +148,8 @@ export class UnariElastic {
   }
   this.cards.end();this.strokes.end();this.rings.end();this.sparks.end();st.close();
  }
- /** AYATORI: Cat's Cradle from the confirm to the last blow: the room to night and his victim strung up. Strands of gum
-  *  from six points round and above them to their body, trembling; his cards turning round them; the gum's light on
+ /** AYATORI: Cat's Cradle from the confirm to the last blow: the room to night and his victim strung up. Strands of strand
+  *  from six points round and above them to their body, trembling; his cards turning round them; the strand's light on
   *  them. Never from his own side of them: he stands a stride away with the lens behind him. */
  private encore(actor:Fighter,victim:Fighter,c:Confirm,elapsed:number,time:number,detail:boolean){
   const st=this.stage,E=UNARI_ENCORE,g=clamp((elapsed-ULT.contacts[0])/(ULT_LAST-ULT.contacts[0])),body=bodyCentre(victim,this.centre),floor=victim.group.position.y;
@@ -162,20 +162,20 @@ export class UnariElastic {
    this.a.set(body.x+Math.sin(ang)*E.radius,floor+E.height+.8*Math.sin(i*2.1),body.z+Math.cos(ang)*E.radius);
    this.b.copy(this.a).lerp(body,grown);
    this.ribbon(this.a,this.b,-.28+.06*Math.sin(time*23+i*2),.9,detail?9:5);
-   st.glow(this.a,.3,GUM.main,.5);
+   st.glow(this.a,.3,STRAND.main,.5);
   }
   for(let i=0,n=detail?E.cards:5;i<n;i++){
    const ang=i*TAU/n+time*(2.2+1.8*g);if(Math.cos(ang)*hz+Math.sin(ang)*hx>.35)continue;
    this.p.set(body.x+Math.sin(ang)*2.1,body.y-.3+.9*Math.sin(time*2+i*1.7),body.z+Math.cos(ang)*2.1);
    this.q.setFromAxisAngle(UP,ang+Math.PI/2);this.spin.setFromAxisAngle(FRONT,time*9+i);this.q.multiply(this.spin);this.cards.add(this.p,this.q,.3,.43,1,CARD,.95);
   }
-  st.light(this.p.copy(body).setY(body.y+.3),4.5,GUM,.3+.25*g);
+  st.light(this.p.copy(body).setY(body.y+.3),4.5,STRAND,.3+.25*g);
   if(g>.8)st.speed(.5*(g-.8)/.2,c.actor,c.target);
  }
  private cardFrame(f:Fighter,out:THREE.Vector3,q:THREE.Quaternion){const index=f.bones?.get('righthandindex2'),middle=f.bones?.get('righthandmiddle2'),base=f.bones?.get('righthandindex1');if(!index||!middle||!base)return false;index.getWorldPosition(this.a);middle.getWorldPosition(this.b);base.getWorldPosition(this.p);this.along.subVectors(this.a,this.p).normalize();this.across.subVectors(this.b,this.a).normalize();this.normal.crossVectors(this.across,this.along).normalize();this.across.crossVectors(this.along,this.normal).normalize();this.matrix.makeBasis(this.across,this.along,this.normal);q.setFromRotationMatrix(this.matrix);out.copy(this.a).add(this.b).multiplyScalar(.5).addScaledVector(this.along,.034);return true;}
  /** A strand of the elastic from `a` to `b`, sagging (or pulled up) by `sag` metres at its middle: his ink ribbon with
   *  its pink heart, and the stage's lit strokes over it, as thick as a wrist. */
- private ribbon(a:THREE.Vector3,b:THREE.Vector3,sag:number,alpha:number,steps:number){this.last.copy(a);for(let i=1;i<=steps;i++){const t=i/steps;this.next.copy(a).lerp(b,t);this.next.y+=Math.sin(t*Math.PI)*sag;this.segment(this.last,this.next,.05,INK,alpha*.75);this.segment(this.last,this.next,.026,PINK,alpha);this.stage.streak(this.last,this.next,.075,GUM.main,alpha*.9);this.stage.streak(this.last,this.next,.024,GUM.core,alpha*1.2);this.last.copy(this.next);}}
+ private ribbon(a:THREE.Vector3,b:THREE.Vector3,sag:number,alpha:number,steps:number){this.last.copy(a);for(let i=1;i<=steps;i++){const t=i/steps;this.next.copy(a).lerp(b,t);this.next.y+=Math.sin(t*Math.PI)*sag;this.segment(this.last,this.next,.05,INK,alpha*.75);this.segment(this.last,this.next,.026,PINK,alpha);this.stage.streak(this.last,this.next,.075,STRAND.main,alpha*.9);this.stage.streak(this.last,this.next,.024,STRAND.core,alpha*1.2);this.last.copy(this.next);}}
  private segment(a:THREE.Vector3,b:THREE.Vector3,width:number,color:THREE.Color,alpha:number){this.p.copy(a).add(b).multiplyScalar(.5);const length=a.distanceTo(b);if(length<1e-5)return;this.d.subVectors(b,a).normalize();this.q.setFromUnitVectors(UP,this.d);this.strokes.add(this.p,this.q,width,length,width,color,alpha);}
  reset(){for(const h of this.receipts)h.actor='';for(const t of this.tethers)t.actor='';for(const c of this.confirms)c.actor='';this.seen.fill(-1);this.seenTime.fill(-1);for(const batch of[this.cards,this.strokes,this.rings,this.sparks]){batch.begin();batch.end();}this.stage.reset();}
  dispose(){if(this.disposed)return;this.reset();this.disposed=true;this.cards.dispose();this.strokes.dispose();this.rings.dispose();this.sparks.dispose();this.stage.release();}

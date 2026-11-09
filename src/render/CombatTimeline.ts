@@ -38,8 +38,10 @@ export class CombatTimeline {
   private offsetMs: number | null = null;
   private jitterMs = 0;
 
-  constructor(options: { delayMs?: number } = {}) {
-    this.delayMs = options.delayMs ?? 60;
+  /** How many snapshots it holds (a ball match's replay keeps a few seconds of them: render/ball/BallReplay.ts). */
+  private readonly keep: number;
+  constructor(options: { delayMs?: number; keep?: number } = {}) {
+    this.delayMs = options.delayMs ?? 60; this.keep = options.keep ?? MAX_SNAPSHOTS;
     if (!Number.isFinite(this.delayMs) || this.delayMs < 0) throw new Error('Visual delay must be a nonnegative number');
   }
 
@@ -104,7 +106,7 @@ export class CombatTimeline {
     else if (this.snapshots[index].serverTime === snapshot.serverTime) {
       if (snapshot.tick >= this.snapshots[index].tick) this.snapshots[index] = copy;
     } else this.snapshots.splice(index, 0, copy);
-    if (this.snapshots.length > MAX_SNAPSHOTS) this.snapshots.splice(0, this.snapshots.length - MAX_SNAPSHOTS);
+    if (this.snapshots.length > this.keep) this.snapshots.splice(0, this.snapshots.length - this.keep);
     for(const [id,anchors] of this.landings){
       const current=anchors.filter(a=>a.serverTime>=this.snapshots[0].serverTime);
       if(current.length)this.landings.set(id,current);else this.landings.delete(id);

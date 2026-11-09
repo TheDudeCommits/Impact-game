@@ -372,7 +372,7 @@ const HELD_SLACK=.25;
 /** A won match, in preference order. The loop is preferred over the one-shot
  *  because the round is over and he can hold it; four of the ten ship one and
  *  the rest fall back to their idle, which is what all ten did before. */
-const VICTORY=['Cardo Victory','Bruin Victory','Aquilo Victory','Svanhild Victory','Chohan Victory','Aqrab Victory','Tsubute Victory','Psyche Victory','Ovid Resolve','Hawser Victory','Colossus Victory','Rotfalke Victory','Gratitude','Pilot Steady','Kinu Victory','Madake Victory','Shakudo Victory','Minase Victory','Onigawara Victory','Kubiwa Victory','Torsion Victory','Highsun Victory','Lanthorn Victory','Hikui Victory','Ume Victory','Tokan Victory','Strappado Victory','Unari Victory','Barrow Victory','Kusushi Victory','Hakushi Victory','Suzuran Victory','Wataame Victory','Senko Victory','Buna Victory','Oyashio Victory','Adad Victory','Shijima Victory','Akaito Victory','Tempo Victory','Tancho Victory','Bellows Victory','Mikage Victory','Old Fire Salute','victory_lp','victory','Konta pose','_Idle','Idle','taisei-ready','stance'];
+const VICTORY=['Cardo Victory','Bruin Victory','Aquilo Victory','Svanhild Victory','Chohan Victory','Aqrab Victory','Tsubute Victory','Psyche Victory','Ovid Resolve','Hawser Victory','Colossus Victory','Rotfalke Victory','Bonsho Victory','Pilot Steady','Kinu Victory','Madake Victory','Shakudo Victory','Minase Victory','Onigawara Victory','Kubiwa Victory','Torsion Victory','Highsun Victory','Lanthorn Victory','Hikui Victory','Ume Victory','Tokan Victory','Strappado Victory','Unari Victory','Barrow Victory','Kusushi Victory','Hakushi Victory','Suzuran Victory','Wataame Victory','Senko Victory','Buna Victory','Oyashio Victory','Adad Victory','Shijima Victory','Akaito Victory','Tempo Victory','Tancho Victory','Bellows Victory','Mikage Victory','Old Fire Salute','victory_lp','victory','Konta pose','_Idle','Idle','taisei-ready','stance'];
 /** The feel pass, iteration twelve: a victory authored in two parts (scripts/fanim/victories.py) - this,
  *  the move into the pose, played once from the start of the win and held on its last frame, then the pose's own
  *  breathing loop (VICTORY's `victory_lp`), which starts on that frame. A clip that loops replays whatever it opens
@@ -673,7 +673,7 @@ export function clipMotionTable(clip:THREE.AnimationClip):Float32Array{
   // The BUSIEST joint's turn between samples, not the sum over joints. A sum
   // is uniform when the body as a whole moves evenly, which still lets one
   // leg take the whole frame's budget while nothing else moves - measured,
-  // Kosho's Collier turned a hip 56 degrees in a frame at the average rate.
+  // Kosho's Amuse-Bouche turned a hip 56 degrees in a frame at the average rate.
   // The largest turn is the thing a strobe is made of, so it is the thing
   // held even.
   for(const track of clip.tracks){
@@ -2081,7 +2081,7 @@ export class Fighter {
   private swap?:Transplanted;
   /** This body's rig - its file's scene, untouched - its clips, and the take it draws `state` with, as `update` would
    *  (Taisei's measured melee first): what the transplant fits another fighter's move from and onto. */
-  take(state:PlayerState){return {scene:this.source.scene,clips:this.clips,clip:this.groundedMelee(state)?.clip??this.clipFor(state),form:this.gear4};}
+  take(state:PlayerState){return {scene:this.source.scene,clips:this.clips,clip:this.groundedMelee(state)?.clip??this.clipFor(state),form:this.awakenedForm};}
   /** The 30 Hz pose grid every body steps on together (see AnimStyle 'twos'):
    *  set once a frame, before the bodies update, by `beginFrame`. */
   static stepTick=0;
@@ -2098,7 +2098,7 @@ export class Fighter {
   readonly handL=new THREE.Vector3();
   state:PlayerState;
   private active?:THREE.AnimationAction;
-  private gear4?:Fighter;
+  private awakenedForm?:Fighter;
   private carriedVelocity?:THREE.Vector3;
   private formReveal=0;
   private formEye={value:new THREE.Vector3(0,1000,0)};
@@ -2138,22 +2138,22 @@ export class Fighter {
     // throwing the ender's.
     const worn=look.formTint!==undefined,names=new Set(COMBO_KEYS.map(key=>comboClip(this.state.fighter,key)?.clip).filter((name):name is string=>!!name));
     const carried=worn?this.clips.filter(c=>names.has(c.name)&&!source.animations.some(a=>a.name===c.name)):[];
-    this.gear4=new Fighter({...this.state,x:0,y:0,z:0,yaw:0},source,true,carried.length?bindClips(source.scene,carried,`${this.state.fighter} form`):undefined);
-    this.gear4.owner=this;
-    this.group.add(this.gear4.group);
-    this.gear4.group.visible=false;
-    const formRoot=this.gear4.group,update=formRoot.updateMatrixWorld;
+    this.awakenedForm=new Fighter({...this.state,x:0,y:0,z:0,yaw:0},source,true,carried.length?bindClips(source.scene,carried,`${this.state.fighter} form`):undefined);
+    this.awakenedForm.owner=this;
+    this.group.add(this.awakenedForm.group);
+    this.awakenedForm.group.visible=false;
+    const formRoot=this.awakenedForm.group,update=formRoot.updateMatrixWorld;
     formRoot.updateMatrixWorld=function(this:THREE.Object3D,force?:boolean){if(this.visible)update.call(this,force);};
     // Every model is normalised to one height, so without this the awakened
     // body is exactly as big as the base one - and Full Swell is not.
-    this.gear4.group.scale.setScalar(look.formScale??1);
-    this.gear4.group.position.z=look.formForward??0;
+    this.awakenedForm.group.scale.setScalar(look.formScale??1);
+    this.awakenedForm.group.position.z=look.formForward??0;
     if(this.state.fighter==='konta'){
       // The surface and both shadow paths use the same dither and main-camera
       // eye. Otherwise invisible tails still cast solid shadows on the floor.
-      for(const body of [this,this.gear4])body.model.traverse(object=>{
+      for(const body of [this,this.awakenedForm])body.model.traverse(object=>{
         const mesh=object as THREE.SkinnedMesh;if(!mesh.isSkinnedMesh)return;
-        const fox=body===this.gear4;
+        const fox=body===this.awakenedForm;
         if(fox&&!mesh.geometry.hasAttribute('foxTailWeight')){
           const indices=mesh.geometry.getAttribute('skinIndex'),weights=mesh.geometry.getAttribute('skinWeight');
           const tail=new Float32Array(indices.count);
@@ -2197,13 +2197,13 @@ export class Fighter {
       });
     }
     if(look.formTint===undefined){
-      this.formHover=this.gear4.restHover();
-      this.gear4.group.position.y=-this.formHover;
+      this.formHover=this.awakenedForm.restHover();
+      this.awakenedForm.group.position.y=-this.formHover;
     }
     // A summon is worn: tinted, translucent, and the fighter stays inside it.
     if(look.formTint!==undefined){
       const tint=new THREE.Color(look.formTint);
-      this.gear4.model.traverse(o=>{
+      this.awakenedForm.model.traverse(o=>{
         const mesh=o as THREE.Mesh;
         if(!mesh.isMesh)return;
         mesh.castShadow=false;
@@ -2250,7 +2250,7 @@ export class Fighter {
    *  a take hangs a foot lower than standing, so no sole comes within the float of the tile. In the air and being
    *  thrown about, the lifted rest alone. */
   private floatForm(dt:number,real:number,state:PlayerState,elapsed:number){
-    const form=this.gear4!;
+    const form=this.awakenedForm!;
     if(state.grounded&&!this.formWasGrounded)this.formLandedAt=this.floatClock;
     this.formWasGrounded=state.grounded;this.floatClock+=real;
     const arriving=state.action==='awaken'?THREE.MathUtils.smoothstep(elapsed,awakeningSwapAt(state.fighter),AWAKENING_ENTRY):1;
@@ -2271,13 +2271,13 @@ export class Fighter {
     form.group.position.y=this.floatOffset;
   }
   /** Where the transformation's body sits under the fighter, for the tests. */
-  get formOffset(){return this.gear4?.group.position.y;}
+  get formOffset(){return this.awakenedForm?.group.position.y;}
   /** How far the transformation's lowest sole is off the fighter's floor, as
    *  drawn this frame; undefined while no form is showing. For the tests. */
   formSole(){
-    if(!this.gear4||!this.gear4.group.visible)return undefined;
-    this.gear4.group.updateMatrixWorld(true);
-    const lowest=this.gear4.lowestSupport();
+    if(!this.awakenedForm||!this.awakenedForm.group.visible)return undefined;
+    this.awakenedForm.group.updateMatrixWorld(true);
+    const lowest=this.awakenedForm.lowestSupport();
     return Number.isFinite(lowest)?lowest-this.group.getWorldPosition(this.fallback).y:undefined;
   }
   private actionKey='';
@@ -2528,7 +2528,7 @@ export class Fighter {
     // take every hit without a twitch, because only the fighter they hang
     // under was ever told about one. A worn Guardian is a shell the fighter
     // stands inside, and the fighter takes the hit.
-    if(this.gear4?.group.visible&&AWAKENINGS[this.state.fighter].kind==='form')this.gear4.impact(recipient,slot,style,contactIndex,direction,damage,height,detail,blow??null);
+    if(this.awakenedForm?.group.visible&&AWAKENINGS[this.state.fighter].kind==='form')this.awakenedForm.impact(recipient,slot,style,contactIndex,direction,damage,height,detail,blow??null);
   }
   /** A blow landing on this body: from its event (`impact`), or from the
    *  attacker's striking surface arriving in it where it is drawn (a touch,
@@ -3533,7 +3533,7 @@ export class Fighter {
    *  or more from it, and anything that has to sit ON the body - the lock-on
    *  marker, a name tag, a hit spark - wants this rather than the group. */
   visualCenter(out:THREE.Vector3):THREE.Vector3{
-    if(this.gear4?.group.visible&&!this.model.visible&&!this.worn)return this.gear4.visualCenter(out);
+    if(this.awakenedForm?.group.visible&&!this.model.visible&&!this.worn)return this.awakenedForm.visualCenter(out);
     const hips=this.pelvis,top=this.joints.get('Neck')??this.joints.get('Spine2')??this.headBone;
     if(!hips)return out.copy(this.group.position).addScaledVector(UP,1.1);
     hips.getWorldPosition(out);
@@ -3546,7 +3546,7 @@ export class Fighter {
   restCenter(out:THREE.Vector3):THREE.Vector3{return this.visualCenter(out).sub(this.push);}
   /** The body being drawn for this fighter: a replacement form's while one
    *  stands in, else its own. A worn shell leaves the fighter drawn. */
-  private drawnBody():Fighter{return this.gear4&&this.gear4.group.visible&&!this.model.visible?this.gear4:this;}
+  private drawnBody():Fighter{return this.awakenedForm&&this.awakenedForm.group.visible&&!this.model.visible?this.awakenedForm:this;}
   /** The body drawn now: the form's, while it shows (EmperorEffects copies it for False Encore's illusion). */
   get shownBody():Fighter{return this.drawnBody();}
   /** The displayed source clock, shared with native command-driven limbs. */
@@ -3889,7 +3889,7 @@ export class Fighter {
   }
   private lockTakes:({clip:THREE.AnimationClip;from:number;to:number;contact:number}|null|undefined)[]=[];
   /** Build the rush plan now rather than on the first rush of a match. */
-  prepareRush(){this.rushPlan??=this.planRush();this.prepareMoves();this.gear4?.prepareRush();}
+  prepareRush(){this.rushPlan??=this.planRush();this.prepareMoves();this.awakenedForm?.prepareRush();}
   /** Everything a move builds the first time it is drawn, built now - which
    *  for the roster is the loading screen's warm-up, and for a fighter in a
    *  match the frame it arrives - rather than on the frame the move is used.
@@ -4485,7 +4485,7 @@ export class Fighter {
    *  footage is a stall on screen. Both put the contact frame on the
    *  contact. Never a mix of the two paths at one instant: a blend of two
    *  monotone paths is monotone but its speed is neither's, and measured it
-   *  put a sixty-nine degree frame into Kosho's Collier that neither path
+   *  put a sixty-nine degree frame into Kosho's Amuse-Bouche that neither path
    *  had. */
   private static windUp(t:number,at:number,fraction:number,D:number,clip:THREE.AnimationClip,natural:number){
     const table=natural>=PACE_BAND[0]?clipMotionTable(clip):null;
@@ -5015,7 +5015,7 @@ export class Fighter {
   }
   /** The largest single-joint gap the last `poseDistance` saw, in radians.
    *  The mean is what sizes a transition; the widest joint is what shows.
-   *  Kosho's idle has his hands in his pockets and Collier swings the arms:
+   *  Kosho's idle has his hands in his pockets and Amuse-Bouche swings the arms:
    *  the mean over twenty joints called that a near pose and gave the entry
    *  three frames, and the forearm turned fifty-five degrees in one. */
   private poseGapMax=0;
@@ -6376,7 +6376,7 @@ export class Fighter {
     // Round 3d (owner): an awakened spirit's user no longer steps out of the
     // fight - the spirit looms over them instead (SwordSpiritEffects' LOOM), so
     // the body stays drawn.
-    if(this.gear4){
+    if(this.awakenedForm){
       // Awakening owns the form model now: Full Swell and the NIGHTFALL are
       // the body for the whole window, not a flash inside one move. The swap
       // lands part-way through the transformation, behind the aura burst.
@@ -6400,7 +6400,7 @@ export class Fighter {
       const until=state.fighter==='gummy'?grandTideOut(state,WHIFF_RECOVERY):state.actionDuration-.23;
       let show=transformed||(state.fighter!=='konta'&&!OWN_BODY_ULTIMATE.has(state.fighter)&&!worn&&!state.awakened&&state.action==='ultimate'&&!this.swap
         &&fromStart&&elapsed<until);
-      this.model.visible=!show||worn;this.gear4.group.visible=show;
+      this.model.visible=!show||worn;this.awakenedForm.group.visible=show;
       // Round 5 (GUMMY): a float the form is not drawn in starts from the floor the next time it is.
       if(!show)this.formLift=this.floatOffset=0;
       if(state.fighter==='konta'){
@@ -6409,18 +6409,18 @@ export class Fighter {
         const goal=state.awakened?(state.action==='awaken'?THREE.MathUtils.smoothstep(elapsed,swap,Math.min(AWAKENING_ENTRY,swap+.4)):1):0;
         this.formReveal+=THREE.MathUtils.clamp(goal-this.formReveal,-real*6,real*6);
         if(!state.awakened&&ATTACK_SLOTS.has(state.action))this.formReveal=0;
-        show=this.formReveal>.001;this.gear4.group.visible=show;this.model.visible=this.formReveal<.999;
-        this.formOpacity.value=1-this.formReveal;this.gear4.formOpacity.value=this.formReveal;
+        show=this.formReveal>.001;this.awakenedForm.group.visible=show;this.model.visible=this.formReveal<.999;
+        this.formOpacity.value=1-this.formReveal;this.awakenedForm.formOpacity.value=this.formReveal;
         for(const material of this.outlineMaterials)material.opacity=1-this.formReveal;
-        for(const material of this.gear4.outlineMaterials)material.opacity=this.formReveal;
+        for(const material of this.awakenedForm.outlineMaterials)material.opacity=this.formReveal;
       }
       if(show){
-        this.gear4.targetDistance=this.targetDistance;this.gear4.cameraPoint=this.cameraPoint;
-        this.gear4.carriedVelocity=(this.gear4.carriedVelocity??new THREE.Vector3()).copy(this.velocity).divideScalar(this.gear4.group.scale.x);
-        this.gear4.unseen=this.unseen;
+        this.awakenedForm.targetDistance=this.targetDistance;this.awakenedForm.cameraPoint=this.cameraPoint;
+        this.awakenedForm.carriedVelocity=(this.awakenedForm.carriedVelocity??new THREE.Vector3()).copy(this.velocity).divideScalar(this.awakenedForm.group.scale.x);
+        this.awakenedForm.unseen=this.unseen;
         // (Round 5, GUMMY: a floating SUNRISE is placed at its float - floatForm - which its own update puts its body at.)
-        this.gear4.update(dt,{...state,x:0,y:this.gear4.floating?this.floatOffset:0,z:AWAKENINGS[state.fighter].formForward??0,yaw:0},true,real);
-        this.gear4.contactShadow.visible=false;
+        this.awakenedForm.update(dt,{...state,x:0,y:this.awakenedForm.floating?this.floatOffset:0,z:AWAKENINGS[state.fighter].formForward??0,yaw:0},true,real);
+        this.awakenedForm.contactShadow.visible=false;
         if(!worn){
           // The standing offset is baked at attach; this is drift. The sole's
           // height over a form's own cycle is not a ground signal - Kurobi's
@@ -6431,20 +6431,20 @@ export class Fighter {
           // a sole under the tile is wrong wherever it is. Rate limited, and
           // never proportional: a gain of one on a per-frame minimum was a
           // 0.44 m vertical teleport.
-          const y=this.gear4.group.position.y;
+          const y=this.awakenedForm.group.position.y;
           // Round 5 (GUMMY): SUNRISE floats (gummy/sunrise.ts): his own placing, below.
-          if(this.gear4.floating)this.floatForm(dt,real,state,elapsed);
+          if(this.awakenedForm.floating)this.floatForm(dt,real,state,elapsed);
           else if(state.grounded&&!REACTION_ACTIONS.has(state.action)){
-            this.gear4.group.updateMatrixWorld(true);
-            const lowest=this.gear4.lowestSupport();
+            this.awakenedForm.group.updateMatrixWorld(true);
+            const lowest=this.awakenedForm.lowestSupport();
             if(Number.isFinite(lowest)&&dt>0){
               const sink=this.group.position.y-lowest;
               this.formSink=Math.min(this.formSink+dt*.5,sink);
               this.formFloat=Math.min(this.formFloat+dt*.5,-sink);
-              const standing=STANCE_ACTIONS.has(state.action)&&this.gear4.strideWeight<.02;
+              const standing=STANCE_ACTIONS.has(state.action)&&this.awakenedForm.strideWeight<.02;
               const delta=this.formSink>0?Math.min(this.formSink,.25):standing&&this.formFloat>0?-Math.min(this.formFloat,.25):0;
               const target=THREE.MathUtils.clamp(y+delta,-this.formHover-.9,-this.formHover+.4);
-              this.gear4.group.position.y+=THREE.MathUtils.clamp((target-y)*(1-Math.exp(-dt*22)),-.6*dt,.6*dt);
+              this.awakenedForm.group.position.y+=THREE.MathUtils.clamp((target-y)*(1-Math.exp(-dt*22)),-.6*dt,.6*dt);
             }
           }else if(dt>0){
             this.formSink=this.formFloat=Infinity;
@@ -6452,16 +6452,16 @@ export class Fighter {
             // fighter left - lifted by what its soles are short, as the fighter's own body is, quickly up.
             let rest=-this.formHover;
             if(this.thrown(state)){
-              this.gear4.group.updateMatrixWorld(true);
-              const lowest=this.gear4.lowestSupport();
+              this.awakenedForm.group.updateMatrixWorld(true);
+              const lowest=this.awakenedForm.lowestSupport();
               if(Number.isFinite(lowest))rest+=THREE.MathUtils.clamp(this.groundY+.006-(lowest-(y-rest)),0,FLOOR_GUARD);
             }
-            this.gear4.group.position.y+=rest>y?Math.min(rest-y,FLOOR_GUARD_RATE*dt):(rest-y)*(1-Math.exp(-dt*6));
+            this.awakenedForm.group.position.y+=rest>y?Math.min(rest-y,FLOOR_GUARD_RATE*dt):(rest-y)*(1-Math.exp(-dt*6));
           }
         }
         // A replacement body owns the hands effects are placed from; a worn one
         // does not, or every Shrike Bolt would light up inside a giant's fist.
-        if(!worn&&(FIGHTER_SOCKETS[state.fighter]?.formHands!=='awakened'||state.awakened)){this.handR.copy(this.gear4.handR);this.handL.copy(this.gear4.handL);}
+        if(!worn&&(FIGHTER_SOCKETS[state.fighter]?.formHands!=='awakened'||state.awakened)){this.handR.copy(this.awakenedForm.handR);this.handL.copy(this.awakenedForm.handL);}
         // Fade the shell out as the eye approaches rather than filling the
         // frame with purple: against a wall the camera has nowhere else to go.
         if(worn&&this.formMaterials.length){
@@ -6480,7 +6480,7 @@ export class Fighter {
           // Off entirely rather than a faint wash: backed into a corner the
           // camera has nowhere to go, and a two-per-cent Guardian across the
           // whole frame is worse than no Guardian at all.
-          this.gear4.group.visible=near>.08;
+          this.awakenedForm.group.visible=near>.08;
         }
       }
     }
@@ -8430,7 +8430,7 @@ export class Fighter {
   /** How far the corpse has been tidied into its downed pose, for the tests. */
   get settledDead(){return this.deathSettle;}
 
-  motionEvidence(){const relative=(b:THREE.Object3D|undefined)=>b?this.group.worldToLocal(b.getWorldPosition(new THREE.Vector3())).toArray():null;return {model:this.isForm?FIGHTERS[this.state.fighter].formModel:this.outfit?.model??FIGHTERS[this.state.fighter].model,modelVisible:this.model.visible,formVisible:this.gear4?.group.visible??false,formClip:this.gear4?.active?.getClip().name,formClipTime:this.gear4?.active?.time,formSpeed:this.gear4?.locomotionSpeed,formLift:Number(this.formLiftDrawn.toFixed(3)),formHover:this.gear4?Number(this.formHover.toFixed(3)):undefined,formOffset:this.gear4?Number(this.gear4.group.position.y.toFixed(3)):undefined,formSole:this.gear4?.group.visible?Number((this.formSole()??NaN).toFixed(3)):undefined,action:this.state.action,elapsed:this.state.actionTime*this.state.actionDuration,duration:this.state.actionDuration,clip:this.active?.getClip().name,clipTime:this.active?.time,clipRate:this.active?.timeScale,soleGap:Number(this.soleGap.toFixed(4)),springBones:this.secondary?.boneCount??0,springSwing:this.secondary?.swingDegrees??0,aim:Number(this.aimWeight.toFixed(3)),rootOffset:Number(this.rootOffset.toFixed(3)),hold:Number(this.chargeHold.toFixed(3)),life:Number(this.holdWeight.toFixed(3)),rubber:Number(this.rubberSpan.toFixed(3)),handR:relative(this.rightBone),head:relative(this.headBone),drawn:[Number(this.group.position.x.toFixed(3)),Number(this.group.position.z.toFixed(3))],blend:this.blendDuration>0?Number(Math.min(1,this.blendTime/this.blendDuration).toFixed(3)):undefined};}
+  motionEvidence(){const relative=(b:THREE.Object3D|undefined)=>b?this.group.worldToLocal(b.getWorldPosition(new THREE.Vector3())).toArray():null;return {model:this.isForm?FIGHTERS[this.state.fighter].formModel:this.outfit?.model??FIGHTERS[this.state.fighter].model,modelVisible:this.model.visible,formVisible:this.awakenedForm?.group.visible??false,formClip:this.awakenedForm?.active?.getClip().name,formClipTime:this.awakenedForm?.active?.time,formSpeed:this.awakenedForm?.locomotionSpeed,formLift:Number(this.formLiftDrawn.toFixed(3)),formHover:this.awakenedForm?Number(this.formHover.toFixed(3)):undefined,formOffset:this.awakenedForm?Number(this.awakenedForm.group.position.y.toFixed(3)):undefined,formSole:this.awakenedForm?.group.visible?Number((this.formSole()??NaN).toFixed(3)):undefined,action:this.state.action,elapsed:this.state.actionTime*this.state.actionDuration,duration:this.state.actionDuration,clip:this.active?.getClip().name,clipTime:this.active?.time,clipRate:this.active?.timeScale,soleGap:Number(this.soleGap.toFixed(4)),springBones:this.secondary?.boneCount??0,springSwing:this.secondary?.swingDegrees??0,aim:Number(this.aimWeight.toFixed(3)),rootOffset:Number(this.rootOffset.toFixed(3)),hold:Number(this.chargeHold.toFixed(3)),life:Number(this.holdWeight.toFixed(3)),rubber:Number(this.rubberSpan.toFixed(3)),handR:relative(this.rightBone),head:relative(this.headBone),drawn:[Number(this.group.position.x.toFixed(3)),Number(this.group.position.z.toFixed(3))],blend:this.blendDuration>0?Number(Math.min(1,this.blendTime/this.blendDuration).toFixed(3)):undefined};}
   /** Cosmetic hovering protects the authored lower body, not simulation movement. */
   private authoredHover(state:PlayerState):boolean {return state.fighter==='torsion'&&torsionAuthoredHover(this.active?.getClip().name);}
   /** A native kneeling smash uses its legs to place the knuckles on the
@@ -8529,7 +8529,7 @@ export class Fighter {
     ask.shown=shown;ask.state=this.state;ask.index=index;ask.form=this.isForm;ask.shownForm=shown.isForm;
     ask.clip=active?.getClip().name;ask.time=active?.time;ask.phase=active?active.time/active.getClip().duration:0;
     ask.shownClip=drawn?.getClip().name;ask.shownTime=drawn?.time??0;ask.shownPhase=(drawn?.time??0)/Math.max(1e-6,drawn?.getClip().duration??1);
-    ask.elapsed=this.state.actionTime*this.state.actionDuration;ask.formBody=this.gear4?.group.visible?this.gear4:undefined;
+    ask.elapsed=this.state.actionTime*this.state.actionDuration;ask.formBody=this.awakenedForm?.group.visible?this.awakenedForm:undefined;
     ask.head=this.headBone;ask.rightHand=this.rightBone;
     return placeSocket(kind,ask,out);
   }
@@ -8551,7 +8551,7 @@ export class Fighter {
   dispose(){
     Fighter.drawn.delete(this);
     this.ragdoll?.dispose();this.ragdoll=undefined;
-    this.gear4?.dispose();this.mixer.stopAllAction();this.mixer.uncacheRoot(this.model);this.group.removeFromParent();
+    this.awakenedForm?.dispose();this.mixer.stopAllAction();this.mixer.uncacheRoot(this.model);this.group.removeFromParent();
     disposeSkeletons(this.model);
     for(const m of this.outlineMaterials)m.dispose();
     const shadow=this.group.getObjectByName('contact-shadow') as THREE.Mesh<THREE.CircleGeometry,THREE.MeshBasicMaterial>;

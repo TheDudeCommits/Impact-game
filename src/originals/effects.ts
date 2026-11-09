@@ -3,7 +3,7 @@ const OWN = '/assets/vfx/originals/';
 
 export const STILL_BELL = OWN + 'still-bell.webp';
 
-export const TSUBUTE_STONES = { wolf: OWN + 'ballast.webp', bird: OWN + 'far-bank.webp' } as const;
+export const TSUBUTE_STONES = { ballast: OWN + 'ballast.webp', farBank: OWN + 'far-bank.webp' } as const;
 
 export const SWAN_HEAD = {
   asset: OWN + 'swan-head.glb',

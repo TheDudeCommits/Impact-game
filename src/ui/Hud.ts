@@ -1,6 +1,7 @@
 import { mediaArt } from './mediaArt';
 import {pulseClass} from './pulse';
 import {riftOf} from '../game/moba/model';
+import {ballOf} from '../game/ball/model';
 import { activePackRoster } from '../engine/packs/active';
 import { commandList } from './commandList';
 import {customOf} from '../game/social/custom';
@@ -586,9 +587,9 @@ export class Hud {
     if(!self.alive&&this.trainingRoom)this.notify('TRAINING RESET',0.4);
     // Round 5 (UX, WP2): or RESULTS now, asked from the royale's spectator bar once knocked out (#interface[data-results-now]).
     const finale=snapshot.status==='finished'&&this.finale();
-    const finished=((snapshot.status==='finished'&&!finale)||(!self.alive&&'resultsNow' in this.root.dataset))&&!this.trainingRoom&&!this.survivalMode&&!objective&&!riftOf(snapshot);
+    const finished=((snapshot.status==='finished'&&!finale)||(!self.alive&&'resultsNow' in this.root.dataset))&&!this.trainingRoom&&!this.survivalMode&&!objective&&!riftOf(snapshot)&&!ballOf(snapshot);
     this.results(snapshot,self,finished);
-    if(snapshot.status==='finished'&&!finished&&!finale&&!objective&&!riftOf(snapshot))this.notify(snapshot.winnerId===self.id?'LAST FIGHTER STANDING':'MATCH COMPLETE',0.4);
+    if(snapshot.status==='finished'&&!finished&&!finale&&!objective&&!riftOf(snapshot)&&!ballOf(snapshot))this.notify(snapshot.winnerId===self.id?'LAST FIGHTER STANDING':'MATCH COMPLETE',0.4);
     this.modes.update(snapshot,self,target);
   }
   private pulseHit(side:'own'|'foe'){

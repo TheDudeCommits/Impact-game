@@ -4,6 +4,7 @@ import {modeOpen} from '../originals/launch';
 import {mountPublicRiftMatchmaker} from './moba/publicMatchmaker';
 import {riftQueue} from './moba/queue';
 import {RiftRoom} from './moba/RiftRoom';
+import {BallRoom} from './ball/BallRoom';
 import {PartyRoom} from './social/PartyRoom';
 import { defineServer, defineRoom, WebSocketTransport, matchMaker } from 'colyseus';
 import { ArenaRoom, BotArenaRoom, PrivateArenaRoom, DuelRoom, PrivateDuelRoom } from './ArenaRoom';
@@ -50,12 +51,14 @@ if (role === 'control' && presence) setInterval(() => void presence.hgetall(LOAD
 }, () => {}), 2000).unref();
 
 const RIFT_WAR_OPEN = modeOpen('rift-war');
+/** The ball modes (Goal Rush, Sky Spike: src/server/ball), served while the gate opens them (LAUNCH.ballModes). */
+const BALL_OPEN = modeOpen('goal-rush');
 
 export const server = defineServer({
   gracefullyShutdown: false,
   transport,
   ...(presence && link ? { presence, driver: new LinkDriver(link), selectProcessIdToCreateRoom: selectProcess(presence) } : {}),
-  rooms: { ...(RIFT_WAR_OPEN ? { rift_war:defineRoom(RiftRoom).filterBy(['access']) } : {}), duel_arena:defineRoom(DuelRoom), private_duel:defineRoom(PrivateDuelRoom), party:defineRoom(PartyRoom), objective_arena: defineRoom(ObjectiveRoom).filterBy(['objective','access']), arena: defineRoom(ArenaRoom).filterBy(['mode']), private_arena: defineRoom(PrivateArenaRoom), bot_arena: defineRoom(BotArenaRoom), survival_arena: defineRoom(SurvivalRoom) },
+  rooms: { ...(RIFT_WAR_OPEN ? { rift_war:defineRoom(RiftRoom).filterBy(['access']) } : {}), ...(BALL_OPEN ? { ball_arena: defineRoom(BallRoom).filterBy(['ball','access']) } : {}), duel_arena:defineRoom(DuelRoom), private_duel:defineRoom(PrivateDuelRoom), party:defineRoom(PartyRoom), objective_arena: defineRoom(ObjectiveRoom).filterBy(['objective','access']), arena: defineRoom(ArenaRoom).filterBy(['mode']), private_arena: defineRoom(PrivateArenaRoom), bot_arena: defineRoom(BotArenaRoom), survival_arena: defineRoom(SurvivalRoom) },
   express(app) {
     if (RIFT_WAR_OPEN) mountPublicRiftMatchmaker(app as never);
     if (RIFT_WAR_OPEN) app.get('/rift-war/queue',async (_req:unknown,res:{setHeader(k:string,v:string):void;json(body:unknown):unknown;status(code:number):{json(body:unknown):unknown}})=>{res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Cache-Control','no-store');try{res.json(await riftQueue());}catch{res.status(503).json([]);}});

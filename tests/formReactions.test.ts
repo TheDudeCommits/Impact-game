@@ -18,7 +18,7 @@ beforeAll(async () => {
   }
 }, 120_000);
 type Inside = { hitFlash: number; hitFreeze: number; reactionEpoch: number; recoil: THREE.Vector3; group: THREE.Group;
-  motionEvidence(): ReturnType<Fighter['motionEvidence']>; gear4?: Inside };
+  motionEvidence(): ReturnType<Fighter['motionEvidence']>; awakenedForm?: Inside };
 const inside = (fighter: Fighter) => fighter as unknown as Inside;
 /** A fighter transformed and standing, with its form body showing. */
 function transformed(id: FighterId) {
@@ -33,7 +33,7 @@ describe('a transformation takes the hit with its fighter', () => {
   it('Full Swell flinches, flashes and holds on a blow the fighter takes', () => {
     const { body, state } = transformed('gummy');
     try {
-      const form = inside(body).gear4!;
+      const form = inside(body).awakenedForm!;
       expect(form.group.visible, 'the form is showing').toBe(true);
       const before = form.reactionEpoch;
       body.impact(true, 'heavy', 'melee', 0, new THREE.Vector3(0, 0, -1), 90, 1.2);
@@ -50,7 +50,7 @@ describe('a transformation takes the hit with its fighter', () => {
     const { body } = transformed('kenzo');
     try {
       body.impact(false, 'heavy', 'melee', 0, new THREE.Vector3(0, 0, 1), 90);
-      expect(inside(body).gear4!.hitFreeze).toBeGreaterThan(0);
+      expect(inside(body).awakenedForm!.hitFreeze).toBeGreaterThan(0);
     } finally { body.dispose(); }
   });
 
@@ -58,7 +58,7 @@ describe('a transformation takes the hit with its fighter', () => {
   it('leaves a worn Guardian alone: the fighter inside it takes the hit', () => {
     const { body } = transformed('tobari');
     try {
-      const form = inside(body).gear4!;
+      const form = inside(body).awakenedForm!;
       const before = form.reactionEpoch;
       body.impact(true, 'heavy', 'melee', 0, new THREE.Vector3(0, 0, -1), 90, 1.2);
       expect(form.reactionEpoch).toBe(before);

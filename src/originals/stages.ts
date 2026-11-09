@@ -64,6 +64,8 @@ export const ORIGINAL_STAGES: Record<StageId, OriginalStage> = {
   'drifting-isle': {
     name: 'The Drifting Isle', scene: 'Old flagstones adrift in a bright sky', world: 'Last Sun', safe: true,
   },
+  'ball-pitch': { name: 'The Ink Bowl', scene: 'Goal Rush under the floodlights', world: '', safe: true },
+  'ball-court': { name: 'The Sky Court', scene: 'Sky Spike above the clouds', world: '', safe: true },
   'rift-war': { name: 'The Torn Plain', scene: 'Three causeways across the rift', world: '', safe: true },
   'dry-harbour': { name: 'The Dry Harbour', scene: 'Where the Dust Sea went out and never came back', world: 'Dust Sea', safe: true },
   'thornwood-ward': { name: 'Thornwood Ward', scene: 'A city block the hex gave back to the forest', world: 'Hex Fallout', safe: true },

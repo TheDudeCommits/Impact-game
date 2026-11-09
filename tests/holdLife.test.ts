@@ -34,7 +34,7 @@ function cast(id: FighterId, slot: AttackSlot, dynamics = true) {
   const form = rigs.get(`${id}-form`);
   if (form) body.attachForm(form);
   body.dynamics = dynamics;
-  const inner = (body as unknown as { gear4?: Fighter }).gear4;
+  const inner = (body as unknown as { awakenedForm?: Fighter }).awakenedForm;
   if (inner) inner.dynamics = dynamics;
   body.targetPoint = new THREE.Vector3(0, 1.3, 2); body.targetDistance = 2;
   try {

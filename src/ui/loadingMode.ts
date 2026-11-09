@@ -8,6 +8,7 @@ import type { LoadingMode } from './LoadingScreen';
  *  never made. A party's other modes show those modes' own pages. `survivalRun`: an Arcade run, alone or in co-op. */
 export function loadingModeFor(access: NetworkAccess | undefined, room: RoomMode, survivalRun = false): LoadingMode {
   if (access?.kind === 'rift-war') return 'rift-war';
+  if (access?.kind === 'ball') return access.mode;
   if (access?.kind === 'duel') return 'duel';
   if (survivalRun || access?.kind === 'survival' || access?.kind === 'coop-create' || access?.kind === 'coop-join') return 'arcade';
   if (access?.kind === 'objective') return access.objective;

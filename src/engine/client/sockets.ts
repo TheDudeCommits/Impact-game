@@ -11,7 +11,7 @@ import { ROTFALKE_KNIFE } from '../../render/signature/RotfalkeFieldContact';
 import { rotfalkeSurfacePoint } from '../../render/signature/RotfalkeSurface';
 import { murexStrikePoint } from '../../render/signature/MurexSurface';
 import { bonshoSurfacePoint } from '../../render/signature/BonshoContactSurface';
-import { bonshoDrawnPalmPoint } from '../../render/signature/BonshoBodhisattvaContact';
+import { bonshoDrawnPalmPoint } from '../../render/signature/BonshoGuardianContact';
 import { bonshoStrikePoint } from '../../originals/bonshoStrike';
 import { HIGHSUN_BLADE } from '../../originals/highsunBlade';
 import { kinuStrikeJoint } from '../../render/signature/KinuStoneThreadContact';
@@ -158,7 +158,7 @@ const named = (model: THREE.Object3D, name: string) => {
   return found.get(name) ?? undefined;
 };
 
-/** Bonsho: Bodhisattva's drawn palms on the ultimate's later contacts, else his skin where his blow lands. */
+/** Bonsho: the guardian's drawn palms on the ultimate's later contacts, else his skin where his blow lands. */
 const bonshoPoint = solve((ctx, out) => {
   const state = ctx.state;
   if (state.action === 'ultimate' && !state.branch) {

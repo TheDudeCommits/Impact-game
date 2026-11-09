@@ -79,7 +79,7 @@ describe('SUNRISE floats', () => {
     const f = new Fighter(state(), assets.body);
     f.attachForm(assets.form);
     try {
-      const form = (f as unknown as { gear4: Fighter }).gear4;
+      const form = (f as unknown as { awakenedForm: Fighter }).awakenedForm;
       for (const [action, clip] of [['idle', SUNRISE_FLOAT.idle], ['run', SUNRISE_FLOAT.run]] as const) {
         settle(f, { action });
         expect(form.motionEvidence().clip, action).toBe(clip);
@@ -105,7 +105,7 @@ describe.skipIf(!ORIGINALS.gummy)('SUNRISE stands', () => {
     const f = new Fighter(state(), assets.body);
     f.attachForm(assets.form);
     try {
-      const form = (f as unknown as { gear4: Fighter }).gear4;
+      const form = (f as unknown as { awakenedForm: Fighter }).awakenedForm;
       for (const action of ['idle', 'run'] as const) {
         for (let i = 0; i < 150; i++) f.update(1 / 60, state({ awakened: true, action }), true);
         expect(form.motionEvidence().clip, action).not.toBe(action === 'idle' ? SUNRISE_FLOAT.idle : SUNRISE_FLOAT.run);
@@ -127,7 +127,7 @@ describe('Grand Tide, one take from its first frame', () => {
     const f = new Fighter(state(), assets.body);
     f.attachForm(assets.form);
     try {
-      const form = (f as unknown as { gear4: Fighter }).gear4;
+      const form = (f as unknown as { awakenedForm: Fighter }).awakenedForm;
       at(f, .02);
       expect(f.model.visible, 'Gummy on the press').toBe(true);
       let last = 0;
@@ -160,7 +160,7 @@ describe('Grand Tide, one take from its first frame', () => {
     const f = new Fighter(state({ awakened: true }), assets.body);
     f.attachForm(assets.form);
     try {
-      const form = (f as unknown as { gear4: Fighter }).gear4;
+      const form = (f as unknown as { awakenedForm: Fighter }).awakenedForm;
       for (let t = 0; t < .6; t += 1 / 30) { at(f, t, { awakened: true }); expect(f.model.visible).toBe(false); expect(form.motionEvidence().clip).toBe(GRAND_TIDE_TAKE.open.clip); }
     } finally { f.dispose(); }
   });
@@ -185,15 +185,15 @@ describe('his lines', () => {
   beforeEach(() => resetVoiceMemory());
   it('peaks "BAZOOKA!" on the palms', () => {
     const [line] = planVoice(cast('heavy'), false);
-    expect(line.cue).toBe('vo-gummy-bazooka');
+    expect(line.cue).toBe('vo-gummy-rogue-wave');
     expect((line.delay ?? 0) + .39).toBeCloseTo(MOVES.gummy.heavy.contacts[0], 2);
   });
   it('calls the GRAND TIDE: "Rubber no!" on the press, "...GUN!" on the fist', () => {
-    expect(planVoice(cast('ultimate'), false).map(l => l.cue)).toContain('vo-gummy-rubber-no');
+    expect(planVoice(cast('ultimate'), false).map(l => l.cue)).toContain('vo-gummy-come-sea');
     const confirm = .6, [line] = planVoice(cast('ultimate', 'confirm', { castAge: confirm }), false);
     expect(line.cue).toBe('vo-gummy-grand-tide');
     expect(confirm + (line.delay ?? 0) + .82).toBeCloseTo(move().contacts[move().contacts.length - 1], 2);
-    for (const cue of ['vo-gummy-sunset-barrage', 'vo-gummy-rubber-no', 'vo-gummy-grand-tide'])
+    for (const cue of ['vo-gummy-sunset-barrage', 'vo-gummy-come-sea', 'vo-gummy-grand-tide'])
       expect((voiceDurations as Record<string, number>)[cue], cue).toBeGreaterThan(.5);
   });
   const move = () => MOVES.gummy.ultimate;

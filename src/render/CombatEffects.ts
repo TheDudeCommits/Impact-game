@@ -330,7 +330,7 @@ export const FINISHERS: Record<FighterId, { shape: Accent; screen: 'speed' | 'fr
   asahi: { shape: 'crescent', screen: 'grade' },
   levin: { shape: 'tornado', screen: 'speed' },
   'rook': { shape: 'cross', screen: 'grade' },
-  // Gaku's Rock goes off like Taisei's blows do, the air ringing out round it.
+  // Gaku's Lion Fist goes off like Taisei's blows do, the air ringing out round it.
   gaku: { shape: 'shockwave', screen: 'speed' },
 };
 /** A blow's spark is drawn on the frame it reached the body (Fighter's
@@ -698,8 +698,8 @@ export class CombatEffects {
       const o = event.origin, closes = event.serverTime + (move.contacts[domain.contact] ?? 0);
       this.blast.mark(event.id, event.actorId, o.x, o.y - 1.05, o.z, domain.radius, event.serverTime, closes, closes, fighterId === 'magatsu' ? 0xff2a3a : BLAST_TINT.kuon ?? 0xffffff);
     }
-    // BLACK CONFESSIONAL's coffin is Shiun's own (EmperorEffects): no orb of energy where it closes.
-    // Nor is an orb what Emperor Jinlin's barrage throws: its death beams are his (EmperorEffects).
+    // BLACK CONFESSIONAL's reliquary is Shiun's own (EmperorEffects): no orb of energy where it closes.
+    // Nor is an orb what Emperor Jinlin's barrage throws: its needle rays are his (EmperorEffects).
     // Nor Sorrel' Horizon Sunder, a cut (an orb of the default blue filled the screen at its opener), nor Gohaku's
     // Sun-Seizing Spiral, whose two fingers and spiral are his (a gold orb buried them): the blind critics, 3 October.
     // (Round 4b: Gummy's barrage is fists, GummyEffects' - a line of them, not a beam of light.)
@@ -984,7 +984,7 @@ export class CombatEffects {
    *  and a spark drawn there covered the torso it was meant to mark. */
   private contactPoint(event: CombatEvent, source: Fighter | undefined, victim: Fighter | undefined, melee: boolean, out: THREE.Vector3) {
     const e = event.endpoint!;
-    // A confirmed Bodhisattva strike belongs to its native instance, never
+    // A confirmed guardian strike belongs to its native instance, never
     // the caster's praying human hands or generic nearest-limb fallback.
     if(event.fighter==='bonsho'&&event.slot==='ultimate'&&!event.branch&&(event.contactIndex??0)>0){
       if(source?.meleeContactPoint(event.contactIndex!,out))return out;

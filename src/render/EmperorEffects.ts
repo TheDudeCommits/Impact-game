@@ -16,7 +16,7 @@ import {DIZZY_SECONDS} from '../game/moves';
 import {GhostShell} from './signature/GhostShell';
 import {whiffGone} from './signature/ultimateClock';
 import {MirrorMereDomain} from './shop/MirrorMere';
-import {KyokaDecoy} from './shop/FalseEncore';
+import {EncoreDecoy} from './shop/FalseEncore';
 import {BladeWhirl} from './shop/BladeWhirl';
 import {CrowFlock} from './shop/CrowFlock';
 import {VfxKit, DUST_LIT, DUST_SHADE, DREAM_IMPACT } from './vfx/VfxKit';
@@ -85,7 +85,7 @@ applyOriginalGuardianTint(GUARDIAN_TINT);
  *  (the sphere it throws is the shared one, in red). The Mountain-Felling Fist
  *  burns in the fist he raises through the leap, and the dive through them
  *  splits the air and rocks the floor. He goes to full power under a red dome.
- *  'Emperor Jinlin': gold, and his death beams magenta. The Pearl Needle goes off
+ *  'Emperor Jinlin': gold, and his needle rays magenta. The Pearl Needle goes off
  *  his fingertip accent; the Whirlpool Tail rings round him; the barrage is
  *  a volley of beams out of both hands, one after another; the Drowned Sun
  *  (the shared bomb, held over his raised hand) gathers at the fingertip under
@@ -159,8 +159,8 @@ const COLOR: Record<Emperor, {glow: THREE.Color; light: THREE.Color}> = {
   'rook': {glow: new THREE.Color(1.9, .9, 3.4), light: new THREE.Color(1.0, .45, 1.9)},
   gaku: {glow: new THREE.Color(3.4, 2.3, .55), light: new THREE.Color(1.9, 1.25, .3)},
 };
-/** Emperor Jinlin's death beams, and the Drowned Sun's red. */
-const DEATH = new THREE.Color(3.2, .7, 2.8), DEATH_LIGHT = new THREE.Color(1.7, .35, 1.5), DROWNED_SUN_RED = new THREE.Color(3.4, .9, .3);
+/** Emperor Jinlin's needle rays, and the Drowned Sun's red. */
+const RAY = new THREE.Color(3.2, .7, 2.8), RAY_LIGHT = new THREE.Color(1.7, .35, 1.5), DROWNED_SUN_RED = new THREE.Color(3.4, .9, .3);
 /** Gohaku: the Beast's red-violet; the Star-Shifting Beam's yellow (and the Sun-Seizing Spiral's point), and its spiral. */
 const BEAST_RIM = new THREE.Color(2.9, .55, 1.7), STAR_BEAM_GOLD = new THREE.Color(3.4, 2.8, .7), STAR_BEAM_LIGHT = new THREE.Color(1.9, 1.5, .35);
 const SPIRAL = new THREE.Color(2.1, .7, 3.3);
@@ -229,7 +229,7 @@ interface Dome {mesh: THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial>; ac
 interface Strike {center: THREE.Vector3; targetId: string; since: number; seed: number; kind: 'sky' | 'floor'; active: boolean; color: THREE.Color}
 /** A discharge where a finisher lands, fading. */
 interface Flash {center: THREE.Vector3; since: number; seed: number; strength: number; reach: number; active: boolean; color: THREE.Color; soft?: boolean}
-/** A thin beam of ki between two points, fading: Emperor Jinlin's death beams. One may be set to start later. */
+/** A thin beam of ki between two points, fading: Emperor Jinlin's needle rays. One may be set to start later. */
 interface Beam {from: THREE.Vector3; to: THREE.Vector3; since: number; seconds: number; seed: number; width: number; active: boolean; color: THREE.Color}
 /** Cloudstep's hold: the body stays hidden this long past the return, while a remote copy's timeline may
  *  still be interpolating across the jump (GoldenTechniques' APPEAR_HOLD). */
@@ -561,7 +561,7 @@ export class EmperorEffects {
   private seeing = false;
   private domainAt = new Map<string, {key: number; at: THREE.Vector3; flashed: boolean}>();
   /** False Encore's illusion, one a fighter (src/render/shop/FalseEncore.ts), and the heavy it was left by. */
-  private decoys = new Map<string, {decoy: KyokaDecoy; key: number}>();
+  private decoys = new Map<string, {decoy: EncoreDecoy; key: number}>();
   /** SOJI: Clean Sweep's whirl of blade-light round Levin as he turns (src/render/shop/BladeWhirl.ts), one a Levin. */
   private whirls = new Map<string, BladeWhirl>();
   /** The Murder of Crows's crows (src/render/shop/CrowFlock.ts), every Tobari's, and the frame time they are stepped by; and
@@ -569,12 +569,12 @@ export class EmperorEffects {
    *  that has an Tobari (`load`), not at the first 'Murder of Crows': built there, its program was linked by the draw of a
    *  fight's first clone, 37 to 110 ms of a royale's frame (launch day 15, scripts/night/late_sweep.mjs). */
   private crows?: CrowFlock;
-  private clones = new Map<string, KyokaDecoy>();
+  private clones = new Map<string, EncoreDecoy>();
   /** An illusion never shown, made with a room that has an Shiun or an Tobari (`load`): its shards (instanced, a colour a
    *  shard, drawn both sides) are drawn with the programs every Shiun's illusion and every Tobari's clone uses, so the
    *  room's compile links them behind the loading screen. Made at the first heavy, they were linked in that frame (two
    *  programs: launch day 15's sweep). */
-  private warmDecoy?: KyokaDecoy;
+  private warmDecoy?: EncoreDecoy;
   /** A whirl never shown, made with a room that has a Levin (`load`): its trail's two programs (coloured by vertex, drawn
    *  both sides) linked by the room's compile; made at his first SOJI: Clean Sweep, they were linked in that frame. */
   private warmWhirl?: BladeWhirl;
@@ -661,7 +661,7 @@ export class EmperorEffects {
     }
     for (let i = 0; i < STRIKES; i++) this.strikes.push({center: new THREE.Vector3(), targetId: '', since: 0, seed: 0, kind: 'sky', active: false, color: COLOR.gorai.glow});
     for (let i = 0; i < FLASHES; i++) this.flashes.push({center: new THREE.Vector3(), since: 0, seed: 0, strength: 1, reach: 1, active: false, color: COLOR.gorai.glow});
-    for (let i = 0; i < BEAMS; i++) this.beams.push({from: new THREE.Vector3(), to: new THREE.Vector3(), since: 0, seconds: BEAM_SECONDS, seed: 0, width: .03, active: false, color: DEATH});
+    for (let i = 0; i < BEAMS; i++) this.beams.push({from: new THREE.Vector3(), to: new THREE.Vector3(), since: 0, seconds: BEAM_SECONDS, seed: 0, width: .03, active: false, color: RAY});
     this.flames.count = 0; this.flames.setColorAt(0, new THREE.Color(0, 0, flamePalette(BLACK))); this.flames.frustumCulled = false;
     this.flames.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.flames.name = 'emperor-flames'; scene.add(this.flames);
     scene.add(this.ink.mesh);
@@ -697,7 +697,7 @@ export class EmperorEffects {
   load(fighters: Iterable<string>) {
     const ids = new Set(fighters);
     if (ids.has('tobari')) this.crows ??= new CrowFlock(this.scene, CROW_EYE);
-    if (ids.has('tobari') || ids.has('shiun')) this.warmDecoy ??= new KyokaDecoy(this.scene, COLOR.shiun.glow);
+    if (ids.has('tobari') || ids.has('shiun')) this.warmDecoy ??= new EncoreDecoy(this.scene, COLOR.shiun.glow);
     if (ids.has('levin')) this.warmWhirl ??= new BladeWhirl(this.scene);
   }
 
@@ -1503,8 +1503,8 @@ export class EmperorEffects {
     }
     if (chain === 0 || chain === 2) {
       const tip = this.b.copy(actor.handR).addScaledVector(this.forward, .12);
-      this.beam(tip, this.c.copy(tip).addScaledVector(this.forward, chain ? 2.2 : 3.4), time, key, chain ? .035 : .045, DEATH);
-      this.flash(tip, .5, key, .8, DEATH, time);
+      this.beam(tip, this.c.copy(tip).addScaledVector(this.forward, chain ? 2.2 : 3.4), time, key, chain ? .035 : .045, RAY);
+      this.flash(tip, .5, key, .8, RAY, time);
       return;
     }
     this.cut('jinlin', this.a, actor.state.yaw, 2.8, chain === 1 ? -.35 : .2, time, CUT_SECONDS, key);
@@ -2060,8 +2060,8 @@ export class EmperorEffects {
       // The barrage: ki at his fingertips as the hands come down to aim, and on them while they fire.
       const gather = THREE.MathUtils.smoothstep(elapsed, .25, contact) * (1 - THREE.MathUtils.smoothstep(elapsed, contact + .4, contact + .55));
       if (gather > .02) {
-        kit.ball(actor.handR, gather * .45, 73, NaN, DEATH, DEATH_LIGHT, .3);
-        kit.ball(actor.handL, gather * .45, 79, NaN, DEATH, DEATH_LIGHT, .3);
+        kit.ball(actor.handR, gather * .45, 73, NaN, RAY, RAY_LIGHT, .3);
+        kit.ball(actor.handL, gather * .45, 79, NaN, RAY, RAY_LIGHT, .3);
       }
     }
     if (who === 'gohaku') {
@@ -2149,9 +2149,9 @@ export class EmperorEffects {
         const r = kit.painter.rng.seed(key * 6 + i);
         this.a.copy(i % 2 ? actor.handL : actor.handR).addScaledVector(this.forward, .12);
         this.b.set(r.signed() * .5, r.signed() * .45, r.signed() * .5).add(aim);
-        this.beam(this.a, this.b, time + i * .065, key + i * 7, .04, DEATH, .14);
+        this.beam(this.a, this.b, time + i * .065, key + i * 7, .04, RAY, .14);
       }
-      this.flash(this.a.copy(actor.handR), .9, key, 1.3, DEATH, time);
+      this.flash(this.a.copy(actor.handR), .9, key, 1.3, RAY, time);
     }
     if (who === 'dorado') {
       // The shot: the flash at the muzzle, and the will round the ball going out with it.
@@ -2203,7 +2203,7 @@ export class EmperorEffects {
     if (held && held.decoy.standing && (!heavy || held.key !== key)) held.decoy.shatter(time);
     if (!heavy) return;
     if (elapsed >= blink.vanish && elapsed < ILLUSION_BREAKS && (!held || held.key !== key)) {
-      if (!held) { held = {decoy: new KyokaDecoy(this.scene, colour.glow), key}; this.decoys.set(id, held); }
+      if (!held) { held = {decoy: new EncoreDecoy(this.scene, colour.glow), key}; this.decoys.set(id, held); }
       held.key = key;
       held.decoy.show(actor.shownBody);
     }
@@ -2267,7 +2267,7 @@ export class EmperorEffects {
     const blink = BLINKS.tobari!, mark = key * 2;
     this.crows ??= new CrowFlock(this.scene, CROW_EYE);
     let clone = this.clones.get(id);
-    if (!clone) { clone = new KyokaDecoy(this.scene, COLOR.tobari.glow); this.clones.set(id, clone); }
+    if (!clone) { clone = new EncoreDecoy(this.scene, COLOR.tobari.glow); this.clones.set(id, clone); }
     if (elapsed >= blink.vanish - CROW_LEAD && this.drawn.get(`${id}:gone`) !== mark) {
       this.drawn.set(`${id}:gone`, mark);
       this.crows.burst(actor, time, 5);

@@ -26,7 +26,7 @@ export function akayuriBlade(f: Fighter, root: THREE.Vector3, tip: THREE.Vector3
 }
 /** Nightblade's edge: a white line in red, and the red it throws on a room. No flame: steel, not fire. */
 const EDGE: StageLook = { core: lin(3.2, 2.3, 2.3), main: lin(2, .12, .2), rim: lin(.7, .03, .07), light: lin(1.3, .2, .24), element: { spike: 0xffe4e0, rim: 0xef2148, light: 0xff3a55, ink: 0x170b18 }, shell: 0xef2148, edge: 0x4a0612, flame: -1, dark: false, heart: 0 };
-/** The same barely past the bloom (a red that stays red): the light under a curse mark. */
+/** The same barely past the bloom (a red that stays red): the light under her black marks. */
 const BLOODLINE: StageLook = { ...EDGE, core: lin(2.2, .14, .22), main: lin(1.35, .05, .1) };
 /** The curse: black that covers what is behind it, its edge burning red, creeping over the floor and standing in black
  *  flames where it has killed. */

@@ -56,7 +56,7 @@ describe('the clip lands its blow when the move does', () => {
   // light used to be the first case: measured honestly (round 13, the blade
   // tip at the frame it crosses the facing) its cut is at 0.795 of a clip
   // far longer than the 0.26 s wind-up, so `pace` skips the head of the
-  // clip by design and the swing no longer starts at frame zero. Bazooka
+  // clip by design and the swing no longer starts at frame zero. Rogue Wave
   // is the same disagreement the other way - 0.18 against a contact at
   // 0.46 - on a clip the pacing plays from its start.
   const cases: [FighterId, 'light' | 'heavy' | 'special' | 'ultimate', () => GLTF][] = [

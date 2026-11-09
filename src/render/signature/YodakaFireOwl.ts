@@ -6,7 +6,7 @@ import { SignaturePoolUpload } from './SignaturePoolUpload';
 import { ORIGINALS } from '../../originals/roster';
 import { YODAKA_FIRE_OWL, YODAKA_FIRE_OWL_SCALE } from '../../originals/effects';
 
-export const YODAKA_OWL_ASSET = ORIGINALS.yodaka ? YODAKA_FIRE_OWL : '/assets/vfx/yodaka/flame-tiger.webp';
+export const YODAKA_OWL_ASSET = ORIGINALS.yodaka ? YODAKA_FIRE_OWL : '/assets/vfx/yodaka/fire-owl.webp';
 export const YODAKA_OWL_LIMITS = Object.freeze({ impacts: 6, crescents: 12, lifetime: .65, radius: 3.5, loadTimeoutMs: 4000 });
 let readyInstances = 0;
 /** AreaTelegraph retains its default look until an owned texture is available. */
@@ -32,7 +32,7 @@ function crescentGeometry(): T.BufferGeometry {
 }
 
 /** Two fixed pools: a camera-facing native flame drawing and thin floor crescents. */
-class TigerBatch {
+class OwlBatch {
   readonly mesh: T.InstancedMesh<T.BufferGeometry, T.ShaderMaterial>;
   private readonly tint: T.InstancedBufferAttribute;
   private readonly object = new T.Object3D();
@@ -40,12 +40,12 @@ class TigerBatch {
   private used = 0;
   constructor(scene: T.Scene, name: string, geometry: T.BufferGeometry, private capacity: number, sprite: boolean) {
     this.tint = new T.InstancedBufferAttribute(new Float32Array(capacity * 4), 4).setUsage(T.DynamicDrawUsage);
-    geometry.setAttribute('tigerTint', this.tint);
+    geometry.setAttribute('owlTint', this.tint);
     const material = new T.ShaderMaterial({ name, transparent: true, depthWrite: false, depthTest: true,
       side: T.DoubleSide, toneMapped: false, uniforms: { map: { value: null }, ready: { value: 0 } },
       vertexShader: sprite
-        ? `attribute vec4 tigerTint;varying vec4 tint;varying vec2 tex;void main(){tint=tigerTint;tex=uv;vec4 p=modelViewMatrix*instanceMatrix*vec4(0.,0.,0.,1.);p.xy+=position.xy*vec2(length(instanceMatrix[0].xyz),length(instanceMatrix[1].xyz));gl_Position=projectionMatrix*p;}`
-        : `attribute vec4 tigerTint;varying vec4 tint;varying vec2 tex;void main(){tint=tigerTint;tex=uv;gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.);}`,
+        ? `attribute vec4 owlTint;varying vec4 tint;varying vec2 tex;void main(){tint=owlTint;tex=uv;vec4 p=modelViewMatrix*instanceMatrix*vec4(0.,0.,0.,1.);p.xy+=position.xy*vec2(length(instanceMatrix[0].xyz),length(instanceMatrix[1].xyz));gl_Position=projectionMatrix*p;}`
+        : `attribute vec4 owlTint;varying vec4 tint;varying vec2 tex;void main(){tint=owlTint;tex=uv;gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.);}`,
       fragmentShader: sprite
         ? `uniform sampler2D map;uniform float ready;varying vec4 tint;varying vec2 tex;void main(){if(ready<.5)discard;vec4 c=texture2D(map,tex);float a=c.a*tint.a;if(a<.015)discard;gl_FragColor=vec4(c.rgb*tint.rgb,a);\n#include <colorspace_fragment>\n}`
         : `varying vec4 tint;varying vec2 tex;void main(){float a=tint.a*sin(tex.x*3.14159265);if(a<.01)discard;vec3 c=mix(tint.rgb,vec3(1.,.93,.64),1.-smoothstep(.1,.8,abs(tex.y-.5)*2.));gl_FragColor=vec4(c,a);\n#include <colorspace_fragment>\n}` });
@@ -66,13 +66,13 @@ class TigerBatch {
   dispose() { this.mesh.removeFromParent(); this.mesh.dispose(); this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
 }
 
-type TigerImpact = { actor: string; born: number; radius: number; yaw: number; point: T.Vector3 };
+type OwlImpact = { actor: string; born: number; radius: number; yaw: number; point: T.Vector3 };
 
 /** A visual response to the server's manual area impact. Never schedules or applies damage. */
 export class YodakaFireOwl {
-  private readonly tiger: TigerBatch;
-  private readonly crescents: TigerBatch;
-  private readonly impacts: TigerImpact[] = Array.from({ length: YODAKA_OWL_LIMITS.impacts }, () => ({ actor: '', born: 0, radius: 0, yaw: 0, point: new T.Vector3() }));
+  private readonly owl: OwlBatch;
+  private readonly crescents: OwlBatch;
+  private readonly impacts: OwlImpact[] = Array.from({ length: YODAKA_OWL_LIMITS.impacts }, () => ({ actor: '', born: 0, radius: 0, yaw: 0, point: new T.Vector3() }));
   private readonly seenIds = new Float64Array(64).fill(NaN);
   private readonly seenTimes = new Float64Array(64).fill(NaN);
   private readonly point = new T.Vector3();
@@ -83,8 +83,8 @@ export class YodakaFireOwl {
   private ready = false; private disposed = false;
 
   constructor(scene: T.Scene, private readonly kit: Pick<VfxKit, 'budget'>) {
-    this.tiger = new TigerBatch(scene, 'yodaka-flame-tiger', new T.PlaneGeometry(1, 1), YODAKA_OWL_LIMITS.impacts, true);
-    this.crescents = new TigerBatch(scene, 'yodaka-tiger-crescents', crescentGeometry(), YODAKA_OWL_LIMITS.crescents, false);
+    this.owl = new OwlBatch(scene, 'yodaka-fire-owl', new T.PlaneGeometry(1, 1), YODAKA_OWL_LIMITS.impacts, true);
+    this.crescents = new OwlBatch(scene, 'yodaka-owl-crescents', crescentGeometry(), YODAKA_OWL_LIMITS.crescents, false);
   }
 
   /** Failure/timeout leaves the existing wildfire fallback available; no fighter load can hang here. */
@@ -98,7 +98,7 @@ export class YodakaFireOwl {
         if (texture && !this.disposed) {
           texture.colorSpace = T.SRGBColorSpace; texture.minFilter = T.LinearMipmapLinearFilter; texture.magFilter = T.LinearFilter;
           this.texture = texture; this.ready = true; readyInstances++;
-          this.tiger.mesh.material.uniforms.map.value = texture; this.tiger.mesh.material.uniforms.ready.value = 1;
+          this.owl.mesh.material.uniforms.map.value = texture; this.owl.mesh.material.uniforms.ready.value = 1;
         } else texture?.dispose();
         resolve();
       };
@@ -117,7 +117,7 @@ export class YodakaFireOwl {
       for (const impact of this.impacts) if (impact.actor === event.actorId) impact.actor = '';
       return;
     }
-    // A hit per victim is NOT the area impact: one tiger even when a circle catches many bodies.
+    // A hit per victim is NOT the area impact: one owl even when a circle catches many bodies.
     if (!this.ready || event.fighter !== 'yodaka' || event.kind !== 'impact' || event.slot !== 'area' || event.branch || !event.endpoint) return;
     const at = event.endpoint;
     if (![at.x, at.y, at.z, event.id, event.serverTime].every(Number.isFinite)) return;
@@ -133,7 +133,7 @@ export class YodakaFireOwl {
 
   update(time: number, fighters: ReadonlyMap<string, Fighter>) {
     if (this.disposed) return;
-    this.tiger.begin(); this.crescents.begin();
+    this.owl.begin(); this.crescents.begin();
     for (const impact of this.impacts) {
       if (!impact.actor) continue;
       const age = time - impact.born;
@@ -144,7 +144,7 @@ export class YodakaFireOwl {
       const alpha = smooth(age / .045) * (1 - smooth((age - .16) / .49));
       const width = impact.radius * (.78 + .22 * smooth(age / .13)) * (ORIGINALS.yodaka ? YODAKA_FIRE_OWL_SCALE : 1), height = width / 1.5;
       this.point.copy(impact.point); this.point.y += height * .5 + .06;
-      this.rotation.identity(); this.tiger.add(this.point, this.rotation, width, height, alpha * .92);
+      this.rotation.identity(); this.owl.add(this.point, this.rotation, width, height, alpha * .92);
       this.point.copy(impact.point); this.point.y += .065;
       const size = impact.radius * (.50 + u * .25), count = this.kit.budget >= .65 ? 2 : 1;
       for (let i = 0; i < count; i++) {
@@ -152,19 +152,19 @@ export class YodakaFireOwl {
         this.crescents.add(this.point, this.rotation, size, size, alpha * .58, true);
       }
     }
-    this.tiger.end(); this.crescents.end();
+    this.owl.end(); this.crescents.end();
   }
 
   reset() {
     for (const impact of this.impacts) impact.actor = '';
     this.seenIds.fill(NaN); this.seenTimes.fill(NaN); this.cursor = this.seenCursor = 0;
-    this.tiger.begin(); this.tiger.end(); this.crescents.begin(); this.crescents.end();
+    this.owl.begin(); this.owl.end(); this.crescents.begin(); this.crescents.end();
   }
   dispose() {
     if (this.disposed) return;
     this.reset(); this.disposed = true; this.cancelLoad?.();
     if (this.ready) { readyInstances--; this.ready = false; }
     this.texture?.dispose(); this.texture = undefined;
-    this.tiger.dispose(); this.crescents.dispose();
+    this.owl.dispose(); this.crescents.dispose();
   }
 }

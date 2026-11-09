@@ -244,7 +244,7 @@ const dir = (x: number, y: number, z: number): Vec3 => {
  *  first; it lit the fighters more evenly but put the rays out of frame. */
 const HALL_KEY = dir(.3, .5, -.81);
 
-export const STAGE_LOOKS: Record<Exclude<StageId, `rift-${string}`|'hidden-ash'|'blood-citadel'>, LookPreset> & Partial<Record<StageId, LookPreset>> = {
+export const STAGE_LOOKS: Record<Exclude<StageId, `rift-${string}`|`ball-${string}`|'hidden-ash'|'blood-citadel'>, LookPreset> & Partial<Record<StageId, LookPreset>> = {
   'proving-hall': {
     // Warmth only where the sun lands; the shade is a desaturated violet-grey,
     // and the key is strong enough that sunlit surfaces reach near-white gold
@@ -921,6 +921,43 @@ STAGE_LOOKS['rift-war']={
   grade:{...STAGE_LOOKS.harbor.grade,saturation:1.07,contrast:1.17,shadowTint:0x303c5c,highlightTint:0xffdbad,split:.14,vignette:.18},
   bloom:{strength:.24,radius:.4,threshold:1.15,knee:.25},
   atmosphere:{kind:'leaves',count:48,color:0xb9c17c,color2:0xd19a6d,size:.025},
+};
+// The ball modes' arenas (render/ball/BallArena.ts). Goal Rush's Ink Bowl is a floodlit night: a cold white key high
+// over the pitch where the four towers stand, a navy sky with stars over the canopy, the lamps, the ribbon boards and
+// the hot ball left to the bloom.
+STAGE_LOOKS['ball-pitch']={
+  ...STAGE_LOOKS['cinder-flats'],
+  key:{color:0xf2f5ff,intensity:3.4,dir:dir(.35,.85,.4)},
+  hemi:{sky:0x4a5a8c,ground:0x22331f,intensity:.8},
+  fill:{color:0x8fa4ff,intensity:.45,dir:dir(-.5,.5,-.6)},
+  rim:{color:0xe4ecff,strength:2.1,width:.42,dir:dir(-.35,.6,-.7),px:2.2,peak:.9},
+  toon:{...STAGE_LOOKS.harbor.toon,shadow:0x9aa2c4,mid:0xb0c4ff,midStrength:.2,ambient:2.4,floor:0x3a3f5c,key:.72,neutral:.6,fill:2.2,fillFloor:.18},
+  fog:{color:0x0d1226,near:150,far:410},
+  sky:{...STAGE_LOOKS['cinder-flats'].sky,zenith:0x02040c,horizon:0x1c2550,ground:0x090b14,stars:1,nebula:.15,
+    cloudCoverage:.18,cloudLit:0x2c3560,cloudShade:0x0a0d1c,cloudRim:0x5a6aa0,cloudScale:1.1,cloudSpeed:.004},
+  ibl:.42,exposure:1.12,
+  grade:{...STAGE_LOOKS['cinder-flats'].grade,saturation:1.12,contrast:1.16,shadowTint:0x1a2050,highlightTint:0xf2f6ff,split:.2,vignette:.28},
+  bloom:{strength:.8,radius:.6,threshold:1,knee:.4},
+  atmosphere:{kind:'dust',count:120,color:0xe8eeff,color2:0xffffff,size:.02},
+  room:{albedo:1,key:1},
+};
+// Sky Spike's court above the clouds at sunset: the sun low and gold across the court, a violet fill off the sky
+// behind it, rose haze over the cloud sea, petals in the air with the trees' own.
+STAGE_LOOKS['ball-court']={
+  ...STAGE_LOOKS.harbor,
+  key:{color:0xffb27c,intensity:3.6,dir:dir(-.62,.34,.7)},
+  hemi:{sky:0xb59ad8,ground:0x8a5a62,intensity:.75},
+  fill:{color:0x9a8cff,intensity:.5,dir:dir(.6,.4,-.7)},
+  rim:{color:0xffc48e,strength:2,width:.44,dir:dir(-.62,.34,.7),px:2.3,peak:.9},
+  toon:{...STAGE_LOOKS.harbor.toon,shadow:0xb09ad0,mid:0xff9a5a,midStrength:.38},
+  fog:{color:0xf0a184,near:140,far:400},
+  sky:{...STAGE_LOOKS.harbor.sky,zenith:0x34407e,horizon:0xffa476,ground:0xd88f86,horizonHeight:.36,
+    sunDir:dir(-.62,.1,.7),sunColor:0xffd59a,sunIntensity:13,sunSize:.05,sunGlow:1.1,sunGlowWidth:6,
+    cloudCoverage:.42,cloudLit:0xffc4a4,cloudShade:0x8c6aa4,cloudRim:0xffe4b8,cloudScale:1.2,cloudSpeed:.006},
+  ibl:.36,exposure:1.06,
+  grade:{...STAGE_LOOKS.harbor.grade,saturation:1.14,contrast:1.15,shadowTint:0x4a3a8a,highlightTint:0xffcc9a,split:.3,vignette:.22},
+  bloom:{strength:.6,radius:.55,threshold:1,knee:.4},
+  atmosphere:{kind:'petals',count:70,color:0xffb8d0,color2:0xfff0f4,size:.055},
 };
 // The survival places added on 30 September start from their nearest kin
 // here; arcade survival's own table (src/render/rift/looks.ts) replaces all

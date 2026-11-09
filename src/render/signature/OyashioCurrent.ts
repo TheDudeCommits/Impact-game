@@ -9,15 +9,15 @@ import { STAR } from './GlowBatch';
 import { BURN, MoveStage, SHEEN, stageLook, type StageLook } from './MoveStage';
 import { blowFloor } from './blowFloor';
 
-/** Manual sea karate contact/pressure presentation; never a damage owner. */
-export const OYASHIO_KARATE_ASSETS: readonly string[] = Object.freeze([]);
-export const OYASHIO_KARATE_LIMITS = Object.freeze({ drops: 96, jets: 24, rings: 96, sprays: 128, impacts: 24, drills: 8 });
-export const OYASHIO_KARATE_BEATS = Object.freeze({ coil: 1.99, charge: 2.6, burst: 3.215, end: 3.63 });
-export const isOyashioKarate = (id: string | undefined) => id === 'oyashio';
+/** Manual water-palm contact/pressure presentation; never a damage owner. */
+export const OYASHIO_CURRENT_ASSETS: readonly string[] = Object.freeze([]);
+export const OYASHIO_CURRENT_LIMITS = Object.freeze({ drops: 96, jets: 24, rings: 96, sprays: 128, impacts: 24, drills: 8 });
+export const OYASHIO_CURRENT_BEATS = Object.freeze({ coil: 1.99, charge: 2.6, burst: 3.215, end: 3.63 });
+export const isOyashioCurrent = (id: string | undefined) => id === 'oyashio';
 const UP=new THREE.Vector3(0,1,0),FORWARD=new THREE.Vector3(0,0,1),TAU=Math.PI*2;
 /** His water itself, over the bloom threshold where it is foam and light (it was drawn in colours of 1 and under). */
 const BLUE=new THREE.Color(.05,.55,1.05),CYAN=new THREE.Color(.5,1.7,2),FOAM=new THREE.Color(2,2.25,2.3);
-/** His sea karate as the stage lights it: foam at the heart, the cyan of the DEEP CURRENT round it, cooling to deep
+/** His water-palm style as the stage lights it: foam at the heart, the cyan of the DEEP CURRENT round it, cooling to deep
  *  water (his casting's palette); and the floor under it in a deep sea blue with little light. */
 export const SEA:StageLook=stageLook(0xe8fdff,0x42c4df,0x198bb5);
 const DEEP=new THREE.Color(.06,.5,1.1);
@@ -43,7 +43,7 @@ class WaterBatch {
      vec3 c=mix(vTint.rgb,vec3(.86,.99,1.),clamp(edge*.7+smoothstep(.8,.97,flow)*.2,0.,.9));float a=vTint.a;
      if(kind>.5&&kind<1.5)a*=.38+.34*edge;
      gl_FragColor=vec4(c,a);}`});material.forceSinglePass=true;
-  this.mesh=new THREE.InstancedMesh(geometry,material,capacity);this.mesh.name=`oyashio-karate-${name}`;this.mesh.frustumCulled=false;this.mesh.renderOrder=3;this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.mesh.count=0;scene.add(this.mesh);
+  this.mesh=new THREE.InstancedMesh(geometry,material,capacity);this.mesh.name=`oyashio-current-${name}`;this.mesh.frustumCulled=false;this.mesh.renderOrder=3;this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.mesh.count=0;scene.add(this.mesh);
  }
  begin(time:number){this.count=0;this.mesh.material.uniforms.clock.value=time;}
  add(p:THREE.Vector3,q:THREE.Quaternion,x:number,y:number,z:number,color:THREE.Color,alpha=1){if(this.count>=this.capacity||alpha<=.003||Math.min(x,y,z)<=0)return;this.object.position.copy(p);this.object.quaternion.copy(q);this.object.scale.set(x,y,z);this.object.updateMatrix();this.mesh.setMatrixAt(this.count,this.object.matrix);this.tint.setXYZW(this.count++,color.r,color.g,color.b,clamp(alpha));}
@@ -52,25 +52,25 @@ class WaterBatch {
 }
 type Drill={actor:string;target:string;seq:number;finalHit:boolean;endpoint:THREE.Vector3};
 type Impact={actor:string;seq:number;born:number;seed:number;grade:number;point:THREE.Vector3;projectile:boolean};
-export class OyashioKarate {
+export class OyashioCurrent {
  private readonly stage:MoveStage;private readonly full?:VfxKit;
  private blow=new THREE.Vector3();private ground=new THREE.Vector3();private fist=new THREE.Vector3();private heading=new THREE.Vector3();
  private drops:WaterBatch;private jets:WaterBatch;private rings:WaterBatch;private sprays:WaterBatch;private batches:WaterBatch[];
- private drills:Drill[]=Array.from({length:OYASHIO_KARATE_LIMITS.drills},()=>({actor:'',target:'',seq:-1,finalHit:false,endpoint:new THREE.Vector3()}));
- private impacts:Impact[]=Array.from({length:OYASHIO_KARATE_LIMITS.impacts},()=>({actor:'',seq:-1,born:0,seed:0,grade:0,point:new THREE.Vector3(),projectile:false}));
+ private drills:Drill[]=Array.from({length:OYASHIO_CURRENT_LIMITS.drills},()=>({actor:'',target:'',seq:-1,finalHit:false,endpoint:new THREE.Vector3()}));
+ private impacts:Impact[]=Array.from({length:OYASHIO_CURRENT_LIMITS.impacts},()=>({actor:'',seq:-1,born:0,seed:0,grade:0,point:new THREE.Vector3(),projectile:false}));
  private seen=new Float64Array(128).fill(-1);private seenTimes=new Float64Array(128).fill(-1);private eventCursor=0;private drillCursor=0;private impactCursor=0;private disposed=false;
  private p=new THREE.Vector3();private a=new THREE.Vector3();private b=new THREE.Vector3();private side=new THREE.Vector3();private direction=new THREE.Vector3();private q=new THREE.Quaternion();private flat=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2);
  constructor(scene:THREE.Scene,private kit:Pick<VfxKit,'budget'>&Partial<VfxKit>){
   this.stage=MoveStage.for(scene,kit);this.full=(kit as VfxKit).smoke&&(kit as VfxKit).dust?kit as VfxKit:undefined;
-  this.drops=new WaterBatch(scene,'drops',new THREE.SphereGeometry(.5,14,10),OYASHIO_KARATE_LIMITS.drops,0);
-  this.jets=new WaterBatch(scene,'jets',new THREE.CylinderGeometry(.40,.055,1,24,12,true),OYASHIO_KARATE_LIMITS.jets,1);
-  this.rings=new WaterBatch(scene,'rings',new THREE.TorusGeometry(1,.035,4,36),OYASHIO_KARATE_LIMITS.rings,2);
-  this.sprays=new WaterBatch(scene,'sprays',new THREE.SphereGeometry(.5,8,5),OYASHIO_KARATE_LIMITS.sprays,0);
+  this.drops=new WaterBatch(scene,'drops',new THREE.SphereGeometry(.5,14,10),OYASHIO_CURRENT_LIMITS.drops,0);
+  this.jets=new WaterBatch(scene,'jets',new THREE.CylinderGeometry(.40,.055,1,24,12,true),OYASHIO_CURRENT_LIMITS.jets,1);
+  this.rings=new WaterBatch(scene,'rings',new THREE.TorusGeometry(1,.035,4,36),OYASHIO_CURRENT_LIMITS.rings,2);
+  this.sprays=new WaterBatch(scene,'sprays',new THREE.SphereGeometry(.5,8,5),OYASHIO_CURRENT_LIMITS.sprays,0);
   this.batches=[this.drops,this.jets,this.rings,this.sprays];
  }
  load(_ids:readonly string[]):Promise<void>{return Promise.resolve();}
  handle(e:CombatEvent,fighters?:ReadonlyMap<string,Fighter>){
-  if(this.disposed)return;if(e.kind==='eliminated'||e.kind==='respawn'){this.cancel(e.actorId,true);return;}if(!isOyashioKarate(e.fighter))return;if(e.kind==='whiff'||e.kind==='rejected'){this.cancel(e.actorId);return;}if(e.kind!=='confirm'&&e.kind!=='hit')return;
+  if(this.disposed)return;if(e.kind==='eliminated'||e.kind==='respawn'){this.cancel(e.actorId,true);return;}if(!isOyashioCurrent(e.fighter))return;if(e.kind==='whiff'||e.kind==='rejected'){this.cancel(e.actorId);return;}if(e.kind!=='confirm'&&e.kind!=='hit')return;
   for(let i=0;i<this.seen.length;i++)if(this.seen[i]===e.id&&this.seenTimes[i]===e.serverTime)return;const index=this.eventCursor++%this.seen.length;this.seen[index]=e.id;this.seenTimes[index]=e.serverTime;
   const actor=fighters?.get(e.actorId),target=e.targetId?fighters?.get(e.targetId):undefined,seq=e.actionSeq??actor?.state.actionSeq??-1;
   if(e.kind==='confirm'){if(e.slot==='ultimate'&&!e.branch&&e.targetId)Object.assign(this.drills[this.drillCursor++%this.drills.length],{actor:e.actorId,target:e.targetId,seq,finalHit:false});return;}
@@ -130,7 +130,7 @@ export class OyashioKarate {
   if(this.disposed)return;for(const batch of this.batches)batch.begin(time);const detail=this.kit.budget>=.65;
   const st=this.stage.open(time);
   for(const f of fighters.values()){
-   const s=f.state;if(!isOyashioKarate(s.fighter)||!s.alive)continue;const elapsed=s.actionTime*s.actionDuration;
+   const s=f.state;if(!isOyashioCurrent(s.fighter)||!s.alive)continue;const elapsed=s.actionTime*s.actionDuration;
    this.swing(f,elapsed,time);
    if(s.action==='awaken')this.awakening(f,elapsed,detail);
    if((s.action==='light'||s.action==='heavy')&&s.whiffedAt===undefined){const k=Math.sin(clamp(s.actionTime)*Math.PI),r=s.action==='heavy'?.35:.22;f.strikePoint(this.p);this.q.setFromAxisAngle(UP,f.group.rotation.y);this.rings.add(this.p,this.q,r,r,r,FOAM,k*.85);if(detail)this.drops.add(this.p,this.q,r*.65,r*.65,r*.65,CYAN,k*.45);}
@@ -138,7 +138,7 @@ export class OyashioKarate {
   }
   // A single bead belongs to the authoritative Brine Shot flight; the trail has no hitbox.
   for(const f of flights.values()){
-   if(!isOyashioKarate(f.fighter)||f.slot!=='special'||f.branch||!f.released)continue;
+   if(!isOyashioCurrent(f.fighter)||f.slot!=='special'||f.branch||!f.released)continue;
    this.direction.copy(f.heading);this.q.setFromUnitVectors(UP,this.direction);this.p.copy(f.position);
    // (The bead itself twice the size it was: it is the body of the move.)
    const bead=f.awakened?2.3:2;this.drops.add(this.p,this.q,.33*bead,.58*bead,.33*bead,CYAN,1);this.drops.add(this.p,this.q,.15*bead,.38*bead,.15*bead,FOAM,.95);
@@ -154,19 +154,19 @@ export class OyashioKarate {
   for(const drill of this.drills){
    if(!drill.actor)continue;const actor=fighters.get(drill.actor),victim=fighters.get(drill.target),s=actor?.state;
    if(!actor||!s?.alive||!victim?.state.alive&&!drill.finalHit||s.action!=='ultimate'||s.branch||(s.actionSeq??-1)!==drill.seq||s.whiffedAt!==undefined){drill.actor='';continue;}
-   const elapsed=s.actionTime*s.actionDuration;if(elapsed>OYASHIO_KARATE_BEATS.end){drill.actor='';continue;}
+   const elapsed=s.actionTime*s.actionDuration;if(elapsed>OYASHIO_CURRENT_BEATS.end){drill.actor='';continue;}
    if(!drill.finalHit&&elapsed<ULT.contacts[FINAL])this.gather(actor,drill,elapsed,time,detail);
-   if(elapsed<OYASHIO_KARATE_BEATS.coil)continue;
+   if(elapsed<OYASHIO_CURRENT_BEATS.coil)continue;
    this.a.copy(actor.handL);if(drill.finalHit&&!victim?.state.alive)this.b.copy(drill.endpoint);else bodyCentre(victim!,this.b);
-   const charge=clamp((elapsed-OYASHIO_KARATE_BEATS.coil)/(OYASHIO_KARATE_BEATS.burst-OYASHIO_KARATE_BEATS.coil));this.p.copy(actor.group.position);this.p.y+=.045;const radius=.8+charge*.65;
+   const charge=clamp((elapsed-OYASHIO_CURRENT_BEATS.coil)/(OYASHIO_CURRENT_BEATS.burst-OYASHIO_CURRENT_BEATS.coil));this.p.copy(actor.group.position);this.p.y+=.045;const radius=.8+charge*.65;
    this.rings.add(this.p,this.flat,radius,radius,1,CYAN,.75);this.rings.add(this.p,this.flat,radius*.8,radius*.8,1,FOAM,.65);
-   if(elapsed<OYASHIO_KARATE_BEATS.burst){this.p.copy(this.a);this.q.identity();this.drops.add(this.p,this.q,.16+charge*.24,.16+charge*.24,.16+charge*.24,CYAN,.7);continue;}
-   const fade=clamp((OYASHIO_KARATE_BEATS.end-elapsed)/.17);this.direction.subVectors(this.b,this.a);const length=Math.min(10,this.direction.length());if(length<.05)continue;this.direction.normalize();this.q.setFromUnitVectors(UP,this.direction);this.p.copy(this.a).addScaledVector(this.direction,length*.5);
+   if(elapsed<OYASHIO_CURRENT_BEATS.burst){this.p.copy(this.a);this.q.identity();this.drops.add(this.p,this.q,.16+charge*.24,.16+charge*.24,.16+charge*.24,CYAN,.7);continue;}
+   const fade=clamp((OYASHIO_CURRENT_BEATS.end-elapsed)/.17);this.direction.subVectors(this.b,this.a);const length=Math.min(10,this.direction.length());if(length<.05)continue;this.direction.normalize();this.q.setFromUnitVectors(UP,this.direction);this.p.copy(this.a).addScaledVector(this.direction,length*.5);
    this.jets.add(this.p,this.q,1.8,length,1.8,BLUE,fade);this.jets.add(this.p,this.q,.95,length,.95,CYAN,fade*.65);
    // (The drill lit: a white-hot line down its heart and its light along it.)
    st.streak(this.a,this.b,.3,SEA.main,.6*fade);st.streak(this.a,this.b,.1,SEA.core,1.5*fade);st.light(this.p,Math.min(8,length*.5+3),SEA,.6*fade);
    this.q.setFromUnitVectors(FORWARD,this.direction);
-   for(let i=0;i<(detail?7:4);i++){const t=(i/(detail?7:4)+(elapsed-OYASHIO_KARATE_BEATS.burst)*2)%1;this.p.copy(this.a).addScaledVector(this.direction,length*t);const r=.10+t*.7;this.rings.add(this.p,this.q,r,r,r,i%2?FOAM:CYAN,fade*(.55+.35*t));}
+   for(let i=0;i<(detail?7:4);i++){const t=(i/(detail?7:4)+(elapsed-OYASHIO_CURRENT_BEATS.burst)*2)%1;this.p.copy(this.a).addScaledVector(this.direction,length*t);const r=.10+t*.7;this.rings.add(this.p,this.q,r,r,r,i%2?FOAM:CYAN,fade*(.55+.35*t));}
   }
   for(const impact of this.impacts){
    if(!impact.actor)continue;const s=fighters.get(impact.actor)?.state,age=time-impact.born,life=impact.grade===3?.48:.28;

@@ -1,4 +1,5 @@
 import { FIGHTERS } from '../../config';
+import { ballOf, BALL_TEAM_NAMES } from '../../game/ball/model';
 import { promptText } from '../prompts';
 import { MODES, type ModeId, type VariantId } from '../modes/catalogue';
 import { defenceBasics } from '../modes/defence';
@@ -19,6 +20,14 @@ export function statusLine(mode: ModeId, frame: ModeHudFrame | undefined): strin
   const alive = snapshot.players.filter(p => p.alive && !p.enemy).length;
   switch (mode) {
     case 'rift-war': return phase==='waiting'?'GATHERING THE TEAMS':phase==='over'?'WAR COMPLETE':'THREE LANES · DESTROY THE ENEMY CORE';
+    case 'goal-rush': case 'sky-spike': {
+      const ball = ballOf(snapshot);
+      if (!ball) return '';
+      const score = `${BALL_TEAM_NAMES.red} ${ball.score.red} · ${ball.score.blue} ${BALL_TEAM_NAMES.blue}`;
+      if (ball.phase === 'lobby' || ball.phase === 'countdown') return 'THE TEAMS ARE TAKING THE FIELD';
+      if (ball.phase === 'over') return `FULL TIME · ${score}`;
+      return mode === 'goal-rush' ? `${score} · ${ball.overtime ? 'OVERTIME' : `${Math.floor(ball.clock / 60)}:${String(Math.floor(ball.clock % 60)).padStart(2, '0')} LEFT`}` : `${score} · RALLY ${ball.rally}`;
+    }
     case 'royale': return phase === 'waiting' ? `${snapshot.players.length} FIGHTERS IN THE ROOM` : `${alive} LEFT · YOUR KOs ${self.kills ?? 0}`;
     case 'duel': {
       const rival = snapshot.players.find(p => p.id !== self.id && !p.enemy);

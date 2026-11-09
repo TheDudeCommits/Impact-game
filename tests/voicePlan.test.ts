@@ -17,7 +17,7 @@ const ORIGINAL_VOICES = (ORIGINAL_VOICE_DATA as unknown as { cues: Record<string
 
 const FIGHTERS = Object.keys(MOVES) as FighterId[];
 /** The lights that are named by a callout, and the callout. */
-const LIGHT_CALLS: Partial<Record<FighterId, AudioCue>> = { 'rakucho':'vo-rakucho-my-turn', shidare:'vo-shidare-ready', kenzo: 'vo-kenzo-crossing', kagari: 'kagari-hinoko', gummy: 'gummy-pistol',
+const LIGHT_CALLS: Partial<Record<FighterId, AudioCue>> = { 'rakucho':'vo-rakucho-my-turn', shidare:'vo-shidare-ready', kenzo: 'vo-kenzo-crossing', kagari: 'kagari-hinoko', gummy: 'gummy-snapback',
   'basilissa':'vo-basilissa-thorn-kiss', buna:'vo-buna-lets-go', adad:'vo-adad-enough',
   // The shop's four whose lights are named (voicePlan.ts): with efforts between their callouts since 5 October.
   gorai: 'vo-gorai-mast-breaker', shiun: 'vo-shiun-weak', magatsu: 'vo-magatsu-tch', imago: 'vo-imago-i-can-read' };

@@ -53,7 +53,7 @@ const JOINT = { hips: 'WAIST_04', chest: 'SPINE3_07', head: 'HEAD_09', armL: 'SH
 /** Shirokane's: where the lightning crawls, joint to joint. */
 const ARCS: readonly (readonly [keyof typeof JOINT, keyof typeof JOINT])[] = [['armR', 'foreR'], ['foreR', 'handR'], ['armL', 'foreL'], ['foreL', 'handL'], ['hips', 'chest'], ['chest', 'head']];
 const BOLT = new THREE.Color(.55, 1.05, 2.6);
-const LIGHTNING_CUT: BoltStyle = { width: .05, color: BOLT, intensity: 1, levels: 3, jag: .36, branches: 1, branchLength: .7, taper: .3, core: .17 };
+const SICKLE_BOLT: BoltStyle = { width: .05, color: BOLT, intensity: 1, levels: 3, jag: .36, branches: 1, branchLength: .7, taper: .3, core: .17 };
 /** The wings' roots: the source spreads them three times its height across, so they are drawn at Look.wings of it. */
 const WING_ROOTS = [JOINT.wingL, JOINT.wingR] as const;
 /** Metres to one side of its user the lens must be for the Guardian to cross to his other side, and how fast it walks
@@ -225,7 +225,7 @@ export class GuardianLooms {
       shell.setWindow(2, theirs && theirs !== foe && theirs !== f && theirs.state.alive ? theirs : undefined, GUARDIAN.keepTarget);
       // The lock-on rig stands back for its shoulders, not its crown: it towers out of the frame.
       setLoomTop(id, Math.min(look.height * GUARDIAN.frame, GUARDIAN.frameMost) * k);
-      // Shirokane's: his Lightning Cut crawling over it, and chirping in its right hand.
+      // Shirokane's: his Sickle Bolt crawling over it, and chirping in its right hand.
       if (kit && look.lightning && k > .3) {
         const power = k * Math.max(.5, kit.density);
         for (let i = 0; i < ARCS.length; i++) {
@@ -239,7 +239,7 @@ export class GuardianLooms {
         if (hand) {
           hand.getWorldPosition(_a);
           kit.glows.add(_a, .9 * power, BOLT, 1, SPARK, .36, kit.tick % 97);
-          kit.painter.burst(_a, 1.2 * power, Math.max(4, Math.round(9 * kit.density)), kit.tick, 7, LIGHTNING_CUT);
+          kit.painter.burst(_a, 1.2 * power, Math.max(4, Math.round(9 * kit.density)), kit.tick, 7, SICKLE_BOLT);
         }
       }
     }

@@ -13,7 +13,7 @@ export interface MatchPresence { room?: Joinable; line?: string }
 export interface PartyPresence { code: string; members: number; mode: string }
 
 const OPERATIONS = { 'last-stand': 'Last Stand', 'bad-blood': 'Bad Blood', 'rift-war': 'Rift War' } as const;
-const PARTY_NAMES: Record<PartyView['mode'], string> = { 'rift-war': 'Rift War', duel: 'Duel', royale: 'Battle Royale', 'bad-blood': 'Bad Blood', 'last-stand': 'Last Stand', survival: 'Co-op Survival' };
+const PARTY_NAMES: Record<PartyView['mode'], string> = { 'goal-rush': 'Goal Rush', 'sky-spike': 'Sky Spike', 'rift-war': 'Rift War', duel: 'Duel', royale: 'Battle Royale', 'bad-blood': 'Bad Blood', 'last-stand': 'Last Stand', survival: 'Co-op Survival' };
 const code = (value: unknown): value is string => typeof value === 'string' && /^\d{6}$/.test(value);
 
 /** A hosted operation (Last Stand, Bad Blood, Rift War) still in its lobby, with a seat open: its code is the invite's

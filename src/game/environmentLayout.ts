@@ -227,6 +227,10 @@ function riftLandmarks(stage: StageId): EnvironmentCollider[] {
 }
 
 export const STAGE_LANDMARKS: Record<StageId, readonly EnvironmentCollider[]> = {
+  // Goal Rush's pitch is its walls alone. Sky Spike's net is a wall to the fighters (the ball goes over it, game/ball):
+  // as tall as the highest jump, so no side ever stands in the other's court.
+  'ball-pitch': [],
+  'ball-court': [{x:0,y:6,z:0,halfX:16,halfY:6,halfZ:.12}],
   'rift-war': RIFT_SOLIDS,
   'blood-citadel': [],
   'hidden-ash': [

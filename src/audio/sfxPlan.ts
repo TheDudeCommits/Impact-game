@@ -663,7 +663,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   strappado:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-cut-2',.2,c0(c))],special:c=>[onBeat('fx-clock-hand-knives-2',.24,c0(c)),onBeat('fx-cut-2',.18,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-stretch-2',.12,c0(c))]},
   unari:{heavy:c=>[...meleeSwings(c),onBeat('fx-snap-1',.21,c0(c))],special:c=>[onBeat('fx-clock-hand-knives-2',.27,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-stretch-2',.12,c0(c))]},
   // Left-hand darkness draws inward; right-hand quake strikes with a dry fracture.
-  barrow:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-defib-shock',.22,c0(c))],special:c=>[bed('fx-gather',.12,.04,c0(c)),onBeat('fx-room',.25,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-room',.15,c0(c))]},
+  barrow:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-defib-shock',.22,c0(c))],special:c=>[bed('fx-gather',.12,.04,c0(c)),onBeat('fx-theatre-open',.25,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-theatre-open',.15,c0(c))]},
   kusushi:{heavy:c=>[...meleeSwings(c),onBeat('fx-hit-finisher-1',.22,c0(c))],special:c=>[...meleeSwings(c),onBeat('fx-energy-hit-1',.19,c0(c))]},
   hakushi:{heavy:c=>[bed('fx-gather',.12,.03,c0(c)),onBeat('fx-energy-hit-1',.22,c0(c))],special:c=>[bed('fx-fire-bed',.11,.16,c0(c)),onBeat('fx-fire-whoosh-2',.24,c0(c))]},
   suzuran:{heavy:c=>[...meleeSwings(c),onBeat('fx-energy-hit-1',.14,c0(c))],special:c=>[bed('fx-gather',.12,.03,c0(c)),onBeat('fx-wind-blast',.24,c0(c))]},
@@ -756,7 +756,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   },
   shirokane: {
     heavy: c => [{ cue: pick(FAMILY.zap, c.seed), gain: .3, phase: 'cast' }, bed('fx-shrike-bolt', .26, .02, c0(c))],
-    // Static Scarecrow: the Lightning Cut swells, then a clone bolts out.
+    // Static Scarecrow: the Sickle Bolt swells, then a clone bolts out.
     special: c => [bed('fx-shrike-bolt', .28, 0, c0(c)), onBeat(pick(FAMILY.poof, c.seed), .34, c0(c)),
       onBeat(pick(FAMILY.zip, c.seed), .38, c0(c) + .05), onBeat(pick(FAMILY.zap, c.seed), .3, c0(c) + .06)],
     // VOID SICKLE: the spiral opens beside him; the blade crackles as he closes.
@@ -773,7 +773,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
       onBeat(pick(FAMILY.stretch, c.seed), .32, c0(c) - .06, 'cast', 1.15),
       ...c.move.contacts.slice(0, -1).map((time, i) => onBeat(pick(FAMILY.snap, c.seed, i), .2, time, 'cast', 1.2)),
       onBeat(pick(FAMILY.heavy, c.seed), .46, last(c))],
-    // The GRAND TIDE. The opener is a rubber Bazooka at .5; SUNRISE, the fist
+    // The GRAND TIDE. The opener is a Rogue Wave at .5; SUNRISE, the fist
     // blown up over the dazed victim and brought down are the cinematic
     // (confirmLayers).
     ultimate: c => [onBeat(pick(FAMILY.stretch, c.seed), .4, c0(c) - .1, 'cast', .7), onBeat('fx-swing-huge', .5, c0(c))],
@@ -826,12 +826,12 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     // Stat Shot: a dash and a thrust.
     heavy: c => [onBeat(pick(FAMILY.zip, c.seed), .38, c0(c) - .2), onBeat(pick(FAMILY.nodachi, c.seed), .5, c0(c))],
     // Cautery Blade: a THEATRE, an energy blade held from .1, and a thrust.
-    special: c => [{ cue: 'fx-room', gain: .4, phase: 'cast' }, bed('fx-electric-bed', .14, .1, c0(c)),
+    special: c => [{ cue: 'fx-theatre-open', gain: .4, phase: 'cast' }, bed('fx-electric-bed', .14, .1, c0(c)),
       onBeat(pick(FAMILY.zip, c.seed), .34, c0(c) - .06)],
     // THEATRE: Flatline. The THEATRE opens and Crossmatch puts his palm on the
     // target - the opener, at .45 (round 3d); the shock pulsing through them
     // and the full discharge are the cinematic.
-    ultimate: c => [{ cue: 'fx-room', gain: .5, phase: 'cast' }, onBeat('fx-crossmatch', .46, c0(c) - .08),
+    ultimate: c => [{ cue: 'fx-theatre-open', gain: .5, phase: 'cast' }, onBeat('fx-crossmatch', .46, c0(c) - .08),
       bed('fx-electric-bed', .2, .15, c0(c))],
   },
   koko: {
@@ -927,8 +927,8 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   shiun: {
     // GLASS LANCES: the light gathers, and the wing blades go out.
     special: c => [{ cue: 'fx-gather', gain: .4, phase: 'cast' }, onBeat('fx-clock-hand-knives-1', .5, c0(c)), onBeat('fx-zap-2', .36, c0(c) + .02)],
-    // BLACK CONFESSIONAL: the coffin closing round them is the opener; the spears are the cinematic.
-    ultimate: c => [{ cue: 'fx-domain', gain: .38, phase: 'cast' }, onBeat('fx-room', .5, c0(c))],
+    // BLACK CONFESSIONAL: the reliquary closing round them is the opener; the spears are the cinematic.
+    ultimate: c => [{ cue: 'fx-domain', gain: .38, phase: 'cast' }, onBeat('fx-theatre-open', .5, c0(c))],
   },
   magatsu: {
     // Rend: Thousand Cuts: the sweep, and the slashes it throws.
@@ -1165,7 +1165,7 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
   // Round 4b (GUMMY): the GRAND TIDE - a puff of cloud as he goes SUNRISE, the fist blown up over the dazed victim
   // with Crimson Command crackling round it, brought down, and the floor going under it.
   gummy: c => [{ cue: 'fx-poof-1', gain: .4, delay: round(c0(c) + .05), phase: 'cast' },
-    { cue: 'fx-gear4-inflate', gain: .46, delay: round(Math.max(c0(c) + .3, last(c) - 1.5)), phase: 'cast' },
+    { cue: 'fx-rubber-swell', gain: .46, delay: round(Math.max(c0(c) + .3, last(c) - 1.5)), phase: 'cast' },
     held('fx-electric-bed', .16, c0(c) + .4, last(c) - .05),
     onBeat(pick(FAMILY.stretch, c.seed), .42, last(c) - .22, 'cast', .6), onBeat('fx-swing-huge', .62, last(c)),
     onBeat('fx-explosion-huge', .55, last(c) + .02), { cue: 'fx-poof-2', gain: .32, delay: round(last(c) + .35), phase: 'cast' }],
@@ -1210,7 +1210,7 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
   // HORIZON SUNDER: one cut, and the sky splitting along it.
   dorado: c => [onBeat('fx-swing-huge', .5, last(c) - .05), onBeat('fx-slash-wave', .62, last(c)), onBeat('fx-lightning', .46, last(c) + .02),
     onBeat('fx-explosion-huge', .4, last(c) + .06)],
-  // BLACK CONFESSIONAL: the coffin humming shut, then the spears.
+  // BLACK CONFESSIONAL: the reliquary humming shut, then the spears.
   shiun: c => [held('fx-electric-bed', .2, c0(c) + .1, last(c)), onBeat('fx-dark-spark', .55, last(c)), onBeat('fx-explosion-huge', .42, last(c) + .04)],
   // Open: Calamity Pyre: the fire drawn into a bow, and the arrow loosed.
   magatsu: c => [held('fx-fire-bed', .22, c0(c) + .1, last(c)), onBeat('fx-fire-roar', .5, last(c) - .08), onBeat('fx-fire-burst', .55, last(c)),
@@ -1307,7 +1307,7 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
   },
   gummy: {
     // The giant fist blown up before it lands.
-    lh: swung(c => [onBeat('fx-gear4-inflate', .3, Math.max(.06, c0(c) - .12))]),
+    lh: swung(c => [onBeat('fx-rubber-swell', .3, Math.max(.06, c0(c) - .12))]),
     // Waterspout: the barrage carries them up.
     llh: c => [...meleeSwings(c), ...[-.12, -.08, -.04].map((dt, i) => onBeat(pick(FAMILY.jab, c.seed, i), .3, Math.max(.04, c0(c) + dt)))],
   },
@@ -1354,9 +1354,9 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
   },
   ward: {
     // THEATRE opens, and the target is swapped away.
-    lh: c => [onBeat('fx-room', .4, .02), onBeat('fx-crossmatch', .48, c0(c))],
+    lh: c => [onBeat('fx-theatre-open', .4, .02), onBeat('fx-crossmatch', .48, c0(c))],
     lllh: swung(c => [onBeat('fx-defib-shock', .42, c0(c) + .02)]),
-    llls: swung(c => [onBeat('fx-room', .3, .02), onBeat(pick(FAMILY.snap, c.seed), .3, c0(c) + .03)]),
+    llls: swung(c => [onBeat('fx-theatre-open', .3, .02), onBeat(pick(FAMILY.snap, c.seed), .3, c0(c) + .03)]),
   },
   kuon: {
     lh: swung(c => [onBeat('fx-dark-spark', .54, c0(c))]),
@@ -1689,7 +1689,7 @@ const SIGNATURE_IMPACTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Im
   },
   ward: {
     heavy: c => [{ cue: pick(FAMILY.cutHeavy, c.seed), gain: .66 }],
-    special: () => [{ cue: 'fx-gamma', gain: .72 }, { cue: 'fx-hit-heavy-1', gain: .34 }],
+    special: () => [{ cue: 'fx-rad-knife', gain: .72 }, { cue: 'fx-hit-heavy-1', gain: .34 }],
     ultimate: confirmBlow(c => [{ cue: pick(FAMILY.hitHeavy, c.seed), gain: .56 }, { cue: pick(FAMILY.zap, c.seed), gain: .4 }],
       (c, index) => [{ cue: pick(FAMILY.zap, c.seed, index), gain: .46 }, { cue: pick(FAMILY.energyHit, c.seed, index), gain: .3 }],
       () => [{ cue: 'fx-defib-shock', gain: .86 }]),
@@ -1829,7 +1829,7 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
     // Kurobi: the fox's roar answering him (a recorded monster roar, pitched; next to nothing in the speech band).
     case 'konta': return [...base, add('fx-beast-roar', .5, .5)];
     // Round 4b (GUMMY): SUNRISE - pressure building, the burst of cloud, and the cartoon's boing as he lands in it.
-    case 'gummy': return [...base, add('fx-gear4-inflate', .36), add('fx-poof-1', .46, .34), add('fx-poof-2', .36, .48), add('fx-gear4-bounce', .42, .62)];
+    case 'gummy': return [...base, add('fx-rubber-swell', .36), add('fx-poof-1', .46, .34), add('fx-poof-2', .36, .48), add('fx-rubber-bounce', .42, .62)];
     // The gold awakening, Taisei's and Ouga's: the aura catching, ki drawn up, the burst on the swap, sparks (goldAwakening).
     case 'taisei': case 'ouga': return goldAwakening(fighter);
     // The spirit looming up behind them: its ghostly swell, and the pressure it puts on the air.
@@ -1921,7 +1921,7 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
     case 'kagari': return [...base, add('fx-fire-roar', .52, .4), on('fx-fire-whoosh-1', .44, swap + .02), on('fx-embers', .34, swap + .2)];
     case 'asahi': return [...base, on('fx-fire-ignite', .44, swap), add('fx-fire-roar', .44, .4), on('fx-fire-whoosh-1', .42, swap + .04)];
     // The operating theatre opening wide, and a Crossmatch blip in it.
-    case 'ward': return [...base, add('fx-room', .54, .3), on('fx-crossmatch', .34, swap + .1)];
+    case 'ward': return [...base, add('fx-theatre-open', .54, .3), on('fx-crossmatch', .34, swap + .1)];
     // TENGAN: Blue drawn in, and the swirl of Infinity round him.
     case 'kuon': return [...base, add('fx-blue', .4), held('fx-purple-charge', .26, swap, swap + .8)];
     // The HOUND ARMOR closing on him (its clanks, kept under his scream) and the beast in it.

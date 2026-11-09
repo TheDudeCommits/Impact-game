@@ -55,7 +55,7 @@ describe('the first visit downloads only what the home screen needs', () => {
     expect(fs.readFileSync('src/render/signature/RosterSignatureSet.ts', 'utf8').match(/lazy\(\(\) => import\('/g)?.length).toBeGreaterThanOrEqual(51);
     const away = ['render/castEffects', 'render/GummyEffects', 'render/NinjaEffects', 'render/SwordSpiritEffects', 'render/SetsuEffects', 'render/WardEffects',
       'render/EmperorEffects', 'render/KuonEffects', 'render/GauntEffects', 'render/signature/LastSun', 'originals/emperorFinales',
-      ...['FullBeamPressure', 'PyroclastExplosions', 'AmpereSurge', 'KuzuChainsaw', 'ShakugoMagma', 'RoseEmpress', 'TorsionPsychic', 'BonshoBodhisattva', 'StrappadoStrings',
+      ...['FullBeamPressure', 'PyroclastExplosions', 'AmpereSurge', 'KuzuChainsaw', 'ShakugoMagma', 'RoseEmpress', 'TorsionPsychic', 'BonshoGuardian', 'StrappadoStrings',
         'ChohanAllIn', 'KinuStoneThread', 'BunaOni', 'TempoDarkSpark'].map(id => `render/signature/${id}`)].map(file => `src/${file}.ts`);
     for (const file of away) expect(fs.existsSync(file), file).toBe(true);
     expect(away.filter(file => closure.includes(file))).toEqual([]);

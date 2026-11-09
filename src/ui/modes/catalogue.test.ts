@@ -10,7 +10,7 @@ const snap = (extra: Partial<GameSnapshot> & Record<string, unknown> = {}) => ({
 
 describe('the mode catalogue', () => {
   it('describes every mode the same way: a goal, a win line, three facts, three bullets', () => {
-    expect(MODE_ORDER).toHaveLength(7);
+    expect(MODE_ORDER).toHaveLength(9);
     for (const id of MODE_ORDER) {
       const mode = MODES[id];
       expect(mode.id).toBe(id);
@@ -20,7 +20,7 @@ describe('the mode catalogue', () => {
       expect(mode.howTo).toHaveLength(3);
       expect(mode.rulesVersion).toBeGreaterThanOrEqual(1);
     }
-    expect(new Set(MODE_ORDER.map(id => MODES[id].name)).size).toBe(7);
+    expect(new Set(MODE_ORDER.map(id => MODES[id].name)).size).toBe(9);
   });
   it('offers its ways to play in one order, each with a label, a tag, a note and a button', () => {
     for (const id of MODE_ORDER) {

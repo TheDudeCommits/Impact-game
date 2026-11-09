@@ -119,7 +119,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
     airHeavy: seg('Heaven\'s Harvest', 0, .5, .25), airSpecial: seg('Heaven\'s Harvest', .9, 1.38, .3) },
   jirenga: { lh: seg('Mountain-Felling Fist', 0, .6, .7), llh: whole('Uprooting Fist', .471), lllh: seg('Mountain-Felling Fist', .9, 1.6, .55), llls: seg('Vermilion Seal', .9, 1.8, .6),
     airHeavy: seg('Mountain-Felling Fist', .7, 1.4, .6), airSpecial: whole('awaken-wrathful-guardian', .3) },
-  'jinlin': { lh: whole('Jinlin Rush 5', .5), llh: seg('Drowned Sun', .4, 1.2, .45), lllh: seg('Pearl Rain', .2, 1.2, .6), llls: seg('awaken-golden', .2, 1.5, .5),
+  'jinlin': { lh: whole('Jinlin Rush 5', .5), llh: seg('Drowned Sun', .4, 1.2, .45), lllh: seg('Pearl Rain', .2, 1.2, .6), llls: seg('awaken-jinlin', .2, 1.5, .5),
     airHeavy: whole('Jinlin Rush 3', .5), airSpecial: seg('Pearl Rain', 1.2, 2.38, .2) },
   'gohaku': { lh: seg('Beast Rush 4', .3, .75, .4), llh: seg('Beast Rush 3', .05, .4, .5), lllh: seg('Rising Kick', .4, 1.08, .45), llls: whole('Beast Rush 2', .5333),
     airHeavy: seg('Star-Shifting Beam', .2, 1.2, .65), airSpecial: seg('awaken-beast', .9, 2, .4) },
@@ -142,7 +142,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   'rook': { lh: seg('Crossed Talons', .5, 1.5, .6), llh: whole('Raven Rise', .4417), lllh: whole('Shadow Kick', .65), llls: seg('awaken-rookery', .8, 2.2, .5),
     airHeavy: whole('Talon Cut', .6818), airSpecial: seg('Rook\'S Grip', 1.1, 2.08, .35) },
   gaku: { lh: seg('Riot Palm', .9, 1.88, .35), llh: whole('Rising Paw', .776), lllh: seg('Landslide', .8, 2, .45), llls: whole('Scav Kick', .5),
-    airHeavy: whole('Chain Jab', .6), airSpecial: seg('awaken-adult', 0, 1.4, .6) },
+    airHeavy: whole('Chain Jab', .6), airSpecial: seg('awaken-gaku', 0, 1.4, .6) },
   // The main game's sixteen (5 October 2026; game/combosVol1.ts), each ender the part of a take that moves as the move
   // is named: chosen off fixed-camera filmstrips with the fighter's own root caps and a trace of where each hand and
   // foot strikes and the body leaves and meets the floor (scripts/combos/ender_sheet.html). Where a fighter's set had

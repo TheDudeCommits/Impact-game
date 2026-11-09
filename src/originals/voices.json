@@ -155,22 +155,22 @@
    "voice": "lucy",
    "text": "だっ!"
   },
-  "gummy-pistol": {
-   "file": "voice/originals/lucy/gummy-pistol.wav",
+  "gummy-snapback": {
+   "file": "voice/originals/lucy/gummy-snapback.wav",
    "seconds": 0.66,
    "level": -15.9,
    "voice": "lucy",
    "text": "スナップ!"
   },
-  "vo-gummy-bazooka": {
-   "file": "voice/originals/lucy/vo-gummy-bazooka.wav",
+  "vo-gummy-rogue-wave": {
+   "file": "voice/originals/lucy/vo-gummy-rogue-wave.wav",
    "seconds": 0.99,
    "level": -15.6,
    "voice": "lucy",
    "text": "ローグ・ウェーブ!"
   },
-  "gummy-bazooka": {
-   "file": "voice/originals/lucy/gummy-bazooka.wav",
+  "gummy-rogue-wave": {
+   "file": "voice/originals/lucy/gummy-rogue-wave.wav",
    "seconds": 0.6,
    "level": -15.6,
    "voice": "lucy",
@@ -274,7 +274,7 @@
    "voice": "lucy",
    "text": "サンセット・バラージ!"
   },
-  "vo-gummy-rubber-no": {
+  "vo-gummy-come-sea": {
    "file": "voice/originals/lucy/gummy-b00ce290.wav",
    "seconds": 1.06,
    "level": -15.6,
@@ -372,7 +372,7 @@
    "voice": "shirokane",
    "text": "ふっ！"
   },
-  "vo-shirokane-lightning-cut": {
+  "vo-shirokane-sickle-bolt": {
    "file": "voice/originals/shirokane/shirokane-adaf5bce.wav",
    "seconds": 1.005,
    "level": -16.5,
@@ -386,7 +386,7 @@
    "voice": "shirokane",
    "text": "雷藁人形！"
   },
-  "vo-shirokane-void-sickle-lightning-cut": {
+  "vo-shirokane-void-sickle-bolt": {
    "file": "voice/originals/shirokane/shirokane-46cbe3a5.wav",
    "seconds": 1.56,
    "level": -16.4,
@@ -463,7 +463,7 @@
    "voice": "kenzo",
    "text": "牙渡りッ！"
   },
-  "vo-kenzo-lion-cut": {
+  "vo-kenzo-mirage-draw": {
    "file": "voice/originals/kenzo/kenzo-d80d9c6e.wav",
    "seconds": 1.295,
    "level": -16.4,
@@ -477,15 +477,15 @@
    "voice": "kenzo",
    "text": "牙渡りッ！"
   },
-  "kenzo-phoenix": {
-   "file": "voice/originals/kenzo/kenzo-phoenix.wav",
+  "kenzo-eagle": {
+   "file": "voice/originals/kenzo/kenzo-eagle.wav",
    "seconds": 1.495,
    "level": -16.7,
    "voice": "kenzo",
    "text": "千里……鷲ィッ！"
   },
-  "kenzo-world": {
-   "file": "voice/originals/kenzo/kenzo-world.wav",
+  "kenzo-dust-sea": {
+   "file": "voice/originals/kenzo/kenzo-dust-sea.wav",
    "seconds": 1.955,
    "level": -15.2,
    "voice": "kenzo",
@@ -736,7 +736,7 @@
    "voice": "koko",
    "text": "アイアン・ララバイ！"
   },
-  "koko-world": {
+  "koko-hush": {
    "file": "voice/originals/koko/koko-a324364d.wav",
    "seconds": 0.67,
    "level": -16.4,
@@ -3928,8 +3928,8 @@
    "voice": "shirokane",
    "text": "ちょっと本を閉じるよ。…ちょっとだけね。"
   },
-  "vo-shirokane-great-waterfall": {
-   "file": "voice/originals/shirokane/vo-shirokane-great-waterfall.wav",
+  "vo-shirokane-dust-fall": {
+   "file": "voice/originals/shirokane/vo-shirokane-dust-fall.wav",
    "seconds": 1.31,
    "level": -17,
    "voice": "shirokane",
@@ -5846,8 +5846,8 @@
    "voice": "unari",
    "text": "あんたの糸、いただくよ。"
   },
-  "vo-unari-gum": {
-   "file": "voice/originals/unari/vo-unari-gum.wav",
+  "vo-unari-deal": {
+   "file": "voice/originals/unari/vo-unari-deal.wav",
    "seconds": 1.59,
    "level": -16.5,
    "voice": "unari",
@@ -6525,8 +6525,8 @@
    "voice": "tokan",
    "text": "みんな仲良く……冬眠だ。"
   },
-  "vo-tokan-pheasant": {
-   "file": "voice/originals/tokan/vo-tokan-pheasant.wav",
+  "vo-tokan-frostplume": {
+   "file": "voice/originals/tokan/vo-tokan-frostplume.wav",
    "seconds": 1.76,
    "level": -16.4,
    "voice": "tokan",
@@ -6595,8 +6595,8 @@
    "voice": "tokan",
    "text": "本気出させんなよ。疲れるんだから。"
   },
-  "vo-tokan-partisan": {
-   "file": "voice/originals/tokan/vo-tokan-partisan.wav",
+  "vo-tokan-icicle-spear": {
+   "file": "voice/originals/tokan/vo-tokan-icicle-spear.wav",
    "seconds": 1.645,
    "level": -15.4,
    "voice": "tokan",
@@ -9640,8 +9640,8 @@
    "voice": "bellows",
    "text": "精錬の拳だッ！"
   },
-  "vo-bellows-spider": {
-   "file": "voice/originals/bellows/vo-bellows-spider.wav",
+  "vo-bellows-slag-lances": {
+   "file": "voice/originals/bellows/vo-bellows-slag-lances.wav",
    "seconds": 2.825,
    "level": -16.3,
    "voice": "bellows",

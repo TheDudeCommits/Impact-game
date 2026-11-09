@@ -3,6 +3,7 @@ import type { GameSnapshot, PlayerInput } from '../../game/types';
 import type { MatchReport } from '../../game/economy/earn';
 import { objectiveOf } from '../../game/objectives/model';
 import { riftOf } from '../../game/moba/model';
+import { ballOf, ballReportOf } from '../../game/ball/model';
 import { riftContributed, riftReport } from '../../game/economy/riftReport';
 import { sharedEconomy } from './api';
 import type { RoomEconomy } from '../cluster/economyLink';
@@ -60,17 +61,17 @@ export class RoomRewards {
     if (this.started !== undefined && (Math.hypot(input.moveX, input.moveZ) > .1 || input.attack || input.guard || input.dash || input.jump)) this.active.add(id);
   }
   observe(snapshot: GameSnapshot) {
-    const objective = objectiveOf(snapshot), rift = riftOf(snapshot), set = snapshot.duel?.set ?? objective?.round ?? rift?.round ?? snapshot.lobby?.again?.match ?? 1;
+    const objective = objectiveOf(snapshot), rift = riftOf(snapshot), ball = ballOf(snapshot), set = snapshot.duel?.set ?? objective?.round ?? rift?.round ?? ball?.round ?? snapshot.lobby?.again?.match ?? 1;
     this.next(set);
-    if (snapshot.status === 'active' && this.started === undefined) { this.started = snapshot.serverTime; this.fieldSize = objective?.seats.length ?? rift?.seats.length ?? snapshot.players.length; }
+    if (snapshot.status === 'active' && this.started === undefined) { this.started = snapshot.serverTime; this.fieldSize = objective?.seats.length ?? rift?.seats.length ?? ball?.seats.length ?? snapshot.players.length; }
     // (A royale's places come from its knockouts; the Rift's fighters fall and come back.)
-    if (!objective && !snapshot.duel && !rift && this.started !== undefined) for (const e of snapshot.events) {
+    if (!objective && !snapshot.duel && !rift && !ball && this.started !== undefined) for (const e of snapshot.events) {
       if (e.kind === 'eliminated' && e.targetId && !this.places.has(e.targetId)) this.places.set(e.targetId, Math.max(2, this.fieldSize - this.places.size));
     }
     if (this.done || this.started === undefined || snapshot.status !== 'finished') return;
     // A training simulation also backs objectives. Only explicit completed
     // objective matches or match rooms may reach settlement.
-    if (objective ? objective.phase !== 'over' : rift ? rift.phase !== 'over' : snapshot.roomMode !== 'match') return;
+    if (objective ? objective.phase !== 'over' : rift ? rift.phase !== 'over' : ball ? ball.phase !== 'over' : snapshot.roomMode !== 'match') return;
     const seconds = Math.max(0, snapshot.serverTime - this.started);
     const economy = this.economy(); if (!economy) return;
     let completed = true;
@@ -81,7 +82,7 @@ export class RoomRewards {
     };
     const humans = objective ? objective.seats.filter(s => !s.bot).map(s => s.id) : rift ? rift.seats.filter(s => !s.bot).map(s => s.id) : snapshot.players.filter(p => !p.isBot).map(p => p.id);
     const people = humans.filter(id => this.active.has(id) || contributedBy(id)).length;
-    const privateRoom = snapshot.lobby?.visibility === 'private' || objective?.access === 'host' || objective?.access === 'join' || rift?.access === 'host' || rift?.access === 'join';
+    const privateRoom = snapshot.lobby?.visibility === 'private' || objective?.access === 'host' || objective?.access === 'join' || rift?.access === 'host' || rift?.access === 'join' || ball?.access === 'host';
     const friends = privateRoom && people >= 2;
     for (const [id, pk] of this.bindings) {
       const p = snapshot.players.find(p => p.id === id), seat = objective?.seats.find(s => s.id === id);
@@ -92,15 +93,16 @@ export class RoomRewards {
         if (report) completed = this.complete(this.pk(id,pk), report) && completed;
         continue;
       }
-      const won = objective ? objective.winner === seat?.team : snapshot.winnerId === id;
+      // A ball match (Goal Rush, Sky Spike) is won by a side: first place for the winners, second for the rest.
+      const won = objective ? objective.winner === seat?.team : ball ? ball.winner === ball.seats.find(s => s.id === id)?.team : snapshot.winnerId === id;
       const practice = privateRoom;
       const report: MatchReport = { id: this.matchId, fighter: p.fighter, seconds: Math.floor(seconds),
         mode: objective?.kind ?? (snapshot.duel ? 'duel' : practice ? 'private' : snapshot.players.filter(q => q.id !== id).every(q => q.isBot) ? 'bots' : 'match'),
-        practice, place: won ? 1 : objective || snapshot.duel ? 2 : this.places.get(id) ?? Math.max(2, this.fieldSize - this.places.size),
+        practice, place: won ? 1 : objective || snapshot.duel || ball ? 2 : this.places.get(id) ?? Math.max(2, this.fieldSize - this.places.size),
         players: this.fieldSize, kos: p.kills ?? 0,
         rounds: objective?.village ? Math.max(0, objective.village.wave - (objective.village.phase === 'assault' ? 1 : 0)) : snapshot.duel?.scores[id] ?? 0,
         revives: seat?.revives ?? 0, repairs: seat?.repairs ?? 0, bossDamage: seat?.bossDamage ?? 0,
-        assists: seat?.assists ?? 0, rescues: seat?.rescues ?? 0, supplies: seat?.supplies ?? 0, ...(friends ? { friends: true } : {}) };
+        assists: seat?.assists ?? 0, rescues: seat?.rescues ?? 0, supplies: seat?.supplies ?? 0, ...(friends ? { friends: true } : {}), ...ballReportOf(ball, id) };
       completed = this.complete(this.pk(id,pk), report) && completed;
     }
     this.done = completed;

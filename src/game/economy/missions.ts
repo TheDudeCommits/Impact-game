@@ -27,7 +27,7 @@ const knockouts = (r: Report) => r.mode === 'survival' ? r.bosses : r.kos;
 const won = (r: Report) => r.mode === 'survival' ? r.sealed || r.rank >= 4 : r.place === 1;
 /** A podium, in any mode: the top three of a Battle Royale, a Duel or a team battle won (a Rift War's too: its sides are
  *  first and second), a run at rank C. */
-const podium = (r: Report) => r.mode === 'survival' ? r.rank >= 3 : r.mode === 'duel' || r.mode === 'last-stand' || r.mode === 'bad-blood' || r.mode === 'rift-war' ? r.place === 1 : r.place <= 3;
+const podium = (r: Report) => r.mode === 'survival' ? r.rank >= 3 : r.mode === 'duel' || r.mode === 'last-stand' || r.mode === 'bad-blood' || r.mode === 'rift-war' || r.ball ? r.place === 1 : r.place <= 3;
 
 export const DAILY: readonly Mission[] = [
   daily('play-3', 'Play three matches', 3, () => 1),
@@ -51,7 +51,9 @@ export const WEEKLY: readonly Mission[] = [
  *  they were (each date still picks the same three, and the bonus for all three still asks only what any mode can
  *  finish); a challenge is one more to do, paid as the others are, and never needed for that bonus. */
 const won1 = (r: Report) => r.mode !== 'survival' && r.place === 1;
-const royale = (r: Report): r is MatchReport => r.mode === 'match' || r.mode === 'bots' || r.mode === 'private';
+const royale = (r: Report): r is MatchReport => (r.mode === 'match' || r.mode === 'bots' || r.mode === 'private') && !r.ball;
+/** The ball modes: a Goal Rush or Sky Spike match, and what this fighter scored in it. */
+const ball = (mode: 'goal-rush' | 'sky-spike', count: (r: MatchReport) => number) => (r: Report) => r.mode !== 'survival' && r.ball === mode ? count(r) : 0;
 const of = (mode: Report['mode'], test: (r: Report) => boolean = () => true) => (r: Report) => r.mode === mode && test(r) ? 1 : 0;
 const waves = (r: Report) => r.mode === 'last-stand' ? r.rounds ?? 0 : 0;
 export const DAILY_CHALLENGES: readonly Mission[] = [
@@ -62,6 +64,8 @@ export const DAILY_CHALLENGES: readonly Mission[] = [
   daily('waves-10', 'Clear ten waves in one Last Stand', 1, r => waves(r) >= 10 ? 1 : 0),
   daily('bad-blood-win', 'Win a Bad Blood match', 1, of('bad-blood', won1)),
   daily('rift-tower', 'Destroy a tower in Rift War', 1, r => r.mode === 'rift-war' ? r.towers ?? 0 : 0),
+  daily('goal-rush-goals', 'Score two goals in Goal Rush', 2, ball('goal-rush', r => r.scored ?? 0)),
+  daily('sky-spike-win', 'Win a Sky Spike match', 1, ball('sky-spike', r => r.place === 1 ? 1 : 0)),
 ];
 export const WEEKLY_CHALLENGES: readonly Mission[] = [
   weekly('friends-5', 'Play five matches with friends', 5, r => r.friends ? 1 : 0),
@@ -71,6 +75,8 @@ export const WEEKLY_CHALLENGES: readonly Mission[] = [
   weekly('waves-15', 'Clear fifteen waves in one Last Stand', 1, r => waves(r) >= 15 ? 1 : 0),
   weekly('bad-blood-wins-3', 'Win three Bad Blood matches', 3, of('bad-blood', won1)),
   weekly('rift-win', 'Win a Rift War', 1, of('rift-war', won1)),
+  weekly('goal-rush-wins-3', 'Win three Goal Rush matches', 3, ball('goal-rush', r => r.place === 1 ? 1 : 0)),
+  weekly('sky-spike-points-20', 'Win twenty points of your own in Sky Spike (kills and aces)', 20, ball('sky-spike', r => r.scored ?? 0)),
 ];
 
 /** Three of a pool for a day or a week: the same three for everyone, from its name. */

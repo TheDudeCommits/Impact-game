@@ -442,7 +442,7 @@ describe('small floors: room for the lens past the bounds, and the Classic look 
   };
   const inFrame=(p:THREE.Vector3)=>p.z<1&&Math.abs(p.x)<.95&&Math.abs(p.y)<.95;
   it('small is read off the stage\'s own floor (its narrower side under 2 x SMALL_FLOOR across), not a list: the Proving Hall and the Sunfall Arena\'s ring',()=>{
-    expect([...small].sort()).toEqual(['proving-hall','scrap-pit','sunfall-arena','wreckers-causeway','zenith-coliseum']);
+    expect([...small].sort()).toEqual(['ball-court','proving-hall','scrap-pit','sunfall-arena','wreckers-causeway','zenith-coliseum']);
     for(const id of ids)expect(smallFloor(STAGES[id]),id).toBe(Math.min(STAGES[id].halfX,STAGES[id].halfZ)<SMALL_FLOOR);
     expect(smallFloor(undefined),'no stage known').toBe(false);
   });
@@ -486,7 +486,9 @@ describe('small floors: room for the lens past the bounds, and the Classic look 
   });
   const PAST:readonly StageId[]=['sunward-summit','mirror-mere','drifting-isle','cinder-flats','warlords-roof','ashfall-weir','hollowmere-quarry'];
   it('a floor with room: the lens may stand 1.4 m past an edge that was looked at and found harmless, and stays inside any other',()=>{
-    const roomy=ids.filter(id=>!smallFloor(STAGES[id])&&!STAGES[id].doubleSided&&STAGES[id].background===undefined);
+    // (The ball modes' places are their own case: glass walls with the stands well past them, the lens free out there.)
+    const roomy=ids.filter(id=>!id.startsWith('ball-')&&!smallFloor(STAGES[id])&&!STAGES[id].doubleSided&&STAGES[id].background===undefined);
+    for(const id of ['ball-pitch','ball-court'] as const){const b=STAGES[id],out=Math.max(...corner('close',b,2.6,[b.halfX-4,b.halfZ-4]).map(r=>r.out));expect(out,`${id}: past the glass`).toBeGreaterThan(0);expect(out,id).toBeLessThanOrEqual(5+1e-6);}
     for(const id of PAST)expect(roomy,id).toContain(id);
     expect(roomy).toContain('ash-colosseum');expect(PAST).not.toContain('ash-colosseum');
     for(const id of roomy){

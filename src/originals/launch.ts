@@ -30,12 +30,22 @@ export const LAUNCH = {
   stages: [...SAFE_STAGES] as StageId[],
   hold: [...R6P_HOLD, ...R6B_HOLD] as FighterId[],
   riftWar: 'open' as 'gate' | 'open',
+  /** The ball modes, Goal Rush and Sky Spike (src/game/ball), everything in them drawn in code: 'gate' hides both -
+   *  their cards, sheets, the party's cards, the server's rooms; 'site' opens them everywhere but Player Two's copy of the
+   *  build, where they are hidden as 'gate' hides them (the match server serves their rooms); 'open' opens them there too. */
+  ballModes: 'site' as 'gate' | 'site' | 'open',
 };
+
+/** Whether this page is Player Two's copy of the build (the one its player frames; src/boot/playerTwo.ts): never under
+ *  node (the match server, the tests). */
+const onPlayerTwo = () => typeof location === 'object' && /(?:^|\.)playertwo\.(?:cc|lol)$/i.test(location.hostname);
+/** Whether the ball modes show here (LAUNCH.ballModes). */
+const ballModesHere = () => LAUNCH.ballModes === 'open' || LAUNCH.ballModes === 'site' && !onPlayerTwo();
 
 /** The places that are the game's own or neutral: the harbour (RG Poly and AVATTA's kits), the Fallen Citadel (Bad
  *  Blood's courtyard, RG Poly and a CC BY keep) and the Rift's procedural arenas. */
 export const NEUTRAL_STAGES: readonly StageId[] = ['harbor', 'blood-citadel', 'rift-village', 'rift-fortress',
-  'rift-frost', 'rift-grove', 'rift-wastes', 'rift-harbor'];
+  'rift-frost', 'rift-grove', 'rift-wastes', 'rift-harbor', 'ball-pitch', 'ball-court'];
 /** Where a mode is fought when the place it would pick is not cleared. */
 export const FALLBACK_STAGE: StageId = 'harbor';
 
@@ -108,11 +118,11 @@ applyGate();
 
 /** The catalogue's modes (src/ui/modes/catalogue.ts ModeId) and ways to play (VariantId), as strings here so this module
  *  stays below the interface. */
-type ModeKey = 'duel' | 'royale' | 'training' | 'arcade' | 'last-stand' | 'bad-blood' | 'rift-war';
+type ModeKey = 'duel' | 'royale' | 'training' | 'arcade' | 'last-stand' | 'bad-blood' | 'rift-war' | 'goal-rush' | 'sky-spike';
 type WayKey = 'offline' | 'online' | 'friends';
 /** The place each objective mode is fought on (src/game/objectives: Last Stand's village, Bad Blood's citadel), and Rift
  *  War's map (src/game/moba/model.ts RIFT_STAGE: the Torn Plain). */
-const MODE_STAGE: Partial<Record<ModeKey, StageId>> = { 'last-stand': 'hidden-ash', 'bad-blood': 'blood-citadel', 'rift-war': 'rift-war' };
+const MODE_STAGE: Partial<Record<ModeKey, StageId>> = { 'last-stand': 'hidden-ash', 'bad-blood': 'blood-citadel', 'rift-war': 'rift-war', 'goal-rush': 'ball-pitch', 'sky-spike': 'ball-court' };
 
 export const stageSafe = (stage: StageId | string | undefined) => !!stage && (NEUTRAL_STAGES.includes(stage as StageId) || LAUNCH.stages.includes(stage as StageId));
 /** The stage a match is fought on: the one asked for if it is cleared, else `fallback` (the harbour unless a mode asks
@@ -139,6 +149,7 @@ gateSeries();
  *  and its map; any other by its stage. */
 export function modeOpen(mode: ModeKey | string): boolean {
   if (mode === 'rift-war' && LAUNCH.riftWar !== 'open') return false;
+  if ((mode === 'goal-rush' || mode === 'sky-spike') && !ballModesHere()) return false;
   if (mode === 'arcade') return LAUNCH.survival === 'open';
   if ((mode === 'last-stand' || mode === 'bad-blood') && LAUNCH.objectives !== 'open') return false;
   const stage = MODE_STAGE[mode as ModeKey];
@@ -157,6 +168,7 @@ export const wayOpen = (mode: ModeKey | string, way: WayKey | string, onDevice =
 const HOME_CARD: Record<string, [ModeKey, WayKey?]> = {
   duel: ['duel'], players: ['royale', 'online'], bots: ['royale'], private: ['royale', 'friends'], training: ['training'],
   arcade: ['arcade'], 'last-stand': ['last-stand'], 'bad-blood': ['bad-blood'], 'rift-war': ['rift-war'],
+  'goal-rush': ['goal-rush'], 'sky-spike': ['sky-spike'],
 };
 export function homeCardOpen(card: string): boolean {
   const [mode, way] = HOME_CARD[card] ?? [card];

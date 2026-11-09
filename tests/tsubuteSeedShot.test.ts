@@ -100,15 +100,15 @@ describe('Tsubute manual seed shot presentation', () => {
     h.update(); expect(h.pools().every(o => o.count === 0)).toBe(true); expect(h.staged()).toBe(0);
     h.flights.set('branch', flight({ slot: 'heavy', branch: 'airHeavy' })); h.update(); expect(h.mesh('seeds').count).toBeGreaterThan(0);
   });
-  it('stages what each shot is: the wolf grown out of its seed, the firebird burning, the Skull Bomb Grass and its skull', () => {
+  it('stages what each shot is: the Ballast grown out of its seed, the Far Bank burning, the last shot and its skull', () => {
     const load = vi.spyOn(T.TextureLoader.prototype, 'load').mockImplementation((_url, ready) => { const t = new T.Texture<HTMLImageElement>({ width: 100, height: 100 } as HTMLImageElement); ready?.(t); return t; });
     const h = harness(); void h.fx.load(['tsubute']); expect(load).toHaveBeenCalledTimes(2);
     const size = (mesh: T.InstancedMesh) => { const m = new T.Matrix4(); mesh.getMatrixAt(0, m); return new T.Vector3().setFromMatrixScale(m).x; };
     // In flight, three metres out: the cutouts at the size a player reads, lit by the stage.
-    h.flights.set('wolf', flight({ slot: 'heavy', position: new T.Vector3(0, 1.3, 4) })); h.update();
+    h.flights.set('ballast', flight({ slot: 'heavy', position: new T.Vector3(0, 1.3, 4) })); h.update();
     expect(size(h.mesh('ballast'))).toBeGreaterThan(2.2); expect(h.staged()).toBeGreaterThan(0);
-    h.flights.clear(); h.flights.set('bird', flight({ slot: 'special', position: new T.Vector3(0, 1.3, 4) })); h.update();
-    expect(size(h.mesh('firebird'))).toBeGreaterThan(3);
+    h.flights.clear(); h.flights.set('farBank', flight({ slot: 'special', position: new T.Vector3(0, 1.3, 4) })); h.update();
+    expect(size(h.mesh('far-bank'))).toBeGreaterThan(3);
     // Where each lands: the stage's blast, begun by the hit; the last shot of the Barrage raises the skull.
     h.flights.clear(); h.fx.handle(hit({ id: 5, slot: 'special', serverTime: 10.2 }), h.fighters); h.update(10.25);
     expect(h.staged()).toBeGreaterThan(10); expect(h.mesh('skull').count).toBe(0);
@@ -136,11 +136,11 @@ describe('Tsubute manual seed shot presentation', () => {
     const load = vi.spyOn(T.TextureLoader.prototype, 'load').mockImplementation((_url, ready) => { const t = new T.Texture<HTMLImageElement>({ width: 200, height: 100 } as HTMLImageElement); ready?.(t); return t; });
     const h = harness(); await h.fx.load(['taisei']); expect(load).not.toHaveBeenCalled();
     const pending = h.fx.load(['tsubute']); expect(h.fx.load(['tsubute'])).toBe(pending); await pending;
-    expect(load.mock.calls.map(c => c[0])).toEqual([TSUBUTE_SEED_SHOT_TEXTURES.wolf, TSUBUTE_SEED_SHOT_TEXTURES.bird]);
-    h.flights.set('wolf', flight({ slot: 'heavy' })); h.flights.set('bird', flight({ slot: 'special', position: new T.Vector3(2, 1.3, 6) })); h.update();
-    expect(h.mesh('ballast').count).toBe(1); expect(h.mesh('firebird').count).toBe(1);
-    expect(position(h.mesh('firebird')).toArray()).toEqual([2, 1.2999999523162842, 6]);
-    const matrix = new T.Matrix4(); h.mesh('firebird').getMatrixAt(0, matrix);
+    expect(load.mock.calls.map(c => c[0])).toEqual([TSUBUTE_SEED_SHOT_TEXTURES.ballast, TSUBUTE_SEED_SHOT_TEXTURES.farBank]);
+    h.flights.set('ballast', flight({ slot: 'heavy' })); h.flights.set('farBank', flight({ slot: 'special', position: new T.Vector3(2, 1.3, 6) })); h.update();
+    expect(h.mesh('ballast').count).toBe(1); expect(h.mesh('far-bank').count).toBe(1);
+    expect(position(h.mesh('far-bank')).toArray()).toEqual([2, 1.2999999523162842, 6]);
+    const matrix = new T.Matrix4(); h.mesh('far-bank').getMatrixAt(0, matrix);
     const size = new T.Vector3().setFromMatrixScale(matrix); expect(size.x / size.y).toBeCloseTo(2);
   });
   it('resolves failed and bounded slow loads, disposes late completions, and retains procedural projectiles', async () => {
@@ -148,7 +148,7 @@ describe('Tsubute manual seed shot presentation', () => {
     vi.spyOn(T.TextureLoader.prototype, 'load').mockImplementation((_url, ready) => { completions.push(ready); return new T.Texture<HTMLImageElement>(); });
     const h = harness(), pending = h.fx.load(['tsubute']); await vi.advanceTimersByTimeAsync(TSUBUTE_SEED_SHOT_LIMITS.loadTimeoutMs); await pending;
     for (const ready of completions) { const t = new T.Texture<HTMLImageElement>(), dispose = vi.spyOn(t, 'dispose'); ready!(t); expect(dispose).toHaveBeenCalledOnce(); }
-    h.flights.set('bird', flight({ slot: 'special' })); h.update(); expect(h.mesh('firebird').count).toBe(0); expect(h.mesh('leaves').count).toBe(7);
+    h.flights.set('farBank', flight({ slot: 'special' })); h.update(); expect(h.mesh('far-bank').count).toBe(0); expect(h.mesh('leaves').count).toBe(7);
   });
   it('disposes texture requests in progress without keeping room loading pending', async () => {
     const completions: (((t: T.Texture<HTMLImageElement>) => void) | undefined)[] = [];

@@ -40,7 +40,7 @@ async function main() {
   fighter.group.updateMatrixWorld(true);
   // The head: its bone, else the top of the body.
   let head: THREE.Object3D | undefined;
-  const body = form ? (fighter as unknown as { gear4?: { group: THREE.Object3D } }).gear4?.group ?? fighter.group : fighter.group;
+  const body = form ? (fighter as unknown as { awakenedForm?: { group: THREE.Object3D } }).awakenedForm?.group ?? fighter.group : fighter.group;
   body.traverse(o => { if (!head && (o as THREE.Bone).isBone && /(^|[_:])head$|^head|defhead|Head$/i.test(o.name) && !/end|top|nub/i.test(o.name)) head = o; });
   // Sized on the fighter's own height (FIGHTERS.height; a box would take in swords, capes and scrolls), and framed as
   // the reference's busts are: the head in the upper half, cut at the chest; a long lens.

@@ -338,12 +338,12 @@ describe('a party of six', () => {
   const table = (count: number) => Object.fromEntries(PARTY_ORDER.map(mode => [mode, modeBlocked(mode, count) ?? '']));
   it('holds up to twelve, and each mode says whether it seats them', () => {
     expect(PARTY_MAX).toBeGreaterThanOrEqual(6);
-    expect(table(1)).toEqual({ duel: 'NEEDS 2 PLAYERS', royale: '', 'bad-blood': '', 'last-stand': '', survival: '', 'rift-war': '' });
-    expect(table(2)).toEqual({ duel: '', royale: '', 'bad-blood': '', 'last-stand': '', survival: '', 'rift-war': '' });
-    for (const count of [3, 4]) expect(table(count)).toEqual({ duel: '1 V 1 ONLY', royale: '', 'bad-blood': '', 'last-stand': '', survival: '', 'rift-war': '' });
-    for (const count of [5, 6]) expect(table(count), String(count)).toEqual({ duel: '1 V 1 ONLY', royale: '', 'bad-blood': '', 'last-stand': 'UP TO 4 PLAYERS', survival: 'UP TO 4 PLAYERS', 'rift-war': '' });
-    for (const count of [7, 8, 9, 10]) expect(table(count), String(count)).toEqual({ duel: '1 V 1 ONLY', royale: '', 'bad-blood': 'UP TO 6 PLAYERS', 'last-stand': 'UP TO 4 PLAYERS', survival: 'UP TO 4 PLAYERS', 'rift-war': '' });
-    for (const count of [11, 12]) expect(table(count), String(count)).toEqual({ duel: '1 V 1 ONLY', royale: '', 'bad-blood': 'UP TO 6 PLAYERS', 'last-stand': 'UP TO 4 PLAYERS', survival: 'UP TO 4 PLAYERS', 'rift-war': 'UP TO 10 PLAYERS' });
+    expect(table(1)).toEqual({ duel: 'NEEDS 2 PLAYERS', 'goal-rush': '', 'sky-spike': '', royale: '', 'bad-blood': '', 'last-stand': '', survival: '', 'rift-war': '' });
+    expect(table(2)).toEqual({ duel: '', 'goal-rush': '', 'sky-spike': '', royale: '', 'bad-blood': '', 'last-stand': '', survival: '', 'rift-war': '' });
+    for (const count of [3, 4]) expect(table(count)).toEqual({ duel: '1 V 1 ONLY', 'goal-rush': '', 'sky-spike': '', royale: '', 'bad-blood': '', 'last-stand': '', survival: '', 'rift-war': '' });
+    for (const count of [5, 6]) expect(table(count), String(count)).toEqual({ duel: '1 V 1 ONLY', 'goal-rush': '', 'sky-spike': '', royale: '', 'bad-blood': '', 'last-stand': 'UP TO 4 PLAYERS', survival: 'UP TO 4 PLAYERS', 'rift-war': '' });
+    for (const count of [7, 8, 9, 10]) expect(table(count), String(count)).toEqual({ duel: '1 V 1 ONLY', 'goal-rush': 'UP TO 6 PLAYERS', 'sky-spike': 'UP TO 6 PLAYERS', royale: '', 'bad-blood': 'UP TO 6 PLAYERS', 'last-stand': 'UP TO 4 PLAYERS', survival: 'UP TO 4 PLAYERS', 'rift-war': '' });
+    for (const count of [11, 12]) expect(table(count), String(count)).toEqual({ duel: '1 V 1 ONLY', 'goal-rush': 'UP TO 6 PLAYERS', 'sky-spike': 'UP TO 6 PLAYERS', royale: '', 'bad-blood': 'UP TO 6 PLAYERS', 'last-stand': 'UP TO 4 PLAYERS', survival: 'UP TO 4 PLAYERS', 'rift-war': 'UP TO 10 PLAYERS' });
     expect(Object.keys(PARTY_MODES).sort()).toEqual([...PARTY_ORDER].sort());
   });
 

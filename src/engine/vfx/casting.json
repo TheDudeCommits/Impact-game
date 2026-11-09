@@ -292,7 +292,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "efk_moonedge is blank in both captures, so the light is judged from its blurb, with efk_crimsonstar as the stilled fallback. extra_iaido is set to the plain element (its default is thunder) and extra_slashstorm's lightning is off: Akayuri has no elemental power. Missing: a curse-mark spread for Nightblade's One-Cut Killing.",
+  "notes": "efk_moonedge is blank in both captures, so the light is judged from its blurb, with efk_crimsonstar as the stilled fallback. extra_iaido is set to the plain element (its default is thunder) and extra_slashstorm's lightning is off: Akayuri has no elemental power. Missing: the black marks' spread for Nightblade's last cut.",
   "by": "casting agent batch 4",
   "at": "2026-10-11"
  },
@@ -3008,7 +3008,7 @@
    "core": "#ffd9f2",
    "main": "#f072cc",
    "rim": "#3c123f",
-   "note": "stretch-gum magenta, matching UnariElastic"
+   "note": "stretch-thread magenta, matching UnariElastic"
   },
   "slots": {
    "body": {
@@ -3052,7 +3052,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "hand",
-    "why": "Left to the game: Snag is staged by his module (MoveStage: his gum stretched between his hands and gathered on the palm, a blast and a shell of it, the strand it leaves stretching to his hand and snapping). The Armory's strand (seal_elasticstrand, now the first alternate) was 4 % of the frame as the palm landed and peaked 1.4 s after it, on a move 0.94 s long (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Snag is staged by his module (MoveStage: his thread stretched between his hands and gathered on the palm, a blast and a shell of it, the strand it leaves stretching to his hand and snapping). The Armory's strand (seal_elasticstrand, now the first alternate) was 4 % of the frame as the palm landed and peaked 1.4 s after it, on a move 0.94 s long (fx_presence, 12 October 2026)."
    },
    "special": {
     "pick": null,
@@ -3069,7 +3069,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Left to the game: Paper Cut is staged by his module (MoveStage: the cards dealt as a lit fan of five with the strand they are tied to stretching out behind them, then a blast, a shell of gum closing and the strand snapping them back). The Armory's cards (origami, now the first alternate) changed 2.3 % of the frame and lit nothing (an original's special: 34-73 %) (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Paper Cut is staged by his module (MoveStage: the cards dealt as a lit fan of five with the strand they are tied to stretching out behind them, then a blast, a shell of thread closing and the strand snapping them back). The Armory's cards (origami, now the first alternate) changed 2.3 % of the frame and lit nothing (an original's special: 34-73 %) (fx_presence, 12 October 2026)."
    },
    "ultimate": {
     "pick": null,
@@ -3081,7 +3081,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "target",
-    "why": "Left to the game: AYATORI: Cat's Cradle is staged by his module (MoveStage: the room to night and his victim strung up in strands of gum with his cards turning round them, a pop of pink on every blow, then every strand letting go at once in a blast, a shell of gum and a storm of cards). Before, it changed 3 % of the frame and lit nothing (fx_presence, 12 October 2026). The authored pick (bubblecage, huge) stays the first alternate."
+    "why": "Left to the game: AYATORI: Cat's Cradle is staged by his module (MoveStage: the room to night and his victim strung up in strands of thread with his cards turning round them, a pop of pink on every blow, then every strand letting go at once in a blast, a shell of thread and a storm of cards). Before, it changed 3 % of the frame and lit nothing (fx_presence, 12 October 2026). The authored pick (bubblecage, huge) stays the first alternate."
    }
   },
   "moveIdeas": [],
@@ -3279,7 +3279,7 @@
     "on": "hit",
     "scale": "small",
     "anchor": "target",
-    "why": "Left to the game: Tide Palm is staged by his module (OyashioKarate, with the shared MoveStage: the palm in cyan light, a ripple of pressure and a pop of spray where it lands). The pick (extra_palm) was under 1 % of the frame and came 0.4 s after the blow (0.53 to 0.83 s on a palm that lands at 0.17 s; fx_presence, 12 October 2026). It stays the first alternate.",
+    "why": "Left to the game: Tide Palm is staged by his module (OyashioCurrent, with the shared MoveStage: the palm in cyan light, a ripple of pressure and a pop of spray where it lands). The pick (extra_palm) was under 1 % of the frame and came 0.4 s after the blow (0.53 to 0.83 s on a palm that lands at 0.17 s; fx_presence, 12 October 2026). It stays the first alternate.",
     "settings": {
      "element": 6
     }
@@ -3294,7 +3294,7 @@
     "on": "hit",
     "scale": "medium",
     "anchor": "target",
-    "why": "Left to the game: Breakwater Fist is staged by his module (OyashioKarate, with the shared MoveStage: water gathered on the fist in a shaking shell of pressure, the shell thrown out at the fist's reach, and where it lands the shock through the body, a jet out of its back, a shell of pressure and a ring over the floor). The pick (efk_toonwater) stood its waterspout up 0.9 s after the punch and held it 0.7 s (1.30 to 2.03 s on a blow at 0.41 s), hiding its victim for 1.2 s against a ceiling of 0.35 (fx_presence, 12 October 2026). It stays the first alternate."
+    "why": "Left to the game: Breakwater Fist is staged by his module (OyashioCurrent, with the shared MoveStage: water gathered on the fist in a shaking shell of pressure, the shell thrown out at the fist's reach, and where it lands the shock through the body, a jet out of its back, a shell of pressure and a ring over the floor). The pick (efk_toonwater) stood its waterspout up 0.9 s after the punch and held it 0.7 s (1.30 to 2.03 s on a blow at 0.41 s), hiding its victim for 1.2 s against a ceiling of 0.35 (fx_presence, 12 October 2026). It stays the first alternate."
    },
    "special": {
     "pick": null,
@@ -3306,7 +3306,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Left to the game: Brine Shot is staged by his module (OyashioKarate, with the shared MoveStage: the shot gathered in his left palm, flying as a white-hot bead of water in a cyan halo trailing spray, and where it lands a blast, a shell of pressure, a waterspout and the floor left wet and glowing). The pick (torrent) was a thin jet along the floor: 7 % of the frame at its peak, for 97 draw calls, and on the floor for 1.5 s after the shot (fx_presence, 12 October 2026). It stays the first alternate."
+    "why": "Left to the game: Brine Shot is staged by his module (OyashioCurrent, with the shared MoveStage: the shot gathered in his left palm, flying as a white-hot bead of water in a cyan halo trailing spray, and where it lands a blast, a shell of pressure, a waterspout and the floor left wet and glowing). The pick (torrent) was a thin jet along the floor: 7 % of the frame at its peak, for 97 draw calls, and on the floor for 1.5 s after the shot (fx_presence, 12 October 2026). It stays the first alternate."
    },
    "ultimate": {
     "pick": null,
@@ -3318,12 +3318,12 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "target",
-    "why": "Left to the game: Grand Gyre is staged by his module (OyashioKarate, with the shared MoveStage: from the confirm the room to a deep-sea night, the floor veined with it under him, water turning in a ring round his feet and the pressure filling his fist; the last blow the jet through his victim, a shell of pressure, a waterspout where they stood and a ring to ten metres). The authored pick (efk_tornado, huge) was not verified in the game; it stays the first alternate."
+    "why": "Left to the game: Grand Gyre is staged by his module (OyashioCurrent, with the shared MoveStage: from the confirm the room to a deep-sea night, the floor veined with it under him, water turning in a ring round his feet and the pressure filling his fist; the last blow the jet through his victim, a shell of pressure, a waterspout where they stood and a ring to ten metres). The authored pick (efk_tornado, huge) was not verified in the game; it stays the first alternate."
    }
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "The OyashioKarate signature already draws the drops, jets, rings and drills, so these picks sit under it. extra_palm's arcane element is switched to water. The efk_toonwater still caught its splash off frame, and efk_tornado is a wind effect recoloured as water. Missing: a cel water-drill vortex; the Armory's water is mostly realistic foam. Launch day (12 October 2026): the four moves are staged by OyashioKarate with the shared MoveStage (docs/engine/VFX_BAR.md); every move slot is left to it and the Armory picks stay as alternates.",
+  "notes": "The OyashioCurrent signature already draws the drops, jets, rings and drills, so these picks sit under it. extra_palm's arcane element is switched to water. The efk_toonwater still caught its splash off frame, and efk_tornado is a wind effect recoloured as water. Missing: a cel water-drill vortex; the Armory's water is mostly realistic foam. Launch day (12 October 2026): the four moves are staged by OyashioCurrent with the shared MoveStage (docs/engine/VFX_BAR.md); every move slot is left to it and the Armory picks stay as alternates.",
   "by": "casting agent batch 3",
   "at": "2026-10-11"
  },
@@ -3398,7 +3398,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "arts_fireball has no engine still yet; its Armory pack still (armory-shots/arts_fireball.jpg) shows a bold cel fireball, and the hand signs are canon for him. The Armory's true spiral sphere (ki_spiral) is locked to Last Sun by the ki_* rule, so fx_magmaorb, kept in its native chi blue, is his sphere. efk_toonhit's still is caught empty; judged from the blurb. Launch day (12 October 2026): the four moves are staged by HakushiOldLion with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
+  "notes": "arts_fireball has no engine still yet; its Armory pack still (armory-shots/arts_fireball.jpg) shows a bold cel fireball, and the hand signs are canon for him. The Armory's spinning orb (ki_spiral) is locked to Last Sun by the ki_* rule, so fx_magmaorb, kept in its native chi blue, is his sphere. efk_toonhit's still is caught empty; judged from the blurb. Launch day (12 October 2026): the four moves are staged by HakushiOldLion with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
   "by": "casting agent batch 1",
   "at": "2026-10-11"
  },
@@ -3755,7 +3755,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "target",
-    "why": "Everything drains, then black lightning with red rims tears out of the strike in an impact frame: Thunder Trigram, his Will-coated TIMBER: The Forest Falls."
+    "why": "Everything drains, then black lightning with red rims tears out of the strike in an impact frame: Thunderhead: Sky Anvil, his Will-coated TIMBER: The Forest Falls."
    }
   },
   "moveIdeas": [
@@ -3854,7 +3854,7 @@
    "core": "#ffffff",
    "main": "#5aa8ff",
    "rim": "#7a3cff",
-   "note": "Lightning Cut blue (the game's lightning blue), with VOID SICKLE's violet as the rim for the ultimate."
+   "note": "Sickle Bolt blue (the game's lightning blue), with VOID SICKLE's violet as the rim for the ultimate."
   },
   "slots": {
    "body": {
@@ -3863,7 +3863,7 @@
     "when": "never",
     "scale": "small",
     "anchor": "body",
-    "why": "None: Shirokane shows no aura in canon, and his lightning lives in Lightning Cut."
+    "why": "None: Shirokane shows no aura in canon, and his lightning lives in Sickle Bolt."
    },
    "light": {
     "pick": "efk_azureblow",
@@ -3886,7 +3886,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "line",
-    "why": "Lightning chirps in his hand, then his line becomes a lightning streak that bursts at the end: Lightning Cut, the Sickle Bolt."
+    "why": "Lightning chirps in his hand, then his line becomes a lightning streak that bursts at the end: the Sickle Bolt."
    },
    "special": {
     "pick": "arts_clones",
@@ -3908,7 +3908,7 @@
     "on": "confirm",
     "scale": "large",
     "anchor": "target",
-    "why": "Space tears open in a jagged violet rift with black shards orbiting its throat, then slams shut: Lightning Cut driven through VOID SICKLE's dimension."
+    "why": "Space tears open in a jagged violet rift with black shards orbiting its throat, then slams shut: Sickle Bolt driven through VOID SICKLE's dimension."
    }
   },
   "moveIdeas": [],
@@ -3985,7 +3985,7 @@
     "settings": {
      "suckers": 0
     },
-    "why": "Left to the game: Last Chapter is staged by his module (MoveStage: the darkness flooding the floor and standing round him in black flames as the shell's centipede climbs out of his back and arches over him, then comes down through the victim on the last blow: the floor cracked crimson, a pillar of black flame). Before, it changed 4 % of the frame (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Last Chapter is staged by his module (MoveStage: the darkness flooding the floor and standing round him in black flames as the shell's plated spire climbs over his back and arches over him, then comes down through the victim on the last blow: the floor cracked crimson, a pillar of black flame). Before, it changed 4 % of the frame (fx_presence, 12 October 2026)."
    }
   },
   "moveIdeas": [],
@@ -4079,7 +4079,7 @@
    "core": "#ffffff",
    "main": "#bfeaff",
    "rim": "#5a7bff",
-   "note": "SETSUNA's near-white electric blue, paler and whiter than Shirokane's Lightning Cut."
+   "note": "SETSUNA's near-white electric blue, paler and whiter than Shirokane's Sickle Bolt."
   },
   "slots": {
    "body": {
@@ -5144,7 +5144,7 @@
     "settings": {
      "chargeSparks": 0
     },
-    "why": "A modest gold flare round him while awakened: overtime at 7:3, the Ratio technique at full output. Worn only while awakened."
+    "why": "A modest gold flare round him while awakened: ZERO TOLERANCE, the rule at full measure. Worn only while awakened."
    },
    "light": {
     "pick": null,
@@ -5159,7 +5159,7 @@
     "settings": {
      "swooshShow": 0
     },
-    "why": "Left to his module (SashiganeRatio, staged with MoveStage on launch day, 12 Oct 2026: the blade's sheen and a small pale burst). sam_kick, measured from the gameplay camera: a yellow glow at the victim's feet that peaked at 0.53 s on a cut that lands at 0.17 s and stayed on the floor for 1.2 s; a jab is over in a third of a second. It stays the first alternate."
+    "why": "Left to his module (SashiganeRule, staged with MoveStage on launch day, 12 Oct 2026: the blade's sheen and a small pale burst). sam_kick, measured from the gameplay camera: a yellow glow at the victim's feet that peaked at 0.53 s on a cut that lands at 0.17 s and stayed on the floor for 1.2 s; a jab is over in a third of a second. It stays the first alternate."
    },
    "heavy": {
     "pick": null,
@@ -5174,7 +5174,7 @@
     "settings": {
      "element": 0
     },
-    "why": "Left to his module (SashiganeRatio: the rule measured in the air, snapped across the body, and the body broken from its seventh mark, staged with MoveStage on launch day, 12 Oct 2026). extra_iaido, measured from the gameplay camera: 1 % of the frame as the blow landed at 0.50 s, its burst at 1.2 to 1.4 s, and its victim unreadable for 0.45 s. It stays the first alternate."
+    "why": "Left to his module (SashiganeRule: the rule measured in the air, snapped across the body, and the body broken from its seventh mark, staged with MoveStage on launch day, 12 Oct 2026). extra_iaido, measured from the gameplay camera: 1 % of the frame as the blow landed at 0.50 s, its burst at 1.2 to 1.4 s, and its victim unreadable for 0.45 s. It stays the first alternate."
    },
    "special": {
     "pick": null,
@@ -5186,7 +5186,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "ground",
-    "why": "Left to his module (SashiganeRatio: the rule laid on the floor, the floor broken from seven tenths of it, rubble and dust, staged with MoveStage on launch day, 12 Oct 2026). sinkhole, measured from the gameplay camera: big (71 % of the frame) but 3 % on screen as the blow landed at 0.70 s and its peak at 2.4 s, 1.7 s after it, with none of the room lit; starting it at the cast would still leave it a second late. It stays the first alternate."
+    "why": "Left to his module (SashiganeRule: the rule laid on the floor, the floor broken from seven tenths of it, rubble and dust, staged with MoveStage on launch day, 12 Oct 2026). sinkhole, measured from the gameplay camera: big (71 % of the frame) but 3 % on screen as the blow landed at 0.70 s and its peak at 2.4 s, 1.7 s after it, with none of the room lit; starting it at the cast would still leave it a second late. It stays the first alternate."
    },
    "ultimate": {
     "pick": null,
@@ -5197,7 +5197,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "target",
-    "why": "Left to his module (SashiganeRatio: Overtime's dial on the floor, the rule across the victim, each blow breaking the air from the weak point and the last across the frame, staged with MoveStage on launch day, 12 Oct 2026). The Armory pick tried earlier (blade_darkspark) was never verified in Training."
+    "why": "Left to his module (SashiganeRule: ZERO TOLERANCE's dial on the floor, the rule across the victim, each blow breaking the air from the break point and the last across the frame, staged with MoveStage on launch day, 12 Oct 2026). The Armory pick tried earlier (blade_darkspark) was never verified in Training."
    }
   },
   "moveIdeas": [],
@@ -5281,7 +5281,7 @@
   },
   "moveIdeas": [],
   "confidence": "high",
-  "notes": "Per the coordinator's update, ki_spiral (Gale Spiral Sphere) is now tagged Konta, so the Senpugan is the real thing; its still shows a white-blue spinning sphere with segmented wind rings. arts_clones and arts_windshuriken have no engine still; their captures at armory-shots/<id>.jpg show six clones of the caster and a giant blue-white shuriken sphere. Clones are set to four for UP YOU GO!, and their floor seal is off because his clones have no glyph. Keep the clone smoke poofs white rather than palette blue. pyroclasm's stills catch it close-up in toon orange ash; recolour it black-violet with an orange rim. Awakened Konta is the 3 m Kurobi fox (NinjaEffects draws its tails), so the aura wraps the fox. NinjaEffects also already draws clones and a Senpugan, so these are the Armory versions to compare. Fighter review (11 October 2026): live with only the Galewheel's landing (arts_windshuriken on the hit); the rest stays the game's own, which the review found already the anime's.",
+  "notes": "Per the coordinator's update, ki_spiral (the Churning Orb) is now tagged Konta, so the Senpugan is the real thing; its still shows a white-blue spinning sphere with segmented wind rings. arts_clones and arts_windshuriken have no engine still; their captures at armory-shots/<id>.jpg show six clones of the caster and a giant blue-white shuriken sphere. Clones are set to four for UP YOU GO!, and their floor seal is off because his clones have no glyph. Keep the clone smoke poofs white rather than palette blue. pyroclasm's stills catch it close-up in toon orange ash; recolour it black-violet with an orange rim. Awakened Konta is the 3 m Kurobi fox (NinjaEffects draws its tails), so the aura wraps the fox. NinjaEffects also already draws clones and a Senpugan, so these are the Armory versions to compare. Fighter review (11 October 2026): live with only the Galewheel's landing (arts_windshuriken on the hit); the rest stays the game's own, which the review found already the anime's.",
   "by": "casting agent batch 5",
   "at": "2026-10-11"
  },
@@ -5366,7 +5366,7 @@
    }
   ],
   "confidence": "medium",
-  "notes": "nb_haloseal's engine still is blank; the older capture shows the halo ring of light. sam_judgement's engine still is muddied by the leftover swirl, but the older capture shows the seal and the giant arm clearly; its runes are off so the seal reads as a halo, not magic, though the hand is a closed fist rather than an open palm. Missing: the Guanyin statue itself and Last Toll's beam. 11 Oct: special now colossus_hundredpalm (the Armory's colossus pack, made for this). Launch day (12 October 2026): the four moves are staged by BonshoBodhisattva with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
+  "notes": "nb_haloseal's engine still is blank; the older capture shows the halo ring of light. sam_judgement's engine still is muddied by the leftover swirl, but the older capture shows the seal and the giant arm clearly; its runes are off so the seal reads as a halo, not magic, though the hand is a closed fist rather than an open palm. Missing: the guardian itself and Last Toll's beam. 11 Oct: special now colossus_hundredpalm (the Armory's colossus pack, made for this). Launch day (12 October 2026): the four moves are staged by BonshoGuardian with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
   "by": "casting agent batch 4",
   "at": "2026-10-11"
  },
@@ -5919,7 +5919,7 @@
     "on": "release",
     "scale": "small",
     "anchor": "line",
-    "why": "A swoosh of the leg and an impact frame with a star flash, sparks and a dust ring: Collier, his kick to the neck."
+    "why": "A swoosh of the leg and an impact frame with a star flash, sparks and a dust ring: Amuse-Bouche, his kick to the neck."
    },
    "heavy": {
     "pick": "extra_heel",
@@ -6826,7 +6826,7 @@
      "colorHitRim": "#fa6e1d",
      "lightColor": "#cf936a"
     },
-    "why": "Left to the game: the Far Bank is staged by his module (fire gathered on the pouch, the firebird itself in flight three and a half metres across its wings, a blast, a pillar of fire and a burn where it lands). The Armory's arrow (edge_firearrow, now the first alternate) drew a small streak beside him: 14 % of the frame at its peak against an original's 34-73 % (fx_presence, 12 October 2026)."
+    "why": "Left to the game: the Far Bank is staged by his module (fire gathered on the pouch, the hot stone itself in flight three and a half metres across, a blast, a pillar of fire and a burn where it lands). The Armory's arrow (edge_firearrow, now the first alternate) drew a small streak beside him: 14 % of the frame at its peak against an original's 34-73 % (fx_presence, 12 October 2026)."
    },
    "ultimate": {
     "pick": null,
@@ -6838,12 +6838,12 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "line",
-    "why": "Left to the game: the INJI: Both Banks is staged by his module (the Devil's jaws of leaves grown out of the floor round the victim from the confirm and shut on the second shot, then the Skull Bomb Grass: a pillar of fire and the skull in it). The authored pick (thornwake, huge) stays the first alternate."
+    "why": "Left to the game: the INJI: Both Banks is staged by his module (jaws of great leaves grown out of the floor round the victim from the confirm and shut on the second shot, then the last shot: a pillar of fire and a skull in its smoke). The authored pick (thornwake, huge) stays the first alternate."
    }
   },
   "moveIdeas": [],
   "confidence": "low",
-  "notes": "Authored in the launch night (12 Oct 2026): Tsubute had no casting and his shots drew nothing. The pellet and the Firebird fly as the effect draws them (the game draws no projectile for him); the Ballast is only its impact. Launch day (12 October 2026): the four moves are staged by TsubuteSeedShot (its own wolf, firebird and skull cutouts at a size that reads, on the shared MoveStage: docs/engine/VFX_BAR.md), so every move slot is left to it and the Armory picks stay as alternates.",
+  "notes": "Authored in the launch night (12 Oct 2026): Tsubute had no casting and his shots drew nothing. The pellet and the Far Bank fly as the effect draws them (the game draws no projectile for him); the Ballast is only its impact. Launch day (12 October 2026): the four moves are staged by TsubuteSeedShot (its own two stone cutouts and its skull at a size that reads, on the shared MoveStage: docs/engine/VFX_BAR.md), so every move slot is left to it and the Armory picks stay as alternates.",
   "by": "fx-b launch night",
   "at": "2026-10-12"
  },
@@ -7298,7 +7298,7 @@
   },
   "moveIdeas": [],
   "confidence": "high",
-  "notes": "blade_darkspark is the canon Dark Spark; Sashigane shares it for his four-hit Overtime record. ext_aura_electric loses its floor crust, burns, rings and uprights so only the arcs on his body remain, and extra_palm is set to the dark element for hex-energy wisps.",
+  "notes": "blade_darkspark is the canon Dark Spark; Sashigane shares it for his four-hit ZERO TOLERANCE record. ext_aura_electric loses its floor crust, burns, rings and uprights so only the arcs on his body remain, and extra_palm is set to the dark element for hex-energy wisps.",
   "by": "casting agent batch 4",
   "at": "2026-10-11"
  },
@@ -7464,7 +7464,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "The extra_cross and extra_dash stills are Fang Crossing and Lion Cut almost to the letter. Their fire and dark elements are switched to plain. extra_shockwave loses its feet magic circle and goes from thunder to wind for air blades. Missing: an effect for the oni Will cuts with the oni silhouette. 11 Oct: ultimate now edge_onislash (the Armory's edge pack, made for this).",
+  "notes": "The extra_cross and extra_dash stills are Fang Crossing and Mirage Draw almost to the letter. Their fire and dark elements are switched to plain. extra_shockwave loses its feet magic circle and goes from thunder to wind for air blades. Missing: an effect for the oni Will cuts with the oni silhouette. 11 Oct: ultimate now edge_onislash (the Armory's edge pack, made for this).",
   "by": "casting agent batch 3",
   "at": "2026-10-11"
  },

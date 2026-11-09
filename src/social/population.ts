@@ -1,4 +1,4 @@
-export const QUEUE_MODES = ['royale', 'duel', 'last-stand', 'bad-blood', 'rift-war', 'arcade'] as const;
+export const QUEUE_MODES = ['royale', 'duel', 'last-stand', 'bad-blood', 'rift-war', 'arcade', 'goal-rush', 'sky-spike'] as const;
 export type QueueMode = typeof QUEUE_MODES[number];
 export interface ModeCount { queue: number; playing: number; standby: number }
 export interface PopulationView { online: number; modes: Record<QueueMode, ModeCount>; at: number }

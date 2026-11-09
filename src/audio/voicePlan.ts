@@ -111,9 +111,9 @@ const KITS: Record<FighterId, VoiceKit> = {
   amagoi:{calls:{light:'vo-amagoi-effort-a'},efforts:[],heavy:{cues:['vo-amagoi-cloudburst'],chance:.8},special:{cues:['vo-amagoi-calling-water'],chance:.9},enders:{lllh:{cues:['vo-amagoi-effort-b'],chance:.65}},cinematic:{cue:'vo-amagoi-ultimate',lands:3.08,fromConfirm:true}},
   'shakudo':{calls:{},efforts:['vo-shakudo-effort-tap'],heavy:{cues:['vo-shakudo-strike','vo-shakudo-effort-a'],chance:.65},special:{cues:['vo-shakudo-stay-back'],chance:.8},enders:{lllh:{cues:['vo-shakudo-no-refunds'],chance:.65}},cinematic:{cue:'vo-shakudo-transmute',lands:3.3,fromConfirm:true}},
   hikui:{calls:{},efforts:['vo-hikui-effort-a','vo-hikui-effort-b'],heavy:{cues:['vo-hikui-flame-sword'],chance:.65},special:{cues:['vo-hikui-effort-a'],chance:.75},cinematic:{cue:'vo-hikui-ultimate',lands:1.734,fromConfirm:true}},
-  tokan:{calls:{},efforts:['vo-tokan-effort-a','vo-tokan-effort-b'],heavy:{cues:['vo-tokan-heel'],chance:.65},special:{cues:['vo-tokan-pheasant'],chance:.8},cinematic:{cue:'vo-tokan-winter-sleep',lands:1.15,fromConfirm:true}},
+  tokan:{calls:{},efforts:['vo-tokan-effort-a','vo-tokan-effort-b'],heavy:{cues:['vo-tokan-heel'],chance:.65},special:{cues:['vo-tokan-frostplume'],chance:.8},cinematic:{cue:'vo-tokan-winter-sleep',lands:1.15,fromConfirm:true}},
   strappado:{calls:{},efforts:['vo-strappado-effort-a','vo-strappado-effort-b'],heavy:{cues:['vo-strappado-out-of-my-way'],chance:.65},special:{cues:['vo-strappado-small-fry'],chance:.75},enders:{llls:{cues:['vo-strappado-dance'],chance:.75}},cinematic:{cue:'vo-strappado-final-bow',lands:3.18,fromConfirm:true}},
-  unari:{calls:{heavy:'vo-unari-gum'},efforts:['vo-unari-effort-a','vo-unari-effort-b','vo-unari-effort-c'],special:{cues:['vo-unari-gum'],chance:.8},cinematic:{cue:'vo-unari-encore',lands:2.89,fromConfirm:true}},
+  unari:{calls:{heavy:'vo-unari-deal'},efforts:['vo-unari-effort-a','vo-unari-effort-b','vo-unari-effort-c'],special:{cues:['vo-unari-deal'],chance:.8},cinematic:{cue:'vo-unari-encore',lands:2.89,fromConfirm:true}},
   barrow:{calls:{heavy:'vo-barrow-take-it-all'},efforts:['vo-barrow-effort-a','vo-barrow-effort-b'],special:{cues:['vo-barrow-sinkhole'],chance:.8},cinematic:{cue:'vo-barrow-liberation',lands:3.25,fromConfirm:true}},
   sashigane:{calls:{light:'vo-sashigane-cut',heavy:'vo-sashigane-golden-ratio'},efforts:[],special:{cues:['vo-sashigane-condemned'],chance:.8},cinematic:{cue:'vo-sashigane-finish',lands:2.05,fromConfirm:true}},
   gosu:{calls:{heavy:'vo-gosu-join-it-back'},efforts:['vo-gosu-effort-a','vo-gosu-effort-b','vo-gosu-effort-c'],special:{cues:['vo-gosu-kin-barrage'],chance:.8},cinematic:{cue:'vo-gosu-in-range',lands:2.76,fromConfirm:true}},
@@ -133,7 +133,7 @@ const KITS: Record<FighterId, VoiceKit> = {
     heavy:{cues:['vo-tancho-burn'],chance:.65},special:{cues:['vo-tancho-freeze'],chance:.85},
     cinematic:{cue:'vo-tancho-maximum',lands:1.65,fromConfirm:true}},
   bellows:{calls:{},efforts:['vo-bellows-effort-a','vo-bellows-effort-b','vo-bellows-effort-c'],
-    heavy:{cues:['vo-bellows-flame'],chance:.6},special:{cues:['vo-bellows-spider'],chance:.8},
+    heavy:{cues:['vo-bellows-flame'],chance:.6},special:{cues:['vo-bellows-slag-lances'],chance:.8},
     cinematic:{cue:'vo-bellows-burn',lands:2.3,fromConfirm:true}},
   mikage:{calls:{},efforts:['vo-mikage-effort-a','vo-mikage-effort-b','vo-mikage-effort-c'],
     heavy:{cues:['vo-mikage-finish'],chance:.65},special:{cues:['vo-mikage-slow'],chance:.85},
@@ -202,14 +202,14 @@ const KITS: Record<FighterId, VoiceKit> = {
     enders: { llh: { cues: ['vo-konta-ura'], chance: .5 }, airSpecial: { cues: ['vo-konta-ura', 'vo-konta-ha'], chance: .6 } } },
   shiden: { calls: { heavy: 'vo-shiden-shrike-bolt', special: 'vo-shiden-black-pyre' }, efforts: ['vo-shiden-ei', 'vo-shiden-ya', 'vo-shiden-fu'],
     enders: { lllh: { cues: ['vo-shiden-ei'], chance: .5 }, airSpecial: { cues: ['vo-shiden-ya', 'vo-shiden-ei'], chance: .6 } } },
-  shirokane: { calls: { heavy: 'vo-shirokane-lightning-cut', special: 'vo-shirokane-lightning-twin', ultimate: 'vo-shirokane-void-sickle-lightning-cut' },
+  shirokane: { calls: { heavy: 'vo-shirokane-sickle-bolt', special: 'vo-shirokane-lightning-twin', ultimate: 'vo-shirokane-void-sickle-bolt' },
     efforts: ['vo-shirokane-seya', 'vo-shirokane-ti', 'vo-shirokane-fun'],
     enders: { llh: { cues: ['vo-shirokane-seya'], chance: .5 }, airSpecial: { cues: ['vo-shirokane-ti', 'vo-shirokane-seya'], chance: .6 } } },
-  gummy: { calls: { light: 'gummy-pistol', heavy: 'vo-gummy-bazooka', special: 'vo-gummy-sunset-barrage', ultimate: 'vo-gummy-rubber-no' },
+  gummy: { calls: { light: 'gummy-snapback', heavy: 'vo-gummy-rogue-wave', special: 'vo-gummy-sunset-barrage', ultimate: 'vo-gummy-come-sea' },
     delays: { heavy: onRelease('gummy', 'heavy', .39), special: onRelease('gummy', 'special', .44) },
     efforts: ['vo-gummy-yo', 'vo-gummy-ho', 'vo-gummy-da'], cinematic: { cue: 'vo-gummy-grand-tide', lands: .82, fromConfirm: true },
     enders: { llh: { cues: ['vo-gummy-da', 'vo-gummy-yo'], chance: .5 }, airSpecial: { cues: ['vo-gummy-ho', 'vo-gummy-da'], chance: .6 } } },
-  kenzo: { calls: { light: 'vo-kenzo-crossing', heavy: 'vo-kenzo-lion-cut', special: 'kenzo-phoenix', ultimate: 'kenzo-world' },
+  kenzo: { calls: { light: 'vo-kenzo-crossing', heavy: 'vo-kenzo-mirage-draw', special: 'kenzo-eagle', ultimate: 'kenzo-dust-sea' },
     efforts: ['vo-kenzo-fun', 'vo-kenzo-ura', 'vo-kenzo-fu'],
     enders: { lllh: { cues: ['vo-kenzo-ura'], chance: .45 }, airSpecial: { cues: ['vo-kenzo-fu', 'vo-kenzo-ura'], chance: .55 } } },
   kosho: { calls: { heavy: 'vo-kosho-hachoir', special: 'vo-kosho-ram', ultimate: 'vo-kosho-banquet-infernal' },
@@ -333,9 +333,9 @@ const LEVEL = -16.5;
 const MEASURED: Partial<Record<AudioCue, number>> = {
   'taisei-sunpalm-cannon-full': -14.6, 'taisei-spirit': -11.3, 'ouga-gale': -16.6, 'konta-whirlsphere': -8.8,
   'konta-galewheel': -11.3, 'kurobi-link': -19.1, 'kurobi-taunt': -19.7, 'kurobi-growl': -21.5,
-  'gummy-pistol': -17.7, 'gummy-bazooka': -17.4, 'gummy-grand-tide-fist': -15.8, 'kenzo-crossing': -16.3,
-  'kenzo-phoenix': -16.8, 'kenzo-world': -15.4, 'koko-iron-lullaby': -16.7,
-  'koko-world': -17.0, 'nigo-nightfall': -12.6, 'kagari-hinoko': -20.7, 'kagari-yuragi': -16.6,
+  'gummy-snapback': -17.7, 'gummy-rogue-wave': -17.4, 'gummy-grand-tide-fist': -15.8, 'kenzo-crossing': -16.3,
+  'kenzo-eagle': -16.8, 'kenzo-dust-sea': -15.4, 'koko-iron-lullaby': -16.7,
+  'koko-hush': -17.0, 'nigo-nightfall': -12.6, 'kagari-hinoko': -20.7, 'kagari-yuragi': -16.6,
   'ward-stat-shot': -14.1, 'ward-cautery-blade': -17.3, 'ward-flatline': -18.0, 'kuon-gravity': -16.8,
   'kuon-violet': -13.5, 'kuon-boundless': -13.2, 'oro-steamroller': -18.8, 'gaunt-scream': -19.1,
   'setsu-ikazuchi': -16.8, 'setsu-gale-step': -15.3,
@@ -358,7 +358,7 @@ export const SUPER_LINE_PRIORITY = .5;
  *  goes out over both, still under his Shikou-Ha (1) and his Kyokko-Ho (2). */
 export const BIG_BANG_PRIORITY = .75;
 /** (The overnight pass, 9 October) The awakening lines named after the burst (awakeningLines.ts) are released at
- *  SUPER_LINE_PRIORITY too, so a named heavy call - Kenzo's Lion Cut, Gummy's Bazooka - would be kept out for the
+ *  SUPER_LINE_PRIORITY too, so a named heavy call - Kenzo's Mirage Draw, Gummy's Rogue Wave - would be kept out for the
  *  line's length as Ouga's Haou-Dan was. Awakened, the heavy call of a fighter with such a line goes out at Haou-Dan's
  *  priority, over the line (ducking it) and still under the special and the ultimate; in the base form it is as it was.
  *  Efforts, a light's callout and a heavy's cries stay under the line and do not cut it. */

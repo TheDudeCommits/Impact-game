@@ -1,0 +1,174 @@
+/* The ball modes' HUD (BallHud.ts): a broadcast scoreboard in the approved ink, paper and red, each side in its own
+   colour (game/ball/model.ts BALL_TEAM_COLOURS), and the moments as big torn manga banners. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .mode-hud{--bh-red:#ff3b52;--bh-blue:#2f8cff;--bh-gold:#ffcf5a}
+/* Nobody's health counts here: the own plate keeps its meters and drops its health track. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .fighter-meter.own :is(#own-health,#own-hp,.hl-hpnum,.hl-hp){visibility:hidden!important}
+/* Nor is there a foe here to plate: the ball is the only target. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .fighter-meter.foe{display:none!important}
+
+/* ---- Zone 2: the scoreboard. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-board{display:grid;grid-template-columns:auto auto minmax(calc(120px * var(--hk-k)),auto) auto auto;
+  grid-template-areas:"redteam redscore middle bluescore blueteam";align-items:stretch;gap:0;filter:drop-shadow(4px 3px 0 rgba(0,0,0,.55));pointer-events:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team{display:flex;flex-direction:column;justify-content:center;gap:3px;padding:calc(5px * var(--hk-k)) calc(14px * var(--hk-k));color:#fff}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.red{grid-area:redteam;align-items:flex-end;background:linear-gradient(90deg,rgba(11,12,14,.0),rgba(11,12,14,.88) 22%);clip-path:polygon(10% 0,100% 0,100% 100%,0 100%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.blue{grid-area:blueteam;align-items:flex-start;background:linear-gradient(270deg,rgba(11,12,14,.0),rgba(11,12,14,.88) 22%);clip-path:polygon(0 0,90% 0,100% 100%,0 100%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team small{font:800 calc(clamp(9px,.72vw,13px) * var(--hk-k))/1 'Barlow Condensed',sans-serif;letter-spacing:.2em;white-space:nowrap}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.red small{color:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.blue small{color:var(--bh-blue)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-faces{display:flex;gap:4px}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.red .bh-faces{flex-direction:row-reverse}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face{position:relative;width:calc(30px * var(--hk-k));height:calc(30px * var(--hk-k));overflow:hidden;background:#fff9ef;
+  border:2px solid currentColor;clip-path:polygon(12% 0,100% 0,88% 100%,0 100%);transition:transform .12s}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.red{color:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.blue{color:var(--bh-blue)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face span,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face span>*{display:block;width:100%;height:100%;object-fit:cover}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.self{outline:2px solid var(--bh-gold);outline-offset:-2px}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.touch{transform:translateY(-3px) scale(1.08);box-shadow:0 0 0 2px var(--bh-gold)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.gone{opacity:.35;filter:grayscale(1)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score{display:flex;align-items:center;justify-content:center;min-width:calc(46px * var(--hk-k));padding:0 calc(10px * var(--hk-k));
+  font:italic 900 calc(clamp(30px,2.6vw,50px) * var(--hk-k))/1 Impact,'Barlow Condensed',sans-serif;color:#fff;padding-right:.3em}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score.red{grid-area:redscore;background:var(--bh-red);clip-path:polygon(14% 0,100% 0,100% 100%,0 100%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score.blue{grid-area:bluescore;background:var(--bh-blue);clip-path:polygon(0 0,86% 0,100% 100%,0 100%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score[data-pulse]{animation:bh-score-a .7s ease-out}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score[data-pulse="b"]{animation-name:bh-score-b}
+@keyframes bh-score-a{0%{transform:scale(1.6);filter:brightness(2)}100%{transform:none}}
+@keyframes bh-score-b{0%{transform:scale(1.6);filter:brightness(2)}100%{transform:none}}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle{grid-area:middle;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  padding:calc(5px * var(--hk-k)) calc(14px * var(--hk-k));background:#0b0c0e;color:#fff}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle strong{font:italic 900 calc(clamp(20px,1.7vw,32px) * var(--hk-k))/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.02em;padding-right:.2em;white-space:nowrap}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle small{font:800 calc(clamp(8px,.6vw,11px) * var(--hk-k))/1 'Barlow Condensed',sans-serif;letter-spacing:.14em;color:#b9b2a6;white-space:nowrap}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle[data-kind="late"] strong{color:var(--bh-gold)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle:is([data-kind="overtime"],[data-kind="ending"]) strong{color:#ff5a6e;animation:bh-throb 1s ease-in-out infinite}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle[data-kind="hot"] strong{color:#ff9a3c}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle[data-kind="fever"]{background:linear-gradient(90deg,#ff3b52,#ffb43c,#ff3b52);background-size:200% 100%;animation:bh-fever 1.2s linear infinite}
+@keyframes bh-throb{50%{opacity:.55}}
+@keyframes bh-fever{to{background-position:200% 0}}
+
+/* ---- Zone 2b: heat, touches, serve. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-strip{display:flex;align-items:center;justify-content:center;gap:calc(14px * var(--hk-k));margin-top:4px;pointer-events:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-touches{display:flex;align-items:center;gap:3px;padding:3px 10px 4px 8px;background:rgba(11,12,14,.82);clip-path:polygon(6% 0,100% 0,94% 100%,0 100%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat small,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-touches small{margin-right:4px;font:800 calc(clamp(8px,.62vw,11px) * var(--hk-k))/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;color:#e9e3d6}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat i{width:calc(14px * var(--hk-k));height:calc(8px * var(--hk-k));background:#3a3832;transform:skewX(-18deg);transition:background .15s}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat:is([data-tier="1"],[data-tier="2"],[data-tier="3"],[data-tier="4"]) i:nth-of-type(1){background:#ffd36a}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat:is([data-tier="2"],[data-tier="3"],[data-tier="4"]) i:nth-of-type(2){background:#ff9a3c}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat:is([data-tier="3"],[data-tier="4"]) i:nth-of-type(3){background:#ff3b30}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat[data-tier="4"] i:nth-of-type(4){background:#c86bff;box-shadow:0 0 8px #c86bff}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat[data-tier="4"] small{color:#e2b6ff;animation:bh-throb .6s ease-in-out infinite}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-touches i{width:calc(11px * var(--hk-k));height:calc(11px * var(--hk-k));border-radius:50%;border:2px solid #e9e3d6;background:transparent}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-touches i.used{background:#e9e3d6}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-touches.last i:not(.used){border-color:#ff5a6e;animation:bh-throb .5s ease-in-out infinite}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-serve{font:800 calc(clamp(9px,.7vw,13px) * var(--hk-k))/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;color:#fff;text-shadow:0 1px 3px #000}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-serve:empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-cam{font:800 calc(clamp(8px,.62vw,11px) * var(--hk-k))/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;color:#e9e3d6;opacity:.8;text-shadow:0 1px 3px #000}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-cam:empty{display:none}
+
+/* RUMBLE's charms at work. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charms{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-top:5px;pointer-events:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charms:empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charm{padding:3px 10px 4px;background:rgba(11,12,14,.86);color:#fff;border-left:4px solid var(--c,#fff);
+  font:italic 900 calc(clamp(9px,.72vw,13px) * var(--hk-k))/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.05em;white-space:nowrap;clip-path:polygon(0 0,100% 0,94% 100%,0 100%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charm.ours{box-shadow:inset 0 -2px 0 var(--c,#fff)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker[data-kind="charm"]{border-left-color:#7dff6a;color:#e8ffe2}
+
+/* ---- Zone 7: the banner, a little lower than the shared layout's, under the scoreboard, its strip and the charm chips. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .mode-hud>[data-zone="7"]{top:31%}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner{display:none;flex-direction:column;align-items:center;gap:6px;padding:12px 46px 14px;background:#0b0c0e;color:#fff;text-align:center;pointer-events:none;
+  filter:drop-shadow(6px 4px 0 var(--bh-accent,#d51d34));clip-path:polygon(4% 0,100% 0,96% 30%,100% 78%,93% 100%,0 100%,4% 70%,0 34%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-team="red"]{--bh-accent:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-team="blue"]{--bh-accent:var(--bh-blue)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner.on{display:flex;animation:bh-in-a .32s cubic-bezier(.2,1.6,.4,1)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner.on[data-pulse="b"]{animation-name:bh-in-b}
+@keyframes bh-in-a{0%{opacity:0;transform:scale(2.2) skew(-12deg)}60%{opacity:1}100%{transform:none}}
+@keyframes bh-in-b{0%{opacity:0;transform:scale(2.2) skew(-12deg)}60%{opacity:1}100%{transform:none}}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner small{font:800 clamp(10px,.85vw,16px)/1 'Barlow Condensed',sans-serif;letter-spacing:.24em;color:var(--bh-gold)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner strong{font:italic 900 clamp(38px,4.4vw,86px)/.95 Impact,'Barlow Condensed',sans-serif;letter-spacing:-.01em;white-space:nowrap;padding-right:.18em;
+  color:#fff;text-shadow:4px 4px 0 var(--bh-accent,#d51d34)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner span{font:800 clamp(10px,.85vw,16px)/1.1 'Barlow Condensed',sans-serif;letter-spacing:.1em;color:#e9e3d6}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner :is(small,span):empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="count"]{background:none;filter:none;clip-path:none;padding:0}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="count"] strong{font-size:clamp(70px,8vw,150px);text-shadow:6px 6px 0 #d51d34,0 0 30px rgba(0,0,0,.6)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="count"] small{text-shadow:0 1px 4px #000}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner:is([data-kind="goal"],[data-kind="super"],[data-kind="win"]) strong{font-size:clamp(54px,6.4vw,124px)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="goal"]{background:linear-gradient(100deg,#0b0c0e 60%,var(--bh-accent) 61%,var(--bh-accent) 64%,#0b0c0e 65%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="fever"] strong{color:#ffcf5a;text-shadow:4px 4px 0 #ff3b52}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="clash"]{background:linear-gradient(100deg,var(--bh-red) 0 8%,#0b0c0e 8% 92%,var(--bh-blue) 92%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="clash"] strong{color:#fff;text-shadow:4px 3px 0 var(--bh-accent),-3px -2px 0 #ffcf5a;animation:bh-throb .12s steps(2) 4}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="super"] strong{color:#fff;text-shadow:3px 3px 0 var(--bh-accent),-3px -2px 0 #c86bff}
+
+/* ---- Zone 3b: the shot ticker. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker{display:none;margin-top:8px;padding:5px 14px 6px 10px;background:#0b0c0e;color:#fff;border-left:5px solid var(--bh-gold);
+  font:italic 900 clamp(11px,.9vw,16px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.03em;white-space:nowrap;pointer-events:none;clip-path:polygon(0 0,100% 0,96% 100%,0 100%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker[data-team="red"]{border-left-color:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker[data-team="blue"]{border-left-color:var(--bh-blue)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker.on{display:block;animation:bh-tick-a .22s ease-out}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker.on[data-pulse="b"]{animation-name:bh-tick-b}
+@keyframes bh-tick-a{0%{opacity:0;transform:translateX(24px)}100%{opacity:1;transform:none}}
+@keyframes bh-tick-b{0%{opacity:0;transform:translateX(24px)}100%{opacity:1;transform:none}}
+
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker[data-kind="accolade"]{background:linear-gradient(90deg,#0b0c0e 70%,#3a2c08);color:var(--bh-gold);border-left-color:var(--bh-gold)}
+/* The bots' lines: name in the side's colour, the line in paper. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat{display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-top:6px;pointer-events:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-line{display:flex;gap:7px;align-items:baseline;padding:3px 10px 4px;background:rgba(11,12,14,.78);color:#f3eee4;
+  font:700 clamp(10px,.78vw,14px)/1.1 'Barlow Condensed',sans-serif;letter-spacing:.04em;white-space:nowrap;animation:bh-tick-a .2s ease-out}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-line b{font:italic 900 1em/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.04em}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-line.red b{color:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-line.blue b{color:var(--bh-blue)}
+
+/* ---- Zone 8: the ball's edge arrow. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow{position:absolute;left:0;top:0;display:none;align-items:center;gap:6px;padding:4px 10px 5px;background:#0b0c0e;color:#fff;pointer-events:none;
+  font:italic 900 13px/1 Impact,'Barlow Condensed',sans-serif;will-change:transform;transition:transform .08s linear}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow.on{display:flex}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow i{width:0;height:0;border:7px solid transparent;border-left:11px solid var(--bh-gold)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow[data-side="l"]{flex-direction:row-reverse}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow[data-side="l"] i{transform:rotate(180deg)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow[data-team="red"] i{border-left-color:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow[data-team="blue"] i{border-left-color:var(--bh-blue)}
+
+/* ---- The replay (render/ball/BallReplay.ts): its tag over the letterbox, and the fight's plates and cards put away
+   while it shows (the scoreboard stays). */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay{position:fixed;left:clamp(16px,4vw,72px);bottom:calc(5.2vh + 18px);display:none;flex-direction:column;align-items:flex-start;gap:6px;pointer-events:none;z-index:3}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay.on{display:flex;visibility:visible;animation:bh-tick-a .3s ease-out}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay-chip{display:flex;align-items:center;gap:10px;padding:6px 22px 8px 14px;background:#0b0c0e;color:#fff;
+  font:italic 900 clamp(26px,2.6vw,48px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.04em;padding-right:.6em;filter:drop-shadow(5px 4px 0 var(--bh-accent,#d51d34));clip-path:polygon(0 0,100% 0,94% 100%,0 100%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay[data-team="red"]{--bh-accent:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay[data-team="blue"]{--bh-accent:var(--bh-blue)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay-chip i{width:.42em;height:.42em;border-radius:50%;background:#ff3b30;box-shadow:0 0 10px #ff3b30;animation:bh-throb 1s steps(2) infinite}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay strong{padding:4px 14px 5px 10px;background:var(--bh-accent,#d51d34);color:#fff;font:italic 900 clamp(13px,1.1vw,20px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.04em;white-space:nowrap}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay strong:empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay small{font:800 clamp(10px,.8vw,14px)/1 'Barlow Condensed',sans-serif;letter-spacing:.14em;color:#e9e3d6;text-shadow:0 1px 3px #000}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-mood{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0;transition:opacity .6s}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-mood[data-mood="fever"]{opacity:1;box-shadow:inset 0 0 70px 6px rgba(255,190,70,.55);animation:bh-mood 1.1s ease-in-out infinite}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-mood[data-mood="overtime"]{opacity:1;box-shadow:inset 90px 0 80px -60px rgba(255,59,82,.6),inset -90px 0 80px -60px rgba(47,140,255,.6);animation:bh-mood 1.6s ease-in-out infinite}
+@keyframes bh-mood{50%{filter:brightness(1.6)}}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-wipe{position:fixed;inset:-10% -60%;pointer-events:none;z-index:4;transform:translateX(-140%) skewX(-16deg);
+  background:linear-gradient(90deg,transparent 0 18%,var(--bh-accent,#d51d34) 18% 24%,#0b0c0e 24% 76%,var(--bh-accent,#d51d34) 76% 82%,transparent 82%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-wipe[data-team="red"]{--bh-accent:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-wipe[data-team="blue"]{--bh-accent:var(--bh-blue)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-wipe[data-pulse="a"]{animation:bh-wipe-a .5s cubic-bezier(.6,.05,.4,.95)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-wipe[data-pulse="b"]{animation:bh-wipe-b .5s cubic-bezier(.6,.05,.4,.95)}
+@keyframes bh-wipe-a{from{transform:translateX(-140%) skewX(-16deg)}to{transform:translateX(140%) skewX(-16deg)}}
+@keyframes bh-wipe-b{from{transform:translateX(-140%) skewX(-16deg)}to{transform:translateX(140%) skewX(-16deg)}}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-ball-replay] :is(.combat-hud>:not(.mode-hud),.bh-strip,.bh-charms,.bh-prompt,.bh-arrow,.bh-ticker,.bh-banner){opacity:0!important;transition:opacity .25s}
+
+/* Touch: FREE PLAY's reset prompt is a button, and quick chat has one of its own (QuickChat.ts opens on it). */
+#interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-prompt[data-act="reset"]{pointer-events:auto;cursor:pointer}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-btn{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));top:calc(104px + env(safe-area-inset-top,0px));z-index:6;display:none;
+  padding:7px 12px 8px;border:2px solid #fff9ef;background:rgba(11,12,14,.82);color:#fff9ef;font:italic 900 13px/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.08em;pointer-events:auto;touch-action:manipulation}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-btn.on{display:block}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-ball-replay] .bh-chat-btn{display:none}
+/* The now-playing tag (handheld.css puts it under the top bars, centred): in a ball match there it lies on the scoreboard,
+   so on the touch controls it goes to the middle of the bottom edge, between the stick and the buttons. */
+:root.touch-play body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .music-caption.music-caption{top:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform-origin:50% 100%}
+@media(max-height:520px) and (orientation:landscape){
+  /* The banners under the scoreboard and its strip, not on them. */
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .mode-hud>[data-zone="7"]{top:44%}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face{width:20px;height:20px}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score{font-size:24px;min-width:30px}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner{padding:6px 22px 8px}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner strong{font-size:30px}
+}
+@media(prefers-reduced-motion:reduce){
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-wipe{display:none}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-mood{animation:none}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) :is(.bh-banner.on,.bh-ticker.on,.bh-score[data-pulse],.bh-middle strong,.bh-middle[data-kind="fever"]){animation:none}
+}

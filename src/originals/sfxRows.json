@@ -295,7 +295,7 @@
     "what": "A draw-cut: the guard loosed, a held stillness, one cut too fast to see and the guard clicking home.",
     "cast": [
      [
-      "fx-sig-kenzo-lions-whisper",
+      "fx-sig-kenzo-mirage-draw",
       0.45,
       "contact"
      ]
@@ -428,20 +428,20 @@
     ]
    },
    "ultimate": {
-    "what": "Hymn 90: an organ's chord as the reliquary closes round them, its lid slamming down.",
+    "what": "Hymn 40: an organ's chord as the reliquary closes round them, its lid slamming down.",
     "cast": [
      [
-      "fx-sig-shiun-hymn-90",
+      "fx-sig-shiun-black-confessional",
       0.55,
       "contact"
      ]
     ]
    },
    "special": {
-    "what": "Hymn 91: an organ's chord and a volley of lances of light loosed one after another.",
+    "what": "Hymn 12: an organ's chord and a volley of lances of light loosed one after another.",
     "cast": [
      [
-      "fx-sig-shiun-hymn-91",
+      "fx-sig-shiun-glass-lances",
       0.5,
       "contact"
      ]

@@ -10,7 +10,7 @@ const GRAVITY = 7.5;
 
 interface Piece {p: THREE.Vector3; v: THREE.Vector3; axis: THREE.Vector3; spin: number; size: THREE.Vector3; turn: number}
 
-export class KyokaDecoy {
+export class EncoreDecoy {
   private root = new THREE.Group();
   private copy?: THREE.Object3D;
   private source?: THREE.Object3D;

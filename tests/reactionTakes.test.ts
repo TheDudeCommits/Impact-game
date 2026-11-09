@@ -195,7 +195,7 @@ async function formOf(id: FighterId, take: string) {
   }
   return { form, own, mine };
 }
-type Shown = { gear4?: { motionEvidence(): ReturnType<Fighter['motionEvidence']>; joints: Map<string, THREE.Bone>; group: THREE.Group } };
+type Shown = { awakenedForm?: { motionEvidence(): ReturnType<Fighter['motionEvidence']>; joints: Map<string, THREE.Bone>; group: THREE.Group } };
 const CORE = ['Hips', 'Spine', 'Spine1', 'Neck', 'Head', 'LeftArm', 'LeftForeArm', 'RightArm', 'RightForeArm', 'LeftUpLeg', 'LeftLeg', 'RightUpLeg', 'RightLeg'];
 describe.skipIf(!FORMS.length)('an awakened form takes a blow in its own new reactions', () => {
   it.each(FORMS)('%s (%s)', async (id, take, flinch, downed, getup, hurt, floats) => {
@@ -211,7 +211,7 @@ describe.skipIf(!FORMS.length)('an awakened form takes a blow in its own new rea
     try {
       const awake: PlayerState = { ...base(id), awakened: true };
       for (let f = 0; f < 90; f++) body.update(1 / 60, awake, true, 1 / 60);
-      const g5 = (body as unknown as Shown).gear4!;
+      const g5 = (body as unknown as Shown).awakenedForm!;
       // Every clip it brings keys the body's core joints (restore_still), so none keeps another clip's pose.
       for (const clip of mine) {
         const keyed = new Set(clip.tracks.map(t => THREE.PropertyBinding.parseTrackName(t.name).nodeName));

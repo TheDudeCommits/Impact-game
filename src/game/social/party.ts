@@ -4,14 +4,14 @@ import {factionOf,isBadBloodFighter,type RolePreference} from '../objectives/mod
 
 /** The party (PartyRoom): what a party of friends can play together, and where. The leader chooses; the server checks
  *  every choice against the tables below (strict allowlists), and the page draws the same tables. */
-export type PartyMode='duel'|'royale'|'bad-blood'|'last-stand'|'survival'|'rift-war';
-export const PARTY_MODES:Record<PartyMode,string>={'rift-war':'RIFT WAR',duel:'DUEL',royale:'BATTLE ROYALE','bad-blood':'BAD BLOOD','last-stand':'LAST STAND',survival:'CO-OP SURVIVAL'};
-export const PARTY_ORDER:readonly PartyMode[]=['duel','royale','bad-blood','last-stand','survival','rift-war'];
+export type PartyMode='duel'|'royale'|'bad-blood'|'last-stand'|'survival'|'rift-war'|'goal-rush'|'sky-spike';
+export const PARTY_MODES:Record<PartyMode,string>={'goal-rush':'GOAL RUSH','sky-spike':'SKY SPIKE','rift-war':'RIFT WAR',duel:'DUEL',royale:'BATTLE ROYALE','bad-blood':'BAD BLOOD','last-stand':'LAST STAND',survival:'CO-OP SURVIVAL'};
+export const PARTY_ORDER:readonly PartyMode[]=['duel','goal-rush','sky-spike','royale','bad-blood','last-stand','survival','rift-war'];
 /** A party holds up to twelve friends, whatever the mode: a mode with fewer seats says so, it does not turn a friend away. */
 export const PARTY_MAX=12;
 /** Where each mode can be fought, as a party may choose: none for a mode whose place is fixed (Last Stand's village, the
  *  co-op run's worlds, which the run deals act by act). */
-export const PARTY_ARENAS:Record<PartyMode,readonly StageId[]>={'rift-war':[],duel:DUEL_ARENAS,royale:ARENAS.royale,'bad-blood':ARENAS['bad-blood'],'last-stand':[],survival:[]};
+export const PARTY_ARENAS:Record<PartyMode,readonly StageId[]>={'goal-rush':[],'sky-spike':[],'rift-war':[],duel:DUEL_ARENAS,royale:ARENAS.royale,'bad-blood':ARENAS['bad-blood'],'last-stand':[],survival:[]};
 /** The battle royale's seats (bots fill the ones friends leave empty). A 1 V 1 is the DUEL now. */
 export const ROYALE_SEATS=[4,8,12] as const;
 /** RANDOM: the server deals it at launch. VOTE: one vote per member, counted at launch. Otherwise the stage itself. */
@@ -36,7 +36,7 @@ export function partyRules(mode:PartyMode,raw:unknown,base:PartyRules=defaultPar
     players:mode!=='royale'?partyCapacity(mode,base):(ROYALE_SEATS as readonly unknown[]).includes(r.players)?r.players as number:base.players,
     fill:mode!=='last-stand'?false:typeof r.fill==='boolean'?r.fill:base.fill};
 }
-export const partyCapacity=(mode:PartyMode,rules:{players:number})=>mode==='royale'?rules.players:mode==='duel'?2:mode==='bad-blood'?6:mode==='rift-war'?10:4;
+export const partyCapacity=(mode:PartyMode,rules:{players:number})=>mode==='royale'?rules.players:mode==='duel'?2:mode==='bad-blood'||mode==='goal-rush'||mode==='sky-spike'?6:mode==='rift-war'?10:4;
 /** The most seats the mode can offer at all (the royale's largest field). */
 export const modeSeats=(mode:PartyMode)=>mode==='royale'?ROYALE_SEATS.at(-1)!:partyCapacity(mode,{players:0});
 export interface PartyMember {id:string;name:string;fighter:FighterId;ready:boolean;connected:boolean;status:'home'|'travelling'|'playing';role:RolePreference;}

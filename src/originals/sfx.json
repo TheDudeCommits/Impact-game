@@ -602,7 +602,7 @@
   "seconds": 0.2683,
   "peak": 0.0278
  },
- "fx-gamma": {
+ "fx-rad-knife": {
   "file": "sfx/originals/signatures/ward/rad-knife.wav",
   "seconds": 0.8,
   "peak": 0.0654
@@ -613,12 +613,12 @@
   "peak": 0.6229,
   "loop": true
  },
- "fx-gear4-bounce": {
+ "fx-rubber-bounce": {
   "file": "sfx/originals/families/body/rubber-bounce.wav",
   "seconds": 0.5263,
   "peak": 0.0907
  },
- "fx-gear4-inflate": {
+ "fx-rubber-swell": {
   "file": "sfx/originals/families/body/rubber-swell.wav",
   "seconds": 1.5139,
   "peak": 0.901
@@ -977,7 +977,7 @@
   "peak": 0.1123,
   "beat": 0.07
  },
- "fx-room": {
+ "fx-theatre-open": {
   "file": "sfx/originals/signatures/ward/theatre-open.wav",
   "seconds": 0.7063,
   "peak": 0.08
@@ -1204,7 +1204,7 @@
   "peak": 0.0698
  },
  "fx-sig-gaku-landslide": {
-  "file": "sfx/originals/signatures/gaku/rock-fist.wav",
+  "file": "sfx/originals/signatures/gaku/lion-fist.wav",
   "seconds": 1.8,
   "peak": 1.0296,
   "beat": 0.44
@@ -1447,8 +1447,8 @@
   "seconds": 2,
   "peak": 0.1199
  },
- "fx-sig-kenzo-lions-whisper": {
-  "file": "sfx/originals/signatures/kenzo/lions-whisper.wav",
+ "fx-sig-kenzo-mirage-draw": {
+  "file": "sfx/originals/signatures/kenzo/mirage-draw.wav",
   "seconds": 2.2662,
   "peak": 1.3247,
   "beat": 1.2
@@ -1811,14 +1811,14 @@
   "seconds": 1.2,
   "peak": 0.0028
  },
- "fx-sig-shiun-hymn-90": {
-  "file": "sfx/originals/signatures/shiun/hymn-90.wav",
+ "fx-sig-shiun-black-confessional": {
+  "file": "sfx/originals/signatures/shiun/black-confessional.wav",
   "seconds": 4,
   "peak": 2.0044,
   "beat": 2
  },
- "fx-sig-shiun-hymn-91": {
-  "file": "sfx/originals/signatures/shiun/hymn-91.wav",
+ "fx-sig-shiun-glass-lances": {
+  "file": "sfx/originals/signatures/shiun/glass-lances.wav",
   "seconds": 2.1398,
   "peak": 0.5991
  },

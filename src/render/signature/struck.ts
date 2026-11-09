@@ -6,7 +6,7 @@ import type { Fighter } from '../Fighter';
  *  stands on them (LANDED: the prediction's for your own swing, the server's
  *  for everyone else's, a guard that took it included) - or undefined.
  *
- *  A technique's discharge on its contact frame - Shrike Bolt's and Lightning Cut's
+ *  A technique's discharge on its contact frame - Shrike Bolt's and Sickle Bolt's
  *  burst of lightning, Setsu's - used to go off from the hand a metre and
  *  more in every direction whether the blow had landed or not, so a body
  *  standing just out of the blow's reach was drawn engulfed in it and took

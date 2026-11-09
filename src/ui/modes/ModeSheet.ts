@@ -270,7 +270,13 @@ export class ModeSheet {
     const rival = (label: string, random: string) => { const face = (id: FighterId) => `<option value="${id}" data-face="${id}" data-short="${escape(fighterCaption(id))}"${prefs.rival === id ? ' selected' : ''}>${escape(FIGHTERS[id].name)}</option>`, out = (ids: readonly FighterId[]) => ids.filter(id => isReleasedFighter(id) && !HELD.has(id)).map(face).join('');
       return `<label class="ms-option ms-rival"><b>${label.toUpperCase()}</b><ink-select layout="faces" data-ms-rival label="${label}"><option value="" data-short="RANDOM"${prefs.rival && HOME_ROSTER.includes(prefs.rival) ? '' : ' selected'}>${random}</option>${HOME_VOLUMES.map((ids,i)=>`<optgroup label="VOL.${i+1}">${out(ids)}</optgroup>`).join('')}</ink-select></label>`; };
     // Couch: Player 2's options - with the royale's field size, and Bad Blood's and the Rift's sides and Player 1's own pick.
-    if (this.variant === 'couch') return `${this.mode === 'royale' ? row('FIGHTERS', 'data-ms-fighters', FIGHTER_COUNTS, prefs.fighters ?? defaultRoyaleFighters()) : ''}${this.mode === 'bad-blood' || this.mode === 'rift-war' ? this.sideOptions() : ''}${this.couchOptions()}`;
+    // The ball modes' rules: CLASSIC, or RUMBLE with its charms (matchmaking is always classic).
+    const ball = this.mode === 'goal-rush' || this.mode === 'sky-spike';
+    const rules = ball && this.variant !== 'online' && !this.joining ? `<div class="ms-option" role="group" aria-label="Rules"><b>RULES</b><button type="button" data-ms-rumble="false" aria-pressed="${!prefs.rumble}">CLASSIC</button><button type="button" data-ms-rumble="true" aria-pressed="${!!prefs.rumble}">RUMBLE</button></div>${prefs.rumble ? '<p class="ms-note">Charms appear on the field. Run through one: a KI CHARGE shot, a GIANT BALL, an IRON WALL over your goal and more.</p>' : ''}` : '';
+    if (this.variant === 'couch') return `${rules}${this.mode === 'royale' ? row('FIGHTERS', 'data-ms-fighters', FIGHTER_COUNTS, prefs.fighters ?? defaultRoyaleFighters()) : ''}${this.mode === 'bad-blood' || this.mode === 'rift-war' ? this.sideOptions() : ''}${this.couchOptions()}`;
+    // BOTS: a 3 v 3 match, or FREE PLAY alone with the ball.
+    const play = ball && this.variant === 'offline' ? `<div class="ms-option" role="group" aria-label="Play"><b>PLAY</b><button type="button" data-ms-practice="false" aria-pressed="${!prefs.practice}">3 V 3 MATCH</button><button type="button" data-ms-practice="true" aria-pressed="${!!prefs.practice}">FREE PLAY</button></div>${prefs.practice ? `<p class="ms-note">Just you and the ball: no clock, no bots. ${this.mode === 'sky-spike' ? 'A ball machine keeps sending balls over to spike.' : 'The ball goes back on the spot after each goal.'} Backspace resets the ball.</p>` : ''}` : '';
+    if (rules) return play + rules;
     if (this.mode === 'duel' && this.variant === 'offline') return rival('Bot opponent', 'Random rival');
     if (this.mode === 'training') return rival('Opponent', 'Random opponent');
     if (this.mode === 'royale' && this.variant === 'offline') return row('FIGHTERS', 'data-ms-fighters', FIGHTER_COUNTS, prefs.fighters ?? defaultRoyaleFighters());
@@ -477,8 +483,9 @@ export class ModeSheet {
     const place = join ? undefined : namedPlaceFor(mode, this.variant, this.field());
     const objective = (access: 'quick' | 'bots' | 'solo' | 'host' | 'join'): Extract<NetworkAccess, { kind: 'objective' }> => ({ kind: 'objective', objective: mode as 'last-stand' | 'bad-blood', access, role: mode === 'bad-blood' ? factionOf(fighter) : 'defenders', fighter, code: join ? this.code : undefined, place });
     let room: RoomMode = 'match', access: NetworkAccess | undefined;
-    const couch: CouchStart | undefined = this.variant === 'couch' && !join ? { partner: this.partnerOf(fighter), screen: screenFor(mode, prefs.couchScreen), ...(mode === 'bad-blood' || mode === 'rift-war' ? { sides: this.sides() } : {}), ...(this.seats ? { seats: [...this.seats] } : {}) } : undefined;
+    const couch: CouchStart | undefined = this.variant === 'couch' && !join ? { partner: this.partnerOf(fighter), screen: screenFor(mode, prefs.couchScreen), ...(mode === 'bad-blood' || mode === 'rift-war' || mode === 'goal-rush' || mode === 'sky-spike' ? { sides: this.sides() } : {}), ...(this.seats ? { seats: [...this.seats] } : {}) } : undefined;
     switch (mode) {
+      case 'goal-rush': case 'sky-spike': access = couch ? { kind: 'ball', mode, access: 'bots', couch, rumble: !!prefs.rumble } : { kind: 'ball', mode, access: join ? 'join' : this.variant === 'offline' ? 'bots' : this.variant === 'online' ? 'quick' : 'host', code: join ? this.code : undefined, rumble: this.variant !== 'online' && !join && !!prefs.rumble, practice: this.variant === 'offline' && !!prefs.practice }; break;
       case 'rift-war': access = couch ? { kind: 'rift-war', access: 'bots', couch } : {kind:'rift-war',access:join?'join':this.variant==='offline'?'bots':this.variant==='online'?'quick':'host',code:join?this.code:undefined}; break;
       case 'duel': access = couch ? { kind: 'duel', access: 'couch', rival: couch.partner, place, couch } : { kind: 'duel', access: join ? 'join' : this.variant === 'offline' ? 'bot' : this.variant === 'online' ? 'online' : 'host', code: join ? this.code : undefined, rival: prefs.rival, place }; break;
       case 'royale': access = join ? { kind: 'join-private', code: this.code } : couch ? { kind: 'bots', players: prefs.fighters ?? defaultRoyaleFighters(), place, couch } : this.variant === 'offline' ? { kind: 'bots', players: prefs.fighters ?? defaultRoyaleFighters(), place } : this.variant === 'online' ? { kind: 'public' } : { kind: 'create-private', players: prefs.roomSize ?? 8, place }; break;
@@ -531,6 +538,8 @@ export class ModeSheet {
     else if (d.msFighters) { saveModePrefs(this.mode, { fighters: Number(d.msFighters) }); this.redrawKeeping(b); }
     else if (d.msRoom) { saveModePrefs(this.mode, { roomSize: Number(d.msRoom) }); this.redrawKeeping(b); }
     else if (d.msLone) { saveModePrefs(this.mode, { lone: d.msLone === 'true' }); this.redrawKeeping(b); }
+    else if (d.msRumble) { saveModePrefs(this.mode, { rumble: d.msRumble === 'true' }); this.redrawKeeping(b); }
+    else if (d.msPractice) { saveModePrefs(this.mode, { practice: d.msPractice === 'true' }); this.redrawKeeping(b); }
     else if (d.msSwap !== undefined) { saveModePrefs(this.mode, { couchSwap: !this.prefs().couchSwap }); if (this.seats) this.seats = [this.seats[1], this.seats[0]]; this.redrawSeats(); this.focus('[data-ms-swap]'); }
     // Couch: Player 2's face, or a step along their picks with the arrows on their card.
     else if (d.msP2pick) this.setP2(d.msP2pick as PartnerPick);

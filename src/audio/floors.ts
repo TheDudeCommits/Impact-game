@@ -10,6 +10,8 @@ export type Surface = 'stone' | 'wood' | 'sand' | 'grass' | 'water' | 'snow' | '
 export const FLOORS: Readonly<Record<StageId, Surface>> = {
   // ---- the main game's places (render/ground/index.ts GROUND_DECISIONS)
   harbor: 'stone',                      // cobbles and quays
+  'ball-pitch': 'grass',                 // Goal Rush's turf
+  'ball-court': 'wood',                  // Sky Spike's sprung court
   'wreckers-causeway': 'stone',
   'ash-colosseum': 'grass',              // a grass field inside the stadium wall
   'sunfall-arena': 'stone',   // the ring is stone; its lawn is past the edge the bounds hold the fight inside

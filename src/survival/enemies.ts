@@ -759,7 +759,7 @@ ENEMIES.kurobi = {
     melee('Ember Storm', 'special', ['Kurobi ultimate'], 2.4, .6, 50, { range: .5, radius: 5, knockback: 9, maxRange: 20, rest: 10, telegraph: 'ring', element: 'fire', callout: true, phase: 1,
       rain: { count: 16, every: .13, lead: .9, spread: 7, radius: 2.2, damage: 70, start: .4, knockback: 9 } }),
   ],
-  // (Kurobi's own body and clips: round 1's Tamamo recoloured, playing the roster fox's.)
+  // (Kurobi's own body and clips: round 1's fox recoloured, playing the roster fox's.)
   clips: { idle: ['_Idle', 'Armature|wait'], run: ['Run'], hit: ['Hit 01'], down: ['Die fall'], getup: ['shake'], stun: ['Hit 01'],
     blown: ['Hit 01'], land: ['Hit 01'], death: ['Die fall'], dash: ['Dash'], jump: ['jump'], fall: ['Jump Fall'], taunt: ['shake'], intro: ['shake'] },
   xp: 80, score: 20000, cost: 0, color: 0xff7a1e, runSpeed: 9,

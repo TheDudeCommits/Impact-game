@@ -1,6 +1,7 @@
 import type { FighterId, GameSnapshot, PlayerState } from '../../game/types';
 import { objectiveOf } from '../../game/objectives/model';
 import { riftOf } from '../../game/moba/model';
+import { ballOf } from '../../game/ball/model';
 import { prompt } from '../prompts';
 import './finale.css';
 
@@ -49,6 +50,9 @@ export function finaleWinner(snapshot: GameSnapshot): PlayerState | undefined {
 export function finaleMine(snapshot: GameSnapshot, selfId: string): boolean {
   const team = objectiveOf(snapshot)?.winner ?? riftOf(snapshot)?.winner;
   if (team) return team === snapshot.players.find(p => p.id === selfId)?.team;
+  // A ball match's sides are its seats' (every fighter shares one side in the kernel there).
+  const ball = ballOf(snapshot);
+  if (ball) return !!ball.winner && ball.winner === ball.seats.find(s => s.id === selfId)?.team;
   return !!selfId && snapshot.winnerId === selfId;
 }
 
@@ -60,6 +64,7 @@ export function finaleStateOf(snapshot: GameSnapshot | undefined, drawn: (id: st
   let key: string | undefined;
   if (operation) key = phase === 'over' ? `operation:${operation.kind}:${operation.round}:${operation.endsAt}` : undefined;
   else if (war) key = phase === 'over' ? `rift:${war.round}:${war.endsAt}` : undefined;
+  else if (ballOf(snapshot)) { const ball = ballOf(snapshot)!; key = ball.phase === 'over' ? `ball:${ball.mode}:${ball.round}:${ball.endsAt}` : undefined; }
   else if (snapshot.roomMode === 'match' && snapshot.status === 'finished' && (!snapshot.duel || snapshot.duel.phase === 'complete')) key = `match:${snapshot.matchId ?? ''}:${snapshot.duel?.set ?? 0}:${snapshot.winnerId ?? '-'}`;
   const running = operation || war ? phase === 'active' : snapshot.roomMode === 'match' && snapshot.status === 'active';
   if (!key) return { running };

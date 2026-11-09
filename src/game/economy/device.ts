@@ -3,6 +3,7 @@ import type { RunResult } from '../../survival/SurvivalGame';
 import { RANKS } from '../../survival/bosses';
 import { objectiveOf } from '../objectives/model';
 import { riftOf } from '../moba/model';
+import { ballOf, ballReportOf } from '../ball/model';
 import type { MatchReport, Report, SurvivalReport } from './earn';
 import { riftContributed, riftReport } from './riftReport';
 
@@ -55,11 +56,12 @@ export class DeviceMatch {
    *  reports nothing; one too short is reported here, and the page's own check of the rules says so without sending.
    *  `partner`: on the couch, Player 2's id. */
   observe(snapshot: GameSnapshot, self: string, partner?: string): MatchReport | undefined {
-    const objective = objectiveOf(snapshot), rift = riftOf(snapshot), set = snapshot.duel?.set ?? objective?.round ?? rift?.round ?? 1;
+    const objective = objectiveOf(snapshot), rift = riftOf(snapshot), set = snapshot.duel?.set ?? objective?.round ?? rift?.round ?? ballOf(snapshot)?.round ?? 1;
     if (set !== this.set) this.reset(set);
-    if (snapshot.status === 'active' && this.started === undefined) { this.started = snapshot.serverTime; this.fieldSize = objective?.seats.length ?? rift?.seats.length ?? snapshot.players.length; deviceReports.begin(); }
+    const ball = ballOf(snapshot);
+    if (snapshot.status === 'active' && this.started === undefined) { this.started = snapshot.serverTime; this.fieldSize = objective?.seats.length ?? rift?.seats.length ?? ball?.seats.length ?? snapshot.players.length; deviceReports.begin(); }
     // (A royale's places come from its knockouts; the Rift's fighters fall and come back.)
-    const royale = !objective && !snapshot.duel && !rift;
+    const royale = !objective && !snapshot.duel && !rift && !ball;
     if (royale && this.started !== undefined) for (const e of snapshot.events) {
       if (e.kind === 'eliminated' && e.targetId && !this.places.has(e.targetId)) this.places.set(e.targetId, Math.max(2, this.fieldSize - this.places.size));
     }
@@ -76,14 +78,15 @@ export class DeviceMatch {
       if (report) this.send(report);
       return report;
     }
-    const won = objective ? objective.winner === seat?.team : snapshot.winnerId === self;
+    // A ball match (Goal Rush, Sky Spike) is won by a side: it reports as a match against bots, first place for the winners.
+    const won = objective ? objective.winner === seat?.team : ball ? ball.winner === ball.seats.find(s => s.id === self)?.team : snapshot.winnerId === self;
     const report: MatchReport = { id: deviceId(), fighter: p.fighter, seconds,
       mode: objective?.kind ?? (snapshot.duel ? 'duel' : 'bots'), practice: true,
-      place: won ? 1 : objective || snapshot.duel ? 2 : this.places.get(self) ?? Math.max(2, this.fieldSize - this.places.size),
+      place: won ? 1 : objective || snapshot.duel || ball ? 2 : this.places.get(self) ?? Math.max(2, this.fieldSize - this.places.size),
       players: this.fieldSize, kos: p.kills ?? 0,
       rounds: objective?.village ? Math.max(0, objective.village.wave - (objective.village.phase === 'assault' ? 1 : 0)) : snapshot.duel?.scores[self] ?? 0,
       revives: seat?.revives ?? 0, repairs: seat?.repairs ?? 0, bossDamage: seat?.bossDamage ?? 0,
-      assists: seat?.assists ?? 0, rescues: seat?.rescues ?? 0, supplies: seat?.supplies ?? 0, ...(couch ? { friends: true, couch: true } : {}) };
+      assists: seat?.assists ?? 0, rescues: seat?.rescues ?? 0, supplies: seat?.supplies ?? 0, ...(couch ? { friends: true, couch: true } : {}), ...ballReportOf(ball, self) };
     this.send(report);
     return report;
   }

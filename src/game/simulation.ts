@@ -657,7 +657,10 @@ export interface ExternalTargets {
 }
 /** Arcade survival's hack-and-slash aim: a swing turns to the nearest enemy
  *  all the way round, and homes up to `magnet` metres past its own reach. */
-export interface AimAssist { magnet: number }
+export interface AimAssist { magnet: number;
+  /** The ball modes: an air strike (airHeavy) with no fighter to dive at flies at the chosen external body (the ball) to
+   *  meet it on the blow, above the thrower as well as below, instead of diving blind to the floor. */
+  airExternal?: boolean }
 /** A blow from the horde's rank and file: a fighter in the middle of a move
  *  trades with it, and one it has just flinched only chips for MINOR_GRACE,
  *  so a crowd can hurt a fighter but never hold them in a stagger. */
@@ -3526,8 +3529,17 @@ export class ArenaSimulation {
     const lead = Math.max(1 / 60, cast.move.contacts[0] ?? .2);
     if (cast.branch === 'airHeavy') {
       const q = this.airAim(a, AIR_STRIKE_REACH, true);
+      const ext = !q && this.assist?.airExternal && a.chosenExternal ? this.external?.locate(a.chosenExternal) : undefined;
       let vx: number, vy: number, vz: number;
-      if (q) {
+      if (!q && ext && Math.hypot(ext.x - p.x, ext.z - p.z) <= AIR_STRIKE_REACH && Math.abs(ext.y - p.y) < 8) {
+        // At the ball: the blow (a body's height up) comes level with its middle.
+        const hx = ext.x - p.x, hz = ext.z - p.z, flat = Math.hypot(hx, hz), mid = ext.y + ext.height * .55 - 1.1;
+        const along = flat > 1e-3 ? Math.max(0, flat - this.gapOf(a, 'heavy', cast.move, false)) / flat : 0;
+        vx = hx * along / lead; vz = hz * along / lead; vy = Math.max(-AIR_STRIKE_BLIND[1], Math.min(AIR_CAST_RISE, (mid - p.y) / lead));
+        const speed = Math.hypot(vx, vy, vz);
+        if (speed > AIR_STRIKE_SPEED) { vx *= AIR_STRIKE_SPEED / speed; vy *= AIR_STRIKE_SPEED / speed; vz *= AIR_STRIKE_SPEED / speed; }
+        if (flat > 1e-3) { p.yaw = Math.atan2(hx, hz); cast.direction = { x: hx / flat, y: 0, z: hz / flat }; }
+      } else if (q) {
         const meet = q.state.grounded && q.vy <= 0 ? position(q.state) : this.flightAhead(q, lead);
         const hx = meet.x - p.x, hz = meet.z - p.z, flat = Math.hypot(hx, hz);
         const along = flat > 1e-3 ? Math.max(0, flat - this.gapOf(a, 'heavy', cast.move, false)) / flat : 0;

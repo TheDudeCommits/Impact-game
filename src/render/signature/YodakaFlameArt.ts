@@ -12,9 +12,9 @@ import { SignaturePoolUpload } from './SignaturePoolUpload';
 import { YodakaFireOwl } from './YodakaFireOwl';
 import { blowFloor } from './blowFloor';
 
-/** His fire follows the real Sunsteel. Four pools plus two for Tiger; no combat writes. */
+/** His fire follows the real Sunsteel. Four pools plus two for Owl; no combat writes. */
 export const YODAKA_FLAME_LIMITS = Object.freeze({ tongues: 144, arcs: 72, sparks: 96, hearts: 16, impacts: 24, blooms: 6, confirms: 6, spine: 18 });
-/** Ninth Form's beats (seconds into the move): the dragon gathers from the first blow and is loosed with the last. */
+/** Ninth Watch's beats (seconds into the move): the dragon gathers from the first blow and is loosed with the last. */
 export const YODAKA_NINTH = Object.freeze({ confirm: YODAKA_MOVES.ultimate.contacts[0], last: YODAKA_MOVES.ultimate.contacts[3], lunge: .7 });
 const UP = new T.Vector3(0, 1, 0), Z = new T.Vector3(0, 0, 1);
 const SCARLET = new T.Color(0xe73616), GOLD = new T.Color(0xffad25), WHITE = new T.Color(0xfff1c5);
@@ -80,7 +80,7 @@ class FlameBatch {
 type Impact = { actor: string; target: string; born: number; seq: number; final: boolean; seed: number; yaw: number; point: T.Vector3 };
 /** A flower of painted flame opened where a blow landed: `petals` tongues `size` metres long, standing a moment. */
 type Bloom = { p: T.Vector3; yaw: number; born: number; life: number; size: number; petals: number; rise: number; live: boolean };
-/** A confirmed Ninth Form, from its first blow to the dragon loosed. */
+/** A confirmed Ninth Watch, from its first blow to the dragon loosed. */
 type Ninth = { actor: string; target: string; seq: number; final: boolean; loosed: number; from: T.Vector3; dir: T.Vector3; reach: number };
 export class YodakaFlameArt {
   private readonly stage: MoveStage;
@@ -89,7 +89,7 @@ export class YodakaFlameArt {
   private spine: T.Vector3[] = Array.from({ length: YODAKA_FLAME_LIMITS.spine }, () => new T.Vector3());
   private bloomCursor = 0; private ninthCursor = 0;
   private heading = new T.Vector3(); private ground = new T.Vector3(); private c = new T.Vector3(); private d = new T.Vector3(); private side = new T.Vector3();
-  private tiger: YodakaFireOwl;
+  private owl: YodakaFireOwl;
   private tongues: FlameBatch; private arcs: FlameBatch; private sparks: FlameBatch; private hearts: FlameBatch;
   private batches: FlameBatch[];
   private impacts: Impact[] = Array.from({ length: YODAKA_FLAME_LIMITS.impacts }, () => ({ actor: '', target: '', born: -Infinity, seq: 0, final: false, seed: 0, yaw: 0, point: new T.Vector3() }));
@@ -100,7 +100,7 @@ export class YodakaFlameArt {
   private face = new T.Quaternion(); private q = new T.Quaternion(); private spin = new T.Quaternion();
   constructor(scene: T.Scene, private kit: Pick<VfxKit, 'budget'> & Partial<VfxKit>) {
     this.stage = MoveStage.for(scene, kit);
-    this.tiger = new YodakaFireOwl(scene, kit);
+    this.owl = new YodakaFireOwl(scene, kit);
     this.tongues = new FlameBatch(scene, 'blade-flames', yodakaFlameGeometry(), YODAKA_FLAME_LIMITS.tongues, true);
     this.arcs = new FlameBatch(scene, 'breathing-crescents', yodakaFlameGeometry(true), YODAKA_FLAME_LIMITS.arcs);
     this.sparks = new FlameBatch(scene, 'embers', yodakaFlameGeometry(), YODAKA_FLAME_LIMITS.sparks);
@@ -108,10 +108,10 @@ export class YodakaFlameArt {
     this.hearts = new FlameBatch(scene, 'resolve-crest', yodakaFlameGeometry(), YODAKA_FLAME_LIMITS.hearts, true, 1);
     this.batches = [this.tongues, this.arcs, this.sparks, this.hearts];
   }
-  load(ids: readonly string[]) { return this.tiger.load(ids); }
+  load(ids: readonly string[]) { return this.owl.load(ids); }
   handle(e: CombatEvent, fighters?: ReadonlyMap<string, Fighter>) {
     if (this.disposed) return;
-    this.tiger.handle(e, fighters);
+    this.owl.handle(e, fighters);
     if (e.kind === 'eliminated' || e.kind === 'respawn' || e.kind === 'whiff' || e.kind === 'rejected') {
       for (const h of this.impacts) if (h.actor === e.actorId || h.target === e.actorId) h.actor = '';
       const gone = e.kind === 'eliminated' || e.kind === 'respawn';
@@ -119,7 +119,7 @@ export class YodakaFlameArt {
       return;
     }
     if (e.fighter === 'yodaka' && e.kind === 'confirm') {
-      // Ninth Form has landed its first blow: the dragon gathers until the last (an event may come twice).
+      // Ninth Watch has landed its first blow: the dragon gathers until the last (an event may come twice).
       const seq = e.actionSeq ?? fighters?.get(e.actorId)?.state.actionSeq ?? -1;
       if (e.slot === 'ultimate' && !e.branch && e.targetId && !armoryDraws(e.fighter, e.slot, e.branch, e.actorId) && !this.ninths.some(n => n.actor === e.actorId && n.seq === seq))
         Object.assign(this.ninths[this.ninthCursor++ % this.ninths.length], { actor: e.actorId, target: e.targetId, seq, final: false, loosed: -Infinity });
@@ -190,7 +190,7 @@ export class YodakaFlameArt {
     const b = this.blooms[this.bloomCursor++ % this.blooms.length];
     b.p.copy(p); b.yaw = yaw; b.born = born; b.life = life; b.size = size; b.petals = petals; b.rise = rise; b.live = true;
   }
-  /** The dragon of the Ninth Form, painted along `spine` (its head first, `count` points of it): a body of flame tongues
+  /** The dragon of the Ninth Watch, painted along `spine` (its head first, `count` points of it): a body of flame tongues
    *  laid nose to tail, widest behind the head and streaming back; a head of three (the jaws and the crest) with its
    *  eye; and the stage's heat and light on the room round it. */
   private dragon(count: number, girth: number, alpha: number, time: number) {
@@ -252,7 +252,7 @@ export class YodakaFlameArt {
   }
   update(time: number, fighters: ReadonlyMap<string, Fighter>, flights: ReadonlyMap<string, Flight>) {
     if (this.disposed) return;
-    this.tiger.update(time, fighters);
+    this.owl.update(time, fighters);
     for (const b of this.batches) b.begin(time);
     const detail = this.kit.budget >= .65, st = this.stage.open(time);
     for (const f of fighters.values()) {
@@ -356,7 +356,7 @@ export class YodakaFlameArt {
         this.arcs.add(h.point, this.q, radius, radius, SCARLET, fade * .9);
         this.arcs.add(h.point, this.q, radius * .87, radius * .87, WHITE, fade * .7);
       }
-      // Ninth Form: twin winding flame wakes meet at the confirmed thrust, not at cast start.
+      // Ninth Watch: twin winding flame wakes meet at the confirmed thrust, not at cast start.
       if (h.final) for (let i = 0; i < (detail ? 16 : 8); i++) {
         const u = i / (detail ? 16 : 8), angle = u * Math.PI * 3 + age * 3;
         this.p.set(Math.sin(angle) * (.14 + u * .5), Math.cos(angle) * (.14 + u * .5), -u * 2.4 * clamp(age * 9));
@@ -396,7 +396,7 @@ export class YodakaFlameArt {
     if (s.action === 'special' && !s.branch) { if (elapsed < SPECIAL.contacts[0]) st.charge(tip, FLAME, .34, elapsed / SPECIAL.contacts[0], seed); return; }
     if (s.action === 'ultimate' && !s.branch && s.confirmedAt === undefined && elapsed < ULT.contacts[0] + .1) st.charge(tip, FLAME, .28, elapsed / ULT.contacts[0], seed);
   }
-  /** Ninth Form from its first blow to its last: the dragon of painted flame winding up round him, head first and
+  /** Ninth Watch from its first blow to its last: the dragon of painted flame winding up round him, head first and
    *  longer as it gathers, the floor burning under him, the room gone dark, fire drawn to the blade's point. Round him
    *  at two metres and over his head: the pair is read inside its coils. */
   private gather(actor: Fighter, n: Ninth, elapsed: number, time: number) {
@@ -413,12 +413,12 @@ export class YodakaFlameArt {
     if (g > .75) st.speed(.5 * (g - .75) / .25, n.actor, n.target);
   }
   reset() {
-    this.tiger.reset();
+    this.owl.reset();
     for (const h of this.impacts) h.actor = '';
     for (const b of this.blooms) b.live = false; for (const n of this.ninths) n.actor = '';
     this.bloomCursor = this.ninthCursor = 0; this.stage.reset();
     this.seen.fill(-1); this.seenTime.fill(-1); this.cursor = this.eventCursor = 0;
     for (const b of this.batches) { b.begin(0); b.end(); }
   }
-  dispose() { if (this.disposed) return; this.reset(); this.disposed = true; this.tiger.dispose(); for (const b of this.batches) b.dispose(); this.stage.release(); }
+  dispose() { if (this.disposed) return; this.reset(); this.disposed = true; this.owl.dispose(); for (const b of this.batches) b.dispose(); this.stage.release(); }
 }

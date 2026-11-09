@@ -2386,7 +2386,7 @@
    "file": "cc0/families/body/rubber-bounce.wav",
    "standsIn": "sfx/originals/families/body/rubber-bounce.wav",
    "cues": [
-    "fx-gear4-bounce"
+    "fx-rubber-bounce"
    ],
    "seconds": 0.5263,
    "loop": false,
@@ -2472,7 +2472,7 @@
    "file": "cc0/families/body/rubber-swell.wav",
    "standsIn": "sfx/originals/families/body/rubber-swell.wav",
    "cues": [
-    "fx-gear4-inflate"
+    "fx-rubber-swell"
    ],
    "seconds": 1.5139,
    "loop": false,
@@ -6165,8 +6165,8 @@
    "sha256": "5caf621c586cc962a3f6c4f11185a7a8c03a7d72a5ede5f6c65b5342833b8ec5"
   },
   {
-   "file": "cc0/signatures/gaku/rock-fist.wav",
-   "standsIn": "sfx/originals/signatures/gaku/rock-fist.wav",
+   "file": "cc0/signatures/gaku/lion-fist.wav",
+   "standsIn": "sfx/originals/signatures/gaku/lion-fist.wav",
    "cues": [
     "fx-sig-gaku-landslide"
    ],
@@ -7073,10 +7073,10 @@
    "sha256": "12176e6a44bbee7381a4b829792ac92c4345014967ff7ef955d116c1078b1786"
   },
   {
-   "file": "cc0/signatures/kenzo/lions-whisper.wav",
-   "standsIn": "sfx/originals/signatures/kenzo/lions-whisper.wav",
+   "file": "cc0/signatures/kenzo/mirage-draw.wav",
+   "standsIn": "sfx/originals/signatures/kenzo/mirage-draw.wav",
    "cues": [
-    "fx-sig-kenzo-lions-whisper"
+    "fx-sig-kenzo-mirage-draw"
    ],
    "seconds": 2.2662,
    "loop": false,
@@ -8648,10 +8648,10 @@
    "sha256": "c5621c4b583a67fa7b5a415250f05a82a3faeeaebf3c9193d1dc19e9e69884de"
   },
   {
-   "file": "cc0/signatures/shiun/hymn-90.wav",
-   "standsIn": "sfx/originals/signatures/shiun/hymn-90.wav",
+   "file": "cc0/signatures/shiun/black-confessional.wav",
+   "standsIn": "sfx/originals/signatures/shiun/black-confessional.wav",
    "cues": [
-    "fx-sig-shiun-hymn-90"
+    "fx-sig-shiun-black-confessional"
    ],
    "seconds": 4.0,
    "loop": false,
@@ -8667,10 +8667,10 @@
    "sha256": "6999af0e6aa8006652b81812465ba9aa9583d162532cdd368e4ad4cdb77889df"
   },
   {
-   "file": "cc0/signatures/shiun/hymn-91.wav",
-   "standsIn": "sfx/originals/signatures/shiun/hymn-91.wav",
+   "file": "cc0/signatures/shiun/glass-lances.wav",
+   "standsIn": "sfx/originals/signatures/shiun/glass-lances.wav",
    "cues": [
-    "fx-sig-shiun-hymn-91"
+    "fx-sig-shiun-glass-lances"
    ],
    "seconds": 2.1398,
    "loop": false,
@@ -9461,7 +9461,7 @@
    "file": "cc0/signatures/ward/rad-knife.wav",
    "standsIn": "sfx/originals/signatures/ward/rad-knife.wav",
    "cues": [
-    "fx-gamma"
+    "fx-rad-knife"
    ],
    "seconds": 0.8,
    "loop": false,
@@ -9495,7 +9495,7 @@
    "file": "cc0/signatures/ward/theatre-open.wav",
    "standsIn": "sfx/originals/signatures/ward/theatre-open.wav",
    "cues": [
-    "fx-room"
+    "fx-theatre-open"
    ],
    "seconds": 0.7063,
    "loop": false,

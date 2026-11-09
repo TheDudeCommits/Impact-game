@@ -27,7 +27,7 @@ describe('Yodaka reviewed manual kit',()=>{
   expect(homeRosterPages([...RELEASED_FIGHTERS,...LABORATORY_FIGHTERS]).flatMap(p=>p.fighters)).toContain('yodaka');
   expect(FIGHTERS.yodaka.formModel).toBeUndefined();expect(AWAKENINGS.yodaka.name).toBe('BURNING STAR');
  });
- it('has no aura, status or autonomous damage and missed Ninth Form never confirms',()=>{
+ it('has no aura, status or autonomous damage and missed Ninth Watch never confirms',()=>{
   for(const move of Object.values(MOVES.yodaka))expect(move.status).toBeUndefined();
   expect(run({},2,true).hits).toHaveLength(0);
   const miss=run({attack:'ultimate'},24);expect(miss.hits).toHaveLength(0);expect(miss.events.some(e=>e.kind==='confirm')).toBe(false);
