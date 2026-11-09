@@ -100,7 +100,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   aqrab:define({"name":"DRY SEASON","kind":"aura","aura":[15324064,13212501],"auraGlow":0.1,"clips":["DRY SEASON"],"swapAt":0.46}),
   tsubute:define({"name":"MIZUKAGAMI","kind":"aura","aura":[15138768,9027394],"auraGlow":0.12,"clips":["MIZUKAGAMI"],"swapAt":0.47}),
   ume:define({"name":"IRON BLOSSOM","kind":"form","aura":[16761311,15964099],"auraGlow":0.1,"clips":["IRON BLOSSOM"],"swapAt":0.504}),
-  lanthorn:define({"name":"AFTER HOURS","kind":"form","aura":[7680950,1510441],"auraGlow":0.1,"clips":["The Dragon Awakens"],"swapAt":0.5}),
+  lanthorn:define({"name":"AFTER HOURS","kind":"form","aura":[7680950,1510441],"auraGlow":0.1,"clips":["AFTER HOURS"],"swapAt":0.5}),
   highsun:define({"name":"NO SHADOW","kind":"form","aura":[16759363,16774350],"auraGlow":0.1,"clips":["NO SHADOW"],"swapAt":0.4}),
   torsion:define({name:'GLOVES OFF',kind:'aura',aura:[0x5dffac,0xeaffef],auraGlow:.08,clips:['GLOVES OFF'],swapAt:.55}),
   kubiwa:define({name:'CONDUCTOR',kind:'aura',aura:[0xd69b47,0x782822],auraGlow:.08,clips:['The CONDUCTOR'],swapAt:.567}),
