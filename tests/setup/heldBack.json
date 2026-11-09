@@ -62,9 +62,6 @@
  "tests/gummyRound5.test.ts": [
   "is its own take, landing its blow on the move's contact"
  ],
- "tests/heldEquipment.test.ts": [
-  "tsubute keeps hold of it through a run and a combo"
- ],
  "tests/kubiwaSharedIntegration.test.ts": [
   "reads actual native command fingers in every manual branch; awakened=false",
   "reads actual native command fingers in every manual branch; awakened=true"
@@ -166,16 +163,13 @@
   "oro: the rush clips stand on the idle's floor and stay near the capsule",
   "oro: the rush file binds onto the body, names its stages, and has their contacts",
   "ouga: the rush clips stand on the idle's floor and stay near the capsule",
-  "shirokane: the rush file binds onto the body, names its stages, and has their contacts",
-  "tsubute: the rush clips stand on the idle's floor and stay near the capsule",
-  "tsubute: the rush file binds onto the body, names its stages, and has their contacts"
+  "shirokane: the rush file binds onto the body, names its stages, and has their contacts"
  ],
  "tests/rushContacts.test.ts": [
   "kenzo",
   "kuon",
   "oro",
-  "ouga",
-  "tsubute"
+  "ouga"
  ],
  "tests/rushFlow.test.ts": [
   "goes from stage to stage without a tick of idle, hit or miss, at any mashing rate, for all sixteen"
@@ -200,10 +194,8 @@
  ],
  "tests/victory.test.ts": [
   "bruin has something to celebrate with",
-  "dorado has something to celebrate with",
   "kenzo has something to celebrate with",
   "sashigane has something to celebrate with",
-  "tsubute has something to celebrate with",
   "wataame has something to celebrate with"
  ],
  "tests/armoryRetention.test.ts": [

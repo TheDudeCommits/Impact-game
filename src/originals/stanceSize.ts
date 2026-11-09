@@ -77,6 +77,10 @@ const BASE: Partial<Record<FighterId, number>> = {
   // the scale his stance gave him on originals/next (93570f035, r1_probe), so he is drawn at his own size (his match idle is his idle
   // file's upright guard either way).
   konta: 1.17202,           // Konta
+  // clean-clips (9 November 2026, clean-tsubute-dorado): Tsubute's and Dorado's stances swapped to the library's relaxed stand; held at the
+  // scale each stance gave them on originals/next (b2a264b99, r1_probe), so both are drawn at their own size.
+  tsubute: 1.00365,         // Tsubute
+  dorado: 1.01279,          // Dorado
 };
 /** The awakened bodies whose own stance was swapped. */
 const FORM: Partial<Record<FighterId, number>> = {
