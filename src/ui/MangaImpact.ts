@@ -99,6 +99,9 @@ export class MangaImpact {
   private lastAccent=-100;
   reduced=false;
   density=1;
+  /** A ball match (main.ts): a fighter wiped out in Goal Rush is the ball HUD's to tell (WIPED OUT, the count back in),
+   *  not a knockout panel over the pitch. */
+  sport=false;
   private lastStrength=0;
   constructor(private parent:HTMLElement){
     this.edge=document.createElement('div');this.edge.className='manga-speed-frame';this.edge.setAttribute('aria-hidden','true');parent.append(this.edge);
@@ -108,7 +111,7 @@ export class MangaImpact {
     for(const event of events){
       if(this.seen.has(event.id))continue;this.seen.add(event.id);
       const local=event.actorId===selfId||event.targetId===selfId;
-      if(event.kind==='eliminated'){if(local&&this.density>=.05)this.knockout(event.actorId===selfId);continue;}
+      if(event.kind==='eliminated'){if(local&&this.density>=.05&&!this.sport)this.knockout(event.actorId===selfId);continue;}
       if(event.kind==='whiff'){if(local&&this.density>=.05)this.whiff(event);continue;} // Round 3e (ULTFIX)
       const profile=mangaImpactProfile(event);if(!profile||!local||this.density<.05)continue;
       // VISUAL EFFECTS (render/vfxLevel.ts): Reduced letters only the big moments (a special, an ultimate, a rush's

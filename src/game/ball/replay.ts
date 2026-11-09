@@ -14,6 +14,9 @@ export interface BallReplay {
   team?: BallTeam; actorId?: string; shot?: ShotKind; speed?: number; text?: string;
   /** The skip vote: how many of the match's people have voted, of how many. */
   skips?: number; people?: number;
+  /** A goal, or a Sky Spike kill on match point: the pages play its sequence first (the burst, the net, the lights, the
+   *  scorer's close-up: render/ball/BallCeremony.ts), so the replay waits REPLAY.ceremony rather than REPLAY.delay. */
+  ceremony?: boolean;
 }
 
 export const REPLAY = {
@@ -21,6 +24,8 @@ export const REPLAY = {
   lead: 2.6, tail: .6,
   /** The celebration seen live before the replay begins, and the beat after it before the next kickoff. */
   delay: 1.4, after: .5,
+  /** The wait before a goal's replay (and a Sky Spike match point's kill): its burst and the scorer's close-up. */
+  ceremony: 3,
   /** The replay's pace, and its slow motion round the decisive strike: so long before it and after it. */
   rate: .85, slow: .38, slowBefore: .25, slowAfter: .45,
   /** No replay runs longer than this; a long window plays a little quicker. */

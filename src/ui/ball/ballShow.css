@@ -1,0 +1,142 @@
+/* The ball modes' spectacle (BallShow.ts): the intro's title and splash page, the SUPER
+   SHOT's cut-in and the podium's accolades, in the VS splash's ink, paper and red. Motion is transforms, opacity and
+   clip-paths; under reduced motion everything only fades. */
+.ball-show{position:absolute;inset:0;z-index:16;pointer-events:none;overflow:hidden;--ink:#0b0c0e;--paper:#fff9ef;--red:#d51d34;font-family:Impact,'Barlow Condensed',sans-serif}
+.ball-show>[hidden]{display:none!important}
+
+/* The HUD steps back while the show holds the screen: all of it for the intro and the podium, the play's own pieces for a
+   goal's close-up (the scoreboard stays). */
+#interface:is([data-ball-show="intro"],[data-ball-show="podium"]) :is(.combat-hud,.controls-hint,.bh-chat-btn){opacity:0!important;transition:opacity .3s}
+#interface[data-ball-show="close"] :is(.combat-hud>:not(.mode-hud),.bh-strip,.bh-charms,.bh-prompt,.bh-arrow,.bh-ticker,.controls-hint,.bh-chat-btn){opacity:0!important;transition:opacity .25s}
+
+/* The intro's title: the arena's name lower left, the two sides upper right. */
+.bs-title{position:absolute;inset:0}
+.bs-title-card{position:absolute;left:4vw;bottom:calc(13vh + 1vw);display:flex;flex-direction:column;align-items:flex-start;gap:.6vmin;max-width:60vw}
+.bs-title-card small{padding:.4em .8em .35em;background:var(--red);color:var(--paper);font:800 clamp(11px,1vw,17px)/1 'Barlow Condensed',sans-serif;letter-spacing:.2em;transform:skewX(-10deg)}
+.bs-title-card strong{font:italic 900 clamp(38px,6.6vw,124px)/.9 Impact,'Barlow Condensed',sans-serif;color:#fff;-webkit-text-stroke:.08em var(--ink);paint-order:stroke fill;text-shadow:.045em .06em 0 var(--red),.075em .1em 0 var(--ink);padding-right:.12em}
+.bs-title-card span{padding:.45em .9em .4em;background:var(--ink);color:var(--paper);font:700 clamp(12px,1.15vw,19px)/1.15 'Barlow Condensed',sans-serif;letter-spacing:.06em;transform:skewX(-10deg)}
+.bs-title-sides{position:absolute;right:4vw;top:calc(12vh + .6vw);display:flex;align-items:center;gap:.8vw;font:italic 900 clamp(18px,2vw,34px)/1 Impact,'Barlow Condensed',sans-serif}
+.bs-title-sides b{padding:.25em .6em .2em;color:#fff;background:var(--ink);border-bottom:.18em solid}
+.bs-title-sides b.red{border-color:#ff3b52}.bs-title-sides b.blue{border-color:#2f8cff}
+.bs-title-sides i{font-style:italic;color:var(--red);-webkit-text-stroke:.06em #fff;paint-order:stroke fill;font-size:1.3em}
+.bs-title.bs-on .bs-title-card>*{animation:bs-slide-in .32s cubic-bezier(.2,.9,.3,1.15) both}
+.bs-title.bs-on .bs-title-card strong{animation-delay:.08s}.bs-title.bs-on .bs-title-card span{animation-delay:.18s}
+.bs-title.bs-on .bs-title-sides{animation:bs-fade-in .4s .35s both}
+
+/* The splash page: your side's three panels over a brush seam, the other side's three under it, VS on the seam. */
+.bs-splash{position:absolute;inset:0;z-index:2}
+.bs-page{position:absolute;inset:0;background:radial-gradient(#fff9ef14 1px,#0000 1.6px) 0 0/5px 5px,var(--ink)}
+.bs-band{position:absolute;left:0;right:0;height:50%;padding:2.2vh 3vw;display:flex;flex-direction:column;gap:1vh}
+.bs-top{top:0}.bs-bottom{bottom:0;flex-direction:column-reverse}
+.bs-band h3{margin:0;display:flex;align-items:baseline;gap:.6em;font:italic 900 clamp(22px,2.6vw,46px)/1 Impact,'Barlow Condensed',sans-serif;color:#fff;-webkit-text-stroke:.07em var(--ink);paint-order:stroke fill;text-shadow:.05em .06em 0 var(--team)}
+.bs-bottom h3{align-self:flex-end}
+.bs-band h3 small{font:800 clamp(10px,.9vw,15px)/1 'Barlow Condensed',sans-serif;letter-spacing:.18em;padding:.35em .7em;background:var(--team);color:#fff;-webkit-text-stroke:0;text-shadow:none;transform:skewX(-10deg)}
+.bs-cells{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,1.2vw,22px);transform:skewX(-9deg)}
+.bs-cell{position:relative;overflow:hidden;min-width:0;min-height:0;border:3px solid var(--paper);box-shadow:4px 5px 0 var(--team);background:radial-gradient(circle at 50% 32%,color-mix(in srgb,var(--tint) 30%,#fff9ef) 0 22%,var(--tint) 62%,color-mix(in srgb,var(--tint) 45%,#0b0c0e) 120%)}
+.bs-cell:after{content:'';position:absolute;inset:0 0 auto;height:6px;background:var(--team)}
+.bs-cell img{position:absolute;left:50%;height:250%;width:auto;max-width:none;top:calc(30% - 250% * var(--face));transform:translateX(-50%) skewX(9deg);mix-blend-mode:multiply;filter:contrast(1.12);user-select:none}
+.bs-cell .bs-fallback{position:absolute;inset:8% 18%;display:block;transform:skewX(9deg)}
+.bs-cell .bs-fallback svg{width:100%;height:100%}
+.bs-lines{position:absolute;inset:0;background:repeating-conic-gradient(from 3deg at 50% 32%,#0000 0 2.1deg,rgb(11 12 14/.32) 2.25deg 2.7deg,#0000 2.85deg 4.6deg);-webkit-mask-image:radial-gradient(circle at 50% 32%,#0000 0 30%,#000 80%);mask-image:radial-gradient(circle at 50% 32%,#0000 0 30%,#000 80%)}
+.bs-tone{position:absolute;inset:0;background:radial-gradient(rgb(11 12 14/.5) .9px,#0000 1.5px) 0 0/6px 6px;mix-blend-mode:multiply;-webkit-mask-image:linear-gradient(to top,#000,#0000 40%);mask-image:linear-gradient(to top,#000,#0000 40%)}
+.bs-cell-name{position:absolute;left:6%;right:4%;bottom:6%;display:flex;flex-direction:column;align-items:flex-start;gap:3px;transform:skewX(9deg)}
+.bs-cell-name strong{max-width:100%;white-space:nowrap;padding-right:.25em;font:italic 900 clamp(14px,1.9vw,34px)/.95 Impact,'Barlow Condensed',sans-serif;color:#fff;-webkit-text-stroke:.08em var(--ink);paint-order:stroke fill;text-shadow:.05em .06em 0 var(--red)}
+.bs-cell-name small{padding:.3em .6em;background:var(--ink);color:var(--paper);font:800 clamp(9px,.8vw,13px)/1 'Barlow Condensed',sans-serif;letter-spacing:.14em}
+.bs-seam{position:absolute;left:50%;top:50%;width:118vw;height:clamp(40px,7vmin,90px);translate:-50% -50%;rotate:-3deg;fill:var(--ink);overflow:visible;z-index:3}
+.bs-vs{position:absolute;z-index:4;left:50%;top:50%;width:clamp(110px,22vmin,260px);aspect-ratio:1;translate:-50% -50%;rotate:-8deg;display:grid;place-items:center}
+.bs-vs svg{position:absolute;inset:-24%;width:148%;height:148%;fill:var(--ink);overflow:visible}
+.bs-vs b{position:relative;font:italic 900 clamp(60px,13vmin,160px)/1 Impact,'Barlow Condensed',sans-serif;color:var(--red);-webkit-text-stroke:.075em #fff;paint-order:stroke fill;text-shadow:.045em .055em 0 var(--ink);padding-right:.1em}
+.bs-flash{position:absolute;inset:0;background:#fff;opacity:0}
+.bs-splash.bs-on .bs-page:before{content:'';position:absolute;inset:0}
+.bs-splash.bs-on .bs-top{animation:bs-slam-left .28s cubic-bezier(.2,.85,.3,1.15) both}
+.bs-splash.bs-on .bs-bottom{animation:bs-slam-right .28s .1s cubic-bezier(.2,.85,.3,1.15) both}
+.bs-splash.bs-on .bs-cell{animation:bs-cell-in .24s calc(.14s + var(--i) * .06s) cubic-bezier(.2,.85,.3,1.2) both}
+.bs-splash.bs-on .bs-seam{animation:bs-reveal .22s .26s cubic-bezier(.3,.8,.3,1) both}
+.bs-splash.bs-on .bs-vs{animation:bs-stamp .22s .42s cubic-bezier(.2,.9,.3,1.25) both}
+.bs-splash.bs-on .bs-page{animation:bs-shake .32s .3s linear both,bs-push 2.4s .5s cubic-bezier(.25,.1,.4,1) both}
+.bs-splash.bs-out .bs-top{animation:bs-split-up .32s cubic-bezier(.5,0,.9,.45) forwards}
+.bs-splash.bs-out .bs-bottom{animation:bs-split-down .32s cubic-bezier(.5,0,.9,.45) forwards}
+.bs-splash.bs-out :is(.bs-seam,.bs-vs){animation:bs-fade-out .18s ease-in forwards}
+.bs-splash.bs-out .bs-page{background:none}
+.bs-splash.bs-out .bs-flash{animation:bs-flash .34s ease-out both}
+
+/* The skip prompt, lower right, with the vote. */
+.bs-skip{position:absolute;right:3vw;top:2.4vh;z-index:5}
+.bs-skip span{display:block;padding:.45em .9em .4em;background:var(--ink);color:var(--paper);font:800 clamp(11px,1vw,16px)/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;transform:skewX(-10deg);box-shadow:3px 3px 0 var(--red),0 0 0 1px #fff9ef55;animation:bs-fade-in .3s .6s both}
+.bs-skip kbd{font:inherit;padding:0 .4em;margin-right:.5em;border:1px solid var(--paper)}
+
+/* A SUPER SHOT's cut-in: the screen goes ink from its edge, a slanted panel slams in with the striker's bust in their
+   colour, and the shot's name is brushed on under it. The page's own side's comes from the left. */
+.bs-cut{position:absolute;inset:0;z-index:3}
+.bs-cut-ink{position:absolute;inset:0;background:linear-gradient(100deg,rgb(11 12 14/.88) 0 40%,rgb(11 12 14/.5) 55%,#0000 72%)}
+.bs-theirs .bs-cut-ink{background:linear-gradient(-100deg,rgb(11 12 14/.88) 0 40%,rgb(11 12 14/.5) 55%,#0000 72%)}
+.bs-cut-panel{position:absolute;top:14vh;left:-2vw;width:min(44vw,640px);height:46vh;overflow:hidden;clip-path:polygon(0 0,100% 6%,88% 100%,0 94%);background:radial-gradient(circle at 55% 40%,color-mix(in srgb,var(--tint) 30%,#fff9ef) 0 18%,var(--tint) 58%,color-mix(in srgb,var(--tint) 40%,#0b0c0e) 115%);box-shadow:inset 0 0 0 5px var(--paper)}
+.bs-theirs .bs-cut-panel{left:auto;right:-2vw;clip-path:polygon(0 6%,100% 0,100% 94%,12% 100%)}
+.bs-cut-panel img{position:absolute;left:50%;bottom:-6%;height:118%;width:auto;translate:-46% 0;user-select:none}
+.bs-cut-lines{position:absolute;inset:0;background:repeating-conic-gradient(from 2deg at 55% 40%,#0000 0 2deg,rgb(255 251 240/.5) 2.15deg 2.55deg,#0000 2.7deg 4.4deg);-webkit-mask-image:radial-gradient(circle at 55% 40%,#0000 0 26%,#000 70%);mask-image:radial-gradient(circle at 55% 40%,#0000 0 26%,#000 70%)}
+.bs-cut-tone{position:absolute;inset:0;background:radial-gradient(rgb(11 12 14/.45) .9px,#0000 1.5px) 0 0/6px 6px;mix-blend-mode:multiply;-webkit-mask-image:linear-gradient(to top,#000,#0000 45%);mask-image:linear-gradient(to top,#000,#0000 45%)}
+.bs-cut-name{position:absolute;left:3vw;top:calc(14vh + 46vh - 4vh);display:flex;flex-direction:column;align-items:flex-start;max-width:70vw}
+.bs-theirs .bs-cut-name{left:auto;right:3vw;align-items:flex-end}
+.bs-cut-name small{padding:.38em .75em .32em;background:var(--team);color:#fff;font:800 clamp(10px,1vw,16px)/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;transform:skewX(-10deg);z-index:1}
+.bs-cut-name svg{position:absolute;left:-6%;top:42%;width:112%;height:70%;fill:var(--ink);overflow:visible}
+.bs-cut-name b{position:relative;font:italic 900 clamp(44px,7.4vw,140px)/.95 Impact,'Barlow Condensed',sans-serif;letter-spacing:.01em;color:#fff;-webkit-text-stroke:.07em var(--ink);paint-order:stroke fill;text-shadow:.05em .06em 0 var(--tint),.08em .1em 0 var(--ink);padding-right:.14em;white-space:nowrap}
+.bs-cut:not(.bs-sig) .bs-cut-name b{font-size:clamp(34px,5.4vw,100px)}
+.bs-cut.bs-soft .bs-cut-ink{opacity:.55}
+.bs-cut.bs-on .bs-cut-ink{animation:bs-wipe-in .14s ease-out both,bs-fade-out .25s .95s ease-in forwards}
+.bs-cut.bs-on .bs-cut-panel{animation:bs-slam-left .2s .04s cubic-bezier(.2,.85,.3,1.15) both,bs-out-left .22s .96s cubic-bezier(.5,0,.9,.45) forwards}
+.bs-theirs.bs-on .bs-cut-panel{animation:bs-slam-right .2s .04s cubic-bezier(.2,.85,.3,1.15) both,bs-out-right .22s .96s cubic-bezier(.5,0,.9,.45) forwards}
+.bs-cut.bs-on .bs-cut-panel img{animation:bs-drift 1.2s cubic-bezier(.2,.6,.4,1) both}
+.bs-cut.bs-on .bs-cut-name svg{animation:bs-reveal .16s .12s cubic-bezier(.3,.7,.3,1) both}
+.bs-cut.bs-on .bs-cut-name b{animation:bs-word .2s .16s cubic-bezier(.2,1.35,.4,1) both}
+.bs-cut.bs-on .bs-cut-name small{animation:bs-fade-in .15s .1s both}
+.bs-cut.bs-on .bs-cut-name{animation:bs-fade-out .2s .98s ease-in forwards}
+
+/* The podium: the winners' banner up top, the accolades dropping in as panels down the left. */
+.bs-podium{position:absolute;inset:0}
+.bs-champs{position:absolute;left:50%;top:7vh;translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:.6vmin}
+.bs-champs small{padding:.4em .8em .35em;background:var(--ink);color:var(--paper);font:800 clamp(11px,1vw,17px)/1 'Barlow Condensed',sans-serif;letter-spacing:.2em;transform:skewX(-10deg)}
+.bs-champs strong{font:italic 900 clamp(40px,6vw,112px)/.9 Impact,'Barlow Condensed',sans-serif;color:#fff;-webkit-text-stroke:.08em var(--ink);paint-order:stroke fill;text-shadow:.05em .06em 0 var(--team),.08em .1em 0 var(--ink);padding-right:.12em}
+.bs-panels{position:absolute;left:3vw;top:24vh;bottom:8vh;display:flex;flex-direction:column;gap:1.2vh;width:min(30vw,420px)}
+.bs-panel{display:flex;align-items:center;gap:.8vw;padding:.7vh .8vw .7vh .5vw;background:var(--paper);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--tint);transform:skewX(-8deg) translateX(calc(var(--slot) * .6vw))}
+.bs-panel.bs-mvp{background:var(--ink);color:var(--paper);box-shadow:5px 5px 0 #f2c14e}
+.bs-panel .bs-face{flex:none;width:clamp(36px,3.4vw,62px);aspect-ratio:1;overflow:hidden;border:2px solid var(--ink);background:var(--tint);transform:skewX(8deg)}
+.bs-panel .bs-face svg{width:100%;height:100%;display:block}
+.bs-panel>span:last-child{display:flex;flex-direction:column;min-width:0;transform:skewX(8deg)}
+.bs-panel small{font:800 clamp(9px,.8vw,13px)/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bs-panel b{font:italic 900 clamp(18px,1.9vw,34px)/1 Impact,'Barlow Condensed',sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:.2em}
+.bs-panel.bs-mvp b{color:#f2c14e}
+.bs-podium.bs-on .bs-champs{animation:bs-stamp .3s .35s cubic-bezier(.2,.9,.3,1.25) both}
+.bs-podium.bs-on .bs-panel{animation:bs-drop .34s var(--d) cubic-bezier(.2,.9,.3,1.25) both}
+
+@keyframes bs-fade-in{from{opacity:0}}
+@keyframes bs-fade-out{to{opacity:0}}
+@keyframes bs-slide-in{from{translate:-30% 0;opacity:0}to{translate:0 0;opacity:1}}
+@keyframes bs-slam-left{from{translate:-105% 0}72%{translate:2.5% 0}to{translate:0 0}}
+@keyframes bs-slam-right{from{translate:105% 0}72%{translate:-2.5% 0}to{translate:0 0}}
+@keyframes bs-out-left{to{translate:-60% -4%;opacity:0}}
+@keyframes bs-out-right{to{translate:60% -4%;opacity:0}}
+@keyframes bs-split-up{to{translate:-24% -60%;opacity:0}}
+@keyframes bs-split-down{to{translate:24% 60%;opacity:0}}
+@keyframes bs-cell-in{from{translate:0 40%;opacity:0}60%{opacity:1}to{translate:0 0;opacity:1}}
+@keyframes bs-reveal{from{clip-path:inset(-50% 100% -50% 0)}to{clip-path:inset(-50% 0 -50% 0)}}
+@keyframes bs-stamp{from{scale:3.2;opacity:0;rotate:-26deg}55%{opacity:1}to{scale:1;opacity:1}}
+@keyframes bs-shake{0%,100%{translate:0 0}12%{translate:-9px 5px}24%{translate:7px -4px}36%{translate:-3px 2px}50%{translate:6px 3px}64%{translate:-4px -2px}80%{translate:2px 1px}}
+@keyframes bs-push{from{scale:1}to{scale:1.04}}
+@keyframes bs-flash{0%{opacity:0}18%{opacity:.85}100%{opacity:0}}
+@keyframes bs-wipe-in{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes bs-drift{from{translate:-52% 3%;scale:1.06}to{translate:-46% 0;scale:1}}
+@keyframes bs-word{from{scale:2.6;opacity:0}50%{opacity:1}to{scale:1;opacity:1}}
+@keyframes bs-drop{from{translate:0 -70%;opacity:0}60%{opacity:1}to{translate:0 0;opacity:1}}
+
+@media(max-height:500px){
+  .bs-band{padding:1.2vh 2vw}.bs-band h3{font-size:clamp(16px,2vw,28px)}
+  .bs-panels{top:30vh;width:min(36vw,360px)}
+  .bs-cut-panel{top:10vh;height:52vh}
+}
+@media(prefers-reduced-motion:reduce){
+  .ball-show *,.ball-show *:before{animation:none!important}
+  .bs-title.bs-on,.bs-splash.bs-on,.bs-cut.bs-on,.bs-podium.bs-on{animation:bs-fade-in .25s both}
+  .bs-splash.bs-out{animation:bs-fade-out .25s forwards}
+  .bs-cut.bs-on{animation:bs-fade-in .15s both,bs-fade-out .25s .9s forwards}
+  .bs-flash{display:none}
+}

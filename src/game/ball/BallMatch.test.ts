@@ -41,8 +41,9 @@ describe('Goal Rush', () => {
     expect(m.view.phase).toBe('scored');
     expect(m.seats.get('red-1')!.goals).toBe(1);
     expect(m.view.events.some(e => e.kind === 'goal' && e.actorId === 'red-1')).toBe(true);
-    // The goal's replay holds the celebration, then the next kickoff.
-    expect(until(m, () => m.view.phase === 'kickoff', REPLAY.delay + REPLAY.most + REPLAY.after + 1)).toBe(true);
+    // The goal's sequence and its replay hold the celebration (the replay waits REPLAY.ceremony), then the next kickoff.
+    expect(m.view.replay?.ceremony).toBe(true);
+    expect(until(m, () => m.view.phase === 'kickoff', REPLAY.ceremony + REPLAY.most + REPLAY.after + 1)).toBe(true);
     expect(m.view.replay).toBeNull();
   });
   it('replays a goal from before the shot, slowed round it, and every person voting to skip ends it', () => {
@@ -157,12 +158,17 @@ describe('Goal Rush', () => {
     expect(['idle', 'run']).toContain(hot.m.sim.actors.get('blue-1')!.state.action);
     expect(run(3.5).event).toBeUndefined();
   });
-  it('never lets one fighter hurt another', () => {
+  it('lets a blow find the other side, never a team-mate (and Sky Spike\'s sides never meet)', () => {
     const m = pair('goal-rush');
     until(m, () => m.view.phase === 'live');
     const before = m.sim.actors.get('blue-1')!.state.hp;
     m.sim.strike('red-1', 'blue-1', 'heavy', MOVE);
-    expect(m.sim.actors.get('blue-1')!.state.hp).toBe(before);
+    expect(m.sim.actors.get('blue-1')!.state.hp).toBeLessThan(before);
+    const spike = pair('sky-spike');
+    steps(spike, 1);
+    const whole = spike.sim.actors.get('blue-1')!.state.hp;
+    spike.sim.strike('red-1', 'blue-1', 'heavy', MOVE);
+    expect(spike.sim.actors.get('blue-1')!.state.hp).toBe(whole);
   });
 });
 

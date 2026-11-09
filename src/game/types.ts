@@ -82,6 +82,9 @@ export interface PlayerState extends Vec3 {
   /** Which way the current dash went, for the renderer to play the clip the
    *  right way round. Only meaningful while `action` is 'dash'. */
   dashKind?: 'forward' | 'back' | 'side';
+  /** The ball rooms only (AimAssist.sport): the fighter is boosting - a dash run on at the boost's speed, spending
+   *  stamina, for as long as the stick holds - for the page's boost trail. Absent everywhere else. */
+  boost?: boolean;
   /** Server time the transformation ends, for the meter countdown. */
   awakenedUntil?: number;
   timeStopped?: boolean;

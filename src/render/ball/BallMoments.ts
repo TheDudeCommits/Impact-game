@@ -23,6 +23,10 @@ const PEAKS = {
   clash: {frame: .9, lines: .85, linesFor: .4, chroma: 1, ink: 0, shake: .8, punch: 2},
   perfect: {frame: .7, lines: .5, linesFor: .25, chroma: .95, ink: 0, shake: .55, punch: 1},
   skySpike: {frame: .6, lines: .7, linesFor: .3, chroma: 0, ink: 0, shake: .6, punch: 1},
+  // A LINK SHOT, and a TECHNIQUE DUEL's end (the shot dying on the guard prints the INK FLASH).
+  link: {frame: .55, lines: .75, linesFor: .35, chroma: 0, ink: 0, shake: .55, punch: 1},
+  duelStopped: {frame: 1, lines: .9, linesFor: .5, chroma: 1, ink: .5, shake: 1, punch: 2},
+  duelThrough: {frame: .9, lines: .9, linesFor: .45, chroma: 1, ink: 0, shake: .85, punch: 2},
 } satisfies Record<string, Peak>;
 /** The shake falls off with the viewer's distance from the moment: whole within NEAR metres, a floor of FAR_SHARE of it
  *  at FAR and beyond, so everyone on the pitch feels a goal. */
@@ -87,7 +91,9 @@ export class BallMoments {
       case 'clash': this.clashAt = e.at + CLASH.hold; this.clashPoint.copy(at); this.shake(.35, at, 0); if (this.clashAt <= now) { this.clashAt = Infinity; this.peak(PEAKS.clash, at); } break;
       case 'save': if (e.text === 'PERFECT SAVE') this.peak(PEAKS.perfect, at); break;
       case 'perfect': this.peak(PEAKS.perfect, at); break;
-      case 'strike': if (e.text === 'SKY SPIKE') this.peak(PEAKS.skySpike, at); break;
+      case 'strike': if (e.text === 'SKY SPIKE') this.peak(PEAKS.skySpike, at); else if (e.text === 'LINK SHOT') this.peak(PEAKS.link, at); break;
+      case 'duel': this.shake(.45, at, 1); break;
+      case 'duel-won': this.peak(e.text === 'SHOT STOPPED' ? PEAKS.duelStopped : PEAKS.duelThrough, at); break;
       default: break;
     }
   }

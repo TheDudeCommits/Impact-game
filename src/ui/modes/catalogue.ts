@@ -70,8 +70,8 @@ export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
     facts: { players: '3 V 3', length: `${Math.round(GOAL_RULES.matchSeconds / 60)} MIN + OVERTIME`, lives: 'BALL ONLY · NO KOS' },
     howTo: [
       'Every move strikes the ball where you look: {light} taps and passes, {heavy} drives a power shot, a launcher pops it high. Jump and strike to volley or spike it.',
-      'Each touch heats the ball. A hot ball flies faster and bowls over anyone in its way. {guard} blocks it; time it perfectly to kill its heat. {target} locks the camera on the ball.',
-      `Touch the ball to fill your bar, then {ultimate}: a SUPER SHOT. A super shot's goal counts ${GOAL_RULES.superGoal}.`,
+      'Passes and heavy blows heat the ball; bounces and guards cool it. A hot ball flies faster, and an OVERDRIVE ball staggers whoever it meets. {guard} blocks it; time it perfectly to kill its heat. The camera follows the ball: {target} turns the ball cam off and on.',
+      `Touch the ball to fill your bar, then {ultimate}: your own SUPER SHOT, bulldozing anyone but a perfect guard. A super shot's goal counts ${GOAL_RULES.superGoal}.`,
     ],
     panels: [art('goal-rush', '30% 40%'), art('goal-rush', '60% 50%'), { move: 'ultimate' }],
     variants: {
@@ -89,7 +89,7 @@ export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
     facts: { players: '3 V 3', length: '~5–8 MIN', lives: `FIRST TO ${SPIKE_RULES.target}` },
     howTo: [
       `{light} keeps the ball on your side: a bump, then a set up at the net. ${SPIKE_RULES.touches} touches a side, and the last has to go over.`,
-      '{heavy} and {special} send it over: jump for a SPIKE. {guard} in the air at the net BLOCKS. A ball landing in a court scores; out is the hitter’s fault. {target} locks the camera on the ball.',
+      '{heavy} and {special} send it over: jump for a SPIKE. {guard} in the air at the net BLOCKS. A ball landing in a court scores; out is the hitter’s fault. The camera follows the ball: {target} turns the ball cam off and on.',
       `Every crossing heats the rally; past ${SPIKE_RULES.fever} it is a FEVER rally and the point counts double. {ultimate} is a SUPER SHOT into their emptiest corner.`,
     ],
     panels: [art('sky-spike', '30% 40%'), art('sky-spike', '60% 50%'), { move: 'ultimate' }],

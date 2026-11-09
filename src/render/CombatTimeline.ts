@@ -2,6 +2,7 @@ import { SIMULATION_HZ } from '../game/moves';
 import type { CombatEvent, GameSnapshot, PlayerState } from '../game/types';
 import {riftOf} from '../game/moba/model';
 import {presentRift} from './moba/presentUnits';
+import {ballOf} from '../game/ball/model';
 
 export interface CombatFrame { snapshot: GameSnapshot; time: number; events: CombatEvent[] }
 /** The server accrues frozen time a whole tick at a time, from the tick after
@@ -203,6 +204,9 @@ export class CombatTimeline {
     const events = this.pending.splice(0, ready);
     const snapshot: GameSnapshot = { ...before, players, events, serverTime: time };
     const war=riftOf(before);if(war)Object.assign(snapshot,{rift:presentRift(war,riftOf(after),weight,time)});
+    // The ball modes: the frame's ball says when it was sampled and carries the next snapshot's, so the page draws the
+    // ball where it is at this frame's time (render/ball/BallField), not where it was at the snapshot before it.
+    const ball=ballOf(before);if(ball)Object.assign(snapshot,{ball:{...ball,sampledAt:before.serverTime,next:ballOf(after)?.ball??null,nextAt:after?.serverTime}});
     return { snapshot, time, events };
   }
 }

@@ -2,6 +2,7 @@ import type { FighterId, GameSnapshot, PlayerState } from '../../game/types';
 import { objectiveOf } from '../../game/objectives/model';
 import { riftOf } from '../../game/moba/model';
 import { ballOf } from '../../game/ball/model';
+import { PODIUM } from '../../game/ball/ceremony';
 import { prompt } from '../prompts';
 import './finale.css';
 
@@ -26,10 +27,13 @@ export const FINALE = {
 
 /** What a page is presenting as over: `key` names the end (a new key is a new finale), `winner` says a winner's pose
  *  is on screen, `line` is the winner's line's length when known. */
-export interface FinaleEnd { key: string; winner: boolean; line?: number }
+export interface FinaleEnd { key: string; winner: boolean; line?: number;
+  /** A finale of its own length (a ball match's podium, game/ball/ceremony.ts PODIUM), whatever the line. */
+  hold?: number }
 
 /** How long the finale of `end` holds the results, in seconds. */
-export function finaleSeconds(end: Pick<FinaleEnd, 'winner' | 'line'>): number {
+export function finaleSeconds(end: Pick<FinaleEnd, 'winner' | 'line' | 'hold'>): number {
+  if (end.hold) return end.hold;
   if (!end.winner) return FINALE.beat;
   const line = end.line !== undefined && Number.isFinite(end.line) && end.line > 0 ? end.line : FINALE.line;
   return Math.min(FINALE.most, Math.max(FINALE.least, FINALE.lineAt + line + FINALE.after));
@@ -69,7 +73,9 @@ export function finaleStateOf(snapshot: GameSnapshot | undefined, drawn: (id: st
   const running = operation || war ? phase === 'active' : snapshot.roomMode === 'match' && snapshot.status === 'active';
   if (!key) return { running };
   const winner = finaleWinner(snapshot), shown = !!winner && drawn(winner.id);
-  return { end: { key, winner: shown, line: shown ? line(winner!.fighter) : undefined }, running: false };
+  // A ball match's end is its podium (render/ball/BallCeremony.ts): held for it, whoever won.
+  const hold = ballOf(snapshot)?.winner ? PODIUM.seconds : undefined;
+  return { end: { key, winner: shown, line: shown ? line(winner!.fighter) : undefined, ...(hold ? { hold } : {}) }, running: false };
 }
 
 /** The finale's clock: fed every frame with the end on screen (or none), asked whether the results may show. */

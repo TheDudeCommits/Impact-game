@@ -9,6 +9,8 @@ import {VfxKit} from '../vfx/VfxKit';
 import {BallCharms} from './BallCharms';
 import {BallTags} from './BallTags';
 import {arenaMood,crowdHype} from './hype';
+import {MOTIF_RATE,fighterColour,superLook} from './superShotLooks';
+import type {FighterId} from '../../game/types';
 
 /** Points in the trail, effects in the pool, and the instances drawn each frame beyond the pool (the shadow, the
  *  landing ring, the stopped clock). */
@@ -37,9 +39,9 @@ const TREES:readonly (readonly [number,number])[]=[[1,1],[1,-1],[-1,1],[-1,-1]].
 const blankBall=():BallState=>({x:0,y:0,z:0,vx:0,vy:0,vz:0,sx:0,sy:0,sz:0,heat:0,lastId:null,lastTeam:null,shot:null,held:true,frozenUntil:0,super:false,size:1,grav:1,wall:null,clash:0});
 function copyBall(to:BallState,from:BallState){
   to.x=from.x;to.y=from.y;to.z=from.z;to.vx=from.vx;to.vy=from.vy;to.vz=from.vz;to.sx=from.sx;to.sy=from.sy;to.sz=from.sz;
-  to.heat=from.heat;to.lastId=from.lastId;to.lastTeam=from.lastTeam;to.shot=from.shot;to.held=from.held;to.frozenUntil=from.frozenUntil;to.super=from.super;to.size=from.size??1;to.grav=from.grav??1;to.wall=from.wall??null;to.clash=from.clash??0;
+  to.heat=from.heat;to.lastId=from.lastId;to.lastTeam=from.lastTeam;to.shot=from.shot;to.held=from.held;to.frozenUntil=from.frozenUntil;to.super=from.super;to.size=from.size??1;to.grav=from.grav??1;to.wall=from.wall??null;to.clash=from.clash??0;to.link=from.link??null;
 }
-const sameBall=(a:BallState,b:BallState)=>a.x===b.x&&a.y===b.y&&a.z===b.z&&a.vx===b.vx&&a.vy===b.vy&&a.vz===b.vz&&a.held===b.held&&a.frozenUntil===b.frozenUntil&&a.heat===b.heat&&a.lastTeam===b.lastTeam&&a.super===b.super&&a.size===b.size&&a.grav===b.grav&&a.wall===b.wall&&a.clash===b.clash;
+const sameBall=(a:BallState,b:BallState)=>a.x===b.x&&a.y===b.y&&a.z===b.z&&a.vx===b.vx&&a.vy===b.vy&&a.vz===b.vz&&a.held===b.held&&a.frozenUntil===b.frozenUntil&&a.heat===b.heat&&a.lastTeam===b.lastTeam&&a.super===b.super&&a.size===b.size&&a.grav===b.grav&&a.wall===b.wall&&a.clash===b.clash&&(a.link??null)===(b.link??null);
 const PREMULTIPLIED={transparent:true,depthWrite:false,forceSinglePass:true,blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor} as const;
 const golden=(1+Math.sqrt(5))/2;
 const unit=(x:number,y:number,z:number)=>new THREE.Vector3(x,y,z).normalize();
@@ -48,10 +50,12 @@ const unit=(x:number,y:number,z:number)=>new THREE.Vector3(x,y,z).normalize();
 class Trail{
   readonly x=new Float32Array(TRAIL);readonly y=new Float32Array(TRAIL);readonly z=new Float32Array(TRAIL);readonly t=new Float32Array(TRAIL);
   readonly w=new Float32Array(TRAIL);readonly r=new Float32Array(TRAIL);readonly g=new Float32Array(TRAIL);readonly b=new Float32Array(TRAIL);
+  /** A second colour along the ribbon's other edge (a SUPER SHOT's two, a LINK SHOT's two fighters). */
+  readonly r2=new Float32Array(TRAIL);readonly g2=new Float32Array(TRAIL);readonly b2=new Float32Array(TRAIL);
   head=0;count=0;
   slot(i:number){return (this.head-i+TRAIL*2)%TRAIL;}
-  set(i:number,p:THREE.Vector3,t:number,w:number,c:THREE.Color){const s=this.slot(i);this.x[s]=p.x;this.y[s]=p.y;this.z[s]=p.z;this.t[s]=t;this.w[s]=w;this.r[s]=c.r;this.g[s]=c.g;this.b[s]=c.b;}
-  push(p:THREE.Vector3,t:number,w:number,c:THREE.Color){this.head=(this.head+1)%TRAIL;this.count=Math.min(TRAIL,this.count+1);this.set(0,p,t,w,c);}
+  set(i:number,p:THREE.Vector3,t:number,w:number,c:THREE.Color,c2=c){const s=this.slot(i);this.x[s]=p.x;this.y[s]=p.y;this.z[s]=p.z;this.t[s]=t;this.w[s]=w;this.r[s]=c.r;this.g[s]=c.g;this.b[s]=c.b;this.r2[s]=c2.r;this.g2[s]=c2.g;this.b2[s]=c2.b;}
+  push(p:THREE.Vector3,t:number,w:number,c:THREE.Color,c2=c){this.head=(this.head+1)%TRAIL;this.count=Math.min(TRAIL,this.count+1);this.set(0,p,t,w,c,c2);}
 }
 
 /** A ribbon laid along the trail broad side to the lens, as a pooled strip of TRAIL pairs of vertices. */
@@ -80,7 +84,8 @@ class Ribbon{
       const u=i/(n-1),fade=Math.max(0,1-(clock-trail.t[s])/life),w=trail.w[s]*widthScale*Math.sqrt(1-u)*.5*(.45+.55*fade);
       pos[i*6]=px+sx*w;pos[i*6+1]=py+sy*w;pos[i*6+2]=pz+sz*w;pos[i*6+3]=px-sx*w;pos[i*6+4]=py-sy*w;pos[i*6+5]=pz-sz*w;
       const alpha=fade*(1-u*.4);
-      for(let k=0;k<2;k++){const o=i*8+k*4;col[o]=trail.r[s];col[o+1]=trail.g[s];col[o+2]=trail.b[s];col[o+3]=alpha;}
+      col[i*8]=trail.r[s];col[i*8+1]=trail.g[s];col[i*8+2]=trail.b[s];col[i*8+3]=alpha;
+      col[i*8+4]=trail.r2[s];col[i*8+5]=trail.g2[s];col[i*8+6]=trail.b2[s];col[i*8+7]=alpha;
     }
     this.position.clearUpdateRanges();this.position.addUpdateRange(0,n*6);this.position.needsUpdate=true;
     this.colour.clearUpdateRanges();this.colour.addUpdateRange(0,n*8);this.colour.needsUpdate=true;
@@ -321,10 +326,14 @@ class InkFx{
  *  shadow and where it will come down, and a pooled burst for every moment the room names (a goal's ink explosion and
  *  confetti, a post's clang, a save's shield, a point's crater). View only: the room owns every bounce and every call.
  *
- *  Snapshots come 30 times a second online and the page draws every frame, so the drawn ball runs on from its last
- *  snapshot along its own flight (the sim's stepBall: its gravity, drag, spin and the walls) for up to AHEAD, and a
- *  correction when the next arrives is blended out rather than jumped. A held ball is not run on; a stopped one
- *  (frozenUntil) stands still, drained to grey, with a clock round it. Everything is built once and pooled: a frame
+ *  Snapshots come 30 times a second online (60 on this device) and the page draws at its own rate, so the ball is drawn
+ *  where it is at the frame's own time: the snapshot before the frame run on along its own flight (the sim's stepBall:
+ *  its gravity, drag, spin, the walls and the floor) by the frame's time since that snapshot was sampled, and what that
+ *  flight misses the next snapshot by (a touch between them) blended in across the gap, so the ball meets every
+ *  snapshot on time and never steps back. (It used to run on from when the snapshot reached the page and carry the
+ *  last frame's place over as a correction; on a 60 Hz screen that held the ball still until it was 4 m behind, then
+ *  jumped it. ballSmooth.test.ts measures it.) A held ball moves from hand to hand; a stopped one (frozenUntil)
+ *  stands still, drained to grey, with a clock round it. Everything is built once and pooled: a frame
  *  allocates nothing (save the landing forecast, once a snapshot). */
 export class BallField {
   readonly root=new THREE.Group();
@@ -342,6 +351,9 @@ export class BallField {
   /** The last two balls the room sent, the server time each came under and the page time (s) each arrived. */
   private readonly base=blankBall();private readonly prev=blankBall();private readonly sim=blankBall();
   private baseServer=-1;private prevServer=-1;private baseAt=0;private lastRef:BallState|null=null;
+  /** The frame's segment (CombatTimeline: view.next): the next snapshot's ball, when, and how far the base's own flight
+   *  misses it there - blended in across the segment, so the drawn ball meets every snapshot on time. */
+  private nextRef:BallState|null=null;private nextAt=-1;private readonly miss=new THREE.Vector3();
   private readonly drawn=new THREE.Vector3();private readonly offset=new THREE.Vector3();private readonly velocity=new THREE.Vector3();
   private shown=false;private lastEvent=-1;private frozen=false;private freezeFrom=0;private freezeLength=1;
   private readonly charms=new BallCharms();
@@ -551,8 +563,8 @@ export class BallField {
     const seconds=now/1000,step=Math.min(Math.max(dt,0),.1),serverTime=snapshot.serverTime;
     if(view.mode!==this.mode||view.startedAt!==this.startedAt||serverTime<this.lastServer-.5)this.restart(view);
     this.lastServer=serverTime;this.root.visible=true;
-    this.receive(view.ball,serverTime,seconds);
-    this.place(serverTime,seconds);
+    this.receive(view.ball,view.sampledAt??serverTime,seconds,view.sampledAt!==undefined);
+    this.place(serverTime,seconds,view);
     this.moments(view,serverTime);
     this.players=snapshot.players;
     this.dress(view,selfId,camera,step,seconds,serverTime);
@@ -568,7 +580,7 @@ export class BallField {
   /** Lets everything go: the ball hidden, every effect and the trail gone, the snapshots forgotten. */
   clear(){
     this.root.visible=false;this.shown=false;this.fx.clear();this.charms.clear();crowdHype.value=0;arenaMood.value=0;this.trail.count=0;this.ribbon.clear();this.superTrail.clear();
-    this.mode=null;this.startedAt=NaN;this.lastServer=-Infinity;this.baseServer=-1;this.prevServer=-1;this.lastRef=null;this.lastEvent=-1;
+    this.mode=null;this.startedAt=NaN;this.lastServer=-Infinity;this.baseServer=-1;this.prevServer=-1;this.lastRef=null;this.nextRef=null;this.nextAt=-1;this.lastEvent=-1;
     this.offset.set(0,0,0);this.velocity.set(0,0,0);this.land.show=false;this.frozen=false;this.heat=0;this.flash=0;
   }
 
@@ -586,7 +598,7 @@ export class BallField {
 
   /** A ball from the room, if it is a new one: kept with the one before it, the drawn ball's lead over it kept as a
    *  correction to blend out, its landing forecast, and any rebound it took read from its change of flight. */
-  private receive(b:BallState,serverTime:number,seconds:number){
+  private receive(b:BallState,serverTime:number,seconds:number,timed=false){
     if(b===this.lastRef)return;this.lastRef=b;
     // A presented frame can carry the same ball under a later time: nothing new.
     if(this.baseServer>=0&&sameBall(b,this.base))return;
@@ -598,16 +610,20 @@ export class BallField {
     const p=this.prev,jump=Math.hypot(b.x-p.x,b.y-p.y,b.z-p.z),flight=p.held?0:Math.hypot(p.vx,p.vy,p.vz)*Math.max(.05,serverTime-this.prevServer);
     if(jump>SNAP+flight*1.5){this.offset.set(0,0,0);this.drawn.set(b.x,b.y,b.z);this.trail.count=0;return;}
     this.offset.set(this.drawn.x-b.x,this.drawn.y-b.y,this.drawn.z-b.z);
+    if(timed)this.offset.set(0,0,0);
     if(this.offset.lengthSq()>SNAP*SNAP)this.offset.set(0,0,0);
     this.rebounds();
   }
 
-  /** The drawn ball: the last snapshot run on along its flight by its age, plus what is left of the correction. Its
-   *  age is the presented clock's when that runs on (CombatTimeline), else the page's since it arrived. */
-  private place(serverTime:number,seconds:number){
+  /** The drawn ball at the frame's time. A frame from the timeline (view.sampledAt) knows when its ball was sampled
+   *  and the next snapshot's: the ball is where its flight has carried it since, bent onto the next snapshot across
+   *  the gap. A bare snapshot (a check's): run on by its age - the presented clock's when that runs on, else the
+   *  page's since it arrived - plus what is left of the correction. */
+  private place(serverTime:number,seconds:number,view:BallView){
     const b=this.base,frozen=b.frozenUntil>serverTime;
     if(frozen&&!this.frozen){this.freezeFrom=serverTime;this.freezeLength=Math.max(.2,b.frozenUntil-serverTime);}
     this.frozen=frozen;
+    if(view.sampledAt!==undefined){this.timed(serverTime,view);this.shown=true;return;}
     let x=b.x,y=b.y,z=b.z;
     if(b.held||frozen||b.clash>serverTime)this.velocity.set(0,0,0);
     else{
@@ -619,6 +635,35 @@ export class BallField {
     const k=Math.exp(-Math.max(0,seconds-this.baseAt)/(b.held?.05:BLEND));
     this.drawn.set(x+this.offset.x*k,y+this.offset.y*k,z+this.offset.z*k);
     this.shown=true;
+  }
+
+  /** The base's own flight run on to `at` (server s) into this.sim: it stands still while stopped or clashing, then flies. */
+  private flown(at:number){
+    const b=this.base,from=Math.max(this.baseServer,b.frozenUntil,b.clash),age=Math.min(.5,Math.max(0,at-from));
+    copyBall(this.sim,b);this.sim.held=false;
+    for(let left=age;left>1e-5;left-=1/60)stepBall(this.mode!,this.sim,Math.min(1/60,left),this.contacts);
+    return this.sim;
+  }
+
+  private timed(serverTime:number,view:BallView){
+    const b=this.base,next=view.next??null,nextAt=view.nextAt??-1,span=nextAt-this.baseServer;
+    const s=next&&span>1e-4?Math.min(1,Math.max(0,(serverTime-this.baseServer)/span)):0;
+    if(b.held||next?.held&&s>0){
+      // In a hand (a serve, a catch): from where the base has it to where the next has it.
+      const to=next??b;this.drawn.set(b.x+(to.x-b.x)*s,b.y+(to.y-b.y)*s,b.z+(to.z-b.z)*s);this.velocity.set(0,0,0);return;
+    }
+    if(next!==this.nextRef||nextAt!==this.nextAt){
+      this.nextRef=next;this.nextAt=nextAt;this.miss.set(0,0,0);
+      if(next&&span>1e-4){
+        const f=this.flown(nextAt);this.miss.set(next.x-f.x,next.y-f.y,next.z-f.z);
+        // A reset (a kickoff, a new serve) is not bent toward: the ball holds its flight and is there at the next.
+        if(this.miss.lengthSq()>SNAP*SNAP)this.miss.set(0,0,0);
+      }
+    }
+    const f=this.flown(serverTime),w=s*s*(3-2*s),still=b.frozenUntil>serverTime||b.clash>serverTime;
+    this.drawn.set(f.x+this.miss.x*w,f.y+this.miss.y*w,f.z+this.miss.z*w);
+    if(still)this.velocity.set(0,0,0);
+    else{const rate=span>1e-4?6*s*(1-s)/span:0;this.velocity.set(f.vx+this.miss.x*rate,f.vy+this.miss.y*rate,f.vz+this.miss.z*rate);}
   }
 
   /** Where a ball in the air will come down (physics.ts landing), once a snapshot: Sky Spike's in whose court. */
@@ -659,7 +704,13 @@ export class BallField {
     this.ball.scale.setScalar(r);
     if(!frozen)this.time.value+=dt;
     this.heat+=(b.heat-this.heat)*Math.min(1,dt*8);this.flash=Math.max(0,this.flash-dt*6);
-    const tier=heatTier(this.heat+.05),team=b.lastTeam?TEAM[b.lastTeam]:NEUTRAL,hot=!frozen&&!b.held;
+    const tier=heatTier(this.heat+.05),hot=!frozen&&!b.held;
+    // A SUPER SHOT wears its striker's own ultimate colours (and a bespoke one its motif); a LINK SHOT both
+    // fighters' colours. Otherwise the side's colour, as ever.
+    let team=b.lastTeam?TEAM[b.lastTeam]:NEUTRAL,second=team,motif:ReturnType<typeof superLook>['motif'];
+    const striker=this.fighterOf(view,b.lastId);
+    if(b.super&&striker){const look=superLook(striker);team=look.a;second=look.b;motif=look.motif;}
+    else if(b.link&&striker){team=fighterColour(striker,this.linkA);second=fighterColour(this.fighterOf(view,b.link),this.linkB);}
     this.ball.position.copy(this.drawn);this.ball.visible=true;
     // The spin the room sent, and the roll: on the floor it rolls true (up x v / r), in the air a little topspin.
     if(!frozen){
@@ -693,10 +744,12 @@ export class BallField {
     const life=.3+tier*.06+(b.super?.25:0),width=Math.min(1,Math.max(0,(speed-3)/14))*r*2*(1+tier*.22)*(b.super?1.35:1),stroke=this.gear.trailColour(view,b,team);
     if(!frozen){
       this.trailClock+=dt;const trail=this.trail;
-      if(trail.count<2){trail.push(this.drawn,this.trailClock,width,stroke);trail.push(this.drawn,this.trailClock,width,stroke);}
+      // The ribbon's colours: a SUPER SHOT's or a LINK SHOT's own two, else the striker's ball gear trail.
+      const edgeA=b.super||b.link?team:stroke,edgeB=b.super||b.link?second:stroke;
+      if(trail.count<2){trail.push(this.drawn,this.trailClock,width,edgeA,edgeB);trail.push(this.drawn,this.trailClock,width,edgeA,edgeB);}
       else{
         const s=trail.slot(1),d=Math.hypot(this.drawn.x-trail.x[s],this.drawn.y-trail.y[s],this.drawn.z-trail.z[s]);
-        if(d>.2)trail.push(this.drawn,this.trailClock,width,stroke);else trail.set(0,this.drawn,this.trailClock,width,stroke);
+        if(d>.2)trail.push(this.drawn,this.trailClock,width,edgeA,edgeB);else trail.set(0,this.drawn,this.trailClock,width,edgeA,edgeB);
       }
       while(trail.count>2&&this.trailClock-trail.t[trail.slot(trail.count-1)]>life)trail.count--;
     }
@@ -728,6 +781,9 @@ export class BallField {
         fx.data[o+FLAGS]=ALONG_AXIS;fx.data[o+AX]=dx;fx.data[o+AY]=dy;fx.data[o+AZ]=dz;fx.data[o+STRETCH]=Math.min(70,speed*.9);
       }
       if(b.super&&this.time.value>=this.pulseAt){this.pulseAt=this.time.value+.14;fx.spawn(K.ring,x,y,z,vx*.3,vy*.3,vz*.3,.42,r*1.2,r*4,team,.9);}
+      if(b.super&&motif)this.motif(motif,dt,r,team,second);
+      // A LINK SHOT: both colours thrown off it, a spark of each.
+      else if(b.link&&!b.super){this.linkSparks+=40*dt*gain;for(;this.linkSparks>=1;this.linkSparks--){const off=this.rim(r*1.2),c=this.linkSparks%2<1?team:second,o=fx.spawn(K.spark,x+off.x,y+off.y,z+off.z,-vx*.2+off.x*4,-vy*.2+off.y*4,-vz*.2+off.z*4,.35,r*.2,r*.08,c,1);fx.data[o+DRAG]=2.5;fx.data[o+STRETCH]=3;fx.data[o+FLAGS]=ALONG_FLIGHT;}}
       // A burning ball lights the turf and the fighters round it through the pooled lights (vfx/LightPool, at the VISUAL
       // EFFECTS level's share), more and further the hotter it is; none on the LOW quality.
       if(this.heat>=1&&this.kit.quality!=='low'){const k=Math.min(1,(this.heat-.9)/3.3);this.kit.lights.request(x,Math.max(y,.7),z,HEAT_LIGHT[tier],5+k*19,5+k*5,1.6+k*1.4);}
@@ -778,6 +834,9 @@ export class BallField {
           const d=this.fx.data;d[o+GRAV]=9;d[o+DRAG]=1.4;d[o+FLAGS]=FLUTTER|FLOOR;d[o+SPIN]=(Math.random()-.5)*14;
         }
         this.chips(x,y,z,n(16),INK,14);this.sparkle(x,y,z,n(24),team,16);
+        // The scorer's own colour bursting through it.
+        const scorer=e.kind==='goal'?this.fighterOf(view,e.actorId):undefined;
+        if(scorer){const own=fighterColour(scorer,this.linkA);this.fx.spawn(K.burst,x,y,z,0,0,0,.6,2,8,own,1);this.fx.spawn(K.ring,x,y,z,0,0,0,.8,3,17,own,1);this.sparkle(x,y,z,n(40),own,20);}
         break;
       }
       case 'post':{
@@ -825,6 +884,31 @@ export class BallField {
         this.fx.spawn(K.groundRing,e.x,.06,e.z,0,0,0,.9,2,15,team,1);
         this.sparkle(e.x,e.y,e.z,n(30),team,18);this.puffs(e.x,e.y,e.z,n(10),INK,.9,2.4,7);this.flash=1;
         break;
+      }
+      case 'duel':{
+        // A TECHNIQUE DUEL begins: the keeper's guard and the shot meet - a white flash, the keeper's side's shield up,
+        // the shot's colours sparking off it while the ball hangs.
+        const striker=this.fighterOf(view,e.targetId),look=striker?superLook(striker):undefined;
+        this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.5,5,2,WHITE,1);this.fx.spawn(K.shield,e.x,e.y,e.z,0,0,0,.7,2.6,4.4,team,1);
+        this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.6,.8,7,look?.a??WHITE,1);
+        this.sparkle(e.x,e.y,e.z,n(26),look?.a??WHITE,14);this.sparkle(e.x,e.y,e.z,n(26),team,14);this.flash=1;
+        break;
+      }
+      case 'duel-won':{
+        // How it ended: the shot dying on the guard (a great shield of the keeper's side's colour shattering it, gold
+        // sparks, ink), or breaking through (a burst in the striker's colours driving on).
+        const stopped=e.text==='SHOT STOPPED';
+        if(stopped){
+          this.fx.spawn(K.shield,e.x,e.y,e.z,0,0,0,.8,3.4,7.5,team,1);this.fx.spawn(K.burst,e.x,e.y,e.z,0,0,0,.6,2,8,GOLD,1);
+          this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.7,2,14,team,1);this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.5,1,9,WHITE,1);
+          this.fx.spawn(K.groundRing,e.x,.06,e.z,0,0,0,1,2,14,team,1);this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.45,8,3,WHITE,1);
+          this.sparkle(e.x,e.y,e.z,n(44),GOLD,20);this.chips(e.x,e.y,e.z,n(18),INK,14);this.puffs(e.x,e.y,e.z,n(8),INK,.9,2.6,6);
+        }else{
+          const striker=this.fighterOf(view,e.actorId),look=striker?superLook(striker):undefined,c=look?.a??team;
+          this.fx.spawn(K.burst,e.x,e.y,e.z,0,0,0,.55,2,8,c,1);this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.6,2,13,c,1);
+          this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.35,7,2.5,WHITE,1);this.sparkle(e.x,e.y,e.z,n(36),c,20);this.chips(e.x,e.y,e.z,n(12),INK,12);
+        }
+        this.flash=1;break;
       }
       case 'bowled':case 'demo':{
         // A body knocked flat by a hot ball: dust thrown out round it, chips, a small white burst.
@@ -886,6 +970,81 @@ export class BallField {
   private chips(x:number,y:number,z:number,count:number,colour:THREE.Color,speed:number){
     for(let i=0;i<count;i++){const v=this.randomDirection(speed*(.4+Math.random()*.6)),o=this.fx.spawn(K.chunk,x,y,z,v.x,Math.abs(v.y)+speed*.3,v.z,1+Math.random()*.5,.18+Math.random()*.14,.12,colour,1);const d=this.fx.data;d[o+GRAV]=18;d[o+FLAGS]=FLOOR;d[o+SPIN]=(Math.random()-.5)*16;}
   }
+  // ---------------------------------------------------------------- the signature shots' motifs
+
+  private readonly linkA=new THREE.Color();private readonly linkB=new THREE.Color();private linkSparks=0;private motifs=0;
+  /** A seat's fighter, by its id (no allocation). */
+  private fighterOf(view:BallView,id:string|null|undefined):FighterId|undefined{
+    if(!id)return undefined;
+    for(let i=0;i<view.seats.length;i++)if(view.seats[i].id===id)return view.seats[i].fighter;
+    return undefined;
+  }
+  /** What a bespoke SUPER SHOT throws off in flight (superShotLooks.ts MOTIF_RATE), in its two colours. */
+  private motif(m:NonNullable<ReturnType<typeof superLook>['motif']>,dt:number,r:number,a:THREE.Color,b:THREE.Color){
+    const fx=this.fx,{x,y,z}=this.drawn,vx=this.velocity.x,vy=this.velocity.y,vz=this.velocity.z,speed=Math.max(1,this.velocity.length());
+    this.motifs+=MOTIF_RATE[m]*dt*VFX.spriteGain;
+    for(;this.motifs>=1;this.motifs--){
+      const flip=Math.random()<.5,c=flip?a:b;
+      switch(m){
+        case 'sun':{
+          // A corona: rings of gold and the ultimate's colour thrown out behind it, and a glint at its heart.
+          fx.spawn(K.ring,x,y,z,vx*.15,vy*.15,vz*.15,.45,r*1.4,r*6.5,flip?GOLD:a,1);
+          for(let i=0;i<4;i++){const d=this.randomDirection(9),o=fx.spawn(K.spark,x,y,z,d.x-vx*.1,d.y-vy*.1,d.z-vz*.1,.4,r*.3,r*.1,GOLD,1);fx.data[o+DRAG]=2;fx.data[o+STRETCH]=3;fx.data[o+FLAGS]=ALONG_FLIGHT;}
+          break;
+        }
+        case 'foxfire':{
+          // Flame wisps peeling off the rim and rising, fluttering.
+          const off=this.rim(r*1.3),o=fx.spawn(K.smoke,x+off.x,y+off.y,z+off.z,-vx*.12+off.x*2,2.5+Math.random()*2,-vz*.12+off.z*2,.6+Math.random()*.3,r*.5,r*1.3,c,.9);
+          fx.data[o+DRAG]=2.2;fx.data[o+GRAV]=-2;
+          const p=fx.spawn(K.spark,x+off.x,y+off.y,z+off.z,-vx*.05,3+Math.random()*3,-vz*.05,.7,r*.3,r*.1,c,1);fx.data[p+FLAGS]=FLUTTER;fx.data[p+DRAG]=1.5;fx.data[p+SPIN]=(Math.random()-.5)*10;
+          break;
+        }
+        case 'tide':{
+          // Spray flung out to either side of its flight, falling as water does; a wake ring now and then.
+          const sx=-vz/speed,sz=vx/speed,side=flip?1:-1,k=4+Math.random()*5;
+          const o=fx.spawn(K.spark,x,y,z,sx*side*k-vx*.15,3+Math.random()*4,sz*side*k-vz*.15,.6,r*.22,r*.08,flip?WHITE:a,1);fx.data[o+GRAV]=12;fx.data[o+DRAG]=1;fx.data[o+STRETCH]=2.5;fx.data[o+FLAGS]=ALONG_FLIGHT;
+          if(Math.random()<.12)fx.spawn(K.ring,x,y,z,0,0,0,.5,r*1.2,r*5,b,.8);
+          break;
+        }
+        case 'sand-cut':{
+          // Slash lines crossing over the ball, square to its flight, and sand puffing off.
+          const ax=Math.random()-.5,ay=Math.random()-.5,az=Math.random()-.5,l=Math.hypot(ax,ay,az)||1,reach=r*(3+Math.random()*2);
+          const o=fx.spawn(K.streak,x-ax/l*reach*.5,y-ay/l*reach*.5,z-az/l*reach*.5,vx*.4,vy*.4,vz*.4,.16,r*.18,r*.18,c,1);
+          fx.data[o+FLAGS]=ALONG_AXIS;fx.data[o+AX]=ax/l;fx.data[o+AY]=ay/l;fx.data[o+AZ]=az/l;fx.data[o+STRETCH]=reach/(r*.18);
+          this.puffs(x,y,z,1,DUST,.4,1.2,2);
+          break;
+        }
+        case 'feast':{
+          // A spiral of flame in its two colours round the flight.
+          const t=this.time.value*14+this.motifs,sx=-vz/speed,sz=vx/speed,cx=Math.cos(t)*r*1.4,cy=Math.sin(t)*r*1.4;
+          const o=fx.spawn(K.smoke,x+sx*cx,y+cy,z+sz*cx,-vx*.08,1.5,-vz*.08,.45,r*.45,r*1.1,c,.95);fx.data[o+DRAG]=3;fx.data[o+GRAV]=-3;
+          break;
+        }
+        case 'crown':{
+          // Golden lightning crawling round it, and gold glints.
+          const ax=Math.random()-.5,ay=Math.random()-.5,az=Math.random()-.5,l=Math.hypot(ax,ay,az)||1,reach=r*(2+Math.random()*1.8);
+          const o=fx.spawn(K.bolt,x+ax/l*reach*.6,y+ay/l*reach*.6,z+az/l*reach*.6,vx*.6,vy*.6,vz*.6,.1,r*.4,r*.4,flip?GOLD:a,1);
+          fx.data[o+FLAGS]=ALONG_AXIS;fx.data[o+AX]=ax/l;fx.data[o+AY]=ay/l;fx.data[o+AZ]=az/l;fx.data[o+STRETCH]=reach/(r*.4)*.6;
+          if(Math.random()<.2)fx.spawn(K.glint,x,y,z,0,0,0,.2,r*3,r,GOLD,1);
+          break;
+        }
+        case 'sickle':{
+          // Crescent ripples in the void's colour, left hanging behind it.
+          fx.spawn(K.shield,x-vx*.03,y-vy*.03,z-vz*.03,0,0,0,.4,r*2,r*4.2,c,.85);
+          fx.spawn(K.ring,x,y,z,0,0,0,.3,r*1.2,r*3.6,WHITE,.6);
+          break;
+        }
+        case 'storm':{
+          // Purple lightning thrown out round it, white streaks along its line.
+          const ax=Math.random()-.5,ay=Math.random()-.5,az=Math.random()-.5,l=Math.hypot(ax,ay,az)||1,reach=r*(2.6+Math.random()*2.4);
+          const o=fx.spawn(K.bolt,x+ax/l*reach*.6,y+ay/l*reach*.6,z+az/l*reach*.6,vx*.5,vy*.5,vz*.5,.09,r*.45,r*.45,flip?WHITE:a,1);
+          fx.data[o+FLAGS]=ALONG_AXIS;fx.data[o+AX]=ax/l;fx.data[o+AY]=ay/l;fx.data[o+AZ]=az/l;fx.data[o+STRETCH]=reach/(r*.45)*.6;
+          break;
+        }
+      }
+    }
+  }
+
   private readonly direction=new THREE.Vector3();
   private readonly spot=new THREE.Vector3();
   /** Where a seat's fighter stands: its drawn body, else the snapshot's place for it; null if neither. */

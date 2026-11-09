@@ -174,3 +174,56 @@
   #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-mood{animation:none}
   #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) :is(.bh-banner.on,.bh-ticker.on,.bh-score[data-pulse],.bh-middle strong,.bh-middle[data-kind="fever"]){animation:none}
 }
+
+/* ---- The sports HUD. A ball match reads like a sports
+   broadcast, not a fight: the score bug alone at the top edge with the heat under it, the shot keys small in the corner
+   with their keys and no names, and nothing on the pitch but the tags over the players. The fighting HUD's own plate
+   (portrait, name, meters), its combo count and its move names are not shown here; its key strip fades once the match
+   is under way, and the banners sit under the score bug instead of over the middle of the pitch. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) :is(.fighter-meter.own,#combo-counter,#action-message){display:none!important}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-skin] .combat-hud .mode-hud>[data-zone="2"]{top:calc(8px + env(safe-area-inset-top,0px))!important;scale:.84!important;transform-origin:50% 0;gap:3px}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-board{filter:drop-shadow(3px 2px 0 rgba(0,0,0,.5))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face{width:calc(22px * var(--hk-k));height:calc(22px * var(--hk-k))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle small:empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .combat-hud .mode-hud>[data-zone="7"]{top:15%!important}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner{scale:.74;transform-origin:50% 0}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]):not([data-input="touch"]) .combat-hud .move-bar.ik-cards{scale:calc(var(--hud-k,1) * var(--k-cards,1) * .66);transform-origin:100% 100%}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .move-bar .ik-cap{display:none!important}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) #controls-hint{animation:bh-hint-out .6s 12s both}
+@keyframes bh-hint-out{to{opacity:0;visibility:hidden}}
+@media(max-height:520px) and (orientation:landscape){
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .combat-hud .mode-hud>[data-zone="7"]{top:26%!important}
+}
+@media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) #controls-hint{animation:none;opacity:0;visibility:hidden}}
+/* Touch, the sports names: in a ball match the buttons say what they do to the ball - a light passes (Sky
+   Spike: sets), a heavy shoots (spikes), a special curves it, the ultimate is the SUPER SHOT, guard saves (blocks), the
+   target key is the ball cam. The new name is drawn over the move's own, which the button's label and prompts keep. */
+body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-btn:is(.tc-light,.tc-heavy,.tc-special,.tc-ultimate,.tc-guard,.tc-target)>b{font-size:0;letter-spacing:0}
+body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-btn:is(.tc-light,.tc-heavy,.tc-special,.tc-ultimate,.tc-guard,.tc-target)>b::after{font-size:calc(9px * var(--tc-k));letter-spacing:.07em}
+body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-light>b::after{font-size:calc(11px * var(--tc-k))}
+body:has(#interface[data-hud="goal-rush"]) .touch-controls .tc-light>b::after{content:'PASS'}
+body:has(#interface[data-hud="goal-rush"]) .touch-controls .tc-heavy>b::after{content:'SHOOT'}
+body:has(#interface[data-hud="goal-rush"]) .touch-controls .tc-guard>b::after{content:'SAVE'}
+body:has(#interface[data-hud="sky-spike"]) .touch-controls .tc-light>b::after{content:'SET'}
+body:has(#interface[data-hud="sky-spike"]) .touch-controls .tc-heavy>b::after{content:'SPIKE'}
+body:has(#interface[data-hud="sky-spike"]) .touch-controls .tc-guard>b::after{content:'BLOCK'}
+body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-special>b::after{content:'CURVE'}
+body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-ultimate>b::after{content:'SUPER'}
+body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-controls .tc-target>b::after{content:'BALL CAM'}
+/* The sports HUD's meter (BallHud.gauges): under the play, over the cards' line - health (Goal Rush, where the
+   sides fight; red under a third) over the boost (gold, bright while boosting). And the count back in from a wipe-out. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter{display:flex;flex-direction:column;gap:3px;width:calc(210px * var(--hk-k,1));pointer-events:none;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.6))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter>i{position:relative;display:block;height:calc(7px * var(--hk-k,1));background:rgba(11,12,14,.72);clip-path:polygon(2% 0,100% 0,98% 100%,0 100%);overflow:hidden}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter>i>b{position:absolute;inset:1px;transform-origin:0 50%;transition:transform .12s linear}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter:not(.hp)>.bh-hp{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-hp>b{background:#fff9ef}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter.low .bh-hp>b{background:var(--bh-red,#ff3b52);animation:bh-low .5s steps(2) infinite}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-boost>b{background:#c99a2e}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter:is([data-boost="on"],[data-boost="full"]) .bh-boost>b{background:var(--bh-gold,#ffcf5a)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter[data-boost="on"] .bh-boost{box-shadow:0 0 10px var(--bh-gold,#ffcf5a)}
+@keyframes bh-low{50%{opacity:.45}}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-out{display:none;padding:7px 18px 8px;background:#0b0c0e;color:#fff9ef;font:italic 900 clamp(16px,1.5vw,26px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.04em;
+  clip-path:polygon(3% 0,100% 0,97% 100%,0 100%);box-shadow:inset 0 -3px 0 var(--bh-red,#ff3b52);pointer-events:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-out.on{display:block}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-ball-replay] :is(.bh-meter,.bh-out){opacity:0!important}
+@media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter.low .bh-hp>b{animation:none}}

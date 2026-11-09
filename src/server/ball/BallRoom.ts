@@ -135,7 +135,7 @@ export class BallRoom extends Room {
     this.setFixedTimestep(({dt}) => this.faults.guard(() => this.tick(dt)), SIMULATION_HZ);
   }
   private fresh(collision: ReturnType<typeof buildCollision>, round: number) {
-    const game = new BallMatch(this.mode, {collision, seed: Math.random() * 0x7fffffff | 0 || 1, access: this.access, round, fillBots: true, lockCombat: LOCK_ONLINE, rumble: this.rumble, mutator: this.mutator, arena: this.arena});
+    const game = new BallMatch(this.mode, {collision, seed: Math.random() * 0x7fffffff | 0 || 1, access: this.access, round, fillBots: true, lockCombat: LOCK_ONLINE, rumble: this.rumble, mutator: this.mutator, arena: this.arena, intro: true});
     game.sim.rewind = LAG_COMPENSATION; game.view.code = this.code;
     // A ranked queue's room: ranked or not is settled at kickoff, by the people seated then.
     if (this.queue === 'ranked') game.view.ranked = false;
@@ -198,7 +198,8 @@ export class BallRoom extends Room {
     const waiting = new Set<string>();
     for (const [id, q] of this.queues) { const input = q.take(); if (input) { this.game.submit(id, input); this.rewards.input(id, input); } else waiting.add(id); }
     // The kickoff waits for every page to have loaded the pitch and the fighters.
-    if (v.phase === 'countdown' && !this.assets.ready(this.game.snapshot())) v.startsAt = this.game.sim.serverTime + BALL_RULES.countdown;
+    // (Its intro, when it has one, runs in the countdown: held at its start too - ceremony.ts INTRO.)
+    if (v.phase === 'countdown' && !this.assets.ready(this.game.snapshot())) v.startsAt = this.game.sim.serverTime + this.game.leadIn();
     this.game.step(dt, waiting);
     if (this.game.view.phase === 'over' && this.overAt === Infinity) { this.overAt = this.game.sim.serverTime; this.finishRanked(); }
     if (this.game.sim.serverTime - this.overAt > AFTER_MATCH) { void this.disconnect(4006); return; }

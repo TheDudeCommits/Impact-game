@@ -40,9 +40,10 @@ export const actionName=(action:CombatAction,family:PadFamily)=>{
   const chord=(names:PadFamily)=>chordControls().map(control=>padName(names,control)).join('+');
   return family==='generic'?`${chord('xbox')} / ${chord('playstation')}`:chord(family);
 };
-export function keyboardCombatHints(){
+/** `target`: what the target key does here (LOCK ON; a ball match's BALL CAM). */
+export function keyboardCombatHints(target='LOCK ON'){
   const map=getBindings().keyboard, key=(action:keyof typeof map)=>`<kbd>${keyName(map[action][0])}</kbd>`;
-  return `<span class="control-item">${['forward','left','backward','right'].map(a=>key(a as keyof typeof map)).join('')} MOVE</span>`+(['jump','dash','guard','target'] as const).map(a=>`<span class="control-item">${key(a)} ${a==='target'?'LOCK ON':a.toUpperCase()}</span>`).join('')+`<span class="control-item"><kbd>${pauseKey()==='KeyP'?'P':'ESC'}</kbd> PAUSE</span>`;
+  return `<span class="control-item">${['forward','left','backward','right'].map(a=>key(a as keyof typeof map)).join('')} MOVE</span>`+(['jump','dash','guard','target'] as const).map(a=>`<span class="control-item">${key(a)} ${a==='target'?target:a.toUpperCase()}</span>`).join('')+`<span class="control-item"><kbd>${pauseKey()==='KeyP'?'P':'ESC'}</kbd> PAUSE</span>`;
 }
 
 /** A prompt as markup. PlayStation face buttons are drawn as their symbols in
@@ -53,12 +54,12 @@ export function padKey(family: PadFamily, control: PadControl) {
 }
 
 /** The combat strip under the arena, for a pad. */
-export function padCombatHints(family: PadFamily) {
+export function padCombatHints(family: PadFamily, target = 'LOCK ON') {
   const item = (control: PadControl, label: string) => `<span class="control-item">${padKey(family, control)} ${label}</span>`;
   // The right stick turning the camera goes without saying; the strip only
   // has room for six.
   return [item('lstick', 'MOVE'), item(actionControl('jump'), 'JUMP'), item(actionControl('dash'), 'DASH'), item(actionControl('guard'), 'GUARD'),
-    item(actionControl('target'), 'LOCK ON'), item('start', 'PAUSE')].join('');
+    item(actionControl('target'), target), item('start', 'PAUSE')].join('');
 }
 
 export const MOVE_CONTROLS: readonly PadControl[] = ['west', 'north', 'r1', 'l2', 'r2'];

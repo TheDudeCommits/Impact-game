@@ -1,5 +1,6 @@
-import type {PlayerInput, PlayerState} from '../types';
-import {BALL_ID, GOAL_RULES, SPIKE_RULES, otherTeam, type BallModeId, type BallSeat, type BallView} from './model';
+import type {AttackSlot, PlayerInput, PlayerState} from '../types';
+import {MOVES} from '../moves';
+import {BALL_ID, GOAL_RULES, SPIKE_RULES, otherTeam, type BallModeId, type BallSeat, type BallTeam, type BallView} from './model';
 import {goalZ, landing, sideOf, stepBall, type BallContact} from './physics';
 import type {BallState} from './model';
 
@@ -25,6 +26,24 @@ function crossing(b: BallState): {x: number; y: number; t: number} | undefined {
   return undefined;
 }
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+/** A seat of the view by id (no allocation: six at most). */
+function seatOf(view: BallView, id: string): BallSeat | undefined {
+  for (let i = 0; i < view.seats.length; i++) if (view.seats[i].id === id) return view.seats[i];
+  return undefined;
+}
+/** How far `p` stands off the segment from `a` to `b`, along the floor. */
+function offLine(p: {x: number; z: number}, a: {x: number; z: number}, b: {x: number; z: number}) {
+  const dx = b.x - a.x, dz = b.z - a.z, l2 = dx * dx + dz * dz || 1, t = clamp(((p.x - a.x) * dx + (p.z - a.z) * dz) / l2, 0, 1);
+  return Math.hypot(p.x - a.x - dx * t, p.z - a.z - dz * t);
+}
+/** The bots show off a little. A SUPER SHOT on its way at a bot
+ *  is guarded as it arrives (a perfect guard: the TECHNIQUE DUEL) this much of the time, more the better the bot; a
+ *  guard leaves `GUARD_LEAD` seconds before the ball gets there (the just-guard window is 0.25 s). A bot in reach of a
+ *  ball with a team-mate placed to finish it sets them up (a LINK SHOT) about `LINK_SET` of the time, no more than once
+ *  every few seconds. Measured on headless bot matches. */
+const DUEL_TRY = [.55, .35] as const, GUARD_LEAD = .15, LINK_SET = .7, LINK_GAP = 2.6;
+/** Goal Rush: a SUPER SHOT is struck from up to this far out, with the goal in sight (not from too wide). */
+const SUPER_RANGE = 40, SUPER_WIDE = 15;
 
 /** A bot that plays the ball game it was seated in, through the same inputs a person sends (a stick, a view, the
  *  buttons): it reads the ball - where it is, where it will come down - and the job its side gave it (BallMatch's
@@ -34,11 +53,21 @@ export class BallBrain {
   private nextJump = 0;
   private jumpUntil = 0;
   private nextDash = 0;
+  /** Goal Rush's fights: when this bot may tackle again, and go up again off the floor (the double jump) or dash at the
+   *  ball in the air (the aerial). */
+  private nextTackle = 0;
+  private nextAerial = 0;
+  /** The opponent this bot's tackle is on, and until when it follows the first blow with its string. */
+  private tackling: {id: string; until: number} | null = null;
   private serveAt = -1;
   /** When this bot left the floor for a spike. */
   private spikeAt = -Infinity;
   /** The block it is going up for: timed to the hit (a STUFF BLOCK) or the hands up early (soft), and whose spike. */
   private stuff = false; private stuffFor: string | null = null;
+  /** A SUPER SHOT read: whose, and whether this bot goes for the perfect guard against it. */
+  private duelFor = ''; private duelTry = false;
+  /** Goal Rush: when this bot may next set a team-mate up. */
+  private nextLink = 0;
   private readonly skill: number;
   private readonly flank: number;
   constructor(readonly id: string, readonly mode: BallModeId, readonly index: number, private readonly rng: () => number) {
@@ -57,7 +86,38 @@ export class BallBrain {
     const dx = to.x - me.x, dz = to.z - me.z, d = Math.hypot(dx, dz);
     if (d > stop) { input.moveX = dx / d; input.moveZ = dz / d; input.yaw = Math.atan2(dx, dz); }
     if (d > sprint && now >= this.nextDash && me.grounded && me.stamina > 40) { input.dash = true; this.nextDash = now + 1.4 + this.rng() * 1.2; }
+    // The ball rooms' boost (a dash runs on into it while the stick holds): let go of it a few strides short, or with
+    // the bar low (a keeper's guard needs some), by easing the stick for a tick - the run carries on after.
+    if (me.boost && (d < 3 || me.stamina < 45) && d > stop) { input.moveX = dx / d * .45; input.moveZ = dz / d * .45; }
     return d;
+  }
+  /** Goal Rush's fights (GOAL_FIGHT): a tackle, never a brawl away from the ball. The one of the other side at the ball
+   *  (nearer it than this bot, and at its feet) or standing in the way to it, within a swing's reach, is struck at -
+   *  while the ball itself is out of this bot's reach (the swing's aim takes the ball whenever it is near: simulation.ts
+   *  assistAim). Whether it swung. */
+  private tackle(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], b: {x: number; y: number; z: number}, input: Command, now: number, near = 2.8) {
+    if (me.team !== seat.team || now < this.nextPress) return false;
+    // A tackle that has begun follows its first blow with the light string while they are still in reach.
+    const on = this.tackling && now < this.tackling.until ? players.find(q => q.id === this.tackling!.id && q.alive) : undefined;
+    if (on && gap(me, on) < 2.6 && Math.abs(on.y - me.y) < 1.6) { this.press(input, 'light', Math.atan2(on.x - me.x, on.z - me.z), now, .14); return true; }
+    if (now < this.nextTackle) return false;
+    const toBall = gap(me, b);
+    let best: PlayerState | undefined, bestD = 2.4;
+    for (const q of players) {
+      if (!q.alive || q.id === me.id || q.team === seat.team || Math.abs(q.y - me.y) > 1.4) continue;
+      const d = gap(me, q);
+      if (d >= bestD || d < 1e-3) continue;
+      const theirs = gap(q, b);
+      const carrier = theirs < near && theirs < toBall;
+      const inWay = d < toBall && ((q.x - me.x) * (b.x - me.x) + (q.z - me.z) * (b.z - me.z)) / (d * Math.max(1e-3, toBall)) > .8;
+      if (carrier || inWay) { best = q; bestD = d; }
+    }
+    if (!best) return false;
+    const string = this.rng() < .35 + this.skill * .4;
+    this.press(input, string ? 'light' : 'heavy', Math.atan2(best.x - me.x, best.z - me.z), now, string ? .14 : .4);
+    this.tackling = string ? {id: best.id, until: now + .9 + this.skill * .5} : null;
+    this.nextTackle = now + .9 + this.rng() * (1.6 - this.skill);
+    return true;
   }
   /** RUMBLE: the nearest charm within `within` metres (on its own side of the net in Sky Spike), if any. */
   private charm(me: PlayerState, view: BallView, within: number, side?: number) {
@@ -86,7 +146,9 @@ export class BallBrain {
     const role = seat.role ?? 'attack';
     const ownDanger = Math.sign(b.vz) === Math.sign(ownZ) && Math.abs(b.z - ownZ) < 22 && Math.hypot(b.vx, b.vz) > 9;
     // Up for a ball in the air in front of it.
-    if (now >= this.nextJump && me.grounded && dBall < 2.6 && b.y > 2.6 && b.y < 6.2 && b.vy < 5 && role !== 'keeper') this.jump(input, now);
+    if (now >= this.nextJump && me.grounded && dBall < 2.6 && b.y > 2.6 && b.y < 8.5 && b.vy < 5 && role !== 'keeper') this.jump(input, now);
+    // A SUPER SHOT coming through this bot: the guard timed to it (a perfect one is a TECHNIQUE DUEL).
+    if (this.brace(me, b, team, now, input, role === 'keeper')) return input;
     if (role === 'keeper') {
       let spot = {x: clamp(b.x * .4, -R.goalHalfWidth + .8, R.goalHalfWidth - .8), z: ownZ - Math.sign(ownZ) * 2.4};
       if (ownDanger && Math.abs(b.vz) > .5) {
@@ -102,15 +164,25 @@ export class BallBrain {
       const speed = Math.hypot(b.vx, b.vy, b.vz);
       if (dBall < 3 && ownDanger && speed > 13 && this.rng() < .35 + this.skill * .5) { input.guard = true; input.yaw = Math.atan2(b.x - me.x, b.z - me.z); }
       else if (inReach && now >= this.nextPress) this.press(input, me.ultimate >= 100 ? 'ultimate' : 'heavy', Math.atan2(toward * 9 * this.flank, toward * 20), now, .5);
+      // A striker on the ball in front of goal is tackled.
+      else if (!inReach && Math.abs(b.z - ownZ) < 13) this.tackle(me, seat, players, b, input, now, 2.2);
       return input;
     }
+    // A team-mate's pass on its way here: met first time at the goal (a LINK SHOT).
+    if (this.meet(me, b, team, enemyZ, now, input)) return input;
     if (role === 'support') {
       const back = {x: clamp(b.x * .5 + this.flank * 7, -R.halfX + 2, R.halfX - 2), z: clamp(b.z + (ownZ - b.z) * .42, -R.halfZ + 3, R.halfZ - 3)};
       const chase = dBall < 5 && Math.sign(ownZ) * (me.z - b.z) > 0;
       // RUMBLE: the support goes for a charm when the ball is not theirs to play.
       const near = !chase && !ownDanger && dBall > 7 ? this.charm(me, view, 12) : undefined;
       this.run(me, chase ? {x: b.x - Math.sin(shotYaw) * 1.2, z: b.z - Math.cos(shotYaw) * 1.2} : near ?? back, input, now, near ? .2 : .8, 12);
-      if (inReach && now >= this.nextPress) this.press(input, this.rng() < .6 ? 'heavy' : 'light', shotYaw, now);
+      if (inReach && now >= this.nextPress) {
+        if (this.setUp(me, b, team, toward, enemyZ, players, view, now, input)) return input;
+        // With the meter full and the goal in sight, the super shot.
+        const sight = Math.abs(enemyZ - b.z) < SUPER_RANGE && Math.abs(b.x) < SUPER_WIDE;
+        this.press(input, me.ultimate >= 100 && sight ? 'ultimate' : this.rng() < .6 ? 'heavy' : 'light', shotYaw, now);
+      }
+      else if (!inReach && (chase || dBall < 6)) this.tackle(me, seat, players, b, input, now);
       return input;
     }
     // The attacker: round behind the ball, then drive it at the goal.
@@ -123,18 +195,99 @@ export class BallBrain {
     if (near) approach = near;
     this.run(me, approach, input, now, .3, 9);
     if (dBall < 3.5) input.yaw = shotYaw;
+    // The aerial (BALL_SPORT): off the floor under a high ball, up again off the air and a dash at it.
+    if (!me.grounded && now >= this.nextAerial && b.y > me.y + 2 && b.y < 10 && gap(me, b) < 4.5 && this.rng() < .25 + this.skill * .5) {
+      const up = Math.hypot(b.x - me.x, b.y - (me.y + 1), b.z - me.z);
+      if (b.y - me.y > 3.2) { input.jump = true; input.jumpHeld = true; this.jumpUntil = now + .3; }
+      else if (up < 7 && me.stamina > 30) { input.dash = true; input.moveX = (b.x - me.x) / Math.max(.1, gap(me, b)); input.moveZ = (b.z - me.z) / Math.max(.1, gap(me, b)); }
+      this.nextAerial = now + .35;
+    }
     const toGoal = Math.abs(enemyZ - b.z);
     if (inReach && now >= this.nextPress) {
       const air = !me.grounded;
-      const slot = me.ultimate >= 100 && toGoal < 28 ? 'ultimate'
+      if (!air && this.setUp(me, b, team, toward, enemyZ, players, view, now, input)) return input;
+      const slot = me.ultimate >= 100 && toGoal < SUPER_RANGE && Math.abs(b.x) < SUPER_WIDE ? 'ultimate'
         : air ? (this.rng() < .6 ? 'heavy' : 'light')
         : toGoal < 26 && (me.cooldowns.special ?? 0) <= now && this.rng() < .3 ? 'special'
         : toGoal < 32 ? (this.rng() < .7 ? 'heavy' : 'light')
         : this.rng() < .55 ? 'light' : 'heavy';
       this.press(input, slot, shotYaw, now, slot === 'light' ? .28 : .5);
     }
-    void players;
+    // Their striker on the ball, or one in the way to it: tackled.
+    else if (!inReach && dBall < 6) this.tackle(me, seat, players, b, input, now);
     return input;
+  }
+
+  /** A SUPER SHOT on its way through this bot (or, for the keeper, into its goal): step into its line and put the guard
+   *  up as it arrives, so the guard is perfect - the TECHNIQUE DUEL. Decided once a shot; true while it is bracing. */
+  private brace(me: PlayerState, b: BallState, team: BallTeam, now: number, input: Command, keeper: boolean): boolean {
+    if (!b.super || b.lastTeam === null || b.lastTeam === team || b.clash > now) { this.duelFor = ''; return false; }
+    const speed = Math.hypot(b.vx, b.vy, b.vz);
+    if (speed < 8) return false;
+    // (Rolled once a shot: the read is whether to try at all.)
+    const key = b.lastId ?? '?';
+    if (key !== this.duelFor) { this.duelFor = key; this.duelTry = this.rng() < DUEL_TRY[0] + this.skill * DUEL_TRY[1] - (keeper ? 0 : .25); }
+    if (!this.duelTry) return false;
+    // Where it passes this bot's line: along its flight, the point nearest the body.
+    const fx = b.vx / speed, fy = b.vy / speed, fz = b.vz / speed;
+    const along = (me.x - b.x) * fx + (me.y + 1 - b.y) * fy + (me.z - b.z) * fz;
+    if (along < -.5) return false;
+    const px = b.x + fx * along, pz = b.z + fz * along, miss = Math.hypot(me.x - px, me.z - pz);
+    const eta = along / speed;
+    // Off its line: the keeper runs across to meet it (about 9 m a second, the dash), anyone else only guards one at them.
+    if (miss > 1.1 + (keeper ? Math.max(0, eta) * 9 : 0) || eta > 1.6) return false;
+    if (miss > .5) this.run(me, {x: px, z: pz}, input, now, .2, .5);
+    input.yaw = Math.atan2(b.x - me.x, b.z - me.z);
+    // The guard comes up GUARD_LEAD before the ball does (a fresh press: down until then).
+    const up = eta <= GUARD_LEAD + (1 - this.skill) * .05;
+    input.guard = up;
+    return true;
+  }
+  /** A LINK SHOT set up: a team-mate ahead of the ball, a short pass away, in range of the goal and open (no rival on
+   *  them or across the pass), and this bot farther out than they are: a tap to them (strike.ts leads their run), now
+   *  and then. True when it passed. */
+  private setUp(me: PlayerState, b: BallState, team: BallTeam, toward: number, enemyZ: number, players: readonly PlayerState[], view: BallView, now: number, input: Command): boolean {
+    if (now < this.nextLink || !me.grounded || b.y > 1.3) return false;
+    let mate: PlayerState | undefined, best = Infinity;
+    for (const p of players) {
+      if (p.id === me.id || !p.alive || !p.grounded) continue;
+      const seat = seatOf(view, p.id);
+      if (!seat || seat.team !== team || seat.role === 'keeper') continue;
+      const d = gap(p, b), ahead = toward * (p.z - b.z), toGoal = Math.abs(enemyZ - p.z);
+      if (d < 3.2 || d > 7.4 || ahead < -2 || toGoal > 24 || Math.abs(p.x) > 12 || toGoal > Math.abs(enemyZ - me.z) + 1) continue;
+      let open = true;
+      for (const r of players) {
+        if (!r.alive) continue;
+        const rs = seatOf(view, r.id);
+        if (!rs || rs.team === team) continue;
+        if (gap(r, p) < 2.2 || offLine(r, b, p) < 1.1) { open = false; break; }
+      }
+      if (open && toGoal + d < best) { best = toGoal + d; mate = p; }
+    }
+    if (!mate) return false;
+    // Now and then: a bot that passes on the chance does not ask again for a moment.
+    const pass = this.rng() < LINK_SET;
+    this.nextLink = now + (pass ? LINK_GAP : 1);
+    if (!pass) return false;
+    this.press(input, 'light', Math.atan2(mate.x - b.x, mate.z - b.z), now, .45);
+    return true;
+  }
+  /** A team-mate's pass coming to this bot: stand for it facing the goal, and strike it first time, the blow timed to land
+   *  as the ball does (a heavy; the special if the heavy is a launcher, which would only pop it up). True while meeting it. */
+  private meet(me: PlayerState, b: BallState, team: BallTeam, enemyZ: number, now: number, input: Command): boolean {
+    if (b.shot !== 'tap' || b.lastTeam !== team || b.lastId === me.id || !me.grounded) return false;
+    const dx = me.x - b.x, dz = me.z - b.z, d = Math.hypot(dx, dz), flat = Math.hypot(b.vx, b.vz);
+    const closing = (b.vx * dx + b.vz * dz) / Math.max(.01, d);
+    if (closing < 4 || d > 9 || Math.abs(b.vx * dz - b.vz * dx) / Math.max(.01, flat) > 1.6) return false;
+    const moves = MOVES[me.fighter];
+    const heavyPops = moves.heavy.outcome === 'launch' || moves.heavy.outcome === 'hop';
+    const slot: AttackSlot = me.ultimate >= 100 ? 'ultimate' : heavyPops && (me.cooldowns.special ?? 0) <= now ? 'special' : 'heavy';
+    const lands = moves[slot]?.contacts[0] ?? .35;
+    input.moveX = input.moveZ = 0;
+    const goalYaw = Math.atan2(clamp(b.x * .25, -GOAL_RULES.goalHalfWidth + 1.2, GOAL_RULES.goalHalfWidth - 1.2) - me.x, enemyZ - me.z);
+    input.yaw = goalYaw;
+    if (now >= this.nextPress && (d - 1.2) / closing <= lands + .04) this.press(input, slot, goalYaw, now, .6);
+    return true;
   }
 
   // ─── Sky Spike ────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -166,6 +319,8 @@ export class BallBrain {
       return input;
     }
     this.serveAt = -1;
+    // A SUPER SHOT coming through this bot: the guard timed to it (a perfect one is a TECHNIQUE DUEL).
+    if (this.brace(me, b, team, now, input, false)) return input;
     const fall = landing(this.mode, b, 1.2, 3);
     const comingHere = sideOf(fall.z) === team && Math.abs(fall.x) < R.halfX && Math.abs(fall.z) < R.halfZ;
     const onHere = sideOf(b.z) === team && Math.abs(b.z) > .4;
@@ -178,7 +333,7 @@ export class BallBrain {
     // (Never a serve: it is the serving side's last touch, and the ball it sends is received, not blocked.)
     const theirs = otherTeam(team), setUp = view.phase === 'live' && view.rally > 0 && b.shot !== 'serve' && view.touchTeam === theirs && view.touches >= 2 && sideOf(b.z) === theirs;
     // Only a set coming down at the net, or the spike off it, is blocked: a deep ball is defended from the back.
-    const atNet = (b.shot === 'set' && Math.abs(landing(this.mode, b, SPIKE_HIT, 2.5).z) < 3.4) || (b.shot === 'spike' && Math.abs(b.z) < 3.6);
+    const atNet = (b.shot === 'set' && Math.abs(landing(this.mode, b, SPIKE_HIT, 2.5).z) < 3.4) || ((b.shot === 'spike' || b.shot === 'super') && Math.abs(b.z) < 3.6);
     if (setUp && atNet && seat.role === 'front') {
       const read = landing(this.mode, b, SPIKE_HIT, 2.5), x = read.t > .02 ? read.x : b.x;
       const front = mates.filter(p => p.id !== me.id && Math.abs(p.z) < 3.8);
@@ -193,7 +348,8 @@ export class BallBrain {
         this.run(me, {x: clamp(at ? at.x : x, -R.courtHalfX + .5, R.courtHalfX - .5), z: sign * .95}, input, now, .15, at ? 1.2 : 4);
         // The hands go up early (a soft block) unless this is one of the times it is timed to the hit (a STUFF BLOCK):
         // the better the bot, the more often.
-        if (at && at.t < BLOCK_LEAD + .14 && this.stuffFor !== b.lastId) { this.stuffFor = b.lastId; this.stuff = this.rng() < .15 + this.skill * .3; }
+        // (Against a SUPER SHOT the block goes for the stuff far more often: a perfect one is the TECHNIQUE DUEL.)
+        if (at && at.t < BLOCK_LEAD + .14 && this.stuffFor !== b.lastId) { this.stuffFor = b.lastId; this.stuff = this.rng() < (b.super ? DUEL_TRY[0] + this.skill * DUEL_TRY[1] : .15 + this.skill * .3); }
         if (at && me.grounded && !this.stuff && at.t < BLOCK_LEAD + .12) { input.guard = true; input.yaw = Math.atan2(0, -sign); }
         if (at && me.grounded && now >= this.nextJump && at.t < BLOCK_LEAD + (1 - this.skill) * .04 && this.rng() < .55 + this.skill * .4) this.jump(input, now);
         if (!me.grounded) { input.guard = true; input.yaw = Math.atan2(0, -sign); }

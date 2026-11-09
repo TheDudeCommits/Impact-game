@@ -1521,6 +1521,94 @@
    "source": "ElevenLabs (eleven_v3), the voice 'grandpa' designed for the game (text-to-voice design from a description: an elderly Japanese grandfather with a Japanese accent; never a clone), 9 November 2026",
    "take": "final-seconds-2.mp3",
    "sha256": "9ed857989f1fcba9ad9f51110b70c9b3c2378c7204c19e3be1ed7776ad8b59d3"
+  },
+  {
+   "id": "link-shot-1",
+   "file": "/assets/audio/ball/caller/grandpa/link-shot-1.m4a",
+   "moment": "link-shot",
+   "text": "Set and strike! LINK SHOT!",
+   "seconds": 2.004,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'grandpa' designed for the game (text-to-voice design from a description: an elderly Japanese grandfather with a Japanese accent; never a clone), 9 November 2026",
+   "take": "link-shot-1.mp3",
+   "sha256": "2bba1c0e63d3ad26ae8aa1f510be8ff074f40d5ef4d4f45470dcb6f3f8bdb136"
+  },
+  {
+   "id": "link-shot-2",
+   "file": "/assets/audio/ball/caller/grandpa/link-shot-2.m4a",
+   "moment": "link-shot",
+   "text": "Perfect timing, they linked it up!",
+   "seconds": 1.781,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'grandpa' designed for the game (text-to-voice design from a description: an elderly Japanese grandfather with a Japanese accent; never a clone), 9 November 2026",
+   "take": "link-shot-2.mp3",
+   "sha256": "2df1c6fee58e586ca268acec32b292297e04dac30f49fea215876b0c865d9654"
+  },
+  {
+   "id": "link-shot-3",
+   "file": "/assets/audio/ball/caller/grandpa/link-shot-3.m4a",
+   "moment": "link-shot",
+   "text": "One touch to the next, rensa!",
+   "seconds": 2.088,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'grandpa' designed for the game (text-to-voice design from a description: an elderly Japanese grandfather with a Japanese accent; never a clone), 9 November 2026",
+   "take": "link-shot-3.mp3",
+   "sha256": "2a4bcd7f827c2abf152b00805513c1a9fe27b8b269c5ae948aa3a15a3e8d49a0"
+  },
+  {
+   "id": "technique-duel-1",
+   "file": "/assets/audio/ball/caller/grandpa/technique-duel-1.m4a",
+   "moment": "technique-duel",
+   "text": "Technique against technique!",
+   "seconds": 1.766,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'grandpa' designed for the game (text-to-voice design from a description: an elderly Japanese grandfather with a Japanese accent; never a clone), 9 November 2026",
+   "take": "technique-duel-1.mp3",
+   "sha256": "8b96e41706aa29ffbe897c3d1a90eea01dee51251449af8e6d3e93aea6d67ced"
+  },
+  {
+   "id": "technique-duel-2",
+   "file": "/assets/audio/ball/caller/grandpa/technique-duel-2.m4a",
+   "moment": "technique-duel",
+   "text": "The guard meets the super shot!",
+   "seconds": 1.838,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'grandpa' designed for the game (text-to-voice design from a description: an elderly Japanese grandfather with a Japanese accent; never a clone), 9 November 2026",
+   "take": "technique-duel-2.mp3",
+   "sha256": "032cb623c6f2f97b3df54483840c992d77f8fe3652d38cb8feb1cdd5a5da3327"
+  },
+  {
+   "id": "duel-won-1",
+   "file": "/assets/audio/ball/caller/grandpa/duel-won-1.m4a",
+   "moment": "duel-won",
+   "text": "Stopped it cold! The duel is theirs!",
+   "seconds": 2.324,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'grandpa' designed for the game (text-to-voice design from a description: an elderly Japanese grandfather with a Japanese accent; never a clone), 9 November 2026",
+   "take": "duel-won-1.mp3",
+   "sha256": "622f920966d6a4529f0b44090b33894dcee674fdc690272c9a9369df6dd54fdd"
+  },
+  {
+   "id": "duel-won-2",
+   "file": "/assets/audio/ball/caller/grandpa/duel-won-2.m4a",
+   "moment": "duel-won",
+   "text": "The guard holds! Unbelievable!",
+   "seconds": 2.453,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'grandpa' designed for the game (text-to-voice design from a description: an elderly Japanese grandfather with a Japanese accent; never a clone), 9 November 2026",
+   "take": "duel-won-2.mp3",
+   "sha256": "6f896f408f0c8fea4b5d21cf534bc282f8cfa970479cb31f827ac2608e39313f"
+  },
+  {
+   "id": "duel-won-3",
+   "file": "/assets/audio/ball/caller/grandpa/duel-won-3.m4a",
+   "moment": "duel-won",
+   "text": "Super shot denied!",
+   "seconds": 1.562,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'grandpa' designed for the game (text-to-voice design from a description: an elderly Japanese grandfather with a Japanese accent; never a clone), 9 November 2026",
+   "take": "duel-won-3.mp3",
+   "sha256": "3721072b4b03a1dad86b4a8307a8113ffa9c215a9680e4da5473161e6f20d455"
   }
  ]
 }

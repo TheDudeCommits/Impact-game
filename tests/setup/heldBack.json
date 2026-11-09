@@ -10,7 +10,6 @@
   "kosho: announces its air string by the names of what it draws",
   "kuon: announces its air string by the names of what it draws",
   "never draws Jump + Light with the grounded jab's clip (round 4b)",
-  "oro: announces its air string by the names of what it draws",
   "shirokane: announces its air string by the names of what it draws",
   "tucks the legs under a blow thrown with the arms in the air, and leaves a kick its own legs",
   "ward: announces its air string by the names of what it draws"
@@ -123,7 +122,6 @@
   "kuon shake",
   "levin Hit 01",
   "levin shake",
-  "oro shake",
   "rook, a heavy, the knockdown and the get-up",
   "shiden, a heavy, the knockdown and the get-up",
   "tobari, a heavy, the knockdown and the get-up",
@@ -139,14 +137,11 @@
   "koko: the rush file binds onto the body, names its stages, and has their contacts",
   "kuon: the rush clips stand on the idle's floor and stay near the capsule",
   "kuon: the rush file binds onto the body, names its stages, and has their contacts",
-  "oro: the rush clips stand on the idle's floor and stay near the capsule",
-  "oro: the rush file binds onto the body, names its stages, and has their contacts",
   "shirokane: the rush file binds onto the body, names its stages, and has their contacts"
  ],
  "tests/rushContacts.test.ts": [
   "kenzo",
-  "kuon",
-  "oro"
+  "kuon"
  ],
  "tests/rushFlow.test.ts": [
   "goes from stage to stage without a tick of idle, hit or miss, at any mashing rate, for all sixteen"
