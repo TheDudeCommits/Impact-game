@@ -2,6 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {BallMatch} from './BallMatch';
 import {BALL_ARENAS, MODE_ARENAS, arenaFor} from './arenas';
 import {freshBall, stepBall} from './physics';
+import {GOAL_RULES} from './model';
 
 describe('Ball arenas', () => {
   it('each mode has three arenas of its own, its first the one it always had', () => {
@@ -30,7 +31,8 @@ describe('Ball arenas', () => {
   });
   it('carries each twist to the ball: sand drags, rain runs, the sea wind blows, the rim starts hot', () => {
     const roll = (ground?: number) => {
-      const b = freshBall(); b.held = false; b.y = .3; b.vx = 9; if (ground) b.ground = ground;
+      // (From one side wall toward the other: the pitch's full width to roll in.)
+      const b = freshBall(); b.held = false; b.x = -GOAL_RULES.halfX + 1; b.y = .3; b.vx = 9; if (ground) b.ground = ground;
       for (let i = 0; i < 120; i++) stepBall('goal-rush', b, 1 / 60);
       return b.x;
     };

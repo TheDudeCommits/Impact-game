@@ -88,8 +88,8 @@ function cylinder(b: BallState, r: number, ax: number, ay: number, az: number, b
 /** Goal Rush's walls have a foot (GOAL_RULES.wallFoot, wallLift): a low ball that meets one at `s` m/s is lifted by a
  *  share of it, as a curved board would turn it up, so it comes back off the wall into play instead of rolling dead along
  *  it. */
-function lift(b: BallState, r: number, s: number) {
-  if (s > 1 && b.y < r + GOAL_RULES.wallFoot) b.vy = Math.max(b.vy, s * GOAL_RULES.wallLift);
+function lift(b: BallState, r: number, s: number, k: number = GOAL_RULES.wallLift) {
+  if (s > 1 && b.y < r + GOAL_RULES.wallFoot) b.vy = Math.max(b.vy, s * k);
 }
 
 function pitch(b: BallState, r: number, h: number, out: BallContact[]) {
@@ -113,14 +113,15 @@ function pitch(b: BallState, r: number, h: number, out: BallContact[]) {
   } else {
     if (Math.abs(b.x) > R.halfX - r) { const sx = Math.sign(b.x); b.x = sx * (R.halfX - r); const s = reflect(b, -sx, 0, 0, e); lift(b, r, s); if (s > 2) out.push({kind: 'wall', x: b.x, y: b.y, z: b.z, speed: s}); }
     if (Math.abs(b.z) > R.halfZ - r && !inMouth) { const sz = Math.sign(b.z); b.z = sz * (R.halfZ - r); const s = reflect(b, 0, 0, -sz, e); lift(b, r, s); if (s > 2) out.push({kind: 'wall', x: b.x, y: b.y, z: b.z, speed: s}); }
-    // The chamfered corners, so a ball never dies in one.
+    // The chamfered corners, so a ball never dies in one: they kick it back out livelier and higher than a wall does
+    // (GOAL_RULES.cornerBounce, cornerLift), a ball run along a side wall turned across the goal's face as a cross.
     const limit = (R.halfX + R.halfZ - R.corner) / SQRT2 - r;
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
       const d = (sx * b.x + sz * b.z) / SQRT2;
       if (d <= limit) continue;
       const nx = -sx / SQRT2, nz = -sz / SQRT2, over = d - limit;
       b.x += nx * over; b.z += nz * over;
-      const s = reflect(b, nx, 0, nz, e); lift(b, r, s); if (s > 2) out.push({kind: 'wall', x: b.x, y: b.y, z: b.z, speed: s});
+      const s = reflect(b, nx, 0, nz, R.cornerBounce); lift(b, r, s, R.cornerLift); if (s > 2) out.push({kind: 'wall', x: b.x, y: b.y, z: b.z, speed: s});
     }
   }
   // The posts and the crossbar of both goals.

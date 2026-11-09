@@ -94,7 +94,8 @@ export class BallReplayer {
     if (goalRush) {
       const R = GOAL_RULES, gz = r.team === 'red' ? R.halfZ : -R.halfZ, sign = Math.sign(gz);
       const toGoal = Math.hypot(ball.x, ball.z - gz);
-      if ((time > r.key + .05 && toGoal < 20) || time > r.to - .75) shot = 'close';
+      // (Cut to the goal line once the ball is within three quarters of a half-length of it: 20 m on the 52 m pitch.)
+      if ((time > r.key + .05 && toGoal < R.halfZ * .77) || time > r.to - .75) shot = 'close';
       if (shot === 'chase') {
         // From behind the ball, on its line to the goal, a little above it.
         let dx = ball.x, dz = ball.z - gz; const d = Math.hypot(dx, dz) || 1; dx /= d; dz /= d;

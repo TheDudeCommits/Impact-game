@@ -227,3 +227,43 @@ body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .touch-co
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-out.on{display:block}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-ball-replay] :is(.bh-meter,.bh-out){opacity:0!important}
 @media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter.low .bh-hp>b{animation:none}}
+/* Goal Rush's two stances (BallHud.stanceBadge; game/ball/stance.ts): a small badge over the meter - BALL in
+   gold on ink, FIGHT in red with the one locked and their health - flashing as it changes. */
+#interface[data-hud="goal-rush"] .bh-stance{display:none;align-items:center;gap:6px;align-self:flex-start;margin-bottom:4px;padding:3px 10px 4px 7px;background:rgba(11,12,14,.84);color:#fff9ef;pointer-events:none;
+  font:italic 900 calc(clamp(11px,.85vw,15px) * var(--hk-k,1))/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.06em;white-space:nowrap;clip-path:polygon(0 0,100% 0,94% 100%,0 100%);
+  box-shadow:inset 3px 0 0 var(--bh-gold,#ffcf5a)}
+#interface[data-hud="goal-rush"] .bh-stance.on{display:flex}
+#interface[data-hud="goal-rush"] .bh-stance>b::before{content:'BALL'}
+#interface[data-hud="goal-rush"] .bh-stance>b{display:flex;align-items:center;gap:5px;color:var(--bh-gold,#ffcf5a)}
+#interface[data-hud="goal-rush"] .bh-stance>b::after{content:'';order:-1;width:.62em;height:.62em;border-radius:50%;background:var(--bh-gold,#ffcf5a);box-shadow:0 0 6px var(--bh-gold,#ffcf5a)}
+#interface[data-hud="goal-rush"] .bh-stance>span:empty,#interface[data-hud="goal-rush"] .bh-stance>small:empty{display:none}
+#interface[data-hud="goal-rush"] .bh-stance>small{font:800 calc(clamp(8px,.62vw,11px) * var(--hk-k,1))/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;color:#e9e3d6;opacity:.85}
+#interface[data-hud="goal-rush"] .bh-stance-hp{display:none;position:relative;width:calc(46px * var(--hk-k,1));height:5px;background:rgba(255,255,255,.18);overflow:hidden}
+#interface[data-hud="goal-rush"] .bh-stance-hp>b{position:absolute;inset:0;background:#fff9ef;transform-origin:0 50%;transition:transform .12s linear}
+#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]{background:#c8102e;box-shadow:inset 3px 0 0 #0b0c0e,0 0 14px rgba(255,40,60,.45)}
+#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]>b{color:#fff}
+#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]>b::before{content:'FIGHT'}
+#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]>b::after{width:.7em;height:.7em;border-radius:0;background:none;box-shadow:none;
+  background:linear-gradient(45deg,transparent 40%,#fff 40% 60%,transparent 60%),linear-gradient(-45deg,transparent 40%,#fff 40% 60%,transparent 60%)}
+#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]>span::before{content:'▸ ';opacity:.8}
+#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"] .bh-stance-hp{display:block}
+#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]>small{color:#ffe3e3}
+#interface[data-hud="goal-rush"] .bh-stance[data-pulse="a"]{animation:bh-stance-a .3s cubic-bezier(.2,1.6,.4,1)}
+#interface[data-hud="goal-rush"] .bh-stance[data-pulse="b"]{animation:bh-stance-b .3s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bh-stance-a{0%{transform:scale(1.35);filter:brightness(1.8)}100%{transform:none}}
+@keyframes bh-stance-b{0%{transform:scale(1.35);filter:brightness(1.8)}100%{transform:none}}
+#interface[data-hud="goal-rush"][data-ball-replay] .bh-stance{opacity:0!important}
+/* A TACKLE of yours: the banner in red, short. Anyone's: the ticker's edge in red. */
+#interface[data-hud="goal-rush"] .bh-banner[data-kind="tackle"]{background:linear-gradient(100deg,#0b0c0e 62%,#c8102e 63% 67%,#0b0c0e 68%)}
+#interface[data-hud="goal-rush"] .bh-banner[data-kind="tackle"] strong{color:#fff;text-shadow:4px 4px 0 #c8102e,-2px -2px 0 #0b0c0e}
+#interface[data-hud="goal-rush"] .bh-ticker[data-kind="tackle"]{border-left-color:#ff2a3c;background:linear-gradient(90deg,#0b0c0e 72%,#3a0a10)}
+/* The touch layer's target button says what a tap does in Goal Rush: FIGHT from the ball, BALL from a fight. */
+body:has(#interface[data-hud="goal-rush"][data-ball-stance="ball"]) .touch-controls .tc-target>b::after{content:'FIGHT'}
+body:has(#interface[data-hud="goal-rush"][data-ball-stance="fight"]) .touch-controls .tc-target>b::after{content:'BALL'}
+body:has(#interface[data-hud="goal-rush"][data-ball-stance="fight"]) .touch-controls .tc-target{box-shadow:0 0 0 3px #ff2a3c,0 0 16px rgba(255,42,60,.6)}
+@media(prefers-reduced-motion:reduce){#interface[data-hud="goal-rush"] .bh-stance{animation:none!important}}
+/* A goal's banner: the explosion first, the word after. From the ball cam the far goal sits right under the
+   banner's place, so the banner waits seven tenths of a second (held invisible by its first keyframe) and comes in lower,
+   off the goal mouth. */
+#interface:is([data-hud="goal-rush"]) .bh-banner.on[data-kind="goal"]{animation-delay:.7s;animation-fill-mode:both;translate:0 26vh}
+@media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"]) .bh-banner.on[data-kind="goal"]{animation:none;translate:0 26vh}}

@@ -58,7 +58,7 @@ const define = (stage: StageDefinition) => stage;
 export const STAGES: Record<StageId, StageDefinition> = {
   // The ball modes (game/ball/model.ts GOAL_RULES and SPIKE_RULES hold the same numbers): the playable rectangle is the
   // pitch inside its walls, and the court with its free zone.
-  'ball-pitch': define({id:'ball-pitch',name:'The Ink Bowl',scene:'Goal Rush under the floodlights',model:null,halfX:17.6,halfZ:25.6,spawnRadius:12,cameraFar:420,fog:[120,380]}),
+  'ball-pitch': define({id:'ball-pitch',name:'The Ink Bowl',scene:'Goal Rush under the floodlights',model:null,halfX:12.6,halfZ:18.6,spawnRadius:9,cameraFar:420,fog:[120,380]}),
   'ball-court': define({id:'ball-court',name:'The Sky Court',scene:'Sky Spike above the clouds',model:null,halfX:14.6,halfZ:18.1,spawnRadius:8,cameraFar:420,fog:[120,380]}),
   'rift-war': define({id:'rift-war',name:'The Torn Plain',scene:'Three causeways across the rift',model:null,halfX:84,halfZ:84,spawnRadius:12,cameraFar:650,fog:[145,560],background:0xc9d8d1}),
   'blood-citadel': define({id:'blood-citadel',name:'The Fallen Citadel',scene:'Bad Blood beneath the broken moon',model:null,halfX:30,halfZ:24,spawnRadius:13,cameraFar:480,fog:[90,350]}),

@@ -55,7 +55,8 @@ The sound effects held back from this repository play CC0 stand-ins in `public/a
 repository from the CC0 recordings above and from sound made in code; `public/assets/audio/v2/cc0/manifest.json` names
 each stand-in's sources (with their hashes) and the file it stands in for. The ball modes' sounds in `public/assets/audio/ball/`
 were synthesised for the game, layered from the CC0 recordings above, or generated for the game with ElevenLabs sound
-effects (the crowd, the whistles, the horn and the biggest impacts); `public/assets/audio/ball/manifest.json` names each
+effects (the crowd, the whistles, the horn, the boom under the biggest impacts, a spike slammed into the court and a
+wipe-out's knockout blow); `public/assets/audio/ball/manifest.json` names each
 one's layers and their sources (with their hashes), or how it was generated.
 
 ## Music
@@ -110,4 +111,4 @@ Elemental Sandbox's MIT one: it is provided under the VFX Armory Licence, not th
 The game's own art, models, motion and voices were made with these tools on the maintainer's accounts; what they
 made belongs to the project and is covered by its licence: Meshy (models, animation-library actions and text-to-motion
 takes), Tripo (models, rigs and troop animation), OpenAI image generation and Codex (2D art), FLUX.2 [klein] 4B (four
-chapter panels), Higgsfield (voices), Qwen3-TTS (the announcer), ElevenLabs (the ball modes' commentary in two designed voices, and their crowd, whistles, horn and biggest impacts), Blender (modelling, rigging and animation).
+chapter panels), Higgsfield (voices), Qwen3-TTS (the announcer), ElevenLabs (the ball modes' commentary in two designed voices, and their crowd, whistles, horn, biggest impacts, spike slams and wipe-outs), Blender (modelling, rigging and animation).

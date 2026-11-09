@@ -1,41 +1,47 @@
 import type {BallArenaId} from '../../game/ball/arenas';
 import {INTRO} from '../../game/ball/ceremony';
-import type {BallModeId} from '../../game/ball/model';
+import {GOAL_RULES, type BallModeId} from '../../game/ball/model';
+import {bowlGuardian, gateZ, wreckHullX, wreckShipZ} from './pitchLayout';
 
 /** One authored camera move: the eye and the point it looks at, each eased from its first place to its second over the
  *  move's seconds, and the lens (vertical degrees). */
 export interface Shot { seconds: number; eye: readonly [V, V]; look: readonly [V, V]; fov: number }
 type V = readonly [number, number, number];
 
+/** Goal Rush's places, as its arenas stand them (render/ball/pitchLayout.ts; the pitch is 26 × 38 m,
+ *  and its shots are laid from it): its half-sizes, the carved gateway behind each goal, the guardian on
+ *  the bowl's corner, the Wreck Yard's great hull beside the pitch and its wrecked ships beyond the ends. */
+const X = GOAL_RULES.halfX, Z = GOAL_RULES.halfZ, GATE = gateZ(), [GX, GZ] = bowlGuardian(), HULL = wreckHullX(), WRECK = wreckShipZ();
+
 /** The intro's flyover: three moves an arena, each to the place's own landmarks, played
  *  back to back through the first INTRO.splash seconds of the intro (BallCeremony). Positions are world metres, the
- *  pitch and court centred on the origin (render/ball/BallArena.ts places the pieces: the gates behind each goal at
- *  z = ±30.6, the guardians on the bowl's corners at (±28.6, 24, ±36.6), the wrecks at z = ±66, the shrine islands at
- *  (62, -14, -24) and (-70, -4, 36), the arch at (41, 20, -75), the colossus at (0, -34, -92) and 78 m tall). */
+ *  pitch and court centred on the origin (render/ball/BallArena.ts places the pieces: Goal Rush's from the pitch's size
+ *  as above; the shrine islands at (62, -14, -24) and (-70, -4, 36), the arch at (41, 20, -75), the colossus at
+ *  (0, -34, -92) and 78 m tall). */
 export const INTRO_SHOTS: Readonly<Record<BallArenaId, readonly Shot[]>> = {
   'ink-bowl': [
     // Down the pitch at the red goal, rising to the carved gateway behind it.
-    {seconds: 1.9, eye: [[0, 3.2, -9], [0, 6.5, -15]], look: [[0, 5, -30], [0, 9, -31]], fov: 52},
+    {seconds: 1.9, eye: [[0, 3.2, -Z * .35], [0, 6.5, -Z * .58]], look: [[0, 5, -GATE + .6], [0, 9, -GATE - .4]], fov: 52},
     // Along the canopy to a guardian standing on its corner, side on (from the centre it stands against a floodlight).
-    {seconds: 1.7, eye: [[8, 25, 31], [13, 29, 28]], look: [[28.6, 29.5, 36.6], [28.6, 30.5, 36.6]], fov: 40},
+    {seconds: 1.7, eye: [[GX - 20.6, 25, GZ - 5.6], [GX - 15.6, 29, GZ - 8.6]], look: [[GX, 29.5, GZ], [GX, 30.5, GZ]], fov: 40},
     // A crane over the whole bowl, the screens and the floodlights.
-    {seconds: 1.7, eye: [[-34, 30, -18], [-30, 22, 14]], look: [[0, 2, 0], [0, 1, 0]], fov: 56},
+    {seconds: 1.7, eye: [[-X - 16, 30, -Z * .7], [-X - 12, 22, Z * .54]], look: [[0, 2, 0], [0, 1, 0]], fov: 56},
   ],
   'dust-yard': [
     // Over the red end at the wreck beached beyond it.
-    {seconds: 1.9, eye: [[-8, 10, -12], [6, 13, -16]], look: [[-6, 10, -66], [-4, 11, -66]], fov: 50},
+    {seconds: 1.9, eye: [[-8, 10, -Z * .46], [6, 13, -Z * .62]], look: [[-6, 10, -WRECK], [-4, 11, -WRECK]], fov: 50},
     // Across the sand at the great hull on its side, its masts and torn sails.
-    {seconds: 1.7, eye: [[-8, 11, 12], [-12, 14, -4]], look: [[-52, 14, 4], [-52, 15, -8]], fov: 50},
+    {seconds: 1.7, eye: [[-X * .45, 11, Z * .46], [-X * .67, 14, -Z * .15]], look: [[-HULL, 14, 4], [-HULL, 15, -8]], fov: 50},
     // A crane down the yard to the second wreck.
-    {seconds: 1.7, eye: [[20, 26, -32], [14, 19, -10]], look: [[4, 4, 30], [6, 8, 50]], fov: 56},
+    {seconds: 1.7, eye: [[X + 2, 26, -Z * 1.23], [X - 4, 19, -Z * .38]], look: [[4, 4, Z + 4], [6, 8, WRECK - 16]], fov: 56},
   ],
   'rain-roof': [
     // Low over the wet slate, the rain falling through the lights.
-    {seconds: 1.9, eye: [[-14, 1.2, -21], [-6, 1.9, -13]], look: [[6, 2.2, 8], [8, 3, 12]], fov: 50},
+    {seconds: 1.9, eye: [[-X * .78, 1.2, -Z * .81], [-X * .33, 1.9, -Z * .5]], look: [[X * .33, 2.2, Z * .31], [X * .44, 3, Z * .46]], fov: 50},
     // Up past a floodlight tower to the city's towers.
-    {seconds: 1.7, eye: [[24, 10, -14], [27, 19, -22]], look: [[64, 28, -64], [70, 34, -70]], fov: 52},
+    {seconds: 1.7, eye: [[X + 6, 10, -Z * .54], [X + 9, 19, -Z * .85]], look: [[64, 28, -64], [70, 34, -70]], fov: 52},
     // A crane over the roof.
-    {seconds: 1.7, eye: [[-30, 28, 26], [-24, 21, 2]], look: [[0, 1, 0], [0, 1, 0]], fov: 56},
+    {seconds: 1.7, eye: [[-X - 12, 28, Z], [-X - 6, 21, 2]], look: [[0, 1, 0], [0, 1, 0]], fov: 56},
   ],
   'sky-court': [
     // Across the court to the shrine island in the clouds.
@@ -65,7 +71,7 @@ export const INTRO_SHOTS: Readonly<Record<BallArenaId, readonly Shot[]>> = {
 
 /** The splash page's shot behind it: both sides on their marks, from the broadcast side line, a slow push in. */
 export const SPLASH_SHOT: Readonly<Record<BallModeId, Shot>> = {
-  'goal-rush': {seconds: INTRO.seconds - INTRO.splash, eye: [[-31, 10, 0], [-26, 8, 0]], look: [[0, 1.2, 0], [0, 1.2, 0]], fov: 54},
+  'goal-rush': {seconds: INTRO.seconds - INTRO.splash, eye: [[-X - 13, 10, 0], [-X - 8, 8, 0]], look: [[0, 1.2, 0], [0, 1.2, 0]], fov: 54},
   'sky-spike': {seconds: INTRO.seconds - INTRO.splash, eye: [[-25, 8, 0], [-21, 6.5, 0]], look: [[0, 1.6, 0], [0, 1.6, 0]], fov: 54},
 };
 

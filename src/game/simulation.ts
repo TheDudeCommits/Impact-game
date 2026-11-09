@@ -650,6 +650,10 @@ export interface ExternalBlow {
 export interface ExternalTargets {
   /** Optional allegiance filter for modes with allied and hostile compact units. */
   hostile?(attackerId:string,body:ExternalBody):boolean;
+  /** Optional: a fighter of another side the attacker's blows pass by all the same - Goal Rush's BALL stance, whose
+   *  swings play the ball and never hurt a fighter (game/ball/model.ts GOAL_STANCE). Absent (every other mode): every
+   *  fighter of another side is fair game, as it always was. */
+  spares?(attackerId:string,targetId:string):boolean;
   /** Every body whose hit volume may touch the capsule from `a` to `b` of `radius`: written into `out`, the count returned. */
   query(a: Vec3, b: Vec3, radius: number, out: ExternalBody[]): number;
   /** A blow reaches a body; what it did, or null when it could not land (dying, still coming out of a rift). */
@@ -687,6 +691,11 @@ export interface SportFeel {
   /** A light or heavy melee blow struck in full is over this long after its last contact (its tail cut): the body is
    *  free to strike, jump or dash again while the clip would still be recovering. */
   recovery: number;
+  /** A blow thrown in the air plays its tail out instead (Sky Spike, so its hits flow). Cut 0.14 s after its contact, a
+   *  spike's follow-through dropped out of the air cast's hang into the jump's hard fall mid-swing, a fifth of a second of
+   *  the clip unplayed; there is nothing to strike up there before the feet are down anyway. Absent: cut as `recovery`
+   *  says. */
+  airTail?: boolean;
 }
 /** A blow from the horde's rank and file: a fighter in the middle of a move
  *  trades with it, and one it has just flinched only chips for MINOR_GRACE,
@@ -1258,7 +1267,7 @@ export class ArenaSimulation {
   strike(attackerId: string, targetId: string, slot: AttackSlot, move: MoveDefinition, origin?: Vec3, minor = false, crowd = false) {
     const attacker = this.actors.get(attackerId), target = this.actors.get(targetId);
     if (!target || !target.state.alive || this.status !== 'active') return;
-    if (attacker && !this.hostile(attacker.state, target.state)) return;
+    if (attacker && !this.opposed(attacker.state, target.state)) return;
     const from = origin ?? (attacker ? centre(attacker.state) : centreOf(target.state));
     this.hit(attackerId, target, slot, move, from, true, from, undefined, undefined, undefined, 0, undefined, minor, crowd);
   }
@@ -1339,8 +1348,15 @@ export class ArenaSimulation {
   drainEvents(): CombatEvent[] { const out = this.events; this.events = []; return out; }
 
   /** Whether a blow from `a` may land on `b`: two different bodies, and not
-   *  on one side. Without a side that is every other body, as it always was. */
+   *  on one side. Without a side that is every other body, as it always was.
+   *  (The external host may spare `b` from `a`'s blows: Goal Rush's BALL stance,
+   *  ExternalTargets.spares; nothing else defines it.) */
   private hostile(a: PlayerState, b: PlayerState) {
+    return this.opposed(a, b) && !this.external?.spares?.(a.id, b.id);
+  }
+  /** Two different bodies not on one side: who a blow nobody swung (strike) may land on, whatever the external host
+   *  spares from swings. */
+  private opposed(a: PlayerState, b: PlayerState) {
     return a.id !== b.id && (a.team === undefined || a.team !== b.team);
   }
 
@@ -3926,6 +3942,7 @@ export class ArenaSimulation {
     // over a moment after its last one - a kick recovers and the play flows on - instead of playing out its tail.
     const quick = this.assist?.sport?.recovery, contacts = cast.move.contacts;
     const cut = quick !== undefined && (cast.slot === 'light' || cast.slot === 'heavy') && cast.move.style === 'melee' && !cast.move.plunge
+      && !(cast.airborne && this.assist?.sport?.airTail)
       && !(cast.dive && this.serverTime < cast.dive.until) && cast.nextContact >= contacts.length && !cast.live?.length && age >= contacts[contacts.length - 1] + quick;
     if (age >= cast.move.duration || cut) {
       a.cast = null;

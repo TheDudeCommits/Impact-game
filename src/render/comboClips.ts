@@ -117,7 +117,11 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
     airHeavy: seg('Kings Decree', 2, 2.9, .8), airSpecial: whole('Stinger Storm', .8) },
   'wuming': { lh: seg('Lightless Cannon', 1, 1.75, .5), llh: whole('Dusk Rush 4', .5), lllh: seg('Petalfall Blade', .5, 1.13, .6), llls: seg('awaken-rose', 0, 1, .5),
     airHeavy: seg('Heaven\'s Harvest', 0, .5, .25), airSpecial: seg('Heaven\'s Harvest', .9, 1.38, .3) },
-  jirenga: { lh: seg('Mountain-Felling Fist', 0, .6, .7), llh: whole('Uprooting Fist', .471), lllh: seg('Mountain-Felling Fist', .9, 1.6, .55), llls: seg('Vermilion Seal', .9, 1.8, .6),
+  // Jirenga's lh is the hook that opens Mountain-Felling Fist: its window ends at .5 s (was .6), as
+  // he stands up from the hook's recovery and before the leap that follows it (from .515 s), and its contact share is .39 (was
+  // .7), so the hook (furthest at .19 s) lands on the contact, not 9 frames before it. The take plays at .70 of its pace up to the
+  // contact and .73 after it - no faster can it: the hook comes .19 s into the take, the move's contact .28 s into the move.
+  jirenga: { lh: seg('Mountain-Felling Fist', 0, .5, .39), llh: whole('Uprooting Fist', .471), lllh: seg('Mountain-Felling Fist', .9, 1.6, .55), llls: seg('Vermilion Seal', .9, 1.8, .6),
     airHeavy: seg('Mountain-Felling Fist', .7, 1.4, .6), airSpecial: whole('awaken-wrathful-guardian', .3) },
   'jinlin': { lh: whole('Jinlin Rush 5', .5), llh: seg('Drowned Sun', .4, 1.2, .45), lllh: seg('Pearl Rain', .2, 1.2, .6), llls: seg('awaken-jinlin', .2, 1.5, .5),
     airHeavy: whole('Jinlin Rush 3', .5), airSpecial: seg('Pearl Rain', 1.2, 2.38, .2) },
@@ -158,7 +162,10 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   // Sunpalm Cannon is his special's own Sunpalm Cannon (03-SUNPALM-CANNON), drawn back at the hip as he drops and fired at the floor.
   taisei: { lh: v('Straight Palm', 0.7, 1.7, 0.4, 5.542), llh: v('Rising Axe', 0.95, 1.9, 0.47, 6.042), lllh: v('Flare Hammer', 2.6, 4.3, 0.57, 5.542), llls: v('Flare Hammer', 0.35, 2.35, 0.45, 5.542), airHeavy: v('Afterburn Chase', 0.75, 2.2, 0.3476, 4.042), airSpecial: v('03-SUNPALM-CANNON', 5.9, 7.3, 0.5, 10) },
   ouga: { lh: v('Rising Kick', 0.05, 0.95, 0.33, 6.042), llh: v('Elbow Palm', 1.85, 2.75, 0.39, 5.542), lllh: v('Axe Dive', 0.55, 1.5, 0.47, 6.542), llls: v('Elbow Palm', 0.4, 1.5, 0.41, 5.542), airHeavy: v('Rising Kick', 2.35, 3.3, 0.53, 6.042), airSpecial: v('Axe Dive', 3.3, 4.6, 0.32, 6.542) },
-  konta: { lh: v('Whirlsphere Attack', 1.75, 2.75, 0.42, 3.333), llh: v('Punch 01', 0.15, 1.05, 0.4, 4.167), lllh: v('Punch 01', 1.95, 3, 0.38, 4.167), llls: v('Whirlsphere Attack', 0.35, 1.6, 0.55, 3.333), airHeavy: v('Kick 02', 0.55, 1.35, 0.54, 2.333), airSpecial: v('Whirlsphere Dive', 0.75, 2.2, 0.28, 3.542) },
+  // Konta's lh, llh and lllh windows moved onto his new ender takes, the
+  // same length and contact share: each blow's reach on its contact - the uppercut's and the straight's furthest (they reached
+  // it 3 and 2 frames early), the palm at full extension (it got there 4 frames late). Seconds only; the moves are as they were.
+  konta: { lh: v('Whirlsphere Attack', 1.85, 2.85, 0.42, 3.333), llh: v('Punch 01', 0.08, 0.98, 0.4, 4.167), lllh: v('Punch 01', 1.91, 2.96, 0.38, 4.167), llls: v('Whirlsphere Attack', 0.35, 1.6, 0.55, 3.333), airHeavy: v('Kick 02', 0.55, 1.35, 0.54, 2.333), airSpecial: v('Whirlsphere Dive', 0.75, 2.2, 0.28, 3.542) },
   // Round 4b (COMBAT): the Undertow Sweep is a take of its own (gummy-enders2.glb), the arm flung out wide and swept round
   // at neck height; the slam it used to borrow is his air string's.
   gummy: { lh: v('Grand Tide Fist', 0.9, 1.6, 0.2, 1.875), llh: v('Rising Axe', 2, 2.95, 0.42, 6.042), lllh: v('Sickle Sweep', 0.6, 2.6, 0.67, 5.042), llls: v('Slam Stubborn Headbutt', 3.35, 4.35, 0.6, 6.042), airHeavy: v('Rising Axe', 2.95, 3.75, 0.46, 6.042), airSpecial: v('Signal Fire', 2.9, 3.46, 0.36, 3.458) },

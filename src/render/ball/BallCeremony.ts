@@ -26,6 +26,8 @@ export type CeremonyShow = 'intro' | 'close' | 'podium' | null;
 interface Sequence { at: number; scorer?: string; team: BallTeam; until: number; x: number; y: number; z: number; key: string }
 /** The goal's lens: from this long after the goal to the replay, the scorer's close-up. */
 const CLOSE_FROM = .85;
+/** The close-up's turns off the scorer's front to try, nearest first, when the walls are in the way (closeUp). */
+const CLOSE_TURNS = [0, .5, -.5, 1, -1, 1.5, -1.5, 2.1, -2.1, 2.7, -2.7, Math.PI];
 /** The spotlights' sweep: seconds, and how long they take to find the scorer. */
 const SWEEP = 3.2, FIND = .9;
 const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -197,7 +199,7 @@ export class BallCeremony {
     // or roof, bulging as far as the shot was hard.
     if (e.kind !== 'kill' && e.kind !== 'ace') this.netHit(e);
     if (e.kind === 'own-goal') return;
-    const until = view.replay && view.replay.at > e.at ? view.replay.at : e.at + REPLAY.ceremony;
+    const until = view.replay && view.replay.at > e.at ? view.replay.at : e.at + (goal ? REPLAY.goalCeremony : REPLAY.ceremony);
     this.sequence = {at: e.at, scorer: e.actorId, team: e.team ?? 'red', until, x: e.x, y: e.y, z: e.z, key: `${e.id}`};
     const body = e.actorId ? this.bodiesOf(e.actorId) : undefined;
     if (body && one) MangaScreens.focus(body, until - e.at + .4, 1.4);
@@ -246,15 +248,36 @@ export class BallCeremony {
     if (!body) return false;
     const p = body.getWorldPosition(this.tmp), player = this.player(s.scorer!);
     const yaw = player?.yaw ?? 0, size = player?.size ?? 1, t = Math.min(1, (this.serverTime - s.at - CLOSE_FROM) / Math.max(.5, s.until - s.at - CLOSE_FROM));
-    const swing = (reduced() ? .5 : t) * .5 - .25, d = (3.6 - (reduced() ? .3 : t * .6)) * size, a = yaw + swing;
+    const swing = (reduced() ? .5 : t) * .5 - .25, d = (3.6 - (reduced() ? .3 : t * .6)) * size;
+    // A scorer facing a wall up close (more often on the smaller pitch) had the lens clamped against the wall,
+    // inside their own body - a black screen - and a team-mate crowding them stood in front of it. The close-up is turned
+    // round them, once a sequence, to the nearest angle off their front whose whole swing keeps the lens inside the walls
+    // with nobody else's body across it.
+    const [wx, wz] = view.mode === 'goal-rush' ? [GOAL_RULES.halfX - .6, GOAL_RULES.halfZ + GOAL_RULES.goalDepth - .4] : [SPIKE_RULES.halfX - .6, SPIKE_RULES.halfZ - .6];
+    if (this.shotIndex !== -3) {
+      const far = 3.6 * size, others = (this.snapshotPlayers ?? []).filter(q => q.id !== s.scorer && q.alive);
+      const clear = (a: number) => {
+        const ex = p.x + Math.sin(a) * far, ez = p.z + Math.cos(a) * far;
+        if (Math.abs(ex) >= wx || Math.abs(ez) >= wz) return false;
+        // (Nobody within a body's width of the line from the lens to the scorer.)
+        for (const q of others) {
+          const dx = ex - p.x, dz = ez - p.z, l2 = dx * dx + dz * dz, k = Math.max(0, Math.min(1, ((q.x - p.x) * dx + (q.z - p.z) * dz) / l2));
+          if (k > .08 && Math.hypot(q.x - p.x - dx * k, q.z - p.z - dz * k) < .75 * (q.size ?? 1)) return false;
+        }
+        return true;
+      };
+      this.closeTurn = CLOSE_TURNS.find(k => clear(yaw + k - .25) && clear(yaw + k + .25)) ?? CLOSE_TURNS.find(k => clear(yaw + k)) ?? 0;
+    }
+    const a = yaw + this.closeTurn + swing;
     this.eye.set(p.x + Math.sin(a) * d, p.y + 1.55 * size, p.z + Math.cos(a) * d);
     // Keep the lens inside the place's walls.
-    if (view.mode === 'goal-rush') { this.eye.x = THREE.MathUtils.clamp(this.eye.x, -GOAL_RULES.halfX + .6, GOAL_RULES.halfX - .6); this.eye.z = THREE.MathUtils.clamp(this.eye.z, -GOAL_RULES.halfZ - GOAL_RULES.goalDepth + .4, GOAL_RULES.halfZ + GOAL_RULES.goalDepth - .4); }
-    else { this.eye.x = THREE.MathUtils.clamp(this.eye.x, -SPIKE_RULES.halfX + .6, SPIKE_RULES.halfX - .6); this.eye.z = THREE.MathUtils.clamp(this.eye.z, -SPIKE_RULES.halfZ + .6, SPIKE_RULES.halfZ - .6); }
+    this.eye.x = THREE.MathUtils.clamp(this.eye.x, -wx, wx); this.eye.z = THREE.MathUtils.clamp(this.eye.z, -wz, wz);
     this.look.set(p.x, p.y + 1.35 * size, p.z);
     if (this.shotIndex !== -3) { this.shotIndex = -3; this.cut = true; }
     return true;
   }
+  /** The close-up's turn off the scorer's front (radians) this sequence (closeUp). */
+  private closeTurn = 0;
   /** Round the podium in an arc in front of it, a little higher as it goes, then holding a slow drift under the results. */
   private orbit(view: BallView) {
     const layout = this.podiumLayout;
@@ -354,7 +377,7 @@ export class BallCeremony {
     if (!this.spots.visible || !target) return;
     const tint = u.uTint.value as THREE.Color;
     if (s && view.phase === 'scored') tint.setHex(s.team === 'red' ? 0xffd8cc : 0xd6e6ff); else tint.setRGB(1, .93, .78);
-    const pitch = view.mode === 'goal-rush', R = pitch ? GOAL_RULES : SPIKE_RULES, reach = pitch ? 16 : 10;
+    const pitch = view.mode === 'goal-rush', R = pitch ? GOAL_RULES : SPIKE_RULES, reach = pitch ? GOAL_RULES.halfX * .9 : 10;
     const find = reduced() ? 1 : Math.min(1, age / FIND), ease = find * find * (3 - 2 * find), lights = this.kit.quality !== 'low';
     const pos = this.shaftPositions.array as Float32Array;
     for (let i = 0; i < 4; i++) {

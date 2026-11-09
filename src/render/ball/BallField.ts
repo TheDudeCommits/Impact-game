@@ -14,12 +14,17 @@ import type {FighterId} from '../../game/types';
 
 /** Points in the trail, effects in the pool, and the instances drawn each frame beyond the pool (the shadow, the
  *  landing ring, the stopped clock). */
-const TRAIL=40,CAP=720,EXTRA=10;
+const TRAIL=40,CAP=900,EXTRA=10;
 /** One pooled effect's floats: where, its velocity, its age and life, its size from and to, colour and alpha, its
  *  kind, turn and spin, drag, gravity, a seed, how far it stretches and along what, and its flags. */
 const F=25,PX=0,PY=1,PZ=2,VX=3,VY=4,VZ=5,AGE=6,LIFE=7,S0=8,S1=9,CR=10,CG=11,CB=12,CA=13,KIND=14,ROT=15,SPIN=16,DRAG=17,GRAV=18,SEED=19,STRETCH=20,FLAGS=21,AX=22,AY=23,AZ=24;
 /** What each pooled effect is drawn as (the fragment shader's branches). 20 and up lie flat on the floor. */
-const K={spark:0,smoke:1,burst:2,ring:3,petal:4,confetti:5,streak:6,shield:7,chunk:8,glint:9,clock:10,bolt:11,groundRing:20,splat:21,shadow:22,landing:23,dust:24,side:25} as const;
+const K={spark:0,smoke:1,burst:2,ring:3,petal:4,confetti:5,streak:6,shield:7,chunk:8,glint:9,clock:10,bolt:11,
+  // A hit star at contact, focus lines round a moment, a manga cloud, a column off the floor, an inked shock.
+  hit:12,lines:13,cloud:14,pillar:15,shock:16,
+  groundRing:20,splat:21,shadow:22,landing:23,dust:24,side:25} as const;
+/** The kinds drawn in the covering layer (ink and paper over what is behind them), before the light. */
+const COVERS=new Uint8Array(32);for(const k of [K.smoke,K.petal,K.confetti,K.chunk,K.burst,K.hit,K.lines,K.cloud,K.pillar,K.shock])COVERS[k]=1;
 /** Stretched along its own flight, stretched along a fixed axis, stopped by the floor, fluttering as paper falls. */
 const ALONG_FLIGHT=1,ALONG_AXIS=2,FLOOR=4,FLUTTER=8;
 /** Seconds the drawn ball may run ahead of its last snapshot; the time constant a correction is blended out over
@@ -29,9 +34,14 @@ const AHEAD=.12,BLEND=.028,SNAP=4;
 const TEAM:Record<BallTeam,THREE.Color>={red:new THREE.Color(BALL_TEAM_COLOURS.red),blue:new THREE.Color(BALL_TEAM_COLOURS.blue)};
 const NEUTRAL=new THREE.Color(.9,.92,1),WHITE=new THREE.Color(1,1,1),INK=new THREE.Color(.012,.012,.016),GOLD=new THREE.Color(1,.72,.28);
 const DUST=new THREE.Color(.42,.38,.33),PINK=new THREE.Color(1,.62,.76),PALE=new THREE.Color(.75,.9,1),WOOD=new THREE.Color(.55,.34,.18),CLOCK=new THREE.Color(.92,.92,.96);
+/** The manga clouds' paper - cold, warmed by a burning ball, and the grey of a ball at OVERDRIVE's smoke. */
+const PAPER=new THREE.Color(.95,.93,.88),WARM=new THREE.Color(1,.84,.66),ASH=new THREE.Color(.55,.52,.5);
 /** How bright the fire round a hot ball burns (its HDR; the frame's bloom and diffusion spread anything much over one
  *  across the ball itself, which is what washed it out), scaled down on the lower VISUAL EFFECTS levels. */
 const FIRE_GLOW=.55;
+/** How hard a strike was (0.12-1.2), from the ball's speed off it (m/s): a 12 m/s pass is a spark, a 35 m/s
+ *  power shot a blast. */
+const strikePower=(value:number|undefined)=>Math.min(1.2,Math.max(.12,((value??15)-8)/28));
 /** The light a burning ball throws, by heat tier (none cold). */
 const HEAT_LIGHT=[0,0xffb060,0xff7a1a,0xff3a1a,0xb46bff] as const;
 const TREES:readonly (readonly [number,number])[]=[[1,1],[1,-1],[-1,1],[-1,-1]].map(([sx,sz])=>[sx*(SPIKE_RULES.halfX+1.6),sz*(SPIKE_RULES.halfZ+1.7)] as const);
@@ -115,26 +125,31 @@ class InkFx{
       name:'Ball moments',...PREMULTIPLIED,side:THREE.DoubleSide,toneMapped:false,
       uniforms:{uTime:time,uNoise:{value:noiseTexture()}},
       vertexShader:`attribute vec4 aPos;attribute vec4 aCol;attribute vec4 aAxis;attribute vec4 aMisc;
-        varying vec2 vP;varying vec4 vCol;varying vec4 vMisc;varying vec4 vAxis;
+        varying vec2 vP;varying vec4 vCol;varying vec4 vMisc;varying vec4 vAxis;varying float vDepth;
         void main(){
           vP=position.xy;vCol=aCol;vMisc=aMisc;vAxis=aAxis;
           vec3 centre=(modelMatrix*vec4(aPos.xyz,1.)).xyz;
-          float c=cos(aMisc.z),s=sin(aMisc.z);
-          vec2 q=mat2(c,s,-s,c)*position.xy*aPos.w;
+          float c=cos(aMisc.z),s=sin(aMisc.z),kind=aMisc.x,size=aPos.w;
           vec4 mv;
-          if(aMisc.x>19.5)mv=viewMatrix*vec4(centre+vec3(q.x,0.,q.y),1.);
+          if(kind>19.5){vec2 q=mat2(c,s,-s,c)*position.xy*size;mv=viewMatrix*vec4(centre+vec3(q.x,0.,q.y),1.);}
           else{
             mv=viewMatrix*vec4(centre,1.);
+            // A card standing up to the lens is never more than a share of the frame's height across (a ring,
+            // a shock, the focus lines up to most of it; a cloud, a burst or a hit star about half), so a moment beside
+            // the lens frames the play instead of filling the screen with a band or a blob.
+            float cap=(kind>2.5&&kind<3.5)||(kind>12.5&&kind<13.5)||(kind>15.5&&kind<16.5)?.95:(kind>.5&&kind<2.5)||(kind>11.5&&kind<12.5)||(kind>13.5&&kind<14.5)?.5:1e4;
+            size=min(size,max(-mv.z,.05)/projectionMatrix[1][1]*cap);
             if(aAxis.w>0.){
               vec3 d=(viewMatrix*vec4(aAxis.xyz,0.)).xyz;float l=length(d.xy);
               vec2 along=l>1e-4?d.xy/l:vec2(1.,0.),across=vec2(-along.y,along.x);
-              mv.xy+=along*position.x*aPos.w*aAxis.w+across*position.y*aPos.w;
-            }else mv.xy+=q;
+              mv.xy+=along*position.x*size*aAxis.w+across*position.y*size;
+            }else mv.xy+=mat2(c,s,-s,c)*position.xy*size;
           }
+          vDepth=-mv.z;
           gl_Position=projectionMatrix*mv;
         }`,
       fragmentShader:`uniform sampler2D uNoise;uniform float uTime;
-        varying vec2 vP;varying vec4 vCol;varying vec4 vMisc;varying vec4 vAxis;
+        varying vec2 vP;varying vec4 vCol;varying vec4 vMisc;varying vec4 vAxis;varying float vDepth;
         float h1(float n){return fract(sin(n)*43758.5453);}
         void main(){
           float kind=vMisc.x,t=vMisc.y,seed=vMisc.w;
@@ -166,9 +181,9 @@ class InkFx{
             cover=shape*hole*al*(1.-smoothstep(.65,1.,t));
             rgb=c*cover;
           }else if(kind<3.5){
-            // A shockwave ring racing out and thinning.
-            float rr=mix(.25,.95,sqrt(t)),w=mix(.2,.025,t);
-            rgb=col*(1.-smoothstep(w*.5,w*.5+.04,abs(r-rr)))*al*(1.-t)*1.6;
+            // A ring of light racing out and thinning (thin from its start: a thick one read as a band).
+            float rr=mix(.25,.95,sqrt(t)),w=mix(.075,.018,t),px=fwidth(r)+.002;
+            rgb=col*(1.-smoothstep(w-px,w+px,abs(r-rr)))*al*(1.-t)*1.7;
           }else if(kind<4.5){
             // A cherry petal.
             float d=max(length(p*vec2(1.65,1.))-.92,.2-length(p-vec2(0.,1.02)));
@@ -215,34 +230,106 @@ class InkFx{
             float off=((texture2D(uNoise,vec2(p.x*.35+seed,frame*.137+seed)).r-.5)*.9+(texture2D(uNoise,vec2(p.x*.9+seed*2.,frame*.31)).g-.5)*.35)*(1.-abs(p.x));
             float l=1.-smoothstep(.03,.14,abs(p.y-off)),core=1.-smoothstep(0.,.05,abs(p.y-off));
             rgb=(col*l*1.8+vec3(2.5)*core)*al*(1.-t)*(1.-smoothstep(.85,1.,abs(p.x)));
+          }else if(kind<12.5){
+            // A hit at the moment of contact: needle spikes round a white-hot heart, every spike inked at its edge
+            // (the card is stretched along the shot, so the longest run with it); whole at once, then thinning away.
+            float slots=13.,f=a*.15915494*slots+seed*7.,cell=floor(f),fr=fract(f)-.5,px=fwidth(r)+.004;
+            float len=mix(.42,1.,h1(cell*1.7+seed*31.))*(1.-t*.25);
+            float d=r*abs(fr)*6.2832/slots,taper=max(0.,1.-r/len);
+            float w=.11*taper*(1.-t*.55),heart=.2*(1.-t*.8);
+            float hot=max(1.-smoothstep(heart-px,heart+px,r),(1.-smoothstep(w-px,w+px,d))*step(r,len));
+            float iw=w+.045*max(0.,1.-r/(len+.07));
+            float edge=max(1.-smoothstep(heart+.05-px,heart+.05+px,r),(1.-smoothstep(iw-px,iw+px,d))*step(r,len+.07));
+            cover=edge*al*(1.-smoothstep(.6,1.,t));
+            vec3 c=mix(vec3(2.3),col*2.,smoothstep(.1,.5,r/len));
+            rgb=mix(vec3(.012),c,hot)*cover;
+          }else if(kind<13.5){
+            // Manga focus lines round a moment, kept to it (the frame's own are the whole screen's): tapered ink
+            // strokes thrown out from an empty middle, each on a paper edge so it reads on a dark floor and a pale one.
+            float slots=60.,f=a*.15915494*slots,cell=floor(f),fr=abs(fract(f)-.5)*2.;
+            float inner=mix(.26,.5,h1(cell*1.3+seed*5.))+t*.3,outer=min(1.,inner+mix(.28,.5,h1(cell*2.7+seed*3.)));
+            float along=smoothstep(inner,inner+.05,r)*(1.-smoothstep(outer-.1,outer,r))*step(.42,h1(cell*3.1+seed*17.));
+            float w=mix(.22,.5,h1(cell*.7+seed))*(1.-smoothstep(inner,outer+.05,r));
+            float aa=min(fwidth(f)*2.,.5);
+            float line=(1.-smoothstep(w-aa,w+aa,fr))*along,lip=(1.-smoothstep(w+.35-aa,w+.35+aa,fr))*along;
+            float fade=al*(1.-smoothstep(.45,1.,t));
+            cover=lip*fade;
+            rgb=mix(vec3(.95,.93,.87),col,line/max(lip,1e-3))*cover;
+          }else if(kind<14.5){
+            // A manga cloud: a lumpy puff of paper rimmed in ink (dust, smoke, the trail a fast ball leaves),
+            // lit from above, wearing away from its thin side as it dies.
+            float n=texture2D(uNoise,p*.3+vec2(seed*5.3,seed*2.9)+t*.05).g;
+            float lumps=.1*sin(a*5.+seed*20.)+.06*sin(a*9.-seed*13.+t*2.)+(n-.5)*.16;
+            float edge=.74+lumps,px=fwidth(r)*1.2+.012;
+            float keep=smoothstep(t*1.1-.12,t*1.1+.02,n*.7+.3*(1.-r/edge));
+            float body=(1.-smoothstep(edge-px,edge+px,r))*keep;
+            float rim=1.-smoothstep(edge-.11-px,edge-.11+px,r);
+            vec3 fill=col*mix(.78,1.05,smoothstep(-.6,.6,p.y+n*.3));
+            cover=body*al*(1.-smoothstep(.75,1.,t));
+            rgb=mix(fill,vec3(.02,.02,.025),(1.-rim)*.92)*cover;
+          }else if(kind<15.5){
+            // A column thrown up off the floor (a goal, a spike slammed in): the card stands along the world's up
+            // (vP.x up it), ragged at its sides, shooting up then breaking off at its foot; a hot heart in its colour,
+            // ink at its edges.
+            float up=p.x*.5+.5,n=texture2D(uNoise,vec2(p.y*.4+seed,up*1.3-t*1.4)).g;
+            float top=min(1.,sqrt(t*3.2)),foot=smoothstep(.45,1.,t);
+            float w=mix(.62,.2,up)*(.8+.4*n)*(1.+up*t*.6);
+            float px=fwidth(p.y)+.01;
+            float body=(1.-smoothstep(w-px,w+px,abs(p.y)))*step(foot*.9,up)*(1.-smoothstep(top-.08,top,up));
+            float heart=1.-smoothstep(w*.38,w*.62,abs(p.y));
+            cover=body*al*(1.-smoothstep(.7,1.,t));
+            rgb=mix(vec3(.015),mix(col*2.2,vec3(3.),heart*(1.-up)*.6),heart)*cover;
+          }else if(kind<16.5){
+            // A shock: a crisp line of colour on an ink band, racing out with an ease and broken like a brush
+            // stroke - it reads on paper and on a night floor, and is gone in a breath.
+            float e=1.-(1.-t)*(1.-t)*(1.-t),rr=mix(.18,.96,e),w=mix(.07,.012,e),px=fwidth(r)+.002;
+            float gap=smoothstep(.2,.32,texture2D(uNoise,vec2(a*.55+seed*5.,seed*1.7)).r);
+            float line=1.-smoothstep(w-px,w+px,abs(r-rr)),band=1.-smoothstep(w+.035-px,w+.035+px,abs(r-rr));
+            float fade=al*(1.-smoothstep(.55,1.,t))*gap;
+            cover=band*fade*.85;
+            rgb=col*1.7*line*fade;
           }else if(kind<20.5){
-            // A shockwave along the floor.
-            float rr=mix(.2,.97,sqrt(t)),w=mix(.24,.03,t);
-            rgb=col*(1.-smoothstep(w*.5,w*.5+.03,abs(r-rr)))*al*(1.-t)*1.4;
+            // A shockwave along the floor (a crisp line in its colour on a broken ink band, where a fat white band
+            // lay on the turf like a painted ellipse).
+            float e=1.-(1.-t)*(1.-t),rr=mix(.18,.97,e),w=mix(.06,.012,e),px=fwidth(r)+.002;
+            float gap=smoothstep(.18,.3,texture2D(uNoise,vec2(a*.45+seed*3.,seed*2.3)).r);
+            float line=1.-smoothstep(w-px,w+px,abs(r-rr)),band=1.-smoothstep(w+.03-px,w+.03+px,abs(r-rr));
+            float fade=al*(1.-t)*gap;
+            cover=band*fade*.7;
+            rgb=col*1.5*line*fade;
           }else if(kind<21.5){
-            // An ink crater where the ball came down: a black splash with droplets thrown out, rimmed in colour.
+            // An ink crater where the ball came down: a black splash with droplets thrown out, rimmed in colour (with
+            // cracks running out past it across the floor).
             float s=pow(abs(sin(a*3.5+seed*10.)),6.)*(.5+.5*texture2D(uNoise,vec2(a*.5+seed,.3)).b);
             float reach=.4+.42*s,body=1.-smoothstep(reach-.03,reach,r),drops=0.;
             for(int i=0;i<6;i++){float fi=float(i),an=seed*6.28+fi*1.047+h1(seed+fi)*.6,dist=.68+.24*h1(seed*3.+fi);
               drops=max(drops,1.-smoothstep(.05,.08,length(p-dist*vec2(cos(an),sin(an)))));}
             float rim=smoothstep(reach-.16,reach-.07,r)*body;
             float crack=step(.94,fract(a*1.9+seed*3.))*step(r,.34)*step(.1,r);
+            float slots=9.,f=a*.15915494*slots+seed*4.,cell=floor(f),jag=(texture2D(uNoise,vec2(r*2.2+cell,seed)).r-.5)*.5;
+            float run=(1.-smoothstep(.02,.05,abs(fract(f)-.5+jag*.3)*r*.7))*step(reach-.05,r)*(1.-smoothstep(.62+.3*h1(cell+seed*9.),.98,r))*step(.35,h1(cell*2.3+seed));
             vec3 c=mix(vec3(.012),col*1.3,rim);c=mix(c,vec3(.8),crack*.55);
-            cover=max(body,drops)*al*(1.-smoothstep(.7,1.,t));
+            cover=max(max(body,drops),run*.9)*al*(1.-smoothstep(.7,1.,t));
             rgb=c*cover;
           }else if(kind<22.5){
             // The ball's shadow, and a fine ring to find it by when the ball is high (its strength in vAxis.x).
             cover=(1.-smoothstep(.15,1.,r))*al;
             rgb=vec3(.9)*(1.-smoothstep(.02,.05,abs(r-.9)))*vAxis.x;
           }else if(kind<23.5){
-            // Where the ball comes down: dashes round a ring, a fainter inner ring, a cross when it lands out.
-            float ring=(1.-smoothstep(.05,.09,abs(r-.88)))*step(.45,fract(a/6.28318*14.));
-            float inner=1.-smoothstep(.02,.05,abs(r-.42));
+            // Where the ball comes down (drawn fine, as a sight rather than a painted band): a fine ring on an ink
+            // hairline, four ticks pointing in and turning slowly, a dot at its heart, a faint fill, a cross when it lands
+            // out. The card shrinks as the ball falls, so the ring closes on the spot.
+            float px=fwidth(r)+.002;
+            float ring=1.-smoothstep(.026-px,.026+px,abs(r-.88)),hair=1.-smoothstep(.055-px,.055+px,abs(r-.88));
+            vec2 q=abs(p);
+            float tick=max((1.-smoothstep(.024-px,.024+px,q.y))*step(.6,q.x)*step(q.x,.8),(1.-smoothstep(.024-px,.024+px,q.x))*step(.6,q.y)*step(q.y,.8));
+            float tickInk=max((1.-smoothstep(.05-px,.05+px,q.y))*step(.57,q.x)*step(q.x,.83),(1.-smoothstep(.05-px,.05+px,q.x))*step(.57,q.y)*step(q.y,.83));
+            float heart=1.-smoothstep(.065-px,.065+px,r),heartInk=1.-smoothstep(.1-px,.1+px,r);
             vec2 d=vec2(p.x+p.y,p.x-p.y)*.7071;
-            float xmark=vAxis.y*(1.-smoothstep(.04,.08,min(abs(d.x),abs(d.y))))*step(r,.6);
-            float fill=(1.-smoothstep(0.,.9,r))*.18;
-            cover=fill*al;
-            rgb=col*(ring*1.6+inner*.7+xmark*1.4+fill*.5)*al;
+            float xmark=vAxis.y*(1.-smoothstep(.035,.06,min(abs(d.x),abs(d.y))))*step(r,.55);
+            float fill=(1.-smoothstep(.2,.88,r))*.1;
+            cover=(max(max(hair,tickInk),heartInk)*.7+fill)*al;
+            rgb=col*(ring*1.7+tick*1.5+heart*1.4+xmark*1.5+fill*.4)*al;
           }else if(kind<24.5){
             // Dust thrown out along the floor in a broken ring.
             float n=texture2D(uNoise,vec2(a*.6+seed,r*.8-t*.5)).g;
@@ -258,6 +345,9 @@ class InkFx{
             cover=max(edge*.6,outer*.5)*al;
             rgb=col*(band*(.85+own*.75)+outer*1.3)*al;
           }
+          // What stands up to the lens fades out as the lens closes on it (gone a metre off), so a burst, a cloud
+          // or a shock the ball carries past the camera never washes the whole frame.
+          if(kind<19.5){float near=smoothstep(1.,3.2,vDepth);rgb*=near;cover*=near;}
           gl_FragColor=vec4(rgb,cover);
         }`,
     });
@@ -299,7 +389,7 @@ class InkFx{
     const d=this.data;
     for(let i=0;i<CAP&&this.count<CAP+EXTRA;i++){
       const o=i*F;if(d[o+LIFE]<=0)continue;
-      const kind=d[o+KIND],flat=kind>19.5,covers=kind===K.smoke||kind===K.petal||kind===K.confetti||kind===K.chunk||kind===K.burst;
+      const kind=d[o+KIND],flat=kind>19.5,covers=COVERS[kind]===1;
       if((which===0)!==flat||(which===1&&!covers)||(which===2&&covers))continue;
       const t=d[o+AGE]/d[o+LIFE],e=1-(1-t)*(1-t),size=d[o+S0]+(d[o+S1]-d[o+S0])*e,flags=d[o+FLAGS];
       let ax=0,ay=0,az=0,stretch=0;
@@ -358,7 +448,7 @@ export class BallField {
   private shown=false;private lastEvent=-1;private frozen=false;private freezeFrom=0;private freezeLength=1;
   private readonly charms=new BallCharms();
   private heat=0;private flash=0;private grown=1;private trailClock=0;private pulseAt=0;
-  private embers=0;private sparks=0;private bolts=0;private streaks=0;
+  private embers=0;private sparks=0;private bolts=0;private streaks=0;private smoke=0;
   private readonly land={x:0,z:0,t:0,show:false,team:null as BallTeam|null};
   private readonly contacts:BallContact[]=[];
   private readonly eye=new THREE.Vector3();private readonly omega=new THREE.Vector3();private readonly axis=new THREE.Vector3();private readonly turn=new THREE.Quaternion();
@@ -529,10 +619,11 @@ export class BallField {
     const ribbon=(style:number)=>new THREE.ShaderMaterial({
       name:style?'Ball super trail':'Ball trail',...PREMULTIPLIED,side:THREE.DoubleSide,toneMapped:false,
       uniforms:{uStyle:{value:style},uHeat:{value:0},uTime:this.time,uNoise:{value:noiseTexture()}},
-      vertexShader:`attribute vec4 aColor;varying vec4 vColor;varying vec2 vUv;void main(){vColor=aColor;vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-      fragmentShader:`uniform float uStyle,uHeat,uTime;uniform sampler2D uNoise;varying vec4 vColor;varying vec2 vUv;
+      vertexShader:`attribute vec4 aColor;varying vec4 vColor;varying vec2 vUv;varying float vDepth;void main(){vColor=aColor;vUv=uv;vec4 mv=modelViewMatrix*vec4(position,1.);vDepth=-mv.z;gl_Position=projectionMatrix*mv;}`,
+      fragmentShader:`uniform float uStyle,uHeat,uTime;uniform sampler2D uNoise;varying vec4 vColor;varying vec2 vUv;varying float vDepth;
         void main(){
-          float across=abs(vUv.y*2.-1.),a=vColor.a;
+          // (Faded out where it passes the lens, which a ball flown past the camera drew as a band across the frame.)
+          float across=abs(vUv.y*2.-1.),a=vColor.a*smoothstep(1.,3.5,vDepth);
           if(uStyle<.5){
             // A solid band in the striker's colour, an ink edge, a white-hot core as the ball heats.
             float body=1.-smoothstep(.9,1.,across),ink=smoothstep(.72,.8,across)*body,core=1.-smoothstep(0.,.18+uHeat*.08,across);
@@ -762,6 +853,15 @@ export class BallField {
     if(hot){
       this.embers+=(tier>=2?14:0)*dt*gain;this.sparks+=(tier>=3?(tier>=4?48:36):0)*dt*gain;this.bolts+=(tier>=4?16:0)*dt*gain;
       this.streaks+=(speed>16?Math.min(60,(speed-14)*2.2):0)*dt*VFX.speedLines;
+      // The smoke trail (a big readable ball trailing smoke): manga clouds left behind a
+      // fast ball - paper, warmer as it burns, ash at OVERDRIVE - born small a ball and a half behind it and swelling as
+      // they wear away, so they never stand over its face.
+      this.smoke+=(speed>11?Math.min(42,(speed-11)*2.1):0)*dt*gain;
+      for(;this.smoke>=1;this.smoke--){
+        const s=Math.max(speed,1),back=r*(1.5+Math.random()*1.2),j=this.randomDirection(r*.35);
+        const o=fx.spawn(K.cloud,x-vx/s*back+j.x,y-vy/s*back+j.y,z-vz/s*back+j.z,-vx*.05+j.x*2,.35+Math.random()*.4,-vz*.05+j.z*2,.34+Math.random()*.2+tier*.04,r*.5,r*(1.25+tier*.16+Math.min(.6,speed/60)),tier>=4?ASH:tier>=2?WARM:PAPER,.82);
+        fx.data[o+DRAG]=3;
+      }
       for(;this.embers>=1;this.embers--){const off=this.rim(r*1.05),o=fx.spawn(K.spark,x+off.x,y+off.y,z+off.z,-vx*.08+(Math.random()-.5)*2,-vy*.08+Math.random()*2.5,-vz*.08+(Math.random()-.5)*2,.5,r*.22,r*.08,tier>=4?PINK:GOLD,.9);fx.data[o+DRAG]=1.5;}
       for(;this.sparks>=1;this.sparks--){
         const off=this.rim(r*1.15);
@@ -787,7 +887,7 @@ export class BallField {
       // A burning ball lights the turf and the fighters round it through the pooled lights (vfx/LightPool, at the VISUAL
       // EFFECTS level's share), more and further the hotter it is; none on the LOW quality.
       if(this.heat>=1&&this.kit.quality!=='low'){const k=Math.min(1,(this.heat-.9)/3.3);this.kit.lights.request(x,Math.max(y,.7),z,HEAT_LIGHT[tier],5+k*19,5+k*5,1.6+k*1.4);}
-    }else this.embers=this.sparks=this.bolts=this.streaks=0;
+    }else this.embers=this.sparks=this.bolts=this.streaks=this.smoke=0;
     if(!frozen)this.gear.trail(this.emit,view,b,this.drawn,this.velocity,speed,r,dt,gain);
     fx.step(frozen?0:dt);
     fx.begin();
@@ -825,10 +925,20 @@ export class BallField {
       case 'goal':case 'own-goal':{
         // A huge ink explosion at the goal, thrown out toward the pitch, and confetti in the scorers' colour.
         const sz=Math.sign(e.z)||1,x=e.x,y=Math.max(1.4,Math.min(e.y,GOAL_RULES.goalHeight-.6)),z=e.z;
-        this.fx.spawn(K.burst,x,y,z,0,0,0,.75,3,11,team,1);this.fx.spawn(K.glint,x,y,z,0,0,0,.4,9,4,WHITE,1);
-        this.fx.spawn(K.ring,x,y,z,0,0,0,.6,4,15,WHITE,1);this.fx.spawn(K.ring,x,y,z,0,0,0,.95,6,20,team,1);
-        this.fx.spawn(K.groundRing,x,.06,z-sz*2,0,0,0,1.1,3,18,team,1);
-        for(let i=0;i<n(26);i++){const a=Math.random()*Math.PI*2,s=4+Math.random()*10,o=this.fx.spawn(K.smoke,x,y*.7,z,Math.cos(a)*s*.8,2+Math.random()*7,-sz*Math.abs(Math.sin(a))*s,1.4+Math.random()*.9,1.6,3.4+Math.random()*1.6,INK,.95);this.fx.data[o+DRAG]=2.2;}
+        this.fx.spawn(K.burst,x,y,z,0,0,0,.75,4,14,team,1);this.fx.spawn(K.glint,x,y,z,0,0,0,.4,9,4,WHITE,1);
+        this.hit(x,y,z,0,0,-sz,1.25,team,true);
+        this.fx.spawn(K.shock,x,y,z,0,0,0,.6,4,15,WHITE,1);this.fx.spawn(K.shock,x,y,z,0,0,0,.95,6,20,team,1);
+        this.fx.spawn(K.groundRing,x,.06,z-sz*2,0,0,0,1.1,3,18,team,1);this.fx.spawn(K.groundRing,x,.065,z-sz*2,0,0,0,.7,2,11,WHITE,1);
+        this.fx.spawn(K.dust,x,.06,z-sz*1.5,0,0,0,1,2,13,DUST,.85);
+        // The goal goes up - columns of the scorers' colour thrown up out of the mouth, the middle one tallest,
+        // burning hot enough that the INK FLASH leaves them in colour on the inked page.
+        for(let i=-2;i<=2;i++){
+          const lean=i*.3,h=i===0?10:i*i===1?7.5:5.5,w=i===0?2:i*i===1?1.6:1.2,ax=lean,ay=1,l=Math.hypot(ax,ay);
+          const o=this.fx.spawn(K.pillar,x+i*1.5+lean*h*.5,h*.5,z-sz*.4,0,0,0,.6+.12*(2-Math.abs(i)),w*.75,w,team,1),d=this.fx.data;
+          d[o+FLAGS]=ALONG_AXIS;d[o+AX]=ax/l;d[o+AY]=ay/l;d[o+AZ]=0;d[o+STRETCH]=h/w*.55;
+        }
+        for(let i=0;i<n(10);i++){const a=Math.random()*Math.PI*2,s=4+Math.random()*10,o=this.fx.spawn(K.smoke,x,y*.7,z,Math.cos(a)*s*.8,2+Math.random()*7,-sz*Math.abs(Math.sin(a))*s,.9+Math.random()*.5,1.2,2.6+Math.random()*1.2,INK,.95);this.fx.data[o+DRAG]=2.2;}
+        this.clouds(x,.6,z-sz*1.2,n(14),PAPER,9,1.2,3.2,.4);
         for(let i=0;i<n(110);i++){
           const roll=Math.random(),o=this.fx.spawn(K.confetti,x+(Math.random()-.5)*4,y,z,(Math.random()-.5)*18,10+Math.random()*11,-sz*(3+Math.random()*10),3+Math.random()*1.6,.16+Math.random()*.08,.16,roll<.6?team:roll<.85?WHITE:GOLD,1);
           const d=this.fx.data;d[o+GRAV]=9;d[o+DRAG]=1.4;d[o+FLAGS]=FLUTTER|FLOOR;d[o+SPIN]=(Math.random()-.5)*14;
@@ -840,24 +950,30 @@ export class BallField {
         break;
       }
       case 'post':{
-        // The clang: a white glint, sparks flying off the iron, a ring.
-        this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.3,2.6,1,WHITE,1);this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.35,.6,3.2,WHITE,1);
-        this.sparkle(e.x,e.y,e.z,n(18),GOLD,14);this.puffs(e.x,e.y,e.z,2,INK,.5,1.3,3);this.flash=1;
+        // The clang: a hit star on the iron, the post ringing out in two shocks, a white glint, sparks flying off it.
+        const s=Math.min(1,.5+(e.value??20)/50);
+        this.hit(e.x,e.y,e.z,0,0,0,s,GOLD,true);
+        this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.3,2.6,1,WHITE,1);this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.3,.6,3.4,WHITE,1);this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.55,.6,5,GOLD,.9);
+        this.sparkle(e.x,e.y,e.z,n(22),GOLD,15);this.flash=1;
         break;
       }
       case 'save':case 'perfect':case 'block':{
         // A guard: a white shield flashing out (a perfect one gold, and bigger).
         const perfect=e.kind==='perfect'||e.text==='PERFECT SAVE',c=perfect?GOLD:PALE;
-        this.fx.spawn(K.shield,e.x,e.y,e.z,0,0,0,.45,perfect?3.6:2.8,perfect?4.6:3.4,c,1);this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.4,.6,4,WHITE,1);
+        this.fx.spawn(K.shield,e.x,e.y,e.z,0,0,0,.45,perfect?3.6:2.8,perfect?4.6:3.4,c,1);this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.4,.6,4,WHITE,1);
         this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.25,2.2,.8,WHITE,1);this.sparkle(e.x,e.y,e.z,n(10),WHITE,10);
-        if(perfect)this.fx.spawn(K.burst,e.x,e.y,e.z,0,0,0,.35,1.4,3.4,GOLD,1);
+        // The ball meets the guard as a hit does - a PERFECT one (or a STUFF BLOCK) as the hardest.
+        const d=this.shotDirection(view,e);
+        this.hit(e.x,e.y,e.z,d.x,d.y,d.z,perfect?1.1:.6,perfect?GOLD:PALE,perfect);
+        if(perfect){this.fx.spawn(K.burst,e.x,e.y,e.z,0,0,0,.35,1.4,3.4,GOLD,1);this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.55,1,6.5,GOLD,1);}
         this.flash=1;break;
       }
       case 'clash':{
         // A CLASH: a white-hot flash, both sides' colours thrown out in rings, sparks and ink, the floor shaken.
         const lost=view.seats.find(s=>s.id===e.targetId)?.team,other=lost?TEAM[lost]:WHITE;
         this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.5,4.5,2,WHITE,1);this.fx.spawn(K.burst,e.x,e.y,e.z,0,0,0,.55,1.4,6.5,WHITE,1);
-        this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.5,.8,8,team,1);this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.75,.8,11,other,1);
+        this.hit(e.x,e.y,e.z,0,0,0,1.15,WHITE,true);
+        this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.5,.8,8,team,1);this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.75,.8,11,other,1);
         this.fx.spawn(K.groundRing,e.x,.06,e.z,0,0,0,.9,1.5,13,WHITE,1);
         this.sparkle(e.x,e.y,e.z,n(30),team,18);this.sparkle(e.x,e.y,e.z,n(30),other,18);this.puffs(e.x,e.y,e.z,n(6),INK,.8,2.4,6);this.chips(e.x,e.y,e.z,n(10),INK,12);
         this.flash=1;break;
@@ -870,19 +986,27 @@ export class BallField {
         break;
       }
       case 'strike':{
-        // A blow on the ball: an ink starburst and puffs, bigger for a harder shot.
-        const s=Math.min(1.2,Math.max(.2,(e.value??15)/40));
-        this.fx.spawn(K.burst,e.x,e.y,e.z,0,0,0,.32,.6,1.2+2.2*s,team,1);this.puffs(e.x,e.y,e.z,n(3+5*s),INK,.5,1.4,4*s);
-        if((e.value??0)>24)this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.3,.5,3.5*s,WHITE,.9);
-        this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.18,1+s,.4,WHITE,.8);this.flash=Math.max(this.flash,.6);
+        // A blow on the ball, with weight: a hit star turned along the shot, the focus lines and a shock round
+        // it, sparks flung on with the ball, all by how hard it was struck - a tap's a spark, a power shot's a blast. A
+        // spike struck high over the net is struck as hard as anything. (The ink puffs that stood over the striker like
+        // black rocks for half a second are gone: paper clouds kicked back off the ball instead.)
+        const sky=e.text==='SKY SPIKE'||e.text==='ROLL SPIKE',s=sky?.9:strikePower(e.value),d=this.shotDirection(view,e);
+        this.hit(e.x,e.y,e.z,d.x,d.y,d.z,s,team,s>.45);
+        this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.16,1+s*1.6,.4,WHITE,.9);this.flash=Math.max(this.flash,.45+.45*Math.min(1,s));
+        // A LINK SHOT's setter's colour through it; a flair shot's gold.
+        if(e.text==='LINK SHOT'){const setter=this.fighterOf(view,e.assistId);if(setter)this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.4,.6,4.5,fighterColour(setter,this.linkB),1);}
+        else if(e.text==='BICYCLE KICK'||e.text==='AERIAL'||e.text==='ROLL SPIKE')this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.45,.6,5,GOLD,1);
         break;
       }
       case 'super':{
-        // An ultimate on the ball: a big flash, two shockwaves and one along the floor.
-        this.fx.spawn(K.burst,e.x,e.y,e.z,0,0,0,.6,2,7,team,1);this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.4,8,3,WHITE,1);
-        this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.7,3,16,team,1);this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.5,2,11,WHITE,1);
-        this.fx.spawn(K.groundRing,e.x,.06,e.z,0,0,0,.9,2,15,team,1);
-        this.sparkle(e.x,e.y,e.z,n(30),team,18);this.puffs(e.x,e.y,e.z,n(10),INK,.9,2.4,7);this.flash=1;
+        // An ultimate on the ball: the biggest hit there is along the shot, a burst, shocks in the air and along the
+        // floor, ink thrown out.
+        const d=this.shotDirection(view,e),look=this.fighterOf(view,e.actorId),c=look?superLook(look).a:team;
+        this.hit(e.x,e.y,e.z,d.x,d.y,d.z,1.25,c,true);
+        this.fx.spawn(K.burst,e.x,e.y,e.z,0,0,0,.55,2,6.5,c,1);this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.4,8,3,WHITE,1);
+        this.fx.spawn(K.shock,e.x,e.y,e.z,0,0,0,.6,2,14,c,1);this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.45,1.5,9,WHITE,1);
+        this.fx.spawn(K.groundRing,e.x,.06,e.z,0,0,0,.9,2,15,c,1);this.fx.spawn(K.dust,e.x,.06,e.z,0,0,0,.8,1.5,8,DUST,.8);
+        this.sparkle(e.x,e.y,e.z,n(30),c,18);this.puffs(e.x,e.y,e.z,n(6),INK,.9,2.2,7);this.clouds(e.x,Math.max(.4,e.y-.6),e.z,n(6),PAPER,6,.7,1.8);this.flash=1;
         break;
       }
       case 'duel':{
@@ -911,23 +1035,36 @@ export class BallField {
         this.flash=1;break;
       }
       case 'bowled':case 'demo':{
-        // A body knocked flat by a hot ball: dust thrown out round it, chips, a small white burst.
-        this.fx.spawn(K.dust,e.x,.06,e.z,0,0,0,.8,1,5.5,DUST,.9);this.puffs(e.x,.4,e.z,n(10),DUST,.8,2,5);
-        this.chips(e.x,.6,e.z,n(10),INK,8);this.fx.spawn(K.burst,e.x,e.y,e.z,0,0,0,.25,.6,2.2,team,1);this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.25,2,.6,WHITE,1);
+        // A body knocked flat by a hot ball or a boosting body (BUMP): a hit star where it struck, dust thrown out round
+        // it in clouds, chips.
+        this.hit(e.x,Math.max(.8,e.y),e.z,0,0,0,.85,team,true);
+        this.fx.spawn(K.dust,e.x,.06,e.z,0,0,0,.8,1,5.5,DUST,.9);this.clouds(e.x,.4,e.z,n(7),PAPER,5,.6,1.5);
+        this.chips(e.x,.6,e.z,n(10),INK,8);this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.25,2,.6,WHITE,1);
+        break;
+      }
+      case 'wipeout':{
+        // A WIPE-OUT (Goal Rush's fights): somebody flattened for three seconds - the biggest hit star in the
+        // wiper's colour where they went down, the lines round it, a burst, a shock along the floor, an ink splash under
+        // them, dust clouds thrown out and chips.
+        const x=e.x,y=Math.max(.9,e.y),z=e.z;
+        this.hit(x,y,z,0,0,0,1.2,team,true);
+        this.fx.spawn(K.burst,x,y,z,0,0,0,.45,1,4,team,1);this.fx.spawn(K.glint,x,y,z,0,0,0,.35,4.5,1.5,WHITE,1);
+        this.fx.spawn(K.groundRing,x,.07,z,0,0,0,.75,1,10,team,1);this.fx.spawn(K.dust,x,.06,z,0,0,0,.9,1,6.5,DUST,.9);
+        this.fx.spawn(K.splat,x,.05,z,0,0,0,1.6,2.2,3,team,1);
+        this.clouds(x,.4,z,n(10),PAPER,6,.7,1.8);this.chips(x,.6,z,n(12),INK,9);this.sparkle(x,y,z,n(18),team,14);
         break;
       }
       case 'kill':case 'ace':case 'point':{
-        // A point won where the ball came down: an ink crater rimmed in the winners' colour, ink thrown up, a ring.
-        const big=e.kind==='ace'?1.3:e.kind==='point'?.75:1,x=e.x,z=e.z;
-        this.fx.spawn(K.splat,x,.05,z,0,0,0,2.6,4*big,4.6*big,team,1);
-        this.fx.spawn(K.groundRing,x,.07,z,0,0,0,.8,1,9*big,team,1);this.fx.spawn(K.burst,x,.7,z,0,0,0,.4,1,3.2*big,team,1);
-        for(let i=0;i<n(12*big);i++){const a=Math.random()*Math.PI*2,s=1.5+Math.random()*3,p=this.fx.spawn(K.smoke,x,.4,z,Math.cos(a)*s,3+Math.random()*6,Math.sin(a)*s,1+Math.random()*.4,.5,1.4+Math.random(),INK,.95);this.fx.data[p+DRAG]=2.5;this.fx.data[p+GRAV]=3;}
-        this.chips(x,.3,z,n(12*big),view.mode==='sky-spike'?WOOD:INK,7);
+        // A point won where the ball came down (the spike slams in): an ink crater rimmed in the winners'
+        // colour with cracks running out of it, a shock and a ring of dust clouds thrown out along the floor, an ink
+        // splash thrown up, a hit star, chips of the planks. A kill or an ace hardest; a point won otherwise less.
+        const big=e.kind==='ace'?1.3:e.kind==='point'?.7:1.1+Math.min(.25,Math.max(0,((e.value??0)-1)*.12)),x=e.x,z=e.z;
+        this.slam(x,z,big,team,view.mode==='sky-spike'?WOOD:INK);
         if(e.kind==='ace')this.fx.spawn(K.glint,x,1.2,z,0,0,0,.45,5,2,WHITE,1);
         break;
       }
-      case 'out':this.fx.spawn(K.dust,e.x,.06,e.z,0,0,0,.7,.8,3.2,DUST,.8);this.puffs(e.x,.3,e.z,n(4),DUST,.5,1.3,2.5);break;
-      case 'net':this.fx.spawn(K.ring,e.x,e.y,0,0,0,0,.35,.4,2.5,WHITE,.9);this.puffs(e.x,e.y,0,n(3),PALE,.3,.9,2);break;
+      case 'out':this.fx.spawn(K.dust,e.x,.06,e.z,0,0,0,.7,.8,3.2,DUST,.8);this.clouds(e.x,.3,e.z,n(4),PAPER,2.5,.5,1.2);break;
+      case 'net':this.fx.spawn(K.shock,e.x,e.y,0,0,0,0,.35,.4,2.8,WHITE,.9);this.clouds(e.x,e.y,0,n(3),PAPER,2,.3,.9);break;
       case 'rally':this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.5,1,4.5,GOLD,1);this.fx.spawn(K.glint,e.x,e.y,e.z,0,0,0,.35,3,1,GOLD,1);break;
       case 'fever':{
         // FEVER: petals burst from the ball and blow in off all four trees.
@@ -954,12 +1091,12 @@ export class BallField {
   private wall(x:number,y:number,z:number,speed:number,dome:boolean){
     const s=Math.min(1.4,speed/25);
     this.fx.spawn(K.shield,x,y,z,0,0,0,.4,1+s,2+s*2,dome?PINK:PALE,.85);this.fx.spawn(K.ring,x,y,z,0,0,0,.3,.4,1.6+s*2,WHITE,.8);
-    this.puffs(x,y,z,Math.max(1,Math.round(2*VFX.spriteGain)),INK,.4,1,2);
+    this.clouds(x,y,z,Math.max(1,Math.round(2*VFX.spriteGain)),PAPER,2,.35,.9);
   }
   /** The ball off the floor hard: a ring along it and a little dust. */
   private floor(x:number,z:number,speed:number){
     const s=Math.min(1.4,speed/18);
-    this.fx.spawn(K.groundRing,x,.06,z,0,0,0,.45,.6,1.6+s*3,WHITE,.7);this.puffs(x,.3,z,Math.max(1,Math.round(3*s*VFX.spriteGain)),DUST,.4,1.1,2.5);
+    this.fx.spawn(K.groundRing,x,.06,z,0,0,0,.45,.6,1.6+s*3,WHITE,.7);this.clouds(x,.25,z,Math.max(1,Math.round(3*s*VFX.spriteGain)),PAPER,2.5,.35,.9);
   }
   private puffs(x:number,y:number,z:number,count:number,colour:THREE.Color,size0:number,size1:number,speed:number){
     for(let i=0;i<count;i++){const v=this.randomDirection(speed*(.4+Math.random()*.6)),o=this.fx.spawn(K.smoke,x,y,z,v.x,v.y*.6+speed*.15,v.z,.6+Math.random()*.35,size0,size1*(.8+Math.random()*.4),colour,.95);this.fx.data[o+DRAG]=4;}
@@ -969,6 +1106,64 @@ export class BallField {
   }
   private chips(x:number,y:number,z:number,count:number,colour:THREE.Color,speed:number){
     for(let i=0;i<count;i++){const v=this.randomDirection(speed*(.4+Math.random()*.6)),o=this.fx.spawn(K.chunk,x,y,z,v.x,Math.abs(v.y)+speed*.3,v.z,1+Math.random()*.5,.18+Math.random()*.14,.12,colour,1);const d=this.fx.data;d[o+GRAV]=18;d[o+FLAGS]=FLOOR;d[o+SPIN]=(Math.random()-.5)*16;}
+  }
+  /** Manga clouds: paper puffs rimmed in ink, thrown out low and slowing, swelling as they wear away. */
+  private clouds(x:number,y:number,z:number,count:number,colour:THREE.Color,speed:number,size0:number,size1:number,life=.55){
+    for(let i=0;i<count;i++){
+      const v=this.randomDirection(speed*(.45+Math.random()*.55)),o=this.fx.spawn(K.cloud,x,y,z,v.x,Math.abs(v.y)*.35+speed*.08,v.z,life*(1+Math.random()*.6),size0,size1*(.8+Math.random()*.4),colour,.95);
+      this.fx.data[o+DRAG]=3.6;
+    }
+  }
+
+  // ---------------------------------------------------------------- hits with weight
+
+  /** A hit at contact, sized by how hard it was struck (`power` 0-1.25) and turned along the shot (`dx, dy,
+   *  dz`, a unit vector; zeros for none): a needle star round a white-hot heart, stretched along the shot; the manga
+   *  focus lines round it (`lines`); a crisp inked shock; sparks flung on along the shot; paper clouds kicked back off
+   *  it (`kicked`). Every count at the VISUAL EFFECTS level's density. */
+  private hit(x:number,y:number,z:number,dx:number,dy:number,dz:number,power:number,colour:THREE.Color,lines:boolean,kicked=true){
+    const fx=this.fx,d=fx.data,s=Math.min(1.25,Math.max(0,power)),gain=VFX.spriteGain,aimed=dx*dx+dy*dy+dz*dz>.25;
+    const o=fx.spawn(K.hit,x,y,z,0,0,0,.1+.08*s,.55+1.25*s,.75+1.6*s,colour,1);
+    if(aimed){d[o+FLAGS]=ALONG_AXIS;d[o+AX]=dx;d[o+AY]=dy;d[o+AZ]=dz;d[o+STRETCH]=1.25+.6*s;}
+    if(lines)fx.spawn(K.lines,x,y,z,0,0,0,.2+.1*s,1.3+2*s,1.9+3*s,INK,1);
+    fx.spawn(K.shock,x,y,z,0,0,0,.2+.14*s,.4,1.2+2.8*s,s>.7?WHITE:colour,1);
+    const sparks=Math.max(1,Math.round((4+12*s)*gain)),k=aimed?.72:0;
+    for(let i=0;i<sparks;i++){
+      const v=this.randomDirection(1),sp=(8+17*s)*(.5+Math.random()*.6),vx=(dx*k+v.x*(1-k*.55))*sp,vy=(dy*k+v.y*(1-k*.55))*sp,vz=(dz*k+v.z*(1-k*.55))*sp;
+      const p=fx.spawn(K.spark,x,y,z,vx,vy,vz,.2+Math.random()*.16,.13+.1*s,.05,Math.random()<.6?WHITE:colour,1);
+      d[p+DRAG]=4;d[p+GRAV]=5;d[p+STRETCH]=3.5;d[p+FLAGS]=ALONG_FLIGHT;
+    }
+    const puffs=kicked?Math.max(1,Math.round((1+3*s)*gain)):0;
+    for(let i=0;i<puffs;i++){
+      const v=this.randomDirection(1.2+2.2*s),c=fx.spawn(K.cloud,x-dx*.3,y-dy*.3,z-dz*.3,v.x-dx*(1.5+3*s),Math.abs(v.y)*.5+.4,v.z-dz*(1.5+3*s),.32+Math.random()*.2,.22+.2*s,.6+.6*s,PAPER,.95);
+      d[c+DRAG]=4.5;
+    }
+  }
+  /** A ball slammed into the floor (a kill, an ace): the crater with its cracks, shocks along the floor, dust
+   *  thrown out in a ring of manga clouds, an ink splash thrown up in the winners' colour, a hit star and chips of the
+   *  floor. `big` about 0.7-1.4. */
+  private slam(x:number,z:number,big:number,colour:THREE.Color,chip:THREE.Color){
+    const fx=this.fx,d=fx.data,count=Math.max(3,Math.round(12*big*VFX.spriteGain));
+    fx.spawn(K.splat,x,.05,z,0,0,0,2.8,4.2*big,5*big,colour,1);
+    fx.spawn(K.groundRing,x,.07,z,0,0,0,.5,1,9*big,WHITE,1);fx.spawn(K.groundRing,x,.065,z,0,0,0,.85,1.4,14*big,colour,1);
+    fx.spawn(K.dust,x,.06,z,0,0,0,.9,1.4,7.5*big,DUST,.85);
+    // (The dust runs out from the spot and leaves it clear: the ball and whoever is by it stay in sight.)
+    for(let i=0;i<count;i++){
+      const a=i/count*Math.PI*2+Math.random()*.45,sp=6+Math.random()*4*big;
+      const o=fx.spawn(K.cloud,x+Math.cos(a)*1.1,.3+Math.random()*.3,z+Math.sin(a)*1.1,Math.cos(a)*sp,.4+Math.random()*1.1,Math.sin(a)*sp,.45+Math.random()*.3,.4,.9+Math.random()*.6*big,PAPER,.95);
+      d[o+DRAG]=3.2;
+    }
+    const p=fx.spawn(K.pillar,x,1.15*big,z,0,0,0,.4,.6*big,.9*big,colour,1);
+    d[p+FLAGS]=ALONG_AXIS;d[p+AX]=0;d[p+AY]=1;d[p+AZ]=0;d[p+STRETCH]=2.1;
+    this.hit(x,.45,z,0,1,0,Math.min(1.25,big),colour,true,false);
+    this.chips(x,.3,z,Math.max(2,Math.round(14*big*VFX.spriteGain)),chip,9);
+  }
+  private readonly shot=new THREE.Vector3();
+  /** Which way a strike sent the ball (a unit vector; zero when the ball has since been touched by somebody else). */
+  private shotDirection(view:BallView,e:BallEvent){
+    const b=view.ball,v=Math.hypot(b.vx,b.vy,b.vz);
+    if(b.lastId!==e.actorId||v<1)return this.shot.set(0,0,0);
+    return this.shot.set(b.vx/v,b.vy/v,b.vz/v);
   }
   // ---------------------------------------------------------------- the signature shots' motifs
 

@@ -3,8 +3,12 @@ import {GOAL_RULES, type BallTeam, type BallView} from '../../game/ball/model';
 import type {Vec3} from '../../game/types';
 import type {FollowCamera} from '../FollowCamera';
 
-/** How fast the view comes round to the ball (per second, eased), and the most it turns in a second. */
-const RATE = 5, MOST = 3.6;
+/** How fast the view comes round to the ball (a critically damped spring's rate, a second), and the most it turns in a
+ *  second. (A spring, where it was an eased step - that started every turn at full speed, so a ball changing
+ *  direction kicked the view; the spring starts and stops a turn smoothly and never overshoots.) */
+const RATE = 4.2, MOST = 3;
+/** The FIGHT stance turns to the one locked this much quicker (a lock is a deliberate press: look at them now). */
+const FIGHT_TURN = 1.6;
 /** The player's own turning is theirs while they turn and for HOLD seconds after; then it eases back at BACK a second.
  *  It reaches at most AWAY radians off the ball. */
 const HOLD = .7, BACK = 2.4, AWAY = 1.3;
@@ -24,7 +28,9 @@ const smooth = (x: number, a: number, b: number) => { const t = clamp((x - a) / 
  * (FollowCamera.keepInView). It eases off when the ball is very close or overhead - it holds its heading rather than
  * whip round - and in the third of the pitch you attack it turns a share of the way to the goal you attack, so the goal
  * is in the frame with the ball. Your own turning (the mouse, the right stick) is yours for a moment and then eases
- * back to the ball. Tab - a couch seat's TARGET button - turns it off for the follow camera you chose, and on again.
+ * back to the ball. Tab - a couch seat's TARGET button - turns it off for the follow camera you chose, and on again
+ * (Sky Spike and FREE PLAY; in Goal Rush Tab is the stance, game/ball/stance.ts, and this heading is the one Goal Rush's
+ * own rig stands on, render/ball/BallChase.ts - on the opponent locked in the FIGHT stance).
  *
  * One for the page's own view and one for a split screen's second half (main.ts). A replay's lens is the replay's
  * (BallReplay.aim, after this). Nothing here allocates.
@@ -36,13 +42,17 @@ export class BallCam {
   active = false;
   private presses = 0;
   private yaw = NaN;
+  /** The heading's turning speed (radians a second): the spring's. */
+  private rate = 0;
+  /** Coming back on after a while off (Goal Rush's FIGHT stance let go, Tab): the view turns from where it is, not cut. */
+  private resume = false;
   private handed = NaN;
   private away = 0;
   private still = 0;
   private readonly look = new THREE.Vector3();
 
-  reset() { this.on = true; this.active = false; this.presses = 0; this.forget(); }
-  private forget() { this.yaw = this.handed = NaN; this.away = 0; this.still = 0; }
+  reset() { this.on = true; this.active = false; this.presses = 0; this.resume = false; this.forget(); }
+  private forget() { this.yaw = this.handed = NaN; this.rate = 0; this.away = 0; this.still = 0; }
   /** The toggle's press count (the page's Tab presses, a couch seat's TARGET presses): each press flips it. */
   pressed(count: number) {
     if (count === this.presses) return;
@@ -55,12 +65,14 @@ export class BallCam {
   /**
    * Sets `rig` up for this frame's update and returns the heading to hand it. `yaw` is the heading the page holds now
    * (the last one handed back, plus the player's own turn since); `mode` the camera the player chose, which the rig
-   * keeps while this is off. `self` is the player's drawn body, `ball` the drawn ball (null: none up).
+   * keeps while this is off. `self` is the player's drawn body, `ball` the drawn ball (null: none up). `fighting`: Goal
+   * Rush's FIGHT stance (game/ball/stance.ts): `ball` is then the opponent locked, whom the view follows the same way
+   * (the share of the way round to the goal is the ball's alone).
    */
-  steer(rig: FollowCamera, dt: number, yaw: number, mode: FollowCamera['mode'], self: Vec3, ball: Vec3 | null, view: BallView | undefined, team: BallTeam | undefined): number {
+  steer(rig: FollowCamera, dt: number, yaw: number, mode: FollowCamera['mode'], self: Vec3, ball: Vec3 | null, view: BallView | undefined, team: BallTeam | undefined, fighting = false): number {
     const playing = !!view && !!ball && view.phase !== 'lobby' && view.phase !== 'over';
     this.active = this.on && playing;
-    if (!this.active || !ball || !view) { rig.mode = mode; rig.keepInView = null; rig.sportFov = 0; this.forget(); return yaw; }
+    if (!this.active || !ball || !view) { rig.mode = mode; rig.keepInView = null; rig.sportFov = 0; if (Number.isFinite(this.yaw)) this.resume = true; this.forget(); return yaw; }
     rig.mode = 'free'; rig.sportFov = SPORT_FOV;
     const turn = Number.isFinite(this.handed) ? wrapped(yaw - this.handed) : 0, reset = Math.abs(turn) > RESET;
     if (reset) { this.away = 0; this.still = 0; }
@@ -71,7 +83,7 @@ export class BallCam {
     let bearing = d > 1e-3 ? Math.atan2(dx, dz) : Number.isFinite(this.yaw) ? this.yaw : yaw;
     // The third of the pitch you attack: a share of the way round to the goal, while you are behind the ball and the
     // goal is not far off the line to it, so the ball and the goal are both in the frame.
-    if (view.mode === 'goal-rush' && team) {
+    if (view.mode === 'goal-rush' && team && !fighting) {
       const gz = team === 'red' ? GOAL_RULES.halfZ : -GOAL_RULES.halfZ, third = GOAL_RULES.halfZ / 3;
       const w = smooth(Math.sign(gz) * ball.z, third - 2, third + 3);
       if (w > 0 && Math.abs(gz - self.z) > Math.abs(gz - ball.z)) {
@@ -81,13 +93,19 @@ export class BallCam {
     }
     // Close by or overhead, the line to the ball swings about: the view holds its heading until it is clear again.
     const rise = Math.atan2(ball.y - self.y - 1.2, Math.max(d, .01));
-    const pull = smooth(d, 2, 6) * (1 - smooth(rise, .85, 1.2));
+    const pull = smooth(d, 2, 6.5) * (1 - smooth(rise, .85, 1.2));
     const goal = bearing + this.away;
-    if (!Number.isFinite(this.yaw) || reset) this.yaw = goal;
+    if (!Number.isFinite(this.yaw) || reset) { this.yaw = this.resume && !reset ? yaw : goal; this.rate = 0; this.resume = false; }
     else {
       this.yaw += turn;
-      const gap = wrapped(goal - this.yaw), step = gap * (1 - Math.exp(-RATE * pull * dt));
-      this.yaw += clamp(step, -MOST * dt, MOST * dt);
+      // The spring: its pull scaled by how clear the line to the ball is (a close or overhead ball holds the view), its
+      // damping always whole, so a held view settles rather than drifts. Stepped in sixtieths for a hitch's sake.
+      for (let left = dt; left > 1e-6;) {
+        const h = Math.min(left, 1 / 60), gap = wrapped(goal - this.yaw), k = fighting ? RATE * FIGHT_TURN : RATE, most = fighting ? MOST * FIGHT_TURN : MOST;
+        this.rate += (k * k * pull * gap - 2 * k * this.rate) * h;
+        this.rate = clamp(this.rate, -most, most);
+        this.yaw += this.rate * h; left -= h;
+      }
     }
     this.yaw = wrapped(this.yaw); this.handed = this.yaw;
     rig.keepInView = this.look.set(ball.x, ball.y, ball.z);

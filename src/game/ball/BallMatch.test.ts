@@ -33,7 +33,8 @@ describe('Goal Rush', () => {
     const m = pair('goal-rush');
     expect(m.view.phase).toBe('kickoff');
     expect(until(m, () => m.view.phase === 'live')).toBe(true);
-    m.ball.x = 0; m.ball.z = GOAL_RULES.halfZ - 10; m.ball.y = 1;
+    // (Past blue's kickoff mark, half the half-length out, so the shot has a clear run at the goal.)
+    m.ball.x = 0; m.ball.z = GOAL_RULES.halfZ - 7; m.ball.y = 1;
     aim(m, 'red-1', 0);
     expect(m.receive(m.locate(BALL_ID)!, blow('red-1'))).not.toBeNull();
     expect(m.ball.vz).toBeGreaterThan(10);
@@ -41,16 +42,17 @@ describe('Goal Rush', () => {
     expect(m.view.phase).toBe('scored');
     expect(m.seats.get('red-1')!.goals).toBe(1);
     expect(m.view.events.some(e => e.kind === 'goal' && e.actorId === 'red-1')).toBe(true);
-    // The goal's sequence and its replay hold the celebration (the replay waits REPLAY.ceremony), then the next kickoff.
+    // The goal's sequence and its replay hold the celebration (the replay waits REPLAY.goalCeremony), then the next kickoff.
     expect(m.view.replay?.ceremony).toBe(true);
-    expect(until(m, () => m.view.phase === 'kickoff', REPLAY.ceremony + REPLAY.most + REPLAY.after + 1)).toBe(true);
+    expect(m.view.replay!.at - m.sim.serverTime).toBeCloseTo(REPLAY.goalCeremony, 1);
+    expect(until(m, () => m.view.phase === 'kickoff', REPLAY.goalCeremony + REPLAY.goalMost + REPLAY.after + 1)).toBe(true);
     expect(m.view.replay).toBeNull();
   });
   it('replays a goal from before the shot, slowed round it, and every person voting to skip ends it', () => {
     const m = pair('goal-rush');
     until(m, () => m.view.phase === 'live');
     steps(m, 2);
-    m.ball.x = 0; m.ball.z = GOAL_RULES.halfZ - 10; m.ball.y = 1;
+    m.ball.x = 0; m.ball.z = GOAL_RULES.halfZ - 7; m.ball.y = 1;
     aim(m, 'red-1', 0);
     m.receive(m.locate(BALL_ID)!, blow('red-1'));
     const struck = m.sim.serverTime;
@@ -64,7 +66,7 @@ describe('Goal Rush', () => {
     expect(r.to).toBeGreaterThan(scored);
     expect(r.at).toBeGreaterThan(scored);
     expect(r.until - r.at).toBeCloseTo(replayLength(r), 5);
-    expect(r.until - r.at).toBeLessThanOrEqual(REPLAY.most + 1e-9);
+    expect(r.until - r.at).toBeLessThanOrEqual(REPLAY.goalMost + 1e-9);
     // The clock reads the play back slower round the shot than before it.
     let round = 1;
     for (let e = 0; e < replayLength(r); e += .01) { const c = replayClock(r, e); if (Math.abs(c.time - r.key) < .02) { round = c.rate; break; } }
@@ -473,6 +475,65 @@ describe('the spike', () => {
     expect(until(m, () => m.view.phase === 'scored', 3)).toBe(true);
     expect(m.view.score.red).toBe(1);
   });
+  it('is a PERFECT SPIKE from the top of the jump under a floating set: faster, hotter, the striker held a beat', () => {
+    // The same set and fighter, struck as the swing on takeoff (an ordinary spike) and from the top of the jump.
+    const spike = (swing: number) => {
+      const m = new BallMatch('sky-spike', { seed: 5, access: 'bots', practice: true });
+      m.add('me', 'taisei', 'Me', false, 'red');
+      m.start(); steps(m, 3.1);
+      until(m, () => m.view.phase === 'live', 2);
+      m.sim.place('me', { x: 0, y: 0, z: -2.4 }, 0);
+      // A floating set (strike.ts SPIKE_SET) at its top over the hitter, two touches spent.
+      Object.assign(m.ball, { x: 0, y: 7, z: -2, vx: 0, vy: 0, vz: .4, held: false, shot: 'set', lastId: 'me', lastTeam: 'red', heat: .5 });
+      m.view.touchTeam = 'red'; m.view.touches = 2; m.view.rally = 1;
+      let held = 0, speed = 0;
+      for (let i = 0; i < 70 && m.ball.shot !== 'spike'; i++) {
+        m.submit('me', { seq: i + 1, moveX: 0, moveZ: 0, yaw: 0, jump: i === 0, jumpHeld: i < 30, attack: i === swing ? 'heavy' : undefined, targetId: BALL_ID });
+        m.step(1 / 60);
+        if ((m.ball.shot as string) === 'spike') { speed = Math.hypot(m.ball.vx, m.ball.vy, m.ball.vz); const a = m.sim.actors.get('me')!; held = a.hitstopUntil - m.sim.serverTime; }
+      }
+      return { m, speed, held, perfect: m.view.events.find(e => e.kind === 'strike' && e.perfect) };
+    };
+    const top = spike(16);
+    expect(top.m.ball.shot).toBe('spike');
+    expect(top.perfect?.text).toBe('SKY SPIKE');
+    expect(top.held).toBeGreaterThan(.08);
+    expect(top.m.ball.vz).toBeGreaterThan(0);
+    expect(until(top.m, () => top.m.view.phase === 'scored', 3)).toBe(true);
+    expect(top.m.view.score.red).toBe(1);
+    // Swung early, still climbing: the swing brakes the jump and the spike is an ordinary one, slower.
+    const early = spike(10);
+    expect(early.m.ball.shot).toBe('spike');
+    expect(early.perfect).toBeUndefined();
+    expect(top.speed).toBeGreaterThan(early.speed * 1.08);
+  });
+  it('digs a hard ball high, and a dash at it reaches further: the DIVING DIG', () => {
+    // Running across a spike coming down into red's court from a little too far for the body alone; and dashing.
+    const across = (dash: boolean) => {
+      const m = new BallMatch('sky-spike', { seed: 5, access: 'bots', practice: true });
+      m.add('me', 'taisei', 'Me', false, 'red');
+      m.start(); steps(m, 3.1);
+      until(m, () => m.view.phase === 'live', 2);
+      m.sim.place('me', { x: -1.8, y: 0, z: -5 }, Math.PI / 2);
+      Object.assign(m.ball, { x: .4, y: 1.6, z: -2.2, vx: 0, vy: -6, vz: -20, held: false, shot: 'spike', lastId: null, lastTeam: 'blue', heat: 1 });
+      m.view.touchTeam = 'blue'; m.view.touches = 3; m.view.rally = 2;
+      for (let i = 0; i < 20 && m.ball.lastTeam !== 'red'; i++) {
+        m.submit('me', { seq: i + 1, moveX: 1, moveZ: 0, yaw: Math.PI / 2, dash: dash && i === 0, targetId: BALL_ID });
+        m.step(1 / 60);
+      }
+      return m;
+    };
+    expect(across(false).ball.lastTeam).toBe('blue');
+    const m = across(true);
+    expect(m.ball.lastTeam).toBe('red');
+    expect(m.ball.shot).toBe('dig');
+    expect(m.view.events.some(e => e.kind === 'dig' && e.text === 'DIVING DIG')).toBe(true);
+    // Up high, and down again inside red's own court, near its middle, for a team-mate to play.
+    expect(m.ball.vy).toBeGreaterThan(6);
+    const down = landing('sky-spike', m.ball);
+    expect(down.z).toBeLessThan(-2); expect(down.z).toBeGreaterThan(-SPIKE_RULES.courtHalfZ); expect(Math.abs(down.x)).toBeLessThan(SPIKE_RULES.courtHalfX);
+    expect(down.t).toBeGreaterThan(1.2);
+  });
   it('spikes with the body when a fighter jumps into the last touch at the net without a swing', () => {
     const m = new BallMatch('sky-spike', { seed: 5, access: 'bots', practice: true });
     m.add('me', 'taisei', 'Me', false, 'red');
@@ -578,7 +639,8 @@ describe('the keeper', () => {
 
 describe('the kickoff', () => {
   it('deals new spots after a goal, the same on both sides', () => {
-    const spots = [[8.1, 10.2], [1.6, 15.2], [0, 18.3]];
+    // (The five spots are shares of the pitch's half-width and half-length: BallMatch KICKOFF_SPOTS.)
+    const spots = [[.45, .39], [.09, .58], [0, .7]].map(([x, z]) => [x * GOAL_RULES.halfX, z * GOAL_RULES.halfZ]);
     const seen = new Set<string>();
     const m = pair('goal-rush');
     for (let goal = 0; goal < 6; goal++) {
@@ -612,7 +674,7 @@ describe('target practice', () => {
     // Into the goal, nowhere near the new ring: the streak ends, the targets stay.
     until(m, () => m.view.phase === 'live', 3);
     const next = m.view.aim!;
-    Object.assign(m.ball, { x: -next.x || 3.4, y: next.y > 2 ? .7 : 3.6, z: GOAL_RULES.halfZ - 1.5, vx: 0, vy: 0, vz: 20, held: false });
+    Object.assign(m.ball, { x: -next.x || GOAL_RULES.goalHalfWidth - 1.2, y: next.y > 2 ? .7 : GOAL_RULES.goalHeight - .7, z: GOAL_RULES.halfZ - 1.5, vx: 0, vy: 0, vz: 20, held: false });
     until(m, () => m.view.phase === 'scored', 2);
     expect(m.view.hits).toBe(1); expect(m.view.streak).toBe(0); expect(m.view.bestStreak).toBe(1);
     // None in a match.

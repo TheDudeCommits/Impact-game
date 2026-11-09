@@ -104,6 +104,24 @@ describe('the ball modes\' sound', () => {
     expect(played).toContain('bounce-dome');
   });
 
+  it('lays the boom under the big hits, slams a kill into the planks and hears a wipe-out', () => {
+    const { audio, played, stands } = rig();
+    audio.update(snap(view({ events: [event(1, 'strike', { shot: 'drive', value: 14 })] }), 10), 'me');
+    expect(played).not.toContain('impact-boom');
+    audio.update(snap(view({ events: [event(2, 'strike', { shot: 'power', value: 34 })] }), 10.1), 'me');
+    expect(played).toContain('impact-boom');
+    played.length = 0;
+    audio.update(snap(view({ mode: 'sky-spike', ball: ball({ y: 2, vy: -14 }) }), 11), 'me');
+    audio.update(snap(view({ mode: 'sky-spike', phase: 'scored', ball: ball({ y: .5, held: true }), events: [event(3, 'kill', { team: 'red', x: 2, z: 5 })] }), 11.03), 'me');
+    expect(played).toEqual(expect.arrayContaining(['spike-slam', 'impact-boom', 'bounce-wood-hard']));
+    played.length = 0; stands.length = 0;
+    audio.update(snap(view({ events: [event(4, 'wipeout', { team: 'blue', targetId: 'me', x: 1, y: 1, z: 1, value: 3 })] }), 12), 'me');
+    expect(played).toEqual(expect.arrayContaining(['wipeout-hit', 'impact-boom']));
+    expect(stands).toContain('crowd-gasp');
+    audio.update(snap(view({ events: [event(5, 'demo', { team: 'red', x: 1, y: 1, z: 1, value: 14 })] }), 12.1), 'me');
+    expect(played).toContain('bowled');
+  });
+
   it('lights the heat tier by tier and holds OVERDRIVE\'s roar on the ball, let go when it cools', () => {
     const { audio, played, loops } = rig();
     audio.update(snap(view({ ball: ball({ heat: .5 }) }), 10), 'me');
