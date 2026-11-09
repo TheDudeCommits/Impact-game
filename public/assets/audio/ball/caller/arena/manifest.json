@@ -1521,6 +1521,94 @@
    "source": "ElevenLabs (eleven_v3), the voice 'arena caller' designed for the game from the voiceDesign above (text-to-voice design; never a clone), 9 November 2026",
    "take": "final-seconds-2.mp3",
    "sha256": "ad7e07a5ad4bae72b6ede2281720c1e10d0b5185d33d18eb062bc6468b8c4d50"
+  },
+  {
+   "id": "link-shot-1",
+   "file": "/assets/audio/ball/caller/arena/link-shot-1.m4a",
+   "moment": "link-shot",
+   "text": "Set and strike! LINK SHOT!",
+   "seconds": 3.12,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'arena caller' designed for the game from the voiceDesign above (text-to-voice design; never a clone), 9 November 2026",
+   "take": "link-shot-1.mp3",
+   "sha256": "64b1ff7789113876658c5748534266ea396bd14344ed5b5ffdb50a19a33e4aae"
+  },
+  {
+   "id": "link-shot-2",
+   "file": "/assets/audio/ball/caller/arena/link-shot-2.m4a",
+   "moment": "link-shot",
+   "text": "Perfect timing, they linked it up!",
+   "seconds": 2.412,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'arena caller' designed for the game from the voiceDesign above (text-to-voice design; never a clone), 9 November 2026",
+   "take": "link-shot-2.mp3",
+   "sha256": "adec890c3c5b92aeb0e0406d9106ef6269f22ad7f7a44a9996a29d31ca2b93fa"
+  },
+  {
+   "id": "link-shot-3",
+   "file": "/assets/audio/ball/caller/arena/link-shot-3.m4a",
+   "moment": "link-shot",
+   "text": "One touch to the next, rensa!",
+   "seconds": 3.454,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'arena caller' designed for the game from the voiceDesign above (text-to-voice design; never a clone), 9 November 2026",
+   "take": "link-shot-3.mp3",
+   "sha256": "30a9e85a5a3fcba7c3321758a4febfec9b093f30e6c101bb890af1bb2786cf08"
+  },
+  {
+   "id": "technique-duel-1",
+   "file": "/assets/audio/ball/caller/arena/technique-duel-1.m4a",
+   "moment": "technique-duel",
+   "text": "Technique against technique!",
+   "seconds": 2.151,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'arena caller' designed for the game from the voiceDesign above (text-to-voice design; never a clone), 9 November 2026",
+   "take": "technique-duel-1.mp3",
+   "sha256": "f2254b9e1ecfc3c2f19725337c9c9311b031dfb152b47fbbf2684524e4b05873"
+  },
+  {
+   "id": "technique-duel-2",
+   "file": "/assets/audio/ball/caller/arena/technique-duel-2.m4a",
+   "moment": "technique-duel",
+   "text": "The guard meets the super shot!",
+   "seconds": 2.187,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'arena caller' designed for the game from the voiceDesign above (text-to-voice design; never a clone), 9 November 2026",
+   "take": "technique-duel-2.mp3",
+   "sha256": "d07476ed7484d43adf5a6061ac52f5106d873107399401c31df9363fe5fcb2a9"
+  },
+  {
+   "id": "duel-won-1",
+   "file": "/assets/audio/ball/caller/arena/duel-won-1.m4a",
+   "moment": "duel-won",
+   "text": "Stopped it cold! The duel is theirs!",
+   "seconds": 3.199,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'arena caller' designed for the game from the voiceDesign above (text-to-voice design; never a clone), 9 November 2026",
+   "take": "duel-won-1.mp3",
+   "sha256": "eacd49bb3aeb8e7c22101080082e81b55be4e9bc14ef29f85779ccc3a0962950"
+  },
+  {
+   "id": "duel-won-2",
+   "file": "/assets/audio/ball/caller/arena/duel-won-2.m4a",
+   "moment": "duel-won",
+   "text": "The guard holds! Unbelievable!",
+   "seconds": 3.658,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'arena caller' designed for the game from the voiceDesign above (text-to-voice design; never a clone), 9 November 2026",
+   "take": "duel-won-2.mp3",
+   "sha256": "3cf735f354d5bee7cdd4117ea999bc1a64de3dca5925e00e81c0c1d18cc3d912"
+  },
+  {
+   "id": "duel-won-3",
+   "file": "/assets/audio/ball/caller/arena/duel-won-3.m4a",
+   "moment": "duel-won",
+   "text": "Super shot denied!",
+   "seconds": 3.081,
+   "license": "original",
+   "source": "ElevenLabs (eleven_v3), the voice 'arena caller' designed for the game from the voiceDesign above (text-to-voice design; never a clone), 9 November 2026",
+   "take": "duel-won-3.mp3",
+   "sha256": "cdde697bcfd59bccf1e5383260208c12bfb2558f092dd9725bc3f6a902cbdfe2"
   }
  ]
 }

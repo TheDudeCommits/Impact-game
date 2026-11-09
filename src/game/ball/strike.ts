@@ -11,7 +11,7 @@ export interface Striker extends Vec3 {
 }
 export interface StrikeContext {
   mode: BallModeId;
-  slot: AttackSlot; move: Pick<MoveDefinition, 'style' | 'outcome' | 'name'>; knockback: number; launch: boolean; finisher: boolean;
+  slot: AttackSlot; move: Pick<MoveDefinition, 'style' | 'outcome' | 'name'> & {contacts?: readonly number[]}; knockback: number; launch: boolean; finisher: boolean;
   /** The blow's own drive along the floor (from its origin to the ball), for shots that fly where they were fired. */
   pushX: number; pushZ: number;
   striker: Striker;
@@ -21,11 +21,19 @@ export interface StrikeContext {
   touches?: number; serve?: boolean; rivals?: readonly Vec3[];
   /** The ball's share of its gravity all match (a mutator's LOW GRAVITY; 1 unset), so the help on target arcs it right. */
   gravity?: number;
+  /** How the striker was moving along the floor (m/s): a blow struck on the run carries some of it (MOMENTUM). */
+  run?: {vx: number; vz: number};
 }
 export interface StrikeResult { vx: number; vy: number; vz: number; sx: number; sy: number; sz: number; shot: ShotKind; heat: number; super: boolean }
 
 const DEG = Math.PI / 180;
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+/** Every touch carries momentum: a shot struck on the run - a sprint, a boost, a
+ *  dash into it - flies this share of the striker's speed along the aim faster (never past its heat's cap). Not a tap's
+ *  pass or a Sky Spike keep, which are laid to land where they were meant to. */
+export const MOMENTUM = .5;
+/** The striker's run along the aim (x, z), as MOMENTUM carries it into the shot. */
+const carried = (c: StrikeContext, dx: number, dz: number) => Math.max(0, (c.run?.vx ?? 0) * dx + (c.run?.vz ?? 0) * dz) * MOMENTUM;
 
 /** How a blow drives the ball. The direction is the striker's aim (the view they pressed with: a ball goes where it was
  *  aimed, never where an animation happened to point: a ball game's lesson), helped on target the way the arcade sports
@@ -61,7 +69,11 @@ function classify(ball: BallState, c: StrikeContext): ShotKind {
   if (air) return c.slot === 'light' ? 'volley' : 'spike';
   if (c.slot === 'special') return s.forward > .5 ? 'sinker' : 'curve';
   if (c.slot === 'heavy') return 'power';
-  return c.finisher || s.chain >= 3 ? 'drive' : 'tap';
+  // A light string's last blow drives (its fourth stage, or a many-blow light's last). In Goal Rush a light of one blow
+  // was its own last too, which made every light a drive (99 of 100 fighters' lights have one blow) and the tap and its
+  // pass unreachable: there it counts as a tap. (Sky Spike keeps its third-touch drive.)
+  const last = c.finisher && (c.mode !== 'goal-rush' || (c.move.contacts?.length ?? 1) > 1);
+  return last || s.chain >= 3 ? 'drive' : 'tap';
 }
 
 /** The ballistic velocity that carries the ball from `from` to land at `to` (height `toY`) in `t` seconds, drag made
@@ -90,7 +102,8 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
   }
   if (kind === 'super') {
     // The super shot goes for the frame wherever it was struck from: the far side of the mouth from the keeper's end, low.
-    const tx = Math.max(-R.goalHalfWidth + 1.1, Math.min(R.goalHalfWidth - 1.1, ball.x + Math.sin(yaw) * Math.abs(gz - ball.z) * .35));
+    const inside = R.goalHalfWidth - R.ballRadius - .5;
+    const tx = Math.max(-inside, Math.min(inside, ball.x + Math.sin(yaw) * Math.abs(gz - ball.z) * .35));
     const d = Math.hypot(tx - ball.x, gz - ball.z), speed = R.speedCap[4] * .96, t = Math.max(.25, d / speed);
     const v = arc(ball, tx, 1.6, gz, t, g, R.drag);
     return {...v, sx: 0, sy: 0, sz: 0};
@@ -98,8 +111,8 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
   const [base, lift, side, top] = table[kind] ?? table.tap;
   // (Never faster than the ball's tier lets it fly: a shot helped on target is aimed for the speed it will really have,
   // or a cool ball's shot would sink under the height it was laid for.)
-  let speed = Math.min(cap, base * power + (kind === 'power' ? Math.min(6, c.knockback * .35) : 0));
   let dx = Math.sin(yaw), dz = Math.cos(yaw);
+  let speed = Math.min(cap, base * power + (kind === 'power' ? Math.min(6, c.knockback * .35) : 0) + (kind === 'tap' ? 0 : carried(c, dx, dz)));
   // A tap toward a team-mate is a pass to where they are running.
   if (kind === 'tap' && c.mates?.length) {
     let best: {x: number; z: number; t: number} | undefined, bestCos = Math.cos(28 * DEG);
@@ -124,7 +137,8 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
   if (kind !== 'tap' && kind !== 'drive' && dz * toward > .2) {
     const t = (gz - ball.z) / dz, hitX = ball.x + dx * t, d = Math.abs(t);
     if (d < 34 && Math.abs(hitX) < R.goalHalfWidth + 3) {
-      const tx = Math.max(-R.goalHalfWidth + .6, Math.min(R.goalHalfWidth - .6, hitX));
+      // (The corner is laid as far out as it was for the old 0.62 m ball: the ball's own radius in from the post's middle.)
+      const tx = Math.max(-R.goalHalfWidth + R.ballRadius, Math.min(R.goalHalfWidth - R.ballRadius, hitX));
       const flat = Math.hypot(tx - ball.x, gz - ball.z);
       dx = (tx - ball.x) / flat; dz = (gz - ball.z) / flat;
       const aimY = kind === 'spike' ? 1 : kind === 'sinker' ? 1.4 : 2.1;
@@ -189,8 +203,8 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
     // Aimed away from the other court: it flies the way it was aimed, and is probably out.
     tx = ball.x + dx * 9; tz = ball.z + dz * 9;
   }
-  const speed = (speedOf[kind] ?? 18) * power;
   const flat = Math.hypot(tx - ball.x, tz - ball.z);
+  const speed = (speedOf[kind] ?? 18) * power + (kind === 'serve' || kind === 'super' || flat < 1e-3 ? 0 : carried(c, (tx - ball.x) / flat, (tz - ball.z) / flat));
   let t = kind === 'serve' && c.slot === 'light' ? 1.55 : Math.max(.28, flat / speed);
   let v = arc(ball, tx, R.ballRadius, tz, t, g, R.drag);
   // It has to clear the net (a spike from too low becomes a tip that does): the slowest flight that does.

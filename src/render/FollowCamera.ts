@@ -510,6 +510,9 @@ export class FollowCamera {
    *  BallCam.ts): the look rises after it - never so far that the player's own feet leave the bottom of the frame - and
    *  only up and down, so the heading and every direction the keys point stay exactly what they were. Null: no tilt. */
   keepInView:THREE.Vector3|null=null;
+  /** Degrees the lens opens past its own for a sport (the ball modes' ball cam, render/ball/BallCam.ts): more of the
+   *  pitch round the player and the ball, and speed read off the floor. 0 everywhere else. */
+  sportFov=0;
   private keepTilt=0;
   yaw=Math.PI;
   /** Horizontal view direction before cosmetic shake, used only to map input. */
@@ -813,7 +816,7 @@ export class FollowCamera {
   constructor(readonly camera:THREE.PerspectiveCamera){this.baseFov=camera.fov;camera.userData.rig=this.rig;
     // Round 3f (CAM5): the awakening shot's framing, for the evidence captures.
     this.rig.awaken=this.director.awakenFrame;}
-  reset(){resetCameraCutaway();this.fader.stage.off();this.initialized=false;this.subject='';this.trauma=0;this.boom=4.5;this.lift=1.65;this.shoulder=1.15;this.focusHeight=1.05;
+  reset(){resetCameraCutaway();this.sportFov=0;this.fader.stage.off();this.initialized=false;this.subject='';this.trauma=0;this.boom=4.5;this.lift=1.65;this.shoulder=1.15;this.focusHeight=1.05;
     this.assistVelocity=0;this.lastTurn=-Infinity;this.far=0;this.close=0;this.air=0;this.airLanded=LAND_HOLD;this.hold=0;this.framed=0;this.engage=0;this.strain=0;this.landed=LAND_HOLD;
     this.tilt.value=this.tilt.velocity=this.pull.value=this.pull.velocity=this.widen.value=this.widen.velocity=0;this.squeeze=this.squeezeLift=0;
     this.dodge.value=this.dodge.velocity=0;this.dodgeGoal=0;this.dodgeWait=0;this.uncover=false;this.foxness=0;this.framingGoal=NaN;this.fader.closeManual=0;
@@ -1246,8 +1249,8 @@ export class FollowCamera {
     this.comboFrame(dt,placed,self,foe,occluders);
     // Round 4: the dynamic camera's field moves gently with a dash, a run and
     // a group (CameraBrain BASE_FOV); every other mode keeps the fixed 50.
-    if(this.dynBlend>0)this.baseFov=THREE.MathUtils.lerp(this.baseFov,closeStyleFov(50+(this.brain.fov-50-this.arenaBlend*this.brain.group*GROUP_FOV*(1-ARENA.group)+Math.min(FORM_DYN_FOV_MOST,FORM_DYN_FOV*Math.max(0,this.drawnScale-1)))*this.dynBlend,this.styleBlend),placed?1:blend(3,dt));
-    else this.baseFov=THREE.MathUtils.lerp(this.baseFov,closeStyleFov(50,this.styleBlend),placed?1:blend(10,dt));
+    if(this.dynBlend>0)this.baseFov=THREE.MathUtils.lerp(this.baseFov,closeStyleFov(50+this.sportFov+(this.brain.fov-50-this.arenaBlend*this.brain.group*GROUP_FOV*(1-ARENA.group)+Math.min(FORM_DYN_FOV_MOST,FORM_DYN_FOV*Math.max(0,this.drawnScale-1)))*this.dynBlend,this.styleBlend),placed?1:blend(3,dt));
+    else this.baseFov=THREE.MathUtils.lerp(this.baseFov,closeStyleFov(50+this.sportFov,this.styleBlend),placed?1:blend(10,dt));
     if(this.lockBlend>0){
       // The lens the next frame's occlusion check is judged from.
       this.lensY=this.camera.position.y;

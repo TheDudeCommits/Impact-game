@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {arenaMood,crowdHype} from './hype';
+import {arenaMood,crowdHype,goalNetHit,goalNetPower} from './hype';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {BALL_TEAM_COLOURS,GOAL_RULES,SPIKE_RULES} from '../../game/ball/model';
 import type {StageId} from '../../game/stages';
@@ -39,12 +39,21 @@ class Quads{
   private readonly position:number[]=[];private readonly normal:number[]=[];private readonly uv:number[]=[];
   private readonly color:number[]=[];private readonly team:number[]=[];private readonly panel:number[]=[];
   private readonly ab=new THREE.Vector3();private readonly ad=new THREE.Vector3();
-  add(a:V3,b:V3,c:V3,d:V3,o:{uv?:readonly [number,number,number,number];color?:THREE.Color;team?:number}={}){
-    const [u0,v0,u1,v1]=o.uv??[0,0,1,1],corners=[a,b,c,d],uvs:V2[]=[[u0,v0],[u1,v0],[u1,v1],[u0,v1]],panels:V2[]=[[0,0],[1,0],[1,1],[0,1]];
+  add(a:V3,b:V3,c:V3,d:V3,o:{uv?:readonly [number,number,number,number];color?:THREE.Color;team?:number;panel?:readonly [number,number,number,number]}={}){
+    const [u0,v0,u1,v1]=o.uv??[0,0,1,1],[p0,q0,p1,q1]=o.panel??[0,0,1,1],corners=[a,b,c,d],uvs:V2[]=[[u0,v0],[u1,v0],[u1,v1],[u0,v1]],panels:V2[]=[[p0,q0],[p1,q0],[p1,q1],[p0,q1]];
     this.ab.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]);this.ad.set(d[0]-a[0],d[1]-a[1],d[2]-a[2]);const n=this.ab.cross(this.ad).normalize();
     for(const i of [0,1,2,0,2,3]){
       this.position.push(...corners[i]);this.normal.push(n.x,n.y,n.z);this.uv.push(...uvs[i]);this.panel.push(...panels[i]);
       const c=o.color??RED;this.color.push(c.r,c.g,c.b);this.team.push(o.team??0);
+    }
+  }
+  /** A quad cut into nu x nv cells (each a quad of its own, its panel place kept): a net that can bulge where it is hit. */
+  grid(a:V3,b:V3,c:V3,d:V3,nu:number,nv:number,o:{uv?:readonly [number,number,number,number];team?:number}={}){
+    const [u0,v0,u1,v1]=o.uv??[0,0,1,1];
+    const at=(s:number,t:number):V3=>{const x=(k:number)=>(a[k]*(1-s)+b[k]*s)*(1-t)+(d[k]*(1-s)+c[k]*s)*t;return [x(0),x(1),x(2)];};
+    for(let i=0;i<nu;i++)for(let j=0;j<nv;j++){
+      const s0=i/nu,s1=(i+1)/nu,t0=j/nv,t1=(j+1)/nv;
+      this.add(at(s0,t0),at(s1,t0),at(s1,t1),at(s0,t1),{team:o.team,uv:[u0+(u1-u0)*s0,v0+(v1-v0)*t0,u0+(u1-u0)*s1,v0+(v1-v0)*t1],panel:[s0,t0,s1,t1]});
     }
   }
   geometry(){
@@ -186,14 +195,26 @@ export class BallArena {
     if(this.arena==='rain-roof'){
       // Water tanks on the roof round the stands.
       for(const [x,z,r] of [[-30,-40,.4],[32,-38,2.2],[-34,40,-1.1],[29,44,3.4],[-38,0,1.6],[38,6,-.6]] as const)place.push(['own/ball-water-tower',{x,z,y:0,height:13,rot:r,shadow:false}]);
+      // The roof's plant round the stands, and a blank billboard frame over each long side.
+      for(const [x,z,r] of [[-40,-24,.3],[41,22,2.9],[-42,30,-1.4],[40,-34,1.9]] as const)place.push(['own/ball-roof-units',{x,z,y:0,width:9,rot:r,shadow:false}]);
+      for(const sx of [-1,1])place.push(['own/ball-billboard',{x:sx*(GOAL_RULES.halfX+30),z:0,y:3,width:22,rot:sx<0?Math.PI/2:-Math.PI/2,shadow:false}]);
     }else if(this.arena==='dust-yard'){
       place.push(['own/ball-wreck-ship',{x:-6,z:-(Z+40),y:-1.5,width:46,rot:.35,shadow:false}],['own/ball-wreck-ship',{x:8,z:Z+40,y:-1.5,width:50,rot:Math.PI+.5,shadow:false}]);
+      // An anchor and a ship's figurehead in the sand beyond the end stands (clear of the hulls).
+      place.push(['own/ball-ship-anchor',{x:-16,z:-50,y:-.6,height:9,rot:.5,tilt:.12,shadow:false}],['own/ball-figurehead',{x:18,z:50,y:-.3,height:10,rot:-2.6,shadow:false}]);
     }else if(this.arena==='sky-court'){
       place.push(['own/ball-sky-shrine',{x:62,z:-24,y:-14,height:34,rot:-1.2,shadow:false}],['own/ball-sky-shrine',{x:-70,z:36,y:-4,height:26,rot:2.1,shadow:false}]);
+      // Two sky-ships drifting past.
+      place.push(['own/ball-sky-ship',{x:-48,z:-34,y:16,width:15,rot:1.2,roll:.08,shadow:false}],['own/ball-sky-ship',{x:58,z:44,y:24,width:19,rot:-2.1,roll:-.06,shadow:false}]);
     }else if(this.arena==='tide-court'){
       place.push(['own/ball-tide-arch',{x:44,z:-80,y:-1,height:30,rot:-.3,shadow:false}]);
+      // Lifeguard towers either side of the court, and boats pulled up on the sand.
+      for(const sx of [-1,1])place.push(['own/ball-lifeguard-tower',{x:sx*27,z:sx*4,y:0,height:8,rot:sx<0?Math.PI/2:-Math.PI/2,shadow:false}]);
+      place.push(['own/ball-beached-boat',{x:31,z:-22,y:-.1,width:7,rot:.7,shadow:false}],['own/ball-beached-boat',{x:-33,z:21,y:-.1,width:6,rot:-2.3,shadow:false}]);
     }else if(this.arena==='ember-rim'){
       place.push(['own/ball-ember-colossus',{x:0,z:-92,y:-34,height:78,rot:0,shadow:false}]);
+      // Basalt braziers burning at the court's four corners, on the rim beyond the barrier.
+      for(const sx of [-1,1])for(const sz of [-1,1])place.push(['own/ball-basalt-brazier',{x:sx*17,z:sz*20.6,y:0,height:3.4,rot:Math.atan2(-sx,-sz),shadow:false}]);
     }
     if(!place.length)return;
     // Each piece on its own: one that is missing or fails to load is left out, the rest still stand.
@@ -347,22 +368,34 @@ export class BallArena {
       white.push({geometry:rod([-G-P,GH,z],[G+P,GH,z],P,14)},{geometry:rod([-G,GH,back],[G,GH,back],.09)},{geometry:rod([-G,.05,back],[G,.05,back],.07)});
       bands.push({geometry:rod([-.8,GH,z],[.8,GH,z],P+.02,14),color:colour});
       // The nets: the back, both sides and the roof, in the goal's own colour.
-      nets.add([-G,0,back],[G,0,back],[G,GH,back],[-G,GH,back],{uv:[-G,0,G,GH],team});
-      for(const sx of [-1,1])nets.add([sx*G,0,z],[sx*G,0,back],[sx*G,GH,back],[sx*G,GH,z],{uv:[0,0,D,GH],team});
-      nets.add([-G,GH,z],[G,GH,z],[G,GH,back],[-G,GH,back],{uv:[-G,0,G,D],team});
+      // (Cut into cells, so a goal's ball can bulge the net where it hits: BallCeremony.)
+      nets.grid([-G,0,back],[G,0,back],[G,GH,back],[-G,GH,back],12,6,{uv:[-G,0,G,GH],team});
+      for(const sx of [-1,1])nets.grid([sx*G,0,z],[sx*G,0,back],[sx*G,GH,back],[sx*G,GH,z],5,6,{uv:[0,0,D,GH],team});
+      nets.grid([-G,GH,z],[G,GH,z],[G,GH,back],[-G,GH,back],12,5,{uv:[-G,0,G,D],team});
     }
     const frame=this.add(new THREE.Mesh(bake(white),stageMaterial('ball-pitch','Goal frame',{color:0xf4f1ea,roughness:.5})),'Goal frames');frame.castShadow=true;
     this.add(new THREE.Mesh(bake(bands,true),new THREE.MeshBasicMaterial({vertexColors:true,name:'Goal bands'})),'Goal bands');
     const net=new THREE.ShaderMaterial({
       name:'Goal nets',transparent:true,depthWrite:false,side:THREE.DoubleSide,forceSinglePass:true,fog:true,
-      uniforms:fogged({uTime:this.time,uRed:{value:RED.clone()},uBlue:{value:BLUE.clone()}}),
+      uniforms:fogged({uTime:this.time,uRed:{value:RED.clone()},uBlue:{value:BLUE.clone()},uHit:goalNetHit,uHitPower:goalNetPower}),
       vertexShader:`attribute float aTeam;attribute vec2 aPanel;varying vec2 vUv;varying float vTeam;varying float vDeep;varying float vLens;
-        uniform float uTime;
+        uniform float uTime;uniform vec4 uHit;uniform float uHitPower;
         #include <fog_pars_vertex>
         void main(){vUv=uv;vTeam=aTeam;vec3 p=position;
           // A slow billow, pinned at every edge of its panel.
           float free=sin(aPanel.x*3.14159)*sin(aPanel.y*3.14159);
           p+=normal*free*(sin(uTime*1.3+uv.x*.9)*.06+.05);vDeep=free;
+          // A goal's ball bulges the net out where it hit (uHit, at uHit.w on the arena's clock), and the net
+          // springs back, pinned at its frame.
+          float since=uTime-uHit.w;
+          if(since>0.&&since<2.4){
+            vec3 mouth=vec3(0.,${num(GH*.5)},sign(position.z)*${num(Z+D*.5)});
+            vec3 out_=normal*sign(dot(normal,position-mouth)+1e-4);
+            float d=distance(position,uHit.xyz),reach=exp(-d*d/2.6);
+            float pin=smoothstep(0.,.22,min(min(aPanel.x,1.-aPanel.x),min(aPanel.y,1.-aPanel.y)));
+            float swing=since<.07?since/.07:exp(-(since-.07)*3.2)*cos((since-.07)*10.);
+            p+=out_*uHitPower*reach*pin*swing;vDeep=max(vDeep,reach*pin*abs(swing));
+          }
           vec4 mvPosition=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mvPosition;vLens=-mvPosition.z;
           #include <fog_vertex>
         }`,

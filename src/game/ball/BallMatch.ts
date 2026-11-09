@@ -7,7 +7,7 @@ import {tidyName} from '../displayName';
 import type {CollisionWorld, CombatEvent, FighterId, PlayerState, Vec3} from '../types';
 import {BallBrain} from './BallBrain';
 import {
-  BALL_ID, BALL_RULES, BALL_STAGE, BALL_TEAMS, CHARM_KINDS, CLASH, QUICK_CHAT_LIMIT, quickChat, GOAL_RULES, RUMBLE, SPIKE_RULES, charmName, heatTier, otherTeam,
+  BALL_ID, BALL_RULES, BALL_STAGE, BALL_TEAMS, CHARM_KINDS, CLASH, GOAL_FIGHT, QUICK_CHAT_LIMIT, quickChat, GOAL_RULES, RUMBLE, SPIKE_RULES, ballAssist, charmName, heatTier, otherTeam,
   type BallAccess, type BallCharm, type BallEffect, type CharmKind, type BallEvent, type BallModeId, type BallSeat, type BallSnapshot, type BallState,
   type BallTeam, type BallView, type ShotKind,
 } from './model';
@@ -18,6 +18,8 @@ import {MUTATOR_RULES, baseGravity, baseSize, isMutator, type BallMutator} from 
 import {TRAIT_RULES, traitOf, withTrait} from './traits';
 import {DRILLS, DrillRunner, isDrill, type DrillFeed, type DrillHost, type DrillId} from './drills';
 import {CELEBRATE, celebrationOf, cleanLook, type Celebration} from './look';
+import {DUEL, LINK, SIGNATURE_FIGHTERS, SIGNATURE_SHOTS} from './superShots';
+import {INTRO, podiumOf} from './ceremony';
 
 export interface BallOptions {
   collision?: CollisionWorld; seed?: number; access?: BallAccess; round?: number; fillBots?: boolean;
@@ -37,10 +39,14 @@ export interface BallOptions {
   mutator?: BallMutator | null;
   /** FREE PLAY's training drill (drills.ts), this mode's. */
   drill?: DrillId;
+  /** The match opens with its intro (ceremony.ts INTRO: the flyover, the splash page, the whistle), held in a
+   *  longer countdown. Never in FREE PLAY; the page's offline match and the online rooms ask for it, a couch one doesn't. */
+  intro?: boolean;
 }
 
-/** Every fighter shares one side in the combat kernel, so no blow ever finds another fighter: blows find the ball,
- *  which this match puts in front of them as the kernel's one external body. The teams of the game live in the seats. */
+/** Sky Spike and FREE PLAY: every fighter shares one side in the combat kernel, so no blow ever finds another fighter:
+ *  blows find the ball, which this match puts in front of them as the kernel's one external body. Goal Rush's sides are
+ *  the kernel's own (GOAL_FIGHT), so a blow finds the other side's fighters as well as the ball, never a team-mate. */
 const PITCH = 'pitch';
 const POOL = (Object.keys(MOVES) as FighterId[]).filter(f => isReleasedFighter(f) && !HELD.has(f));
 /** A SUPER SHOT bulldozing somebody: a heavy knockdown with no harm in it (nobody's health counts here). */
@@ -50,8 +56,16 @@ const BOWL: MoveDefinition = {name: 'Ball Impact', duration: .4, contacts: [0], 
 const STAGGER: MoveDefinition = {name: 'Ball Impact', duration: .3, contacts: [0], damage: 1, range: 1, radius: 1, stamina: 0, cooldown: 0, stun: BALL_RULES.staggerSeconds, knockback: 3.5, style: 'melee', outcome: 'stagger'};
 /** Ultimate and awakening meter a touch is worth, by slot: a side that keeps the ball moving earns its super shot. */
 const TOUCH_METER: Record<string, [number, number]> = {light: [2, 2.5], heavy: [3.5, 3.5], special: [4, 4], ultimate: [0, 5], area: [3.5, 3.5]};
-/** Body contact: the capsule a fighter's body is to the ball, and how soft. */
-const BODY_LOW = .45, BODY_HIGH = 1.45, BODY_BOUNCE = .35;
+/** The share of bot matches in which a side's bots bring a fighter with a signature super shot (superShots.ts). (.35 with
+ *  the bigger ball and running shots made 13 goals a match against 9.8; .15 makes 11.4.) */
+const SIGNATURE_BOTS = .15;
+/** Goal Rush's jobs: metres of head start toward the attacker's job for a bot whose super shot is ready. */
+const SUPER_READY = 3;
+/** Body contact: the capsule a fighter's body is to the ball, and how soft. Goal Rush's is livelier: a body
+ *  run or boosted into the ball drives it on by half again its own speed. */
+const BODY_LOW = .45, BODY_HIGH = 1.45, BODY_BOUNCE = .35, GOAL_BODY_BOUNCE = .5;
+/** Goal Rush's BUMP (GOAL_FIGHT.bump): a boosting body knocking an opponent flat. */
+const BUMP: MoveDefinition = {name: 'BUMP', duration: .4, contacts: [0], damage: Math.round(GOAL_FIGHT.health * GOAL_FIGHT.bump.damage), range: 1, radius: 1, stamina: 0, cooldown: 0, stun: .7, knockback: 10, style: 'melee', outcome: 'knockdown'};
 /** How much further than its body a guard meets the ball. */
 const GUARD_REACH = .7;
 /** Goal Rush's kickoff spots (on red's half; blue's mirror them): five of them, scaled to the pitch. */
@@ -84,9 +98,11 @@ export class BallMatch implements ExternalTargets, DrillHost {
   private readonly touchCast = new Map<string, number>();
   private readonly touchedAt = new Map<string, number>();
   /** Every touch lately, oldest first: `strike` false for a ball that only bounced off a body. */
-  private touchesLog: (Touch & {strike: boolean})[] = [];
+  private touchesLog: (Touch & {strike: boolean; shot?: ShotKind})[] = [];
   /** Blows a stopped ball took, landing together when its time starts again. */
-  private stack: {vx: number; vy: number; vz: number; heat: number; count: number; id: string; team: BallTeam; shot: ShotKind} | null = null;
+  private stack: {vx: number; vy: number; vz: number; heat: number; count: number; id: string; team: BallTeam; shot: ShotKind; super?: boolean} | null = null;
+  /** A TECHNIQUE DUEL on now: who guarded, whose shot, and how it ends when the beat does (releaseStack). */
+  private duelling: {keeper: string; striker?: string; keeperWins: boolean; x: number; y: number; z: number} | null = null;
   /** The last real strike (not a tap, bump or set), for a CLASH with the other side's next one. */
   private clashAt = -Infinity;
   /** When each seat last dashed: a save straight after one is a DIVING SAVE. */
@@ -100,6 +116,10 @@ export class BallMatch implements ExternalTargets, DrillHost {
   private serveRotation: Record<BallTeam, number> = {red: 0, blue: 0};
   private readonly hitR: number;
   private readonly radius: number;
+  /** Goal Rush outside FREE PLAY: the sides fight (GOAL_FIGHT). */
+  private readonly pvp: boolean;
+  /** When each seat last bumped somebody (GOAL_FIGHT.bump.gap). */
+  private readonly bumpAt = new Map<string, number>();
   private onTargetSince = -Infinity;
   private feverTold = false;
   private matchPointTold = 0;
@@ -126,10 +146,12 @@ export class BallMatch implements ExternalTargets, DrillHost {
     this.replays = (options.replays ?? true) && !options.practice;
     this.radius = mode === 'goal-rush' ? GOAL_RULES.ballRadius : SPIKE_RULES.ballRadius;
     this.hitR = mode === 'goal-rush' ? GOAL_RULES.hitRadius : SPIKE_RULES.hitRadius;
+    this.pvp = mode === 'goal-rush' && !options.practice;
     this.sim = new ArenaSimulation({roomMode: 'training', adaptive: false, trainingBot: false, respawn: true, stage: BALL_STAGE[mode],
-      collision: options.collision, seed: options.seed ?? 1, capacity: BALL_RULES.capacity, maxHp: COMBO_HP, maxStamina: COMBO_STAMINA,
+      collision: options.collision, seed: options.seed ?? 1, capacity: BALL_RULES.capacity, maxHp: this.pvp ? GOAL_FIGHT.health : COMBO_HP, maxStamina: COMBO_STAMINA,
       ...(options.lockCombat ? {lockCombat: true} : {})});
-    this.sim.status = 'waiting'; this.sim.external = this; this.sim.assist = {magnet: .9, airExternal: true};
+    // The aim at the ball and the sports movement (model.ts BALL_SPORT), as the page's prediction of the room has them.
+    this.sim.status = 'waiting'; this.sim.external = this; this.sim.assist = ballAssist(mode);
     this.ball = freshBall();
     this.view = {kind: 'ball', mode, phase: 'lobby', access: options.access ?? 'host', round: options.round ?? 1, hostId: null,
       capacity: BALL_RULES.capacity, fillBots: options.fillBots ?? true, startsAt: null, startedAt: 0, endsAt: 0, phaseUntil: 0, seats: [],
@@ -141,6 +163,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     // SUDDEN DEATH: Goal Rush's clock is a minute, then the next goal wins.
     if (mode === 'goal-rush' && this.view.mutator === 'sudden-death' && options.length === undefined) this.view.clock = MUTATOR_RULES.suddenSeconds;
     if (options.practice) { this.view.fillBots = false; if (mode === 'sky-spike') this.view.target = 999; }
+    else if (options.intro) this.view.intro = {seconds: INTRO.seconds};
     this.view.arena = isBallArena(options.arena) && BALL_ARENAS[options.arena].mode === mode ? options.arena : arenaFor(mode, this.seed);
     if (options.practice && isDrill(options.drill) && DRILLS[options.drill].mode === mode) { this.drill = new DrillRunner(options.drill, this.rng); this.view.drill = this.drill.view; }
     this.placeBallAtRest();
@@ -156,7 +179,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     const seat: BallSeat = {id, name: tidyName(name, 18), fighter, team: side, bot, goals: 0, assists: 0, saves: 0, shots: 0, touches: 0, kills: 0, aces: 0, blocks: 0, digs: 0, points: 0, trait: traitOf(fighter)};
     this.seats.set(id, seat);
     this.sim.addPlayer(id, fighter, seat.name, bot, this.mark(seat));
-    this.sim.setTeam(id, PITCH);
+    this.sim.setTeam(id, this.pvp ? seat.team : PITCH);
     if (bot) this.attachBrain(id);
     else if (this.view.hostId === null) this.view.hostId = id;
     this.view.seats = [...this.seats.values()];
@@ -193,6 +216,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     const to = otherTeam(seat.team);
     if (this.count(to) >= BALL_RULES.teamSize) return false;
     seat.team = to; this.view.seats = [...this.seats.values()];
+    if (this.pvp) this.sim.setTeam(id, to);
     return true;
   }
   submit(id: string, raw: unknown): boolean {
@@ -257,6 +281,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
   }
   /** A person voting to skip the replay showing now; when every person in the match has, it ends (a vote). */
   skip(id: string): boolean {
+    if (this.view.phase === 'countdown' && this.view.intro) return this.skipIntro(id);
     const r = this.view.replay, seat = this.seats.get(id), now = this.sim.serverTime;
     if (!r || !seat || seat.bot || this.brains.has(id) || !this.replaying()) return false;
     this.skips.add(id);
@@ -265,6 +290,18 @@ export class BallMatch implements ExternalTargets, DrillHost {
     if (people.every(s => this.skips.has(s.id))) { r.until = now; this.view.phaseUntil = Math.min(this.view.phaseUntil, now + REPLAY.after); }
     return true;
   }
+  /** The intro's skip, voted as a replay's is: once every person in the match has, the kickoff comes at once. */
+  private skipIntro(id: string): boolean {
+    const intro = this.view.intro!, seat = this.seats.get(id), now = this.sim.serverTime;
+    if (!seat || seat.bot || this.brains.has(id) || intro.skipped) return false;
+    this.skips.add(id);
+    const people = [...this.seats.values()].filter(s => !s.bot && !s.disconnected && !this.brains.has(s.id));
+    intro.skips = people.filter(s => this.skips.has(s.id)).length; intro.people = people.length;
+    if (people.every(s => this.skips.has(s.id))) { intro.skipped = true; this.view.startsAt = Math.min(this.view.startsAt ?? now, now + INTRO.skipTo); }
+    return true;
+  }
+  /** Seconds from the start to the kickoff: the intro's, or the plain countdown's (a room holds it while its pages load). */
+  leadIn() { return this.view.intro ? this.view.intro.skipped ? INTRO.skipTo : INTRO.seconds : BALL_RULES.countdown; }
   /** A replay is on every screen. */
   replaying() { const r = this.view.replay, now = this.sim.serverTime; return this.view.phase === 'scored' && !!r && now >= r.at && now < r.until; }
   disconnect(id: string, away: boolean) { const seat = this.seats.get(id); if (!seat) return; seat.disconnected = away || undefined; this.sim.clearPlayerInput(id); }
@@ -279,15 +316,22 @@ export class BallMatch implements ExternalTargets, DrillHost {
   start(): boolean {
     if (this.view.phase !== 'lobby' || !this.seats.size) return false;
     if (this.view.fillBots) {
-      const deck = this.sim.shuffle(POOL.slice());
+      const deck = this.sim.shuffle(POOL.slice()), headliners = this.sim.shuffle(SIGNATURE_FIGHTERS.filter(f => POOL.includes(f)));
       let n = 0;
-      for (const team of BALL_TEAMS) while (this.count(team) < BALL_RULES.teamSize) {
-        const used = new Set([...this.seats.values()].map(s => s.fighter)), fighter = deck.find(f => !used.has(f)) ?? deck[n % deck.length];
-        this.add(`ball-bot-${++n}`, fighter, fighter.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' '), true, team);
+      for (const team of BALL_TEAMS) {
+        // (Now and then a side's bots bring one of the eight fighters with a signature super shot, if the side has none,
+        // so a bot match shows them off.)
+        let signature = [...this.seats.values()].some(s => s.team === team && SIGNATURE_SHOTS[s.fighter]) || this.rng() >= SIGNATURE_BOTS;
+        while (this.count(team) < BALL_RULES.teamSize) {
+          const used = new Set([...this.seats.values()].map(s => s.fighter)), pick = signature ? undefined : headliners.find(f => !used.has(f));
+          signature = true;
+          const fighter = pick ?? deck.find(f => !used.has(f)) ?? deck[n % deck.length];
+          this.add(`ball-bot-${++n}`, fighter, fighter.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' '), true, team);
+        }
       }
     }
     if (!this.view.practice && !BALL_TEAMS.every(team => this.count(team) > 0)) return false;
-    this.view.phase = 'countdown'; this.view.startsAt = this.sim.serverTime + BALL_RULES.countdown;
+    this.view.phase = 'countdown'; this.view.startsAt = this.sim.serverTime + this.leadIn();
     for (const seat of this.seats.values()) { this.sim.place(seat.id, this.mark(seat), this.facing(seat.team)); this.sim.clearPlayerInput(seat.id); }
     return true;
   }
@@ -314,7 +358,9 @@ export class BallMatch implements ExternalTargets, DrillHost {
     for (const seat of this.seats.values()) {
       const a = this.sim.actors.get(seat.id);
       if (!a) continue;
+      delete seat.out;
       if (!a.state.alive) this.sim.revive(seat.id, a.state.maxHp);
+      a.state.hp = a.state.maxHp;
       this.sim.place(seat.id, this.mark(seat), this.facing(seat.team)); this.sim.clearPlayerInput(seat.id);
       if (this.celebration?.id === seat.id) { a.cast = null; continue; }
       a.cast = null; a.state.action = 'idle'; a.state.actionStarted = this.sim.serverTime; a.state.actionDuration = 0;
@@ -334,7 +380,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     if (twist.groundBounce !== 1) b.spring = twist.groundBounce;
     if (twist.wind) { const turn = ((this.seed + (this.view?.score.red ?? 0) * 7919 + (this.view?.score.blue ?? 0) * 104729) % 360) * Math.PI / 180; b.windX = Math.cos(turn) * twist.wind; b.windZ = Math.sin(turn) * twist.wind; }
     if (twist.startHeat) b.heat = Math.max(b.heat, twist.startHeat);
-    this.stack = null; this.lastStrike = null;
+    b.link = null; this.stack = null; this.lastStrike = null; this.duelling = null;
   }
 
   // ─── The step ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -358,7 +404,11 @@ export class BallMatch implements ExternalTargets, DrillHost {
       }
     }
     this.sim.step(dt, waiting);
-    this.tidyBodies();
+    // (Read at once, for Goal Rush's knock-outs: each one a wipe-out.)
+    const fresh = this.sim.drainEvents();
+    this.events.push(...fresh);
+    if (this.pvp) this.wipeOuts(fresh);
+    this.tidyBodies(dt);
     if (this.celebration) this.holdCelebration();
     for (const seat of this.seats.values()) if (this.sim.actors.get(seat.id)?.state.action === 'dash') this.dashAt.set(seat.id, this.sim.serverTime);
     const t = this.sim.serverTime;
@@ -394,14 +444,58 @@ export class BallMatch implements ExternalTargets, DrillHost {
   }
   serveNow() { if (this.mode !== 'sky-spike') return; this.ball.held = true; this.serve(); this.view.phaseUntil = this.sim.serverTime + .3; }
 
-  /** Nobody's health counts here, and nobody stays down: a body knocked off the arena comes back on its mark. */
-  private tidyBodies() {
+  /** Sky Spike and FREE PLAY: nobody's health counts, and nobody stays down: a body knocked off the arena comes back on
+   *  its mark. Goal Rush (GOAL_FIGHT): health counts, and fills again a while after the last blow; a wiped-out fighter
+   *  comes back at their own end when their time is up. */
+  private tidyBodies(dt = 0) {
+    const now = this.sim.serverTime;
     for (const seat of this.seats.values()) {
       const a = this.sim.actors.get(seat.id);
       if (!a) continue;
-      a.state.hp = a.state.maxHp;
-      if (!a.state.alive) { this.sim.revive(seat.id, a.state.maxHp); this.sim.place(seat.id, this.mark(seat), this.facing(seat.team)); }
+      if (!this.pvp) {
+        a.state.hp = a.state.maxHp;
+        if (!a.state.alive) { this.sim.revive(seat.id, a.state.maxHp); this.sim.place(seat.id, this.mark(seat), this.facing(seat.team)); }
+        continue;
+      }
+      if (seat.out !== undefined) { if (now + 1e-6 >= seat.out) this.backIn(seat); continue; }
+      // (A knock-out the kernel's events did not name - off the arena - is a wipe-out all the same.)
+      if (!a.state.alive) { this.wipeOut(seat); continue; }
+      if (now - a.lastDamageAt >= GOAL_FIGHT.regenAfter && a.state.hp < a.state.maxHp) a.state.hp = Math.min(a.state.maxHp, a.state.hp + GOAL_FIGHT.regen * dt);
     }
+  }
+  /** Goal Rush: the kernel's knock-outs this tick, each a wipe-out credited to whoever landed the last blow. */
+  private wipeOuts(events: readonly CombatEvent[]) {
+    for (const e of events) {
+      if (e.kind !== 'eliminated' || !e.targetId) continue;
+      const seat = this.seats.get(e.targetId), by = e.actorId ? this.seats.get(e.actorId) : undefined;
+      if (!seat || seat.out !== undefined) continue;
+      let blow: string | undefined;
+      for (const h of events) if (h.kind === 'hit' && h.targetId === seat.id && h.actorId === e.actorId && h.move) blow = h.move;
+      this.wipeOut(seat, by && by.team !== seat.team ? by : undefined, blow);
+    }
+  }
+  /** A fighter's health ran out: WIPED OUT, off the pitch for GOAL_FIGHT.seconds (the body lies where it fell, the
+   *  kernel's own respawn held off: backIn brings them back). */
+  private wipeOut(seat: BallSeat, by?: BallSeat, blow?: string) {
+    const a = this.sim.actors.get(seat.id), now = this.sim.serverTime;
+    if (!a) return;
+    seat.out = now + GOAL_FIGHT.seconds; a.respawnAt = Infinity; this.last.delete(seat.id);
+    if (by) { by.wipeouts = (by.wipeouts ?? 0) + 1; by.points += GOAL_FIGHT.points; }
+    const p = a.state;
+    this.emit('wipeout', {team: by?.team ?? otherTeam(seat.team), actorId: by?.id, targetId: seat.id, x: p.x, y: p.y + 1, z: p.z, value: GOAL_FIGHT.seconds, text: blow});
+  }
+  /** Back from a wipe-out: at their own end, either side of their goal (the side away from the ball), facing the far
+   *  goal, health full, the meters kept, untouchable for a moment. */
+  private backIn(seat: BallSeat) {
+    const a = this.sim.actors.get(seat.id), now = this.sim.serverTime;
+    delete seat.out;
+    if (!a) return;
+    const home = goalZ(seat.team), x = (this.ball.x > 0 ? -1 : 1) * GOAL_FIGHT.respawnX;
+    if (!a.state.alive) this.sim.revive(seat.id, a.state.maxHp);
+    a.state.hp = a.state.maxHp;
+    this.sim.place(seat.id, {x, y: 0, z: home - Math.sign(home) * GOAL_FIGHT.respawnZ}, this.facing(seat.team));
+    this.sim.clearPlayerInput(seat.id);
+    a.evadeUntil = now + GOAL_FIGHT.guard;
   }
 
   private begin() {
@@ -475,6 +569,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     // to burn.
     for (const c of this.contacts) if (c.kind === 'floor' && c.speed > BALL_RULES.bounceFrom) b.heat = Math.max(floor, b.heat - BALL_RULES.bounceHeat);
     this.bodyContacts(dt);
+    if (this.pvp) this.bumps();
     if (this.mode === 'goal-rush') this.judgeGoal(); else this.judgeSpike(sideBefore);
   }
   /** After a goal or a point the ball rests where it ended (a goal's in its net) while everyone celebrates. */
@@ -509,6 +604,8 @@ export class BallMatch implements ExternalTargets, DrillHost {
       const speed = Math.hypot(b.vx, b.vy, b.vz), rel = (b.vx - fvx) * nx + (b.vy - fvy) * ny + (b.vz - fvz) * nz;
       const guarding = p.guarding || p.action === 'guard';
       const hostile = b.lastTeam !== null && b.lastTeam !== seat.team;
+      // A PERFECT guard against a SUPER SHOT: a TECHNIQUE DUEL.
+      if (b.super && hostile && rel < -1 && guarding && now - a.guardPressedAt <= JUST_GUARD_WINDOW) { this.duel(seat, a, speed); return; }
       // A super shot is stopped by nothing but a perfect guard: anyone else in its way is bowled over and it flies on
       // (a guard that is not perfect is broken through), the keeper blasted back with it.
       if (b.super && hostile && rel < -1 && !(guarding && now - a.guardPressedAt <= JUST_GUARD_WINDOW)) {
@@ -530,11 +627,17 @@ export class BallMatch implements ExternalTargets, DrillHost {
         continue;
       }
       if (rel < 0) {
-        b.vx -= (1 + BODY_BOUNCE) * rel * nx; b.vy -= (1 + BODY_BOUNCE) * rel * ny; b.vz -= (1 + BODY_BOUNCE) * rel * nz;
+        const e = this.mode === 'goal-rush' ? GOAL_BODY_BOUNCE : BODY_BOUNCE;
+        b.vx -= (1 + e) * rel * nx; b.vy -= (1 + e) * rel * ny; b.vz -= (1 + e) * rel * nz;
       }
       // A body running into the ball drives it on ahead of itself: the dribble.
       const run = fvx * nx + fvz * nz, ahead = b.vx * nx + b.vz * nz;
       if (run > 1 && ahead < run * 1.15 + .6) { const add = run * 1.15 + .6 - ahead; b.vx += nx * add; b.vz += nz * add; }
+      // (No faster than its heat lets a strike fly it, unless it came in faster: a body is no boot.)
+      if (this.mode === 'goal-rush') {
+        const after = Math.hypot(b.vx, b.vy, b.vz), cap = Math.max(speed, speedCap(this.mode, b.heat));
+        if (after > cap) { const k = cap / after; b.vx *= k; b.vy *= k; b.vz *= k; }
+      }
       // An OVERDRIVE ball at speed staggers whoever it meets on the other side (never knocks them down: that is a
       // SUPER SHOT's alone).
       if (hostile && speed >= BALL_RULES.bowlSpeed && heatTier(b.heat) >= BALL_RULES.bowlTier && p.action !== 'knockdown' && now - (this.staggeredAt.get(seat.id) ?? -Infinity) >= BALL_RULES.staggerGap) {
@@ -546,6 +649,28 @@ export class BallMatch implements ExternalTargets, DrillHost {
       if ((this.bodyTouch.get(seat.id) ?? -Infinity) + .35 <= now && Math.abs(rel) > 1.5) {
         this.bodyTouch.set(seat.id, now);
         this.touched(seat, null, 'header');
+      }
+    }
+  }
+  /** Goal Rush's BUMP (GOAL_FIGHT.bump): a boosting body closing hard on one of the other side knocks them flat - a
+   *  blow of the bumper's, through the kernel's own rules (a guard takes it; one out of health is wiped out). */
+  private bumps() {
+    const B = GOAL_FIGHT.bump, now = this.sim.serverTime;
+    for (const seat of this.seats.values()) {
+      const a = this.sim.actors.get(seat.id), v = this.last.get(seat.id);
+      if (!a?.boosting || !a.state.alive || seat.out !== undefined || !v || Math.hypot(v.vx, v.vz) < B.speed || now - (this.bumpAt.get(seat.id) ?? -Infinity) < B.gap) continue;
+      const p = a.state;
+      for (const other of this.seats.values()) {
+        const q = other.team !== seat.team && other.out === undefined ? this.sim.actors.get(other.id)?.state : undefined;
+        if (!q?.alive || Math.abs(q.y - p.y) > 1.2) continue;
+        const dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz);
+        if (d < 1e-3 || d > PLAYER_RADIUS * ((p.size ?? 1) + (q.size ?? 1)) + B.reach) continue;
+        const w = this.last.get(other.id), closing = ((v.vx - (w?.vx ?? 0)) * dx + (v.vz - (w?.vz ?? 0)) * dz) / d;
+        if (closing < B.closing) continue;
+        this.bumpAt.set(seat.id, now);
+        this.sim.strike(seat.id, other.id, 'heavy', BUMP, {x: p.x, y: p.y + 1, z: p.z});
+        this.emit('demo', {team: seat.team, actorId: seat.id, targetId: other.id, x: q.x, y: q.y + 1, z: q.z, value: Math.round(Math.hypot(v.vx, v.vz)), text: 'BUMP'});
+        break;
       }
     }
   }
@@ -633,8 +758,9 @@ export class BallMatch implements ExternalTargets, DrillHost {
       return {x: m.x, z: m.z, vx: v?.vx ?? 0, vz: v?.vz ?? 0};
     }) : undefined;
     const rivals = this.mode === 'sky-spike' ? [...this.seats.values()].filter(s => s.team !== seat.team).map(s => this.sim.actors.get(s.id)!.state) : undefined;
+    const moving = this.last.get(seat.id);
     const result = strikeBall(b, {mode: this.mode, slot: blow.slot, move: blow.move, knockback: blow.knockback, launch: blow.launch, finisher: blow.finisher,
-      pushX: blow.pushX, pushZ: blow.pushZ, mates, touches, serve, rivals, gravity: baseGravity(this.view.mutator),
+      pushX: blow.pushX, pushZ: blow.pushZ, mates, touches, serve, rivals, gravity: baseGravity(this.view.mutator), run: {vx: moving?.vx ?? 0, vz: moving?.vz ?? 0},
       striker: {id: seat.id, team: seat.team, x: p.x, y: p.y, z: p.z, grounded: p.grounded, aimYaw: yaw, awakened: !!p.awakened,
         forward: mx * Math.sin(yaw) + mz * Math.cos(yaw), lateral: -mx * Math.cos(yaw) + mz * Math.sin(yaw), chain: p.chain ?? 0}});
     // A pass completed (the side's last strike a team-mate's, a moment ago) heats the ball: passing is how it burns.
@@ -678,6 +804,9 @@ export class BallMatch implements ExternalTargets, DrillHost {
       if (run && run.vz * towardNet < -1.2) flair = 'ROLL SPIKE';
     }
     if (flair) { result.heat += .3; this.flair = {id: seat.id, at: now, text: flair}; }
+    // A LINK SHOT: a team-mate's set finished first time.
+    const linked = !again && !serve && LINK.finishes.has(result.shot) ? this.linkFrom(seat, now) : undefined;
+    if (linked) result.heat += LINK.heat;
     if (b.frozenUntil > now) {
       // In stopped time the blows pile up and land together when it starts again.
       const s = this.stack ?? {vx: 0, vy: 0, vz: 0, heat: 0, count: 0, id: seat.id, team: seat.team, shot: result.shot};
@@ -693,12 +822,57 @@ export class BallMatch implements ExternalTargets, DrillHost {
     const [ult, awaken] = TOUCH_METER[blow.slot] ?? [3, 2];
     this.sim.addMeter(seat.id, ult, awaken);
     if (result.super && !again) this.emit('super', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot: 'super', text: blow.move.name});
-    else if (!again && result.shot !== 'tap' && result.shot !== 'bump' && result.shot !== 'set') this.emit('strike', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot: b.shot ?? result.shot, value: Math.round(Math.hypot(b.vx, b.vy, b.vz)), text: charged ? 'KI CHARGE' : flair ?? (skySpike ? 'SKY SPIKE' : undefined)});
+    else if (!again && result.shot !== 'tap' && result.shot !== 'bump' && result.shot !== 'set') this.emit('strike', {team: seat.team, actorId: seat.id, assistId: linked?.id, x: b.x, y: b.y, z: b.z, shot: b.shot ?? result.shot, value: Math.round(Math.hypot(b.vx, b.vy, b.vz)), text: linked ? 'LINK SHOT' : charged ? 'KI CHARGE' : flair ?? (skySpike ? 'SKY SPIKE' : undefined)});
     if (!seat.bot && !this.brains.has(seat.id)) this.view.best = Math.max(this.view.best, Math.hypot(b.vx, b.vy, b.vz));
     // A move's later contacts drive the ball on; the touch was its first.
     if (again) { b.lastId = seat.id; b.lastTeam = seat.team; }
     else this.touched(seat, result.shot, b.shot ?? result.shot, false, serve);
+    if (linked) {
+      b.link = linked.id; seat.points += LINK.points; linked.points += LINK.setter;
+      this.accolade(seat, 'LINK SHOT', 25, linked.id);
+    }
     return {damage: 1, reaction: 'flinch', killed: false};
+  }
+  /** The team-mate whose set this strike finishes first time (a LINK SHOT), if it does: the last strike on the ball was
+   *  theirs, a set (LINK.sets), inside the mode's window, with nobody of the other side touching it since. */
+  private linkFrom(seat: BallSeat, now: number): BallSeat | undefined {
+    for (let i = this.touchesLog.length - 1; i >= 0; i--) {
+      const t = this.touchesLog[i];
+      if (t.team !== seat.team) return undefined;
+      if (!t.strike) continue;
+      if (t.id === seat.id || !t.shot || !LINK.sets.has(t.shot) || now - t.at > LINK.window[this.mode]) return undefined;
+      return this.seats.get(t.id);
+    }
+    return undefined;
+  }
+  /** A PERFECT guard meets a SUPER SHOT: the ball hangs between them for the beat, the keeper frozen in the guard, and
+   *  then either the shot dies (the keeper's side's ball, cold, popped up in front of them) or it breaks through and the
+   *  keeper goes down (releaseStack ends it). */
+  private duel(seat: BallSeat, a: NonNullable<ReturnType<typeof this.sim.actors.get>>, speed: number) {
+    const b = this.ball, now = this.sim.serverTime, striker = b.lastId ? this.seats.get(b.lastId) : undefined;
+    const shooter = striker && this.sim.actors.get(striker.id)?.state;
+    const onTarget = this.mode === 'goal-rush' && this.headingInto(seat.team);
+    const keeperWins = this.rng() < DUEL.keeper + (a.state.awakened ? DUEL.awakened : 0) - (shooter?.awakened ? DUEL.awakened : 0);
+    const v = {vx: b.vx, vy: b.vy, vz: b.vz};
+    b.clash = now + DUEL.hold; this.clashAt = now; this.lastStrike = null;
+    b.vx = b.vy = b.vz = 0; b.sx = b.sy = b.sz = 0;
+    if (now >= a.hitstopUntil) a.hitstopFrom = now;
+    a.hitstopUntil = Math.max(a.hitstopUntil, now + DUEL.hold);
+    if (keeperWins) {
+      // Popped up in front of the keeper (Sky Spike: back into their own court), cold: their side's ball to play.
+      const yaw = a.input.yaw, home = seat.team === 'red' ? -1 : 1;
+      const dx = this.mode === 'sky-spike' ? 0 : Math.sin(yaw) * 3.5, dz = this.mode === 'sky-spike' ? home * 2.5 : Math.cos(yaw) * 3.5;
+      this.stack = {vx: dx, vy: 7, vz: dz, heat: 0, count: 1, id: seat.id, team: seat.team, shot: 'save', super: false};
+      b.heat = 0; seat.points += DUEL.points; this.sim.addMeter(seat.id, 16, 10);
+      if (onTarget) { seat.saves++; this.saved(seat, speed); } else if (this.mode === 'sky-spike') seat.blocks++;
+      this.touched(seat, null, 'save', true);
+      if (this.mode === 'sky-spike') { this.view.touchTeam = seat.team; this.view.touches = 0; }
+    } else {
+      this.stack = {vx: v.vx, vy: v.vy, vz: v.vz, heat: 0, count: 1, id: b.lastId ?? seat.id, team: b.lastTeam ?? otherTeam(seat.team), shot: 'super', super: true};
+      if (striker) striker.points += DUEL.points / 2;
+    }
+    this.duelling = {keeper: seat.id, striker: striker?.id, keeperWins, x: b.x, y: b.y, z: b.z};
+    this.emit('duel', {team: seat.team, actorId: seat.id, targetId: striker?.id, x: b.x, y: b.y, z: b.z, value: DUEL.hold, text: 'TECHNIQUE DUEL'});
   }
   /** Two sides' blows on the ball at once: it hangs in the clash, both fighters freeze, and the stronger blow (with a
    *  little luck either way) sends it on harder and hotter when the clash breaks (releaseStack). */
@@ -745,6 +919,18 @@ export class BallMatch implements ExternalTargets, DrillHost {
     this.stack = null;
     const cap = speedCap(this.mode, BALL_RULES.heatMax), speed = Math.hypot(s.vx, s.vy, s.vz), k = speed > cap ? cap / speed : 1;
     b.vx = s.vx * k; b.vy = s.vy * k; b.vz = s.vz * k; b.heat = Math.min(BALL_RULES.heatMax, b.heat + s.heat); b.shot = s.shot;
+    if (s.super !== undefined) b.super = s.super;
+    const d = this.duelling;
+    if (d) {
+      // The duel's end: the shot dies, or the keeper goes down under it and it flies on.
+      this.duelling = null;
+      const keeper = this.seats.get(d.keeper), striker = d.striker ? this.seats.get(d.striker) : undefined;
+      if (!d.keeperWins && keeper) { const p = this.sim.actors.get(keeper.id)?.state; if (p && p.action !== 'knockdown') this.sim.strike(BALL_ID, keeper.id, 'heavy', BOWL, {x: b.x, y: b.y, z: b.z}); }
+      if (d.keeperWins && keeper) this.accolade(keeper, 'TECHNIQUE DUEL', 30);
+      const winner = d.keeperWins ? keeper : striker, loser = d.keeperWins ? striker : keeper;
+      this.emit('duel-won', {team: winner?.team ?? keeper?.team, actorId: winner?.id, targetId: loser?.id, x: d.x, y: d.y, z: d.z, value: Math.round(speed * k), text: d.keeperWins ? 'SHOT STOPPED' : 'BREAKS THROUGH'});
+      if (d.keeperWins && keeper) this.chatter(keeper.team, CHAT.saved, keeper.id, .7);
+    }
     if (s.count > 1) this.emit('strike', {team: s.team, actorId: s.id, x: b.x, y: b.y, z: b.z, shot: s.shot, value: Math.round(speed * k), text: `${s.count} BLOWS AT ONCE`});
   }
 
@@ -752,9 +938,9 @@ export class BallMatch implements ExternalTargets, DrillHost {
   private touched(seat: BallSeat, shot: ShotKind | null, named: ShotKind, block = false, serve = false) {
     const b = this.ball, now = this.sim.serverTime;
     const wasOnTarget = this.mode === 'goal-rush' && b.lastTeam !== null && b.lastTeam !== seat.team && this.headingInto(seat.team);
-    b.lastId = seat.id; b.lastTeam = seat.team;
+    b.lastId = seat.id; b.lastTeam = seat.team; b.link = null;
     seat.touches++; seat.points += 2;
-    this.touchesLog.push({id: seat.id, team: seat.team, at: now, x: b.x, y: b.y, z: b.z, strike: shot !== null});
+    this.touchesLog.push({id: seat.id, team: seat.team, at: now, x: b.x, y: b.y, z: b.z, strike: shot !== null, shot: shot ?? undefined});
     if (this.touchesLog.length > 12) this.touchesLog.shift();
     if (this.mode === 'goal-rush') {
       if (wasOnTarget && shot !== null && named !== 'save') { seat.saves++; seat.points += 50; this.emit('save', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, text: 'SAVE', shot: 'save'}); this.saved(seat); }
@@ -842,15 +1028,16 @@ export class BallMatch implements ExternalTargets, DrillHost {
     this.view.phase = 'scored'; this.view.phaseUntil = now + (this.view.practice ? 1.6 : GOAL_RULES.goalSeconds);
     if (this.view.overtime) this.view.phaseUntil = now + GOAL_RULES.goalSeconds * .8;
     const decisive = deflected ? shooter : [...this.touchesLog].reverse().find(t => t.strike);
-    this.replay('goal', decisive?.at, {team: scorers, actorId: scorer?.id, shot: b.shot ?? undefined, speed, text: own ? 'OWN GOAL' : b.super ? 'SUPER GOAL' : undefined});
+    this.replay('goal', decisive?.at, {team: scorers, actorId: scorer?.id, shot: b.shot ?? undefined, speed, text: own ? 'OWN GOAL' : b.super ? 'SUPER GOAL' : undefined, ceremony: !own && !!scorer});
   }
   /** The replay of what just happened, shown after the celebration's first beat; the celebration waits for it. */
-  private replay(kind: BallReplay['kind'], key: number | undefined, fields: Pick<BallReplay, 'team' | 'actorId' | 'shot' | 'speed' | 'text'>) {
+  private replay(kind: BallReplay['kind'], key: number | undefined, fields: Pick<BallReplay, 'team' | 'actorId' | 'shot' | 'speed' | 'text' | 'ceremony'>) {
     if (!this.replays) return;
     const now = this.sim.serverTime, decisive = key ?? now - .6;
     const from = Math.max(this.liveSince + .05, Math.min(now - REPLAY.lead, decisive - 1));
     if (now - from < 1) return;
-    const r: BallReplay = {kind, from, to: now + REPLAY.tail, key: decisive, at: now + REPLAY.delay, until: 0, ...fields};
+    const r: BallReplay = {kind, from, to: now + REPLAY.tail, key: decisive, at: now + (fields.ceremony ? REPLAY.ceremony : REPLAY.delay), until: 0, ...fields};
+    if (!r.ceremony) delete r.ceremony;
     r.until = r.at + replayLength(r);
     this.view.replay = r; this.skips.clear();
     this.view.phaseUntil = Math.max(this.view.phaseUntil, r.until + REPLAY.after);
@@ -925,13 +1112,15 @@ export class BallMatch implements ExternalTargets, DrillHost {
     const highlight = why !== 'touches' && (this.view.fever || b.super || matchPoint || last);
     const decisive = [...this.touchesLog].reverse().find(t => t.strike)?.at;
     const text = last ? 'WINNING POINT' : b.super ? 'SUPER SHOT' : this.view.fever ? 'FEVER POINT' : matchPoint ? 'MATCH POINT SAVED' : undefined;
-    if (last) { this.view.phase = 'scored'; this.view.phaseUntil = now + REPLAY.lastPoint; this.pendingWinner = won(red, blue) ? 'red' : 'blue'; if (highlight) this.replay('point', decisive, {team: winner, actorId: by?.team === winner ? by.id : undefined, shot: b.shot ?? undefined, text}); return; }
+    // A kill on match point - the winning one, or one that saves it - gets the goal's sequence before its replay.
+    const ceremony = why === 'floor' && by?.team === winner && (last || matchPoint) && !this.view.practice;
+    if (last) { this.view.phase = 'scored'; this.view.phaseUntil = now + REPLAY.lastPoint; this.pendingWinner = won(red, blue) ? 'red' : 'blue'; if (highlight) this.replay('point', decisive, {team: winner, actorId: by?.team === winner ? by.id : undefined, shot: b.shot ?? undefined, text, ceremony}); return; }
     for (const team of BALL_TEAMS) {
       const s = this.view.score[team], o = this.view.score[otherTeam(team)];
       if ((s + 1 >= target && s + 1 - o >= 2 || s + 1 >= cap) && this.matchPointTold !== s * 100 + o) { this.matchPointTold = s * 100 + o; this.emit('match-point', {team, x: 0, y: 0, z: 0, text: 'MATCH POINT'}); }
     }
     this.view.phase = 'scored'; this.view.phaseUntil = now + (this.view.practice ? 1.2 : R.pointSeconds);
-    if (highlight) this.replay('point', decisive, {team: winner, actorId: by?.team === winner ? by.id : undefined, shot: b.shot ?? undefined, text});
+    if (highlight) this.replay('point', decisive, {team: winner, actorId: by?.team === winner ? by.id : undefined, shot: b.shot ?? undefined, text, ceremony});
     if (this.celebration) this.celebration.until = this.view.phaseUntil + R.celebrateSeconds;
   }
   private pendingWinner: BallTeam | null = null;
@@ -972,13 +1161,23 @@ export class BallMatch implements ExternalTargets, DrillHost {
     let mvp: BallSeat | undefined;
     for (const s of this.seats.values()) if (!mvp || s.points + (s.team === winner ? 25 : 0) > mvp.points + (mvp.team === winner ? 25 : 0)) mvp = s;
     v.mvp = mvp?.id ?? null;
-    this.sim.winnerId = [...this.seats.values()].find(s => s.team === winner)?.id ?? null;
+    // The podium (ceremony.ts): the winning side's best on the top step, the other two either side; the others back on
+    // their marks. FREE PLAY never ends; a draw stands the MVP's side up.
+    const side = winner === 'draw' ? mvp?.team : winner;
+    const podium = side ? [...this.seats.values()].filter(s => s.team === side).sort((x, y) => y.points - x.points) : [];
+    this.sim.winnerId = podium[0]?.id ?? [...this.seats.values()].find(s => s.team === winner)?.id ?? null;
+    const stand = side ? podiumOf(this.mode, side) : undefined;
     for (const seat of this.seats.values()) {
       this.sim.clearPlayerInput(seat.id);
       const a = this.sim.actors.get(seat.id)!;
-      a.cast = null;
+      a.cast = null; delete seat.out;
+      if (!a.state.alive) this.sim.revive(seat.id, a.state.maxHp);
+      const step = stand ? podium.indexOf(seat) : -1;
+      if (stand && step >= 0 && step < stand.spots.length) this.sim.place(seat.id, stand.spots[step], stand.yaw);
+      else if (stand) this.sim.place(seat.id, this.mark(seat), this.facing(seat.team));
       a.state.action = seat.team === winner ? 'victory' : 'idle'; a.state.actionStarted = this.sim.serverTime; a.state.actionDuration = 0;
     }
+    if (stand) { const b = this.ball; Object.assign(b, {x: stand.ball.x, y: this.radius + .02, z: stand.ball.z, vx: 0, vy: 0, vz: 0, sx: 0, sy: 0, sz: 0, super: false, clash: 0, frozenUntil: 0}); }
     this.ball.held = true;
     if (winner !== 'draw') { this.chatter(winner, CHAT.won, undefined, 1); this.chatter(otherTeam(winner), CHAT.beaten, undefined, .8); }
     this.emit('win', {team: winner === 'draw' ? undefined : winner, actorId: v.mvp ?? undefined, x: 0, y: 0, z: 0, text: reason});
@@ -993,7 +1192,8 @@ export class BallMatch implements ExternalTargets, DrillHost {
       // The jobs go to the side's bots (and anyone a bot is playing for): a person plays as they please, and a bot left
       // to support a person who never attacks would leave the side with no attacker at all. With two people beside it,
       // the one bot keeps goal.
-      const all = [...this.seats.values()].filter(s => s.team === team), side = all.filter(s => this.brains.has(s.id));
+      // (A wiped-out bot has no job until it is back.)
+      const all = [...this.seats.values()].filter(s => s.team === team), side = all.filter(s => this.brains.has(s.id) && s.out === undefined);
       const people = all.length - side.length;
       for (const s of all) if (!this.brains.has(s.id)) s.role = undefined;
       if (!side.length) continue;
@@ -1004,7 +1204,10 @@ export class BallMatch implements ExternalTargets, DrillHost {
           const p = this.sim.actors.get(s.id)!.state;
           // Behind the ball (between it and their own goal) is where an attacker comes from.
           const behind = Math.sign(own) * (p.z - b.z) > 0 ? 0 : 6;
-          return {s, chase: Math.hypot(p.x - b.x, p.z - b.z) + behind, home: Math.hypot(p.x, p.z - own)};
+          // (A bot with its super shot ready is the one sent at the ball, a few metres sooner, so the meter is spent on a
+          // shot rather than sat on.)
+          const ready = p.ultimate >= 100 ? SUPER_READY : 0;
+          return {s, chase: Math.hypot(p.x - b.x, p.z - b.z) + behind - ready, home: Math.hypot(p.x, p.z - own)};
         });
         scored.sort((x, y) => x.chase - y.chase);
         const attacker = scored[0];
@@ -1124,7 +1327,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
   /** What a seat wears in the ball modes (look.ts), as a room read it off the account or a page off its own. */
   setLook(id: string, look: unknown) { const seat = this.seats.get(id); if (!seat) return false; seat.look = cleanLook(look); this.view.seats = [...this.seats.values()]; return true; }
   /** A feat named on every screen (an accolade), worth a few points toward MVP. */
-  private accolade(seat: BallSeat, text: string, points = 25) { seat.points += points; (seat.feats ??= []).push(text); this.emit('accolade', {team: seat.team, actorId: seat.id, x: 0, y: 0, z: 0, text}); }
+  private accolade(seat: BallSeat, text: string, points = 25, assistId?: string) { seat.points += points; (seat.feats ??= []).push(text); this.emit('accolade', {team: seat.team, actorId: seat.id, assistId, x: 0, y: 0, z: 0, text}); }
   /** A save's feats: the third (SAVIOR), one off a ball at full tilt (EPIC SAVE); and the saver's side says so. */
   private saved(seat: BallSeat, speed = 0) {
     if (seat.saves === 3) this.accolade(seat, 'SAVIOR', 40);

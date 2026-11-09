@@ -225,6 +225,20 @@
     "final-seconds": [
      "/assets/audio/ball/caller/grandpa/final-seconds-1.m4a",
      "/assets/audio/ball/caller/grandpa/final-seconds-2.m4a"
+    ],
+    "link-shot": [
+     "/assets/audio/ball/caller/grandpa/link-shot-1.m4a",
+     "/assets/audio/ball/caller/grandpa/link-shot-2.m4a",
+     "/assets/audio/ball/caller/grandpa/link-shot-3.m4a"
+    ],
+    "technique-duel": [
+     "/assets/audio/ball/caller/grandpa/technique-duel-1.m4a",
+     "/assets/audio/ball/caller/grandpa/technique-duel-2.m4a"
+    ],
+    "duel-won": [
+     "/assets/audio/ball/caller/grandpa/duel-won-1.m4a",
+     "/assets/audio/ball/caller/grandpa/duel-won-2.m4a",
+     "/assets/audio/ball/caller/grandpa/duel-won-3.m4a"
     ]
    }
   },
@@ -452,6 +466,20 @@
     "final-seconds": [
      "/assets/audio/ball/caller/arena/final-seconds-1.m4a",
      "/assets/audio/ball/caller/arena/final-seconds-2.m4a"
+    ],
+    "link-shot": [
+     "/assets/audio/ball/caller/arena/link-shot-1.m4a",
+     "/assets/audio/ball/caller/arena/link-shot-2.m4a",
+     "/assets/audio/ball/caller/arena/link-shot-3.m4a"
+    ],
+    "technique-duel": [
+     "/assets/audio/ball/caller/arena/technique-duel-1.m4a",
+     "/assets/audio/ball/caller/arena/technique-duel-2.m4a"
+    ],
+    "duel-won": [
+     "/assets/audio/ball/caller/arena/duel-won-1.m4a",
+     "/assets/audio/ball/caller/arena/duel-won-2.m4a",
+     "/assets/audio/ball/caller/arena/duel-won-3.m4a"
     ]
    }
   }

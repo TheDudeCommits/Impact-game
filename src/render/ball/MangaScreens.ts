@@ -20,7 +20,22 @@ export interface ScreenSpot {
   facing: THREE.Vector3;
 }
 
+/** What the broadcast camera is told to watch instead of the ball for a while (MangaScreens.focus): a body or a
+ *  point, until when (performance.now() / 1000). One for the page: there is one ball match at a time. */
+const FOCUS = { target: null as THREE.Object3D | null, point: new THREE.Vector3(), until: 0, lift: 1.5 };
+
 export class MangaScreens {
+  /** Aim every screen's broadcast camera at `target` - a body (followed as it moves) or a point - for `seconds`: the wide
+   *  panel frames it, the two close-ups crop its middle and its head (a goal's scorer, the podium). `null` lets it go
+   *  back to the ball at once. `lift` is how far above the point its middle is (a body's feet are its point). */
+  static focus(target: THREE.Object3D | THREE.Vector3 | null, seconds: number, lift = 1.5) {
+    if (!target) { FOCUS.target = null; FOCUS.until = 0; return; }
+    if ((target as THREE.Object3D).isObject3D) { FOCUS.target = target as THREE.Object3D; } else { FOCUS.target = null; FOCUS.point.copy(target as THREE.Vector3); }
+    FOCUS.until = performance.now() / 1000 + Math.max(0, seconds); FOCUS.lift = lift;
+  }
+  /** Whether a focus is on now (for the checks). */
+  static get focused() { return performance.now() / 1000 < FOCUS.until; }
+
   readonly root = new THREE.Group();
   private readonly target = new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: 0, generateMipmaps: false });
   private readonly camera = new THREE.PerspectiveCamera(34, W / H, .5, 400);
@@ -114,6 +129,7 @@ export class MangaScreens {
 
   /** The broadcast camera on the side line, eased toward the ball; the crops follow it. */
   private aim(scene: THREE.Object3D) {
+    if (MangaScreens.focused) { this.aimFocus(); return; }
     if (!this.ball) {
       let root: THREE.Object3D = scene;
       while (root.parent) root = root.parent;
@@ -135,8 +151,29 @@ export class MangaScreens {
     this.cropBall.y = THREE.MathUtils.clamp(p.y * .5 + .5, .2, .8);
     const toward = Math.abs(this.heading.z) > .02 ? Math.sign(this.heading.z) : Math.sign(ball.z || 1);
     const goal = this.tmp.set(0, 2, toward * this.goalZ).project(this.camera);
+    this.cropGoal.z = this.cropGoal.w = .5;
     this.cropGoal.x = THREE.MathUtils.clamp(goal.x * .5 + .5, .25, .75);
     this.cropGoal.y = THREE.MathUtils.clamp(goal.y * .5 + .5, .25, .75);
+  }
+
+  /** The focus's framing: the camera in close on the subject from the broadcast side, the ball's panel on its middle and
+   *  the goal's on its head. */
+  private aimFocus() {
+    const at = FOCUS.target ? FOCUS.target.getWorldPosition(this.tmp) : this.tmp.copy(FOCUS.point);
+    const mid = this.look.set(at.x, at.y + FOCUS.lift, at.z);
+    this.eye.set(at.x - 8.5, at.y + 3.2, at.z + 2.5);
+    this.camera.position.lerp(this.eye, .35);
+    this.lookAt.lerp(mid, .4);
+    this.camera.lookAt(this.lookAt);
+    this.camera.updateMatrixWorld();
+    const p = this.tmp.copy(mid).project(this.camera);
+    this.cropBall.x = THREE.MathUtils.clamp(p.x * .5 + .5, .2, .8); this.cropBall.y = THREE.MathUtils.clamp(p.y * .5 + .5, .2, .8);
+    const head = this.tmp.set(at.x, at.y + FOCUS.lift + .55, at.z);
+    if (FOCUS.target) FOCUS.target.getWorldPosition(head).add(this.heading.set(0, FOCUS.lift + .55, 0));
+    head.project(this.camera);
+    this.cropGoal.x = THREE.MathUtils.clamp(head.x * .5 + .5, .15, .85); this.cropGoal.y = THREE.MathUtils.clamp(head.y * .5 + .5, .15, .85);
+    this.cropGoal.z = this.cropGoal.w = .24;
+    this.lastBall.copy(at);
   }
 
   private draw(renderer: THREE.WebGLRenderer, parent: THREE.Object3D | null) {

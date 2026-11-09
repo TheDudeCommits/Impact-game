@@ -512,6 +512,8 @@ export class Hud {
     // Rift armies and defenses have world health bars and a named Glow target.
     // Their camera proxy is not a roster fighter and must never show Taisei's portrait.
     if(target?.enemy==='rift-unit')target=undefined;
+    // The ball modes' target key is the ball cam (render/ball/BallCam.ts), not a lock: the strip under the arena says so.
+    {const label=ballOf(snapshot)?'BALL CAM':'LOCK ON';if(label!==this.targetLabel){this.targetLabel=label;this.refreshBindingHints();}}
     if(this.lastOwnHp!==null&&self.hp<this.lastOwnHp-1)this.pulseHit('own');
     this.lastOwnHp=self.hp;
     if(target?.id!==this.lastFoeId){this.lastFoeId=target?.id??null;this.lastFoeHp=null;}
@@ -602,12 +604,14 @@ export class Hud {
     const timer=window.setTimeout(()=>meter.classList.remove('hit'),420);
     if(side==='own')this.ownHitTimer=timer;else this.foeHitTimer=timer;
   }
+  /** What the control strip calls the target key (BALL CAM in a ball match). */
+  private targetLabel='LOCK ON';
   private refreshBindingHints(){
     const free=(code:string)=>!ACTIONS.some(a=>boundTo(a,code));
     this.objectiveCameraHint=`${free('KeyO')&&free('BracketLeft')?'O / [':'← / →'} LOOK${free('KeyI')?'   I RECENTRE':''}   ${keyNames('target').toUpperCase()} LOCK`;
     const pad=this.inputMode==='controller',family=this.padFamily;
     this.root.querySelectorAll<HTMLElement>('.move-slot:not(.couch-view[data-seat="1"] *)').forEach(card=>{const el=card.querySelector<HTMLElement>('kbd');if(!el)return;const action:CombatAction=card.dataset.move?MOVE_ACTIONS[Number(card.dataset.move)]:'awaken',control=action==='awaken'?undefined:actionControl(action);el.textContent=pad?actionName(action,family):keyName(getBindings().keyboard[action][0]);el.className=pad&&family==='playstation'&&control&&['south','east','west','north'].includes(control)?`ps-face ps-${control}`:'';});
-    this.root.querySelector('#controls-hint')!.innerHTML=pad?padCombatHints(family):keyboardCombatHints();
+    this.root.querySelector('#controls-hint')!.innerHTML=pad?padCombatHints(family,this.targetLabel):keyboardCombatHints(this.targetLabel);
     // Overnight UX (9 October 2026): on a touch screen the pause menu's YOUR CONTROLS names the on-screen buttons
     // (prompts.ts touchKey's labels), not the keyboard's keys it read before (J, WASD, SPACE...). Each card and key says
     // its own action (PauseMenu.ts data-action); the sticks have none.

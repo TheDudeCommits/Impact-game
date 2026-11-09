@@ -19,7 +19,9 @@ export type CallerMoment = 'kickoff' | 'serve' | 'goal' | 'goal-power' | 'goal-v
   | 'goal-bicycle' | 'super-goal' | 'own-goal' | 'clash' | 'clash-win' | 'save' | 'save-perfect' | 'save-diving' | 'post' | 'crossbar'
   | 'near-miss' | 'overtime' | 'overtime-win' | 'fever' | 'rally' | 'match-point' | 'serve-winner' | 'kill' | 'sky-spike' | 'roll-spike'
   | 'stuff-block' | 'comeback' | 'hat-trick' | 'on-fire' | 'overdrive' | 'super-shot' | 'mvp' | 'win' | 'shutout' | 'loss'
-  | 'target' | 'new-record' | 'last-minute' | 'final-seconds';
+  | 'target' | 'new-record' | 'last-minute' | 'final-seconds'
+  /** A LINK SHOT, a TECHNIQUE DUEL's beat and a keeper winning it. */
+  | 'link-shot' | 'technique-duel' | 'duel-won';
 
 export interface CallerRule { priority: number; chance: number; rest: number }
 const rule = (priority: number, chance = 1, rest = 12): CallerRule => ({ priority, chance, rest });
@@ -35,6 +37,7 @@ export const CALLER: Readonly<Record<CallerMoment, CallerRule>> = {
   comeback: rule(7, 1, 30), 'hat-trick': rule(8, 1, 0), 'on-fire': rule(6, 1, 20), overdrive: rule(4, .6, 25), 'super-shot': rule(5, .8, 10),
   mvp: rule(6, 1, 0), win: rule(10, 1, 0), shutout: rule(10, 1, 0), loss: rule(10, 1, 0),
   target: rule(2, 1, 6), 'new-record': rule(3, 1, 8), 'last-minute': rule(4, 1, 0), 'final-seconds': rule(5, 1, 0),
+  'link-shot': rule(5, .8, 10), 'technique-duel': rule(6, 1, 8), 'duel-won': rule(8, 1, 0),
 };
 /** A moment at this priority or more is never held back by SPACING. */
 export const BIG = 5;

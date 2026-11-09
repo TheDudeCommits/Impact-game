@@ -291,7 +291,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     shortMoves: ['GILDED PUNCH', 'CLOCK-HAND KNIVES', 'NOROMA NOROMA', 'MIDNIGHT'],
     awakening: 'MIDNIGHT',
     impactWord: 'のろまッ', knife: F + 'oro-knife1.glb', companion: { model: F + 'oro-spirit-tr1.glb', punches: F + 'oro-spirit-fanim1.glb' },
-    model: F + 'oro-tr1.glb', extraModels: [F + 'oro-enders1.glb', F + 'oro-enders2.glb', F + 'oro-tr1-area1.glb'], // remake-areas: his Knife Rain cast (src/originals/areaCasts.ts)
+    model: F + 'oro-tr1.glb', rushModel: F + 'oro-rush1.glb', extraModels: [F + 'oro-enders1.glb', F + 'oro-enders2.glb', F + 'oro-tr1-area1.glb'], // remake-areas: his Knife Rain cast (src/originals/areaCasts.ts)
     portrait: F + 'oro-portrait.png', idleModel: F + 'oro-idleb1.glb',
     names: {
       'Noroma!!': 'Noroma!', 'Noroma Noroma!!': 'Noroma Noroma!', 'KYAHAAA!!': 'KYAHAAA!', 'Die!': 'Perish!', 'Diving Kick': 'Steeple Drop', 'Checkmate': 'Last Chime',

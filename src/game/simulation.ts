@@ -519,6 +519,10 @@ interface Actor {
   externalFreezeTick?: number;
   /** A horde body the player chose (the lock or the auto target). */
   chosenExternal?: string;
+  /** The ball rooms (AimAssist.sport): boosting - a ground dash run on at the boost's speed while the stick holds and
+   *  the stamina lasts - and the jumps taken off the floor since this body last stood on it. */
+  boosting: boolean;
+  airJumps: number;
   /** Round 4b (COMBAT): when this fighter last pressed light, and how many lights in a row came sooner than
    *  MASH_INTERVAL after the one before - mashing. */
   lightPressAt: number;
@@ -660,7 +664,30 @@ export interface ExternalTargets {
 export interface AimAssist { magnet: number;
   /** The ball modes: an air strike (airHeavy) with no fighter to dive at flies at the chosen external body (the ball) to
    *  meet it on the blow, above the thrower as well as below, instead of diving blind to the floor. */
-  airExternal?: boolean }
+  airExternal?: boolean;
+  /** The ball modes' sports movement (game/ball/model.ts BALL_SPORT): set by the ball rooms and the page's prediction of
+   *  one, and by nothing else, so every other mode moves exactly as it did. */
+  sport?: SportFeel }
+/** How a body moves in a ball room: a sport's movement, not a fight's. Speeds are metres a second, times seconds. */
+export interface SportFeel {
+  /** The run, in place of 7.5; and the ground ramp's rates (start, stop, turn) times `feet`. */
+  run: number; feet: number;
+  /** Boost: a forward dash on the floor hands back `boost` instead of the run and holds it for as long as the stick does
+   *  and the stamina lasts, spending `boostDrain` a second (the stamina bar is the boost meter); the next dash may come
+   *  `dashGap` after one ends (0.35 elsewhere). */
+  boost: number; boostDrain: number; dashGap: number;
+  /** The jump's take-off speed times `jump`; `airJumps` more jumps off the floor before the feet are back on it, each
+   *  leaving at `airJump` times the take-off speed; a running jump carried at no more than `leap` along the floor. */
+  jump: number; airJumps: number; airJump: number; leap: number;
+  /** A dash in the air goes at the chosen body (the ball) when it is within `airDash` metres and on the way the stick
+   *  says: the aerial. 0: a flat air dash as elsewhere. */
+  airDash: number;
+  /** Every impact freeze (hitstop) times this. */
+  hitstop: number;
+  /** A light or heavy melee blow struck in full is over this long after its last contact (its tail cut): the body is
+   *  free to strike, jump or dash again while the clip would still be recovering. */
+  recovery: number;
+}
 /** A blow from the horde's rank and file: a fighter in the middle of a move
  *  trades with it, and one it has just flinched only chips for MINOR_GRACE,
  *  so a crowd can hurt a fighter but never hold them in a stagger. */
@@ -1155,6 +1182,7 @@ export class ArenaSimulation {
       dashSeconds: DASH_SECONDS, dashKind: 'forward', jumping: false,
       jumpAt: -Infinity, jumpStartedAt: -Infinity, dashAt: -Infinity, attackAt: -Infinity, attackHold: -Infinity, attackNotified: -Infinity,
       groundedAt: -Infinity, leapt: false, landedUntil: -Infinity, // Round 4b (JUMP)
+      boosting: false, airJumps: 0, // The ball rooms (AimAssist.sport)
       awakenAt: -Infinity, awakenEntryUntil: 0,
       cast: null, respawnAt: 0, nextBotThink: 0,
       lastDamageAt: -10, chainHits: 0, scalingHits: 0, spawn: position(origin),
@@ -1612,6 +1640,9 @@ export class ArenaSimulation {
    *  identical heavy does not weigh twice as much on one tick phase as on
    *  another. The simulation itself only ever reads these two fields. */
   private freeze(a: Actor, seconds: number) {
+    // The ball rooms (SportFeel.hitstop): a sport's touches and tackles hold the play up less.
+    const sport = this.assist?.sport;
+    if (sport) seconds *= sport.hitstop;
     if (this.serverTime >= a.hitstopUntil) a.hitstopFrom = this.serverTime;
     a.hitstopUntil = Math.max(a.hitstopUntil, this.serverTime + seconds);
   }
@@ -2502,7 +2533,16 @@ export class ArenaSimulation {
         this.emit({ kind: 'tech', actorId: p.id });
       }
       // Round 4b (JUMP): not inside a full jump's landing (JUMP_LAND_RECOVERY): the press waits for it.
-      if (controllable && !p.guarding && held(a.jumpAt) && p.grounded && this.serverTime >= a.landedUntil) { a.vy = jumpArc(p.fighter).speed; a.leapt = this.leap(a, input, stale); p.grounded = false; a.jumping = true; a.motionNetworkHold=0;a.jumpStartedAt = this.serverTime; a.jumpAt = -Infinity; }
+      const sport = this.assist?.sport;
+      if (controllable && !p.guarding && held(a.jumpAt) && p.grounded && this.serverTime >= a.landedUntil) { a.vy = jumpArc(p.fighter).speed * (sport?.jump ?? 1); a.leapt = this.leap(a, input, stale); p.grounded = false; a.jumping = true; a.motionNetworkHold=0;a.jumpStartedAt = this.serverTime; a.jumpAt = -Infinity; }
+      // The ball rooms (SportFeel.airJumps): a jump pressed off the floor goes up again - the double jump an aerial is
+      // made of - a beat after the last one left (a held press is not two), never out of a reaction's hands.
+      else if (sport && controllable && !p.guarding && held(a.jumpAt) && !p.grounded && !a.reaction && a.airJumps < sport.airJumps
+        && this.serverTime - a.jumpStartedAt >= .12) {
+        a.airJumps++; a.vy = Math.max(a.vy, jumpArc(p.fighter).speed * sport.jump * sport.airJump);
+        a.jumping = true; a.motionNetworkHold = 0; a.jumpStartedAt = this.serverTime; a.jumpAt = -Infinity;
+        if (!a.cast) this.action(a, 'jump', 0, true);
+      }
       // Only out of a move that did something. Dashing out of recovery is the
       // escape valve that keeps exchanges continuous, but `recovering` opens
       // four frames after the last active frame whether or not anything was
@@ -2518,7 +2558,7 @@ export class ArenaSimulation {
       // A blocked move still counts: `hit` marks the cast connected before the
       // guard branch returns, which is deliberate - a guard is not a wall.
       const escapable = !a.cast || a.cast.connected;
-      if (controllable && escapable && !p.guarding && (held(a.dashAt) || lightChase) && (p.stamina >= 20 || this.chaseOverdraws(a, lightChase)) && this.serverTime >= a.dashUntil + 0.35
+      if (controllable && escapable && !p.guarding && (held(a.dashAt) || lightChase) && (p.stamina >= 20 || this.chaseOverdraws(a, lightChase)) && this.serverTime >= a.dashUntil + (sport?.dashGap ?? 0.35)
         && this.serverTime >= a.landedUntil) { // Round 4b (JUMP): nor a dash inside a full jump's landing.
         a.dashAt = -Infinity;
         a.motionNetworkHold=0;
@@ -2566,6 +2606,21 @@ export class ArenaSimulation {
             a.dashSpeed = clamp((span - PLAYER_RADIUS * 2) / DASH_SECONDS, 4, AIR_DASH_SPEED);
           }
         }
+        // The ball rooms (SportFeel.airDash): in the air, at the chosen body (the ball) when it is near and the way the
+        // stick says (or the facing, the stick let go) - the aerial, sized to arrive on it as the chase is to its body.
+        else if (!p.grounded && sport?.airDash && a.chosenExternal) {
+          const body = this.external?.locate(a.chosenExternal);
+          const dx = body ? body.x - p.x : 0, dy = body ? body.y + body.height * .55 - (p.y + .9) : 0, dz = body ? body.z - p.z : 0;
+          const span = Math.hypot(dx, dy, dz), flat = Math.hypot(dx, dz);
+          if (body && span > .4 && span <= sport.airDash && (flat < .5 || (dx * a.dashX + dz * a.dashZ) / flat >= .35)) {
+            a.dashX = dx / span; a.dashY = dy / span; a.dashZ = dz / span;
+            a.dashKind = 'forward'; a.dashSeconds = DASH_SECONDS;
+            a.dashUntil = this.serverTime + DASH_SECONDS; a.evadeUntil = this.serverTime + DASH_EVADE;
+            a.dashSpeed = clamp((span - body.radius * .5) / DASH_SECONDS, 6, AIR_DASH_SPEED);
+          }
+        }
+        // The ball rooms (SportFeel.boost): a forward dash on the floor runs on as a boost (see the run below).
+        if (sport && p.grounded && a.dashKind === 'forward' && a.dashY === 0 && !a.dashChase) a.boosting = true;
         p.dashKind = a.dashKind;
         // A ground dash is shaped around the run it interrupts; the chases
         // above are sized to their target and keep the bare shape.
@@ -2600,7 +2655,13 @@ export class ArenaSimulation {
         if (outcome !== 'blocked' && outcome !== 'cooling') { a.attackAt = a.attackHold = -Infinity; this.nextPress(a); }
       }
 
-      let speed = p.guarding ? 2.2 : 7.5;
+      // The ball rooms (SportFeel): a sport's run, and the boost a dash runs on into while the stick holds and the stamina
+      // lasts (spent below, where the stamina comes back).
+      if (sport) {
+        if (a.boosting && (Math.hypot(input.moveX, input.moveZ) < .5 || p.stamina <= 0 || p.guarding || stale || this.serverTime < a.stunUntil || a.reaction)) a.boosting = false;
+        if (a.boosting) p.boost = true; else if (p.boost) delete p.boost;
+      }
+      let speed = p.guarding ? 2.2 : sport ? (a.boosting ? sport.boost : sport.run) : 7.5;
       if (p.awakened) speed *= AWAKENED_SPEED;
       speed *= this.slowOf(a);
       if (a.mods) speed *= a.mods.speed;
@@ -2622,7 +2683,7 @@ export class ArenaSimulation {
       else {
         const turning=(wantX*a.mx+wantZ*a.mz)<Math.hypot(wantX,wantZ)*Math.hypot(a.mx,a.mz)*.7;
         const rate = (turning?GROUND_TURN_ACCEL:Math.hypot(wantX, wantZ) >= Math.hypot(a.mx, a.mz) ? GROUND_ACCEL : GROUND_BRAKE)
-          * (p.grounded ? 1 : AIR_CONTROL) * dt;
+          * (p.grounded ? 1 : AIR_CONTROL) * (sport?.feet ?? 1) * dt;
         // The whole change is clamped, not each axis: clamping them separately
         // lets a diagonal ramp up at rate*sqrt(2), which is the same diagonal
         // advantage the normalised input exists to remove.
@@ -2915,6 +2976,7 @@ export class ArenaSimulation {
       p.grounded = a.vy <= 0 && (corrected.grounded ??
         (!this.collision ? p.y <= 0.03 : corrected.y > delta.y + 0.0001));
       if (p.grounded) {
+        a.airJumps = 0; // The ball rooms (SportFeel.airJumps): the double jump comes back on the floor.
         // Round 4b (JUMP): the floor, for the next leap (LEAP_GROUNDED); a full jump's landing takes a beat before the
         // next jump or dash (JUMP_LAND_RECOVERY) - read off the speed it meets the floor at, before it is taken away.
         if (wasAirborne) {
@@ -3015,7 +3077,9 @@ export class ArenaSimulation {
         else this.action(a, p.guarding ? 'guard' : !p.grounded ? 'jump' : Math.hypot(vx, vz) > 0.1 ? 'run' : 'idle');
       }
       // Round 5 (PARRY): nor through a blockstun, which is the guard held up by the blow.
-      if (!a.cast && !p.guarding && this.serverTime >= a.dashUntil && this.serverTime >= a.blockedUntil) p.stamina = Math.min(p.maxStamina??100, p.stamina + STAMINA_REGEN * (a.mods?.staminaRecovery??1) * dt);
+      // The ball rooms (SportFeel.boost): a boost spends it, and none comes back meanwhile.
+      if (a.boosting && sport) p.stamina = Math.max(0, p.stamina - sport.boostDrain * dt);
+      else if (!a.cast && !p.guarding && this.serverTime >= a.dashUntil && this.serverTime >= a.blockedUntil) p.stamina = Math.min(p.maxStamina??100, p.stamina + STAMINA_REGEN * (a.mods?.staminaRecovery??1) * dt);
       if (a.mods?.staminaRegen) p.stamina = Math.min(p.maxStamina??100, p.stamina + a.mods.staminaRegen * dt);
       p.actionTime = p.actionDuration > 0
         ? clamp((this.serverTime - p.actionStarted - (p.actionFrozen ?? 0)) / p.actionDuration, 0, 1) : 0;
@@ -3430,8 +3494,9 @@ export class ArenaSimulation {
     const length = Math.hypot(input.moveX, input.moveZ);
     if (length < 1e-4) return 0;
     const along = clamp((input.moveX * a.dashX + input.moveZ * a.dashZ) / length, 0, 1);
-    const p = a.state;
-    const run = 7.5 * (p.awakened ? AWAKENED_SPEED : 1);
+    const p = a.state, sport = this.assist?.sport;
+    // (The ball rooms: the run, or the boost the dash is handing over to.)
+    const run = (sport ? a.boosting ? sport.boost : sport.run : 7.5) * (p.awakened ? AWAKENED_SPEED : 1);
     return Math.min(a.dashSpeed, run) * along;
   }
 
@@ -3444,15 +3509,17 @@ export class ArenaSimulation {
    *  one keeps no more than a run's worth of what it landed with, or the leap was
    *  multiplied again on every hop of a chain. Whether it leapt. */
   private leap(a: Actor, input: PlayerInput, stale: boolean): boolean {
-    const p = a.state, speed = Math.hypot(a.mx, a.mz), stick = Math.hypot(input.moveX, input.moveZ);
+    const p = a.state, speed = Math.hypot(a.mx, a.mz), stick = Math.hypot(input.moveX, input.moveZ), sport = this.assist?.sport;
     if (stale || this.serverTime - a.groundedAt < LEAP_GROUNDED) {
-      const run = 7.5 * (p.awakened ? AWAKENED_SPEED : 1) * (a.mods?.speed ?? 1);
+      const run = (sport ? a.boosting ? sport.boost : sport.run : 7.5) * (p.awakened ? AWAKENED_SPEED : 1) * (a.mods?.speed ?? 1);
       if (speed > run) { a.mx *= run / speed; a.mz *= run / speed; }
       return false;
     }
     if (speed < 1e-3 || stick < .05) return false;
     const along = clamp((input.moveX * a.mx + input.moveZ * a.mz) / (stick * speed), 0, 1);
-    const k = 1 + (jumpArc(p.fighter).leap - 1) * along;
+    // (The ball rooms: a sport's run, boosted, multiplied by the leap would fly a body across half the pitch: it carries
+    // at no more than SportFeel.leap.)
+    const k = Math.min(1 + (jumpArc(p.fighter).leap - 1) * along, sport ? Math.max(1, sport.leap / speed) : Infinity);
     a.mx *= k; a.mz *= k;
     return k > 1;
   }
@@ -3855,7 +3922,12 @@ export class ArenaSimulation {
         if (a.cast !== cast) return;
       }
     }
-    if (age >= cast.move.duration) {
+    // The ball rooms (SportFeel.recovery): a light or a heavy whose blows are all out, none still looking for a body, is
+    // over a moment after its last one - a kick recovers and the play flows on - instead of playing out its tail.
+    const quick = this.assist?.sport?.recovery, contacts = cast.move.contacts;
+    const cut = quick !== undefined && (cast.slot === 'light' || cast.slot === 'heavy') && cast.move.style === 'melee' && !cast.move.plunge
+      && !(cast.dive && this.serverTime < cast.dive.until) && cast.nextContact >= contacts.length && !cast.live?.length && age >= contacts[contacts.length - 1] + quick;
+    if (age >= cast.move.duration || cut) {
       a.cast = null;
       // A stage that ran its whole course, hit or whiff, leaves the string
       // open for RUSH_WINDOW - unless it was the last one the string has.

@@ -48,7 +48,7 @@ export class LocalBall {
     const here = typeof location === 'object' && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) ? new URLSearchParams(location.search) : undefined;
     const length = Number(here?.get('balllength')) || undefined;
     this.match = new BallMatch(mode, {collision, seed: Math.random() * 0x7fffffff | 0 || 1, access: 'bots', lockCombat: lockCombatOn(), length, replays: !partner, rumble, arena: extras.arena, practice: practice && !partner,
-      mutator: rumble ? null : extras.mutator ?? null, drill: practice && !partner ? extras.drill : undefined});
+      mutator: rumble ? null : extras.mutator ?? null, drill: practice && !partner ? extras.drill : undefined, intro: !partner && !practice});
     const team: BallTeam = 'red';
     this.match.add(this.id, fighter, name, false, team); this.match.sim.setPlayerSkill(this.id, keptSkill()); this.match.setLook(this.id, extras.look);
     // `?ballpilot` on this machine: a bot plays the page's own fighter (the captures and checks of the ball modes).

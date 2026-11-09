@@ -11,6 +11,9 @@ const HOLD = .7, BACK = 2.4, AWAY = 1.3;
 /** A jump in the heading the page hands back bigger than this in one frame is a reset (a kickoff's, a serve's), not a
  *  turn of the player's. */
 const RESET = .6;
+/** The sports lens: degrees the ball cam opens the follow camera's lens by (FollowCamera.sportFov), so more of the pitch
+ *  is in view round the player and the ball and the floor reads the speed. */
+const SPORT_FOV = 14;
 const wrapped = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 const clamp = THREE.MathUtils.clamp;
 const smooth = (x: number, a: number, b: number) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
@@ -57,8 +60,8 @@ export class BallCam {
   steer(rig: FollowCamera, dt: number, yaw: number, mode: FollowCamera['mode'], self: Vec3, ball: Vec3 | null, view: BallView | undefined, team: BallTeam | undefined): number {
     const playing = !!view && !!ball && view.phase !== 'lobby' && view.phase !== 'over';
     this.active = this.on && playing;
-    if (!this.active || !ball || !view) { rig.mode = mode; rig.keepInView = null; this.forget(); return yaw; }
-    rig.mode = 'free';
+    if (!this.active || !ball || !view) { rig.mode = mode; rig.keepInView = null; rig.sportFov = 0; this.forget(); return yaw; }
+    rig.mode = 'free'; rig.sportFov = SPORT_FOV;
     const turn = Number.isFinite(this.handed) ? wrapped(yaw - this.handed) : 0, reset = Math.abs(turn) > RESET;
     if (reset) { this.away = 0; this.still = 0; }
     else if (Math.abs(turn) > 1e-6) { this.away = clamp(this.away + turn, -AWAY, AWAY); this.still = 0; }

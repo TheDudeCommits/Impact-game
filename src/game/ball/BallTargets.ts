@@ -5,8 +5,9 @@ import type {GameSnapshot, PlayerState, Vec3} from '../types';
 import {BALL_ID, GOAL_RULES, SPIKE_RULES, ballOf, ballRadius} from './model';
 
 /** The ball, on the page, as the two things the game already knows how to aim at: a stand-in fighter for the soft
- *  target, the lock (Tab locks the ball: the ball cam) and the camera's framing, beside every fighter of the match (no
- *  fighter is anybody's target here: they all share one side in the kernel); and the external body the page's own
+ *  target, the lock (Tab locks the ball: the ball cam) and the camera's framing, beside every fighter of the match (Sky
+ *  Spike's all share one side in the kernel; Goal Rush's sides fight, and a swing still takes the ball whenever it is in
+ *  reach: model.ts GOAL_FIGHT); and the external body the page's own
  *  prediction swings at, so a press homes on the ball at once. It forecasts nothing: what a blow did to the ball is the
  *  room's to say (receive is null), as Rift War's prediction adapter leaves its armies to the room. */
 export class BallTargets implements ExternalTargets {

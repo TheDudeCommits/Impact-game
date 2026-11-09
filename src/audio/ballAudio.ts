@@ -41,7 +41,7 @@ export const BALL_SFX = {
 } as const;
 export type BallSfx = keyof typeof BALL_SFX;
 /** The loops' seamless periods (sound.py writes each period with 0.3 s of it again on either side). */
-export const BALL_LOOPS: Partial<Record<BallSfx, readonly [number, number]>> = { 'overdrive-loop': [.3, 3.3], 'crowd-chant': [.3, 4.3] };
+export const BALL_LOOPS: Partial<Record<BallSfx, readonly [number, number]>> = { 'overdrive-loop': [.3, 3.3], 'crowd-chant': [.3, 8.3] };
 export const ballSfxUrl = (id: BallSfx) => url(id);
 export const ballSoundFiles = () => (Object.keys(BALL_SFX) as BallSfx[]).map(url);
 
@@ -169,6 +169,8 @@ export class BallAudio {
     this.music?.peak(false); this.music?.heat(0);
   }
 
+  /** One of the ball's sounds centred, from outside (the intro's whistle, BallCeremony). */
+  cue(id: BallSfx, scale = 1, delay = 0) { this.centred(id, scale, delay); }
   private play(id: BallSfx, at: Vec3, scale = 1, rate = 1, delay = 0, priority = 2) {
     this.mix.sample(url(id), at, BALL_SFX[id] * scale, rate, 'ball', priority, delay);
   }
@@ -194,8 +196,18 @@ export class BallAudio {
         if (e.text === 'SKY SPIKE') { this.play('spike-crack', at); this.say('sky-spike', .15); this.react('crowd-ooh-2', .5 * side, .2); }
         else if (e.text === 'ROLL SPIKE') { this.play('spike-crack', at, .8); this.say('roll-spike', .15); }
         else if (e.text === 'BICYCLE KICK' || e.text === 'AERIAL') this.react('crowd-ooh-1', .45 * side, .15);
+        // A LINK SHOT: the crowd and the caller's moment.
+        else if (e.text === 'LINK SHOT') { this.react('crowd-ooh-2', .55 * side, .1); this.say('link-shot', .2); }
         break;
       }
+      // A TECHNIQUE DUEL - the clash's charge as the guard meets the shot, then its break; the keeper's side
+      // roars when the shot dies on the guard, the striker's when it breaks through.
+      case 'duel': this.play('clash-charge', at, 1, 1, 0, 5); this.react('crowd-gasp', .8); this.say('technique-duel', .05); break;
+      case 'duel-won':
+        this.play('clash-break', at, 1.1, 1, 0, 6); this.mix.cheer(1.2, true);
+        this.react('crowd-roar-2', side); if (!mine) this.react('crowd-groan', .5, .25);
+        if (e.text === 'SHOT STOPPED') { this.play('block-stuff', at, 1, .9); this.say('duel-won', .2); }
+        break;
       case 'super':
         this.lastStrike = e;
         this.play('strike-super', at, 1, 1, 0, 5);

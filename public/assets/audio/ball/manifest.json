@@ -1,6 +1,6 @@
 {
  "version": 1,
- "note": "Goal Rush and Sky Spike: every sound made for the ball modes, synthesised or layered from CC0 sources (Kenney's Impact, Sci-Fi and Interface Sounds; the game's crowd bed). Public-safe.",
+ "note": "Goal Rush and Sky Spike: every sound made for the ball modes, synthesised, layered from CC0 sources (Kenney's Impact, Sci-Fi and Interface Sounds; the game's crowd bed), or generated for the game with ElevenLabs sound effects (the crowd, the whistles, the horn and the biggest impacts). Public-safe.",
  "assets": [
   {
    "id": "strike-tap-1",
@@ -49,42 +49,42 @@
    "file": "/assets/audio/ball/strike-power-1.m4a",
    "family": "impact",
    "design": "A power shot: a full boot through the ball, the thump of it in the chest and the air torn behind it.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "kenney-impact/impactPunch_heavy_000.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "b33a8f14068aec24ec69ba85e5e87fdc41228975f6a1a3e44a6e7d6fc3d9f8d8"
+     "file": "generated for the game with ElevenLabs sound effects (strike-power-1-take2.mp3)",
+     "license": "original",
+     "prompt": "A powerful kick of a leather football, a deep punchy thump close up, no echo",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
    "seconds": 0.661,
-   "lufsMomentaryMax": -15.8,
-   "lufsIntegrated": -19.6,
+   "lufsMomentaryMax": -18.4,
+   "lufsIntegrated": -21.0,
    "truePeakDbfs": -1.6,
-   "sha256": "f700ab838134e6348d1cb5643ca79416ad7fa5db9dee05e53953f6f053d513a9"
+   "sha256": "438b76e5385a4e01047b861109cd1ac9977cc3b981a4b97a8298c97734122ed6"
   },
   {
    "id": "strike-power-2",
    "file": "/assets/audio/ball/strike-power-2.m4a",
    "family": "impact",
    "design": "A power shot, a second take: heavier in the low end.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "kenney-impact/impactPunch_heavy_002.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "7993dd4c156b9979ad69f17be5ebe31850b16039a3857f8477141be54dfee1b3"
+     "file": "generated for the game with ElevenLabs sound effects (strike-power-2-take1.mp3)",
+     "license": "original",
+     "prompt": "A very hard strike of a leather ball, a heavy boom and a whip of air, close up",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 0.683,
-   "lufsMomentaryMax": -15.9,
-   "lufsIntegrated": -19.0,
-   "truePeakDbfs": -1.8,
-   "sha256": "8f1f3b8261927a858ca8ff2ece0dc30fb7d44c9040791117217371be06577110"
+   "seconds": 0.725,
+   "lufsMomentaryMax": -16.6,
+   "lufsIntegrated": -20.7,
+   "truePeakDbfs": -1.7,
+   "sha256": "894eddc0d21c22394f7004661cf097ef95141d3ba758c99df3749e8a51827990"
   },
   {
    "id": "strike-volley",
@@ -187,27 +187,21 @@
    "file": "/assets/audio/ball/strike-super.m4a",
    "family": "impact",
    "design": "SUPER SHOT: an ultimate driven through the ball. A sub drop, a detonation, a whip-crack and a ring that hangs.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "kenney-impact/impactPunch_heavy_004.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "f4c0c3eb8ab6517583b8218ed03f28923d1b687379aab4c1d5a6d4c10cf8e500"
-    },
-    {
-     "file": "kenney-sci-fi/explosionCrunch_002.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "be2b8ddc62e4a24c91e2e77793de98549ce216faf2f323a917e7d6f34321ff97"
+     "file": "generated for the game with ElevenLabs sound effects (strike-super-take2.mp3)",
+     "license": "original",
+     "prompt": "An anime super shot: an explosive energy blast launching a ball, a charged whoosh into a thunderous boom",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 2.069,
-   "lufsMomentaryMax": -14.3,
-   "lufsIntegrated": -19.0,
-   "truePeakDbfs": -1.5,
-   "sha256": "bc744edec529834fc00bedb49878633b28a93e5c83f12a73581deed554c3304a"
+   "seconds": 1.664,
+   "lufsMomentaryMax": -14.1,
+   "lufsIntegrated": -16.9,
+   "truePeakDbfs": -4.8,
+   "sha256": "0988f9fb56ad6f04e980682e60949d2ed53d691f9ac6ea8d33b6d23f417d9a1d"
   },
   {
    "id": "strike-dig",
@@ -432,54 +426,42 @@
    "file": "/assets/audio/ball/post.m4a",
    "family": "impact",
    "design": "OFF THE POST: the ball rings the steel post, a clang that sings on.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "kenney-impact/impactBell_heavy_001.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "9df61e3ae9a83dc65e5a1fd3ed19d480876f3b22b963a1b9ef6fa293592dcec4"
-    },
-    {
-     "file": "kenney-impact/impactMetal_heavy_002.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "b914c8f1eb7c0f34bb165d7c77f4be0351f6be0660c13c53e65424e262e2c093"
+     "file": "generated for the game with ElevenLabs sound effects (post-take1.mp3)",
+     "license": "original",
+     "prompt": "A football hitting a metal goal post: a loud ringing clang that hums away",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 1.856,
-   "lufsMomentaryMax": -14.0,
-   "lufsIntegrated": -19.8,
-   "truePeakDbfs": -1.1,
-   "sha256": "da20a1c571688521c521bdf7bab5dacf301c7cdfe85991a7e7d85be5d1c2a242"
+   "seconds": 1.408,
+   "lufsMomentaryMax": -14.5,
+   "lufsIntegrated": -19.9,
+   "truePeakDbfs": -1.7,
+   "sha256": "4430c9fba48c196fefd21a643c7f090ea5516d0cef913ef4b64b989dc18f0340"
   },
   {
    "id": "bar",
    "file": "/assets/audio/ball/bar.m4a",
    "family": "impact",
    "design": "CROSSBAR: higher and longer, the bar humming across the goal's mouth.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "kenney-impact/impactBell_heavy_003.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "5572ccdeb3b62373b86fa955355b3a222c36e815f0636ba16165189a21cf2514"
-    },
-    {
-     "file": "kenney-impact/impactMetal_heavy_000.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "e07045693e4a2b3d165c424e3dab4c781d9ff8880a386880ac89a51315d7f831"
+     "file": "generated for the game with ElevenLabs sound effects (bar-take1.mp3)",
+     "license": "original",
+     "prompt": "A ball striking a metal crossbar: a sharp ringing clang with a long hum",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 2.048,
+   "seconds": 1.408,
    "lufsMomentaryMax": -14.0,
-   "lufsIntegrated": -20.1,
-   "truePeakDbfs": -1.2,
-   "sha256": "7cf338940b5ca39205f277b2ee71ff34801813790ed1c9e76ba1e5745f93c1cd"
+   "lufsIntegrated": -18.6,
+   "truePeakDbfs": -5.7,
+   "sha256": "d3aaa73fc68fa47d1d3a24e715219bed6d51e68807c4bccd1d6b5ce6e7971508"
   },
   {
    "id": "goal-net",
@@ -489,16 +471,18 @@
    "license": "original",
    "sources": [
     {
-     "file": "synthesised",
-     "license": "original"
+     "file": "generated for the game with ElevenLabs sound effects (goal-net-take1.mp3)",
+     "license": "original",
+     "prompt": "A football smashing into a goal net, the cords snapping taut and the net rattling",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 1.152,
+   "seconds": 1.045,
    "lufsMomentaryMax": -16.2,
-   "lufsIntegrated": -20.9,
-   "truePeakDbfs": -1.2,
-   "sha256": "bb7599e19d0c4384ad3cc56d6d9241bf7cbb556a12ac26b111aa04f0ff74123c"
+   "lufsIntegrated": -20.0,
+   "truePeakDbfs": -1.8,
+   "sha256": "8161742e1a27bc78e551594f20efea1fa32052b331409f2de6cb667255102c60"
   },
   {
    "id": "whistle-kickoff",
@@ -508,16 +492,18 @@
    "license": "original",
    "sources": [
     {
-     "file": "synthesised",
-     "license": "original"
+     "file": "generated for the game with ElevenLabs sound effects (whistle-kickoff-take1.mp3)",
+     "license": "original",
+     "prompt": "A referee whistle: one short sharp blast, close up, dry",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 0.981,
+   "seconds": 0.853,
    "lufsMomentaryMax": -16.0,
-   "lufsIntegrated": -18.0,
-   "truePeakDbfs": -11.4,
-   "sha256": "3eaecdf602a4c508c22ba3115e9830a9c522cff8ed8bb7aac965c524d203131e"
+   "lufsIntegrated": -17.7,
+   "truePeakDbfs": -11.5,
+   "sha256": "cdac6a8e3d6ebe57fd330049e9d99e8a761295e5141a669adeec49e7f039cf17"
   },
   {
    "id": "whistle-goal",
@@ -527,16 +513,18 @@
    "license": "original",
    "sources": [
     {
-     "file": "synthesised",
-     "license": "original"
+     "file": "generated for the game with ElevenLabs sound effects (whistle-goal-take1.mp3)",
+     "license": "original",
+     "prompt": "A referee whistle: two quick sharp blasts, close up, dry",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 1.6,
+   "seconds": 1.045,
    "lufsMomentaryMax": -16.0,
-   "lufsIntegrated": -17.3,
-   "truePeakDbfs": -11.8,
-   "sha256": "5db3b5921b3429db483e4e0a3173abe685d57f01f50b170e0ead1c0a54f203f3"
+   "lufsIntegrated": -17.2,
+   "truePeakDbfs": -10.9,
+   "sha256": "f339e995b09882f3c89311774e3c8a9bef2b38073e84951169cba4129348aa9d"
   },
   {
    "id": "whistle-overtime",
@@ -546,16 +534,18 @@
    "license": "original",
    "sources": [
     {
-     "file": "synthesised",
-     "license": "original"
+     "file": "generated for the game with ElevenLabs sound effects (whistle-overtime-take1.mp3)",
+     "license": "original",
+     "prompt": "A referee whistle: one long blast, close up, dry",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 1.792,
+   "seconds": 1.408,
    "lufsMomentaryMax": -16.0,
-   "lufsIntegrated": -18.0,
-   "truePeakDbfs": -12.8,
-   "sha256": "f5e135297ad859ee17f02f88200243f1085a6e14a10eccf1a03afeb568eb811a"
+   "lufsIntegrated": -16.8,
+   "truePeakDbfs": -10.6,
+   "sha256": "cb56961f65e1f8b4cf579d550a690b0cedd8a2ac220672149df5e4443edab085"
   },
   {
    "id": "whistle-fulltime",
@@ -565,16 +555,18 @@
    "license": "original",
    "sources": [
     {
-     "file": "synthesised",
-     "license": "original"
+     "file": "generated for the game with ElevenLabs sound effects (whistle-fulltime-take2.mp3)",
+     "license": "original",
+     "prompt": "A referee whistle: three long blasts, the final whistle, close up",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 2.304,
-   "lufsMomentaryMax": -16.0,
-   "lufsIntegrated": -17.5,
-   "truePeakDbfs": -11.5,
-   "sha256": "37bcc9d465e1a6799d43e36d3bdfba57e57b7f2dd256e7480a1f02fefe31c7d9"
+   "seconds": 2.624,
+   "lufsMomentaryMax": -16.1,
+   "lufsIntegrated": -17.2,
+   "truePeakDbfs": -11.6,
+   "sha256": "2f2b3b0fbbb8053f47137a31c58d2d00f6142af784e2a5b49c3f4cb4cb6ba90a"
   },
   {
    "id": "whistle-serve",
@@ -584,16 +576,18 @@
    "license": "original",
    "sources": [
     {
-     "file": "synthesised",
-     "license": "original"
+     "file": "generated for the game with ElevenLabs sound effects (whistle-serve-take1.mp3)",
+     "license": "original",
+     "prompt": "A referee whistle: one brief chirp, close up, dry",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 0.747,
+   "seconds": 0.533,
    "lufsMomentaryMax": -16.0,
-   "lufsIntegrated": -19.0,
-   "truePeakDbfs": -9.0,
-   "sha256": "1cbbc7d01b11daf672ce914cd18c5bad01955d34f04acbe82b9027e4295f64fc"
+   "lufsIntegrated": -18.4,
+   "truePeakDbfs": -10.5,
+   "sha256": "381b6679245787154f1d57498cde71339143744fb1e4387e06fe80e458ec9877"
   },
   {
    "id": "whistle-point",
@@ -603,16 +597,18 @@
    "license": "original",
    "sources": [
     {
-     "file": "synthesised",
-     "license": "original"
+     "file": "generated for the game with ElevenLabs sound effects (whistle-point-take1.mp3)",
+     "license": "original",
+     "prompt": "A referee whistle: one short blast, close up, dry",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 0.853,
+   "seconds": 0.661,
    "lufsMomentaryMax": -16.0,
-   "lufsIntegrated": -17.7,
-   "truePeakDbfs": -9.9,
-   "sha256": "945d9689949a87c75ccb9d9bd27371bde37c7ea9bf5a55c93695271e48e4f668"
+   "lufsIntegrated": -18.1,
+   "truePeakDbfs": -10.0,
+   "sha256": "0476b85db26d02658d8796161611481673e177d1097fae65203a9e31d6c1ac66"
   },
   {
    "id": "whistle-sideout",
@@ -622,16 +618,18 @@
    "license": "original",
    "sources": [
     {
-     "file": "synthesised",
-     "license": "original"
+     "file": "generated for the game with ElevenLabs sound effects (whistle-sideout-take1.mp3)",
+     "license": "original",
+     "prompt": "A referee whistle: two short chirps, close up, dry",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -16.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 0.896,
+   "seconds": 0.811,
    "lufsMomentaryMax": -16.0,
-   "lufsIntegrated": -18.8,
-   "truePeakDbfs": -8.7,
-   "sha256": "27e54be8c827ef09c144a1ff8152c8191bf8f56f3b0559bb402f63b0e8741ade"
+   "lufsIntegrated": -18.5,
+   "truePeakDbfs": -9.7,
+   "sha256": "d67a191f45600c8d309d050e53bc4c21c4b5b50bdaacf069e1846cb86855ae5c"
   },
   {
    "id": "heat-1",
@@ -774,48 +772,42 @@
    "file": "/assets/audio/ball/clash-break.m4a",
    "family": "impact",
    "design": "The CLASH breaking: the stronger blow tearing through, a blast and the ball shot clear.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "kenney-impact/impactGlass_heavy_000.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "b44b39a940e8948e74b9bd3776bff980df43cf220abdaf0d467dc4c43c0244a5"
-    },
-    {
-     "file": "kenney-sci-fi/explosionCrunch_001.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "fdd04d6f0032d4d57c134ad37f3587d2d00e58c9572715275bd8cf4f43593576"
+     "file": "generated for the game with ElevenLabs sound effects (clash-break-take1.mp3)",
+     "license": "original",
+     "prompt": "Two energy blasts colliding and breaking apart with a shockwave boom and crackle",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 1.536,
-   "lufsMomentaryMax": -14.4,
-   "lufsIntegrated": -19.4,
-   "truePeakDbfs": -1.4,
-   "sha256": "5cf44f335be6852b6f199782cfa93b730186345538af5be8943367418245b598"
+   "seconds": 1.344,
+   "lufsMomentaryMax": -14.1,
+   "lufsIntegrated": -17.7,
+   "truePeakDbfs": -1.8,
+   "sha256": "55d45f8e97d13524abf483a393698d1c72f836e6265959ba0e4990a3a65659c9"
   },
   {
    "id": "spike-crack",
    "file": "/assets/audio/ball/spike-crack.m4a",
    "family": "impact",
    "design": "SKY SPIKE: the ball whipped down from above the net, a crack like a bolt and the thunder after it.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "kenney-impact/impactPunch_heavy_001.ogg",
-     "author": "Kenney",
-     "license": "CC0 1.0",
-     "sha256": "f92f5cb6ba4ff2766497292ffd90865654317eeca976f5652e0708dbdcdc0dd9"
+     "file": "generated for the game with ElevenLabs sound effects (spike-crack-take2.mp3)",
+     "license": "original",
+     "prompt": "A volleyball spike: the sharp loud slap of a hand smashing the ball hard, close up",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 1.515,
-   "lufsMomentaryMax": -14.6,
-   "lufsIntegrated": -19.8,
-   "truePeakDbfs": -0.9,
-   "sha256": "a7a2a333c0af2cfa720fada3e34ce97ac623c4b1d0c96093cf85efeef6ad434d"
+   "seconds": 0.661,
+   "lufsMomentaryMax": -16.7,
+   "lufsIntegrated": -19.2,
+   "truePeakDbfs": -1.3,
+   "sha256": "312a0848f672ec031b41b8cbe3440317ee8d1b979b3dc3e1766fde31a1fec1bd"
   },
   {
    "id": "block",
@@ -1076,160 +1068,168 @@
    "file": "/assets/audio/ball/crowd-ooh-1.m4a",
    "family": "crowd",
    "design": "The stands: \"ooooh\", a near miss or a big save, rising then falling away.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "ambience/crowd.m4a",
-     "author": "StarNinjas (the game's crowd bed)",
-     "license": "CC0 1.0"
+     "file": "generated for the game with ElevenLabs sound effects (crowd-ooh-1-take2.mp3)",
+     "license": "original",
+     "prompt": "A big stadium crowd reacting to a near miss with a long collective rising and falling oooh, thousands of voices, no music",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 2.859,
+   "seconds": 2.624,
    "lufsMomentaryMax": -18.0,
-   "lufsIntegrated": -20.6,
-   "truePeakDbfs": -6.6,
-   "sha256": "f4ac7b76c1b8696f14da97af12585f147c09ddb2183b3a30cba291372d214a48"
+   "lufsIntegrated": -23.5,
+   "truePeakDbfs": -7.9,
+   "sha256": "6df19a3188cb1c8f17f60ab1a0afd072a6e8082b72cb6339f7b0f464a5a56f12"
   },
   {
    "id": "crowd-ooh-2",
    "file": "/assets/audio/ball/crowd-ooh-2.m4a",
    "family": "crowd",
    "design": "\"Ooooh\", a second take: shorter, more voices.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "ambience/crowd.m4a",
-     "author": "StarNinjas (the game's crowd bed)",
-     "license": "CC0 1.0"
+     "file": "generated for the game with ElevenLabs sound effects (crowd-ooh-2-take1.mp3)",
+     "license": "original",
+     "prompt": "A stadium crowd gasping then going oooh at a close call, a swell of thousands of voices, no music",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 2.453,
+   "seconds": 2.56,
    "lufsMomentaryMax": -18.0,
-   "lufsIntegrated": -20.2,
-   "truePeakDbfs": -6.5,
-   "sha256": "7d44a38cc13f41f08159bd60450d260d5f1035af73b372880f53b686d7a00546"
+   "lufsIntegrated": -21.5,
+   "truePeakDbfs": -9.5,
+   "sha256": "4279eec5f0fad64b7d25a04814d0b256a897fef32993dae23cf37c18023a0d5d"
   },
   {
    "id": "crowd-gasp",
    "file": "/assets/audio/ball/crowd-gasp.m4a",
    "family": "crowd",
    "design": "The stands gasp: a sharp breath in at the post, then a short \"oh!\".",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "ambience/crowd.m4a",
-     "author": "StarNinjas (the game's crowd bed)",
-     "license": "CC0 1.0"
+     "file": "generated for the game with ElevenLabs sound effects (crowd-gasp-take1.mp3)",
+     "license": "original",
+     "prompt": "A stadium crowd taking one sharp collective gasp in shock, thousands of people at once, no music",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 1.856,
+   "seconds": 1.664,
    "lufsMomentaryMax": -18.0,
-   "lufsIntegrated": -20.7,
-   "truePeakDbfs": -5.1,
-   "sha256": "dd1ac2ecad8ad105c4fd1baa46a3cc25025260da79d11561900787d1231eda07"
+   "lufsIntegrated": -21.5,
+   "truePeakDbfs": -8.3,
+   "sha256": "8a1efa7d299b951c6971e486ccb3287b3fd026bfaa7f13584a80ecc84219b070"
   },
   {
    "id": "crowd-roar-1",
    "file": "/assets/audio/ball/crowd-roar-1.m4a",
    "family": "crowd",
    "design": "The stands erupt: a goal or a kill, thousands on their feet shouting, clapping, whistling.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "ambience/crowd.m4a",
-     "author": "StarNinjas (the game's crowd bed)",
-     "license": "CC0 1.0"
+     "file": "generated for the game with ElevenLabs sound effects (crowd-roar-1-take2.mp3)",
+     "license": "original",
+     "prompt": "A huge stadium crowd erupting into a roaring cheer after a goal, thousands of fans screaming and shouting with joy, big open arena, no music, no commentary",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 4.843,
+   "seconds": 4.544,
    "lufsMomentaryMax": -18.0,
-   "lufsIntegrated": -21.3,
-   "truePeakDbfs": -9.0,
-   "sha256": "ae63b343846806bb1d7904b0cde994ec92292aa40892be1c1c42d2ece0e6ae64"
+   "lufsIntegrated": -21.7,
+   "truePeakDbfs": -8.9,
+   "sha256": "d765436b64543cafe71f0913e7dc966cb8d0270818a68735cbe12bdce2998047"
   },
   {
    "id": "crowd-roar-2",
    "file": "/assets/audio/ball/crowd-roar-2.m4a",
    "family": "crowd",
    "design": "The roar, a second take: a bigger, longer one for the biggest goals.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "ambience/crowd.m4a",
-     "author": "StarNinjas (the game's crowd bed)",
-     "license": "CC0 1.0"
+     "file": "generated for the game with ElevenLabs sound effects (crowd-roar-2-take2.mp3)",
+     "license": "original",
+     "prompt": "A packed stadium going wild, a long rising roar of excitement with cheers, whistles and stamping, big open arena, no music, no commentary",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 5.44,
-   "lufsMomentaryMax": -18.1,
-   "lufsIntegrated": -21.7,
-   "truePeakDbfs": -8.9,
-   "sha256": "97ddac388d88f8726d0dcb5f99e8368addcae17f201f7d9fa872c3bef0021b77"
+   "seconds": 5.291,
+   "lufsMomentaryMax": -18.0,
+   "lufsIntegrated": -20.6,
+   "truePeakDbfs": -9.4,
+   "sha256": "f6bef6b62f17419d054a4c31f5029236990f222a812773a5674f1aacd19f1dd8"
   },
   {
    "id": "crowd-applause",
    "file": "/assets/audio/ball/crowd-applause.m4a",
    "family": "crowd",
    "design": "Applause round the stands: a good save, a point won the hard way.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "ambience/crowd.m4a",
-     "author": "StarNinjas (the game's crowd bed)",
-     "license": "CC0 1.0"
+     "file": "generated for the game with ElevenLabs sound effects (crowd-applause-take1.mp3)",
+     "license": "original",
+     "prompt": "A stadium crowd applauding warmly, steady clapping with a few cheers and whistles, no music",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 3.456,
-   "lufsMomentaryMax": -18.1,
-   "lufsIntegrated": -22.1,
-   "truePeakDbfs": -4.1,
-   "sha256": "5d46ba63005a286b5f3c0023e125dceb0eca768b8ebfcb3635aded9907bc30b4"
+   "seconds": 4.053,
+   "lufsMomentaryMax": -18.0,
+   "lufsIntegrated": -21.3,
+   "truePeakDbfs": -6.1,
+   "sha256": "a6eb8959efa829f720e77d804f5633a206594c8c8e3c3594bbcc3940ff656faa"
   },
   {
    "id": "crowd-groan",
    "file": "/assets/audio/ball/crowd-groan.m4a",
    "family": "crowd",
    "design": "The home stands groan: \"awww\", a chance gone or a point given away.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "ambience/crowd.m4a",
-     "author": "StarNinjas (the game's crowd bed)",
-     "license": "CC0 1.0"
+     "file": "generated for the game with ElevenLabs sound effects (crowd-groan-take2.mp3)",
+     "license": "original",
+     "prompt": "A disappointed stadium crowd letting out a long falling groan, thousands of voices, no music",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 2.56,
+   "seconds": 2.624,
    "lufsMomentaryMax": -18.0,
-   "lufsIntegrated": -19.9,
-   "truePeakDbfs": -6.7,
-   "sha256": "d55d0be4ad71771a8cd1c25f63b4e3ec57200d50aafd690c2b0712ed558e2cc4"
+   "lufsIntegrated": -21.9,
+   "truePeakDbfs": -7.2,
+   "sha256": "588041f417fb48bef7518cbd770798dcfd8fa33681d77732cfdac561767473a2"
   },
   {
    "id": "crowd-jeer",
    "file": "/assets/audio/ball/crowd-jeer.m4a",
    "family": "crowd",
    "design": "The home stands whistle and boo the other side's SUPER SHOT.",
-   "license": "CC0-derived",
+   "license": "original",
    "sources": [
     {
-     "file": "ambience/crowd.m4a",
-     "author": "StarNinjas (the game's crowd bed)",
-     "license": "CC0 1.0"
+     "file": "generated for the game with ElevenLabs sound effects (crowd-jeer-take1.mp3)",
+     "license": "original",
+     "prompt": "A stadium crowd booing and whistling in playful disapproval, no music",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -18.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 3.221,
+   "seconds": 3.051,
    "lufsMomentaryMax": -18.0,
-   "lufsIntegrated": -20.7,
-   "truePeakDbfs": -10.0,
-   "sha256": "d912fa203a100ea760c2dfb9ad86afb587f1319a963df083c8ef665ba7e5c9ee"
+   "lufsIntegrated": -22.1,
+   "truePeakDbfs": -8.2,
+   "sha256": "758e31cdce8d3dbb4124012732f64c23bba1a1e4629f15518b4e7b1fe400ff8f"
   },
   {
    "id": "crowd-chant",
@@ -1237,22 +1237,24 @@
    "family": "loop",
    "loop": [
     0.3,
-    4.3
+    8.3
    ],
    "design": "The stands under pressure: a drum, two claps and a \"HEY!\", looped (120 bpm, two bars).",
    "license": "original",
    "sources": [
     {
-     "file": "synthesised",
-     "license": "original"
+     "file": "generated for the game with ElevenLabs sound effects (crowd-chant-take1.mp3)",
+     "license": "original",
+     "prompt": "A stadium crowd rhythmic chanting and clapping in unison with a big drum beat, sports fans, steady tempo, no words, no music",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -19.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 4.651,
+   "seconds": 8.661,
    "lufsMomentaryMax": -19.0,
-   "lufsIntegrated": -24.7,
-   "truePeakDbfs": -6.7,
-   "sha256": "c0320c33720b4e211a7618996b758cf32a6d3b56686746d8176f55c28b216abb"
+   "lufsIntegrated": -23.2,
+   "truePeakDbfs": -9.9,
+   "sha256": "c7f1bd2e084fea1f82dc81ef0935f53a682bf010695ff24809bac40e064303ce"
   },
   {
    "id": "goal-horn",
@@ -1262,16 +1264,18 @@
    "license": "original",
    "sources": [
     {
-     "file": "synthesised",
-     "license": "original"
+     "file": "generated for the game with ElevenLabs sound effects (goal-horn-take1.mp3)",
+     "license": "original",
+     "prompt": "A stadium goal horn: one deep powerful air horn blast echoing through a big arena",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)"
     }
    ],
    "processing": "Trimmed, high-passed at 28 Hz, levelled to -15.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
-   "seconds": 3.861,
+   "seconds": 3.051,
    "lufsMomentaryMax": -15.0,
-   "lufsIntegrated": -16.5,
-   "truePeakDbfs": -4.8,
-   "sha256": "981de4cd2a32a1901004290fc780f6a24c552041fb1906dc8e09f91aa6f165a7"
+   "lufsIntegrated": -15.5,
+   "truePeakDbfs": -8.9,
+   "sha256": "a44aa42ee650a183e6098a668d1f28a3d340b190b5cbdb5c70f500df12a7a080"
   },
   {
    "id": "goal-burst",

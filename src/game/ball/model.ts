@@ -6,14 +6,16 @@ import type {BallTrait} from './traits';
 import type {DrillView} from './drills';
 import type {SeatRank} from './ranked';
 import type {BallLook} from './look';
+import type {AimAssist, SportFeel} from '../simulation';
 
 /** The two ball modes: Goal Rush, three a side scoring on each other's goal, and Sky Spike, three a side over a net
- *  (volleyball and sepak takraw). Every attack and ability lands on the ball and only on the ball: fighters never hurt
- *  each other here. Data and rules only, as everything under src/game. */
+ *  (volleyball and sepak takraw). Every attack and ability lands on the ball; in Goal Rush they land on the other
+ *  side's fighters as well (GOAL_FIGHT), and a fighter whose health runs out is wiped out for a moment, never knocked
+ *  out. Sky Spike's sides never meet across the net. Data and rules only, as everything under src/game. */
 export type BallModeId = 'goal-rush' | 'sky-spike';
 export const BALL_MODES: readonly BallModeId[] = ['goal-rush', 'sky-spike'];
 /** Bumped whenever a page and a room would disagree about the ball, its view or its messages. */
-export const BALL_PROTOCOL = 2;
+export const BALL_PROTOCOL = 3;
 export type BallTeam = 'red' | 'blue';
 export const BALL_TEAMS: readonly BallTeam[] = ['red', 'blue'];
 export const otherTeam = (team: BallTeam): BallTeam => team === 'red' ? 'blue' : 'red';
@@ -60,6 +62,8 @@ export interface BallState extends Vec3 {
   /** A CLASH holds the ball until this server time (0: none): two sides' blows met it at once, and the stronger one
    *  sends it on when the clash breaks. */
   clash: number;
+  /** A LINK SHOT in flight (superShots.ts LINK): the team-mate who set it up, whose colour shares the trail. */
+  link?: string | null;
 }
 
 export interface BallSeat {
@@ -80,6 +84,12 @@ export interface BallSeat {
   rank?: SeatRank;
   /** The ball gear the seat wears (look.ts): ball skin, trail, goal burst, celebration. */
   look?: BallLook;
+  /** Goal Rush (GOAL_FIGHT): wiped out - their health ran out - and off the pitch until this server time, when they come
+   *  back at their own end with it full. The body lies where it fell meanwhile (the kernel's 'defeated'), which the page
+   *  may fade. Absent: in play. */
+  out?: number;
+  /** Goal Rush: the opponents this seat has wiped out this match. */
+  wipeouts?: number;
 }
 
 export interface BallEvent {
@@ -95,7 +105,16 @@ export interface BallEvent {
      *  targetId lost it, value is the speed it breaks out at (m/s). */
     | 'clash'
     /** FREE PLAY: a target hit (value: the streak). */
-    | 'target';
+    | 'target'
+    /** A TECHNIQUE DUEL (superShots.ts DUEL): a PERFECT guard met a SUPER SHOT - actorId the keeper, targetId the striker,
+     *  value the beat's seconds - and how it ended: actorId the winner, targetId the loser, text SHOT STOPPED or BREAKS
+     *  THROUGH. */
+    | 'duel' | 'duel-won'
+    /** Goal Rush's fights (GOAL_FIGHT): a fighter wiped out - actorId whoever landed the last blow (absent: nobody's,
+     *  their team in `team`), targetId who went down, value the seconds they are out, x/y/z where they fell, text the
+     *  blow's name or BUMP - and a boosting body's bump that knocked somebody flat ('demo': actorId the bumper, targetId
+     *  the bumped, value the bumper's speed, m/s). */
+    | 'wipeout';
   team?: BallTeam; actorId?: string; assistId?: string; targetId?: string;
   x: number; y: number; z: number;
   /** A shot's speed (m/s), a rally's length, a point's worth. */
@@ -146,7 +165,15 @@ export interface BallView {
   drill?: DrillView | null;
   /** RANKED (ranked.ts): a ranked queue's room, and whether the people at kickoff made the match ranked. */
   ranked?: boolean;
+  /** The match's intro (ceremony.ts INTRO): it runs through the countdown, from `startsAt - seconds` to `startsAt`. The
+   *  skip vote's count, and whether it carried. Absent: no intro (FREE PLAY, a couch split screen). */
+  intro?: BallIntro | null;
+  /** The page's own (render/CombatTimeline; never sent): the server time this ball was sampled at, and the next
+   *  snapshot's ball and its time when the frame falls between two, so the page draws the ball where it is at the
+   *  frame's time (render/ball/BallField) instead of where it was at the last snapshot. */
+  sampledAt?: number; next?: BallState | null; nextAt?: number;
 }
+export interface BallIntro { seconds: number; skips?: number; people?: number; skipped?: boolean }
 /** The events that end a Sky Spike rally, by how (a page's sound reads them: src/audio/ballAudio.ts): a point won outright -
  *  a kill, an ace off the serve, a point - and a point given away (out, four touches, a fault). */
 export const POINT_WON: ReadonlySet<BallEvent['kind']> = new Set(['kill', 'ace', 'point']);
@@ -229,18 +256,27 @@ export const BALL_RULES = {
 
 /** A CLASH: blows of both sides on the ball inside `window` seconds of each other. The ball hangs `hold` seconds while
  *  the two fighters freeze `freeze` seconds, then the stronger blow (an ultimate, a special, an awakened fighter weigh
- *  more; a little luck either way) sends it on `boost` times harder and `heat` hotter. The next can't come for `gap` s. */
-export const CLASH = {window: .22, hold: .5, freeze: .34, boost: 1.2, heat: 1, gap: 2} as const;
+ *  more; a little luck either way) sends it on `boost` times harder and `heat` hotter. The next can't come for `gap` s.
+ *  (A hold of 0.5 s every 2 s at most was 11-16 clashes and 6-8 s of a match held still; a breath now, and rarer, so a
+ *  50/50 is mostly the ball's own.) */
+export const CLASH = {window: .22, hold: .3, freeze: .2, boost: 1.2, heat: 1, gap: 4} as const;
 
 /** Goal Rush. The pitch is a walled box with chamfered corners and a goal sunk into each end wall, sized to
- *  a fighter's run (7.5 m/s). */
+ *  a fighter's run (7.5 m/s; BALL_SPORT's 9.5, and 13.5 on the boost).
+ *  A big ball that reads at a glance, and play that flows: the ball is
+ *  bigger (0.62 to 0.8 m, as tall as a fighter's chest) and floatier (gravity 15 to 13), the walls livelier (0.74 to
+ *  0.8, and a low ball off one is lifted by its foot, `wallLift`) and the floor rolls it further (roll 3.2 to 2.4), and
+ *  the kickoff is two seconds, not three. */
 export const GOAL_RULES = {
   halfX: 18, halfZ: 26, wall: 10, ceiling: 17, corner: 4.5,
   goalHalfWidth: 4.6, goalHeight: 4.3, goalDepth: 3.4, post: .28,
-  ballRadius: .62, hitRadius: 1.15, gravity: 15, drag: .07, roll: 3.2, bounce: .62, wallBounce: .74,
+  ballRadius: .8, hitRadius: 1.35, gravity: 13, drag: .07, roll: 2.4, bounce: .64, wallBounce: .8,
+  /** A low ball off a wall (its centre under the ball's radius plus this) climbs by this share of how hard it met it: the
+   *  wall's foot curves it back up into play instead of letting it die along the boards. */
+  wallFoot: .7, wallLift: .32,
   /** The ball's top speed at each heat tier. */
   speedCap: [24, 29, 34, 41, 50],
-  matchSeconds: 240, kickoffSeconds: 3, goalSeconds: 4.2,
+  matchSeconds: 240, kickoffSeconds: 2, goalSeconds: 4.2,
   /** Overtime's ball heats by itself (its heat can't fall under this many a second of overtime), so a tied match
    *  always ends. */
   overtimeHeat: .05,
@@ -249,6 +285,36 @@ export const GOAL_RULES = {
   /** A super shot's goal counts twice. */
   superGoal: 2,
 } as const;
+
+/** Goal Rush's fights. The sides are sides in the combat kernel, so a blow finds the other side's
+ *  fighters and never a team-mate's, and every blow still finds the ball: the swing's aim (simulation.ts assistAim) takes
+ *  the ball whenever it is within the swing's reach and a stride, else the nearest opponent there.
+ *  - `health`: a smaller bar than a duel's (a light string, a heavy and a special take it), so a fight is a moment, not
+ *    a minute; it fills again `regenAfter` s after the last blow, at `regen` a second.
+ *  - Nobody is knocked out: a fighter whose health runs out is WIPED OUT, off the pitch for `seconds`, then back at their
+ *    own end (`respawnZ` from their goal line, `respawnX` either side) with it full, protected for `guard` s.
+ *  - A wipe-out is worth `points` toward MVP.
+ *  - A BUMP: a boosting body at `bump.speed` or more, closing on an opponent at `bump.closing`, knocks them flat
+ *    (`bump.damage` of the bar; one out of health is wiped out), at most once a `bump.gap` s each. */
+export const GOAL_FIGHT = {
+  health: 220, regenAfter: 6, regen: 25, seconds: 3, guard: 1, respawnZ: 4, respawnX: 7, points: 10,
+  bump: {speed: 11, closing: 8, damage: .5, gap: 1.2, reach: .45},
+} as const;
+
+/** Sports movement in the ball rooms (simulation.ts SportFeel). A quicker run (7.5 to 9.5 m/s) on quicker feet, the dash run on as a boost on the stamina bar (13.5 m/s; a
+ *  full bar is about five seconds of it), a double jump and the air dash at the ball for aerials, half the impact
+ *  freezes, and a kick's tail cut so the play flows on. Sky Spike keeps its jump (its spikes and blocks are timed to
+ *  it) and its flat air dash, and has no double jump: its rallies were tuned on them. */
+export const BALL_SPORT: Record<BallModeId, SportFeel> = {
+  'goal-rush': {run: 9.5, feet: 1.35, boost: 13.5, boostDrain: 42, dashGap: .15, jump: 1.06, airJumps: 1, airJump: .8, leap: 16, airDash: 9, hitstop: .5, recovery: .14},
+  'sky-spike': {run: 9, feet: 1.3, boost: 12.5, boostDrain: 42, dashGap: .15, jump: 1, airJumps: 0, airJump: .8, leap: 15, airDash: 0, hitstop: .6, recovery: .14},
+};
+const ASSIST: Record<BallModeId, AimAssist> = {
+  'goal-rush': {magnet: .9, airExternal: true, sport: BALL_SPORT['goal-rush']},
+  'sky-spike': {magnet: .9, airExternal: true, sport: BALL_SPORT['sky-spike']},
+};
+/** The combat kernel's aim and movement in a ball room: the room's and the page's prediction of it (main.ts) alike. */
+export const ballAssist = (mode: BallModeId): AimAssist => ASSIST[mode];
 
 /** Sky Spike. A court split by a net, a free zone round it and a dome over it: a ball that lands in a side's court is
  *  the other side's point, a ball that lands anywhere else is out off whoever touched it last. Three touches a side

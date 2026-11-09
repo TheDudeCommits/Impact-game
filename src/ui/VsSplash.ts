@@ -82,6 +82,8 @@ const FACE_X: Partial<Record<FighterId,number>> = {
   asahi:53, levin:49, 'rook':50, gaku:50,
   cardo:45, bruin:48, aquilo:44, svanhild:49,
 };
+/** Where a fighter's face sits down their full-length art, as a share of its height (the ball modes' splash page crops on it). */
+export const vsFaceAt = (id: FighterId) => fullLength(id) ? FACE_AT[id] ?? .11 : .42;
 const face = (id: FighterId) => `${FACE_AT[id] ? `;--face-at:${FACE_AT[id]}` : ''}${FACE_X[id] ? `;--art-anchor:${FACE_X[id]}%` : ''}`;
 /** A fighter's colour as a panel's inks: the colour, a pale wash of it on the
  *  paper behind the art, and a deep shade of it for the edges. */

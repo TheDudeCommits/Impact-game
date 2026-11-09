@@ -2,7 +2,8 @@ import { ROSTER_PROTOCOL } from '../../game/rosterProtocol';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { Client, FixedTimestepCallback } from 'colyseus';
 import { BallRoom } from './BallRoom';
-import { BALL_PROTOCOL, type BallModeId, type BallSnapshot } from '../../game/ball/model';
+import { BALL_PROTOCOL, BALL_SPORT, type BallModeId, type BallSnapshot } from '../../game/ball/model';
+import {INTRO} from '../../game/ball/ceremony';
 
 const TOKEN = '01234567-89ab-cdef-0123-456789abcdef';
 const client = (sessionId: string) => ({ sessionId, send: vi.fn() } as unknown as Client);
@@ -48,6 +49,15 @@ describe('the ball room', () => {
       f.send(host, 'ball-start');
       expect(f.room.game.seats.size).toBe(6);
       f.advance(4);
+      // The match's intro (game/ball/ceremony.ts) holds the countdown; once both people have voted to skip it, the kickoff.
+      expect(f.room.game.view.phase).toBe('countdown');
+      expect(f.room.game.view.intro?.seconds).toBe(INTRO.seconds);
+      f.send(host, 'ball-skip');
+      expect(f.room.game.view.intro).toMatchObject({skips: 1, people: 2});
+      expect(f.room.game.view.phase).toBe('countdown');
+      f.send(guest, 'ball-skip');
+      expect(f.room.game.view.intro?.skipped).toBe(true);
+      f.advance(1);
       expect(['kickoff', 'live']).toContain(f.room.game.view.phase);
       const snapshot = f.last(host)!;
       expect(snapshot.ball.mode).toBe('goal-rush');
@@ -98,6 +108,30 @@ describe('the ball room', () => {
       f.send(guest, 'ball-skip');
       expect(g.replaying()).toBe(false);
     } finally { f.room.onDispose(); }
+  }, 30000);
+  it("fights in Goal Rush and never in Sky Spike, the sport's movement on, a wipe-out on every page", async () => {
+    const f = await fixture('host');
+    try {
+      const host = f.join('h'), guest = f.join('g', 'konta');
+      f.send(host, 'ball-start'); f.send(host, 'ball-skip'); f.send(guest, 'ball-skip');
+      const g = f.room.game;
+      for (let i = 0; i < 60 * 10 && g.view.phase !== 'live'; i++) f.advance(1 / 60);
+      expect(g.view.phase).toBe('live');
+      expect(g.sim.assist?.sport).toBe(BALL_SPORT['goal-rush']);
+      expect(g.sim.actors.get('h')!.state.team).toBe(g.seats.get('h')!.team);
+      g.sim.strike('h', 'g', 'heavy', { name: 'Test Haymaker', duration: .4, contacts: [0], damage: 999, range: 2, radius: .8, stamina: 0, cooldown: 0, stun: .3, knockback: 4, style: 'melee' });
+      f.advance(.1);
+      const seen = f.last(host)!.ball;
+      expect(seen.seats.find(s => s.id === 'g')!.out).toBeGreaterThan(0);
+      expect(seen.events.some(e => e.kind === 'wipeout' && e.actorId === 'h' && e.targetId === 'g')).toBe(true);
+    } finally { f.room.onDispose(); }
+    const spike = await fixture('host', 'sky-spike');
+    try {
+      spike.join('h'); spike.join('g', 'konta');
+      const g = spike.room.game;
+      expect(g.sim.assist?.sport).toBe(BALL_SPORT['sky-spike']);
+      expect(g.sim.actors.get('h')!.state.team).toBe(g.sim.actors.get('g')!.state.team);
+    } finally { spike.room.onDispose(); }
   }, 30000);
   it('contains bad input', async () => {
     const f = await fixture();
