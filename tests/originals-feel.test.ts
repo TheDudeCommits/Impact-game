@@ -24,6 +24,7 @@ const SPRINTS: Record<string, { run: number; shared: boolean }> = {
   // Kuzu's run is a clean sprint: three steps a cycle, as Kuon's and Jirenga's clean sprints, 4.0-4.3 steps a second at
   // 7.5 m/s; its planted foot slides 0.33-0.42 of travel there, 0.16-0.19 at 4.5 m/s and 0.07 at 2.4. With no row (two
   // steps a cycle) it slid 0.43 and, where the walk mixes in at 4.5 m/s, 0.50. His walk keeps no row (not on the run's clock).
+  // At his own stride, 1.15 times the roster's (Fighter.ts STRIDE_SCALE), it slides 0.36-0.37 at 7.5 m/s on this row.
   kuzu: { run: .1667, shared: false },
 };
 

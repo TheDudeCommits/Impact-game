@@ -6,5 +6,8 @@ export function amagoiStrikeJoint(action:string,clip?:string,contactIndex=0):'Le
  if(action==='ultimate'&&(!clip||clip==='Ash Moon'))return contactIndex===0?'RightHand':'LeftHand';
  return ['Cloudburst','Calling Water','Rush 2','Rain Rebuff','Drawing Rain','Falling Sky'].includes(clip??'')||(!clip&&(action==='heavy'||action==='special'))?'LeftHand':'RightHand';
 }
-/** Frozen final-r12 receiver tip, measured in the actual exported RightHand frame. */
-export const AMAGOI_RECEIVER_TIP=Object.freeze([-0.6008820533752441,-0.01629497855901718,0.40872931480407715]as const);
+/** The receiver rod's point in the RightHand joint's frame: the apex of the drawn spike, the rod seated in his fist once, the
+ *  same in every clip (weapon_rod_R's keyed local transform), the fist round the shaft above its pommel cap. Measured on the
+ *  exported body (the rod's skinned vertices carried through weapon_rod_R's inverse bind and keyed transform): on the drawn
+ *  rod's point on every frame of every clip. */
+export const AMAGOI_RECEIVER_TIP=Object.freeze([0.6294815671028392,0.6985699232843519,0.05673595040530666]as const);

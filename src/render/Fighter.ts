@@ -1619,7 +1619,11 @@ const TARGET_STRIDE=1.35,CADENCE_RANGE:[number,number]=[.7,2.2];
  *  clips retargeted onto Kari's body, 2 October) sweeps it 4.18 m/s at rate 1 against the 3.52 his 0.87 m legs are
  *  played to, and skated at 55% of his travel; played to his own stride it holds. */
 // Taisei 1.27 since his new body (10 October): his shorter legs would otherwise quicken the run past the arms' 30-degree-a-frame swing (tests/runTakes.test.ts); the planted foot still slides less than on kr1 at 1.19.
-const STRIDE_SCALE:Partial<Record<FighterId,number>>={taisei:1.27};
+// Kuzu 1.15: his clean run (the library's sprint, on its three-steps-a-cycle row) slid its planted foot 0.39-0.46 of travel
+// at 7.5 m/s (30-144 frames a second); at his own stride, 1.15 times the roster's, 0.36-0.37 at every rate, and 0.19-0.24
+// where the walk mixes in at 4.5 m/s (0.19-0.28 at the roster's), 3.8 steps a second. The cadence row's other steps and the
+// library's jog measured worse.
+const STRIDE_SCALE:Partial<Record<FighterId,number>>={taisei:1.27,kuzu:1.15};
 /** Where the gait is all walk and where it is all run, in metres a second.
  *  Between them it is a mix of the two read from one stride clock. */
 const GAIT_RANGE:[number,number]=[1.6,6];
