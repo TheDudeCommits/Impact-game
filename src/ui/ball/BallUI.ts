@@ -4,7 +4,9 @@ import { ballOf, BALL_TEAM_NAMES, type BallSeat, type BallTeam, type BallView } 
 import type { GameSnapshot } from '../../game/types';
 import { mangaPortrait } from '../MangaHome';
 import { BALL_MUTATORS, MUTATOR_NAMES, mutatorLine } from '../../game/ball/mutators';
-import { DRILLS, MODE_DRILLS } from '../../game/ball/drills';
+import { DRILLS, MEDALS, MODE_DRILLS } from '../../game/ball/drills';
+import { TIERS, tierOf, RANKED, type SeatRank } from '../../game/ball/ranked';
+import { ballPay } from './ballPay';
 import { TRAIT_NAMES } from '../../game/ball/traits';
 import { BallBadge } from './BallBadge';
 import { MEDAL_MARK, recordDrill } from './drillMedals';
@@ -14,6 +16,20 @@ import './ballUi.css';
 const escape = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const nameOf = (seat: BallSeat) => (seat.bot || seat.name === 'Fighter' ? FIGHTERS[seat.fighter].name : seat.name).toUpperCase();
 const TEAMS: readonly BallTeam[] = ['red', 'blue'];
+const whole = (n: number) => Math.round(n).toLocaleString('en-US');
+/** A ranked standing as how near the next stamp is - the stamp, the rating and the
+ *  match's change, a bar to the next stamp and the points still to go (or the placements left). */
+export function rankNext(r: SeatRank): string {
+  const tier = tierOf(r), delta = r.delta ? `<em class="${r.delta > 0 ? 'up' : 'down'}">${r.delta > 0 ? '+' : '−'}${Math.abs(r.delta)}</em>` : '';
+  if (!tier) {
+    const played = Math.min(r.games, RANKED.placements), left = RANKED.placements - played;
+    return `<p class="bu-next"><b>PLACEMENTS</b><span>${played} / ${RANKED.placements}${delta}</span><i><u style="width:${Math.round(played / RANKED.placements * 100)}%"></u></i><small>${left ? `${left} MORE TO YOUR STAMP` : 'YOUR STAMP NEXT MATCH'}</small></p>`;
+  }
+  const next = TIERS.find(t => t.from > r.rating);
+  if (!next) return `<p class="bu-next"><b>${tier.name}</b><span>${whole(r.rating)}${delta}</span><small>THE TOP STAMP</small></p>`;
+  const from = Number.isFinite(tier.from) ? tier.from : next.from - 150, share = Math.max(0, Math.min(1, (r.rating - from) / (next.from - from)));
+  return `<p class="bu-next"><b>${tier.name}</b><span>${whole(r.rating)}${delta}</span><i><u style="width:${Math.round(share * 100)}%"></u></i><small>${whole(Math.ceil(next.from - r.rating))} TO ${next.name}</small></p>`;
+}
 
 /** The ball modes' two panels outside play (the HUD is BallHud's): a room's lobby - its code, the two sides, SWITCH SIDES,
  *  and for the host BOTS FILL and START - and the results once the winners have had their moment: the score, every
@@ -34,10 +50,14 @@ export class BallUI {
   private drillKept = ''; private drillBest?: ReturnType<typeof recordDrill>;
   /** A ranked match's end, once asked of the server again for the new standing. */
   private rankedAsked = '';
+  /** What the match paid (ballPay.ts: the shop draws it here), kept on the results card beside PLAY AGAIN. */
+  private readonly pay = document.createElement('div');
   constructor(parent: HTMLElement) {
     this.root = document.createElement('div');
     this.root.className = 'ball-ui hidden';
     parent.append(this.root);
+    this.pay.className = 'bu-pay hidden';
+    ballPay.host = () => this.view && !this.view.practice && this.view.phase !== 'lobby' ? this.pay : undefined;
     this.badge = new BallBadge(parent);
     this.root.addEventListener('click', event => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-act]');
@@ -54,6 +74,8 @@ export class BallUI {
       else if (act === 'drill-again') this.onSend('ball-rematch');
       else if (act === 'drill-next' && button.dataset.drill) this.onSend('ball-drill', button.dataset.drill);
       else if (act === 'again') this.onAgain();
+      // A private room's host plays the same people again in the same room (BallRoom's 'ball-rematch').
+      else if (act === 'rematch') this.onSend('ball-rematch');
       else if (act === 'leave') this.onLeave();
     });
   }
@@ -72,6 +94,8 @@ export class BallUI {
     if (v && drill && this.drillKept !== `${v.drill!.id}:${v.startedAt}`) { this.drillKept = `${v.drill!.id}:${v.startedAt}`; this.drillBest = recordDrill(v.drill!.id, v.drill!.done); }
     // After a ranked match, the account's standing is asked again (the sheet's stamp).
     if (v && results && v.ranked && this.rankedAsked !== `${v.code}:${v.round}`) { this.rankedAsked = `${v.code}:${v.round}`; void refreshRanks(true); }
+    // A new match: the last one's pay goes.
+    if (v && (v.phase === 'countdown' || v.phase === 'lobby') && this.pay.childElementCount) { this.pay.replaceChildren(); this.pay.classList.add('hidden'); }
     if (!v || !show) { this.key = ''; return; }
     if (drill) {
       const key = `drill|${v.drill!.id}|${v.startedAt}`;
@@ -83,7 +107,7 @@ export class BallUI {
     this.key = key;
     this.root.dataset.mode = v.mode;
     this.root.innerHTML = lobby ? this.lobby(v, selfId, snapshot?.serverTime ?? 0) : this.results(v, selfId);
-    if (results) this.root.querySelector<HTMLButtonElement>('button[data-act="again"]')?.focus({ preventScroll: true });
+    if (results) { this.root.querySelector('.bu-pay-slot')?.replaceWith(this.pay); this.root.querySelector<HTMLButtonElement>('footer button.go:not(:disabled)')?.focus({ preventScroll: true }); }
   }
   private seatRow(seat: BallSeat, selfId: string, stats: string, feats = false) {
     // The accolades earned (each once, with how many times: HAT TRICK ×2).
@@ -114,24 +138,33 @@ export class BallUI {
     const mvp = v.seats.find(s => s.id === v.mvp);
     const goal = v.mode === 'goal-rush';
     const header = goal ? '<i>G</i><i>A</i><i>SV</i><i>SH</i><i>PTS</i>' : '<i>KILL</i><i>ACE</i><i>BLK</i><i>DIG</i><i>PTS</i>';
+    // A ranked match says how near the next stamp is; what the match paid sits by PLAY AGAIN (ballPay.ts). A
+    // private room's host has REMATCH - the same people, the same room, its short intro - and the others wait for it.
+    const me = v.seats.find(s => s.id === selfId), rank = v.ranked && me?.rank ? rankNext(me.rank) : '';
+    const again = v.access !== 'host' ? '<button data-act="again" class="go">PLAY AGAIN</button>'
+      : v.hostId === selfId ? '<button data-act="rematch" class="go">REMATCH</button>' : '<button class="go" disabled>REMATCH · THE HOST STARTS IT</button>';
     const stat = (s: BallSeat) => `<span class="bu-stats">${(goal ? [s.goals, s.assists, s.saves, s.shots, s.points] : [s.kills, s.aces, s.blocks, s.digs, s.points]).map(n => `<i>${n}</i>`).join('')}</span>`;
     const columns = TEAMS.map(team => {
       const seats = v.seats.filter(s => s.team === team).sort((a, b) => b.points - a.points);
       return `<section class="bu-side ${team}${v.winner === team ? ' won' : ''}"><h3>${BALL_TEAM_NAMES[team]} <b>${v.score[team]}</b></h3><div class="bu-head">${header}</div><ul>${seats.map(s => this.seatRow(s, selfId, (s.id === v.mvp ? '<em>MVP</em>' : '') + stat(s), true)).join('')}</ul></section>`;
     }).join('');
     return `<div class="bu-card results ${won ? 'won' : 'lost'}"><header><small>${goal ? 'GOAL RUSH' : 'SKY SPIKE'}${v.rumble ? ' RUMBLE' : v.mutator ? ` ${MUTATOR_NAMES[v.mutator]}` : ''}${v.ranked ? ' · RANKED' : v.ranked === false ? ' · UNRANKED' : ''} · ${escape(v.reason.toUpperCase())}</small><h2>${head}</h2>
-      <p class="bu-final"><span class="red">${v.score.red}</span> – <span class="blue">${v.score.blue}</span></p>${mvp ? `<p class="bu-mvp">MVP <b>${escape(nameOf(mvp))}</b> · ${mvp.points} PTS</p>` : ''}</header>
+      <p class="bu-final"><span class="red">${v.score.red}</span> – <span class="blue">${v.score.blue}</span></p>${mvp ? `<p class="bu-mvp">MVP <b>${escape(nameOf(mvp))}</b> · ${mvp.points} PTS</p>` : ''}${rank}</header>
       <div class="bu-teams results">${columns}</div>
-      <footer><button data-act="again" class="go">PLAY AGAIN</button><button data-act="leave">LEAVE</button></footer></div>`;
+      <footer><div class="bu-pay-slot"></div>${again}<button data-act="leave">LEAVE</button></footer></div>`;
   }
   /** A drill's ten balls done: how many were right, the medal, the best kept, and AGAIN, NEXT DRILL, LEAVE. */
   private drillCard(v: BallView) {
     const d = v.drill!, def = DRILLS[d.id], list = MODE_DRILLS[v.mode], next = list[(list.indexOf(d.id) + 1) % list.length], best = this.drillBest;
     const medal = d.medal ? `<p class="bu-medal ${d.medal}"><i>${MEDAL_MARK[d.medal]}</i>${d.medal.toUpperCase()} MEDAL</p>` : `<p class="bu-medal none">NO MEDAL · BRONZE AT ${def.medals[0]}</p>`;
+    // The next medal over the best kept, and how many more balls it takes than the best.
+    const held = best?.medal ? MEDALS.indexOf(best.medal) + 1 : 0, nextMedal = MEDALS[held];
+    const kept = best?.best ?? d.done;
+    const toGo = nextMedal ? `<p class="bu-next"><b>NEXT · ${nextMedal.toUpperCase()}</b><span>${def.medals[held]} / ${d.balls}</span><i><u style="width:${Math.round(Math.min(1, kept / def.medals[held]) * 100)}%"></u></i><small>${def.medals[held] - kept} MORE THAN YOUR BEST</small></p>` : '<p class="bu-next"><b>GOLD</b><small>EVERY MEDAL WON</small></p>';
     const dots = d.results.map(r => `<i class="${r ? 'hit' : 'miss'}"></i>`).join('');
     return `<div class="bu-card results ${d.medal ? 'won' : 'lost'}"><header><small>${v.mode === 'goal-rush' ? 'GOAL RUSH' : 'SKY SPIKE'} · DRILL</small><h2>${escape(def.name)}</h2>
-      <p class="bu-final">${d.done} / ${d.balls}</p><p class="bu-dots">${dots}</p>${medal}${best?.improved && d.done > 0 ? '<p class="bu-rules">YOUR BEST YET</p>' : best ? `<p class="bu-rules">YOUR BEST: ${best.best} / ${d.balls}</p>` : ''}</header>
+      <p class="bu-final">${d.done} / ${d.balls}</p><p class="bu-dots">${dots}</p>${medal}${best?.improved && d.done > 0 ? '<p class="bu-rules">YOUR BEST YET</p>' : best ? `<p class="bu-rules">YOUR BEST: ${best.best} / ${d.balls}</p>` : ''}${toGo}</header>
       <footer><button data-act="drill-again" class="go">AGAIN</button><button data-act="drill-next" data-drill="${next}">NEXT: ${escape(DRILLS[next].name)}</button><button data-act="leave">LEAVE</button></footer></div>`;
   }
-  clear() { this.root.classList.add('hidden'); this.root.innerHTML = ''; this.key = ''; this.view = undefined; this.badge.clear(); }
+  clear() { this.root.classList.add('hidden'); this.root.innerHTML = ''; this.key = ''; this.view = undefined; this.badge.clear(); this.pay.replaceChildren(); this.pay.classList.add('hidden'); }
 }

@@ -11,11 +11,12 @@ import type { StageId } from '../../game/stages';
  *                     royale's fighters and room size, the rival, and the LOCATION - `stage`, 'random' until one is named)
  *   rift-coach        { mode: [tip ids] } and { off: true }   coach tips shown, or switched off in Settings
  *   rift-training-dummy  'passive' | 'combat'   the sparring dummy's behaviour; passive until the player changes it
+ *   rift-ball-hints   [hint ids]   the ball modes' first-time hints shown (ui/ball/ballHints.ts; each once per device)
  */
 const read = <T>(key: string, fallback: T): T => { try { const raw = globalThis.localStorage?.getItem(key); return raw ? JSON.parse(raw) as T : fallback; } catch { return fallback; } };
 const write = (key: string, value: unknown) => { try { globalThis.localStorage?.setItem(key, JSON.stringify(value)); } catch { /* The session keeps it. */ } };
 
-export const SEEN_KEY = 'rift-modes-seen', PREFS_KEY = 'rift-mode-prefs', COACH_KEY = 'rift-coach', DUMMY_KEY = 'rift-training-dummy';
+export const SEEN_KEY = 'rift-modes-seen', PREFS_KEY = 'rift-mode-prefs', COACH_KEY = 'rift-coach', DUMMY_KEY = 'rift-training-dummy', BALL_HINTS_KEY = 'rift-ball-hints';
 
 /** The mode's explainer has been seen at its current rules version. */
 export function explainerSeen(mode: ModeId) { return (read<Record<string, number>>(SEEN_KEY, {})[mode] ?? 0) >= MODES[mode].rulesVersion; }
@@ -39,6 +40,11 @@ export function setCoachOn(on: boolean) { const store = read<CoachStore>(COACH_K
 /** Tips this mode has already given (each is shown once, ever). */
 export function coachShown(mode: ModeId): readonly string[] { const list = read<CoachStore>(COACH_KEY, {})[mode]; return Array.isArray(list) ? list : []; }
 export function markCoachShown(mode: ModeId, tip: string) { const store = read<CoachStore>(COACH_KEY, {}); const list = Array.isArray(store[mode]) ? store[mode] as string[] : []; if (!list.includes(tip)) store[mode] = [...list, tip]; write(COACH_KEY, store); }
+
+/** The ball modes' first-time hints this device has shown (ui/ball/ballHints.ts): each once, ever; Settings → Coach tips
+ *  turns them off with the coach's. */
+export function ballHintsShown(): readonly string[] { const list = read<unknown>(BALL_HINTS_KEY, []); return Array.isArray(list) ? list.filter((id): id is string => typeof id === 'string') : []; }
+export function markBallHint(id: string) { const list = [...ballHintsShown()]; if (!list.includes(id)) write(BALL_HINTS_KEY, [...list, id]); }
 
 /** The training dummy: passive until the player chooses otherwise (the [1] DUMMY toggle, WP2), then remembered. */
 export type DummyMode = 'passive' | 'combat';

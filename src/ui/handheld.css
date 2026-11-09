@@ -271,3 +271,51 @@ html.tc-upright .tc-turn{display:grid}
    finger. (Specific enough to win over Arcade Survival's own place for it, rift.css, which was on the stick as well.) */
 :root.touch-play body .music-caption.music-caption{left:0;right:0;bottom:auto;top:calc(100px + env(safe-area-inset-top,0px));margin-inline:auto;width:max-content;max-width:min(80vw,500px);
   transform:scale(.62);transform-origin:50% 0;pointer-events:none}
+
+/* ---- The ball modes' own set (input/sportTouch.ts).
+   In a ball match the fight's fan steps aside for six buttons in two rows - SHOOT · PASS · BOOST along
+   the bottom, JUMP · FIGHT · SUPER over them (Sky Spike: SPIKE · SET · DIVE, JUMP · BLOCK · SUPER) - each a line glyph
+   and its name in the paper's colour. The playstyle is the colour under the thumb: Goal Rush's FIGHT stance rings the
+   set red and its BALL button gold; SUPER is a small dim charge ring until it is charged, then a gold button. */
+.tc-sport{display:contents}
+.touch-controls:not(.tc-sports) .tc-sp,.tc-sp[hidden]{display:none}
+.touch-controls.tc-sports>.tc-btn:not(.tc-pause):not(.tc-emote){display:none}
+.tc-sp .tc-glyph{width:46%;height:46%;margin-top:-17%}
+.tc-sp .tc-glyph .tc-fill{fill:var(--tc-paper);stroke:none}
+.tc-sp .tc-glyph .tc-fist{fill:var(--tc-paper);stroke:var(--tc-ink);stroke-width:1.3}
+.tc-sp>b{bottom:12%;font-size:calc(10px * var(--tc-k));letter-spacing:.08em}
+.tc-sp-main{border-width:calc(3px * var(--tc-k))}
+.tc-sp-main .tc-glyph{width:50%;height:50%;margin-top:-18%}
+.tc-sp-main>b{bottom:15%;font-size:calc(13px * var(--tc-k))}
+.tc-sp-pass>b{font-size:calc(11px * var(--tc-k))}
+/* The cooling wipe (the shot's and the pass's recovery), as LIGHT's: a beat, no number. */
+.tc-sp .tc-wipe{background:conic-gradient(#0b0c0e8c calc(var(--cool,0) * 1turn),transparent 0)}
+.tc-sp.cooling .tc-wipe{opacity:1}
+/* HEAVY and ULT in a fight wear their move's own art (touchArt.ts), as the fan's skills do. */
+.tc-sp .ik-art{position:absolute;inset:0;display:none;background-image:var(--move-sheet);background-repeat:no-repeat;background-size:540% auto;background-position:var(--art-x,50%) 48.5%}
+.tc-sp[data-face="art"] .ik-art{display:block}
+.tc-sp[data-face="art"] .tc-glyph{display:none}
+.tc-sp[data-face="art"]>b{bottom:9%;padding:1.5px 4px 2px;background:#0b0c0ed1;text-shadow:none}
+/* BOOST: the boost bar as a gold ring round it (the stamina: a dash takes 20, the boost drains it), lit while boosting;
+   dim when there is not a dash left in it. DIVE (Sky Spike) the same. */
+.tc-sp-run{--ring:var(--tc-gold)}
+.tc-sp-run.boosting{border-color:var(--tc-gold);box-shadow:0 0 0 1px #0b0c0e80,0 0 calc(14px * var(--tc-k)) #f0c35a99}
+.tc-sp-run.boosting .tc-glyph{stroke:var(--tc-gold)}
+.tc-sp-run.boosting .tc-glyph .tc-fill{fill:var(--tc-gold)}
+.tc-sp-run.spent .tc-face{opacity:.45}
+/* Goal Rush's stance button: FIGHT (from the ball) with a red rim; in a fight the whole set is ringed red and BALL gold. */
+.touch-controls[data-stance="ball"] .tc-sp-side[data-face="fist"]{border-color:#ff5a6e}
+.touch-controls[data-sport="goal-rush"][data-stance="fight"] .tc-sp:not(.tc-sp-side):not(.charging){border-color:var(--tc-red);box-shadow:0 0 0 1px #0b0c0e80,0 0 calc(8px * var(--tc-k)) #cc202b80}
+.touch-controls[data-sport="goal-rush"][data-stance="fight"] .tc-sp-side{border-color:var(--tc-gold);box-shadow:0 0 0 1px #0b0c0e80,0 0 calc(10px * var(--tc-k)) #f0c35a73}
+/* SUPER: short of its charge, a small dim ring filling red (not a button: a finger there turns the view); charged, a gold
+   button that pops in. */
+.tc-sp-super.charging{pointer-events:none;background:#0b0c0e59;border-color:#fbf6ea4d;box-shadow:none}
+.tc-sp-super.charging>b{display:none}
+.tc-sp-super.charging .tc-glyph{width:52%;height:52%;margin:0;opacity:.55}
+.tc-sp-super:not(.charging){--ring:var(--tc-gold);border-color:var(--tc-gold);background:radial-gradient(circle at 50% 30%,#ffd978,#b07a12 74%);
+  box-shadow:0 0 0 1px #0b0c0e80,0 0 calc(14px * var(--tc-k)) #f0c35aa6;animation:tc-super-in .38s cubic-bezier(.2,1.5,.4,1)}
+.tc-sp-super:not(.charging) .tc-glyph{fill:#0b0c0e;stroke:#0b0c0e;stroke-width:1.2}
+.tc-sp-super:not(.charging)>b{color:#0b0c0e;text-shadow:none}
+.tc-sp-super:not(.charging)[data-face="art"]>b{color:var(--tc-paper)}
+@keyframes tc-super-in{0%{transform:scale(.6)}60%{transform:scale(1.14)}100%{transform:none}}
+@media(prefers-reduced-motion:reduce){.tc-sp-super{animation:none!important}}

@@ -18,6 +18,9 @@ import { areaAnimOf } from '../sim/areaMoves';
 export interface Transplanted {
   /** The fitted take for this moment of the move. */
   readonly clip: THREE.AnimationClip;
+  /** The take carries its own legs off the floor, so the air string's tuck (Fighter.airTuck) leaves them be: the ball
+   *  modes' sports takes (render/ball/ballMoves.ts). Unset for a borrowed move. */
+  readonly legs?: boolean;
   /** Changes as the take does (an ultimate's confirm, a form's turn), so the body starts the new one. */
   readonly phase: string;
   /** The move the action is timed by (the simulation's: the forged one). */

@@ -25,6 +25,7 @@ export class BallBadge {
     const d = v.drill, key = `${v.mutator}|${v.ranked}|${d ? `${d.id}:${d.ball}:${d.results.join('')}:${d.state}` : ''}`;
     if (key === this.key) return;
     this.key = key;
+    this.root.classList.toggle('drill', !!d);
     this.root.innerHTML = this.html(v);
   }
   private html(v: BallView) {
@@ -33,7 +34,9 @@ export class BallBadge {
     if (!d) return chips;
     const def = DRILLS[d.id], next = def.medals.find(n => d.done < n), medal = next === def.medals[0] ? 'bronze' : next === def.medals[1] ? 'silver' : 'gold';
     const dots = Array.from({ length: d.balls }, (_, i) => `<i class="${i < d.results.length ? (d.results[i] ? 'hit' : 'miss') : i === d.results.length && d.state === 'live' ? 'now' : ''}"></i>`).join('');
-    return `${chips}<div class="bb-drill"><small>BALL ${Math.min(d.balls, Math.max(1, d.ball))} / ${d.balls}</small><b>${def.line}</b><span class="bb-dots">${dots}</span>
+    // (While a ball is in play after the first, the card is its count, dots and medal alone - the line is read
+    // between balls - so it never stands on the play: on a phone it would cover the middle of the screen.)
+    return `${chips}<div class="bb-drill" data-state="${d.state}"${d.ball <= 1 ? ' data-first' : ''}><small>BALL ${Math.min(d.balls, Math.max(1, d.ball))} / ${d.balls}</small><b>${def.line}</b><span class="bb-dots">${dots}</span>
       <em>${d.done} RIGHT${next !== undefined ? ` · <u class="${medal}">${MEDAL_MARK[medal]}</u> AT ${next}` : ' · GOLD'}</em></div>`;
   }
   clear() { this.root.classList.add('hidden'); this.root.innerHTML = ''; this.key = ''; }

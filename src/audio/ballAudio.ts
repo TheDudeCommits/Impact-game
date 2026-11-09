@@ -70,6 +70,20 @@ const HEAT_REST = 3;
 const BOOM_FROM = 28;
 /** A bounce this hard (m/s into the surface) or harder is the hard take. */
 const HARD = { 'goal-rush': 9, 'sky-spike': 8 } as const;
+/** The names a moment may carry (an event's `text`: a strike's, a serve's, or an event
+ *  of a kind this file does not know yet) that the caller has lines for, so a round that adds one is called the moment
+ *  it emits it. A Goal Rush strike with `perfect: true` is a perfect strike whatever its name; a Sky Spike one is a
+ *  PERFECT SPIKE (its text SKY SPIKE). */
+export const CALLED_TEXT: Readonly<Record<string, CallerMoment>> = {
+  'PERFECT STRIKE': 'perfect-strike', 'PERFECT SHOT': 'perfect-strike', 'PERFECT SERVE': 'perfect-strike', 'PERFECT VOLLEY': 'perfect-strike',
+  'PERFECT SET': 'clever-touch', 'QUICK SET': 'clever-touch', 'BACK SET': 'clever-touch', 'JUMP SET': 'clever-touch',
+  TIP: 'clever-touch', DUMP: 'clever-touch', FEINT: 'clever-touch', 'NO-LOOK PASS': 'clever-touch', 'BACKHEEL': 'clever-touch',
+};
+/** A point won this soon (s) after its side's PERFECT SPIKE is that spike's - the stands' biggest roar. */
+const PERFECT_ROAR = 2.5;
+/** The stands' "ooh" at the commonest moments (a TACKLE, eleven a match; a DIVING DIG, two dozen) rests this long
+ *  (s), so it stays a reaction and not a murmur. */
+const OOH_REST = 7;
 
 /** What BallAudio asks of the game's mixer (CombatAudio). */
 export interface BallMixer extends CallerVoice {
@@ -130,6 +144,10 @@ export class BallAudio {
   private peaked = false;
   private matchPoint = false;
   private lastStrike?: BallEvent;
+  /** The last PERFECT SPIKE (the room's time, and its side), for the roar when it is put away; and when the
+   *  stands last "oohed" at a common moment (OOH_REST). */
+  private perfectSpike: { at: number; team?: BallTeam } | null = null;
+  private oohAt = -Infinity;
   private deficit: Record<BallTeam, number> = { red: 0, blue: 0 };
   private comeback = new Set<BallTeam>();
   private loaded = false;
@@ -168,7 +186,7 @@ export class BallAudio {
   private begin(view: BallView) {
     this.match = view.startedAt; this.heard = Math.max(0, ...view.events.map(e => e.id)); this.prev = undefined;
     this.prevTier = heatTier(view.ball.heat); this.prevClock = view.clock; this.prevBest = view.best; this.peaked = false; this.matchPoint = false;
-    this.chanting = false; this.chantFrom = Infinity; this.calmSince = Infinity; this.lastStrike = undefined;
+    this.chanting = false; this.chantFrom = Infinity; this.calmSince = Infinity; this.lastStrike = undefined; this.perfectSpike = null;
     this.deficit = { red: 0, blue: 0 }; this.comeback.clear(); this.caller.reset();
     this.music?.peak(false); this.music?.heat(0);
   }
@@ -199,11 +217,20 @@ export class BallAudio {
         this.play(this.take(sfx, e.shot ?? 'power'), at, hard, .97 + ((e.id * 7) % 7) * .01);
         // The boom under a power shot, by how hard it was struck (and under a SKY SPIKE's crack).
         if (speed >= BOOM_FROM && e.text !== 'SKY SPIKE') this.play('impact-boom', at, Math.min(1, .45 + (speed - BOOM_FROM) / 30), .96 + ((e.id * 5) % 5) * .02, 0, 3);
-        if (e.text === 'SKY SPIKE') { this.play('spike-crack', at); this.play('impact-boom', at, .5, 1.08, 0, 3); this.say('sky-spike', .15); this.react('crowd-ooh-2', .5 * side, .2); }
+        // A PERFECT SPIKE (struck from the top of the jump) cracks harder, the stands draw breath as it goes, and
+        // roar when it is put away (point); the caller names it.
+        if (e.text === 'SKY SPIKE' && e.perfect) {
+          this.play('spike-crack', at, 1.1, .96); this.play('impact-boom', at, .75, 1.02, 0, 4);
+          this.react('crowd-ooh-2', .7 * side, .08); this.say('perfect-spike', .12); this.perfectSpike = { at: e.at, team: e.team };
+        }
+        else if (e.text === 'SKY SPIKE') { this.play('spike-crack', at); this.play('impact-boom', at, .5, 1.08, 0, 3); this.say('sky-spike', .15); this.react('crowd-ooh-2', .5 * side, .2); }
         else if (e.text === 'ROLL SPIKE') { this.play('spike-crack', at, .8); this.say('roll-spike', .15); }
         else if (e.text === 'BICYCLE KICK' || e.text === 'AERIAL') this.react('crowd-ooh-1', .45 * side, .15);
         // A LINK SHOT: the crowd and the caller's moment.
         else if (e.text === 'LINK SHOT') { this.react('crowd-ooh-2', .55 * side, .1); this.say('link-shot', .2); }
+        // A perfect strike (a Goal Rush strike timed perfectly, whatever its name), or a named one the caller knows.
+        else if (e.perfect && view.mode === 'goal-rush') this.named('perfect-strike', at, side);
+        else if (e.text && CALLED_TEXT[e.text]) this.named(CALLED_TEXT[e.text], at, side);
         break;
       }
       // A TECHNIQUE DUEL - the clash's charge as the guard meets the shot, then its break; the keeper's side
@@ -232,8 +259,11 @@ export class BallAudio {
       case 'save': {
         this.play('strike-power-2', at, .8);
         if (e.text === 'PERFECT SAVE') this.play('impact-boom', at, .55, 1.1, 0, 3);
-        this.react(this.take(['crowd-ooh-1', 'crowd-ooh-2'], 'ooh'), side, .1); this.react('crowd-applause', .6 * side, .9);
-        this.say(e.text === 'PERFECT SAVE' ? 'save-perfect' : e.text === 'DIVING SAVE' ? 'save-diving' : 'save', .2);
+        // OFF THE LINE - a gasp as it nearly goes in, the long "ooh" of the one that got away, then applause.
+        const line = e.text === 'OFF THE LINE';
+        if (line) { this.react('crowd-gasp', .6, .02); this.react('crowd-ooh-1', side, .3); this.react('crowd-applause', .7 * side, 1.3); }
+        else { this.react(this.take(['crowd-ooh-1', 'crowd-ooh-2'], 'ooh'), side, .1); this.react('crowd-applause', .6 * side, .9); }
+        this.say(e.text === 'PERFECT SAVE' ? 'save-perfect' : e.text === 'DIVING SAVE' ? 'save-diving' : line ? 'off-the-line' : 'save', .2);
         break;
       }
       case 'perfect':
@@ -254,6 +284,7 @@ export class BallAudio {
         if (!view.practice) {
           this.centred('whistle-serve', 1, .5);
           if (view.score.red + view.score.blue === 0) this.say('serve', 1.1);
+          else if (e.text && CALLED_TEXT[e.text]) this.named(CALLED_TEXT[e.text], at, side);
         }
         break;
       case 'kickoff': if (!view.practice) this.mix.cheer(.5); break;
@@ -264,19 +295,40 @@ export class BallAudio {
         break;
       case 'fever':
         this.centred('riser-fever'); this.react('crowd-roar-1', .6, .3); this.mix.cheer(1);
-        this.say('fever', .4);
+        // (Goal Rush's FINAL PUSH is a 'fever' too: the caller's fever lines are Sky Spike's FEVER RALLY.)
+        if (view.mode === 'sky-spike') this.say('fever', .4);
         break;
       case 'match-point': this.matchPoint = true; this.mix.cheer(.8); this.say('match-point', .5); break;
       case 'rally': this.mix.cheer(.5); this.react('crowd-applause', .4, .1); this.say('rally', .2); break;
       case 'bowled': this.play('bowled', at); this.react('crowd-ooh-2', .4 * side, .1); break;
       // Goal Rush's fights heard. A WIPE-OUT: the knockout blow and the boom under it, the stands roaring for
       // their own side's and gasping at the other's. A BUMP: the body flattened, an "ooh".
-      case 'wipeout':
+      // A TAKEDOWN's own wipe-out (the room sends both the same step) is the TAKEDOWN's to call, and its gasp
+      // has been heard; the wipe-out's roar for the home side's comes after it.
+      case 'wipeout': {
+        const takedown = fresh.some(f => f.kind === 'tackle' && f.text === 'TAKEDOWN' && f.targetId === e.targetId);
         this.play('wipeout-hit', at, 1, .97 + ((e.id * 3) % 4) * .02, 0, 5); this.play('impact-boom', at, .6, .92, .1, 4);
-        if (mine) this.react('crowd-roar-1', .5, .12); else this.react('crowd-gasp', .75, .05);
+        if (mine) this.react('crowd-roar-1', .5, takedown ? .4 : .12); else if (!takedown) this.react('crowd-gasp', .75, .05);
         this.react(this.take(['crowd-ooh-1', 'crowd-ooh-2'], 'ooh'), .55 * side, .35);
+        if (!takedown) this.say('wipeout', .3);
         break;
-      case 'demo': this.play('bowled', at, 1.1); this.react('crowd-ooh-2', .45 * side, .1); break;
+      }
+      case 'demo': this.play('bowled', at, 1.1); this.react('crowd-ooh-2', .45 * side, .1); this.say('bump', .15); break;
+      // Goal Rush's FIGHT stance put the one on the ball down - a TACKLE (weight under the blow, an "ooh") or a
+      // TAKEDOWN (wiped out: the whole bowl gasps).
+      case 'tackle':
+        if (e.text === 'TAKEDOWN') { this.react('crowd-gasp', .9, .02); this.say('takedown', .2); }
+        else { this.play('impact-boom', at, .4, 1.06, 0, 3); this.ooh(.5 * side, .08); this.say('tackle', .2); }
+        break;
+      // Sky Spike's DIG (thirty a match: the caller now and then) and DIVING DIG; a PERFECT SPIKE dug up is the
+      // stands' "ooh" and their applause.
+      case 'dig': {
+        const dived = e.text === 'DIVING DIG', spike = this.perfectSpike && this.perfectSpike.team !== e.team && e.at - this.perfectSpike.at < 1.5;
+        if (spike) { this.perfectSpike = null; this.react('crowd-ooh-1', .8 * side, .05); this.react('crowd-applause', .55 * side, .9); }
+        else if (dived) this.ooh(.45 * side, .08);
+        this.say(dived ? 'diving-dig' : 'dig', .12);
+        break;
+      }
       case 'charm': this.play(CHARM[e.charm ?? 'charge'], at, e.actorId && view.seats.some(s => s.id === e.actorId && s.team === home) ? 1.2 : 1); break;
       case 'shield': this.play('shield-hit', at); this.react(this.take(['crowd-ooh-1', 'crowd-ooh-2'], 'ooh'), .6 * side, .1); break;
       case 'accolade':
@@ -291,8 +343,23 @@ export class BallAudio {
         break;
       }
       case 'win': this.end(e, view, home); break;
-      default: break;
+      default: if (e.text && CALLED_TEXT[e.text]) this.named(CALLED_TEXT[e.text], at, side); break;
     }
+  }
+
+  /** An "ooh" at a common moment, unless the stands made one at another lately (OOH_REST). */
+  private ooh(scale: number, delay: number) {
+    const now = this.clock();
+    if (now - this.oohAt < OOH_REST) return;
+    this.oohAt = now; this.react(this.take(['crowd-ooh-2', 'crowd-ooh-1'], 'ooh'), scale, delay);
+  }
+
+  /** A named moment the caller has lines for (CALLED_TEXT) - a perfect strike draws an "ooh" from the stands,
+   *  a clever touch a ripple of applause. */
+  private named(moment: CallerMoment, at: Vec3, side: number) {
+    if (moment === 'perfect-strike') { this.play('impact-boom', at, .55, 1.04, 0, 3); this.react('crowd-ooh-2', .6 * side, .1); }
+    else if (moment === 'clever-touch') this.react('crowd-applause', .35 * side, .2);
+    this.say(moment, .15);
   }
 
   private goal(e: BallEvent, view: BallView, home: BallTeam | null, fresh: BallEvent[]) {
@@ -346,7 +413,10 @@ export class BallAudio {
     if (!view.practice) this.centred('whistle-point', 1, .12);
     if (POINT_WON.has(e.kind)) {
       const rally = Math.min(1, (view.rally || 1) / 8);
-      this.react(rally > .6 || worth > 1 || e.text === 'SUPER SHOT' ? 'crowd-roar-2' : 'crowd-roar-1', (view.practice ? .4 : .55 + .45 * rally) * side, .05);
+      // A PERFECT SPIKE put away brings the house down, however short the rally.
+      const perfect = !!this.perfectSpike && this.perfectSpike.team === e.team && e.at - this.perfectSpike.at < PERFECT_ROAR;
+      this.perfectSpike = null;
+      this.react(perfect || rally > .6 || worth > 1 || e.text === 'SUPER SHOT' ? 'crowd-roar-2' : 'crowd-roar-1', (view.practice ? .4 : perfect ? 1 : .55 + .45 * rally) * side, .05);
       if (!mine && !view.practice) this.react('crowd-groan', .4, .2);
       this.mix.cheer(.8 + .4 * rally);
       if (!view.practice) this.music?.punch(.5);

@@ -26,6 +26,7 @@ import { signInWithPlayerTwo } from './playerTwo';
 import { inPlayerTwo } from '../../boot/playerTwo';
 import { startProgressSync } from '../progress/sync';
 import { onRoomEmote, socialRoom } from '../../social/roomSocial';
+import { ballPay } from '../ball/ballPay';
 
 let shop: Shop | undefined;
 let started = false;
@@ -261,10 +262,17 @@ function onDevice(report: Report) {
     window.setTimeout(() => { if (!run.shown && !('refused' in plausible(report, false))) void account.report(report).catch(() => undefined); }, 60_000);
     return;
   }
+  payNote(report, report.place === 1 ? 'THE WIN EARNED' : 'THIS MATCH EARNED', false);
+}
+/** A versus match's pay in a passing toast - or, for a ball match, in its results card (ui/ball/ballPay.ts: the toast
+ *  would be gone before their results came). */
+function payNote(report: Report, kicker: string, verified: boolean) {
+  const held = ballPay.host();
+  if (held) { void showPay(held, report, kicker, account, verified).catch(() => undefined); return; }
   const toast = document.createElement('div');
   toast.className = 'shop-toast';
   (document.querySelector('#interface') ?? document.body).append(toast);
-  void showPay(toast, report, report.place === 1 ? 'THE WIN EARNED' : 'THIS MATCH EARNED', account).catch(() => undefined).finally(() => window.setTimeout(() => toast.remove(), 7200));
+  void showPay(toast, report, kicker, account, verified).catch(() => undefined).finally(() => window.setTimeout(() => toast.remove(), 7200));
 }
 
 /** Main-game matches, watched from outside once a second while one is on: the result is reported when it is decided, and its pay shown in a note. */
@@ -285,9 +293,6 @@ function watchMatches() {
     if (me && evidence.state?.matchId) wearSelf(me.id, me.fighter as FighterId);
     const report = watcher.look(state, evidence.playerId ?? '', performance.now() / 1000);
     if (!report) return;
-    const toast = document.createElement('div');
-    toast.className = 'shop-toast';
-    (document.querySelector('#interface') ?? document.body).append(toast);
-    void showPay(toast, report, report.mode !== 'survival' && report.place === 1 ? 'THE WIN EARNED' : 'THIS MATCH EARNED', account, true).catch(() => undefined).finally(() => window.setTimeout(() => toast.remove(), 7200));
+    payNote(report, report.mode !== 'survival' && report.place === 1 ? 'THE WIN EARNED' : 'THIS MATCH EARNED', true);
   }, 1000);
 }

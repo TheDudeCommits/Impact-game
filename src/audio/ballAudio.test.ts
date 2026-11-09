@@ -122,6 +122,46 @@ describe('the ball modes\' sound', () => {
     expect(played).toContain('bowled');
   });
 
+  it('calls the stance fights, the saves on the line and the spikes, and the stands react to them', () => {
+    const lines = (moment: CallerMoment) => callerLines(moment);
+    // A TAKEDOWN and its own wipe-out, the same step: the whole bowl gasps once, the caller says TAKEDOWN, never the wipe-out.
+    let r = rig(.8);
+    r.audio.update(snap(view(), 10), 'me');
+    r.audio.update(snap(view({ events: [event(1, 'tackle', { team: 'red', actorId: 'me', targetId: 'them', text: 'TAKEDOWN' }), event(2, 'wipeout', { team: 'red', actorId: 'me', targetId: 'them', value: 3 })] }), 10.05), 'me');
+    expect(r.stands.filter(s => s === 'crowd-gasp')).toHaveLength(1);
+    expect(r.stands).toContain('crowd-roar-1');
+    expect(r.said).toHaveLength(1); expect(lines('takedown')).toContain(r.said[0]);
+    // A plain wipe-out is called as one; a save OFF THE LINE has its gasp, its "ooh" and its own call.
+    r = rig(.8);
+    r.audio.update(snap(view(), 10), 'me');
+    r.audio.update(snap(view({ events: [event(1, 'wipeout', { team: 'blue', targetId: 'me', value: 3 })] }), 10.05), 'me');
+    expect(lines('wipeout')).toContain(r.said[0]);
+    r.tick(20); r.stands.length = 0;
+    r.audio.update(snap(view({ events: [event(2, 'save', { team: 'red', actorId: 'me', text: 'OFF THE LINE', shot: 'save' })] }), 30), 'me');
+    expect(r.stands).toEqual(expect.arrayContaining(['crowd-gasp', 'crowd-ooh-1', 'crowd-applause']));
+    expect(lines('off-the-line')).toContain(r.said[1]);
+    // A PERFECT SPIKE: the crack, its own call, a breath from the stands, and their biggest roar when it is put away.
+    r = rig(.8);
+    r.audio.update(snap(view({ mode: 'sky-spike' }), 10), 'me');
+    r.audio.update(snap(view({ mode: 'sky-spike', events: [event(1, 'strike', { team: 'red', actorId: 'me', shot: 'spike', value: 30, text: 'SKY SPIKE', perfect: true, at: 10 })] }), 10.05), 'me');
+    expect(r.played).toContain('spike-crack');
+    expect(lines('perfect-spike')).toContain(r.said[0]);
+    r.audio.update(snap(view({ mode: 'sky-spike', phase: 'scored', rally: 1, ball: ball({ held: true }), events: [event(2, 'kill', { team: 'red', x: 2, z: 5, at: 10.6 })] }), 10.6), 'me');
+    expect(r.stands).toContain('crowd-roar-2');
+    // A DIVING DIG is called; a Goal Rush strike timed perfectly, or one named PERFECT SET, waits for its moment's lines.
+    r = rig(.8);
+    r.audio.update(snap(view({ mode: 'sky-spike' }), 10), 'me');
+    r.audio.update(snap(view({ mode: 'sky-spike', events: [event(1, 'dig', { team: 'red', actorId: 'me', text: 'DIVING DIG', value: 20 })] }), 10.05), 'me');
+    expect(lines('diving-dig')).toContain(r.said[0]);
+    r = rig(.8);
+    r.audio.update(snap(view(), 10), 'me');
+    r.audio.update(snap(view({ events: [event(1, 'strike', { team: 'red', actorId: 'me', shot: 'power', value: 32, perfect: true })] }), 10.05), 'me');
+    expect(lines('perfect-strike')).toContain(r.said[0]);
+    r.tick(20);
+    r.audio.update(snap(view({ events: [event(2, 'strike', { team: 'red', actorId: 'me', shot: 'pop', value: 9, text: 'PERFECT SET' })] }), 30), 'me');
+    expect(lines('clever-touch')).toContain(r.said[1]);
+  });
+
   it('lights the heat tier by tier and holds OVERDRIVE\'s roar on the ball, let go when it cools', () => {
     const { audio, played, loops } = rig();
     audio.update(snap(view({ ball: ball({ heat: .5 }) }), 10), 'me');

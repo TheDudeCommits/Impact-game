@@ -239,6 +239,60 @@
      "/assets/audio/ball/caller/grandpa/duel-won-1.m4a",
      "/assets/audio/ball/caller/grandpa/duel-won-2.m4a",
      "/assets/audio/ball/caller/grandpa/duel-won-3.m4a"
+    ],
+    "tackle": [
+     "/assets/audio/ball/caller/grandpa/tackle-1.m4a",
+     "/assets/audio/ball/caller/grandpa/tackle-2.m4a",
+     "/assets/audio/ball/caller/grandpa/tackle-3.m4a",
+     "/assets/audio/ball/caller/grandpa/tackle-4.m4a"
+    ],
+    "takedown": [
+     "/assets/audio/ball/caller/grandpa/takedown-1.m4a",
+     "/assets/audio/ball/caller/grandpa/takedown-2.m4a",
+     "/assets/audio/ball/caller/grandpa/takedown-3.m4a"
+    ],
+    "wipeout": [
+     "/assets/audio/ball/caller/grandpa/wipeout-1.m4a",
+     "/assets/audio/ball/caller/grandpa/wipeout-2.m4a",
+     "/assets/audio/ball/caller/grandpa/wipeout-3.m4a",
+     "/assets/audio/ball/caller/grandpa/wipeout-4.m4a"
+    ],
+    "bump": [
+     "/assets/audio/ball/caller/grandpa/bump-1.m4a",
+     "/assets/audio/ball/caller/grandpa/bump-2.m4a",
+     "/assets/audio/ball/caller/grandpa/bump-3.m4a"
+    ],
+    "off-the-line": [
+     "/assets/audio/ball/caller/grandpa/off-the-line-1.m4a",
+     "/assets/audio/ball/caller/grandpa/off-the-line-2.m4a",
+     "/assets/audio/ball/caller/grandpa/off-the-line-3.m4a",
+     "/assets/audio/ball/caller/grandpa/off-the-line-4.m4a"
+    ],
+    "perfect-spike": [
+     "/assets/audio/ball/caller/grandpa/perfect-spike-1.m4a",
+     "/assets/audio/ball/caller/grandpa/perfect-spike-2.m4a",
+     "/assets/audio/ball/caller/grandpa/perfect-spike-3.m4a",
+     "/assets/audio/ball/caller/grandpa/perfect-spike-4.m4a"
+    ],
+    "dig": [
+     "/assets/audio/ball/caller/grandpa/dig-1.m4a",
+     "/assets/audio/ball/caller/grandpa/dig-2.m4a",
+     "/assets/audio/ball/caller/grandpa/dig-3.m4a"
+    ],
+    "diving-dig": [
+     "/assets/audio/ball/caller/grandpa/diving-dig-1.m4a",
+     "/assets/audio/ball/caller/grandpa/diving-dig-2.m4a",
+     "/assets/audio/ball/caller/grandpa/diving-dig-3.m4a"
+    ],
+    "perfect-strike": [
+     "/assets/audio/ball/caller/grandpa/perfect-strike-1.m4a",
+     "/assets/audio/ball/caller/grandpa/perfect-strike-2.m4a",
+     "/assets/audio/ball/caller/grandpa/perfect-strike-3.m4a"
+    ],
+    "clever-touch": [
+     "/assets/audio/ball/caller/grandpa/clever-touch-2.m4a",
+     "/assets/audio/ball/caller/grandpa/clever-touch-3.m4a",
+     "/assets/audio/ball/caller/grandpa/clever-touch-4.m4a"
     ]
    }
   },
@@ -480,6 +534,61 @@
      "/assets/audio/ball/caller/arena/duel-won-1.m4a",
      "/assets/audio/ball/caller/arena/duel-won-2.m4a",
      "/assets/audio/ball/caller/arena/duel-won-3.m4a"
+    ],
+    "tackle": [
+     "/assets/audio/ball/caller/arena/tackle-1.m4a",
+     "/assets/audio/ball/caller/arena/tackle-2.m4a",
+     "/assets/audio/ball/caller/arena/tackle-3.m4a",
+     "/assets/audio/ball/caller/arena/tackle-4.m4a"
+    ],
+    "takedown": [
+     "/assets/audio/ball/caller/arena/takedown-1.m4a",
+     "/assets/audio/ball/caller/arena/takedown-2.m4a",
+     "/assets/audio/ball/caller/arena/takedown-3.m4a"
+    ],
+    "wipeout": [
+     "/assets/audio/ball/caller/arena/wipeout-1.m4a",
+     "/assets/audio/ball/caller/arena/wipeout-2.m4a",
+     "/assets/audio/ball/caller/arena/wipeout-3.m4a",
+     "/assets/audio/ball/caller/arena/wipeout-4.m4a"
+    ],
+    "bump": [
+     "/assets/audio/ball/caller/arena/bump-1.m4a",
+     "/assets/audio/ball/caller/arena/bump-2.m4a",
+     "/assets/audio/ball/caller/arena/bump-3.m4a"
+    ],
+    "off-the-line": [
+     "/assets/audio/ball/caller/arena/off-the-line-1.m4a",
+     "/assets/audio/ball/caller/arena/off-the-line-2.m4a",
+     "/assets/audio/ball/caller/arena/off-the-line-3.m4a",
+     "/assets/audio/ball/caller/arena/off-the-line-4.m4a"
+    ],
+    "perfect-spike": [
+     "/assets/audio/ball/caller/arena/perfect-spike-1.m4a",
+     "/assets/audio/ball/caller/arena/perfect-spike-2.m4a",
+     "/assets/audio/ball/caller/arena/perfect-spike-3.m4a",
+     "/assets/audio/ball/caller/arena/perfect-spike-4.m4a"
+    ],
+    "dig": [
+     "/assets/audio/ball/caller/arena/dig-1.m4a",
+     "/assets/audio/ball/caller/arena/dig-2.m4a",
+     "/assets/audio/ball/caller/arena/dig-3.m4a"
+    ],
+    "diving-dig": [
+     "/assets/audio/ball/caller/arena/diving-dig-1.m4a",
+     "/assets/audio/ball/caller/arena/diving-dig-2.m4a",
+     "/assets/audio/ball/caller/arena/diving-dig-3.m4a"
+    ],
+    "perfect-strike": [
+     "/assets/audio/ball/caller/arena/perfect-strike-1.m4a",
+     "/assets/audio/ball/caller/arena/perfect-strike-2.m4a",
+     "/assets/audio/ball/caller/arena/perfect-strike-3.m4a"
+    ],
+    "clever-touch": [
+     "/assets/audio/ball/caller/arena/clever-touch-1.m4a",
+     "/assets/audio/ball/caller/arena/clever-touch-2.m4a",
+     "/assets/audio/ball/caller/arena/clever-touch-3.m4a",
+     "/assets/audio/ball/caller/arena/clever-touch-4.m4a"
     ]
    }
   }

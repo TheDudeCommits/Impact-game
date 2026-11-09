@@ -130,7 +130,7 @@ export class GameMenu {
   private drawHowTo() {
     const info = MODES[this.mode!];
     this.howto.innerHTML = `<h3>${escape(info.name)}</h3><p class="gm-goal">${escape(info.goal)}</p><p class="gm-win">${escape(info.win)}</p>
-      <h3>HOW TO PLAY</h3><ol class="ux-keys">${info.howTo.map(line => `<li>${promptText(line)}</li>`).join('')}</ol>
+      <h3>HOW TO PLAY</h3><ol class="ux-keys">${info.howTo.map(line => `<li>${promptText(line, { sport: info.id === 'goal-rush' || info.id === 'sky-spike' ? { mode: info.id } : null })}</li>`).join('')}</ol>
       <h3>DEFENCE BASICS</h3><ul class="gm-defence ux-keys ux-defence">${defenceBasics()}</ul>`;
   }
   private drawLive(frame = this.modes.frame) {

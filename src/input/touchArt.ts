@@ -20,7 +20,9 @@ export class TouchArt {
   private readonly artists = new Map<string, MoveCardArt>();
   private fighter = '';
   private sheetShown = '';
-  constructor(root: HTMLElement, private readonly buttons: (id: string) => HTMLElement | undefined, private readonly face: HTMLElement | undefined) {
+  /** `more`: a second button showing a slot's art - the ball modes' set (input/sportTouch.ts) shows HEAVY's and ULT's in
+   *  Goal Rush's FIGHT stance. */
+  constructor(root: HTMLElement, private readonly buttons: (id: string) => HTMLElement | undefined, private readonly face: HTMLElement | undefined, private readonly more: (id: string) => HTMLElement | undefined = () => undefined) {
     this.sheet = new MoveSheet(sheet => root.style.setProperty('--move-sheet', `url('${moveSheetUrl(sheet)}')`));
   }
   update(self: PlayerState) {
@@ -30,10 +32,10 @@ export class TouchArt {
       for (const form of moveSheetsFor(fighter)) this.sheet.warm(form);
       if (this.face) this.face.innerHTML = mangaPortrait(fighter);
     } else if (sheet !== this.sheetShown) { this.sheetShown = sheet; this.sheet.want(sheet); }
-    for (const [slot, panel] of SKILLS) {
-      const node = this.buttons(slot); if (!node) continue;
-      let artist = this.artists.get(slot);
-      if (!artist) { artist = new MoveCardArt(node); this.artists.set(slot, artist); }
+    for (const [slot, panel] of SKILLS) for (const [key, node] of [[slot, this.buttons(slot)], [`${slot}+`, this.more(slot)]] as const) {
+      if (!node) continue;
+      let artist = this.artists.get(key);
+      if (!artist) { artist = new MoveCardArt(node); this.artists.set(key, artist); }
       artist.show(...moveArtSource(panel, fighter, slotNames(self, slot), awakened));
     }
   }

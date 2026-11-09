@@ -29,6 +29,11 @@ const PEAKS = {
   screamer: {frame: 1, lines: 1, linesFor: .7, chroma: 1, ink: .72, zoom: 1, shake: 1, punch: 2},
   clash: {frame: .9, lines: .85, linesFor: .4, chroma: 1, ink: 0, zoom: .8, shake: .8, punch: 2},
   perfect: {frame: .7, lines: .5, linesFor: .25, chroma: .95, ink: 0, zoom: .7, shake: .55, punch: 1},
+  // Goal Rush's PERFECT STRIKE (a ball met just as it arrived): a crack of the impact frame and the lines, the
+  // screen punched, a touch of the lens - the shot a player is proud of. The FINAL PUSH: the lines run and the screen
+  // breathes in, nothing printed.
+  perfectStrike: {frame: .6, lines: .75, linesFor: .3, chroma: .9, ink: 0, zoom: .75, shake: .4, punch: 1, near: 30},
+  finalPush: {frame: 0, lines: .55, linesFor: .6, chroma: 0, ink: 0, zoom: .5, shake: 0, punch: 0},
   // A SKY SPIKE struck is a crack on the screen, not a jolt of the lens: it comes every crossing of a rally, so
   // it throws no impact frame (the kill it makes does) and moves no lens.
   skySpike: {frame: 0, lines: .5, linesFor: .16, chroma: 0, ink: 0, zoom: .4, shake: 0, punch: 0},
@@ -118,10 +123,13 @@ export class BallMoments {
       case 'super': this.peak(PEAKS.super, at); break;
       case 'goal': case 'own-goal': this.peak(e.text === 'SUPER GOAL' || (e.value ?? 0) >= SCREAMER ? PEAKS.screamer : PEAKS.goal, at); break;
       case 'clash': this.clashAt = e.at + CLASH.hold; this.clashPoint.copy(at); this.shake(.35, at, 0); if (this.clashAt <= now) { this.clashAt = Infinity; this.peak(PEAKS.clash, at); } break;
-      case 'save': if (e.text === 'PERFECT SAVE') this.peak(PEAKS.perfect, at); break;
+      // (A DIVING SAVE and one OFF THE LINE are as big a moment as a PERFECT SAVE.)
+      case 'save': if (e.text === 'PERFECT SAVE' || e.text === 'DIVING SAVE' || e.text === 'OFF THE LINE') this.peak(PEAKS.perfect, at); break;
+      case 'fever': if (this.mode === 'goal-rush') this.peak(PEAKS.finalPush, at); break;
       case 'perfect': this.peak(PEAKS.perfect, at); break;
       case 'strike':
-        if (e.text === 'SKY SPIKE' || e.text === 'ROLL SPIKE') this.peak(PEAKS.skySpike, at);
+        if (e.perfect && this.mode === 'goal-rush') this.peak(PEAKS.perfectStrike, at);
+        else if (e.text === 'SKY SPIKE' || e.text === 'ROLL SPIKE') this.peak(PEAKS.skySpike, at);
         else if (e.text === 'LINK SHOT') this.peak(PEAKS.link, at);
         else if ((e.value ?? 0) >= POWER) this.peak(PEAKS.power, at);
         break;

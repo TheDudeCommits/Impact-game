@@ -198,9 +198,11 @@ export class ModeSheet {
     const go = goLabel(this.mode, v.go, fighterCaption(fighter), this.locked(fighter), this.joining ? this.code : undefined);
     const art = siteUrl(info.cover ?? `/assets/home/modes/${info.art}.webp`);
     const facts = [info.facts.players, info.facts.length, info.facts.lives].map(f => `<span>${escape(f)}</span>`).join('');
+    // (A ball mode's lines name its own touch set's buttons on a phone: PASS, SHOOT, BOOST ... input/sportTouch.ts.)
+    const keys = { sport: this.mode === 'goal-rush' || this.mode === 'sky-spike' ? { mode: this.mode } : null };
     const howTo = this.panels
-      ? `<div class="ms-panels">${info.howTo.map((line, i) => `<figure class="ms-panel"><span class="ms-pic" style="${this.panelArt(info.panels[i], fighter)}"><b>${i + 1}</b></span><figcaption class="ux-keys">${promptText(line)}</figcaption></figure>`).join('')}</div>`
-      : `<ol class="ms-bullets ux-keys">${info.howTo.map(line => `<li><span>${promptText(line)}</span></li>`).join('')}</ol>`;
+      ? `<div class="ms-panels">${info.howTo.map((line, i) => `<figure class="ms-panel"><span class="ms-pic" style="${this.panelArt(info.panels[i], fighter)}"><b>${i + 1}</b></span><figcaption class="ux-keys">${promptText(line, keys)}</figcaption></figure>`).join('')}</div>`
+      : `<ol class="ms-bullets ux-keys">${info.howTo.map(line => `<li><span>${promptText(line, keys)}</span></li>`).join('')}</ol>`;
     // Every mode's blows can be blocked and parried, the horde's too: the PARRY stream's three lessons (defence.ts).
     const defence = `<details class="ms-defence" open><summary>DEFENCE BASICS</summary><ul class="ux-keys ux-defence">${defenceBasics()}</ul></details>`;
     const tabs = VARIANT_ORDER.filter(id => info.variants[id]).map(id => { const each = info.variants[id]!; return `<button type="button" role="tab" data-ms-variant="${id}" aria-selected="${id === this.variant}" tabindex="${id === this.variant ? 0 : -1}">${escape(each.label)}<small>${escape(each.tag)}</small></button>`; }).join('');

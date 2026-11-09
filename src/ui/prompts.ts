@@ -1,6 +1,8 @@
 import { getBindings, keyName, pauseKey, type BindingAction, type CombatAction } from '../input/bindings';
 import { actionControl, actionKey, padKey, type PadControl } from '../input/glyphs';
 import type { PadFamily } from '../input/gamepad';
+import { sportTouchName } from '../input/sportTouch';
+import type { BallModeId } from '../game/ball/model';
 import './prompts.css';
 
 export type PromptDevice = 'keyboard' | 'controller' | 'touch';
@@ -16,7 +18,12 @@ export interface PromptOptions {
   hold?: boolean;
   /** A short detail after the verb: `· 2 POINTS`, `◈ 425`. */
   detail?: string;
+  /** On a touch screen, the ball modes' own set (input/sportTouch.ts) names the buttons: PASS, SHOOT, BOOST, FIGHT ... By
+   *  default the match on screen says which (currentSport); null: the fight's fan whatever is on screen. */
+  sport?: PromptSport | null;
 }
+/** A ball match's touch set: its mode, and Goal Rush's FIGHT stance (its buttons read as fight moves). */
+export interface PromptSport { mode: BallModeId; fight?: boolean }
 
 const escape = (value: string) => value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const COMBAT = new Set<string>(['jump', 'dash', 'guard', 'target', 'light', 'heavy', 'special', 'ultimate', 'area', 'awaken']);
@@ -47,6 +54,16 @@ export function currentDevice(): { device: PromptDevice; family: PadFamily } {
   return { device, family };
 }
 
+/** What a ball match's touch set shares with the fight's: the stick, PAUSE and the back cross. */
+const SHARED_TOUCH = new Set<PromptAction>(['forward', 'left', 'backward', 'right', 'menu', 'back']);
+/** The ball match on screen, as the HUD marks it (#interface[data-hud], and Goal Rush's [data-ball-stance]): its touch set
+ *  names the buttons (input/sportTouch.ts). Null outside one. */
+export function currentSport(): PromptSport | null {
+  const root = typeof document === 'object' && typeof document.querySelector === 'function' ? document.querySelector<HTMLElement>('#interface') : null;
+  const hud = root?.dataset.hud;
+  return hud === 'goal-rush' || hud === 'sky-spike' ? { mode: hud, fight: root?.dataset.ballStance === 'fight' } : null;
+}
+
 /** The pad control an action is on, or undefined when it has none (the mouse's click). AWAKEN's is the first of its
  *  two (glyphs.ts chordControls): its prompt (promptKey) draws both. */
 export function padControlFor(action: PromptAction): PadControl | undefined {
@@ -66,14 +83,15 @@ export function promptKey(action: PromptAction, options: PromptOptions = {}): st
   const seen = options.device && options.family ? undefined : currentDevice();
   const device = options.device ?? seen!.device, family = options.family ?? seen?.family ?? 'generic';
   if (device === 'controller') { if (action === 'awaken') return actionKey('awaken', family); const control = padControlFor(action); return control ? padKey(family, control) : ''; }
-  if (device === 'touch') return touchKey(action);
+  if (device === 'touch') return touchKey(action, options.sport === undefined ? currentSport() : options.sport);
   return `<kbd>${escape(keyLabel(action))}</kbd>`;
 }
 /** The on-screen button's own label for an action (input/touch.ts), or undefined where the thing is tapped. */
 export const touchLabel = (action: PromptAction): string | undefined => TOUCH_NAMES[action];
-/** The on-screen button for an action, as a <kbd> (an ink circle with its label), or empty where the thing is tapped. */
-export function touchKey(action: PromptAction): string {
-  const name = TOUCH_NAMES[action];
+/** The on-screen button for an action, as a <kbd> (an ink circle with its label), or empty where the thing is tapped.
+ *  In a ball match (`sport`) the sports set's own buttons: an action it has no button for has no key. */
+export function touchKey(action: PromptAction, sport: PromptSport | null = null): string {
+  const name = sport ? sportTouchName(sport.mode, !!sport.fight, action) ?? (SHARED_TOUCH.has(action) ? TOUCH_NAMES[action] : undefined) : TOUCH_NAMES[action];
   return name ? `<kbd class="touch-key">${escape(name)}</kbd>` : '';
 }
 
