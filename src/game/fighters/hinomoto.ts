@@ -12,5 +12,8 @@ export const HINOMOTO_COMBOS:ComboRow={lh:{name:'Old General\'s Reversal',range:
 export const HINOMOTO_CONTACTS={light:.435,heavy:.495,special:.58,ultimate:.125,rush1:.435,rush2:.53,rush3:.495,combos:{lh:.53,llh:.55,lllh:.495,llls:.58,airHeavy:.495,airSpecial:.58}}as const;
 export const HINOMOTO_AWAKENING={name:'THE OLD FIRE',clip:'THE OLD FIRE',duration:2.3,entryDuration:.9,beats:{lower:.20,compress:.42,release:.64,settle:.86},manualOnly:true,canonScope:'Unsealed on his own two-armed costume. Heat is presentation only; no passive burn or autonomous attacks.'}as const;
 export const hinomotoStrikeJoint=()=> 'RightHand' as const;
-/** Measured actual sword endpoints in the exported RightHand joint coordinates. */
-export const HINOMOTO_SWORD_SOCKET={"bone":"RightHand","tip":[0.14236698759756772,0.24956964307522972,0.9367059995696284],"heel":[9.150698868465312e-05,0.1336377974888034,0.15291268431425065],"grip":[-0.028225480932581704,0.10018940842495866,-0.007304677982070851]}as const;
+/** Measured actual sword endpoints in the exported RightHand joint coordinates: the cane's tip, the heel (where the thin blade
+ *  leaves the metal collar) and the grip (the handle under the fist), measured off the cane as it is drawn now, seated in his
+ *  fist with one mount in every clip. The earlier points lay along the sword's bind line, 80 degrees off the drawn blade, so
+ *  the slash fire (HinomotoBlaze, heel to strike point) and the strike socket (engine/client/sockets.ts) were drawn off it. */
+export const HINOMOTO_SWORD_SOCKET={"bone":"RightHand","tip":[0.74318,0.62692,-0.01527],"heel":[0.15409,0.20634,0.02638],"grip":[-0.0063,0.09213,0.03732]}as const;

@@ -39,8 +39,9 @@ describe('the ball cam', () => {
     expect(Math.abs(yaw)).toBeLessThan(.05);
   });
   it('in the third it attacks, turns a share of the way to the goal so both are in the frame', () => {
-    const cam = new BallCam(), r = rig(), self = new THREE.Vector3(8, 0, 12), ball = new THREE.Vector3(2, .6, 18);
-    const yaw = run(cam, r, 120, 0, self, ball), toBall = Math.atan2(-6, 6), toGoal = Math.atan2(-8, GOAL_RULES.halfZ - 12);
+    // (Eight metres from the goal it attacks, the player six behind it: laid from the goal line, as the pitch's size goes.)
+    const cam = new BallCam(), r = rig(), self = new THREE.Vector3(8, 0, GOAL_RULES.halfZ - 14), ball = new THREE.Vector3(2, .6, GOAL_RULES.halfZ - 8);
+    const yaw = run(cam, r, 120, 0, self, ball), toBall = Math.atan2(-6, 6), toGoal = Math.atan2(-8, 14);
     expect(yaw).toBeGreaterThan(toBall + .1);
     expect(yaw).toBeLessThan(toGoal);
     // In its own half it is the ball alone.

@@ -1,5 +1,6 @@
 import {GOAL_RULES, SPIKE_RULES, otherTeam, type BallEvent, type BallModeId, type BallState, type BallTeam, type BallView, type ShotKind} from './model';
 import {landing} from './physics';
+import {SPIKE_SET} from './strike';
 
 /** Training drills: ten scripted drills on top of FREE PLAY, five
  *  a mode, each ten balls from the ball machine and a bronze, silver or gold medal for how many were done right. The
@@ -161,35 +162,38 @@ export class DrillRunner {
   private goalFeed(host: DrillHost, team: BallTeam): DrillFeed {
     const R = GOAL_RULES, s = team === 'red' ? 1 : -1, goal = s * R.halfZ, g = R.gravity * (host.ball.grav || 1), r = R.ballRadius * (host.ball.size || 1);
     const face = s > 0 ? 0 : Math.PI;
+    // (Every spot is laid as a share of the pitch's half-width X and half-length Z, so the drills follow its size.)
+    const X = R.halfX, Z = R.halfZ;
     switch (this.id) {
       case 'gr-volley': {
         // A cross from the wing to about head height a stride in front of the person, at the edge of the box.
-        const spot = {x: this.rand(-2, 2), z: goal - s * 11};
-        const from = {x: this.side * 14, y: .9, z: goal - s * this.rand(6, 9)};
+        const spot = {x: this.rand(-2, 2), z: goal - s * .42 * Z};
+        const from = {x: this.side * (X - 3), y: .9, z: goal - s * this.rand(.24, .34) * Z};
         return {ball: {...from, ...arc(from, spot.x, 1.9, spot.z + s * 1.2, 1.15, g, R.drag)}, team, at: {x: spot.x, z: spot.z, yaw: face}};
       }
       case 'gr-curve': {
         // At rest off to one side; the ring in the far top corner, which a curve bends into.
-        const ball = {x: this.side * this.rand(8, 11), y: r + .02, z: goal - s * this.rand(12, 15)};
+        const ball = {x: this.side * this.rand(.44, .61) * X, y: r + .02, z: goal - s * this.rand(.46, .58) * Z};
         const aim = {x: -this.side * (R.goalHalfWidth - 1.3), y: 2.7, z: goal, r: 1.2, floor: false};
         const yaw = Math.atan2(aim.x - ball.x, aim.z - ball.z);
         return {ball: {...ball, vx: 0, vy: 0, vz: 0}, team, aim, at: {x: ball.x - Math.sin(yaw) * 2.2, z: ball.z - Math.cos(yaw) * 2.2, yaw}};
       }
       case 'gr-aerial': {
         // Popped high in front of the goal: up past four metres and down onto the person's run.
-        const from = {x: this.rand(-3, 3), y: .8, z: goal - s * this.rand(8.5, 10.5)};
+        const from = {x: this.rand(-3, 3), y: .8, z: goal - s * this.rand(.33, .4) * Z};
         return {ball: {...from, vx: this.rand(-1, 1), vy: this.rand(12.5, 14), vz: -s * this.rand(.6, 1.6)}, team, at: {x: from.x, z: from.z - s * 4.5, yaw: face}};
       }
       case 'gr-keeper': {
-        // A shot from the edge of the box at a corner of the person's own goal.
-        const own = -goal, from = {x: this.rand(-8, 8), y: .7, z: own + s * this.rand(15, 19)};
-        const tx = this.side * this.rand(1.6, R.goalHalfWidth - .8), ty = this.rand(.7, R.goalHeight - .9), speed = this.rand(21, 26);
+        // A shot from the edge of the box at a corner of the person's own goal (about two thirds of a second away, as it
+        // was from further out on the bigger pitch).
+        const own = -goal, from = {x: this.rand(-.44, .44) * X, y: .7, z: own + s * this.rand(.58, .73) * Z};
+        const tx = this.side * this.rand(1.6, R.goalHalfWidth - .8), ty = this.rand(.7, R.goalHeight - .9), speed = this.rand(17, 21);
         const t = Math.hypot(tx - from.x, own - from.z) / speed;
         return {ball: {...from, ...arc(from, tx, ty, own, t, g, R.drag), heat: 1.5, shot: 'power'}, team: otherTeam(team), at: {x: 0, z: own + s * 1.2, yaw: face}};
       }
       case 'gr-long': default: {
         // At rest in the person's own half.
-        const ball = {x: this.rand(-9, 9), y: r + .02, z: -s * this.rand(5, 11)};
+        const ball = {x: this.rand(-.5, .5) * X, y: r + .02, z: -s * this.rand(.19, .42) * Z};
         const yaw = Math.atan2(-ball.x * .3, goal - ball.z);
         return {ball: {...ball, vx: 0, vy: 0, vz: 0}, team, at: {x: ball.x - Math.sin(yaw) * 2.2, z: ball.z - Math.cos(yaw) * 2.2, yaw}};
       }
@@ -199,11 +203,11 @@ export class DrillRunner {
   // ─── Sky Spike ─────────────────────────────────────────────────────────────────────────────────────────────────────
   private spikeFeed(host: DrillHost, team: BallTeam): DrillFeed {
     const R = SPIKE_RULES, c = team === 'red' ? -1 : 1, g = R.gravity * (host.ball.grav || 1), face = c < 0 ? 0 : Math.PI, machine = otherTeam(team);
-    // A team-mate's set, onto the net at 4.3 m (as strike.ts sets), for the spikes.
+    // A team-mate's floating set, onto the net as strike.ts sets it (SPIKE_SET), for the spikes.
     const set = (x: number): DrillFeed => {
       const from = {x: x + this.rand(-1.5, 1.5), y: 1.6, z: c * this.rand(4.5, 6)};
       const ring = {x: this.rand(-R.courtHalfX + 1.8, R.courtHalfX - 1.8), y: .02, z: -c * this.rand(3, R.courtHalfZ - 2), r: 1.6, floor: true};
-      return {ball: {...from, ...arc(from, x, 4.3, c * 1.9, 1.15, g, R.drag), shot: 'set'}, team, touchTeam: team, touches: 2, at: {x, z: c * 4.2, yaw: face}, aim: this.id === 'ss-spike' ? ring : null};
+      return {ball: {...from, ...arc(from, x, SPIKE_SET.height, c * SPIKE_SET.z, SPIKE_SET.seconds, g, R.drag), shot: 'set'}, team, touchTeam: team, touches: 2, at: {x, z: c * 4.2, yaw: face}, aim: this.id === 'ss-spike' ? ring : null};
     };
     switch (this.id) {
       case 'ss-dig': {
@@ -217,7 +221,7 @@ export class DrillRunner {
       case 'ss-set': {
         // A team-mate's bump from the back of the court up to the person, the first touch spent; the ring at the net.
         const x = this.rand(-3, 3), from = {x: x + this.rand(-2, 2), y: 1.2, z: c * 9};
-        const aim = {x: this.rand(-4, 4), y: .02, z: c * 1.9, r: 1.3, floor: true};
+        const aim = {x: this.rand(-4, 4), y: .02, z: c * SPIKE_SET.z, r: 1.3, floor: true};
         return {ball: {...from, ...arc(from, x, 1.5, c * 4.6, 1.3, g, R.drag), shot: 'bump'}, team, touchTeam: team, touches: 1, at: {x, z: c * 4.4, yaw: face}, aim};
       }
       case 'ss-block': {
@@ -278,11 +282,11 @@ export class DrillRunner {
     // A dig: the person's touch keeps the serve up on their side.
     if (this.id === 'ss-dig' && b.lastId === me.id && (b.shot === 'dig' || b.shot === 'bump' || b.shot === 'set')) return true;
     if (this.id === 'ss-dig' && b.lastId === me.id) return false;
-    // A set: the person's, coming down through 3 m onto the ring at the net.
+    // A set: the person's, coming down onto the net over the ring, at the height a spiker meets it (SPIKE_SET).
     if (this.id === 'ss-set' && b.lastId === me.id) {
       const aim = host.view.aim;
       if (b.shot !== 'set' || !aim) return false;
-      const down = landing(host.mode, b, 3);
+      const down = landing(host.mode, b, SPIKE_SET.height);
       return Math.hypot(down.x - aim.x, down.z - aim.z) <= aim.r + .4;
     }
     return undefined;

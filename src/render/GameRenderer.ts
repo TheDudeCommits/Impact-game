@@ -54,6 +54,8 @@ const SHARE_GROW = 1.3125, SHARE_REACH = .3125 * .99, SHARE_TAKE = .93;
  *  half's matrix pass, the window's size read three times a frame - to cost what each saves on the same frames. */
 const SPLIT_LEGACY = { shadow: false, matrices: false, sizes: false };
 const MSAA = { high: 4, medium: 2, low: 0 } as const;
+/** The ball modes' screen punch: seconds it takes to settle back (GameRenderer.screenPunch). */
+const ZOOM_BACK = .22;
 /** A body the impact blur keeps sharp: its drawn centre (the pelvis, wherever a launch has taken it) and size. */
 export type BlurKeep={visualCenter(out:THREE.Vector3):THREE.Vector3;state?:{size?:number}};
 
@@ -608,6 +610,19 @@ export class GameRenderer {
     if(this.reducedMotion||!(VFX.impactFrame>0)||!(seconds>0))return;
     this.inkLeft=Math.max(this.inkLeft,Math.min(.8,seconds));
   }
+  /** The ball modes' screen punch (render/ball/BallMoments.ts): the finished frame
+   *  bumps in toward the world point `at` - by up to 3.5% for `amount` 1 - and settles back over about a fifth of a
+   *  second, so a spike slammed in or a wipe-out lands on the screen without the lens moving. Only the ball modes call
+   *  it; every other frame is as it was. Off under prefers-reduced-motion, and the VISUAL EFFECTS level's share of the
+   *  speed lines (none on Minimal). A weaker punch inside a stronger one is ignored. */
+  screenPunch(amount:number,at?:{x:number;y:number;z:number}){
+    if(this.reducedMotion||!(amount>0)||!(VFX.speedLines>0))return;
+    const a=Math.min(1,amount)*VFX.speedLines,left=this.zoomLevel*Math.max(0,1-this.zoomAge/ZOOM_BACK)**2;
+    if(a<left)return;
+    this.zoomLevel=a;this.zoomAge=0;
+    if(at){this.zoomPoint.set(at.x,at.y,at.z);this.zoomPointSet=true;}else this.zoomPointSet=false;
+  }
+  private zoomLevel=0;private zoomAge=0;private zoomPointSet=false;private readonly zoomPoint=new THREE.Vector3();
   /** The world point the INK FLASH keeps in colour this frame (the ball), and its radius; null for none. */
   inkKeep(point:{x:number;y:number;z:number}|null,radius=1){if(point){this.inkPoint.set(point.x,point.y,point.z);this.inkRadius=radius;}else this.inkRadius=0;}
   private inkLeft=0;private inkLevel=0;private inkRadius=0;private readonly inkPoint=new THREE.Vector3();
@@ -684,6 +699,14 @@ export class GameRenderer {
     if(this.inkLeft>0){this.inkLeft=Math.max(0,this.inkLeft-step);this.inkLevel=this.inkLeft>0?1:this.inkLevel;}
     else{this.inkLevel*=Math.exp(-step*16);if(this.inkLevel<.01)this.inkLevel=0;}
     u.uInk.value=impact?0:this.inkLevel;this.placeInk(u);
+    // The ball modes' screen punch: in at once, eased back out (the toward point projected for the lens drawing now).
+    u.uZoom.value=0;
+    if(this.zoomLevel>0){
+      u.uZoom.value=.035*this.zoomLevel*Math.max(0,1-this.zoomAge/ZOOM_BACK)**2;
+      this.projected.copy(this.zoomPoint).project(this.camera);
+      if(this.zoomPointSet&&this.projected.z<1)u.uZoomCenter.value.set(THREE.MathUtils.clamp(this.projected.x*.5+.5,.15,.85),THREE.MathUtils.clamp(this.projected.y*.5+.5,.15,.85));
+      else u.uZoomCenter.value.set(.5,.5);
+    }
     // The fighters' share of it (their rim in its colour, the lift) goes
     // with how whole-frame it is: a local pool does not re-light the crowd.
     const fighterTech=tech*(1-.7*this.techLocal);
@@ -742,6 +765,7 @@ export class GameRenderer {
     this.punchLevel*=Math.exp(-dt*9);if(this.punchLevel<.003)this.punchLevel=0;
     this.chromaFrames=Math.max(0,this.chromaFrames-1);
     this.impactFrames=Math.max(0,this.impactFrames-1);this.impactHold=Math.max(0,this.impactHold-dt);
+    if(this.zoomLevel>0){this.zoomAge+=dt;if(this.zoomAge>=ZOOM_BACK)this.zoomLevel=0;}
     if(this.blurHold>0)this.blurHold-=dt;else{this.blurLevel*=Math.exp(-dt*26);if(this.blurLevel<.01){this.blurLevel=0;this.blurKeep=[];}}
   }
   render(dt:number){

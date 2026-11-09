@@ -190,6 +190,8 @@ uniform vec2 uTechFocus;
 uniform float uTechRadius;
 uniform float uStop;
 uniform float uInk;
+uniform float uZoom;
+uniform vec2 uZoomCenter;
 uniform vec3 uInkBall;
 uniform vec3 uStopDark;
 uniform vec3 uStopLight;
@@ -257,6 +259,9 @@ float speedPattern( vec2 d, float seed, float amount, float reach ) {
 }
 void main() {
 	vec2 uv = vUv;
+	// The ball modes' screen punch (GameRenderer.screenPunch): the finished picture
+	// bumped in toward a point for a breath - a slam lands on the screen without the lens moving. 0 everywhere else.
+	if ( uZoom > .0001 ) uv = uZoomCenter + ( vUv - uZoomCenter ) * ( 1. - uZoom );
 	vec2 aspect = vec2( uResolution.x / max( uResolution.y, 1. ), 1. );
 	vec2 fromCenter = uv - uCenter;
 	float r = length( fromCenter * aspect );
@@ -522,6 +527,8 @@ export class LookFinalPass extends Pass {
     /** The INK FLASH (0..1), and where the ball is on the screen whose colour it keeps (x, y in uv; radius in the
      *  frame's heights, 0 for none). */
     uInk: { value: 0 }, uInkBall: { value: new THREE.Vector3() },
+    /** The ball modes' screen punch: how far the picture is bumped in (0..0.04) and toward where (uv). */
+    uZoom: { value: 0 }, uZoomCenter: { value: new THREE.Vector2(.5, .5) },
     uBlur: { value: 0 }, uBlurCenter: { value: new THREE.Vector2(.5, .5) }, uBlurKeep: { value: [new THREE.Vector4(), new THREE.Vector4()] },
     // The stopped world's two tones, display-referred: a mid teal and a pale
     // cyan, far enough from black that the fighters' ink stands apart.

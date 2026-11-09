@@ -165,8 +165,7 @@
   "plays its own DEAD OF WINTER entry with moving hands and no body swap"
  ],
  "tests/victory.test.ts": [
-  "kenzo has something to celebrate with",
-  "wataame has something to celebrate with"
+  "kenzo has something to celebrate with"
  ],
  "tests/armoryRetention.test.ts": [
   "lets go of the types a room does not draw - pool, scene objects, buffers - and keeps the ones it does"

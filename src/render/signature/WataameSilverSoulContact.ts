@@ -3,9 +3,10 @@
  *  fetched only with a room that has the fighter (RosterSignatureSet's lazy factories). WataameSilverSoul.ts re-exports it. */
 import * as THREE from 'three';
 import type { Fighter } from '../Fighter';
-const TIP = new THREE.Vector3(0.8921814254969536, 0.07761142948204301, 0.36734193544408766), ROOT = new THREE.Vector3(0.08432913028509417, 0.0845028866437481, 0.04410362272019319);
-/** Points measured from the exported wooden sword in the actual hand's frame (13 October 2026: the sword was turned end for end in
- *  the fist, scripts/night/ol1/wataame_bokken.py, which prints these two; the blade leaves the hand past the thumb now). */
+const TIP = new THREE.Vector3(0.654, 0.549, 0.025), ROOT = new THREE.Vector3(0.050, 0.121, 0.029);
+/** Points measured from the exported wooden sword in the actual hand's frame: the bokken's tip and its guard, measured
+ *  off the bokken as it is drawn now: seated under the guard in a closed fist, one mount in every clip of wataame-tr1.glb.
+ *  Points taken at the bokken's rest mount lay 41 degrees off the drawn blade, and the hit landed 62 cm off its tip. */
 export function wataameBokkenPoint(f: Pick<Fighter, 'joints'>, out: THREE.Vector3, tip = true): boolean {
   const hand = f.joints.get('RightHand'); if (!hand) return false;
   out.copy(tip ? TIP : ROOT).applyMatrix4(hand.matrixWorld); return true;

@@ -15,7 +15,8 @@ export interface BallReplay {
   /** The skip vote: how many of the match's people have voted, of how many. */
   skips?: number; people?: number;
   /** A goal, or a Sky Spike kill on match point: the pages play its sequence first (the burst, the net, the lights, the
-   *  scorer's close-up: render/ball/BallCeremony.ts), so the replay waits REPLAY.ceremony rather than REPLAY.delay. */
+   *  scorer's close-up: render/ball/BallCeremony.ts), so the replay waits REPLAY.goalCeremony (a goal) or
+   *  REPLAY.ceremony (a kill) rather than REPLAY.delay. */
   ceremony?: boolean;
 }
 
@@ -24,8 +25,13 @@ export const REPLAY = {
   lead: 2.6, tail: .6,
   /** The celebration seen live before the replay begins, and the beat after it before the next kickoff. */
   delay: 1.4, after: .5,
-  /** The wait before a goal's replay (and a Sky Spike match point's kill): its burst and the scorer's close-up. */
+  /** The wait before a Sky Spike match point's kill's replay: its burst and the scorer's close-up. */
   ceremony: 3,
+  /** Goal Rush's own (on the smaller pitch goals come about twice as often a minute of
+   *  play, so each holds play a little less; trimmed, not cut): the wait before a goal's replay, its burst and the
+   *  scorer's close-up (3 s before), and its longest replay (`most` before). About 1.5 s a goal back to play, with the
+   *  kickoff's half second (GOAL_RULES.kickoffSeconds). */
+  goalCeremony: 2.5, goalMost: 4.5,
   /** The replay's pace, and its slow motion round the decisive strike: so long before it and after it. */
   rate: .85, slow: .38, slowBefore: .25, slowAfter: .45,
   /** No replay runs longer than this; a long window plays a little quicker. */
@@ -36,21 +42,22 @@ export const REPLAY = {
 } as const;
 
 /** The replay's three stretches: before the decisive strike, round it (slowed), after it; each as its play length and
- *  its playback rate. */
-function stretches(r: Pick<BallReplay, 'from' | 'to' | 'key'>) {
+ *  its playback rate. A goal's replay is held to REPLAY.goalMost, any other to REPLAY.most. */
+function stretches(r: Pick<BallReplay, 'from' | 'to' | 'key'> & {kind?: BallReplay['kind']}) {
   const key = Math.min(r.to, Math.max(r.from, r.key));
   const a = Math.max(r.from, key - REPLAY.slowBefore), b = Math.min(r.to, key + REPLAY.slowAfter);
   const parts = [{span: a - r.from, rate: REPLAY.rate as number}, {span: b - a, rate: REPLAY.slow as number}, {span: r.to - b, rate: REPLAY.rate as number}];
   let length = parts.reduce((sum, p) => sum + p.span / p.rate, 0);
-  if (length > REPLAY.most) { const k = length / REPLAY.most; for (const p of parts) p.rate *= k; length = REPLAY.most; }
+  const most: number = r.kind === 'goal' ? REPLAY.goalMost : REPLAY.most;
+  if (length > most) { const k = length / most; for (const p of parts) p.rate *= k; length = most; }
   return {parts, length};
 }
 
 /** How long a window takes to play, in seconds. */
-export const replayLength = (r: Pick<BallReplay, 'from' | 'to' | 'key'>) => stretches(r).length;
+export const replayLength = (r: Pick<BallReplay, 'from' | 'to' | 'key'> & {kind?: BallReplay['kind']}) => stretches(r).length;
 
 /** The play's time (server seconds) `elapsed` seconds into the replay, and the pace it is playing at there. */
-export function replayClock(r: Pick<BallReplay, 'from' | 'to' | 'key'>, elapsed: number): {time: number; rate: number} {
+export function replayClock(r: Pick<BallReplay, 'from' | 'to' | 'key'> & {kind?: BallReplay['kind']}, elapsed: number): {time: number; rate: number} {
   const {parts} = stretches(r);
   let left = Math.max(0, elapsed), time = r.from;
   for (const p of parts) {

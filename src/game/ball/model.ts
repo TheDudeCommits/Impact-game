@@ -15,7 +15,7 @@ import type {AimAssist, SportFeel} from '../simulation';
 export type BallModeId = 'goal-rush' | 'sky-spike';
 export const BALL_MODES: readonly BallModeId[] = ['goal-rush', 'sky-spike'];
 /** Bumped whenever a page and a room would disagree about the ball, its view or its messages. */
-export const BALL_PROTOCOL = 3;
+export const BALL_PROTOCOL = 4;
 export type BallTeam = 'red' | 'blue';
 export const BALL_TEAMS: readonly BallTeam[] = ['red', 'blue'];
 export const otherTeam = (team: BallTeam): BallTeam => team === 'red' ? 'blue' : 'red';
@@ -90,6 +90,12 @@ export interface BallSeat {
   out?: number;
   /** Goal Rush: the opponents this seat has wiped out this match. */
   wipeouts?: number;
+  /** Goal Rush's FIGHT stance (GOAL_STANCE): the opponent this seat is locked on, whose blows land on them and never on
+   *  the ball. Absent: the BALL stance, whose blows play the ball and never hurt a fighter. The room's to say (BallMatch
+   *  reads it off each command's target), so every page can draw who is hunting whom. */
+  lock?: string;
+  /** Goal Rush: the takedowns this seat has made (GOAL_STANCE.tackle). */
+  tackles?: number;
 }
 
 export interface BallEvent {
@@ -114,7 +120,14 @@ export interface BallEvent {
      *  their team in `team`), targetId who went down, value the seconds they are out, x/y/z where they fell, text the
      *  blow's name or BUMP - and a boosting body's bump that knocked somebody flat ('demo': actorId the bumper, targetId
      *  the bumped, value the bumper's speed, m/s). */
-    | 'wipeout';
+    | 'wipeout'
+    /** Sky Spike: a hard ball (strike.ts SPIKE_DIG, a spike or a drive) kept up on the first touch - actorId the
+     *  digger, value the ball's speed coming in (m/s), text DIG or DIVING DIG (off a dash, BallMatch DIG_DIVE). A page may
+     *  make a moment of it; the HUD need not (thirty a match). */
+    | 'dig'
+    /** Goal Rush's FIGHT stance (GOAL_STANCE.tackle): a fighter locked on the one on the ball put them down - actorId the
+     *  tackler, targetId the striker, text TACKLE (knocked down or sent flying) or TAKEDOWN (wiped out), x/y/z where. */
+    | 'tackle';
   team?: BallTeam; actorId?: string; assistId?: string; targetId?: string;
   x: number; y: number; z: number;
   /** A shot's speed (m/s), a rally's length, a point's worth. */
@@ -123,6 +136,8 @@ export interface BallEvent {
   text?: string;
   /** A charm grabbed or used (RUMBLE). */
   charm?: CharmKind;
+  /** Sky Spike: a strike that was a PERFECT SPIKE (struck from the top of the jump, at the net; its text is SKY SPIKE). */
+  perfect?: boolean;
 }
 
 /** The view a room publishes beside the fighters: `GameSnapshot & {ball: BallView}`. */
@@ -268,15 +283,26 @@ export const CLASH = {window: .22, hold: .3, freeze: .2, boost: 1.2, heat: 1, ga
  *  0.8, and a low ball off one is lifted by its foot, `wallLift`) and the floor rolls it further (roll 3.2 to 2.4), and
  *  the kickoff is two seconds, not three. */
 export const GOAL_RULES = {
-  halfX: 18, halfZ: 26, wall: 10, ceiling: 17, corner: 4.5,
-  goalHalfWidth: 4.6, goalHeight: 4.3, goalDepth: 3.4, post: .28,
+  /** The pitch is 26 × 38 m, about half the 36 × 52 it was (halfX 18, halfZ 26), so the ball is
+   *  never far from somebody and every clearance off a wall is a chance at one end or the other. Everything on the pitch
+   *  is laid from these numbers: the stage's bounds (game/stages.ts), the kickoff and respawn spots, the bots' places,
+   *  the drills, the arena and its stands, the screens' broadcast camera, the intro and the replay's lenses. The
+   *  corner's chamfer kept its 4.5 m, a larger share of the shorter walls: a ball run along a side wall meets it and is
+   *  turned across the face of the goal, a cross. */
+  halfX: 13, halfZ: 19, wall: 10, ceiling: 17, corner: 4.5,
+  goalHalfWidth: 4, goalHeight: 4, goalDepth: 3.4, post: .28,
   ballRadius: .8, hitRadius: 1.35, gravity: 13, drag: .07, roll: 2.4, bounce: .64, wallBounce: .8,
   /** A low ball off a wall (its centre under the ball's radius plus this) climbs by this share of how hard it met it: the
-   *  wall's foot curves it back up into play instead of letting it die along the boards. */
-  wallFoot: .7, wallLift: .32,
+   *  wall's foot curves it back up into play instead of letting it die along the boards. (Raised from .32 to .4: more of
+   *  the play off the walls in the air, aerial goals 2.4 to 3.2 a match in the bot sims.) */
+  wallFoot: .7, wallLift: .4,
+  /** The chamfered corners kick: a ball meets one and comes off it livelier than off a wall (`cornerBounce`) and
+   *  lifted by more of how hard it met it (`cornerLift`), so a ball run along a side wall is turned across the face of the
+   *  goal as a cross at volley height, never dead in the corner. */
+  cornerBounce: .92, cornerLift: .5,
   /** The ball's top speed at each heat tier. */
-  speedCap: [24, 29, 34, 41, 50],
-  matchSeconds: 240, kickoffSeconds: 2, goalSeconds: 4.2,
+  speedCap: [23, 27, 32, 38, 46],
+  matchSeconds: 240, kickoffSeconds: 1.5, goalSeconds: 4.2,
   /** Overtime's ball heats by itself (its heat can't fall under this many a second of overtime), so a tied match
    *  always ends. */
   overtimeHeat: .05,
@@ -297,17 +323,36 @@ export const GOAL_RULES = {
  *  - A BUMP: a boosting body at `bump.speed` or more, closing on an opponent at `bump.closing`, knocks them flat
  *    (`bump.damage` of the bar; one out of health is wiped out), at most once a `bump.gap` s each. */
 export const GOAL_FIGHT = {
-  health: 220, regenAfter: 6, regen: 25, seconds: 3, guard: 1, respawnZ: 4, respawnX: 7, points: 10,
+  health: 220, regenAfter: 6, regen: 25, seconds: 3, guard: 1, respawnZ: 3.5, respawnX: 5, points: 10,
   bump: {speed: 11, closing: 8, damage: .5, gap: 1.2, reach: .45},
+} as const;
+
+/** Goal Rush's two stances, a clear line between playing the ball and fighting (Tab switches between them):
+ *  - BALL (the default): every swing plays the ball - shots, passes, volleys - and never hurts a fighter; the camera is
+ *    the ball cam.
+ *  - FIGHT: locked on one opponent, the fighter's whole combat kit is theirs (the kernel's own lock-on) and never touches
+ *    the ball; the camera is the fight's lock-on framing.
+ *  Body touches and BUMPs move the ball and knock fighters flat in either stance. A command's target says which (BallMatch
+ *  .submit): the ball's id is BALL, an opponent's id with the lock on is FIGHT on them. Sky Spike and FREE PLAY have the
+ *  BALL stance only.
+ *  - `reach`: metres a lock holds out to (past it, and when the one locked is wiped out, it is the BALL stance again).
+ *  - `tackle`: a FIGHT-stance blow that knocks down, launches or wipes out the one on the ball - the nearest of their side
+ *    within `near` m of it, or the last to touch it within `touched` s - is a TACKLE (TAKEDOWN if it wiped them out),
+ *    worth `points` (`takedown`) toward MVP and `meter` of the super shot's meter (`awaken` of the awakening's), at most
+ *    once a `gap` s on the same striker: winning the ball back by force pays toward the shot that follows it. */
+export const GOAL_STANCE = {
+  reach: 32,
+  tackle: {near: 3.4, touched: 1.4, points: 15, takedown: 30, gap: 1.5, meter: 12, awaken: 6},
 } as const;
 
 /** Sports movement in the ball rooms (simulation.ts SportFeel). A quicker run (7.5 to 9.5 m/s) on quicker feet, the dash run on as a boost on the stamina bar (13.5 m/s; a
  *  full bar is about five seconds of it), a double jump and the air dash at the ball for aerials, half the impact
  *  freezes, and a kick's tail cut so the play flows on. Sky Spike keeps its jump (its spikes and blocks are timed to
- *  it) and its flat air dash, and has no double jump: its rallies were tuned on them. */
+ *  it) and its flat air dash, and has no double jump: its rallies were tuned on them. A Sky Spike blow thrown
+ *  in the air (the spike) plays its follow-through out (`airTail`). */
 export const BALL_SPORT: Record<BallModeId, SportFeel> = {
   'goal-rush': {run: 9.5, feet: 1.35, boost: 13.5, boostDrain: 42, dashGap: .15, jump: 1.06, airJumps: 1, airJump: .8, leap: 16, airDash: 9, hitstop: .5, recovery: .14},
-  'sky-spike': {run: 9, feet: 1.3, boost: 12.5, boostDrain: 42, dashGap: .15, jump: 1, airJumps: 0, airJump: .8, leap: 15, airDash: 0, hitstop: .6, recovery: .14},
+  'sky-spike': {run: 9, feet: 1.3, boost: 12.5, boostDrain: 42, dashGap: .15, jump: 1, airJumps: 0, airJump: .8, leap: 15, airDash: 0, hitstop: .6, recovery: .14, airTail: true},
 };
 const ASSIST: Record<BallModeId, AimAssist> = {
   'goal-rush': {magnet: .9, airExternal: true, sport: BALL_SPORT['goal-rush']},

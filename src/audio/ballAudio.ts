@@ -38,6 +38,8 @@ export const BALL_SFX = {
   'crowd-ooh-1': .8, 'crowd-ooh-2': .8, 'crowd-gasp': .85, 'crowd-roar-1': 1, 'crowd-roar-2': 1, 'crowd-applause': .7, 'crowd-groan': .75,
   'crowd-jeer': .75, 'crowd-chant': .55,
   'goal-horn': .55, 'goal-burst': .72, 'riser-overtime': .5, 'riser-fever': .5,
+  // The weight under the biggest hits, a spike slammed into the court, a wipe-out.
+  'impact-boom': .72, 'spike-slam': .88, 'wipeout-hit': .86,
 } as const;
 export type BallSfx = keyof typeof BALL_SFX;
 /** The loops' seamless periods (sound.py writes each period with 0.3 s of it again on either side). */
@@ -64,6 +66,8 @@ const BOUNCE_GAP = .06;
 const RESULT_CALL = 1.9;
 /** Heat catching again at a tier no higher than the last heard waits this long (s): a ball heats and cools all match. */
 const HEAT_REST = 3;
+/** A strike this fast (m/s off the boot) or faster has the boom laid under it. */
+const BOOM_FROM = 28;
 /** A bounce this hard (m/s into the surface) or harder is the hard take. */
 const HARD = { 'goal-rush': 9, 'sky-spike': 8 } as const;
 
@@ -88,7 +92,7 @@ export function ballTension(view: BallView): number {
   let t: number;
   if (view.mode === 'goal-rush') {
     const d = Math.min(Math.hypot(b.x, b.z - GOAL_RULES.halfZ), Math.hypot(b.x, b.z + GOAL_RULES.halfZ));
-    const near = Math.max(0, Math.min(1, 1 - (d - 4) / 22)) ** 1.3;
+    const near = Math.max(0, Math.min(1, 1 - (d - 4) / (GOAL_RULES.halfZ * .85))) ** 1.3;
     const close = gap === 0 ? 1 : gap === 1 ? .85 : gap === 2 ? .62 : .45;
     t = (.1 + .9 * near) * heat * close * (view.overtime ? 1.35 : view.clock < 60 ? 1.15 : 1);
   } else {
@@ -193,7 +197,9 @@ export class BallAudio {
         this.lastStrike = e;
         const sfx = STRIKE[e.shot ?? 'power'] ?? ['strike-power-1'];
         this.play(this.take(sfx, e.shot ?? 'power'), at, hard, .97 + ((e.id * 7) % 7) * .01);
-        if (e.text === 'SKY SPIKE') { this.play('spike-crack', at); this.say('sky-spike', .15); this.react('crowd-ooh-2', .5 * side, .2); }
+        // The boom under a power shot, by how hard it was struck (and under a SKY SPIKE's crack).
+        if (speed >= BOOM_FROM && e.text !== 'SKY SPIKE') this.play('impact-boom', at, Math.min(1, .45 + (speed - BOOM_FROM) / 30), .96 + ((e.id * 5) % 5) * .02, 0, 3);
+        if (e.text === 'SKY SPIKE') { this.play('spike-crack', at); this.play('impact-boom', at, .5, 1.08, 0, 3); this.say('sky-spike', .15); this.react('crowd-ooh-2', .5 * side, .2); }
         else if (e.text === 'ROLL SPIKE') { this.play('spike-crack', at, .8); this.say('roll-spike', .15); }
         else if (e.text === 'BICYCLE KICK' || e.text === 'AERIAL') this.react('crowd-ooh-1', .45 * side, .15);
         // A LINK SHOT: the crowd and the caller's moment.
@@ -210,7 +216,7 @@ export class BallAudio {
         break;
       case 'super':
         this.lastStrike = e;
-        this.play('strike-super', at, 1, 1, 0, 5);
+        this.play('strike-super', at, 1, 1, 0, 5); this.play('impact-boom', at, 1, .9, 0, 5);
         this.mix.cheer(.9);
         if (mine) this.react('crowd-roar-1', .55); else this.react('crowd-jeer', 1, .15);
         this.say('super-shot', .3);
@@ -225,6 +231,7 @@ export class BallAudio {
       }
       case 'save': {
         this.play('strike-power-2', at, .8);
+        if (e.text === 'PERFECT SAVE') this.play('impact-boom', at, .55, 1.1, 0, 3);
         this.react(this.take(['crowd-ooh-1', 'crowd-ooh-2'], 'ooh'), side, .1); this.react('crowd-applause', .6 * side, .9);
         this.say(e.text === 'PERFECT SAVE' ? 'save-perfect' : e.text === 'DIVING SAVE' ? 'save-diving' : 'save', .2);
         break;
@@ -262,6 +269,14 @@ export class BallAudio {
       case 'match-point': this.matchPoint = true; this.mix.cheer(.8); this.say('match-point', .5); break;
       case 'rally': this.mix.cheer(.5); this.react('crowd-applause', .4, .1); this.say('rally', .2); break;
       case 'bowled': this.play('bowled', at); this.react('crowd-ooh-2', .4 * side, .1); break;
+      // Goal Rush's fights heard. A WIPE-OUT: the knockout blow and the boom under it, the stands roaring for
+      // their own side's and gasping at the other's. A BUMP: the body flattened, an "ooh".
+      case 'wipeout':
+        this.play('wipeout-hit', at, 1, .97 + ((e.id * 3) % 4) * .02, 0, 5); this.play('impact-boom', at, .6, .92, .1, 4);
+        if (mine) this.react('crowd-roar-1', .5, .12); else this.react('crowd-gasp', .75, .05);
+        this.react(this.take(['crowd-ooh-1', 'crowd-ooh-2'], 'ooh'), .55 * side, .35);
+        break;
+      case 'demo': this.play('bowled', at, 1.1); this.react('crowd-ooh-2', .45 * side, .1); break;
       case 'charm': this.play(CHARM[e.charm ?? 'charge'], at, e.actorId && view.seats.some(s => s.id === e.actorId && s.team === home) ? 1.2 : 1); break;
       case 'shield': this.play('shield-hit', at); this.react(this.take(['crowd-ooh-1', 'crowd-ooh-2'], 'ooh'), .6 * side, .1); break;
       case 'accolade':
@@ -284,6 +299,8 @@ export class BallAudio {
     const at = { x: e.x, y: e.y, z: e.z }, own = e.kind === 'own-goal', mine = !home || e.team === home, side = this.side(e.team, home);
     const big = e.text === 'SUPER GOAL';
     this.play('goal-net', at, 1, 1, 0, 6);
+    // A screamer (110 km/h or more, or a SUPER GOAL) booms through the bowl.
+    if (big || (e.value ?? 0) >= 110) this.centred('impact-boom', .85, .02, .9);
     if (!view.practice) {
       this.centred('whistle-goal', 1, .12);
       // (The burst is the bowl's, heard from anywhere: a goal at the far end is past the effects' 48 m.)
@@ -320,6 +337,11 @@ export class BallAudio {
     if (POINT_WON.has(e.kind) || e.kind === 'out') {
       const down = Math.abs(this.prev?.vy ?? 10);
       this.play(inCourt ? (down >= HARD['sky-spike'] ? 'bounce-wood-hard' : 'bounce-wood-soft') : 'bounce-dome', { x: e.x, y: 0, z: e.z }, Math.max(.5, Math.min(1.1, .3 + down / 16)), 1, 0, 4);
+      // A kill or an ace slammed into the court - the slam and the boom under it, as big as it looks.
+      if (inCourt && (e.kind === 'kill' || e.kind === 'ace')) {
+        this.play('spike-slam', { x: e.x, y: 0, z: e.z }, Math.max(.75, Math.min(1, .5 + down / 30)), .97 + ((e.id * 3) % 4) * .02, 0, 5);
+        this.play('impact-boom', { x: e.x, y: 0, z: e.z }, .7, .95, .01, 4);
+      }
     }
     if (!view.practice) this.centred('whistle-point', 1, .12);
     if (POINT_WON.has(e.kind)) {

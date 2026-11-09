@@ -442,7 +442,7 @@ describe('small floors: room for the lens past the bounds, and the Classic look 
   };
   const inFrame=(p:THREE.Vector3)=>p.z<1&&Math.abs(p.x)<.95&&Math.abs(p.y)<.95;
   it('small is read off the stage\'s own floor (its narrower side under 2 x SMALL_FLOOR across), not a list: the Proving Hall and the Sunfall Arena\'s ring',()=>{
-    expect([...small].sort()).toEqual(['ball-court','proving-hall','scrap-pit','sunfall-arena','wreckers-causeway','zenith-coliseum']);
+    expect([...small].sort()).toEqual(['ball-court','ball-pitch','proving-hall','scrap-pit','sunfall-arena','wreckers-causeway','zenith-coliseum']);
     for(const id of ids)expect(smallFloor(STAGES[id]),id).toBe(Math.min(STAGES[id].halfX,STAGES[id].halfZ)<SMALL_FLOOR);
     expect(smallFloor(undefined),'no stage known').toBe(false);
   });

@@ -1,5 +1,5 @@
 import type {AttackSlot, PlayerInput, PlayerState} from '../types';
-import {MOVES} from '../moves';
+import {MOVES, jumpArc} from '../moves';
 import {BALL_ID, GOAL_RULES, SPIKE_RULES, otherTeam, type BallModeId, type BallSeat, type BallTeam, type BallView} from './model';
 import {goalZ, landing, sideOf, stepBall, type BallContact} from './physics';
 import type {BallState} from './model';
@@ -10,6 +10,12 @@ const gap = (a: {x: number; z: number}, b: {x: number; z: number}) => Math.hypot
  *  floor. The swing goes on takeoff: its contact lands about 0.12 s later, as the rising body meets the ball (a jump
  *  climbs 4.5-5.5 m, and an air heavy can pull a fighter back down, so a swing at the top would come too late). */
 const SPIKE_HIT = 4, SPIKE_RISE = .15;
+/** The PERFECT SPIKE, from the top of the jump. Under a set high enough (strike.ts SPIKE_SET)
+ *  the hitter meets it there instead: the ball's height at the blow is the jump's top plus APEX_REACH; the swing goes
+ *  APEX_SWING seconds short of the jump's top (as the climb slows to the air cast's own rise, so the swing does not
+ *  brake it), the body hangs at the top through the wind-up, and the blow lands about APEX_CONTACT after it - so the
+ *  hitter leaves the floor that long, plus the jump's rise, before the ball gets there. */
+const APEX_REACH = .9, APEX_SWING = .1, APEX_CONTACT = .23;
 /** A block leaves the floor this long before the spike crosses the net, so the body is a metre or two up and rising as it
  *  arrives (leave sooner and the spike passes under the top of the jump). */
 const BLOCK_LEAD = .1;
@@ -42,8 +48,18 @@ function offLine(p: {x: number; z: number}, a: {x: number; z: number}, b: {x: nu
  *  ball with a team-mate placed to finish it sets them up (a LINK SHOT) about `LINK_SET` of the time, no more than once
  *  every few seconds. Measured on headless bot matches. */
 const DUEL_TRY = [.55, .35] as const, GUARD_LEAD = .15, LINK_SET = .7, LINK_GAP = 2.6;
-/** Goal Rush: a SUPER SHOT is struck from up to this far out, with the goal in sight (not from too wide). */
-const SUPER_RANGE = 40, SUPER_WIDE = 15;
+/** Goal Rush's places and reaches, as shares of the pitch (GOAL_RULES halfX, halfZ), so the bots play the pitch they are
+ *  on (26 × 38 m; the shares are the metres first laid on a 36 × 52 m pitch, over its half-sizes):
+ *  - a SUPER SHOT is struck from up to `superRange` of a half-length out with the goal in sight, not wider than
+ *    `superWide` of a half-width;
+ *  - a ball on its way at the bot's own goal is a danger within `danger` of a half-length; the keeper clears a loose
+ *    ball within `clear` of one and tackles a striker in front of goal there, and leaves its goal for a charm only with
+ *    the ball beyond `keeperCharm`;
+ *  - the support holds `flank` of a half-width out to the side;
+ *  - the attacker shoots a special inside `special` and a heavy inside `heavy` (half-lengths), and a LINK SHOT's
+ *    team-mate is within `link` of a half-length of the goal and `linkWide` of a half-width of the middle. */
+const PITCH = {superRange: 1.54, superWide: .83, danger: .85, clear: .5, keeperCharm: .77, flank: .39, special: 1, heavy: 1.23, link: .92, linkWide: .67} as const;
+const SUPER_RANGE = PITCH.superRange * GOAL_RULES.halfZ, SUPER_WIDE = PITCH.superWide * GOAL_RULES.halfX;
 
 /** A bot that plays the ball game it was seated in, through the same inputs a person sends (a stick, a view, the
  *  buttons): it reads the ball - where it is, where it will come down - and the job its side gave it (BallMatch's
@@ -57,11 +73,12 @@ export class BallBrain {
    *  ball in the air (the aerial). */
   private nextTackle = 0;
   private nextAerial = 0;
-  /** The opponent this bot's tackle is on, and until when it follows the first blow with its string. */
-  private tackling: {id: string; until: number} | null = null;
+  /** Goal Rush's FIGHT stance (model.ts GOAL_STANCE): the opponent this bot's tackle is locked on, and since when. */
+  private fight: {id: string; since: number} | null = null;
   private serveAt = -1;
-  /** When this bot left the floor for a spike. */
-  private spikeAt = -Infinity;
+  /** When this bot left the floor for a spike, and how long after that its swing goes (0: on takeoff; a PERFECT SPIKE's,
+   *  near the top). */
+  private spikeAt = -Infinity; private apex = 0;
   /** The block it is going up for: timed to the hit (a STUFF BLOCK) or the hands up early (soft), and whose spike. */
   private stuff = false; private stuffFor: string | null = null;
   /** A SUPER SHOT read: whose, and whether this bot goes for the perfect guard against it. */
@@ -78,7 +95,7 @@ export class BallBrain {
     const input: Command = {moveX: 0, moveZ: 0, yaw: me.yaw, targetId: BALL_ID, lock: true};
     if (!me.alive || view.phase === 'over' || view.phase === 'countdown') return input;
     if (now < this.jumpUntil) input.jumpHeld = true;
-    if (view.phase === 'scored' || (view.phase === 'kickoff' && this.mode === 'goal-rush')) return input;
+    if (view.phase === 'scored' || (view.phase === 'kickoff' && this.mode === 'goal-rush')) { this.fight = null; return input; }
     return this.mode === 'goal-rush' ? this.football(me, seat, players, view, now, input) : this.volley(me, seat, players, view, now, input);
   }
 
@@ -91,33 +108,65 @@ export class BallBrain {
     if (me.boost && (d < 3 || me.stamina < 45) && d > stop) { input.moveX = dx / d * .45; input.moveZ = dz / d * .45; }
     return d;
   }
-  /** Goal Rush's fights (GOAL_FIGHT): a tackle, never a brawl away from the ball. The one of the other side at the ball
-   *  (nearer it than this bot, and at its feet) or standing in the way to it, within a swing's reach, is struck at -
-   *  while the ball itself is out of this bot's reach (the swing's aim takes the ball whenever it is near: simulation.ts
-   *  assistAim). Whether it swung. */
-  private tackle(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], b: {x: number; y: number; z: number}, input: Command, now: number, near = 2.8) {
-    if (me.team !== seat.team || now < this.nextPress) return false;
-    // A tackle that has begun follows its first blow with the light string while they are still in reach.
-    const on = this.tackling && now < this.tackling.until ? players.find(q => q.id === this.tackling!.id && q.alive) : undefined;
-    if (on && gap(me, on) < 2.6 && Math.abs(on.y - me.y) < 1.6) { this.press(input, 'light', Math.atan2(on.x - me.x, on.z - me.z), now, .14); return true; }
-    if (now < this.nextTackle) return false;
+  /** Goal Rush's fights (GOAL_FIGHT) in the FIGHT stance (GOAL_STANCE): a tackle, never a brawl away from the ball. The
+   *  one of the other side on the ball (nearer it than this bot, at its feet) or standing in the way to it, within
+   *  `range`, is locked on - the bot's swings are its kit on them now, and no longer the ball's (the BALL stance's swings
+   *  never hurt a fighter) - then closed on and struck (fighting). Not at every chance: a bot that lets one go looks
+   *  again in a moment. Whether it locked on. */
+  private tackle(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, b: {x: number; y: number; z: number}, input: Command, now: number, near = 2.8, range = 6) {
+    if (me.team !== seat.team || now < this.nextTackle || this.fight) return false;
     const toBall = gap(me, b);
-    let best: PlayerState | undefined, bestD = 2.4;
+    let best: PlayerState | undefined, bestD = range;
     for (const q of players) {
-      if (!q.alive || q.id === me.id || q.team === seat.team || Math.abs(q.y - me.y) > 1.4) continue;
+      if (!q.alive || q.id === me.id || q.team === seat.team || Math.abs(q.y - me.y) > 1.4 || seatOf(view, q.id)?.out !== undefined) continue;
       const d = gap(me, q);
       if (d >= bestD || d < 1e-3) continue;
       const theirs = gap(q, b);
       const carrier = theirs < near && theirs < toBall;
-      const inWay = d < toBall && ((q.x - me.x) * (b.x - me.x) + (q.z - me.z) * (b.z - me.z)) / (d * Math.max(1e-3, toBall)) > .8;
+      const inWay = d < 2.4 && d < toBall && ((q.x - me.x) * (b.x - me.x) + (q.z - me.z) * (b.z - me.z)) / (d * Math.max(1e-3, toBall)) > .8;
       if (carrier || inWay) { best = q; bestD = d; }
     }
     if (!best) return false;
-    const string = this.rng() < .35 + this.skill * .4;
-    this.press(input, string ? 'light' : 'heavy', Math.atan2(best.x - me.x, best.z - me.z), now, string ? .14 : .4);
-    this.tackling = string ? {id: best.id, until: now + .9 + this.skill * .5} : null;
-    this.nextTackle = now + .9 + this.rng() * (1.6 - this.skill);
+    if (this.rng() > .45 + this.skill * .3) { this.nextTackle = now + .6; return false; }
+    this.fight = {id: best.id, since: now};
+    return this.fighting(me, seat, players, view, b, input, now);
+  }
+  /** A tackle's lock held: run them down (the boost from afar), and in reach strike - the light string followed through,
+   *  or a heavy; a special now and then. It lets go for the BALL stance once they are down or out, off the ball, out of
+   *  reach, after a few seconds, or when the ball comes loose to this bot. True while it holds. */
+  private fighting(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, b: {x: number; y: number; z: number}, input: Command, now: number) {
+    const f = this.fight;
+    if (!f) return false;
+    const q = players.find(p => p.id === f.id), held = now - f.since;
+    const down = !q || !q.alive || seatOf(view, f.id)?.out !== undefined || q.action === 'knockdown' || q.action === 'launched' || q.action === 'splat' || q.action === 'getup';
+    const d = q ? gap(me, q) : Infinity, theirs = q ? gap(q, b) : Infinity, mine = gap(me, b);
+    const loose = mine < 2.4 && mine < theirs && b.y < 2.4;
+    if (down || d > 10 || held > 2 || (held > .45 && theirs > 4) || loose) {
+      this.fight = null; this.nextTackle = now + (down ? .5 : 1) + this.rng() * (1.6 - this.skill);
+      return false;
+    }
+    input.targetId = q!.id; input.lock = true;
+    const yaw = Math.atan2(q!.x - me.x, q!.z - me.z);
+    this.run(me, {x: q!.x, z: q!.z}, input, now, 1.3, 5);
+    input.yaw = yaw;
+    if (d < 2.6 && Math.abs(q!.y - me.y) < 1.6 && now >= this.nextPress) {
+      const special = (me.cooldowns.special ?? 0) <= now && this.rng() < .15;
+      const string = !special && this.rng() < .45 + this.skill * .4;
+      this.press(input, special ? 'special' : string ? 'light' : 'heavy', yaw, now, string ? .14 : .45);
+    }
     return true;
+  }
+  /** Goal Rush's press: the one of the other side on the ball (within 2.5 m of it and nearer it than anyone of this
+   *  side), if any. */
+  private carrier(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], b: {x: number; z: number}) {
+    let theirs: PlayerState | undefined, theirD = 2.5, ours = Infinity;
+    for (const q of players) {
+      if (!q.alive) continue;
+      const d = gap(q, b), mate = q.team === me.team;
+      if (mate) ours = Math.min(ours, d);
+      else if (q.team !== seat.team && d < theirD) { theirs = q; theirD = d; }
+    }
+    return theirs && theirD < ours ? theirs : undefined;
   }
   /** RUMBLE: the nearest charm within `within` metres (on its own side of the net in Sky Spike), if any. */
   private charm(me: PlayerState, view: BallView, within: number, side?: number) {
@@ -129,8 +178,9 @@ export class BallBrain {
     input.attack = slot; input.yaw = yaw + (this.rng() - .5) * (1 - this.skill) * .5;
     this.nextPress = now + wait + this.rng() * .25;
   }
-  private jump(input: Command, now: number) {
-    input.jump = true; input.jumpHeld = true; this.jumpUntil = now + .35; this.nextJump = now + 1.1;
+  /** (`hold`: how long the button stays down - the whole climb, for a jump to its top.) */
+  private jump(input: Command, now: number, hold = .35) {
+    input.jump = true; input.jumpHeld = true; this.jumpUntil = now + hold; this.nextJump = now + 1.1;
   }
 
   // ─── Goal Rush ────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -144,11 +194,13 @@ export class BallBrain {
     const dBall = gap(me, b), dy = b.y - (me.y + 1);
     const inReach = dBall < 2.2 && dy > -1.4 && dy < 1.7;
     const role = seat.role ?? 'attack';
-    const ownDanger = Math.sign(b.vz) === Math.sign(ownZ) && Math.abs(b.z - ownZ) < 22 && Math.hypot(b.vx, b.vz) > 9;
+    const ownDanger = Math.sign(b.vz) === Math.sign(ownZ) && Math.abs(b.z - ownZ) < PITCH.danger * R.halfZ && Math.hypot(b.vx, b.vz) > 9;
     // Up for a ball in the air in front of it.
     if (now >= this.nextJump && me.grounded && dBall < 2.6 && b.y > 2.6 && b.y < 8.5 && b.vy < 5 && role !== 'keeper') this.jump(input, now);
     // A SUPER SHOT coming through this bot: the guard timed to it (a perfect one is a TECHNIQUE DUEL).
-    if (this.brace(me, b, team, now, input, role === 'keeper')) return input;
+    if (this.brace(me, b, team, now, input, role === 'keeper')) { this.fight = null; return input; }
+    // A tackle under way (the FIGHT stance) goes on until it lets go.
+    if (this.fighting(me, seat, players, view, b, input, now)) return input;
     if (role === 'keeper') {
       let spot = {x: clamp(b.x * .4, -R.goalHalfWidth + .8, R.goalHalfWidth - .8), z: ownZ - Math.sign(ownZ) * 2.4};
       if (ownDanger && Math.abs(b.vz) > .5) {
@@ -156,33 +208,38 @@ export class BallBrain {
         if (t > 0 && t < 2.5) spot = {x: clamp(b.x + b.vx * t, -R.goalHalfWidth + .5, R.goalHalfWidth - .5), z: ownZ - Math.sign(ownZ) * 1.4};
       }
       // A ball loose near the goal is the keeper's to clear.
-      if (gap(b, {x: 0, z: ownZ}) < 13 && !ownDanger && b.y < 2.4) spot = {x: b.x - Math.sin(shotYaw) * 1.2, z: b.z - Math.cos(shotYaw) * 1.2};
+      if (gap(b, {x: 0, z: ownZ}) < PITCH.clear * R.halfZ && !ownDanger && b.y < 2.4) spot = {x: b.x - Math.sin(shotYaw) * 1.2, z: b.z - Math.cos(shotYaw) * 1.2};
       // A charm near the goal, with the ball far off, is worth the few steps.
-      const near = !ownDanger && gap(b, {x: 0, z: ownZ}) > 20 ? this.charm(me, view, 7) : undefined;
+      const near = !ownDanger && gap(b, {x: 0, z: ownZ}) > PITCH.keeperCharm * R.halfZ ? this.charm(me, view, 5) : undefined;
       if (near) spot = near;
       this.run(me, spot, input, now, .4, 14);
       const speed = Math.hypot(b.vx, b.vy, b.vz);
       if (dBall < 3 && ownDanger && speed > 13 && this.rng() < .35 + this.skill * .5) { input.guard = true; input.yaw = Math.atan2(b.x - me.x, b.z - me.z); }
       else if (inReach && now >= this.nextPress) this.press(input, me.ultimate >= 100 ? 'ultimate' : 'heavy', Math.atan2(toward * 9 * this.flank, toward * 20), now, .5);
       // A striker on the ball in front of goal is tackled.
-      else if (!inReach && Math.abs(b.z - ownZ) < 13) this.tackle(me, seat, players, b, input, now, 2.2);
+      else if (!inReach && Math.abs(b.z - ownZ) < PITCH.clear * R.halfZ) this.tackle(me, seat, players, view, b, input, now, 2.2, 5);
       return input;
     }
     // A team-mate's pass on its way here: met first time at the goal (a LINK SHOT).
     if (this.meet(me, b, team, enemyZ, now, input)) return input;
     if (role === 'support') {
-      const back = {x: clamp(b.x * .5 + this.flank * 7, -R.halfX + 2, R.halfX - 2), z: clamp(b.z + (ownZ - b.z) * .42, -R.halfZ + 3, R.halfZ - 3)};
+      const back = {x: clamp(b.x * .5 + this.flank * PITCH.flank * R.halfX, -R.halfX + 2, R.halfX - 2), z: clamp(b.z + (ownZ - b.z) * .42, -R.halfZ + 3, R.halfZ - 3)};
       const chase = dBall < 5 && Math.sign(ownZ) * (me.z - b.z) > 0;
+      // The press (on the smaller pitch): in the half its side attacks, one of the other side on the ball (nearer it
+      // than any of this side, at its feet) is closed down at a run from the goal side and tackled, so the ball is fought
+      // for where it was lost instead of handed back. Never in its own half, where the support keeps the keeper company.
+      const carrier = !chase && Math.sign(b.z) === toward && b.y < 2 ? this.carrier(me, seat, players, b) : undefined;
       // RUMBLE: the support goes for a charm when the ball is not theirs to play.
-      const near = !chase && !ownDanger && dBall > 7 ? this.charm(me, view, 12) : undefined;
-      this.run(me, chase ? {x: b.x - Math.sin(shotYaw) * 1.2, z: b.z - Math.cos(shotYaw) * 1.2} : near ?? back, input, now, near ? .2 : .8, 12);
+      const near = !chase && !carrier && !ownDanger && dBall > 7 ? this.charm(me, view, 9) : undefined;
+      const press = carrier && {x: carrier.x + (b.x - carrier.x) * .3, z: carrier.z + Math.sign(ownZ) * 1.1};
+      this.run(me, chase ? {x: b.x - Math.sin(shotYaw) * 1.2, z: b.z - Math.cos(shotYaw) * 1.2} : press || near || back, input, now, near ? .2 : press ? .3 : .8, press ? 6 : 12);
       if (inReach && now >= this.nextPress) {
         if (this.setUp(me, b, team, toward, enemyZ, players, view, now, input)) return input;
         // With the meter full and the goal in sight, the super shot.
         const sight = Math.abs(enemyZ - b.z) < SUPER_RANGE && Math.abs(b.x) < SUPER_WIDE;
         this.press(input, me.ultimate >= 100 && sight ? 'ultimate' : this.rng() < .6 ? 'heavy' : 'light', shotYaw, now);
       }
-      else if (!inReach && (chase || dBall < 6)) this.tackle(me, seat, players, b, input, now);
+      else if (!inReach && (chase || press || dBall < 6)) this.tackle(me, seat, players, view, b, input, now, press ? 3.2 : 2.8);
       return input;
     }
     // The attacker: round behind the ball, then drive it at the goal.
@@ -208,13 +265,13 @@ export class BallBrain {
       if (!air && this.setUp(me, b, team, toward, enemyZ, players, view, now, input)) return input;
       const slot = me.ultimate >= 100 && toGoal < SUPER_RANGE && Math.abs(b.x) < SUPER_WIDE ? 'ultimate'
         : air ? (this.rng() < .6 ? 'heavy' : 'light')
-        : toGoal < 26 && (me.cooldowns.special ?? 0) <= now && this.rng() < .3 ? 'special'
-        : toGoal < 32 ? (this.rng() < .7 ? 'heavy' : 'light')
+        : toGoal < PITCH.special * R.halfZ && (me.cooldowns.special ?? 0) <= now && this.rng() < .3 ? 'special'
+        : toGoal < PITCH.heavy * R.halfZ ? (this.rng() < .7 ? 'heavy' : 'light')
         : this.rng() < .55 ? 'light' : 'heavy';
       this.press(input, slot, shotYaw, now, slot === 'light' ? .28 : .5);
     }
     // Their striker on the ball, or one in the way to it: tackled.
-    else if (!inReach && dBall < 6) this.tackle(me, seat, players, b, input, now);
+    else if (!inReach && dBall < 7) this.tackle(me, seat, players, view, b, input, now);
     return input;
   }
 
@@ -254,7 +311,7 @@ export class BallBrain {
       const seat = seatOf(view, p.id);
       if (!seat || seat.team !== team || seat.role === 'keeper') continue;
       const d = gap(p, b), ahead = toward * (p.z - b.z), toGoal = Math.abs(enemyZ - p.z);
-      if (d < 3.2 || d > 7.4 || ahead < -2 || toGoal > 24 || Math.abs(p.x) > 12 || toGoal > Math.abs(enemyZ - me.z) + 1) continue;
+      if (d < 3.2 || d > 7.4 || ahead < -2 || toGoal > PITCH.link * GOAL_RULES.halfZ || Math.abs(p.x) > PITCH.linkWide * GOAL_RULES.halfX || toGoal > Math.abs(enemyZ - me.z) + 1) continue;
       let open = true;
       for (const r of players) {
         if (!r.alive) continue;
@@ -370,14 +427,20 @@ export class BallBrain {
       }
       const dBall = gap(me, b), dy = b.y - (me.y + 1);
       // The attack: two touches in and a high ball coming down near the net. Run in under where it falls through
-      // hitting height, a little behind it, and leave the floor so the body meets it on the way up (a jump climbs 4.5-5.5
-      // m and the body is at hitting height about 0.2 s after takeoff).
-      const hit = touches >= 2 && sideOf(b.z) === team ? landing(this.mode, b, SPIKE_HIT, 2.5) : undefined;
+      // hitting height, a little behind it, and leave the floor so the body meets it there. Under a floating set (round
+      // 3) that is the top of the jump - the PERFECT SPIKE - taken off for its rise and the swing's wind-up before the
+      // ball gets there; under a lower ball, on the way up (a jump climbs 4.5-5.5 m and the body is at hitting height
+      // about 0.2 s after takeoff), the swing on takeoff.
+      const arcOf = jumpArc(me.fighter), top = arcOf.apex + APEX_REACH, gravity = R.gravity * (b.grav || 1);
+      const high = touches >= 2 && b.y + Math.max(0, b.vy) ** 2 / (2 * gravity) >= top + .2;
+      const hit = touches >= 2 && sideOf(b.z) === team ? landing(this.mode, b, high ? top : SPIKE_HIT, 2.5) : undefined;
       const attack = !!hit && hit.t > .05 && Math.abs(hit.z) < 4.6 && Math.abs(hit.x) < R.courtHalfX + .5;
       if (attack && me.grounded) {
         const spot = {x: hit!.x, z: hit!.z + sign * .7};
         const d = this.run(me, spot, input, now, .15, 4);
-        if (now >= this.nextJump && d < 1.6 && hit!.t < SPIKE_RISE + .04 + (1 - this.skill) * .06) { this.jump(input, now); this.spikeAt = now; }
+        // (The better the bot, the closer to the top it meets the ball.)
+        const lead = high ? arcOf.rise - APEX_SWING + APEX_CONTACT : SPIKE_RISE;
+        if (now >= this.nextJump && d < 1.6 && hit!.t < lead + .04 + (1 - this.skill) * (high ? .12 : .06)) { this.jump(input, now, high ? arcOf.rise + .05 : .35); this.spikeAt = now; this.apex = high ? arcOf.rise - APEX_SWING : 0; }
       } else {
         const under = {x: target.x - Math.sin(sendYaw(target)) * .4 * (touches >= 2 ? 1 : 0), z: target.z + sign * .35};
         // A hard ball coming in (a spike): dive for it, the dig.
@@ -387,8 +450,11 @@ export class BallBrain {
         const spikeable = touches >= 1 && Math.abs(b.z) < 4.5 && b.y > 2.8;
         if (spikeable && me.grounded && now >= this.nextJump && dBall < 2.2 && b.vy < 2 && b.y < 6.5) this.jump(input, now);
       }
-      // In the air for a spike, the swing goes at once; any other time, when the ball is in reach.
-      const spiking = !me.grounded && now - this.spikeAt < .3 && Math.hypot(b.x - me.x, b.y - (me.y + 1.1), b.z - me.z) < 3.4;
+      // In the air for a spike, the swing goes at once (at the top of the jump, for a PERFECT one); any other time, when
+      // the ball is in reach.
+      const since = now - this.spikeAt - this.apex;
+      if (!me.grounded && since < 0 && since > -.6) return input;
+      const spiking = !me.grounded && since >= 0 && since < .3 && Math.hypot(b.x - me.x, b.y - (me.y + 1.1), b.z - me.z) < (this.apex ? 3.8 : 3.4);
       const reach = spiking || (!me.grounded ? Math.hypot(b.x - me.x, b.y - (me.y + 1.1), b.z - me.z) < 2.3 : dBall < 1.9 && dy > -1.2 && dy < 1.7);
       // A ball this side has already sent over is left alone.
       const sent = touches >= SPIKE_RULES.touches && Math.sign(b.vz) === -sign;

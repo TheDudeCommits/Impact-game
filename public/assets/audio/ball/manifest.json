@@ -879,6 +879,69 @@
    "sha256": "ac7c678da2692084026f2529372068296faa2590909877ccfc12afba1a7b6467"
   },
   {
+   "id": "impact-boom",
+   "file": "/assets/audio/ball/impact-boom.m4a",
+   "family": "impact",
+   "design": "The weight under the biggest hits: a crack and a chest-thumping boom with a short rumble, laid under a power shot, a SUPER SHOT, a spike slammed in and a wipe-out.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "generated for the game with ElevenLabs sound effects (impact-boom-take1.mp3)",
+     "license": "original",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)",
+     "prompt": "A massive punchy hit for an anime sports game: a sharp crack and a heavy chest-thumping boom with a short rumbling tail, like a cinematic trailer impact, no music, no voices"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.344,
+   "lufsMomentaryMax": -14.1,
+   "lufsIntegrated": -18.5,
+   "truePeakDbfs": -1.5,
+   "sha256": "e277b45f0c02f30e4ad99c5a3023fbbc98cf673fa4994d5067dfc23c0935d840"
+  },
+  {
+   "id": "spike-slam",
+   "file": "/assets/audio/ball/spike-slam.m4a",
+   "family": "impact",
+   "design": "A spike slammed into the court for the point: the ball cracking into the planks and the floor booming under it.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "generated for the game with ElevenLabs sound effects (spike-slam-take1.mp3)",
+     "license": "original",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)",
+     "prompt": "A ball smashed straight down into a wooden court floor at enormous speed: a booming slam and a sharp crack of the planks, the floor reverberating, close up, no voices"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.259,
+   "lufsMomentaryMax": -14.1,
+   "lufsIntegrated": -17.4,
+   "truePeakDbfs": -1.8,
+   "sha256": "cd5de742d3b620f007de80d8e5ea1f71affd81326d9dc9ca14e2cdf89a36a557"
+  },
+  {
+   "id": "wipeout-hit",
+   "file": "/assets/audio/ball/wipeout-hit.m4a",
+   "family": "impact",
+   "design": "WIPED OUT: a knockout blow - its whoosh, the crunch of it - and the body slammed down.",
+   "license": "original",
+   "sources": [
+    {
+     "file": "generated for the game with ElevenLabs sound effects (wipeout-hit-take1.mp3)",
+     "license": "original",
+     "generator": "ElevenLabs sound effects (paid plan; generated for the game)",
+     "prompt": "A brutal knockout blow in an anime fight: a crushing punch impact with a whoosh, then a body slamming hard into the ground, close up, no voices"
+    }
+   ],
+   "processing": "Trimmed, high-passed at 28 Hz, levelled to -14.0 LUFS over its loudest 400 ms, peaks under -1 dBFS; AAC 96 kb/s mono 48 kHz (afconvert)",
+   "seconds": 1.408,
+   "lufsMomentaryMax": -14.1,
+   "lufsIntegrated": -15.8,
+   "truePeakDbfs": -2.0,
+   "sha256": "b3a8e1885130ff63b1ce3fefd231c99f295f6c110440a1920f6b5a3e538e7dbf"
+  },
+  {
    "id": "charm-power",
    "file": "/assets/audio/ball/charm-power.m4a",
    "family": "accent",

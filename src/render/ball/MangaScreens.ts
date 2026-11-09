@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GOAL_RULES } from '../../game/ball/model';
 
 /** The Ink Bowl's big screens: the live match drawn as a manga page. A broadcast camera
  *  over the side line's first rows follows the ball; every few frames it draws the scene into a small target (as three's Reflector
@@ -55,7 +56,7 @@ export class MangaScreens {
   constructor(spots: readonly ScreenSpot[], private readonly goalZ: number, time: { value: number }, red: THREE.Color, blue: THREE.Color) {
     this.root.name = 'Ink Bowl screens';
     this.target.texture.name = 'Ink Bowl screens: the broadcast';
-    this.camera.position.set(-23, 13, 0);
+    this.camera.position.set(-(GOAL_RULES.halfX + 5), 13, 0);
     this.material = new THREE.ShaderMaterial({
       name: 'Ink Bowl screens', fog: false, toneMapped: false,
       uniforms: {
@@ -140,7 +141,10 @@ export class MangaScreens {
     this.heading.subVectors(ball, this.lastBall).setY(0);
     this.lastBall.copy(ball);
     this.lookAt.lerp(ball, .25);
-    this.eye.set(-23, 13, THREE.MathUtils.clamp(ball.z * .8, -20, 20));
+    // On the broadcast side line, five metres back from the glass, level with the ball along the pitch (laid
+    // from the pitch's size; on a 36 × 52 m pitch it stood at x = -23 and ran ±20).
+    const reach = GOAL_RULES.halfZ - 6;
+    this.eye.set(-(GOAL_RULES.halfX + 5), 13, THREE.MathUtils.clamp(ball.z * .8, -reach, reach));
     this.camera.position.lerp(this.eye, .2);
     this.look.copy(this.lookAt);
     this.camera.lookAt(this.look);

@@ -42,7 +42,7 @@ describe("Goal Rush's fights", () => {
     free.add('me', 'taisei', 'Me', false, 'red');
     expect(free.sim.actors.get('me')!.state.team).toBe('pitch');
   });
-  it('swings at the ball when it is in reach, at an opponent when it is not, and never at a team-mate', () => {
+  it('swings at the ball in the BALL stance, at the opponent locked in the FIGHT stance, and never at a team-mate', () => {
     // In reach: the ball, whoever stands about.
     let m = match();
     m.sim.place('red-1', { x: 0, y: 0, z: -1.7 }, 0);
@@ -51,13 +51,13 @@ describe("Goal Rush's fights", () => {
     steps(m, .7);
     expect(m.ball.lastId).toBe('red-1');
     expect(Math.hypot(m.ball.vx, m.ball.vz)).toBeGreaterThan(8);
-    // Out of reach: the opponent in front takes it, the ball is left alone.
+    // Locked on (the FIGHT stance: GOAL_STANCE): the opponent in front takes it, the ball is left alone.
     m = match();
     m.sim.place('red-1', { x: -8, y: 0, z: -8 }, 0);
     m.sim.place('blue-1', { x: -8, y: 0, z: -6.6 }, Math.PI);
     m.sim.place('red-2', { x: 8, y: 0, z: 8 }, 0);
     const whole = m.sim.actors.get('blue-1')!.state.hp;
-    press(m, 'red-1', { attack: 'heavy', yaw: 0 });
+    press(m, 'red-1', { attack: 'heavy', yaw: 0, targetId: 'blue-1', lock: true });
     steps(m, .7);
     expect(m.sim.actors.get('blue-1')!.state.hp).toBeLessThan(whole);
     expect(m.ball.lastId).toBeNull();

@@ -10,6 +10,7 @@ import {MangaScreens} from './MangaScreens';
 import type {BallArenaId} from '../../game/ball/arenas';
 import {hullGeometry} from '../../originals/places/forge';
 import {StageKit} from '../stages/StageKit';
+import {BOWL,bowlGuardian,gateZ,pulled,wreckHullX,wreckShipZ} from './pitchLayout';
 
 export type BallStage=Extract<StageId,'ball-pitch'|'ball-court'>;
 type V2=readonly [number,number];
@@ -180,12 +181,16 @@ export class BallArena {
   /** Each arena's generated set pieces (made with Tripo for the game), where they stand. */
   private async setPieces(){
     if(typeof document==='undefined')return;
-    const {halfZ:Z,goalDepth:D}=GOAL_RULES;
+    const {halfZ:Z}=GOAL_RULES;
     const kit=new StageKit(this.root,this.stage),place:[string,Parameters<StageKit['place']>[1]][]=[];
+    // Every piece is laid from the pitch (pitchLayout.ts); one placed out beyond
+    // it keeps its distance from the stands, which come in with the walls.
     if(this.arena==='ink-bowl'){
-      // A carved gateway behind each goal, and a guardian on the canopy at each corner of the bowl.
-      for(const sz of [-1,1])place.push(['own/ball-ink-gate',{x:0,z:sz*(Z+D+1.2),y:0,width:19,rot:sz<0?0:Math.PI,shadow:false}]);
-      for(const sx of [-1,1])for(const sz of [-1,1])place.push(['own/ball-ink-guardian',{x:sx*28.6,z:sz*36.6,y:24.1,height:11,rot:Math.atan2(-sx,-sz),shadow:false}]);
+      // A carved gateway behind each goal (no wider than the end wall's straight run), and a guardian on the canopy at
+      // each corner of the bowl.
+      for(const sz of [-1,1])place.push(['own/ball-ink-gate',{x:0,z:sz*gateZ(),y:0,width:Math.min(19,(GOAL_RULES.halfX-GOAL_RULES.corner)*2),rot:sz<0?0:Math.PI,shadow:false}]);
+      const [gx,gz]=bowlGuardian();
+      for(const sx of [-1,1])for(const sz of [-1,1])place.push(['own/ball-ink-guardian',{x:sx*gx,z:sz*gz,y:24.1,height:11,rot:Math.atan2(-sx,-sz),shadow:false}]);
     }
     if(this.arena==='ink-bowl'||this.arena==='rain-roof'){
       // The floodlights' lattice towers under their lamp banks.
@@ -194,14 +199,15 @@ export class BallArena {
     }
     if(this.arena==='rain-roof'){
       // Water tanks on the roof round the stands.
-      for(const [x,z,r] of [[-30,-40,.4],[32,-38,2.2],[-34,40,-1.1],[29,44,3.4],[-38,0,1.6],[38,6,-.6]] as const)place.push(['own/ball-water-tower',{x,z,y:0,height:13,rot:r,shadow:false}]);
+      for(const [x0,z0,r] of [[-30,-40,.4],[32,-38,2.2],[-34,40,-1.1],[29,44,3.4],[-38,0,1.6],[38,6,-.6]] as const){const [x,z]=pulled(x0,z0);place.push(['own/ball-water-tower',{x,z,y:0,height:13,rot:r,shadow:false}]);}
       // The roof's plant round the stands, and a blank billboard frame over each long side.
-      for(const [x,z,r] of [[-40,-24,.3],[41,22,2.9],[-42,30,-1.4],[40,-34,1.9]] as const)place.push(['own/ball-roof-units',{x,z,y:0,width:9,rot:r,shadow:false}]);
+      for(const [x0,z0,r] of [[-40,-24,.3],[41,22,2.9],[-42,30,-1.4],[40,-34,1.9]] as const){const [x,z]=pulled(x0,z0);place.push(['own/ball-roof-units',{x,z,y:0,width:9,rot:r,shadow:false}]);}
       for(const sx of [-1,1])place.push(['own/ball-billboard',{x:sx*(GOAL_RULES.halfX+30),z:0,y:3,width:22,rot:sx<0?Math.PI/2:-Math.PI/2,shadow:false}]);
     }else if(this.arena==='dust-yard'){
-      place.push(['own/ball-wreck-ship',{x:-6,z:-(Z+40),y:-1.5,width:46,rot:.35,shadow:false}],['own/ball-wreck-ship',{x:8,z:Z+40,y:-1.5,width:50,rot:Math.PI+.5,shadow:false}]);
+      place.push(['own/ball-wreck-ship',{x:-6,z:-wreckShipZ(),y:-1.5,width:46,rot:.35,shadow:false}],['own/ball-wreck-ship',{x:8,z:wreckShipZ(),y:-1.5,width:50,rot:Math.PI+.5,shadow:false}]);
       // An anchor and a ship's figurehead in the sand beyond the end stands (clear of the hulls).
-      place.push(['own/ball-ship-anchor',{x:-16,z:-50,y:-.6,height:9,rot:.5,tilt:.12,shadow:false}],['own/ball-figurehead',{x:18,z:50,y:-.3,height:10,rot:-2.6,shadow:false}]);
+      const anchor=pulled(-16,-50),figurehead=pulled(18,50);
+      place.push(['own/ball-ship-anchor',{x:anchor[0],z:anchor[1],y:-.6,height:9,rot:.5,tilt:.12,shadow:false}],['own/ball-figurehead',{x:figurehead[0],z:figurehead[1],y:-.3,height:10,rot:-2.6,shadow:false}]);
     }else if(this.arena==='sky-court'){
       place.push(['own/ball-sky-shrine',{x:62,z:-24,y:-14,height:34,rot:-1.2,shadow:false}],['own/ball-sky-shrine',{x:-70,z:36,y:-4,height:26,rot:2.1,shadow:false}]);
       // Two sky-ships drifting past.
@@ -252,6 +258,11 @@ export class BallArena {
 
   private turf(){
     const {halfX:X,halfZ:Z,corner:C,goalHalfWidth:G,goalDepth:D}=GOAL_RULES;
+    // The marks scale with the pitch (they were laid for 36 × 52 m): the boxes, the penalty spot and its arc,
+    // the great brush circle, the mown bands and the ends' washes, each by the pitch's width (kx), its length (kz) or the
+    // smaller of the two (k). The six-yard box stays wider than the goal.
+    const kx=X/18,kz=Z/26,k=Math.min(kx,kz),band=num(4*kz);
+    const box=[12*kx,5.6*kz],six=[Math.max(G+1.2,7*kx),2.3*kz],spot=8*kz,arc=5*k,enso=6*k;
     // The outline with both goals' floors in it, in the floor plane (a shape's y is world -z).
     const outline:V2[]=[[X,-Z+C],[X,Z-C],[X-C,Z],[G,Z],[G,Z+D],[-G,Z+D],[-G,Z],[-X+C,Z],[-X,Z-C],[-X,-Z+C],[-X+C,-Z],[-G,-Z],[-G,-Z-D],[G,-Z-D],[G,-Z],[X-C,-Z]];
     const geometry=new THREE.ShapeGeometry(new THREE.Shape(outline.map(([x,z])=>new THREE.Vector2(x,-z)))).rotateX(-Math.PI/2);
@@ -259,7 +270,7 @@ export class BallArena {
     const ground={
       'ink-bowl':`// The pitch is a sheet of paper. Warm cream, mown in broad bands a shade apart, the paper's grain
         // and fibre in it, and screentone dots in the darker bands (faded out where they would shimmer).
-        float bStripe=mod(floor(bp.y/4.+100.),2.);
+        float bStripe=mod(floor(bp.y/${band}+100.),2.);
         vec3 bTurf=mix(${lin(0xe8dcc0)},${lin(0xd9c9a6)},bStripe)*(.9+bGrain*.14+bFibre*.05);
         vec2 bDotP=mat2(.7071,-.7071,.7071,.7071)*bp*4.2;
         float bDotFw=length(fwidth(bDotP));
@@ -269,7 +280,7 @@ export class BallArena {
       'dust-yard':`float bStripe=0.;vec3 bTurf=mix(${lin(0xdcc08f)},${lin(0xc8a46f)},smoothstep(.3,.75,bGrain))*(.92+bFibre*.06);
         float bRip=sin(dot(bp,vec2(.82,.57))*4.2+texture2D(uBallNoise,bp*.06).r*7.);bTurf*=1.-.08*smoothstep(.5,1.,bRip);float bPud=0.;`,
       // Rain Roof: wet slate, puddles darker and glossy, the rain ringing in them.
-      'rain-roof':`float bStripe=mod(floor(bp.y/4.+100.),2.);vec3 bTurf=mix(${lin(0x4a4d55)},${lin(0x3f424a)},bStripe)*(.9+bGrain*.15);
+      'rain-roof':`float bStripe=mod(floor(bp.y/${band}+100.),2.);vec3 bTurf=mix(${lin(0x4a4d55)},${lin(0x3f424a)},bStripe)*(.9+bGrain*.15);
         float bPud=smoothstep(.56,.66,texture2D(uBallNoise,bp*.05).g);bTurf*=1.-bPud*.4;
         vec2 bCell=floor(bp*1.1),bF=fract(bp*1.1)-.5;float bT=fract(uBallTime*.8+fract(sin(dot(bCell,vec2(12.9898,78.233)))*43758.5453));
         bTurf+=vec3(.5,.55,.62)*(1.-smoothstep(0.,.03,abs(length(bF)-bT*.45)))*(1.-bT)*(.2+bPud*.8)*.3;`,
@@ -286,27 +297,27 @@ export class BallArena {
         // Each end washed in its side's colour like watercolour, ragged at its edge, the goal floors most.
         vec3 bTeam=mix(${lin(BALL_TEAM_COLOURS.red)},${lin(BALL_TEAM_COLOURS.blue)},step(0.,bp.y));
         float bRag=(texture2D(uBallNoise,bp*.12).a-.5)*3.;
-        float bWash=smoothstep(${num(Z-13)},${num(Z-9)},abs(bp.y)+bRag)*.2+step(${num(Z)},abs(bp.y))*.42;
+        float bWash=smoothstep(${num(Z-13*kz)},${num(Z-9*kz)},abs(bp.y)+bRag)*.2+step(${num(Z)},abs(bp.y))*.42;
         bTurf=mix(bTurf,bTurf*(.35+bTeam*1.25),bWash);
         // The lines: ink brush strokes, wider and wobblier than chalk, dry at their edges where the brush ran out.
         float bW=.13+(texture2D(uBallNoise,bp*.21).a-.5)*.06;
         float bSd=max(max(abs(bp.x)-${num(X)},abs(bp.y)-${num(Z)}),(abs(bp.x)+abs(bp.y)-${num(X+Z-C)})*.70710678);
         float bIn=step(bSd,-.8),bR=length(bp);
         float bMarks=ballLine(bSd+.8,bW)*step(abs(bp.y),${num(Z)});
-        bMarks=max(bMarks,ballLine(bp.y,bW)*bIn*step(6.6,abs(bp.x)));
+        bMarks=max(bMarks,ballLine(bp.y,bW)*bIn*step(${num(enso*1.1)},abs(bp.x)));
         bMarks=max(bMarks,1.-smoothstep(.3,.36,bR));
         float bIntoPitch=${num(Z-.8)}-abs(bp.y);
-        bMarks=max(bMarks,ballLine(ballBox(vec2(bp.x,bIntoPitch-5.6),vec2(12.,5.6)),bW));
-        bMarks=max(bMarks,ballLine(ballBox(vec2(bp.x,bIntoPitch-2.3),vec2(7.,2.3)),bW));
-        bMarks=max(bMarks,1.-smoothstep(.24,.3,length(vec2(bp.x,bIntoPitch-8.))));
-        bMarks=max(bMarks,ballLine(length(vec2(bp.x,bIntoPitch-8.))-5.,bW)*step(11.2,bIntoPitch));
+        bMarks=max(bMarks,ballLine(ballBox(vec2(bp.x,bIntoPitch-${num(box[1])}),vec2(${num(box[0])},${num(box[1])})),bW));
+        bMarks=max(bMarks,ballLine(ballBox(vec2(bp.x,bIntoPitch-${num(six[1])}),vec2(${num(six[0])},${num(six[1])})),bW));
+        bMarks=max(bMarks,1.-smoothstep(.24,.3,length(vec2(bp.x,bIntoPitch-${num(spot)}))));
+        bMarks=max(bMarks,ballLine(length(vec2(bp.x,bIntoPitch-${num(spot)}))-${num(arc)},bW)*step(${num(box[1]*2)},bIntoPitch));
         bMarks=max(bMarks,ballLine(abs(bp.y)-${num(Z)},bW*1.3)*step(abs(bp.x),${num(G)}));
         float bDry=step(.7,texture2D(uBallNoise,bp*vec2(.9,1.1)).r)*.6;
         bMarks*=1.-bDry*(1.-smoothstep(.35,.95,bMarks));
         // The great brush circle at the heart of the pitch (the centre circle and the kickoff's mark in one), and a
         // second, thinner stroke inside it.
-        float bEnso=ballEnso(bp,6.,.62+(texture2D(uBallNoise,bp*.25).g-.5)*.2);
-        bEnso=max(bEnso,ballEnso(vec2(-bp.y,bp.x),4.4,.16)*.8);
+        float bEnso=ballEnso(bp,${num(enso)},.62+(texture2D(uBallNoise,bp*.25).g-.5)*.2);
+        bEnso=max(bEnso,ballEnso(vec2(-bp.y,bp.x),${num(enso*.73)},.16)*.8);
         bMarks=max(bMarks,bEnso);
         bTurf=mix(bTurf,${ink},bMarks*.94);
         diffuseColor.rgb*=bTurf;`).replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
@@ -419,7 +430,7 @@ export class BallArena {
   /** The stadium bowl: stepped stands round the pitch at a distance, a crowd on every tread, a canopy over the top
    *  row, and a ribbon of light along the stand fronts and the canopy's edge. */
   private bowl(o:{tiers?:number;seat?:(z:number,k:number)=>THREE.Color;riser?:number;canopy?:boolean;screens?:boolean;name?:string}={}){
-    const ring=BallArena.pitchRing(),TIERS=o.tiers??14,FRONT=6.5,TREAD=1.55,RISE=1.05,BASE=1.5;
+    const ring=BallArena.pitchRing(),TIERS=o.tiers??BOWL.tiers,{front:FRONT,tread:TREAD}=BOWL,RISE=1.05,BASE=1.5;
     const tier=(k:number)=>({d:FRONT+k*TREAD,h:BASE+k*RISE});
     const rings=Array.from({length:TIERS+1},(_,k)=>offsetRing(ring,tier(k).d));
     // Pale carved stone for the treads (the ink crowd reads against it), dark risers, every fourth tread a
@@ -669,7 +680,7 @@ export class BallArena {
     const sand=new THREE.Color(0xb08f62),rust=new THREE.Color(0x7b3a26),deep=new THREE.Color(0x4a2219),deck=new THREE.Color(0x2b1e17);
     // x, z, turn, length, beam, depth, roll, how deep in the sand.
     const hulls:[number,number,number,number,number,number,number,number][]=[
-      [-(X+34),-4,0,64,14,8.5,.24,3],[X+34,6,Math.PI,58,13,8,-.2,2.6],
+      [-wreckHullX(),-4,0,64,14,8.5,.24,3],[wreckHullX(),6,Math.PI,58,13,8,-.2,2.6],
       [-(X+30),-(Z+28),Math.PI/4,36,9,6,.32,2],[X+28,Z+26,-Math.PI*.72,40,10,6.5,-.3,2.2]];
     hulls.forEach(([x,z,turn,L,B,D,roll,sink],i)=>{
       const g=hullGeometry(L,B,D,16,10).rotateZ(roll).rotateY(turn).translate(x,D-sink,z);g.computeVertexNormals();

@@ -51,7 +51,8 @@ describe('mutators', () => {
     const m = pair('goal-rush', 'low-gravity');
     expect(m.ball.grav).toBe(MUTATOR_RULES.gravity);
     until(m, () => m.view.phase === 'live');
-    m.ball.x = 0; m.ball.z = GOAL_RULES.halfZ - 12; m.ball.y = 1;
+    // (Just past blue's kickoff mark, half the half-length out.)
+    m.ball.x = 0; m.ball.z = GOAL_RULES.halfZ - 8.5; m.ball.y = 1;
     aim(m, 'red-1', 0);
     m.receive(m.locate(BALL_ID)!, blow('red-1'));
     expect(until(m, () => m.view.score.red > 0, 4)).toBe(true);
@@ -200,15 +201,16 @@ describe('training drills', () => {
     const m = drill('ss-spike');
     nextBall(m);
     expect(m.view.touches).toBe(2); expect(m.view.aim?.floor).toBe(true);
-    // Up to the set as it comes onto the net, an air heavy aimed at the ring.
+    // Up off the floor as the floating set tops out, an air heavy aimed at the ring near the top of the jump.
     until(m, () => m.ball.vy < 1, 2);
     const ring = m.view.aim!, yaw = Math.atan2(ring.x - m.ball.x, ring.z - m.ball.z);
     m.sim.place('me', { x: m.ball.x, y: 0, z: m.ball.z - .8 }, yaw);
-    for (let i = 0; i < 40 && m.ball.shot !== 'spike'; i++) {
-      m.submit('me', { seq: i + 1, moveX: 0, moveZ: 0, yaw, jump: i === 0, jumpHeld: i < 12, attack: i === 2 ? 'heavy' : undefined, targetId: BALL_ID });
+    for (let i = 0; i < 60 && m.ball.shot !== 'spike'; i++) {
+      m.submit('me', { seq: i + 1, moveX: 0, moveZ: 0, yaw, jump: i === 0, jumpHeld: i < 30, attack: i === 16 ? 'heavy' : undefined, targetId: BALL_ID });
       m.step(1 / 60);
     }
     expect(m.ball.shot).toBe('spike');
+    expect(m.view.events.some(e => e.kind === 'strike' && e.text === 'SKY SPIKE' && e.perfect)).toBe(true);
     until(m, () => m.view.drill!.results.length > 0, 4);
     expect(m.view.events.some(e => e.kind === 'kill' && e.actorId === 'me')).toBe(true);
   });

@@ -23,10 +23,25 @@ export interface StrikeContext {
   gravity?: number;
   /** How the striker was moving along the floor (m/s): a blow struck on the run carries some of it (MOMENTUM). */
   run?: {vx: number; vz: number};
+  /** Sky Spike: a PERFECT SPIKE (BallMatch: struck from the top of the striker's jump, at the net) - it flies faster
+   *  (PERFECT_SPIKE.speed) and one heat tier over the ball's cap. */
+  perfect?: boolean;
 }
 export interface StrikeResult { vx: number; vy: number; vz: number; sx: number; sy: number; sz: number; shot: ShotKind; heat: number; super: boolean }
 
 const DEG = Math.PI / 180;
+/** Sky Spike's floating set: the second touch climbs to about 7 m and comes down onto the net at
+ *  `height` (`z` metres off it) after `seconds`, slowly enough to be read from the floor. A jumping fighter meets it
+ *  at the top of their jump (4.8-5.5 m up), which is where a spike is PERFECT. It came down at 4.3 m after 1.15 s, under
+ *  a body still climbing: every spike was struck on the way up, the jump braked by the swing. */
+export const SPIKE_SET = {height: 5.9, z: 1.7, seconds: 1.35} as const;
+/** A first touch off a hard ball (`from` m/s and over: a spike, a drive) is a DIG: up high to the middle of the court,
+ *  `height` metres at `z` off the net after `seconds`, so the side has time to get under it and set (BallMatch counts
+ *  it as a dig at the same speed). A bump's ordinary arc came down at 2.6 m after 1.2 s, too low and quick for a save
+ *  off a spike to become an attack. */
+export const SPIKE_DIG = {from: 17, height: 3.6, z: 4.6, seconds: 1.5} as const;
+/** A PERFECT SPIKE's flight: this much faster than a spike's. */
+export const PERFECT_SPIKE_SPEED = 1.12;
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 /** Every touch carries momentum: a shot struck on the run - a sprint, a boost, a
  *  dash into it - flies this share of the striker's speed along the aim faster (never past its heat's cap). Not a tap's
@@ -48,7 +63,7 @@ export function strikeBall(ball: BallState, c: StrikeContext): StrikeResult {
   const power = (1 + .1 * heat) * (c.striker.awakened ? 1.12 : 1);
   const out = c.mode === 'goal-rush' ? goalShot(ball, c, kind, power, speedCap(c.mode, heat)) : spikeShot(ball, c, kind, power);
   // A hotter ball may fly faster, never faster than its heat allows.
-  const cap = c.slot === 'ultimate' ? speedCap(c.mode, BALL_RULES.heatMax) : speedCap(c.mode, heat);
+  const cap = c.slot === 'ultimate' ? speedCap(c.mode, BALL_RULES.heatMax) : speedCap(c.mode, c.perfect && kind === 'spike' ? heat + 1 : heat);
   const s = Math.hypot(out.vx, out.vy, out.vz);
   if (s > cap) { const k = cap / s; out.vx *= k; out.vy *= k; out.vz *= k; }
   return {vx: out.vx, vy: out.vy, vz: out.vz, sx: out.sx, sy: out.sy, sz: out.sz, shot: out.shot ?? kind, heat: heat - ball.heat, super: kind === 'super'};
@@ -118,7 +133,7 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
     let best: {x: number; z: number; t: number} | undefined, bestCos = Math.cos(28 * DEG);
     for (const m of c.mates) {
       const ex = m.x - ball.x, ez = m.z - ball.z, d = Math.hypot(ex, ez);
-      if (d < 3 || d > 26) continue;
+      if (d < 3 || d > R.halfZ) continue;
       const cos = (ex * dx + ez * dz) / d;
       if (cos <= bestCos) continue;
       const t = d / (speed * .9);
@@ -136,7 +151,8 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
   // (A light string's drive is a shot of its own: only a committed blow is helped on target.)
   if (kind !== 'tap' && kind !== 'drive' && dz * toward > .2) {
     const t = (gz - ball.z) / dz, hitX = ball.x + dx * t, d = Math.abs(t);
-    if (d < 34 && Math.abs(hitX) < R.goalHalfWidth + 3) {
+    // (From within 1.3 half-lengths of the goal: 34 m on the 52 m pitch, 25 on the 38 m one.)
+    if (d < R.halfZ * 1.1 && Math.abs(hitX) < R.goalHalfWidth + 3) {
       // (The corner is laid as far out as it was for the old 0.62 m ball: the ball's own radius in from the post's middle.)
       const tx = Math.max(-R.goalHalfWidth + R.ballRadius, Math.min(R.goalHalfWidth - R.ballRadius, hitX));
       const flat = Math.hypot(tx - ball.x, gz - ball.z);
@@ -171,12 +187,12 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
   const touches = c.touches ?? 1;
   const keep = !c.serve && touches < R.touches && (c.slot === 'light' || (kind === 'eruption' && touches < 2)) && kind !== 'spike';
   if (keep) {
-    // First touch: up and toward the middle of this side. Second: a set at the net for a spiker to jump on.
-    const set = touches >= 2;
-    const tx = Math.max(-R.courtHalfX + 1.2, Math.min(R.courtHalfX - 1.2, set ? ball.x * .5 + Math.sin(s.aimYaw) * 2 : ball.x * .4));
-    const tz = sign * (set ? 1.9 : 5.2), t = kind === 'eruption' ? 1.7 : set ? 1.15 : 1.2;
-    const v = arc(ball, tx, set ? 4.3 : 2.6, tz, t, g, R.drag);
-    // A set climbs to about 5 m and comes down onto the net at 4.3, where a jumping spiker meets it on the way up.
+    // First touch: up and toward the middle of this side (a hard ball's, higher: the DIG). Second: a floating set at the
+    // net for a spiker to meet at the top of their jump (SPIKE_SET).
+    const set = touches >= 2, dig = !set && kind !== 'eruption' && Math.hypot(ball.vx, ball.vy, ball.vz) >= SPIKE_DIG.from;
+    const tx = Math.max(-R.courtHalfX + 1.2, Math.min(R.courtHalfX - 1.2, set ? ball.x * .5 + Math.sin(s.aimYaw) * 2 : ball.x * (dig ? .3 : .4)));
+    const tz = sign * (set ? SPIKE_SET.z : dig ? SPIKE_DIG.z : 5.2), t = kind === 'eruption' ? 1.7 : set ? SPIKE_SET.seconds : dig ? SPIKE_DIG.seconds : 1.2;
+    const v = arc(ball, tx, set ? SPIKE_SET.height : dig ? SPIKE_DIG.height : 2.6, tz, t, g, R.drag);
     return {...v, sx: 0, sy: 0, sz: 0, shot: kind === 'eruption' ? 'eruption' : set ? 'set' : 'bump'};
   }
   const yaw = s.aimYaw;
@@ -204,7 +220,7 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
     tx = ball.x + dx * 9; tz = ball.z + dz * 9;
   }
   const flat = Math.hypot(tx - ball.x, tz - ball.z);
-  const speed = (speedOf[kind] ?? 18) * power + (kind === 'serve' || kind === 'super' || flat < 1e-3 ? 0 : carried(c, (tx - ball.x) / flat, (tz - ball.z) / flat));
+  const speed = (speedOf[kind] ?? 18) * power * (c.perfect && kind === 'spike' ? PERFECT_SPIKE_SPEED : 1) + (kind === 'serve' || kind === 'super' || flat < 1e-3 ? 0 : carried(c, (tx - ball.x) / flat, (tz - ball.z) / flat));
   let t = kind === 'serve' && c.slot === 'light' ? 1.55 : Math.max(.28, flat / speed);
   let v = arc(ball, tx, R.ballRadius, tz, t, g, R.drag);
   // It has to clear the net (a spike from too low becomes a tip that does): the slowest flight that does.
