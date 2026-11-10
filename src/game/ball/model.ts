@@ -4,6 +4,7 @@ import type {BallReplay} from './replay';
 import type {BallMutator} from './mutators';
 import type {BallTrait} from './traits';
 import type {DrillView} from './drills';
+import type {LessonView} from './lesson';
 import type {SeatRank} from './ranked';
 import type {BallLook} from './look';
 import type {AimAssist, SportFeel} from '../simulation';
@@ -15,7 +16,7 @@ import type {AimAssist, SportFeel} from '../simulation';
 export type BallModeId = 'goal-rush' | 'sky-spike';
 export const BALL_MODES: readonly BallModeId[] = ['goal-rush', 'sky-spike'];
 /** Bumped whenever a page and a room would disagree about the ball, its view or its messages. */
-export const BALL_PROTOCOL = 6;
+export const BALL_PROTOCOL = 7;
 export type BallTeam = 'red' | 'blue';
 export const BALL_TEAMS: readonly BallTeam[] = ['red', 'blue'];
 export const otherTeam = (team: BallTeam): BallTeam => team === 'red' ? 'blue' : 'red';
@@ -191,8 +192,14 @@ export interface BallView {
   party?: boolean; autoStart?: boolean;
   /** A mutator (mutators.ts: HEAT RUSH, LOW GRAVITY, GIANT BALL, SUDDEN DEATH), or none: CLASSIC or RUMBLE. */
   mutator?: BallMutator | null;
+  /** The bots' level when it is not NORMAL (BallBrain BOT_LEVELS) - a match against bots, or a private room's
+   *  host's pick (the lobby says so). */
+  level?: 'easy' | 'hard';
   /** FREE PLAY's training drill (drills.ts): which, which ball, the results, the medal once it is over. */
   drill?: DrillView | null;
+  /** LEARN TO PLAY (lesson.ts), FREE PLAY's guided first game - the step on now, what is done, why the last try
+   *  missed. */
+  lesson?: LessonView | null;
   /** RANKED (ranked.ts): a ranked queue's room, and whether the people at kickoff made the match ranked. */
   ranked?: boolean;
   /** The match's intro (ceremony.ts INTRO): it runs through the countdown, from `startsAt - seconds` to `startsAt`. The
@@ -307,7 +314,9 @@ export const GOAL_RULES = {
    *  corner's chamfer kept its 4.5 m, a larger share of the shorter walls: a ball run along a side wall meets it and is
    *  turned across the face of the goal, a cross. */
   halfX: 13, halfZ: 19, wall: 10, ceiling: 17, corner: 4.5,
-  goalHalfWidth: 4, goalHeight: 4, goalDepth: 3.4, post: .28,
+  // (The goal 7.2 m wide, not 8 m: with SHOOT shooting for every fighter and the guard's ball leaving the keeper put
+  // 16.3 on the score a match over 16 seeds, live 81.5%; at 7.2 m, 12.6 and 84.7%.)
+  goalHalfWidth: 3.6, goalHeight: 4, goalDepth: 3.4, post: .28,
   ballRadius: .8, hitRadius: 1.35, gravity: 13, drag: .07, roll: 2.4, bounce: .64, wallBounce: .8,
   /** A low ball off a wall (its centre under the ball's radius plus this) climbs by this share of how hard it met it: the
    *  wall's foot curves it back up into play instead of letting it die along the boards. (Raised from .32 to .4: more of
@@ -340,11 +349,11 @@ export const GOAL_RULES = {
  *    a minute; it fills again `regenAfter` s after the last blow, at `regen` a second.
  *  - Nobody is knocked out: a fighter whose health runs out is WIPED OUT, off the pitch for `seconds`, then back at their
  *    own end (`respawnZ` from their goal line, `respawnX` either side) with it full, protected for `guard` s.
- *  - A wipe-out is worth `points` toward MVP.
+ *  - A wipe-out is worth MVP.wipeout toward MVP (BallMatch).
  *  - A BUMP: a boosting body at `bump.speed` or more, closing on an opponent at `bump.closing`, knocks them flat
  *    (`bump.damage` of the bar; one out of health is wiped out), at most once a `bump.gap` s each. */
 export const GOAL_FIGHT = {
-  health: 220, regenAfter: 6, regen: 25, seconds: 3, guard: 1, respawnZ: 3.5, respawnX: 5, points: 10,
+  health: 220, regenAfter: 6, regen: 25, seconds: 3, guard: 1, respawnZ: 3.5, respawnX: 5,
   bump: {speed: 11, closing: 8, damage: .5, gap: 1.2, reach: .45},
 } as const;
 
@@ -359,11 +368,11 @@ export const GOAL_FIGHT = {
  *  - `reach`: metres a lock holds out to (past it, and when the one locked is wiped out, it is the BALL stance again).
  *  - `tackle`: a FIGHT-stance blow that knocks down, launches or wipes out the one on the ball - the nearest of their side
  *    within `near` m of it, or the last to touch it within `touched` s - is a TACKLE (TAKEDOWN if it wiped them out),
- *    worth `points` (`takedown`) toward MVP and `meter` of the super shot's meter (`awaken` of the awakening's), at most
+ *    worth MVP.tackle (MVP.takedown; BallMatch) toward MVP and `meter` of the super shot's meter (`awaken` of the awakening's), at most
  *    once a `gap` s on the same striker: winning the ball back by force pays toward the shot that follows it. */
 export const GOAL_STANCE = {
   reach: 32,
-  tackle: {near: 3.4, touched: 1.4, points: 15, takedown: 30, gap: 1.5, meter: 12, awaken: 6},
+  tackle: {near: 3.4, touched: 1.4, gap: 1.5, meter: 12, awaken: 6},
 } as const;
 
 /** Sports movement in the ball rooms (simulation.ts SportFeel). A quicker run (7.5 to 9.5 m/s) on quicker feet, the dash run on as a boost on the stamina bar (13.5 m/s; a

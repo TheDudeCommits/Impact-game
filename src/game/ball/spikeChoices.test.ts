@@ -247,18 +247,25 @@ describe('Sky Spike: the swings', () => {
     expect(m.view.events.at(-1)?.kind === 'deuce' || m.view.events.some(e => e.kind === 'deuce' && e.value === 10)).toBe(true);
   });
   it('plays its choices in a bots match: every serve, set and attack, and FEVER from the eighth crossing', () => {
-    const m = new BallMatch('sky-spike', { seed: 8, access: 'bots', replays: false });
-    m.add('p', 'konta', 'P', false, 'red'); m.pilot('p'); m.start();
-    // (The view keeps the last sixty events: read them as they come.)
-    const texts = new Set<string>(), seen = new Set<number>();
-    for (let i = 0; i < 60 * 60 * 8 && m.view.phase !== 'over'; i++) {
-      m.step(1 / 60);
-      for (const e of m.view.events) if (!seen.has(e.id)) { seen.add(e.id); texts.add(`${e.kind}:${e.text ?? e.shot ?? ''}`); if (e.kind === 'strike' && e.shot === 'tip') texts.add('tip'); }
+    // (Each side of bots plays a plan - BallBrain PLAN - which steers most of its sets, so one match may not
+    // show every set: a few seeds, until it has.)
+    const texts = new Set<string>(), wants = ['strike:FLOAT SERVE', 'set:QUICK SET', 'set:BACK SET'];
+    for (const seed of [8, 11, 21]) {
+      const m = new BallMatch('sky-spike', { seed, access: 'bots', replays: false });
+      m.add('p', 'konta', 'P', false, 'red'); m.pilot('p'); m.start();
+      // (The view keeps the last sixty events: read them as they come.)
+      const seen = new Set<number>();
+      for (let i = 0; i < 60 * 60 * 8 && m.view.phase !== 'over'; i++) {
+        m.step(1 / 60);
+        for (const e of m.view.events) if (!seen.has(e.id)) { seen.add(e.id); texts.add(`${e.kind}:${e.text ?? e.shot ?? ''}`); if (e.kind === 'strike' && e.shot === 'tip') texts.add('tip'); }
+      }
+      expect(m.view.phase).toBe('over');
+      m.dispose();
+      if (wants.every(w => texts.has(w)) && texts.has('tip')) break;
     }
-    expect(m.view.phase).toBe('over');
-    for (const want of ['strike:FLOAT SERVE', 'set:QUICK SET', 'set:BACK SET']) expect(texts).toContain(want);
+    for (const want of wants) expect(texts).toContain(want);
     expect([...texts].some(t => t === 'strike:JUMP SERVE' || t === 'strike:PERFECT SERVE')).toBe(true);
     expect(texts).toContain('tip');
     expect(SPIKE_RULES.fever).toBe(8);
-  }, 120000);
+  }, 300000); // up to three matches, on a busy machine
 });

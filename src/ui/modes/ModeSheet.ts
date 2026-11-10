@@ -24,6 +24,8 @@ import { onRanks } from '../ball/ranks';
 import { nearest, type Direction } from '../spatialFocus';
 import { MODES, VARIANT_ORDER, modeHere, type ModeId, type Panel, type VariantId } from './catalogue';
 import { defenceBasics } from './defence';
+import { sportsBasics } from './sportsBasics';
+import { LEARN_PITCH, learnState, markLearn } from '../ball/learnCopy';
 import { tutorialState } from '../../tutorial/guidedFight';
 import { explainerSeen, markExplainerSeen, modePrefs, namedPlaceFor, saveModePrefs } from './prefs';
 import { placePicture, placeRow, placeShown } from './place';
@@ -53,8 +55,9 @@ export interface SheetHost {
   story?(): void;
   /** The pad the page's menus read (input.ts padIndex), if any: on the couch way, Player 2's pad moves Player 2's pick. */
   menuPad?(): number | null;
-  /** LEARN TO FIGHT (src/tutorial), offered first in HOW TO PLAY: the guided first fight. */
-  learn?(): void;
+  /** LEARN TO FIGHT (src/tutorial), offered first in HOW TO PLAY: the guided first fight; for a ball mode its LEARN TO
+   *  PLAY (game/ball/lesson.ts, the guided first game). */
+  learn?(mode?: ModeId): void;
 }
 export interface SheetOpen { variant?: VariantId; code?: string; invited?: boolean; status?: string; showPanels?: boolean }
 
@@ -92,7 +95,13 @@ export function screenIcon(screen: CouchScreen): string {
   return `<svg class="ms-screen-icon" viewBox="0 0 64 41" aria-hidden="true" focusable="false"><rect x="1.5" y="1.5" width="61" height="38" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/>${halves}</svg>`;
 }
 
-function learnButton() {
+/** HOW TO PLAY's first offer: LEARN TO FIGHT, the guided first fight (src/tutorial), over the reference that follows. */
+function learnButton(mode: ModeId) {
+  // (A ball mode's is LEARN TO PLAY, the sport's own first game - LEARN TO FIGHT taught guard and parry.)
+  if (mode === 'goal-rush' || mode === 'sky-spike') {
+    const done = learnState(mode) === 'done';
+    return `<button type="button" class="ms-learn" data-ms-learn><i aria-hidden="true">▶</i><span><b>LEARN TO PLAY · 60 s</b><small>${LEARN_PITCH[mode]}</small></span>${done ? '<em>DONE ✓ · AGAIN</em>' : ''}</button>`;
+  }
   const done = tutorialState() === 'done';
   return `<button type="button" class="ms-learn" data-ms-learn><i aria-hidden="true">▶</i><span><b>LEARN TO FIGHT · 60 s</b><small>A GUIDED FIRST FIGHT: GUARD, PARRY, A TECHNIQUE, YOUR ULTIMATE</small></span>${done ? '<em>DONE ✓ · AGAIN</em>' : ''}</button>`;
 }
@@ -203,8 +212,11 @@ export class ModeSheet {
     const howTo = this.panels
       ? `<div class="ms-panels">${info.howTo.map((line, i) => `<figure class="ms-panel"><span class="ms-pic" style="${this.panelArt(info.panels[i], fighter)}"><b>${i + 1}</b></span><figcaption class="ux-keys">${promptText(line, keys)}</figcaption></figure>`).join('')}</div>`
       : `<ol class="ms-bullets ux-keys">${info.howTo.map(line => `<li><span>${promptText(line, keys)}</span></li>`).join('')}</ol>`;
-    // Every mode's blows can be blocked and parried, the horde's too: the PARRY stream's three lessons (defence.ts).
-    const defence = `<details class="ms-defence" open><summary>DEFENCE BASICS</summary><ul class="ux-keys ux-defence">${defenceBasics()}</ul></details>`;
+    // Every mode's blows can be blocked and parried, the horde's too: the PARRY stream's three lessons (defence.ts). A
+    // ball mode's are the sport's instead (sportsBasics.ts - pass, shoot, the perfect strike ... the block, the dive).
+    const ball = this.mode === 'goal-rush' || this.mode === 'sky-spike' ? this.mode : undefined;
+    const defence = ball ? `<details class="ms-defence" open><summary>SPORTS BASICS</summary><ul class="ux-keys ux-defence">${sportsBasics(ball)}</ul></details>`
+      : `<details class="ms-defence" open><summary>DEFENCE BASICS</summary><ul class="ux-keys ux-defence">${defenceBasics()}</ul></details>`;
     const tabs = VARIANT_ORDER.filter(id => info.variants[id]).map(id => { const each = info.variants[id]!; return `<button type="button" role="tab" data-ms-variant="${id}" aria-selected="${id === this.variant}" tabindex="${id === this.variant ? 0 : -1}">${escape(each.label)}<small>${escape(each.tag)}</small></button>`; }).join('');
     this.dialog.dataset.mode = this.mode; this.dialog.dataset.variant = this.variant;
     const prefs = this.prefs(), shown = this.joining ? undefined : placeShown(this.mode, this.variant, prefs.stage, this.field());
@@ -242,7 +254,7 @@ export class ModeSheet {
       ${play}
       <section class="ms-rules" role="group" aria-label="How to play"${this.rules ? '' : ' hidden'}>
         <header><h3>HOW TO PLAY</h3>${!seen ? '<span class="ms-stamp">FIRST TIME</span>' : ''}<button type="button" class="ms-rules-close" data-ms-rules-close>${seen ? 'CLOSE ✕' : 'GOT IT ✓'}</button></header>
-        ${this.host.learn ? learnButton() : ''}
+        ${this.host.learn ? learnButton(this.mode) : ''}
         <h4>HOW YOU WIN</h4>
         <p class="ms-win">${escape(info.win)}</p>
         <div class="ms-facts">${facts}</div>
@@ -283,8 +295,9 @@ export class ModeSheet {
     // The ARENA row (game/ball/arenas.ts): any (the mode's arenas in turn) or one of the three.
     const arenaRow = ball ? `<div class="ms-option ms-arena" role="group" aria-label="Arena"><b>ARENA</b><button type="button" data-ms-arena="" aria-pressed="${!isBallArena(prefs.arena)}">ANY</button>${MODE_ARENAS[this.mode as BallModeId].map(id => `<button type="button" data-ms-arena="${id}" aria-pressed="${prefs.arena === id}">${BALL_ARENAS[id].name.replace(/^The /, '').toUpperCase()}</button>`).join('')}</div>` : '';
     // (the mutators beside them, ONLINE's queues - the weekly playlist and RANKED - and BOTS' drills: ui/ball/ballSheet.ts.)
-    // (BOTS' and COUCH's BOTS row, the other side's bots' level - a match's, not FREE PLAY's or a drill's.)
-    const level = ball && (this.variant === 'couch' || (this.variant === 'offline' && !prefs.practice && !prefs.drills)) ? ballLevelRow(prefs) : '';
+    // (BOTS' and COUCH's BOTS row, the other side's bots' level - a match's, not FREE PLAY's or a drill's; FRIENDS' too,
+    // for the room's bots - the joiner takes the host's.)
+    const level = ball && (this.variant === 'couch' || this.variant === 'friends' || (this.variant === 'offline' && !prefs.practice && !prefs.drills)) ? ballLevelRow(prefs, this.mode as BallModeId) : '';
     const rules = ball && !this.joining ? (this.variant !== 'online' ? arenaRow : '') + level + ballRulesRow(this.mode as 'goal-rush' | 'sky-spike', this.variant, prefs) : '';
     if (this.variant === 'couch') return `${rules}${this.mode === 'royale' ? row('FIGHTERS', 'data-ms-fighters', FIGHTER_COUNTS, prefs.fighters ?? defaultRoyaleFighters()) : ''}${this.mode === 'bad-blood' || this.mode === 'rift-war' ? this.sideOptions() : ''}${this.couchOptions()}`;
     // BOTS: a 3 v 3 match, or FREE PLAY alone with the ball.
@@ -501,6 +514,8 @@ export class ModeSheet {
       case 'goal-rush': case 'sky-spike': {
         // The ARENA row's pick rides with BOTS, COUCH and FRIENDS (matchmaking takes the mode's in turn).
         const start = ballStart(mode, this.variant, prefs, join, this.code, couch);
+        // A player's first match of a ball mode offers LEARN TO PLAY once (learnCopy.ts rift-ball-learn).
+        if (!start.practice && this.offerLearn(mode)) return;
         access = isBallArena(prefs.arena) && BALL_ARENAS[prefs.arena].mode === mode && this.variant !== 'online' && !join ? { ...start, arena: prefs.arena } : start; break;
       }
       case 'rift-war': access = couch ? { kind: 'rift-war', access: 'bots', couch } : {kind:'rift-war',access:join?'join':this.variant==='offline'?'bots':this.variant==='online'?'quick':'host',code:join?this.code:undefined}; break;
@@ -516,6 +531,23 @@ export class ModeSheet {
     this.pending = { mode, variant: this.variant, at: performance.now() };
     this.close();
     this.host.start(fighter, room, access);
+  }
+  /** GO on a ball mode never played - no LEARN TO PLAY done or turned down on this device -
+   *  puts the offer over the sheet first: ▶ LEARN TO PLAY · 60 s, or JUST PLAY (which turns it down for good; HOW TO PLAY
+   *  still has it). True: the offer is up and the match waits. Not for an automated browser (the smokes and captures
+   *  press GO as players do), unless the address asks with `?learn`. */
+  private offerLearn(mode: 'goal-rush' | 'sky-spike'): boolean {
+    if (!this.host.learn || learnState(mode) !== 'new' || this.dialog.querySelector('.ms-offer')) return false;
+    const automated = typeof navigator === 'object' && navigator.webdriver;
+    if (automated && !new URLSearchParams(location.search).has('learn')) return false;
+    const offer = document.createElement('section');
+    offer.className = 'ms-offer'; offer.setAttribute('role', 'group'); offer.setAttribute('aria-label', 'Learn to play first');
+    offer.innerHTML = `<small>FIRST ${mode === 'goal-rush' ? 'MATCH' : 'GAME'} OF ${escape(MODES[mode].name)}</small><b>LEARN IT IN A MINUTE?</b>
+      <p>A guided minute on your own - ${escape(LEARN_PITCH[mode].replace('A GUIDED FIRST GAME: ', '').toLowerCase())}. Then this ${mode === 'goal-rush' ? 'match' : 'game'}.</p>
+      <div><button type="button" class="ms-offer-go" data-ms-offer="learn"><i aria-hidden="true">▶</i> LEARN TO PLAY · 60 s</button><button type="button" data-ms-offer="play">JUST PLAY</button></div>`;
+    this.dialog.append(offer);
+    offer.querySelector<HTMLButtonElement>('[data-ms-offer="learn"]')?.focus({ preventScroll: true });
+    return true;
   }
   /** Player 2's fighter for a couch start: the one on their card, or for RANDOM any fighter open to them. */
   private partnerOf(fighter: FighterId): FighterId {
@@ -551,7 +583,10 @@ export class ModeSheet {
     else if (d.msPlace !== undefined) { saveModePrefs(this.mode, { stage: (d.msPlace || 'random') as StageChoice }); this.redrawKeeping(b); }
     else if (d.msChange !== undefined) { this.close(); this.host.changeFighter(); }
     else if (d.msStory !== undefined) { this.close(); this.host.story?.(); }
-    else if (d.msLearn !== undefined) { this.close(); this.host.learn?.(); }
+    else if (d.msLearn !== undefined) { this.close(); this.host.learn?.(this.mode); }
+    // A ball mode's first match offers LEARN TO PLAY first (go): taken, or turned down and the match played.
+    else if (d.msOffer === 'learn') { this.close(); this.host.learn?.(this.mode); }
+    else if (d.msOffer === 'play') { if (this.mode === 'goal-rush' || this.mode === 'sky-spike') markLearn(this.mode, 'skipped'); this.go(); }
     else if (d.msFighters) { saveModePrefs(this.mode, { fighters: Number(d.msFighters) }); this.redrawKeeping(b); }
     else if (d.msRoom) { saveModePrefs(this.mode, { roomSize: Number(d.msRoom) }); this.redrawKeeping(b); }
     else if (d.msLone) { saveModePrefs(this.mode, { lone: d.msLone === 'true' }); this.redrawKeeping(b); }

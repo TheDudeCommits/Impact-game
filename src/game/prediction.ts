@@ -358,11 +358,14 @@ export class Prediction {
     const held = SERVER_OWNED.has(server.action) || !server.alive;
     this.serverOwns = SERVER_OWNED.has(server.action) || !!server.timeStopped; // Round 3e (REACT): see `sample`.
     this.pending = this.pending.filter(input => input.seq > ack);
-    for (const input of this.pending) {
-      sim.submitInput(this.id, input);
-      this.rememberRemote();
-      sim.step();
-    }
+    this.replaying = true;
+    try {
+      for (const input of this.pending) {
+        sim.submitInput(this.id, input);
+        this.rememberRemote();
+        sim.step();
+      }
+    } finally { this.replaying = false; }
     this.consumeEvents(sim.snapshot(true).events,false);
     for(const [id,contact]of this.contacts){
       const from=previousTargets.get(id),to=sim.actors.get(id)?.state;
@@ -491,6 +494,13 @@ export class Prediction {
    *  Read by the evidence probes: it is the clock a press is supposed to move,
    *  and the drawn frame is bounded by the render rate rather than by it. */
   get action() { return this.sim?.actors.get(this.id)?.state.action; }
+  /** The ball modes' forecast of the page's own touch (game/ball/BallTargets): the local copy's own fighter -
+   *  its body, its last command, its swing and guard - and its clock. Read-only: nothing here changes the copy. */
+  get local() { return this.sim?.actors.get(this.id); }
+  get localTime() { return this.sim?.serverTime ?? NaN; }
+  /** True while a snapshot's unacknowledged commands are being stepped again (`reconcile`): what the copy meets then is
+   *  already history, and the ball modes never forecast a touch from it. */
+  replaying = false;
 
   /** Read-only transport diagnostics; never fed back into gameplay. */
   get diagnostics() {

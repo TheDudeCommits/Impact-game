@@ -137,7 +137,12 @@ function classify(ball: BallState, c: StrikeContext): ShotKind {
   // Only a move made to launch (a string's launcher ender, a rising strike) pops the ball into the sky.
   const launcher = c.move.outcome === 'launch' || c.move.outcome === 'hop';
   if (air && (c.slot === 'heavy' || c.slot === 'special') && ball.y < s.y + 2.4) return 'spike';
-  if (launcher) return 'pop';
+  // (In Goal Rush a heavy from the floor is SHOOT - the touch set's button and the keys' - and it shoots,
+  // whatever the fighter's heavy does to a ball on its own. A launching heavy popped every one of them up, so 27 of the
+  // hundred fighters - the home's own first among them - could not shoot a ball at all, nor strike a PERFECT STRIKE on
+  // SHOOT; on a touch screen, whose set has no SPECIAL, they had no shot. A launcher in the air, a light string's launcher
+  // ender and Sky Spike's pops are as they were.)
+  if (launcher && !(c.mode === 'goal-rush' && c.slot === 'heavy' && !air)) return 'pop';
   if (air) return c.slot === 'light' ? 'volley' : 'spike';
   if (c.slot === 'special') return s.forward > .5 ? 'sinker' : 'curve';
   if (c.slot === 'heavy') return 'power';

@@ -3,6 +3,7 @@ import { ballOf, BALL_TEAM_NAMES } from '../../game/ball/model';
 import { promptText } from '../prompts';
 import { MODES, type ModeId, type VariantId } from '../modes/catalogue';
 import { defenceBasics } from '../modes/defence';
+import { sportsBasics } from '../modes/sportsBasics';
 import { coachOn, setCoachOn } from '../modes/prefs';
 import type { ModeHudHost } from '../hud/host';
 import type { ModeHudFrame } from '../hud/modeHud';
@@ -131,7 +132,7 @@ export class GameMenu {
     const info = MODES[this.mode!];
     this.howto.innerHTML = `<h3>${escape(info.name)}</h3><p class="gm-goal">${escape(info.goal)}</p><p class="gm-win">${escape(info.win)}</p>
       <h3>HOW TO PLAY</h3><ol class="ux-keys">${info.howTo.map(line => `<li>${promptText(line, { sport: info.id === 'goal-rush' || info.id === 'sky-spike' ? { mode: info.id } : null })}</li>`).join('')}</ol>
-      <h3>DEFENCE BASICS</h3><ul class="gm-defence ux-keys ux-defence">${defenceBasics()}</ul>`;
+      ${info.id === 'goal-rush' || info.id === 'sky-spike' ? `<h3>SPORTS BASICS</h3><ul class="gm-defence ux-keys ux-defence">${sportsBasics(info.id)}</ul>` : `<h3>DEFENCE BASICS</h3><ul class="gm-defence ux-keys ux-defence">${defenceBasics()}</ul>`}`;
   }
   private drawLive(frame = this.modes.frame) {
     if (!this.mode || !this.open) return;

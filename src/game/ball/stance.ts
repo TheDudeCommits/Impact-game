@@ -19,8 +19,8 @@ import type {PlayerState, Vec3} from '../types';
  */
 export type Stance = 'ball' | 'fight';
 /** Whether a match has the two stances: Goal Rush outside FREE PLAY (Sky Spike never fights), and FREE PLAY's drill with
- *  a carrier to take the ball off (drills.ts TACKLE). */
-export const hasStances = (view: BallView | undefined): view is BallView => !!view && view.mode === 'goal-rush' && (!view.practice || !!(view.drill && DRILLS[view.drill.id]?.rival));
+ *  a carrier to take the ball off (drills.ts TACKLE) and LEARN TO PLAY's (lesson.ts: its FIGHT & TACKLE is that drill's). */
+export const hasStances = (view: BallView | undefined): view is BallView => !!view && view.mode === 'goal-rush' && (!view.practice || !!(view.drill && DRILLS[view.drill.id]?.rival) || !!view.lesson);
 
 /** A flick: the view swept this far (radians) inside FLICK_WINDOW seconds moves the lock; then FLICK_REST before another. */
 const FLICK = .32, FLICK_WINDOW = .28, FLICK_REST = .35;

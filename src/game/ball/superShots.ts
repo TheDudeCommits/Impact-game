@@ -53,8 +53,7 @@ export const LINK = {
   window: {'goal-rush': .6, 'sky-spike': .5} as Record<BallModeId, number>,
   /** The heat it adds: one tier. */
   heat: 1,
-  /** Points to the finisher (with the accolade's own) and to the setter. */
-  points: 20, setter: 20,
+  /** (Its points to the finisher, with the accolade's own, and to the setter: BallMatch MVP.link, MVP.linkSetter.) */
   /** The touches that set it up, and the strikes that finish it. */
   sets: new Set<ShotKind>(['tap', 'bump', 'set', 'pop']),
   finishes: new Set<ShotKind>(['power', 'volley', 'spike', 'curve', 'sinker', 'blast', 'eruption', 'super', 'drive']),
@@ -62,5 +61,5 @@ export const LINK = {
 
 /** A TECHNIQUE DUEL: a PERFECT guard meeting a SUPER SHOT. The ball hangs `hold` seconds between them (the clash's beat),
  *  then the keeper wins `keeper` of the time (more awakened, less against an awakened striker) and the shot dies, or it
- *  breaks through and the keeper goes down. */
-export const DUEL = {hold: .7, keeper: .55, awakened: .15, points: 90} as const;
+ *  breaks through and the keeper goes down (the winner's points: BallMatch MVP.duel, half to a striker breaking through). */
+export const DUEL = {hold: .7, keeper: .55, awakened: .15} as const;

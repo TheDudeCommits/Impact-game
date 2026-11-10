@@ -55,7 +55,7 @@ export class HomeShell {
       changeFighter: () => { this.root.querySelector<HTMLElement>('.home-fighter[aria-pressed="true"]')?.focus(); },
       story: deps.story,
       menuPad: deps.menuPad,
-      learn: () => this.learn(),
+      learn: mode => this.learn(mode),
     });
     this.offer = new LearnOffer(this.root, () => this.learn());
     this.menu = new GameMenu(this.root, hud.modes);
@@ -221,9 +221,11 @@ export class HomeShell {
     this.shown = undefined; this.describe();
   }
 
-  /** LEARN TO FIGHT: the guided first fight (src/tutorial), in offline Training with the home's fighter. */
-  learn() {
+  /** LEARN TO FIGHT: the guided first fight (src/tutorial), in offline Training with the home's fighter. A ball mode's
+   *  is LEARN TO PLAY (game/ball/lesson.ts), its guided first game in FREE PLAY on this device. */
+  learn(mode?: ModeId) {
     this.sheet.close(); this.hud.onPreviewStop();
+    if (mode === 'goal-rush' || mode === 'sky-spike') { void this.hud.onStart(this.hud.selected, 'match', this.hud.playerName(), { kind: 'ball', mode, access: 'bots', practice: true, lesson: true }); return; }
     void this.hud.onStart(this.hud.selected, 'training', this.hud.playerName(), { kind: 'training', tutorial: true });
   }
 

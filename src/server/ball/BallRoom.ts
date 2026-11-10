@@ -24,13 +24,15 @@ import {owns} from '../../game/economy/account';
 import {outfitFor} from '../../game/economy/outfits';
 import {RoomRewards} from '../economy/RoomRewards';
 import {isMutator, weeklyMutator, type BallMutator} from '../../game/ball/mutators';
+import {isBotLevel, type BotLevel} from '../../game/ball/BallBrain';
 import {lookOfWorn} from '../../game/ball/look';
 import {RANKED, bandOf, rankedStart, rate, type RankedSeat} from '../../game/ball/ranked';
 import {ranked} from './ranked';
 import {otherTeam} from '../../game/ball/model';
 
 interface Options extends RosterProtocolOptions {party?: unknown; ballProtocol?: unknown; ball?: unknown; access?: unknown; fighter?: unknown; name?: unknown; code?: unknown; creationToken?: unknown; rumble?: unknown; arena?: unknown; account?: string; assetGate?: boolean; skill?: unknown;
-  /** Matchmaking's queues: CLASSIC, the weekly PLAYLIST (its mutator: this week's), RANKED. */ queue?: unknown; mutator?: unknown; band?: unknown;}
+  /** Matchmaking's queues: CLASSIC, the weekly PLAYLIST (its mutator: this week's), RANKED. */ queue?: unknown; mutator?: unknown; band?: unknown;
+  /** A private room's bots' level, the host's pick on the mode sheet (BallBrain BOT_LEVELS); none: NORMAL. */ difficulty?: unknown;}
 /** Matchmaking's three queues, kept apart by the matchmaker's filter (src/server/index.ts filterBy). */
 export type BallQueue = 'classic' | 'playlist' | 'ranked';
 const QUEUES: readonly BallQueue[] = ['classic', 'playlist', 'ranked'];
@@ -54,6 +56,9 @@ export class BallRoom extends Room {
   private arena: BallArenaId | undefined;
   /** A mutator: the host's choice, or the weekly playlist's (mutators.ts). */
   private mutator: BallMutator | null = null;
+  /** The bots' level - a private room's host's pick (EASY, NORMAL, HARD) for every round; matchmaking's rooms
+   *  are always NORMAL, so a stranger is never matched into a level they did not choose. */
+  private difficulty: BotLevel = 'normal';
   /** Which matchmaking queue a public room is (a private room's is 'classic'). */
   private queue: BallQueue = 'classic';
   /** RANKED (game/ball/ranked.ts): each person's account, the people who started the match (rated against each other at
@@ -91,6 +96,7 @@ export class BallRoom extends Room {
       if (this.queue === 'playlist') { const week = weeklyMutator(Date.now()); if (options.mutator !== week) throw new Error("This week's playlist has changed. Open the mode again."); this.mutator = week; }
     } else if (isMutator(options.mutator)) { this.mutator = options.mutator; this.rumble = false; }
     if (this.access === 'host' && isBallArena(options.arena) && BALL_ARENAS[options.arena].mode === options.ball) this.arena = options.arena;
+    if (this.access === 'host' && isBotLevel(options.difficulty)) this.difficulty = options.difficulty;
     if (this.access === 'host') {
       if (typeof options.creationToken !== 'string' || !/^[-0-9a-f]{36}$/i.test(options.creationToken)) throw new Error('Create this room from the mode menu.');
       this.nonce = options.creationToken;
@@ -135,7 +141,7 @@ export class BallRoom extends Room {
   }
   private fresh(collision: ReturnType<typeof buildCollision>, round: number) {
     // (A rematch - the room's next round - opens with the short intro, ceremony.ts SHORT_INTRO.)
-    const game = new BallMatch(this.mode, {collision, seed: Math.random() * 0x7fffffff | 0 || 1, access: this.access, round, fillBots: true, lockCombat: LOCK_ONLINE, rumble: this.rumble, mutator: this.mutator, arena: this.arena, intro: round > 1 ? 'short' : true});
+    const game = new BallMatch(this.mode, {collision, seed: Math.random() * 0x7fffffff | 0 || 1, access: this.access, round, fillBots: true, lockCombat: LOCK_ONLINE, rumble: this.rumble, mutator: this.mutator, arena: this.arena, difficulty: this.difficulty, intro: round > 1 ? 'short' : true});
     // Online fairness: each person's swings, guards, headers and tackles are judged against the ball and the
     // fighters as their page drew them, at most SEEN.most back (BallMatch SEEN) - the fighters' own rewind too, past the
     // other rooms' quarter second (simulation.ts LAG_COMPENSATION): a 120 ms round trip is a quarter second of view.

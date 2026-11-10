@@ -5,7 +5,7 @@ import {COMBO_HP, COMBO_STAMINA, JUST_GUARD_WINDOW, MOVES, PLAYER_RADIUS, jumpAr
 import {HELD} from '../economy/fighters';
 import {tidyName} from '../displayName';
 import type {CollisionWorld, CombatEvent, FighterId, PlayerState, Vec3} from '../types';
-import {BOT_LEVELS, BallBrain, isBotLevel, type BotLevel} from './BallBrain';
+import {BOT_LEVELS, BallBrain, PLAN_LINES, dealPlan, isBotLevel, type BotLevel} from './BallBrain';
 import {
   BALL_ID, BALL_RULES, BALL_SPORT, BALL_STAGE, BALL_TEAMS, CHARM_KINDS, CLASH, GOAL_FIGHT, GOAL_STANCE, QUICK_CHAT_LIMIT, quickChat, GOAL_RULES, RUMBLE, SPIKE_RULES, ballAssist, charmName, heatTier, otherTeam,
   type BallAccess, type BallCharm, type BallEffect, type CharmKind, type BallEvent, type BallModeId, type BallSeat, type BallSnapshot, type BallState,
@@ -16,7 +16,8 @@ import {SPIKE_DIG, strikeBall} from './strike';
 import {REPLAY, replayLength, type BallReplay} from './replay';
 import {MUTATOR_RULES, baseGravity, baseSize, isMutator, type BallMutator} from './mutators';
 import {TRAIT_RULES, traitOf, withTrait} from './traits';
-import {DRILLS, DrillRunner, isDrill, type DrillFeed, type DrillHost, type DrillId} from './drills';
+import {DRILLS, DRILL_RIVAL, DrillRunner, isDrill, type DrillFeed, type DrillId} from './drills';
+import {BallLesson, LESSON_CAST, type LessonHost} from './lesson';
 import {CELEBRATE, celebrationOf, cleanLook, type Celebration} from './look';
 import {DUEL, LINK, SIGNATURE_FIGHTERS, SIGNATURE_SHOTS} from './superShots';
 import {INTRO, SHORT_INTRO, podiumOf} from './ceremony';
@@ -39,6 +40,8 @@ export interface BallOptions {
   mutator?: BallMutator | null;
   /** FREE PLAY's training drill (drills.ts), this mode's. */
   drill?: DrillId;
+  /** FREE PLAY as LEARN TO PLAY, the guided first game (lesson.ts): its cast seated, its steps on the machine. */
+  lesson?: boolean;
   /** The match opens with its intro (ceremony.ts INTRO: the flyover, the splash page, the whistle), held in a
    *  longer countdown. Never in FREE PLAY; the page's offline match and the online rooms ask for it, a couch one doesn't.
    *  'short' is the short intro (SHORT_INTRO: the splash page and the whistle), a rematch's. */
@@ -59,7 +62,7 @@ const BOWL: MoveDefinition = {name: 'Ball Impact', duration: .4, contacts: [0], 
  *  still bulldozes: a ball that bowled players over every few seconds took the match away from them). */
 const STAGGER: MoveDefinition = {name: 'Ball Impact', duration: .3, contacts: [0], damage: 1, range: 1, radius: 1, stamina: 0, cooldown: 0, stun: BALL_RULES.staggerSeconds, knockback: 3.5, style: 'melee', outcome: 'stagger'};
 /** The TACKLE drill's carrier's seat (drills.ts). */
-export const DRILL_RIVAL = 'drill-rival';
+export {DRILL_RIVAL};
 /** Ultimate and awakening meter a touch is worth, by slot: a side that keeps the ball moving earns its super shot. */
 const TOUCH_METER: Record<string, [number, number]> = {light: [2, 2.5], heavy: [3.5, 3.5], special: [4, 4], ultimate: [0, 5], area: [3.5, 3.5]};
 /** Goal Rush's share of TOUCH_METER's ultimate meter (on the smaller pitch the ball is touched a fifth more
@@ -78,21 +81,54 @@ const BODY_LOW = .45, BODY_HIGH = 1.45, BODY_BOUNCE = .35, GOAL_BODY_BOUNCE = .5
 const BUMP: MoveDefinition = {name: 'BUMP', duration: .4, contacts: [0], damage: Math.round(GOAL_FIGHT.health * GOAL_FIGHT.bump.damage), range: 1, radius: 1, stamina: 0, cooldown: 0, stun: .7, knockback: 10, style: 'melee', outcome: 'knockdown'};
 /** How much further than its body a guard meets the ball. */
 const GUARD_REACH = .7;
+/** A guard meets the ball once (a block announced a dozen times, and paid a dozen times, is no moment at all). The ball it turns away leaves it - at `leave` m/s at
+ *  the least against the guarding body's own motion, along the line from the body to the ball - and that body lets it
+ *  go until it is clear of its reach (`clear` s at the most) or somebody else has touched it. A SUPER SHOT that bowls a
+ *  body over flies on through it the same way. And a guard's credit (its event, the block or save, the points, the meter)
+ *  comes once a `credit` s. Without it, in the bot sims, a stuffed ball rode a rising blocker's hands, a STUFF BLOCK every tick;
+ *  a keeper's PERFECT GUARD sent the ball up the way they looked, back into their own body in the air, eight times in a
+ *  row, each a sixth of the super shot's meter; a SUPER SHOT bulldozed the same keeper four ticks running, a tenth of
+ *  its speed lost at each. */
+const GUARD_OFF = {leave: 3, clear: .4, credit: .4} as const;
+/** How near the net (m) a Sky Spike fighter's body may stand: never past it (tidyBodies). The net's collider is
+ *  0.12 m either side of the line (game/environmentLayout.ts) and a body a PLAYER_RADIUS round: no step ever stands a
+ *  body nearer, so only a move that carried one through it is put back. */
+const NET_SIDE = .12 + PLAYER_RADIUS;
+/** The frame's posts and crossbar ring once for a ball rattling between them (OFF THE POST!, CROSSBAR!: one
+ *  event a `post` s), and Sky Spike's net once for a ball caught in it (one 'net' a `net` s). */
+const RATTLE = {post: .6, net: .6} as const;
+/** What each thing a seat does is worth toward MVP (BallSeat.points: the results card's order and its MVP, the podium's
+ *  steps). One table, so the tally reads as a whole. The MVP is the most points, `win` more to each of the winners.
+ *  Rewards follow skill: a tally carried by touches hardly told a skilled player from a casual one (Goal Rush
+ *  1043 points against 1000) and a masher out-scored a casual one in Sky Spike, because touches (2 each, sixty a match)
+ *  and shots on target (20) carried it. Now the moments carry it - goals and assists, the PERFECT STRIKE and SPIKE, the
+ *  STUFF BLOCK, saves, tackles, digs and kills - and a touch is worth 1, a shot on target 10. A strike out of a flurry of
+ *  presses (MASHED: a SCUFF) earns nothing for its touch or its shot, and a goal or a kill off one a third or so of a
+ *  clean one's; a ball put out, a fourth touch and an own goal are debits. A LINK SHOT is worth `link` and no more (its
+ *  accolade was 25 on top). Measured with the scripted players (playerModels.ts), 48 paired seeds. */
+export const MVP = {
+  touch: 1, shot: 10, scuffTouch: 0, scuffShot: 0, goal: 120, scuffGoal: 40, ownGoal: -60, assist: 50,
+  save: 50, divingSave: 60, perfectSave: 80, shield: 30,
+  perfectStrike: 100, perfectSpike: 80, tackle: 30, takedown: 50, wipeout: 10,
+  block: 30, stuff: 110, dig: 30, divingDig: 50, kill: 80, scuffKill: 20, superKill: 140, ace: 90, fault: -60, serve: 2, perfectServe: 50,
+  link: 25, linkSetter: 10, duel: 90, clash: 15, charm: 5, win: 25,
+} as const;
+export type MvpKind = Exclude<keyof typeof MVP, 'win'>;
 /** Sky Spike: a body climbing at `rising` m/s or more is still on its way up; a ball within `near` metres past its reach
  *  is one it is climbing past (bodyContacts). */
 const CLIMB = {rising: .6, near: .6} as const;
 /** Sky Spike: a swing leaving with the body falling slower than this (m/s) is one from the top of the jump. */
 const SWING_TOP = .6;
-/** Sky Spike's PERFECT SPIKE: a spike struck from the top of the jump - the striker's body at `apex` of their jump's
- *  height or more - with the ball over `ball` metres and within `net` metres of the net (so every one is a SKY SPIKE
- *  too). It flies faster and a heat tier over its cap (strike.ts), burns `heat` hotter, holds the striker in the air a
- *  beat on the blow (`freeze` s: the hang at the top), and is worth `points`. Struck on the way up instead, the swing
- *  brakes the jump at a metre or two (the kernel's air cast) and the spike is an ordinary one. Its strike event is a
- *  SKY SPIKE's (`text`), so whatever the page does for one it does for this, with `perfect` set for anything more (the
- *  shot ticker names it). It goes through any block at the net (`through` metres of it) that is not a STUFF BLOCK -
- *  hands up early, or a body in the way - so the timing of the spike is answered only by the timing of the block (or a
- *  dig behind it). */
-const PERFECT_SPIKE = {apex: .92, net: 3.6, ball: 3.6, heat: .7, freeze: .1, points: 25, through: 2.6} as const;
+/** Sky Spike's PERFECT SPIKE: a
+ *  spike struck from the top of the jump - the striker's body at `apex` of their jump's height or more - with the ball
+ *  over `ball` metres and within `net` metres of the net (so every one is a SKY SPIKE too). It flies faster and a heat
+ *  tier over its cap (strike.ts), burns `heat` hotter, holds the striker in the air a beat on the blow (`freeze` s: the
+ *  hang at the top), and is worth MVP.perfectSpike. Struck on the way up instead, the swing brakes the jump at a metre or two
+ *  (the kernel's air cast) and the spike is an ordinary one. Its strike event is a SKY SPIKE's (`text`), so whatever
+ *  the page does for one it does for this, with `perfect` set for anything more (the shot ticker names it). It
+ *  goes through any block at the net (`through` metres of it) that is not a STUFF BLOCK - hands up early, or a body in
+ *  the way - so the timing of the spike is answered only by the timing of the block (or a dig behind it). */
+const PERFECT_SPIKE = {apex: .92, net: 3.6, ball: 3.6, heat: .7, freeze: .1, through: 2.6} as const;
 /** Goal Rush's PERFECT STRIKE, the moment a player is proud of. A ball coming to you - a pass, a cross, a rebound, a
  *  clearance: `incoming` m/s or more
  *  of its own flight toward you - met by the blow just as it arrives: it came inside `shell` metres of your chest no more
@@ -102,12 +138,12 @@ const PERFECT_SPIKE = {apex: .92, net: 3.6, ball: 3.6, heat: .7, freeze: .1, poi
  *  A heavy met at 12 m/s has about an eighth of a second to be pressed in. A heavy, a special or an air blow (a tap's
  *  pass, a launcher's pop, a beam, an area move and an ultimate never are). It flies `speed` times faster and a heat tier
  *  over the ball's cap (strike.ts), is helped onto the frame from further out and laid deeper in its corner, burns
- *  `heat` hotter, holds the striker a beat on the blow (`freeze` s), and is worth `points` and `meter` of the super
- *  shot's. A swing at nothing in the last `clean` s spoils it - a perfect strike is the first swing at the ball, so a
+ *  `heat` hotter, holds the striker a beat on the blow (`freeze` s), and is worth MVP.perfectStrike and `meter` of the
+ *  super shot's. A swing at nothing in the last `clean` s spoils it - a perfect strike is the first swing at the ball, so a
  *  button-masher swinging at the air as it comes never has one (in the bot sims, before that rule, a masher piloting a
  *  seat struck five times the perfects a bot at its best did). Its strike event is `perfect: true` with the text
  *  PERFECT STRIKE, PERFECT VOLLEY in the air (or the flair's own name). */
-export const PERFECT_STRIKE = {incoming: 5, shell: 2.6, arrived: .1, late: .04, sweet: 3, clean: .65, speed: 1.15, heat: .6, freeze: .07, points: 20, meter: 4} as const;
+export const PERFECT_STRIKE = {incoming: 5, shell: 2.6, arrived: .1, late: .04, sweet: 3, clean: .65, speed: 1.15, heat: .6, freeze: .07, meter: 4} as const;
 /** Goal Rush's HEADER: a ball meeting the upper body (its centre over `head` metres off the feet: the chest up) that
  *  jumped into it, coming in at `from` m/s or more, is headed on - not bounced off - the way the body faces (the
  *  stick's), helped onto the frame like a shot (strike.ts). A cross off a corner is turned in by jumping into it. (A
@@ -155,7 +191,7 @@ const DIG_DIVE = {window: .5, reach: .75, ahead: .12} as const;
  *  serve of `stretch.speed` m/s or more (a JUMP SERVE, a hot DRIVE) met with the body `stretch.from` metres or more off
  *  its line - at full stretch, not behind it - comes off the arms `stretch.miss` metres off line and up to `stretch.wild`
  *  more (all of it `span` metres further out): often out or down, the server's ACE (point). */
-const SERVE_RULES = {reach: .9, apex: .92, spray: 1.2, wild: 4, wide: 2.4, low: .7, points: 10, shank: {x: 3.4, z: 2.4},
+const SERVE_RULES = {reach: .9, apex: .92, spray: 1.2, wild: 4, wide: 2.4, low: .7, shank: {x: 3.4, z: 2.4},
   stretch: {speed: 22, from: 1.15, span: .9, miss: 2.5, wild: 3.5}} as const;
 /** Online, a person's touch of the ball judged against the ball as their page drew it: a PERFECT STRIKE must not be a
  *  coin toss online. A page draws the ball and everyone else `view` seconds behind the room - the round trip, the
@@ -174,6 +210,9 @@ const SERVE_RULES = {reach: .9, apex: .92, spray: 1.2, wild: 4, wide: 2.4, low: 
  *  Off (`compensate` 0) on this device, in a couch match and in every test that does not ask: the online room turns it on
  *  (BallRoom). */
 export const SEEN = {most: .3, keep: .4, over: .04, settle: 1, overNet: 1} as const;
+/** The rules of a touch that the page forecasts for its own fighter (touchForecast.ts), read from here so the
+ *  page's forecast and the room's touch cannot drift apart. */
+export const TOUCH_RULES = {BODY_LOW, BODY_HIGH, BODY_BOUNCE, GOAL_BODY_BOUNCE, GUARD_REACH, CLIMB, SWING_TOP, PERFECT_SPIKE, SERVE_RULES, DIG_DIVE, HEADED, BOWL, REELING, GUARD_OFF} as const;
 /** One tick of the ball's history (SEEN): the ball, the rally's count, where each fighter stood, and what changed the
  *  ball's flight in that tick - a seat's touch (`body`: its body's, `touch`: a swing's or a guard's), or the match's own
  *  doing or nobody's known (`by` null). */
@@ -216,7 +255,7 @@ const CHAT = {
 /** One Goal Rush or Sky Spike match around the shared fighting kernel: its seats and teams, its ball and the rules of
  *  each game. A server room, a page's offline match and the tests all drive it the same way: `add`, `start`, then
  *  `submit` and `step` each tick, `snapshot` to publish. */
-export class BallMatch implements ExternalTargets, DrillHost {
+export class BallMatch implements ExternalTargets, LessonHost {
   readonly sim: ArenaSimulation;
   readonly seats = new Map<string, BallSeat>();
   readonly view: BallView;
@@ -231,7 +270,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
   private readonly touchCast = new Map<string, number>();
   private readonly touchedAt = new Map<string, number>();
   /** Every touch lately, oldest first: `strike` false for a ball that only bounced off a body. */
-  private touchesLog: (Touch & {strike: boolean; shot?: ShotKind})[] = [];
+  private touchesLog: (Touch & {strike: boolean; shot?: ShotKind; scuffed?: boolean})[] = [];
   /** Blows a stopped ball took, landing together when its time starts again. */
   private stack: {vx: number; vy: number; vz: number; heat: number; count: number; id: string; team: BallTeam; shot: ShotKind; super?: boolean} | null = null;
   /** A TECHNIQUE DUEL on now: who guarded, whose shot, and how it ends when the beat does (releaseStack). */
@@ -240,6 +279,16 @@ export class BallMatch implements ExternalTargets, DrillHost {
   private clashAt = -Infinity;
   /** When each seat last dashed: a save straight after one is a DIVING SAVE. */
   private readonly dashAt = new Map<string, number>();
+  /** GUARD_OFF: the bodies letting the ball go after their guard turned it away (or a SUPER SHOT bowled them
+   *  over), until when; and when each seat's guard was last credited. */
+  private readonly shed = new Map<string, number>();
+  private readonly guardCredit = new Map<string, number>();
+  /** When the frame last rang (RATTLE), and the cast each seat's SUPER SHOT was last announced for. */
+  private postAt = -Infinity;
+  private netAt = -Infinity;
+  private readonly superCast = new Map<string, number>();
+  /** What each seat's points were for (MVP's kinds, and the accolades' own), for the measures. */
+  private readonly tally = new Map<string, Partial<Record<MvpKind | 'accolade', number>>>();
   /** Goal Rush: when the ball was last outside each seat's PERFECT_STRIKE.shell (the strike's timing reads it); each
    *  seat's swing under way (its cast's id) and when its last swing at nothing ended (PERFECT_STRIKE.clean). */
   private readonly outsideAt = new Map<string, number>();
@@ -314,16 +363,19 @@ export class BallMatch implements ExternalTargets, DrillHost {
   private streak = {id: '', count: 0};
   /** The match's own seeded numbers (bots' nerve, who serves first), apart from the kernel's. */
   private seed: number;
+  /** The seed as the match began, which deals each side of bots its plan (BallBrain dealPlan) without a draw. */
+  private readonly dealt: number;
   private rng = () => { let x = this.seed; x ^= x << 13; x ^= x >>> 17; x ^= x << 5; this.seed = x >>> 0 || 1; return this.seed / 0x100000000; };
 
   constructor(readonly mode: BallModeId, options: BallOptions = {}) {
-    this.seed = ((options.seed ?? 1) * 2654435761) >>> 0 || 1;
+    this.seed = ((options.seed ?? 1) * 2654435761) >>> 0 || 1; this.dealt = this.seed;
     this.difficulty = isBotLevel(options.difficulty) ? options.difficulty : 'normal';
     this.replays = (options.replays ?? true) && !options.practice;
     this.radius = mode === 'goal-rush' ? GOAL_RULES.ballRadius : SPIKE_RULES.ballRadius;
     this.hitR = mode === 'goal-rush' ? GOAL_RULES.hitRadius : SPIKE_RULES.hitRadius;
     // (A drill with a carrier, FREE PLAY's TACKLE, fights as a match does: drills.ts DrillDef.rival.)
-    this.pvp = mode === 'goal-rush' && (!options.practice || (isDrill(options.drill) && !!DRILLS[options.drill].rival));
+    // (So does LEARN TO PLAY's, whose FIGHT & TACKLE is that drill's: lesson.ts.)
+    this.pvp = mode === 'goal-rush' && (!options.practice || (isDrill(options.drill) && !!DRILLS[options.drill].rival) || !!options.lesson);
     this.sim = new ArenaSimulation({roomMode: 'training', adaptive: false, trainingBot: false, respawn: true, stage: BALL_STAGE[mode],
       collision: options.collision, seed: options.seed ?? 1, capacity: BALL_RULES.capacity, maxHp: this.pvp ? GOAL_FIGHT.health : COMBO_HP, maxStamina: COMBO_STAMINA,
       ...(options.lockCombat ? {lockCombat: true} : {})});
@@ -342,7 +394,9 @@ export class BallMatch implements ExternalTargets, DrillHost {
     if (options.practice) { this.view.fillBots = false; if (mode === 'sky-spike') this.view.target = 999; }
     else if (options.intro) this.view.intro = options.intro === 'short' ? {seconds: SHORT_INTRO.seconds, short: true} : {seconds: INTRO.seconds};
     this.view.arena = isBallArena(options.arena) && BALL_ARENAS[options.arena].mode === mode ? options.arena : arenaFor(mode, this.seed);
+    if (this.difficulty !== 'normal' && !options.practice) this.view.level = this.difficulty;
     if (options.practice && isDrill(options.drill) && DRILLS[options.drill].mode === mode) { this.drill = new DrillRunner(options.drill, this.rng); this.view.drill = this.drill.view; }
+    else if (options.practice && options.lesson) { this.lesson = new BallLesson(mode, this.rng); this.view.lesson = this.lesson.view; }
     this.placeBallAtRest();
   }
 
@@ -373,15 +427,23 @@ export class BallMatch implements ExternalTargets, DrillHost {
    *  bot plays) is the person's: its bots are the level's team-mates (EASY's the best, otherwise NORMAL's), who play
    *  their own game at any score. A side of bots alone takes the difficulty picked, and eases off ahead and digs in
    *  behind. With people on both sides, every bot takes the difficulty and none eases off: each person has the same
-   *  help. */
-  private levelBots() {
+   *  help. A side of bots alone also plays a plan (BallBrain PLAN, dealt from the match's seed and round), and
+   *  at the start one of them says it (PLAN_LINES); a person's team-mates follow the person. */
+  private levelBots(start = false) {
     const people = (team: BallTeam) => [...this.seats.values()].some(s => s.team === team && !this.brains.has(s.id));
     const both = BALL_TEAMS.every(people);
     for (const [id, brain] of this.brains) {
       const seat = this.seats.get(id);
       if (!seat) continue;
       const mine = people(seat.team);
-      brain.levelled(both || !mine ? this.difficulty : BOT_LEVELS[this.difficulty].mates, !mine);
+      brain.levelled(both || !mine ? this.difficulty : BOT_LEVELS[this.mode][this.difficulty].mates, !mine,
+        mine || this.view.practice ? undefined : dealPlan(this.mode, this.dealt, seat.team, this.view.round));
+    }
+    if (!start || this.view.practice) return;
+    for (const team of BALL_TEAMS) {
+      const said = !people(team) && [...this.seats.values()].find(s => s.team === team && this.brains.has(s.id));
+      const line = said && PLAN_LINES[this.mode][dealPlan(this.mode, this.dealt, team, this.view.round).plan];
+      if (said && line) { this.chats.push({at: (this.view.startsAt ?? this.sim.serverTime) + 1.2, id: said.id, team, text: line}); this.chats.sort((x, y) => x.at - y.at); }
     }
   }
   private readonly difficulty: BotLevel;
@@ -578,8 +640,8 @@ export class BallMatch implements ExternalTargets, DrillHost {
   /** FREE PLAY's target practice: a new ring somewhere to aim at - a corner or the middle of the goal the person shoots
    *  at, top or bottom; a spot on the far court's floor. */
   private newTarget() {
-    // (A drill puts its own ring up, ball by ball.)
-    if (!this.view.practice || this.drill) return;
+    // (A drill puts its own ring up, ball by ball; the lesson has none.)
+    if (!this.view.practice || this.script) return;
     const person = [...this.seats.values()].find(s => !s.bot), team = person?.team ?? 'red';
     if (this.mode === 'goal-rush') {
       const R = GOAL_RULES, z = goalZ(otherTeam(team)), xs = [-(R.goalHalfWidth - 1.25), 0, R.goalHalfWidth - 1.25], ys = [1.05, R.goalHeight - 1.15];
@@ -605,7 +667,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
    *  next ball now. */
   reset(id: string): boolean {
     const seat = this.seats.get(id), a = this.sim.actors.get(id), b = this.ball, now = this.sim.serverTime;
-    if (!this.view.practice || this.drill || !seat || !a || (this.view.phase !== 'live' && this.view.phase !== 'kickoff')) return false;
+    if (!this.view.practice || this.script || !seat || !a || (this.view.phase !== 'live' && this.view.phase !== 'kickoff')) return false;
     if (this.mode === 'goal-rush') {
       const yaw = a.input.yaw ?? a.state.yaw, p = a.state, R = GOAL_RULES, r = this.radius * b.size;
       Object.assign(b, {vx: 0, vy: 0, vz: 0, sx: 0, sy: 0, sz: 0, heat: 0, super: false, held: false, frozenUntil: 0, clash: 0});
@@ -684,9 +746,15 @@ export class BallMatch implements ExternalTargets, DrillHost {
       const fighter = this.sim.shuffle(POOL.filter(f => f !== person.fighter))[0];
       this.add(DRILL_RIVAL, fighter, fighter.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' '), true, otherTeam(person.team));
     }
+    // LEARN TO PLAY's cast (lesson.ts): bots whose hands are the lesson's.
+    if (this.lesson && person) for (const c of LESSON_CAST[this.mode]) {
+      if (this.seats.has(c.id)) continue;
+      const used = new Set([...this.seats.values()].map(s => s.fighter)), fighter = this.sim.shuffle(POOL.filter(f => !used.has(f)))[0];
+      this.add(c.id, fighter, fighter.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' '), true, c.side === 'mine' ? person.team : otherTeam(person.team));
+    }
     if (!this.view.practice && !BALL_TEAMS.every(team => this.count(team) > 0)) return false;
-    this.levelBots();
     this.view.phase = 'countdown'; this.view.startsAt = this.sim.serverTime + this.leadIn();
+    this.levelBots(true);
     for (const seat of this.seats.values()) { this.sim.place(seat.id, this.mark(seat), this.facing(seat.team)); this.sim.clearPlayerInput(seat.id); }
     return true;
   }
@@ -735,7 +803,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     if (twist.groundBounce !== 1) b.spring = twist.groundBounce;
     if (twist.wind) { const turn = ((this.seed + (this.view?.score.red ?? 0) * 7919 + (this.view?.score.blue ?? 0) * 104729) % 360) * Math.PI / 180; b.windX = Math.cos(turn) * twist.wind; b.windZ = Math.sin(turn) * twist.wind; }
     if (twist.startHeat) b.heat = Math.max(b.heat, twist.startHeat);
-    b.link = null; this.stack = null; this.lastStrike = null; this.duelling = null;
+    b.link = null; this.stack = null; this.lastStrike = null; this.duelling = null; this.shed.clear();
   }
 
   // ─── The step ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -756,7 +824,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
         if (this.celebration?.id === id && this.view.phase === 'scored') continue;
         const seat = this.seats.get(id), me = this.sim.actors.get(id)?.state;
         if (!seat || !me) continue;
-        const command = this.drill?.command(this, id) ?? brain.command(me, seat, players, this.view, now);
+        const command = this.script?.command(this, id) ?? brain.command(me, seat, players, this.view, now);
         this.stance(seat, command);
         this.sim.command(id, command);
       }
@@ -789,12 +857,47 @@ export class BallMatch implements ExternalTargets, DrillHost {
     if (this.view.phase === 'live' || (this.view.phase === 'kickoff' && this.mode === 'sky-spike')) this.play(dt);
     else if (this.view.phase === 'scored') this.coast(dt);
     if (this.view.rumble && this.view.phase === 'live') this.rumbleStep(dt);
-    if (this.drill && this.view.phase !== 'lobby' && this.view.phase !== 'countdown') this.drill.step(this);
+    if (this.script && this.view.phase !== 'lobby' && this.view.phase !== 'countdown') this.script.step(this);
     if (this.compensate > 0) this.record();
   }
 
-  // ─── Training drills (drills.ts): the host's side ───────────────────────────────────────────────────────────────
+  // ─── Training drills (drills.ts) and LEARN TO PLAY (lesson.ts): the host's side ────────────────────────────────────
   private drill?: DrillRunner;
+  private lesson?: BallLesson;
+  /** What runs on the ball machine: a drill, or the lesson. */
+  private get script(): DrillRunner | BallLesson | undefined { return this.drill ?? this.lesson; }
+  /** A seat's body as the kernel has it. */
+  stateOf(id: string) { return this.sim.actors.get(id)?.state; }
+  /** Goal Rush's FIGHT stance: the seat locked on an opponent. */
+  locked(id: string) { return !!this.seats.get(id)?.lock; }
+  /** A body put on a spot, facing, standing still (the lesson's setups). */
+  put(id: string, x: number, z: number, yaw: number) {
+    const a = this.sim.actors.get(id);
+    if (!a) return;
+    if (!a.state.alive) this.sim.revive(id, a.state.maxHp);
+    this.sim.place(id, {x, y: 0, z}, yaw); this.sim.clearPlayerInput(id); this.last.delete(id);
+  }
+  /** Sky Spike, LEARN TO PLAY's JUMP SERVE: the person serves - the ball hung at their baseline, they behind it - with
+   *  `seconds` to do it before the machine hangs it again (lesson.ts). */
+  servePerson(seconds: number) {
+    const seat = [...this.seats.values()].find(s => !s.bot);
+    if (!seat || this.mode !== 'sky-spike') return;
+    this.serving = seat.team; this.serve(); this.serving = null;
+    this.view.serverId = seat.id;
+    this.sim.place(seat.id, this.mark(seat), this.facing(seat.team)); this.sim.clearPlayerInput(seat.id); this.last.delete(seat.id);
+    this.view.phaseUntil = this.sim.serverTime + seconds;
+  }
+  /** FREE PLAY's serving side when the lesson has the person serve. */
+  private serving: BallTeam | null = null;
+  /** LEARN TO PLAY's SKIP STEP and END, from the person's page. */
+  lessonCommand(id: string, what: unknown): boolean {
+    const seat = this.seats.get(id);
+    if (!this.lesson || !seat || seat.bot || this.view.phase === 'lobby' || this.view.phase === 'countdown') return false;
+    if (what === 'skip') this.lesson.skip(this);
+    else if (what === 'end') this.lesson.end();
+    else return false;
+    return true;
+  }
   now() { return this.sim.serverTime; }
   person() {
     const seat = [...this.seats.values()].find(s => !s.bot), p = seat && this.sim.actors.get(seat.id)?.state;
@@ -806,7 +909,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     const b = this.ball, now = this.sim.serverTime, m = this.view.mutator;
     Object.assign(b, freshBall(), {x: f.ball.x, y: f.ball.y, z: f.ball.z, vx: f.ball.vx, vy: f.ball.vy, vz: f.ball.vz, held: false, lastTeam: f.team, shot: f.ball.shot ?? null});
     b.grav = baseGravity(m); b.size = baseSize(m); b.heat = Math.max(f.ball.heat ?? 0, m === 'heat-rush' ? MUTATOR_RULES.heatStart : 0);
-    this.stack = null; this.lastStrike = null; this.touchesLog = []; this.flair = null; this.endWait = false;
+    this.stack = null; this.lastStrike = null; this.touchesLog = []; this.flair = null; this.endWait = false; this.shed.clear();
     this.view.phase = 'live'; this.view.phaseUntil = now; this.liveSince = now; this.view.aim = f.aim ?? null;
     if (this.mode === 'sky-spike') { this.view.touchTeam = f.touchTeam ?? f.team; this.view.touches = f.touches ?? 0; this.view.rally = 1; }
     const me = this.person();
@@ -841,6 +944,11 @@ export class BallMatch implements ExternalTargets, DrillHost {
       if (!this.pvp) {
         a.state.hp = a.state.maxHp;
         if (!a.state.alive) { this.sim.revive(seat.id, a.state.maxHp); this.sim.place(seat.id, this.mark(seat), this.facing(seat.team)); }
+        // (Sky Spike's fighters stay on their own side of the net. A move that carries its fighter to the ball -
+        // an ultimate's rush - put one in the other court, a body in the other side's play until the next serve, once in
+        // sixteen bot matches.)
+        const own = seat.team === 'red' ? -1 : 1;
+        if (this.mode === 'sky-spike' && this.view.phase !== 'over' && a.state.z * own < NET_SIDE) { a.state.z = own * NET_SIDE; a.kz = 0; }
         continue;
       }
       if (seat.out !== undefined) { if (now + 1e-6 >= seat.out) this.backIn(seat); continue; }
@@ -866,7 +974,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     const a = this.sim.actors.get(seat.id), now = this.sim.serverTime;
     if (!a) return;
     seat.out = now + GOAL_FIGHT.seconds; a.respawnAt = Infinity; this.last.delete(seat.id); delete seat.lock;
-    if (by) { by.wipeouts = (by.wipeouts ?? 0) + 1; by.points += GOAL_FIGHT.points; }
+    if (by) { by.wipeouts = (by.wipeouts ?? 0) + 1; this.award(by, 'wipeout'); }
     const p = a.state;
     this.emit('wipeout', {team: by?.team ?? otherTeam(seat.team), actorId: by?.id, targetId: seat.id, x: p.x, y: p.y + 1, z: p.z, value: GOAL_FIGHT.seconds, text: blow});
   }
@@ -908,7 +1016,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
   /** FREE PLAY in Sky Spike: the side nobody sits on, where the ball machine stands. */
   private machine(): BallTeam { return this.count('red') > 0 && this.count('blue') === 0 ? 'blue' : this.count('red') === 0 ? 'red' : 'blue'; }
   private serve() {
-    if (this.view.practice) this.view.servingTeam = this.machine();
+    if (this.view.practice) this.view.servingTeam = this.serving ?? this.machine();
     const R = SPIKE_RULES, team = this.view.servingTeam, sign = team === 'red' ? -1 : 1;
     const servers = [...this.seats.values()].filter(s => s.team === team);
     const server = servers[this.serveRotation[team] % Math.max(1, servers.length)];
@@ -1007,6 +1115,10 @@ export class BallMatch implements ExternalTargets, DrillHost {
       const dive = this.mode === 'sky-spike' && !guardReach && b.lastTeam !== null && b.lastTeam !== seat.team && sideOf(b.z) === seat.team
         && now - (this.dashAt.get(seat.id) ?? -Infinity) < DIG_DIVE.window && Math.hypot(b.vx, b.vy, b.vz) >= SPIKE_DIG.from ? DIG_DIVE.reach : 0;
       const d = Math.hypot(nx, ny, nz), reach = r + PLAYER_RADIUS * size + guardReach + dive;
+      // (GUARD_OFF: a body whose guard has just turned the ball away, or that a SUPER SHOT has just bowled over,
+      // lets it go until it is clear.)
+      const shed = this.shed.get(seat.id);
+      if (shed !== undefined) { if (now < shed && d < reach) continue; this.shed.delete(seat.id); }
       // Sky Spike, the attacking touch: a hitter still climbing lets the ball by the body, for the swing (one
       // jumping straight up under the set would meet it with the head first: a PERFECT SPIKE off a set right overhead
       // came 27% of the time, a step back 97%). Not swung for by the top of the jump, it is the body's there, as it always was (the
@@ -1043,15 +1155,19 @@ export class BallMatch implements ExternalTargets, DrillHost {
       // A super shot is stopped by nothing but a perfect guard: anyone else in its way is bowled over and it flies on
       // (a guard that is not perfect is broken through), the keeper blasted back with it.
       if (b.super && hostile && rel < -1 && !(guarding && now - a.guardPressedAt <= JUST_GUARD_WINDOW)) {
+        // (GUARD_OFF: on through the body along its own line - put by on the body's far side across the floor, a glancing one's flight came back at it and bulldozed it again, the ball jumping back and forth. And a
+        // body is bulldozed once a BALL_RULES.staggerGap, as it is staggered: a slow super shot in a scrum bowled the same
+        // one over three times in a second.)
+        this.shed.set(seat.id, now + GUARD_OFF.clear);
+        if (now - (this.staggeredAt.get(seat.id) ?? -Infinity) < BALL_RULES.staggerGap) continue;
+        this.staggeredAt.set(seat.id, now);
         if (p.action !== 'knockdown') this.sim.strike(BALL_ID, seat.id, 'heavy', BOWL, {x: b.x, y: b.y, z: b.z});
         const keep = guarding ? .78 : .9;
-        b.x = p.x - nx * reach; b.z = p.z - nz * reach;
         b.vx *= keep; b.vy *= keep; b.vz *= keep;
-        b.x += b.vx * dt; b.z += b.vz * dt;
-        this.emit(guarding ? 'bowled' : 'bowled', {team: b.lastTeam!, actorId: b.lastId ?? undefined, targetId: seat.id, x: p.x, y: p.y + 1, z: p.z, value: Math.round(speed), text: guarding ? 'BREAKS THROUGH' : 'BULLDOZED'});
+        this.emit('bowled', {team: b.lastTeam!, actorId: b.lastId ?? undefined, targetId: seat.id, x: p.x, y: p.y + 1, z: p.z, value: Math.round(speed), text: guarding ? 'BREAKS THROUGH' : 'BULLDOZED'});
         continue;
       }
-      if (guarding && rel < -1) { this.guardBall(seat, a.guardPressedAt, nx, ny, nz, speed); continue; }
+      if (guarding && rel < -1) { this.guardBall(seat, a.guardPressedAt, nx, ny, nz, speed, fvx, fvy, fvz); continue; }
       // Goal Rush's HEADER: a ball meeting the top of a body that jumped into it is headed on, the way the body faces.
       // (The BALL stance's: a body locked in a fight only bounces it; a lob dropping on a head standing still too.)
       if (this.mode === 'goal-rush' && !seat.lock && rel < -HEADER.from && b.y - p.y > HEADER.head * size && !p.grounded
@@ -1091,7 +1207,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
         this.emit('bowled', {team: b.lastTeam!, actorId: b.lastId ?? undefined, targetId: seat.id, x: p.x, y: p.y + 1, z: p.z, value: Math.round(speed), text: 'STAGGERED'});
       }
       if (lineBall && !this.headingInto(seat.team, 1.2)) {
-        seat.saves++; seat.points += 50;
+        seat.saves++; this.award(seat, 'save');
         this.emit('save', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, value: Math.round(speed), text: 'OFF THE LINE', shot: 'save'}); this.saved(seat);
       }
       if ((this.bodyTouch.get(seat.id) ?? -Infinity) + .35 <= now && Math.abs(rel) > 1.5) {
@@ -1124,9 +1240,14 @@ export class BallMatch implements ExternalTargets, DrillHost {
   }
   /** A guard meets the ball: a block (Sky Spike at the net: back down into their court), a save, and, timed within the
    *  just-guard window, a perfect one - the ball's heat gone and the keeper's meter up. */
-  private guardBall(seat: BallSeat, pressedAt: number, nx: number, ny: number, nz: number, speed: number) {
+  private guardBall(seat: BallSeat, pressedAt: number, nx: number, ny: number, nz: number, speed: number, fvx = 0, fvy = 0, fvz = 0) {
     const b = this.ball, now = this.sim.serverTime, perfect = now - pressedAt <= JUST_GUARD_WINDOW;
-    const wasOnTarget = this.mode === 'goal-rush' && this.headingInto(seat.team), line = wasOnTarget && this.onLine(seat.team);
+    // (GUARD_OFF: one guard is one block or save - its event, its count, its points and its meter.)
+    const credit = now - (this.guardCredit.get(seat.id) ?? -Infinity) >= GUARD_OFF.credit;
+    if (credit) this.guardCredit.set(seat.id, now);
+    // (A save is of the other side's ball - their strike last, whoever's body it bounced off since - never of a
+    // team-mate's pass back, nor of the guard's own ball turned back at its goal.)
+    const wasOnTarget = this.mode === 'goal-rush' && this.headingInto(seat.team) && this.theirs(seat.team), line = wasOnTarget && this.onLine(seat.team);
     if (this.mode === 'sky-spike' && Math.abs(b.z) < 2.6 && b.y > SPIKE_RULES.netHeight - .6) {
       const away = seat.team === 'red' ? 1 : -1;
       // A perfect one is a STUFF BLOCK, driven down into the hitter's court. Any other comes off the hands soft and up,
@@ -1134,10 +1255,13 @@ export class BallMatch implements ExternalTargets, DrillHost {
       if (perfect) { b.vz = away * Math.max(7, Math.abs(b.vz) * .95); b.vy = -Math.max(3, Math.abs(b.vy) * .5) - 5; b.vx *= .5; }
       else { b.vz = away * (2.5 + this.rng() * 2.5); b.vy = 6 + this.rng() * 2.5; b.vx *= .35; }
       b.heat = Math.max(0, b.heat - BALL_RULES.guardHeat * (perfect ? .5 : 1));
-      seat.blocks++; seat.points += perfect ? 60 : 35;
-      if (seat.blocks === 3) this.accolade(seat, 'THE WALL');
-      this.emit(perfect ? 'perfect' : 'block', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot: 'block', text: perfect ? 'STUFF BLOCK' : 'BLOCK'});
+      if (credit) {
+        seat.blocks++; this.award(seat, perfect ? 'stuff' : 'block');
+        if (seat.blocks === 3) this.accolade(seat, 'THE WALL');
+        this.emit(perfect ? 'perfect' : 'block', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot: 'block', text: perfect ? 'STUFF BLOCK' : 'BLOCK'});
+      }
       this.touched(seat, null, 'block', true);
+      this.shed.set(seat.id, now + GUARD_OFF.clear);
       // The ball comes back to the hitters with three touches of their own (else a block met before the ball crossed would
       // leave them on their spent three, and their dig of it would be FOUR TOUCHES). A stuffed ball that lands is the
       // blocker's point.
@@ -1145,26 +1269,51 @@ export class BallMatch implements ExternalTargets, DrillHost {
       // most spikes there, before the rally counts the crossing.)
       const crossed = sideOf(b.z) === seat.team;
       b.shot = 'block'; this.view.touchTeam = otherTeam(seat.team); this.view.touches = 0;
-      if (!crossed) this.climb(otherTeam(seat.team));
-      if (perfect) this.sim.addMeter(seat.id, 14, 8);
+      if (!crossed && credit) this.climb(otherTeam(seat.team));
+      if (perfect && credit) this.sim.addMeter(seat.id, 14, 8);
       return;
     }
     const rel = b.vx * nx + b.vy * ny + b.vz * nz;
     if (perfect) {
-      // The keeper's perfect save: the ball dead, then sent up the way they look.
-      const a = this.sim.actors.get(seat.id)!, yaw = a.input.yaw;
-      b.vx = Math.sin(yaw) * 11; b.vz = Math.cos(yaw) * 11; b.vy = 8; b.heat = 0; b.super = false; b.sx = b.sy = b.sz = 0;
-      this.sim.addMeter(seat.id, 16, 10);
+      // The keeper's perfect save: the ball dead, then sent up the way they look - out of their own end: a bot
+      // keeper running across its goal mouth, looking back at its net, sent a PERFECT SAVE into it (Goal Rush).
+      const a = this.sim.actors.get(seat.id)!, yaw = a.input.yaw, out = -Math.sign(goalZ(seat.team));
+      const dz = this.mode === 'goal-rush' && Math.cos(yaw) * out < 0 ? -Math.cos(yaw) : Math.cos(yaw);
+      b.vx = Math.sin(yaw) * 11; b.vz = dz * 11; b.vy = 8; b.heat = 0; b.super = false; b.sx = b.sy = b.sz = 0;
+      if (credit) this.sim.addMeter(seat.id, 16, 10);
     } else {
       b.vx -= 1.45 * rel * nx; b.vy -= 1.45 * rel * ny; b.vz -= 1.45 * rel * nz;
       b.heat = Math.max(0, b.heat - BALL_RULES.guardHeat);
       if (b.super) { b.super = false; }
     }
+    // (And away from the body that turned it - a keeper up in the air over the ball looking back at their own
+    // goal sent it up into themselves: GUARD_OFF.)
+    this.leaveGuard(nx, ny, nz, fvx, fvy, fvz);
     // A save straight off a dash is a dive (the keeper's lunge across the line).
     const dived = now - (this.dashAt.get(seat.id) ?? -Infinity) < .6;
-    if (wasOnTarget) { seat.saves++; seat.points += perfect ? 75 : dived ? 60 : 50; this.emit('save', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, value: Math.round(speed), text: perfect ? 'PERFECT SAVE' : dived ? 'DIVING SAVE' : line ? 'OFF THE LINE' : 'SAVE', shot: 'save'}); this.saved(seat, speed); }
-    else if (perfect) this.emit('perfect', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, text: 'PERFECT GUARD', shot: 'save'});
+    if (credit && wasOnTarget) { seat.saves++; this.award(seat, perfect ? 'perfectSave' : dived ? 'divingSave' : 'save'); this.emit('save', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, value: Math.round(speed), text: perfect ? 'PERFECT SAVE' : dived ? 'DIVING SAVE' : line ? 'OFF THE LINE' : 'SAVE', shot: 'save'}); this.saved(seat, speed); }
+    else if (credit && perfect) this.emit('perfect', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, text: 'PERFECT GUARD', shot: 'save'});
     this.touched(seat, null, 'save', true);
+    this.shed.set(seat.id, now + GUARD_OFF.clear);
+  }
+  /** GUARD_OFF: the ball a guard turned away leaves the guarding body - its speed out along (nx, ny, nz), the
+   *  line from the body to the ball, against the body's own (fvx, fvy, fvz) at least GUARD_OFF.leave. */
+  private leaveGuard(nx: number, ny: number, nz: number, fvx: number, fvy: number, fvz: number) {
+    const b = this.ball, n = Math.hypot(nx, ny, nz);
+    if (n < 1e-6) return;
+    nx /= n; ny /= n; nz /= n;
+    const out = (b.vx - fvx) * nx + (b.vy - fvy) * ny + (b.vz - fvz) * nz;
+    if (out >= GUARD_OFF.leave) return;
+    const k = GUARD_OFF.leave - out;
+    b.vx += nx * k; b.vy += ny * k; b.vz += nz * k;
+  }
+  /** Goal Rush: whether the ball is the other side's - their strike the last, whoever's body it has bounced off
+   *  since (a deflection) - so a guard or a touch that stops it at `team`'s goal saves a shot. */
+  private theirs(team: BallTeam) {
+    const b = this.ball;
+    if (b.lastTeam !== null && b.lastTeam !== team) return true;
+    for (let i = this.touchesLog.length - 1; i >= 0; i--) if (this.touchesLog[i].strike) return this.touchesLog[i].team !== team;
+    return false;
   }
 
   // ─── Goal Rush's two stances (model.ts GOAL_STANCE) ─────────────────────────────────────────────────────────────
@@ -1202,7 +1351,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
       // (Online, the one on the ball as the tackler's page drew them: SEEN.)
       if (!flat || !(this.onBall(seat, q) || this.onBallSeen(by.id, seat))) continue;
       this.tackledAt.set(seat.id, now);
-      by.tackles = (by.tackles ?? 0) + 1; by.points += down ? T.takedown : T.points; this.sim.addMeter(by.id, T.meter, T.awaken);
+      by.tackles = (by.tackles ?? 0) + 1; this.award(by, down ? 'takedown' : 'tackle'); this.sim.addMeter(by.id, T.meter, T.awaken);
       this.emit('tackle', {team: by.team, actorId: by.id, targetId: seat.id, x: q.x, y: q.y + 1, z: q.z, text: down ? 'TAKEDOWN' : 'TACKLE'});
     }
   }
@@ -1361,7 +1510,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     if (skySpike) result.heat += SPIKE_RULES.skySpikeHeat;
     const perfectSpike = perfect && !scuffed && result.shot === 'spike';
     if (perfectSpike) {
-      result.heat += PERFECT_SPIKE.heat; seat.points += PERFECT_SPIKE.points;
+      result.heat += PERFECT_SPIKE.heat; this.award(seat, 'perfectSpike');
       if (now >= a.hitstopUntil) a.hitstopFrom = now;
       a.hitstopUntil = Math.max(a.hitstopUntil, now + PERFECT_SPIKE.freeze);
     }
@@ -1382,7 +1531,9 @@ export class BallMatch implements ExternalTargets, DrillHost {
     }
     if (flair) { result.heat += .3; this.flair = {id: seat.id, at: now, text: flair}; }
     // A LINK SHOT: a team-mate's set finished first time.
-    const linked = !again && !serve && LINK.finishes.has(result.shot) ? this.linkFrom(seat, now) : undefined;
+    // (Never a SCUFF - the strike event would read SCUFFED while the LINK SHOT's accolade, heat and points
+    // went to it, and a masher finished the most sets of anyone.)
+    const linked = !again && !serve && !scuffed && LINK.finishes.has(result.shot) ? this.linkFrom(seat, now) : undefined;
     if (linked) result.heat += LINK.heat;
     let stopped: boolean | undefined;
     if (b.frozenUntil > now) {
@@ -1397,24 +1548,28 @@ export class BallMatch implements ExternalTargets, DrillHost {
       if (this.mode === 'goal-rush' && !again) stopped = incoming >= LINE_SHOT && this.onTarget(seat, 1) && Math.abs(b.z - goalZ(seat.team)) < SAVE_ZONE;
       b.vx = result.vx; b.vy = result.vy; b.vz = result.vz; b.sx = result.sx; b.sy = result.sy; b.sz = result.sz;
       b.heat = Math.min(BALL_RULES.heatMax, b.heat + result.heat); b.super = result.super; b.shot = result.shot;
-      if (serve) { b.held = false; this.view.phase = 'live'; seat.points += 5 + (perfect ? SERVE_RULES.points : 0); this.toss = null; this.floated = result.style === 'FLOAT SERVE'; }
+      if (serve) { b.held = false; this.view.phase = 'live'; this.award(seat, 'serve'); if (perfect) this.award(seat, 'perfectServe'); this.toss = null; this.floated = result.style === 'FLOAT SERVE'; }
       if (result.shot === 'bump' && incoming >= SPIKE_DIG.from) this.dug(seat, incoming, false);
       // A QUICK SET or a BACK SET is announced (the hitter's cue, the block's read); a floating set is the rally's own beat.
-      if (result.style === 'QUICK SET' || result.style === 'BACK SET') this.emit('set', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot: 'set', text: result.style});
+      // (Once - a many-blow light's later contacts lay the same set again, and said it again each time.)
+      if ((result.style === 'QUICK SET' || result.style === 'BACK SET') && !again) this.emit('set', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot: 'set', text: result.style});
     }
     const [ult, awaken] = TOUCH_METER[blow.slot] ?? [3, 2];
     // (A SCUFF earns none of it: MASHED.)
     if (!scuffed) this.sim.addMeter(seat.id, this.mode === 'goal-rush' ? ult * GOAL_TOUCH_METER * this.swing(seat.team) : ult, awaken);
-    if (result.super && !again) this.emit('super', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot: 'super', text: blow.move.name});
+    // (A SUPER SHOT is announced once a cast - in stopped time, the others' blows landing between its own, each
+    // of its blows was announced again: four SUPER SHOTs in a second, the stands and the caller each time.)
+    const announced = result.super && castId >= 0 && this.superCast.get(seat.id) === castId;
+    if (result.super && !again) { if (!announced) { this.superCast.set(seat.id, castId); this.emit('super', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot: 'super', text: blow.move.name}); } }
     else if (!again && result.shot !== 'tap' && result.shot !== 'bump' && result.shot !== 'set') this.emit('strike', {team: seat.team, actorId: seat.id, assistId: linked?.id, x: b.x, y: b.y, z: b.z, shot: b.shot ?? result.shot, value: Math.round(Math.hypot(b.vx, b.vy, b.vz)), text: perfectSpike ? 'SKY SPIKE' : perfectStrike ? flair ?? (air ? 'PERFECT VOLLEY' : 'PERFECT STRIKE') : scuffed ? 'SCUFFED' : serve && result.style ? (perfect ? 'PERFECT SERVE' : result.style) : result.shot === 'tip' ? 'TIP' : linked ? 'LINK SHOT' : charged ? 'KI CHARGE' : flair ?? (skySpike ? 'SKY SPIKE' : undefined), perfect: perfectSpike || perfectStrike || undefined});
     if (!seat.bot && !this.brains.has(seat.id)) this.view.best = Math.max(this.view.best, Math.hypot(b.vx, b.vy, b.vz));
     // A move's later contacts drive the ball on; the touch was its first.
     if (again) { b.lastId = seat.id; b.lastTeam = seat.team; }
-    else this.touched(seat, result.shot, b.shot ?? result.shot, false, serve, stopped);
+    else this.touched(seat, result.shot, b.shot ?? result.shot, false, serve, stopped, scuffed);
     if (!again) this.hot = perfectSpike;
     if (linked) {
-      b.link = linked.id; seat.points += LINK.points; linked.points += LINK.setter;
-      this.accolade(seat, 'LINK SHOT', 25, linked.id);
+      b.link = linked.id; this.award(seat, 'link'); this.award(linked, 'linkSetter');
+      this.accolade(seat, 'LINK SHOT', 0, linked.id);
     }
     return {damage: 1, reaction: 'flinch', killed: false};
   }
@@ -1489,7 +1644,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
   /** A PERFECT STRIKE's (or PERFECT HEADER's) worth: hotter, points, meter, and the striker held a beat on the blow. */
   private perfectStruck(seat: BallSeat, a: Actor, result: {heat: number}) {
     const now = this.sim.serverTime;
-    result.heat += PERFECT_STRIKE.heat; seat.points += PERFECT_STRIKE.points; seat.perfects = (seat.perfects ?? 0) + 1;
+    result.heat += PERFECT_STRIKE.heat; this.award(seat, 'perfectStrike'); seat.perfects = (seat.perfects ?? 0) + 1;
     this.sim.addMeter(seat.id, PERFECT_STRIKE.meter, 0);
     if (now >= a.hitstopUntil) a.hitstopFrom = now;
     a.hitstopUntil = Math.max(a.hitstopUntil, now + PERFECT_STRIKE.freeze);
@@ -1538,15 +1693,17 @@ export class BallMatch implements ExternalTargets, DrillHost {
       const yaw = a.input.yaw, home = seat.team === 'red' ? -1 : 1;
       const dx = this.mode === 'sky-spike' ? 0 : Math.sin(yaw) * 3.5, dz = this.mode === 'sky-spike' ? home * 2.5 : Math.cos(yaw) * 3.5;
       this.stack = {vx: dx, vy: 7, vz: dz, heat: 0, count: 1, id: seat.id, team: seat.team, shot: 'save', super: false};
-      b.heat = 0; seat.points += DUEL.points; this.sim.addMeter(seat.id, 16, 10);
+      b.heat = 0; this.award(seat, 'duel'); this.sim.addMeter(seat.id, 16, 10);
       if (onTarget) { seat.saves++; this.saved(seat, speed); } else if (this.mode === 'sky-spike') seat.blocks++;
       this.touched(seat, null, 'save', true);
       if (this.mode === 'sky-spike') { this.view.touchTeam = seat.team; this.view.touches = 0; }
     } else {
       this.stack = {vx: v.vx, vy: v.vy, vz: v.vz, heat: 0, count: 1, id: b.lastId ?? seat.id, team: b.lastTeam ?? otherTeam(seat.team), shot: 'super', super: true};
-      if (striker) striker.points += DUEL.points / 2;
+      if (striker) this.award(striker, 'duel', .5);
     }
     this.duelling = {keeper: seat.id, striker: striker?.id, keeperWins, x: b.x, y: b.y, z: b.z};
+    // (GUARD_OFF: the ball the duel sends on - popped up in front of the keeper, or through them - leaves them.)
+    this.shed.set(seat.id, now + DUEL.hold + GUARD_OFF.clear);
     this.emit('duel', {team: seat.team, actorId: seat.id, targetId: striker?.id, x: b.x, y: b.y, z: b.z, value: DUEL.hold, text: 'TECHNIQUE DUEL'});
   }
   /** Two sides' blows on the ball at once: it hangs in the clash, both fighters freeze, and the stronger blow (with a
@@ -1563,7 +1720,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     this.touched(seat, result.shot, result.shot);
     b.lastId = winner.id; b.lastTeam = winner.team; b.shot = win.shot;
     if (this.mode === 'sky-spike') { this.view.touchTeam = winner.team; this.view.touches = SPIKE_RULES.touches; }
-    winner.points += 30; winner.clashes = (winner.clashes ?? 0) + 1;
+    this.award(winner, 'clash'); winner.clashes = (winner.clashes ?? 0) + 1;
     if (winner.clashes === 3) this.accolade(winner, 'CLASH KING');
     const speed = Math.min(speedCap(this.mode, BALL_RULES.heatMax), Math.hypot(win.vx, win.vy, win.vz) * k);
     this.emit('clash', {team: winner.team, actorId: winner.id, targetId: loser, x: b.x, y: b.y, z: b.z, value: Math.round(speed), shot: win.shot});
@@ -1585,7 +1742,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     b.heat = Math.min(BALL_RULES.heatMax, b.heat + result.heat * .5);
     if (result.shot === 'bump' && incoming >= SPIKE_DIG.from) this.dug(seat, incoming, dived);
     this.sim.addMeter(seat.id, 2, 2);
-    this.touched(seat, result.shot, b.shot ?? result.shot);
+    this.touched(seat, result.shot, b.shot ?? result.shot, false, false, undefined, !!scuff);
   }
   /** Sky Spike: a serve's reception (the receiving side's first touch of it) off line - a FLOAT SERVE's always a little
    *  (SERVE_RULES.shank), a hard serve's met at full stretch, with the body `stretch.from` metres or more off the ball's
@@ -1606,7 +1763,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
   /** Sky Spike: a hard ball kept up on the first touch - a DIG (a DIVING DIG off a dash), its own event. */
   private dug(seat: BallSeat, incoming: number, dived: boolean) {
     const b = this.ball;
-    b.shot = 'dig'; seat.digs++; seat.points += dived ? 25 : 15;
+    b.shot = 'dig'; seat.digs++; this.award(seat, dived ? 'divingDig' : 'dig');
     this.emit('dig', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, value: Math.round(incoming), shot: 'dig', text: dived ? 'DIVING DIG' : 'DIG'});
   }
   freeze(centre: Vec3, radius: number, seconds: number) {
@@ -1640,19 +1797,22 @@ export class BallMatch implements ExternalTargets, DrillHost {
     return this.mode === 'goal-rush' && b.lastTeam !== null && b.lastTeam !== seat.team && this.headingInto(seat.team, within);
   }
   /** A touch of the ball by `seat`: whose ball it is now, the touch count, the shot bookkeeping. `stopped` is whether the
-   *  ball was on its way into their goal before the touch, when the touch has already sent it on (a strike's). */
-  private touched(seat: BallSeat, shot: ShotKind | null, named: ShotKind, block = false, serve = false, stopped?: boolean) {
+   *  ball was on its way into their goal before the touch, when the touch has already sent it on (a strike's); `scuffed`,
+ *  a strike or a body's touch out of a flurry of presses (MASHED), whose MVP worth is MVP.scuffTouch's and .scuffShot's. */
+  private touched(seat: BallSeat, shot: ShotKind | null, named: ShotKind, block = false, serve = false, stopped?: boolean, scuffed = false) {
     const b = this.ball, now = this.sim.serverTime;
     // (A strike's touch is told whether it stopped a ball on target, read before the strike sent it away. Read
     // here, after, a clearance was never a save: only a strike that still sent the ball at its own goal was.)
     const wasOnTarget = stopped ?? this.onTarget(seat);
     b.lastId = seat.id; b.lastTeam = seat.team; b.link = null; this.hot = false;
-    seat.touches++; seat.points += 2;
-    this.touchesLog.push({id: seat.id, team: seat.team, at: now, x: b.x, y: b.y, z: b.z, strike: shot !== null, shot: shot ?? undefined});
+    // (GUARD_OFF: a touch is a new flight - every body that let the last one go may meet this one.)
+    this.shed.clear();
+    seat.touches++; this.award(seat, scuffed ? 'scuffTouch' : 'touch');
+    this.touchesLog.push({id: seat.id, team: seat.team, at: now, x: b.x, y: b.y, z: b.z, strike: shot !== null, shot: shot ?? undefined, ...(scuffed ? {scuffed} : {})});
     if (this.touchesLog.length > 12) this.touchesLog.shift();
     if (this.mode === 'goal-rush') {
-      if (wasOnTarget && shot !== null && named !== 'save') { seat.saves++; seat.points += 50; this.emit('save', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, text: this.onLine(seat.team) ? 'OFF THE LINE' : 'SAVE', shot: 'save'}); this.saved(seat); }
-      if (shot !== null && this.headingInto(otherTeam(seat.team), 2.6)) { seat.shots++; seat.points += 20; this.onTargetSince = now; }
+      if (wasOnTarget && shot !== null && named !== 'save') { seat.saves++; this.award(seat, 'save'); this.emit('save', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, text: this.onLine(seat.team) ? 'OFF THE LINE' : 'SAVE', shot: 'save'}); this.saved(seat); }
+      if (shot !== null && this.headingInto(otherTeam(seat.team), 2.6)) { seat.shots++; this.award(seat, scuffed ? 'scuffShot' : 'shot'); this.onTargetSince = now; }
       return;
     }
     if (serve) { this.view.touchTeam = seat.team; this.view.touches = SPIKE_RULES.touches; return; }
@@ -1701,7 +1861,8 @@ export class BallMatch implements ExternalTargets, DrillHost {
   private judgeGoal() {
     const b = this.ball;
     for (const c of this.contacts) {
-      if (c.kind === 'post' || c.kind === 'bar') this.emit('post', {team: b.lastTeam ?? undefined, actorId: b.lastId ?? undefined, x: c.x, y: c.y, z: c.z, value: Math.round(c.speed), text: c.kind === 'bar' ? 'CROSSBAR!' : 'OFF THE POST!'});
+      // (A ball rattling between the post and the bar rings once: RATTLE.)
+      if ((c.kind === 'post' || c.kind === 'bar') && this.sim.serverTime - this.postAt >= RATTLE.post) { this.postAt = this.sim.serverTime; this.emit('post', {team: b.lastTeam ?? undefined, actorId: b.lastId ?? undefined, x: c.x, y: c.y, z: c.z, value: Math.round(c.speed), text: c.kind === 'bar' ? 'CROSSBAR!' : 'OFF THE POST!'}); }
       if (c.kind === 'goal') { this.targetHit(c.x, c.y, c.z); this.goal(c.team!, c); return; }
       if (c.kind === 'shield') this.shielded(c.team!, c.x, c.y, c.z, 'IRON WALL');
       if (c.kind === 'floor' && this.endWait) { this.timeUp(); return; }
@@ -1723,9 +1884,12 @@ export class BallMatch implements ExternalTargets, DrillHost {
     const scorerId = deflected ? shooter!.id : b.lastId;
     const scorer = scorerId ? this.seats.get(scorerId) : undefined, own = !!scorer && scorer.team !== scorers;
     const assist = [...this.touchesLog].reverse().find(t => t.team === scorers && t.id !== scorerId && t.strike && now - t.at < 7);
-    if (scorer && !own) { scorer.goals++; scorer.points += 100 * worth; this.sim.addMeter(scorer.id, 10, 10); }
+    // (A goal off a SCUFF - MASHED - is worth MVP.scuffGoal toward MVP; an own goal MVP.ownGoal, a debit.)
+    const scuffed = !!(deflected ? shooter : lastTouch?.id === scorerId ? lastTouch : undefined)?.scuffed;
+    if (scorer && !own) { scorer.goals++; this.award(scorer, scuffed ? 'scuffGoal' : 'goal', worth); this.sim.addMeter(scorer.id, 10, 10); }
+    else if (scorer && own) this.award(scorer, 'ownGoal');
     const helper = assist && !own ? this.seats.get(assist.id) : undefined;
-    if (helper) { helper.assists++; helper.points += 50; }
+    if (helper) { helper.assists++; this.award(helper, 'assist'); }
     for (const s of this.seats.values()) if (s.team === conceded) this.sim.addMeter(s.id, 12, 10);
     const speed = Math.round(c.speed * 3.6);
     // The feats in it, and what the bots make of it.
@@ -1811,7 +1975,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
         return;
       }
       if (c.kind === 'wall' || c.kind === 'ceiling') { this.point(b.lastTeam ? otherTeam(b.lastTeam) : otherTeam(this.view.servingTeam), 'out', b.lastId ?? undefined); return; }
-      if (c.kind === 'net' && c.speed > 4) this.emit('net', {team: b.lastTeam ?? undefined, x: c.x, y: c.y, z: c.z});
+      if (c.kind === 'net' && c.speed > 4 && this.sim.serverTime - this.netAt >= RATTLE.net) { this.netAt = this.sim.serverTime; this.emit('net', {team: b.lastTeam ?? undefined, x: c.x, y: c.y, z: c.z}); }
     }
   }
   /** The rally climbs by an exchange (a crossing of the net, or a block that met the attack at it): it heats, and FEVER. */
@@ -1844,7 +2008,9 @@ export class BallMatch implements ExternalTargets, DrillHost {
     const by = received ? server : toucher;
     if (why === 'floor' && by && by.team === winner) {
       const ace = this.view.rally <= 1 && (b.shot === 'serve' || received);
-      if (ace) { by.aces++; by.points += 90; } else { by.kills++; by.points += b.super ? 140 : 80; }
+      // (A kill off a SCUFF - MASHED - is worth MVP.scuffKill toward MVP.)
+      const last = this.touchesLog[this.touchesLog.length - 1], scuffed = !!last?.scuffed && last.id === by.id;
+      if (ace) { by.aces++; this.award(by, 'ace'); } else { by.kills++; this.award(by, b.super ? 'superKill' : scuffed ? 'scuffKill' : 'kill'); }
       this.streak = this.streak.id === by.id ? {id: by.id, count: this.streak.count + 1} : {id: by.id, count: 1};
       if (this.streak.count === 3) this.accolade(by, 'ON FIRE');
       if (ace && by.aces === 3) this.accolade(by, 'ACE MACHINE');
@@ -1855,6 +2021,8 @@ export class BallMatch implements ExternalTargets, DrillHost {
     } else if (why === 'touches') this.emit('touches', {team: winner, actorId: byId, x: b.x, y: b.y, z: b.z, value: worth, text: 'FOUR TOUCHES'});
     else if (why === 'out') this.emit('out', {team: winner, actorId: byId, x: b.x, y: b.y, z: b.z, value: worth, text: 'OUT'});
     else this.emit('point', {team: winner, actorId: byId, x: b.x, y: 0, z: b.z, value: worth});
+    // (A ball put out or a fourth touch is the toucher's fault, MVP.fault toward MVP: a debit.)
+    if ((why === 'out' || why === 'touches') && toucher && toucher.team !== winner) this.award(toucher, 'fault');
     for (const s of this.seats.values()) if (s.team !== winner) this.sim.addMeter(s.id, 5, 6);
     const sideOut = winner !== this.view.servingTeam;
     if (sideOut) { this.serveRotation[winner]++; this.view.servingTeam = winner; this.emit('side-out', {team: winner, x: 0, y: 0, z: 0}); }
@@ -1920,7 +2088,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
   }
   private autoServe() {
     // A drill's ball machine feeds its own balls.
-    if (this.drill?.serve(this)) return;
+    if (this.script?.serve(this)) return;
     const b = this.ball, team = this.view.servingTeam, sign = team === 'red' ? -1 : 1, server = this.view.serverId ? this.seats.get(this.view.serverId) : undefined;
     b.held = false; this.view.phase = 'live';
     let target = {x: 0, z: -sign * 6};
@@ -1951,7 +2119,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     const v = this.view;
     v.phase = 'over'; v.winner = winner; v.reason = reason; v.endsAt = this.sim.serverTime; this.sim.status = 'finished';
     let mvp: BallSeat | undefined;
-    for (const s of this.seats.values()) if (!mvp || s.points + (s.team === winner ? 25 : 0) > mvp.points + (mvp.team === winner ? 25 : 0)) mvp = s;
+    for (const s of this.seats.values()) if (!mvp || s.points + (s.team === winner ? MVP.win : 0) > mvp.points + (mvp.team === winner ? MVP.win : 0)) mvp = s;
     v.mvp = mvp?.id ?? null;
     // The podium (ceremony.ts): the winning side's best on the top step, the other two either side; the others back on
     // their marks. FREE PLAY never ends; a draw stands the MVP's side up.
@@ -2070,7 +2238,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
     else if (kind === 'ice' && !b.held) b.frozenUntil = Math.max(b.frozenUntil, now + seconds);
     else if (kind === 'wall' && this.mode === 'goal-rush') b.wall = seat.team;
     else if (kind === 'surge') this.sim.addMeter(seat.id, 50, 25);
-    seat.points += 10;
+    this.award(seat, 'charm');
     this.emit('charm', {team: seat.team, actorId: seat.id, x: charm.x, y: 1.2, z: charm.z, charm: kind, text: charmName(kind, this.mode)});
   }
   /** A charm's time is up, or it was used: what it changed put back. */
@@ -2090,7 +2258,7 @@ export class BallMatch implements ExternalTargets, DrillHost {
   private shielded(team: BallTeam, x: number, y: number, z: number, text: string) {
     const holder = this.view.effects.find(e => e.kind === 'wall' && e.team === team)?.id ?? [...this.touchesLog].reverse().find(t => t.team === team)?.id;
     const seat = holder ? this.seats.get(holder) : undefined;
-    if (seat) { seat.saves++; seat.points += 30; }
+    if (seat) { seat.saves++; this.award(seat, 'shield'); }
     this.emit('shield', {team, actorId: seat?.id, x, y, z, charm: 'wall', text});
   }
 
@@ -2118,8 +2286,17 @@ export class BallMatch implements ExternalTargets, DrillHost {
   }
   /** What a seat wears in the ball modes (look.ts), as a room read it off the account or a page off its own. */
   setLook(id: string, look: unknown) { const seat = this.seats.get(id); if (!seat) return false; seat.look = cleanLook(look); this.view.seats = [...this.seats.values()]; return true; }
+  /** `seat` earns `times` of MVP's worth for `kind` (an accolade: its own `times` points). */
+  private award(seat: BallSeat, kind: MvpKind | 'accolade', times = 1) {
+    seat.points += kind === 'accolade' ? times : MVP[kind] * times;
+    const t = this.tally.get(seat.id) ?? {};
+    t[kind] = (t[kind] ?? 0) + times;
+    this.tally.set(seat.id, t);
+  }
+  /** Each seat's points by what they were for (MVP's kinds; 'accolade' in points), for the measures. */
+  mvpTally(id: string) { return {...this.tally.get(id)}; }
   /** A feat named on every screen (an accolade), worth a few points toward MVP. */
-  private accolade(seat: BallSeat, text: string, points = 25, assistId?: string) { seat.points += points; (seat.feats ??= []).push(text); this.emit('accolade', {team: seat.team, actorId: seat.id, assistId, x: 0, y: 0, z: 0, text}); }
+  private accolade(seat: BallSeat, text: string, points = 25, assistId?: string) { this.award(seat, 'accolade', points); (seat.feats ??= []).push(text); this.emit('accolade', {team: seat.team, actorId: seat.id, assistId, x: 0, y: 0, z: 0, text}); }
   /** A save's feats: the third (SAVIOR), one off a ball at full tilt (EPIC SAVE); and the saver's side says so. */
   private saved(seat: BallSeat, speed = 0) {
     if (seat.saves === 3) this.accolade(seat, 'SAVIOR', 40);
@@ -2154,7 +2331,8 @@ export class BallMatch implements ExternalTargets, DrillHost {
     const recent = this.sim.serverTime - 3;
     const view: BallView = {...this.view, seats: [...this.seats.values()].map(s => ({...s, feats: s.feats?.slice()})), score: {...this.view.score}, ball: {...this.ball},
       events: this.view.events.filter(e => e.at >= recent).map(e => ({...e})), replay: this.view.replay ? {...this.view.replay} : null, aim: this.view.aim ? {...this.view.aim} : null,
-      charms: this.view.charms.map(c => ({...c})), effects: this.view.effects.map(e => ({...e})), drill: this.view.drill ? {...this.view.drill, results: this.view.drill.results.slice()} : undefined};
+      charms: this.view.charms.map(c => ({...c})), effects: this.view.effects.map(e => ({...e})), drill: this.view.drill ? {...this.view.drill, results: this.view.drill.results.slice()} : undefined,
+      lesson: this.view.lesson ? {...this.view.lesson, done: this.view.lesson.done.slice(), skipped: this.view.lesson.skipped.slice(), parts: this.view.lesson.parts.slice()} : undefined};
     if (consume) this.events = [];
     return {...base, roomMode: 'match', events, ball: view};
   }

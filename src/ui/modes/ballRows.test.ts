@@ -76,5 +76,10 @@ describe('the ball modes\' rows on the mode sheet', () => {
     expect(ballStart('sky-spike', 'offline', { difficulty: 'hard', practice: true }, false, '')).not.toHaveProperty('difficulty');
     expect(ballStart('sky-spike', 'offline', { difficulty: 'hard', drills: true }, false, '')).not.toHaveProperty('difficulty');
     expect(ballStart('sky-spike', 'online', { difficulty: 'hard' }, false, '')).not.toHaveProperty('difficulty');
+    // A private room's host picks its bots' level as the room is opened (NORMAL is left off); a joiner's page
+    // sends none (the room has the host's).
+    expect(ballStart('sky-spike', 'friends', { difficulty: 'hard' }, false, '')).toMatchObject({ access: 'host', difficulty: 'hard' });
+    expect(ballStart('sky-spike', 'friends', {}, false, '')).not.toHaveProperty('difficulty');
+    expect(ballStart('sky-spike', 'friends', { difficulty: 'hard' }, true, '123456')).not.toHaveProperty('difficulty');
   });
 });

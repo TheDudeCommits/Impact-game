@@ -3,6 +3,7 @@ import {BallGear,patchBallSkin,type Emit} from './ballCosmetics';
 import type {GameSnapshot} from '../../game/types';
 import {BALL_TEAM_COLOURS,CHARM_COLOURS,GOAL_RULES,SPIKE_RULES,ballOf,ballRadius,heatTier,type BallEvent,type BallModeId,type BallState,type BallTeam,type BallView} from '../../game/ball/model';
 import {courtSide,landing,stepBall,type BallContact} from '../../game/ball/physics';
+import type {TouchForecast} from '../../game/ball/touchForecast';
 import {noiseTexture} from '../vfx/noiseTexture';
 import {VFX} from '../vfxLevel';
 import {VfxKit} from '../vfx/VfxKit';
@@ -30,6 +31,16 @@ const ALONG_FLIGHT=1,ALONG_AXIS=2,FLOOR=4,FLUTTER=8;
 /** Seconds the drawn ball may run ahead of its last snapshot; the time constant a correction is blended out over
  *  (gone by about 80 ms); a jump between snapshots beyond any flight that is a reset (a kickoff, a serve's walk-up). */
 const AHEAD=.12,BLEND=.028,SNAP=4;
+/** The page's own touch, drawn at once (`forecastTouch`): how long the room's ball is kept (s); the time
+ *  constants (s) of the spring the forecast's miss is blended out by when the room agrees with it, and when it refuses it
+ *  (somebody else's touch got there first, the swing found nothing) - gentler; how long the page waits to hear its touch
+ *  back: past the room's time for it (its prediction's clock as it struck) HEARD_PAST, reaching HEARD_BACK before it (the
+ *  room can play a backlog of commands a few ticks sooner), or HEARD after the frame it was forecast on where that time
+ *  is not known. The lead the ball is drawn with after the page's own touch is eased off at LEAD_EASE (the share of the
+ *  frame's time: the ball runs at least 1 - most of its pace meanwhile, the rate itself settling over 1/settle s), done
+ *  before the flight brings it within LEAD_MEET metres of any other fighter (looking LEAD_LOOK s ahead), held while it
+ *  is on its way to the page's own. */
+const RING=1.2,MEND=.07,REFUSED=.12,HEARD=.42,HEARD_PAST=.1,HEARD_BACK=.12,LEAD_EASE={least:.15,most:.6,settle:10},LEAD_MEET=2.4,LEAD_LOOK=1.2;
 
 const TEAM:Record<BallTeam,THREE.Color>={red:new THREE.Color(BALL_TEAM_COLOURS.red),blue:new THREE.Color(BALL_TEAM_COLOURS.blue)};
 const NEUTRAL=new THREE.Color(.9,.92,1),WHITE=new THREE.Color(1,1,1),INK=new THREE.Color(.012,.012,.016),GOLD=new THREE.Color(1,.72,.28);
@@ -50,6 +61,9 @@ const blankBall=():BallState=>({x:0,y:0,z:0,vx:0,vy:0,vz:0,sx:0,sy:0,sz:0,heat:0
 function copyBall(to:BallState,from:BallState){
   to.x=from.x;to.y=from.y;to.z=from.z;to.vx=from.vx;to.vy=from.vy;to.vz=from.vz;to.sx=from.sx;to.sy=from.sy;to.sz=from.sz;
   to.heat=from.heat;to.lastId=from.lastId;to.lastTeam=from.lastTeam;to.shot=from.shot;to.held=from.held;to.frozenUntil=from.frozenUntil;to.super=from.super;to.size=from.size??1;to.grav=from.grav??1;to.wall=from.wall??null;to.clash=from.clash??0;to.link=from.link??null;
+  // (The arena's floor and wind - arenas.ts twist - which the flight reads.)
+  to.ground=from.ground;to.spring=from.spring;to.windX=from.windX;to.windZ=from.windZ;
+  return to;
 }
 const sameBall=(a:BallState,b:BallState)=>a.x===b.x&&a.y===b.y&&a.z===b.z&&a.vx===b.vx&&a.vy===b.vy&&a.vz===b.vz&&a.held===b.held&&a.frozenUntil===b.frozenUntil&&a.heat===b.heat&&a.lastTeam===b.lastTeam&&a.super===b.super&&a.size===b.size&&a.grav===b.grav&&a.wall===b.wall&&a.clash===b.clash&&(a.link??null)===(b.link??null);
 const PREMULTIPLIED={transparent:true,depthWrite:false,forceSinglePass:true,blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor} as const;
@@ -446,6 +460,33 @@ export class BallField {
   private nextRef:BallState|null=null;private nextAt=-1;private readonly miss=new THREE.Vector3();
   private readonly drawn=new THREE.Vector3();private readonly offset=new THREE.Vector3();private readonly velocity=new THREE.Vector3();
   private shown=false;private lastEvent=-1;private frozen=false;private freezeFrom=0;private freezeLength=1;
+  // ─── The page's own touch, drawn at once (online) ──────────────────────────────────────────────────────────────
+  /** The room's balls as the snapshots brought them (`heard`: online the newest is a round trip and more ahead of the
+   *  frame drawn), oldest first, and the newest's time. */
+  private readonly ring:{t:number;ball:BallState;live:boolean;hold:number}[]=[];
+  /** The page's view lag (s: its prediction's clock less the frame's, what the room measures as this page's lag; main.ts
+   *  sets it every frame online, 0 elsewhere), and an attack the room put back into this page's time (`rewound`). */
+  viewLag=0;
+  private rewind:{tr:number;lag:number;upTo:number}|null=null;
+  /** The page's own touch, forecast (game/ball/BallTargets) and not yet heard back from the room: the ball as it left,
+   *  the presented time it left at, the lead the ball was drawn with then, and the page clock (s) it was made at. */
+  private ahead:{ball:BallState;at:number;room:number;lead:number;kind:string;made:number}|null=null;
+  /** How far ahead of the frame the ball is drawn (s). 0, as every other body is drawn; after the page's own touch the
+   *  room plays the ball in this page's time (BallMatch SEEN: `frame`), so it is drawn there - where the page's own
+   *  fighter is - and eased back to the frame's time before anybody else meets it. */
+  private lead=0;private leadRate=0;
+  /** What is left to blend out of a forecast the room has answered (m), when it was set (page s) and over how long. */
+  private readonly mend=new THREE.Vector3();private readonly mendV=new THREE.Vector3();private mendAt=0;private mendFor=MEND;
+  private readonly mendX=new THREE.Vector3();private readonly mendU=new THREE.Vector3();
+  /** The presented time of the last frame drawn (what `drawnState` is the ball at), the ring's newest drawn from then,
+   *  the page's own id, and the round trip the page's touches have come back in (s, smoothed; 0 before the first). */
+  private drawnT=NaN;private drawnAt=0;private ringSeen=-Infinity;private self='';private heardIn=0;
+  /** The ball whose look is drawn: the snapshot's, the forecast's, or the room's ahead of the frame. */
+  private readonly ahead0=blankBall();private readonly look0=blankBall();private readonly tmp=blankBall();private readonly tmp2=blankBall();private readonly prior=blankBall();
+  private readonly gap=new THREE.Vector3();
+  private told:{kind:string;at:number;perfect:boolean}|null=null;private nearest=NaN;private landAt=0;private ringOf=NaN;private lastView:BallView|null=null;
+  /** For the checks (window.__ballField on this machine): each forecast and what the room made of it. */
+  readonly forecasts:{kind:string;lead:number;miss:number;missV:number;refused:boolean;heardIn:number;late:number}[]=[];
   private readonly charms=new BallCharms();
   private heat=0;private flash=0;private grown=1;private trailClock=0;private pulseAt=0;
   private embers=0;private sparks=0;private bolts=0;private streaks=0;private smoke=0;
@@ -653,11 +694,10 @@ export class BallField {
     if(!view||!snapshot){if(this.root.visible||this.shown)this.clear();return;}
     const seconds=now/1000,step=Math.min(Math.max(dt,0),.1),serverTime=snapshot.serverTime;
     if(view.mode!==this.mode||view.startedAt!==this.startedAt||serverTime<this.lastServer-.5)this.restart(view);
-    this.lastServer=serverTime;this.root.visible=true;
+    this.lastServer=serverTime;this.root.visible=true;this.self=selfId;this.players=snapshot.players;this.lastView=view;
     this.receive(view.ball,view.sampledAt??serverTime,seconds,view.sampledAt!==undefined);
-    this.place(serverTime,seconds,view);
-    this.moments(view,serverTime);
-    this.players=snapshot.players;
+    this.place(serverTime,seconds,view,replaying?0:step);
+    this.moments(view,serverTime,seconds);
     this.dress(view,selfId,camera,step,seconds,serverTime);
     // The name tags: in play, not over a replay (its tag names the goal) nor the results.
     this.tags.update(view.seats,selfId,this.where,!replaying&&view.phase!=='lobby'&&view.phase!=='over');
@@ -674,6 +714,254 @@ export class BallField {
     this.root.visible=false;this.shown=false;this.fx.clear();this.charms.clear();crowdHype.value=0;arenaMood.value=0;this.trail.count=0;this.ribbon.clear();this.superTrail.clear();
     this.mode=null;this.startedAt=NaN;this.lastServer=-Infinity;this.baseServer=-1;this.prevServer=-1;this.lastRef=null;this.nextRef=null;this.nextAt=-1;this.lastEvent=-1;
     this.offset.set(0,0,0);this.velocity.set(0,0,0);this.land.show=false;this.frozen=false;this.heat=0;this.flash=0;
+    this.ring.length=0;this.ahead=null;this.lead=0;this.rewind=null;this.mend.set(0,0,0);this.mendV.set(0,0,0);this.drawnT=NaN;this.ringSeen=-Infinity;this.told=null;
+  }
+
+  // ─── The page's own touch, drawn at once ─────────────────────────────────────────────────────────────────────────
+  /** Every snapshot the page hears, as it hears it (main.ts onSnapshot): the room's ball, kept a little over a second.
+   *  Online it runs a round trip and more ahead of the frame drawn; the ball drawn ahead of the frame (`lead`) and the
+   *  room's word on a forecast touch are read from it. */
+  heard(snapshot:GameSnapshot){
+    const view=ballOf(snapshot);if(!view)return;
+    const t=snapshot.serverTime,R=this.ring,last=R[R.length-1];
+    if(last&&(t<last.t-.5||view.startedAt!==this.ringOf)){R.length=0;this.ahead=null;this.lead=0;this.rewind=null;}
+    this.ringOf=view.startedAt;
+    if(last&&t<=last.t+1e-6)return;
+    const live=view.phase==='live'||view.phase==='kickoff'&&view.mode==='sky-spike';
+    const old=R.length>=48&&R[0].t<t-RING?R.shift()!:null,ball=old?copyBall(old.ball,view.ball):copyBall(blankBall(),view.ball);
+    const prev=R[R.length-1];
+    // (A ball still held where the room put it back, standing as it was: held as long.)
+    const hold=prev&&prev.hold>t&&Math.abs(prev.ball.x-ball.x)+Math.abs(prev.ball.y-ball.y)+Math.abs(prev.ball.z-ball.z)<1e-3?prev.hold:-Infinity;
+    R.push({t,ball,live,hold});
+    while(R.length>2&&R[1].t<t-RING)R.shift();
+    if(prev&&hold===-Infinity&&live)this.rewound(prev,R[R.length-1]);
+  }
+
+  /** The other side's attack, put back by the room into this page's time as it came at this page's fighter (BallMatch
+   *  SEEN `meetSeen`): the snapshot has the ball where the page drew it a moment ago - the room's own flight, earlier,
+   *  no new touch - and, if the touch that sent it is newer than the page had seen, held there until the page would see
+   *  it go. Drawn as it was, the ball hopped back, hung, and came again; and the page's own guard met it a lag late. So
+   *  from the moment it was put back to, it is drawn ahead of the frame by the room's lag for this page (`rewind`):
+   *  the flight the page was drawing goes on, and the guard meets it where the room does. */
+  private rewound(prev:{t:number;ball:BallState},cur:{t:number;ball:BallState;hold:number}){
+    const b=cur.ball,lag=this.viewLag;
+    if(lag<1/30||this.ahead||b.held||b.lastId===this.self||b.lastId!==prev.ball.lastId||b.lastTeam!==prev.ball.lastTeam)return;
+    const f=this.flyFrom(this.tmp,prev.ball,prev.t,cur.t);
+    if(Math.abs(f.x-b.x)+Math.abs(f.y-b.y)+Math.abs(f.z-b.z)<.3)return;
+    // (Where on the flight the page had drawn the ball is the room's ball now: the room's time it was there.)
+    let best=NaN,bestD=Infinity;
+    for(let back=1/60;back<=Math.min(.45,lag+.15);back+=1/60){
+      if(!this.truth(cur.t-back,this.prior,prev.t))break;
+      const p=this.prior,d=Math.hypot(p.x-b.x,p.y-b.y,p.z-b.z)+.05*Math.hypot(p.vx-b.vx,p.vy-b.vy,p.vz-b.vz);
+      if(d<bestD){bestD=d;best=back;}
+    }
+    if(!(bestD<.25)||!this.headedAt(b))return;
+    const tr=cur.t-best;
+    cur.hold=tr+lag>cur.t?tr+lag:-Infinity;
+    this.rewind={tr,lag,upTo:prev.t};
+  }
+  /** Whether a ball's flight comes to this page's own fighter before it comes to anybody else's (as they are drawn now),
+   *  within LEAD_LOOK s. */
+  private headedAt(ball:BallState){const m=this.meets(ball);return m.mine<Infinity&&m.mine<=m.other;}
+
+  /** The page's own touch of the ball, forecast (game/ball/BallTargets, online): the ball is drawn leaving at once, from
+   *  where it was drawn, along the flight the room will most likely give it, until the room's word comes back - then
+   *  onto the room's (`ahead`). Its moment (a strike's hit, a block's shield) is drawn now, and the room's own for it is
+   *  not drawn again. */
+  forecastTouch(touch:TouchForecast){
+    if(!this.shown||!this.mode||!Number.isFinite(this.drawnT))return;
+    const seconds=this.drawnAt,ball=copyBall(blankBall(),touch.ball);
+    // (From where the ball was drawn - as the room's history has it for this page's swing - with whatever of the last
+    // answer was still being blended in, so nothing jumps: the new flight starts from the drawn ball itself.)
+    ball.x=this.drawn.x;ball.y=this.drawn.y;ball.z=this.drawn.z;this.mend.set(0,0,0);this.mendV.set(0,0,0);
+    this.ahead={ball,at:this.drawnT,room:touch.room??NaN,lead:this.lead,kind:touch.kind,made:seconds};
+    this.landFrom(ball,seconds);
+    const e=touch.event;
+    if(e&&this.lastView){
+      this.told={kind:e.kind,at:seconds,perfect:!!e.perfect};
+      this.moment({id:-1,at:this.drawnT,...e,x:ball.x,y:ball.y,z:ball.z} as BallEvent,{...this.lastView,ball});
+    }
+  }
+
+  /** The ball as the page draws it now, as a whole ball (the look of the one drawn, at the drawn place and pace): what the
+   *  page's own touch is forecast from. Null when none is drawn. The ball is this field's own: copy it to keep it. */
+  drawnState():BallState|null{
+    if(!this.shown||!this.mode)return null;
+    const b=copyBall(this.tmp2,this.lookBall());
+    b.x=this.drawn.x;b.y=this.drawn.y;b.z=this.drawn.z;b.vx=this.velocity.x;b.vy=this.velocity.y;b.vz=this.velocity.z;
+    return b;
+  }
+
+  /** The ball whose look is drawn: the forecast's while it flies, the room's ahead of the frame while it is drawn there,
+   *  else the snapshot's. */
+  private lookBall(){return this.ahead?this.ahead.ball:this.lead>0||this.rewind?this.look0:this.base;}
+  /** What is left of the answers' misses at `seconds` (into mendX, its pace into mendU): a critically damped spring from
+   *  where it was set (mend, mendV at mendAt), over `mendFor` - so the ball keeps its place and its pace at an answer
+   *  and settles onto the room's flight, a small miss in a few frames, a refused touch (a whole flight's worth) slowed,
+   *  turned and brought back rather than jumped or yanked. */
+  private mendNow(seconds:number){
+    const w=1/this.mendFor,age=Math.max(0,seconds-this.mendAt),e=Math.exp(-w*age);
+    // x(t) = (x0 + (v0 + w x0) t) e^-wt; v(t) = (v0 - (v0 + w x0) w t) e^-wt
+    this.mendU.copy(this.mendV).addScaledVector(this.mend,w);
+    this.mendX.copy(this.mend).addScaledVector(this.mendU,age).multiplyScalar(e);
+    this.mendU.multiplyScalar(-w*age).add(this.mendV).multiplyScalar(e);
+    return this.mendX;
+  }
+  /** A new miss to blend out (place and pace, the drawn ball's less the ball it is drawn from now), on what is left of
+   *  the last. Past three SNAPs it is a reset: drawn at once. */
+  private mendBy(seconds:number,dx:number,dy:number,dz:number,dvx:number,dvy:number,dvz:number,over:number){
+    if(dx*dx+dy*dy+dz*dz>(SNAP*3)**2){this.mend.set(0,0,0);this.mendV.set(0,0,0);return;}
+    this.mendNow(seconds);
+    this.mend.copy(this.mendX).add(this.gap.set(dx,dy,dz));this.mendV.copy(this.mendU).add(this.gap.set(dvx,dvy,dvz));
+    this.mendAt=seconds;this.mendFor=over;
+  }
+
+  /** The room's ball at `tau` (server s), from the snapshots heard (with `upTo`: only those up to that time, as the last
+   *  frame had them): the one before run on along its own flight, bent onto the one after across the gap - as `timed`
+   *  draws the frame's - or run on past the newest. Into `out`; false when nothing is heard. */
+  private truth(tau:number,out:BallState,upTo=Infinity){
+    const R=this.ring;let n=R.length;while(n>0&&R[n-1].t>upTo+1e-9)n--;
+    if(!n)return false;
+    let i=n-1;while(i>0&&R[i].t>tau+1e-9)i--;
+    const base=R[i],next=i+1<n?R[i+1]:null,span=next?next.t-base.t:0,s=next&&span>1e-4?Math.min(1,Math.max(0,(tau-base.t)/span)):0;
+    if(base.ball.held||next?.ball.held&&s>0){
+      const to=next?.ball??base.ball;copyBall(out,base.ball);
+      out.x=base.ball.x+(to.x-base.ball.x)*s;out.y=base.ball.y+(to.y-base.ball.y)*s;out.z=base.ball.z+(to.z-base.ball.z)*s;out.vx=out.vy=out.vz=0;return true;
+    }
+    this.flyFrom(out,base.ball,base.t,tau,base.hold);
+    if(next&&span>1e-4){
+      const f=this.flyFrom(this.tmp,base.ball,base.t,next.t,base.hold),mx=next.ball.x-f.x,my=next.ball.y-f.y,mz=next.ball.z-f.z;
+      if(mx*mx+my*my+mz*mz<=SNAP*SNAP){
+        const w=s*s*(3-2*s),rate=6*s*(1-s)/span;
+        out.x+=mx*w;out.y+=my*w;out.z+=mz*w;out.vx+=mx*rate;out.vy+=my*rate;out.vz+=mz*rate;
+      }
+    }
+    return true;
+  }
+  /** `b` (sampled at `from`) run on along its own flight to `to` into `out`: it stands still while stopped or clashing. */
+  private flyFrom(out:BallState,b:BallState,from:number,to:number,hold=-Infinity){
+    const start=Math.max(from,b.frozenUntil,b.clash,hold),age=Math.min(.8,Math.max(0,to-start));
+    copyBall(out,b);out.held=false;
+    for(let left=age;left>1e-5;left-=1/60)stepBall(this.mode!,out,Math.min(1/60,left),this.contacts);
+    if(to<b.frozenUntil||to<b.clash||to<hold){out.vx=out.vy=out.vz=0;}
+    return out;
+  }
+
+  /** The frame's ball while the page's own touch is forecast or the ball is drawn ahead of the frame. The forecast flies
+   *  on from where it left until the room's word on it comes back. Heard, the ball goes on along the room's own flight
+   *  from the moment on it that lines up with where the forecast has it - so the ball keeps its pace and only the miss is
+   *  blended out - which puts it `lead` ahead of the frame: the room plays the ball in this page's time after its touch
+   *  (BallMatch SEEN). Refused, it goes back to the room's ball at the lead it had, the whole miss blended out more
+   *  gently. Ahead of the frame, a snapshot that changes the room's flight there (somebody else's touch) is blended in,
+   *  not jumped to, and the lead is eased off (`easeLead`) until the ball is in the frame's time again. */
+  private drawAhead(t:number,seconds:number,view:BallView,dt:number){
+    const a=this.ahead;
+    if(a){
+      this.nearest=NaN;const word=this.verdict(a),f=this.flyFrom(this.ahead0,a.ball,a.at,t);
+      if(word===null){this.drawn.set(f.x,f.y,f.z);this.velocity.set(f.vx,f.vy,f.vz);return;}
+      let lead=a.lead,miss=-1,missV=-1,late=NaN;
+      if(word){
+        const u=this.along(a,word),g=this.flyFrom(this.tmp,a.ball,a.at,a.at+u);
+        lead=Math.max(0,Math.min(.5,word.t-a.at-u));
+        miss=Math.hypot(g.x-word.ball.x,g.y-word.ball.y,g.z-word.ball.z);missV=Math.hypot(g.vx-word.ball.vx,g.vy-word.ball.vy,g.vz-word.ball.vz);
+        this.heardIn=this.heardIn>0?this.heardIn+(lead-this.heardIn)*.3:lead;late=word.t-a.room;
+      }
+      this.ahead=null;this.lead=lead;this.leadRate=0;
+      this.forecasts.push({kind:a.kind,lead:+lead.toFixed(3),miss:+miss.toFixed(3),missV:+missV.toFixed(2),refused:!word,heardIn:+(seconds-a.made).toFixed(3),late:+(word?late:this.nearest).toFixed(3)});
+      if(this.forecasts.length>200)this.forecasts.shift();
+      this.ringSeen=this.ring[this.ring.length-1]?.t??-Infinity;
+      // (Where the forecast was drawn, against where the room's ball is drawn from now: blended out.)
+      if(lead>0)this.truth(t+lead,this.look0);else this.timed(t,view);
+      const to=lead>0?this.look0:this.drawn,vx=lead>0?this.look0.vx:this.velocity.x,vy=lead>0?this.look0.vy:this.velocity.y,vz=lead>0?this.look0.vz:this.velocity.z;
+      this.mendBy(seconds,f.x-to.x,f.y-to.y,f.z-to.z,f.vx-vx,f.vy-vy,f.vz-vz,word?MEND:REFUSED);
+      if(lead<=0)return;
+      this.landFrom(this.look0,seconds);
+    }
+    if(this.lead<=0){this.timed(t,view);return;}
+    const R=this.ring,newest=R[R.length-1]?.t??-Infinity,tau=t+this.lead;
+    if(!this.truth(tau,this.look0)||this.look0.held){this.lead=0;this.timed(t,view);return;}
+    if(newest>this.ringSeen&&Number.isFinite(this.ringSeen)&&this.truth(tau,this.prior,this.ringSeen)){
+      // A snapshot heard since the last frame changed the room's flight this far ahead (somebody else's touch, a bounce
+      // off a body): what it moved is blended in, not jumped to.
+      const p=this.prior,l=this.look0,dx=p.x-l.x,dy=p.y-l.y,dz=p.z-l.z,d2=dx*dx+dy*dy+dz*dz;
+      if(d2>1e-6){this.mendBy(seconds,dx,dy,dz,p.vx-l.vx,p.vy-l.vy,p.vz-l.vz,d2>.25?REFUSED:MEND);this.landFrom(l,seconds);}
+    }
+    this.ringSeen=newest;
+    this.drawn.set(this.look0.x,this.look0.y,this.look0.z);this.velocity.set(this.look0.vx,this.look0.vy,this.look0.vz);
+    this.easeLead(dt);
+    if(this.lead<=0){
+      // (Back in the frame's time: the frame's own ball from here, anything between the two blended out.)
+      const x=this.drawn.x,y=this.drawn.y,z=this.drawn.z,vx=this.velocity.x,vy=this.velocity.y,vz=this.velocity.z;this.lead=0;this.timed(t,view);
+      this.mendBy(seconds,x-this.drawn.x,y-this.drawn.y,z-this.drawn.z,vx-this.velocity.x,vy-this.velocity.y,vz-this.velocity.z,MEND);
+      this.forecast();
+    }
+  }
+  /** How far along the forecast's flight (s) the room's first ball after the touch lines up with it: the nearest it
+   *  comes to that ball. */
+  private along(a:{ball:BallState;at:number},word:{t:number;ball:BallState}){
+    const b=copyBall(this.tmp,a.ball),w=word.ball,most=Math.min(.5,Math.max(0,word.t-a.at));b.held=false;
+    let best=0,bestD=Math.hypot(b.x-w.x,b.y-w.y,b.z-w.z);
+    for(let u=1/120;u<=most+1e-6;u+=1/120){
+      stepBall(this.mode!,b,1/120,this.contacts);
+      const d=Math.hypot(b.x-w.x,b.y-w.y,b.z-w.z);if(d<bestD){bestD=d;best=u;}
+    }
+    return best;
+  }
+  /** The lead eased off: at least LEAD_EASE.least of the frame's time, and fast enough (up to LEAD_EASE.most) to be gone
+   *  before the ball's flight brings it to any other fighter (as they are drawn now), within LEAD_MEET; not at all while
+   *  it is on its way to the page's own fighter first - there the room's time and this page's are the same. */
+  private easeLead(dt:number){
+    if(dt<=0)return;
+    const {mine,other}=this.meets(this.look0);
+    // (The rate itself eases, so the ball's pace changes over a few frames rather than in one.)
+    const want=mine<other?0:Math.min(LEAD_EASE.most,Math.max(LEAD_EASE.least,this.lead/Math.max(.05,other-.1)));
+    this.leadRate+=(want-this.leadRate)*Math.min(1,dt*LEAD_EASE.settle);
+    this.lead=Math.max(0,this.lead-this.leadRate*dt);
+  }
+
+  /** When a ball's flight first comes within LEAD_MEET of this page's own fighter (coming to it, not leaving it) and of
+   *  anybody else's (s, as they are drawn now; Infinity: not within LEAD_LOOK). */
+  private readonly met={mine:Infinity,other:Infinity};
+  private meets(ball:BallState){
+    const b=copyBall(this.tmp,ball),me=this.where(this.self,this.spot),others=this.lastView?.seats??[],meet2=LEAD_MEET*LEAD_MEET;
+    let other=Infinity,mine=Infinity,inside=true;b.held=false;
+    for(let s=0;s<=LEAD_LOOK&&other===Infinity;s+=1/30){
+      if(me&&mine===Infinity){const d2=(b.x-me.x)**2+(b.y-me.y-1)**2+(b.z-me.z)**2;if(d2>meet2)inside=false;else if(!inside||s===0)mine=s;}
+      for(let i=0;i<others.length;i++){
+        const id=others[i].id;if(id===this.self)continue;
+        const q=this.where(id,this.direction);if(!q)continue;
+        if((b.x-q.x)**2+(b.y-q.y-1)**2+(b.z-q.z)**2<meet2){other=s;break;}
+      }
+      stepBall(this.mode!,b,1/30,this.contacts);
+    }
+    this.met.mine=mine;this.met.other=other;return this.met;
+  }
+
+  /** The room's word on the forecast touch `a`, from the snapshots heard since it: the snapshot that has the ball changed
+   *  by this page's fighter (its last toucher) nearest the forecast - the touch, heard - or false: refused, the point
+   *  over, or nothing of this page's by a little past the room's time for it. Null: not heard yet. */
+  private verdict(a:{ball:BallState;at:number;room:number}){
+    // (From a little before the room's time for the touch - the page's prediction's clock as it struck, the time the room
+    // plays the command at; the room can play a backlog of commands a few ticks sooner - else from the frame it was
+    // forecast on. A touch of this page's further back is not this one: the ball the room had reached the body a round
+    // trip before the swing did. Of those that are, the one that sends the ball most nearly as the forecast does.)
+    const R=this.ring,known=Number.isFinite(a.room),from=known?a.room-HEARD_BACK:a.at,f0=a.ball,pace=Math.hypot(f0.vx,f0.vy,f0.vz);
+    let best:typeof R[number]|null=null,bestD=Infinity;
+    for(let i=1;i<R.length;i++){
+      const prev=R[i-1],cur=R[i];if(cur.t<=from+1e-6)continue;
+      if(!cur.live)return best??false;
+      const f=this.flyFrom(this.tmp,prev.ball,prev.t,cur.t),b=cur.ball;
+      const changed=f.held!==b.held||Math.abs(f.x-b.x)+Math.abs(f.y-b.y)+Math.abs(f.z-b.z)>.05||Math.abs(f.vx-b.vx)+Math.abs(f.vy-b.vy)+Math.abs(f.vz-b.vz)>.5;
+      if(!changed||b.lastId!==this.self)continue;
+      const d=Math.hypot(b.vx-f0.vx,b.vy-f0.vy,b.vz-f0.vz);
+      if(d<bestD){best=cur;bestD=d;}
+      if(d<3+pace*.3)return cur;
+    }
+    const newest=R[R.length-1]?.t??-Infinity;
+    const out=newest>=(known?a.room+HEARD_PAST:a.at+(this.heardIn>0?Math.min(HEARD,this.heardIn+.12):HEARD))?best??false:null;
+    // (For the log: a refused one's nearest touch of this page's in the room, from its time for the touch.)
+    if(out===false)for(let i=1;i<R.length;i++){const cur=R[i];if(cur.t>a.at&&cur.ball.lastId===this.self&&!sameBall(cur.ball,R[i-1].ball)){this.nearest=cur.t-a.room;break;}}
+    return out;
   }
 
   dispose(){
@@ -697,7 +985,7 @@ export class BallField {
     const had=this.baseServer>=0;
     copyBall(this.prev,this.base);this.prevServer=this.baseServer;
     copyBall(this.base,b);this.baseServer=serverTime;this.baseAt=seconds;
-    this.forecast();
+    if(!this.ahead&&this.lead<=0)this.forecast();
     if(!had||!this.shown){this.offset.set(0,0,0);this.drawn.set(b.x,b.y,b.z);return;}
     const p=this.prev,jump=Math.hypot(b.x-p.x,b.y-p.y,b.z-p.z),flight=p.held?0:Math.hypot(p.vx,p.vy,p.vz)*Math.max(.05,serverTime-this.prevServer);
     if(jump>SNAP+flight*1.5){this.offset.set(0,0,0);this.drawn.set(b.x,b.y,b.z);this.trail.count=0;return;}
@@ -711,11 +999,31 @@ export class BallField {
    *  and the next snapshot's: the ball is where its flight has carried it since, bent onto the next snapshot across
    *  the gap. A bare snapshot (a check's): run on by its age - the presented clock's when that runs on, else the
    *  page's since it arrived - plus what is left of the correction. */
-  private place(serverTime:number,seconds:number,view:BallView){
+  private place(serverTime:number,seconds:number,view:BallView,dt=0){
     const b=this.base,frozen=b.frozenUntil>serverTime;
     if(frozen&&!this.frozen){this.freezeFrom=serverTime;this.freezeLength=Math.max(.2,b.frozenUntil-serverTime);}
     this.frozen=frozen;
-    if(view.sampledAt!==undefined){this.timed(serverTime,view);this.shown=true;return;}
+    if(view.sampledAt!==undefined){
+      // The page's own touch, drawn from the moment it was forecast; and after it, the ball drawn ahead of the
+      // frame (in this page's own time) until it is eased back. Anything the room said otherwise is blended out (`mend`).
+      const rw=this.rewind;
+      if(rw&&!this.ahead){
+        // (An attack put back into this page's time: the flight the page was drawing, up to the moment it was put back
+        // to; from there the room's, ahead of the frame by the room's lag for this page. A ball still drawn ahead of the
+        // frame from the last touch - a rebound, the next attack a moment after - is blended onto it.)
+        const was=this.lead>0&&this.truth(serverTime+this.lead,this.prior);this.lead=0;
+        if(serverTime<rw.tr&&this.truth(serverTime,this.look0,rw.upTo)){this.drawn.set(this.look0.x,this.look0.y,this.look0.z);this.velocity.set(this.look0.vx,this.look0.vy,this.look0.vz);}
+        else{this.rewind=null;this.lead=rw.lag;this.leadRate=0;this.ringSeen=this.ring[this.ring.length-1]?.t??-Infinity;this.drawAhead(serverTime,seconds,view,dt);}
+        const p=this.prior;
+        if(was)this.mendBy(seconds,p.x-this.drawn.x,p.y-this.drawn.y,p.z-this.drawn.z,p.vx-this.velocity.x,p.vy-this.velocity.y,p.vz-this.velocity.z,MEND);
+      }
+      else if(this.ahead||this.lead>0)this.drawAhead(serverTime,seconds,view,dt);else this.timed(serverTime,view);
+      if(this.mend.lengthSq()+this.mendV.lengthSq()>0){
+        const x=this.mendNow(seconds);this.drawn.add(x);this.velocity.add(this.mendU);
+        if(x.lengthSq()<1e-6&&this.mendU.lengthSq()<1e-4){this.mend.set(0,0,0);this.mendV.set(0,0,0);}
+      }
+      this.drawnT=serverTime;this.drawnAt=seconds;this.shown=true;return;
+    }
     let x=b.x,y=b.y,z=b.z;
     if(b.held||frozen||b.clash>serverTime)this.velocity.set(0,0,0);
     else{
@@ -758,10 +1066,12 @@ export class BallField {
     else{const rate=span>1e-4?6*s*(1-s)/span:0;this.velocity.set(f.vx+this.miss.x*rate,f.vy+this.miss.y*rate,f.vz+this.miss.z*rate);}
   }
 
-  /** Where a ball in the air will come down (physics.ts landing), once a snapshot: Sky Spike's in whose court. */
-  private forecast(){
-    const b=this.base,mode=this.mode!,r=ballRadius(mode),land=this.land;
-    land.show=false;
+  /** Where a ball in the air will come down (physics.ts landing), once a snapshot: Sky Spike's in whose court. (From
+   *  the ball drawn ahead of the frame while it is - `landFrom` - else the snapshot's.) */
+  private forecast(){this.landFrom(this.base,this.baseAt);}
+  private landFrom(b:BallState,at:number){
+    const mode=this.mode!,r=ballRadius(mode),land=this.land;
+    land.show=false;this.landAt=at;
     if(b.held||b.y<(mode==='goal-rush'?2:r+.4))return;
     const l=landing(mode,b);
     const R=mode==='goal-rush'?GOAL_RULES:SPIKE_RULES;
@@ -779,12 +1089,15 @@ export class BallField {
     if(p.vy<-6&&b.vy>0&&b.y<r+.8)this.floor(b.x,b.z,-p.vy);
   }
 
-  private moments(view:BallView,serverTime:number){
+  private moments(view:BallView,serverTime:number,seconds:number){
     const events=view.events;
     for(let i=0;i<events.length;i++){
       const e=events[i];if(e.id<=this.lastEvent)continue;this.lastEvent=e.id;
       // Only what is happening now: a page that joins late, or hitches, does not replay a backlog.
       if(serverTime-e.at>1.2)continue;
+      // (The page's own touch whose moment was drawn when it was forecast, the same moment.)
+      const told=this.told;
+      if(told&&e.actorId===this.self&&e.kind===told.kind&&!!e.perfect===told.perfect&&seconds-told.at<1.2){this.told=null;continue;}
       this.moment(e,view);
     }
   }
@@ -792,7 +1105,7 @@ export class BallField {
   private dress(view:BallView,selfId:string,camera:THREE.Camera,dt:number,seconds:number,serverTime:number){
     // RUMBLE's GIANT BALL swells it (and lets it go) over a few frames.
     this.grown+=((this.base.size||1)-this.grown)*Math.min(1,dt*6);
-    const b=this.base,r=ballRadius(view.mode)*this.grown,frozen=this.frozen,speed=this.velocity.length(),fx=this.fx;
+    const b=this.lookBall(),r=ballRadius(view.mode)*this.grown,frozen=this.frozen,speed=this.velocity.length(),fx=this.fx;
     this.ball.scale.setScalar(r);
     if(!frozen)this.time.value+=dt;
     this.heat+=(b.heat-this.heat)*Math.min(1,dt*8);this.flash=Math.max(0,this.flash-dt*6);
@@ -902,7 +1215,7 @@ export class BallField {
     }
     // Where it comes down, closing in as it falls: Sky Spike's in the colour of the court it lands in (urgent on your
     // own side), a cross when it lands out; Goal Rush's a quiet ring.
-    const land=this.land,left=land.t-Math.max(0,seconds-this.baseAt);
+    const land=this.land,left=land.t-Math.max(0,seconds-this.landAt);
     if(land.show&&!b.held&&!frozen&&left>0){
       let mine=false;for(let i=0;i<view.seats.length;i++)if(view.seats[i].id===selfId){mine=!!land.team&&view.seats[i].team===land.team;break;}
       const spike=view.mode==='sky-spike',colour=spike?land.team?TEAM[land.team]:WHITE:PALE,pulse=mine?.75+.25*Math.sin(seconds*22):1;
