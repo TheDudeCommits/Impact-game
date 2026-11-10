@@ -17,19 +17,20 @@ export const MADE_HERE: readonly { what: string; how: string }[] = [
 export interface Credit { work: string; by?: string; sources: readonly (readonly [label: string, url: string])[]; licence: string; licenceUrl?: string; changes?: string; files: readonly string[] }
 const CC_BY_4 = 'https://creativecommons.org/licenses/by/4.0/', CC_BY_3 = 'https://creativecommons.org/licenses/by/3.0/', CC0 = 'https://creativecommons.org/publicdomain/zero/1.0/';
 
-/** The fighters' files whose walk, run, dash, jump, fall, tumble, knockback or death fall (or a rush cut) is cut from the
- *  Universal Animation Library: its credit stays while any of them ships. */
+/** The fighters' files whose stance, walk, run, dash, jump, fall, tumble, knockback, get-up or death fall (or a strike or a
+ *  rush cut) is cut from the Universal Animation Library: its credit stays while any of them ships. */
 const UAL_CUTS = [
-  'akaito-tr1', 'akayuri-awakened-tr1', 'akayuri-tr1', 'amagoi-tr1', 'ampere-awakened-tr1', 'ampere-tr1', 'aqrab-tr1',
-  'aquilo-tr1', 'bonsho-tr1', 'bruin-tr1', 'chohan-tr1', 'gaunt-tr1', 'gosu-tr1', 'hagure-awakened-tr1', 'hagure-tr1',
-  'hakushi-form-tr1', 'hakushi-tr1', 'hikui-awakened-tr1', 'hikui-tr1', 'hinomoto-tr1', 'hisame-px1', 'hisame-pxrush1',
-  'irbis-form-tr1', 'irbis-tr1', 'kinu-tr1', 'koko-spirit-tr1', 'koko-tr1', 'kubiwa-px-tr1', 'kuon-px1',
-  'kusushi-form-tr1', 'kusushi-tr1', 'kuzu-tr1', 'lanthorn-awakened-tr1', 'lanthorn-tr1', 'levin-tr1', 'minase-form-tr1',
-  'minase-tr1', 'mizuhiki-tr1', 'murex-tr1', 'oro-spirit-tr1', 'oro-tr1', 'ouga-px1', 'psyche-tr1', 'pyroclast-tr1',
-  'rakucho-px-awakened-tr1', 'rakucho-px-tr1', 'rotfalke-awakened-tr1', 'rotfalke-tr1', 'sashigane-tr1', 'senko-tr1',
-  'setsu-tr1', 'shakudo-px1', 'shidare-tr1', 'shijima-form-tr1', 'shijima-tr1', 'shirokane-tr1', 'strix-tr1',
-  'suzuran-px1', 'svanhild-tr1', 'tancho-tr1', 'tempo-tr1', 'tokan-tr1', 'ume-form-tr1', 'ume-tr1', 'unari-px1',
-  'wataame-tr1', 'wukong-tr1', 'yodaka-tr1'
+  'akagane-tr1', 'akaito-tr1', 'akayuri-awakened-tr1', 'akayuri-tr1', 'amagoi-tr1', 'ampere-awakened-tr1',
+  'ampere-tr1', 'aqrab-tr1', 'aquilo-tr1', 'asahi-tr1', 'bonsho-tr1', 'bruin-tr1', 'chohan-tr1', 'gaku-awakened-tr1',
+  'gaku-tr1', 'gaunt-tr1', 'gosu-tr1', 'hagure-awakened-tr1', 'hagure-tr1', 'hakushi-form-tr1', 'hakushi-tr1',
+  'hikui-awakened-tr1', 'hikui-tr1', 'hinomoto-tr1', 'hisame-px1', 'hisame-pxrush1', 'irbis-form-tr1', 'irbis-tr1',
+  'kinu-tr1', 'koko-spirit-tr1', 'koko-tr1', 'kubiwa-px-tr1', 'kuon-px1', 'kusushi-form-tr1', 'kusushi-tr1',
+  'kuzu-tr1', 'lanthorn-awakened-tr1', 'lanthorn-tr1', 'levin-tr1', 'magatsu-awakened-tr1', 'magatsu-tr1',
+  'minase-form-tr1', 'minase-tr1', 'mizuhiki-tr1', 'murex-tr1', 'oro-spirit-tr1', 'oro-tr1', 'ouga-px1', 'psyche-tr1',
+  'pyroclast-tr1', 'rakucho-px-awakened-tr1', 'rakucho-px-tr1', 'rook-awakened-tr1', 'rotfalke-awakened-tr1',
+  'rotfalke-tr1', 'sashigane-tr1', 'senko-tr1', 'setsu-tr1', 'shakudo-px1', 'shidare-tr1', 'shijima-form-tr1',
+  'shijima-tr1', 'shirokane-tr1', 'strix-tr1', 'suzuran-px1', 'svanhild-tr1', 'tancho-tr1', 'tempo-tr1', 'tokan-tr1',
+  'ume-form-tr1', 'ume-tr1', 'unari-px1', 'wataame-tr1', 'wukong-tr1', 'yodaka-tr1'
 ].map(name => `assets/fighters/${name}.glb`);
 
 /** The works whose licences ask for a credit (the LICENSE files beside each kit under public/assets/environment,
@@ -52,7 +53,7 @@ export const OPEN_WORKS: readonly Credit[] = [
   { work: 'Kloofendal 48d Partly Cloudy (Pure Sky)', by: 'by Greg Zaal and Jarod Guest', sources: [['Poly Haven', 'https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky']], licence: 'CC0', licenceUrl: CC0, files: ['assets/environment/sky/partly-cloudy-2k.hdr'] },
   { work: 'Crowd Shouting Ambience', by: 'by StarNinjas', sources: [['OpenGameArt', 'https://opengameart.org']], licence: 'CC0', licenceUrl: CC0, files: ['assets/audio/ambience/crowd.m4a'] },
   { work: 'The recordings layered into its sound effects', by: 'by their authors', sources: [['Freesound', 'https://freesound.org']], licence: 'CC0', licenceUrl: CC0, files: ['assets/audio/v2/sfx/', 'assets/audio/v2/cc0/'] },
-  { work: 'Universal Animation Library and Universal Animation Library 2', by: 'by Quaternius', sources: [['quaternius.com', 'https://quaternius.com/packs/universalanimationlibrary.html']], licence: 'CC0', licenceUrl: CC0, changes: 'moves cut from it, the fighters\' walks, runs, dashes, jumps, falls and death falls among them, retargeted and re-timed', files: [...UAL_CUTS, 'assets/fighters/wukong-rush1.glb', 'assets/fighters/shiden-tr1.glb', 'assets/fighters/shiden-rush1.glb', 'assets/fighters/ball-moves.glb'] },
+  { work: 'Universal Animation Library and Universal Animation Library 2', by: 'by Quaternius', sources: [['quaternius.com', 'https://quaternius.com/packs/universalanimationlibrary.html']], licence: 'CC0', licenceUrl: CC0, changes: 'moves cut from it, the fighters\' walks, runs, dashes, jumps, falls, knockbacks, get-ups and death falls among them, retargeted and re-timed', files: [...UAL_CUTS, 'assets/fighters/wukong-rush1.glb', 'assets/fighters/shiden-tr1.glb', 'assets/fighters/shiden-rush1.glb', 'assets/fighters/ball-moves.glb'] },
   { work: 'Barlow and Barlow Condensed', by: '© 2017 The Barlow Project Authors', sources: [['GitHub', 'https://github.com/jpt/barlow']], licence: 'SIL Open Font License 1.1', licenceUrl: 'https://openfontlicense.org', files: ['assets/ui/hud/fonts/'] },
   { work: 'The libraries three.js, Rapier and Colyseus', sources: [['three.js', 'https://threejs.org'], ['Rapier', 'https://rapier.rs'], ['Colyseus', 'https://colyseus.io']], licence: 'MIT and Apache 2.0', files: [] },
   ...STAGE_CC0_WORKS,

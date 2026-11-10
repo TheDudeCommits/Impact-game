@@ -2,7 +2,8 @@ import type { FighterId } from '../game/types';
 
 // (Kuzu's stance and run are his previous ones again: with the clean sprint the renderer lifted his Rush 2 24 cm off the
 // floor. Gaku's never-shown stance is his previous one again: measured off the clean one at this size, his knockdown popped
-// the head 8 cm. Both bodies measure as they always did.)
+// the head 8 cm. Both bodies measure as they always did. Gaku's stance is a clean one again now, drawn at his old size and
+// stood and centred where the old one was - his row below.)
 const BASE: Partial<Record<FighterId, number>> = {
   kagari: 1.20228,            // Kagari
   'full-beam': 1.05393,    // Full Beam
@@ -47,7 +48,7 @@ const BASE: Partial<Record<FighterId, number>> = {
   ouga: 1.05318,         // Ouga
   tempo: 1.02096,           // Tempo
   // (Rook, flat on his feet now: no row - measured, he stands Rook's 1.82 m; his live scale, 1.00022, would stand him
-  // 1.78 m, 2% short of Impact's same slot.)
+  // 1.78 m, 2% short of Impact's same slot. His row below holds that size on his new stance.)
   // aaa-b3 (6 November): Tobari's ready stance is Tobari's own again (the clean boxer's guard held his hands over his face): held
   // at the scale the live body measured off the clean one (measured off Tobari's own he would be drawn 4.5% smaller, 1.01115).
   tobari: 1.05848,         // Tobari
@@ -84,6 +85,14 @@ const BASE: Partial<Record<FighterId, number>> = {
   // Kuzu's stance is a relaxed breath, crouched with both saws held out ahead, held at the scale his old one gave him (off
   // the new one he would be drawn 0.6% larger), so he is drawn at his own size. (Ampere's two rows already hold his.)
   kuzu: 1.09553,            // Kuzu
+  // Akagane's and Rook's stances are their own idle files' loops (the ones the game stands them in), Unari's the library's relaxed
+  // breath, posed (her row above holds her size already); held at the scale each stance before gave them (measured off the new ones
+  // Akagane would be drawn 3.4% larger, Rook 1.8%), so each is drawn at his own size - Rook his 1.82 m.
+  akagane: 0.99226,         // Akagane
+  rook: 1.02055,            // Rook
+  // Gaku's stance is the library's relaxed breath, held at the scale his stance before gave him (1.00317), stood on the same floor
+  // and centred where the old one was, so he is drawn at his own size and place. (His match idle is gaku-idle1.glb's either way.)
+  gaku: 1.00317,            // Gaku
 };
 /** The awakened bodies whose own stance was swapped. */
 const FORM: Partial<Record<FighterId, number>> = {
