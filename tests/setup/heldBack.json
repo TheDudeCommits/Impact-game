@@ -1,11 +1,6 @@
 {
- "tests/airNormals.test.ts": [
-  "koko is announced as the air kick exactly when the air kick is what is drawn"
- ],
  "tests/airStrings.test.ts": [
-  "kenzo: announces its air string by the names of what it draws",
-  "koko: announces its air string by the names of what it draws",
-  "shirokane: announces its air string by the names of what it draws"
+  "kenzo: announces its air string by the names of what it draws"
  ],
  "tests/amagoiSharedIntegration.test.ts": [
   "air stages retain their individual authored receiver/repulsion clips"
@@ -35,10 +30,6 @@
  ],
  "tests/gummyRound5.test.ts": [
   "is its own take, landing its blow on the move's contact"
- ],
- "tests/kubiwaSharedIntegration.test.ts": [
-  "reads actual native command fingers in every manual branch; awakened=false",
-  "reads actual native command fingers in every manual branch; awakened=true"
  ],
  "tests/lockStrikes.test.ts": [
   "every one fits its body: keyed on the body's own joints, finite, never refused"
@@ -87,17 +78,8 @@
   "draw only their own bodies, clips, idles and portraits, and every one of them ships",
   "key every joint the transfer moves in every clip, so the renderer's layers never pile up on a stale pose"
  ],
- "tests/reactionTakes.test.ts": [
-  "gaku, a light string",
-  "rook, a heavy, the knockdown and the get-up"
- ],
- "tests/runTakes.test.ts": [
-  "magatsu"
- ],
  "tests/rushClips.test.ts": [
-  "kenzo: the rush file binds onto the body, names its stages, and has their contacts",
-  "koko: the rush file binds onto the body, names its stages, and has their contacts",
-  "shirokane: the rush file binds onto the body, names its stages, and has their contacts"
+  "kenzo: the rush file binds onto the body, names its stages, and has their contacts"
  ],
  "tests/rushFlow.test.ts": [
   "goes from stage to stage without a tick of idle, hit or miss, at any mashing rate, for all sixteen"
