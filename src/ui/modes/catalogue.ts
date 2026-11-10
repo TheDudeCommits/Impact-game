@@ -84,16 +84,17 @@ export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
     },
   },
   'sky-spike': {
-    // (rulesVersion 2: the PERFECT SPIKE's timing and the dig are taught.)
-    id: 'sky-spike', name: 'SKY SPIKE', art: 'sky-spike', rulesVersion: 2, kicker: 'THE SKY COURT · 3 V 3 TAKRAW',
+    // (rulesVersion 2: the PERFECT SPIKE's timing and the dig are taught. 3: a FEVER point counts double to the side
+    // behind.)
+    id: 'sky-spike', name: 'SKY SPIKE', art: 'sky-spike', rulesVersion: 3, kicker: 'THE SKY COURT · 3 V 3 TAKRAW',
     tagline: 'Spike it into their court.',
     goal: 'Three against three across a net. Keep the ball off your floor and smash it into theirs with every move you have.',
-    win: `First to ${SPIKE_RULES.target}, win by two (${SPIKE_RULES.cap} caps it). A point in a FEVER rally counts double.`,
+    win: `First to ${SPIKE_RULES.target}, win by two (${SPIKE_RULES.cap} caps it). A FEVER rally's point counts double to the side behind (to either side, level).`,
     facts: { players: '3 V 3', length: '~5–8 MIN', lives: `FIRST TO ${SPIKE_RULES.target}` },
     howTo: [
       `{light} keeps the ball on your side: a BUMP, then a SET floating high at the net. ${SPIKE_RULES.touches} touches a side, the last has to go over; a ball that hits you is bumped for you.`,
       'From a step behind the set, {jump} as it peaks and swing {heavy} at the top of your jump: a PERFECT SPIKE, faster and hotter. Swing early and it is an ordinary spike. {guard} in the air at the net BLOCKS.',
-      `A hard ball into your court: {dash} at it to DIVE and dig it up for your side. Past rally ${SPIKE_RULES.fever} it is a FEVER rally, worth double. {ultimate}: a SUPER SHOT into their emptiest corner.`,
+      `A hard ball into your court: {dash} at it to DIVE and dig it up for your side. Past rally ${SPIKE_RULES.fever} it is a FEVER rally: worth double to the side behind. {ultimate}: a SUPER SHOT into their emptiest corner.`,
     ],
     panels: [art('sky-spike', '30% 40%'), art('sky-spike', '60% 50%'), { move: 'ultimate' }],
     variants: {

@@ -23,7 +23,7 @@ describe('the intro\'s flyover', () => {
   });
   it('holds each shot still under reduced motion', () => {
     const a = { eye: [0, 0, 0] as [number, number, number], look: [0, 0, 0] as [number, number, number], fov: 0 }, b = { ...a, eye: [0, 0, 0] as [number, number, number], look: [0, 0, 0] as [number, number, number] };
-    introLens('ink-bowl', 'goal-rush', .1, a, true); introLens('ink-bowl', 'goal-rush', 1.5, b, true);
+    introLens('ink-bowl', 'goal-rush', .1, a, true); introLens('ink-bowl', 'goal-rush', 1.2, b, true);
     expect(a.eye).toEqual(b.eye);
   });
 });

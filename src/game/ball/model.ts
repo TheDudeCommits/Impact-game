@@ -15,7 +15,7 @@ import type {AimAssist, SportFeel} from '../simulation';
 export type BallModeId = 'goal-rush' | 'sky-spike';
 export const BALL_MODES: readonly BallModeId[] = ['goal-rush', 'sky-spike'];
 /** Bumped whenever a page and a room would disagree about the ball, its view or its messages. */
-export const BALL_PROTOCOL = 5;
+export const BALL_PROTOCOL = 6;
 export type BallTeam = 'red' | 'blue';
 export const BALL_TEAMS: readonly BallTeam[] = ['red', 'blue'];
 export const otherTeam = (team: BallTeam): BallTeam => team === 'red' ? 'blue' : 'red';
@@ -319,7 +319,11 @@ export const GOAL_RULES = {
   cornerBounce: .92, cornerLift: .5,
   /** The ball's top speed at each heat tier. */
   speedCap: [23, 27, 32, 38, 46],
-  matchSeconds: 240, kickoffSeconds: 1.5, goalSeconds: 4.2,
+  /** The clock; the kickoff's hold with the bodies on their marks; a goal's hold - its sequence, the net, the burst, the
+   *  lights and the scorer's close-up - when it has no replay (a replay holds it on: replay.ts REPLAY). Play comes back
+   *  fast: 3.4 s from a goal to the ball back in play without a replay, under 6 s with one (with every goal replayed
+   *  and a longer hold it was 9 s). */
+  matchSeconds: 240, kickoffSeconds: 1, goalSeconds: 2.4,
   /** Overtime's ball heats by itself (its heat can't fall under this many a second of overtime), so a tied match
    *  always ends. */
   overtimeHeat: .05,
@@ -396,8 +400,8 @@ export const SPIKE_RULES = {
   passHeat: .1, heatShare: .75, skySpikeHeat: .4,
   /** The serve's walk-up (it serves itself after this), and the point's beat before the next serve. The scorer's
    *  celebration plays on into the walk-up for `celebrateSeconds` (Sky Spike was live for only 53-56% of a
-   *  match). */
-  serveSeconds: 5, pointSeconds: .8, celebrateSeconds: 2,
+   *  match). A point flows into the next serve, and a person serves within 3.5 s. */
+  serveSeconds: 3.5, pointSeconds: .6, celebrateSeconds: 2,
   /** Where a serve's ball hangs: this far in front of the server, this high. */
   serveAhead: 1.1, serveHeight: 1.75,
 } as const;

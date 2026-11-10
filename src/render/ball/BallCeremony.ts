@@ -24,15 +24,24 @@ export type CeremonyShow = 'intro' | 'close' | 'podium' | null;
 
 /** A goal's sequence (and a Sky Spike kill on match point's): when, whose, where the replay takes over. */
 interface Sequence { at: number; scorer?: string; team: BallTeam; until: number; x: number; y: number; z: number; key: string }
-/** The goal's lens: from this long after the goal to the replay, the scorer's close-up. */
-const CLOSE_FROM = .85;
+/** The goal's lens: from this long after the goal (the ball into the net and its burst, from the match's own camera)
+ *  to the replay or the kickoff, the scorer's close-up. */
+const CLOSE_FROM = .5;
 /** The close-up's turns off the scorer's front to try, nearest first, when the walls are in the way (closeUp). */
 const CLOSE_TURNS = [0, .5, -.5, 1, -1, 1.5, -1.5, 2.1, -2.1, 2.7, -2.7, Math.PI];
-/** The spotlights' sweep: seconds, and how long they take to find the scorer. */
-const SWEEP = 3.2, FIND = .9;
+/** The spotlights: how long they take to find the scorer, and to fade once the replay or the kickoff comes. They are
+ *  on for the sequence, the close-up's length, and close on the scorer before it. */
+const FIND = .55, FADE = .3;
 const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-/** Pad buttons that vote to skip the intro: the face buttons and START. */
-const PAD_SKIP = [0, 1, 2, 3, 9];
+/** Pad buttons that vote to skip the intro: the face buttons and START. A goal's close-up: A and START, as a replay's
+ *  skip (render/ball/BallReplay.ts); any button in a match with one person in it. */
+const PAD_SKIP = [0, 1, 2, 3, 9], PAD_CLOSE = [0, 9];
+/** Keys that vote to skip a goal's close-up (any key but these in a match with one person in it), as a replay's. */
+const KEY_SKIP = ['Space', 'Enter', 'NumpadEnter'];
+/** Keys that never vote: the pause menu's, and the modifiers. */
+const KEY_NEVER = ['Escape', 'ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight'];
+/** One person in the match (the rest bots): any press is theirs to skip with (BallMatch.skip). */
+export const soloMatch = (view: BallView | null | undefined) => !!view && view.seats.filter(s => !s.bot).length <= 1;
 
 /**
  * The ball modes' ceremonies, timed from the room's clock so every page of an
@@ -43,7 +52,9 @@ const PAD_SKIP = [0, 1, 2, 3, 9];
  *   votes to skip it (the page sends `ball-skip`; the room ends it once everyone has).
  * - A goal (and a Sky Spike kill on match point): the net bulges where the ball hit (BallArena's net shader), the
  *   spotlights sweep the arena and find the scorer, then a close-up of the scorer in their pose until the replay, while
- *   the big screens (MangaScreens.focus) show them too.
+ *   the big screens (MangaScreens.focus) show them too - until the kickoff when the goal earned no replay; the
+ *   whole sequence about 1.6 s before a replay and 2.4 s without one, and skipped as a replay is (Space, Enter, a tap, a
+ *   pad's A or START; any press in a match with one person in it).
  * - A SUPER SHOT's cut-in and INK FLASH (game/ball/superShots.ts names each fighter's).
  * - The podium: the generated podium and trophy under the winners the room stood on it (BallMatch.finish), the
  *   accolades dropping in, and an orbit round it before the results.
@@ -115,11 +126,16 @@ export class BallCeremony {
   get holding() { return this.show === 'close'; }
 
   private readonly onKey = (e: KeyboardEvent) => {
-    if (this.show !== 'intro' || e.repeat || ['Escape', 'ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight'].includes(e.code)) return;
-    this.vote();
+    if (e.repeat || KEY_NEVER.includes(e.code)) return;
+    if (this.show === 'intro') this.vote();
+    // A goal's close-up is skipped as its replay is (the room ends both at once: BallMatch.skip).
+    else if (this.show === 'close' && (KEY_SKIP.includes(e.code) || soloMatch(this.view))) { e.preventDefault(); this.closeVote(); }
   };
-  private readonly onTap = () => { if (this.show === 'intro') this.vote(); };
+  private readonly onTap = () => { if (this.show === 'intro') this.vote(); else if (this.show === 'close') this.closeVote(); };
   private vote() { if (this.introVoted) return; this.introVoted = true; this.onSkip(); }
+  /** The sequence this page has voted to skip (one vote a goal). */
+  private closeVoted = '';
+  private closeVote() { const key = this.sequence?.key ?? ''; if (this.closeVoted === key) return; this.closeVoted = key; this.onSkip(); }
 
   /** Every frame, with the presented snapshot. `couch`: a couch match (one screen or two), which has none of the lens's. */
   update(snapshot: GameSnapshot | null | undefined, selfId: string, dt: number, couch: boolean): CeremonyShow {
@@ -128,7 +144,7 @@ export class BallCeremony {
     if (!view || !snapshot) { if (this.lastShow || this.root.visible) this.clear(); return null; }
     this.root.visible = true;
     const now = snapshot.serverTime, key = `${view.startedAt}:${view.round}:${view.mode}`;
-    if (key !== this.matchKey || now < this.seenAt - 1) { this.matchKey = key; this.seen = 0; this.sequence = null; this.introVoted = false; this.beats.clear(); this.podiumKey = ''; }
+    if (key !== this.matchKey || now < this.seenAt - 1) { this.matchKey = key; this.seen = 0; this.sequence = null; this.introVoted = false; this.closeVoted = ''; this.beats.clear(); this.podiumKey = ''; }
     this.seenAt = now; this.serverTime = now;
     if (!view.ball.held) this.flight.set(view.ball.vx, view.ball.vy, view.ball.vz);
     const one = !couch;
@@ -139,6 +155,9 @@ export class BallCeremony {
       if (now - e.at > 1) continue;
       this.moment(e, view, selfId, one);
     }
+    // (The sequence holds the lens until the replay, or the kickoff when it has none - whenever a skip brings
+    // either forward.)
+    if (this.sequence && view.phase === 'scored') this.sequence.until = view.replay && view.replay.at > this.sequence.at ? view.replay.at : view.phaseUntil;
     let show: CeremonyShow = null;
     // (The short intro is the full one's tail - SHORT_INTRO - so it is timed as the full one's last seconds.)
     const intro = one && view.phase === 'countdown' && view.intro && view.startsAt !== null && !view.intro.skipped ? (view.intro.short ? INTRO.seconds : view.intro.seconds) - (view.startsAt - now) : -1;
@@ -147,7 +166,12 @@ export class BallCeremony {
     else if (one && this.sequence && view.phase === 'scored' && now >= this.sequence.at + CLOSE_FROM && now < this.sequence.until && !view.practice) show = 'close';
     if (show !== this.lastShow) this.change(show);
     this.show = show;
-    if (show === 'intro') this.intro(view, selfId, intro); else { this.ui.introTitle(null); this.ui.introSplash(null, selfId); this.ui.skipPrompt(null); }
+    if (show === 'intro') this.intro(view, selfId, intro);
+    else {
+      this.ui.introTitle(null); this.ui.introSplash(null, selfId);
+      // (A match with one person in it: any press skips the close-up and the replay after it.)
+      this.ui.skipPrompt(show === 'close' && soloMatch(view) && this.closeVoted !== this.sequence?.key ? this.ui.touch ? 'TAP TO SKIP' : 'ANY KEY TO SKIP' : null);
+    }
     this.props(view, snapshot, dt);
     this.spotlights(view, snapshot, dt);
     this.bars += ((show === 'intro' ? intro < INTRO.splash ? 1 : 0 : show === 'close' ? .65 : show === 'podium' ? .45 : 0) - this.bars) * Math.min(1, dt * 7);
@@ -202,7 +226,8 @@ export class BallCeremony {
     // or roof, bulging as far as the shot was hard.
     if (e.kind !== 'kill' && e.kind !== 'ace') this.netHit(e);
     if (e.kind === 'own-goal') return;
-    const until = view.replay && view.replay.at > e.at ? view.replay.at : e.at + (goal ? REPLAY.goalCeremony : REPLAY.ceremony);
+    // (Until the replay, or the kickoff when it has none: update keeps it so.)
+    const until = view.replay && view.replay.at > e.at ? view.replay.at : view.phase === 'scored' ? view.phaseUntil : e.at + (goal ? REPLAY.goalCeremony : REPLAY.ceremony);
     this.sequence = {at: e.at, scorer: e.actorId, team: e.team ?? 'red', until, x: e.x, y: e.y, z: e.z, key: `${e.id}`};
     const body = e.actorId ? this.bodiesOf(e.actorId) : undefined;
     if (body && one) MangaScreens.focus(body, until - e.at + .4, 1.4);
@@ -368,8 +393,8 @@ export class BallCeremony {
     const s = this.sequence, now = snapshot.serverTime;
     let target: THREE.Vector3 | null = null, age = 0, level = 0;
     if (view.phase === 'over' && this.podiumLayout && this.show === 'podium') { target = this.tmp.set(this.podiumLayout.x, 0, this.podiumLayout.z); age = now - view.endsAt + FIND; level = 1; }
-    else if (s && now - s.at < SWEEP && view.phase === 'scored') {
-      age = now - s.at; level = Math.min(1, age / .25) * (1 - Math.max(0, (age - SWEEP + .6) / .6));
+    else if (s && now < s.until && view.phase === 'scored') {
+      age = now - s.at; level = Math.min(1, age / .25) * Math.min(1, (s.until - now) / FADE);
       const body = s.scorer ? this.bodiesOf(s.scorer) : undefined;
       target = body ? body.getWorldPosition(this.tmp) : this.tmp.set(s.x, 0, s.z);
     }
@@ -399,11 +424,12 @@ export class BallCeremony {
   }
 
   private pollPad() {
-    if (this.show !== 'intro') { this.padHeld = true; return; }
+    if (this.show !== 'intro' && this.show !== 'close') { this.padHeld = true; return; }
     const pads = typeof navigator === 'object' && navigator.getGamepads ? navigator.getGamepads() : [];
+    const any = this.show === 'close' && soloMatch(this.view), buttons = this.show === 'intro' ? PAD_SKIP : PAD_CLOSE;
     let held = false;
-    for (const pad of pads) if (pad?.connected && PAD_SKIP.some(i => pad.buttons[i]?.pressed)) held = true;
-    if (held && !this.padHeld) this.vote();
+    for (const pad of pads) if (pad?.connected && (any ? pad.buttons.some(b => b.pressed) : buttons.some(i => pad.buttons[i]?.pressed))) held = true;
+    if (held && !this.padHeld) { if (this.show === 'intro') this.vote(); else this.closeVote(); }
     this.padHeld = held;
   }
 

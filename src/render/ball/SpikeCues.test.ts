@@ -100,4 +100,28 @@ describe("Sky Spike's timing cues", () => {
       expect(cues.count).toBe(0);
     }
   });
+  it('draws each couch seat\'s cues only into its own half of a split screen', () => {
+    const scene = new THREE.Scene(), mine = new SpikeCues(scene), second = new SpikeCues(scene, 1);
+    expect([mine.half, second.half]).toEqual([0, 1]);
+    // Player 2 (red, at the net) in their PERFECT window under the attack; the page's own seat (blue) nowhere near it.
+    const arc = jumpArc('taisei'), p2 = new THREE.Vector3(0, arc.apex * .97, -1.2), p1 = new THREE.Vector3(3, 0, 6);
+    const v = view({ seats: [{ ...view().seats[0], id: 'p2' }, { ...view().seats[1], id: 'p1', bot: false }], ball: { ...freshBall(), held: false, x: 0, y: arc.apex + 1.4, z: -1.2, shot: 'set', lastTeam: 'red', lastId: 'mate' } });
+    const players = [player('p2', 'taisei'), player('p1', 'konta')], at = (id: string) => id === 'p2' ? p2 : p1, ball = new THREE.Vector3(0, arc.apex + 1.4, -1.2);
+    second.update(1 / 60, v, 'p2', players, at, ball, true);
+    expect(second.state.window).toBe(true);
+    expect(second.count).toBeGreaterThan(0);
+    // Player 1's own cues (none of their own here, only the other side's hitter - Player 2 - at the top for them).
+    mine.update(1 / 60, v, 'p1', players, at, ball, true);
+    expect(mine.state.window).toBe(false);
+    expect(mine.count).toBeGreaterThan(0);
+    // The split screen's halves: each set only in its own.
+    second.drawing(0); mine.drawing(0);
+    expect([mine.mesh.visible, second.mesh.visible]).toEqual([true, false]);
+    second.drawing(1); mine.drawing(1);
+    expect([mine.mesh.visible, second.mesh.visible]).toEqual([false, true]);
+    // A single view: wherever there are any; none drawn, never.
+    second.drawing(undefined); expect(second.mesh.visible).toBe(true);
+    second.update(1 / 60, v, 'p2', players, at, ball, false); second.drawing(1);
+    expect(second.mesh.visible).toBe(false);
+  });
 });

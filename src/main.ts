@@ -18,7 +18,7 @@ import {BallReplayer} from './render/ball/BallReplay';
 import {BallCam,ballShadowFocus,teamOf} from './render/ball/BallCam';
 import {BallMoments} from './render/ball/BallMoments';
 import {SpikeCam} from './render/ball/SpikeCam';
-import {SpikeCues} from './render/ball/SpikeCues';
+import {SpikeCues,type SpikeCueTick} from './render/ball/SpikeCues';
 import {BallChase,type ChaseFrame} from './render/ball/BallChase';
 import {StanceMarks} from './render/ball/StanceMarks';
 import {StanceControl,hasStances} from './game/ball/stance';
@@ -28,6 +28,7 @@ import {BallShow} from './ui/ball/BallShow';
 import {QuickChat} from './ui/ball/QuickChat';
 import {BallUI} from './ui/ball/BallUI';
 import type {BallMutator} from './game/ball/mutators';
+import type {BotLevel} from './game/ball/BallBrain';
 import type {DrillId} from './game/ball/drills';
 import {myBallLook} from './ui/ball/myLook';
 import {RiftTargets} from './game/moba/RiftTargets';
@@ -270,6 +271,8 @@ function splitHalf(half:0|1){
   // The Rift's health bars turned to this half's lens, and its own person's tower range ring (RiftField.face); and every
   // effect turned to the lens on the CPU, turned to this one (render/lenses.ts faceLens).
   if(riftField.root.visible)riftField.face(view.camera,half);
+  // Sky Spike's cues: each seat's only in its own half.
+  spikeCues.drawing(half);spikeCues2.drawing(half);
   faceLens(view.camera);
 }
 /** The couch's split screen on: the second camera behind Player 2, the renderer drawing both halves, the halves' plates. */
@@ -367,11 +370,15 @@ const chaseFrame:ChaseFrame={self:new THREE.Vector3(),heading:0,ball:null,fight:
 const stanceBody=(id:string)=>fighters.get(id)?.group.position;
 // Sky Spike's timing cues (render/ball/SpikeCues.ts): the jump's beat, the PERFECT window's glint at the top, the
 // other side's hitter at the top (the block's beat), a dive to make; each with a short tick on the ball's own takes.
-const spikeCues=new SpikeCues(view.scene);
-spikeCues.onTick=k=>{const [id,gain,rate]=({jump:['strike-tap-2',.42,2.2],apex:['target-hit',.5,1.25],block:['target-hit',.3,.82],dive:['strike-tap-1',.38,1.7]} as const)[k];audio.centred(ballSfxUrl(id),gain,0,rate);
-  (window as unknown as {__spikeTicks?:unknown[][]}).__spikeTicks?.push([performance.now(),k]);};
-// (A check on this machine reads the cues: `__spikeCues.state`, and `__spikeTicks = []` logs each tick.)
-if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__spikeCues:SpikeCues}).__spikeCues=spikeCues;
+// A couch split screen's Player 2 has their own (spikeCues2), drawn only into their half (splitHalf), their ticks
+// a shade lower so each player hears their own.
+const spikeCues=new SpikeCues(view.scene),spikeCues2=new SpikeCues(view.scene,1);
+const spikeTick=(seat:0|1)=>(k:SpikeCueTick)=>{const [id,gain,rate]=({jump:['strike-tap-2',.42,2.2],apex:['target-hit',.5,1.25],block:['target-hit',.3,.82],dive:['strike-tap-1',.38,1.7]} as const)[k];audio.centred(ballSfxUrl(id),gain,0,rate*(seat?.88:1));
+  (window as unknown as {__spikeTicks?:unknown[][]}).__spikeTicks?.push([performance.now(),k,seat]);};
+spikeCues.onTick=spikeTick(0);spikeCues2.onTick=spikeTick(1);
+// (A check on this machine reads the cues: `__spikeCues.state` (Player 2's `__spikeCues2`), and `__spikeTicks = []` logs
+// each tick with its seat.)
+if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))Object.assign(window as unknown as {__spikeCues:SpikeCues;__spikeCues2:SpikeCues},{__spikeCues:spikeCues,__spikeCues2:spikeCues2});
 /** `?ballpilot` on this machine (a bot plays the page's fighter, LocalBall): the page films the bot's stance. */
 const ballPiloted=['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).has('ballpilot');
 // A TACKLE (game/ball/model.ts GOAL_STANCE): the lens punches for the tackler and the one tackled, the frame's ink for a
@@ -639,8 +646,8 @@ Object.defineProperty(window,'jumpLoading',{get:()=>startup.snapshot()});
 // (and hand the checks the match on this device, to set a moment up: `__ballMatch().view.fever = true`).
 if(import.meta.env.DEV||['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__ballMatch:()=>unknown}).__ballMatch=()=>localBall.match;
 // A development build (or one served from this machine) can start a ball match straight away, for the captures and checks
-// that look at the ball modes: `__ballStart('goal-rush')`, `__ballStart('sky-spike', 'konta', 'quick')`, `__ballStart('goal-rush', undefined, 'bots', true)` (RUMBLE); a seventh argument, {arena, mutator, drill, queue}.
-if(import.meta.env.DEV||['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__ballStart:(mode:'goal-rush'|'sky-spike',fighter?:string,access?:'bots'|'quick'|'host',rumble?:boolean,practice?:boolean,couch?:'shared'|'split-v'|'split-h',extra?:{arena?:BallArenaId;mutator?:BallMutator;drill?:DrillId;queue?:'classic'|'playlist'|'ranked'})=>unknown}).__ballStart=(mode,fighter,access='bots',rumble=false,practice=false,couch,extra)=>hud.onStart((fighter as typeof hud.selected)??hud.selected,'match',hud.playerName(),{kind:'ball',mode,access,rumble,practice,...extra,...(couch?{couch:{partner:'taisei',screen:couch,sides:'same'}}:{})});
+// that look at the ball modes: `__ballStart('goal-rush')`, `__ballStart('sky-spike', 'konta', 'quick')`, `__ballStart('goal-rush', undefined, 'bots', true)` (RUMBLE); a seventh argument, {arena, mutator, drill, queue, difficulty}.
+if(import.meta.env.DEV||['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__ballStart:(mode:'goal-rush'|'sky-spike',fighter?:string,access?:'bots'|'quick'|'host',rumble?:boolean,practice?:boolean,couch?:'shared'|'split-v'|'split-h',extra?:{arena?:BallArenaId;mutator?:BallMutator;drill?:DrillId;queue?:'classic'|'playlist'|'ranked';difficulty?:BotLevel})=>unknown}).__ballStart=(mode,fighter,access='bots',rumble=false,practice=false,couch,extra)=>hud.onStart((fighter as typeof hud.selected)??hud.selected,'match',hud.playerName(),{kind:'ball',mode,access,rumble,practice,...extra,...(couch?{couch:{partner:'taisei',screen:couch,sides:'same'}}:{})});
 let reportCapture:((image:string)=>void)|undefined;
 const bugReport=new BugReport(root,()=>({fighter:hud.selected,mode:started?(survival()?'survival':network.snapshot?.roomMode??'match'):'home',connection:(!started?'not connected':network.predictionReady?'connected':'reconnecting')+(started&&network===online?online.link.summary(performance.now()):''),input:input.mode,performance:view.perf(),loading:startup.snapshot()}),()=>new Promise<string>((resolve,reject)=>{
   const timer=setTimeout(()=>{reportCapture=undefined;reject(new Error('No arena frame'));},3000);
@@ -781,7 +788,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     clearFighters();resetSwaps();
     pauseLink.reset();roomFrozen=false;fightShown=false;
     network=riftRun?localRift:ballRun?localBall:royaleRun?royale:duelRun?duel:arcadeRun?arcade:practiceRun?practice:objectiveRun?localObjective:online;timeline.delayMs=riftRun||ballRun||royaleRun||duelRun||arcadeRun||practiceRun||objectiveRun?LOCAL_DELAY:ONLINE_DELAY;
-    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();spikeCues.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();camera.reset();
+    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();camera.reset();
     horde.clear();grunts.clear();gore.clear();survivalFx.reset();techniques.reset();lastEntrance=0;lastRoar=0;bossesWanted='';lastHordeVoice=0;lastBossVoice=0;lastSmash=0;bossShoutAt.clear();stages.rift?.restore();
     if(arcadeRun||coopRun)audio.preload(everyTake());
     if(access?.kind==='objective'&&access.objective==='last-stand'||access?.kind==='party'&&access.travel.mode==='last-stand')objectiveAudio.preload();
@@ -790,7 +797,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     /** The couch's seats for this mode - the ones its sheet showed (CouchStart.seats), else planned now (swapped as the sheet
      *  says) - Player 1 under the mode's own id for the page. */
     const seatCouch=(kind:CouchKind,sheet:ModeId)=>couch.begin(kind,couchStart?.seats??plannedSeats(!!modePrefs(sheet).couchSwap),{ids:[network.id,SECOND],screen:couchStart?.screen});
-    if(ballRun&&access?.kind==='ball'){await localBall.connect(access.mode,fighter,name,couchKind==='field'?couchStart?.partner:undefined,couchStart?.sides==='rivals',!!access.rumble,!!access.practice,{mutator:access.mutator,drill:access.drill,look:myBallLook(),arena:access.arena});localClock=localBall.snapshot?.serverTime??0;
+    if(ballRun&&access?.kind==='ball'){await localBall.connect(access.mode,fighter,name,couchKind==='field'?couchStart?.partner:undefined,couchStart?.sides==='rivals',!!access.rumble,!!access.practice,{mutator:access.mutator,drill:access.drill,look:myBallLook(),arena:access.arena,difficulty:access.difficulty});localClock=localBall.snapshot?.serverTime??0;
       if(couchKind==='field'){seatCouch('field',access.mode);localBall.second=()=>ballAim(couch.command(SECOND),1);}
     }else if(riftRun){await localRift.connect(fighter,name,1,couchKind==='field'?couchStart?.partner:undefined);localClock=localRift.snapshot?.serverTime??0;
       if(couchKind==='field'){seatCouch('field','rift-war');localRift.second=()=>couch.command(SECOND);}
@@ -1022,7 +1029,7 @@ function ballSounds(snapshot:GameSnapshot){
     else if(e.kind==='clash'){const me=snapshot.players.find(p=>p.id===network.id);if(me&&Math.hypot(me.x-e.x,me.z-e.z)<18)camera.impact(.9);}
   }
 }
-function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();spikeCues.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
+function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
 // Out of a party's match: home, and back on the party's sheet, where the others are seen coming home too.
 hud.onLeave=()=>{returnToLobby();if(party.joined)partyUI.show();};
 for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onDisconnect=(reason,code)=>{
@@ -1754,7 +1761,9 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   ballField.update(replayed?.snapshot??snapshot,network.id,view.camera,replayed?dt*replayed.rate:dt,performance.now(),!!replayed);
   // Goal Rush's stances under the feet (render/ball/StanceMarks.ts), and its tackles felt.
   {const v=ballOf(snapshot);stanceMarks.update(rawDt,v,network.id,hasStances(v)?ballStances[0].lock:null,ballField.ballPosition(),stanceBody,!!v&&started&&!replayed&&!ceremony);
-    spikeCues.update(rawDt,v,network.id,snapshot?.players??[],stanceBody,ballField.ballPosition(),!!v&&started&&!replayed&&!ceremony);}
+    spikeCues.update(rawDt,v,network.id,snapshot?.players??[],stanceBody,ballField.ballPosition(),!!v&&started&&!replayed&&!ceremony);
+    // (Player 2's, on a split screen: their seat's cues, for their half alone.)
+    spikeCues2.update(rawDt,v,couch.split?couch.ids[1]??'':'',snapshot?.players??[],stanceBody,ballField.ballPosition(),couch.split&&!!v&&started&&!replayed&&!ceremony);}
   // A check's trace of the drawn ball (window.__ballTrace = [] on this machine): page ms, frame time, the ball, the newest snapshot's time.
   {const trace=(window as unknown as {__ballTrace?:number[][]}).__ballTrace,p=trace&&presented&&ballField.ballPosition();if(p)trace!.push([performance.now(),presented!.time,p.x,p.y,p.z,timeline.newest??0]);}ballMoments.update(rawDt);ballUI.update(snapshot,network.id);
   if(snapshot){const serverTime=presented!.time;

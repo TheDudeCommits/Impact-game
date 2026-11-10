@@ -19,7 +19,7 @@ import { padKey } from '../../input/glyphs';
 import { preloadLoadingArt, type LoadingMode } from '../LoadingScreen';
 import { readInvite } from '../roomInvite';
 import { modeOpen } from '../../originals/launch';
-import { ballChoice, ballPlayRow, ballRulesRow, ballStart, traitBadge } from '../ball/ballSheet';
+import { ballChoice, ballLevelRow, ballPlayRow, ballRulesRow, ballStart, traitBadge } from '../ball/ballSheet';
 import { onRanks } from '../ball/ranks';
 import { nearest, type Direction } from '../spatialFocus';
 import { MODES, VARIANT_ORDER, modeHere, type ModeId, type Panel, type VariantId } from './catalogue';
@@ -283,7 +283,9 @@ export class ModeSheet {
     // The ARENA row (game/ball/arenas.ts): any (the mode's arenas in turn) or one of the three.
     const arenaRow = ball ? `<div class="ms-option ms-arena" role="group" aria-label="Arena"><b>ARENA</b><button type="button" data-ms-arena="" aria-pressed="${!isBallArena(prefs.arena)}">ANY</button>${MODE_ARENAS[this.mode as BallModeId].map(id => `<button type="button" data-ms-arena="${id}" aria-pressed="${prefs.arena === id}">${BALL_ARENAS[id].name.replace(/^The /, '').toUpperCase()}</button>`).join('')}</div>` : '';
     // (the mutators beside them, ONLINE's queues - the weekly playlist and RANKED - and BOTS' drills: ui/ball/ballSheet.ts.)
-    const rules = ball && !this.joining ? (this.variant !== 'online' ? arenaRow : '') + ballRulesRow(this.mode as 'goal-rush' | 'sky-spike', this.variant, prefs) : '';
+    // (BOTS' and COUCH's BOTS row, the other side's bots' level - a match's, not FREE PLAY's or a drill's.)
+    const level = ball && (this.variant === 'couch' || (this.variant === 'offline' && !prefs.practice && !prefs.drills)) ? ballLevelRow(prefs) : '';
+    const rules = ball && !this.joining ? (this.variant !== 'online' ? arenaRow : '') + level + ballRulesRow(this.mode as 'goal-rush' | 'sky-spike', this.variant, prefs) : '';
     if (this.variant === 'couch') return `${rules}${this.mode === 'royale' ? row('FIGHTERS', 'data-ms-fighters', FIGHTER_COUNTS, prefs.fighters ?? defaultRoyaleFighters()) : ''}${this.mode === 'bad-blood' || this.mode === 'rift-war' ? this.sideOptions() : ''}${this.couchOptions()}`;
     // BOTS: a 3 v 3 match, or FREE PLAY alone with the ball.
     const play = ball && this.variant === 'offline' ? ballPlayRow(this.mode as 'goal-rush' | 'sky-spike', prefs) : '';

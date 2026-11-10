@@ -23,6 +23,9 @@ const BLOCK_LEAD = .1;
 const probe = {} as BallState, contacts: BallContact[] = [];
 /** Where and when the ball crosses the net, run on along its flight (half a second at most), or undefined. */
 function crossing(b: BallState): {x: number; y: number; t: number} | undefined {
+  // (The arena's own twists are optional fields: cleared first, or the last ball read - another room's on the server, the
+  // last match's in a run of sims - lends its wind and its floor to one that has none.)
+  probe.ground = probe.spring = probe.windX = probe.windZ = undefined;
   Object.assign(probe, b); probe.held = false;
   const side = Math.sign(probe.z) || 1;
   for (let t = 0; t < .6; t += 1 / 60) {
@@ -96,12 +99,44 @@ const SPIKE_STYLES: Record<SpikeStyle, {serve: readonly [number, number]; set: r
 };
 /** A bot reads a ball the other side has just played (a serve, a set, a spike, a tip) this long after it was played
  *  (`base` less `skill` times its skill, s): before then it holds where it was going. Without it every serve was read
- *  at once and none was ever an ACE (none in five matches), and a tip was met before it fell. */
-const REACT = {base: .34, skill: .2, spike: 0, jump: .16} as const;
-/** The difficulty that scales: a bot's skill this match is its own less COMPOSURE for every point its side leads by (more
- *  for every point it trails), at most `most` either way - a side well ahead eases off, one behind digs in, so a match
- *  stays close enough for DEUCE and a COMEBACK (without it, bot matches ended 11-3, 11-4 and 11-5). */
-const COMPOSURE = {point: .06, most: .24} as const;
+ *  at once and none was ever an ACE (none in five matches), and a tip was met before it fell. (The same read as .34
+ *  less .2 × skill for an average bot, a slower one for a poor one and a quicker one for the best, so its skill tells:
+ *  FORM.) */
+export const REACT = {base: .5, skill: .4, spike: 0, jump: .16} as const;
+/** The difficulty that scales: a bot's skill this rally is its own less COMPOSURE for every point its side leads by
+ *  (more for every point it trails), at most `most` either way - a side well ahead eases off, one behind digs in, so a
+ *  match stays close enough for DEUCE and a COMEBACK (without it, bot matches ended 11-3, 11-4 and 11-5). Only a side
+ *  with nobody's own hands on it (BallMatch.levelBots) - a person's team-mates play their own game at any score, so the
+ *  side that eases off or digs in is always the other one - and with FORM it tells. (At 0.06 a point, with a bot's
+ *  skill hardly moving the rallies it won, a side three points up won 49% of them.) */
+export const COMPOSURE = {point: .08, most: .3, lo: .1, hi: 1} as const;
+/** Sky Spike's bots' form, for close matches and a difficulty a new player can beat and a good one is challenged by. A
+ *  person's errors, more the lower the bot's skill this rally - so a bot's skill, its COMPOSURE and its side's
+ *  difficulty change the rallies it wins. (Bots that barely missed - a side of them at 0.4 against one at 1 still won
+ *  38% of the rallies. With these and REACT's slower read, a side at 0.55 against one at 0.85 wins 38%.) Each is rolled
+ *  once a ball:
+ *  - **The takeoff:** the attack's jump leaves up to `jump` × (1 − skill) seconds early or late - off the top of the
+ *    jump, an ordinary spike or a swing at nothing.
+ *  - **The misread:** a ball of the other side's is misjudged `miss` × (1 − skill) of the time: the bot runs for a spot
+ *    `misread` metres off where it will come down, and sees the truth only `late` seconds before it lands - a scramble,
+ *    a dig off the arm, or the floor. */
+export const FORM = {jump: .4, miss: .35, misread: 1.6, late: .35} as const;
+/** The bots' level the player picks for a match against them (EASY, NORMAL, HARD on the mode sheet): the band
+ *  their skill is drawn from (`lo` plus up to `span`), and how much of COMPOSURE's easing off ahead (`ease`) and digging
+ *  in behind (`dig`) their side has. The other side's bots take the level picked; a person's own team-mates take
+ *  `mates` (BallMatch.levelBots) - at EASY the best, who cover a new player's misses, otherwise NORMAL. NORMAL is the
+ *  band every bot had before. EASY's side eases off as far as any but hardly digs in, so a new player who gets ahead
+ *  stays in reach of winning; HARD's digs in as far as any but hardly eases off, so a good player has to close it out.
+ *  (Above a skill of about 0.9 and below about 0.3 a bot's skill hardly moves the rallies it wins - FORM's errors are
+ *  all but gone, or both sides make them all - so HARD is NORMAL's best, all of them, and EASY sits just under where
+ *  it starts to tell.) */
+export type BotLevel = 'easy' | 'normal' | 'hard';
+export const BOT_LEVELS: Readonly<Record<BotLevel, {lo: number; span: number; mates: BotLevel; ease: number; dig: number}>> = {
+  easy: {lo: .2, span: .25, mates: 'hard', ease: 1, dig: .3},
+  normal: {lo: .55, span: .4, mates: 'normal', ease: 1, dig: 1},
+  hard: {lo: .85, span: .15, mates: 'normal', ease: .3, dig: 1},
+};
+export const isBotLevel = (v: unknown): v is BotLevel => v === 'easy' || v === 'normal' || v === 'hard';
 /** The block: a blocker commits with the hitter, leaving the floor as the set comes down through hitting height
  *  `lead` seconds plus its own jump's rise share `rise` away - before the ball is struck, as a blocker must, so a TIP
  *  can go over a block that is already up. (A blocker leaving the floor after the spike was struck, a tenth of a
@@ -147,7 +182,11 @@ export class BallBrain {
   private sk = 0;
   private readonly seen = {} as BallState; private seenAt = -Infinity; private unread = Infinity;
   private rolledFor = ''; private timingErr = 0; private shotRead = true; private guardErr = 0; private guess = 0; private closing = 0; private diveAt = -Infinity;
-  private readonly skill: number;
+  private skill: number;
+  /** The skill's draw (0-1), placed in the bot's level's band (levelled), and whether the score moves it (COMPOSURE). */
+  private readonly draw: number;
+  private composed = true;
+  private level: BotLevel = 'normal';
   private readonly flank: number;
   /** Sky Spike: this bot's style, its skill as the score has it now (COMPOSURE: `sk`, shared with Goal Rush's
    *  PRESSURE above - a bot plays one mode), the other side's last touch it has read and when it can act on it (REACT),
@@ -158,12 +197,16 @@ export class BallBrain {
   private serveKind: 'jump' | 'float' | 'drive' | null = null; private serveJump = -Infinity; private serveSwing = 0;
   private setKind: 'quick' | 'back' | 'high' | null = null; private setFor = '';
   constructor(readonly id: string, readonly mode: BallModeId, readonly index: number, private readonly rng: () => number) {
-    this.skill = .55 + rng() * .4;
+    // (One draw, as before: the level only places it in its band - levelled.)
+    this.draw = rng(); this.skill = BOT_LEVELS.normal.lo + this.draw * BOT_LEVELS.normal.span;
     this.flank = index % 2 ? 1 : -1;
     // (Drawn for Sky Spike's bots only: a draw from the shared stream in Goal Rush would play every one of its seeded
     // matches differently.)
     this.style = mode === 'sky-spike' ? (['power', 'craft', 'wall'] as const)[(index + Math.floor(rng() * 3)) % 3] : 'power';
   }
+  /** The bot's level (BOT_LEVELS) and whether its side's score moves it (COMPOSURE): BallMatch.levelBots, at the start
+   *  and whenever a seat is handed to a bot. */
+  levelled(level: BotLevel, composed: boolean) { const band = BOT_LEVELS[level]; this.skill = band.lo + this.draw * band.span; this.composed = composed; this.level = level; }
   command(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, now: number): Command {
     const input: Command = {moveX: 0, moveZ: 0, yaw: me.yaw, targetId: BALL_ID, lock: true};
     this.sk = this.skill;
@@ -509,8 +552,9 @@ export class BallBrain {
   // ─── Sky Spike ────────────────────────────────────────────────────────────────────────────────────────────────────
   private volley(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, now: number, input: Command): Command {
     const b = view.ball, R = SPIKE_RULES, team = seat.team, sign = team === 'red' ? -1 : 1, theirs = otherTeam(team), S = SPIKE_STYLES[this.style];
-    // The difficulty that scales (COMPOSURE): sharper behind, easier ahead.
-    this.sk = clamp(this.skill - clamp((view.score[team] - view.score[theirs]) * COMPOSURE.point, -COMPOSURE.most, COMPOSURE.most), .4, 1);
+    // The difficulty that scales (COMPOSURE): sharper behind, easier ahead (as low as `lo`, for EASY's bots ahead).
+    const lead = view.score[team] - view.score[theirs], shape = BOT_LEVELS[this.level];
+    this.sk = clamp(this.skill - (this.composed ? clamp(lead * COMPOSURE.point, -COMPOSURE.most, COMPOSURE.most) * (lead > 0 ? shape.ease : shape.dig) : 0), COMPOSURE.lo, COMPOSURE.hi);
     const sk = this.sk;
     const rivals = players.filter(p => p.alive && Math.sign(p.z) === -sign);
     // Where to send it: the far court's emptiest spot.
@@ -539,10 +583,17 @@ export class BallBrain {
       const key = `${b.lastId}:${b.shot}:${view.rally}`;
       // (A spike is read off the hitter's swing, mostly before it is struck: a share of the delay.)
       // (A JUMP SERVE, the fastest ball a side receives, a little later still.)
-      if (key !== this.readKey) { this.readKey = key; this.readAt = now + (REACT.base - REACT.skill * sk + (this.style === 'wall' ? -.03 : 0) + (b.shot === 'serve' && Math.hypot(b.vx, b.vy, b.vz) > 24 ? REACT.jump : 0)) * (b.shot === 'spike' || b.shot === 'super' || b.shot === 'blast' ? REACT.spike : 1); }
+      if (key !== this.readKey) {
+        this.readKey = key; this.readAt = now + (REACT.base - REACT.skill * sk + (this.style === 'wall' ? -.03 : 0) + (b.shot === 'serve' && Math.hypot(b.vx, b.vy, b.vz) > 24 ? REACT.jump : 0)) * (b.shot === 'spike' || b.shot === 'super' || b.shot === 'blast' ? REACT.spike : 1);
+        // (FORM: now and then misjudged, the poorer the bot the more often.)
+        const miss = this.rng() < FORM.miss * (1 - sk), ang = this.rng() * Math.PI * 2;
+        this.misX = miss ? Math.sin(ang) * FORM.misread : 0; this.misZ = miss ? Math.cos(ang) * FORM.misread : 0;
+      }
     }
     if (now < this.readAt && me.grounded && Number.isFinite(this.spotX)) { this.run(me, {x: this.spotX, z: this.spotZ}, input, now, .6, 30); return input; }
     const fall = landing(this.mode, b, 1.2, 3);
+    // A misread ball (FORM) is run for off its true spot until it is nearly down.
+    if ((this.misX || this.misZ) && b.lastTeam === theirs && fall.t > FORM.late) { fall.x += this.misX; fall.z += this.misZ; }
     // A ball of theirs coming down out of the court is let go (not played, so a serve sprayed long is out):
     // judged to the line by a margin the better the bot, the finer.
     const floor = b.lastTeam === theirs && b.shot !== 'block' ? landing(this.mode, b, R.ballRadius, 3) : undefined;
@@ -622,7 +673,10 @@ export class BallBrain {
         const d = this.run(me, spot, input, now, .15, 4);
         // (The better the bot, the closer to the top it meets the ball.)
         const lead = high ? arcOf.rise - APEX_SWING + APEX_CONTACT : SPIKE_RISE;
-        if (now >= this.nextJump && d < 1.6 && hit!.t < lead + .04 + (1 - sk) * (high ? .12 : .06)) { this.jump(input, now, high ? arcOf.rise + .05 : .35); this.spikeAt = now; this.apex = high ? arcOf.rise - APEX_SWING : 0; }
+        // (FORM: the takeoff off by a little, rolled once an attack; the poorer the bot, the more.)
+        const akey = `${view.rally}:${b.lastId}`;
+        if (akey !== this.attackFor) { this.attackFor = akey; this.jumpErr = (this.rng() * 2 - 1) * Math.max(0, 1 - sk) * FORM.jump; }
+        if (now >= this.nextJump && d < 1.6 && hit!.t < lead + .04 + this.jumpErr + (1 - sk) * (high ? .12 : .06)) { this.jump(input, now, high ? arcOf.rise + .05 : .35); this.spikeAt = now; this.apex = high ? arcOf.rise - APEX_SWING : 0; }
       } else {
         const under = {x: target.x - Math.sin(sendYaw(target)) * .4 * (touches >= 2 ? 1 : 0), z: target.z + sign * .35};
         // A hard ball coming in (a spike): dive for it, the dig.
@@ -729,4 +783,6 @@ export class BallBrain {
     return this.tipping;
   }
   private tipFor = ''; private tipping = false; private quickFor = ''; private quickRead = false;
+  /** FORM: the misread of the ball being read (metres off its spot), and the attack's takeoff error (s) and whose. */
+  private misX = 0; private misZ = 0; private attackFor = ''; private jumpErr = 0;
 }

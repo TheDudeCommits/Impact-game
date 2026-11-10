@@ -216,6 +216,21 @@ describe('the caller (ballCaller.ts)', () => {
     expect(quiet.say('overtime')).toBeUndefined();
     expect(said).toHaveLength(2);
   });
+  it('leaves out the lines asked (a FEVER point double to the side behind alone is not "every point")', () => {
+    let now = 0;
+    const { said, voice: v } = voice(.5), caller = new BallCaller(v, Math.random, () => now);
+    const lines = callerLines('fever'), avoid = /\/fever-[14]\.[a-z0-9]+$/;
+    expect(lines.filter(url => avoid.test(url))).toHaveLength(2);
+    for (let i = 0; i < 12; i++) { now += 60; caller.say('fever', { avoid }); }
+    expect(said).toHaveLength(12);
+    expect(said.every(url => !avoid.test(url))).toBe(true);
+    // Each voice's two lines that say so (its manifest).
+    for (const voice of ['grandpa', 'arena']) {
+      const book = JSON.parse(fs.readFileSync(`public/assets/audio/ball/caller/${voice}/manifest.json`, 'utf8')) as { assets: { id: string; text: string }[] };
+      expect(book.assets.filter(l => /^fever-[14]$/.test(l.id)).every(l => /double/i.test(l.text)), voice).toBe(true);
+      expect(book.assets.filter(l => /^fever-[23]$/.test(l.id)).some(l => /double/i.test(l.text)), voice).toBe(false);
+    }
+  });
   it('has a rule for every moment, and every line it can say is on disk', () => {
     for (const moment of Object.keys(CALLER) as CallerMoment[]) expect(CALLER[moment].priority, moment).toBeGreaterThan(0);
     for (const file of allCallerFiles()) expect(fs.existsSync(`public${file}`), file).toBe(true);

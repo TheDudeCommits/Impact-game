@@ -156,7 +156,10 @@ class BallHud implements ModeHud {
       // In play the line says only what changes the play (the sports HUD): the match's terms are for the kickoff.
       this.sub.set(v.overtime ? 'NEXT GOAL WINS' : ending ? 'BALL ON THE GROUND ENDS IT' : v.phase === 'live' ? '' : `${v.rumble ? 'RUMBLE' : 'FIRST TO SCORE MORE'} · ${Math.round(GOAL_RULES.matchSeconds / 60)} MIN`);
     } else {
-      this.middle.set(v.fever ? `FEVER ×2` : `RALLY ${v.rally}`);
+      // (A FEVER point counts double to the side behind alone - the arrow points at it on the score bug, red's
+      // on the left - or to either side level, and to anyone in SUDDEN DEATH.)
+      const behind = !v.fever || v.mutator === 'sudden-death' || v.score.red === v.score.blue ? '' : v.score.red < v.score.blue ? 'red' : 'blue';
+      this.middle.set(v.fever ? behind === 'red' ? '◂ FEVER ×2' : behind === 'blue' ? 'FEVER ×2 ▸' : 'FEVER ×2' : `RALLY ${v.rally}`);
       this.middleKind.set(v.fever ? 'fever' : v.rally >= SPIKE_RULES.rallyHeat ? 'hot' : 'rally');
       this.sub.set(v.phase === 'live' ? '' : `${v.rumble ? 'RUMBLE · ' : ''}FIRST TO ${v.target} · WIN BY 2`);
     }
@@ -284,7 +287,9 @@ class BallHud implements ModeHud {
         else if (e.text) this.tick(now, e.team, `${e.text} · ${who}`);
         break;
       // (Goal Rush's FINAL PUSH: the last half minute of a match in reach - the ball burns, the side behind charges.)
-      case 'fever': this.show(now, 'fever', '', v.mode === 'goal-rush' ? `${e.value ?? 30} SECONDS LEFT` : `RALLY ${e.value}`, v.mode === 'goal-rush' ? 'FINAL PUSH!' : 'FEVER RALLY!', v.mode === 'goal-rush' ? 'THE BALL BURNS' : 'EVERY POINT COUNTS DOUBLE', 2400); break;
+      // (Sky Spike's FEVER point counts double to the side behind - the event's team - or to either side level.)
+      case 'fever': this.show(now, 'fever', v.mode === 'goal-rush' ? '' : e.team ?? '', v.mode === 'goal-rush' ? `${e.value ?? 30} SECONDS LEFT` : `RALLY ${e.value}`, v.mode === 'goal-rush' ? 'FINAL PUSH!' : 'FEVER RALLY!',
+        v.mode === 'goal-rush' ? 'THE BALL BURNS' : e.team ? (mine ? 'YOUR POINT COUNTS DOUBLE' : `${BALL_TEAM_NAMES[e.team]}'S POINT COUNTS DOUBLE`) : 'EVERY POINT COUNTS DOUBLE', 2400); break;
       case 'rally': this.tick(now, undefined, e.text ? `${e.text} · RALLY ${e.value}` : `RALLY ${e.value}!`); break;
       case 'match-point': this.show(now, 'match', e.team ?? '', BALL_TEAM_NAMES[e.team!], 'MATCH POINT', '', 1800); break;
       case 'side-out': break;

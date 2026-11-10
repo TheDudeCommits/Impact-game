@@ -98,16 +98,18 @@ describe('the ball room', () => {
       expect(f.room.game.view.events.some(e => e.kind === 'chat' && e.actorId === 'g' && e.text === 'Nice shot!')).toBe(true);
       f.send(guest, 'ball-chat', 'hello'); f.send(guest, 'ball-chat', 99); f.send(guest, 'ball-chat', 5);
       expect(f.room.game.view.events.filter(e => e.kind === 'chat' && e.actorId === 'g')).toHaveLength(1);
-      // A goal's replay: both people skip, and it ends.
+      // A goal's replay (a screamer's, into blue's net, so red scored): the side that conceded skips, and it
+      // plays on; the scorers' side skips, and it ends.
       const g = f.room.game;
       for (let i = 0; i < 60 * 30 && !g.replaying(); i++) {
-        if (g.view.phase === 'live' && i % 30 === 0) { g.ball.x = 0; g.ball.z = 20; g.ball.y = 1; g.ball.vz = 30; g.ball.held = false; }
+        if (g.view.phase === 'live' && i % 30 === 0) { g.ball.x = 0; g.ball.z = 20; g.ball.y = 1; g.ball.vz = 40; g.ball.heat = 3.5; g.ball.held = false; }
         f.advance(1 / 60);
       }
       expect(g.replaying()).toBe(true);
-      f.send(host, 'ball-skip');
+      const [conceded, scored] = g.seats.get('h')!.team === 'red' ? [guest, host] : [host, guest];
+      f.send(conceded, 'ball-skip');
       expect(g.replaying()).toBe(true);
-      f.send(guest, 'ball-skip');
+      f.send(scored, 'ball-skip');
       expect(g.replaying()).toBe(false);
     } finally { f.room.onDispose(); }
   }, 30000);

@@ -4,7 +4,9 @@ import {jumpArc} from '../../game/moves';
 import type {FighterId, PlayerState} from '../../game/types';
 
 /** The timing the cues teach, as the room judges it (game/ball/BallMatch.ts PERFECT_SPIKE and SERVE_RULES): a spike or a
- *  JUMP SERVE struck with the body at `apex` of its jump's top or more is PERFECT; a spike only over the net's zone
+ *  JUMP SERVE swung with the body at `apex` of its jump's top or more is PERFECT (judged from where the swing left as
+ *  well as where it landed - online, with the page's own fighter drawn where the room has it, a swing pressed as the
+ *  glint flared would land a hair under it after the air cast's sink, and a JUMP SERVE never be PERFECT); a spike only over the net's zone
  *  (`net` metres either side) with the ball over `ball` metres. A set is met at the top of the jump with the ball
  *  `reach` metres over the jump's top (BallBrain APEX_REACH); the swing goes `swing` seconds short of the top and lands
  *  `contact` after it - so the jump goes that long, plus the jump's own rise, before the ball gets there. Under a low
@@ -57,8 +59,13 @@ export function jumpIn(ball: {y: number; vy: number; grav?: number}, arc: {apex:
  *   tick when you are at the net: their swing is a breath away, the moment to put the hands up for a STUFF BLOCK.
  * - **DIVE:** a hard ball of theirs whose line passes beyond your reach but inside a dive's: a chevron at your feet points
  *   the way to throw yourself.
- * The page's own fighter only (each half of a split screen has its own), drawn at the fighter's drawn place; nothing
- * here decides anything (the room judges every strike). One instanced draw of quads, nothing allocated in a frame.
+ * The page's own fighter only, drawn at the fighter's drawn place; nothing here decides anything (the room judges every
+ * strike). One instanced draw of quads, nothing allocated in a frame.
+ *
+ * A couch split screen: each seat has its own, made with its `half` - Player 1's the page's own (0), Player
+ * 2's the second (1) - and each is drawn only into its own half (`drawing`, which main.ts's splitHalf calls before each
+ * half is drawn): Player 2's jump ring, glint, dive chevron and the other side's flares for them, never in Player 1's
+ * view, and the other way round.
  */
 export class SpikeCues {
   readonly mesh: THREE.Mesh<THREE.InstancedBufferGeometry, THREE.ShaderMaterial>;
@@ -79,7 +86,8 @@ export class SpikeCues {
   private readonly theirsFlare = new Map<string, number>();
   private readonly at = new THREE.Vector3();
 
-  constructor(parent: THREE.Object3D) {
+  /** `half`: the split screen's half these cues are drawn in (drawing), 0 for the page's own seat, 1 for Player 2's. */
+  constructor(parent: THREE.Object3D, readonly half: 0 | 1 = 0) {
     const quad = new THREE.PlaneGeometry(1, 1), geometry = new THREE.InstancedBufferGeometry();
     geometry.index = quad.index; geometry.setAttribute('position', quad.getAttribute('position')); quad.dispose();
     this.pos = new THREE.InstancedBufferAttribute(new Float32Array(CAP * 4), 4).setUsage(THREE.DynamicDrawUsage);
@@ -171,7 +179,10 @@ export class SpikeCues {
     if (!air && view.phase === 'live' && touches === 2 && b.shot === 'set' && b.lastTeam === team && mySide) {
       const key = `${view.rally}:${b.lastId}:${view.score.red + view.score.blue}`;
       if (key !== this.setKey) { this.setKey = key; this.setHigh = highSet(b, arc); this.setArmed = false; }
-      const t = jumpIn(b, arc, this.setHigh), g = SPIKE_RULES.gravity * (b.grav || 1);
+      // (The frame's ball is the room's last sample of it, carried on to the moment drawn - `since` s on, read off how far
+      // along its flight the drawn ball is: online up to a snapshot's gap, which would make the beat that much late.)
+      const flat = b.vx * b.vx + b.vz * b.vz, since = flat > 1 ? Math.min(.1, Math.max(0, ((ball.x - b.x) * b.vx + (ball.z - b.z) * b.vz) / flat)) : 0;
+      const t = jumpIn(b, arc, this.setHigh) - since, g = SPIKE_RULES.gravity * (b.grav || 1);
       if (t > .04) this.setArmed = true;
       // (Where it comes through hitting height: near enough to you to be yours.)
       const when = untilDown(b.y, b.vy, this.setHigh ? arc.apex + T.reach : T.low, g);
@@ -260,6 +271,9 @@ export class SpikeCues {
     const g = this.mesh.geometry; g.instanceCount = this.n; this.mesh.visible = this.n > 0;
     for (const attr of [this.pos, this.look, this.tint]) { attr.clearUpdateRanges(); attr.addUpdateRange(0, Math.max(1, this.n) * 4); attr.needsUpdate = true; }
   }
+  /** A couch split screen's half about to be drawn (main.ts splitHalf): these cues show only in their own seat's half;
+   *  undefined, a single view: shown wherever there are any. (Every update shows them again: flush.) */
+  drawing(half: 0 | 1 | undefined) { this.mesh.visible = this.n > 0 && (half === undefined || half === this.half); }
   /** How many cues are drawn this frame (for checks). */
   get count() { return this.n; }
   clear() { this.n = 0; this.wasWindow = false; this.flareAge = Infinity; this.jumpTold = this.diveTold = this.setKey = ''; this.setArmed = false; this.theirsTold.clear(); this.theirsFlare.clear(); this.flush(); }
