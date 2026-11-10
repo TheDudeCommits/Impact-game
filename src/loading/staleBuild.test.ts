@@ -49,6 +49,12 @@ describe('which build a page runs', () => {
     expect(buildChanged('/assets/index-DuQu_WBh.js', undefined)).toBe(false);
     expect(buildChanged(undefined, '/assets/index-B2Qo1zC0.js')).toBe(false);
   });
+  it("reads Player Two's pinned page and the page its probe gets as one build", () => {
+    // The frame's page names the entry under the build's prefix; the page /index.html answers names it relatively.
+    expect(buildChanged('/~f537c3b165ad050899cb1cb2/assets/index-D3fjvEZr.js', './assets/index-D3fjvEZr.js')).toBe(false);
+    expect(buildChanged('/~f537c3b165ad050899cb1cb2/./assets/index-D3fjvEZr.js', '/assets/index-D3fjvEZr.js')).toBe(false);
+    expect(buildChanged('/~f537c3b165ad050899cb1cb2/assets/index-D3fjvEZr.js', './assets/index-CEwTs8gs.js')).toBe(true);
+  });
 });
 
 describe('the reload guard', () => {

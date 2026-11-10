@@ -10,7 +10,7 @@ import {MangaScreens} from './MangaScreens';
 import type {BallArenaId} from '../../game/ball/arenas';
 import {hullGeometry} from '../../originals/places/forge';
 import {StageKit} from '../stages/StageKit';
-import {BOWL,bowlGuardian,gateZ,pulled,wreckHullX,wreckShipZ} from './pitchLayout';
+import {BOWL,bowlGuardian,cannonSpot,gateZ,pulled,wreckHullX,wreckShipZ} from './pitchLayout';
 
 export type BallStage=Extract<StageId,'ball-pitch'|'ball-court'>;
 type V2=readonly [number,number];
@@ -22,6 +22,15 @@ const lin=(hex:number)=>{const c=new THREE.Color(hex);return `vec3(${c.r.toFixed
 const num=(n:number)=>n.toFixed(4);
 const fogged=(uniforms:Record<string,THREE.IUniform>)=>({...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),...uniforms});
 const rng=(seed:number)=>{let s=seed;return ()=>(s=(s*16807)%2147483647)/2147483647;};
+/** How many aisles of stairs a run of stand has, by the length of its front row (one every eleven metres). */
+const aisles=(a:V2,b:V2)=>Math.max(1,Math.round(Math.hypot(b[0]-a[0],b[1]-a[1])/11));
+/** The crowd: how far apart the fans stand along a row (m); the rows on each tread of a stand (how far back
+ *  across the tread, how far up: the back row stands on its seats); a fan's card (m: the drawing's cell is 128 x 160);
+ *  and the light on the crowd in each arena (the floodlit night's cool grey, a sunset's warmth, the volcano's glow). */
+const CROWD_GAP=.6,CROWD_ROWS:readonly V2[]=[[.3,0],[.8,.45]],CROWD_CARD=[.86,1.075] as const;
+const CROWD_LIGHT:Record<BallArenaId,[number,number,number]>={
+  'ink-bowl':[.6,.64,.8],'dust-yard':[.94,.77,.6],'rain-roof':[.5,.56,.74],
+  'sky-court':[1,.82,.72],'tide-court':[.95,.78,.7],'ember-rim':[.72,.46,.36]};
 
 /** Antialiased line and box distances, shared by the painted floors. */
 const FLOOR_GLSL=`
@@ -160,6 +169,9 @@ export class BallArena {
   /** The arena's generated set pieces (public/assets/environment/own/ball-*.glb), placed through the
    *  places' own kit (their materials in the look, the camera's cutaway). */
   private kit?:StageKit;
+  /** The crowd's drawn fans (one picture for every arena), clear until it has loaded. */
+  private readonly fans={value:BallArena.clear()};
+  private static clear(){const t=new THREE.DataTexture(new Uint8Array(4),1,1);t.needsUpdate=true;return t as THREE.Texture;}
   /** Which of the mode's arenas (game/ball/arenas.ts) this is; the rules' shapes are the same in all. */
   constructor(readonly stage:BallStage,readonly arena:BallArenaId=stage==='ball-pitch'?'ink-bowl':'sky-court'){this.root.name=`${stage==='ball-pitch'?'Goal Rush':'Sky Spike'} · ${arena}`;}
 
@@ -173,6 +185,11 @@ export class BallArena {
       if(this.arena==='tide-court')this.tideCourt();else if(this.arena==='ember-rim')this.emberRim();
       else{this.trees();this.petals();this.cloudSea();this.islands();this.banners();this.waterfalls();this.standIslands();}
     }
+    // The crowd's drawn fans. Without them (a failed fetch) the stands stay empty rather than break the place.
+    if(typeof document!=='undefined')try{
+      const fans=await new THREE.TextureLoader().loadAsync('/assets/environment/own/ball-crowd.webp');
+      fans.colorSpace=THREE.SRGBColorSpace;fans.anisotropy=4;this.fans.value.dispose();this.fans.value=fans;
+    }catch(error){console.warn('Ball arena crowd failed',this.arena,error);}
     // The set pieces load after the place is whole: a piece that fails leaves the arena as it is.
     try{await this.setPieces();}catch(error){console.warn('Ball arena pieces failed',this.arena,error);}
     this.root.updateMatrixWorld(true);
@@ -222,10 +239,51 @@ export class BallArena {
       // Basalt braziers burning at the court's four corners, on the rim beyond the barrier.
       for(const sx of [-1,1])for(const sz of [-1,1])place.push(['own/ball-basalt-brazier',{x:sx*17,z:sz*20.6,y:0,height:3.4,rot:Math.atan2(-sx,-sz),shadow:false}]);
     }
+    // The furniture of a place where a sport is played, where the play's own camera looks. Goal Rush: in the
+    // walk between the cage and the stands (dugouts and a camera platform on each long side, loudspeakers by the
+    // corners, a confetti cannon at each corner: the two at the scorer's end fire on a goal). The Wreck Yard is timber
+    // and rope, so its sides get benches, drums and ball carts instead.
+    if(this.stage==='ball-pitch'){
+      const {halfX:X}=GOAL_RULES,inward=(sx:number)=>sx<0?Math.PI/2:-Math.PI/2,timber=this.arena==='dust-yard';
+      for(const sx of [-1,1]){
+        for(const sz of [-1,1]){
+          place.push([timber?'own/ball-team-bench':'own/ball-dugout',{x:sx*(X+3.3),z:sz*7.4,y:0,width:timber?5.6:7,rot:inward(sx),shadow:true}]);
+          place.push([timber?'own/ball-festival-drums':'own/ball-speaker-stack',{x:sx*(X+3.6),z:sz*14.2,y:0,height:timber?1.9:3.4,rot:inward(sx)+sz*sx*.35}]);
+          const [cx,cz]=cannonSpot(sx,sz);
+          place.push(['own/ball-confetti-cannon',{x:cx,z:cz,y:0,height:2.3,rot:Math.atan2(sx,sz)}]);
+        }
+        place.push([timber?'own/ball-ball-cart':'own/ball-broadcast-camera',{x:sx*(X+(timber?2.6:3.4)),z:0,y:0,width:timber?1.5:3.6,rot:inward(sx),shadow:true}]);
+      }
+    }else{
+      // Sky Spike: on the rim beyond the barrier (nothing a fighter can run into): the umpire's chair at the net, a bench
+      // and a ball cart for each side, the supporters' drums behind each baseline.
+      // (On the volcano the timber and canvas are smoke-dark.)
+      const {halfX:X,halfZ:Z}=SPIKE_RULES,tint=this.arena==='ember-rim'?0x8f6a5c:undefined;
+      place.push(['own/ball-umpire-chair',{x:X+1.9,z:0,y:0,height:4.3,rot:-Math.PI/2,shadow:true,tint}]);
+      for(const sz of [-1,1]){
+        place.push(['own/ball-team-bench',{x:-(X+2.1),z:sz*7.6,y:0,width:5.4,rot:Math.PI/2,shadow:true,tint}]);
+        place.push(['own/ball-ball-cart',{x:-(X+1.6),z:sz*2.4,y:0,width:1.4,rot:Math.PI/2+sz*.5,shadow:true,tint}]);
+        for(const sx of [-1,1])place.push(['own/ball-festival-drums',{x:sx*10.4,z:sz*(Z+2.1),y:0,height:1.9,rot:(sz<0?0:Math.PI)-sx*sz*.3,shadow:true,tint}]);
+      }
+      if(this.arena==='sky-court'){
+        // The cherry trees at the rim's corners, in place of the ones drawn in code. Those on the sun's side do not cast:
+        // at sunset their shade lay across half the court.
+        for(const [x,z] of BallArena.TREES)place.push(['own/ball-blossom-tree',{x:x+Math.sign(x)*.8,z:z+Math.sign(z)*.8,y:-.5,height:9,rot:Math.atan2(x,z)+.6,shadow:x<0}]);
+      }else if(this.arena==='tide-court'){
+        // Palms leaning over the sand round the court, and places to sit out of the sun down the open side.
+        for(const [x,z,r,h] of [[-23,-25,.4,13],[24,-27,2.2,15],[-25,25,-1.1,14],[23,27,3.4,12],[-29,-2,1.6,16],[30,4,-.6,14],[-21,-13,2.9,11],[26,15,.9,12]] as const)place.push(['own/ball-palm-tree',{x,z,y:-.2,height:h,rot:r}]);
+        for(const [x,z,r] of [[24,-9,-1.3],[25,7,-1.9],[-24,10,1.4]] as const)place.push(['own/ball-beach-set',{x,z,y:0,width:5.2,rot:r}]);
+      }else if(this.arena==='ember-rim'){
+        // Spires of black glass standing up out of the rim all round the court, their cracks alight.
+        for(const [x,z,r,h] of [[-22,-21,.4,9],[23,-23,2.2,12],[-24,22,-1.1,11],[22,24,3.4,8],[-25,-3,1.6,13],[26,5,-.6,10],[0,-27,2.9,7],[4,28,.9,9]] as const)place.push(['own/ball-obsidian-spire',{x,z,y:-.6,height:h,rot:r}]);
+      }
+    }
     if(!place.length)return;
     // Each piece on its own: one that is missing or fails to load is left out, the rest still stand.
     for(const piece of new Set(place.map(([p])=>p)))await kit.load([piece]).catch(error=>console.warn('Ball arena piece failed',piece,error));
     for(const [piece,at] of place)if(kit.has(piece))kit.place(piece,at);
+    // And the modelled cherry trees for the ones drawn in code.
+    if(kit.has('own/ball-blossom-tree'))for(const name of ['Cherry limbs','Cherry blossom']){const plain=this.root.getObjectByName(name);if(plain)plain.visible=false;}
     // The generated towers stand in for the plain ones.
     if(kit.has('own/ball-flood-tower')){const plain=this.root.getObjectByName('Floodlight towers');if(plain)plain.visible=false;}
     kit.flush();this.kit=kit;
@@ -236,11 +294,14 @@ export class BallArena {
   update(time:number){
     const dt=Number.isFinite(this.lastTime)?Math.max(0,Math.min(.1,time-this.lastTime)):0;this.lastTime=time;
     this.time.value=time;this.petalTime.value+=dt*(1+arenaMood.value*2.4);
+    // A goal's celebration is drawn for the ten seconds after it and not at all otherwise.
+    const since=time-goalNetHit.value.w,on=since>=0&&since<10;for(const mesh of this.party)mesh.visible=on;
   }
   /** Everything here is the arena's own (the noise texture is shared and stays). Safe to call twice, and alongside
    *  StageEnvironment's own release of the root. */
   dispose(){
     this.screens?.dispose();this.screens=undefined;
+    this.fans.value.dispose();
     this.kit?.dispose();this.kit=undefined;
     this.root.traverse(object=>{const mesh=object as THREE.Mesh;if(!mesh.isMesh)return;mesh.geometry.dispose();for(const m of [mesh.material].flat())m.dispose();});
   }
@@ -360,7 +421,8 @@ export class BallArena {
         frame.push({geometry:beam([x-ux,z-uz],[x+ux,z+uz],y0,W,.34)});
       }
     }
-    this.add(new THREE.Mesh(bake(frame),stageMaterial('ball-pitch','Ink Bowl frame',{color:0x111216,roughness:.6})),'Ink Bowl frame');
+    // The cage's frame casts: its posts lie across the pitch's edge in the floodlights.
+    this.add(new THREE.Mesh(bake(frame),stageMaterial('ball-pitch','Ink Bowl frame',{color:0x111216,roughness:.6})),'Ink Bowl frame').castShadow=true;
     this.add(new THREE.Mesh(bake(trim,true),new THREE.MeshBasicMaterial({vertexColors:true,name:'Ink Bowl trim'})),'Ink Bowl trim');
   }
 
@@ -452,6 +514,21 @@ export class BallArena {
         stands.add([b1[0],h,b1[1]],[a1[0],h,a1[1]],[a1[0],next,a1[1]],[b1[0],next,b1[1]],{color:ink});
       }
     }
+    // A lit nosing on every step of every aisle, warm white with a little of the end's colour: the aisles
+    // read as stairs running up the stand, and the stands as built.
+    const steps=new Quads(),warm=new THREE.Color(0xffe2b0);
+    for(let k=0;k<TIERS;k++){
+      const y=tier(k+1).h;
+      for(let i=0;i<ring.length;i++){
+        const j=(i+1)%ring.length,a=rings[k+1][i],b=rings[k+1][j],len=Math.hypot(b[0]-a[0],b[1]-a[1]),ux=(b[0]-a[0])/len,uz=(b[1]-a[1])/len,n=aisles(rings[0][i],rings[0][j]);
+        const colour=warm.clone().lerp((a[1]+b[1])/2<0?RED:BLUE,.3).multiplyScalar(1.5);
+        for(let m=0;m<n;m++){
+          const t=(m+.5)/n,x=a[0]+(b[0]-a[0])*t+uz*.03,z=a[1]+(b[1]-a[1])*t-ux*.03;
+          steps.add([x+ux*.5,y-.2,z+uz*.5],[x-ux*.5,y-.2,z-uz*.5],[x-ux*.5,y-.06,z-uz*.5],[x+ux*.5,y-.06,z+uz*.5],{color:colour});
+        }
+      }
+    }
+    this.add(new THREE.Mesh(steps.geometry(),new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide,name:`${o.name??'Ink Bowl'} step lights`})),`${o.name??'Ink Bowl'} step lights`);
     // The back wall and the canopy, sloping in over the top rows; its fascia carries the second ribbon.
     const top=tier(TIERS).h,wallTop=top+5,lip=offsetRing(ring,tier(TIERS).d-10),fascia=offsetRing(ring,tier(TIERS).d-10.04),outer=rings[TIERS];along=0;
     for(let i=0;i<ring.length&&o.canopy!==false;i++){
@@ -467,7 +544,7 @@ export class BallArena {
     this.add(new THREE.Mesh(stands.geometry(),stageMaterial('ball-pitch',`${o.name??'Ink Bowl'} stands`,{vertexColors:true,side:THREE.DoubleSide,roughness:.9})),`${o.name??'Ink Bowl'} stands`);
     const led=new THREE.ShaderMaterial({
       name:'Ink Bowl banners',side:THREE.DoubleSide,fog:true,
-      uniforms:fogged({uTime:this.time,uRed:{value:RED.clone()},uBlue:{value:BLUE.clone()},uNoise:{value:noiseTexture()}}),
+      uniforms:fogged({uTime:this.time,uRed:{value:RED.clone()},uBlue:{value:BLUE.clone()},uNoise:{value:noiseTexture()},uHit:goalNetHit}),
       vertexShader:`attribute float aTeam;varying vec2 vUv;varying float vTeam;
         #include <fog_pars_vertex>
         void main(){vUv=uv;vTeam=aTeam;vec4 mvPosition=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*mvPosition;
@@ -476,7 +553,7 @@ export class BallArena {
       // Painted banners in place of the racing chevrons. Panels six metres long drift slowly round the
       // bowl, each one of three: the side's colour with a white brush circle, paper with a black brush sweep, ink with
       // the side's colour slashed across. No lettering.
-      fragmentShader:`uniform float uTime;uniform vec3 uRed,uBlue;uniform sampler2D uNoise;varying vec2 vUv;varying float vTeam;
+      fragmentShader:`uniform float uTime;uniform vec3 uRed,uBlue;uniform sampler2D uNoise;uniform vec4 uHit;varying vec2 vUv;varying float vTeam;
         #include <fog_pars_fragment>
         void main(){
           vec3 team=mix(uRed,uBlue,vTeam);
@@ -493,12 +570,15 @@ export class BallArena {
             col=mix(ink,team*1.2,slash*step(.18,rough));}
           // The banner's ink border, top and bottom.
           col=mix(col,ink,step(v,.07)+step(.93,v));
+          // A goal runs the scorer's colour round every board for three seconds, in chasing bars.
+          float since=uTime-uHit.w,run=step(0.,since)*(1.-smoothstep(2.2,3.2,since));
+          col=mix(col,(uHit.z<0.?uBlue:uRed)*2.2,run*step(.5,fract(vUv.x*.16-since*2.4))*step(.07,v)*step(v,.93));
           gl_FragColor=vec4(col,1.);
           #include <fog_fragment>
         }`,
     });
     this.add(new THREE.Mesh(ribbon.geometry(),led),'Ink Bowl banners');
-    this.crowd(rings,tier,TIERS);
+    this.crowd(rings,tier,TIERS);this.celebration(TIERS);
     // A big screen over each end, in front of the canopy's lip, tipped down to the pitch.
     if(o.screens===false)return this.standFronts(ring,FRONT);
     const {halfZ:GZ}=GOAL_RULES,screenY=o.canopy===false?top+12:31,screenZ=o.canopy===false?GZ+FRONT+TIERS*TREAD+2:GZ+17.5;
@@ -517,24 +597,119 @@ export class BallArena {
     }
   }
 
-  /** One instanced draw of painted fans, a card each turned to the lens about its upright: the home end in crimson, the
-   *  away end in azure, a Mexican wave running round the bowl, camera flashes popping in the dark. */
+  /** A goal sets the scorer's end off (uHit: the net the ball went into and when, hype.ts): confetti fired
+   *  from the top of the end wall back over their own stand, flares lit along it with smoke in the side's colour, and
+   *  three rockets bursting over it. Two instanced draws worked out in the shader from the goal's clock, hidden
+   *  between goals (update), so a match without a goal pays nothing for them. The place answers, not the screen. */
+  private party:THREE.Mesh[]=[];
+  private celebration(tiers:number){
+    const {halfX:X,halfZ:Z,corner:C,wall:W}=GOAL_RULES,random=rng(7741),quad=new THREE.PlaneGeometry(1,1);
+    const SPAN=num(X-C),FRONT=num(Z+BOWL.front),TREAD=num(BOWL.tread),ROWS=num(Math.max(1,tiers-3));
+    const build=(name:string,kinds:[number,number,number][],material:THREE.ShaderMaterial)=>{
+      // Each piece: four seeds, and what it is (its kind, which of its group's spots it belongs to, its number there).
+      const seeds:number[]=[],data:number[]=[];
+      for(const [kind,groups,each] of kinds)for(let j=0;j<groups;j++)for(let n=0;n<each;n++){seeds.push(random(),random(),random(),random());data.push(kind,j,n);}
+      const g=new THREE.InstancedBufferGeometry();g.index=quad.index;g.setAttribute('position',quad.getAttribute('position'));g.setAttribute('uv',quad.getAttribute('uv'));
+      g.setAttribute('aSeed',new THREE.InstancedBufferAttribute(new Float32Array(seeds),4));g.setAttribute('aData',new THREE.InstancedBufferAttribute(new Float32Array(data),3));
+      g.instanceCount=data.length/3;
+      const mesh=this.add(new THREE.Mesh(g,material),name);mesh.frustumCulled=false;mesh.visible=false;mesh.renderOrder=6;this.party.push(mesh);
+    };
+    const HEAD=`attribute vec4 aSeed;attribute vec3 aData;uniform float uTime;uniform vec4 uHit;uniform vec3 uRed,uBlue;
+      varying vec2 vUv;varying vec4 vCol;varying float vKind;
+      // The scorer's end: blue's stand is at +z, and a ball in the -z net is blue's goal.
+      float endOf(){return uHit.z<0.?1.:-1.;}
+      vec3 sideColour(){return uHit.z<0.?uBlue:uRed;}`;
+    const uniforms=()=>({uTime:this.time,uHit:goalNetHit,uRed:{value:RED.clone()},uBlue:{value:BLUE.clone()}});
+    // Confetti: 1,200 pieces from the two cannons at the scorer's end (pitchLayout.ts cannonSpot), thrown up over the cage
+    // and back over the stand, slowed by the air to a flutter down onto the crowd.
+    const [CX,CZ]=cannonSpot(1,1);
+    build('Goal confetti',[[0,2,600]],new THREE.ShaderMaterial({
+      name:'Goal confetti',side:THREE.DoubleSide,uniforms:uniforms(),
+      vertexShader:`${HEAD}
+        void main(){
+          float e=endOf(),t=uTime-uHit.w-aSeed.w*.6-aData.y*.12;vUv=uv;vKind=0.;
+          float sx=aData.y*2.-1.;
+          vec3 from=vec3(sx*${num(CX)},2.2,e*${num(CZ)});
+          vec3 v0=vec3(sx*(1.-aSeed.x*13.)*.9,19.+aSeed.y*13.,e*(1.5+aSeed.z*15.)),fall=vec3(0.,-1.7-aSeed.x*.9,0.);
+          float k=1.5,ease=(1.-exp(-k*max(t,0.)))/k;
+          vec3 p=from+(v0-fall)*ease+fall*max(t,0.);
+          p.x+=sin(t*2.3+aSeed.y*40.)*.5*smoothstep(.6,2.,t);p.z+=cos(t*1.9+aSeed.x*40.)*.4*smoothstep(.6,2.,t);
+          float spin=t*(5.+aSeed.z*7.)+aSeed.w*40.,show=step(0.,t)*(1.-smoothstep(7.,8.5,t));
+          vec4 c=viewMatrix*vec4(p,1.);
+          c.xy+=mat2(cos(spin*.37),-sin(spin*.37),sin(spin*.37),cos(spin*.37))*(position.xy*vec2(.44,.3*cos(spin)))*show;
+          float pick=fract(aSeed.w*7.31);
+          vCol=vec4(pick<.62?sideColour()*1.25:pick<.84?vec3(1.):vec3(1.,.78,.25),show);
+          gl_Position=projectionMatrix*c;
+        }`,
+      fragmentShader:`varying vec4 vCol;void main(){if(vCol.a<.5)discard;gl_FragColor=vec4(vCol.rgb,1.);}`,
+    }));
+    // The glow: flares along the stand with their smoke (kinds 1 and 2), and the rockets' sparks (3). One blend for
+    // all three: colour added, and where a piece has an alpha (the smoke) the scene behind it dimmed by it.
+    build('Goal flares',[[1,8,20],[2,8,1],[3,5,150]],new THREE.ShaderMaterial({
+      name:'Goal flares',transparent:true,depthWrite:false,uniforms:uniforms(),
+      blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor,blendSrcAlpha:THREE.OneFactor,blendDstAlpha:THREE.OneMinusSrcAlphaFactor,
+      vertexShader:`${HEAD}
+        float hash(float n){return fract(sin(n*91.7)*43758.5453);}
+        // A flare's spot in the scorer's stand: spread across the end, each on a row of its own.
+        vec3 spot(float j){float row=1.+floor(hash(j+3.)*${ROWS});
+          return vec3((j/7.-.5)*2.*${SPAN}*.92,2.6+row*1.05,endOf()*(${FRONT}+row*${TREAD}));}
+        void main(){
+          float since=uTime-uHit.w,size=0.;vec3 p=vec3(0.);vUv=uv;vKind=aData.x;vCol=vec4(0.);
+          vec3 side=sideColour();
+          if(aData.x<1.5){
+            // Smoke: a puff every third of a second from each flare for six seconds, rising, spreading and thinning.
+            float born=.3+aData.y*.12+aData.z*.33,age=since-born,life=4.2+aSeed.x*1.4,a=clamp(age/life,0.,1.);
+            p=spot(aData.y)+vec3((aSeed.y-.5)*1.6*a+sin(age*.9+aSeed.z*9.)*.5*a,age*(1.5+aSeed.x*.7)+age*age*.12,endOf()*age*.5);
+            size=(1.6+a*4.6)*step(0.,age)*step(age,life);
+            vCol=vec4(side*.75*(1.-a*.6),.6)*smoothstep(0.,.1,a)*(1.-a);
+          }else if(aData.x<2.5){
+            // The flare itself: a point of the side's colour burning white at its heart, for seven seconds.
+            float lit=smoothstep(.2,.5,since)*(1.-smoothstep(6.,7.2,since))*step(0.,since);
+            p=spot(aData.y)+vec3(0.,.5,0.);size=5.*lit*(.86+.14*sin(uTime*31.+aData.y*5.));
+            vCol=vec4(side*3.2+vec3(1.6),0.)*lit;
+          }else{
+            // Rockets: five shells over the scorer's end, half a second apart, each a ball of sparks that slows and sinks.
+            float at=.35+aData.y*.5,age=since-at,life=1.6+aSeed.w*.6,a=clamp(age/life,0.,1.);
+            vec3 centre=vec3((hash(aData.y+11.)-.5)*44.,${num(W+26)}+hash(aData.y+5.)*12.,endOf()*${num(Z+BOWL.front+12)});
+            float th=aSeed.x*6.2832,ph=acos(aSeed.y*2.-1.);vec3 dir=vec3(sin(ph)*cos(th),cos(ph),sin(ph)*sin(th));
+            p=centre+dir*(11.+aSeed.z*7.)*(1.-exp(-2.6*max(age,0.)))-vec3(0.,max(age,0.)*max(age,0.)*1.6,0.);
+            size=1.15*step(0.,age)*step(age,life);
+            float shell=mod(aData.y,3.);vec3 c=shell<.5?side*2.4+vec3(.5):shell<1.5?vec3(2.6,1.9,.7):vec3(2.4)+side;
+            vCol=vec4(c*(1.-a)*(1.-a)*(.7+.3*sin(uTime*40.+aSeed.w*60.)),0.);
+          }
+          vec4 c=viewMatrix*vec4(p,1.);c.xy+=position.xy*size;gl_Position=projectionMatrix*c;
+        }`,
+      fragmentShader:`varying vec2 vUv;varying vec4 vCol;varying float vKind;
+        void main(){
+          float r=length(vUv-.5)*2.,soft=1.-smoothstep(0.,1.,r);
+          // Smoke is a soft cloud; a flare and a spark a hot core with a wide soft glow.
+          float w=vKind<1.5?soft*soft:exp(-r*r*18.)+soft*soft*.22;
+          gl_FragColor=vec4(vCol.rgb*w,vCol.a*w);
+        }`,
+    }));
+    quad.dispose();
+  }
+
+  /** One instanced draw of drawn fans, a card each turned to the lens about its upright: the home end in crimson, the
+   *  away end in azure, a Mexican wave running round the bowl, camera flashes popping in the dark. Two rows
+   *  to a tread, shoulder to shoulder, so the stands read as full. */
   private crowd(rings:V2[][],tier:(k:number)=>{d:number;h:number},tiers:number){
     const random=rng(4219),spots:number[]=[],shirts:number[]=[],info:number[]=[],c=new THREE.Color();
     const white=new THREE.Color(0xe8e6e0),gold=new THREE.Color(0xffcf5a);
     for(let k=0;k<tiers;k++){
       const {h}=tier(k),inner=rings[k],outer=rings[k+1];
-      for(let i=0;i<inner.length;i++){
-        const j=(i+1)%inner.length;
-        const ax=(inner[i][0]*.42+outer[i][0]*.58),az=(inner[i][1]*.42+outer[i][1]*.58),bx=(inner[j][0]*.42+outer[j][0]*.58),bz=(inner[j][1]*.42+outer[j][1]*.58);
-        const len=Math.hypot(bx-ax,bz-az),n=Math.floor(len/.74);
+      for(const [back,lift] of CROWD_ROWS)for(let i=0;i<inner.length;i++){
+        const j=(i+1)%inner.length,front=1-back;
+        const ax=(inner[i][0]*front+outer[i][0]*back),az=(inner[i][1]*front+outer[i][1]*back),bx=(inner[j][0]*front+outer[j][0]*back),bz=(inner[j][1]*front+outer[j][1]*back);
+        const len=Math.hypot(bx-ax,bz-az),n=Math.floor(len/CROWD_GAP),stairs=aisles(rings[0][i],rings[0][j]);
         for(let s=0;s<n;s++){
-          if(random()<.1)continue;
+          if(random()<.05)continue;
           const t=(s+.5+(random()-.5)*.3)/n,x=ax+(bx-ax)*t,z=az+(bz-az)*t;
-          // An aisle of stairs every eleven metres along the stand.
-          if((t*len)%11<1.15)continue;
-          spots.push(x,h,z,random());
-          // The colour is the fan's scarf (and flag): their end's colour, a few in white or gold.
+          // An aisle of stairs every eleven metres or so along the stand, at the same share of the way along on every
+          // tier, so each runs straight up the stand under its step lights.
+          if(Math.abs(((t*stairs)%1)-.5)*len/stairs<.62)continue;
+          spots.push(x,h+lift,z,random());
+          // The colour is the fan's shirt and scarf (and flag): their end's colour, a few in white or gold.
           const roll=random(),home=z<0?RED:BLUE;
           c.copy(roll<.86?home:roll<.94?white:gold).multiplyScalar(.85+random()*.25);
           shirts.push(c.r,c.g,c.b);info.push(Math.atan2(x,z),random());
@@ -545,7 +720,10 @@ export class BallArena {
   }
 
   /** The crowd's one instanced draw, shared by both arenas: a card per fan (x, y, z, a seed), each fan's
-   *  scarf colour, and their bearing round the place and a second seed. */
+   *  shirt colour, and their bearing round the place and a second seed. The fans are drawn people
+   *  (public/assets/environment/own/ball-crowd.webp: 24 calm and 24 celebrating, 8 to a row in 128 x 160 px cells, the
+   *  clothes in a pure green the shader turns into the fan's side colour): a fan on their feet (the wave, a goal's roar)
+   *  is one of the celebrating ones. */
   private crowdMesh(name:string,spots:number[],shirts:number[],info:number[]){
     const card=new THREE.PlaneGeometry(1,1).translate(0,.5,0),geometry=new THREE.InstancedBufferGeometry();
     geometry.index=card.index;geometry.setAttribute('position',card.getAttribute('position'));geometry.setAttribute('uv',card.getAttribute('uv'));
@@ -554,62 +732,59 @@ export class BallArena {
     geometry.setAttribute('aInfo',new THREE.InstancedBufferAttribute(new Float32Array(info),2));
     geometry.instanceCount=spots.length/4;
     const material=new THREE.ShaderMaterial({
-      name,fog:true,side:THREE.DoubleSide,
-      uniforms:fogged({uTime:this.time,uHype:crowdHype}),
-      vertexShader:`attribute vec4 aSpot;attribute vec3 aShirt;attribute vec2 aInfo;uniform float uTime,uHype;
-        varying vec2 vUv;varying vec3 vShirt;varying float vArms;varying float vFlash;varying float vFlag;varying float vWave;
+      name,fog:true,side:THREE.DoubleSide,alphaToCoverage:true,
+      uniforms:fogged({uTime:this.time,uHype:crowdHype,uHit:goalNetHit,uFans:this.fans,uTint:{value:new THREE.Color().setRGB(...CROWD_LIGHT[this.arena])}}),
+      vertexShader:`attribute vec4 aSpot;attribute vec3 aShirt;attribute vec2 aInfo;uniform float uTime,uHype;uniform vec4 uHit;
+        varying vec2 vUv;varying vec3 vShirt;varying float vFlash;varying float vFlag;varying float vWave;varying vec3 vCell;
         #include <fog_pars_vertex>
         void main(){
           vUv=uv;vShirt=aShirt;
           float wave=smoothstep(.6,1.,cos(aInfo.x-uTime*.5));
+          // For eight seconds after a goal (uHit: the net it went into, and when) the roar is the scoring
+          // side's end; the end that conceded stays down. (Red defends -z, so its fans stand at that end.)
+          float since=uTime-uHit.w,goal=step(0.,since)*step(since,8.),mine=step(0.,-aSpot.z*uHit.z);
+          float hype=uHype*mix(1.,mix(.12,1.,mine),goal);
           // On its feet after a goal (uHype): jumping, arms up, the calm bob and the wave under it.
-          float bob=max(0.,sin(uTime*(4.+aInfo.y*3.+uHype*6.)+aInfo.y*40.))*(.07+uHype*.42)+wave*.5;
-          vArms=max(max(wave,step(.93,fract(aInfo.y*13.7+floor(uTime*.4+aInfo.y)*.37))),step(1.-uHype*.9,fract(aInfo.y*7.3)));
-          // One fan in twenty-five carries a flag on a pole (a taller, wider card).
-          vFlag=step(fract(aInfo.y*31.7),.04);
-          vWave=uTime*(2.2+uHype*3.)+aInfo.y*30.;
+          float bob=max(0.,sin(uTime*(4.+aInfo.y*3.+hype*6.)+aInfo.y*40.))*(.05+hype*.38)+wave*.32;
+          float up=max(max(step(.5,wave),step(.93,fract(aInfo.y*13.7+floor(uTime*.4+aInfo.y)*.37))),step(1.-hype*.9,fract(aInfo.y*7.3)));
+          // Which of the drawn fans (0-23 calm, 24-47 on their feet), and mirrored or not.
+          float who=floor(fract(aInfo.y*57.31+aSpot.w*3.7)*24.)+up*24.;
+          vCell=vec3(mod(who,8.),floor(who/8.),step(.5,fract(aSpot.w*91.7)));
+          // A fan here and there carries a flag on a pole (a taller, wider card).
+          vFlag=step(fract(aInfo.y*31.7),.022);
+          vWave=uTime*(2.2+hype*3.)+aInfo.y*30.;
           vec3 base=(modelMatrix*vec4(aSpot.xyz,1.)).xyz;base.y+=bob;
           vec3 toLens=cameraPosition-base;toLens.y=0.;
           vec3 side=normalize(vec3(toLens.z,0.,-toLens.x)+vec3(1e-5,0.,0.));
-          vec3 world=base+side*position.x*(.66+vFlag*.9)+vec3(0.,position.y*(1.+vArms*.35+vFlag*1.5),0.);
+          vec3 world=base+side*position.x*mix(${num(CROWD_CARD[0])},1.7,vFlag)+vec3(0.,position.y*mix(${num(CROWD_CARD[1])},2.9,vFlag),0.);
           vFlash=step(.9985,fract(sin(aInfo.y*917.3+floor(uTime*9.)*.731)*43758.5453));
           vec4 mvPosition=viewMatrix*vec4(world,1.);gl_Position=projectionMatrix*mvPosition;
           #include <fog_vertex>
         }`,
-      fragmentShader:`varying vec2 vUv;varying vec3 vShirt;varying float vArms;varying float vFlash;varying float vFlag;varying float vWave;
+      fragmentShader:`uniform sampler2D uFans;uniform vec3 uTint;
+        varying vec2 vUv;varying vec3 vShirt;varying float vFlash;varying float vFlag;varying float vWave;varying vec3 vCell;
         #include <fog_pars_fragment>
         float ballRound(vec2 p,vec2 b){vec2 q=abs(p)-b;return length(max(q,0.))+min(max(q.x,q.y),0.);}
         void main(){
-          // An ink silhouette, head and shoulders, with a pale rim where the floodlights catch it, and the
-          // fan's scarf in their side's colour: round the neck, or stretched overhead between both hands when the arms go
-          // up (the card grows to hold them). A flag-bearer's card is taller and wider: the fan, a pole, a waving flag.
-          vec2 q=vec2(vUv.x,vUv.y*(1.+vArms*.35));
-          vec3 ink=vec3(.022,.022,.026),rim=vec3(.42,.42,.46);
           if(vFlag>.5){
-            vec2 f=vec2(vUv.x*1.58,vUv.y*2.85);
-            float head=length((f-vec2(.5,.74))*vec2(1.,1.15))-.15,body=ballRound(f-vec2(.5,.3),vec2(.27,.3))-.08;
-            float pole=ballRound(vUv-vec2(.36,.62),vec2(.012,.38));
-            vec2 c=vUv-vec2(.37,.72);float flap=sin(c.x*9.-vWave)*.05*c.x*3.;
-            float flag=ballRound(vec2(c.x-.3,c.y-.08-flap),vec2(.3,.14));
-            float d=min(min(head,body),min(pole,flag));
-            if(d>0.)discard;
-            vec3 col=flag<min(min(head,body),pole)?mix(vShirt,vec3(.95),step(.82,fract((c.x-c.y*1.4)*3.))):ink;
-            col=mix(col,rim,step(-.03,d)*step(.5,vUv.y));
-            gl_FragColor=vec4(col,1.);
+            // A flag on its pole over the heads, in the bearer's side colour with a white slash: the bearer is in the crowd.
+            float pole=ballRound(vUv-vec2(.3,.5),vec2(.012,.5));
+            vec2 c=vUv-vec2(.31,.7);float flap=sin(c.x*9.-vWave)*.05*c.x*3.;
+            float flag=ballRound(vec2(c.x-.33,c.y-.08-flap),vec2(.33,.16));
+            if(min(pole,flag)>0.)discard;
+            vec3 col=flag<pole?mix(vShirt,vec3(.95),step(abs(c.y-.08-flap),.045))*(.8+.2*sin(c.x*9.-vWave+1.2)):vec3(.03);
+            gl_FragColor=vec4(col*uTint,1.);
             #include <fog_fragment>
             return;
           }
-          float head=length((q-vec2(.5,.74))*vec2(1.,1.15))-.15;
-          float body=ballRound(q-vec2(.5,.3),vec2(.27,.3))-.08;
-          float arms=vArms>.5?ballRound(vec2(abs(q.x-.5)-.27,q.y-.9),vec2(.05,.35)):1.;
-          float scarf=vArms>.5?ballRound(vec2(q.x-.5,q.y-1.18),vec2(.3,.06)):ballRound(vec2(q.x-.5,q.y-.6),vec2(.24,.04));
-          float d=min(min(head,body),arms);
-          if(min(d,scarf)>0.)discard;
-          vec3 col=ink;
-          col=mix(col,rim,step(-.035,d)*step(.55,q.y)*step(d,0.));
-          if(scarf<0.)col=mix(vShirt,vec3(.95),step(.75,fract(q.x*7.)))*(1.-step(-.012,scarf)*.7);
-          col=mix(col,vec3(6.),vFlash*step(head,0.));
-          gl_FragColor=vec4(col,1.);
+          vec2 q=vec2(mix(vUv.x,1.-vUv.x,vCell.z),vUv.y);
+          vec4 fan=texture2D(uFans,vec2((vCell.x+q.x)*.125,1.-(vCell.y+1.-q.y)*.15625));
+          if(fan.a<.3)discard;
+          // The drawn clothes are a pure green: the fan's side colour goes in there, the drawing's own shading kept.
+          float key=smoothstep(.1,.36,fan.g-max(fan.r,fan.b));
+          vec3 col=mix(fan.rgb,vShirt*(.3+fan.g*.9),key)*uTint*mix(.7,1.06,q.y);
+          col=mix(col,vec3(6.),vFlash*step(.62,q.y)*step(q.y,.9));
+          gl_FragColor=vec4(col,smoothstep(.3,.62,fan.a));
           #include <fog_fragment>
         }`,
     });
@@ -1241,9 +1416,10 @@ export class BallArena {
       for(let k=0;k<TIERS;k++){
         const z=z0+sz*k*TREAD,y=y0+k*RISE;
         parts.push({geometry:new THREE.BoxGeometry(HALF*2-k*.6,RISE,TREAD).translate(0,y+RISE/2,z+sz*TREAD/2),color:k%3===2?dark:stone});
-        for(let x=-HALF+1+k*.3;x<HALF-1-k*.3;x+=.74){
-          if(random()<.12||Math.abs(x%9)<.9)continue;
-          spots.push(x+(random()-.5)*.2,y+RISE,z+sz*TREAD*.45,random());
+        // Two rows to a tread, shoulder to shoulder, as in the bowl.
+        for(const [back,lift] of CROWD_ROWS)for(let x=-HALF+1+k*.3;x<HALF-1-k*.3;x+=CROWD_GAP){
+          if(random()<.06||Math.abs(x%9)<.9)continue;
+          spots.push(x+(random()-.5)*.2,y+RISE+lift,z+sz*TREAD*back,random());
           const roll=random();c.copy(roll<.86?team:roll<.94?white:gold).multiplyScalar(.85+random()*.25);
           shirts.push(c.r,c.g,c.b);info.push(Math.atan2(x,z),random());
         }

@@ -1,15 +1,11 @@
 {
  "tests/airNormals.test.ts": [
-  "koko is announced as the air kick exactly when the air kick is what is drawn",
-  "kosho is announced as the air kick exactly when the air kick is what is drawn"
+  "koko is announced as the air kick exactly when the air kick is what is drawn"
  ],
  "tests/airStrings.test.ts": [
-  "kagari: announces its air string by the names of what it draws",
   "kenzo: announces its air string by the names of what it draws",
   "koko: announces its air string by the names of what it draws",
-  "kosho: announces its air string by the names of what it draws",
-  "shirokane: announces its air string by the names of what it draws",
-  "tucks the legs under a blow thrown with the arms in the air, and leaves a kick its own legs"
+  "shirokane: announces its air string by the names of what it draws"
  ],
  "tests/amagoiSharedIntegration.test.ts": [
   "air stages retain their individual authored receiver/repulsion clips"
@@ -31,24 +27,11 @@
  "tests/fighterAssets.test.ts": [
   "names only files that exist, so the package step cannot fail on one"
  ],
- "tests/fmovesClips.test.ts": [
-  "keeps the clips the combo enders cut from, at their lengths"
- ],
  "tests/footContact.test.ts": [
   "cycles kenzo's legs into a lunge and leaves a standing swing alone",
-  "gaunt does not skate at a run",
-  "gaunt keeps a foot on the ground while blocking and walking",
   "kenzo does not skate at a run",
-  "koko does not skate at a run",
-  "koko keeps a foot on the ground while blocking and walking",
-  "koko walks, runs, and does something in between",
-  "kuon does not skate at a run",
-  "kuon keeps a foot on the ground while blocking and walking",
   "measures the whole roster",
-  "oro does not skate at a run",
-  "reports a plausible number of steps for the ground covered",
-  "setsu does not skate at a run",
-  "shirokane does not skate at a run"
+  "reports a plausible number of steps for the ground covered"
  ],
  "tests/gummyRound5.test.ts": [
   "is its own take, landing its blow on the move's contact"
@@ -60,33 +43,21 @@
  "tests/lockStrikes.test.ts": [
   "every one fits its body: keyed on the body's own joints, finite, never refused"
  ],
- "tests/lockTakeRecursion.test.ts": [
-  "plans the rush once and plays the round for kenzo"
- ],
  "tests/matchFill.test.ts": [
   "plans its bots as the countdown starts, tells every page, and seats those at kickoff"
  ],
  "tests/mergeStatic.test.ts": [
   "is only switched on for real places"
  ],
- "tests/minaseSharedIntegration.test.ts": [
-  "actual signature draws a palm sphere only on current left-palm commands; awakened=false",
-  "actual signature draws a palm sphere only on current left-palm commands; awakened=true",
-  "uses actual right kunai or left palm on every branch; awakened=false",
-  "uses actual right kunai or left palm on every branch; awakened=true"
- ],
  "tests/originals-authored-kicks.test.ts": [
   "name shown originals and clips in their body or rush file"
  ],
  "tests/originals-lock-strikes.test.ts": [
   "are every shown original's own, written from the files its body loads now",
-  "find their clip on the donor's take pack's rig, in a small file with no body in it",
-  "name only the originals' own files, never the earlier donors'"
+  "find their clip on the donor's take pack's rig, in a small file with no body in it"
  ],
  "tests/originals-lucy-onset.test.ts": [
-  "Idle B hat: no leg joint shimmers from key to key",
-  "lucy-px1.glb: the Bazooka keeps its length (its blow stays on 0.42 s, contactFrames' 0.4667)",
-  "lucy-px1.glb: the jump opens at its stand, not on a crouch key it leaves on the next frame"
+  "Idle B hat: no leg joint shimmers from key to key"
  ],
  "tests/originals-places-r8.test.ts": [
   "keeps the earlier model of each out of the package, unless what still loads it ships"
@@ -116,47 +87,17 @@
   "draw only their own bodies, clips, idles and portraits, and every one of them ships",
   "key every joint the transfer moves in every clip, so the renderer's layers never pile up on a stale pose"
  ],
- "tests/reactClips.test.ts": [
-  "gaunt, through seven lights, a launch, a juggle and a second launch",
-  "koko's hit recoil keeps its own forearm and hand",
-  "ouga's hit recoil keeps its own forearm and hand",
-  "shirokane's hit recoil keeps its own forearm and hand"
- ],
  "tests/reactionTakes.test.ts": [
   "gaku, a light string",
-  "gaunt, a heavy, the knockdown and the get-up",
-  "gaunt, a light string",
-  "gaunt, konta's light string, seed 8",
-  "koko, imago's light string, seed 7",
-  "kuon, Konta's light string, seed 7",
-  "kuon, Konta's light string, seed 8",
-  "kuon, a heavy, the knockdown and the get-up",
-  "kuon, a light string",
-  "kuon, kosho's light string, seed 8",
-  "levin Hit 01",
-  "levin shake",
-  "oro, kosho's light string, seed 8",
-  "rook, a heavy, the knockdown and the get-up",
-  "setsu, Konta's light string",
-  "setsu, a heavy, the knockdown and the get-up",
-  "setsu, a light string",
-  "shirokane, Konta's light string",
-  "shirokane, a heavy, the knockdown and the get-up",
-  "shirokane, a light string"
+  "rook, a heavy, the knockdown and the get-up"
  ],
  "tests/runTakes.test.ts": [
-  "kuon",
-  "magatsu",
-  "shirokane",
-  "taisei"
+  "magatsu"
  ],
  "tests/rushClips.test.ts": [
   "kenzo: the rush file binds onto the body, names its stages, and has their contacts",
   "koko: the rush file binds onto the body, names its stages, and has their contacts",
   "shirokane: the rush file binds onto the body, names its stages, and has their contacts"
- ],
- "tests/rushContacts.test.ts": [
-  "kenzo"
  ],
  "tests/rushFlow.test.ts": [
   "goes from stage to stage without a tick of idle, hit or miss, at any mashing rate, for all sixteen"
@@ -169,9 +110,6 @@
  "tests/sashiganeGosuRuntime.test.ts": [
   "human ground light commands while the mender throws its own exact attack clip",
   "retains all eight ultimate windows and alternates the real spirit hand only after confirmation"
- ],
- "tests/senkoBunaStrikePose.test.ts": [
-  "light retains its raised native striking foot through an approach lunge"
  ],
  "tests/setsu.test.ts": [
   "carries the whole set, every clip keying every joint, every track binding"
@@ -209,16 +147,5 @@
  ],
  "tests/senkoBunaIntegration.test.ts": [
   "lets go of the Armory effects of the fighter who left as the next room is entered, and keeps the room's own"
- ],
- "tests/dreamHurts.test.ts": [
-  "ouga carries them at its own hurt's and flinch's lengths, every core joint keyed",
-  "ouga under taisei's string",
-  "and, the takes off, the body's own hurt on every blow"
- ],
- "tests/hitFeelEffects.test.ts": [
-  "reels, then doubles over, dazed, for the rest of the hold (Shirokane's Static Scarecrow)"
- ],
- "tests/originals-jump-onset.test.ts": [
-  "finds the roster"
  ]
 }

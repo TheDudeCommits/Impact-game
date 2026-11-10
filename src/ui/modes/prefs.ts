@@ -2,6 +2,7 @@ import type { ModeId, VariantId } from './catalogue';
 import { MODES } from './catalogue';
 import { namedPlace, placeForStart, type StageChoice } from '../../game/stageChoice';
 import type { StageId } from '../../game/stages';
+import { isReleasedFighter } from '../../game/rosterAvailability';
 
 /**
  * Round 5 (UX): what this device remembers about the modes. Each value lives under its own key, and a browser that
@@ -23,7 +24,17 @@ export function explainerSeen(mode: ModeId) { return (read<Record<string, number
 export function markExplainerSeen(mode: ModeId) { const seen = read<Record<string, number>>(SEEN_KEY, {}); seen[mode] = MODES[mode].rulesVersion; write(SEEN_KEY, seen); }
 
 export interface ModePrefs { variant?: VariantId; fighters?: number; roomSize?: number; lone?: boolean; /** The ball modes: RUMBLE's charms on (ui: the RULES row), and FREE PLAY instead of a match (the PLAY row, bots only). */ rumble?: boolean; practice?: boolean; /** A mutator for BOTS, COUCH and FRIENDS (game/ball/mutators.ts; RUMBLE and a mutator are one choice), ONLINE's queue, and the PLAY row's DRILLS with the drill chosen. */ mutator?: import('../../game/ball/mutators').BallMutator | null; queue?: 'classic' | 'playlist' | 'ranked'; drills?: boolean; drill?: import('../../game/ball/drills').DrillId; /** The arena picked on the ARENA row (game/ball/arenas.ts id), or none for each in turn. */ arena?: string; /** The BOTS row's level for a match against bots (game/ball/BallBrain.ts BOT_LEVELS), BOTS and COUCH; none: NORMAL. */ difficulty?: import('../../game/ball/BallBrain').BotLevel; rival?: import('../../game/types').FighterId; /** Couch: Player 2's fighter (or RANDOM, ui/modes/partnerPick.ts), and whether the two seats were swapped (couch/couch.ts plannedSeats). */ partner?: import('../../game/types').FighterId | 'random'; couchSwap?: boolean; /** Couch: how the screen is shared (couch/split.ts), and in Bad Blood and the Rift which side Player 2 stands on. */ couchScreen?: import('../../network').CouchScreen; couchSides?: 'same' | 'rivals'; /** The LOCATION chosen on the sheet; absent or 'random': random. One value per mode, whichever way (bots, friends) it was chosen on. */ stage?: StageChoice }
-export function modePrefs(mode: ModeId): ModePrefs { return read<Record<string, ModePrefs>>(PREFS_KEY, {})[mode] ?? {}; }
+/** A mode's remembered options. A rival or Player 2 that is not a released fighter is left out: this device's storage
+ *  can hold another build's (Player Two restores a game's saved data for each player), and a rival no released fighter
+ *  answers would stop every bot duel from starting. */
+export function modePrefs(mode: ModeId): ModePrefs {
+  const kept = read<Record<string, ModePrefs>>(PREFS_KEY, {})?.[mode];
+  if (!kept || typeof kept !== 'object') return {};
+  const prefs = { ...kept };
+  if (prefs.rival !== undefined && !isReleasedFighter(prefs.rival)) delete prefs.rival;
+  if (prefs.partner !== undefined && prefs.partner !== 'random' && !isReleasedFighter(prefs.partner)) delete prefs.partner;
+  return prefs;
+}
 export function saveModePrefs(mode: ModeId, prefs: ModePrefs) { const all = read<Record<string, ModePrefs>>(PREFS_KEY, {}); all[mode] = { ...all[mode], ...prefs }; write(PREFS_KEY, all); }
 /** The place the player named for this mode's way (bots or friends), or undefined for RANDOM - always undefined for the
  *  online way, whatever was remembered (game/stageChoice.ts). */

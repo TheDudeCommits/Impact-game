@@ -44,6 +44,10 @@ THREE.DefaultLoadingManager.setURLModifier(url => siteUrl(url));
 /** How far the sun's shadow box reaches from the fight, per quality: tight
  *  enough for crisp, stable texels, wide enough for a lock-on shot. */
 const SHADOW_HALF = { high: 18, medium: 18, low: 15 } as const;
+/** The ball modes' box: one that holds the whole pitch or court and stands still on its middle, so no
+ *  fighter at the far end plays without a shadow and no edge crawls as the play moves (the pitch is 26 x 38 m, the
+ *  court's floor 30 x 37: 23 m to a corner). A texel of 2.3 cm on High where the fight's box has 1.8. */
+const BALL_SHADOW_HALF = { high: 24, medium: 24, low: 19 } as const;
 /** The split screen's shared shadow (GameRenderer sharedShadow): the box and the map this much wider - 2048 texels to
  *  2688, 1024 to 1344, 512 to 672, the texel the same - so it holds two of the sun's own boxes whose centres are within
  *  SHARE_REACH of the box's side of each other on both of its axes (a little rounding kept back: 11.1 m on High). It
@@ -369,7 +373,7 @@ export class GameRenderer {
     this.renderer.setPixelRatio(this.pixelCap*this.governor.scale);this.composer.setPixelRatio(this.pixelCap*this.governor.scale);
     const size=budget.shadowSize;
     if(this.sun.shadow.mapSize.x!==size){this.sun.shadow.mapSize.set(size,size);this.sun.shadow.map?.dispose();this.sun.shadow.map=null;}
-    const half=SHADOW_HALF[q],cam=this.sun.shadow.camera;
+    const half=this.shadowHalf(),cam=this.sun.shadow.camera;
     Object.assign(cam,{left:-half,right:half,top:half,bottom:-half,near:.5,far:150});cam.updateProjectionMatrix();
     // Multisampling is a property of the target's storage, so a change of
     // quality releases the targets and they are rebuilt on the next frame.
@@ -427,14 +431,24 @@ export class GameRenderer {
    *  a third of its size ahead along the camera's view, where the opponent
    *  is. The centre is snapped to whole shadow texels in the light's own
    *  basis, so a moving box never makes the shadow edges crawl. */
-  private updateShadow(){this.placeSun(this.shadowAim(this.camera,this.shadowCenter),2*SHADOW_HALF[this.settings.quality]/this.sun.shadow.mapSize.x);}
+  private updateShadow(){this.placeSun(this.shadowAim(this.camera,this.shadowCenter),2*this.shadowHalf()/this.sun.shadow.mapSize.x);}
   /** The ball modes (main.ts): the focus is the box's own centre - between the player and the ball (render/ball/BallCam.ts
    *  ballShadowFocus) - not a point the box is led ahead of, and it is trusted further from the lens, which stands well
    *  back in those modes. */
-  shadowCentred=false;
+  get shadowCentred(){return this.centred;}
+  set shadowCentred(on:boolean){
+    if(on===this.centred)return;this.centred=on;
+    // The ball modes' box is their own size, so the sun's camera is fitted again as one starts or ends.
+    const half=this.shadowHalf(),cam=this.sun.shadow.camera;
+    Object.assign(cam,{left:-half,right:half,top:half,bottom:-half});cam.updateProjectionMatrix();
+  }
+  private centred=false;
+  private shadowHalf(){return (this.centred?BALL_SHADOW_HALF:SHADOW_HALF)[this.settings.quality];}
   /** Where the box's centre is for `camera` (unsnapped): the fight's focus, a third of the box ahead along the view. */
   private shadowAim(camera:THREE.Camera,c:THREE.Vector3){
-    const half=SHADOW_HALF[this.settings.quality];
+    // A ball match's box stands on the middle of the place and holds all of it.
+    if(this.centred)return c.set(0,0,0);
+    const half=this.shadowHalf();
     const forward=camera.getWorldDirection(this.scratch);forward.y=0;
     if(forward.lengthSq()<1e-6)forward.set(0,0,-1);forward.normalize();
     // The focus is only trusted while it is fresh and near the lens: a dead
@@ -834,7 +848,7 @@ export class GameRenderer {
         if(half){main.position.copy(second.position);main.quaternion.copy(second.quaternion);main.up.copy(second.up);main.fov=second.fov;main.zoom=second.zoom;main.near=second.near;main.far=second.far;}
         main.aspect=r.w/r.h;main.updateProjectionMatrix();main.updateMatrixWorld(true);
         split.before(half);
-        if(!shared)this.placeSun(this.aims[half],2*SHADOW_HALF[this.settings.quality]/own.mapSize.x);
+        if(!shared)this.placeSun(this.aims[half],2*this.shadowHalf()/own.mapSize.x);
         this.renderer.shadowMap.autoUpdate=!shared||!half;
         if(half&&!SPLIT_LEGACY.matrices){this.scene.matrixWorldAutoUpdate=false;this.sun.updateMatrixWorld();this.sun.target.updateMatrixWorld();}
         this.atmosphere.update(this.time,main);
@@ -861,10 +875,10 @@ export class GameRenderer {
     const [a,b]=this.aims,q=this.settings.quality,one=split.focus(0),two=split.focus(1);
     if(two)this.setFocus(two);this.shadowAim(split.second,b);
     if(one)this.setFocus(one);this.shadowAim(this.camera,a);
-    const reach=2*SHADOW_HALF[q]*SHARE_REACH*(this.sharing?1:SHARE_TAKE);
+    const reach=2*this.shadowHalf()*SHARE_REACH*(this.sharing?1:SHARE_TAKE);
     this.sharing=!SPLIT_LEGACY.shadow&&Math.abs(b.dot(this.shadowRight)-a.dot(this.shadowRight))<=reach&&Math.abs(b.dot(this.shadowUp)-a.dot(this.shadowUp))<=reach;
     if(!this.sharing)return false;
-    const size=Math.round(own.mapSize.x*SHARE_GROW),half=SHADOW_HALF[q]*SHARE_GROW;
+    const size=Math.round(own.mapSize.x*SHARE_GROW),half=this.shadowHalf()*SHARE_GROW;
     let shadow=this.sharedShadow;
     if(!shadow||shadow.mapSize.x!==size){shadow?.dispose();shadow=this.sharedShadow=own.clone();shadow.mapSize.set(size,size);}
     shadow.bias=own.bias;shadow.normalBias=own.normalBias;shadow.radius=own.radius;shadow.intensity=own.intensity;

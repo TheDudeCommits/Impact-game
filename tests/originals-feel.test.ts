@@ -11,7 +11,10 @@ const SPRINTS: Record<string, { run: number; shared: boolean }> = {
   levin: { run: .2222, shared: true },     // Levin (was Kirigane): 4.75 against 5.00 (was 3.75)
   akagane: { run: .2222, shared: true },
   konta: { run: .2, shared: false },     // Konta: 5.00 against 5.00 (was 3.75)
-  setsu: { run: .2667, shared: false },  // Setsu: 5.75 against 6.00 (was 4.75)
+  // Setsu's run is a new sprint: .19, 4.1 steps a second at 7.5 m/s (the old run's 5.7), its planted foot sliding 0.22 of
+  // travel there (0.34 before), 0.29 at 4.5 m/s (0.21), 0.08 at 2.4 (0.09); his walk keeps its own row. (Was .2667: 5.75
+  // against 6.00.)
+  setsu: { run: .19, shared: false },
   // Shiden: 4.00 against 5.75 (was 3.50). His run plants long: faster, its slide passes footContact.test.ts's half.
   shiden: { run: .2, shared: false },
   'gaunt-form': { run: .2222, shared: false },
