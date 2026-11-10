@@ -93,11 +93,14 @@ describe('the ball moments', () => {
   it('waits for a CLASH to break, and keeps the flash for the big moments only', () => {
     const {calls, moments, snap} = setup();
     moments.handle(snap([{kind: 'clash'}], 10));
-    expect(calls).not.toContain('impact');
+    expect(calls).toHaveLength(0);
+    // (The quiet rule: a CLASH breaking is felt - the lines - and prints nothing.)
     moments.handle(snap([{kind: 'clash'}], 10.6));
-    expect(calls).toContain('impact');
+    expect(calls).toContain('lines');
+    expect(calls).not.toContain('impact');
     expect(calls).not.toContain('ink');
     moments.handle(snap([{kind: 'clash'}, {kind: 'strike', text: 'SKY SPIKE'}, {kind: 'save', text: 'PERFECT SAVE'}], 11));
+    expect(calls).not.toContain('impact');
     expect(calls).not.toContain('ink');
   });
 });

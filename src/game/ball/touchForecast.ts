@@ -12,7 +12,7 @@ import {HEADER, MASHED, PERFECT_STRIKE, TOUCH_RULES} from './BallMatch';
  *  the body, the last command, the swing under way and its blow's aim and stick (as pressed), the guard's press. */
 export interface LocalFighter {
   state: PlayerState; input: PlayerInput; attackYaw?: number; attackSeq?: number; attackMoveX?: number; attackMoveZ?: number; guardPressedAt: number;
-  cast: {id: number; start: number; move: Pick<MoveDefinition, 'style' | 'contacts'>} | null;
+  cast: {id: number; start: number; move: Pick<MoveDefinition, 'style' | 'contacts'>; press?: number} | null;
 }
 /** A forecast touch: the ball as the touch sends it (a copy), what kind of touch it was, and the moment the room will
  *  make of it where the room makes one (a strike's, a guard's, a dig's: what the page draws at the contact). */
@@ -130,11 +130,13 @@ export class TouchForecaster {
       let best = 4.5;
       for (const q of world.players) if (q.id !== world.selfId && view.seats.some(s => s.id === q.id && s.team === seat.team) && Math.abs(q.z) < best && Math.abs(q.x - p.x) < 7) { best = Math.abs(q.z); quickTo = {x: q.x}; }
     }
-    const scuffed = !again && !serve && this.mashed(now, blow.slot);
+    // (BallMatch MASHED: SHOOT's quick strike pressed over before it landed, or pressed hard on the press
+    // before it.)
+    const scuffed = !again && !serve && (this.mashed(now, blow.slot) || (blow.strike === 'tap' && ((a.cast?.press !== undefined && a.attackSeq !== a.cast.press) || this.tapMashed())));
     const timed = mode === 'goal-rush' && !again && !scuffed && this.timed(a, blow, now, b);
     const moving = this.last;
     const c: StrikeContext = {mode, slot: blow.slot, move: blow.move, knockback: blow.knockback, launch: blow.launch, finisher: blow.finisher, perfect: (perfect || timed) && !scuffed, spray, quickTo,
-      scuff: scuffed ? {yaw: 0, off: 0} : undefined, pushX: blow.pushX, pushZ: blow.pushZ, mates, touches, serve, rivals, gravity: baseGravity(view.mutator), run: {vx: moving?.vx ?? 0, vz: moving?.vz ?? 0},
+      scuff: scuffed ? {yaw: 0, off: 0} : undefined, strike: blow.strike, charge: blow.charge, pushX: blow.pushX, pushZ: blow.pushZ, mates, touches, serve, rivals, gravity: baseGravity(view.mutator), run: {vx: moving?.vx ?? 0, vz: moving?.vz ?? 0},
       striker: {id: world.selfId, team: seat.team, x: p.x, y: p.y, z: p.z, grounded: p.grounded, aimYaw: yaw, awakened: !!p.awakened,
         forward: mx * Math.sin(yaw) + mz * Math.cos(yaw), lateral: -mx * Math.cos(yaw) + mz * Math.sin(yaw), chain: p.chain ?? 0}};
     const result = strikeBall(b, c);
@@ -302,6 +304,11 @@ export class TouchForecaster {
     let open = -Infinity;
     for (const c of cast.move.contacts) if (c <= age + 1e-6) open = c;
     return age - open <= P.late;
+  }
+  /** (BallMatch tapMashed: SHOOT's quick strike pressed within MASHED.tap of the press before it.) */
+  private tapMashed() {
+    const list = this.pressed;
+    return list.length >= 2 && list[list.length - 1] - list[list.length - 2] <= MASHED.tap + 1e-6;
   }
   private mashed(now: number, slot: AttackSlot | string) {
     const list = this.pressed;

@@ -745,6 +745,39 @@ export function applyInkShell(material: THREE.MeshToonMaterial, relativeWidth: n
 }
 
 
+/** A ball match's sides on the bodies themselves: rings on the floor alone are easier to find than the fighters. A body's own `TeamTrim` - one set of
+ *  uniforms per body, shared by all of its materials, as its hit flash and its threat glow are - turns its ink and its
+ *  rim light toward its side's colour:
+ *  - `ink` (an ink hull, or a body's own flat outline mesh): the line drawn in `inkColor` by `amount.x` - a coloured
+ *    line, still a line. Installed between the ink's own patch and the lock's glow (ThreatOutline), so a locked
+ *    opponent's threat colour still wins, and a silhouette frame's ink is still black.
+ *  - `body` (a toon material, after applyToonShading): the stage's edge rim and its wash, and the anime finish's two rims
+ *    from behind, lit in `rimColor` by `amount.y`, each at the brightness it had - the same lights in the side's hue,
+ *    no new light. A technique's grade still takes the rim over. A translucent shell, which has no hull, carries its
+ *    side on this rim alone.
+ *  All zero, which is every body outside a ball match (render/ball/TeamTrim.ts sets them, and clears them), the
+ *  shader takes neither branch: the ink and the rims exactly as they were. */
+export interface TeamTrim { inkColor: { value: THREE.Color }; rimColor: { value: THREE.Color }; amount: { value: THREE.Vector2 } }
+export const teamTrim = (): TeamTrim => ({ inkColor: { value: new THREE.Color(0, 0, 0) }, rimColor: { value: new THREE.Color(0, 0, 0) }, amount: { value: new THREE.Vector2(0, 0) } });
+export function applyTeamTrim(material: THREE.Material, trim: TeamTrim, part: 'ink' | 'body') {
+  addShaderPatch(material, `look-team-trim-${part}-v1`, shader => {
+    shader.uniforms.uTrimInk = trim.inkColor; shader.uniforms.uTrimRim = trim.rimColor; shader.uniforms.uTrim = trim.amount;
+    shader.fragmentShader = 'uniform vec3 uTrimInk;\nuniform vec3 uTrimRim;\nuniform vec2 uTrim;\n' + shader.fragmentShader;
+    if (part === 'ink') {
+      shader.fragmentShader = replaceOnce(shader.fragmentShader, '#include <opaque_fragment>', 'if ( uTrim.x > 0.0 ) outgoingLight = mix( outgoingLight, uTrimInk, uTrim.x );\n#include <opaque_fragment>', 'team trim ink');
+      return;
+    }
+    shader.fragmentShader = replaceOnce(shader.fragmentShader, 'vec3 lookRimColor = mix( uRimColor, uLookTechColor, uLookTech );',
+      `vec3 lookRimColor = mix( uRimColor, uLookTechColor, uLookTech );
+	// The side's trim (applyTeamTrim): the rim in the side's colour, as bright as the stage's own.
+	if ( uTrim.y > 0.0 ) lookRimColor = mix( lookRimColor, uTrimRim * max( max( lookRimColor.r, lookRimColor.g ), lookRimColor.b ), uTrim.y * ( 1.0 - uLookTech ) );`, 'team trim rim');
+    shader.fragmentShader = replaceOnce(shader.fragmentShader, 'outgoingLight += ( uRigWarm * rigWarm + uRigCool * rigCool ) * uRig.z * rigBand * ( .6 + .4 * diffuseColor.rgb );',
+      `vec3 rigLight = uRigWarm * rigWarm + uRigCool * rigCool;
+		if ( uTrim.y > 0.0 ) rigLight = mix( rigLight, uTrimRim * max( max( rigLight.r, rigLight.g ), rigLight.b ), uTrim.y );
+		outgoingLight += rigLight * uRig.z * rigBand * ( .6 + .4 * diffuseColor.rgb );`, 'team trim rig rims');
+  });
+}
+
 export function applyAuthoredInk(material: THREE.MeshBasicMaterial) {
   addShaderPatch(material, 'look-authored-ink-v1', shader => {
     Object.assign(shader.uniforms, frameUniforms);

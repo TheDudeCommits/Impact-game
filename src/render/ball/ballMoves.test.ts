@@ -1,4 +1,4 @@
-import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import type {FighterId, PlayerState} from '../../game/types';
@@ -6,8 +6,11 @@ import {Fighter, FighterLibrary} from '../Fighter';
 import {clipKey} from '../clipMatch';
 import {rigOf} from '../../engine/client/retarget';
 import {base, loadRig} from '../../../tests/rigHarness';
-import {BALL_MOVES, ballMovesWanted, chosen, fitBallMove, forceBallMove, installBallMoves, loadBallMovesFrom, readPack, resetBallMoves, retimed} from './ballMoves';
+import {BALL_MOVES, READY_WAIT, ballMovesReady, ballMovesWanted, chosen, fitBallMove, forceBallMove, installBallMoves, loadBallMovesFrom, readPack, resetBallMoves, retimed} from './ballMoves';
 import {chooseBallMove, type BallMoveAsk, type BallMoveKey} from './ballMoveChoice';
+import {BallMatch} from '../../game/ball/BallMatch';
+import {SHOOT} from '../../game/ball/model';
+import {MOVES} from '../../game/moves';
 
 /** Ball modes, sports moves (render/ball/ballMoves.ts): the switch, the chooser, the shared file and
  *  its fits on the awkward bodies (the smallest, the biggest, a long coat, a cape, a two-handed weapon, a tail), through
@@ -128,4 +131,91 @@ describe('fitted to the bodies', () => {
       body.dispose();
     } finally { forceBallMove(null); resetBallMoves(before); }
   }, 60000);
+
+  // SHOOT's quick strike (model.ts SHOOT) is nobody's own clip, so it is drawn with a take on every page.
+  it('SHOOT\'s quick strike is drawn with a take without ?ballmoves - its contact on the quick strike\'s - and nothing else is', async () => {
+    await library.ensure(['kosho']);
+    const before = Fighter.transplant;
+    Fighter.transplant = undefined;
+    // (The tests before this one put the takes away: in hand again, as a ball room's loading has them - ballMovesReady.)
+    await loadBallMovesFrom(async () => readPack(await loadRig(FILE)));
+    const m = new BallMatch('goal-rush', {seed: 3, access: 'bots', practice: true});
+    m.add('k', 'kosho', 'K', false, 'red');
+    installBallMoves(() => ({view: m.view, ball: null}), false);
+    try {
+      const body = library.create({...base('kosho'), id: 'k'});
+      const swing: PlayerState = {...base('kosho'), id: 'k', action: 'heavy', actionStarted: 1, actionSeq: 3, actionDuration: SHOOT.duration, actionTime: 0, grounded: true};
+      // A light, and a heavy that is not SHOOT's tap (the FIGHT stance's, or one wound up): the body's own clip.
+      expect(Fighter.transplant!(body, {...swing, action: 'light', actionSeq: 1})).toBeUndefined();
+      expect(Fighter.transplant!(body, {...swing, actionSeq: 2})).toBeUndefined();
+      expect(Fighter.transplant!(body, {...swing, actionSeq: 2, strike: 'charge', charge: .4})).toBeUndefined();
+      // The tap, on the floor: the kick, timed by the quick strike - its blow's frame where the simulation's blow lands.
+      const kick = Fighter.transplant!(body, {...swing, strike: 'tap'});
+      expect(kick?.phase).toBe('-ball-GR.power');
+      expect(kick?.move.contacts[0]).toBe(SHOOT.contact);
+      const read = body.take({...swing, action: 'idle'}), fit = fitBallMove(read.scene, read.clips, 'GR.power', 'kosho')!;
+      expect(kick?.clip).toBe(retimed(fit.clip, fit.take.contact, SHOOT.contact / SHOOT.duration));
+      // (The take's own contact, moved: within a hundredth of the clip - 4 ms of the swing - of the simulation's.)
+      expect(Math.abs(Math.round(SHOOT.contact / SHOOT.duration * 100) / 100 * SHOOT.duration - SHOOT.contact)).toBeLessThan(.004);
+      // In the air: the volley. The key held on turns the same swing into the fighter's own move: their own clip again.
+      expect(Fighter.transplant!(body, {...swing, actionSeq: 4, strike: 'tap', grounded: false, y: 2, branch: 'airHeavy'})?.phase).toBe('-ball-GR.volley');
+      expect(Fighter.transplant!(body, {...swing, actionSeq: 4, strike: 'charge', grounded: false, y: 2, branch: 'airHeavy'})).toBeUndefined();
+      // Under the renderer's feel pass ('snap', the game's default) a melee swing is drawn on
+      // a clock warped round the move it reads for the body - its own air strike here, whose blow falls inside the quick
+      // strike's 0.4 s - so the take is laid where that clock stands at the quick strike's blow (filmed: the volley's foot
+      // had been fastest 36-44 ms after the ball left).
+      const style = Fighter.animStyle;
+      Fighter.animStyle = 'snap';
+      try {
+        const air: PlayerState = {...swing, actionSeq: 5, strike: 'tap', grounded: false, y: 2, branch: 'airHeavy'};
+        const volley = Fighter.transplant!(body, air), own = body.movePlayed(air), fitAir = fitBallMove(read.scene, read.clips, 'GR.volley', 'kosho')!;
+        const drawn = Fighter.animeWarp(SHOOT.contact, own.contacts, SHOOT.duration, .05) / SHOOT.duration;
+        expect(own.contacts[0]).toBeLessThan(SHOOT.duration - .1);
+        expect(drawn).toBeLessThan(SHOOT.contact / SHOOT.duration - .02);
+        expect(volley?.clip).toBe(retimed(fitAir.clip, fitAir.take.contact, drawn));
+        // (On the floor Kosho's heavy lands its blow past the swing's end: no warp, the take as it was.)
+        expect(Fighter.transplant!(body, {...swing, actionSeq: 6, strike: 'tap'})?.clip).toBe(retimed(fit.clip, fit.take.contact, SHOOT.contact / SHOOT.duration));
+      } finally { Fighter.animStyle = style; }
+      body.dispose();
+    } finally { resetBallMoves(before); }
+  }, 60000);
+  it('with no take to draw it (the file missing), the quick strike is the fighter\'s own heavy, its blow moved onto the quick strike\'s', async () => {
+    await library.ensure(['kosho']);
+    const before = Fighter.transplant;
+    Fighter.transplant = undefined;
+    resetBallMoves(undefined);
+    await loadBallMovesFrom(async () => { throw new Error('no file'); });
+    const m = new BallMatch('sky-spike', {seed: 3, access: 'bots', practice: true});
+    m.add('k', 'kosho', 'K', false, 'red');
+    installBallMoves(() => ({view: m.view, ball: null}), false);
+    try {
+      const body = library.create({...base('kosho'), id: 'k'});
+      const swing: PlayerState = {...base('kosho'), id: 'k', action: 'heavy', strike: 'tap', actionStarted: 1, actionSeq: 3, actionDuration: SHOOT.duration, actionTime: 0, grounded: true};
+      const own = Fighter.transplant!(body, swing), made = MOVES.kosho.heavy, clip = body.take({...swing, strike: undefined}).clip!;
+      expect(own?.phase).toBe('-ball-own');
+      expect(own?.move.contacts[0]).toBe(SHOOT.contact);
+      expect(own?.clip).toBe(retimed(clip, made.contacts[0] / made.duration, SHOOT.contact / SHOOT.duration));
+      expect(own?.clip.duration).toBe(clip.duration);
+      body.dispose();
+    } finally { resetBallMoves(before); await loadBallMovesFrom(async () => readPack(await loadRig(FILE))); }
+  }, 60000);
+});
+
+// Every ball room now fetches the file for SHOOT's quick strike; a slow one must not hold its loading.
+describe('the loading', () => {
+  it('a file that never comes holds a ball room\'s loading READY_WAIT at the most, when only the quick strike wants it', async () => {
+    const before = Fighter.transplant;
+    resetBallMoves(before);
+    void loadBallMovesFrom(() => new Promise(() => {}));
+    installBallMoves(() => undefined, false);
+    vi.useFakeTimers();
+    try {
+      let done = false;
+      void ballMovesReady().then(() => { done = true; });
+      await vi.advanceTimersByTimeAsync(READY_WAIT - 50);
+      expect(done).toBe(false);
+      await vi.advanceTimersByTimeAsync(100);
+      expect(done).toBe(true);
+    } finally { vi.useRealTimers(); resetBallMoves(before); }
+  });
 });

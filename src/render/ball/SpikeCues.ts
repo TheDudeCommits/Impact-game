@@ -10,8 +10,12 @@ import type {FighterId, PlayerState} from '../../game/types';
  *  (`net` metres either side) with the ball over `ball` metres. A set is met at the top of the jump with the ball
  *  `reach` metres over the jump's top (BallBrain APEX_REACH); the swing goes `swing` seconds short of the top and lands
  *  `contact` after it - so the jump goes that long, plus the jump's own rise, before the ball gets there. Under a low
- *  ball (a QUICK SET) the hitter meets it at `low` metres on the way up, `lowLead` seconds after leaving the floor. */
-export const SPIKE_TIMING = {apex: .92, net: 3.6, ball: 3.6, reach: .9, swing: .1, contact: .23, low: 4, lowLead: .15} as const;
+ *  ball (a QUICK SET) the hitter meets it at `low` metres on the way up, `lowLead` seconds after leaving the floor.
+ *  (`contact` is SHOOT's tap, the swing everyone throws - the ball away 8 ticks after the
+ *  room hears the press, model.ts SHOOT. It was 0.23, the charged spike's - a fighter's own air strike, 0.22 to 0.33
+ *  s - which no cue can be for every fighter at once; a tap on that beat met the set a tenth of a second before it
+ *  came down to the hand.) */
+export const SPIKE_TIMING = {apex: .92, net: 3.6, ball: 3.6, reach: .9, swing: .1, contact: .133, low: 4, lowLead: .15} as const;
 /** How the cues are shown: the JUMP ring closes on the ball over `jumpLead` seconds; the glint flares for `flare` s; a
  *  DIVE chevron shows for a hard ball (`hard` m/s and over) whose line passes `diveFrom`-`diveTo` metres from the body -
  *  beyond its own reach, inside the dive's (BallMatch DIG_DIVE) - in the next `diveWithin` seconds. */

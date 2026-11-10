@@ -4,9 +4,10 @@ import type { PlayerState } from '../game/types';
 import { phone, tablet } from './device';
 import { coolSeconds, METER_HZ, spotStyle, TOUCH_LAYOUT, touchMeters, type ClusterButton } from './touchLayout';
 import { TouchArt } from './touchArt';
-import { BOOST_HOLD_MS, BOOST_REPRESS_MS, SPORT_GLYPHS, SPORT_LAYOUT, SPORT_SLOTS, SUPER_CHARGING, sportSet, type SportFace, type SportSet, type SportSlot } from './sportTouch';
+import { BOOST_HOLD_MS, BOOST_REPRESS_MS, SPORT_GLYPHS, SPORT_SLOTS, SPORT_LAYOUT, sportSet, type SportFace, type SportSet, type SportSlot } from './sportTouch';
 import type { BallView } from '../game/ball/model';
 import { hudView } from '../ui/hud/hudView';
+import { chargeFull, ownCharge } from '../render/ball/ownShot';
 import '../ui/handheld.css';
 
 export type TouchButton = TouchAction | 'area' | 'guard' | 'pause' | 'emote' | 'boost';
@@ -124,7 +125,7 @@ type Finger = { role: 'stick' | 'look' | TouchButton; x: number; y: number; node
 /** One of the ball modes' buttons (input/sportTouch.ts): its face and its label, both written only when they change. */
 function sportHtml(slot: SportSlot) {
   return `<button type="button" tabindex="-1" class="tc-btn tc-sp tc-sp-${slot}" data-slot="${slot}" hidden><span class="tc-face"><svg class="tc-glyph" viewBox="0 0 32 32" aria-hidden="true"></svg>${slot === 'main' || slot === 'super' ? '<span class="ik-art"></span>' : ''}</span>`
-    + `${slot === 'main' || slot === 'pass' ? '<i class="tc-wipe"></i>' : ''}${slot === 'super' || slot === 'run' ? '<i class="tc-ring"></i>' : ''}<b></b></button>`;
+    + `${slot === 'main' || slot === 'pass' ? '<i class="tc-wipe"></i>' : ''}${slot === 'super' || slot === 'run' || slot === 'main' ? '<i class="tc-ring"></i>' : ''}<b></b></button>`;
 }
 /** The page's own box, CSS pixels: what the HUD and these controls are laid out in (innerWidth can be wider on a phone,
  *  see handheld.css). As of the last resize (ui/viewport.ts): read every frame, clientWidth laid the page out each time. */
@@ -168,7 +169,10 @@ export class TouchControls {
   private readonly sportFaces = new Map<SportSlot, string>();
   private sportOn = false;
   private sportCool = { light: new CooldownLeft(), heavy: new CooldownLeft() };
+  private ball?: BallView;
   private self?: PlayerState;
+  /** SHOOT's charge on its button's ring (`shotRing`): the share shown last, whether it was full, until when (ms) it stays. */
+  private ringShown = -1; private ringFull = false; private ringUntil = -Infinity;
   /** BOOST: when it last pressed for a dash, and the stick eased under the boost's hold for a moment so that lifting BOOST
    *  stops it (the kernel ends a boost when the stick falls under half: simulation.ts SportFeel.boost). */
   private boostPressAt = 0;
@@ -245,6 +249,7 @@ export class TouchControls {
     if (this.easeFrames > 0) this.easeFrames--;
     this.input.touchHold(this.forward * ease, this.right * ease, guard, jumpHeld);
     if (this.wheelUntil && performance.now() > this.wheelUntil) this.openWheel(false);
+    if (this.sportOn) this.shotRing(now);
     // A mode's HUD mounts its pieces as the fight begins, and the plaque's text changes its width.
     if (performance.now() - this.placedAt > 500) this.placeTop();
   }
@@ -312,7 +317,7 @@ export class TouchControls {
   }
   /** The ball modes' set on or off, and each of its buttons' face, label and press, written only when they change. */
   private sports(ball: BallView | undefined, self: PlayerState, superReady: boolean) {
-    const on = !!ball;
+    const on = !!ball; this.ball = ball;
     if (on !== this.sportOn) {
       this.sportOn = on; this.root.classList.toggle('tc-sports', on);
       if (!on) { for (const node of this.sport.values()) node.hidden = true; this.sportFaces.clear(); delete this.root.dataset.sport; delete this.root.dataset.stance; }
@@ -320,27 +325,26 @@ export class TouchControls {
     if (!ball) return;
     const fight = !!hudView.ballLock();
     this.root.dataset.sport = ball.mode; this.root.dataset.stance = fight ? 'fight' : 'ball';
-    const set: SportSet = sportSet(ball, self.id, fight, superReady);
+    const set: SportSet = sportSet(ball, self.id, fight, superReady, self);
     for (const slot of SPORT_SLOTS) this.sportFace(slot, set[slot]);
   }
   private sportFace(slot: SportSlot, face: SportFace | null) {
-    const key = face ? `${face.action}|${face.label}|${face.glyph}|${face.hold ? 1 : 0}|${face.charging ? 1 : 0}` : '';
+    const key = face ? `${face.action}|${face.label}|${face.glyph}|${face.hold ? 1 : 0}|${face.held ? 1 : 0}` : '';
     if (this.sportFaces.get(slot) === key) return;
-    // A button under a finger keeps what it is until the finger lifts (SUPER charging up under a thumb, a stance turning).
+    // A button under a finger keeps what it is until the finger lifts (a stance turning, the moment's button changing).
     const node = this.sport.get(slot)!;
     if (this.sportFaces.has(slot) && [...this.fingers.values()].some(f => f.node === node)) return;
     this.sportFaces.set(slot, key);
     node.hidden = !face;
     if (!face) return;
-    const press = face.charging ? '' : face.hold ? 'boost' : face.action;
-    if (press) node.dataset.tc = press; else delete node.dataset.tc;
-    node.dataset.face = face.glyph; node.classList.toggle('charging', !!face.charging);
-    node.setAttribute('aria-label', face.label || 'SUPER CHARGING');
+    node.dataset.tc = face.hold ? 'boost' : face.action;
+    // The shot is held as its key is: Input.touchKey, down with the finger and up with it.
+    if (face.held) node.dataset.held = ''; else delete node.dataset.held;
+    node.dataset.face = face.glyph;
+    node.setAttribute('aria-label', face.label);
     const glyph = node.querySelector('svg.tc-glyph');
     if (glyph) glyph.innerHTML = face.glyph === 'art' ? SPORT_GLYPHS.super : SPORT_GLYPHS[face.glyph];
     node.querySelector('b')!.textContent = face.label;
-    // SUPER short of its charge is a small ring where it will be (sportTouch.ts SUPER_CHARGING), not a button.
-    if (slot === 'super') { const spot = face.charging ? { ...SPORT_LAYOUT.super, d: SUPER_CHARGING } : SPORT_LAYOUT.super; for (const [name, value] of Object.entries(spotStyle(spot))) node.style.setProperty(name, value); }
   }
   /** The set's meters: the shot's and the pass's recovery wipes, SUPER's charge, the boost bar round BOOST (lit while
    *  boosting), the fighter's own art on HEAVY and ULT in a fight. */
@@ -349,10 +353,26 @@ export class TouchControls {
     const set = (node: HTMLElement, name: string, value: number) => { const text = value.toFixed(2); if (node.style.getPropertyValue(name) !== text) node.style.setProperty(name, text); };
     const flag = (node: HTMLElement, name: string, on: boolean) => { if (node.classList.contains(name) !== on) node.classList.toggle(name, on); };
     set(main, '--cool', this.sportCool.heavy.of(m.cool.heavy)); flag(main, 'cooling', m.cool.heavy > .05);
+    // (SHOOT's ring in the side's colour: shotRing.)
+    const side = this.ball?.seats.find(seat => seat.id === self.id)?.team ?? '';
+    if (main.dataset.side !== side) main.dataset.side = side;
     set(pass, '--cool', this.sportCool.light.of(m.cool.light)); flag(pass, 'cooling', m.cool.light > .05);
     set(sup, '--charge', m.ultimate); flag(sup, 'ready', m.ultimate >= 1);
     const max = Math.max(1, self.maxStamina ?? 100);
     set(run, '--charge', Math.max(0, Math.min(1, (self.stamina ?? 0) / max))); flag(run, 'boosting', !!self.boost); flag(run, 'spent', (self.stamina ?? 0) < 20);
+  }
+  /** SHOOT's charge on the shot's own button (the HUD's readout stands aside on a phone):
+   *  its ring, in the side's colour, fills over the fighter's own wind-up while the finger stays down past the split, and
+   *  is full and lit as the blow lands; nothing on a tap. Every frame, from the page's own prediction (render/ball/
+   *  ownShot.ts), kept a breath after the blow as the HUD's is. Nothing new over the play: the ring hugs the button. */
+  private shotRing(now: number) {
+    const main = this.sport.get('main')!, c = this.self ? ownCharge(this.self.id) : undefined;
+    if (c) { this.ringFull = chargeFull(c); this.ringShown = this.ringFull ? 1 : c.charge; this.ringUntil = now + 320; }
+    else if (now >= this.ringUntil) { this.ringShown = -1; this.ringFull = false; }
+    const on = this.ringShown >= 0, text = on ? this.ringShown.toFixed(2) : '0.00';
+    if (main.style.getPropertyValue('--charge') !== text) main.style.setProperty('--charge', text);
+    if (main.classList.contains('charging') !== on) main.classList.toggle('charging', on);
+    if (main.classList.contains('full') !== this.ringFull) main.classList.toggle('full', this.ringFull);
   }
   private meter(id: TouchButton, name: string, value: number) { const node = this.buttons.get(id)!, text = value.toFixed(2); if (node.style.getPropertyValue(name) !== text) node.style.setProperty(name, text); }
   private flag(id: TouchButton, name: string, on: boolean) { const node = this.buttons.get(id)!; if (node.classList.contains(name) !== on) node.classList.toggle(name, on); }
@@ -372,6 +392,7 @@ export class TouchControls {
     for (const node of this.buttons.values()) node.classList.remove('down');
     for (const node of this.sport.values()) node.classList.remove('down');
     this.easeFrames = 0;
+    this.input.touchKey('heavy', false);
     this.input.touchHold(0, 0, false, false); this.openWheel(false);
   }
   private openWheel(open: boolean) { this.wheel.hidden = !open; this.wheelUntil = open ? performance.now() + 3000 : 0; this.buttons.get('emote')?.classList.toggle('down', open); }
@@ -405,6 +426,8 @@ export class TouchControls {
     if (button === 'area') { this.aimStart(id, touch); return; }
     // BOOST (the ball modes): a dash, which on the floor runs on as the boost; held, update() keeps it going.
     if (button === 'boost') { this.boostPressAt = performance.now(); this.easeFrames = 0; this.input.touchPress('dash'); return; }
+    // The ball modes' shot (sportTouch.ts `held`): its key goes down with the finger, as a keyboard's does.
+    if (button === 'heavy' && node?.dataset.held !== undefined) this.input.touchKey('heavy', true);
     this.input.touchPress(button);
   }
   private aimStart(id: number, touch: Touch) {
@@ -471,6 +494,8 @@ export class TouchControls {
       if (finger.role === 'area') this.aimEnd(touch.identifier, event.type === 'touchcancel');
       if (finger.role === 'stick') { this.forward = 0; this.right = 0; this.stickNode.classList.remove('on'); }
       else if (finger.role !== 'look' && finger.role !== 'emote' && ![...this.fingers.values()].some(f => f.node === finger.node)) finger.node?.classList.remove('down');
+      // The shot's key comes up with the last finger on it.
+      if (finger.role === 'heavy' && ![...this.fingers.values()].some(f => f.role === 'heavy')) this.input.touchKey('heavy', false);
       // BOOST lifted after a hold stops the boost; a quick tap's burst runs on while the stick holds (sportTouch.ts).
       if (finger.role === 'boost' && performance.now() - (finger.at ?? 0) >= BOOST_HOLD_MS && this.self?.boost && ![...this.fingers.values()].some(f => f.role === 'boost')) this.easeFrames = 2;
     }

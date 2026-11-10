@@ -8,6 +8,7 @@ const STANCE: Record<string, { height: number; floor: number }> = {
   '/assets/survival/enemies/gorai.glb': { height: 3.38433, floor: -0.22921 }, // Gorai (gorai)
   '/assets/survival/enemies/gorai-wyrm.glb': { height: 3.30384, floor: -0.77641 }, // Gorai's Storm Wyrm (gorai-wyrm)
   '/assets/survival/enemies/nightfall.glb': { height: 1.83642, floor: -0.05874 }, // Nightfall (nightfall)
+  '/assets/survival/enemies/barrow.glb': { height: 2.47525, floor: -0.20813 }, // Barrow (barrow): his old idle's box (his model unchanged; the new stance stands taller)
 };
 
 /** The box `url`'s previous idle measured (height and floor, in the file's units), or undefined to measure it. */

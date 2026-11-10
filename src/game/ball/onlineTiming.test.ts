@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BallMatch, SEEN } from './BallMatch';
-import { BALL_ID, GOAL_RULES, SPIKE_RULES } from './model';
+import { BALL_ID, GOAL_RULES, SHOOT, SPIKE_RULES } from './model';
 import { MOVES, jumpArc } from '../moves';
 import type { PlayerInput } from '../types';
 
@@ -48,8 +48,10 @@ const SEQ = { n: 1000 };
 const send = (m: BallMatch, id: string, lag: number, more: Partial<PlayerInput> = {}) => m.submit(id, { seq: ++SEQ.n, moveX: 0, moveZ: 0, yaw: 0, view: m.sim.serverTime - lag, targetId: BALL_ID, ...more });
 
 /** Goal Rush: a team-mate's pass rolled at red-1 (Gorai, standing at z -6, facing the far goal) at 12 m/s, red-1's page
- *  drawing it `lag` s behind the room; the heavy pressed as the bots time it, on the ball the page draws. */
-function strikeOnline(lag: number, compensate: boolean) {
+ *  drawing it `lag` s behind the room; the heavy pressed as the bots time it, on the ball the page draws.
+ *  (SHOOT held on - the fighter's own heavy wound up, the half-second blow this test times; `tap`, SHOOT
+ *  tapped instead - the quick strike, model.ts SHOOT - timed by its own blow, a tick over its contact.) */
+function strikeOnline(lag: number, compensate: boolean, tap = false) {
   const m = new BallMatch('goal-rush', { seed: 3, access: 'host', fillBots: false });
   m.add('red-1', 'gorai', 'Red', false, 'red');
   m.add('blue-1', 'konta', 'Blue', false, 'blue');
@@ -60,14 +62,14 @@ function strikeOnline(lag: number, compensate: boolean) {
   m.sim.place('red-1', { x: 0, y: 0, z: -6 }, 0);
   for (let i = 0; i < 30; i++) { send(m, 'red-1', lag); m.step(1 / 60); }
   Object.assign(m.ball, { x: 0, y: GOAL_RULES.ballRadius, z: 10, vx: 0, vy: 0, vz: -12, heat: 0, lastId: 'red-1', lastTeam: 'red' });
-  const view = page(m), heavy = MOVES.gorai.heavy, lands = heavy.contacts[0], lunge = .6 * Math.min(3, (heavy.lunge ?? 3.2) * (lands - (heavy.lungeDelay ?? 0)));
+  const view = page(m), heavy = tap ? {contacts: [SHOOT.contact + 1 / 60], lunge: undefined, lungeDelay: undefined} : MOVES.gorai.heavy, lands = heavy.contacts[0], lunge = .6 * Math.min(3, (heavy.lunge ?? 3.2) * (lands - (heavy.lungeDelay ?? 0)));
   let pressed = false;
   for (let i = 0; i < 160; i++) {
     view.keep();
     const p = m.sim.actors.get('red-1')!.state, b = view.drawn(lag), d = Math.hypot(b.x - p.x, b.y - (p.y + 1), b.z - p.z), closing = -b.vz;
     const press = !pressed && (d - 2.3 - lunge) / Math.max(1, closing) <= lands;
     if (press) pressed = true;
-    send(m, 'red-1', lag, press ? { attack: 'heavy' } : {});
+    send(m, 'red-1', lag, press ? { attack: 'heavy', heavyHeld: !tap } : pressed && !tap ? { heavyHeld: true } : {});
     m.step(1 / 60);
   }
   return m.view.events.filter(e => e.kind === 'strike' && e.actorId === 'red-1');
@@ -83,6 +85,17 @@ describe('online ball rooms: the timing skills judged as the page drew them (SEE
       expect(online.length).toBe(1);
       expect(online[0].perfect).toBe(true);
     }
+  });
+  // SHOOT's quick strike lands an eighth of a second after its press - less room for the page's lag than
+  // the half-second heavy had, judged all the same where the page drew the ball.
+  it('a tapped PERFECT STRIKE timed on a page up to a quarter second behind the room is perfect, as on this device', () => {
+    expect(strikeOnline(0, false, true).map(e => [e.shot, e.perfect])).toEqual([['drive', true]]);
+    for (const lag of [.06, .12, .2, .28]) {
+      const online = strikeOnline(lag, true, true);
+      expect(online.map(e => [e.shot, e.perfect]), `lag ${lag}`).toEqual([['drive', true]]);
+    }
+    // (Judged against the room's own present instead, the ball is past the blow by then.)
+    expect(strikeOnline(.2, false, true)[0]?.perfect).toBeUndefined();
   });
   it('bounds the lag a page may claim: at most SEEN.most, never from a view older than one already heard, a jump held to its steady value', () => {
     const m = new BallMatch('goal-rush', { seed: 3, access: 'host', fillBots: false });

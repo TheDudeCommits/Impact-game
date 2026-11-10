@@ -17,21 +17,23 @@ export const MADE_HERE: readonly { what: string; how: string }[] = [
 export interface Credit { work: string; by?: string; sources: readonly (readonly [label: string, url: string])[]; licence: string; licenceUrl?: string; changes?: string; files: readonly string[] }
 const CC_BY_4 = 'https://creativecommons.org/licenses/by/4.0/', CC_BY_3 = 'https://creativecommons.org/licenses/by/3.0/', CC0 = 'https://creativecommons.org/publicdomain/zero/1.0/';
 
-/** The fighters' files whose stance, walk, run, dash, jump, fall, tumble, knockback, get-up or death fall (or a strike or a
- *  rush cut) is cut from the Universal Animation Library: its credit stays while any of them ships. */
+/** The fighters' files whose stance, walk, run, dash, jump, fall, tumble, knockback, get-up or death fall (or a strike, a
+ *  rush cut or an idle's fidget) is cut from the Universal Animation Library, and the survival bosses' whose moves are: its
+ *  credit stays while any of them ships. */
 const UAL_CUTS = [
   'akagane-tr1', 'akaito-tr1', 'akayuri-awakened-tr1', 'akayuri-tr1', 'amagoi-tr1', 'ampere-awakened-tr1',
-  'ampere-tr1', 'aqrab-tr1', 'aquilo-tr1', 'asahi-tr1', 'bonsho-tr1', 'bruin-tr1', 'chohan-tr1', 'gaku-awakened-tr1',
+  'ampere-tr1', 'aqrab-tr1', 'aquilo-tr1', 'asahi-tr1', 'barrow-tr1', 'bonsho-tr1', 'bruin-tr1', 'chohan-tr1', 'gaku-awakened-tr1',
   'gaku-tr1', 'gaunt-tr1', 'gosu-tr1', 'hagure-awakened-tr1', 'hagure-tr1', 'hakushi-form-tr1', 'hakushi-tr1',
   'hikui-awakened-tr1', 'hikui-tr1', 'hinomoto-tr1', 'hisame-px1', 'hisame-pxrush1', 'irbis-form-tr1', 'irbis-tr1',
-  'kinu-tr1', 'koko-spirit-tr1', 'koko-tr1', 'kubiwa-px-tr1', 'kuon-px1', 'kusushi-form-tr1', 'kusushi-tr1',
-  'kuzu-tr1', 'lanthorn-awakened-tr1', 'lanthorn-tr1', 'levin-tr1', 'magatsu-awakened-tr1', 'magatsu-tr1',
-  'minase-form-tr1', 'minase-tr1', 'mizuhiki-tr1', 'murex-tr1', 'oro-spirit-tr1', 'oro-tr1', 'ouga-px1', 'psyche-tr1',
+  'kenzo-awakened-tr1', 'kenzo-idleb1', 'kenzo-rush1', 'kenzo-tr1', 'kinu-tr1', 'koko-spirit-tr1', 'koko-tr1', 'kubiwa-px-tr1',
+  'kuon-px1', 'kusushi-form-tr1', 'kusushi-tr1', 'kuzu-tr1', 'lanthorn-awakened-tr1', 'lanthorn-tr1', 'levin-tr1',
+  'lucy-pxidleb1', 'magatsu-awakened-tr1', 'magatsu-tr1', 'minase-form-tr1', 'minase-tr1', 'mizuhiki-tr1', 'murex-tr1',
+  'nigo-awakened-tr1', 'oro-spirit-tr1', 'oro-tr1', 'ouga-px1', 'psyche-tr1',
   'pyroclast-tr1', 'rakucho-px-awakened-tr1', 'rakucho-px-tr1', 'rook-awakened-tr1', 'rotfalke-awakened-tr1',
   'rotfalke-tr1', 'sashigane-tr1', 'senko-tr1', 'setsu-tr1', 'shakudo-px1', 'shidare-tr1', 'shijima-form-tr1',
   'shijima-tr1', 'shirokane-tr1', 'strix-tr1', 'suzuran-px1', 'svanhild-tr1', 'tancho-tr1', 'tempo-tr1', 'tokan-tr1',
   'ume-form-tr1', 'ume-tr1', 'unari-px1', 'wataame-tr1', 'wukong-tr1', 'yodaka-tr1'
-].map(name => `assets/fighters/${name}.glb`);
+].map(name => `assets/fighters/${name}.glb`).concat(['barrow', 'gandang', 'jinlin'].map(name => `assets/survival/enemies/${name}.glb`));
 
 /** The works whose licences ask for a credit (the LICENSE files beside each kit under public/assets/environment,
  *  environment/br/parts.json, src/audio/data/ambience.json). */

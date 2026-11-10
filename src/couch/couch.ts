@@ -171,7 +171,7 @@ export class Couch {
       }
     }
     // Out of the fight, or working its own shop on a split screen (seats.ts menuOpen): the fighter stands still.
-    if (!this.live || seat.menuOpen) return { ...command, moveX: 0, moveZ: 0, attack: undefined, jump: false, jumpHeld: false, dash: false, guard: false, awaken: false };
+    if (!this.live || seat.menuOpen) return { ...command, moveX: 0, moveZ: 0, attack: undefined, jump: false, jumpHeld: false, heavyHeld: false, dash: false, guard: false, awaken: false };
     return command;
   }
   /** A split screen's frame, before its halves are filmed: each pad seat's right stick turns and tilts its own view, as

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {arenaMood,crowdHype,goalNetHit,goalNetPower} from './hype';
+import {netSheer} from './ballCamChoice';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {BALL_TEAM_COLOURS,GOAL_RULES,SPIKE_RULES} from '../../game/ball/model';
 import type {StageId} from '../../game/stages';
@@ -267,8 +268,9 @@ export class BallArena {
       }
       if(this.arena==='sky-court'){
         // The cherry trees at the rim's corners, in place of the ones drawn in code. Those on the sun's side do not cast:
-        // at sunset their shade lay across half the court.
-        for(const [x,z] of BallArena.TREES)place.push(['own/ball-blossom-tree',{x:x+Math.sign(x)*.8,z:z+Math.sign(z)*.8,y:-.5,height:9,rot:Math.atan2(x,z)+.6,shadow:x<0}]);
+        // at sunset their shade lay across half the court. (The flag was the wrong way round - the sun
+        // stands at -x, and it was those two that cast.)
+        for(const [x,z] of BallArena.TREES)place.push(['own/ball-blossom-tree',{x:x+Math.sign(x)*.8,z:z+Math.sign(z)*.8,y:-.5,height:9,rot:Math.atan2(x,z)+.6,shadow:x>0}]);
       }else if(this.arena==='tide-court'){
         // Palms leaning over the sand round the court, and places to sit out of the sun down the open side.
         for(const [x,z,r,h] of [[-23,-25,.4,13],[24,-27,2.2,15],[-25,25,-1.1,14],[23,27,3.4,12],[-29,-2,1.6,16],[30,4,-.6,14],[-21,-13,2.9,11],[26,15,.9,12]] as const)place.push(['own/ball-palm-tree',{x,z,y:-.2,height:h,rot:r}]);
@@ -1037,14 +1039,14 @@ export class BallArena {
     mesh.add([-NX,0,0],[NX,0,0],[NX,NH,0],[-NX,NH,0],{uv:[-NX,0,NX,NH]});
     const material=new THREE.ShaderMaterial({
       name:'Sky Court net',transparent:true,depthWrite:false,side:THREE.DoubleSide,forceSinglePass:true,fog:true,
-      uniforms:fogged({uTime:this.time}),
+      uniforms:fogged({uTime:this.time,uSheer:netSheer}),
       vertexShader:`uniform float uTime;varying vec2 vUv;
         #include <fog_pars_vertex>
         void main(){vUv=uv;vec3 p=position;p.z+=sin(uTime*1.6+p.x*.7)*.03*sin(clamp(p.y/${num(NH)},0.,1.)*3.14159);
           vec4 mvPosition=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mvPosition;
           #include <fog_vertex>
         }`,
-      fragmentShader:`varying vec2 vUv;
+      fragmentShader:`uniform float uSheer;varying vec2 vUv;
         #include <fog_pars_fragment>
         void main(){
           // A woven rattan net, square, honey-coloured, black tape top and bottom.
@@ -1056,7 +1058,9 @@ export class BallArena {
           float tape=step(${num(NH-.13)},vUv.y)+step(vUv.y,.07);
           float side=1.-smoothstep(.035,.06,abs(abs(vUv.x)-${num(R.courtHalfX)}));
           float white=clamp(tape+side,0.,1.);
-          float a=max(cord*.92,white);
+          // (The COURT-SIDE camera looks at the far court through the net (SpikeCam, ballCamChoice.ts netSheer):
+          // for it the weave is drawn at about a quarter of its opacity and the tapes at three quarters; at 0, the net as it was.)
+          float a=max(cord*.92*(1.-.74*uSheer),white*(1.-.25*uSheer));
           if(a<.02)discard;
           gl_FragColor=vec4(mix(vec3(.62,.42,.2)*(.8+.2*sin(vUv.x*40.)),vec3(.02,.018,.02),white),a);
           #include <fog_fragment>

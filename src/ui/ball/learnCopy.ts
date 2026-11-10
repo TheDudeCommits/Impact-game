@@ -75,7 +75,8 @@ export function learnAsk(v: LessonView, d: LearnDevice): string {
   switch (v.step) {
     case 'gr-run': return d.device === 'touch' ? 'HOLD BOOST AND PUSH THE STICK' : 'BOOST ON THE RUN · THE GOLD BAR';
     case 'gr-pass': return 'FACE YOUR TEAM-MATE · THE PASS FINDS THEM';
-    case 'gr-shoot': return v.pops ? 'YOUR SHOOT POPS A STILL BALL UP · MEET THE PASS AS THE BAR FILLS' : d.device === 'touch' ? 'THE GOAL IS BEHIND THE BALL · DRAG TO AIM' : 'THE GOAL IS BEHIND THE BALL · AIM WITH THE VIEW';
+    // (SHOOT's two ways - model.ts SHOOT - in the one line; the goal behind the ball is the setup's to show.)
+    case 'gr-shoot': return v.pops ? 'YOUR SHOOT POPS A STILL BALL UP · MEET THE PASS AS THE BAR FILLS' : 'TAP TO SHOOT · HOLD TO CHARGE';
     case 'gr-perfect': return v.firstTime ? 'MEET THE PASS AS IT COMES' : 'PERFECT STRIKE · PRESS AS THE BAR FILLS';
     case 'gr-header': return 'HEADER · JUMP AS THE BAR FILLS';
     case 'gr-tackle': return fight ? 'A TACKLE WINS THE BALL' : 'LOCK ON THE ONE WITH THE BALL';

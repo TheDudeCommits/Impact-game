@@ -2,7 +2,7 @@ import type { AttackSlot, PlayerInput } from './game/types';
 import { GamepadControls, type InputMode, type PadFamily, type UiAction } from './input/gamepad';
 import { Rumble, type Actuator, type Pulse } from './input/rumble';
 import { TouchHaptics } from './input/haptics';
-import { ACTIONS, BINDINGS_EVENT, boundTo, heldBinding, isCapturingBinding, pauseKey, type BindingAction } from './input/bindings';
+import { ACTIONS, BINDINGS_EVENT, boundTo, getBindings, heldBinding, isCapturingBinding, pauseKey, type BindingAction } from './input/bindings';
 /** How the menu key came: see InputController.onMenu. */
 export type MenuVia='menu'|'back'|'pause';
 import { touchFirst } from './input/device';
@@ -46,6 +46,9 @@ export class Input {
   private padRight=0;
   private padGuard=false;
   private padJumpHeld=false;
+  /** The heavy held down on the pad (the keyboard's is read off its keys, and the touch set's SHOOT joins them: touchKey):
+   *  the ball rooms' SHOOT is charged by holding it (PlayerInput.heavyHeld). */
+  private padHeavyHeld=false;
   /** The on-screen stick, read where the pad's left stick is, and the held buttons (TouchControls.update). */
   private touchForward=0;
   private touchRight=0;
@@ -141,7 +144,7 @@ export class Input {
     else if(phase==='end')this.releaseAim('touch');
     else if(this.aim.view.source==='touch')this.aim.cancel();
   }
-  clear(){this.aim.cancel();this.aimPoint=undefined;this.keys.clear();this.attack=undefined;this.jump=false;this.dash=false;this.awaken=false;this.padForward=0;this.padRight=0;this.padGuard=false;this.padJumpHeld=false;this.touchForward=0;this.touchRight=0;this.touchGuard=false;this.touchJumpHeld=false;this.pad.reset();}
+  clear(){this.aim.cancel();this.aimPoint=undefined;this.keys.clear();this.attack=undefined;this.jump=false;this.dash=false;this.awaken=false;this.padForward=0;this.padRight=0;this.padGuard=false;this.padJumpHeld=false;this.padHeavyHeld=false;this.touchForward=0;this.touchRight=0;this.touchGuard=false;this.touchJumpHeld=false;this.pad.reset();}
   /** The on-screen stick ([forward, right], as the pad's left stick reads after its deadzone) and held buttons, each
    *  frame they are up (input/touch.ts). */
   touchHold(forward:number,right:number,guard:boolean,jumpHeld:boolean){this.touchForward=forward;this.touchRight=right;this.touchGuard=guard;this.touchJumpHeld=jumpHeld;}
@@ -150,6 +153,13 @@ export class Input {
     if(!this.enabled||isCapturingBinding())return;
     if(action==='jump'&&this.onInteract()){this.clear();return;}
     if(action==='jump')this.jump=true;else if(action==='dash')this.dash=true;else if(action==='awaken')this.awaken=true;else if(action==='target')this.onTarget();else this.attack=action;
+  }
+  /** An on-screen button held down and let go, as its key is (input/touch.ts: the ball modes' SHOOT, for a rule that reads
+   *  how long it is held): the action's first key joins the held keys while the finger is down, so whatever reads the
+   *  key held reads the button held. The press itself is touchPress's. */
+  touchKey(action:BindingAction,down:boolean){
+    const code=getBindings().keyboard[action][0];if(!code)return;
+    if(down&&this.enabled&&!isCapturingBinding())this.keys.add(code);else this.keys.delete(code);
   }
   /** A drag on the free right half, CSS pixels: the mouse's turn (see TOUCH_LOOK). */
   touchLook(dx:number,dy:number){
@@ -179,7 +189,7 @@ export class Input {
     if(!this.enabled)return;
     if((frame.interact||frame.jump)&&this.onInteract(!!frame.interact)){this.clear();return;}
     if(frame.attack)this.attack=frame.attack;
-    this.padJumpHeld=frame.jumpHeld;this.jump ||= frame.jump;this.dash ||= frame.dash;this.awaken ||= frame.awaken;
+    this.padJumpHeld=frame.jumpHeld;this.padHeavyHeld=!!frame.heavyHeld;this.jump ||= frame.jump;this.dash ||= frame.dash;this.awaken ||= frame.awaken;
     if(frame.target)this.onTarget();
     // The area slot (gamepad.ts): R2 down aims, up casts; the AWAKEN chord or L1 puts the aim away.
     if(frame.area==='press')this.aim.begin('pad');
@@ -208,6 +218,7 @@ export class Input {
     if(this.attack==='area'&&this.aimPoint)command.aim={x:+this.aimPoint.x.toFixed(2),z:+this.aimPoint.z.toFixed(2)};
     if(this.jump)command.jump=true;
     if(held('jump')||this.padJumpHeld||this.touchJumpHeld)command.jumpHeld=true;
+    if(held('heavy')||this.padHeavyHeld)command.heavyHeld=true;
     if(this.dash)command.dash=true;
     if(this.awaken)command.awaken=true;
     this.attack=undefined;this.aimPoint=undefined;this.jump=false;this.dash=false;this.awaken=false;

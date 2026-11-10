@@ -245,6 +245,15 @@ interface Cast {
   /** Techniques (techniques.ts): a counter stance that met a blow - its own blow comes at once, and is worth
    *  COUNTER_DAMAGE of itself. */
   countered?: boolean;
+  /** The ball rooms' SHOOT (SportFeel.strike): the quick strike, or the fighter's own move wound up from it; the press
+   *  it was thrown by (its key, held on, is what charges it); how long the quick strike's blow has waited on the key
+   *  (its clock held meanwhile); and, charging, since when the key has been up (the charge stops there) and the charge
+   *  so far (0-1). */
+  sport?: 'tap' | 'charge';
+  press?: number;
+  waited?: number;
+  letGo?: number;
+  charge?: number;
 }
 /** The controller's answer for a body that is standing still on the floor: no travel, still grounded (see ArenaSimulation.atRest). */
 const AT_REST: CollisionMovement = Object.freeze({ x: 0, y: 0, z: 0, grounded: true });
@@ -524,6 +533,10 @@ interface Actor {
   externalFreezeTick?: number;
   /** A horde body the player chose (the lock or the auto target). */
   chosenExternal?: string;
+  /** The ball rooms' SHOOT (SportFeel.strike): the heavy press whose key has stayed down since (PlayerInput.heavyHeld);
+   *  and the last wound-up cast and its charge, for a shot of its that lands after the cast is over. */
+  heldPress?: number;
+  wound?: { cast: number; charge: number };
   /** The ball rooms (AimAssist.sport): boosting - a ground dash run on at the boost's speed while the stick holds and
    *  the stamina lasts - and the jumps taken off the floor since this body last stood on it. */
   boosting: boolean;
@@ -651,6 +664,9 @@ export interface ExternalBlow {
   /** A finisher heavy enough to throw somebody (LAUNCH_KNOCKBACK), or any blow on a body already in the air. */
   launch: boolean;
   hitstop: number;
+  /** The ball rooms' SHOOT (SportFeel.strike): the blow was the quick strike ('tap') or the fighter's own
+   *  move wound up ('charge', and how far: 0-1). Absent for any other blow. */
+  strike?: 'tap' | 'charge'; charge?: number;
 }
 export interface ExternalTargets {
   /** Optional allegiance filter for modes with allied and hostile compact units. */
@@ -703,7 +719,26 @@ export interface SportFeel {
    *  the clip unplayed; there is nothing to strike up there before the feet are down anyway. Absent: cut as `recovery`
    *  says. */
   airTail?: boolean;
+  /** SHOOT: instant on a tap, and held it charges the fighter's own move. Absent: the heavy is the fighter's own, as everywhere else. */
+  strike?: SportStrike;
 }
+/** The ball rooms' SHOOT (SportFeel.strike). A heavy pressed with the fighter's swings on the ball (not locked on a
+ *  fighter: Goal Rush's FIGHT stance keeps its heavy) starts `move`, one quick strike every fighter shares - off the
+ *  floor `air` - so the blow lands the same moment after the press for all of them (its first contact), and the sport's
+ *  timing is learnt once. A heavy's own first blow came 0.26 to 0.61 s after the press by the fighter (the median 0.50),
+ *  and with the stick toward the ball a person's was the Charging Strike's 0.50 s whoever they played.
+ *  - **Tap:** the key up again before the blow's moment: the quick strike lands then. Let go a little late (up to `hold`
+ *    seconds after the press) it lands as the key comes up, the swing held on its blow meanwhile: a slow thumb or a
+ *    finger on glass is still a tap.
+ *  - **Hold:** the key still down `hold` seconds after the press: the swing becomes the fighter's own heavy (off the
+ *    floor its air strike), wound up from the press - its blow lands when it always did - as a CHARGED shot. How far it
+ *    is charged (0-1) is the share of that wind-up, from the press to the blow, that the key stayed down for (so it is
+ *    `hold` over the blow's moment already when it turns, and a quick heavy charges sooner than a slow one); the aim and
+ *    the stick are read as the key comes up (or as the blow lands), not as it went down.
+ *  The quick strike costs its own stamina (never refused for the lack of it) and its own short cooldown; the wind-up
+ *  costs the rest of the heavy's and takes the heavy's cooldown. No technique, heavy string or ender is thrown off
+ *  SHOOT: those are the FIGHT stance's. */
+export interface SportStrike { move: MoveDefinition; air?: MoveDefinition; hold: number }
 /** A blow from the horde's rank and file: a fighter in the middle of a move
  *  trades with it, and one it has just flinched only chips for MINOR_GRACE,
  *  so a crowd can hurt a fighter but never hold them in a stagger. */
@@ -994,7 +1029,7 @@ export function validateInput(raw: unknown): PlayerInput | null {
   if (!Number.isSafeInteger(i.seq) || (i.seq as number) < 0) return null;
   for (const k of ['moveX', 'moveZ', 'yaw']) if (typeof i[k] !== 'number' || !Number.isFinite(i[k])) return null;
   if (Math.abs(i.moveX as number) > 1 || Math.abs(i.moveZ as number) > 1 || Math.abs(i.yaw as number) > 1e6) return null;
-  for (const k of ['jump', 'jumpHeld', 'dash', 'guard', 'awaken', 'lock']) if (i[k] !== undefined && typeof i[k] !== 'boolean') return null;
+  for (const k of ['jump', 'jumpHeld', 'heavyHeld', 'dash', 'guard', 'awaken', 'lock']) if (i[k] !== undefined && typeof i[k] !== 'boolean') return null;
   if (i.attack !== undefined && !slots.includes(i.attack as AttackSlot)) return null;
   if (i.targetId !== undefined && i.targetId !== null && (typeof i.targetId !== 'string' || i.targetId.length > 128)) return null;
   if (i.view !== undefined && (typeof i.view !== 'number' || !Number.isFinite(i.view) || i.view < 0)) return null;
@@ -1009,7 +1044,7 @@ export function validateInput(raw: unknown): PlayerInput | null {
     attack: i.attack as AttackSlot | undefined,
     targetId: i.targetId as string | null | undefined, lock: i.lock as boolean | undefined,
     ...(i.view !== undefined ? { view: i.view as number } : {}), ...(aim ? { aim: { x: aim.x as number, z: aim.z as number } } : {}),
-    ...(i.dir !== undefined ? { dir: i.dir as StickDir } : {}) };
+    ...(i.dir !== undefined ? { dir: i.dir as StickDir } : {}), ...(i.heavyHeld ? { heavyHeld: true } : {}) };
 }
 
 /** Round 3e (VARIETY): what a bot remembers between thoughts. Whom it is
@@ -1554,6 +1589,7 @@ export class ArenaSimulation {
     const actor = this.actors.get(id);
     if (!actor) return;
     actor.input = { seq: actor.lastSeq, moveX: 0, moveZ: 0, yaw: actor.state.yaw };
+    if (this.assist?.sport?.strike) actor.heldPress = undefined; // (The ball rooms' SHOOT only: SportFeel.strike.)
     actor.lastInputAt = this.serverTime - .36;
     actor.state.guarding = false;
   }
@@ -1572,6 +1608,17 @@ export class ArenaSimulation {
     // Lag compensation: this tick less the server time of the frame the page drew (rewind).
     if (this.rewind > 0) actor.viewLag = input.view === undefined ? 0 : clamp(this.serverTime - input.view, 0, this.rewind);
     if(input.attack){actor.attackSeq=input.seq;actor.attackYaw=input.yaw;actor.attackMoveX=input.moveX;actor.attackMoveZ=input.moveZ;actor.attackAim=input.attack==='area'?input.aim:undefined;this.pressPace(actor,input.attack);}
+    // The ball rooms' SHOOT (SportFeel.strike): which heavy press's key is still down; and while that key winds the
+    // fighter's own move up, the aim and the stick are the command's as it is held - a charged shot goes where the
+    // player is aiming as they let go, not where they looked half a second before.
+    if (this.assist?.sport?.strike) {
+      if (input.attack === 'heavy') actor.heldPress = input.heavyHeld ? input.seq : undefined;
+      else if (!input.heavyHeld) actor.heldPress = undefined;
+      const cast = actor.cast;
+      if (cast?.sport === 'charge' && cast.nextContact === 0 && cast.press !== undefined && actor.heldPress === cast.press && !input.attack) {
+        actor.attackYaw = input.yaw; actor.attackMoveX = input.moveX; actor.attackMoveZ = input.moveZ;
+      }
+    }
     actor.lastInputAt = this.serverTime;
     // Preserve a pending edge if several movement packets arrive before the tick.
     actor.input = { ...input, jump: input.jump || actor.input.jump, dash: input.dash || actor.input.dash,
@@ -2079,15 +2126,20 @@ export class ArenaSimulation {
     return this.inLane(q, origin, cast.direction.x, 0, cast.direction.z);
   }
 
-  private cast(a: Actor, slot: AttackSlot): 'cast' | 'blocked' | 'cooling' | 'rejected' {
+  private cast(a: Actor, slot: AttackSlot, wound?: Cast): 'cast' | 'blocked' | 'cooling' | 'rejected' {
     const p = a.state;
+    // The ball rooms' SHOOT (SportFeel.strike): a heavy with the fighter's swings on the ball - not locked
+    // on a fighter, Goal Rush's FIGHT stance - is the sport's quick strike; `wound`, the quick strike whose key stayed
+    // down, being turned into the fighter's own move (windUp).
+    const strike = slot === 'heavy' && !a.kit && !(a.input.lock === true && p.target) ? this.assist?.sport?.strike : undefined;
     // A light is a stage of the rush string: its own light to open it, the
     // next stage when it continues one.
     // A body with a kit has no rush string: its light is one move.
     let stage = slot === 'light' && !a.kit ? this.rushStageFor(a) : 0;
     // A heavy or special pressed into a light stage, or just after one, or off the floor, is a combo ender (combos.ts);
     // with nothing running, the stick's technique, and a heavy into a heavy the heavy string (techniques.ts).
-    let branch = a.kit ? undefined : this.branchFor(a, slot);
+    // (SHOOT throws none of them: off the floor the air strike, as ever; on it the fighter's own heavy.)
+    let branch = a.kit ? undefined : strike ? (p.grounded ? undefined : comboKeyFor(p.fighter, slot, -1, true)) : this.branchFor(a, slot);
     // A technique thrown from neutral that is not ready again is the button's own move instead (techniques.ts).
     if (isTechnique(branch) && NEUTRAL_TECHNIQUES.has(branch) && (a.techniqueReady[branch] ?? -Infinity) > this.serverTime) branch = undefined;
     // The Delayed Strike is the string's third blow, held back: it stands in for that stage, in the round it is in.
@@ -2098,7 +2150,8 @@ export class ArenaSimulation {
     const round = slot !== 'light' || !this.locking(a) ? 0 : branch === 'delay' ? a.lockRound : nextRound ? this.lockRoundOf(a) + 1 : stage > 0 ? this.lockRoundOf(a) : 0;
     // Awakened, the move may be a different one: KoKo's HUSH becomes the
     // barrage. The cast keeps this definition for its whole duration.
-    const m = branch ? comboMove(p.fighter, branch, !!p.awakened)! : (round ? lockRoundMove(p.fighter, stage, !!p.awakened) : undefined) ?? this.moveOf(a, slot, stage);
+    const own = branch ? comboMove(p.fighter, branch, !!p.awakened)! : (round ? lockRoundMove(p.fighter, stage, !!p.awakened) : undefined) ?? this.moveOf(a, slot, stage);
+    const m = strike && !wound ? (p.grounded ? strike.move : strike.air ?? strike.move) : own;
     const mods = a.mods;
     const chaining = !!a.cast;
     if (!this.cancellable(a, slot) || this.serverTime < a.stunUntil || p.guarding || this.status !== 'active') return 'blocked';
@@ -2112,10 +2165,13 @@ export class ArenaSimulation {
     // A rush stage is chained whether it cancelled the stage before it or
     // followed that stage inside the window.
     // (The heavy string's second and third blows and the Delayed Strike are chained too: a string's, not a fresh press's.)
-    const gated = !(chaining || stage > 0 || nextRound || branch === 'hh' || branch === 'hhh' || branch === 'delay') || slot === 'special' || slot === 'ultimate' || slot === 'area';
-    const staminaCost = mods ? m.stamina * mods.stamina : m.stamina;
-    const reason = gated && (p.cooldowns[slot] ?? 0) > this.serverTime ? 'cooldown'
-      : p.stamina < staminaCost && !(STAMINA_OVERDRAW && slot !== 'heavy') ? 'stamina'
+    // (SHOOT - SportFeel.strike - pays its cooldown however it is thrown: cancelled out of one that landed, a quick
+    // strike came again every sixth of a second, and a masher's second swing struck the ball clean.)
+    const gated = !(chaining || stage > 0 || nextRound || branch === 'hh' || branch === 'hhh' || branch === 'delay') || slot === 'special' || slot === 'ultimate' || slot === 'area' || !!strike;
+    // (SHOOT: the quick strike is never refused for the lack of stamina, and the wind-up pays what is left of the heavy's.)
+    const staminaCost = Math.max(0, (mods ? m.stamina * mods.stamina : m.stamina) - (wound ? wound.move.stamina : 0));
+    const reason = gated && !wound && (p.cooldowns[slot] ?? 0) > this.serverTime ? 'cooldown'
+      : p.stamina < staminaCost && !(STAMINA_OVERDRAW && slot !== 'heavy') && !(strike && !wound) ? 'stamina'
       // The ultimate costs its own bar, awakened or not. The transformation
       // is bought with the awakening meter now, so it no longer pays for the
       // ultimate as well: an awakened fighter hits harder and takes less, and
@@ -2238,7 +2294,9 @@ export class ArenaSimulation {
     if (slot === 'light' && stage === 0 && !nextRound) a.stringMash = !a.attackPaced;
     const mash = slot === 'light' && !a.kit && a.stringMash;
     const beat = !!branch && !!a.attackBeat && (prior ? prior.slot === 'light' && prior.connected : a.rushOpened.length > 0);
-    a.cast = { id: ++a.castSerial, stage, ...(round ? { round } : {}), slot, ...(branch ? { branch } : {}), ...(beat ? { beat } : {}), ...(mash ? { mash } : {}), move: m, start: this.serverTime, nextContact: 0, live: [], direction, endpoint,
+    // (A wound-up SHOOT is the swing that was pressed: its number, and its clock the press's - less the wait on the key.)
+    a.cast = { id: wound ? wound.id : ++a.castSerial, stage, ...(round ? { round } : {}), slot, ...(branch ? { branch } : {}), ...(beat ? { beat } : {}), ...(mash ? { mash } : {}), move: m, start: wound ? wound.start - (wound.waited ?? 0) : this.serverTime, nextContact: 0, live: [], direction, endpoint,
+      ...(strike ? { sport: wound ? 'charge' as const : 'tap' as const, press: wound ? wound.press : a.attackSeq } : {}),
       lungeTargetId: nearbyMeleeTarget ? target.id : m.lockAim&&!branch&&!p.awakened?aimedMelee?.id:undefined, connected: false, airborne: !p.grounded, opened,
       aimId: aimAt?.id, ...(aimedExternal ? { externalAim: aimedExternal.id } : {}), ...(backstep > .02 ? { backstep, backstepPlanned: backstep, backstepUntil: backstepWindow(p.fighter, m) } : {}) };
     this.action(a, slot, m.duration);
@@ -2247,7 +2305,8 @@ export class ArenaSimulation {
       const on = aimedMelee ?? (target?.alive ? target : undefined);
       if (on) { a.cast.riseOn = on.id; this.risingStrike(a, a.cast); }
     }
-    p.actionSeq=a.attackSeq;
+    p.actionSeq=wound?wound.press:a.attackSeq;
+    if (strike) { p.strike = wound ? 'charge' : 'tap'; delete p.charge; } else if (p.strike) { delete p.strike; delete p.charge; }
     if (slot === 'light') p.chain = stage;
     // Lock combat: which round the light is in, so the page draws a second round's own blows (render/lockRound.ts).
     if (slot === 'light' && this.lockCombat) p.lockRound = round;
@@ -2283,12 +2342,15 @@ export class ArenaSimulation {
     return own || stage > 0 || !(grounded === 'all' || (!!grounded && grounded.includes(slot)));
   }
 
+  /** This step's length (updateCast holds a quick strike's clock by it: SportFeel.strike). */
+  private stepped = 1 / 60;
   step(dt = 1 / 60, waitingForInput?:ReadonlySet<string>) {
     if (!Number.isFinite(dt) || dt <= 0 || dt > 0.05) throw new Error('Step must be between 0 and 0.05 seconds');
     if (this.roomMode === 'training' && !this.trainingLab.shouldStep()) return;
     if (this.rewind > 0) this.record();
     this.serverTime += dt;
     this.tick++;
+    this.stepped = dt;
     // Countdown time advances, but entrants cannot walk into hazards, spend
     // resources or queue an advantage before the clean match start.
     if (this.status === 'waiting') return;
@@ -2683,6 +2745,8 @@ export class ArenaSimulation {
       if (sport) {
         if (a.boosting && (Math.hypot(input.moveX, input.moveZ) < .5 || p.stamina <= 0 || p.guarding || stale || this.serverTime < a.stunUntil || a.reaction)) a.boosting = false;
         if (a.boosting) p.boost = true; else if (p.boost) delete p.boost;
+        // (SHOOT's state for the page - PlayerState.strike - goes with its swing.)
+        if (p.strike && !a.cast?.sport) { delete p.strike; delete p.charge; }
       }
       let speed = p.guarding ? 2.2 : sport ? (a.boosting ? sport.boost : sport.run) : 7.5;
       if (p.awakened) speed *= AWAKENED_SPEED;
@@ -3176,7 +3240,9 @@ export class ArenaSimulation {
       return { x: ux * move / dt, z: uz * move / dt };
     }
     const contact = cast.move.contacts[0];
-    if (!cast.move.dashThrough || cast.nextContact > 0 || steering) return null;
+    // (Nor does a wound-up SHOOT's iai draw dash: with no fighter to run through it ran through the ball, and the body
+    // knocked it on before the cut could strike it.)
+    if (!cast.move.dashThrough || cast.nextContact > 0 || steering || cast.sport === 'charge') return null;
     if (!cast.through) {
       const q = cast.aimId ? this.actors.get(cast.aimId)?.state : undefined;
       let dx = cast.direction.x, dz = cast.direction.z, length = DASH_THROUGH_MISS;
@@ -3626,7 +3692,8 @@ export class ArenaSimulation {
     const run = 7.5 * (p.awakened ? AWAKENED_SPEED : 1) * (a.mods?.speed ?? 1), carried = Math.hypot(a.mx, a.mz);
     if (carried > run) { a.mx *= run / carried; a.mz *= run / carried; }
     if (a.kit) return;
-    const lead = Math.max(1 / 60, cast.move.contacts[0] ?? .2);
+    // (A wound-up SHOOT - SportFeel.strike - is on the press's clock: what is left of its wind-up.)
+    const lead = Math.max(1 / 60, cast.sport === 'charge' ? cast.start + (cast.move.contacts[0] ?? .2) - this.serverTime : cast.move.contacts[0] ?? .2);
     if (cast.branch === 'airHeavy') {
       const q = this.airAim(a, AIR_STRIKE_REACH, true);
       const ext = !q && this.assist?.airExternal && a.chosenExternal ? this.external?.locate(a.chosenExternal, p.id) : undefined;
@@ -3850,7 +3917,9 @@ export class ArenaSimulation {
 
   private updateCast(a: Actor) {
     const cast = a.cast!;
-    if (cast.move.teleport) this.blink(a, cast); // Round 3: Cloudstep (MOVES stream).
+    // (A wound-up SHOOT - SportFeel.strike - stands its ground: a Cloudstep goes for a fighter, and with the ball in front
+    // of it and nobody to go for it blinked past the ball and struck at the air - five fighters' SHOOT, before the quick strike.)
+    if (cast.move.teleport && cast.sport !== 'charge') this.blink(a, cast); // Cloudstep (MOVES stream).
     const age = this.serverTime - cast.start - (cast.slot === 'ultimate' ? 0 : AGE_EPSILON); // Round 3d (PACE): see AGE_EPSILON.
     if (this.timeStopTour(a, cast)) return;
     if (this.ultimateTick(a, cast)) return; // Round 3d (ULTS): a hit-confirm ultimate's confirm, whiff and cinematic.
@@ -3868,6 +3937,25 @@ export class ArenaSimulation {
       if (a.state.grounded && drop >= PLUNGE_IMPACT_DROP)
         this.emit({ kind: 'land', actorId: a.state.id, fighter: a.state.fighter, slot: cast.slot, ...(cast.branch ? { branch: cast.branch } : {}), origin: position(a.state), drop: +drop.toFixed(2) });
       this.updateCast(a); return;
+    }
+    // The ball rooms' SHOOT (SportFeel.strike): the quick strike's blow waits on its key. Let go, it lands; still down,
+    // the swing holds on its blow (its clock held, as an impact freeze holds one) until `hold` after the press, and
+    // from there it is the fighter's own move, wound up from the press (windUp).
+    if (cast.sport === 'tap' && cast.nextContact === 0 && age >= cast.move.contacts[0] && this.keyDown(a, cast)) {
+      const hold = this.assist?.sport?.strike?.hold ?? 0, waited = cast.waited ?? 0, dt = this.stepped;
+      if (cast.move.contacts[0] + waited + dt * .5 < hold) {
+        cast.waited = waited + dt; cast.start += dt; a.state.actionFrozen = (a.state.actionFrozen ?? 0) + dt;
+        return;
+      }
+      if (this.windUp(a, cast)) { this.updateCast(a); return; }
+    }
+    // (Winding up: how far it is charged - the share of the wind-up the key has stayed down for, from the press.)
+    if (cast.sport === 'charge' && cast.nextContact === 0) {
+      const held = this.serverTime - cast.start;
+      if (cast.letGo === undefined && !this.keyDown(a, cast)) cast.letGo = held;
+      cast.charge = clamp((cast.letGo ?? held) / Math.max(.05, cast.move.contacts[0]), 0, 1);
+      a.state.charge = Math.round(cast.charge * 100) / 100;
+      a.wound = { cast: cast.id, charge: cast.charge };
     }
     while (cast.nextContact < cast.move.contacts.length && age >= cast.move.contacts[cast.nextContact]) {
       const contact = cast.nextContact++;
@@ -3971,6 +4059,26 @@ export class ArenaSimulation {
     }
   }
 
+  /** The ball rooms' SHOOT (SportFeel.strike): whether the key that threw this swing is still down - the press's own
+   *  hold unbroken (submitInput), on a link still sending. */
+  private keyDown(a: Actor, cast: Cast) {
+    return cast.press !== undefined && a.heldPress === cast.press && this.serverTime - a.lastInputAt <= .35;
+  }
+
+  /** The ball rooms' SHOOT (SportFeel.strike): the quick strike `tap`, its key still down, becomes the fighter's own
+   *  heavy (off the floor its air strike) - thrown as any cast is (its aim, its step-in or its dive, its cost, its
+   *  cooldown, its announcement), but as the same swing, on the press's clock: the blow lands when the heavy's always
+   *  did, and a blow already due lands at once. The aim and the stick are the key's from here (submitInput). False
+   *  where the fighter cannot pay for it: the quick strike lands instead. */
+  private windUp(a: Actor, tap: Cast): boolean {
+    const p = a.state, started = p.actionStarted, frozen = (p.actionFrozen ?? 0) - (tap.waited ?? 0);
+    a.attackYaw = a.input.yaw; a.attackMoveX = a.input.moveX; a.attackMoveZ = a.input.moveZ;
+    a.cast = null;
+    if (this.cast(a, 'heavy', tap) !== 'cast') { a.cast = tap; tap.press = undefined; return false; }
+    p.actionStarted = started; p.actionFrozen = Math.max(0, frozen); p.charge = 0;
+    return true;
+  }
+
   /** Round 4b (GUMMY): a line thrown again and again (MoveDefinition.track),
    *  its next contact thrown at where the fighter it is aimed at - its
    *  thrower's target - stands now: inside its range, and within `track`
@@ -4041,7 +4149,11 @@ export class ArenaSimulation {
     }
     // The horde, by the same volumes: a swing cuts every body it passes through.
     if (this.external) {
-      const reach = this.reachOf(a, cast.slot, cast.move, !cast.airborne);
+      // (A wound-up SHOOT - SportFeel.strike - reaches at least as far as the quick strike it grew out of: a ball the
+      // tap would have struck is not out of the held blow's reach. A quarter of the roster's heavies reach less, and
+      // one - 1.2 m, parked 2 m off the ball by its own step-in - could not strike a ball on the floor at all.)
+      const quick = cast.sport === 'charge' ? this.assist?.sport?.strike : undefined;
+      const reach = Math.max(this.reachOf(a, cast.slot, cast.move, !cast.airborne), quick ? this.reachOf(a, cast.slot, cast.airborne ? quick.air ?? quick.move : quick.move, !cast.airborne) : 0);
       const far = through ? tip : endpoint, wide = through ? reach : cast.move.radius;
       const n = this.external.query(origin, far, wide + 1.2, this.nearby, a.state.id);
       for (let i = 0; i < n; i++) {
@@ -4792,8 +4904,12 @@ export class ArenaSimulation {
     if (n < 1e-3) { pushX = Math.sin(attacker?.state.yaw ?? 0); pushZ = Math.cos(attacker?.state.yaw ?? 0); } else { pushX /= n; pushZ /= n; }
     const gap = contactIndex !== undefined && contactIndex + 1 < move.contacts.length ? move.contacts[contactIndex + 1] - move.contacts[contactIndex] : Infinity;
     const hitstop = finisher ? move.hitstop ?? HITSTOP[slot] : Math.min(HITSTOP[slot] * .6, gap * .3);
+    // (The ball rooms' SHOOT - SportFeel.strike: the quick strike, or the wound-up move and its charge; a shot of a
+    // wound-up cast that lands after it is over is still its charge.)
+    const late = !own && castId !== undefined && attacker?.wound?.cast === castId ? attacker.wound : undefined;
+    const sport = own?.sport ? { strike: own.sport, ...(own.sport === 'charge' ? { charge: own.charge ?? 0 } : {}) } : late ? { strike: 'charge' as const, charge: late.charge } : undefined;
     const result = this.external!.receive(body, { attackerId: actorId, slot, move, damage: Math.max(1, Math.round(damage)), critical, finisher,
-      pushX, pushZ, knockback, stun, launch: body.airborne || (finisher && knockback >= LAUNCH_KNOCKBACK), hitstop });
+      pushX, pushZ, knockback, stun, launch: body.airborne || (finisher && knockback >= LAUNCH_KNOCKBACK), hitstop, ...sport });
     if (!result) return false;
     if (own) own.connected = true;
     const source = attacker?.state;

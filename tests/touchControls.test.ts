@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AIM_RADIUS, AIM_SLOP, AreaDrag, CooldownLeft, dragBase, STICK_DEADZONE, STICK_FULL, STICK_RADIUS, stickVector, TOUCH_BUTTONS, type AimStep } from '../src/input/touch';
+import { AIM_RADIUS, AIM_SLOP, AreaDrag, CooldownLeft, dragBase, STICK_DEADZONE, STICK_FULL, STICK_RADIUS, stickVector, TOUCH_BUTTONS, TouchControls, type AimStep } from '../src/input/touch';
 import { Input, TOUCH_LOOK } from '../src/input';
+import { BallMatch } from '../src/game/ball/BallMatch';
+import { BALL_ID, GOAL_RULES, SHOOT } from '../src/game/ball/model';
+import { MOVES } from '../src/game/moves';
 import { promptKey, promptText, prompt } from '../src/ui/prompts';
 import type { PadState } from '../src/input/gamepad';
 
@@ -118,6 +121,87 @@ describe('touch controls feed Input as the pad and the mouse do', () => {
     input.touchHold(1, 0, true, true); input.clear();
     const command = input.command(null);
     expect(command.moveX).toBe(0); expect(command.moveZ).toBe(0); expect(command.guard).toBe(false); expect(command.jumpHeld).toBeUndefined();
+  });
+});
+
+describe("the ball modes' SHOOT is held as its key is (Input.touchKey)", () => {
+  const held = (input: Input) => (input as unknown as { keys: Set<string> }).keys;
+  it('the finger down holds the heavy key and presses it once; the finger up lets it go', () => {
+    const { input } = fixture();
+    input.touchKey('heavy', true); input.touchPress('heavy');
+    expect(held(input).has('KeyK')).toBe(true);
+    expect(input.command(null).attack).toBe('heavy');
+    // Still held on the next command, with no second press.
+    expect(input.command(null).attack).toBeUndefined();
+    expect(held(input).has('KeyK')).toBe(true);
+    input.touchKey('heavy', false);
+    expect(held(input).has('KeyK')).toBe(false);
+  });
+  it('holds nothing while the fight takes no input, and clear() lets it go', () => {
+    const { input } = fixture();
+    input.enabled = false; input.touchKey('heavy', true);
+    expect(held(input).has('KeyK')).toBe(false);
+    input.enabled = true; input.touchKey('heavy', true); input.clear();
+    expect(held(input).size).toBe(0);
+  });
+  it('reads as a key held to whatever asks the bindings (heldBinding), exactly as the keyboard\'s does', async () => {
+    const { heldBinding } = await import('../src/input/bindings');
+    const viaKey = fixture(); viaKey.win.dispatchEvent(Object.assign(new Event('keydown', { cancelable: true }), { code: 'KeyK', repeat: false }));
+    const keyHeld = heldBinding('heavy', held(viaKey.input));
+    vi.unstubAllGlobals();
+    const viaTouch = fixture(); viaTouch.input.touchKey('heavy', true);
+    expect(keyHeld).toBe(true);
+    expect(heldBinding('heavy', held(viaTouch.input))).toBe(keyHeld);
+  });
+});
+
+describe("the ball modes' SHOOT on a touch screen reaches the rule (PlayerInput.heavyHeld, model.ts SHOOT)", () => {
+  /** A finger on the ball set's SHOOT through TouchControls' own press and lift (the button `held`, as sportTouch.ts
+   *  makes the ball set's shot), and the page's commands, one a tick, while it is down and after. */
+  type Controls = { fingers: Map<number, unknown>; input: Input; stickNode: { classList: { remove(): void } } };
+  const controls = (input: Input): Controls => ({ fingers: new Map(), input, stickNode: { classList: { remove() {} } } });
+  const shoot = { dataset: { held: '' } as Record<string, string>, classList: { add() {}, remove() {} } };
+  const down = (c: Controls) => (TouchControls.prototype as unknown as { press: (...a: unknown[]) => void }).press.call(c, 1, 'heavy', { clientX: 700, clientY: 320 }, shoot);
+  const up = (c: Controls) => (TouchControls.prototype as unknown as { end: (e: unknown) => void }).end.call(c, { changedTouches: [{ identifier: 1 }], cancelable: false, type: 'touchend' });
+  it('heavyHeld rides every command while the finger is down and none after it lifts; the press goes once, on the first', () => {
+    const { input } = fixture(), c = controls(input);
+    down(c);
+    const held = Array.from({ length: 20 }, () => input.command(BALL_ID));
+    expect(held[0].attack).toBe('heavy');
+    expect(held.slice(1).map(x => x.attack)).toEqual(Array(19).fill(undefined));
+    expect(held.map(x => x.heavyHeld)).toEqual(Array(20).fill(true));
+    up(c);
+    expect(Array.from({ length: 5 }, () => input.command(BALL_ID).heavyHeld)).toEqual(Array(5).fill(undefined));
+  });
+  it('a tap shorter than the split still sends the press and is the quick strike; a finger kept down is the charge', () => {
+    /** FREE PLAY, Gorai, a still ball a stride ahead: the finger down for `ticks` of the page's commands, each into the
+     *  room as it is made. The tick the ball leaves, and the swing that sent it. */
+    const play = (ticks: number) => {
+      const { input } = fixture(), c = controls(input);
+      const m = new BallMatch('goal-rush', { seed: 3, access: 'bots', practice: true });
+      m.add('me', 'gorai', 'Me', false, 'red'); m.start();
+      for (let i = 0; i < 600 && m.view.phase !== 'live'; i++) m.step(1 / 60);
+      m.sim.place('me', { x: 0, y: 0, z: -6 }, 0); m.sim.clearPlayerInput('me');
+      let seq = 0, at = -1, way: string | undefined;
+      down(c);
+      for (let i = 0; i < 90 && at < 0; i++) {
+        if (i === ticks) up(c);
+        Object.assign(m.ball, { x: 0, y: GOAL_RULES.ballRadius, z: -4, vx: 0, vy: 0, vz: 0 });
+        m.submit('me', { ...input.command(BALL_ID, 0), seq: ++seq, yaw: 0 });
+        m.step(1 / 60);
+        way ??= m.sim.actors.get('me')!.state.strike === 'charge' ? 'charge' : undefined;
+        if (Math.hypot(m.ball.vx, m.ball.vy, m.ball.vz) > 2) { at = i + 1; way ??= 'tap'; }
+      }
+      return { at, way };
+    };
+    const split = Math.round(SHOOT.hold * 60);
+    // A finger lifted before the blow's moment: the quick strike, 8 ticks after the press.
+    expect(play(3)).toEqual({ at: 8, way: 'tap' });
+    // Lifted after it but before the split: still the quick strike, struck as the finger comes up.
+    expect(play(split - 2)).toEqual({ at: split - 1, way: 'tap' });
+    // Kept down past the split: Gorai's own heavy, wound up, its blow where it always was.
+    // (Counted as shoot.test counts: the tick the swing starts on and those its blow takes - 0.533 s for Gorai's 0.5.)
+    expect(play(60)).toEqual({ at: Math.ceil((MOVES.gorai.heavy.contacts[0] + 1e-6) * 60 - 1e-9) + 1, way: 'charge' });
   });
 });
 

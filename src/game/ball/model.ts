@@ -8,6 +8,7 @@ import type {LessonView} from './lesson';
 import type {SeatRank} from './ranked';
 import type {BallLook} from './look';
 import type {AimAssist, SportFeel} from '../simulation';
+import type {MoveDefinition} from '../moves';
 
 /** The two ball modes: Goal Rush, three a side scoring on each other's goal, and Sky Spike, three a side over a net
  *  (volleyball and sepak takraw). Every attack and ability lands on the ball; in Goal Rush they land on the other
@@ -16,7 +17,7 @@ import type {AimAssist, SportFeel} from '../simulation';
 export type BallModeId = 'goal-rush' | 'sky-spike';
 export const BALL_MODES: readonly BallModeId[] = ['goal-rush', 'sky-spike'];
 /** Bumped whenever a page and a room would disagree about the ball, its view or its messages. */
-export const BALL_PROTOCOL = 8;
+export const BALL_PROTOCOL = 9;
 export type BallTeam = 'red' | 'blue';
 export const BALL_TEAMS: readonly BallTeam[] = ['red', 'blue'];
 export const otherTeam = (team: BallTeam): BallTeam => team === 'red' ? 'blue' : 'red';
@@ -380,9 +381,29 @@ export const GOAL_STANCE = {
  *  freezes, and a kick's tail cut so the play flows on. Sky Spike keeps its jump (its spikes and blocks are timed to
  *  it) and its flat air dash, and has no double jump: its rallies were tuned on them. A Sky Spike blow thrown
  *  in the air (the spike) plays its follow-through out (`airTail`). */
+/** SHOOT: instant on a tap, and held it charges the fighter's own move. SHOOT was each fighter's heavy, whose first blow came 0.26 to 0.61 s after the press by the
+ *  fighter (the median 0.50 s; with the stick toward the ball a person threw the Charging Strike, 0.50 s for everyone),
+ *  so a shot was a wait and a different wait for every fighter. Now (the kernel's rule: simulation.ts SportStrike):
+ *  - **Tap:** one quick strike every fighter shares. Its blow lands `contact` s into the swing - the ball leaves 8
+ *    ticks, 0.133 s, after the room hears the press - on the floor and in the air, in both modes: the sport's timing
+ *    is learnt once. A key let go up to `hold` s after the press is
+ *    still a tap, struck as it comes up (a slow thumb, a finger on glass).
+ *  - **Hold:** a key still down at `hold` winds up the fighter's own heavy (off the floor their air strike) from the
+ *    press: its blow lands when it always did (0.26-0.61 s on the floor, about 0.23 s in the air), as a CHARGED shot -
+ *    more pace, a higher cap and more heat by how far it is charged (strike.ts SHOT), aimed as the key comes up. The
+ *    wait is the player's choice: a charged shot can be tackled, blocked or closed down while it winds up.
+ *  The quick strike reaches as a fighter's light does at the roster's middle (`reach`, 2.85 m to the ball's edge), steps
+ *  in through its last strides as any blow with no lunge of its own, costs `stamina` (a heavy's 20-30 went on a tap,
+ *  and with the bar low from a boost SHOOT was refused) and may be thrown again `cooldown` s after the press. */
+export const SHOOT = {contact: .115, hold: .2, duration: .4, reach: 2.2, range: 2.4, radius: .95, stamina: 8, cooldown: .45} as const;
+const QUICK_STRIKE: MoveDefinition = {name: 'Quick Strike', duration: SHOOT.duration, contacts: [SHOOT.contact], damage: 10, range: SHOOT.range, radius: SHOOT.radius,
+  stamina: SHOOT.stamina, cooldown: SHOOT.cooldown, stun: .2, knockback: 2, style: 'melee', reach: SHOOT.reach};
+/** (Off the floor it flies at the ball as the air strike does - simulation.ts airborneOpener - for as long as it has.) */
+const QUICK_VOLLEY: MoveDefinition = {...QUICK_STRIKE, name: 'Quick Volley', lunge: 3};
+const STRIKE = {move: QUICK_STRIKE, air: QUICK_VOLLEY, hold: SHOOT.hold};
 export const BALL_SPORT: Record<BallModeId, SportFeel> = {
-  'goal-rush': {run: 9.5, feet: 1.35, boost: 13.5, boostDrain: 42, dashGap: .15, jump: 1.06, airJumps: 1, airJump: .8, leap: 16, airDash: 9, hitstop: .5, recovery: .14},
-  'sky-spike': {run: 9, feet: 1.3, boost: 12.5, boostDrain: 42, dashGap: .15, jump: 1, airJumps: 0, airJump: .8, leap: 15, airDash: 0, hitstop: .6, recovery: .14, airTail: true},
+  'goal-rush': {run: 9.5, feet: 1.35, boost: 13.5, boostDrain: 42, dashGap: .15, jump: 1.06, airJumps: 1, airJump: .8, leap: 16, airDash: 9, hitstop: .5, recovery: .14, strike: STRIKE},
+  'sky-spike': {run: 9, feet: 1.3, boost: 12.5, boostDrain: 42, dashGap: .15, jump: 1, airJumps: 0, airJump: .8, leap: 15, airDash: 0, hitstop: .6, recovery: .14, airTail: true, strike: STRIKE},
 };
 const ASSIST: Record<BallModeId, AimAssist> = {
   'goal-rush': {magnet: .9, airExternal: true, sport: BALL_SPORT['goal-rush']},

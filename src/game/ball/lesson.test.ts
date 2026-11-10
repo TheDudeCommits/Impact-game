@@ -110,19 +110,27 @@ describe('LEARN TO PLAY: the guided first game', () => {
     expect(m.view.lesson!.done).toContain('gr-perfect');
     expect(m.view.events.some(e => e.kind === 'strike' && e.actorId === 'me' && e.perfect) || m.view.lesson!.done.includes('gr-perfect')).toBe(true);
   }, 60_000);
-  it('every released fighter whose SHOOT can strike perfect has its cue measured; the others are asked for a first-time goal', () => {
+  // (SHOOT's quick strike is the same melee blow for every fighter. Until then 89 of the hundred had a cue
+  // measured each, and the 11 whose heavy was a beam or a projectile were asked for a first-time goal instead.)
+  it('every released fighter\'s SHOOT can strike perfect on the one cue they share; none is asked for a first-time goal instead', () => {
     const released = (Object.keys(MOVES) as FighterId[]).filter(f => isReleasedFighter(f));
-    const measured = released.filter(strikesPerfect);
-    expect(measured.length).toBeGreaterThanOrEqual(85);
-    for (const f of released) if (MOVES[f].heavy.style !== 'melee') expect(STRIKE_MEET[f]).toBeUndefined();
+    expect(released.filter(strikesPerfect).length).toBe(released.length);
+    expect(STRIKE_MEET).toBeGreaterThan(1.9); expect(STRIKE_MEET).toBeLessThan(3.63);
+    // Tsubute's heavy is a thrown stone: a PERFECT STRIKE off SHOOT all the same, on the bar.
     const m = lesson('goal-rush', 'tsubute');
     play(m, step => step === 'gr-perfect', 60, 0);
-    expect(m.view.lesson).toMatchObject({ step: 'gr-perfect', firstTime: true });
+    expect(m.view.lesson!.step).toBe('gr-perfect');
+    expect(m.view.lesson!.firstTime).toBeUndefined();
+    play(m, step => step !== 'gr-perfect', 20);
+    expect(m.view.lesson!.done).toContain('gr-perfect');
+    expect(m.view.events.some(e => e.kind === 'strike' && e.actorId === 'me' && e.perfect)).toBe(true);
   }, 60_000);
-  it('SHOOT for a fighter whose heavy launches (Konta): met on the bar as the pass arrives it flies (strike.ts), not popped', () => {
+  // (Nobody's SHOOT pops a ball at rest. Until then Konta's step was the pass met on the bar, `pops`.)
+  it('SHOOT for a fighter whose heavy launches (Konta): the ball at rest is shot like anyone\'s, never popped', () => {
     const m = lesson('goal-rush', 'konta');
     play(m, step => step === 'gr-shoot', 30);
-    expect(m.view.lesson).toMatchObject({ step: 'gr-shoot', pops: true });
+    expect(m.view.lesson!.step).toBe('gr-shoot');
+    expect(m.view.lesson!.pops).toBeUndefined();
     play(m, step => step === 'gr-perfect', 60);
     expect(m.view.lesson!.done).toContain('gr-shoot');
     expect(m.view.events.some(e => e.kind === 'strike' && e.actorId === 'me' && e.shot === 'pop')).toBe(false);

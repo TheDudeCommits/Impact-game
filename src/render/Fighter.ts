@@ -31,7 +31,7 @@ import { rosterPrefetch } from '../loading/rosterPrefetch';
 import {PriorityQueue} from '../loading/PriorityQueue';
 import * as THREE from 'three';
 import { addShaderPatch } from './look/shaderPatch';
-import { applyAuthoredInk, applyHitFlash, applyInkShell, applyLimbSmear, applyToonShading, headWeights, limbWeights, toonKind } from './look/toonShading';
+import { applyAuthoredInk, applyHitFlash, applyInkShell, applyLimbSmear, applyTeamTrim, applyToonShading, headWeights, limbWeights, teamTrim, toonKind } from './look/toonShading';
 import { applyThreatInk, threatInk } from './ThreatOutline';
 import { SHADOW_SIDE_FIGHTERS, fixShadowSide } from './look/shadowSide';
 import { HAND_SCALE } from './look/proportions';
@@ -2766,6 +2766,15 @@ export class Fighter {
   private outlineMaterials:THREE.Material[]=[];
   /** Round 4b (TARGETING): the lock's glow on this body's ink (ThreatOutline); unlit, the ink as it was. */
   readonly threatInk=threatInk();
+  /** This body's side in a ball match, on its ink and its rim light (look/toonShading.ts applyTeamTrim;
+   *  render/ball/TeamTrim.ts sets it). All zero, as everywhere else: the ink and the rims as they were. */
+  readonly teamTrim=teamTrim();
+  /** The side's trim on this body and on its transformation's (a form is a body of its own): the ink's colour and the
+   *  rim's (linear), and how much of each (0-1). */
+  setTeamTrim(ink:THREE.Color,rim:THREE.Color,inkAmount:number,rimAmount:number){
+    this.teamTrim.inkColor.value.copy(ink);this.teamTrim.rimColor.value.copy(rim);this.teamTrim.amount.value.set(inkAmount,rimAmount);
+    this.awakenedForm?.setTeamTrim(ink,rim,inkAmount,rimAmount);
+  }
   private rightBone?:THREE.Bone;
   private leftBone?:THREE.Bone;
   /** The far end of whatever is in that hand, in the hand's own frame. Only
@@ -3319,7 +3328,7 @@ export class Fighter {
       const originals=Array.isArray(mesh.material)?mesh.material:[mesh.material];
       const materials=originals.map(material=>{
         const src=material as THREE.MeshStandardMaterial;
-        if(/outline/i.test(mesh.name)){const outline=new THREE.MeshBasicMaterial({color:0x0d1b26,side:src.side});applyAuthoredInk(outline);applyThreatInk(outline,this.threatInk,false);this.outlineMaterials.push(outline);return outline;}
+        if(/outline/i.test(mesh.name)){const outline=new THREE.MeshBasicMaterial({color:0x0d1b26,side:src.side});applyAuthoredInk(outline);applyTeamTrim(outline,this.teamTrim,'ink');applyThreatInk(outline,this.threatInk,false);this.outlineMaterials.push(outline);return outline;}
         const mat=new THREE.MeshToonMaterial({map:src.map??null,color:src.color??new THREE.Color(1,1,1),gradientMap:toonGradient,normalMap:src.normalMap??null,normalScale:src.normalScale??new THREE.Vector2(1,1),normalMapType:src.normalMapType??THREE.TangentSpaceNormalMap,bumpMap:src.bumpMap??null,bumpScale:src.bumpScale??1,aoMap:src.aoMap??null,aoMapIntensity:src.aoMapIntensity??1,side:src.side,alphaTest:src.alphaTest||0,transparent:src.transparent,opacity:src.opacity});
         mat.name=material.name;
         // An outfit of a blue (or any) gold awakening: the hair the form swaps in, in the outfit's colour, its shading kept.
@@ -3362,6 +3371,7 @@ export class Fighter {
         // highlight and face softening (src/render/look/toonShading.ts).
         applyToonShading(mat,toonKind(mesh.name,material.name));
         if(lensFacingNormals(state.fighter))addShaderPatch(mat,'lens-normal-v1',lensNormalPatch);
+        applyTeamTrim(mat,this.teamTrim,'body'); // The side's colour on the rim in a ball match (nothing outside one).
         applyHitFlash(mat,this.flash,this.flashFlat);
         applyHagureCosmicLook(mat,state.fighter,this.isForm);
         applyLimbSmear(mat,this.smear);
@@ -3401,7 +3411,7 @@ export class Fighter {
         // The push is now a constant screen width (about 2.2 px at 1080p)
         // with the fighter's outlineWidth as a multiplier on the roster's
         // 3 mm, and the ink colour follows the stage; see applyInkShell.
-        applyInkShell(outline,inkWidth/.003,INK_DEPTH_BIAS);preserveAmagoiCloakSurface(outline,state.fighter,mesh.name);applyThreatInk(outline,this.threatInk);applyLimbSmear(outline,this.smear);
+        applyInkShell(outline,inkWidth/.003,INK_DEPTH_BIAS);applyTeamTrim(outline,this.teamTrim,'ink');preserveAmagoiCloakSurface(outline,state.fighter,mesh.name);applyThreatInk(outline,this.threatInk);applyLimbSmear(outline,this.smear);
         const shell=(mesh as THREE.SkinnedMesh).isSkinnedMesh?new THREE.SkinnedMesh(mesh.geometry,outline):new THREE.Mesh(mesh.geometry,outline);
         shell.name=mesh.name+'-ink';shell.frustumCulled=false;shell.matrixAutoUpdate=false;shell.matrix.identity();shell.castShadow=false;shell.receiveShadow=false;
         shell.morphTargetInfluences=mesh.morphTargetInfluences;shell.morphTargetDictionary=mesh.morphTargetDictionary;

@@ -3,22 +3,27 @@ import { hasStances } from '../game/ball/stance';
 import type { Spot } from './touchLayout';
 
 /**
- * The ball modes' own touch set: six buttons where the fighting game's fan has ten. In a ball match the fan
- * steps aside for six buttons laid like a sports pad - the shot big in the corner, the pass beside it, the jump over
- * it, the run at the near end of the bottom row, and two more over those - each one a press of an action the input
- * already has (Input.touchPress), so the room, the bots and the prediction see exactly what a key would send.
+ * The ball modes' own touch set: a sports pad where the fighting game's fan has ten buttons. In a ball match the fan
+ * steps aside for it, each button a press of an action the input already has (Input.touchPress), so the room, the bots
+ * and the prediction see exactly what a key would send. Four main buttons are the same in both modes - the shot big in
+ * the corner, the pass beside it, the jump over it, the boost at the near end of the bottom row - and one changes with
+ * the moment, over the pass. SUPER is the HUD's bar until it is charged (ui/hud/BallHud.ts), and only then a button.
  *
  *  - Goal Rush, BALL stance: SHOOT (heavy: a power shot; in the air a volley), PASS (light: a tap to a team-mate's run),
- *    JUMP, BOOST (the dash: on the floor it runs on as the boost; held, it boosts and lifting stops it), FIGHT (the
- *    target key: Tab's stance toggle) and SUPER (the ultimate, only once it is charged).
- *  - Goal Rush, FIGHT stance: the same buttons as fight moves - HEAVY (the move's own art), LIGHT, JUMP, DASH, BALL (the
- *    stance back) and ULT - ringed red, so the playstyle you are in is the colour under your thumb.
+ *    JUMP, BOOST (the dash: on the floor it runs on as the boost; held, it boosts and lifting stops it), and the
+ *    moment's: FIGHT (the target key: Tab's stance toggle).
+ *  - Goal Rush, FIGHT stance: the same buttons as fight moves - HEAVY (the move's own art), LIGHT, JUMP, DASH and BALL
+ *    (the stance back) - ringed red, so the playstyle you are in is the colour under your thumb.
  *  - Sky Spike: SPIKE (heavy; SERVE on your serve), SET (light, named for the touch it will be: BUMP, SET, TIP, or LOB
- *    on your serve), JUMP, DIVE (the dash: a dash into a hard ball is the DIVING DIG's reach), BLOCK (guard, held) and
- *    SUPER once charged.
+ *    on your serve), JUMP, BOOST (the dash, which into a hard ball is the DIVING DIG's reach), and the moment's: BLOCK
+ *    (guard, held) at the net, DIVE (the dash again, by the name of what it is for) in the back court while the ball is
+ *    the other side's (`spikeMoment`).
  *  - FREE PLAY in Goal Rush has no stances, so no FIGHT button (a drill with fights, the TACKLE drill, has it).
- * Not on the set: SPECIAL (the curve), AREA, AWAKEN and Goal Rush's guard (the keeper's SAVE): six buttons is the
- * most for a thumb, and a shot or a pass at a ball coming at your goal is a save all the same.
+ *  - SUPER (ULT in a fight), gold, over the boost: only once the ultimate is charged.
+ * The shot's button is held as its key is (`SportFace.held`: Input.touchKey, down with the finger and up with it), for
+ * a rule that reads how long SHOOT is held.
+ * Not on the set: SPECIAL (the curve), AREA, AWAKEN and Goal Rush's guard (the keeper's SAVE): a shot or a pass at a
+ * ball coming at your goal is a save all the same.
  *
  * Data and rules only: input/touch.ts draws it, handheld.css styles it, ui/prompts.ts names its buttons in prompts.
  */
@@ -32,32 +37,40 @@ export interface SportFace {
   action: SportAction; label: string; glyph: SportGlyph;
   /** BOOST: held, it keeps the boost going and lifting stops it (TouchControls). */
   hold?: boolean;
-  /** SUPER short of its charge: drawn as a small dim charge ring, not a button (a finger on it looks round). */
-  charging?: boolean;
+  /** The shot: its press is reported as its key's is, down while the finger is and up as it lifts (TouchControls,
+   *  Input.touchKey) - a rule may read how long SHOOT is held. */
+  held?: boolean;
 }
 export type SportSet = Readonly<Record<SportSlot, SportFace | null>>;
 
 /** Where each button stands: diameter and centre, phone CSS px, `x` in from the safe area's right edge and `y` up from its
- *  bottom, as the fan's (touchLayout.ts). Two rows of three: [SHOOT · PASS · BOOST] along the bottom, the big shot in the
- *  corner under the thumb's rest, the pass beside it, the run at the row's far end; [JUMP · FIGHT/BLOCK · SUPER] over
- *  them, JUMP straight over the shot (a jump and a strike, the volley and the spike, are one roll of the thumb), BLOCK
- *  beside JUMP (a block is a jump at the net and a guard). The right-most column stops under RIGHT_TOP, as the fan does,
- *  clear of the shot ticker and the bots' lines down the right; nothing passes 300 px in from the right, and the far
- *  column (BOOST, SUPER) stays under the prompt lane's foot even on a 667 px phone (SPORT_FAR_TOP), with the sports HUD's
- *  meter and stance badge to the left of it on a touch screen (ballHud.css). */
+ *  bottom, as the fan's (touchLayout.ts). Two rows: [SHOOT · PASS · BOOST] along the bottom, the big shot in the corner
+ *  under the thumb's rest, the pass beside it, the boost at the row's far end; [JUMP · the moment's] over them, JUMP
+ *  straight over the shot (a jump and a strike, the volley and the spike, are one roll of the thumb) and the moment's
+ *  beside JUMP (a block is a jump at the net and a guard). SUPER, once charged, stands over the boost. Five
+ *  where there were six and a charge ring, the four main ones larger (the shot 88 to 92, the pass 72 to 76, the jump 58
+ *  to 64, the boost 60 to 64), the far column 22 px nearer the thumb; nothing passes SPORT_REACH in from the right, and
+ *  the seat's strip - the stance badge and the two bars (SPORT_STRIP) - has the screen's foot to the left of it. JUMP
+ *  stands up to the fan's own top (touchLayout.ts CLUSTER_TOP), over where the right column stopped: the shot ticker
+ *  and the bots' lines that stood above it there are gone from the ball HUD. */
 export const SPORT_LAYOUT: Readonly<Record<SportSlot, Spot>> = {
-  main: { d: 88, x: 66, y: 64 },
-  pass: { d: 72, x: 166, y: 50 },
-  run: { d: 60, x: 258, y: 42 },
-  jump: { d: 58, x: 58, y: 146 },
-  side: { d: 62, x: 160, y: 140 },
-  super: { d: 54, x: 250, y: 114 },
+  main: { d: 92, x: 62, y: 62 },
+  pass: { d: 76, x: 160, y: 50 },
+  run: { d: 64, x: 244, y: 44 },
+  jump: { d: 64, x: 56, y: 154 },
+  side: { d: 62, x: 150, y: 136 },
+  super: { d: 54, x: 236, y: 114 },
 };
 /** The far column's top (BOOST, SUPER), phone px: under the prompt lane's foot on the shortest phone (handheld.css: 38%
  *  of a 375 px screen). Everything stays within SPORT_REACH of the safe area's right edge. */
-export const SPORT_FAR_TOP = 142, SPORT_REACH = 300;
-/** SUPER short of its charge: a ring this size where the button will be. */
-export const SUPER_CHARGING = 44;
+export const SPORT_FAR_TOP = 142, SPORT_REACH = 278;
+/** The stick's ring at rest in a ball match, phone px across (handheld.css: the fight's is 116): a hint of where the
+ *  thumb goes, drawn smaller here so less of the pitch is under it. */
+export const SPORT_STICK = 100;
+/** The seat's strip on a phone on its side (ui/hud/ballHud.css: the stance badge, then the two bars, in one row), CSS
+ *  px: along the screen's foot, ending `gap` short of the boost's reach, no wider than `wide` nor taller than `tall` -
+ *  which is lower than the stick's ring at rest (34 px up, 30 on the shortest phone). */
+export const SPORT_STRIP = { wide: 340, tall: 28, gap: 10 } as const;
 /** BOOST held this long (ms) is a hold: lifting it stops the boost. A shorter tap is a burst that runs on while the stick
  *  holds, as the dash key's does. And while it is held, a boost that has stopped (a landing, a stun, the stick let go and
  *  pushed again) is pressed for again, at most this often (ms). */
@@ -75,24 +88,37 @@ export function spikeLight(view: Pick<BallView, 'phase' | 'serverId' | 'touchTea
   return { label: 'BUMP', glyph: 'bump' };
 }
 
+/** Sky Spike's back court for the moment's button: this far from the net (m) and further, a body digs; nearer, it
+ *  blocks (ui/ball/ballHints.ts: the BLOCK hint's net is 3.2 m, the DIVE hint's back court from 4.5). */
+export const SPIKE_BACK = 4;
+/** Sky Spike's button of the moment: DIVE - the dash, by the name of what it is for - while the ball is the other side's
+ *  and the body stands in the back court (`at`, its place; the net is z = 0); BLOCK - the guard, held - at the net, and
+ *  whenever the ball is your own side's or nobody's. */
+export function spikeMoment(view: Pick<BallView, 'phase' | 'ball' | 'seats'>, selfId: string, at?: { z: number }): SportFace {
+  const team = view.seats.find(s => s.id === selfId)?.team, last = view.ball?.lastTeam;
+  if (at && team && last && last !== team && view.phase === 'live' && Math.abs(at.z) >= SPIKE_BACK) return { action: 'dash', label: 'DIVE', glyph: 'dive' };
+  return { action: 'guard', label: 'BLOCK', glyph: 'block' };
+}
+
 /** The set a ball match shows now: per slot what it presses and how it reads, or null where the slot is empty. `fight`
- *  is Goal Rush's FIGHT stance (the page's own lock, hudView.ballLock); `superReady` whether the ultimate is charged. */
-export function sportSet(view: BallView, selfId: string, fight: boolean, superReady: boolean): SportSet {
-  const superFace = (label: string): SportFace => superReady ? { action: 'ultimate', label, glyph: 'super' } : { action: 'ultimate', label: '', glyph: 'super', charging: true };
+ *  is Goal Rush's FIGHT stance (the page's own lock, hudView.ballLock); `superReady` whether the ultimate is charged
+ *  (short of it there is no button: the HUD's SUPER bar is its charge); `at` the body's place (Sky Spike's moment). */
+export function sportSet(view: BallView, selfId: string, fight: boolean, superReady: boolean, at?: { z: number }): SportSet {
+  const superFace = (label: string): SportFace | null => superReady ? { action: 'ultimate', label, glyph: 'super' } : null;
   if (view.mode === 'sky-spike') {
     const serving = view.phase === 'kickoff' && view.serverId === selfId, light = spikeLight(view, selfId);
     return {
-      main: { action: 'heavy', label: serving ? 'SERVE' : 'SPIKE', glyph: serving ? 'shoot' : 'spike' },
+      main: { action: 'heavy', label: serving ? 'SERVE' : 'SPIKE', glyph: serving ? 'shoot' : 'spike', held: true },
       pass: { action: 'light', label: light.label, glyph: light.glyph },
       jump: { action: 'jump', label: 'JUMP', glyph: 'jump' },
-      run: { action: 'dash', label: 'DIVE', glyph: 'dive' },
-      side: { action: 'guard', label: 'BLOCK', glyph: 'block' },
+      run: { action: 'dash', label: 'BOOST', glyph: 'boost', hold: true },
+      side: spikeMoment(view, selfId, at),
       super: superFace('SUPER'),
     };
   }
   const stances = hasStances(view), fighting = stances && fight;
   if (fighting) return {
-    main: { action: 'heavy', label: 'HEAVY', glyph: 'art' },
+    main: { action: 'heavy', label: 'HEAVY', glyph: 'art', held: true },
     pass: { action: 'light', label: 'LIGHT', glyph: 'fist' },
     jump: { action: 'jump', label: 'JUMP', glyph: 'jump' },
     run: { action: 'dash', label: 'DASH', glyph: 'dash', hold: true },
@@ -100,7 +126,7 @@ export function sportSet(view: BallView, selfId: string, fight: boolean, superRe
     super: superFace('ULT'),
   };
   return {
-    main: { action: 'heavy', label: 'SHOOT', glyph: 'shoot' },
+    main: { action: 'heavy', label: 'SHOOT', glyph: 'shoot', held: true },
     pass: { action: 'light', label: 'PASS', glyph: 'pass' },
     jump: { action: 'jump', label: 'JUMP', glyph: 'jump' },
     run: { action: 'dash', label: 'BOOST', glyph: 'boost', hold: true },
@@ -111,9 +137,10 @@ export function sportSet(view: BallView, selfId: string, fight: boolean, superRe
 
 /** What a prompt calls each action's button on a touch screen in a ball match (prompts.ts touchKey): the set's own
  *  label, in the stance the player is in. An action the set has no button for has no name (the prompt says the verb
- *  alone). Sky Spike's light is SET in prompts, whatever touch it is for. */
+ *  alone). Sky Spike's light is SET in prompts, whatever touch it is for; its dash is BOOST, the button that is always
+ *  there (the moment's DIVE is the same press, when it shows). */
 export function sportTouchName(mode: BallModeId, fight: boolean, action: string): string | undefined {
-  if (mode === 'sky-spike') return ({ light: 'SET', heavy: 'SPIKE', jump: 'JUMP', dash: 'DIVE', guard: 'BLOCK', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
+  if (mode === 'sky-spike') return ({ light: 'SET', heavy: 'SPIKE', jump: 'JUMP', dash: 'BOOST', guard: 'BLOCK', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
   return (fight
     ? { light: 'LIGHT', heavy: 'HEAVY', jump: 'JUMP', dash: 'DASH', target: 'BALL', ultimate: 'ULT', interact: 'JUMP' }
     : { light: 'PASS', heavy: 'SHOOT', jump: 'JUMP', dash: 'BOOST', target: 'FIGHT', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
