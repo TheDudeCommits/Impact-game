@@ -2,6 +2,9 @@ import { BALL_ID, GOAL_RULES, POINT_GIVEN, POINT_WON, SPIKE_RULES, ballOf, heatT
 import { stepBall, type BallContact } from '../game/ball/physics';
 import type { GameSnapshot, Vec3 } from '../game/types';
 import { BallCaller, callerFiles, type CallerMoment, type CallerVoice } from './ballCaller';
+/** The caller's FEVER lines that say every point counts double (caller.json fever-1, fever-4), not said while a FEVER
+ *  point is worth two to the side behind alone (BallMatch SWINGS.feverBehind). */
+const FEVER_FOR_EVERYONE = /\/fever-[14]\.[a-z0-9]+$/;
 
 /** Goal Rush's and Sky Spike's own sound.
  *
@@ -203,7 +206,7 @@ export class BallAudio {
     const n = (this.flavour.get(key) ?? 0) + 1; this.flavour.set(key, n);
     return ids[n % ids.length];
   }
-  private say(moment: CallerMoment, delay = 0, queue = false) { this.caller.say(moment, { delay, queue }); }
+  private say(moment: CallerMoment, delay = 0, queue = false, avoid?: RegExp) { this.caller.say(moment, { delay, queue, avoid }); }
   private side(team: BallTeam | null | undefined, home: BallTeam | null) { return !home || !team || team === home ? 1 : AWAY; }
 
   private event(e: BallEvent, view: BallView, home: BallTeam | null, fresh: BallEvent[], now: number) {
@@ -296,7 +299,9 @@ export class BallAudio {
       case 'fever':
         this.centred('riser-fever'); this.react('crowd-roar-1', .6, .3); this.mix.cheer(1);
         // (Goal Rush's FINAL PUSH is a 'fever' too: the caller's fever lines are Sky Spike's FEVER RALLY.)
-        if (view.mode === 'sky-spike') this.say('fever', .4);
+        // (A FEVER point worth double to the side behind alone - the event's team - is never called "every point counts
+        // double" or "double points".)
+        if (view.mode === 'sky-spike') this.say('fever', .4, false, e.team ? FEVER_FOR_EVERYONE : undefined);
         break;
       case 'match-point': this.matchPoint = true; this.mix.cheer(.8); this.say('match-point', .5); break;
       case 'rally': this.mix.cheer(.5); this.react('crowd-applause', .4, .1); this.say('rally', .2); break;

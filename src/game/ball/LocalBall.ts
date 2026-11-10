@@ -6,6 +6,7 @@ import {lockCombatOn} from '../lockMode';
 import {SECOND} from '../couchSeat';
 import {DeviceMatch} from '../economy/device';
 import {BallMatch} from './BallMatch';
+import type {BotLevel} from './BallBrain';
 import {BALL_RULES, BALL_STAGE, otherTeam, type BallModeId, type BallTeam} from './model';
 import type {BallMutator} from './mutators';
 import type {BallLook} from './look';
@@ -13,7 +14,7 @@ import {DRILLS, isDrill, type DrillId} from './drills';
 
 /** What else a match on this device is played with: a mutator, a training drill (FREE PLAY's), and what the
  *  page's own player wears in the ball modes (their seat's look: ball skin, trail, goal burst, celebration). */
-export interface BallExtras { mutator?: BallMutator; drill?: DrillId; look?: BallLook; /** The arena picked (arenas.ts); none: the mode's in turn. */ arena?: BallArenaId }
+export interface BallExtras { mutator?: BallMutator; drill?: DrillId; look?: BallLook; /** The arena picked (arenas.ts); none: the mode's in turn. */ arena?: BallArenaId; /** The other side's bots' level (BallBrain BOT_LEVELS); none: NORMAL. */ difficulty?: BotLevel }
 /** The arenas whose intro this page has flown over: a match there again opens with the
  *  short intro (ceremony.ts SHORT_INTRO), as a rematch does. For the page's session. */
 const flown = new Set<BallArenaId>();
@@ -68,7 +69,8 @@ export class LocalBall {
     const here = typeof location === 'object' && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) ? new URLSearchParams(location.search) : undefined;
     const length = Number(here?.get('balllength')) || undefined;
     this.match = new BallMatch(mode, {collision, seed, access: 'bots', lockCombat: lockCombatOn(), length, replays: !partner, rumble, arena, practice: practice && !partner,
-      mutator: rumble ? null : extras.mutator ?? null, drill: practice && !partner ? extras.drill : undefined, intro, round: typeof again === 'object' ? again.round : undefined});
+      mutator: rumble ? null : extras.mutator ?? null, drill: practice && !partner ? extras.drill : undefined, intro, round: typeof again === 'object' ? again.round : undefined,
+      difficulty: practice && !partner ? undefined : extras.difficulty});
     const team: BallTeam = 'red';
     this.match.add(this.id, fighter, name, false, team); this.match.sim.setPlayerSkill(this.id, keptSkill()); this.match.setLook(this.id, extras.look);
     // `?ballpilot` on this machine: a bot plays the page's own fighter (the captures and checks of the ball modes).

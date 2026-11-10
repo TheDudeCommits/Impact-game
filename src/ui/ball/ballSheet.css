@@ -23,3 +23,7 @@
 .rk-stamp.rk-placing{border-style:dashed;color:#5b564e;border-color:#5b564e}
 .rk-stamp.rk-gilded{border-color:#a8740a;color:#a8740a}.rk-stamp.rk-cover{border-color:#0b0c0e;color:#fff;background:#c81e2a}
 .rk-stamp.rk-cover small{color:#fff}
+/* The ball sheets carry no stage tiles under their column (.ms-where, .ms-place: the other modes' arenas), so the
+   column may run nearer the foot than the 470 units kept for them: with the BOTS row the RULES row would be half under
+   the column's fold at 1600 x 900. */
+.mode-sheet.ms-select .ms-mode:has(.bs-rules){max-height:calc(100% - 260 * var(--u))}

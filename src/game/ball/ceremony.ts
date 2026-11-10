@@ -9,9 +9,9 @@ import type {BallModeId, BallTeam} from './model';
  *  before the kickoff or the serve. Everyone in the match can vote to skip it, as with a replay. */
 export const INTRO = {
   /** Start to whistle, seconds. */
-  seconds: 8,
+  seconds: 6.4,
   /** When the flyover gives way to the splash page, and when the referee's whistle goes. */
-  splash: 5.3, whistle: 7.55,
+  splash: 4.1, whistle: 6,
   /** Once everyone has voted to skip: the kickoff this soon. */
   skipTo: .45,
 } as const;

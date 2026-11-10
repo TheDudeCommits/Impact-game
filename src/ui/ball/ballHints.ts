@@ -21,8 +21,10 @@ import { ballHintsShown, coachOn, markBallHint } from '../modes/prefs';
  *  - Sky Spike: AS IT PEAKS · AT THE TOP (a team-mate's set coming down to you: the PERFECT SPIKE's timing), DIVE (their
  *    set with you in the back court: a dash into a hard ball reaches it - the DIVING DIG), BLOCK (their set with you at the
  *    net).
+ *  - Both: SCUFFED (your own strike just came out of a flurry of presses and was mis-hit: BallMatch MASHED) -
+ *    one press, on time.
  */
-export type BallHintId = 'gr-tackle' | 'gr-knock' | 'gr-boost' | 'gr-aerial' | 'gr-save' | 'ss-spike' | 'ss-dig' | 'ss-block';
+export type BallHintId = 'gr-tackle' | 'gr-knock' | 'gr-boost' | 'gr-aerial' | 'gr-save' | 'gr-scuff' | 'ss-spike' | 'ss-dig' | 'ss-block' | 'ss-scuff';
 /** How long a hint stays up (ms) unless it is done sooner; the breath after one before another may come; the most a
  *  match shows; the quiet start of a match (the coach's own opening line). */
 export const HINT_MS = 4500, HINT_GAP_MS = 12000, HINTS_A_MATCH = 3, HINT_QUIET_S = 6;
@@ -42,6 +44,8 @@ interface Ctx extends HintFrame {
   since: number;
   /** Whether the page's own fighter has made a moment of this kind since the hint went up. */
   mine: (kind: BallEvent['kind']) => boolean;
+  /** The page's own fighter scuffed the ball a moment ago (a strike out of a flurry of presses: BallMatch MASHED). */
+  scuffed?: boolean;
 }
 interface Hint {
   id: BallHintId; mode: BallModeId;
@@ -74,8 +78,12 @@ function nearestTo(c: Ctx, spot: { x: number; z: number }) {
   return true;
 }
 
+/** Your strike came out SCUFFED - the presses that made it were a flurry. Said once, the moment it happens. */
+const scuffed = () => '<span class="ux-prompt"><b>SCUFFED</b><small>MASHING MIS-HITS THE BALL · ONE PRESS, ON TIME</small></span>';
+
 export const HINTS: readonly Hint[] = [
   // ─── Goal Rush ───
+  { id: 'gr-scuff', mode: 'goal-rush', fire: c => !!c.scuffed && !c.fight, draw: scuffed },
   { id: 'gr-tackle', mode: 'goal-rush',
     fire: c => { if (c.fight || !hasStances(c.view)) return false; const q = carrier(c); return !!q && flat(q, c.me) > 2.2 && flat(q, c.me) < 10; },
     done: c => c.fight,
@@ -102,6 +110,7 @@ export const HINTS: readonly Hint[] = [
     done: c => c.mine('save') || c.mine('perfect'),
     draw: c => prompt('guard', 'SAVE', keys(c, { detail: 'ON TIME, IT KILLS THE HEAT' })) },
   // ─── Sky Spike ───
+  { id: 'ss-scuff', mode: 'sky-spike', fire: c => !!c.scuffed, draw: scuffed },
   { id: 'ss-spike', mode: 'sky-spike',
     fire: c => {
       const b = c.ball;
@@ -134,18 +143,25 @@ export class BallHints {
   constructor(private readonly busy: () => boolean = () => false, private readonly shown = ballHintsShown, private readonly mark = markBallHint, private readonly on = coachOn) {}
 
   /** A ball moment: the ones the page's own fighter made count toward a hint's "done". */
-  event(e: BallEvent, selfId: string) { if (e.actorId === selfId) { this.moments.push({ kind: e.kind, at: e.at }); if (this.moments.length > 12) this.moments.shift(); } }
+  event(e: BallEvent, selfId: string) {
+    if (e.actorId !== selfId) return;
+    this.moments.push({ kind: e.kind, at: e.at }); if (this.moments.length > 12) this.moments.shift();
+    if (e.kind === 'strike' && e.text === 'SCUFFED') this.scuffAt = e.at;
+  }
+  /** When the page's own fighter last scuffed the ball (server time). */
+  private scuffAt = -Infinity;
 
   /** Every frame (`now`: the page's clock, ms): the hint to show in the prompt lane, or ''. */
   frame(f: HintFrame, now: number): string {
     const v = f.view, seat = v.seats.find(s => s.id === f.self.id);
     const match = `${v.mode}:${v.startedAt}`;
-    if (match !== this.match) { this.match = match; this.count = 0; this.lastAt = -Infinity; this.showing = undefined; this.moments.length = 0; }
+    if (match !== this.match) { this.match = match; this.count = 0; this.lastAt = -Infinity; this.showing = undefined; this.moments.length = 0; this.scuffAt = -Infinity; }
     if (f.fight) { if (this.fightSince < 0) this.fightSince = now; } else this.fightSince = -1;
     if (!seat || v.practice || v.phase !== 'live' || v.replay || seat.out !== undefined || !f.self.alive) { this.showing = undefined; return ''; }
     const since = this.showing?.since ?? f.serverTime;
     const c: Ctx = { ...f, seat, team: seat.team, ball: v.ball, me: f.self, at: id => f.players.find(p => p.id === id),
-      since: this.fightSince < 0 ? 0 : (now - this.fightSince) / 1000, mine: kind => this.moments.some(m => m.kind === kind && m.at >= since) };
+      since: this.fightSince < 0 ? 0 : (now - this.fightSince) / 1000, mine: kind => this.moments.some(m => m.kind === kind && m.at >= since),
+      scuffed: f.serverTime - this.scuffAt < 1.5 };
     if (this.showing) {
       const { hint, until } = this.showing;
       if (now < until && !hint.done?.(c)) return hint.draw(c);

@@ -654,14 +654,16 @@ export interface ExternalTargets {
    *  swings play the ball and never hurt a fighter (game/ball/model.ts GOAL_STANCE). Absent (every other mode): every
    *  fighter of another side is fair game, as it always was. */
   spares?(attackerId:string,targetId:string):boolean;
-  /** Every body whose hit volume may touch the capsule from `a` to `b` of `radius`: written into `out`, the count returned. */
-  query(a: Vec3, b: Vec3, radius: number, out: ExternalBody[]): number;
+  /** Every body whose hit volume may touch the capsule from `a` to `b` of `radius`: written into `out`, the count returned.
+   *  `by` (the ball rooms' lag compensation): the fighter whose swing asks - a set may answer with a body where
+   *  that fighter's page drew it (game/ball/BallMatch.ts SEEN). Every other set ignores it, and answers as it always did. */
+  query(a: Vec3, b: Vec3, radius: number, out: ExternalBody[], by?: string): number;
   /** A blow reaches a body; what it did, or null when it could not land (dying, still coming out of a rift). */
   receive(body: ExternalBody, blow: ExternalBlow): { damage: number; reaction?: ReactionKind; killed: boolean } | null;
   /** Time stopped around a point. */
   freeze(centre: Vec3, radius: number, seconds: number, attackerId?:string): void;
-  /** Where a body is now, for a swing homing on it. */
-  locate(id: string): ExternalBody | undefined;
+  /** Where a body is now, for a swing homing on it; `by` as for query. */
+  locate(id: string, by?: string): ExternalBody | undefined;
 }
 /** Arcade survival's hack-and-slash aim: a swing turns to the nearest enemy
  *  all the way round, and homes up to `magnet` metres past its own reach. */
@@ -1707,7 +1709,7 @@ export class ArenaSimulation {
     const p = a.state;
     const lock = p.target ? this.actors.get(p.target)?.state : undefined;
     if (lock?.alive && this.hostile(p, lock) && Math.abs(lock.y - p.y) < 2.2 && Math.hypot(lock.x - p.x, lock.z - p.z) <= radius + radiusOf(lock)) return { actor: lock };
-    const chosen = a.chosenExternal ? this.external?.locate(a.chosenExternal) : undefined;
+    const chosen = a.chosenExternal ? this.external?.locate(a.chosenExternal, p.id) : undefined;
     if (chosen && this.external?.hostile?.(p.id,chosen)!==false && Math.abs(chosen.y - p.y) < 2.2 && Math.hypot(chosen.x - p.x, chosen.z - p.z) <= radius + chosen.radius) return { body: chosen };
     const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
     const score = (x: number, z: number, r: number) => {
@@ -2625,7 +2627,7 @@ export class ArenaSimulation {
         // The ball rooms (SportFeel.airDash): in the air, at the chosen body (the ball) when it is near and the way the
         // stick says (or the facing, the stick let go) - the aerial, sized to arrive on it as the chase is to its body.
         else if (!p.grounded && sport?.airDash && a.chosenExternal) {
-          const body = this.external?.locate(a.chosenExternal);
+          const body = this.external?.locate(a.chosenExternal, p.id);
           const dx = body ? body.x - p.x : 0, dy = body ? body.y + body.height * .55 - (p.y + .9) : 0, dz = body ? body.z - p.z : 0;
           const span = Math.hypot(dx, dy, dz), flat = Math.hypot(dx, dz);
           if (body && span > .4 && span <= sport.airDash && (flat < .5 || (dx * a.dashX + dz * a.dashZ) / flat >= .35)) {
@@ -3622,7 +3624,7 @@ export class ArenaSimulation {
     const lead = Math.max(1 / 60, cast.move.contacts[0] ?? .2);
     if (cast.branch === 'airHeavy') {
       const q = this.airAim(a, AIR_STRIKE_REACH, true);
-      const ext = !q && this.assist?.airExternal && a.chosenExternal ? this.external?.locate(a.chosenExternal) : undefined;
+      const ext = !q && this.assist?.airExternal && a.chosenExternal ? this.external?.locate(a.chosenExternal, p.id) : undefined;
       let vx: number, vy: number, vz: number;
       if (!q && ext && Math.hypot(ext.x - p.x, ext.z - p.z) <= AIR_STRIKE_REACH && Math.abs(ext.y - p.y) < 8) {
         // At the ball: the blow (a body's height up) comes level with its middle.
@@ -3749,7 +3751,7 @@ export class ArenaSimulation {
     const p = a.state, reach = cast.move.range + 2;
     const q = p.target ? this.actors.get(p.target) : undefined;
     if (q?.state.alive && this.hostile(p, q.state) && distance(p, q.state) <= reach) return { at: centreOf(q.state), vx: q.mx + q.kx, vz: q.mz + q.kz, actor: q };
-    const body = cast.externalAim ? this.external?.locate(cast.externalAim) : undefined;
+    const body = cast.externalAim ? this.external?.locate(cast.externalAim, p.id) : undefined;
     if (body && Math.hypot(body.x - p.x, body.z - p.z) <= reach) return { at: { x: body.x, y: body.y + body.height * .55, z: body.z }, vx: 0, vz: 0 };
     return undefined;
   }
@@ -4036,7 +4038,7 @@ export class ArenaSimulation {
     if (this.external) {
       const reach = this.reachOf(a, cast.slot, cast.move, !cast.airborne);
       const far = through ? tip : endpoint, wide = through ? reach : cast.move.radius;
-      const n = this.external.query(origin, far, wide + 1.2, this.nearby);
+      const n = this.external.query(origin, far, wide + 1.2, this.nearby, a.state.id);
       for (let i = 0; i < n; i++) {
         const body = this.nearby[i];
         const bc = { x: body.x, y: body.y + body.height * .55, z: body.z }, girth = body.radius - PLAYER_RADIUS;

@@ -96,7 +96,7 @@ export class BallCaller {
   private lastStart = -Infinity;
   private lastPriority = 0;
   private rested = new Map<CallerMoment, number>();
-  private bags = new Map<CallerMoment, string[]>();
+  private bags = new Map<string, string[]>();
   private last = '';
   private voiceSaid: Commentary = commentary;
   constructor(private readonly voice: CallerVoice, private readonly random: () => number = Math.random, private readonly clock = () => performance.now() / 1000) {}
@@ -104,10 +104,10 @@ export class BallCaller {
   reset() { this.busyUntil = -Infinity; this.lastStart = -Infinity; this.lastPriority = 0; this.rested.clear(); }
   /** Call `moment`, `delay` seconds from now, if the rules let him; `queue`: wait for the line being said rather than drop
    *  (a follow-up: the MVP after the result). Returns the file said, or nothing. */
-  say(moment: CallerMoment, options: { delay?: number; queue?: boolean } = {}): string | undefined {
+  say(moment: CallerMoment, options: { delay?: number; queue?: boolean; /** Lines (their files) not to say this time: a FEVER rally's "every point counts double" when only the side behind's point does. */ avoid?: RegExp } = {}): string | undefined {
     // A voice changed in Settings: its own lines from now on.
     if (this.voiceSaid !== commentary) { this.voiceSaid = commentary; this.bags.clear(); this.voice.preload(callerFiles()); }
-    const lines = callerLines(moment), rules = CALLER[moment];
+    const lines = options.avoid ? callerLines(moment).filter(url => !options.avoid!.test(url)) : callerLines(moment), rules = CALLER[moment];
     if (!lines.length) return;
     const now = this.clock();
     let at = now + Math.max(0, options.delay ?? 0);
@@ -119,7 +119,7 @@ export class BallCaller {
     }
     if (rules.priority < BIG && at - this.lastStart < SPACING) return;
     if (rules.chance < 1 && this.random() >= rules.chance) return;
-    const url = this.pick(moment, lines), seconds = this.voice.sampleSeconds(url);
+    const url = this.pick(options.avoid ? `${moment}~${options.avoid.source}` : moment, lines), seconds = this.voice.sampleSeconds(url);
     // Not decoded yet: fetched for next time, and this moment passes (a line is never said late).
     if (seconds === undefined) { this.voice.preload([url]); return; }
     this.voice.announce(url, CALLER_GAIN, at - now);
@@ -127,7 +127,7 @@ export class BallCaller {
     return url;
   }
   /** Each moment's lines in a shuffled bag, so none comes round again before the others, and never the same twice running. */
-  private pick(moment: CallerMoment, lines: readonly string[]) {
+  private pick(moment: string, lines: readonly string[]) {
     let bag = this.bags.get(moment);
     if (!bag?.length) {
       bag = [...lines];

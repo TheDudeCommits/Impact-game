@@ -31,6 +31,11 @@ export interface StrikeContext {
   /** Goal Rush: a HEADER (BallMatch HEADER) - the ball met by the top of a body, headed on - and how fast it
    *  came in (m/s; a share of it goes back out). */
   header?: boolean; incoming?: number;
+  /** A SCUFF - the blow came out of a flurry of presses (BallMatch MASHED) - and how far off its aim it goes (radians,
+   *  BallMatch's draw). It flies SCUFF.speed as fast, the way it was mis-hit, with no help on target, no pass's lead,
+   *  nothing of the run carried and never a PERFECT; `off` (-1..1) is the same mis-hit as a share, which way and how
+   *  far a Sky Spike keep lands off its spot. */
+  scuff?: {yaw: number; off: number};
   /** Sky Spike: an off-time JUMP SERVE's error, metres off the spot it was aimed at (BallMatch rolls it from how
    *  far under the top of the jump it was struck: SERVE_RULES.spray). */
   spray?: {x: number; z: number};
@@ -82,6 +87,12 @@ export const SERVE_STYLE = {float: 14, floatTime: 1.25, drift: 3.2, drive: 19, j
 export const SPIKE_QUICK = {height: 4.5, z: 1.3, seconds: .62, wing: 4.6, back: 4, backSeconds: 1.05} as const;
 export const SPIKE_TIP = {near: 1.9, far: 3.7, seconds: .8, height: .5} as const;
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+/** Skill against mashing: a SCUFF, a blow out of a flurry of presses (BallMatch MASHED), comes off the boot at `speed`
+ *  of the shot it would have been, off its aim, unhelped. Sky Spike's scuffed keep (a bump or a set) lands `keep` metres
+ *  off the spot it is laid for, either way, and a scuffed hit over flies `speed` as fast. In the headless sims with
+ *  scripted players (playerModels.ts), without it a masher's side scored more and conceded less than a casual
+ *  player's. */
+export const SCUFF = {speed: .6, keep: 2.6} as const;
 /** Every touch carries momentum: a shot struck on the run - a sprint, a boost, a
  *  dash into it - flies this share of the striker's speed along the aim faster (never past its heat's cap). Not a tap's
  *  pass or a Sky Spike keep, which are laid to land where they were meant to. */
@@ -98,7 +109,7 @@ const carried = (c: StrikeContext, dx: number, dz: number) => Math.max(0, (c.run
 export function strikeBall(ball: BallState, c: StrikeContext): StrikeResult {
   const kind = classify(ball, c);
   // (Sky Spike's perfect is a spike's or a jump serve's; Goal Rush's a committed shot's.)
-  const perfect = !!c.perfect && (c.mode === 'sky-spike' ? kind === 'spike' || kind === 'serve' : PERFECT_KINDS.has(kind));
+  const perfect = !!c.perfect && !c.scuff && (c.mode === 'sky-spike' ? kind === 'spike' || kind === 'serve' : PERFECT_KINDS.has(kind));
   const heatAdd = c.slot === 'ultimate' ? BALL_RULES.heatMax : (BALL_RULES.heatPer[c.slot] ?? .3) * (c.finisher && c.slot === 'light' ? 2 : 1) * (c.mode === 'sky-spike' ? SPIKE_RULES.heatShare : 1);
   let heat = Math.min(BALL_RULES.heatMax, ball.heat + heatAdd);
   // (A JUMP SERVE leaves the hand warm: its flight is the hardest a cold ball takes.)
@@ -148,8 +159,8 @@ type Flight = {vx: number; vy: number; vz: number; sx: number; sy: number; sz: n
 
 function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: number, cap = Infinity): Flight {
   const R = GOAL_RULES, s = c.striker, g = R.gravity * (c.gravity ?? 1);
-  // A blast from a shot or a beam goes where its thrower aimed, as every other strike does.
-  const yaw = s.aimYaw;
+  // A blast from a shot or a beam goes where its thrower aimed, as every other strike does. (A SCUFF goes off it.)
+  const yaw = s.aimYaw + (c.scuff?.yaw ?? 0);
   const enemy = s.team === 'red' ? 'blue' : 'red', gz = goalZ(enemy);
   // [speed, lift in degrees, side spin, top spin] by shot.
   const table: Record<string, [number, number, number, number]> = {
@@ -173,11 +184,12 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
   // (Never faster than the ball's tier lets it fly: a shot helped on target is aimed for the speed it will really have,
   // or a cool ball's shot would sink under the height it was laid for.)
   let dx = Math.sin(yaw), dz = Math.cos(yaw);
-  let speed = Math.min(cap, base * power * (c.perfect ? PERFECT_SHOT.speed : 1) + (kind === 'power' ? Math.min(6, c.knockback * .35) : 0) + (kind === 'tap' ? 0 : carried(c, dx, dz))
+  let speed = Math.min(cap, base * power * (c.perfect ? PERFECT_SHOT.speed : 1) + (kind === 'power' ? Math.min(6, c.knockback * .35) : 0) + (kind === 'tap' || c.scuff ? 0 : carried(c, dx, dz))
     // (A header sends back a share of how hard the ball came in.)
     + (kind === 'header' ? Math.min(PERFECT_SHOT.headerBackMost, (c.incoming ?? 0) * PERFECT_SHOT.headerBack) : 0));
+  if (c.scuff) speed *= SCUFF.speed;
   // A tap toward a team-mate is a pass to where they are running.
-  if (kind === 'tap' && c.mates?.length) {
+  if (kind === 'tap' && c.mates?.length && !c.scuff) {
     let best: {x: number; z: number; t: number} | undefined, bestCos = Math.cos(28 * DEG);
     for (const m of c.mates) {
       const ex = m.x - ball.x, ez = m.z - ball.z, d = Math.hypot(ex, ez);
@@ -197,7 +209,7 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
   // aimed at, kept), and a height under the bar when it gets there.
   const toward = Math.sign(gz - ball.z);
   // (A light string's drive is a shot of its own: only a committed blow is helped on target - and a PERFECT drive.)
-  if (kind !== 'tap' && (kind !== 'drive' || c.perfect) && dz * toward > (c.perfect ? .05 : .2)) {
+  if (kind !== 'tap' && (kind !== 'drive' || c.perfect) && !c.scuff && dz * toward > (c.perfect ? .05 : .2)) {
     const t = (gz - ball.z) / dz, hitX = ball.x + dx * t, d = Math.abs(t);
     // (From within 1.1 half-lengths of the goal: 21 m on the 38 m pitch; a PERFECT STRIKE and a header further.)
     const reach = kind === 'header' ? PERFECT_SHOT.headerReach : c.perfect ? PERFECT_SHOT.reach : 1.1, wide = kind === 'header' ? PERFECT_SHOT.headerWide : c.perfect ? PERFECT_SHOT.wide : 3;
@@ -250,11 +262,13 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
     else if (wing) { tx = Math.sign(across || 1) * SPIKE_QUICK.wing; if (Math.abs(tx - ball.x) >= SPIKE_QUICK.back) style = 'BACK SET'; }
     let tz = sign * (quick ? SPIKE_QUICK.z : set ? SPIKE_SET.z : dig ? SPIKE_DIG.z : 5.2);
     if (c.shank && !set) { tx = Math.max(-R.courtHalfX + .8, Math.min(R.courtHalfX - .8, tx + c.shank.x)); tz += sign * c.shank.z; }
+    // (A SCUFF lands off its spot, across the court, and short of it: a set off the net, a bump nobody stands under.)
+    if (c.scuff) { tx += c.scuff.off * SCUFF.keep; tz -= sign * Math.abs(c.scuff.off) * SCUFF.keep * .5; style = undefined; }
     const t = kind === 'eruption' ? 1.7 : quick ? SPIKE_QUICK.seconds : style === 'BACK SET' ? SPIKE_QUICK.backSeconds : set ? SPIKE_SET.seconds : dig ? SPIKE_DIG.seconds : 1.2;
     const v = arc(ball, tx, quick ? SPIKE_QUICK.height : set ? SPIKE_SET.height : dig ? SPIKE_DIG.height : 2.6, tz, t, g, R.drag);
     return {...v, sx: 0, sy: 0, sz: 0, shot: kind === 'eruption' ? 'eruption' : set ? 'set' : 'bump', style};
   }
-  const yaw = s.aimYaw;
+  const yaw = s.aimYaw + (c.scuff?.yaw ?? 0);
   const dx = Math.sin(yaw), dz = Math.cos(yaw);
   // The serve's three (SERVE_STYLE): a light FLOAT SERVE, a heavy's DRIVE from the floor, a JUMP SERVE from the air.
   const jumpServe = kind === 'serve' && !s.grounded && c.slot !== 'light', floatServe = kind === 'serve' && c.slot === 'light';
@@ -275,7 +289,8 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
     tx = best.x; tz = best.z;
   } else if (intoFar) {
     const reach = (Math.abs(ball.z) + deep) / Math.max(.25, Math.abs(dz));
-    tx = Math.max(-R.courtHalfX + .7, Math.min(R.courtHalfX - .7, ball.x + dx * reach));
+    // (A SCUFF goes where it was mis-hit, inside the lines or not.)
+    tx = c.scuff ? ball.x + dx * reach : Math.max(-R.courtHalfX + .7, Math.min(R.courtHalfX - .7, ball.x + dx * reach));
     tz = -sign * Math.max(1.2, Math.min(R.courtHalfZ - .7, deep + (kind === 'spike' || jumpServe ? 0 : -Math.abs(dx) * 1.5)));
   } else {
     // Aimed away from the other court: it flies the way it was aimed, and is probably out.
@@ -286,7 +301,7 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
   const flat = Math.hypot(tx - ball.x, tz - ball.z);
   // (Laid for the speed it will really have: a flight laid faster than the ball's cap lets it fly was slowed after and
   // came down short: JUMP SERVEs into the net.)
-  const speed = Math.min(cap * .97, (speedOf[kind] ?? 18) * power * (c.perfect && (kind === 'spike' || jumpServe) ? PERFECT_SPIKE_SPEED : 1) + (kind === 'serve' || kind === 'super' || flat < 1e-3 ? 0 : carried(c, (tx - ball.x) / flat, (tz - ball.z) / flat)));
+  const speed = Math.min(cap * .97, (speedOf[kind] ?? 18) * power * (c.perfect && (kind === 'spike' || jumpServe) ? PERFECT_SPIKE_SPEED : 1) * (c.scuff ? SCUFF.speed : 1) + (kind === 'serve' || kind === 'super' || flat < 1e-3 || c.scuff ? 0 : carried(c, (tx - ball.x) / flat, (tz - ball.z) / flat)));
   let t = floatServe ? SERVE_STYLE.floatTime : Math.max(.28, flat / speed);
   let v = arc(ball, tx, R.ballRadius, tz, t, g, R.drag);
   // It has to clear the net (a spike from too low becomes a tip that does): the slowest flight that does.

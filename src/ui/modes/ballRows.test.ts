@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ballChoice, ballPlayRow, ballRulesRow, ballStart, traitBadge } from '../ball/ballSheet';
+import { ballChoice, ballLevelRow, ballPlayRow, ballRulesRow, ballStart, traitBadge } from '../ball/ballSheet';
 import { drillBest, drillMedal, recordDrill, DRILLS_KEY } from '../ball/drillMedals';
 import { stampHtml, seasonLine } from '../ball/ranks';
 import { weeklyMutator, MUTATOR_NAMES } from '../../game/ball/mutators';
@@ -60,5 +60,21 @@ describe('the ball modes\' rows on the mode sheet', () => {
     expect(stampHtml({ rating: 1460, games: 9 }, 18)).toMatch(/COVER[\s\S]*\+18/);
     expect(seasonLine(Date.UTC(2026, 10, 9, 12))).toMatch(/^SEASON 1 · 56 DAYS LEFT$/);
     expect(traitBadge('taisei')).toContain('AERIALIST');
+  });
+  it('offers the bots\' level: EASY, NORMAL, HARD, NORMAL first, kept and sent with a match against bots', () => {
+    const row = ballLevelRow({});
+    for (const name of ['EASY', 'NORMAL', 'HARD']) expect(row).toContain(`>${name}</button>`);
+    expect(row).toMatch(/data-ms-ball="level:normal" aria-pressed="true"/);
+    expect(row).not.toContain('ms-note');
+    expect(ballLevelRow({ difficulty: 'easy' })).toMatch(/data-ms-ball="level:easy" aria-pressed="true"[\s\S]*ms-note/);
+    expect(ballChoice('level:hard')).toEqual({ difficulty: 'hard' });
+    expect(ballChoice('level:brutal')).toBeUndefined();
+    expect(ballStart('sky-spike', 'offline', { difficulty: 'hard' }, false, '')).toMatchObject({ access: 'bots', difficulty: 'hard' });
+    expect(ballStart('goal-rush', 'offline', {}, false, '')).toMatchObject({ difficulty: 'normal' });
+    expect(ballStart('sky-spike', 'couch', { difficulty: 'easy' }, false, '', { partner: 'konta', screen: 'split-v' })).toMatchObject({ couch: { partner: 'konta' }, difficulty: 'easy' });
+    // FREE PLAY and the drills have no bots to beat; online rooms none to choose.
+    expect(ballStart('sky-spike', 'offline', { difficulty: 'hard', practice: true }, false, '')).not.toHaveProperty('difficulty');
+    expect(ballStart('sky-spike', 'offline', { difficulty: 'hard', drills: true }, false, '')).not.toHaveProperty('difficulty');
+    expect(ballStart('sky-spike', 'online', { difficulty: 'hard' }, false, '')).not.toHaveProperty('difficulty');
   });
 });

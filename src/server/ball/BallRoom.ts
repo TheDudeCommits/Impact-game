@@ -1,5 +1,4 @@
 import {BALL_ARENAS, isBallArena, type BallArenaId} from '../../game/ball/arenas';
-import {LAG_COMPENSATION} from '../../game/simulation';
 import {LOCK_ONLINE} from '../lockOnline';
 import {requireRosterProtocol, type RosterProtocolOptions} from '../../game/rosterProtocol';
 import {isReleasedFighter} from '../../game/rosterAvailability';
@@ -8,7 +7,7 @@ import {Room, type Client, type FixedTimestepCallback, type RoomException, type 
 import {SIMULATION_HZ} from '../../game/moves';
 import type {FighterId} from '../../game/types';
 import {buildCollision, createRapierCollision} from '../../game/rapierCollision';
-import {BallMatch} from '../../game/ball/BallMatch';
+import {BallMatch, SEEN} from '../../game/ball/BallMatch';
 import {BALL_MODES, BALL_PROTOCOL, BALL_RULES, BALL_STAGE, type BallModeId, type BallSnapshot} from '../../game/ball/model';
 import {InputQueue} from '../InputQueue';
 import {StepClock} from '../StepClock';
@@ -137,7 +136,10 @@ export class BallRoom extends Room {
   private fresh(collision: ReturnType<typeof buildCollision>, round: number) {
     // (A rematch - the room's next round - opens with the short intro, ceremony.ts SHORT_INTRO.)
     const game = new BallMatch(this.mode, {collision, seed: Math.random() * 0x7fffffff | 0 || 1, access: this.access, round, fillBots: true, lockCombat: LOCK_ONLINE, rumble: this.rumble, mutator: this.mutator, arena: this.arena, intro: round > 1 ? 'short' : true});
-    game.sim.rewind = LAG_COMPENSATION; game.view.code = this.code;
+    // Online fairness: each person's swings, guards, headers and tackles are judged against the ball and the
+    // fighters as their page drew them, at most SEEN.most back (BallMatch SEEN) - the fighters' own rewind too, past the
+    // other rooms' quarter second (simulation.ts LAG_COMPENSATION): a 120 ms round trip is a quarter second of view.
+    game.compensate = SEEN.most; game.sim.rewind = SEEN.most; game.view.code = this.code;
     // A ranked queue's room: ranked or not is settled at kickoff, by the people seated then.
     if (this.queue === 'ranked') game.view.ranked = false;
     return game;

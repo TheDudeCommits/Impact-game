@@ -42,13 +42,37 @@ describe('Goal Rush', () => {
     expect(m.view.phase).toBe('scored');
     expect(m.seats.get('red-1')!.goals).toBe(1);
     expect(m.view.events.some(e => e.kind === 'goal' && e.actorId === 'red-1')).toBe(true);
-    // The goal's sequence and its replay hold the celebration (the replay waits REPLAY.goalCeremony), then the next kickoff.
-    expect(m.view.replay?.ceremony).toBe(true);
-    expect(m.view.replay!.at - m.sim.serverTime).toBeCloseTo(REPLAY.goalCeremony, 1);
-    expect(until(m, () => m.view.phase === 'kickoff', REPLAY.goalCeremony + REPLAY.goalMost + REPLAY.after + 1)).toBe(true);
+    // An ordinary goal has no replay - its sequence (the net, the burst, the lights, the scorer's close-up) holds play
+    // GOAL_RULES.goalSeconds, then the kickoff, held GOAL_RULES.kickoffSeconds.
     expect(m.view.replay).toBeNull();
+    const scored = m.sim.serverTime;
+    expect(until(m, () => m.view.phase === 'kickoff', GOAL_RULES.goalSeconds + .2)).toBe(true);
+    expect(m.sim.serverTime - scored).toBeCloseTo(GOAL_RULES.goalSeconds, 1);
+    expect(until(m, () => m.view.phase === 'live', GOAL_RULES.kickoffSeconds + .1)).toBe(true);
   });
-  it('replays a goal from before the shot, slowed round it, and every person voting to skip ends it', () => {
+  it('replays only the goals that earned it: a screamer, a SUPER GOAL, a PERFECT STRIKE; never an own goal', () => {
+    const goal = (set: (m: BallMatch) => void, own = false) => {
+      const m = pair('goal-rush');
+      until(m, () => m.view.phase === 'live');
+      steps(m, 2);
+      m.ball.x = 0; m.ball.z = (GOAL_RULES.halfZ - 7) * (own ? -1 : 1); m.ball.y = 1;
+      aim(m, 'red-1', own ? Math.PI : 0);
+      m.receive(m.locate(BALL_ID)!, blow('red-1'));
+      set(m);
+      expect(until(m, () => m.view.phase === 'scored', 4)).toBe(true);
+      return m.view.replay;
+    };
+    expect(goal(() => {})).toBeNull();
+    // A hot ball in at REPLAY.screamer km/h or more.
+    const screamer = goal(m => { m.ball.heat = 3.5; m.ball.vz = REPLAY.screamer / 3.6 + 2; m.ball.vy = 1; });
+    expect(screamer?.kind).toBe('goal');
+    expect(screamer?.speed).toBeGreaterThanOrEqual(REPLAY.screamer);
+    expect(goal(m => { m.ball.super = true; })?.text).toBe('SUPER GOAL');
+    // A PERFECT STRIKE: its strike event says so.
+    expect(goal(m => { const e = [...m.view.events].reverse().find(e => e.kind === 'strike'); if (e) e.perfect = true; else m.view.events.push({ id: 9999, at: m.sim.serverTime, kind: 'strike', team: 'red', actorId: 'red-1', x: 0, y: 1, z: 12, perfect: true }); })).not.toBeNull();
+    expect(goal(m => { m.ball.heat = 3.5; m.ball.vz = -(REPLAY.screamer / 3.6 + 2); }, true)).toBeNull();
+  });
+  it('replays a goal from before the shot, slowed round it; the scoring side, or everyone, skips it at once', () => {
     const m = pair('goal-rush');
     until(m, () => m.view.phase === 'live');
     steps(m, 2);
@@ -56,6 +80,7 @@ describe('Goal Rush', () => {
     aim(m, 'red-1', 0);
     m.receive(m.locate(BALL_ID)!, blow('red-1'));
     const struck = m.sim.serverTime;
+    m.ball.super = true;
     expect(until(m, () => m.view.phase === 'scored', 4)).toBe(true);
     const r = m.view.replay!, scored = m.sim.serverTime;
     expect(r.kind).toBe('goal');
@@ -72,19 +97,49 @@ describe('Goal Rush', () => {
     for (let e = 0; e < replayLength(r); e += .01) { const c = replayClock(r, e); if (Math.abs(c.time - r.key) < .02) { round = c.rate; break; } }
     expect(round).toBeLessThan(replayClock(r, .05).rate);
     expect(replayClock(r, 99).time).toBe(r.to);
-    // Nobody plays on behind it; a skip before it shows is no vote.
+    // Its sequence and the replay together are short: the replay waits REPLAY.goalCeremony and runs REPLAY.goalMost at most.
+    expect(r.ceremony).toBe(true);
+    expect(r.at - scored).toBeCloseTo(REPLAY.goalCeremony, 1);
+    expect(r.until - scored).toBeLessThanOrEqual(REPLAY.goalCeremony + REPLAY.goalMost + 1e-6);
+    expect(r.until - scored).toBeLessThan(5);
+    // A press already on its way when the ball went in is no vote.
     expect(m.skip('red-1')).toBe(false);
     until(m, () => m.sim.serverTime >= r.at + .1, 3);
     expect(m.replaying()).toBe(true);
     expect(m.submit('red-1', {seq: 1, moveX: 1, moveZ: 0, yaw: 0})).toBe(false);
-    // One of the two people skips: it plays on. Both have: it ends, and the kickoff follows.
-    expect(m.skip('red-1')).toBe(true);
+    // The side that conceded skips: it plays on (everyone has to). The scorers' side skips: it ends at once, and the
+    // kickoff follows.
+    expect(m.skip('blue-1')).toBe(true);
     expect(m.replaying()).toBe(true);
     expect(m.view.replay!.skips).toBe(1);
     expect(m.view.replay!.people).toBe(2);
-    expect(m.skip('blue-1')).toBe(true);
+    expect(m.skip('red-1')).toBe(true);
     expect(m.replaying()).toBe(false);
-    expect(until(m, () => m.view.phase === 'kickoff', REPLAY.after + .2)).toBe(true);
+    expect(until(m, () => m.view.phase === 'kickoff', REPLAY.after + .1)).toBe(true);
+  });
+  it('lets the scorers skip the sequence before the replay, and the one person of a match against bots skip any goal', () => {
+    const early = pair('goal-rush');
+    until(early, () => early.view.phase === 'live');
+    early.ball.x = 0; early.ball.z = GOAL_RULES.halfZ - 7; early.ball.y = 1;
+    aim(early, 'red-1', 0); early.receive(early.locate(BALL_ID)!, blow('red-1')); early.ball.super = true;
+    expect(until(early, () => early.view.phase === 'scored', 4)).toBe(true);
+    steps(early, REPLAY.skipFrom + .05);
+    expect(early.skip('red-1')).toBe(true);
+    // (The replay never shows: the kickoff comes.)
+    expect(early.replaying()).toBe(false);
+    expect(until(early, () => early.view.phase === 'kickoff', REPLAY.after + .1)).toBe(true);
+    // One person, five bots: theirs is the only vote, conceded or scored, replay or none.
+    const solo = new BallMatch('goal-rush', { seed: 3, access: 'bots' });
+    solo.add('me', 'taisei', 'Me', false, 'red');
+    expect(solo.start()).toBe(true);
+    steps(solo, 3.1);
+    until(solo, () => solo.view.phase === 'live');
+    solo.ball.x = 0; solo.ball.z = -(GOAL_RULES.halfZ + .5); solo.ball.y = 1; solo.ball.vz = -10; solo.ball.lastId = null; solo.ball.lastTeam = null;
+    expect(until(solo, () => solo.view.phase === 'scored', 2)).toBe(true);
+    expect(solo.view.score.blue).toBe(1);
+    steps(solo, REPLAY.skipFrom + .05);
+    expect(solo.skip('me')).toBe(true);
+    expect(until(solo, () => solo.view.phase === 'kickoff', REPLAY.after + .1)).toBe(true);
   });
   it('credits a goal that bounced in off a defender to the striker, and an own blow as an own goal', () => {
     const m = pair('goal-rush');

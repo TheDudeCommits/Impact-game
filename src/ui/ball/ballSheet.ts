@@ -2,6 +2,7 @@ import { BALL_MUTATORS, MUTATOR_NAMES, isMutator, mutatorLine, weeklyMutator, we
 import { DRILLS, MODE_DRILLS, isDrill, type DrillId } from '../../game/ball/drills';
 import { TRAIT_LINES, TRAIT_NAMES, traitOf } from '../../game/ball/traits';
 import { RANKED } from '../../game/ball/ranked';
+import { isBotLevel, type BotLevel } from '../../game/ball/BallBrain';
 import type { BallModeId } from '../../game/ball/model';
 import type { FighterId } from '../../game/types';
 import type { CouchStart, NetworkAccess } from '../../network';
@@ -14,6 +15,7 @@ import './ballSheet.css';
  *  - BOTS, PLAY: a 3 V 3 MATCH, FREE PLAY, or DRILLS (game/ball/drills.ts) with each drill's best medal.
  *  - BOTS, COUCH and FRIENDS, RULES: CLASSIC, RUMBLE, or one of the mutators (game/ball/mutators.ts).
  *  - ONLINE, QUEUE: CLASSIC, this week's PLAYLIST (its mutator), or RANKED with the account's stamp (ui/ball/ranks.ts).
+ *  - BOTS (a match) and COUCH, BOTS: the other side's bots EASY, NORMAL or HARD (game/ball/BallBrain.ts BOT_LEVELS).
  *  And the fighter's ball trait (game/ball/traits.ts) under YOUR FIGHTER. Every button is `data-ms-ball="key:value"`;
  *  `ballChoice` turns a press into the preferences to keep. */
 type Variant = 'offline' | 'online' | 'friends' | 'couch';
@@ -38,6 +40,21 @@ export function ballPlayRow(mode: BallModeId, prefs: ModePrefs): string {
   return `${row}<div class="bs-drills" role="group" aria-label="Drill">${list}</div><p class="ms-note">${escape(d.line)} ${d.balls} balls: bronze ${b}, silver ${s}, gold ${g}.</p>`;
 }
 const drillOf = (mode: BallModeId, prefs: ModePrefs): DrillId => isDrill(prefs.drill) && DRILLS[prefs.drill].mode === mode ? prefs.drill : MODE_DRILLS[mode][0];
+
+/** The BOTS row's level: NORMAL unless the player picked another. */
+export const levelOf = (prefs: ModePrefs): BotLevel => isBotLevel(prefs.difficulty) ? prefs.difficulty : 'normal';
+const LEVEL_NOTES: Record<BotLevel, string> = {
+  easy: 'Their bots read the ball late and mistime it: a match to learn in.',
+  normal: '',
+  hard: 'Their bots read every ball early, time it right and dig in when behind.',
+};
+/** A new player must be able to win, a good one must be challenged: BOTS' and COUCH's BOTS row - the level of the bots on the other side (a person's team-mates are always NORMAL). Not for FREE
+ *  PLAY or the drills, which have no bots to beat. */
+export function ballLevelRow(prefs: ModePrefs): string {
+  const level = levelOf(prefs), note = LEVEL_NOTES[level];
+  const row = `<div class="ms-option" role="group" aria-label="Bots"><b>BOTS</b>${(['easy', 'normal', 'hard'] as const).map(l => `<button type="button" data-ms-ball="level:${l}" ${pressed(level === l)}>${l.toUpperCase()}</button>`).join('')}</div>`;
+  return note ? `${row}<p class="ms-note">${note}</p>` : row;
+}
 
 /** BOTS', COUCH's and FRIENDS' RULES row, or ONLINE's QUEUE row. */
 export function ballRulesRow(mode: BallModeId, variant: Variant, prefs: ModePrefs, now = Date.now()): string {
@@ -67,18 +84,22 @@ export function ballChoice(value: string | undefined): Partial<ModePrefs> | unde
   if (key === 'drill' && isDrill(choice)) return { drill: choice, drills: true, practice: false };
   if (key === 'rules') return choice === 'rumble' ? { rumble: true, mutator: null } : isMutator(choice) ? { rumble: false, mutator: choice } : { rumble: false, mutator: null };
   if (key === 'queue' && (choice === 'classic' || choice === 'playlist' || choice === 'ranked')) return { queue: choice };
+  if (key === 'level' && isBotLevel(choice)) return { difficulty: choice };
   return undefined;
 }
 
 /** GO on a ball mode's sheet, as the start code's access. */
 export function ballStart(mode: BallModeId, variant: Variant, prefs: ModePrefs, join: boolean, code: string, couch?: CouchStart): Extract<NetworkAccess, { kind: 'ball' }> {
   const rules = rulesOf(prefs), mutator = isMutator(rules) ? rules : undefined, rumble = rules === 'rumble';
-  if (couch) return { kind: 'ball', mode, access: 'bots', couch, rumble, mutator };
+  // (The BOTS row's level rides with a match against bots, never FREE PLAY or a drill.)
+  const difficulty = levelOf(prefs);
+  if (couch) return { kind: 'ball', mode, access: 'bots', couch, rumble, mutator, difficulty };
   if (join) return { kind: 'ball', mode, access: 'join', code };
   if (variant === 'online') return { kind: 'ball', mode, access: 'quick', queue: queueOf(prefs) };
   if (variant === 'friends') return { kind: 'ball', mode, access: 'host', rumble, mutator };
   const drill = prefs.drills ? drillOf(mode, prefs) : undefined;
-  return { kind: 'ball', mode, access: 'bots', rumble, mutator, practice: !!drill || !!prefs.practice, drill };
+  const practice = !!drill || !!prefs.practice;
+  return { kind: 'ball', mode, access: 'bots', rumble, mutator, practice, drill, ...(practice ? {} : { difficulty }) };
 }
 
 /** The fighter's ball trait, under YOUR FIGHTER. */

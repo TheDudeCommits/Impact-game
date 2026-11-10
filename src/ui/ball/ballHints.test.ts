@@ -88,4 +88,25 @@ describe('the ball modes\' first-time hints (ui/ball/ballHints.ts)', () => {
     expect(hints().h.frame(frame(shot), 1000)).toContain('SAVE');
     expect(hints().h.frame(frame({ ...shot, device: 'touch' }), 1000)).not.toContain('SAVE');
   });
+  it('SCUFFED the moment your own strike came out of a flurry of presses (BallMatch MASHED), once', () => {
+    const { h, shown } = hints(), f = frame({ ball: { x: 9, z: 9 }, me: { stamina: 10 }, players: [{ id: 'foe', x: 0, z: 14 }], serverTime: 20 });
+    expect(h.frame(f, 1000)).toBe('');
+    // Someone else's scuff, or a clean strike of yours: nothing.
+    h.event({ id: 1, at: 20, kind: 'strike', actorId: 'foe', text: 'SCUFFED', x: 0, y: 0, z: 0 } as never, 'me');
+    h.event({ id: 2, at: 20, kind: 'strike', actorId: 'me', text: 'PERFECT STRIKE', x: 0, y: 0, z: 0 } as never, 'me');
+    expect(h.frame(f, 1100)).toBe('');
+    h.event({ id: 3, at: 20, kind: 'strike', actorId: 'me', text: 'SCUFFED', x: 0, y: 0, z: 0 } as never, 'me');
+    expect(h.frame(f, 1200)).toContain('<b>SCUFFED</b>');
+    expect(shown).toEqual(['gr-scuff']);
+    // Sky Spike's own, once a moment has passed it is gone.
+    const s = hints(), spike = frame({ view: { mode: 'sky-spike' }, ball: { x: 0, z: 6 }, me: { stamina: 10 }, serverTime: 30 });
+    expect(s.h.frame(spike, 900)).toBe('');
+    s.h.event({ id: 4, at: 30, kind: 'strike', actorId: 'me', text: 'SCUFFED', x: 0, y: 0, z: 0 } as never, 'me');
+    expect(s.h.frame(spike, 1000)).toContain('ONE PRESS, ON TIME');
+    expect(s.shown).toEqual(['ss-scuff']);
+    const late = hints();
+    late.h.frame(spike, 900);
+    late.h.event({ id: 5, at: 30, kind: 'strike', actorId: 'me', text: 'SCUFFED', x: 0, y: 0, z: 0 } as never, 'me');
+    expect(late.h.frame({ ...spike, serverTime: 33 }, 1000)).toBe('');
+  });
 });

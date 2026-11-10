@@ -15,6 +15,11 @@ const HOLD = .7, BACK = 2.4, AWAY = 1.3;
 /** A jump in the heading the page hands back bigger than this in one frame is a reset (a kickoff's, a serve's), not a
  *  turn of the player's. */
 const RESET = .6;
+/** A step of the drawn body farther than this (m) in one frame is a placement (a kickoff's, a serve's, a return from a
+ *  wipe-out): the view comes round to the ball at once, as at a reset. (The page resets the heading when the newest
+ *  snapshot holds the kickoff, a few frames before the bodies drawn are on their marks, or the view would turn from the
+ *  old line to the ball for about half a second - half of the kickoff.) */
+const PLACED = 4;
 /** The sports lens: degrees the ball cam opens the follow camera's lens by (FollowCamera.sportFov), so more of the pitch
  *  is in view round the player and the ball and the floor reads the speed. */
 const SPORT_FOV = 14;
@@ -50,9 +55,11 @@ export class BallCam {
   private away = 0;
   private still = 0;
   private readonly look = new THREE.Vector3();
+  /** Where the drawn body was last frame (NaN: not yet). */
+  private lastX = NaN; private lastZ = NaN;
 
   reset() { this.on = true; this.active = false; this.presses = 0; this.resume = false; this.forget(); }
-  private forget() { this.yaw = this.handed = NaN; this.rate = 0; this.away = 0; this.still = 0; }
+  private forget() { this.yaw = this.handed = NaN; this.rate = 0; this.away = 0; this.still = 0; this.lastX = this.lastZ = NaN; }
   /** The toggle's press count (the page's Tab presses, a couch seat's TARGET presses): each press flips it. */
   pressed(count: number) {
     if (count === this.presses) return;
@@ -74,7 +81,9 @@ export class BallCam {
     this.active = this.on && playing;
     if (!this.active || !ball || !view) { rig.mode = mode; rig.keepInView = null; rig.sportFov = 0; if (Number.isFinite(this.yaw)) this.resume = true; this.forget(); return yaw; }
     rig.mode = 'free'; rig.sportFov = SPORT_FOV;
-    const turn = Number.isFinite(this.handed) ? wrapped(yaw - this.handed) : 0, reset = Math.abs(turn) > RESET;
+    const placed = Math.hypot(self.x - this.lastX, self.z - this.lastZ) > PLACED;
+    this.lastX = self.x; this.lastZ = self.z;
+    const turn = Number.isFinite(this.handed) ? wrapped(yaw - this.handed) : 0, reset = Math.abs(turn) > RESET || placed;
     if (reset) { this.away = 0; this.still = 0; }
     else if (Math.abs(turn) > 1e-6) { this.away = clamp(this.away + turn, -AWAY, AWAY); this.still = 0; }
     else this.still += dt;

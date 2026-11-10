@@ -187,7 +187,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     shortMoves: ['HABAKIRI', 'SHRIKE BOLT', 'BLACK SUN', 'IKAZUCHI ARROW'],
     awakening: 'IKAZUCHI',
     guardian: F + 'guardian-loom1.glb',
-    coat: { thigh: .12, shin: .11 }, model: F + 'shiden-tr1.glb', extraModels: [F + 'shiden-enders1.glb'],
+    coat: { thigh: .12, shin: .11 }, model: F + 'shiden-tr1.glb', rushModel: F + 'shiden-rush1.glb', extraModels: [F + 'shiden-enders1.glb'],
     portrait: F + 'shiden-portrait.png', idleModel: F + 'shiden-idle1.glb',
     names: {
       'Black Pyre': 'Black Sun',

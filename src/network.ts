@@ -1,4 +1,5 @@
 import type {BallArenaId} from './game/ball/arenas';
+import type {BotLevel} from './game/ball/BallBrain';
 import { keptSkill } from './boot/skill';
 import {BALL_PROTOCOL,type BallModeId} from './game/ball/model';
 import {weeklyMutator,type BallMutator} from './game/ball/mutators';
@@ -17,6 +18,7 @@ import {RIFT_PROTOCOL} from './game/moba/model';
 import {OBJECTIVE_PROTOCOL,type ObjectiveKind,type ObjectiveAccess,type RolePreference} from './game/objectives/model';
 import { Client, type Room } from '@colyseus/sdk';
 import { LinkQuality } from './network/linkQuality';
+import { devLag } from './network/devLag';
 import { errorReports } from './boot/errorReports';
 import { REJOIN_FAILED, REJOIN_WINDOW } from './boot/rejoin';
 import type { AttackSlot, FighterId, GameSnapshot, PlayerInput, RoomMode } from './game/types';
@@ -41,7 +43,7 @@ export interface CouchStart { partner: FighterId; screen: CouchScreen; sides?: '
 export type CouchScreen = 'shared' | 'split-v' | 'split-h';
 export type NetworkAccess={kind:'rift-war';access:'quick'|'bots'|'host'|'join';code?:string;couch?:CouchStart}
   /** The ball modes (game/ball): Goal Rush and Sky Spike, on this device against bots or in a ball room. */
-  |{kind:'ball';mode:BallModeId;access:'quick'|'bots'|'host'|'join';code?:string;couch?:CouchStart;/** RUMBLE's charms (on this device, or a room the page opens). */rumble?:boolean;/** FREE PLAY: alone with the ball, on this device. */practice?:boolean;/** A mutator (game/ball/mutators.ts) on this device or for a room the page opens; matchmaking's queue (the weekly playlist plays this week's); a training drill (game/ball/drills.ts) on this device. */mutator?:BallMutator;queue?:'classic'|'playlist'|'ranked';drill?:DrillId;/** The arena picked on the mode sheet (game/ball/arenas.ts); none: the mode's arenas in turn. */arena?:BallArenaId}|{kind:'duel';access:'online'|'bot'|'host'|'join'|'couch';code?:string;couch?:CouchStart;/** A bot duel's rival, kept for PLAY AGAIN (Round 5 UX); a couch duel's, Player 2's fighter. */rival?:FighterId;/** The place the player named on the sheet (a bot Duel's, or the one a friends' room is opened on); none: dealt. */place?:StageId}|{kind:'party';travel:PartyTravel}|{kind:'objective';objective:ObjectiveKind;access:ObjectiveAccess;role?:RolePreference;fighter?:FighterId;code?:string;couch?:CouchStart;/** Bad Blood's place, when the player named one (bots, or a room the host opens). */place?:StageId}|{kind:'public'}|{kind:'create-private';players?:number;/** The place the host named for the room; none: the room deals it. */place?:StageId}|{kind:'join-private';code:string}|{kind:'bots';players:number;couch?:CouchStart;/** The place the player named; none: the royale's deck deals it. */place?:StageId;/** The bots, when a public room the page left had drafted them (loneQueue: their files already fetched); none: drafted here. */field?:FighterId[];/** Played on the device because nobody else queued (loneQueue): its place and field are that room's, not kept for PLAY AGAIN. */lone?:true}
+  |{kind:'ball';mode:BallModeId;access:'quick'|'bots'|'host'|'join';code?:string;couch?:CouchStart;/** RUMBLE's charms (on this device, or a room the page opens). */rumble?:boolean;/** FREE PLAY: alone with the ball, on this device. */practice?:boolean;/** A mutator (game/ball/mutators.ts) on this device or for a room the page opens; matchmaking's queue (the weekly playlist plays this week's); a training drill (game/ball/drills.ts) on this device. */mutator?:BallMutator;queue?:'classic'|'playlist'|'ranked';drill?:DrillId;/** The arena picked on the mode sheet (game/ball/arenas.ts); none: the mode's arenas in turn. */arena?:BallArenaId;/** The other side's bots' level on this device (BallBrain BOT_LEVELS); none: NORMAL. */difficulty?:BotLevel}|{kind:'duel';access:'online'|'bot'|'host'|'join'|'couch';code?:string;couch?:CouchStart;/** A bot duel's rival, kept for PLAY AGAIN (Round 5 UX); a couch duel's, Player 2's fighter. */rival?:FighterId;/** The place the player named on the sheet (a bot Duel's, or the one a friends' room is opened on); none: dealt. */place?:StageId}|{kind:'party';travel:PartyTravel}|{kind:'objective';objective:ObjectiveKind;access:ObjectiveAccess;role?:RolePreference;fighter?:FighterId;code?:string;couch?:CouchStart;/** Bad Blood's place, when the player named one (bots, or a room the host opens). */place?:StageId}|{kind:'public'}|{kind:'create-private';players?:number;/** The place the host named for the room; none: the room deals it. */place?:StageId}|{kind:'join-private';code:string}|{kind:'bots';players:number;couch?:CouchStart;/** The place the player named; none: the royale's deck deals it. */place?:StageId;/** The bots, when a public room the page left had drafted them (loneQueue: their files already fetched); none: drafted here. */field?:FighterId[];/** Played on the device because nobody else queued (loneQueue): its place and field are that room's, not kept for PLAY AGAIN. */lone?:true}
   /** Arcade survival: no room at all - the arena runs in the browser (LocalArena). */
   |{kind:'survival';/** Couch co-op (couch/seats.ts): the second person's hero, beside the first. */partner?:FighterId;couch?:CouchStart}
   /** Training on this device with a second person in the ground (couch): none, it is the solo Training it always was. */
@@ -71,6 +73,9 @@ export function joinFailure(error:unknown,online=typeof navigator!=='object'||na
   if(unreachable||code===502||code===503||code===504||code===1005||code===1006||/Bad Gateway|Service Unavailable|Gateway Time-?out|Application failed to respond|no processId available|shutting.down/i.test(text))return 'The servers are restarting. Try again in a minute.';
   return undefined;
 }
+
+/** The made-up round trip a check on this machine asked for (network/devLag.ts), or nothing - always nothing in a build. */
+const lagShim=devLag();
 
 export class Network {
   constructor(private readonly endpoint?:string){}
@@ -197,6 +202,8 @@ export class Network {
       throw error;
     }
     if(generation!==this.generation){activeRoom.reconnection.enabled=false;await activeRoom.leave();throw new Error('Connection cancelled.');}
+    // (A check on this machine may ask for a made-up round trip: `?lag=120&jitter=20`, network/devLag.ts. Dev builds only.)
+    lagShim?.wrap(activeRoom);
     this.room=activeRoom;this.snapshot=null;this.receivedAt=0;this.predictionReady=false;this.awaitingInputResync=false;this.coop=access.kind==='coop-create'||access.kind==='coop-join'||access.kind==='party'&&access.travel.mode==='survival';
     // Training on the match server (a capture tool's, or ?online-training): the dummy chosen on the mode sheet, as
     // LocalTraining's, through the LABORATORY's own command (the room checks it).
