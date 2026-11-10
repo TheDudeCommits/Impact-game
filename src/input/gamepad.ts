@@ -19,7 +19,7 @@ export interface PadState {
 }
 export interface PadFrame {
   forward: number; right: number; lookX: number; lookY: number; guard: boolean;
-  attack?: AttackSlot; jump: boolean; jumpHeld: boolean; dash: boolean; awaken: boolean; target: boolean; menu: boolean;
+  attack?: AttackSlot; jump: boolean; jumpHeld: boolean; /** The heavy's button is down (the ball rooms' SHOOT is charged by holding it: PlayerInput.heavyHeld). */ heavyHeld?: boolean; dash: boolean; awaken: boolean; target: boolean; menu: boolean;
   ui: UiAction[]; active: boolean; label: string; family: PadFamily; interact?: boolean;
   area?: 'press' | 'release' | 'cancel';
   /** The guard button went down this frame (it cancels an aim). */
@@ -95,7 +95,7 @@ export class GamepadControls {
       if(edge(8))frame.interact=true;
       const b=getBindings().controller;
       frame.forward=-vertical;frame.right=right;frame.lookX=lookX;frame.lookY=lookY;frame.guard=!!buttons[b.guard]&&!baseline;
-      frame.jump=edge(b.jump);frame.jumpHeld=!!buttons[b.jump]&&!baseline;frame.dash=edge(b.dash);frame.target=edge(b.target);
+      frame.jump=edge(b.jump);frame.jumpHeld=!!buttons[b.jump]&&!baseline;frame.heavyHeld=!!buttons[b.heavy]&&!baseline;frame.dash=edge(b.dash);frame.target=edge(b.target);
       frame.guardPressed=edge(b.guard);
       if(edge(b.light))frame.attack='light';else if(edge(b.heavy))frame.attack='heavy';else if(edge(b.special))frame.attack='special';
       this.chord(frame,edge(b.ultimate),!!buttons[b.ultimate],edge(b.area),!!buttons[b.area],!!this.previous[b.area]&&!buttons[b.area],now);

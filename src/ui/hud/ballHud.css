@@ -1,126 +1,157 @@
 /* The ball modes' HUD (BallHud.ts): a broadcast scoreboard in the approved ink, paper and red, each side in its own
-   colour (game/ball/model.ts BALL_TEAM_COLOURS), and the moments as big torn manga banners. */
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .mode-hud{--bh-red:#ff3b52;--bh-blue:#2f8cff;--bh-gold:#ffcf5a}
+   colour (game/ball/model.ts BALL_TEAM_COLOURS), and the moments as big torn manga banners.
+
+   The HUD is drawn on one unit,
+   --bh-u, a pixel on a 1920 x 1080 view and in step with any other (the lesser of the view's width and height, so no
+   shape of window grows it; a split screen's half measures its own box). The top stack's numbers are in that unit:
+   the score bug, the one line under it and the one banner under that, each directly under the last. The banner's foot is
+   therefore never lower than (edge + bug + line-gap + line + banner-gap + banner) / 1080 of the view's height - 23% -
+   which is over Sky Spike's net and Goal Rush's goal mouths as the default cameras frame them (ballBanner.test.ts reads
+   these numbers and checks). A phone on its side has its own unit and a shorter banner (the media rule below), which
+   while it is up stands in the line's place: 21% (the kickoff's count, under the line: 25%). */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]){--bh-red:#ff3b52;--bh-blue:#2f8cff;--bh-gold:#ffcf5a;--bh-super:#c86bff;
+  --bh-u:min(.0521vw,.0926vh);--bh-edge:8;--bh-bug:76;--bh-line-gap:6;--bh-line:34;--bh-banner-gap:8;--bh-banner:120}
+@supports(width:1cqw){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]){--bh-u:min(.0521cqw,.0926cqh)}
+  /* (A split screen's half is its own measure; side by side it is narrow, and its HUD takes more of its width.) */
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .couch-view{container-type:size;--bh-u:min(.075cqw,.0926cqh)}}
+@media(max-height:520px) and (orientation:landscape){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]){--bh-u:min(.5px,.1282vh);--bh-edge:6;--bh-line-gap:4;--bh-line:30;--bh-banner-gap:4;--bh-banner:78}}
 /* Nobody's health counts here: the own plate keeps its meters and drops its health track. */
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .fighter-meter.own :is(#own-health,#own-hp,.hl-hpnum,.hl-hp){visibility:hidden!important}
 /* Nor a round clock (its ∞ over the middle of the top edge): the scoreboard's clock is the match's. */
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .hd-clock{display:none!important}
 /* Nor is there a foe here to plate: the ball is the only target. */
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .fighter-meter.foe{display:none!important}
+/* The display face: Barlow Condensed Black Italic, the game's own file (ui/hud/inked.css declares it as
+   'Barlow Condensed' italic 900), also where the shared pieces this HUD shows name Impact first - the prompts and their
+   keys, the kit's slips and plaques - so every device draws the one face, and a desktop with Impact no other. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .mode-hud :is(.ux-prompt,.ux-prompt kbd,.ux-keys kbd,.hk-slip,.hk-plaque strong,.hk-banner strong,.hk-edge b){font-family:'Barlow Condensed',sans-serif}
 
-/* ---- Zone 2: the scoreboard. */
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-board{display:grid;grid-template-columns:auto auto minmax(calc(120px * var(--hk-k)),auto) auto auto;
-  grid-template-areas:"redteam redscore middle bluescore blueteam";align-items:stretch;gap:0;filter:drop-shadow(4px 3px 0 rgba(0,0,0,.55));pointer-events:none}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team{display:flex;flex-direction:column;justify-content:center;gap:3px;padding:calc(5px * var(--hk-k)) calc(14px * var(--hk-k));color:#fff}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.red{grid-area:redteam;align-items:flex-end;background:linear-gradient(90deg,rgba(11,12,14,.0),rgba(11,12,14,.88) 22%);clip-path:polygon(10% 0,100% 0,100% 100%,0 100%)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.blue{grid-area:blueteam;align-items:flex-start;background:linear-gradient(270deg,rgba(11,12,14,.0),rgba(11,12,14,.88) 22%);clip-path:polygon(0 0,90% 0,100% 100%,0 100%)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team small{font:800 calc(clamp(9px,.72vw,13px) * var(--hk-k))/1 'Barlow Condensed',sans-serif;letter-spacing:.2em;white-space:nowrap}
+/* ---- Zone 2: the top stack. The score bug (no text in it under 16 px tall at 1080p). */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-skin] .combat-hud .mode-hud>[data-zone="2"]{top:calc(var(--bh-edge) * var(--bh-u) + env(safe-area-inset-top,0px))!important;scale:1!important;gap:0}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-board{display:grid;grid-template-columns:auto auto minmax(calc(150 * var(--bh-u)),auto) auto auto;
+  grid-template-areas:"redteam redscore middle bluescore blueteam";align-items:stretch;gap:0;height:calc(var(--bh-bug) * var(--bh-u));filter:drop-shadow(calc(4 * var(--bh-u)) calc(3 * var(--bh-u)) 0 rgba(0,0,0,.5));pointer-events:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team{display:flex;flex-direction:column;justify-content:center;gap:calc(5 * var(--bh-u));padding:0 calc(18 * var(--bh-u));color:#fff}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.red{grid-area:redteam;align-items:flex-end;background:linear-gradient(90deg,rgba(11,12,14,.0),rgba(11,12,14,.88) 22%);clip-path:polygon(10% 0,100% 0,100% 100%,0 100%);padding-left:calc(30 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.blue{grid-area:blueteam;align-items:flex-start;background:linear-gradient(270deg,rgba(11,12,14,.0),rgba(11,12,14,.88) 22%);clip-path:polygon(0 0,90% 0,100% 100%,0 100%);padding-right:calc(30 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team small{font:800 calc(24 * var(--bh-u))/1 'Barlow Condensed',sans-serif;letter-spacing:.08em;white-space:nowrap}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.red small{color:var(--bh-red)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.blue small{color:var(--bh-blue)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-faces{display:flex;gap:4px}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-row{display:flex;align-items:center;gap:calc(10 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.red .bh-row{flex-direction:row-reverse}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-faces{display:flex;gap:calc(5 * var(--bh-u))}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-team.red .bh-faces{flex-direction:row-reverse}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face{position:relative;width:calc(30px * var(--hk-k));height:calc(30px * var(--hk-k));overflow:hidden;background:#fff9ef;
-  border:2px solid currentColor;clip-path:polygon(12% 0,100% 0,88% 100%,0 100%);transition:transform .12s}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face{position:relative;width:calc(30 * var(--bh-u));height:calc(30 * var(--bh-u));overflow:hidden;background:#fff9ef;
+  border:max(1px,calc(2 * var(--bh-u))) solid currentColor;clip-path:polygon(12% 0,100% 0,88% 100%,0 100%);transition:transform .12s}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.red{color:var(--bh-red)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.blue{color:var(--bh-blue)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face span,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face span>*{display:block;width:100%;height:100%;object-fit:cover}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.self{outline:2px solid var(--bh-gold);outline-offset:-2px}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.touch{transform:translateY(-3px) scale(1.08);box-shadow:0 0 0 2px var(--bh-gold)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.self{outline:max(1px,calc(2 * var(--bh-u))) solid var(--bh-gold);outline-offset:calc(-2 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.touch{transform:translateY(calc(-3 * var(--bh-u))) scale(1.08);box-shadow:0 0 0 2px var(--bh-gold)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.gone{opacity:.35;filter:grayscale(1)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score{display:flex;align-items:center;justify-content:center;min-width:calc(46px * var(--hk-k));padding:0 calc(10px * var(--hk-k));
-  font:italic 900 calc(clamp(30px,2.6vw,50px) * var(--hk-k))/1 Impact,'Barlow Condensed',sans-serif;color:#fff;padding-right:.3em}
+/* Sky Spike: each side's touches spent while it has the ball, as dots; the last one left throbs red. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-dots{display:none;gap:calc(5 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-board[data-mode="sky-spike"]:not(.lesson) .bh-dots{display:flex}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-dots i{width:calc(13 * var(--bh-u));height:calc(13 * var(--bh-u));border-radius:50%;border:max(1px,calc(2.5 * var(--bh-u))) solid #e9e3d6;background:transparent;box-sizing:border-box}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-dots:is([data-used="1"],[data-used="2"],[data-used="3"]) i:nth-child(1),#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-dots:is([data-used="2"],[data-used="3"]) i:nth-child(2),#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-dots[data-used="3"] i:nth-child(3){background:#e9e3d6}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-dots.last i:nth-child(3){border-color:#ff5a6e;animation:bh-throb .5s ease-in-out infinite}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score{position:relative;display:flex;align-items:center;justify-content:center;min-width:calc(72 * var(--bh-u));padding:0 calc(14 * var(--bh-u));
+  font:italic 900 calc(72 * var(--bh-u))/1 'Barlow Condensed',sans-serif;color:#fff}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score>span{padding-right:.08em}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score.red{grid-area:redscore;background:var(--bh-red);clip-path:polygon(14% 0,100% 0,100% 100%,0 100%)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score.blue{grid-area:bluescore;background:var(--bh-blue);clip-path:polygon(0 0,86% 0,100% 100%,0 100%)}
+/* Sky Spike: a gold ball on the score of the side that serves. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score.serve::after{content:'';position:absolute;top:calc(6 * var(--bh-u));width:calc(15 * var(--bh-u));height:calc(15 * var(--bh-u));border-radius:50%;background:var(--bh-gold);
+  box-shadow:0 0 0 max(1px,calc(2.5 * var(--bh-u))) #0b0c0e,0 0 calc(8 * var(--bh-u)) var(--bh-gold)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score.red.serve::after{right:calc(7 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score.blue.serve::after{left:calc(7 * var(--bh-u))}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score[data-pulse]{animation:bh-score-a .7s ease-out}
 /* LEARN TO PLAY: no score on the bug - the lesson's goals and points are its steps' moments. */
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-board.lesson .bh-score{display:none}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score[data-pulse="b"]{animation-name:bh-score-b}
 @keyframes bh-score-a{0%{transform:scale(1.6);filter:brightness(2)}100%{transform:none}}
 @keyframes bh-score-b{0%{transform:scale(1.6);filter:brightness(2)}100%{transform:none}}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle{grid-area:middle;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  padding:calc(5px * var(--hk-k)) calc(14px * var(--hk-k));background:#0b0c0e;color:#fff}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle strong{font:italic 900 calc(clamp(20px,1.7vw,32px) * var(--hk-k))/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.02em;padding-right:.2em;white-space:nowrap}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle small{font:800 calc(clamp(8px,.6vw,11px) * var(--hk-k))/1 'Barlow Condensed',sans-serif;letter-spacing:.14em;color:#b9b2a6;white-space:nowrap}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle{grid-area:middle;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(3 * var(--bh-u));
+  padding:0 calc(14 * var(--bh-u));background:#0b0c0e;color:#fff}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle strong{font:italic 900 calc(46 * var(--bh-u))/.92 'Barlow Condensed',sans-serif;letter-spacing:.02em;padding-right:.08em;white-space:nowrap}
+/* (Words in the middle - RALLY 4, OVERTIME, FREE PLAY - a size under the clock's digits.) */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle:not([data-kind="clock"],[data-kind="late"],[data-kind="ending"]) strong{font-size:calc(38 * var(--bh-u))}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle[data-kind="late"] strong{color:var(--bh-gold)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle:is([data-kind="overtime"],[data-kind="ending"]) strong{color:#ff5a6e;animation:bh-throb 1s ease-in-out infinite}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle[data-kind="hot"] strong{color:#ff9a3c}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle[data-kind="fever"]{background:linear-gradient(90deg,#ff3b52,#ffb43c,#ff3b52);background-size:200% 100%;animation:bh-fever 1.2s linear infinite}
 @keyframes bh-throb{50%{opacity:.55}}
 @keyframes bh-fever{to{background-position:200% 0}}
-
-/* ---- Zone 2b: heat, touches, serve. */
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-strip{display:flex;align-items:center;justify-content:center;gap:calc(14px * var(--hk-k));margin-top:4px;pointer-events:none}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-touches{display:flex;align-items:center;gap:3px;padding:3px 10px 4px 8px;background:rgba(11,12,14,.82);clip-path:polygon(6% 0,100% 0,94% 100%,0 100%)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat small,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-touches small{margin-right:4px;font:800 calc(clamp(8px,.62vw,11px) * var(--hk-k))/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;color:#e9e3d6}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat i{width:calc(14px * var(--hk-k));height:calc(8px * var(--hk-k));background:#3a3832;transform:skewX(-18deg);transition:background .15s}
+/* The ball's heat, under the clock: four pips, and OVERDRIVE by name. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat{display:flex;align-items:center;gap:calc(4 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat small{margin-right:calc(4 * var(--bh-u));font:800 calc(24 * var(--bh-u))/.9 'Barlow Condensed',sans-serif;letter-spacing:.1em;color:#e9e3d6}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat i{width:calc(19 * var(--bh-u));height:calc(11 * var(--bh-u));background:#3a3832;transform:skewX(-18deg);transition:background .15s}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat:is([data-tier="1"],[data-tier="2"],[data-tier="3"],[data-tier="4"]) i:nth-of-type(1){background:#ffd36a}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat:is([data-tier="2"],[data-tier="3"],[data-tier="4"]) i:nth-of-type(2){background:#ff9a3c}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat:is([data-tier="3"],[data-tier="4"]) i:nth-of-type(3){background:#ff3b30}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat[data-tier="4"] i:nth-of-type(4){background:#c86bff;box-shadow:0 0 8px #c86bff}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat[data-tier="4"] small{color:#e2b6ff;animation:bh-throb .6s ease-in-out infinite}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-touches i{width:calc(11px * var(--hk-k));height:calc(11px * var(--hk-k));border-radius:50%;border:2px solid #e9e3d6;background:transparent}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-touches i.used{background:#e9e3d6}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-touches.last i:not(.used){border-color:#ff5a6e;animation:bh-throb .5s ease-in-out infinite}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-serve{font:800 calc(clamp(9px,.7vw,13px) * var(--hk-k))/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;color:#fff;text-shadow:0 1px 3px #000}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-serve:empty{display:none}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-cam{font:800 calc(clamp(8px,.62vw,11px) * var(--hk-k))/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;color:#e9e3d6;opacity:.8;text-shadow:0 1px 3px #000}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-cam:empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat[data-tier="4"] i{width:calc(9 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-board.lesson .bh-heat{display:none}
 
-/* RUMBLE's charms at work. */
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charms{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-top:5px;pointer-events:none}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charms:empty{display:none}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charm{padding:3px 10px 4px;background:rgba(11,12,14,.86);color:#fff;border-left:4px solid var(--c,#fff);
-  font:italic 900 calc(clamp(9px,.72vw,13px) * var(--hk-k))/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.05em;white-space:nowrap;clip-path:polygon(0 0,100% 0,94% 100%,0 100%)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charm.ours{box-shadow:inset 0 -2px 0 var(--c,#fff)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker[data-kind="charm"]{border-left-color:#7dff6a;color:#e8ffe2}
+/* ---- The one line under the score (it was a ticker down the right edge, over a feed of the bots' chat):
+   who did what, the banner's own detail while one is up, or what the match says at rest. It keeps its place when it has
+   nothing to say, so the banner under it never moves. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line{display:flex;align-items:center;gap:calc(10 * var(--bh-u));box-sizing:border-box;height:calc(var(--bh-line) * var(--bh-u));margin-top:calc(var(--bh-line-gap) * var(--bh-u));padding:0 calc(18 * var(--bh-u)) calc(1 * var(--bh-u)) calc(14 * var(--bh-u));
+  background:rgba(11,12,14,.9);color:#fff;border-left:calc(6 * var(--bh-u)) solid var(--bh-gold);visibility:hidden;pointer-events:none;
+  font:italic 900 calc(24 * var(--bh-u))/1 'Barlow Condensed',sans-serif;letter-spacing:.04em;white-space:nowrap;clip-path:polygon(0 0,100% 0,calc(100% - 10 * var(--bh-u)) 100%,0 100%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line.on{visibility:visible}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line>span:empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line[data-team="red"]{border-left-color:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line[data-team="blue"]{border-left-color:var(--bh-blue)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line[data-kind="rest"]{background:rgba(11,12,14,.72);border-left-color:#e9e3d6;color:#f3eee4;font:800 calc(24 * var(--bh-u))/1 'Barlow Condensed',sans-serif;letter-spacing:.1em}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line[data-kind="accolade"]{background:linear-gradient(90deg,#0b0c0e 70%,#3a2c08);color:var(--bh-gold);border-left-color:var(--bh-gold)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line[data-kind="charm"]{border-left-color:#7dff6a;color:#e8ffe2}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line kbd{font-family:'Barlow Condensed',sans-serif;font-size:.8em}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line.on[data-pulse="a"]{animation:bh-tick-a .22s ease-out}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line.on[data-pulse="b"]{animation:bh-tick-b .22s ease-out}
+@keyframes bh-tick-a{0%{opacity:0;transform:translateY(calc(-10 * var(--bh-u)))}100%{opacity:1;transform:none}}
+@keyframes bh-tick-b{0%{opacity:0;transform:translateY(calc(-10 * var(--bh-u)))}100%{opacity:1;transform:none}}
 
-/* ---- Zone 7: the banner, a little lower than the shared layout's, under the scoreboard, its strip and the charm chips. */
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .mode-hud>[data-zone="7"]{top:31%}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner{display:none;flex-direction:column;align-items:center;gap:6px;padding:12px 46px 14px;background:#0b0c0e;color:#fff;text-align:center;pointer-events:none;
-  filter:drop-shadow(6px 4px 0 var(--bh-accent,#d51d34));clip-path:polygon(4% 0,100% 0,96% 30%,100% 78%,93% 100%,0 100%,4% 70%,0 34%)}
+/* ---- The one banner: directly under the line, in a place of its own height, so nothing it says stands on
+   Sky Spike's net or on a goal mouth (it was zone 7's, at 15% of the height and lower for a goal, where the STUFF BLOCK
+   covered the net with the ball still live). Two rows: whose moment it is, and the word. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner{display:none;box-sizing:border-box;flex-direction:column;align-items:center;justify-content:center;gap:calc(4 * var(--bh-u));max-height:calc(var(--bh-banner) * var(--bh-u));margin-top:calc(var(--bh-banner-gap) * var(--bh-u));
+  padding:calc(9 * var(--bh-u)) calc(46 * var(--bh-u)) calc(11 * var(--bh-u));background:#0b0c0e;color:#fff;text-align:center;pointer-events:none;transform-origin:50% 0;
+  filter:drop-shadow(calc(6 * var(--bh-u)) calc(4 * var(--bh-u)) 0 var(--bh-accent,#d51d34));clip-path:polygon(4% 0,100% 0,96% 30%,100% 78%,93% 100%,0 100%,4% 70%,0 34%)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-team="red"]{--bh-accent:var(--bh-red)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-team="blue"]{--bh-accent:var(--bh-blue)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner.on{display:flex;animation:bh-in-a .32s cubic-bezier(.2,1.6,.4,1)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner.on[data-pulse="b"]{animation-name:bh-in-b}
-@keyframes bh-in-a{0%{opacity:0;transform:scale(2.2) skew(-12deg)}60%{opacity:1}100%{transform:none}}
-@keyframes bh-in-b{0%{opacity:0;transform:scale(2.2) skew(-12deg)}60%{opacity:1}100%{transform:none}}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner small{font:800 clamp(10px,.85vw,16px)/1 'Barlow Condensed',sans-serif;letter-spacing:.24em;color:var(--bh-gold)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner strong{font:italic 900 clamp(38px,4.4vw,86px)/.95 Impact,'Barlow Condensed',sans-serif;letter-spacing:-.01em;white-space:nowrap;padding-right:.18em;
-  color:#fff;text-shadow:4px 4px 0 var(--bh-accent,#d51d34)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner span{font:800 clamp(10px,.85vw,16px)/1.1 'Barlow Condensed',sans-serif;letter-spacing:.1em;color:#e9e3d6}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner :is(small,span):empty{display:none}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="count"]{background:none;filter:none;clip-path:none;padding:0}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="count"] strong{font-size:clamp(70px,8vw,150px);text-shadow:6px 6px 0 #d51d34,0 0 30px rgba(0,0,0,.6)}
+@keyframes bh-in-a{0%{opacity:0;transform:scale(1.9) skew(-12deg)}60%{opacity:1}100%{transform:none}}
+@keyframes bh-in-b{0%{opacity:0;transform:scale(1.9) skew(-12deg)}60%{opacity:1}100%{transform:none}}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner small{font:800 calc(24 * var(--bh-u))/1 'Barlow Condensed',sans-serif;letter-spacing:.2em;color:var(--bh-gold);white-space:nowrap}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner strong{font:italic 900 calc(64 * var(--bh-u))/.95 'Barlow Condensed',sans-serif;letter-spacing:0;white-space:nowrap;padding-right:.1em;
+  color:#fff;text-shadow:calc(4 * var(--bh-u)) calc(4 * var(--bh-u)) 0 var(--bh-accent,#d51d34)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner small:empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner em{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="count"]{background:none;filter:none;clip-path:none;padding-top:0;padding-bottom:0}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="count"] strong{font-size:calc(96 * var(--bh-u));line-height:.88;text-shadow:calc(6 * var(--bh-u)) calc(6 * var(--bh-u)) 0 #d51d34,0 0 30px rgba(0,0,0,.6)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="count"] small{text-shadow:0 1px 4px #000}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner:is([data-kind="goal"],[data-kind="super"],[data-kind="win"]) strong{font-size:clamp(54px,6.4vw,124px)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner:is([data-kind="goal"],[data-kind="super"],[data-kind="win"]) strong{font-size:calc(74 * var(--bh-u))}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="goal"]{background:linear-gradient(100deg,#0b0c0e 60%,var(--bh-accent) 61%,var(--bh-accent) 64%,#0b0c0e 65%)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="fever"] strong{color:#ffcf5a;text-shadow:4px 4px 0 #ff3b52}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="fever"] strong{color:#ffcf5a;text-shadow:calc(4 * var(--bh-u)) calc(4 * var(--bh-u)) 0 #ff3b52}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="clash"]{background:linear-gradient(100deg,var(--bh-red) 0 8%,#0b0c0e 8% 92%,var(--bh-blue) 92%)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="clash"] strong{color:#fff;text-shadow:4px 3px 0 var(--bh-accent),-3px -2px 0 #ffcf5a;animation:bh-throb .12s steps(2) 4}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="super"] strong{color:#fff;text-shadow:3px 3px 0 var(--bh-accent),-3px -2px 0 #c86bff}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="clash"] strong{color:#fff;text-shadow:calc(4 * var(--bh-u)) calc(3 * var(--bh-u)) 0 var(--bh-accent),calc(-3 * var(--bh-u)) calc(-2 * var(--bh-u)) 0 #ffcf5a;animation:bh-throb .12s steps(2) 4}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="super"] strong{color:#fff;text-shadow:calc(3 * var(--bh-u)) calc(3 * var(--bh-u)) 0 var(--bh-accent),calc(-3 * var(--bh-u)) calc(-2 * var(--bh-u)) 0 #c86bff}
 
-/* ---- Zone 3b: the shot ticker. */
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker{display:none;margin-top:8px;padding:5px 14px 6px 10px;background:#0b0c0e;color:#fff;border-left:5px solid var(--bh-gold);
-  font:italic 900 clamp(11px,.9vw,16px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.03em;white-space:nowrap;pointer-events:none;clip-path:polygon(0 0,100% 0,96% 100%,0 100%)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker[data-team="red"]{border-left-color:var(--bh-red)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker[data-team="blue"]{border-left-color:var(--bh-blue)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker.on{display:block;animation:bh-tick-a .22s ease-out}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker.on[data-pulse="b"]{animation-name:bh-tick-b}
-@keyframes bh-tick-a{0%{opacity:0;transform:translateX(24px)}100%{opacity:1;transform:none}}
-@keyframes bh-tick-b{0%{opacity:0;transform:translateX(24px)}100%{opacity:1;transform:none}}
+/* ---- Zone 3: RUMBLE's charms at work, down the top right corner (they hung under the score, where the line and the
+   banner are now). */
+/* (Under the corner's own first line, where a goal's skip prompt comes.) */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charms{display:flex;flex-direction:column;align-items:flex-end;gap:calc(5 * var(--bh-u));margin-top:calc(58 * var(--bh-u));pointer-events:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charms:empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charm{padding:calc(4 * var(--bh-u)) calc(14 * var(--bh-u)) calc(5 * var(--bh-u));background:rgba(11,12,14,.86);color:#fff;border-left:calc(5 * var(--bh-u)) solid var(--c,#fff);
+  font:italic 900 calc(22 * var(--bh-u))/1 'Barlow Condensed',sans-serif;letter-spacing:.05em;white-space:nowrap;clip-path:polygon(0 0,100% 0,94% 100%,0 100%)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charm.ours{box-shadow:inset 0 -2px 0 var(--c,#fff)}
 
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-ticker[data-kind="accolade"]{background:linear-gradient(90deg,#0b0c0e 70%,#3a2c08);color:var(--bh-gold);border-left-color:var(--bh-gold)}
-/* The bots' lines: name in the side's colour, the line in paper. */
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat{display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-top:6px;pointer-events:none}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-line{display:flex;gap:7px;align-items:baseline;padding:3px 10px 4px;background:rgba(11,12,14,.78);color:#f3eee4;
-  font:700 clamp(10px,.78vw,14px)/1.1 'Barlow Condensed',sans-serif;letter-spacing:.04em;white-space:nowrap;animation:bh-tick-a .2s ease-out}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-line b{font:italic 900 1em/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.04em}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-line.red b{color:var(--bh-red)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-line.blue b{color:var(--bh-blue)}
 
 /* ---- Zone 8: the ball's edge arrow. */
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow{position:absolute;left:0;top:0;display:none;align-items:center;gap:6px;padding:4px 10px 5px;background:#0b0c0e;color:#fff;pointer-events:none;
-  font:italic 900 13px/1 Impact,'Barlow Condensed',sans-serif;will-change:transform;transition:transform .08s linear}
+  font:italic 900 max(13px,calc(20 * var(--bh-u)))/1 'Barlow Condensed',sans-serif;will-change:transform;transition:transform .08s linear}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow.on{display:flex}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow i{width:0;height:0;border:7px solid transparent;border-left:11px solid var(--bh-gold)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow[data-side="l"]{flex-direction:row-reverse}
@@ -133,11 +164,11 @@
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay{position:fixed;left:clamp(16px,4vw,72px);bottom:calc(5.2vh + 18px);display:none;flex-direction:column;align-items:flex-start;gap:6px;pointer-events:none;z-index:3}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay.on{display:flex;visibility:visible;animation:bh-tick-a .3s ease-out}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay-chip{display:flex;align-items:center;gap:10px;padding:6px 22px 8px 14px;background:#0b0c0e;color:#fff;
-  font:italic 900 clamp(26px,2.6vw,48px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.04em;padding-right:.6em;filter:drop-shadow(5px 4px 0 var(--bh-accent,#d51d34));clip-path:polygon(0 0,100% 0,94% 100%,0 100%)}
+  font:italic 900 clamp(26px,2.6vw,48px)/1 'Barlow Condensed',sans-serif;letter-spacing:.04em;padding-right:.6em;filter:drop-shadow(5px 4px 0 var(--bh-accent,#d51d34));clip-path:polygon(0 0,100% 0,94% 100%,0 100%)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay[data-team="red"]{--bh-accent:var(--bh-red)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay[data-team="blue"]{--bh-accent:var(--bh-blue)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay-chip i{width:.42em;height:.42em;border-radius:50%;background:#ff3b30;box-shadow:0 0 10px #ff3b30;animation:bh-throb 1s steps(2) infinite}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay strong{padding:4px 14px 5px 10px;background:var(--bh-accent,#d51d34);color:#fff;font:italic 900 clamp(13px,1.1vw,20px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.04em;white-space:nowrap}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay strong{padding:4px 14px 5px 10px;background:var(--bh-accent,#d51d34);color:#fff;font:italic 900 clamp(13px,1.1vw,20px)/1 'Barlow Condensed',sans-serif;letter-spacing:.04em;white-space:nowrap}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay strong:empty{display:none}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-replay small{font:800 clamp(10px,.8vw,14px)/1 'Barlow Condensed',sans-serif;letter-spacing:.14em;color:#e9e3d6;text-shadow:0 1px 3px #000}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-mood{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0;transition:opacity .6s}
@@ -152,111 +183,162 @@
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-wipe[data-pulse="b"]{animation:bh-wipe-b .5s cubic-bezier(.6,.05,.4,.95)}
 @keyframes bh-wipe-a{from{transform:translateX(-140%) skewX(-16deg)}to{transform:translateX(140%) skewX(-16deg)}}
 @keyframes bh-wipe-b{from{transform:translateX(-140%) skewX(-16deg)}to{transform:translateX(140%) skewX(-16deg)}}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-ball-replay] :is(.combat-hud>:not(.mode-hud),.bh-strip,.bh-charms,.bh-prompt,.bh-arrow,.bh-ticker,.bh-banner){opacity:0!important;transition:opacity .25s}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-ball-replay] :is(.combat-hud>:not(.mode-hud),.bh-charms,.bh-prompt,.bh-arrow,.bh-line,.bh-banner){opacity:0!important;transition:opacity .25s}
 
-/* Touch: FREE PLAY's reset prompt is a button, and quick chat has one of its own (QuickChat.ts opens on it). */
+/* Touch: FREE PLAY's reset prompt is a button, and quick chat has one of its own (QuickChat.ts opens on it): a small
+   round one in the top left corner, after PAUSE and the emote (handheld.css sizes those in a ball match; input/touch.ts
+   placeTop puts them at 16 px and one button on, 8 px apart). */
 #interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-prompt[data-act="reset"]{pointer-events:auto;cursor:pointer}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-btn{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));top:calc(104px + env(safe-area-inset-top,0px));z-index:6;display:none;
-  padding:7px 12px 8px;border:2px solid #fff9ef;background:rgba(11,12,14,.82);color:#fff9ef;font:italic 900 13px/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.08em;pointer-events:auto;touch-action:manipulation}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-btn{--d:38px;position:fixed;left:calc(16px + (var(--d) + 8px) * 2 + env(safe-area-inset-left,0px));top:calc(10px + env(safe-area-inset-top,0px));z-index:41;display:none;box-sizing:border-box;width:var(--d);height:var(--d);margin:0;padding:0;
+  border:2px solid #fbf6eadb;border-radius:50%;background:radial-gradient(circle at 50% 30%,#30343c75,#0b0c0eab 72%);box-shadow:0 0 0 1px #0b0c0e80,inset 0 0 0 1px #0b0c0e66;pointer-events:auto;touch-action:manipulation}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-btn svg{display:block;width:56%;height:56%;margin:auto;fill:none;stroke:#fbf6ea;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-btn::after{content:'';position:absolute;inset:-6px;border-radius:50%}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-chat-btn.on{display:block}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-ball-replay] .bh-chat-btn{display:none}
 /* The now-playing tag (handheld.css puts it under the top bars, centred): in a ball match there it lies on the scoreboard,
-   so on the touch controls it goes to the middle of the bottom edge, between the stick and the buttons. */
-:root.touch-play body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .music-caption.music-caption{top:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform-origin:50% 100%}
-@media(max-height:520px) and (orientation:landscape){
-  /* The banners under the scoreboard and its strip, not on them. */
-  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .mode-hud>[data-zone="7"]{top:44%}
-  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face{width:20px;height:20px}
-  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score{font-size:24px;min-width:30px}
-  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner{padding:6px 22px 8px}
-  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner strong{font-size:30px}
-}
+   so on the touch controls it goes to the middle of the bottom edge, between the stick and the buttons, over the
+   seat's strip. */
+:root.touch-play body:has(#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])) .music-caption.music-caption{top:auto;bottom:calc(40px + env(safe-area-inset-bottom,0px));transform-origin:50% 100%}
 @media(prefers-reduced-motion:reduce){
   #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-wipe{display:none}
   #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-mood{animation:none}
-  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) :is(.bh-banner.on,.bh-ticker.on,.bh-score[data-pulse],.bh-middle strong,.bh-middle[data-kind="fever"]){animation:none}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) :is(.bh-banner.on,.bh-line.on,.bh-score[data-pulse],.bh-middle strong,.bh-middle[data-kind="fever"],.bh-bar,.bh-bar>i>b){animation:none!important}
 }
 
-/* ---- The sports HUD. A ball match reads like a sports
-   broadcast, not a fight: the score bug alone at the top edge with the heat under it, the shot keys small in the corner
-   with their keys and no names, and nothing on the pitch but the tags over the players. The fighting HUD's own plate
-   (portrait, name, meters), its combo count and its move names are not shown here; its key strip fades once the match
-   is under way, and the banners sit under the score bug instead of over the middle of the pitch. */
+/* ---- The sports HUD. A ball match reads like a sports broadcast, not a fight: the score bug alone at the top edge,
+   and nothing on the pitch but the tags over the players. The fighting HUD's own plate (portrait, name, meters), its
+   combo count and its move names are not shown here; its key strip fades once the match is under way. Nor are its six
+   move cards: what a ball player needs of them is the seat's strip (below), BOOST and SUPER. (Put away, not taken
+   out: the cards' own code still measures them.) */
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) :is(.fighter-meter.own,#combo-counter,#action-message){display:none!important}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-skin] .combat-hud .mode-hud>[data-zone="2"]{top:calc(8px + env(safe-area-inset-top,0px))!important;scale:.84!important;transform-origin:50% 0;gap:3px}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-board{filter:drop-shadow(3px 2px 0 rgba(0,0,0,.5))}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face{width:calc(22px * var(--hk-k));height:calc(22px * var(--hk-k))}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle small:empty{display:none}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .combat-hud .mode-hud>[data-zone="7"]{top:15%!important}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner{scale:.74;transform-origin:50% 0}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]):not([data-input="touch"]) .combat-hud .move-bar.ik-cards{scale:calc(var(--hud-k,1) * var(--k-cards,1) * .66);transform-origin:100% 100%}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .move-bar .ik-cap{display:none!important}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .combat-hud .move-bar{visibility:hidden!important;pointer-events:none!important}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) #controls-hint{animation:bh-hint-out .6s 12s both}
 @keyframes bh-hint-out{to{opacity:0;visibility:hidden}}
-@media(max-height:520px) and (orientation:landscape){
-  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .combat-hud .mode-hud>[data-zone="7"]{top:26%!important}
-}
 @media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) #controls-hint{animation:none;opacity:0;visibility:hidden}}
-/* The sports HUD's meter (BallHud.gauges): under the play, over the cards' line - health (Goal Rush, where the
-   sides fight; red under a third) over the boost (gold, bright while boosting). And the count back in from a wipe-out. */
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter{display:flex;flex-direction:column;gap:3px;width:calc(210px * var(--hk-k,1));pointer-events:none;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.6))}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter>i{position:relative;display:block;height:calc(7px * var(--hk-k,1));background:rgba(11,12,14,.72);clip-path:polygon(2% 0,100% 0,98% 100%,0 100%);overflow:hidden}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter>i>b{position:absolute;inset:1px;transform-origin:0 50%;transition:transform .12s linear}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter:not(.hp)>.bh-hp{display:none}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-hp>b{background:#fff9ef}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter.low .bh-hp>b{background:var(--bh-red,#ff3b52);animation:bh-low .5s steps(2) infinite}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-boost>b{background:#c99a2e}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter:is([data-boost="on"],[data-boost="full"]) .bh-boost>b{background:var(--bh-gold,#ffcf5a)}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter[data-boost="on"] .bh-boost{box-shadow:0 0 10px var(--bh-gold,#ffcf5a)}
+
+/* ---- Zone 9, the seat's strip at the foot of the view (BallHud.ts SeatStrip): Goal Rush's stance badge,
+   the seat's health (Goal Rush, where the sides fight; red under a third), and the two bars that stand in for the move
+   cards - BOOST, gold (bright on a full bar and while boosting, dim under one dash's worth), and SUPER, filling as the
+   ultimate charges and flashing once it is ready - each with its key and its name. The empty place after them is
+   SHOOT's charge's. A split screen's second seat has one in its own half (.two). */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .combat-hud .mode-hud>[data-zone="9"]{bottom:calc(22 * var(--bh-u) + env(safe-area-inset-bottom,0px))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-seat{display:flex;flex-direction:column;align-items:flex-start;gap:calc(7 * var(--bh-u));pointer-events:none;filter:drop-shadow(calc(2 * var(--bh-u)) calc(2 * var(--bh-u)) 0 rgba(0,0,0,.6))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-seat.two{position:absolute;left:50%;bottom:calc(22 * var(--bh-u));transform:translateX(-50%);z-index:4}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-hp{position:relative;display:none;align-self:stretch;height:calc(9 * var(--bh-u));background:rgba(11,12,14,.72);clip-path:polygon(calc(4 * var(--bh-u)) 0,100% 0,calc(100% - 4 * var(--bh-u)) 100%,0 100%);overflow:hidden}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-hp.on{display:block}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-hp>b{position:absolute;inset:max(1px,calc(1.5 * var(--bh-u)));background:#fff9ef;transform-origin:0 50%;transition:transform .12s linear}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-hp.low>b{background:var(--bh-red,#ff3b52);animation:bh-low .5s steps(2) infinite}
 @keyframes bh-low{50%{opacity:.45}}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-out{display:none;padding:7px 18px 8px;background:#0b0c0e;color:#fff9ef;font:italic 900 clamp(16px,1.5vw,26px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.04em;
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bars{position:relative;display:flex;align-items:center;gap:calc(26 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar{display:flex;align-items:center;gap:calc(9 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar small{font:italic 900 calc(25 * var(--bh-u))/1 'Barlow Condensed',sans-serif;letter-spacing:.06em;color:#fff9ef;text-shadow:0 1px 3px #000}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-key:empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-key kbd{font:italic 900 calc(20 * var(--bh-u))/1 'Barlow Condensed',sans-serif;min-width:1.3em;padding:.18em .34em}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar>i{position:relative;display:block;width:calc(150 * var(--bh-u));height:calc(18 * var(--bh-u));background:rgba(11,12,14,.78);clip-path:polygon(calc(6 * var(--bh-u)) 0,100% 0,calc(100% - 6 * var(--bh-u)) 100%,0 100%);overflow:hidden}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar>i>b{position:absolute;inset:max(1px,calc(2 * var(--bh-u)));transform-origin:0 50%;transition:transform .12s linear}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.boost>i>b{background:#c99a2e}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.boost:is([data-state="on"],[data-state="full"])>i>b{background:var(--bh-gold)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.boost[data-state="on"]>i{filter:drop-shadow(0 0 calc(6 * var(--bh-u)) var(--bh-gold))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.boost[data-state="spent"]>i>b{background:#7a6a3c}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.boost[data-state="spent"] small{opacity:.6}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.boost[data-pulse="a"]>i{animation:bh-bar-a .5s ease-out}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.boost[data-pulse="b"]>i{animation:bh-bar-b .5s ease-out}
+@keyframes bh-bar-a{0%{filter:brightness(2.4)}100%{filter:none}}
+@keyframes bh-bar-b{0%{filter:brightness(2.4)}100%{filter:none}}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.super>i>b{background:#8a4fb8}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.super[data-state="ready"]>i>b{background:var(--bh-super);animation:bh-ready .7s ease-in-out infinite}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.super[data-state="ready"] small{color:var(--bh-gold);animation:bh-throb .7s ease-in-out infinite}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar.super[data-state="ready"]>i{filter:drop-shadow(0 0 calc(7 * var(--bh-u)) var(--bh-super))}
+@keyframes bh-ready{50%{filter:brightness(1.7)}}
+/* SHOOT's charge (BallHud.ts SeatStrip.shot), in the place the bars left for it: nothing
+   on a tap; held past the split, a small fill in the side's colour over the fighter's own wind-up, paper white and
+   flashing once as it is full; kept a breath after the blow as it ended (dimmed where the key came up first), then gone. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charge{position:absolute;left:calc(100% + 26 * var(--bh-u));top:50%;width:calc(96 * var(--bh-u));height:calc(18 * var(--bh-u));margin-top:calc(-9 * var(--bh-u));
+  background:rgba(11,12,14,.78);clip-path:polygon(calc(6 * var(--bh-u)) 0,100% 0,calc(100% - 6 * var(--bh-u)) 100%,0 100%);overflow:hidden;opacity:0;transition:opacity .16s ease-out}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charge:is([data-state="on"],[data-state="full"],[data-state="kept"]){opacity:1;transition:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charge>b{position:absolute;inset:max(1px,calc(2 * var(--bh-u)));transform-origin:0 50%;transform:scaleX(0);background:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charge[data-side="blue"]>b{background:var(--bh-blue)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charge[data-state="full"]>b{background:#fff9ef}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charge[data-state="kept"]>b{opacity:.6}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charge[data-pulse="a"]{animation:bh-charge-a .34s ease-out}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charge[data-pulse="b"]{animation:bh-charge-b .34s ease-out}
+@keyframes bh-charge-a{0%{filter:brightness(2.6)}100%{filter:none}}
+@keyframes bh-charge-b{0%{filter:brightness(2.6)}100%{filter:none}}
+@media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charge{animation:none!important}}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-out{display:none;padding:7px 18px 8px;background:#0b0c0e;color:#fff9ef;font:italic 900 max(16px,calc(26 * var(--bh-u)))/1 'Barlow Condensed',sans-serif;letter-spacing:.04em;
   clip-path:polygon(3% 0,100% 0,97% 100%,0 100%);box-shadow:inset 0 -3px 0 var(--bh-red,#ff3b52);pointer-events:none}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-out.on{display:block}
-#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-ball-replay] :is(.bh-meter,.bh-out){opacity:0!important}
-@media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-meter.low .bh-hp>b{animation:none}}
-/* On a touch screen on its side the meter and the stance badge stand left of the middle, between the stick's ring and
-   the sports set's far column (input/sportTouch.ts: BOOST and SUPER reach 300 px in from the right, which on a 667 px
-   phone is past the middle). */
-@media(max-height:520px) and (orientation:landscape){#interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .combat-hud .mode-hud>[data-zone="9"]{left:40%}}
-/* Goal Rush's two stances (BallHud.stanceBadge; game/ball/stance.ts): a small badge over the meter - BALL in
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"])[data-ball-replay] :is(.bh-seat,.bh-out){opacity:0!important}
+/* Goal Rush's two stances (BallHud.ts SeatStrip; game/ball/stance.ts): a badge over the bars - BALL in
    gold on ink, FIGHT in red with the one locked and their health - flashing as it changes. */
-#interface[data-hud="goal-rush"] .bh-stance{display:none;align-items:center;gap:6px;align-self:flex-start;margin-bottom:4px;padding:3px 10px 4px 7px;background:rgba(11,12,14,.84);color:#fff9ef;pointer-events:none;
-  font:italic 900 calc(clamp(11px,.85vw,15px) * var(--hk-k,1))/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.06em;white-space:nowrap;clip-path:polygon(0 0,100% 0,94% 100%,0 100%);
-  box-shadow:inset 3px 0 0 var(--bh-gold,#ffcf5a)}
-#interface[data-hud="goal-rush"] .bh-stance.on{display:flex}
-#interface[data-hud="goal-rush"] .bh-stance>b::before{content:'BALL'}
-#interface[data-hud="goal-rush"] .bh-stance>b{display:flex;align-items:center;gap:5px;color:var(--bh-gold,#ffcf5a)}
-#interface[data-hud="goal-rush"] .bh-stance>b::after{content:'';order:-1;width:.62em;height:.62em;border-radius:50%;background:var(--bh-gold,#ffcf5a);box-shadow:0 0 6px var(--bh-gold,#ffcf5a)}
-#interface[data-hud="goal-rush"] .bh-stance>span:empty,#interface[data-hud="goal-rush"] .bh-stance>small:empty{display:none}
-#interface[data-hud="goal-rush"] .bh-stance>small{font:800 calc(clamp(8px,.62vw,11px) * var(--hk-k,1))/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;color:#e9e3d6;opacity:.85}
-#interface[data-hud="goal-rush"] .bh-stance-hp{display:none;position:relative;width:calc(46px * var(--hk-k,1));height:5px;background:rgba(255,255,255,.18);overflow:hidden}
-#interface[data-hud="goal-rush"] .bh-stance-hp>b{position:absolute;inset:0;background:#fff9ef;transform-origin:0 50%;transition:transform .12s linear}
-#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]{background:#c8102e;box-shadow:inset 3px 0 0 #0b0c0e,0 0 14px rgba(255,40,60,.45)}
-#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]>b{color:#fff}
-#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]>b::before{content:'FIGHT'}
-#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]>b::after{width:.7em;height:.7em;border-radius:0;background:none;box-shadow:none;
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance{display:none;align-items:center;gap:calc(9 * var(--bh-u));padding:calc(5 * var(--bh-u)) calc(18 * var(--bh-u)) calc(6 * var(--bh-u)) calc(12 * var(--bh-u));background:rgba(11,12,14,.84);color:#fff9ef;pointer-events:none;
+  font:italic 900 calc(28 * var(--bh-u))/1 'Barlow Condensed',sans-serif;letter-spacing:.06em;white-space:nowrap;clip-path:polygon(0 0,100% 0,calc(100% - 8 * var(--bh-u)) 100%,0 100%);
+  box-shadow:inset calc(5 * var(--bh-u)) 0 0 var(--bh-gold,#ffcf5a)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance.on{display:flex}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b::before{content:'BALL'}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b{display:flex;align-items:center;gap:calc(7 * var(--bh-u));color:var(--bh-gold,#ffcf5a)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b::after{content:'';order:-1;width:.62em;height:.62em;border-radius:50%;background:var(--bh-gold,#ffcf5a);box-shadow:0 0 6px var(--bh-gold,#ffcf5a)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>span:empty,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>small:empty{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>small{font:800 calc(24 * var(--bh-u))/1 'Barlow Condensed',sans-serif;letter-spacing:.1em;color:#e9e3d6}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>small kbd{font-family:'Barlow Condensed',sans-serif;font-size:.8em}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance-hp{display:none;position:relative;width:calc(70 * var(--bh-u));height:calc(8 * var(--bh-u));background:rgba(255,255,255,.18);overflow:hidden}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance-hp>b{position:absolute;inset:0;background:#fff9ef;transform-origin:0 50%;transition:transform .12s linear}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance[data-stance="fight"]{background:#c8102e;box-shadow:inset calc(5 * var(--bh-u)) 0 0 #0b0c0e,0 0 14px rgba(255,40,60,.45)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance[data-stance="fight"]>b{color:#fff}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance[data-stance="fight"]>b::before{content:'FIGHT'}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance[data-stance="fight"]>b::after{width:.7em;height:.7em;border-radius:0;background:none;box-shadow:none;
   background:linear-gradient(45deg,transparent 40%,#fff 40% 60%,transparent 60%),linear-gradient(-45deg,transparent 40%,#fff 40% 60%,transparent 60%)}
-#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]>span::before{content:'▸ ';opacity:.8}
-#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"] .bh-stance-hp{display:block}
-#interface[data-hud="goal-rush"] .bh-stance[data-stance="fight"]>small{color:#ffe3e3}
-#interface[data-hud="goal-rush"] .bh-stance[data-pulse="a"]{animation:bh-stance-a .3s cubic-bezier(.2,1.6,.4,1)}
-#interface[data-hud="goal-rush"] .bh-stance[data-pulse="b"]{animation:bh-stance-b .3s cubic-bezier(.2,1.6,.4,1)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance[data-stance="fight"]>span::before{content:'▸ ';opacity:.8}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance[data-stance="fight"] .bh-stance-hp{display:block}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance[data-stance="fight"]>small{color:#ffe3e3}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance[data-pulse="a"]{animation:bh-stance-a .3s cubic-bezier(.2,1.6,.4,1)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance[data-pulse="b"]{animation:bh-stance-b .3s cubic-bezier(.2,1.6,.4,1)}
 @keyframes bh-stance-a{0%{transform:scale(1.35);filter:brightness(1.8)}100%{transform:none}}
 @keyframes bh-stance-b{0%{transform:scale(1.35);filter:brightness(1.8)}100%{transform:none}}
-#interface[data-hud="goal-rush"][data-ball-replay] .bh-stance{opacity:0!important}
-/* A TACKLE of yours: the banner in red, short. Anyone's: the ticker's edge in red. */
+@media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) :is(.bh-stance,.bh-hp.low>b){animation:none!important}}
+/* A touch screen on its side (it stood at 40% of the width, 14% up, over a low-framed fighter): the strip
+   is one small row along the very foot of the screen - the badge, then the health over the two bars - ending 10 px
+   short of the sports set's boost (handheld.css, input/sportTouch.ts: BOOST ends 278 px in from the right) and lower
+   than the stick's ring, inside SPORT_STRIP (tests/touchLayout.test.ts): under the feet of a fighter the lens frames
+   low, not on them. The one locked is named in a few letters there; their tag over them says the rest. */
+@media(max-height:520px) and (orientation:landscape){
+  #interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .combat-hud .mode-hud>[data-zone="9"]{left:auto;right:calc(288px + env(safe-area-inset-right,0px));transform:none;bottom:calc(6px + env(safe-area-inset-bottom,0px));align-items:flex-end}
+  #interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-seat{display:grid;grid-template-columns:auto auto;grid-template-areas:"stance hp" "stance bars";align-items:end;column-gap:calc(16 * var(--bh-u));row-gap:calc(4 * var(--bh-u));max-width:340px}
+  #interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance{grid-area:stance;padding-top:calc(3 * var(--bh-u));padding-bottom:calc(4 * var(--bh-u));font-size:calc(26 * var(--bh-u))}
+  #interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>span{max-width:70px;overflow:hidden;text-overflow:ellipsis}
+  #interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-hp{grid-area:hp;height:calc(7 * var(--bh-u))}
+  #interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bars{grid-area:bars;gap:calc(14 * var(--bh-u))}
+  #interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar{gap:calc(7 * var(--bh-u))}
+  #interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-bar>i{width:calc(72 * var(--bh-u));height:calc(16 * var(--bh-u))}
+  /* (SHOOT's charge is the shot button's own ring there: handheld.css .tc-sp-main .tc-ring.) */
+  #interface[data-input="touch"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-charge{display:none}
+  /* The banner's two rows on a short screen, inside its shorter place - and, while it is up, in the line's place: under
+     the score bug, the line's words (who did what) in its top row where it has them, in place of its own. Its foot is
+     then 164 units down, not 198: at 844 x 390 the rally's lens lifted Sky Spike's net to 93 px from the top, over the
+     198's 99 (the kickoff's count keeps the line: its match terms, at a kickoff's still lens). */
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line:has(+.bh-banner.on:not([data-kind="count"])){display:none}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner em:not(:empty){display:block;font:800 calc(20 * var(--bh-u))/1 'Barlow Condensed',sans-serif;font-style:normal;letter-spacing:.12em;color:var(--bh-gold);white-space:nowrap}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner em:not(:empty)+small{display:none}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner{padding:calc(5 * var(--bh-u)) calc(40 * var(--bh-u)) calc(7 * var(--bh-u));gap:calc(2 * var(--bh-u))}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner small{font-size:calc(20 * var(--bh-u))}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner strong{font-size:calc(46 * var(--bh-u))}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner:is([data-kind="goal"],[data-kind="super"],[data-kind="win"]) strong{font-size:calc(46 * var(--bh-u))}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-banner[data-kind="count"] strong{font-size:calc(58 * var(--bh-u))}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line{font-size:calc(22 * var(--bh-u))}
+  #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-line[data-kind="rest"]{font-size:calc(22 * var(--bh-u))}
+}
+/* A TACKLE of yours: the banner in red, short. Anyone's: the line's edge in red. */
 #interface[data-hud="goal-rush"] .bh-banner[data-kind="tackle"]{background:linear-gradient(100deg,#0b0c0e 62%,#c8102e 63% 67%,#0b0c0e 68%)}
-#interface[data-hud="goal-rush"] .bh-banner[data-kind="tackle"] strong{color:#fff;text-shadow:4px 4px 0 #c8102e,-2px -2px 0 #0b0c0e}
-#interface[data-hud="goal-rush"] .bh-ticker[data-kind="tackle"]{border-left-color:#ff2a3c;background:linear-gradient(90deg,#0b0c0e 72%,#3a0a10)}
-@media(prefers-reduced-motion:reduce){#interface[data-hud="goal-rush"] .bh-stance{animation:none!important}}
-/* A goal's banner: the explosion first, the word after. From the ball cam the far goal sits right under the
-   banner's place, so the banner waits seven tenths of a second (held invisible by its first keyframe) and comes in lower,
-   off the goal mouth. */
-#interface:is([data-hud="goal-rush"]) .bh-banner.on[data-kind="goal"]{animation-delay:.7s;animation-fill-mode:both;translate:0 26vh}
-@media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"]) .bh-banner.on[data-kind="goal"]{animation:none;translate:0 26vh}}
+#interface[data-hud="goal-rush"] .bh-banner[data-kind="tackle"] strong{color:#fff;text-shadow:calc(4 * var(--bh-u)) calc(4 * var(--bh-u)) 0 #c8102e,calc(-2 * var(--bh-u)) calc(-2 * var(--bh-u)) 0 #0b0c0e}
+#interface[data-hud="goal-rush"] .bh-line[data-kind="tackle"]{border-left-color:#ff2a3c;background:linear-gradient(90deg,#0b0c0e 72%,#3a0a10)}
+/* A goal's banner: the explosion first, the word after - it waits seven tenths of a second (held invisible by
+   its first keyframe). (It came in lower, off the far goal's mouth, which sat right under the banner's old
+   place; under the score it is over the mouth already, and stays there.) */
+#interface:is([data-hud="goal-rush"]) .bh-banner.on[data-kind="goal"]{animation-delay:.7s;animation-fill-mode:both}
+@media(prefers-reduced-motion:reduce){#interface:is([data-hud="goal-rush"]) .bh-banner.on[data-kind="goal"]{animation:none}}
 /* The halo skin sets a slip's small line in its display face at 9 px, which in the ball modes' prompt lane drew
    the hints' second line as unreadable glyphs: here it reads in the HUD's own condensed face. */
 #interface[data-skin="halo"]:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .mode-hud :is(.hk-slip,.hk-slip.ink) small{font:800 .7em/1 'Barlow Condensed',sans-serif;letter-spacing:.06em}
 /* Your own PERFECT STRIKE (PERFECT VOLLEY, PERFECT HEADER) - a short gold banner. */
 #interface[data-hud="goal-rush"] .bh-banner[data-kind="perfect"]{background:linear-gradient(100deg,#0b0c0e 62%,#ffcf5a 63% 67%,#0b0c0e 68%)}
-#interface[data-hud="goal-rush"] .bh-banner[data-kind="perfect"] strong{color:#ffcf5a;text-shadow:4px 4px 0 #0b0c0e,-2px -2px 0 #c8102e}
+#interface[data-hud="goal-rush"] .bh-banner[data-kind="perfect"] strong{color:#ffcf5a;text-shadow:calc(4 * var(--bh-u)) calc(4 * var(--bh-u)) 0 #0b0c0e,calc(-2 * var(--bh-u)) calc(-2 * var(--bh-u)) 0 #c8102e}

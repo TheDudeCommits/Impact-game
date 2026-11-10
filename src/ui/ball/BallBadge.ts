@@ -7,7 +7,8 @@ import './ballBadge.css';
 
 /** A line on the ball modes' screen during play (the HUD itself is BallHud's, left alone): the mutator at work
  *  (HEAT RUSH...), RANKED, and a training drill's progress - its name, which ball of ten, each ball's result as a dot,
- *  and how many the next medal asks for. Drawn under the scoreboard's strip, small, out of the way of the fight. */
+ *  and how many the next medal asks for. Drawn in the top left corner, out of the way of the fight (under
+ *  the scoreboard there is the one line and the one banner now). */
 export class BallBadge {
   readonly root: HTMLElement;
   private key = '';

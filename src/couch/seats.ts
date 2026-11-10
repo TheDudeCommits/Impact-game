@@ -92,6 +92,7 @@ export class Seat {
   private padRight = 0;
   private padGuard = false;
   private padJumpHeld = false;
+  private padHeavyHeld = false;
   /** The pad's right stick, this frame: a split screen's seat turns its own view with it (couch.ts `turn`). */
   lookX = 0;
   lookY = 0;
@@ -142,7 +143,7 @@ export class Seat {
     const frame = this.pad.read(pad ?? undefined, !this.menuOpen, now);
     // VIEW / SELECT: the seat's shop, open or shut (read here, as a menu's pad leaves it out of its frame).
     const view = !!pad?.buttons?.[8]?.pressed, viewDown = view && !this.padView; this.padView = view;
-    this.padForward = frame.forward; this.padRight = frame.right; this.padGuard = frame.guard; this.padJumpHeld = frame.jumpHeld;
+    this.padForward = frame.forward; this.padRight = frame.right; this.padGuard = frame.guard; this.padJumpHeld = frame.jumpHeld; this.padHeavyHeld = !!frame.heavyHeld;
     this.lookX = frame.lookX; this.lookY = frame.lookY;
     if (this.menuOpen) { this.picks.push(...frame.ui); if (viewDown) this.picks.push('back'); this.picks.splice(0, Math.max(0, this.picks.length - 8)); this.menu = frame.menu; if (frame.active) this.active = true; return; }
     if (viewDown) this.interact = true;
@@ -154,7 +155,7 @@ export class Seat {
   }
   /** Whether the seat asked to cycle its lock this tick (taken once). */
   takeTarget() { const t = this.target; this.target = false; return t; }
-  clear() { this.attack = undefined; this.jump = this.dash = this.awaken = this.target = false; this.padForward = this.padRight = this.lookX = this.lookY = 0; this.padGuard = this.padJumpHeld = false; this.pad.reset(); }
+  clear() { this.attack = undefined; this.jump = this.dash = this.awaken = this.target = false; this.padForward = this.padRight = this.lookX = this.lookY = 0; this.padGuard = this.padJumpHeld = this.padHeavyHeld = false; this.pad.reset(); }
   /** This tick's command: movement against the couch camera's heading, the aim at the seat's opponent. */
   command(held: ReadonlySet<string>, viewYaw: number, aimYaw: number, targetId: string | null): PlayerInput {
     const k = this.keys(), down = (action: SeatAction) => this.device.kind === 'keys' && k[action].some(code => held.has(code));
@@ -165,6 +166,8 @@ export class Seat {
     if (this.attack) command.attack = this.attack;
     if (this.jump) command.jump = true;
     if (down('jump') || this.padJumpHeld) command.jumpHeld = true;
+    // (The heavy held: the ball modes' SHOOT is charged by holding it - PlayerInput.heavyHeld.)
+    if (down('heavy') || this.padHeavyHeld) command.heavyHeld = true;
     if (this.dash) command.dash = true;
     if (this.awaken) command.awaken = true;
     this.attack = undefined; this.jump = this.dash = this.awaken = false;

@@ -167,8 +167,16 @@ const GOAL_SWING = {behind: 2, finalFrom: 30, close: 2, finalHeat: 1.5, finalMet
  *  every bot's press (0.28 s apart at the least) never are. Presses are counted as the room steps them (the kernel's
  *  attackSeq), so a press its cooldown refused counts: they are the hands, not the blows. Measured with the scripted
  *  players (playerModels.ts): without it, a masher's side did as well as a casual player's in Goal Rush and a skilled
- *  one's in Sky Spike. */
-export const MASHED = {presses: 3, window: .45, yaw: .5} as const;
+ *  one's in Sky Spike.
+ *  A heavy's half second of wind-up let a flurry show before its blow landed; SHOOT's quick strike (model.ts SHOOT)
+ *  lands an eighth of a second after its press, before a third press can come. So a quick strike with any attack
+ *  pressed again between its own press and its blow is MASHED too: nobody timing a shot presses twice inside an
+ *  eighth of a second, and a masher's first swing at the ball no longer comes out clean. And so is a quick strike
+ *  pressed within `tap` seconds of the attack press before it: a flurry's second press, where a person timing a shot
+ *  presses once (the scripted casual and skilled players press 0.3 s apart or more, the bots 0.28). Without it the
+ *  masher's instant swings came out clean between its flurries: the scripted MASHER won 56% of Sky Spike's matches on
+ *  NORMAL (29% before the quick strike), over the skilled player's 48%. */
+export const MASHED = {presses: 3, window: .45, yaw: .5, tap: .25} as const;
 /** A body reeling from a blow (or down) heads nothing: the ball only bounces off it. */
 const REELING: ReadonlySet<string> = new Set(['launched', 'knockdown', 'getup', 'stun', 'splat', 'defeated']);
 /** A HEADER's blow, as strike.ts reads one (no swing: the body's own). */
@@ -310,7 +318,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
   private readonly pressSeq = new Map<string, number>();
   /** The last flair shot named (BICYCLE KICK...): whose and when, for the accolade if it scores. */
   private flair: {id: string; at: number; text: string} | null = null;
-  private lastStrike: {id: string; team: BallTeam; at: number; power: number; vx: number; vy: number; vz: number; shot: ShotKind; super: boolean} | null = null;
+  private lastStrike: {id: string; team: BallTeam; at: number; power: number; vx: number; vy: number; vz: number; shot: ShotKind; super: boolean; tapped?: boolean} | null = null;
   private events: CombatEvent[] = [];
   private serial = 0;
   private rolesAt = 0;
@@ -1489,10 +1497,13 @@ export class BallMatch implements ExternalTargets, LessonHost {
     // Goal Rush's PERFECT STRIKE: a ball coming in, met by the blow just as it arrived (strike.ts says whether the shot
     // it makes can be one).
     // A blow out of a flurry of presses is a SCUFF (MASHED): off its aim, slower, unhelped, never perfect.
-    const scuffed = !again && !serve && this.mashed(seat, blow.slot);
+    // (And SHOOT's quick strike pressed over before it landed: the kernel's cast knows its own press.)
+    const scuffed = !again && !serve && (this.mashed(seat, blow.slot) || (blow.strike === 'tap' && ((a.cast?.press !== undefined && a.attackSeq !== a.cast.press) || this.tapMashed(seat))));
     const off = scuffed ? this.rng() * 2 - 1 : 0, scuff = scuffed ? {yaw: off * MASHED.yaw, off} : undefined;
     const timed = this.mode === 'goal-rush' && !again && !scuffed && this.timed(seat, a, blow, claim);
+    // (SHOOT: the quick strike or the wound-up heavy and its charge - the kernel's word, ExternalBlow.strike.)
     const result = strikeBall(b, {mode: this.mode, slot: blow.slot, move: blow.move, knockback: blow.knockback, launch: blow.launch, finisher: blow.finisher, perfect: (perfect || timed) && !scuffed, spray, quickTo, shank, scuff,
+      strike: blow.strike, charge: blow.charge,
       pushX: blow.pushX, pushZ: blow.pushZ, mates, touches, serve, rivals, gravity: baseGravity(this.view.mutator), run: {vx: moving?.vx ?? 0, vz: moving?.vz ?? 0},
       striker: {id: seat.id, team: seat.team, x: p.x, y: p.y, z: p.z, grounded: p.grounded, aimYaw: yaw, awakened: !!p.awakened,
         forward: mx * Math.sin(yaw) + mz * Math.cos(yaw), lateral: -mx * Math.cos(yaw) + mz * Math.sin(yaw), chain: p.chain ?? 0}});
@@ -1509,11 +1520,15 @@ export class BallMatch implements ExternalTargets, LessonHost {
       this.endEffect('charge', seat.team, seat.id);
     }
     // A CLASH: the other side struck it a breath ago, and this blow meets theirs.
-    const real = !again && !serve && result.shot !== 'tap' && result.shot !== 'bump' && result.shot !== 'set';
+    // (SHOOT's quick strike is one, but two sides' taps a breath apart are a touch and its answer - in Goal
+    // Rush a CLASH needs one of the two blows to be more than a tap. Counted as clashes, taps held the ball up fourteen
+    // times a match where five had been tuned for; left out altogether, a CLASH came once in three matches. In Sky Spike,
+    // where no CLASH came before, a tap never makes one.)
+    const real = !again && !serve && result.shot !== 'tap' && result.shot !== 'bump' && result.shot !== 'set', tapped = blow.strike === 'tap';
     const power = Math.hypot(result.vx, result.vy, result.vz) * (blow.slot === 'ultimate' ? 1.6 : blow.slot === 'special' || blow.slot === 'area' ? 1.15 : 1) + (p.awakened ? 4 : 0);
     const rival = this.lastStrike;
-    const clashed = real && !!rival && rival.team !== seat.team && now - rival.at <= CLASH.window && now - this.clashAt >= CLASH.gap && b.frozenUntil <= now && !this.stack && this.view.phase === 'live';
-    if (real) this.lastStrike = clashed ? null : {id: seat.id, team: seat.team, at: now, power, vx: result.vx, vy: result.vy, vz: result.vz, shot: result.shot, super: result.super};
+    const clashed = real && !!rival && !(tapped && (rival.tapped || this.mode === 'sky-spike')) && !(rival.tapped && this.mode === 'sky-spike') && rival.team !== seat.team && now - rival.at <= CLASH.window && now - this.clashAt >= CLASH.gap && b.frozenUntil <= now && !this.stack && this.view.phase === 'live';
+    if (real) this.lastStrike = clashed ? null : {id: seat.id, team: seat.team, at: now, power, vx: result.vx, vy: result.vy, vz: result.vz, shot: result.shot, super: result.super, ...(tapped ? {tapped} : {})};
     if (clashed) {
       this.clash(seat, power, result, rival!, merged);
       const [ult, awaken] = TOUCH_METER[blow.slot] ?? [3, 2];
@@ -1628,6 +1643,12 @@ export class BallMatch implements ExternalTargets, LessonHost {
       if (list.length > MASHED.presses) list.shift();
       this.pressedAt.set(seat.id, list);
     }
+  }
+  /** SHOOT's quick strike pressed within MASHED.tap of the press before it (its own press the last heard: one pressed
+   *  over is MASHED already). */
+  private tapMashed(seat: BallSeat) {
+    const list = this.pressedAt.get(seat.id);
+    return !!list && list.length >= 2 && list[list.length - 1] - list[list.length - 2] <= MASHED.tap + 1e-6;
   }
   /** A blow on the ball out of a flurry of presses (MASHED); Sky Spike's body touch (autoBump) asks it too. */
   private mashed(seat: BallSeat, slot: string) {

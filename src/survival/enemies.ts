@@ -12,6 +12,7 @@
  *  renders each clip and reports where its furthest forward reach falls, and a
  *  move's contact is set on that frame so the blow lands when it is seen to.
  */
+import { CLEAN_ATTACKS, CLEAN_INTROS } from './bossAttacks'; // the bosses' clean attack clips
 import type { MoveDefinition, SlotMoves } from '../game/moves';
 import type { AttackSlot, FighterId } from '../game/types';
 
@@ -731,7 +732,7 @@ ENEMIES.barrow = {
     melee('Disgorge', 'ultimate', ['_skill_b'], 2.8, 1.2, 60, { range: .5, radius: 2.8, lunge: 0, knockback: 9, maxRange: 18, rest: 9, telegraph: 'ring', element: 'dark', callout: true, phase: 1,
       rain: { count: 16, every: .14, lead: .95, spread: 7, radius: 2, damage: 70, start: .5, knockback: 8 } }),
   ],
-  clips: brClips({ intro: ['_opening'], death: ['_lose'], taunt: ['_victory'] }), xp: 62, score: 15000, cost: 0, color: 0x2a0a3a,
+  clips: withClean(brClips({ intro: ['_opening'], death: ['_lose'], taunt: ['_victory'] })), xp: 62, score: 15000, cost: 0, color: 0x2a0a3a,
 };
 // Akagane: the war-fan, great fire, and a meteor out of a clear sky.
 ENEMIES.akagane = {
@@ -799,3 +800,18 @@ export function kitOf(def: EnemyDefinition): SlotMoves {
 /** Every distinct model a set of enemies needs, for loading. A shadow rival
  *  wears its roster model, which the client has loaded already. */
 export const modelsOf = (ids: readonly string[]) => [...new Set(ids.map(id => enemy(id).model).filter(Boolean))];
+
+// A boss move with a clean clip of its own (bossAttacks.ts: each clip cut from clean sources on the move's own contacts and
+// length) plays it, in front of the move's older clip names, which stay behind it for any body still carrying them. A chain is played as its one clean clip, on the same clock (the chain's whole length). Each
+// `boss`-role entrance likewise. Timing, contacts, telegraphs, damage and ranges are the move's own, unchanged.
+for (const def of Object.values(ENEMIES)) {
+  const own = CLEAN_ATTACKS[def.id];
+  if (own) for (const move of def.moves) {
+    const clean = own[move.name];
+    if (!clean) continue;
+    move.clip = [clean[0], ...move.clip];
+    if (move.chain) delete move.chain;
+    if (move.clipSeconds !== undefined) move.clipSeconds = clean[1];
+  }
+  if (CLEAN_INTROS[def.id] && def.clips.intro) def.clips = { ...def.clips, intro: [CLEAN_INTROS[def.id], ...def.clips.intro] };
+}

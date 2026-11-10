@@ -1,6 +1,6 @@
 import type {AttackSlot, PlayerInput, PlayerState} from '../types';
 import {MOVES, jumpArc} from '../moves';
-import {BALL_ID, GOAL_RULES, SPIKE_RULES, otherTeam, type BallModeId, type BallSeat, type BallTeam, type BallView} from './model';
+import {BALL_ID, GOAL_RULES, SHOOT, SPIKE_RULES, otherTeam, type BallModeId, type BallSeat, type BallTeam, type BallView} from './model';
 import {goalZ, landing, sideOf, stepBall, type BallContact} from './physics';
 import type {BallState} from './model';
 
@@ -16,6 +16,30 @@ const SPIKE_HIT = 4, SPIKE_RISE = .15;
  *  brake it), the body hangs at the top through the wind-up, and the blow lands about APEX_CONTACT after it - so the
  *  hitter leaves the floor that long, plus the jump's rise, before the ball gets there. */
 const APEX_REACH = .9, APEX_SWING = .1, APEX_CONTACT = .23;
+/** SHOOT (model.ts SHOOT: a tap is the quick strike every fighter shares, a key held on winds up the
+ *  fighter's own heavy as a CHARGED shot). The bots tap by default, and wind one up when they have the room for it:
+ *  - Goal Rush: on the floor with the goal in range (a charged clearance is a wait for nothing), the stamina for the
+ *    heavy, and nobody of the other side within `room` metres plus `run` m/s times the wind-up (by level: what a rival
+ *    who has seen it coming closes in that time; HARD's allows for a boost) - then `share` of the time by level. A ball
+ *    at its feet must be all but still (`still` m/s: one rolling on was gone by the blow); one on its way to it is wound
+ *    up for as it comes, decided once a ball, when it is far enough off for the heavy to land as it arrives. A keeper set
+ *    on its line (within `line` metres of it, between the posts and a stride) closes nobody down: it is the one a charged
+ *    shot is wound up to beat. (The first try counted it and any rival within 6 m, and wound up only for a ball at the
+ *    feet: in a 3 v 3 there nearly always is one, so the bots charged three shots a match, and with every defender's
+ *    swing as quick as the shot - twice the saves - Goal Rush fell to 8.9 goals a match from 11.7.) The keeper and a
+ *    volley in the air are taps.
+ *  - Sky Spike: the spike off a floating set, timed to the top of the jump as the heavy's own always was, `spike` of
+ *    the time by level - HARD's never into a block standing at the net within `block` metres of where it will hit,
+ *    which the wind-up gives its time; a QUICK SET's hit and a hit over from the floor are taps (the quick strike is
+ *    what makes a QUICK SET quick); a JUMP SERVE `serve` of the time. (HARD wound up three spikes in four and seven
+ *    JUMP SERVEs in ten at first: the scripted skilled player's side, with EASY's team-mates, won 19-21% on HARD, from
+ *    35%.)
+ *  `tap`: how long after the press the quick strike's blow lands, as a bot's timing reads it (a tick over its contact);
+ *  `air`: how long a wound-up air strike's key is held. */
+const CHARGE = {room: 1.8, run: {easy: 2.5, normal: 3.5, hard: 5}, line: 3.5, still: 4, share: {easy: .5, normal: .85, hard: .9}, spike: {easy: .2, normal: .5, hard: .5},
+  serve: {easy: .2, normal: .5, hard: .5}, block: 2.2, tap: SHOOT.contact + 1 / 60, air: .34} as const;
+/** The quick strike, as onTime reads a blow. */
+const QUICK = {contacts: [SHOOT.contact], style: 'melee', lunge: undefined, lungeDelay: undefined} as const;
 /** A block leaves the floor this long before the spike crosses the net, so the body is a metre or two up and rising as it
  *  arrives (leave sooner and the spike passes under the top of the jump). */
 const BLOCK_LEAD = .1;
@@ -247,6 +271,9 @@ const SET_SWING = 3;
  *  roles), and never touches the ball any way a person could not. `skill` (0-1) is how cleanly it times and aims. */
 export class BallBrain {
   private nextPress = 0;
+  /** SHOOT (CHARGE): a wind-up under way - the key held until then, the aim it holds - and whether the attack this bot
+   *  is going up for is one. */
+  private holdUntil = 0; private holdYaw = 0; private winding = false;
   private nextJump = 0;
   private jumpUntil = 0;
   private nextDash = 0;
@@ -308,8 +335,15 @@ export class BallBrain {
     this.sk = this.skill;
     if (!me.alive || view.phase === 'over' || view.phase === 'countdown') return input;
     if (now < this.jumpUntil) input.jumpHeld = true;
-    if (view.phase === 'scored' || (view.phase === 'kickoff' && this.mode === 'goal-rush')) { this.fight = null; return input; }
-    return this.mode === 'goal-rush' ? this.football(me, seat, players, view, now, input) : this.volley(me, seat, players, view, now, input);
+    if (view.phase === 'scored' || (view.phase === 'kickoff' && this.mode === 'goal-rush')) { this.fight = null; this.holdUntil = 0; return input; }
+    const out = this.mode === 'goal-rush' ? this.football(me, seat, players, view, now, input) : this.volley(me, seat, players, view, now, input);
+    // SHOOT held on (CHARGE): the key stays down until the blow has landed, the view on the shot's line (a charged
+    // shot is aimed as the key comes up); Sky Spike's stick let go (strike.ts PLACE reads it then too).
+    if (now < this.holdUntil && !out.attack) {
+      out.heavyHeld = true; out.yaw = this.holdYaw;
+      if (this.mode === 'sky-spike') out.moveX = out.moveZ = 0;
+    }
+    return out;
   }
 
   private run(me: PlayerState, to: {x: number; z: number}, input: Command, now: number, stop = .6, sprint = 10) {
@@ -397,12 +431,38 @@ export class BallBrain {
     for (const c of view.charms) { const d = gap(me, c); if (d < bestD && (side === undefined || Math.sign(c.z) === side)) { best = c; bestD = d; } }
     return best;
   }
-  private press(input: Command, slot: NonNullable<Command['attack']>, yaw: number, now: number, wait = .4) {
+  /** (`wind`: SHOOT held on for this long - the fighter's own heavy wound up, CHARGE; 0: a tap.) */
+  private press(input: Command, slot: NonNullable<Command['attack']>, yaw: number, now: number, wait = .4, wind = 0) {
     input.attack = slot; input.yaw = yaw + (this.rng() - .5) * (1 - this.sk) * .5;
     // (Goal Rush: now and then a shot is shanked - PRESSURE.)
     if (this.mode === 'goal-rush' && this.rng() < PRESSURE.shank * (1 - this.sk)) input.yaw += (this.rng() < .5 ? -1 : 1) * PRESSURE.shankYaw;
     this.nextPress = now + wait + this.rng() * .25;
+    this.holdUntil = 0;
+    if (slot === 'heavy' && wind > 0) { input.heavyHeld = true; this.holdUntil = now + wind + .1; this.holdYaw = input.yaw; this.nextPress = Math.max(this.nextPress, this.holdUntil); }
   }
+  /** Goal Rush, SHOOT (CHARGE): how long this bot winds its heavy up for a ball it is about to strike - its first blow's
+   *  time - or 0 for a tap: on the floor, with the stamina for it, the goal in range (`sight`), room to do it in (nobody
+   *  of the other side near enough to close it down meanwhile) and, for a ball at its feet (`b`), the ball all but
+   *  still; then by its level's share. */
+  private winds(me: PlayerState, team: BallTeam, players: readonly PlayerState[], sight: boolean, b?: BallState): number {
+    const move = MOVES[me.fighter].heavy, lands = move.contacts[0] ?? .45;
+    if (!me.grounded || me.stamina < move.stamina || !sight) return 0;
+    // (A ball at its feet stays there through the wind-up only if it is all but still: one rolling on was gone by the blow.)
+    if (b && Math.hypot(b.vx, b.vz) > CHARGE.still) return 0;
+    const room = CHARGE.room + CHARGE.run[this.level] * lands, line = goalZ(otherTeam(team));
+    // (Their keeper set on its line is the one to beat, not one closing the shot down.)
+    const set = (q: PlayerState) => Math.abs(q.z - line) < CHARGE.line && Math.abs(q.x) < GOAL_RULES.goalHalfWidth + 1.5;
+    for (const q of players) if (q.alive && q.team !== team && q.id !== me.id && gap(q, me) < room && !set(q)) return 0;
+    return this.rng() < CHARGE.share[this.level] ? lands : 0;
+  }
+  /** Goal Rush, SHOOT (CHARGE) at a ball on its way here: `winds`, decided once a ball (as `roll` keys one), and only with
+   *  the time to wind the heavy up before it arrives - the blow then timed by the heavy's own moment (onTime). */
+  private windsFor(me: PlayerState, team: BallTeam, players: readonly PlayerState[], sight: boolean, eta: number, b: BallState): number {
+    const key = `${b.lastId}:${Math.round(Math.atan2(b.vx, b.vz) * 2)}`;
+    if (key !== this.windFor) { this.windFor = key; const wind = this.winds(me, team, players, sight); this.windIn = wind > 0 && eta > wind + .05 ? wind : 0; }
+    return this.windIn;
+  }
+  private windFor = ''; private windIn = 0;
   /** Goal Rush's pressure on this bot's side (PRESSURE): its skill now, and whether it is pushing for a late goal. */
   private pressure(view: BallView, team: BallTeam) {
     const down = view.score[otherTeam(team)] - view.score[team], late = view.overtime || (!view.practice && view.clock < PRESSURE.lateFrom);
@@ -451,9 +511,10 @@ export class BallBrain {
   }
   /** Whether a press of `slot` now lands its blow as an arriving ball reaches PRESSURE.meet (with this bot's error): the
    *  ball's own flight and the blow's lunge close the gap together. */
-  private onTime(me: PlayerState, slot: AttackSlot, eta: number, b: BallState) {
+  private onTime(me: PlayerState, slot: AttackSlot, eta: number, b: BallState, wind = 0) {
     this.roll(b);
-    const move = MOVES[me.fighter][slot], lands = move?.contacts[0] ?? .3;
+    // (SHOOT: a tapped heavy is the quick strike, model.ts SHOOT; held on, the fighter's own.)
+    const move = slot === 'heavy' && !wind ? QUICK : MOVES[me.fighter][slot], lands = move?.contacts[0] ?? .3;
     const lunge = move?.style === 'melee' ? PRESSURE.lungeShare * Math.min(3, (move.lunge ?? 3.2) * Math.max(0, lands - (move.lungeDelay ?? 0))) : 0;
     return eta - lunge / Math.max(4, this.closing) - lands - this.timingErr <= 1 / 50;
   }
@@ -526,7 +587,7 @@ export class BallBrain {
       return input;
     }
     // A team-mate's pass on its way here: met first time at the goal (a LINK SHOT).
-    if (this.meet(me, b, team, enemyZ, now, input)) return input;
+    if (this.meet(me, b, team, enemyZ, now, input, players)) return input;
     if (role === 'support') {
       // (Behind in the last seconds, the support pushes up level with the ball and beyond, for the pass: PRESSURE.)
       let back = push ? {x: clamp(b.x * .3 + this.flank * PITCH.flank * R.halfX * 1.3, -R.halfX + 2, R.halfX - 2), z: clamp(b.z + toward * 5, -R.halfZ + 3, R.halfZ - 3)}
@@ -560,7 +621,9 @@ export class BallBrain {
         // With the meter full and the goal in sight, the super shot. (A ball coming in is met as it arrives.)
         const sight = Math.abs(enemyZ - b.z) < SUPER_RANGE && Math.abs(b.x) < SUPER_WIDE;
         const slot = me.ultimate >= 100 && sight ? 'ultimate' : this.rng() < .6 ? 'heavy' : 'light';
-        if (eta === undefined || this.onTime(me, slot, eta, b)) this.press(input, slot, shotYaw, now);
+        // (SHOOT: a ball at its feet with room is wound up - CHARGE; one coming in is met with the quick strike.)
+        const wind = slot !== 'heavy' ? 0 : eta === undefined ? this.winds(me, team, players, sight, b) : this.windsFor(me, team, players, sight, eta, b);
+        if (eta === undefined || this.onTime(me, slot, eta, b, wind)) this.press(input, slot, shotYaw, now, .4, wind);
         else input.yaw = shotYaw;
       }
       else if (!inReach && (chase || press || dBall < 6)) this.tackle(me, seat, players, view, b, input, now, press ? 3.2 : 2.8);
@@ -602,8 +665,10 @@ export class BallBrain {
         : toGoal < PITCH.special * R.halfZ && (me.cooldowns.special ?? 0) <= now && this.rng() < .3 ? 'special'
         : toGoal < PITCH.heavy * R.halfZ ? (this.rng() < .7 ? 'heavy' : 'light')
         : this.rng() < .55 ? 'light' : 'heavy';
+      // (SHOOT: a ball at its feet with room is wound up - CHARGE; in the air and coming in, the quick strike.)
+      const sight = toGoal < PITCH.heavy * R.halfZ, wind = slot !== 'heavy' || air ? 0 : eta === undefined ? this.winds(me, team, players, sight, b) : this.windsFor(me, team, players, sight, eta, b);
       // (A ball coming in is met as it arrives - the timed swing; until then the bot squares up to the goal.)
-      if (eta === undefined || this.onTime(me, slot, eta, b)) this.press(input, slot, far && slot === 'light' ? driveYaw : shotYaw, now, slot === 'light' ? .28 : .5);
+      if (eta === undefined || this.onTime(me, slot, eta, b, wind)) this.press(input, slot, far && slot === 'light' ? driveYaw : shotYaw, now, slot === 'light' ? .28 : .5, wind);
       else input.yaw = shotYaw;
     }
     // Their striker on the ball, or one in the way to it: tackled (from further by a PRESS side).
@@ -666,23 +731,25 @@ export class BallBrain {
     return true;
   }
   /** A team-mate's pass coming to this bot: stand for it facing the goal, and strike it first time, the blow timed to land
-   *  as the ball does (a heavy; the special if the heavy is a launcher, which would only pop it up). True while meeting it. */
-  private meet(me: PlayerState, b: BallState, team: BallTeam, enemyZ: number, now: number, input: Command): boolean {
+   *  as the ball does - SHOOT's quick strike, or with room its own heavy wound up to land then (CHARGE; decided once a
+   *  pass). True while meeting it. */
+  private meet(me: PlayerState, b: BallState, team: BallTeam, enemyZ: number, now: number, input: Command, players: readonly PlayerState[]): boolean {
     if (b.shot !== 'tap' || b.lastTeam !== team || b.lastId === me.id || !me.grounded) return false;
     const dx = me.x - b.x, dz = me.z - b.z, d = Math.hypot(dx, dz), flat = Math.hypot(b.vx, b.vz);
     const closing = (b.vx * dx + b.vz * dz) / Math.max(.01, d);
     if (closing < 4 || d > 9 || Math.abs(b.vx * dz - b.vz * dx) / Math.max(.01, flat) > 1.6) return false;
-    const moves = MOVES[me.fighter];
-    const heavyPops = moves.heavy.outcome === 'launch' || moves.heavy.outcome === 'hop';
-    const slot: AttackSlot = me.ultimate >= 100 ? 'ultimate' : heavyPops && (me.cooldowns.special ?? 0) <= now ? 'special' : 'heavy';
-    const lands = moves[slot]?.contacts[0] ?? .35;
+    const slot: AttackSlot = me.ultimate >= 100 ? 'ultimate' : 'heavy';
+    const key = `${b.lastId}:${Math.round(Math.atan2(b.vx, b.vz) * 2)}`;
+    if (key !== this.meetFor) { this.meetFor = key; this.meetWind = slot === 'heavy' ? this.winds(me, team, players, true) : 0; }
+    const lands = slot === 'ultimate' ? MOVES[me.fighter].ultimate?.contacts[0] ?? .35 : this.meetWind || CHARGE.tap;
     input.moveX = input.moveZ = 0;
     const goalYaw = Math.atan2(clamp(b.x * .25, -GOAL_RULES.goalHalfWidth + 1.2, GOAL_RULES.goalHalfWidth - 1.2) - me.x, enemyZ - me.z);
     input.yaw = goalYaw;
     this.roll(b);
-    if (now >= this.nextPress && (d - PRESSURE.meet) / closing <= lands + .02 + this.timingErr) this.press(input, slot, goalYaw, now, .6);
+    if (now >= this.nextPress && (d - PRESSURE.meet) / closing <= lands + .02 + this.timingErr) this.press(input, slot, goalYaw, now, .6, slot === 'heavy' ? this.meetWind : 0);
     return true;
   }
+  private meetFor = ''; private meetWind = 0;
 
   // ─── Sky Spike ────────────────────────────────────────────────────────────────────────────────────────────────────
   private volley(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, now: number, input: Command): Command {
@@ -806,11 +873,17 @@ export class BallBrain {
       if (attack && me.grounded) {
         const spot = {x: hit!.x, z: hit!.z + sign * .7};
         const d = this.run(me, spot, input, now, .15, 4);
-        // (The better the bot, the closer to the top it meets the ball.)
-        const lead = high ? arcOf.rise - APEX_SWING + APEX_CONTACT : SPIKE_RISE;
-        // (FORM: the takeoff off by a little, rolled once an attack; the poorer the bot, the more.)
+        // (FORM: the takeoff off by a little, rolled once an attack; the poorer the bot, the more. And SHOOT - CHARGE:
+        // whether the spike off a floating set is the heavy's own, wound up, or the quick strike: HARD's not into a block
+        // standing at the net in front of it, which the wind-up gives its time.)
         const akey = `${view.rally}:${b.lastId}`;
-        if (akey !== this.attackFor) { this.attackFor = akey; this.jumpErr = (this.rng() * 2 - 1) * Math.max(0, 1 - sk) * FORM.jump * this.edge.form; }
+        if (akey !== this.attackFor) {
+          this.attackFor = akey; this.jumpErr = (this.rng() * 2 - 1) * Math.max(0, 1 - sk) * FORM.jump * this.edge.form;
+          const block = players.some(q => q.alive && Math.sign(q.z) === -sign && Math.abs(q.z) < CHARGE.block && Math.abs(q.x - hit!.x) < CHARGE.block);
+          this.winding = high && this.rng() < CHARGE.spike[this.level] && !(this.level === 'hard' && block);
+        }
+        // (The better the bot, the closer to the top it meets the ball.)
+        const lead = high ? arcOf.rise - APEX_SWING + (this.winding ? APEX_CONTACT : CHARGE.tap) : SPIKE_RISE;
         if (now >= this.nextJump && d < 1.6 && hit!.t < lead + .04 + this.jumpErr + (1 - sk) * (high ? .12 : .06)) { this.jump(input, now, high ? arcOf.rise + .05 : .35); this.spikeAt = now; this.apex = high ? arcOf.rise - APEX_SWING : 0; }
       } else {
         const under = {x: target.x - Math.sin(sendYaw(target)) * .4 * (touches >= 2 ? 1 : 0), z: target.z + sign * .35};
@@ -856,7 +929,8 @@ export class BallBrain {
         }
         // (strike.ts PLACE: an attack over goes where the bot aims it - its stick, read at the press now, is let go.)
         if (slot !== 'light' || touches >= 2) input.moveX = input.moveZ = 0;
-        this.press(input, slot, yaw, now, .35);
+        // (SHOOT: the spike it went up to wind is held on - CHARGE; any other heavy is a tap.)
+        this.press(input, slot, yaw, now, .35, slot === 'heavy' && !me.grounded && this.winding && spiking && this.apex > 0 ? CHARGE.air : 0);
         if (touches === 1 && slot === 'light') this.setKind = null;
       }
       return input;
@@ -884,7 +958,8 @@ export class BallBrain {
     const seam = this.seam(sign, this.serveKind === 'float'), sendYaw = (from: {x: number; z: number}) => Math.atan2(seam.x - from.x, seam.z - from.z);
     if (!me.grounded && this.serveKind === 'jump') {
       // In the air with the toss: the swing a breath before the top of the jump (sooner, the worse the bot: a spray).
-      if (now - this.serveJump >= this.serveSwing && now >= this.nextPress) { input.moveX = input.moveZ = 0; this.press(input, 'heavy', sendYaw(b), now, .6); }
+      // (SHOOT: wound up `CHARGE.serve` of the time - the heavy's own serve, as it was - or the quick strike.)
+      if (now - this.serveJump >= this.serveSwing && now >= this.nextPress) { input.moveX = input.moveZ = 0; this.press(input, 'heavy', sendYaw(b), now, .6, this.rng() < CHARGE.serve[this.level] ? CHARGE.air : 0); }
       input.yaw = sendYaw(b);
       return input;
     }

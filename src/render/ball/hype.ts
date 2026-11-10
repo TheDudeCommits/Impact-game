@@ -12,3 +12,7 @@ export const arenaMood = {value: 0};
  *  nets' shader (BallArena) pushes the net out round that point and lets it spring back. */
 export const goalNetHit = {value: new Vector4(0, 0, 0, -1e4)};
 export const goalNetPower = {value: 0};
+/** The goal put away. BallArena draws a goal's celebration (and the nets their bulge) by the hit's age, so a
+ *  match begun within ten seconds of the last one's goal showed that goal's confetti, flares and rockets through its own
+ *  intro and kickoff. BallCeremony calls this on leaving a match and when a new match's first snapshot comes. */
+export const forgetGoal = () => { goalNetHit.value.w = -1e4; goalNetPower.value = 0; };

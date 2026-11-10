@@ -15,7 +15,7 @@ export interface SportBasic { action: PromptAction; name: string; how: string; l
 export const SPORTS_BASICS: Readonly<Record<BallModeId, readonly SportBasic[]>> = {
   'goal-rush': [
     { action: 'light', name: 'Pass', how: 'To a team-mate', line: 'Face someone on your side and tap it: the pass finds their run.' },
-    { action: 'heavy', name: 'Shoot', how: 'Where you look', line: 'A shot near the frame is put on target. Boost up to the ball first.' },
+    { action: 'heavy', name: 'Shoot', how: 'Tap, or hold to charge', line: 'A tap shoots at once, where you look. Hold it to wind up your own move: a charged shot, harder and hotter.' },
     { action: 'heavy', name: 'Perfect Strike', how: 'As it arrives', line: 'Meet a pass, a cross or a rebound just as it gets to you: faster and hotter, and worth the most.' },
     { action: 'jump', name: 'Header', how: 'Into a cross', line: 'Jump into a high ball and it is headed on, the way you face. At the top of the jump: a perfect one.' },
     { action: 'dash', name: 'Boost', how: 'On the run', line: 'Burns the gold bar. Run a boost into a rival and they go flat.' },

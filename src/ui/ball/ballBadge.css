@@ -1,32 +1,27 @@
-/* BallBadge.ts: the mutator, RANKED and a drill's progress, under the scoreboard's strip. */
-.ball-badge{position:absolute;left:50%;top:calc(118px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:30;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
+/* BallBadge.ts: the mutator, RANKED and a drill's progress. In the top left corner (it hung under the
+   scoreboard's strip, where the one line and the one banner are now: ui/hud/ballHud.css), in the HUD's own unit
+   (--bh-u: a pixel at 1920 x 1080) and its display face. */
+.ball-badge{--u:var(--bh-u,1px);position:absolute;left:calc(18 * var(--u) + env(safe-area-inset-left,0px));top:calc(14 * var(--u) + env(safe-area-inset-top,0px));z-index:30;display:flex;flex-direction:column;align-items:flex-start;gap:calc(7 * var(--u));pointer-events:none}
 .ball-badge.hidden{display:none}
-.ball-badge .bb-chip{display:inline-block;margin:0 3px;padding:3px 9px 4px;background:#0b0c0e;color:#ffcf5a;font:italic 900 14px/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.08em;clip-path:polygon(6% 0,100% 0,94% 100%,0 100%)}
+.ball-badge .bb-chip{display:inline-block;margin:0 calc(6 * var(--u)) 0 0;padding:calc(5 * var(--u)) calc(14 * var(--u)) calc(6 * var(--u));background:#0b0c0e;color:#ffcf5a;font:italic 900 calc(24 * var(--u))/1 'Barlow Condensed',sans-serif;letter-spacing:.08em;clip-path:polygon(6% 0,100% 0,94% 100%,0 100%)}
 .ball-badge .bb-chip.ranked{background:#c81e2a;color:#fff}
-.ball-badge .bb-drill{display:grid;justify-items:center;gap:3px;padding:7px 14px 8px;background:rgba(11,12,14,.84);color:#fff;clip-path:polygon(3% 0,100% 0,97% 100%,0 100%)}
-.ball-badge .bb-drill small{font:800 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.2em;color:#b9b2a6}
-.ball-badge .bb-drill b{max-width:420px;text-align:center;font:700 14px/1.2 'Barlow Condensed',sans-serif;letter-spacing:.02em}
-.ball-badge .bb-dots{display:flex;gap:4px}
-.ball-badge .bb-dots i{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 2px #5b564e}
+.ball-badge .bb-drill{display:grid;justify-items:start;gap:calc(5 * var(--u));padding:calc(9 * var(--u)) calc(20 * var(--u)) calc(10 * var(--u)) calc(14 * var(--u));background:rgba(11,12,14,.84);color:#fff;clip-path:polygon(0 0,100% 0,97% 100%,0 100%)}
+.ball-badge .bb-drill small{font:800 calc(22 * var(--u))/1 'Barlow Condensed',sans-serif;letter-spacing:.2em;color:#b9b2a6}
+.ball-badge .bb-drill b{max-width:calc(480 * var(--u));text-align:left;font:700 calc(24 * var(--u))/1.2 'Barlow Condensed',sans-serif;letter-spacing:.02em}
+.ball-badge .bb-dots{display:flex;gap:calc(6 * var(--u))}
+.ball-badge .bb-dots i{width:calc(15 * var(--u));height:calc(15 * var(--u));border-radius:50%;box-shadow:inset 0 0 0 max(1px,calc(2.5 * var(--u))) #5b564e}
 .ball-badge .bb-dots i.hit{background:#ffcf5a;box-shadow:none}.ball-badge .bb-dots i.miss{background:#5b564e;box-shadow:none}
-.ball-badge .bb-dots i.now{box-shadow:inset 0 0 0 2px #fff}
-.ball-badge .bb-drill em{font:800 12px/1 'Barlow Condensed',sans-serif;font-style:normal;letter-spacing:.14em}
-.ball-badge .bb-drill u{text-decoration:none;display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;color:#0b0c0e;font:900 10px/1 'Noto Serif JP',serif}
+.ball-badge .bb-dots i.now{box-shadow:inset 0 0 0 max(1px,calc(2.5 * var(--u))) #fff}
+.ball-badge .bb-drill em{font:800 calc(22 * var(--u))/1 'Barlow Condensed',sans-serif;font-style:normal;letter-spacing:.14em}
+.ball-badge .bb-drill u{text-decoration:none;display:inline-grid;place-items:center;width:1.4em;height:1.4em;border-radius:50%;color:#0b0c0e;font:900 .8em/1 'Noto Serif JP',serif}
 .ball-badge u.bronze{background:#c98a52}.ball-badge u.silver{background:#d9dde2}.ball-badge u.gold{background:#ffcf5a}
-#interface[data-input="touch"] .ball-badge{top:calc(150px + env(safe-area-inset-top,0px))}
 /* A drill: in play after its first ball the card is the count, the dots and the next medal - the line is read
-   between balls. On a phone on its side it goes to the top left corner under PAUSE, a size down (FREE PLAY has no quick
-   chat button there): in the middle it stood on the play, and under the scoreboard on Sky Spike's set, which floats up
-   to the top of the frame. */
+   between balls. A touch screen has PAUSE, the emote and quick chat's button along that corner's top (handheld.css,
+   ballHud.css): the badge goes under them. */
 .ball-badge .bb-drill[data-state="live"]:not([data-first]) b{display:none}
+#interface[data-input="touch"] .ball-badge{left:calc(14px + env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px))}
 @media(max-height:520px) and (orientation:landscape){
-  #interface .ball-badge.drill{left:calc(14px + env(safe-area-inset-left,0px));top:calc(62px + env(safe-area-inset-top,0px));transform:none;align-items:flex-start}
-  .ball-badge.drill .bb-drill{justify-items:start}
-  .ball-badge.drill .bb-drill b{text-align:left}
-  .ball-badge .bb-drill{gap:2px;padding:4px 12px 5px}
-  .ball-badge .bb-drill b{max-width:min(380px,60vw);font-size:12px}
-  .ball-badge .bb-drill small,.ball-badge .bb-drill em{font-size:10px}
-  .ball-badge .bb-dots i{width:8px;height:8px}
+  .ball-badge .bb-drill b{max-width:min(380px,60vw)}
 }
 /* The lobby's and results' lines (BallUI.ts): a seat's trait, the rules' line, a drill's card. */
 .ball-ui .bu-trait{font:800 10px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;color:#ff8a98}
@@ -35,7 +30,7 @@
 .ball-ui .bu-dots{display:flex;justify-content:center;gap:6px;margin:8px 0 0}
 .ball-ui .bu-dots i{width:14px;height:14px;border-radius:50%}
 .ball-ui .bu-dots i.hit{background:#d51d34}.ball-ui .bu-dots i.miss{background:#b9b2a6}
-.ball-ui .bu-medal{display:inline-flex;align-items:center;gap:8px;margin:12px 0 0;font:italic 900 24px/1 Impact,sans-serif;letter-spacing:.04em}
+.ball-ui .bu-medal{display:inline-flex;align-items:center;gap:8px;margin:12px 0 0;font:italic 900 24px/1 'Barlow Condensed',sans-serif;letter-spacing:.04em}
 .ball-ui .bu-medal i{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;font:900 20px/1 'Noto Serif JP',serif;font-style:normal;box-shadow:inset 0 0 0 3px rgba(0,0,0,.3)}
 .ball-ui .bu-medal.bronze i{background:#c98a52}.ball-ui .bu-medal.silver i{background:#d9dde2}.ball-ui .bu-medal.gold i{background:#ffcf5a}
 .ball-ui .bu-medal.none{font-size:16px;color:#5b554b}

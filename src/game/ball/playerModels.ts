@@ -1,6 +1,6 @@
 import type {AttackSlot, PlayerInput, PlayerState} from '../types';
 import {MOVES, jumpArc} from '../moves';
-import {BALL_ID, GOAL_RULES, SPIKE_RULES, otherTeam, type BallModeId, type BallSeat, type BallState, type BallTeam, type BallView} from './model';
+import {BALL_ID, GOAL_RULES, SHOOT, SPIKE_RULES, otherTeam, type BallModeId, type BallSeat, type BallState, type BallTeam, type BallView} from './model';
 import {goalZ, landing, sideOf, stepBall, type BallContact} from './physics';
 import {PLACE, SERVE_STYLE} from './strike';
 
@@ -26,7 +26,15 @@ import {PLACE, SERVE_STYLE} from './strike';
  *    serves with the stick (strike.ts PLACE) into the zone the other side left open, and TIPs only with nobody of
  *    theirs home short. (Tried and dropped: its set read off their block - a QUICK SET to a hitter nobody was across
  *    from, a BACK SET away from a block on the setter's side. It set 4.8 QUICK and BACK SETs a match, not 3.1, and its
- *    side won less: HARD's team-mates convert the floating set, PERFECT SPIKEs through a soft block, better.) */
+ *    side won less: HARD's team-mates convert the floating set, PERFECT SPIKEs through a soft block, better.)
+ *
+ *  SHOOT (model.ts SHOOT: a tap is the quick strike, a key held on winds up the fighter's own heavy as a
+ *  CHARGED shot). The MASHER and the CASUAL player tap, as anyone does who has not been told. The SKILLED one uses
+ *  both: the quick strike for a ball met first time (the PERFECT STRIKE, timed to the one moment every fighter shares),
+ *  for a volley, a QUICK SET's hit and a hit over from the floor; SHOOT held on with the ball at its feet, the goal in
+ *  range and room to wind up in (`ROOM`), for the spike from the top of its jump with no block up in front of it (one
+ *  into a block is tapped past it), and for the JUMP SERVE - the key down until the blow has landed, the view on the
+ *  shot's line meanwhile. */
 export type HumanStyle = 'masher' | 'casual' | 'skilled';
 export const HUMAN_STYLES: readonly HumanStyle[] = ['masher', 'casual', 'skilled'];
 
@@ -41,6 +49,13 @@ export const HUMAN = {
   skilled: {react: .2, timing: .035, aim: .06, read: .15, pace: [.3, .4] as const},
 } as const;
 
+/** SHOOT held on (the SKILLED player): with nobody of the other side within `near` metres plus `run` m/s times the
+ *  wind-up - what a rival who sees it coming closes in that time - but their keeper set on its line (within `line` m of
+ *  it, between the posts and a stride), which is the one the charged shot is for (the first try counted every rival
+ *  within 7 m: the skilled player all but never charged); `tap`: how long after the press the quick strike's blow
+ *  lands, as a person feels it; `air`: how long the key is held for a wound-up air strike; `through`: how much later
+ *  than a charged spike's the swing of a spike tapped past a block goes (the air strike's 0.23 s less the tap's). */
+const ROOM = {near: 2.2, run: 5, line: 3.5, tap: SHOOT.contact + 1 / 60, air: .34, through: .23 - (SHOOT.contact + 1 / 60)} as const;
 type Command = Omit<PlayerInput, 'seq'>;
 type Body = {id: string; team?: string; x: number; y: number; z: number; vx: number; vz: number; grounded: boolean; alive: boolean; action: string};
 const gap = (a: {x: number; z: number}, b: {x: number; z: number}) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -135,6 +150,8 @@ export class HumanHands {
   private setFor = ''; private setKind: 'quick' | 'back' | 'high' = 'high'; private tipFor = ''; private tipping = false;
   private serveKind: 'jump' | 'float' | 'drive' | null = null; private serveAt = -1; private serveJump = -Infinity;
   private jumpsFor = ''; private jumpsHere = false;
+  /** SHOOT held on: until when the key stays down, and the view it holds. */
+  private holdUntil = 0; private holdYaw = 0;
   /** What the hands did this tick (a word, for a sim's tally). */
   did = '';
   constructor(readonly id: string, readonly mode: BallModeId, readonly style: HumanStyle, seed = 1) {
@@ -158,8 +175,11 @@ export class HumanHands {
     const input: Command = {moveX: 0, moveZ: 0, yaw: me.yaw, targetId: BALL_ID, lock: true};
     if (now < this.jumpUntil) input.jumpHeld = true;
     if (view.phase === 'over' || view.phase === 'countdown' || view.phase === 'lobby' || !me.alive) return input;
-    if (view.phase === 'scored' || (view.phase === 'kickoff' && this.mode === 'goal-rush')) { this.fight = null; this.heading.yaw = NaN; return input; }
+    if (view.phase === 'scored' || (view.phase === 'kickoff' && this.mode === 'goal-rush')) { this.fight = null; this.heading.yaw = NaN; this.holdUntil = 0; return input; }
     const b = this.eyes.ball(now, this.limits.react), bodies = this.eyes.bodies(now, this.limits.react);
+    return this.held(this.play(me, seat, view, b, bodies, now, dt, input), now);
+  }
+  private play(me: PlayerState, seat: BallSeat, view: BallView, b: BallState, bodies: Body[], now: number, dt: number, input: Command) {
     if (this.mode === 'goal-rush') {
       input.yaw = this.heading.steer(dt, me, view.ball, seat.team);
       return this.style === 'masher' ? this.mashGoal(me, b, now, input) : this.style === 'casual' ? this.casualGoal(me, seat, b, now, input) : this.skilledGoal(me, seat, view, b, bodies, now, input);
@@ -167,6 +187,13 @@ export class HumanHands {
     input.yaw = seat.team === 'red' ? 0 : Math.PI;
     return this.style === 'masher' ? this.mashSpike(me, seat, view, b, now, input) : this.volley(me, seat, view, b, bodies, now, input);
   }
+  /** SHOOT held on: the key down until the blow has landed, the view kept on the shot's line (a charged shot is aimed
+   *  as the key comes up); the stick let go in Sky Spike unless it is placing the shot (it was set at the press). */
+  private held(input: Command, now: number) {
+    if (now < this.holdUntil && !input.attack) { input.heavyHeld = true; input.yaw = this.holdYaw; if (this.mode === 'sky-spike') { input.moveX = this.holdStick.x; input.moveZ = this.holdStick.z; } }
+    return input;
+  }
+  private holdStick = {x: 0, z: 0};
 
   /** The jump as felt: each one's top and the time to it, folded into what this person expects of the next. */
   private learnJump(me: PlayerState, now: number) {
@@ -197,9 +224,17 @@ export class HumanHands {
     this.readErr = {x: this.normal() * this.limits.read, z: this.normal() * this.limits.read};
     this.timeErr = this.normal() * this.limits.timing;
   }
-  private press(input: Command, slot: AttackSlot, yaw: number, now: number, pace: readonly [number, number] = this.limits.pace) {
+  /** (`wind`: SHOOT held on for this long - the fighter's own heavy wound up; 0: a tap.) */
+  private press(input: Command, slot: AttackSlot, yaw: number, now: number, pace: readonly [number, number] = this.limits.pace, wind = 0) {
     input.attack = slot; input.yaw = wrap(yaw + this.normal() * this.limits.aim);
     this.nextPress = now + pace[0] + this.rng() * (pace[1] - pace[0]);
+    this.holdUntil = 0;
+    if (slot === 'heavy' && wind > 0) { input.heavyHeld = true; this.holdUntil = now + wind + .1; this.holdYaw = input.yaw; this.holdStick = {x: input.moveX, z: input.moveZ}; this.nextPress = Math.max(this.nextPress, this.holdUntil); }
+  }
+  /** Whether there is room to wind a heavy up for `wind` seconds: nobody of the other side near enough to close it down
+   *  (Goal Rush: their keeper set on its line is not one). */
+  private room(me: PlayerState, rivals: readonly Body[], wind: number, line?: number) {
+    return rivals.every(r => gap(r, me) > ROOM.near + ROOM.run * wind || (line !== undefined && Math.abs(r.z - line) < ROOM.line && Math.abs(r.x) < GOAL_RULES.goalHalfWidth + 1.5));
   }
   /** The stick (strike.ts PLACE) that sends an attack over to the zone of the far court farthest from the other
    *  side as seen - one of a keyboard's eight ways, or none - `neutral` metres past the net with the stick let go. */
@@ -289,6 +324,7 @@ export class HumanHands {
     if (eta !== undefined && slot && me.grounded) {
       input.yaw = aimYaw;
       this.did = 'meet';
+      // (SHOOT: the quick strike, pressed the one moment before the ball arrives that every fighter shares.)
       if (now >= this.nextPress && this.onTime(me, slot, eta)) { this.press(input, me.ultimate >= 100 && this.inRange(b, enemyZ) ? 'ultimate' : slot, aimYaw, now); this.did = 'meet-press'; }
       return input;
     }
@@ -301,7 +337,9 @@ export class HumanHands {
       const mate = mates.filter(q => toward * (q.z - b.z) > 3 && gap(q, b) < 12 && rivals.every(r => gap(r, q) > 2.5)).sort((x, y) => Math.abs(enemyZ - x.z) - Math.abs(enemyZ - y.z))[0];
       if (mate && !this.inRange(b, enemyZ) && this.rng() < .02) { const to = Math.atan2(mate.x - b.x, mate.z - b.z); input.yaw = this.heading.turn(to); this.press(input, 'light', input.yaw, now); this.did = 'pass'; return input; }
       const strike = me.ultimate >= 100 && this.inRange(b, enemyZ) ? 'ultimate' : slot ?? 'heavy';
-      if (this.onTime(me, strike, run)) { this.press(input, strike, aimYaw, now); this.did = 'shoot'; }
+      // (SHOOT held on: the goal in range, the stamina for it, and room to wind the heavy up in - else the quick strike.)
+      const own = MOVES[me.fighter].heavy, wind = strike === 'heavy' && me.grounded && this.inRange(b, enemyZ) && me.stamina >= own.stamina && this.room(me, rivals, own.contacts[0], enemyZ) ? own.contacts[0] : 0;
+      if (this.onTime(me, strike, run, wind)) { this.press(input, strike, aimYaw, now, this.limits.pace, wind); this.did = wind ? 'charge' : 'shoot'; }
     }
     if (inReach && !this.did) this.did = 'feet';
     // Where to be: on the ball (round behind it on the line to the goal, the boost from afar) unless a team-mate is
@@ -394,19 +432,15 @@ export class HumanHands {
   private moving = {x: 0, z: 0}; private was: {x: number; z: number; t: number} | null = null;
   /** Whether a press of `slot` now lands its blow as the arriving ball reaches 2.3 m (the blow's lunge carrying the body
    *  part of the way), give or take this person's timing. */
-  private onTime(me: PlayerState, slot: AttackSlot, eta: number) {
-    const move = MOVES[me.fighter][slot], lands = move?.contacts[0] ?? .3;
+  private onTime(me: PlayerState, slot: AttackSlot, eta: number, wind = 0) {
+    // (SHOOT: a tapped heavy is the quick strike - model.ts SHOOT; held on, the fighter's own.)
+    const move = slot === 'heavy' && !wind ? {contacts: [ROOM.tap], style: 'melee' as const, lunge: undefined, lungeDelay: undefined} : MOVES[me.fighter][slot], lands = move?.contacts[0] ?? .3;
     const lunge = move?.style === 'melee' ? .6 * Math.min(3, (move.lunge ?? 3.2) * Math.max(0, lands - (move.lungeDelay ?? 0))) : 0;
     return eta - lunge / Math.max(4, this.closing) - lands - this.timeErr <= 1 / 50;
   }
-  /** The slot a person learns makes a real strike with their fighter: a melee heavy that is not a launcher, else such a
-   *  special (off cooldown), else none. */
-  private strikeSlot(me: PlayerState, now: number): AttackSlot | undefined {
-    const moves = MOVES[me.fighter], fit = (m: typeof moves.heavy | undefined) => !!m && m.style === 'melee' && m.outcome !== 'launch' && m.outcome !== 'hop';
-    if (fit(moves.heavy)) return 'heavy';
-    if (fit(moves.special) && (me.cooldowns.special ?? 0) <= now) return 'special';
-    return undefined;
-  }
+  /** The slot a person learns makes a real strike with their fighter: SHOOT, whose quick strike is the same blow for
+   *  every fighter (a heavy that launched or was no melee blow had none, and its special stood in). */
+  private strikeSlot(_me: PlayerState, _now: number): AttackSlot | undefined { return 'heavy'; }
   private inRange(b: BallState, enemyZ: number) { return Math.abs(enemyZ - b.z) < GOAL_RULES.halfZ * 1.15 && Math.abs(b.x) < GOAL_RULES.halfX * .85; }
 
   // ─── Sky Spike ────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -485,6 +519,8 @@ export class HumanHands {
       if (key !== this.jumpsFor) { this.jumpsFor = key; this.jumpsHere = skilled || this.rng() < .5; }
       if (attack && me.grounded && this.jumpsHere) {
         const d = this.stick(me, {x: hit!.x, z: hit!.z + sign * .7}, input, .15);
+        // (SHOOT: the skilled one winds the spike up from the top of the jump, the heavy's own timing; the swing on the
+        // way up is the quick strike's.)
         const lead = skilled ? this.rise - .1 + .23 : .12;
         if (now >= this.nextJump && d < 1.6 && hit!.t < lead + this.timeErr) { this.jump(input, now, this.rise + .05); this.spikeAt = now; this.swingAt = skilled ? this.rise - .1 + this.normal() * this.limits.timing : 0; }
         return input;
@@ -498,10 +534,16 @@ export class HumanHands {
           // whatever stood behind the block.)
           const short = rivals.some(p => p.grounded && Math.abs(p.z) < 4.2);
           if (this.tipFor !== key) { this.tipFor = key; this.tipping = skilled && blocked && this.rng() < (short ? .15 : .85); }
+          // (SHOOT: the skilled one winds the spike up with no block in front of it, and taps it past one that
+          // is up - a charged spike's wind-up is the block's time: wound up into HARD's block, the skilled player's
+          // spikes were stuffed a fifth more often and it won 19% of its matches, from 35%. The tap is swung that much
+          // later, so its quick blow meets the ball where the charged one would have.)
+          const through = skilled && !this.tipping && blocked;
+          if (through && now - this.spikeAt < this.swingAt + ROOM.through) return input;
           const to = empty([3, 5.5, 8.5]);
           // (The skilled one places the spike with the stick - PLACE - into the zone the defence left open.)
           if (skilled && !this.tipping) this.place(input, rivals, b, sign, 'spike', 4.8);
-          this.press(input, this.tipping ? 'light' : 'heavy', aimAt(to, b), now);
+          this.press(input, this.tipping ? 'light' : 'heavy', aimAt(to, b), now, this.limits.pace, skilled && !this.tipping && !through ? ROOM.air : 0);
         }
         return input;
       }
@@ -550,7 +592,7 @@ export class HumanHands {
     if (!this.serveKind) this.serveKind = skilled ? (this.rng() < .7 ? 'jump' : 'float') : this.rng() < .5 ? 'float' : 'drive';
     const yaw = aimAt(empty(this.serveKind === 'float' ? [3.5, 6, 9] : [6.5, 8, 9.5]), b);
     if (!me.grounded && this.serveKind === 'jump') {
-      if (now - this.serveJump >= this.swingAt && now >= this.nextPress) { if (skilled) this.place(input, rivals, b, sign, 'serve', SERVE_STYLE.jumpDeep); this.press(input, 'heavy', yaw, now); }
+      if (now - this.serveJump >= this.swingAt && now >= this.nextPress) { if (skilled) this.place(input, rivals, b, sign, 'serve', SERVE_STYLE.jumpDeep); this.press(input, 'heavy', yaw, now, this.limits.pace, skilled ? ROOM.air : 0); }
       input.yaw = yaw;
       return input;
     }

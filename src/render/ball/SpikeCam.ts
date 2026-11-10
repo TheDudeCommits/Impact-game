@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {SPIKE_RULES, type BallTeam, type BallView} from '../../game/ball/model';
 import type {Vec3} from '../../game/types';
 import type {FollowCamera} from '../FollowCamera';
+import type {SpikeCamStyle} from './ballCamChoice';
 
 /** The broadcast stand, a steady camera that moves only on occasions: metres behind your own baseline and up, the point
  *  it looks at (on your side of the net, near the floor; `lookZ` is metres past the net), and the lens (vertical
@@ -59,6 +60,39 @@ const PUNCH_BACK = 4.5, PUNCH_IN = 24;
 /** An aspect much wider than a screen's (a couch split top and bottom): the stand moves back and the lens closes, so
  *  the court is not stretched across a fish-eye. Narrower (side by side): the lens opens a little. */
 const WIDE_ASPECT = 2.2, NARROW_ASPECT = 1.3;
+/** What differs between the two stands, as one table each. CLASSIC is the numbers above, unchanged (camDefaults.test.ts
+ *  holds every one of them): `most` and `dead` the drift's, `lift*` a very high ball's, `serve*` the walk-up's, `block*`
+ *  the BLOCK step's, `move` and `lens` how far each occasion's push and each change of the lens goes (shares of the
+ *  classic's), `wide*`, `narrowFov`, `across` and `narrowMost` what the lens does on a frame that is not a screen's. */
+const CLASSIC = {...STAND, most: DRIFT.most, dead: DRIFT.dead, liftFrom: LIFT.from, liftShare: LIFT.share, liftMost: LIFT.most, servePush: SERVE.push, serveDown: SERVE.down, serveBack: SERVE.back, serveFov: 0,
+  blockLift: BLOCK_STEP.lift, blockPhoneLift: BLOCK_STEP.phoneLift, blockToward: BLOCK_STEP.toward, blockFov: 0, move: 1, lens: 1, wide: 1.3, wideFov: -12, narrowFov: 6, across: 0, narrowMost: 0};
+/** The COURT-SIDE stand, an option beside the classic one (ballCamChoice.ts; off unless the player picks it). From
+ *  thirteen metres up your fighter is about 115 px tall on a 1080p screen and the
+ *  far side about 70 px, seen from over their heads - the game's best asset, a hundred toon fighters, read as rings on
+ *  a floor. This stand is the same camera in every way but where it stands: the same fixed heading, the same few
+ *  occasions - from seven metres up (`up`), fourteen behind the baseline (`back`) and on a longer lens (`fov`), as a
+ *  volleyball broadcast's end camera films a match. The bodies are seen from the side, and the long lens keeps the far
+ *  side near the size of the near one: a 1.8 m body by your baseline 179 px tall at 1080p (102 from the classic stand),
+ *  at the net 136 (91), on the far side 98 to 114 (74 to 82).
+ *  - The frame holds what the classic's does. On a screen the near baseline's corners stand at the foot of the frame's
+ *    sides (they set how tight the lens may be: both halves of the court are always in it), the far baseline is at its
+ *    middle, and a ball is in it to nine metres over the net before the look lifts after it (`lift*`: a smaller tilt
+ *    for a narrower lens, the same share of the frame). A screen narrower than 16:9 opens the lens to keep those
+ *    corners (`across`); a couch split's narrow half opens it as far as `narrowMost`, which shows what the classic's
+ *    narrow half shows of the near baseline; a wide half and a phone keep the screen's lens.
+ *  - It does not drift (`most` 0): from down here a step to the side would take a near corner out of the frame, and
+ *    the whole court is in it from one spot. Each occasion's push and lens change is scaled to the stand (`move`,
+ *    `lens`), so a set, a point and a strike's punch read as they do from the classic stand, no larger.
+ *  - The walk-up is a small step (`servePush`, `serveDown`), not the classic's stride: for your own side's serve the
+ *    lens opens a little instead (`serveFov`) and the look comes back (`serveBack`), so the server behind the baseline
+ *    and the glint over a JUMP SERVE's top share the frame.
+ *  - LEARN TO PLAY's BLOCK step keeps its framing (the glint a fifth of the way down, you over the lesson's line) with a
+ *    smaller lift and the lens a touch open (`block*`).
+ *  - From this height the net stands between the lens and the far court: BallArena thins its weave for this stand
+ *    alone (`sheer`; main.ts hands it over through ballCamChoice's netSheer). */
+const SIDE = {back: 14, up: 7, lookZ: 8, lookY: .3, fov: 33, most: 0, dead: DRIFT.dead, liftFrom: 8.5, liftShare: .22, liftMost: 1.6, servePush: .5, serveDown: .2, serveBack: 3.2, serveFov: 3,
+  blockLift: .5, blockPhoneLift: 2.2, blockToward: 1.5, blockFov: 3, move: .8, lens: .7, wide: 1, wideFov: 0, narrowFov: 0, across: 16 / 9, narrowMost: 52};
+const STANDS: Record<SpikeCamStyle, Record<keyof typeof CLASSIC, number>> = {classic: CLASSIC, side: SIDE};
 const clamp = THREE.MathUtils.clamp;
 const wrapped = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 const ease = (rate: number, dt: number) => 1 - Math.exp(-rate * dt);
@@ -83,6 +117,14 @@ export class SpikeCam {
   active = false;
   /** The view's heading (radians, the simulation's yaw): the movement basis and the aim. */
   yaw = 0;
+  /** Which stand it films from (ballCamChoice.ts): 'classic' unless the player picked COURT-SIDE. main.ts
+   *  sets it before `steer`; a change is a cut to the other stand. */
+  style: SpikeCamStyle = 'classic';
+  private styled: SpikeCamStyle = 'classic';
+  /** How see-through the net is drawn for this stand (0: as it is; BallArena's `netSheer`), while filming. */
+  get sheer() { return this.active && this.style === 'side' ? 1 : 0; }
+  /** The stands' own numbers, for checks. */
+  static readonly STANDS = STANDS;
   private team: BallTeam = 'red';
   private match = NaN;
   private seen = 0;
@@ -121,8 +163,11 @@ export class SpikeCam {
     rig.mode = 'free'; rig.keepInView = null; rig.sportFov = 0;
     dt = clamp(Number.isFinite(dt) ? dt : 0, 0, .1);
     if (view.startedAt !== this.match || team !== this.team) { this.match = view.startedAt; this.team = team; this.seen = 0; this.forget(); }
+    // (The other stand picked in the menu: placed there outright, as at a match's start; the events read stay read.)
+    if (this.style !== this.styled) { this.styled = this.style; this.forget(); }
     this.moments(view);
-    const R = SPIKE_RULES, s = team === 'red' ? 1 : -1, b = ball ?? view.ball, wide = aspect > WIDE_ASPECT ? 1.3 : 1;
+    const P = STANDS[this.style];
+    const R = SPIKE_RULES, s = team === 'red' ? 1 : -1, b = ball ?? view.ball, wide = aspect > WIDE_ASPECT ? P.wide : 1;
     // The player's own turn, in live play: a pan, held a moment, then eased back. (Each kickoff and serve the page turns
     // the heading it holds to the fighter's, put back on their mark (main.ts ballMark), which is no turn of the player's;
     // the frame drawn may still be the point's when it does, so nothing between points is read as one.)
@@ -133,15 +178,15 @@ export class SpikeCam {
     if (this.still > HOLD) this.away *= Math.exp(-BACK * dt);
     // Across: a dead zone, then a damped spring at a capped speed.
     const ownBall = Math.sign(b.z) === -s || Math.abs(b.z) < 2 ? 1 : .5;
-    const want = clamp(self.x * DRIFT.self + b.x * DRIFT.ball * ownBall, -DRIFT.most, DRIFT.most);
+    const want = clamp(self.x * DRIFT.self + b.x * DRIFT.ball * ownBall, -P.most, P.most);
     if (!this.placed) { this.x = this.goalX = want; this.vx = 0; }
-    else if (Math.abs(want - this.goalX) > DRIFT.dead) this.goalX = want - Math.sign(want - this.goalX) * DRIFT.dead;
+    else if (Math.abs(want - this.goalX) > P.dead) this.goalX = want - Math.sign(want - this.goalX) * P.dead;
     const w = DRIFT.rate;
     this.vx += (w * w * (this.goalX - this.x) - 2 * w * this.vx) * dt;
     this.vx = clamp(this.vx, -DRIFT.speed, DRIFT.speed);
     this.x += this.vx * dt;
     // A very high ball: the look tilts up after it.
-    const lift = clamp((b.y - LIFT.from) * LIFT.share, 0, LIFT.most);
+    const lift = clamp((b.y - P.liftFrom) * P.liftShare, 0, P.liftMost);
     this.lift += (lift - this.lift) * (this.placed ? ease(LIFT.rate, dt) : 1);
     // The occasions.
     const serving = view.phase === 'kickoff';
@@ -162,19 +207,19 @@ export class SpikeCam {
     // (The point that ends a long rally is the big one.)
     if (view.phase === 'scored' && this.pointBig < LONG.big && (view.rally >= LONG.long || view.fever)) this.pointBig = LONG.big;
     // The pose: the stand, then each occasion laid over it.
-    const back = (R.courtHalfZ + STAND.back) * wide, up = STAND.up * wide;
-    const eye = this.eye.set(this.x, up, -s * back), look = this.look.set(this.x * (1 - DRIFT.look), STAND.lookY + this.lift, s * STAND.lookZ);
-    look.y += SERVE.look * this.serveW + SET.lift * this.setW + (aspect >= BLOCK_STEP.phone && aspect <= WIDE_ASPECT ? BLOCK_STEP.phoneLift : BLOCK_STEP.lift) * this.blockW;
-    look.z += s * BLOCK_STEP.toward * this.blockW;
-    if (view.servingTeam === team) look.z -= s * SERVE.back * this.serveW;
-    look.z -= s * SET.lift * .8 * this.setW;
-    if (this.pointW > 0) { const k = Math.min(.9, POINT.toward * this.pointW * this.pointBig); look.x += (this.landed.x - look.x) * k; look.z += (this.landed.z - look.z) * k; look.y += (.4 - look.y) * k; }
-    if (this.followW > 0) { const k = FOLLOW.share * this.followW; look.x += (b.x - look.x) * k; look.y += (b.y - look.y) * k; look.z += (b.z - look.z) * k; }
+    const back = (R.courtHalfZ + P.back) * wide, up = P.up * wide;
+    const eye = this.eye.set(this.x, up, -s * back), look = this.look.set(this.x * (1 - DRIFT.look), P.lookY + this.lift, s * P.lookZ);
+    look.y += (SERVE.look * this.serveW + SET.lift * this.setW) * P.move + (aspect >= BLOCK_STEP.phone && aspect <= WIDE_ASPECT ? P.blockPhoneLift : P.blockLift) * this.blockW;
+    look.z += s * P.blockToward * this.blockW;
+    if (view.servingTeam === team) look.z -= s * P.serveBack * this.serveW;
+    look.z -= s * SET.lift * .8 * this.setW * P.move;
+    if (this.pointW > 0) { const k = Math.min(.9, POINT.toward * this.pointW * this.pointBig) * P.move; look.x += (this.landed.x - look.x) * k; look.z += (this.landed.z - look.z) * k; look.y += (.4 - look.y) * k; }
+    if (this.followW > 0) { const k = FOLLOW.share * this.followW * P.move; look.x += (b.x - look.x) * k; look.y += (b.y - look.y) * k; look.z += (b.z - look.z) * k; }
     // Pushed in along the view, and lowered for the walk-up.
     let dx = look.x - eye.x, dy = look.y - eye.y, dz = look.z - eye.z;
-    const d = Math.hypot(dx, dy, dz) || 1, push = SERVE.push * this.serveW * (1 + (TENSE.serve - 1) * this.tenseW) + SET.push * this.setW + POINT.push * this.pointW * this.pointBig
-      + TENSE.push * this.tenseW + CRESCENDO.push * this.climbW * (1 - this.tenseW * .5);
-    eye.x += dx / d * push; eye.y += dy / d * push - SERVE.down * this.serveW; eye.z += dz / d * push;
+    const d = Math.hypot(dx, dy, dz) || 1, push = (P.servePush * this.serveW * (1 + (TENSE.serve - 1) * this.tenseW) + SET.push * this.setW + POINT.push * this.pointW * this.pointBig
+      + TENSE.push * this.tenseW + CRESCENDO.push * this.climbW * (1 - this.tenseW * .5)) * P.move;
+    eye.x += dx / d * push; eye.y += dy / d * push - P.serveDown * this.serveW; eye.z += dz / d * push;
     // The player's pan: the look turned about the eye.
     dx = look.x - eye.x; dz = look.z - eye.z;
     const flat = Math.hypot(dx, dz), heading = Math.atan2(dx, dz) + this.away;
@@ -185,8 +230,14 @@ export class SpikeCam {
     this.punchGoal *= Math.exp(-PUNCH_BACK * dt);
     this.punch += (this.punchGoal - this.punch) * ease(this.punch < this.punchGoal ? PUNCH_IN : PUNCH_BACK * 2, dt);
     this.trauma = Math.max(0, this.trauma - 2.6 * dt);
-    const base = aspect > WIDE_ASPECT ? STAND.fov - 12 : aspect < NARROW_ASPECT ? STAND.fov + 6 : STAND.fov;
-    this.fov = base - POINT.fov * this.pointW * this.pointBig - this.punch - TENSE.fov * this.tenseW - CRESCENDO.fov * this.climbW * (1 - this.tenseW * .5);
+    // (A stand with `across` holds what it shows from side to side on any frame narrower than that, by opening the lens,
+    // as far as `narrowMost`: the court-side stand's near corners.)
+    const base = aspect > WIDE_ASPECT ? P.fov + P.wideFov : P.across > 0 ? (aspect < P.across ? Math.min(P.narrowMost, 2 * Math.atan(Math.tan(P.fov * Math.PI / 360) * P.across / aspect) * 180 / Math.PI) : P.fov)
+      : aspect < NARROW_ASPECT ? P.fov + P.narrowFov : P.fov;
+    // (Each term on its own, in the classic's order: there `lens` is 1 and the opening 0, so the sum is the classic's to
+    // the last bit.)
+    this.fov = base + P.blockFov * this.blockW + (view.servingTeam === team ? P.serveFov * this.serveW : 0) - POINT.fov * this.pointW * this.pointBig * P.lens - this.punch * P.lens
+      - TENSE.fov * this.tenseW * P.lens - CRESCENDO.fov * this.climbW * (1 - this.tenseW * .5) * P.lens;
     this.placed = true;
     this.handed = heading;
     return heading;

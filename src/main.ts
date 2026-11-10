@@ -14,12 +14,15 @@ import {LocalBall} from './game/ball/LocalBall';
 import {ballOf,ballAssist,BALL_ID} from './game/ball/model';
 import {BallTargets} from './game/ball/BallTargets';
 import {BallField} from './render/ball/BallField';
+import {ownShot} from './render/ball/ownShot';
 import {BallReplayer} from './render/ball/BallReplay';
 import {BallCam,ballShadowFocus,teamOf} from './render/ball/BallCam';
 import {BallMoments} from './render/ball/BallMoments';
 import {SpikeCam} from './render/ball/SpikeCam';
 import {SpikeCues,type SpikeCueTick} from './render/ball/SpikeCues';
 import {BallChase,type ChaseFrame} from './render/ball/BallChase';
+import {askBallCams,askTeamTrim,chaseCamChoice,netSheer,spikeCamChoice} from './render/ball/ballCamChoice';
+import {TeamTrimmer} from './render/ball/TeamTrim';
 import {StanceMarks} from './render/ball/StanceMarks';
 import {StanceControl,hasStances} from './game/ball/stance';
 import {ballMovesReady,ballMovesWanted,installBallMoves} from './render/ball/ballMoves';
@@ -394,6 +397,8 @@ const spikeCams=[new SpikeCam(),new SpikeCam()] as const;
 const ballStances=[new StanceControl(),new StanceControl()] as const,ballChases=[new BallChase(),new BallChase()] as const,stanceMarks=new StanceMarks(view.scene);
 const chaseFrame:ChaseFrame={self:new THREE.Vector3(),heading:0,ball:null,fight:false,mode:'goal-rush',boosting:false,shake:1},NO_FOCUS:readonly (Fighter|undefined)[]=[];let stanceYaw=NaN;
 const stanceBody=(id:string)=>fighters.get(id)?.group.position;
+// Each side's colour on its fighters' ink and rim light, in a ball match only (render/ball/TeamTrim.ts).
+const teamTrims=new TeamTrimmer(),trimBody=(id:string)=>fighters.get(id);
 // Sky Spike's timing cues (render/ball/SpikeCues.ts): the jump's beat, the PERFECT window's glint at the top, the
 // other side's hitter at the top (the block's beat), a dive to make; each with a short tick on the ball's own takes.
 // A couch split screen's Player 2 has their own (spikeCues2), drawn only into their half (splitHalf), their ticks
@@ -404,7 +409,12 @@ const spikeTick=(seat:0|1)=>(k:SpikeCueTick)=>{const [id,gain,rate]=({jump:['str
 spikeCues.onTick=spikeTick(0);spikeCues2.onTick=spikeTick(1);
 // (A check on this machine reads the cues: `__spikeCues.state` (Player 2's `__spikeCues2`), and `__spikeTicks = []` logs
 // each tick with its seat.)
-if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))Object.assign(window as unknown as {__spikeCues:SpikeCues;__spikeCues2:SpikeCues;__ballField:BallField},{__spikeCues:spikeCues,__spikeCues2:spikeCues2,__ballField:ballField});
+if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))Object.assign(window as unknown as {__spikeCues:SpikeCues;__spikeCues2:SpikeCues;__ballField:BallField},{__spikeCues:spikeCues,__spikeCues2:spikeCues2,__ballField:ballField,
+  // (The cameras, their options' numbers and the drawn bodies, for the checks' measures: `__ballCams`;
+  // `hold(true)` stops a match on this device where it is, still drawn, so one moment is filmed from both cameras
+  // (`ask({spike:'side'})`), and `trim(false)` draws it without the sides' trim.)
+  __ballCams:{spike:spikeCams,chase:ballChases,chaseFrame,SpikeCam,BallChase,body:(id:string)=>fighters.get(id),lens:()=>view.camera,lens2:()=>camera2?.camera,scene:()=>view.scene,hold:(on:boolean)=>{ballHeld=on;},trim:askTeamTrim,ask:askBallCams}});
+let ballHeld=false;
 /** `?ballpilot` on this machine (a bot plays the page's fighter, LocalBall): the page films the bot's stance. */
 const ballPiloted=['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).has('ballpilot');
 // A TACKLE (game/ball/model.ts GOAL_STANCE): the lens punches for the tackler and the one tackled, the frame's ink for a
@@ -422,6 +432,9 @@ function ballAim<T extends {targetId?:string|null;lock?:boolean}>(command:T|unde
 const ballLenses=[{impact:(w:number,d?:THREE.Vector3,t:0|1|2=0)=>{camera.impact(w,d,t);ballChases[0].impact(w,d,t);}},{impact:(w:number,d?:THREE.Vector3,t:0|1|2=0)=>{camera2?.impact(w,d,t);ballChases[1].impact(w,d,t);}}] as const;
 const ballMoments=new BallMoments(view,()=>couch.split&&camera2?[[ballLenses[0],fighters.get(couch.ids[0])?.group.position],[ballLenses[1],fighters.get(couch.ids[1])?.group.position]]:[[ballLenses[0],shownSelf]],()=>ballField.ballPosition());
 ballField.bodyOf=id=>fighters.get(id)?.group.position;
+// (The page's own swing as its prediction has it - offline, as the match in this browser has it,
+// at the time drawn - for its aim line, its charge and its take: render/ball/ownShot.ts.)
+ownShot.read=()=>network===localBall?localBall.match?.sim.actors.get(network.id):prediction.local;ownShot.clock=()=>network===localBall?timeline.drawnAt??NaN:prediction.localTime;ownShot.drawn=()=>network!==localBall&&prediction.active;
 // FREE PLAY's reset (game/ball/BallMatch.ts reset): Backspace, or the pad's View/Share button.
 let ballResetHeld=false;
 // Quick chat (ui/ball/QuickChat.ts): C, or the pad's View button; the room relays the line.
@@ -475,8 +488,9 @@ if(lockCombatOn())void installBorrowedStrikes();
 // Techniques (game/techniques.ts): each style's takes, fitted to the bodies that throw them (engine/client/styleMoves.ts).
 void installStyleMoves();
 // Ball modes, sports moves (render/ball/ballMoves.ts): a pass, a header, a dig, a spike drawn for a ball match's swings -
-// only with `?ballmoves` in the address, so the game as played is untouched.
-if(ballMovesWanted(location))installBallMoves(()=>{const view=ballOf(network.snapshot);return view?{view,ball:ballField.ballPosition()}:undefined;});
+// only with `?ballmoves` in the address, so the game as played is untouched. (But SHOOT's quick strike, which is nobody's
+// own clip, is drawn with a take on every page.)
+installBallMoves(()=>{const view=ballOf(network.snapshot);return view?{view,ball:ballField.ballPosition()}:undefined;},ballMovesWanted(location));
 riftField.glows=riftTargets.glows;
 grunts.threats=survivalTargets.glows;
 const targetPlayers=(snapshot:GameSnapshot)=>{const self=snapshot.players.find(p=>p.id===network.id);return ballOf(snapshot)?ballTargets.update(snapshot,ballField.ballPosition()):riftOf(snapshot)&&self?riftTargets.update(snapshot,self):survival()&&self?survivalTargets.update(snapshot.players,hordeFrames()?.around(snapshot.serverTime)?.b,self):snapshot.players;};
@@ -1033,7 +1047,7 @@ function pushInput(){
  *  frames run behind a hidden tab). */
 function localPausePump(){
   const local=localNetwork();if(!local)return;
-  local.paused=bugReport.open||hud.settingsOpen||document.hidden||!fightShown
+  local.paused=bugReport.open||hud.settingsOpen||document.hidden||!fightShown||ballHeld
     ||network===arcade&&riftIntro.open||network===practice&&(vsSplash.open||vsPending||swapPicker.open);
 }
 function pausePump(){
@@ -1712,7 +1726,9 @@ function splitFrame(dt:number,snapshot:GameSnapshot){
     const ballView=ballOf(snapshot),cam=ballCams[half],stances=hasStances(ballView);if(!stances)cam.pressed(couch.pressesOf(id));
     const lock=stances?ballStances[half].lock:null,foe=lock?bodyOf(lock)?.group.position:undefined,subject=foe??ballField.ballPosition();
     const yaw=cam.steer(rig,dt,seatView.yaw,seat?.device.kind==='keys'&&settings.cameraMode==='free'?'dynamic':settings.cameraMode,body.group.position,subject,ballView,teamOf(ballView,id),!!foe);
-    const spike=spikeCams[half],heading=spike.steer(rig,dt,seatView.yaw,yaw,cam.on,body.group.position,ballField.ballPosition(),ballView,teamOf(ballView,id),rig.camera.aspect);
+    // (Each camera's option, off unless picked - render/ball/ballCamChoice.ts.)
+    const spike=spikeCams[half];spike.style=spikeCamChoice(settings);ballChases[half].style=chaseCamChoice(settings);
+    const heading=spike.steer(rig,dt,seatView.yaw,yaw,cam.on,body.group.position,ballField.ballPosition(),ballView,teamOf(ballView,id),rig.camera.aspect);
     rig.update(dt,body,heading,seatView.pitch,occluders(),settings.shake,!cam.active&&!spike.active&&held&&held!==body?held:undefined,!cam.active&&!spike.active&&couch.lockedOf(id));spike.aim(rig,rig.camera,settings.shake);
     const chase=cam.active&&ballView?.mode==='goal-rush';
     chaseFrame.self.copy(body.group.position);chaseFrame.heading=yaw;chaseFrame.ball=subject;chaseFrame.fight=!!foe;chaseFrame.boosting=!!body.state.boost;chaseFrame.shake=settings.shake;if(ballView)chaseFrame.mode=ballView.mode;
@@ -1720,6 +1736,7 @@ function splitFrame(dt:number,snapshot:GameSnapshot){
     seatView.yaw=rig.inputYaw;seatView.pitch=rig.inputPitch;
     halfStates[half].capture(half===0,rig.camera.position);
   }
+  netSheer.value=Math.max(spikeCams[0].sheer,spikeCams[1].sheer);
   halfStates[0].apply();
   if(couch.menuPads().some(index=>index!==input.padIndex))input.onMenu('controller');
 }
@@ -1805,7 +1822,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   ballField.viewLag=forecastTouches&&network===online&&prediction.enabled&&presented?Math.max(0,prediction.localTime-presented.time):0;
   ballField.update(replayed?.snapshot??snapshot,network.id,view.camera,replayed?dt*replayed.rate:dt,performance.now(),!!replayed);
   // Goal Rush's stances under the feet (render/ball/StanceMarks.ts), and its tackles felt.
-  {const v=ballOf(snapshot);stanceMarks.update(rawDt,v,network.id,hasStances(v)?ballStances[0].lock:null,ballField.ballPosition(),stanceBody,!!v&&started&&!replayed&&!ceremony);
+  {const v=ballOf(snapshot);teamTrims.update(started?ballOf(replayed?.snapshot??snapshot):undefined,trimBody,view.camera.position,couch.split?camera2?.camera.position:null);stanceMarks.update(rawDt,v,network.id,hasStances(v)?ballStances[0].lock:null,ballField.ballPosition(),stanceBody,!!v&&started&&!replayed&&!ceremony);
     spikeCues.update(rawDt,v,network.id,snapshot?.players??[],stanceBody,ballField.ballPosition(),!!v&&started&&!replayed&&!ceremony);
     // (Player 2's, on a split screen: their seat's cues, for their half alone.)
     spikeCues2.update(rawDt,v,couch.split?couch.ids[1]??'':'',snapshot?.players??[],stanceBody,ballField.ballPosition(),couch.split&&!!v&&started&&!replayed&&!ceremony);}
@@ -1825,7 +1842,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // split screen has two: a body Player 2's half shows is seen, as one Player 1's shows is (couch/split.ts).
     viewProjection.multiplyMatrices(view.camera.projectionMatrix,view.camera.matrixWorldInverse);viewFrustum.setFromProjectionMatrix(viewProjection);
     const lens2=couch.split?camera2?.camera:undefined;if(lens2){viewProjection.multiplyMatrices(lens2.projectionMatrix,lens2.matrixWorldInverse);secondFrustum.setFromProjectionMatrix(viewProjection);}
-    for(const p of snapshot.players){if(p.enemy||!fighters.has(p.id))continue;const fighter=fighters.get(p.id)!,opponent=snapshot.players.find(o=>o.id===(p.id===network.id?targetId:p.target));const shown=replayed?replayed.snapshot.players.find(q=>q.id===p.id)??p:p.id===network.id?(prediction.sample(steps.correction,p,renderAlpha)??p):prediction.sampleRemote(steps.correction,p,renderAlpha);fighter.targetDistance=opponent?Math.hypot(opponent.x-shown.x,opponent.z-shown.z):Infinity;fighter.targetPoint=opponent?(fighter.targetPoint??new THREE.Vector3()).set(opponent.x,opponent.y+1.45,opponent.z):undefined;fighter.cameraPoint=view.camera.position;fighter.unseen=p.id!==network.id&&p.id!==targetId&&p.id!==spectating&&!fighter.inView(viewFrustum,view.camera.position)&&!(lens2&&fighter.inView(secondFrustum,lens2.position));fighter.update(dt,shown,true,rawDt);if(p.id===network.id){self=shown;shownSelf=shown;}}
+    for(const p of snapshot.players){if(p.enemy||!fighters.has(p.id))continue;const fighter=fighters.get(p.id)!,opponent=snapshot.players.find(o=>o.id===(p.id===network.id?targetId:p.target));const shown=ballCeremony.posed(p.id,replayed?replayed.snapshot.players.find(q=>q.id===p.id)??p:p.id===network.id?(prediction.sample(steps.correction,p,renderAlpha)??p):prediction.sampleRemote(steps.correction,p,renderAlpha));fighter.targetDistance=opponent?Math.hypot(opponent.x-shown.x,opponent.z-shown.z):Infinity;fighter.targetPoint=opponent?(fighter.targetPoint??new THREE.Vector3()).set(opponent.x,opponent.y+1.45,opponent.z):undefined;fighter.cameraPoint=view.camera.position;fighter.unseen=p.id!==network.id&&p.id!==targetId&&p.id!==spectating&&!fighter.inView(viewFrustum,view.camera.position)&&!(lens2&&fighter.inView(secondFrustum,lens2.position));fighter.update(dt,shown,true,rawDt);if(p.id===network.id){self=shown;shownSelf=shown;}}
     // The arcade's horde: its bosses, its grunts, the rifts and orbs, and its HUD.
     if(objectiveOf(snapshot)?.kind==='last-stand'){survivalFx.uploadNextTexture();horde.update(snapshot.players,dt,serverTime,view.camera);horde.handle(snapshot.events);techniques.handle(snapshot.events,serverTime);techniques.feed(objectiveOf(snapshot)?.village?.warnings??[],serverTime);}
     if(survival()){
@@ -1929,6 +1946,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
       if(survival()){survivalTargets.present(gruntPosition,targetId,camera.picker.pending);for(const [id,body] of horde.cameraBodies)survivalTargets.crowd.set(id,body);}
       camera.extraSubjects=ballOf(snapshot)?ballTargets.crowd:riftOf(snapshot)?riftTargets.crowd:survival()?survivalTargets.crowd:objectiveOf(snapshot)?.kind==='last-stand'?horde.cameraBodies:undefined;
       camera.movementBasis(movementMask(input.keys,!input.arrowsLook));
+      netSheer.value=0; // (Sky Spike's net is thinned only under the COURT-SIDE stand, set by whichever camera films below.)
       if(couch.split){splitFrame(rawDt,snapshot);if(now-lastCouchHud>70){couchHud.update(snapshot,couch.ids,[couch.targetOf(couch.ids[0]),couch.targetOf(couch.ids[1])]);lastCouchHud=now;}}
       else if(couch.on){couchFrame(rawDt,snapshot);if(now-lastCouchHud>70){couchHud.update(snapshot,couch.ids,[couch.targetOf(couch.ids[0]),couch.targetOf(couch.ids[1])]);lastCouchHud=now;}}
       else if(subject){const foeId=subject.state.target;const foe=foeId&&foeId!==network.id?fighters.get(foeId):undefined;camera.update(rawDt,subject,input.yaw,input.pitch,occluders(),settings.shake,foe?.state.alive?foe:undefined,!!foe);}
@@ -1938,7 +1956,10 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
         // camera's own shots (an awakening's, an ultimate's) still have the lens while they run; the rig's fading of
         // what stands in the way is judged from its own lens. Sky Spike is filmed by its broadcast camera (SpikeCam).
         const yaw=cam.steer(camera,rawDt,input.yaw,settings.cameraMode,own.group.position,subject,ballView,teamOf(ballView,network.id),!!foe);
-        const spike=spikeCams[0],heading=spike.steer(camera,rawDt,input.yaw,yaw,cam.on,own.group.position,ballField.ballPosition(),ballView,teamOf(ballView,network.id),view.camera.aspect);
+        // (Each camera's option, off unless picked - render/ball/ballCamChoice.ts; the COURT-SIDE stand looks
+        // through the net, which is drawn thinner for it.)
+        const spike=spikeCams[0];spike.style=spikeCamChoice(settings);ballChases[0].style=chaseCamChoice(settings);
+        const heading=spike.steer(camera,rawDt,input.yaw,yaw,cam.on,own.group.position,ballField.ballPosition(),ballView,teamOf(ballView,network.id),view.camera.aspect);netSheer.value=spike.sheer;
         const chase=cam.active&&ballView?.mode==='goal-rush'&&!((view.camera.userData.rig as {shotWeight?:number}|undefined)?.shotWeight! > .5);camera.fading=!chase;
         camera.update(rawDt,own,heading,input.pitch,occluders(),settings.shake,!cam.active&&!spike.active&&held?bodyOf(held):undefined,!cam.active&&!spike.active&&targeting.locked);spike.aim(camera,view.camera,settings.shake);
         chaseFrame.self.copy(own.group.position);chaseFrame.heading=yaw;chaseFrame.ball=subject;chaseFrame.fight=!!foe;chaseFrame.boosting=!!own.state.boost;chaseFrame.shake=settings.shake;if(ballView)chaseFrame.mode=ballView.mode;
@@ -1985,7 +2006,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     const own=fighters.get(network.id);if(own){ceremonyBodies.length=0;for(const f of fighters.values())ceremonyBodies.push(f);camera.fader.update(rawDt,view.camera,undefined,own,undefined,ceremonyBodies);}}else if(shownSelf)view.setFocus(view.shadowCentred?ballShadowFocus(shownSelf,ballField.ballPosition(),ballShadow[0]):shownSelf);// look: the sun's shadow box and the screen effects follow the fight (a replay's, the ball)
   ballReplayBars+=((replayed?1:0)-ballReplayBars)*Math.min(1,rawDt*7);
   hud.tick();damageNumbers.update(view.camera);manga.update(view.camera);letterbox.set(couch.on?0:Math.max(camera.cuts.bars,ballReplayBars,ballCeremony.bars));view.cinemaGrade(couch.on?0:camera.cuts.grade);if(camera.cuts.opened!==heardCinema){heardCinema=camera.cuts.opened;if(camera.cuts.openedKind==='confirm'&&camera.cuts.active)audio.ui('fx-swing-huge',.22,.1);}
-  if(((started||!hud.homeVisible)&&!survivalHud.treeShown)||reportCapture){if(!couch.split)grunts.prepareCamera(view.camera);view.render(rawDt);drawnSize=view.renderer.domElement.width*65536+view.renderer.domElement.height;}
+  if(((started||!hud.homeVisible)&&!survivalHud.treeShown)||reportCapture){if(!couch.split)grunts.prepareCamera(view.camera);view.render(rawDt);ballCeremony.afterDraw(view.renderer.domElement);drawnSize=view.renderer.domElement.width*65536+view.renderer.domElement.height;}
   // Training's switch, measured: the frame that drew the new body (swapLog).
   for(let i=swapLanding.length-1;i>=0;i--){const landing=swapLanding[i];if(fighters.get(landing.actor)?.bodyFighter===landing.fighter){landing.entry.shownMs=Math.round(performance.now()-landing.askedAt);swapLanding.splice(i,1);}}
   if(reportCapture){const capture=reportCapture;reportCapture=undefined;try{capture(view.renderer.domElement.toDataURL('image/jpeg',.8));}catch{/* The capture timeout reports unavailable. */}}

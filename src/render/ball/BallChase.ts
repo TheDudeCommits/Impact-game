@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {GOAL_RULES, SPIKE_RULES, type BallModeId} from '../../game/ball/model';
 import type {Vec3} from '../../game/types';
 import {dampedVector} from '../dampedSpring';
+import type {ChaseCamStyle} from './ballCamChoice';
 
 /**
  * Goal Rush's ball cam as a rig of its own: an arcade sports chase camera, laid over the follow camera's frame after it
@@ -65,7 +66,28 @@ const RIG = {
  *  lower and narrower, a fight's lock-on: the boom at rest and in close (melee), the height, the shoulder, the tilt and
  *  the lens. The two stances' springs carry the frame from one to the other. */
 const FIGHT = {boom: 5.1, boomNear: 4.3, height: 2.35, heightNear: 2.75, shoulder: .8, shoulderNear: 1.05, pitch: -6, fov: 57} as const;
+/** The CLOSE lens, an option beside the classic rig (ballCamChoice.ts; off unless the player picks it): in Goal
+ *  Rush everyone but you is a speck. CLOSE is the same rig - the same boom, springs,
+ *  walls and hand-overs - with the BALL stance's lens `fov` degrees narrower, stood `height` metres higher and tilted
+ *  `pitch` degrees further down, so every body reads about a seventh larger (you a tenth), your own head stays where the
+ *  classic frame has it and your feet stay over the stance badge under them. (Narrower or tilted further, the far goal's
+ *  bar climbs into the banner's place under the score bug, ui/hud/ballHud.css: at nine degrees and four down it stood
+ *  35 px inside the banner's foot at 1080p.) It gives the difference back, a share at a time, whenever the classic frame
+ *  holds something the tighter one would lose:
+ *  - a ball climbing over the frame's top (its elevation from the lens between `riseFrom` and `riseTo` degrees), and all
+ *    of it under a lofted ball: the high-ball frame (back, up, wider) is the classic's own, to the degree;
+ *  - a goal within `goalEdge` degrees of the tighter frame's side edge while the classic frame still holds it;
+ *  - the ball within `ballEdge` degrees of the tighter frame's side or top edge while the classic frame still holds it
+ *    (read off the frame on screen a moment ago).
+ *  What it gives back it gives at once (`back`, a second) and takes again more slowly (`again`). Measured in bot play on
+ *  the Ink Bowl against the classic lens on the same frames (77 s of live play): the ball out of the frame on 0.85% more
+ *  frames (2.2% more without the ball's give-back, lost mostly over the top), the CLOSE lens on 52% of the way on
+ *  average, bodies a median 1.055 times as tall (1.13 at the 90th percentile), and the lens's field of view travelling
+ *  6.7 degrees a second to the classic's 4.6.
+ *  The FIGHT stance's framing is not touched. */
+const CLOSE = {fov: -7, height: .5, pitch: -2, riseFrom: 9, riseTo: 16, goalEdge: 5, ballEdge: 5, back: 12, again: 3} as const;
 const D2R = Math.PI / 180;
+const wrapped = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 /** The swings tried, nearest first (radians either way from straight behind). */
 const SWINGS = [.3, .55, .8, 1.05, 1.3, 1.57, 1.85] as const;
 const clamp = THREE.MathUtils.clamp;
@@ -100,6 +122,13 @@ export class BallChase {
   active = false;
   /** The heading the frame was laid along: the run's basis and the aim's, while active. */
   yaw = 0;
+  /** Which lens the BALL stance is filmed with (ballCamChoice.ts): 'classic' unless the player picked
+   *  CLOSE. main.ts sets it before `aim`; the springs carry the frame from one to the other. */
+  style: ChaseCamStyle = 'classic';
+  /** How much of the CLOSE lens is on this frame (0: the classic frame; for checks). */
+  tight = 0;
+  /** The CLOSE lens's own numbers, for checks. */
+  static readonly CLOSE = CLOSE;
   private ready = false;
   private readonly body = new THREE.Vector3();
   private readonly bodyVel = new THREE.Vector3();
@@ -142,6 +171,9 @@ export class BallChase {
   private laid = false;
   private readonly want = new THREE.Vector3();
   private readonly euler = new THREE.Euler(0, 0, 0, 'YXZ');
+  /** (The CLOSE lens's look at the ball through the last frame: ballAtEdge.) */
+  private readonly seen = new THREE.Vector3();
+  private readonly unseen = new THREE.Quaternion();
   private readonly quat = new THREE.Quaternion();
 
   /** A cut: the next frame is laid fresh (a kickoff, a replay or a ceremony handing the view back). */
@@ -212,10 +244,18 @@ export class BallChase {
     const loft = ball && !f.fight && peak > 2.8 ? smooth(Math.atan2(peak - b.y - 1.2, Math.max(d, .5)), .3, .95) : 0;
     const near = ball ? (1 - smooth(d, 2.5, 9)) * (1 - loft) : 0, far = f.fight ? 0 : smooth(d, 12, 32);
     const boomWant = f.fight ? FIGHT.boom + (FIGHT.boomNear - FIGHT.boom) * near : RIG.boom + (RIG.boomNear - RIG.boom) * near + (RIG.boomFar - RIG.boom) * far + RIG.loftBoom * loft;
+    // How much of the CLOSE lens this frame takes (none on the classic rig): all of it with the ball low and
+    // nothing at the frame's edge, less as the ball climbs toward the frame's top or a goal or the ball nears its side,
+    // none lofted. Given back at once and taken again slowly (CLOSE.back, CLOSE.again a second), so the lens does not
+    // breathe in and out with every touch.
+    const tightWant = this.style === 'close' && !f.fight ? (1 - loft) * (1 - this.climbing(ball, d, fresh)) * (1 - this.goalAtEdge(f, camera.aspect, fresh)) * (1 - this.ballAtEdge(ball, camera.aspect, fresh)) : 0;
+    const eased = fresh || this.style !== 'close' ? tightWant : this.tight + (tightWant - this.tight) * (1 - Math.exp(-(tightWant < this.tight ? CLOSE.back : CLOSE.again) * dt));
+    const tight = this.tight = Math.abs(eased - tightWant) < 1e-3 ? tightWant : eased;
+    const stood = CLOSE.height * tight;
     const heightWant = f.fight ? FIGHT.height + (FIGHT.heightNear - FIGHT.height) * near
-      : THREE.MathUtils.lerp(Math.min(RIG.heightMost, RIG.height + (RIG.heightNear - RIG.height) * near + RIG.heightPerBall * Math.min(hb, 14) * (1 - near)), RIG.loftHeight, loft);
+      : THREE.MathUtils.lerp(Math.min(RIG.heightMost + stood, RIG.height + stood + (RIG.heightNear - RIG.height) * near + RIG.heightPerBall * Math.min(hb, 14) * (1 - near)), RIG.loftHeight, loft);
     const shoulderWant = f.fight ? FIGHT.shoulder + (FIGHT.shoulderNear - FIGHT.shoulder) * near : RIG.shoulder + (RIG.shoulderNear - RIG.shoulder) * near;
-    const fovWant = (f.fight ? FIGHT.fov : RIG.fov) + (f.boosting ? RIG.fovBoost : 0) + RIG.fovSpeed * smooth(Math.hypot(this.bodyVel.x, this.bodyVel.z), 9, 14) + RIG.loftFov * loft;
+    const fovWant = (f.fight ? FIGHT.fov : RIG.fov + CLOSE.fov * tight) + (f.boosting ? RIG.fovBoost : 0) + RIG.fovSpeed * smooth(Math.hypot(this.bodyVel.x, this.bodyVel.z), 9, 14) + RIG.loftFov * loft;
     // (A narrow frame - a split screen's half, a phone held upright - stands further back and less over the shoulder.)
     const narrow = clamp((1.5 - camera.aspect) / .7, 0, 1);
     if (fresh) { this.boom.snap(boomWant * (1 + .3 * narrow)); this.height.snap(heightWant); this.shoulder.snap(shoulderWant * (1 - .6 * narrow)); this.fov.snap(fovWant); this.held.set(0, 0, 0); this.heldVel.set(0, 0, 0); }
@@ -275,7 +315,7 @@ export class BallChase {
     const chest = Math.atan2(b.y + 1.15 - at.y, Math.max(.5, Math.hypot(b.x - at.x, b.z - at.z)));
     const floor = -Math.atan2(at.y, RIG.floorAhead) + Math.atan(Math.tan(half) * (1 - 2 * THREE.MathUtils.lerp(RIG.floorKeep, RIG.floorKeepLoft, loft)));
     const most = Math.min(RIG.pitchMost * D2R, f.fight ? Infinity : floor, chest + half - RIG.chestMargin * D2R);
-    let pitchWant = (f.fight ? FIGHT.pitch : RIG.pitch) * D2R - Math.atan2(lifted, 9) - (f.fight ? 0 : near * 4 * D2R);
+    let pitchWant = (f.fight ? FIGHT.pitch : RIG.pitch + CLOSE.pitch * tight) * D2R - Math.atan2(lifted, 9) - (f.fight ? 0 : near * 4 * D2R);
     if (ball) {
       // (The opponent: their head kept under the top of the frame, as the ball is.)
       const up = Math.atan2(ball.y + (f.fight ? 1.7 : 0) - at.y, Math.max(.5, Math.hypot(ball.x - at.x, ball.z - at.z)));
@@ -297,6 +337,41 @@ export class BallChase {
     camera.fov = fovNow - RIG.punchMost * this.punch * this.punch;
     camera.updateProjectionMatrix(); camera.updateMatrixWorld();
     this.yaw = view; this.ready = true;
+  }
+
+  /** The CLOSE lens: how far the ball has climbed toward the tighter frame's top, 0 (well inside it) to 1
+   *  (where the classic frame is needed) - its elevation from where the lens stands now, behind the body. */
+  private climbing(ball: Vec3 | null, d: number, fresh: boolean) {
+    if (!ball) return 0;
+    const lens = this.body.y + (fresh ? RIG.height + CLOSE.height : this.height.x), reach = d + (fresh ? RIG.boom : this.boom.x);
+    return smooth(Math.atan2(ball.y - lens, Math.max(reach, .5)) / D2R, CLOSE.riseFrom, CLOSE.riseTo);
+  }
+  /** The CLOSE lens: whether a goal's mouth stands at the tighter frame's side edge while the classic frame
+   *  holds it, 0 (no) to 1 (the classic lens is needed) - the mouth's centre against each lens's half-width across. */
+  private goalAtEdge(f: ChaseFrame, aspect: number, fresh: boolean) {
+    if (f.mode !== 'goal-rush') return 0;
+    const b = this.body, boom = fresh ? RIG.boom : this.boom.x, lx = b.x - Math.sin(f.heading) * boom, lz = b.z - Math.cos(f.heading) * boom;
+    const wide = Math.atan(Math.tan(RIG.fov * D2R / 2) * aspect) / D2R, close = Math.atan(Math.tan((RIG.fov + CLOSE.fov) * D2R / 2) * aspect) / D2R;
+    let need = 0;
+    for (let side = -1; side <= 1; side += 2) {
+      const off = Math.abs(wrapped(Math.atan2(-lx, side * GOAL_RULES.halfZ - lz) - f.heading)) / D2R;
+      need = Math.max(need, smooth(off, close - CLOSE.goalEdge * 2, close - CLOSE.goalEdge) * (1 - smooth(off, wide, wide + CLOSE.goalEdge)));
+    }
+    return need;
+  }
+
+  /** The CLOSE lens: whether the ball stands at the tighter frame's side or top while the classic frame holds it,
+   *  0 (no) to 1 (the classic lens is needed) - its angle off the frame on screen a moment ago (this rig's last), across
+   *  and up or down, against each lens's half-widths. */
+  private ballAtEdge(ball: Vec3 | null, aspect: number, fresh: boolean) {
+    if (!ball || fresh || !this.laid) return 0;
+    const v = this.seen.set(ball.x, ball.y, ball.z).sub(this.laidPos).applyQuaternion(this.unseen.copy(this.laidQuat).invert()), ahead = -v.z;
+    if (ahead < .5) return 0;
+    const wideV = (this.fov.x - CLOSE.fov * this.tight) / 2, closeV = wideV + CLOSE.fov / 2, e = CLOSE.ballEdge;
+    const across = (half: number) => Math.atan(Math.tan(half * D2R) * aspect) / D2R;
+    const need = (off: number, close: number, wide: number) => smooth(off, close - e * 2, close - e) * (1 - smooth(off, wide, wide + e));
+    // (Across, and over the top: a ball at the foot of the frame is at your feet, where the rig's own pull in and up has it.)
+    return Math.max(need(Math.atan2(Math.abs(v.x), ahead) / D2R, across(closeV), across(wideV)), v.y > 0 ? need(Math.atan2(v.y, ahead) / D2R, closeV, wideV) : 0);
   }
 
   /** How far round (radians) the boom must swing from behind the heading for RIG.swingRoom of room: none with room

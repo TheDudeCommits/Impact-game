@@ -4,19 +4,19 @@
 .ball-ui .bu-card{width:min(940px,100%);max-height:100%;overflow:auto;background:#fff9ef;color:#0b0c0e;padding:22px 26px 20px;clip-path:polygon(1.5% 0,100% 0,98.5% 3%,100% 97%,98% 100%,0 100%,1.5% 96%,0 4%);filter:drop-shadow(8px 6px 0 #d51d34)}
 .ball-ui header{text-align:center;margin-bottom:14px}
 .ball-ui header small{display:block;font:800 13px/1 'Barlow Condensed',sans-serif;letter-spacing:.24em;color:#d51d34}
-.ball-ui header h2{margin:6px 0 0;font:italic 900 clamp(40px,6vw,74px)/.95 Impact,'Barlow Condensed',sans-serif;letter-spacing:-.01em;padding-right:.15em}
+.ball-ui header h2{margin:6px 0 0;font:italic 900 clamp(40px,6vw,74px)/.95 'Barlow Condensed',sans-serif;letter-spacing:-.01em;padding-right:.15em}
 .ball-ui .results.won header h2{color:#0b0c0e;text-shadow:4px 4px 0 #ffcf5a}
 .ball-ui .results.lost header h2{color:#3a3832}
 .ball-ui .bu-code{margin:8px 0 0;font:800 14px/1 'Barlow Condensed',sans-serif;letter-spacing:.18em}
-.ball-ui .bu-code b{font:italic 900 28px/1 Impact,sans-serif;letter-spacing:.12em;margin-left:8px;color:#d51d34}
-.ball-ui .bu-final{margin:6px 0 0;font:italic 900 46px/1 Impact,sans-serif}
+.ball-ui .bu-code b{font:italic 900 28px/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;margin-left:8px;color:#d51d34}
+.ball-ui .bu-final{margin:6px 0 0;font:italic 900 46px/1 'Barlow Condensed',sans-serif}
 .ball-ui .bu-final .red{color:#ff3b52}.ball-ui .bu-final .blue{color:#2f8cff}
 .ball-ui .bu-mvp{margin:6px 0 0;font:800 14px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em}
-.ball-ui .bu-mvp b{font:italic 900 20px/1 Impact,sans-serif;letter-spacing:.02em;color:#d51d34}
+.ball-ui .bu-mvp b{font:italic 900 20px/1 'Barlow Condensed',sans-serif;letter-spacing:.02em;color:#d51d34}
 .ball-ui .bu-teams{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:start}
 .ball-ui .bu-teams.results{grid-template-columns:1fr 1fr}
-.ball-ui .bu-vs{align-self:center;font:italic 900 34px/1 Impact,sans-serif;color:#0b0c0e}
-.ball-ui .bu-side h3{margin:0 0 8px;padding:6px 12px 7px;color:#fff;font:italic 900 22px/1 Impact,sans-serif;letter-spacing:.04em;display:flex;justify-content:space-between;clip-path:polygon(3% 0,100% 0,97% 100%,0 100%)}
+.ball-ui .bu-vs{align-self:center;font:italic 900 34px/1 'Barlow Condensed',sans-serif;color:#0b0c0e}
+.ball-ui .bu-side h3{margin:0 0 8px;padding:6px 12px 7px;color:#fff;font:italic 900 22px/1 'Barlow Condensed',sans-serif;letter-spacing:.04em;display:flex;justify-content:space-between;clip-path:polygon(3% 0,100% 0,97% 100%,0 100%)}
 .ball-ui .bu-side.red h3{background:#ff3b52}.ball-ui .bu-side.blue h3{background:#2f8cff}
 .ball-ui .bu-side.won h3::after{content:'WIN';font:800 13px/1.6 'Barlow Condensed',sans-serif;letter-spacing:.2em}
 .ball-ui .bu-side ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
@@ -24,7 +24,7 @@
 .ball-ui .bu-side li.self{outline:3px solid #ffcf5a;outline-offset:-3px}
 .ball-ui .bu-side li.empty{background:transparent;border:2px dashed #b9b2a6;color:#7a7368;justify-content:center}
 .ball-ui .bu-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.ball-ui .bu-side li b{font:italic 900 17px/1 Impact,sans-serif;letter-spacing:.02em;padding-right:.2em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ball-ui .bu-side li b{font:italic 900 17px/1 'Barlow Condensed',sans-serif;letter-spacing:.02em;padding-right:.2em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ball-ui .bu-feats{display:flex;flex-wrap:wrap;gap:3px}
 .ball-ui .bu-feats i{font:800 10px/1 'Barlow Condensed',sans-serif;font-style:normal;letter-spacing:.12em;color:#ffcf5a;border:1px solid #ffcf5a;padding:2px 4px}
 .ball-ui .bu-side li small{font:800 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.18em;color:#b9b2a6}
@@ -34,18 +34,18 @@
 .ball-ui .bu-head,.ball-ui .bu-stats{display:grid;grid-template-columns:repeat(4,30px) 44px;gap:2px;text-align:center}
 .ball-ui .bu-head{margin:0 10px 4px auto;width:max-content;font:800 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;color:#5b554b}
 .ball-ui .bu-head i,.ball-ui .bu-stats i{font-style:normal}
-.ball-ui .bu-stats{font:italic 900 16px/1 Impact,sans-serif}
-.ball-ui .bu-count{text-align:center;margin:12px 0 0;font:italic 900 22px/1 Impact,sans-serif;color:#d51d34}
+.ball-ui .bu-stats{font:italic 900 16px/1 'Barlow Condensed',sans-serif}
+.ball-ui .bu-count{text-align:center;margin:12px 0 0;font:italic 900 22px/1 'Barlow Condensed',sans-serif;color:#d51d34}
 .ball-ui footer{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-top:18px}
 .ball-ui footer span{font:800 13px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;color:#5b554b}
-.ball-ui button{border:0;cursor:pointer;padding:11px 22px 12px;background:#0b0c0e;color:#fff;font:italic 900 18px/1 Impact,sans-serif;letter-spacing:.04em;clip-path:polygon(6% 0,100% 0,94% 100%,0 100%)}
+.ball-ui button{border:0;cursor:pointer;padding:11px 22px 12px;background:#0b0c0e;color:#fff;font:italic 900 18px/1 'Barlow Condensed',sans-serif;letter-spacing:.04em;clip-path:polygon(6% 0,100% 0,94% 100%,0 100%)}
 .ball-ui button.go{background:#d51d34}
 .ball-ui button.on{background:#2b6e3f}
 /* Quick chat (QuickChat.ts): four lines down the left edge, each with its key. */
 .ball-chat-wheel{position:fixed;left:clamp(12px,2.4vw,40px);top:50%;transform:translateY(-50%);z-index:45;display:none;flex-direction:column;gap:4px;pointer-events:none}
 .ball-chat-wheel.open{display:flex;animation:bu-chat-in .16s ease-out}
-.ball-chat-wheel b{font:italic 900 14px/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.12em;color:#ffcf5a;text-shadow:0 1px 3px #000;margin-bottom:2px}
-.ball-chat-wheel span{display:flex;align-items:center;gap:8px;padding:5px 14px 6px 6px;background:rgba(11,12,14,.86);color:#fff;font:italic 900 16px/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.03em;clip-path:polygon(0 0,100% 0,94% 100%,0 100%)}
+.ball-chat-wheel b{font:italic 900 14px/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;color:#ffcf5a;text-shadow:0 1px 3px #000;margin-bottom:2px}
+.ball-chat-wheel span{display:flex;align-items:center;gap:8px;padding:5px 14px 6px 6px;background:rgba(11,12,14,.86);color:#fff;font:italic 900 16px/1 'Barlow Condensed',sans-serif;letter-spacing:.03em;clip-path:polygon(0 0,100% 0,94% 100%,0 100%)}
 .ball-chat-wheel kbd{min-width:20px;padding:2px 5px;background:#fff9ef;color:#0b0c0e;font:800 12px/1 'Barlow Condensed',sans-serif;text-align:center}
 .ball-chat-wheel span[data-pick]{touch-action:manipulation}
 /* Touch: its lines are buttons, laid in a row beside the CHAT button under the scoreboard, clear of the stick. */
@@ -61,7 +61,7 @@
 .ball-ui .bu-pay{flex:1 1 100%;order:-1;min-width:0}
 .ball-ui .bu-pay.hidden{display:none}
 .ball-ui .bu-pay .pay{box-sizing:border-box;width:100%;border:0;background:#0b0c0e;clip-path:polygon(.8% 0,100% 0,99.2% 100%,0 100%);padding:10px 22px}
-.ball-ui .bu-next{display:grid;grid-template-columns:auto auto minmax(90px,12vw);align-items:center;gap:4px 10px;width:max-content;max-width:100%;margin:10px auto 0;font:italic 900 17px/1 Impact,sans-serif}
+.ball-ui .bu-next{display:grid;grid-template-columns:auto auto minmax(90px,12vw);align-items:center;gap:4px 10px;width:max-content;max-width:100%;margin:10px auto 0;font:italic 900 17px/1 'Barlow Condensed',sans-serif}
 .ball-ui .bu-next b{font:800 13px/1 'Barlow Condensed',sans-serif;letter-spacing:.18em;color:#d51d34}
 .ball-ui .bu-next span{display:flex;align-items:center;gap:6px}
 .ball-ui .bu-next em{font:800 12px/1 'Barlow Condensed',sans-serif;font-style:normal;letter-spacing:.08em;padding:2px 5px;color:#fff}

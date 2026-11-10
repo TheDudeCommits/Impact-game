@@ -26,7 +26,8 @@ export type ShowMode = 'intro' | 'close' | 'podium' | '';
  *   VS stamped on the seam - and its skip prompt with the vote;
  * - a SUPER SHOT's cut-in: the screen goes ink, a slanted panel slams in with the striker's bust (the HUD's own busts) and
  *   the shot's name, 1.2 s;
- * - the podium's accolades dropping in as manga panels.
+ * - the podium's accolades dropping in as manga panels;
+ * - a goal's held picture over the canvas at the net's furthest stretch (render/ball/GoalHold.ts).
  *
  * Pictures only: it never takes focus or the pointer. With reduced motion everything only fades; the VISUAL EFFECTS
  * level's Minimal leaves the cut-in to the HUD's banner.
@@ -40,6 +41,8 @@ export class BallShow {
   private readonly podium: HTMLElement;
   private titleKey = ''; private splashKey = ''; private podiumKey = ''; private skipText = '';
   private cutTimer = 0;
+  /** The goal's held picture, laid over the game's canvas while it holds (holdFrame). */
+  private held: HTMLCanvasElement | null = null;
   constructor(private readonly host: HTMLElement) {
     this.root = document.createElement('div');
     this.root.className = 'ball-show';
@@ -153,10 +156,28 @@ export class BallShow {
     this.restart(this.podium, 'bs-on');
   }
 
+  /** The goal's hold (render/ball/GoalHold.ts): the frame just drawn, kept on the screen over the game's
+   *  canvas - an exact copy, laid on it in the same place, under the HUD - until `null` lets the canvas show again. */
+  holdFrame(source: HTMLCanvasElement | null) {
+    if (!source) { if (this.held) { this.held.hidden = true; this.held.width = this.held.height = 1; } return; }
+    const parent = source.parentElement;
+    if (!parent) return;
+    let held = this.held;
+    if (!held) { held = this.held = document.createElement('canvas'); held.className = 'bs-held'; held.setAttribute('aria-hidden', 'true'); }
+    if (held.parentElement !== parent || held.previousElementSibling !== source) source.after(held);
+    held.width = source.width; held.height = source.height;
+    // (Fixed where the canvas is on the screen; the HUD after it in the page stays over both.)
+    const box = source.getBoundingClientRect();
+    Object.assign(held.style, {left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px`});
+    held.getContext('2d')?.drawImage(source, 0, 0);
+    held.hidden = false;
+  }
+
   private restart(el: HTMLElement, cls: string) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
   clear() {
     clearTimeout(this.cutTimer);
     for (const el of [this.title, this.splash, this.skip, this.cut, this.podium]) { el.hidden = true; el.innerHTML = ''; }
+    this.holdFrame(null);
     this.titleKey = this.splashKey = this.podiumKey = this.skipText = '';
     this.mode('');
   }

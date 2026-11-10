@@ -1,4 +1,4 @@
-import {BALL_ID, GOAL_RULES, SPIKE_RULES, otherTeam, type BallEvent, type BallModeId, type BallState, type BallTeam} from './model';
+import {BALL_ID, GOAL_RULES, SHOOT, SPIKE_RULES, otherTeam, type BallEvent, type BallModeId, type BallState, type BallTeam} from './model';
 import {stepBall, type BallContact} from './physics';
 import {DRILL_RIVAL, DrillRunner, arc, clearsNet, type DrillHost, type DrillId} from './drills';
 import {MOVES, jumpArc} from '../moves';
@@ -103,25 +103,12 @@ export interface LessonView {
   pops?: boolean;
 }
 /** When to press for a PERFECT STRIKE on a ball coming in (BallMatch PERFECT_STRIKE): the ball's closing speed times
- *  the blow's wind-up (its first contact) before it is this many metres off - the fighter's own lunge and reach, which
- *  differ more than any formula of them told (BallBrain's own timing missed a third of the windows). Measured on the
- *  lesson's own pass (PERFECT_PASS): the middle of each fighter's window, which is an
- *  eighth to a fifth of a second wide. A fighter missing has no window: a heavy that is no melee blow (a beam, a
- *  projectile) can never be one. */
-export const STRIKE_MEET: Readonly<Partial<Record<PlayerState['fighter'], number>>> = {
-  akaito: 3.60, shijima: 3.30, chohan: 3.95, aqrab: 3.20, yodaka: 3.30, ume: 3.60, lanthorn: 3.35, highsun: 3.40,
-  torsion: 3.75, kubiwa: 2.90, onigawara: 3.40, cardo: 3.55, minase: 3.60, aquilo: 3.55, psyche: 3.10, ovid: 4.20,
-  rotfalke: 3.50, bonsho: 4.20, murex: 3.55, kinu: 3.30, madake: 3.75, akayuri: 3.45, hagure: 3.50, hisame: 3.25,
-  svanhild: 3.25, mizuhiki: 3.65, shibuichi: 4.05, rakucho: 3.15, irbis: 3.50, shidare: 3.45, hinomoto: 3.35,
-  amagoi: 2.70, shakudo: 3.80, hikui: 3.70, tokan: 3.45, strappado: 3.80, unari: 3.55, barrow: 3.65, sashigane: 3.80,
-  gosu: 3.25, kusushi: 3.85, hakushi: 3.80, suzuran: 3.45, wataame: 3.80, bruin: 3.55, senko: 3.55, buna: 3.70,
-  oyashio: 3.55, adad: 3.40, tempo: 3.50, tancho: 3.65, bellows: 3.75, mikage: 3.65, 'full-beam': 3.05,
-  pyroclast: 3.05, ampere: 3.10, shanxiao: 3.20, kuzu: 3.80, shakugo: 3.60, strix: 3.40, basilissa: 5.90,
-  sorayomi: 3.30, kenzo: 4.70, nigo: 4.80, shirokane: 2.20, shiden: 1.90, kosho: 2.90, taisei: 4.65, gummy: 3.20,
-  konta: 3.20, ward: 4.10, setsu: 3.40, gorai: 3.85, haldor: 3.85, sorrel: 4.10, dorado: 4.55, shiun: 4.75,
-  magatsu: 3.85, vesper: 3.75, imago: 3.90, wuming: 4.75, jirenga: 4.25, jinlin: 3.65, gohaku: 4.20, sekka: 5.65,
-  tobari: 4.75, akagane: 4.30, rook: 4.25, gaku: 4.20,
-};
+ *  the blow's wind-up (its first contact) before it is this many metres off - the blow's step-in and reach. SHOOT's
+ *  quick strike (model.ts SHOOT) is the same blow for every fighter, so this is one number: the middle of the window
+ *  every fighter shares on the lesson's own pass (PERFECT_PASS: 1.90 to 3.63 m, twelve ticks wide, the same for all
+ *  hundred). (Each fighter's own heavy, its lunge and reach, would put it anywhere from 1.9 to 5.9 m, and a fighter
+ *  whose heavy is a beam or a projectile would have no PERFECT STRIKE on SHOOT at all.) */
+export const STRIKE_MEET = 2.75;
 /** The PERFECT STRIKE's pass: the person stands `from` of a half-length back from the goal they attack (halfway), the
  *  team-mate by its byline plays it back at `speed` m/s along the floor; across the pitch they stand at `x` of its
  *  half-width (the person's, the team-mate's). */
@@ -129,13 +116,15 @@ export const PERFECT_PASS = {from: 1, speed: 12, x: [-.08, .1]} as const;
 /** The cue's run-up: the bar fills over this long before the moment, s. */
 export const CUE_LEAD = .8;
 /** Where the ball is when SHOOT should be pressed for a PERFECT STRIKE, m (STRIKE_MEET). */
-export function pressAt(fighter: PlayerState['fighter'], closing: number): number {
-  return (STRIKE_MEET[fighter] ?? 3.3) + closing * (MOVES[fighter]?.heavy.contacts[0] ?? .45);
+export function pressAt(closing: number): number {
+  return STRIKE_MEET + closing * SHOOT.contact;
 }
-/** Whether a fighter's SHOOT (the heavy) has a PERFECT STRIKE window on the lesson's pass at all (STRIKE_MEET). */
-export const strikesPerfect = (fighter: PlayerState['fighter']) => STRIKE_MEET[fighter] !== undefined;
-/** A fighter whose heavy launches (strike.ts: a ball at rest is popped up, not shot). */
-export const launches = (fighter: PlayerState['fighter']) => MOVES[fighter]?.heavy.outcome === 'launch' || MOVES[fighter]?.heavy.outcome === 'hop';
+/** Whether a fighter's SHOOT has a PERFECT STRIKE window on the lesson's pass at all. Every fighter's
+ *  (the quick strike is a melee blow whoever throws it), so no step asks for a first-time goal instead (`firstTime`). */
+export const strikesPerfect = (_fighter: PlayerState['fighter']) => true;
+/** A fighter whose SHOOT pops a ball at rest up instead of shooting it. Nobody's (the quick strike drives
+ *  it, and a heavy wound up on the floor shoots: strike.ts), so SHOOT and SCORE are the same step for everyone (`pops`). */
+export const launches = (_fighter: PlayerState['fighter']) => false;
 /** The HEADER's jump: the cross comes in at `height` m (over a standing body, under a jumping one's head), and a jump
  *  leaving `lead` s before it arrives meets it on the way up (measured: from 0.18 s to 0.02 s before, on Taisei's and
  *  Aqrab's jumps). */
@@ -492,7 +481,7 @@ export class BallLesson {
   private strikeCue(host: LessonHost, me: {id: string; x: number; z: number}, d: number) {
     const v = this.view, b = host.ball, body = host.stateOf(me.id), closing = d > .1 ? ((b.vx * (me.x - b.x)) + (b.vz * (me.z - b.z))) / d : 0;
     if (this.struck || !body || closing <= 3) { v.cue = null; return; }
-    const eta = (d - pressAt(body.fighter, closing)) / closing;
+    const eta = (d - pressAt(closing)) / closing;
     v.cue = Math.round(Math.max(0, Math.min(1.2, 1 - eta / CUE_LEAD)) * 100) / 100;
     if (host.person()?.swinging && eta > .12) this.early = true;
   }

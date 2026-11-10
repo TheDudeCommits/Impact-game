@@ -23,8 +23,10 @@ import { ballHintsShown, coachOn, markBallHint } from '../modes/prefs';
  *    net).
  *  - Both: SCUFFED (your own strike just came out of a flurry of presses and was mis-hit: BallMatch MASHED) -
  *    one press, on time.
+ *  - Goal Rush: TAP TO SHOOT · HOLD TO CHARGE (the ball at your feet with the goal ahead and nobody on
+ *    you: the moment SHOOT's two ways matter - model.ts SHOOT).
  */
-export type BallHintId = 'gr-tackle' | 'gr-knock' | 'gr-boost' | 'gr-aerial' | 'gr-save' | 'gr-scuff' | 'ss-spike' | 'ss-dig' | 'ss-block' | 'ss-scuff';
+export type BallHintId = 'gr-tackle' | 'gr-knock' | 'gr-boost' | 'gr-aerial' | 'gr-save' | 'gr-scuff' | 'gr-shoot' | 'ss-spike' | 'ss-dig' | 'ss-block' | 'ss-scuff';
 /** How long a hint stays up (ms) unless it is done sooner; the breath after one before another may come; the most a
  *  match shows; the quiet start of a match (the coach's own opening line). */
 export const HINT_MS = 4500, HINT_GAP_MS = 12000, HINTS_A_MATCH = 3, HINT_QUIET_S = 6;
@@ -84,6 +86,15 @@ const scuffed = () => '<span class="ux-prompt"><b>SCUFFED</b><small>MASHING MIS-
 export const HINTS: readonly Hint[] = [
   // ─── Goal Rush ───
   { id: 'gr-scuff', mode: 'goal-rush', fire: c => !!c.scuffed && !c.fight, draw: scuffed },
+  // (SHOOT's two ways, said once with the ball at your feet, the other side's goal ahead and room to wind up.)
+  { id: 'gr-shoot', mode: 'goal-rush',
+    fire: c => {
+      const b = c.ball, gz = goalZ(c.team === 'red' ? 'blue' : 'red');
+      if (c.fight || !c.me.grounded || b.y > 1.6 || Math.hypot(b.vx, b.vz) > 6 || flat(c.me, b) > 3.2 || Math.abs(gz - b.z) > 22) return false;
+      return !c.view.seats.some(s => { const q = s.team !== c.team && s.out === undefined ? c.at(s.id) : undefined; return !!q?.alive && flat(q, c.me) < 6; });
+    },
+    done: c => c.mine('strike'),
+    draw: c => prompt('heavy', 'TAP TO SHOOT', keys(c, { detail: 'HOLD TO CHARGE' })) },
   { id: 'gr-tackle', mode: 'goal-rush',
     fire: c => { if (c.fight || !hasStances(c.view)) return false; const q = carrier(c); return !!q && flat(q, c.me) > 2.2 && flat(q, c.me) < 10; },
     done: c => c.fight,

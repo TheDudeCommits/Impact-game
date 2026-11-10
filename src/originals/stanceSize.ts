@@ -93,6 +93,14 @@ const BASE: Partial<Record<FighterId, number>> = {
   // Gaku's stance is the library's relaxed breath, held at the scale his stance before gave him (1.00317), stood on the same floor
   // and centred where the old one was, so he is drawn at his own size and place. (His match idle is gaku-idle1.glb's either way.)
   gaku: 1.00317,            // Gaku
+  // Akaito's stance is the library's sword stance, held at the scale his stance before gave him (1.10183), stood on the same floor
+  // and centred where the old one was, so he is drawn at his own size and place.
+  akaito: 1.10183,          // Akaito
+  // Barrow's stance is the heavy style's authored stance (Stance_Heavy), held at the scale his stance before gave him (measured off
+  // the new, crouched one he would be drawn 15.1% larger), and every clip moved so the new stance is centred where the old one was:
+  // he is drawn at his own 2.3 m and place, his model unchanged.
+  barrow: 0.96376,          // Barrow
+  kenzo: 1.05189,           // Kenzo (his stance drawn at the size his stance before gave him; his model unchanged)
 };
 /** The awakened bodies whose own stance was swapped. */
 const FORM: Partial<Record<FighterId, number>> = {
@@ -104,6 +112,7 @@ const FORM: Partial<Record<FighterId, number>> = {
   // aaa-a2 (6 November): awakened bodies whose head and feet were framed, held at the size before (the same rule as above).
   hikui: 1.0419,            // Hikui's (framed +2.3%: his heels, further from Impact's Hikui)
   gorai: 1.27096,          // Gorai's (framed +4.0%: neither near Impact's hybrid Gorai, 34% shorter)
+  kenzo: 1.0905,           // Kenzo's RAKSHASA (the oni form's stance drawn at the size its stance before gave it; the model unchanged)
 };
 
 /** The model scale Fighter gives the original's own body (not a worn outfit, not a companion), or undefined to measure it. */

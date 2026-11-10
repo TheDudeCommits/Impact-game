@@ -145,3 +145,8 @@
   .bs-cut.bs-on{animation:bs-fade-in .15s both,bs-fade-out .25s .9s forwards}
   .bs-flash{display:none}
 }
+
+/* The goal's hold (render/ball/GoalHold.ts): the held picture, an exact copy of the frame laid over the
+   game's canvas while the goal's net holds at its furthest stretch. */
+.bs-held{position:fixed;pointer-events:none;display:block}
+.bs-held[hidden]{display:none}

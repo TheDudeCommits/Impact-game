@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type {GameSnapshot, FighterId} from '../../game/types';
+import type {GameSnapshot, FighterId, PlayerState} from '../../game/types';
 import {FIGHTERS} from '../../config';
 import {BALL_STAGE, GOAL_RULES, SPIKE_RULES, ballOf, type BallEvent, type BallTeam, type BallView} from '../../game/ball/model';
 import {BALL_ARENAS, MODE_ARENAS} from '../../game/ball/arenas';
@@ -10,8 +10,12 @@ import {StageKit} from '../stages/StageKit';
 import {VFX} from '../vfxLevel';
 import {VfxKit} from '../vfx/VfxKit';
 import {MangaScreens} from './MangaScreens';
-import {goalNetHit, goalNetPower} from './hype';
+import {forgetGoal, goalNetHit, goalNetPower} from './hype';
 import {introLens} from './ceremonyShots';
+import {SoundWords, inkShown} from './SoundWords';
+import {PitchCount} from './PitchCount';
+import {GoalHold} from './GoalHold';
+import {GoalHuddle} from './GoalHuddle';
 import type {BallShow, ShowMode} from '../../ui/ball/BallShow';
 
 /** What the ceremony needs of the page (main.ts): a fighter's drawn body, the frame's INK FLASH, and the beats' sounds. */
@@ -59,6 +63,10 @@ export const soloMatch = (view: BallView | null | undefined) => !!view && view.s
  * - The podium: the generated podium and trophy under the winners the room stood on it (BallMatch.finish), the
  *   accolades dropping in, and an orbit round it before the results.
  * - FREE PLAY in Sky Spike: the ball machine where its balls come from, recoiling as it fires.
+ * - A goal holds its picture for a breath at the net's furthest stretch (GoalHold) and the
+ *   scorer's side runs in to them through the sequence (GoalHuddle, drawn on the page only); and two layers of drawn
+ *   lettering of their own, driven from here: the sound words at the biggest hits (SoundWords) and Goal Rush's last ten
+ *   seconds and Sky Spike's MATCH POINT on the floor (PitchCount).
  *
  * Not in a couch split screen (two lenses) nor FREE PLAY, except the machine. Reduced motion holds every shot still (cuts,
  * no moves); the VISUAL EFFECTS level dims the spotlights and drops the cut-in on Minimal. Nothing allocates in a frame
@@ -91,6 +99,13 @@ export class BallCeremony {
   private readonly kits = new Map<string, StageKit>(); private loading = new Set<string>();
   private podiumLayout: PodiumLayout | null = null; private podiumOrder: string[] = []; private podiumKey = '';
   private machineKick = -Infinity; private machineHeld = true; private machineStage = '';
+  /** Two layers of their own: the sound words stamped at the biggest hits and the floor's numerals and MATCH POINT.
+   *  Each its own effect, driven from here with the presented view. */
+  readonly words: SoundWords; readonly count: PitchCount;
+  /** The goal: its hold at the net's stretch, and the scorer's side running in to them. */
+  readonly hold: GoalHold; private readonly huddle = new GoalHuddle();
+  /** For the checks (localhost): the two lettering layers left undrawn, to measure what they cost a frame. */
+  hideLettering = false;
 
   constructor(scene: THREE.Scene, private readonly ui: BallShow, private readonly hooks: CeremonyHooks) {
     this.bodiesOf = hooks.body;
@@ -115,9 +130,13 @@ export class BallCeremony {
     pools.setAttribute('position', this.shaftPositions); pools.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); pools.setIndex(index);
     const discs = new THREE.Mesh(pools, this.spotMaterial); discs.frustumCulled = false; discs.renderOrder = 3; this.spots.add(discs);
     this.kit = VfxKit.for(scene);
+    this.words = new SoundWords(scene, () => this.kit.quality); this.count = new PitchCount(scene);
+    this.hold = new GoalHold(ui);
     this.root.add(this.podium, this.trophy, this.machine, this.spots);
     scene.add(this.root);
     if (typeof window === 'object') { window.addEventListener('keydown', this.onKey); window.addEventListener('pointerdown', this.onTap); }
+    // (Localhost only: the checks stage a moment through it.)
+    if (typeof location === 'object' && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) (window as unknown as {__ballCeremony?: BallCeremony}).__ballCeremony = this;
   }
 
   /** What holds the lens now (main.ts gives it the camera after the match's own has placed it). */
@@ -144,6 +163,9 @@ export class BallCeremony {
     if (!view || !snapshot) { if (this.lastShow || this.root.visible) this.clear(); return null; }
     this.root.visible = true;
     const now = snapshot.serverTime, key = `${view.startedAt}:${view.round}:${view.mode}`;
+    // (Another match - its start is its own - never inherits the last one's goal, hype.ts forgetGoal, nor its
+    // hold.)
+    if (!this.matchKey.startsWith(`${view.startedAt}:`)) { this.hold.finish(); forgetGoal(); }
     if (key !== this.matchKey || now < this.seenAt - 1) { this.matchKey = key; this.seen = 0; this.sequence = null; this.introVoted = false; this.closeVoted = ''; this.beats.clear(); this.podiumKey = ''; }
     this.seenAt = now; this.serverTime = now;
     if (!view.ball.held) this.flight.set(view.ball.vx, view.ball.vy, view.ball.vz);
@@ -159,6 +181,8 @@ export class BallCeremony {
     // either forward.)
     if (this.sequence && view.phase === 'scored') this.sequence.until = view.replay && view.replay.at > this.sequence.at ? view.replay.at : view.phaseUntil;
     let show: CeremonyShow = null;
+    // (The goal's hold, on the page's clock.)
+    this.hold.frame(performance.now() / 1000);
     // (The short intro is the full one's tail - SHORT_INTRO - so it is timed as the full one's last seconds.)
     const intro = one && view.phase === 'countdown' && view.intro && view.startsAt !== null && !view.intro.skipped ? (view.intro.short ? INTRO.seconds : view.intro.seconds) - (view.startsAt - now) : -1;
     if (intro >= 0) show = 'intro';
@@ -166,6 +190,9 @@ export class BallCeremony {
     else if (one && this.sequence && view.phase === 'scored' && now >= this.sequence.at + CLOSE_FROM && now < this.sequence.until && !view.practice) show = 'close';
     if (show !== this.lastShow) this.change(show);
     this.show = show;
+    // The scorer's side runs in until the replay or the kickoff (the room's bodies are drawn again from then).
+    const replaying = !!view.replay && now >= view.replay.at && now < view.replay.until;
+    if (this.huddle.active && (view.phase !== 'scored' || replaying || !this.sequence)) this.huddle.stop();
     if (show === 'intro') this.intro(view, selfId, intro);
     else {
       this.ui.introTitle(null); this.ui.introSplash(null, selfId);
@@ -174,6 +201,9 @@ export class BallCeremony {
     }
     this.props(view, snapshot, dt);
     this.spotlights(view, snapshot, dt);
+    this.words.update(view, now, this.hideLettering);
+    // (The floor's mark is the match's, not a ceremony's: none while one holds the lens.)
+    this.count.update(view, dt, !!show || this.hideLettering);
     this.bars += ((show === 'intro' ? intro < INTRO.splash ? 1 : 0 : show === 'close' ? .65 : show === 'podium' ? .45 : 0) - this.bars) * Math.min(1, dt * 7);
     this.pollPad();
     return show;
@@ -217,7 +247,9 @@ export class BallCeremony {
       const own = view.seats.find(s => s.id === selfId)?.team;
       const name = FIGHTERS[seat.fighter].name.toUpperCase();
       this.ui.cutIn(seat.fighter, superShotName(seat.fighter), `${name} · SUPER SHOT`, seat.team, !own || own === seat.team, !!signatureShot(seat.fighter));
-      this.hooks.inkFlash(.8);
+      // (Its sound word, stamped after this, keeps to the side the cut-in leaves clear; none is shown on Minimal.)
+      this.words.superSide = VFX.level === 'minimal' ? 0 : !own || own === seat.team ? 1 : -1;
+      this.hooks.inkFlash(.8); inkShown(.8);
       return;
     }
     const goal = e.kind === 'goal', point = (e.kind === 'kill' || e.kind === 'ace') && !!view.replay?.ceremony;
@@ -225,13 +257,27 @@ export class BallCeremony {
     // The net, where the ball went in: along its last flight from where it crossed the line, to the goal's back, sides
     // or roof, bulging as far as the shot was hard.
     if (e.kind !== 'kill' && e.kind !== 'ace') this.netHit(e);
+    // The hold at the net's stretch (a single lens's: GoalHold).
+    if (e.kind !== 'kill' && e.kind !== 'ace' && one) this.hold.goal(performance.now() / 1000);
     if (e.kind === 'own-goal') return;
     // (Until the replay, or the kickoff when it has none: update keeps it so.)
     const until = view.replay && view.replay.at > e.at ? view.replay.at : view.phase === 'scored' ? view.phaseUntil : e.at + (goal ? REPLAY.goalCeremony : REPLAY.ceremony);
     this.sequence = {at: e.at, scorer: e.actorId, team: e.team ?? 'red', until, x: e.x, y: e.y, z: e.z, key: `${e.id}`};
     const body = e.actorId ? this.bodiesOf(e.actorId) : undefined;
     if (body && one) MangaScreens.focus(body, until - e.at + .4, 1.4);
+    // The scorer's side runs in to them (Goal Rush: a Sky Spike point keeps its court).
+    const scorer = goal && one && e.actorId ? this.player(e.actorId) : undefined;
+    if (scorer) this.huddle.begin(scorer, e.team ?? 'red', this.snapshotPlayers ?? [], view.seats, performance.now() / 1000);
   }
+
+  /** A body as the page draws it this frame (main.ts, for every body): the scorer's side runs in through the goal's
+   *  sequence, everyone else as given. */
+  posed(id: string, state: PlayerState): PlayerState {
+    return this.huddle.active ? this.huddle.posed(id, state, performance.now() / 1000) : state;
+  }
+  /** Just after the page drew the frame, before it yields (main.ts): the canvas still holds the frame, to keep as the
+   *  goal's held picture. */
+  afterDraw(canvas: HTMLCanvasElement) { this.hold.afterDraw(canvas); }
 
   private netHit(e: BallEvent) {
     const R = GOAL_RULES, sz = Math.sign(e.z) || 1, v = this.flight, back = sz * (R.halfZ + R.goalDepth);
@@ -283,7 +329,8 @@ export class BallCeremony {
     // with nobody else's body across it.
     const [wx, wz] = view.mode === 'goal-rush' ? [GOAL_RULES.halfX - .6, GOAL_RULES.halfZ + GOAL_RULES.goalDepth - .4] : [SPIKE_RULES.halfX - .6, SPIKE_RULES.halfZ - .6];
     if (this.shotIndex !== -3) {
-      const far = 3.6 * size, others = (this.snapshotPlayers ?? []).filter(q => q.id !== s.scorer && q.alive);
+      // (The scorer's side running in is placed for the lens once it is chosen, so only the others count.)
+      const far = 3.6 * size, others = (this.snapshotPlayers ?? []).filter(q => q.id !== s.scorer && q.alive && !this.huddle.spotOf(q.id));
       const clear = (a: number) => {
         const ex = p.x + Math.sin(a) * far, ez = p.z + Math.cos(a) * far;
         if (Math.abs(ex) >= wx || Math.abs(ez) >= wz) return false;
@@ -295,6 +342,8 @@ export class BallCeremony {
         return true;
       };
       this.closeTurn = CLOSE_TURNS.find(k => clear(yaw + k - .25) && clear(yaw + k + .25)) ?? CLOSE_TURNS.find(k => clear(yaw + k)) ?? 0;
+      // The lens looks at the scorer from yaw + turn: their side's places round them, beyond.
+      this.huddle.aim(yaw + this.closeTurn + Math.PI);
     }
     const a = yaw + this.closeTurn + swing;
     this.eye.set(p.x + Math.sin(a) * d, p.y + 1.55 * size, p.z + Math.cos(a) * d);
@@ -437,17 +486,22 @@ export class BallCeremony {
   clear() {
     this.show = this.lastShow = null; this.view = null; this.sequence = null; this.bars = 0; this.seen = 0; this.matchKey = ''; this.podiumKey = '';
     this.podium.visible = this.trophy.visible = this.machine.visible = this.spots.visible = false; this.root.visible = false;
-    this.spotMaterial.uniforms.uLevel.value = 0; goalNetPower.value = 0;
+    // (The hold let go before the goal is put away: letting go sets the net's clock running again.)
+    this.hold.finish(); this.huddle.stop(); this.words.clear(); this.count.clear();
+    this.spotMaterial.uniforms.uLevel.value = 0; forgetGoal();
     MangaScreens.focus(null, 0);
     this.ui.clear();
   }
   /** For the checks: what shows, and where the lens is told to stand. */
-  evidence() { return {show: this.show, shot: this.shotIndex, eye: this.eye.toArray(), look: this.look.toArray(), podium: this.podiumLayout, sequence: this.sequence ? {...this.sequence} : null}; }
+  evidence() { return {show: this.show, shot: this.shotIndex, eye: this.eye.toArray(), look: this.look.toArray(), podium: this.podiumLayout, sequence: this.sequence ? {...this.sequence} : null,
+    words: {stamped: {...this.words.stampedCount}, last: this.words.last, up: this.words.mesh.visible}, floor: this.count.shown, floorUp: this.count.mesh.visible,
+    hold: {...this.hold.last, holding: this.hold.holding}, huddle: this.huddle.active}; }
   dispose() {
     this.clear();
     if (typeof window === 'object') { window.removeEventListener('keydown', this.onKey); window.removeEventListener('pointerdown', this.onTap); }
     for (const kit of this.kits.values()) kit.dispose();
     this.spotMaterial.dispose();
+    this.words.dispose(); this.count.dispose();
     (this.spots.children[0] as THREE.Mesh | undefined)?.geometry.dispose();
   }
 }

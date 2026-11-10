@@ -1,7 +1,4 @@
 {
- "tests/airStrings.test.ts": [
-  "kenzo: announces its air string by the names of what it draws"
- ],
  "tests/amagoiSharedIntegration.test.ts": [
   "air stages retain their individual authored receiver/repulsion clips"
  ],
@@ -23,8 +20,6 @@
   "names only files that exist, so the package step cannot fail on one"
  ],
  "tests/footContact.test.ts": [
-  "cycles kenzo's legs into a lunge and leaves a standing swing alone",
-  "kenzo does not skate at a run",
   "measures the whole roster",
   "reports a plausible number of steps for the ground covered"
  ],
@@ -46,9 +41,6 @@
  "tests/originals-lock-strikes.test.ts": [
   "are every shown original's own, written from the files its body loads now",
   "find their clip on the donor's take pack's rig, in a small file with no body in it"
- ],
- "tests/originals-lucy-onset.test.ts": [
-  "Idle B hat: no leg joint shimmers from key to key"
  ],
  "tests/originals-places-r8.test.ts": [
   "keeps the earlier model of each out of the package, unless what still loads it ships"
@@ -78,9 +70,6 @@
   "draw only their own bodies, clips, idles and portraits, and every one of them ships",
   "key every joint the transfer moves in every clip, so the renderer's layers never pile up on a stale pose"
  ],
- "tests/rushClips.test.ts": [
-  "kenzo: the rush file binds onto the body, names its stages, and has their contacts"
- ],
  "tests/rushFlow.test.ts": [
   "goes from stage to stage without a tick of idle, hit or miss, at any mashing rate, for all sixteen"
  ],
@@ -98,10 +87,6 @@
  ],
  "tests/tokanSharedIntegration.test.ts": [
   "plays its own DEAD OF WINTER entry with moving hands and no body swap"
- ],
- "tests/victory.test.ts": [
-  "barrow has something to celebrate with",
-  "kenzo has something to celebrate with"
  ],
  "tests/armoryRetention.test.ts": [
   "lets go of the types a room does not draw - pool, scene objects, buffers - and keeps the ones it does"

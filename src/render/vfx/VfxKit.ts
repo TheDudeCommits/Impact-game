@@ -174,6 +174,10 @@ export class VfxKit {
   private pulseCursor = 0;
   private anchors: Anchor[] = Array.from({ length: ANCHORS }, () => ({ body: null, from: new THREE.Vector3(), until: -1e9 }));
   private anchorCursor = 0;
+  /** The clock the kit was last run on (`update`'s `time`, the match clock its sprites are
+   *  born on), for an effect that has no such clock of its own to hand - the ball's field draws from snapshots a replay
+   *  rewinds (render/ball/BallField.ts). */
+  now = 0;
   /** Round 49: when an impact frame's star last filled the frame (see SZ_SCREEN.big). */
   private screenAt = -1e9;
   private trails: Trail[] = Array.from({ length: 6 }, () => ({ body: null, steel: false, born: -1e9, until: -1e9, last: new THREE.Vector3(), seen: false }));
@@ -233,6 +237,7 @@ export class VfxKit {
 
   /** Run once a frame, after every effect has asked for its light. */
   update(time: number, dt: number) {
+    this.now = time;
     for (let i = 1; i < ANCHORS; i++) {
       const a = this.anchors[i];
       if (!a.body) continue;

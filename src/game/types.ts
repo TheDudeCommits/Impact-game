@@ -85,6 +85,12 @@ export interface PlayerState extends Vec3 {
   /** The ball rooms only (AimAssist.sport): the fighter is boosting - a dash run on at the boost's speed, spending
    *  stamina, for as long as the stick holds - for the page's boost trail. Absent everywhere else. */
   boost?: boolean;
+  /** The ball rooms only (SportFeel.strike): the heavy under way is SHOOT - 'tap', the sport's quick
+   *  strike, or 'charge', the fighter's own move wound up with the key held - and for a charge how far it is wound
+   *  (0-1: the share of the wind-up the key has stayed down), for the page's swing, its aim line and its meter. Absent
+   *  everywhere else, and for a FIGHT-stance heavy. */
+  strike?: 'tap' | 'charge';
+  charge?: number;
   /** Server time the transformation ends, for the meter countdown. */
   awakenedUntil?: number;
   timeStopped?: boolean;
@@ -148,6 +154,9 @@ export interface PlayerInput {
   jump?: boolean;
   /** Still holding the jump: a jump let go of on the way up is cut short. */
   jumpHeld?: boolean;
+  /** Still holding the heavy: read only where a room asks (the ball rooms' SHOOT, SportFeel.strike - a tap is the
+   *  quick strike, a key held on winds up the fighter's own move). Everywhere else it is ignored. */
+  heavyHeld?: boolean;
   dash?: boolean;
   guard?: boolean;
   /** Spend a full meter on the transformation instead of on an ultimate. */

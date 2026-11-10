@@ -25,19 +25,24 @@ function match() {
 }
 /** A ball rolled at red-1 (standing at z -6, facing the far goal) from 16 m out at `speed` m/s, and a heavy pressed
  *  `early` seconds before the moment that lands its blow as the ball reaches 2.3 m - the blow's lunge carrying the body
- *  part of the way at it first, as the bots time it (BallBrain PRESSURE). The strike events after. */
+ *  part of the way at it first, as the bots time it (BallBrain PRESSURE). The strike events after.
+ *  (SHOOT held on is the fighter's own heavy wound up - the blow these tests time - so the key stays down;
+ *  a tap is the quick strike, whose own PERFECT STRIKE shoot.test.ts times.) */
 function meet(early: number, speed = 12, whiffFirst = false) {
   const m = match();
   m.sim.place('red-1', { x: 0, y: 0, z: -6 }, 0);
   const b = m.ball;
   b.x = 0; b.y = GOAL_RULES.ballRadius; b.z = 10; b.vx = 0; b.vy = 0; b.vz = -speed; b.heat = 0; b.lastId = 'blue-1'; b.lastTeam = 'blue';
-  // (A masher's swing at nothing first: a light pressed with the ball far off.)
-  if (whiffFirst) press(m, 'red-1', { attack: 'light', yaw: 0 });
   const heavy = MOVES.gorai.heavy, lands = heavy.contacts[0], lunge = .6 * Math.min(3, (heavy.lunge ?? 3.2) * (lands - (heavy.lungeDelay ?? 0)));
-  let pressed = false;
+  let pressed = false, whiffed = !whiffFirst;
   for (let i = 0; i < 160; i++) {
     const p = m.sim.actors.get('red-1')!.state, d = Math.hypot(b.x - p.x, b.y - (p.y + 1), b.z - p.z), closing = -b.vz;
-    if (!pressed && (d - 2.3 - lunge) / Math.max(1, closing) <= lands + early) { press(m, 'red-1', { attack: 'heavy', yaw: 0 }); pressed = true; }
+    // (A masher's swing at nothing first: a light pressed with the ball still far off, over just before the heavy is
+    // pressed. Until then it was pressed as the ball set off, and the heavy after it was the string's
+    // ender, landing early; SHOOT throws no ender, so the swing at nothing comes nearer the press to be "a moment before".)
+    if (!whiffed && (d - 2.3 - lunge) / Math.max(1, closing) <= lands + early + .45) { press(m, 'red-1', { attack: 'light', yaw: 0 }); whiffed = true; }
+    if (!pressed && (d - 2.3 - lunge) / Math.max(1, closing) <= lands + early) { press(m, 'red-1', { attack: 'heavy', heavyHeld: true, yaw: 0 }); pressed = true; }
+    else if (pressed) press(m, 'red-1', { heavyHeld: true, yaw: 0 });
     m.step(1 / 60);
   }
   return { m, strikes: m.view.events.filter(e => e.kind === 'strike' && e.actorId === 'red-1') };
@@ -54,8 +59,8 @@ describe("Goal Rush's PERFECT STRIKE", () => {
     const still = match();
     still.sim.place('red-1', { x: 0, y: 0, z: -6 }, 0);
     Object.assign(still.ball, { x: 0, y: GOAL_RULES.ballRadius, z: -4, vx: 0, vy: 0, vz: 0, heat: 0 });
-    press(still, 'red-1', { attack: 'heavy', yaw: 0 });
-    steps(still, 1);
+    press(still, 'red-1', { attack: 'heavy', heavyHeld: true, yaw: 0 });
+    for (let i = 0; i < 60; i++) { press(still, 'red-1', { heavyHeld: true, yaw: 0 }); still.step(1 / 60); }
     const plain = still.view.events.filter(e => e.kind === 'strike' && e.actorId === 'red-1');
     expect(plain.length).toBe(1);
     expect(plain[0].perfect).toBeUndefined();

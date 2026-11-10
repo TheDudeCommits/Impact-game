@@ -200,7 +200,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     moves: ['Fang Crossing', 'Mirage Draw', 'Thousand-Mile Eagle', 'Dust Sea Sundered'],
     shortMoves: ['FANG CROSSING', 'MIRAGE DRAW', 'THOUSAND-MILE EAGLE', 'DUST SEA SUNDERED'],
     awakening: 'RAKSHASA',
-    coat: { thigh: .13, shin: .14 }, model: F + 'kenzo-tr1.glb', extraModels: [F + 'kenzo-enders1.glb', F + 'kenzo-enders2.glb'],
+    coat: { thigh: .13, shin: .14 }, model: F + 'kenzo-tr1.glb', rushModel: F + 'kenzo-rush1.glb', extraModels: [F + 'kenzo-enders1.glb', F + 'kenzo-enders2.glb'],
     formModel: F + 'kenzo-awakened-tr1.glb',
     portrait: F + 'kenzo-portrait.png', idleModel: F + 'kenzo-idleb1.glb',
     names: {
