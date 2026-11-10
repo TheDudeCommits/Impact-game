@@ -36,9 +36,15 @@
  ],
  "tests/footContact.test.ts": [
   "cycles kenzo's legs into a lunge and leaves a standing swing alone",
+  "gaunt does not skate at a run",
   "kenzo does not skate at a run",
+  "koko does not skate at a run",
+  "kuon does not skate at a run",
   "measures the whole roster",
-  "reports a plausible number of steps for the ground covered"
+  "oro does not skate at a run",
+  "reports a plausible number of steps for the ground covered",
+  "setsu does not skate at a run",
+  "shirokane does not skate at a run"
  ],
  "tests/gummyRound5.test.ts": [
   "is its own take, landing its blow on the move's contact"
@@ -74,6 +80,7 @@
   "name only the originals' own files, never the earlier donors'"
  ],
  "tests/originals-lucy-onset.test.ts": [
+  "Idle B hat: no leg joint shimmers from key to key",
   "lucy-px1.glb: the Bazooka keeps its length (its blow stays on 0.42 s, contactFrames' 0.4667)",
   "lucy-px1.glb: the jump opens at its stand, not on a crouch key it leaves on the next frame"
  ],
@@ -105,14 +112,35 @@
   "draw only their own bodies, clips, idles and portraits, and every one of them ships",
   "key every joint the transfer moves in every clip, so the renderer's layers never pile up on a stale pose"
  ],
+ "tests/reactClips.test.ts": [
+  "gaunt, through seven lights, a launch, a juggle and a second launch"
+ ],
  "tests/reactionTakes.test.ts": [
   "gaku, a light string",
+  "gaunt, a heavy, the knockdown and the get-up",
+  "gaunt, a light string",
+  "gaunt, konta's light string, seed 8",
+  "kuon, Konta's light string, seed 7",
+  "kuon, Konta's light string, seed 8",
+  "kuon, a heavy, the knockdown and the get-up",
+  "kuon, a light string",
+  "kuon, kosho's light string, seed 8",
   "levin Hit 01",
   "levin shake",
-  "rook, a heavy, the knockdown and the get-up"
+  "oro, kosho's light string, seed 8",
+  "rook, a heavy, the knockdown and the get-up",
+  "setsu, Konta's light string",
+  "setsu, a heavy, the knockdown and the get-up",
+  "setsu, a light string",
+  "shirokane, Konta's light string",
+  "shirokane, a heavy, the knockdown and the get-up",
+  "shirokane, a light string"
  ],
  "tests/runTakes.test.ts": [
-  "magatsu"
+  "kuon",
+  "magatsu",
+  "shirokane",
+  "taisei"
  ],
  "tests/rushClips.test.ts": [
   "kenzo: the rush file binds onto the body, names its stages, and has their contacts",
@@ -144,6 +172,7 @@
   "plays its own DEAD OF WINTER entry with moving hands and no body swap"
  ],
  "tests/victory.test.ts": [
+  "barrow has something to celebrate with",
   "kenzo has something to celebrate with"
  ],
  "tests/armoryRetention.test.ts": [

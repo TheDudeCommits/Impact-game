@@ -241,6 +241,18 @@
 .mode-sheet.ms-select .ms-learn small{font:800 calc(13 * var(--u))/1.2 'Barlow Condensed',sans-serif;letter-spacing:.08em;color:#4a4a52}
 .mode-sheet.ms-select .ms-learn em{margin-left:auto;flex:none;font:italic 900 calc(15 * var(--u))/1 'Barlow Condensed',sans-serif;letter-spacing:.06em;color:#1f8a4c}
 .mode-sheet.ms-select .ms-learn:hover,.mode-sheet.ms-select .ms-learn:focus-visible{outline:3px solid var(--ms-red);outline-offset:2px}
+/* A ball mode's first match offers LEARN TO PLAY first (ModeSheet.offerLearn) - a slab over the
+   sheet's middle, in HOW TO PLAY's ink: ▶ LEARN TO PLAY · 60 s, or JUST PLAY. */
+.mode-sheet.ms-select .ms-offer{position:absolute;z-index:6;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:calc(10 * var(--u));width:min(calc(620 * var(--u)),calc(100% - 32px));padding:calc(24 * var(--u)) calc(28 * var(--u)) calc(26 * var(--u));background:rgba(10,12,21,.97);color:#fff;box-shadow:0 0 0 3px #fff,calc(12 * var(--u)) calc(12 * var(--u)) 0 3px var(--ms-red)}
+.mode-sheet.ms-select .ms-offer small{font:800 calc(14 * var(--u))/1 'Barlow Condensed',sans-serif;letter-spacing:.14em;color:var(--ms-ice)}
+.mode-sheet.ms-select .ms-offer b{font:italic 900 calc(40 * var(--u))/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.01em}
+.mode-sheet.ms-select .ms-offer p{margin:0;font:600 calc(18 * var(--u))/1.35 Barlow,sans-serif;color:#d9dbe4}
+.mode-sheet.ms-select .ms-offer div{display:flex;flex-wrap:wrap;align-items:center;gap:calc(18 * var(--u));margin-top:calc(8 * var(--u))}
+.mode-sheet.ms-select .ms-offer button{min-height:44px;border:0;border-radius:0;cursor:pointer;font:italic 900 calc(24 * var(--u))/1 'Barlow Condensed',Impact,sans-serif!important;letter-spacing:.03em}
+.mode-sheet.ms-select .ms-offer .ms-offer-go{padding:calc(12 * var(--u)) calc(20 * var(--u));background:#fff;color:var(--ms-ink)!important;box-shadow:calc(6 * var(--u)) calc(6 * var(--u)) 0 var(--ms-red)}
+.mode-sheet.ms-select .ms-offer .ms-offer-go i{font-style:normal;color:var(--ms-red)}
+.mode-sheet.ms-select .ms-offer [data-ms-offer="play"]{padding:calc(8 * var(--u)) 2px;background:none;color:#fff!important;border-bottom:2px solid currentColor}
+.mode-sheet.ms-select .ms-offer button:hover,.mode-sheet.ms-select .ms-offer button:focus-visible{outline:3px solid var(--ms-red);outline-offset:3px}
 .mode-sheet.ms-select .ms-rules h4{display:flex;align-items:baseline;gap:calc(12 * var(--u));margin:calc(18 * var(--u)) 0 calc(10 * var(--u));padding-bottom:calc(6 * var(--u));border-bottom:1px solid rgba(255,255,255,.22);font:400 calc(16 * var(--u))/1 Electroharmonix,Impact,sans-serif;letter-spacing:.14em;color:var(--ms-ice)}
 .mode-sheet.ms-select .ms-rules h4 .ms-link{margin-left:auto}
 .mode-sheet.ms-select .ms-win{margin:0 0 calc(10 * var(--u));font:600 calc(19 * var(--u))/1.35 Barlow,sans-serif}

@@ -104,6 +104,7 @@ import {LocalRoyale} from './game/LocalRoyale';
 import {MatchBell} from './game/matchBell';
 import {Network,LocalTraining,type NetworkAccess,type CouchStart} from './network';
 import {GuidedFightRun} from './tutorial/GuidedFightRun';
+import {LearnToPlay} from './ui/ball/LearnToPlay';
 import {modeOfSnapshot,type ModeId} from './ui/modes/catalogue';
 import {DamageNumbers} from './ui/DamageNumbers';
 import {MangaImpact} from './ui/MangaImpact';
@@ -331,6 +332,8 @@ const riftIntro=new RiftIntro(root);
 const shell=new HomeShell(hud,{story:()=>{riftIntro.preload();void riftIntro.play();},menuPad:()=>input.padIndex});
 // LEARN TO FIGHT (src/tutorial): the guided first fight, in the offline Training Ground, its dummy and its HUD the lesson's.
 const guided=new GuidedFightRun({root:root.querySelector<HTMLElement>('#interface')??root,modes:hud.modes,sim:()=>network===practice?practice.sim:null,viewYaw:()=>input.yaw,leave:()=>hud.onLeave()});
+// LEARN TO PLAY (src/ui/ball/LearnToPlay.ts), the ball modes' guided first game, on this device's FREE PLAY.
+new LearnToPlay({root:root.querySelector<HTMLElement>('#interface')??root,modes:hud.modes,send:(type,payload)=>network.room?.send(type,payload),leave:()=>hud.onLeave()});
 // The first-visit notice: what the game is, that it is never monetized, and where a takedown goes.
 mountFirstVisit();
 const loadingScreen=new LoadingScreen(root);
@@ -345,6 +348,20 @@ techniques.bodyOf=id=>{const body=horde.body(id);return body?{x:body.group.posit
 /** The online display delay, and the local one: a tick behind the arena, so
  *  the two latest states can be interpolated and nothing waits on a wire. */
 const ONLINE_DELAY=60,LOCAL_DELAY=1000/60;
+/** A ball match on this device runs its drawing clock steered onto one steady lag behind the match (a PERFECT
+ *  STRIKE timed by eye has to land the same way every time). The clock the other modes keep (below) runs free
+ *  between its two clamps, so whichever end a session drifted to it stayed at: measured 2 to 4 ticks behind from one
+ *  session to the next, the same press a PERFECT STRIKE in one and late in the next. This one is pulled onto `behind`
+ *  the match's own clock (its newest tick plus the time the input clock has banked toward the next: smooth, real time) - gently (`gain` a second, never more than `pace` of the
+ *  frame's time a frame, so the frames stay even), or at once past `snap` (a stall, the start). `behind` leaves the frame's
+ *  own tick sent after the clock is read half a tick of room before the clamp at the newest (1.2 ticks hit it
+ *  and doubled the uneven frames). */
+const BALL_CLOCK={behind:1.5/60,gain:4,pace:.08,snap:3/60} as const;
+/** On this machine only, for the checks' before and after on one build: `?freeclock` keeps a ball match on the free
+ *  clock, `?noforecast` draws the page's own touches when the room's word comes, and an attack the room puts back into
+ *  the page's time as the snapshots have it, as they were drawn before the forecast. */
+const ballChecks=['localhost','127.0.0.1','[::1]'].includes(location.hostname)?new URLSearchParams(location.search):new URLSearchParams();
+const steadyBallClock=!ballChecks.has('freeclock'),forecastTouches=!ballChecks.has('noforecast');
 /** The local arena's visual clock, in arena seconds: it runs at the arena's
  *  own time scale (slow motion on a boss's fall), a tick behind its newest. */
 let localClock=0;
@@ -354,6 +371,10 @@ const objectiveField=new ObjectiveField(view.scene,root);
 const riftField=new RiftField(view.scene,grunts),riftUI=new RiftWarUI(root.querySelector<HTMLElement>('#interface')??root);
 // The ball modes (game/ball): the ball, its trail and its moments in the world; the lobby and results over it.
 const ballField=new BallField(view.scene),ballUI=new BallUI(root.querySelector<HTMLElement>('#interface')??root),ballTargets=new BallTargets();
+// Online, the page's own touch of the ball is forecast from its prediction (game/ball/BallTargets,
+// touchForecast.ts) and drawn at once (BallField.forecastTouch), the room's word blended in when it comes.
+ballTargets.local=()=>prediction.local;ballTargets.clock=()=>prediction.localTime;ballTargets.replaying=()=>prediction.replaying;
+ballTargets.drawn=()=>ballField.drawnState();ballTargets.onTouch=touch=>{if(forecastTouches)ballField.forecastTouch(touch);};
 // A goal's replay, and a great point's (render/ball/BallReplay.ts): the page plays the room's window again from what it kept.
 const ballReplay=new BallReplayer();ballReplay.onSkip=()=>network.room?.send('ball-skip');let ballReplayBars=0,ballReplayed=false;
 // The ball modes' own camera (render/ball/BallCam.ts): the ball cam, on by default, Tab (a couch seat's TARGET) toggles it;
@@ -378,7 +399,7 @@ const spikeTick=(seat:0|1)=>(k:SpikeCueTick)=>{const [id,gain,rate]=({jump:['str
 spikeCues.onTick=spikeTick(0);spikeCues2.onTick=spikeTick(1);
 // (A check on this machine reads the cues: `__spikeCues.state` (Player 2's `__spikeCues2`), and `__spikeTicks = []` logs
 // each tick with its seat.)
-if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))Object.assign(window as unknown as {__spikeCues:SpikeCues;__spikeCues2:SpikeCues},{__spikeCues:spikeCues,__spikeCues2:spikeCues2});
+if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))Object.assign(window as unknown as {__spikeCues:SpikeCues;__spikeCues2:SpikeCues;__ballField:BallField},{__spikeCues:spikeCues,__spikeCues2:spikeCues2,__ballField:ballField});
 /** `?ballpilot` on this machine (a bot plays the page's fighter, LocalBall): the page films the bot's stance. */
 const ballPiloted=['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).has('ballpilot');
 // A TACKLE (game/ball/model.ts GOAL_STANCE): the lens punches for the tackler and the one tackled, the frame's ink for a
@@ -647,7 +668,7 @@ Object.defineProperty(window,'jumpLoading',{get:()=>startup.snapshot()});
 if(import.meta.env.DEV||['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__ballMatch:()=>unknown}).__ballMatch=()=>localBall.match;
 // A development build (or one served from this machine) can start a ball match straight away, for the captures and checks
 // that look at the ball modes: `__ballStart('goal-rush')`, `__ballStart('sky-spike', 'konta', 'quick')`, `__ballStart('goal-rush', undefined, 'bots', true)` (RUMBLE); a seventh argument, {arena, mutator, drill, queue, difficulty}.
-if(import.meta.env.DEV||['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__ballStart:(mode:'goal-rush'|'sky-spike',fighter?:string,access?:'bots'|'quick'|'host',rumble?:boolean,practice?:boolean,couch?:'shared'|'split-v'|'split-h',extra?:{arena?:BallArenaId;mutator?:BallMutator;drill?:DrillId;queue?:'classic'|'playlist'|'ranked';difficulty?:BotLevel})=>unknown}).__ballStart=(mode,fighter,access='bots',rumble=false,practice=false,couch,extra)=>hud.onStart((fighter as typeof hud.selected)??hud.selected,'match',hud.playerName(),{kind:'ball',mode,access,rumble,practice,...extra,...(couch?{couch:{partner:'taisei',screen:couch,sides:'same'}}:{})});
+if(import.meta.env.DEV||['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__ballStart:(mode:'goal-rush'|'sky-spike',fighter?:string,access?:'bots'|'quick'|'host',rumble?:boolean,practice?:boolean,couch?:'shared'|'split-v'|'split-h',extra?:{arena?:BallArenaId;mutator?:BallMutator;drill?:DrillId;lesson?:boolean;queue?:'classic'|'playlist'|'ranked';difficulty?:BotLevel})=>unknown}).__ballStart=(mode,fighter,access='bots',rumble=false,practice=false,couch,extra)=>hud.onStart((fighter as typeof hud.selected)??hud.selected,'match',hud.playerName(),{kind:'ball',mode,access,rumble,practice,...extra,...(couch?{couch:{partner:'taisei',screen:couch,sides:'same'}}:{})});
 let reportCapture:((image:string)=>void)|undefined;
 const bugReport=new BugReport(root,()=>({fighter:hud.selected,mode:started?(survival()?'survival':network.snapshot?.roomMode??'match'):'home',connection:(!started?'not connected':network.predictionReady?'connected':'reconnecting')+(started&&network===online?online.link.summary(performance.now()):''),input:input.mode,performance:view.perf(),loading:startup.snapshot()}),()=>new Promise<string>((resolve,reject)=>{
   const timer=setTimeout(()=>{reportCapture=undefined;reject(new Error('No arena frame'));},3000);
@@ -710,7 +731,7 @@ couchHud.host={rift:riftUI,body:id=>fighters.get(id),camera:()=>camera2?.camera,
 riftUI.onCustom=(type,payload)=>{if(type==='rift-requeue'||type==='rift-rematch'&&network===localRift)hud.onPlayAgain();else network.room?.send(type,payload);};
 riftUI.onLeave=()=>hud.onLeave();riftUI.onPause=()=>hud.toggleSettings();
 // (PLAY AGAIN on a ball match on this device is the same match again in place - LocalBall.rematch - with no loading screen.)
-ballUI.onSend=(type,payload)=>network.room?.send(type,payload);ballUI.onAgain=()=>{if(network===localBall&&localBall.rematch())return;hud.onPlayAgain();};ballUI.onLeave=()=>hud.onLeave();
+ballUI.onSend=(type,payload)=>network.room?.send(type,payload);ballUI.onKickOff=mode=>void hud.onStart(hud.selected,'match',hud.playerName(),{kind:'ball',mode,access:'bots',difficulty:'easy'});ballUI.onAgain=()=>{if(network===localBall&&localBall.rematch())return;hud.onPlayAgain();};ballUI.onLeave=()=>hud.onLeave();
 localRift.onDisconnect=message=>{returnToLobby();hud.error(message);};
 // Training's tools go to the room as they are - but a switch of fighter (the bar's FIGHTER and OPPONENT, the picker, and
 // on this device the LABORATORY's own OPPONENT list) goes by way of `switchTraining`, which has the body here first.
@@ -797,7 +818,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     /** The couch's seats for this mode - the ones its sheet showed (CouchStart.seats), else planned now (swapped as the sheet
      *  says) - Player 1 under the mode's own id for the page. */
     const seatCouch=(kind:CouchKind,sheet:ModeId)=>couch.begin(kind,couchStart?.seats??plannedSeats(!!modePrefs(sheet).couchSwap),{ids:[network.id,SECOND],screen:couchStart?.screen});
-    if(ballRun&&access?.kind==='ball'){await localBall.connect(access.mode,fighter,name,couchKind==='field'?couchStart?.partner:undefined,couchStart?.sides==='rivals',!!access.rumble,!!access.practice,{mutator:access.mutator,drill:access.drill,look:myBallLook(),arena:access.arena,difficulty:access.difficulty});localClock=localBall.snapshot?.serverTime??0;
+    if(ballRun&&access?.kind==='ball'){await localBall.connect(access.mode,fighter,name,couchKind==='field'?couchStart?.partner:undefined,couchStart?.sides==='rivals',!!access.rumble,!!access.practice,{mutator:access.mutator,drill:access.drill,lesson:access.lesson,look:myBallLook(),arena:access.arena,difficulty:access.difficulty});localClock=localBall.snapshot?.serverTime??0;
       if(couchKind==='field'){seatCouch('field',access.mode);localBall.second=()=>ballAim(couch.command(SECOND),1);}
     }else if(riftRun){await localRift.connect(fighter,name,1,couchKind==='field'?couchStart?.partner:undefined);localClock=localRift.snapshot?.serverTime??0;
       if(couchKind==='field'){seatCouch('field','rift-war');localRift.second=()=>couch.command(SECOND);}
@@ -967,7 +988,10 @@ function sendCommand(){
   if(pilot&&survival()){const auto=pilot.command(snapshot.players,snapshot.serverTime);command={...auto,seq:command.seq};if(auto.targetId)targetId=auto.targetId;}
   const sent=exercise.active?exercise.command(command,snapshot,network.id)
     :input.enabled?command:{...command,moveX:0,moveZ:0,attack:undefined,jump:false,dash:false,guard:false,awaken:false};
-  if(!network.send(sent))return;if(network===online)unacked.push(sent.seq);prediction.submit(sent);
+  if(!network.send(sent))return;if(network===online)unacked.push(sent.seq);
+  // (An online ball room's own touch of the ball, forecast around the prediction's step - BallTargets.)
+  const forecasting=network===online&&prediction.enabled&&!!ballOf(snapshot);if(forecasting)ballTargets.beforeStep();
+  prediction.submit(sent);if(forecasting)ballTargets.afterStep();
   for(const cast of presentEvents(prediction.takeCasts(),snapshot.players)){
     if(cast.fighter==='konta'&&cast.slot==='heavy')predictedVisuals.push({...cast,id:PREDICTED_EVENT_BASE+cast.id});
     if(cast.slot)predictedCasts.set(castKey(cast),performance.now());
@@ -1078,7 +1102,7 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   // A ball match puts everyone back on their marks for each kickoff and serve: the view turns with the body, behind it.
   {const ball=ballOf(snapshot),mark=ball&&(ball.phase==='kickoff'||ball.phase==='countdown')?`${ball.phase}:${ball.phaseUntil}:${ball.startsAt}`:'';
     if(mark&&mark!==ballMark){ballMark=mark;input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??input.yaw;camera.reset();ballChases[0].cut();ballChases[1].cut();}else if(!ball)ballMark='';}
-  timeline.push(snapshot,performance.now());if(ballOf(snapshot))ballReplay.record(snapshot);
+  timeline.push(snapshot,performance.now());if(ballOf(snapshot)){ballReplay.record(snapshot);if(network===online)ballField.heard(snapshot);}
   // Lock combat (the fight's snapshots say it plays it, whichever mode, here or online): what it is, once a session.
   if(snapshot.lockCombat&&!lockTold&&snapshot.players.some(p=>p.id===network.id)){lockTold=true;hud.notify('LOCK COMBAT · MASH TO COMBO · GUARD WHEN THE RING CLOSES TO VANISH',4.5);}
   if(!started||!network.id||!network.predictionReady)return;
@@ -1088,7 +1112,9 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   if(network===arcade||network===practice||network===localObjective||network===localRift||network===localBall||network===duel||network===royale)return;
   riftPredictionTargets.update(snapshot,network.id);
   // A ball room: the page's prediction swings at the ball as the room last placed it (BallTargets), as it does at Rift War's armies.
-  const ballView=ballOf(snapshot);if(ballView)ballTargets.update(snapshot);
+  // (Where the page draws it, as the room judges this page's swing - BallMatch SEEN - not where the newest
+  // snapshot has it, a round trip ahead of the frame.)
+  const ballView=ballOf(snapshot);if(ballView){ballTargets.selfId=network.id;ballTargets.update(snapshot,ballField.ballPosition());}
   const external=warView?riftPredictionTargets:ballView?ballTargets:undefined,assist=warView?{magnet:RIFT_RULES.aimMagnet}:ballView?ballAssist(ballView.mode):undefined;
   if(!prediction.enabled){if(snapshot.players.some(p=>p.id===network.id)){ensureLocalCollision(snapshot.stage??'harbor');prediction.lockCombat=!!snapshot.lockCombat||!!(network===duel?duel.sim:network===practice?practice.sim:null)?.lockCombat;prediction.start(network.id,snapshot,localCollision);prediction.setExternalTargets(external,assist);}}
   else {prediction.setExternalTargets(external,assist);prediction.receive(snapshot);}
@@ -1732,7 +1758,12 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // A clock the arena's own time scale drives, a tick behind the newest
     // state it has produced, so two states are always there to blend.
     const local=network===royale?royale:network===duel?duel:network===arcade?arcade:network===practice?practice:network===localRift?localRift:network===localBall?localBall:localObjective,newest=timeline.newest??0,scale=network===arcade?arcade.game?.timeScale??1:1;
-    localClock=Math.min(newest,Math.max(newest-3/60,localClock+rawDt*(local.paused?0:scale)));
+    let next=localClock+rawDt*(local.paused?0:scale);
+    if(network===localBall&&steadyBallClock&&!local.paused&&inputClock.last>0){
+      const err=newest+inputClock.backlog+(now-inputClock.last)/1000*inputClock.rate-BALL_CLOCK.behind-next;
+      next+=Math.abs(err)>BALL_CLOCK.snap?err:Math.max(-rawDt*BALL_CLOCK.pace,Math.min(rawDt*BALL_CLOCK.pace,err*Math.min(1,rawDt*BALL_CLOCK.gain)));
+    }
+    localClock=Math.min(newest,Math.max(newest-3/60,next));
     presented=timeline.at(localClock-LOCAL_DELAY/1000);
   }else presented=timeline.sample(now);
   prediction.visualTime=presented?.time??NaN; // Round 5 (PARRY): a parry's vanish is drawn with the parry (Prediction.visualTime).
@@ -1758,6 +1789,9 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   if(view.frames.frame(rawDt,started&&!hud.settingsOpen&&!document.hidden,settings.powerMode)){view.applySettings(settings);frameRateToast();}
   objectiveField.update(snapshot,presented?.time??0,network.id,view.camera);
   riftField.setTarget(targeting.locked?targetId:null);riftField.update(snapshot,network.id,view.camera,dt,couch.split?couch.ids[1]:undefined);riftUI.update(snapshot,network.id,targeting.locked?targetId:null);
+  // (Online, how far behind the room this page draws - its prediction's clock less the frame's - for an attack the
+  // room puts back into this page's time: BallField `rewound`.)
+  ballField.viewLag=forecastTouches&&network===online&&prediction.enabled&&presented?Math.max(0,prediction.localTime-presented.time):0;
   ballField.update(replayed?.snapshot??snapshot,network.id,view.camera,replayed?dt*replayed.rate:dt,performance.now(),!!replayed);
   // Goal Rush's stances under the feet (render/ball/StanceMarks.ts), and its tackles felt.
   {const v=ballOf(snapshot);stanceMarks.update(rawDt,v,network.id,hasStances(v)?ballStances[0].lock:null,ballField.ballPosition(),stanceBody,!!v&&started&&!replayed&&!ceremony);

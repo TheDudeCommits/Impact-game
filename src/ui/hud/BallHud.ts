@@ -145,9 +145,11 @@ class BallHud implements ModeHud {
     if (score !== this.shownScore) { if (this.shownScore) for (const t of ['red', 'blue'] as BallTeam[]) pulse(this.scoreNodes[t], 'pulse'); this.shownScore = score; }
     // The middle: the clock, OVERTIME, or the rally and what the next point is worth.
     if (v.practice) {
-      this.middle.set(v.drill ? 'DRILL' : 'FREE PLAY'); this.middleKind.set('clock');
-      // (A training drill: its name; its progress is ui/ball/BallBadge.ts's.)
+      this.middle.set(v.drill ? 'DRILL' : v.lesson ? 'LEARN TO PLAY' : 'FREE PLAY'); this.middleKind.set('clock');
+      // (A training drill: its name; its progress is ui/ball/BallBadge.ts's. LEARN TO PLAY: the step's line and
+      // checklist are ui/ball/LearnToPlay.ts's.)
       if (v.drill) this.sub.set(DRILLS[v.drill.id].name);
+      else if (v.lesson) this.sub.set('');
       else this.sub.set([v.hits ? `TARGETS ${v.hits}${v.streak > 1 ? ` · STREAK ${v.streak}` : ''}` : v.mode === 'goal-rush' ? 'SHOOT THROUGH THE GOLD RING' : 'SPIKE IT ONTO THE GOLD RING', v.best > 0 ? `FASTEST ${Math.round(v.best * KMH)} KM/H` : ''].filter(Boolean).join(' · '));
     } else if (v.mode === 'goal-rush') {
       const ending = v.clock <= 0 && !v.overtime && v.phase === 'live';
@@ -181,12 +183,13 @@ class BallHud implements ModeHud {
     const teach = f.snapshot.serverTime - v.startedAt < 30 || v.phase === 'kickoff' || v.phase === 'countdown';
     const chat = v.practice ? '' : ` · ${f.input === 'controller' ? padKey(f.family, 'select') : '<kbd>C</kbd>'} CHAT`;
     // (Goal Rush's target key is the stance's: its badge teaches it, over the meter.)
-    const stances = v.mode === 'goal-rush' && !v.practice;
+    const stances = v.mode === 'goal-rush' && (!v.practice || !!v.lesson);
     this.cam.set(f.input === 'touch' || !teach ? '' : (stances ? chat.replace(/^ · /, '') : promptText(hudView.ballCam() ? '{target} FREE CAM' : '{target} BALL CAM', { device: f.input, family: f.family }) + chat));
     // The prompt: your serve, or a KI CHARGE waiting in your boots.
-    const serving = spike && v.phase === 'kickoff' && v.serverId === f.self.id;
+    // (LEARN TO PLAY's JUMP SERVE says it in its own line: ui/ball/LearnToPlay.ts.)
+    const serving = spike && v.phase === 'kickoff' && v.serverId === f.self.id && !v.lesson;
     const charged = v.rumble && v.effects.some(e => e.kind === 'charge' && e.id === f.self.id);
-    const practice = v.practice && !v.drill && (v.phase === 'live' || v.phase === 'kickoff');
+    const practice = v.practice && !v.drill && !v.lesson && (v.phase === 'live' || v.phase === 'kickoff');
     const hint = serving || charged || practice ? '' : this.hints.frame({ view: v, self: f.self, players: f.snapshot.players, fight: !!hudView.ballLock(), device: f.input, family: f.family, serverTime: f.snapshot.serverTime }, now);
     this.promptOn.set(!serving && !charged && !practice && !hint);
     if (serving) this.promptText.set(promptText('YOUR SERVE · {light} LOB · {heavy} POWER SERVE', { device: f.input, family: f.family }));
@@ -237,7 +240,7 @@ class BallHud implements ModeHud {
   /** The meter and the count back in. Written only when a share moves a percent (or the count a tenth), so a frame
    *  costs nothing. */
   private gauges(v: BallView, f: ModeHudFrame, own: BallSeat | undefined) {
-    const self = f.self, fights = v.mode === 'goal-rush' && !v.practice;
+    const self = f.self, fights = v.mode === 'goal-rush' && (!v.practice || !!v.lesson);
     this.meterHp.set(fights);
     const hp = fights && self.maxHp > 0 ? Math.round(100 * Math.max(0, self.hp) / self.maxHp) : 100;
     if (hp !== this.shownHp) { this.shownHp = hp; this.hpFill.style.transform = `scaleX(${hp / 100})`; this.meterLow.set(fights && hp <= 30); }
@@ -265,7 +268,7 @@ class BallHud implements ModeHud {
       case 'goal': {
         const assist = seat(e.assistId);
         this.show(now, 'goal', e.team ?? '', mine ? 'YOUR TEAM SCORES' : `${BALL_TEAM_NAMES[e.team!]} SCORES`, e.text === 'SUPER GOAL' ? 'SUPER GOAL!!' : 'GOOOAL!!',
-          [who, shot, speed, assist ? `ASSIST ${nameOf(assist)}` : ''].filter(Boolean).join(' · '), v.drill ? 1500 : 3600); // (A drill's next ball comes a breath after: its banner goes before it does.)
+          [who, shot, speed, assist ? `ASSIST ${nameOf(assist)}` : ''].filter(Boolean).join(' · '), v.drill || v.lesson ? 1500 : 3600); // (A drill's next ball comes a breath after, and LEARN TO PLAY's: its banner goes before it does.)
         break;
       }
       case 'own-goal': this.show(now, 'goal', e.team ?? '', `${BALL_TEAM_NAMES[e.team!]} SCORES`, 'OWN GOAL!', who, 3200); break;

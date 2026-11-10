@@ -14,7 +14,7 @@ import {DRILLS, isDrill, type DrillId} from './drills';
 
 /** What else a match on this device is played with: a mutator, a training drill (FREE PLAY's), and what the
  *  page's own player wears in the ball modes (their seat's look: ball skin, trail, goal burst, celebration). */
-export interface BallExtras { mutator?: BallMutator; drill?: DrillId; look?: BallLook; /** The arena picked (arenas.ts); none: the mode's in turn. */ arena?: BallArenaId; /** The other side's bots' level (BallBrain BOT_LEVELS); none: NORMAL. */ difficulty?: BotLevel }
+export interface BallExtras { mutator?: BallMutator; drill?: DrillId; /** FREE PLAY as LEARN TO PLAY (lesson.ts). */ lesson?: boolean; look?: BallLook; /** The arena picked (arenas.ts); none: the mode's in turn. */ arena?: BallArenaId; /** The other side's bots' level (BallBrain BOT_LEVELS); none: NORMAL. */ difficulty?: BotLevel }
 /** The arenas whose intro this page has flown over: a match there again opens with the
  *  short intro (ceremony.ts SHORT_INTRO), as a rematch does. For the page's session. */
 const flown = new Set<BallArenaId>();
@@ -69,7 +69,7 @@ export class LocalBall {
     const here = typeof location === 'object' && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) ? new URLSearchParams(location.search) : undefined;
     const length = Number(here?.get('balllength')) || undefined;
     this.match = new BallMatch(mode, {collision, seed, access: 'bots', lockCombat: lockCombatOn(), length, replays: !partner, rumble, arena, practice: practice && !partner,
-      mutator: rumble ? null : extras.mutator ?? null, drill: practice && !partner ? extras.drill : undefined, intro, round: typeof again === 'object' ? again.round : undefined,
+      mutator: rumble ? null : extras.mutator ?? null, drill: practice && !partner ? extras.drill : undefined, lesson: practice && !partner && !extras.drill ? extras.lesson : undefined, intro, round: typeof again === 'object' ? again.round : undefined,
       difficulty: practice && !partner ? undefined : extras.difficulty});
     const team: BallTeam = 'red';
     this.match.add(this.id, fighter, name, false, team); this.match.sim.setPlayerSkill(this.id, keptSkill()); this.match.setLook(this.id, extras.look);
@@ -115,6 +115,8 @@ export class LocalBall {
     // A drill's NEXT DRILL: the same FREE PLAY with the drill named (drills.ts), from its first ball.
     if (type === 'ball-drill' && isDrill(_payload) && DRILLS[_payload].mode === this.mode && this.last) { this.last.extras = {...this.last.extras, drill: _payload}; void this.again(); return undefined; }
     if (type === 'ball-skip') { this.match?.skip(this.id); return undefined; }
+    // LEARN TO PLAY's SKIP STEP and END (ui/ball/LearnToPlay.ts).
+    if (type === 'ball-lesson') { this.match?.lessonCommand(this.id, _payload); return undefined; }
     if (type === 'ball-reset') { this.match?.reset(this.id); return undefined; }
     if (type === 'ball-chat') { this.match?.chat(this.id, _payload); return undefined; }
     return undefined;

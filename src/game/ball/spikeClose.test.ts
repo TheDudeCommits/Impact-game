@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BallMatch, SWINGS } from './BallMatch';
-import { BOT_LEVELS, COMPOSURE, FORM, REACT, type BotLevel } from './BallBrain';
+import { BOT_LEVELS as LEVELS, COMPOSURE, FORM, LEVEL_EDGE, REACT, type BotLevel } from './BallBrain';
+// (Each mode has its own levels; these are Sky Spike's.)
+const BOT_LEVELS = LEVELS['sky-spike'];
 import { SPIKE_RULES, type BallTeam } from './model';
 
 // Sky Spike's matches that go down to the wire (FEVER for the side behind, the bots' form and
@@ -94,11 +96,12 @@ describe('Sky Spike: the bots\' level and composure', () => {
         else { expect(within(bot.skill, difficulty)).toBe(true); expect(bot.composed).toBe(true); }
       }
     }
-    // EASY's team-mates are the best (they cover a new player's misses); NORMAL's and HARD's are NORMAL's.
-    expect([BOT_LEVELS.easy.mates, BOT_LEVELS.normal.mates, BOT_LEVELS.hard.mates]).toEqual(['hard', 'normal', 'normal']);
-    // NORMAL unless asked, and NORMAL is the band every bot had before.
-    expect(BOT_LEVELS.normal).toMatchObject({ lo: .55, span: .4 });
-    expect([...bots().level.values()].every(b => within(b.skill, 'normal'))).toBe(true);
+    // A person's Sky Spike team-mates are HARD's at every level (they cover a person's misses), and the
+    // levels' bands climb.
+    expect([BOT_LEVELS.easy.mates, BOT_LEVELS.normal.mates, BOT_LEVELS.hard.mates]).toEqual(['hard', 'hard', 'hard']);
+    expect(BOT_LEVELS.easy.lo).toBeLessThan(BOT_LEVELS.normal.lo);
+    expect(BOT_LEVELS.normal.lo).toBeLessThanOrEqual(BOT_LEVELS.hard.lo);
+    expect([...bots().level.values()].filter(b => b.team === 'blue').every(b => within(b.skill, 'normal'))).toBe(true);
     // The draw is the same one: the bots' places in their band, whichever band.
     const easy = [...bots('easy').level.values()].filter(b => b.team === 'blue').map(b => (b.skill - BOT_LEVELS.easy.lo) / BOT_LEVELS.easy.span);
     const hard = [...bots('hard').level.values()].filter(b => b.team === 'blue').map(b => (b.skill - BOT_LEVELS.hard.lo) / BOT_LEVELS.hard.span);
@@ -148,6 +151,7 @@ describe('Sky Spike: the bots\' level and composure', () => {
     // An average bot reads about as fast as at .34 less .2 × skill; a poor one later, the best sooner.
     expect(Math.abs(read(.75) - (.34 - .2 * .75))).toBeLessThan(.02);
     expect(read(BOT_LEVELS.easy.lo)).toBeGreaterThan(.38);
-    expect(read(BOT_LEVELS.hard.lo + BOT_LEVELS.hard.span)).toBeLessThan(.1);
+    // (HARD's own levers read faster still - BallBrain LEVEL_EDGE.react.)
+    expect(read(BOT_LEVELS.hard.lo + BOT_LEVELS.hard.span) * LEVEL_EDGE.hard.react).toBeLessThan(.1);
   });
 });

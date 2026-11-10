@@ -51,6 +51,8 @@ function offLine(p: {x: number; z: number}, a: {x: number; z: number}, b: {x: nu
  *  ball with a team-mate placed to finish it sets them up (a LINK SHOT) about `LINK_SET` of the time, no more than once
  *  every few seconds. Measured on headless bot matches. */
 const DUEL_TRY = [.55, .35] as const, GUARD_LEAD = .15, LINK_SET = .7, LINK_GAP = 2.6;
+/** LEVEL_EDGE.mark: how far goal-side of the runner it marks a HARD support stands (m). */
+const MARK = 1.8;
 /** Goal Rush's places and reaches, as shares of the pitch (GOAL_RULES halfX, halfZ), so the bots play the pitch they are
  *  on (26 × 38 m; the shares are the metres first laid on a 36 × 52 m pitch, over its half-sizes):
  *  - a SUPER SHOT is struck from up to `superRange` of a half-length out with the goal in sight, not wider than
@@ -129,14 +131,102 @@ export const FORM = {jump: .4, miss: .35, misread: 1.6, late: .35} as const;
  *  stays in reach of winning; HARD's digs in as far as any but hardly eases off, so a good player has to close it out.
  *  (Above a skill of about 0.9 and below about 0.3 a bot's skill hardly moves the rallies it wins - FORM's errors are
  *  all but gone, or both sides make them all - so HARD is NORMAL's best, all of them, and EASY sits just under where
- *  it starts to tell.) */
+ *  it starts to tell.)
+ *  Each mode has its own, aimed at a casual player winning about 60% on EASY, 35% on NORMAL and under 15% on HARD,
+ *  and a skilled one about 85%, 55% and 30-40% (measured with the scripted players, playerModels.ts, on 48 paired seeds).
+ *  - Goal Rush: EASY's bots a shade better (0.25-0.5) and a person's team-mates NORMAL's (with HARD's, a casual
+ *    player's side won 88% once the bots had plans). HARD's team-mates are EASY's: HARD's levers (LEVEL_EDGE) hit a
+ *    skilled player's runs and shots, and a casual player's side lived on its team-mates (29% with NORMAL's, 13% with
+ *    EASY's; a skilled player's 40% and 33%) - on HARD you carry your side.
+ *  - Sky Spike: a person's team-mates are HARD's at every level (with NORMAL's, a skilled player's side won 29% on
+ *    NORMAL; with HARD's, 44%: they set and cover for the person). HARD's bots are NORMAL's in skill: its step up is
+ *    its levers and a side that hardly eases off ahead. (A lower NORMAL band - 0.4-0.9 - was fairer to a person, but
+ *    cut the bots' own rallies to 3.2-3.4 crossings.) */
 export type BotLevel = 'easy' | 'normal' | 'hard';
-export const BOT_LEVELS: Readonly<Record<BotLevel, {lo: number; span: number; mates: BotLevel; ease: number; dig: number}>> = {
-  easy: {lo: .2, span: .25, mates: 'hard', ease: 1, dig: .3},
-  normal: {lo: .55, span: .4, mates: 'normal', ease: 1, dig: 1},
-  hard: {lo: .85, span: .15, mates: 'normal', ease: .3, dig: 1},
+export type LevelShape = {lo: number; span: number; mates: BotLevel; ease: number; dig: number};
+export const BOT_LEVELS: Readonly<Record<BallModeId, Readonly<Record<BotLevel, LevelShape>>>> = {
+  'goal-rush': {
+    easy: {lo: .25, span: .25, mates: 'normal', ease: 1, dig: .3},
+    normal: {lo: .55, span: .4, mates: 'normal', ease: 1, dig: 1},
+    hard: {lo: .85, span: .15, mates: 'easy', ease: .3, dig: 1},
+  },
+  'sky-spike': {
+    easy: {lo: .2, span: .25, mates: 'hard', ease: 1, dig: .3},
+    normal: {lo: .55, span: .4, mates: 'hard', ease: 1, dig: 1},
+    hard: {lo: .55, span: .4, mates: 'hard', ease: .3, dig: 1},
+  },
 };
 export const isBotLevel = (v: unknown): v is BotLevel => v === 'easy' || v === 'normal' || v === 'hard';
+/** HARD is a real step up for a good player, with levers of its own, not just skill. The scripted players
+ *  (playerModels.ts) showed why the band alone could not do it: a SKILLED player won 41% on
+ *  NORMAL and 44% on HARD in Sky Spike, because skill over about 0.9 hardly tells and NORMAL's side digs in to it when
+ *  behind. So each level also changes what its bots choose and how cleanly they read, at any score. NORMAL's are the
+ *  bots as they were (every factor 1, every share 0: no new draw from the match's stream, so NORMAL's seeded matches
+ *  play as before). Goal Rush:
+ *  - `read`: the reaction to a change in the ball's flight (PRESSURE.reactionBest and reaction) times this;
+ *  - `keeper`: the keeper's misread and its guess of the side (PRESSURE.missRead, guess) and the guard's timing error
+ *    times this, and `dive` m/s on its dive (PRESSURE.dives); `timing`: the timed swing's error (PRESSURE.timing)
+ *    times this - more PERFECT STRIKEs;
+ *  - `corner`: how far the aim goes from the goal's middle third to the corner away from the keeper (0-1);
+ *  - `tackle`: added to the share of tackles taken when one is on, and `again` the wait before the next look, times;
+ *  - `link`: added to LINK_SET's share - passes into a team-mate's run;
+ *  - `mark`: with the other side on the ball in its half, the support marks their runner nearest its goal, goal-side
+ *    (`MARK` m) - a good player's run into space is followed. (A HARD that left a skilled player's runs
+ *    free it won 54% on HARD, as on NORMAL, while a casual player's fell to 25%.)
+ *  Sky Spike:
+ *  - `react`: REACT's read times this; `form`: FORM's takeoff and misread errors times this;
+ *  - `stuff`: added to a block's share timed to the hitter (STUFF); `quickRead`: added to COMMIT.quick's, a QUICK SET
+ *    read in time to go up with its hitter;
+ *  - `jumpServe`: the share of the other serves turned into JUMP SERVEs; `quickSet`: the QUICK SET's share times this
+ *    (the set that beats a slow block); `tip`: added to the TIP's share over a block that is up. */
+export const LEVEL_EDGE: Readonly<Record<BotLevel, {read: number; keeper: number; dive: number; timing: number; corner: number; tackle: number; again: number; link: number; mark: number;
+  react: number; form: number; stuff: number; quickRead: number; jumpServe: number; quickSet: number; tip: number}>> = {
+  easy: {read: 1, keeper: 1, dive: 0, timing: 1, corner: 0, tackle: 0, again: 1, link: 0, mark: 0, react: 1, form: 1, stuff: 0, quickRead: 0, jumpServe: 0, quickSet: 1, tip: 0},
+  normal: {read: 1, keeper: 1, dive: 0, timing: 1, corner: 0, tackle: 0, again: 1, link: 0, mark: 0, react: 1, form: 1, stuff: 0, quickRead: 0, jumpServe: 0, quickSet: 1, tip: 0},
+  hard: {read: .35, keeper: .2, dive: 3, timing: .4, corner: 1, tackle: .35, again: .4, link: .3, mark: 1, react: .7, form: .5, stuff: .05, quickRead: .3, jumpServe: .6, quickSet: 1.6, tip: .1},
+};
+/** Bots that play like people: a side with a recognisable plan the player can read and beat. Each side of bots is dealt one plan a match (`dealPlan`, BallMatch.levelBots: from the match's seed,
+ *  no draw from its stream), says it at the kickoff (`PLAN_LINES`), and leans on it all match:
+ *  - Goal Rush, WING: the play goes down one wing (`wing`, by the world's x) - the attacker carries the ball up that
+ *    channel (`channel` of a half-width out; its taps, from `carryFrom` of a half-length out to the last `crossFrom`),
+ *    and from out wide there (`crossWide` m) crosses it into the box, where the support waits at the far post
+ *    (`backPost` m across, `box` m out) to meet it first time. Beaten by covering that wing and the far post.
+ *  - Goal Rush, BOX: with the ball theirs in the last third the support goes to the edge of the box (`box` m out) for
+ *    the second ball and the pass - many shots, and open to a quick break.
+ *  - Goal Rush, PRESS: the attacker and the support hunt the ball - the attacker from `pressRange` m, the support a
+ *    carrier `supportPress` m off it in the other half - and more of their tackles are taken (`press`) - beaten by
+ *    passing it early.
+ *  - Sky Spike, QUICK: the QUICK SET to the hitter at the net whenever there is one (`set` of the sets) - fast, and
+ *    beats a slow block, but always that hitter, so a block that goes up with them stuffs it.
+ *  - Sky Spike, POWER: every serve a JUMP SERVE, and the high set for the spike from the top of the jump (`set` of the
+ *    sets) - big, but slow to build: a block timed on the hitter stuffs it, and a deep receiver digs the serve.
+ *  - Sky Spike, TIP: its hitters TIP over a block that is up (`tip` of the time) and now and then anyway (`tipAny`) -
+ *    beaten by staying down and covering short.
+ *  (Tried and dropped, Sky Spike: WING, every set out to one wing. A set turned by the setter's aim moves 2 m at most;
+ *  the stick across sets it wide, but the room reads the stick as the blow lands, and that is often a swing pressed
+ *  for another touch. Held through every swing, the side's attacks came from its wing 59% of the time (others' 46-53%),
+ *  its attacks fell from 17 a match to 9 and the bots' rallies to 3.2 crossings. SWITCH, the BACK SET to a wing, was
+ *  no more readable.)
+ *  The rest of the time a bot plays its own game (its style, SPIKE_STYLES). A person's own team-mates play no plan:
+ *  they follow the person. (Tried and dropped: FEED, a person's Sky Spike team-mates setting the person whenever they
+ *  stood at the net. It took the attack from HARD's team-mates, who convert it better than most people: a skilled
+ *  player's side won 75% on EASY where it had won 88%, a casual one's 79% where it had won 65%.) */
+export type BotPlan = 'wing' | 'box' | 'press' | 'quick' | 'power' | 'tip';
+export const BOT_PLANS: Readonly<Record<BallModeId, readonly BotPlan[]>> = {'goal-rush': ['wing', 'box', 'press'], 'sky-spike': ['quick', 'power', 'tip']};
+export const PLAN = {channel: .62, crossFrom: .66, carryFrom: 1.5, crossWide: 4.5, backPost: 2, box: 10, near: 3, press: .05, pressRange: 8, supportPress: 4, set: .7, tip: .85, tipAny: .35} as const;
+/** What a side's bots say at the first kickoff of a match: their plan, out loud, so it can be read. */
+export const PLAN_LINES: Readonly<Record<BallModeId, Partial<Record<BotPlan, string>>>> = {
+  'goal-rush': {wing: 'Wide, then cross it in!', box: 'Everyone in the box!', press: "Hunt the ball. Don't let them breathe."},
+  'sky-spike': {quick: 'Quick sets, all match!', power: 'Big serves, big spikes!', tip: 'Tip it over their hands!'},
+};
+/** A side's plan for a match (and a round of rematches): from the match's own seed and the side, so a seeded match
+ *  deals the same and no draw is taken from its stream (each mode's matches stay as they were). */
+export function dealPlan(mode: BallModeId, seed: number, team: BallTeam, round = 1): {plan: BotPlan; wing: 1 | -1} {
+  let h = (seed ^ (team === 'red' ? 0x9e3779b9 : 0x85ebca6b) ^ Math.imul(round, 0xc2b2ae35)) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b) >>> 0; h = (h ^ (h >>> 13)) >>> 0;
+  const plans = BOT_PLANS[mode];
+  return {plan: plans[h % plans.length], wing: (h >>> 8) & 1 ? 1 : -1};
+}
 /** The block: a blocker commits with the hitter, leaving the floor as the set comes down through hitting height
  *  `lead` seconds plus its own jump's rise share `rise` away - before the ball is struck, as a blocker must, so a TIP
  *  can go over a block that is already up. (A blocker leaving the floor after the spike was struck, a tenth of a
@@ -198,7 +288,7 @@ export class BallBrain {
   private setKind: 'quick' | 'back' | 'high' | null = null; private setFor = '';
   constructor(readonly id: string, readonly mode: BallModeId, readonly index: number, private readonly rng: () => number) {
     // (One draw, as before: the level only places it in its band - levelled.)
-    this.draw = rng(); this.skill = BOT_LEVELS.normal.lo + this.draw * BOT_LEVELS.normal.span;
+    this.draw = rng(); this.skill = BOT_LEVELS[mode].normal.lo + this.draw * BOT_LEVELS[mode].normal.span;
     this.flank = index % 2 ? 1 : -1;
     // (Drawn for Sky Spike's bots only: a draw from the shared stream in Goal Rush would play every one of its seeded
     // matches differently.)
@@ -206,7 +296,13 @@ export class BallBrain {
   }
   /** The bot's level (BOT_LEVELS) and whether its side's score moves it (COMPOSURE): BallMatch.levelBots, at the start
    *  and whenever a seat is handed to a bot. */
-  levelled(level: BotLevel, composed: boolean) { const band = BOT_LEVELS[level]; this.skill = band.lo + this.draw * band.span; this.composed = composed; this.level = level; }
+  levelled(level: BotLevel, composed: boolean, plan?: {plan: BotPlan; wing: 1 | -1}) {
+    const band = BOT_LEVELS[this.mode][level]; this.skill = band.lo + this.draw * band.span; this.composed = composed; this.level = level; this.edge = LEVEL_EDGE[level];
+    this.plan = plan?.plan ?? null; this.wing = plan?.wing ?? 1;
+  }
+  /** The level's own levers (LEVEL_EDGE), and its side's plan (PLAN) and wing. */
+  private edge = LEVEL_EDGE.normal;
+  plan: BotPlan | null = null; wing: 1 | -1 = 1;
   command(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, now: number): Command {
     const input: Command = {moveX: 0, moveZ: 0, yaw: me.yaw, targetId: BALL_ID, lock: true};
     this.sk = this.skill;
@@ -245,7 +341,7 @@ export class BallBrain {
       if (carrier || inWay) { best = q; bestD = d; }
     }
     if (!best) return false;
-    if (this.rng() > .45 + this.sk * .3) { this.nextTackle = now + .6; return false; }
+    if (this.rng() > .45 + this.sk * .3 + this.edge.tackle + (this.plan === 'press' ? PLAN.press : 0)) { this.nextTackle = now + .6 * this.edge.again; return false; }
     this.fight = {id: best.id, since: now};
     return this.fighting(me, seat, players, view, b, input, now);
   }
@@ -276,8 +372,8 @@ export class BallBrain {
   }
   /** Goal Rush's press: the one of the other side on the ball (within 2.5 m of it and nearer it than anyone of this
    *  side), if any. */
-  private carrier(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], b: {x: number; z: number}) {
-    let theirs: PlayerState | undefined, theirD = 2.5, ours = Infinity;
+  private carrier(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], b: {x: number; z: number}, within = 2.5) {
+    let theirs: PlayerState | undefined, theirD = within, ours = Infinity;
     for (const q of players) {
       if (!q.alive) continue;
       const d = gap(q, b), mate = q.team === me.team;
@@ -285,6 +381,15 @@ export class BallBrain {
       else if (q.team !== seat.team && d < theirD) { theirs = q; theirD = d; }
     }
     return theirs && theirD < ours ? theirs : undefined;
+  }
+  /** Goal Rush: whether this bot's side has the ball - the one nearest it, within `PLAN.near` m and on the floor, is one
+   *  of its own (PLAN: a side goes forward with the ball, not before). */
+  private ours(players: readonly PlayerState[], team: BallTeam, b: {x: number; y: number; z: number}) { return this.holder(players, b) === team; }
+  /** Goal Rush: the side on the ball - of the one nearest it, within `PLAN.near` m, with the ball low - or undefined. */
+  private holder(players: readonly PlayerState[], b: {x: number; y: number; z: number}) {
+    let near: PlayerState | undefined, best: number = PLAN.near;
+    for (const q of players) { const d = gap(q, b); if (q.alive && d < best) { best = d; near = q; } }
+    return near && b.y < 2.5 ? near.team as BallTeam : undefined;
   }
   /** RUMBLE: the nearest charm within `within` metres (on its own side of the net in Sky Spike), if any. */
   private charm(me: PlayerState, view: BallView, within: number, side?: number) {
@@ -313,7 +418,7 @@ export class BallBrain {
     this.seenAt = now;
     if (Math.hypot(b.vx - r.vx, b.vz - r.vz) < 3.5 && Math.hypot(b.x - r.x, b.z - r.z) < 1.5) { Object.assign(r, b); this.unread = Infinity; return r; }
     if (this.unread === Infinity) this.unread = now;
-    if (now - this.unread >= PRESSURE.reactionBest + PRESSURE.reaction * (1 - this.sk)) { Object.assign(r, b); this.unread = Infinity; }
+    if (now - this.unread >= (PRESSURE.reactionBest + PRESSURE.reaction * (1 - this.sk)) * this.edge.read) { Object.assign(r, b); this.unread = Infinity; }
     return r;
   }
   /** A ball's flight, rolled once (a new striker or a new way): this bot's timing error on it, and - a shot at its goal -
@@ -322,11 +427,11 @@ export class BallBrain {
     const key = `${b.lastId}:${Math.round(Math.atan2(b.vx, b.vz) * 2)}`;
     if (key === this.rolledFor) return;
     this.rolledFor = key;
-    const off = 1 - this.sk, n = this.rng() + this.rng() - 1;
-    this.timingErr = n * PRESSURE.timing * off;
-    this.shotRead = this.rng() >= PRESSURE.missRead * off;
-    this.guardErr = (this.rng() + this.rng() - 1) * .2 * off;
-    this.guess = (this.rng() + this.rng() - 1) * PRESSURE.guess * off;
+    const off = 1 - this.sk, n = this.rng() + this.rng() - 1, E = this.edge;
+    this.timingErr = n * PRESSURE.timing * off * E.timing;
+    this.shotRead = this.rng() >= PRESSURE.missRead * off * E.keeper;
+    this.guardErr = (this.rng() + this.rng() - 1) * .2 * off * E.keeper;
+    this.guess = (this.rng() + this.rng() - 1) * PRESSURE.guess * off * E.keeper;
   }
   /** A ball on its way to this bot - its own flight closing on the bot's chest at 4 m/s or more, coming down within a
    *  swing of it - and how soon it reaches PRESSURE.meet (s); or undefined. */
@@ -367,6 +472,12 @@ export class BallBrain {
     const lead = r.y > 2 ? landing(this.mode, r, 1.4, 2.5) : {x: r.x + r.vx * .22, z: r.z + r.vz * .22, t: .22};
     const focus = {x: clamp(lead.x, -R.halfX + 1, R.halfX - 1), z: clamp(lead.z, -R.halfZ + 1, R.halfZ - 1)};
     const goal = {x: clamp(b.x * .25, -R.goalHalfWidth + 1.2, R.goalHalfWidth - 1.2) + (this.rng() - .5) * (1 - this.sk) * 3, z: enemyZ};
+    // (LEVEL_EDGE.corner: the aim taken toward the corner away from their keeper - the one of theirs nearest the line.)
+    if (this.edge.corner > 0) {
+      let keeper: PlayerState | undefined;
+      for (const q of players) if (q.alive && q.team !== team && (!keeper || Math.abs(q.z - enemyZ) < Math.abs(keeper.z - enemyZ))) keeper = q;
+      if (keeper) goal.x += ((keeper.x > 0 ? -1 : 1) * (R.goalHalfWidth - 1.2) - goal.x) * this.edge.corner;
+    }
     const shotYaw = Math.atan2(goal.x - b.x, goal.z - b.z);
     const dBall = gap(me, b), dy = b.y - (me.y + 1);
     const inReach = dBall < 2.2 && dy > -1.4 && dy < 1.7;
@@ -391,7 +502,7 @@ export class BallBrain {
           this.roll(b);
           const cross = clamp(r.x + r.vx * t + this.guess, -R.goalHalfWidth + .5, R.goalHalfWidth - .5), across = Math.abs(cross - me.x);
           if (this.shotRead) spot = {x: cross, z: ownZ - Math.sign(ownZ) * 1.4};
-          dive = this.shotRead && me.grounded && me.stamina > 25 && now - this.diveAt > 1 && t > .1 && t < 1 && across > PRESSURE.runs * t + PRESSURE.reach && across < PRESSURE.dives * t + PRESSURE.reach;
+          dive = this.shotRead && me.grounded && me.stamina > 25 && now - this.diveAt > 1 && t > .1 && t < 1 && across > PRESSURE.runs * t + PRESSURE.reach && across < (PRESSURE.dives + this.edge.dive) * t + PRESSURE.reach;
         }
       }
       // A ball loose near the goal is the keeper's to clear.
@@ -418,13 +529,27 @@ export class BallBrain {
     if (this.meet(me, b, team, enemyZ, now, input)) return input;
     if (role === 'support') {
       // (Behind in the last seconds, the support pushes up level with the ball and beyond, for the pass: PRESSURE.)
-      const back = push ? {x: clamp(b.x * .3 + this.flank * PITCH.flank * R.halfX * 1.3, -R.halfX + 2, R.halfX - 2), z: clamp(b.z + toward * 5, -R.halfZ + 3, R.halfZ - 3)}
+      let back = push ? {x: clamp(b.x * .3 + this.flank * PITCH.flank * R.halfX * 1.3, -R.halfX + 2, R.halfX - 2), z: clamp(b.z + toward * 5, -R.halfZ + 3, R.halfZ - 3)}
         : {x: clamp(b.x * .5 + this.flank * PITCH.flank * R.halfX, -R.halfX + 2, R.halfX - 2), z: clamp(b.z + (ownZ - b.z) * .42, -R.halfZ + 3, R.halfZ - 3)};
+      // The plan (PLAN): with the ball in the last third and theirs to play, WING waits at the far post for the cross
+      // and BOX goes into the box. (Only then: a support that went forward whenever the ball did left its keeper alone
+      // against every break - 15-17 goals a match in the bot sims, from 12.)
+      const final = !ownDanger && !push && Math.abs(enemyZ - b.z) < PLAN.crossFrom * R.halfZ && this.ours(players, team, b);
+      if (final && this.plan === 'wing') back = {x: -this.wing * PLAN.backPost, z: enemyZ - toward * PLAN.box};
+      // (HARD: with the other side on the ball in this half, the support marks their runner nearest this goal, goal-side
+      // - LEVEL_EDGE.mark.)
+      else if (this.edge.mark && !push && Math.sign(b.z) === Math.sign(ownZ) && this.holder(players, b) === otherTeam(team)) {
+        let runner: PlayerState | undefined;
+        for (const q of players) if (q.alive && q.team !== team && gap(q, b) > PLAN.near && (!runner || Math.abs(q.z - ownZ) < Math.abs(runner.z - ownZ))) runner = q;
+        if (runner && Math.abs(runner.z - ownZ) < R.halfZ) back = {x: runner.x * .85, z: clamp(runner.z - toward * MARK, -R.halfZ + 2, R.halfZ - 2)};
+      }
+      else if (final && this.plan === 'box') back = {x: clamp(b.x * .3, -PLAN.backPost * 2, PLAN.backPost * 2), z: enemyZ - toward * PLAN.box};
       const chase = dBall < 5 && Math.sign(ownZ) * (me.z - b.z) > 0;
       // The press (on the smaller pitch): in the half its side attacks, one of the other side on the ball (nearer it
       // than any of this side, at its feet) is closed down at a run from the goal side and tackled, so the ball is fought
       // for where it was lost instead of handed back. Never in its own half, where the support keeps the keeper company.
-      const carrier = !chase && Math.sign(b.z) === toward && b.y < 2 ? this.carrier(me, seat, players, b) : undefined;
+      // (A PRESS side's support hunts a carrier from further off: PLAN.supportPress.)
+      const carrier = !chase && Math.sign(b.z) === toward && b.y < 2 ? this.carrier(me, seat, players, b, this.plan === 'press' ? PLAN.supportPress : 2.5) : undefined;
       // RUMBLE: the support goes for a charm when the ball is not theirs to play.
       const near = !chase && !carrier && !ownDanger && dBall > 7 ? this.charm(me, view, 9) : undefined;
       const press = carrier && {x: carrier.x + (b.x - carrier.x) * .3, z: carrier.z + Math.sign(ownZ) * 1.1};
@@ -441,8 +566,16 @@ export class BallBrain {
       else if (!inReach && (chase || press || dBall < 6)) this.tackle(me, seat, players, view, b, input, now, press ? 3.2 : 2.8);
       return input;
     }
-    // The attacker: round behind the ball, then drive it at the goal.
-    const ux = Math.sin(shotYaw), uz = Math.cos(shotYaw);
+    // The attacker: round behind the ball, then drive it at the goal. (A WING side's carries it up its wing through the
+    // middle of the pitch - its taps that way, its shots still at the goal - and crosses it from out wide near their
+    // goal: PLAN. A WING that drove every ball up the wing from anywhere, and a casual player beat it four
+    // times in five.)
+    const toTheirs = Math.abs(enemyZ - b.z), far = toTheirs > PLAN.crossFrom * R.halfZ && toTheirs < PLAN.carryFrom * R.halfZ;
+    const cross = this.plan === 'wing' && toTheirs < PLAN.crossFrom * R.halfZ && Math.sign(b.x) === this.wing && Math.abs(b.x) > PLAN.crossWide;
+    const driveYaw = this.plan !== 'wing' ? shotYaw
+      : far ? Math.atan2(this.wing * PLAN.channel * R.halfX - b.x, toward * 9)
+      : cross ? Math.atan2(-this.wing * PLAN.backPost - b.x, enemyZ - toward * PLAN.box - b.z) : shotYaw;
+    const ux = Math.sin(driveYaw), uz = Math.cos(driveYaw);
     let approach = {x: focus.x - ux * 1.3, z: focus.z - uz * 1.3};
     const ahead = (me.x - focus.x) * ux + (me.z - focus.z) * uz;
     if (ahead > .4 && dBall > 1.2) approach = {x: focus.x - ux * 2.6 - uz * 2.6 * this.flank, z: focus.z - uz * 2.6 + ux * 2.6 * this.flank};
@@ -450,7 +583,7 @@ export class BallBrain {
     const near = dBall > 6 ? this.charm(me, view, 3.5) : undefined;
     if (near) approach = near;
     this.run(me, approach, input, now, .3, 9);
-    if (dBall < 3.5) input.yaw = shotYaw;
+    if (dBall < 3.5) input.yaw = driveYaw;
     // The aerial (BALL_SPORT): off the floor under a high ball, up again off the air and a dash at it.
     if (!me.grounded && now >= this.nextAerial && b.y > me.y + 2 && b.y < 10 && gap(me, b) < 4.5 && this.rng() < .25 + this.sk * .5) {
       const up = Math.hypot(b.x - me.x, b.y - (me.y + 1), b.z - me.z);
@@ -462,17 +595,19 @@ export class BallBrain {
     if ((inReach || eta !== undefined) && now >= this.nextPress) {
       const air = !me.grounded;
       if (!air && inReach && this.setUp(me, b, team, toward, enemyZ, players, view, now, input)) return input;
+      // (A WING side's cross is a light into the box, met there by its support - PLAN.)
+      if (!air && inReach && cross) { this.press(input, 'light', driveYaw, now, .45); return input; }
       const slot = me.ultimate >= 100 && toGoal < SUPER_RANGE && Math.abs(b.x) < SUPER_WIDE ? 'ultimate'
         : air ? (this.rng() < .6 ? 'heavy' : 'light')
         : toGoal < PITCH.special * R.halfZ && (me.cooldowns.special ?? 0) <= now && this.rng() < .3 ? 'special'
         : toGoal < PITCH.heavy * R.halfZ ? (this.rng() < .7 ? 'heavy' : 'light')
         : this.rng() < .55 ? 'light' : 'heavy';
       // (A ball coming in is met as it arrives - the timed swing; until then the bot squares up to the goal.)
-      if (eta === undefined || this.onTime(me, slot, eta, b)) this.press(input, slot, shotYaw, now, slot === 'light' ? .28 : .5);
+      if (eta === undefined || this.onTime(me, slot, eta, b)) this.press(input, slot, far && slot === 'light' ? driveYaw : shotYaw, now, slot === 'light' ? .28 : .5);
       else input.yaw = shotYaw;
     }
-    // Their striker on the ball, or one in the way to it: tackled.
-    else if (!inReach && dBall < 7) this.tackle(me, seat, players, view, b, input, now);
+    // Their striker on the ball, or one in the way to it: tackled (from further by a PRESS side).
+    else if (!inReach && dBall < (this.plan === 'press' ? PLAN.pressRange : 7)) this.tackle(me, seat, players, view, b, input, now, 2.8, this.plan === 'press' ? PLAN.pressRange : 6);
     return input;
   }
 
@@ -524,7 +659,7 @@ export class BallBrain {
     }
     if (!mate) return false;
     // Now and then: a bot that passes on the chance does not ask again for a moment.
-    const pass = this.rng() < LINK_SET;
+    const pass = this.rng() < LINK_SET + this.edge.link;
     this.nextLink = now + (pass ? LINK_GAP : 1);
     if (!pass) return false;
     this.press(input, 'light', Math.atan2(mate.x - b.x, mate.z - b.z), now, .45);
@@ -553,7 +688,7 @@ export class BallBrain {
   private volley(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, now: number, input: Command): Command {
     const b = view.ball, R = SPIKE_RULES, team = seat.team, sign = team === 'red' ? -1 : 1, theirs = otherTeam(team), S = SPIKE_STYLES[this.style];
     // The difficulty that scales (COMPOSURE): sharper behind, easier ahead (as low as `lo`, for EASY's bots ahead).
-    const lead = view.score[team] - view.score[theirs], shape = BOT_LEVELS[this.level];
+    const lead = view.score[team] - view.score[theirs], shape = BOT_LEVELS[this.mode][this.level];
     this.sk = clamp(this.skill - (this.composed ? clamp(lead * COMPOSURE.point, -COMPOSURE.most, COMPOSURE.most) * (lead > 0 ? shape.ease : shape.dig) : 0), COMPOSURE.lo, COMPOSURE.hi);
     const sk = this.sk;
     const rivals = players.filter(p => p.alive && Math.sign(p.z) === -sign);
@@ -584,9 +719,9 @@ export class BallBrain {
       // (A spike is read off the hitter's swing, mostly before it is struck: a share of the delay.)
       // (A JUMP SERVE, the fastest ball a side receives, a little later still.)
       if (key !== this.readKey) {
-        this.readKey = key; this.readAt = now + (REACT.base - REACT.skill * sk + (this.style === 'wall' ? -.03 : 0) + (b.shot === 'serve' && Math.hypot(b.vx, b.vy, b.vz) > 24 ? REACT.jump : 0)) * (b.shot === 'spike' || b.shot === 'super' || b.shot === 'blast' ? REACT.spike : 1);
+        this.readKey = key; this.readAt = now + (REACT.base - REACT.skill * sk + (this.style === 'wall' ? -.03 : 0) + (b.shot === 'serve' && Math.hypot(b.vx, b.vy, b.vz) > 24 ? REACT.jump : 0)) * (b.shot === 'spike' || b.shot === 'super' || b.shot === 'blast' ? REACT.spike : 1) * this.edge.react;
         // (FORM: now and then misjudged, the poorer the bot the more often.)
-        const miss = this.rng() < FORM.miss * (1 - sk), ang = this.rng() * Math.PI * 2;
+        const miss = this.rng() < FORM.miss * (1 - sk) * this.edge.form, ang = this.rng() * Math.PI * 2;
         this.misX = miss ? Math.sin(ang) * FORM.misread : 0; this.misZ = miss ? Math.cos(ang) * FORM.misread : 0;
       }
     }
@@ -628,12 +763,12 @@ export class BallBrain {
         // otherwise the hands are up from the takeoff (soft). Decided once a set.
         // (Against a SUPER SHOT the block goes for the stuff far more often: a perfect one is the TECHNIQUE DUEL.)
         const key = `${b.lastId}:${view.rally}`;
-        if (this.stuffFor !== key) { this.stuffFor = key; this.stuff = this.rng() < (b.super ? DUEL_TRY[0] + sk * DUEL_TRY[1] : STUFF.base + sk * STUFF.skill + S.stuff); }
+        if (this.stuffFor !== key) { this.stuffFor = key; this.stuff = this.rng() < (b.super ? DUEL_TRY[0] + sk * DUEL_TRY[1] : STUFF.base + sk * STUFF.skill + S.stuff + this.edge.stuff); }
         const wall = input.yaw = Math.atan2(0, -sign);
         if (me.grounded && now >= this.nextJump) {
           // Committed with the hitter, as the set comes through hitting height; or late, off the strike, now and then.
           // (A QUICK SET - a set that never climbs to the top of a jump - is read only some of the time: COMMIT.quick.)
-          if (!high && this.quickFor !== key) { this.quickFor = key; this.quickRead = this.rng() < COMMIT.quick + sk * COMMIT.quickSkill; }
+          if (!high && this.quickFor !== key) { this.quickFor = key; this.quickRead = this.rng() < COMMIT.quick + sk * COMMIT.quickSkill + this.edge.quickRead; }
           const commit = !struck && read.t > .02 && read.t < COMMIT.lead + arcOf.rise * COMMIT.rise + (1 - sk) * .1 && Math.abs(me.x - x) < 1.8 && b.shot === 'set' && (high || this.quickRead);
           const late = struck && at && at.t < BLOCK_LEAD + .05 && this.rng() < COMMIT.late * (.5 + sk);
           if (commit || late) this.jump(input, now, arcOf.rise + .05);
@@ -675,7 +810,7 @@ export class BallBrain {
         const lead = high ? arcOf.rise - APEX_SWING + APEX_CONTACT : SPIKE_RISE;
         // (FORM: the takeoff off by a little, rolled once an attack; the poorer the bot, the more.)
         const akey = `${view.rally}:${b.lastId}`;
-        if (akey !== this.attackFor) { this.attackFor = akey; this.jumpErr = (this.rng() * 2 - 1) * Math.max(0, 1 - sk) * FORM.jump; }
+        if (akey !== this.attackFor) { this.attackFor = akey; this.jumpErr = (this.rng() * 2 - 1) * Math.max(0, 1 - sk) * FORM.jump * this.edge.form; }
         if (now >= this.nextJump && d < 1.6 && hit!.t < lead + .04 + this.jumpErr + (1 - sk) * (high ? .12 : .06)) { this.jump(input, now, high ? arcOf.rise + .05 : .35); this.spikeAt = now; this.apex = high ? arcOf.rise - APEX_SWING : 0; }
       } else {
         const under = {x: target.x - Math.sin(sendYaw(target)) * .4 * (touches >= 2 ? 1 : 0), z: target.z + sign * .35};
@@ -700,8 +835,11 @@ export class BallBrain {
       // at the net, a BACK SET to the far wing, or the floating set.
       if (touches === 1 && reach && me.grounded && this.setFor !== `${view.rally}:${b.lastId}`) {
         this.setFor = `${view.rally}:${b.lastId}`;
-        const hitter = mates.some(p => p.id !== me.id && Math.abs(p.z) < 3.6 && Math.abs(p.x - me.x) < 6), r = this.rng();
-        this.setKind = hitter && r < S.set[0] * (.6 + sk * .6) ? 'quick' : r < S.set[0] + S.set[1] ? 'back' : 'high';
+        const hitter = mates.some(p => p.id !== me.id && Math.abs(p.z) < 3.6 && Math.abs(p.x - me.x) < 6), draw = this.rng();
+        // (The side's plan, PLAN.set of the time - the same draw, the rest of it the bot's own style's.)
+        const planned = this.plan && draw < PLAN.set ? this.plan : null, r = this.plan ? Math.max(0, draw - PLAN.set) / (1 - PLAN.set) : draw;
+        this.setKind = planned === 'quick' ? (hitter ? 'quick' : 'high') : planned === 'power' ? 'high'
+          : hitter && r < S.set[0] * (.6 + sk * .6) * this.edge.quickSet ? 'quick' : r < S.set[0] + S.set[1] ? 'back' : 'high';
       }
       if (touches === 1 && this.setKind === 'quick' && reach && me.grounded && b.y > me.y + 1.2 && now >= this.nextJump && now >= this.nextPress) { this.jump(input, now, .12); return input; }
       if (reach && !sent && now >= this.nextPress) {
@@ -737,7 +875,9 @@ export class BallBrain {
    *  light) or a DRIVE (a heavy). Short: the point's celebration plays on meanwhile, and the match gets back under way. */
   private serving(me: PlayerState, b: BallState, arcOf: {rise: number}, sign: number, now: number, input: Command): Command {
     const S = SPIKE_STYLES[this.style];
-    if (!this.serveKind) { const r = this.rng(); this.serveKind = r < S.serve[0] ? 'jump' : r < S.serve[0] + S.serve[1] ? 'float' : 'drive'; }
+    // (LEVEL_EDGE.jumpServe: a share of the floats and drives struck as JUMP SERVEs instead.)
+    // (A POWER side's every serve: PLAN.)
+    if (!this.serveKind) { const r = this.rng(), jump = this.plan === 'power' ? 1 : S.serve[0] + (1 - S.serve[0]) * this.edge.jumpServe; this.serveKind = r < jump ? 'jump' : r < jump + S.serve[1] * (1 - this.edge.jumpServe) ? 'float' : 'drive'; }
     // A serve goes for the seam: the deep spot farthest from the three receiving it (a float may go short as well).
     const seam = this.seam(sign, this.serveKind === 'float'), sendYaw = (from: {x: number; z: number}) => Math.atan2(seam.x - from.x, seam.z - from.z);
     if (!me.grounded && this.serveKind === 'jump') {
@@ -779,7 +919,8 @@ export class BallBrain {
     this.tipFor = key;
     // (Sky Spike's fighters share one kernel side: the other side is the far half of the court.)
     const blocked = players.some(p => p.alive && Math.sign(p.z) !== Math.sign(me.z) && !p.grounded && Math.abs(p.z) < 2 && Math.abs(p.x - b.x) < 1.8 && p.y > .8);
-    this.tipping = this.rng() < (blocked ? S.tip * (.6 + this.sk * .5) : S.tipAny);
+    // (A TIP side's hitters tip far more: PLAN.)
+    this.tipping = this.rng() < (this.plan === 'tip' ? (blocked ? PLAN.tip : PLAN.tipAny) : blocked ? S.tip * (.6 + this.sk * .5) + this.edge.tip : S.tipAny);
     return this.tipping;
   }
   private tipFor = ''; private tipping = false; private quickFor = ''; private quickRead = false;

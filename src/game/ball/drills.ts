@@ -111,11 +111,22 @@ export const TACKLE = {
 /** How long a ball is given before it counts as missed, and the breath between two. */
 const BALL_SECONDS = 6, PAUSE = 1.1, FIRST = .8;
 
+/** The TACKLE drill's carrier's seat (BallMatch adds it; LEARN TO PLAY's opponent in Goal Rush and Sky Spike sits in it
+ *  too: lesson.ts). */
+export const DRILL_RIVAL = 'drill-rival';
+
 /** The velocity that carries a ball from `p` to (tx, ty, tz) in `t` seconds under gravity `g` (drag made up for
  *  roughly, as strike.ts's arc does). */
-function arc(p: {x: number; y: number; z: number}, tx: number, ty: number, tz: number, t: number, g: number, drag: number) {
+export function arc(p: {x: number; y: number; z: number}, tx: number, ty: number, tz: number, t: number, g: number, drag: number) {
   const k = 1 + drag * t * .5;
   return {vx: (tx - p.x) / t * k, vy: ((ty - p.y) + .5 * g * t * t) / t, vz: (tz - p.z) / t * k};
+}
+
+/** Sky Spike: whether a ball sent from `b` at `v` clears the net (with a little to spare), or never crosses it. */
+export function clearsNet(b: {x: number; y: number; z: number}, v: {vx: number; vy: number; vz: number}, g: number) {
+  if (Math.abs(v.vz) < 1e-3 || Math.sign(-b.z) !== Math.sign(v.vz)) return true;
+  const t = -b.z / v.vz, y = b.y + v.vy * t - .5 * g * t * t;
+  return y > SPIKE_RULES.netHeight + SPIKE_RULES.ballRadius + .2;
 }
 
 /** One drill being run. BallMatch steps it after every tick, and hands it Sky Spike's machine serves. */
@@ -295,11 +306,7 @@ export class DrillRunner {
     Object.assign(b, vel, {shot: 'spike', heat: Math.max(b.heat, 1.5)});
     host.view.touchTeam = otherTeam(me.team); host.view.touches = SPIKE_RULES.touches;
   }
-  private clears(b: {x: number; y: number; z: number}, v: {vx: number; vy: number; vz: number}, g: number) {
-    if (Math.abs(v.vz) < 1e-3 || Math.sign(-b.z) !== Math.sign(v.vz)) return true;
-    const t = -b.z / v.vz, y = b.y + v.vy * t - .5 * g * t * t;
-    return y > SPIKE_RULES.netHeight + SPIKE_RULES.ballRadius + .2;
-  }
+  private clears(b: {x: number; y: number; z: number}, v: {vx: number; vy: number; vz: number}, g: number) { return clearsNet(b, v, g); }
 
   // ─── The TACKLE drill's carrier ───────────────────────────────────────────────────────────────────────────────────
   /** Every tick of a ball: the carrier's ball at its feet while it runs (a dribble the drill keeps, so it is always the

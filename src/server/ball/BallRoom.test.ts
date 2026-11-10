@@ -9,13 +9,13 @@ const TOKEN = '01234567-89ab-cdef-0123-456789abcdef';
 const client = (sessionId: string) => ({ sessionId, send: vi.fn() } as unknown as Client);
 afterEach(() => vi.restoreAllMocks());
 
-async function fixture(access: 'host' | 'quick' = 'host', ball: BallModeId = 'goal-rush') {
+async function fixture(access: 'host' | 'quick' = 'host', ball: BallModeId = 'goal-rush', extra: Record<string, unknown> = {}) {
   const room = new BallRoom(); let tick!: FixedTimestepCallback; const handlers = new Map<string, (c: Client, p?: unknown) => void>();
   vi.spyOn(room, 'setPrivate').mockResolvedValue(undefined); vi.spyOn(room, 'setMetadata').mockResolvedValue(undefined); vi.spyOn(room, 'broadcast').mockImplementation(() => {});
   vi.spyOn(room, 'lock').mockResolvedValue(undefined); vi.spyOn(room, 'unlock').mockResolvedValue(undefined);
   vi.spyOn(room, 'setFixedTimestep').mockImplementation(fn => { tick = fn; });
   vi.spyOn(room, 'onMessage').mockImplementation(((type: string, handler: (c: Client, p?: unknown) => void) => { handlers.set(type, handler); return () => {}; }) as never);
-  await room.onCreate({ rosterProtocol: ROSTER_PROTOCOL, access, creationToken: TOKEN, ballProtocol: BALL_PROTOCOL, ball });
+  await room.onCreate({ rosterProtocol: ROSTER_PROTOCOL, access, creationToken: TOKEN, ballProtocol: BALL_PROTOCOL, ball, ...extra });
   const code = room.roomId.slice(5);
   const options = (id: string, fighter = 'taisei') => ({ rosterProtocol: ROSTER_PROTOCOL, fighter, code, name: id, ballProtocol: BALL_PROTOCOL, ball });
   const join = (id: string, fighter = 'taisei') => { const c = client(id); room.onJoin(c, options(id, fighter)); room.clients.push(c); return c; };
@@ -83,6 +83,24 @@ describe('the ball room', () => {
       expect(f.room.game.view.intro).toMatchObject({seconds: SHORT_INTRO.seconds, short: true});
     } finally { f.room.onDispose(); }
   }, 30000); // a whole match with its replays, on a busy machine
+  it('plays a private room\'s bots at the level its host picked, every round; matchmaking\'s at NORMAL', async () => {
+    type Levelled = { difficulty: string };
+    const f = await fixture('host', 'sky-spike', { difficulty: 'hard' });
+    try {
+      const host = f.join('h');
+      expect((f.room.game as unknown as Levelled).difficulty).toBe('hard');
+      expect(f.room.game.view.level).toBe('hard');
+      f.send(host, 'ball-start'); f.advance(2);
+      for (let i = 0; i < 120 && f.room.game.view.phase !== 'over'; i++) f.advance(5);
+      f.send(host, 'ball-rematch');
+      expect(f.room.game.view.round).toBe(2);
+      expect((f.room.game as unknown as Levelled).difficulty).toBe('hard');
+    } finally { f.room.onDispose(); }
+    for (const [access, difficulty] of [['quick', 'hard'], ['host', 'brutal']] as const) {
+      const g = await fixture(access, 'goal-rush', { difficulty });
+      try { expect((g.room.game as unknown as Levelled).difficulty).toBe('normal'); expect(g.room.game.view.level).toBeUndefined(); } finally { g.room.onDispose(); }
+    }
+  }, 30000); // a whole match, on a busy machine
   it('lets the host choose RUMBLE in the lobby, relays quick chat, and ends a replay when everyone skips', async () => {
     const f = await fixture('host');
     try {

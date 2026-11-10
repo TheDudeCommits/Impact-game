@@ -15,7 +15,8 @@ import './ballSheet.css';
  *  - BOTS, PLAY: a 3 V 3 MATCH, FREE PLAY, or DRILLS (game/ball/drills.ts) with each drill's best medal.
  *  - BOTS, COUCH and FRIENDS, RULES: CLASSIC, RUMBLE, or one of the mutators (game/ball/mutators.ts).
  *  - ONLINE, QUEUE: CLASSIC, this week's PLAYLIST (its mutator), or RANKED with the account's stamp (ui/ball/ranks.ts).
- *  - BOTS (a match) and COUCH, BOTS: the other side's bots EASY, NORMAL or HARD (game/ball/BallBrain.ts BOT_LEVELS).
+ *  - BOTS (a match) and COUCH, BOTS: the other side's bots EASY, NORMAL or HARD (game/ball/BallBrain.ts
+ *    BOT_LEVELS); FRIENDS (a room opened): the level of the bots that fill its seats.
  *  And the fighter's ball trait (game/ball/traits.ts) under YOUR FIGHTER. Every button is `data-ms-ball="key:value"`;
  *  `ballChoice` turns a press into the preferences to keep. */
 type Variant = 'offline' | 'online' | 'friends' | 'couch';
@@ -48,10 +49,17 @@ const LEVEL_NOTES: Record<BotLevel, string> = {
   normal: '',
   hard: 'Their bots read every ball early, time it right and dig in when behind.',
 };
-/** A new player must be able to win, a good one must be challenged: BOTS' and COUCH's BOTS row - the level of the bots on the other side (a person's team-mates are always NORMAL). Not for FREE
- *  PLAY or the drills, which have no bots to beat. */
-export function ballLevelRow(prefs: ModePrefs): string {
-  const level = levelOf(prefs), note = LEVEL_NOTES[level];
+/** What HARD's bots do in each mode (BallBrain LEVEL_EDGE), said on the row. */
+const HARD_NOTES: Record<BallModeId, string> = {
+  'goal-rush': 'Their bots read every ball early, shoot for the far corner, keep goal sharply and mark your runs. Your team-mates leave the match to you.',
+  'sky-spike': 'Their bots read every ball early, jump-serve, set quick and time their blocks on your spike.',
+};
+/** A new player must be able to win, a good one must be challenged: BOTS' and COUCH's BOTS row - the level of the
+ *  bots on the other side (a person's team-mates are always NORMAL). Not for FREE PLAY or the drills, which have no bots
+ *  to beat. FRIENDS' too, as the room is opened - the host's pick for
+ *  the bots that fill its empty seats (ONLINE's matchmaking stays NORMAL). */
+export function ballLevelRow(prefs: ModePrefs, mode?: BallModeId): string {
+  const level = levelOf(prefs), note = level === 'hard' && mode ? HARD_NOTES[mode] : LEVEL_NOTES[level];
   const row = `<div class="ms-option" role="group" aria-label="Bots"><b>BOTS</b>${(['easy', 'normal', 'hard'] as const).map(l => `<button type="button" data-ms-ball="level:${l}" ${pressed(level === l)}>${l.toUpperCase()}</button>`).join('')}</div>`;
   return note ? `${row}<p class="ms-note">${note}</p>` : row;
 }
@@ -96,7 +104,8 @@ export function ballStart(mode: BallModeId, variant: Variant, prefs: ModePrefs, 
   if (couch) return { kind: 'ball', mode, access: 'bots', couch, rumble, mutator, difficulty };
   if (join) return { kind: 'ball', mode, access: 'join', code };
   if (variant === 'online') return { kind: 'ball', mode, access: 'quick', queue: queueOf(prefs) };
-  if (variant === 'friends') return { kind: 'ball', mode, access: 'host', rumble, mutator };
+  // (A private room's host picks its bots' level too; matchmaking's bots stay NORMAL.)
+  if (variant === 'friends') return { kind: 'ball', mode, access: 'host', rumble, mutator, ...(difficulty !== 'normal' ? { difficulty } : {}) };
   const drill = prefs.drills ? drillOf(mode, prefs) : undefined;
   const practice = !!drill || !!prefs.practice;
   return { kind: 'ball', mode, access: 'bots', rumble, mutator, practice, drill, ...(practice ? {} : { difficulty }) };

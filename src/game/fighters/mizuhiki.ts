@@ -33,5 +33,8 @@ export function mizuhikiStrikeJoint(clip:string,contactIndex?:number,sourceFract
  if(clip==='Bitter End'){const i=contactIndex??(sourceFraction<.2125?0:sourceFraction<.37?1:sourceFraction<.5225?2:sourceFraction<.7025?3:4);return i===1||i===3?'LeftHand':'RightHand';}
  return ['Rush 1','Backtwist','Vaulting Strand'].includes(clip)?'LeftHand':'RightHand';
 }
-/** Exact exported blade endpoints; no hand-centre or proxy contact. */
-export const MIZUHIKI_SWORD_SOCKETS={"LeftHand":{"bone":"LeftHand","tip":[0.8823710825169648,0.1735783405040289,0.3109186623114209],"heel":[0.20511266558011884,0.08660696868174668,0.016791239416393603],"grip":[0.018689007755886614,0.0576192943149806,-0.037398356398436146]},"RightHand":{"bone":"RightHand","tip":[-0.8904994647678068,0.1681997442396257,0.29150832920813574],"heel":[-0.18900306610358245,0.09577272492244193,0.0561125179086035],"grip":[-0.013091842990192781,0.060995229349816715,-0.023739542296774774]}} as const;
+/** Exact exported blade endpoints; no hand-centre or proxy contact. (Measured in
+ *  each hand bone's frame on the body's blades as reseated in every clip of mizuhiki-tr1.glb - the tip the farthest blade vertex, the heel
+ *  the blade's line at the guard, the grip the handle's middle; the values before did not match this body's blades: the right tip lay 1.7 m
+ *  off its blade, the left 16 cm.) */
+export const MIZUHIKI_SWORD_SOCKETS={"LeftHand":{"bone":"LeftHand","tip":[0.637265,0.476037,0.068274],"heel":[0.10716,0.148118,-0.022909],"grip":[-0.018651,0.069498,-0.045052]},"RightHand":{"bone":"RightHand","tip":[0.621914,0.474215,0.128728],"heel":[0.094925,0.138094,0.050058],"grip":[-0.030848,0.058316,0.032271]}} as const;

@@ -134,7 +134,7 @@ export class StanceMarks {
     this.n = 0;
     if (view) this.read(view);
     for (const b of this.bursts) if (b.t < 1) { b.t = Math.min(1, b.t + dt / BURST); if (show) this.put(KIND.tackle, b.x, b.z, 3.2, b.t, 1, FIGHT, 0); }
-    if (!show || !view || view.mode !== 'goal-rush' || view.practice || (view.phase !== 'live' && view.phase !== 'kickoff')) { this.flush(); return; }
+    if (!show || !view || view.mode !== 'goal-rush' || (view.practice && !view.lesson) || (view.phase !== 'live' && view.phase !== 'kickoff')) { this.flush(); return; }
     if (lock !== this.lockShown) { this.lockShown = lock; this.lockAge = 0; } else this.lockAge += dt;
     let mine: BallTeam | undefined;
     for (const s of view.seats) if (s.id === self) mine = s.team;
