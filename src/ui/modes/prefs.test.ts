@@ -18,6 +18,13 @@ describe('what the device remembers about the modes', () => {
     saveModePrefs('royale', { variant: 'online' }); saveModePrefs('royale', { fighters: 10 });
     expect(modePrefs('royale')).toEqual({ variant: 'online', fighters: 10 });
   });
+  it("forgets a rival or Player 2 that is not a released fighter (another build's, restored by Player Two)", () => {
+    store.set('rift-mode-prefs', JSON.stringify({ duel: { variant: 'offline', rival: 'not-a-fighter', partner: 'not-a-fighter' }, training: { rival: 'konta', partner: 'random' } }));
+    expect(modePrefs('duel')).toEqual({ variant: 'offline' });
+    expect(modePrefs('training')).toEqual({ rival: 'konta', partner: 'random' });
+    store.set('rift-mode-prefs', JSON.stringify({ duel: 'garbage' }));
+    expect(modePrefs('duel')).toEqual({});
+  });
   it('gives each coach tip once, and stays quiet when switched off', () => {
     expect(coachOn()).toBe(true);
     markCoachShown('arcade', 'tree'); markCoachShown('arcade', 'tree');

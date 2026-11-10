@@ -19,7 +19,9 @@ function stand() {
   const keyDir = new THREE.Vector3(.45, .8, .35).normalize(), right = new THREE.Vector3().crossVectors(THREE.Object3D.DEFAULT_UP, keyDir).normalize();
   return { sun, own, aims: [new THREE.Vector3(), new THREE.Vector3()], settings: { quality: 'high' }, shadowRight: right, shadowUp: new THREE.Vector3().crossVectors(keyDir, right).normalize(), keyDir,
     sharing: false, sharedShadow: undefined as THREE.DirectionalLightShadow | undefined, shadowCenter: new THREE.Vector3(), scratch: new THREE.Vector3(), focus: new THREE.Vector3(), focusAt: -1, time: 1,
-    camera: lens(new THREE.Vector3(0, 3, -4.5), new THREE.Vector3(0, 1, 2)), setFocus: proto.setFocus, shadowAim: proto.shadowAim, placeSun: proto.placeSun };
+    camera: lens(new THREE.Vector3(0, 3, -4.5), new THREE.Vector3(0, 1, 2)), setFocus: proto.setFocus, shadowAim: proto.shadowAim, placeSun: proto.placeSun,
+    // A fight's box, not a ball match's (GameRenderer shadowHalf).
+    centred: false, shadowHalf: proto.shadowHalf };
 }
 /** Two people `apart` metres apart along z, each with the follow camera 4.5 m behind them looking at the other. */
 function duel(s: ReturnType<typeof stand>, apart: number) {

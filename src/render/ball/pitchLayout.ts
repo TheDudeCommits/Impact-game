@@ -27,3 +27,11 @@ export function pulled(x: number, z: number): [number, number] {
 /** The Wreck Yard's two great hulls lie this far out to the sides, and its wrecked ships this far beyond the ends. */
 export const wreckHullX = () => GOAL_RULES.halfX + 34;
 export const wreckShipZ = () => GOAL_RULES.halfZ + 40;
+
+/** Where a confetti cannon stands at a corner of the pitch (sx, sz: which corner): out from the middle of
+ *  the corner's chamfer, in the walk between the cage and the stands. The two at the scorer's end fire on a goal
+ *  (BallArena's celebration throws its confetti from these spots). */
+export function cannonSpot(sx: number, sz: number): readonly [number, number] {
+  const {halfX: X, halfZ: Z, corner: C} = GOAL_RULES, out = 2.6 / Math.SQRT2;
+  return [sx * (X - C / 2 + out), sz * (Z - C / 2 + out)];
+}

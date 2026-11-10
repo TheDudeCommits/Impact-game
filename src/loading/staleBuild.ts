@@ -37,9 +37,14 @@ export function entryOf(html: string): string | undefined {
   return undefined;
 }
 
+/** An entry's own file (Vite's hashed `index-….js` names the build), wherever the page names it from: `/assets/`,
+ *  `./assets/`, or Player Two's `/~<build>/assets/`. Its host writes the build's prefix into the page a player's frame
+ *  plays, and not into the page the probe reads, so comparing whole paths found a "newer" build on every first start
+ *  there: the tab reloaded and the first FIGHT was lost. */
+const fileOf = (src: string) => pathOf(src).split('/').pop() ?? '';
 /** Whether the site serves another build than the one running - only when both are known. */
 export function buildChanged(running: string | undefined, served: string | undefined): boolean {
-  return !!running && !!served && pathOf(running) !== pathOf(served);
+  return !!running && !!served && fileOf(running) !== fileOf(served);
 }
 
 export interface ReloadGuard { from: string; at: number }
