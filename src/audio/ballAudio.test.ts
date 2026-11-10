@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { BALL_LOOPS, BALL_SFX, BallAudio, ballSoundFiles, ballTension, type BallMixer, type BallMusic } from './ballAudio';
+import { BALL_LOOPS, BALL_SFX, BallAudio, ballSoundFiles, ballTension, nextContact, type BallMixer, type BallMusic } from './ballAudio';
+import { DOUBLE } from '../game/ball/BallMatch';
 import { BORROWED, BallCaller, CALLER, GAP, SPACING, allCallerFiles, callerFiles, callerLines, setCommentary, type CallerMoment } from './ballCaller';
 import { GOAL_RULES, type BallEvent, type BallState, type BallView } from '../game/ball/model';
+import type { TouchForecast } from '../game/ball/touchForecast';
 import type { GameSnapshot } from '../game/types';
 
 const ball = (over: Partial<BallState> = {}): BallState => ({ x: 0, y: 3, z: 0, vx: 0, vy: 0, vz: 0, sx: 0, sy: 0, sz: 0, heat: 0, lastId: null, lastTeam: null,
@@ -17,18 +19,22 @@ const event = (id: number, kind: BallEvent['kind'], over: Partial<BallEvent> = {
 
 function rig(seconds = 1.2) {
   const played: string[] = [], stands: string[] = [], said: string[] = [], loops: Record<string, number> = {};
+  /** (Each one-shot and stands' reaction with its owner, and each taken back: owner, or owner and file.) */
+  const owned: string[] = [], taken: string[] = [], timed: [string, string, number][] = [];
   let clock = 100;
+  const id = (url: string) => url.split('/').pop()!.replace('.m4a', '');
   const mixer: BallMixer = {
-    sample: (url) => { played.push(url.split('/').pop()!.replace('.m4a', '')); },
-    centred: (url) => { played.push(url.split('/').pop()!.replace('.m4a', '')); },
-    stands: (url) => { stands.push(url.split('/').pop()!.replace('.m4a', '')); },
+    sample: (url, _at, _gain, _rate, owner, _priority, delay) => { played.push(id(url)); owned.push(`${owner}:${id(url)}`); timed.push([id(url), owner ?? '', delay ?? 0]); },
+    centred: (url) => { played.push(id(url)); },
+    stands: (url, _gain, _delay, _rate, owner) => { stands.push(id(url)); owned.push(`${owner ?? 'stands'}:${id(url)}`); },
     loopAt: (key, _url, gain) => { loops[key] = gain; },
     crowdTension: vi.fn(), soften: vi.fn(), cheer: vi.fn(), preload: vi.fn(),
     announce: (url) => { said.push(url); }, sampleSeconds: () => seconds,
+    takeBack: (owner, url) => { taken.push(url ? `${owner}:${url.includes('/audio/ball/') && !url.includes('/caller/') ? id(url) : url}` : owner); },
   };
   const music: BallMusic = { peak: vi.fn(), heat: vi.fn(), punch: vi.fn() };
   const audio = new BallAudio(mixer, music, () => 0, () => clock);
-  return { audio, mixer, music, played, stands, said, loops, tick: (s: number) => { clock += s; } };
+  return { audio, mixer, music, played, stands, said, loops, owned, taken, timed, tick: (s: number) => { clock += s; } };
 }
 
 describe('the ball modes\' sound', () => {
@@ -190,6 +196,156 @@ describe('the ball modes\' sound', () => {
     expect(music.peak).toHaveBeenLastCalledWith(true);
     expect(music.heat).toHaveBeenLastCalledWith(.8);
     expect(loops['ball-chant']).toBeGreaterThan(0);
+  });
+});
+
+describe('the page\'s own touch heard at once', () => {
+  const touch = (ev: TouchForecast['event'] | undefined, room: number, over: Partial<BallState> = {}): TouchForecast =>
+    ({ ball: ball({ y: 4, vz: 20, lastId: 'me', lastTeam: 'red', shot: 'spike', ...over }), kind: 'strike', room, event: ev });
+  const spike = { kind: 'strike', team: 'red', actorId: 'me', x: 0, y: 4, z: -.5, shot: 'spike', value: 30, text: 'SKY SPIKE', perfect: true } as const;
+  const sky = (over: Partial<BallView> = {}) => view({ mode: 'sky-spike', ball: ball({ z: -6 }), ...over });
+
+  it('plays a PERFECT SPIKE at once - the contact, the crack, the boom, the stands and the caller - and nothing of it again when the room\'s word comes', () => {
+    const r = rig(.8);
+    r.audio.update(snap(sky(), 10), 'me');
+    r.audio.own(touch(spike, 10.2), ball({ y: 4, vy: 2, lastId: 'mate', lastTeam: 'red', shot: 'set' }));
+    expect(r.played).toEqual(expect.arrayContaining(['strike-volley', 'spike-crack', 'impact-boom']));
+    expect(r.owned.filter(o => o.startsWith('own1:'))).toHaveLength(r.played.length);
+    expect(r.stands).toEqual(['crowd-ooh-2']); expect(r.owned).toContain('own1r:crowd-ooh-2');
+    expect(callerLines('perfect-spike')).toContain(r.said[0]);
+    const heard = { played: r.played.length, stands: r.stands.length, said: r.said.length };
+    // The room's own, a round trip and more later, a tick after the forecast's time for it: heard already.
+    const word = sky({ events: [event(7, 'strike', { ...spike, at: 10.217 })], ball: ball({ y: 4, vz: 20, lastId: 'me', lastTeam: 'red', shot: 'spike' }) });
+    r.audio.listen(snap(word, 10.25), 'me');
+    r.audio.update(snap(word, 10.25), 'me');
+    expect({ played: r.played.length, stands: r.stands.length, said: r.said.length }).toEqual(heard);
+    expect(r.taken).toEqual([]);
+    // Its point still brings the house down (the room's event keeps what the forecast only played).
+    r.audio.update(snap(sky({ phase: 'scored', rally: 1, ball: ball({ held: true }), events: [event(8, 'kill', { team: 'red', x: 2, z: 5, at: 10.8 })] }), 10.8), 'me');
+    expect(r.stands).toContain('crowd-roar-2');
+  });
+
+  it('plays a touch the room names no event for (a set) at once, and skips the room\'s flight finding it', () => {
+    const r = rig();
+    r.audio.update(snap(sky({ ball: ball({ y: 2, vy: 6, vz: -3, lastId: 'mate', lastTeam: 'red', shot: 'bump' }) }), 10), 'me');
+    r.audio.own({ ...touch(undefined, 10.05, { vy: 9, vz: -1, shot: 'set' }), kind: 'strike' }, ball({ y: 2, vy: 6, vz: -3, lastId: 'mate', lastTeam: 'red', shot: 'bump' }));
+    expect(r.owned).toEqual([expect.stringMatching(/^own1:strike-tap-/)]);
+    r.audio.update(snap(sky({ ball: ball({ y: 2.1, vy: 9, vz: -1, lastId: 'me', lastTeam: 'red', shot: 'set' }) }), 10 + 2 / 30), 'me');
+    expect(r.played).toHaveLength(1);
+    // Somebody else's touch after it is heard as ever.
+    r.audio.update(snap(sky({ ball: ball({ y: 3, vy: -2, vz: 8, lastId: 'mate', lastTeam: 'red', shot: 'set' }) }), 10 + 4 / 30), 'me');
+    expect(r.played).toHaveLength(2);
+  });
+
+  it('hears a touch once when the room\'s word on it comes before the page\'s own forecast of it', () => {
+    const r = rig(.8);
+    r.audio.update(snap(sky(), 10), 'me');
+    r.audio.update(snap(sky({ events: [event(4, 'perfect', { team: 'red', actorId: 'me', shot: 'block', text: 'STUFF BLOCK', at: 10.02 })] }), 10.03), 'me');
+    const n = { played: r.played.length, stands: r.stands.length, said: r.said.length };
+    expect(r.played).toContain('block-stuff');
+    r.audio.own({ ...touch({ kind: 'perfect', team: 'red', actorId: 'me', x: 0, y: 3.2, z: -.4, shot: 'block', text: 'STUFF BLOCK' }, 10.08), kind: 'guard' }, null);
+    expect({ played: r.played.length, stands: r.stands.length, said: r.said.length }).toEqual(n);
+  });
+
+  it('hears a body\'s touch and the swing landing on it a breath later as one touch, the swing\'s (BallMatch DOUBLE)', () => {
+    const r = rig();
+    const bumped = ball({ y: 2.4, vy: 5, vz: -1, lastId: 'me', lastTeam: 'red', shot: 'bump' }), before = ball({ y: 2.6, vy: -6, vz: -4, lastId: 'them', lastTeam: 'blue', shot: 'spike' });
+    r.audio.update(snap(sky({ ball: before }), 10), 'me');
+    // The body bumps it with the fighter's own set due in 0.05 s: its tap waits that long, and a tick.
+    r.audio.own({ ball: bumped, kind: 'bump', room: 10.05 }, before, .05);
+    expect(r.timed).toEqual([[expect.stringMatching(/^strike-tap-/), 'own1', expect.closeTo(.05 + 1 / 60, 3)]]);
+    // The set lands: the touch is the set's - the bump's tap, still to come, is taken back; the set is heard at once.
+    r.audio.own({ ball: ball({ y: 2.5, vy: 9, vz: -2, lastId: 'me', lastTeam: 'red', shot: 'set' }), kind: 'strike', room: 10.1 }, bumped, Infinity);
+    expect(r.taken).toEqual(['own1']);
+    expect(r.timed[1]).toEqual([expect.stringMatching(/^strike-tap-/), 'own2', 0]);
+    // A body's touch with no swing about to land (or one landing past the window) is heard at once.
+    const q = rig();
+    q.audio.update(snap(sky({ ball: before }), 10), 'me');
+    q.audio.own({ ball: bumped, kind: 'bump', room: 10.05 }, before, DOUBLE.window + .05);
+    expect(q.timed).toEqual([[expect.stringMatching(/^strike-tap-/), 'own1', 0]]);
+    expect(nextContact([.18, .4], .1)).toBeCloseTo(.08, 6); expect(nextContact([.18], .2)).toBe(0); expect(nextContact([.18], .3)).toBe(Infinity);
+  });
+
+  it('on this device too: the room\'s body touch a breath before its fighter\'s swing lands is heard as the swing (DOUBLE)', () => {
+    const r = rig();
+    // (main.ts hands update how soon the page's own swing under way lands: its cast's move, castMove.)
+    r.audio.update(snap(sky({ ball: ball({ y: 2.6, vy: -6, vz: -4, lastId: 'them', lastTeam: 'blue', shot: 'spike' }) }), 10), 'me', .07);
+    // The ball comes off the fighter's body with its set 0.05 s off: the tap waits that long, and a tick or two.
+    r.audio.update(snap(sky({ ball: ball({ y: 2.4, vy: 5, vz: -1, lastId: 'me', lastTeam: 'red', shot: 'bump' }) }), 10 + 1 / 60), 'me', .05);
+    expect(r.timed).toEqual([[expect.stringMatching(/^strike-tap-/), 'late1', expect.closeTo(.05 + 2.5 / 60, 3)]]);
+    // The set lands on it - the body's tap still to come is taken back, and the set heard at once.
+    r.audio.update(snap(sky({ ball: ball({ y: 2.5, vy: 9, vz: -2, lastId: 'me', lastTeam: 'red', shot: 'set' }) }), 10 + 4 / 60), 'me', 0);
+    expect(r.taken).toEqual(['late1']);
+    expect(r.timed[1]).toEqual([expect.stringMatching(/^strike-tap-/), 'ball', 0]);
+    // A swing's own touch (its contact landing now) is never held back.
+    const q = rig();
+    q.audio.update(snap(sky({ ball: ball({ y: 2.6, vy: -6, vz: -4, lastId: 'them', lastTeam: 'blue', shot: 'spike' }) }), 10), 'me', .02);
+    q.audio.update(snap(sky({ ball: ball({ y: 2.5, vy: 9, vz: -2, lastId: 'me', lastTeam: 'red', shot: 'set' }) }), 10 + 1 / 60), 'me', 0);
+    expect(q.timed).toEqual([[expect.stringMatching(/^strike-tap-/), 'ball', 0]]);
+  });
+
+  it('hears the ball riding the guard after a STUFF BLOCK heard at once as that block, not another', () => {
+    const r = rig(.8);
+    r.audio.update(snap(sky({ ball: ball({ y: 3.4, vz: -18, vy: -6, z: 1, lastId: 'them', lastTeam: 'blue', shot: 'spike' }) }), 10), 'me');
+    r.audio.own({ ...touch({ kind: 'perfect', team: 'red', actorId: 'me', x: 0, y: 3.2, z: -.4, shot: 'block', text: 'STUFF BLOCK' }, 10.05, { vz: 9, vy: -8, shot: 'block' }), kind: 'guard' }, null);
+    const n = r.played.length;
+    // The room's block, then its flight finding the ball on the guard again a tick or two after.
+    const blocked = (t: number, vz: number, id: number[]) => sky({ events: id.map(i => event(i, 'perfect', { team: 'red', actorId: 'me', shot: 'block', text: 'STUFF BLOCK', at: 10.067 })), ball: ball({ y: 3, z: .4, vz, vy: -8, lastId: 'me', lastTeam: 'red', shot: 'block' }) });
+    r.audio.update(snap(blocked(10.1, 9, [5]), 10.1), 'me');
+    r.audio.update(snap(blocked(10.13, 2, [5]), 10.13), 'me');
+    expect(r.played).toHaveLength(n);
+    // Its own touch a while later is a touch again.
+    r.audio.update(snap(sky({ ball: ball({ y: 1.2, z: -2, vz: 2, vy: -4, lastId: 'mate', lastTeam: 'red', shot: 'block' }) }), 10.77), 'me');
+    r.audio.update(snap(sky({ ball: ball({ y: 1, z: -2, vz: -6, vy: 5, lastId: 'me', lastTeam: 'red', shot: 'bump' }) }), 10.8), 'me');
+    expect(r.played).toHaveLength(n + 1);
+  });
+
+  it('waits for the room to hear the stands and the caller where the touch alone does not name the moment, and plays only what the forecast did not', () => {
+    const r = rig(.8);
+    r.audio.update(snap(sky(), 10), 'me');
+    // A plain SKY SPIKE: the room may name it a ROLL SPIKE or a LINK SHOT.
+    r.audio.own(touch({ ...spike, perfect: undefined }, 10.2), null);
+    expect(r.played).toEqual(expect.arrayContaining(['strike-volley', 'spike-crack', 'impact-boom']));
+    expect(r.stands).toEqual([]); expect(r.said).toEqual([]);
+    const n = r.played.length;
+    r.audio.listen(snap(sky({ events: [event(7, 'strike', { ...spike, perfect: undefined, text: 'ROLL SPIKE', at: 10.2 })], ball: ball({ lastId: 'me' }) }), 10.24), 'me');
+    r.audio.update(snap(sky({ events: [event(7, 'strike', { ...spike, perfect: undefined, text: 'ROLL SPIKE', at: 10.2 })] }), 10.24), 'me');
+    // The ROLL SPIKE's crack and boom were heard with the touch; its call is the room's.
+    expect(r.played).toHaveLength(n);
+    expect(callerLines('roll-spike')).toContain(r.said[0]);
+    expect(r.taken).toEqual([]);
+  });
+
+  it('takes a refused touch back - its hits, the stands, the caller\'s line - and never plays it twice', () => {
+    const r = rig(.8);
+    r.audio.update(snap(sky(), 10), 'me');
+    r.audio.own({ ...touch({ kind: 'perfect', team: 'red', actorId: 'me', x: 0, y: 3, z: -.4, shot: 'block', text: 'STUFF BLOCK' }, 10.2), kind: 'guard' }, null);
+    expect(r.played).toContain('block-stuff'); expect(r.stands).toContain('crowd-roar-1');
+    const said = r.said[0];
+    expect(callerLines('stuff-block')).toContain(said);
+    // The newest snapshots: somebody else's touch, and nothing of this page's fighter's.
+    r.audio.listen(snap(sky({ ball: ball({ lastId: 'them', lastTeam: 'blue' }) }), 10.3), 'me');
+    expect(r.taken).toEqual([]);
+    r.audio.listen(snap(sky({ ball: ball({ lastId: 'them', lastTeam: 'blue' }) }), 10.46), 'me');
+    expect(r.taken).toEqual(expect.arrayContaining(['own1', 'own1r', `announcer:${said}`]));
+    // The room's flight with the ball sent on by somebody else: nothing of this page's played.
+    const n = r.played.length;
+    r.audio.update(snap(sky({ ball: ball({ y: 3, vz: -9, lastId: 'them', lastTeam: 'blue', shot: 'spike' }) }), 10.5), 'me');
+    expect(r.played.slice(n).filter(id => id === 'block-stuff' || id === 'block')).toEqual([]);
+  });
+
+  it('takes back the stands and the caller heard for another moment than the room\'s, and plays the room\'s', () => {
+    const r = rig(.8);
+    r.audio.update(snap(view(), 10), 'me');
+    const perfect = { kind: 'strike', team: 'red', actorId: 'me', x: 0, y: 1, z: 0, shot: 'power', value: 32, text: 'PERFECT STRIKE', perfect: true } as const;
+    r.audio.own(touch(perfect, 10.2, { shot: 'power', y: 1 }), null);
+    expect(r.played).toEqual(expect.arrayContaining(['impact-boom'])); expect(r.stands).toContain('crowd-ooh-2');
+    const said = r.said[0];
+    // The room timed it a tick late: a plain power shot.
+    const word = view({ events: [event(9, 'strike', { ...perfect, text: undefined, perfect: undefined, at: 10.21 })] });
+    r.audio.listen(snap(word, 10.25), 'me'); r.audio.update(snap(word, 10.25), 'me');
+    expect(r.taken).toEqual(expect.arrayContaining(['own1r', `announcer:${said}`, 'own1:impact-boom']));
+    expect(r.played.filter(id => id.startsWith('strike-power'))).toHaveLength(1);
   });
 });
 

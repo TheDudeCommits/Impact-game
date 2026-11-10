@@ -1,5 +1,7 @@
 import { FIGHTERS } from '../../config';
 import { ballOf, BALL_TEAM_NAMES } from '../../game/ball/model';
+import { LESSON } from '../../game/ball/lesson';
+import { DRILLS } from '../../game/ball/drills';
 import { promptText } from '../prompts';
 import { MODES, type ModeId, type VariantId } from '../modes/catalogue';
 import { defenceBasics } from '../modes/defence';
@@ -24,6 +26,9 @@ export function statusLine(mode: ModeId, frame: ModeHudFrame | undefined): strin
     case 'goal-rush': case 'sky-spike': {
       const ball = ballOf(snapshot);
       if (!ball) return '';
+      // (LEARN TO PLAY, a drill and FREE PLAY keep no score and run no clock: the step, the drill, the practice.)
+      if (ball.lesson) { const steps = LESSON[ball.mode], step = steps[ball.lesson.index]; return step ? `LEARN TO PLAY · STEP ${ball.lesson.index + 1} OF ${steps.length} · ${step.title}` : 'LEARN TO PLAY'; }
+      if (ball.practice) return ball.drill ? `DRILL · ${DRILLS[ball.drill.id].name}` : 'FREE PLAY';
       const score = `${BALL_TEAM_NAMES.red} ${ball.score.red} · ${ball.score.blue} ${BALL_TEAM_NAMES.blue}`;
       if (ball.phase === 'lobby' || ball.phase === 'countdown') return 'THE TEAMS ARE TAKING THE FIELD';
       if (ball.phase === 'over') return `FULL TIME · ${score}`;

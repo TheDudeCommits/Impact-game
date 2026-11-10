@@ -11,7 +11,7 @@ If you believe something here is yours and should not be, write to Hello@Dude.wo
 
 | Asset | Author | Source | Licence | Where |
 |---|---|---|---|---|
-| Universal Animation Library and Universal Animation Library 2 (Standard) | Quaternius | https://quaternius.com/packs/universalanimationlibrary.html | CC0 1.0 | The shared moves (stance, gaits, jumps, guard, hits, knockdown, get-up, death, sword string) of many fighters and bosses in `public/assets/fighters/` and `public/assets/survival/enemies/`, retargeted and re-timed, and the takes authored over them (among them the ball modes' sports moves, `ball-moves.glb`, on the library's own mannequin) |
+| Universal Animation Library and Universal Animation Library 2 (Standard) | Quaternius | https://quaternius.com/packs/universalanimationlibrary.html | CC0 1.0 | Shared moves cut from the library (stance, gaits, jumps, guard, hits, knockdown, get-up, death, sword string) on many fighters and bosses in `public/assets/fighters/` and `public/assets/survival/enemies/`, retargeted and re-timed, and the takes authored over them (among them the ball modes' sports moves, `ball-moves.glb`, on the library's own mannequin) |
 
 ## Models and textures
 

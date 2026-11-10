@@ -1,5 +1,5 @@
 import { FIGHTERS } from '../../config';
-import { ballOf, BALL_TEAM_NAMES, CHARM_COLOURS, GOAL_RULES, SHOT_NAMES, SPIKE_RULES, charmLine, charmName, heatTier, otherTeam, type BallEvent, type BallSeat, type BallTeam, type BallView } from '../../game/ball/model';
+import { ballOf, BALL_TEAM_NAMES, CHARM_COLOURS, POINT_GIVEN, POINT_WON, GOAL_RULES, SHOT_NAMES, SPIKE_RULES, charmLine, charmName, heatTier, otherTeam, type BallEvent, type BallSeat, type BallTeam, type BallView } from '../../game/ball/model';
 import type { ModeHud, ModeHudFrame, ModeHudMount } from './modeHud';
 import { el, Text, Flag, Data, Face, Markup, Fill, clockOf, pulse } from './kit';
 import { hudView } from './hudView';
@@ -33,7 +33,7 @@ export function createBallHud(): ModeHud { return new BallHud(); }
 const nameOf = (seat: BallSeat | undefined) => !seat ? '' : (seat.bot || seat.name === 'Fighter' ? FIGHTERS[seat.fighter].name : seat.name).toUpperCase();
 
 class BallHud implements ModeHud {
-  private board!: HTMLElement; private side!: Data;
+  private board!: HTMLElement; private side!: Data; private boardLesson!: Flag;
   private faces: Record<BallTeam, HTMLElement> = {} as Record<BallTeam, HTMLElement>;
   private scores: Record<BallTeam, Text> = {} as Record<BallTeam, Text>;
   private scoreNodes: Record<BallTeam, HTMLElement> = {} as Record<BallTeam, HTMLElement>;
@@ -68,7 +68,7 @@ class BallHud implements ModeHud {
   private replay!: HTMLElement; private replayOn!: Flag; private replayTeam!: Data; private replayLine!: Text; private replaySkip!: Markup; private replayKey = '';
 
   mount(m: ModeHudMount) {
-    this.board = el('div', 'bh-board', m.zone('2')); this.side = new Data(this.board, 'side');
+    this.board = el('div', 'bh-board', m.zone('2')); this.side = new Data(this.board, 'side'); this.boardLesson = new Flag(this.board, 'lesson');
     for (const team of ['red', 'blue'] as BallTeam[]) {
       const plate = el('div', `bh-team ${team}`, this.board);
       this.labels[team] = new Text(el('small', '', plate));
@@ -141,6 +141,9 @@ class BallHud implements ModeHud {
       this.labels[t].set(t === team ? `${BALL_TEAM_NAMES[t]} · YOU` : BALL_TEAM_NAMES[t]);
       this.scores[t].set(String(v.score[t]));
     }
+    // (LEARN TO PLAY's goals and points are its steps' moments, not a match's: the score bug carries no score
+    // there, only LEARN TO PLAY between the two sides - the steps' count is the checklist's, ui/ball/LearnToPlay.ts.)
+    this.boardLesson.set(!!v.lesson);
     const score = `${v.score.red}-${v.score.blue}`;
     if (score !== this.shownScore) { if (this.shownScore) for (const t of ['red', 'blue'] as BallTeam[]) pulse(this.scoreNodes[t], 'pulse'); this.shownScore = score; }
     // The middle: the clock, OVERTIME, or the rally and what the next point is worth.
@@ -264,10 +267,16 @@ class BallHud implements ModeHud {
     const seat = (id?: string) => v.seats.find(s => s.id === id);
     const who = nameOf(seat(e.actorId)), mine = e.team === team, shot = e.shot ? SHOT_NAMES[e.shot] : '';
     const speed = e.value ? `${Math.round(e.value * (e.kind === 'goal' || e.kind === 'own-goal' ? 1 : KMH))} KM/H` : '';
+    // (LEARN TO PLAY keeps no score - a goal or point to the other side is a step's miss, which the lesson's own
+    // line says, not a banner that stood over the next step's start for two seconds; the person's own side's moment keeps
+    // its banner without the score's words.)
+    const scored = e.kind === 'goal' || e.kind === 'own-goal' || POINT_WON.has(e.kind) || POINT_GIVEN.has(e.kind);
+    if (v.lesson && scored && !mine) return;
+    const lesson = !!v.lesson && scored;
     switch (e.kind) {
       case 'goal': {
         const assist = seat(e.assistId);
-        this.show(now, 'goal', e.team ?? '', mine ? 'YOUR TEAM SCORES' : `${BALL_TEAM_NAMES[e.team!]} SCORES`, e.text === 'SUPER GOAL' ? 'SUPER GOAL!!' : 'GOOOAL!!',
+        this.show(now, 'goal', e.team ?? '', lesson ? '' : mine ? 'YOUR TEAM SCORES' : `${BALL_TEAM_NAMES[e.team!]} SCORES`, e.text === 'SUPER GOAL' ? 'SUPER GOAL!!' : 'GOOOAL!!',
           [who, shot, speed, assist ? `ASSIST ${nameOf(assist)}` : ''].filter(Boolean).join(' · '), v.drill || v.lesson ? 1500 : 3600); // (A drill's next ball comes a breath after, and LEARN TO PLAY's: its banner goes before it does.)
         break;
       }
@@ -281,8 +290,8 @@ class BallHud implements ModeHud {
         this.show(now, 'super', e.team ?? '', `${who} · SUPER SHOT`, superShotName(seat(e.actorId)?.fighter), v.mode === 'goal-rush' ? `A GOAL FROM IT COUNTS ${GOAL_RULES.superGoal}` : 'INTO THE EMPTIEST CORNER', 1900); break;
       case 'duel': this.show(now, 'clash', e.team ?? '', `${who} MEETS ${superShotName(seat(e.targetId)?.fighter)}`, 'TECHNIQUE DUEL!!', 'A PERFECT GUARD AGAINST A SUPER SHOT', 1200); break;
       case 'duel-won': this.show(now, e.text === 'SHOT STOPPED' ? 'save' : 'super', e.team ?? '', e.text === 'SHOT STOPPED' ? `${who} WINS THE DUEL` : `${who} BREAKS THROUGH`, e.text === 'SHOT STOPPED' ? 'SHOT STOPPED!!' : 'BREAKS THROUGH!!', nameOf(seat(e.targetId)) ? `OVER ${nameOf(seat(e.targetId))}` : '', 1800); break;
-      case 'kill': this.show(now, 'kill', e.team ?? '', mine ? 'POINT' : `${BALL_TEAM_NAMES[e.team!]} POINT`, e.text === 'SUPER SHOT' ? 'SUPER SHOT!!' : e.shot === 'spike' ? 'SPIKED!' : 'KILL!', [who, shot, (e.value ?? 1) > 1 ? '×2 FEVER' : ''].filter(Boolean).join(' · '), 2400); break;
-      case 'ace': this.show(now, 'ace', e.team ?? '', mine ? 'POINT' : `${BALL_TEAM_NAMES[e.team!]} POINT`, 'ACE!', who, 2400); break;
+      case 'kill': this.show(now, 'kill', e.team ?? '', lesson ? '' : mine ? 'POINT' : `${BALL_TEAM_NAMES[e.team!]} POINT`, e.text === 'SUPER SHOT' ? 'SUPER SHOT!!' : e.shot === 'spike' ? 'SPIKED!' : 'KILL!', [who, shot, (e.value ?? 1) > 1 ? '×2 FEVER' : ''].filter(Boolean).join(' · '), v.lesson ? 1500 : 2400); break;
+      case 'ace': this.show(now, 'ace', e.team ?? '', lesson ? '' : mine ? 'POINT' : `${BALL_TEAM_NAMES[e.team!]} POINT`, 'ACE!', who, v.lesson ? 1500 : 2400); break;
       case 'out': this.show(now, 'out', e.team ?? '', `${BALL_TEAM_NAMES[e.team!]} POINT`, 'OUT!', who ? `OFF ${who}` : '', 1900); break;
       case 'touches': this.show(now, 'out', e.team ?? '', `${BALL_TEAM_NAMES[e.team!]} POINT`, 'FOUR TOUCHES!', `${SPIKE_RULES.touches} A SIDE`, 1900); break;
       case 'block': case 'perfect':

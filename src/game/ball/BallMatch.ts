@@ -210,9 +210,16 @@ const SERVE_RULES = {reach: .9, apex: .92, spray: 1.2, wild: 4, wide: 2.4, low: 
  *  Off (`compensate` 0) on this device, in a couch match and in every test that does not ask: the online room turns it on
  *  (BallRoom). */
 export const SEEN = {most: .3, keep: .4, over: .04, settle: 1, overNet: 1} as const;
+/** A body's touch of the ball and the same seat's swing landing on it within `window` s are one touch. The ball meets the
+ *  body a breath before the swing pressed for it lands, and both counted: in Sky Spike that spent two of a side's three
+ *  touches (a bump and a set from one player, a set's hitter called for FOUR TOUCHES), about 13 a match; in Goal Rush 15
+ *  touches a match too many on the card. The swing plays the ball - its flight, its events, a LINK SHOT off a team-mate's
+ *  set - as the touch the body already counted; the body's own ball is the swing's to replace. (Sky Spike's last touch
+ *  played by the body goes over by itself: a swing just behind it plays it instead.) */
+export const DOUBLE = {window: .12} as const;
 /** The rules of a touch that the page forecasts for its own fighter (touchForecast.ts), read from here so the
  *  page's forecast and the room's touch cannot drift apart. */
-export const TOUCH_RULES = {BODY_LOW, BODY_HIGH, BODY_BOUNCE, GOAL_BODY_BOUNCE, GUARD_REACH, CLIMB, SWING_TOP, PERFECT_SPIKE, SERVE_RULES, DIG_DIVE, HEADED, BOWL, REELING, GUARD_OFF} as const;
+export const TOUCH_RULES = {BODY_LOW, BODY_HIGH, BODY_BOUNCE, GOAL_BODY_BOUNCE, GUARD_REACH, CLIMB, SWING_TOP, PERFECT_SPIKE, SERVE_RULES, DIG_DIVE, HEADED, BOWL, REELING, GUARD_OFF, DOUBLE} as const;
 /** One tick of the ball's history (SEEN): the ball, the rally's count, where each fighter stood, and what changed the
  *  ball's flight in that tick - a seat's touch (`body`: its body's, `touch`: a swing's or a guard's), or the match's own
  *  doing or nobody's known (`by` null). */
@@ -269,6 +276,9 @@ export class BallMatch implements ExternalTargets, LessonHost {
   /** The cast each seat last touched the ball with: a move's later contacts strike it again but are not new touches. */
   private readonly touchCast = new Map<string, number>();
   private readonly touchedAt = new Map<string, number>();
+  /** DOUBLE: when each seat's body last played the ball as a touch of its own (Sky Spike's automatic bump, a
+   *  body's bounce counted as a touch), and whether it was one of a Sky Spike side's three. */
+  private readonly bodyPlayed = new Map<string, {at: number; three: boolean}>();
   /** Every touch lately, oldest first: `strike` false for a ball that only bounced off a body. */
   private touchesLog: (Touch & {strike: boolean; shot?: ShotKind; scuffed?: boolean})[] = [];
   /** Blows a stopped ball took, landing together when its time starts again. */
@@ -1211,7 +1221,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
         this.emit('save', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, value: Math.round(speed), text: 'OFF THE LINE', shot: 'save'}); this.saved(seat);
       }
       if ((this.bodyTouch.get(seat.id) ?? -Infinity) + .35 <= now && Math.abs(rel) > 1.5) {
-        this.bodyTouch.set(seat.id, now);
+        this.bodyTouch.set(seat.id, now); this.bodyPlayed.set(seat.id, {at: now, three: false});
         this.touched(seat, null, 'header');
       }
     }
@@ -1423,7 +1433,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
       // Nobody plays the ball on the far side of the net; a serve is its server's alone; and a ball a side has sent
       // over (its last touch spent, on its way to the net) goes by that side's own swings.
       if (sideOf(b.z) !== seat.team && Math.abs(b.z) > .9) return null;
-      if (this.sentBy(seat) && this.touchCast.get(seat.id) !== castId) return null;
+      if (this.sentBy(seat) && this.touchCast.get(seat.id) !== castId && !this.merges(seat, now, blow.slot)?.three) return null;
       if (b.held && (this.view.phase !== 'kickoff' || seat.id !== this.view.serverId)) return null;
       // A TIP goes over the block's hands and its swings alike (bodyContacts); a serve is never blocked or attacked at the
       // net (volleyball's rule: it is received).
@@ -1432,14 +1442,19 @@ export class BallMatch implements ExternalTargets, LessonHost {
     this.strikes.set(seat.id, {cast: castId, at: now});
     // The ball leaving a striker's foot brushes their own body: not a touch of its own.
     this.bodyTouch.set(seat.id, now);
-    const p = a.state, yaw = a.attackYaw ?? a.input.yaw, mx = a.input.moveX, mz = a.input.moveZ;
+    // (The stick as the button was pressed, as the aim is - read as the blow landed, a set pressed with the stick
+    // across had mostly been let go by the contact, and came out the floating one; a curl, the same.)
+    const p = a.state, yaw = a.attackYaw ?? a.input.yaw, mx = a.attackMoveX ?? a.input.moveX, mz = a.attackMoveZ ?? a.input.moveZ;
     const serve = this.mode === 'sky-spike' && b.held;
     const again = b.lastId === seat.id && (this.touchCast.get(seat.id) === castId || now - (this.touchedAt.get(seat.id) ?? -Infinity) < .3);
+    // (DOUBLE: the body played it a breath ago - this swing is that touch, played as the swing plays it.)
+    const merged = !again && !serve ? this.merges(seat, now, blow.slot) : undefined;
+    if (merged) { this.bodyPlayed.delete(seat.id); this.unlog(seat.id); }
     this.touchedAt.set(seat.id, now);
     // (A serve's later contacts - a many-blow heavy's - leave it be: they struck it again as a spike from the baseline, and
     // a JUMP SERVE flew into the far wall.)
     if (again && this.mode === 'sky-spike' && b.shot === 'serve') return {damage: 1, reaction: 'flinch', killed: false};
-    const touches = this.mode === 'sky-spike' ? (serve ? SPIKE_RULES.touches : (this.view.touchTeam === seat.team ? this.view.touches : 0) + (again ? 0 : 1)) : 0;
+    const touches = this.mode === 'sky-spike' ? (serve ? SPIKE_RULES.touches : (this.view.touchTeam === seat.team ? this.view.touches : 0) + (again || merged?.three ? 0 : 1)) : 0;
     this.touchCast.set(seat.id, castId);
     const mates = this.mode === 'goal-rush' ? [...this.seats.values()].filter(s => s.team === seat.team && s.id !== seat.id).map(s => {
       const m = this.sim.actors.get(s.id)!.state, v = this.last.get(s.id);
@@ -1500,7 +1515,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
     const clashed = real && !!rival && rival.team !== seat.team && now - rival.at <= CLASH.window && now - this.clashAt >= CLASH.gap && b.frozenUntil <= now && !this.stack && this.view.phase === 'live';
     if (real) this.lastStrike = clashed ? null : {id: seat.id, team: seat.team, at: now, power, vx: result.vx, vy: result.vy, vz: result.vz, shot: result.shot, super: result.super};
     if (clashed) {
-      this.clash(seat, power, result, rival!);
+      this.clash(seat, power, result, rival!, merged);
       const [ult, awaken] = TOUCH_METER[blow.slot] ?? [3, 2];
       this.sim.addMeter(seat.id, this.mode === 'goal-rush' ? ult * GOAL_TOUCH_METER * this.swing(seat.team) : ult, awaken);
       return {damage: 1, reaction: 'flinch', killed: false};
@@ -1565,7 +1580,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
     if (!seat.bot && !this.brains.has(seat.id)) this.view.best = Math.max(this.view.best, Math.hypot(b.vx, b.vy, b.vz));
     // A move's later contacts drive the ball on; the touch was its first.
     if (again) { b.lastId = seat.id; b.lastTeam = seat.team; }
-    else this.touched(seat, result.shot, b.shot ?? result.shot, false, serve, stopped, scuffed);
+    else this.touched(seat, result.shot, b.shot ?? result.shot, false, serve, stopped, scuffed, merged);
     if (!again) this.hot = perfectSpike;
     if (linked) {
       b.link = linked.id; this.award(seat, 'link'); this.award(linked, 'linkSetter');
@@ -1708,7 +1723,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
   }
   /** Two sides' blows on the ball at once: it hangs in the clash, both fighters freeze, and the stronger blow (with a
    *  little luck either way) sends it on harder and hotter when the clash breaks (releaseStack). */
-  private clash(seat: BallSeat, power: number, result: ReturnType<typeof strikeBall>, rival: NonNullable<BallMatch['lastStrike']>) {
+  private clash(seat: BallSeat, power: number, result: ReturnType<typeof strikeBall>, rival: NonNullable<BallMatch['lastStrike']>, merged?: {three: boolean}) {
     const b = this.ball, now = this.sim.serverTime;
     const mine = power * (.85 + this.rng() * .3) >= rival.power * (.85 + this.rng() * .3);
     const win = mine ? {id: seat.id, team: seat.team, vx: result.vx, vy: result.vy, vz: result.vz, shot: result.shot, super: result.super} : rival;
@@ -1717,7 +1732,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
     b.clash = now + CLASH.hold; this.clashAt = now; b.vx = b.vy = b.vz = 0; b.sx = b.sy = b.sz = 0; b.super = win.super;
     for (const id of [seat.id, rival.id]) { const a = this.sim.actors.get(id); if (a) { if (now >= a.hitstopUntil) a.hitstopFrom = now; a.hitstopUntil = Math.max(a.hitstopUntil, now + CLASH.freeze); } }
     const winner = this.seats.get(win.id)!;
-    this.touched(seat, result.shot, result.shot);
+    this.touched(seat, result.shot, result.shot, false, false, undefined, false, merged);
     b.lastId = winner.id; b.lastTeam = winner.team; b.shot = win.shot;
     if (this.mode === 'sky-spike') { this.view.touchTeam = winner.team; this.view.touches = SPIKE_RULES.touches; }
     this.award(winner, 'clash'); winner.clashes = (winner.clashes ?? 0) + 1;
@@ -1743,6 +1758,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
     if (result.shot === 'bump' && incoming >= SPIKE_DIG.from) this.dug(seat, incoming, dived);
     this.sim.addMeter(seat.id, 2, 2);
     this.touched(seat, result.shot, b.shot ?? result.shot, false, false, undefined, !!scuff);
+    this.bodyPlayed.set(seat.id, {at: this.sim.serverTime, three: true});
   }
   /** Sky Spike: a serve's reception (the receiving side's first touch of it) off line - a FLOAT SERVE's always a little
    *  (SERVE_RULES.shank), a hard serve's met at full stretch, with the body `stretch.from` metres or more off the ball's
@@ -1799,7 +1815,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
   /** A touch of the ball by `seat`: whose ball it is now, the touch count, the shot bookkeeping. `stopped` is whether the
    *  ball was on its way into their goal before the touch, when the touch has already sent it on (a strike's); `scuffed`,
  *  a strike or a body's touch out of a flurry of presses (MASHED), whose MVP worth is MVP.scuffTouch's and .scuffShot's. */
-  private touched(seat: BallSeat, shot: ShotKind | null, named: ShotKind, block = false, serve = false, stopped?: boolean, scuffed = false) {
+  private touched(seat: BallSeat, shot: ShotKind | null, named: ShotKind, block = false, serve = false, stopped?: boolean, scuffed = false, merged?: {three: boolean}) {
     const b = this.ball, now = this.sim.serverTime;
     // (A strike's touch is told whether it stopped a ball on target, read before the strike sent it away. Read
     // here, after, a clearance was never a save: only a strike that still sent the ball at its own goal was.)
@@ -1807,7 +1823,8 @@ export class BallMatch implements ExternalTargets, LessonHost {
     b.lastId = seat.id; b.lastTeam = seat.team; b.link = null; this.hot = false;
     // (GUARD_OFF: a touch is a new flight - every body that let the last one go may meet this one.)
     this.shed.clear();
-    seat.touches++; this.award(seat, scuffed ? 'scuffTouch' : 'touch');
+    // (DOUBLE: a swing just behind its body's touch is that touch - counted once, on the card and toward MVP.)
+    if (!merged) { seat.touches++; this.award(seat, scuffed ? 'scuffTouch' : 'touch'); }
     this.touchesLog.push({id: seat.id, team: seat.team, at: now, x: b.x, y: b.y, z: b.z, strike: shot !== null, shot: shot ?? undefined, ...(scuffed ? {scuffed} : {})});
     if (this.touchesLog.length > 12) this.touchesLog.shift();
     if (this.mode === 'goal-rush') {
@@ -1820,8 +1837,20 @@ export class BallMatch implements ExternalTargets, LessonHost {
     // ball it was last, for the line call).
     if (block || shot === null) { if (this.view.touchTeam !== seat.team && sideOf(b.z) === seat.team) { this.view.touchTeam = seat.team; this.view.touches = 0; } return; }
     if (this.view.touchTeam !== seat.team) { this.view.touchTeam = seat.team; this.view.touches = 0; }
-    this.view.touches++;
+    if (!merged?.three || this.view.touches === 0) this.view.touches++;
     if (this.view.touches > SPIKE_RULES.touches) this.point(otherTeam(seat.team), 'touches', seat.id);
+  }
+  /** DOUBLE: the ball is the seat's own body's touch of a moment ago, still on the flight it gave it - a swing
+   *  landing now is that touch. Not a blow out of a flurry of presses (MASHED): it was pressed for no ball in particular,
+   *  and merged, flailing at a ball cost a side nothing - the scripted masher's side won 40% on NORMAL (21% before). */
+  private merges(seat: BallSeat, now: number, slot: string) {
+    const body = this.bodyPlayed.get(seat.id);
+    return body && this.ball.lastId === seat.id && !this.ball.held && now - body.at <= DOUBLE.window + 1e-6 && !this.mashed(seat, slot) ? body : undefined;
+  }
+  /** The seat's own last touch, its body's, taken off the log (DOUBLE: the swing's goes in its place). */
+  private unlog(id: string) {
+    const last = this.touchesLog[this.touchesLog.length - 1];
+    if (last?.id === id) this.touchesLog.pop();
   }
   /** Whether the last strike on the ball before this one was a team-mate's, inside BALL_RULES.passWithin: a pass. */
   private passed(seat: BallSeat, now: number) {

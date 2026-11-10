@@ -37,9 +37,13 @@
  "tests/footContact.test.ts": [
   "cycles kenzo's legs into a lunge and leaves a standing swing alone",
   "gaunt does not skate at a run",
+  "gaunt keeps a foot on the ground while blocking and walking",
   "kenzo does not skate at a run",
   "koko does not skate at a run",
+  "koko keeps a foot on the ground while blocking and walking",
+  "koko walks, runs, and does something in between",
   "kuon does not skate at a run",
+  "kuon keeps a foot on the ground while blocking and walking",
   "measures the whole roster",
   "oro does not skate at a run",
   "reports a plausible number of steps for the ground covered",
@@ -113,13 +117,17 @@
   "key every joint the transfer moves in every clip, so the renderer's layers never pile up on a stale pose"
  ],
  "tests/reactClips.test.ts": [
-  "gaunt, through seven lights, a launch, a juggle and a second launch"
+  "gaunt, through seven lights, a launch, a juggle and a second launch",
+  "koko's hit recoil keeps its own forearm and hand",
+  "ouga's hit recoil keeps its own forearm and hand",
+  "shirokane's hit recoil keeps its own forearm and hand"
  ],
  "tests/reactionTakes.test.ts": [
   "gaku, a light string",
   "gaunt, a heavy, the knockdown and the get-up",
   "gaunt, a light string",
   "gaunt, konta's light string, seed 8",
+  "koko, imago's light string, seed 7",
   "kuon, Konta's light string, seed 7",
   "kuon, Konta's light string, seed 8",
   "kuon, a heavy, the knockdown and the get-up",
@@ -201,5 +209,16 @@
  ],
  "tests/senkoBunaIntegration.test.ts": [
   "lets go of the Armory effects of the fighter who left as the next room is entered, and keeps the room's own"
+ ],
+ "tests/dreamHurts.test.ts": [
+  "ouga carries them at its own hurt's and flinch's lengths, every core joint keyed",
+  "ouga under taisei's string",
+  "and, the takes off, the body's own hurt on every blow"
+ ],
+ "tests/hitFeelEffects.test.ts": [
+  "reels, then doubles over, dazed, for the rest of the hold (Shirokane's Static Scarecrow)"
+ ],
+ "tests/originals-jump-onset.test.ts": [
+  "finds the roster"
  ]
 }

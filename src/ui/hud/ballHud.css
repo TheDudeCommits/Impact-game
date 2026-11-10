@@ -32,6 +32,8 @@
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score.red{grid-area:redscore;background:var(--bh-red);clip-path:polygon(14% 0,100% 0,100% 100%,0 100%)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score.blue{grid-area:bluescore;background:var(--bh-blue);clip-path:polygon(0 0,86% 0,100% 100%,0 100%)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score[data-pulse]{animation:bh-score-a .7s ease-out}
+/* LEARN TO PLAY: no score on the bug - the lesson's goals and points are its steps' moments. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-board.lesson .bh-score{display:none}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-score[data-pulse="b"]{animation-name:bh-score-b}
 @keyframes bh-score-a{0%{transform:scale(1.6);filter:brightness(2)}100%{transform:none}}
 @keyframes bh-score-b{0%{transform:scale(1.6);filter:brightness(2)}100%{transform:none}}

@@ -120,4 +120,29 @@ describe("Sky Spike's broadcast camera", () => {
     l.position.set(1, 2, 3); cam.aim(r, l, 0);
     expect(l.position.toArray()).toEqual([1, 2, 3]);
   });
+
+  it("frames LEARN TO PLAY's BLOCK step: their hitter's glint well under the score bug, you clear of the lesson's line", () => {
+    // Their hitter at the top of its jump on the far side (feet near five metres up), its glint's flare over its hand to
+    // 7.4 m; the set at 5.2 m; you at the net. Where each is on the screen, as a share of the way down from the top edge.
+    for (const team of ['red', 'blue'] as const) {
+      const s = team === 'red' ? 1 : -1, glint = new THREE.Vector3(.4, 7.4, s * 3.9), set = new THREE.Vector3(.3, 5.2, s * 2), head = new THREE.Vector3(0, 1.9, -s * 1.05), feet = new THREE.Vector3(0, 0, -s * 1.05);
+      for (const aspect of [16 / 9, 844 / 390]) {
+        const frame = (step: boolean) => {
+          const cam = new SpikeCam(), r = rig(), l = new THREE.PerspectiveCamera(50, aspect, .1, 500);
+          const lesson = step ? {mode: 'sky-spike', index: 3, step: 'ss-block', state: 'live', at: 0, done: [], skipped: [], tries: 0, miss: null, parts: [], praise: '', cue: null} : undefined;
+          for (let i = 0; i < 240; i++) { cam.steer(r, 1 / 60, 0, NaN, true, {x: 0, y: 0, z: feet.z}, set, view({practice: !!step, lesson} as Partial<BallView>), team, aspect); cam.aim(r, l, 0); }
+          const down = (v: THREE.Vector3) => (1 - v.clone().project(l).y) / 2;
+          return {glint: down(glint), set: down(set), head: down(head), feet: down(feet)};
+        };
+        const stand = frame(false), step = frame(true);
+        // From the stand the flare tops out at the screen's very edge, under the score bug (a match's framing, untouched).
+        expect(stand.glint).toBeLessThan(.05);
+        // In the step: the flare a fifth of the way down or more, the set in the frame; on a desktop you are over the
+        // lesson's line (two thirds down), on a phone on its side under it (it crosses the middle there) and over the meter.
+        expect(step.glint).toBeGreaterThan(.18); expect(step.set).toBeGreaterThan(step.glint);
+        if (aspect < 2) expect(step.feet).toBeLessThan(.68); else expect(step.head).toBeGreaterThan(.6);
+        expect(step.feet).toBeLessThan(.77);
+      }
+    }
+  });
 });

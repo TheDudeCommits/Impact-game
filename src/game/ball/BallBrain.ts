@@ -203,10 +203,10 @@ export const LEVEL_EDGE: Readonly<Record<BotLevel, {read: number; keeper: number
  *  - Sky Spike, TIP: its hitters TIP over a block that is up (`tip` of the time) and now and then anyway (`tipAny`) -
  *    beaten by staying down and covering short.
  *  (Tried and dropped, Sky Spike: WING, every set out to one wing. A set turned by the setter's aim moves 2 m at most;
- *  the stick across sets it wide, but the room reads the stick as the blow lands, and that is often a swing pressed
- *  for another touch. Held through every swing, the side's attacks came from its wing 59% of the time (others' 46-53%),
- *  its attacks fell from 17 a match to 9 and the bots' rallies to 3.2 crossings. SWITCH, the BACK SET to a wing, was
- *  no more readable.)
+ *  the stick across sets it wide, but the room read the stick as the blow landed (now: as pressed), and that was
+ *  often a swing pressed for another touch. Held through every swing, the side's attacks came from its wing 59% of the
+ *  time (others' 46-53%), its attacks fell from 17 a match to 9 and the bots' rallies to 3.2 crossings. SWITCH, the
+ *  BACK SET to a wing, was no more readable.)
  *  The rest of the time a bot plays its own game (its style, SPIKE_STYLES). A person's own team-mates play no plan:
  *  they follow the person. (Tried and dropped: FEED, a person's Sky Spike team-mates setting the person whenever they
  *  stood at the net. It took the attack from HARD's team-mates, who convert it better than most people: a skilled
@@ -854,6 +854,8 @@ export class BallBrain {
           // The stick across, toward the far wing from where the setter stands: the BACK SET (strike.ts reads the stick).
           yaw = Math.atan2(0, -sign); input.moveX = me.x > 0 ? -1 : 1; input.moveZ = 0;
         }
+        // (strike.ts PLACE: an attack over goes where the bot aims it - its stick, read at the press now, is let go.)
+        if (slot !== 'light' || touches >= 2) input.moveX = input.moveZ = 0;
         this.press(input, slot, yaw, now, .35);
         if (touches === 1 && slot === 'light') this.setKind = null;
       }
@@ -882,7 +884,7 @@ export class BallBrain {
     const seam = this.seam(sign, this.serveKind === 'float'), sendYaw = (from: {x: number; z: number}) => Math.atan2(seam.x - from.x, seam.z - from.z);
     if (!me.grounded && this.serveKind === 'jump') {
       // In the air with the toss: the swing a breath before the top of the jump (sooner, the worse the bot: a spray).
-      if (now - this.serveJump >= this.serveSwing && now >= this.nextPress) this.press(input, 'heavy', sendYaw(b), now, .6);
+      if (now - this.serveJump >= this.serveSwing && now >= this.nextPress) { input.moveX = input.moveZ = 0; this.press(input, 'heavy', sendYaw(b), now, .6); }
       input.yaw = sendYaw(b);
       return input;
     }
@@ -895,7 +897,7 @@ export class BallBrain {
         if (this.serveKind === 'jump') {
           this.jump(input, now, arcOf.rise + .05); this.serveJump = now;
           this.serveSwing = Math.max(.08, arcOf.rise - APEX_SWING + (this.rng() - .62) * (1 - this.sk) * .9);
-        } else { this.press(input, this.serveKind === 'float' ? 'light' : 'heavy', sendYaw(b), now, .6); this.serveAt = -1; }
+        } else { input.moveX = input.moveZ = 0; this.press(input, this.serveKind === 'float' ? 'light' : 'heavy', sendYaw(b), now, .6); this.serveAt = -1; }
       }
     }
     return input;

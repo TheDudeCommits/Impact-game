@@ -43,6 +43,14 @@ const FOLLOW = {seconds: .9, share: .12, in: 6, out: 2};
 const TENSE = {push: 1.6, fov: 3, in: .9, out: 1.2, serve: 1.8} as const;
 const CRESCENDO = {from: 4, span: 6, push: 1.4, fov: 2.6, in: 1.2, out: 1.6} as const;
 const LONG = {long: 7, big: 1.9} as const;
+/** LEARN TO PLAY's BLOCK step (game/ball/lesson.ts) - you at the net, their hitter rising on the far side of it
+ *  for the glint you block on (SpikeCues). The hitter's feet top out near five metres up, its hand (the glint) over six:
+ *  from the stand that is the top 7% of the screen, under the score bug, the glint's flare cut off at the edge. For the
+ *  step the look comes `toward` metres up to the net and rises `lift` metres - the glint's flare a fifth of the way down a
+ *  desktop's screen, your own fighter at the net over the line of the lesson (two thirds down). A phone on its side
+ *  (`phone`: from that aspect) has the lesson's line across the middle of the screen, so there it rises `phoneLift`: the
+ *  glint under a third of the way down, you between the line and the meter under the play. Eased in and out at `in` and `out`; a match's stand is untouched. */
+const BLOCK_STEP = {lift: 2.75, toward: 1.5, phone: 2, phoneLift: 4.4, in: 1.6, out: 1.4} as const;
 /** A strike's punch (degrees off the lens, in at PUNCH_IN a second - a few frames, not a step - and back at PUNCH_BACK) and shake (trauma, falling at 2.6 a
  *  second; the noise is its square). A broadcast lens takes them far smaller than the fight's follow camera does. */
 const PUNCH = {spike: 2.5, skySpike: 3.5, perfect: 5, super: 6, kill: 2, block: 2.5, dig: 1.5, dive: 2.5};
@@ -84,7 +92,7 @@ export class SpikeCam {
   private x = 0; private vx = 0; private goalX = 0;
   private lift = 0;
   private serveW = 0; private setW = 0; private pointW = 0; private followW = 0; private followUntil = -Infinity;
-  private tenseW = 0; private climbW = 0;
+  private tenseW = 0; private climbW = 0; private blockW = 0;
   /** The rally's last strike was a PERFECT SPIKE or a SUPER SHOT (its point, if it wins one, is the big one). */
   private big = false; private pointBig = 1;
   private punch = 0; private punchGoal = 0; private trauma = 0; private age = 0;
@@ -97,7 +105,7 @@ export class SpikeCam {
   reset() { this.active = false; this.match = NaN; this.seen = 0; this.forget(); }
   private forget() {
     this.handed = NaN; this.away = this.still = 0; this.vx = 0; this.lift = 0; this.placed = false;
-    this.serveW = this.setW = this.pointW = this.followW = this.tenseW = this.climbW = 0; this.followUntil = -Infinity; this.punch = this.punchGoal = this.trauma = 0;
+    this.serveW = this.setW = this.pointW = this.followW = this.tenseW = this.climbW = this.blockW = 0; this.followUntil = -Infinity; this.punch = this.punchGoal = this.trauma = 0;
   }
 
   /**
@@ -150,12 +158,14 @@ export class SpikeCam {
     const climb = view.phase === 'live' ? (view.fever ? 1 : clamp((view.rally - CRESCENDO.from) / CRESCENDO.span, 0, 1)) : 0;
     this.tenseW = this.weigh(this.tenseW, tense, TENSE.in, TENSE.out, dt);
     this.climbW = this.weigh(this.climbW, climb, CRESCENDO.in, CRESCENDO.out, dt);
+    this.blockW = this.weigh(this.blockW, view.lesson?.step === 'ss-block' && view.lesson.state !== 'over' ? 1 : 0, BLOCK_STEP.in, BLOCK_STEP.out, dt);
     // (The point that ends a long rally is the big one.)
     if (view.phase === 'scored' && this.pointBig < LONG.big && (view.rally >= LONG.long || view.fever)) this.pointBig = LONG.big;
     // The pose: the stand, then each occasion laid over it.
     const back = (R.courtHalfZ + STAND.back) * wide, up = STAND.up * wide;
     const eye = this.eye.set(this.x, up, -s * back), look = this.look.set(this.x * (1 - DRIFT.look), STAND.lookY + this.lift, s * STAND.lookZ);
-    look.y += SERVE.look * this.serveW + SET.lift * this.setW;
+    look.y += SERVE.look * this.serveW + SET.lift * this.setW + (aspect >= BLOCK_STEP.phone && aspect <= WIDE_ASPECT ? BLOCK_STEP.phoneLift : BLOCK_STEP.lift) * this.blockW;
+    look.z += s * BLOCK_STEP.toward * this.blockW;
     if (view.servingTeam === team) look.z -= s * SERVE.back * this.serveW;
     look.z -= s * SET.lift * .8 * this.setW;
     if (this.pointW > 0) { const k = Math.min(.9, POINT.toward * this.pointW * this.pointBig); look.x += (this.landed.x - look.x) * k; look.z += (this.landed.z - look.z) * k; look.y += (.4 - look.y) * k; }

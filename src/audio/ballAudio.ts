@@ -1,6 +1,8 @@
 import { BALL_ID, GOAL_RULES, POINT_GIVEN, POINT_WON, SPIKE_RULES, ballOf, heatTier, servedPoint, type BallEvent, type BallState, type BallTeam, type BallView, type CharmKind, type ShotKind } from '../game/ball/model';
 import { stepBall, type BallContact } from '../game/ball/physics';
 import type { GameSnapshot, Vec3 } from '../game/types';
+import type { TouchForecast } from '../game/ball/touchForecast';
+import { DOUBLE } from '../game/ball/BallMatch';
 import { BallCaller, callerFiles, type CallerMoment, type CallerVoice } from './ballCaller';
 /** The caller's FEVER lines that say every point counts double (caller.json fever-1, fever-4), not said while a FEVER
  *  point is worth two to the side behind alone (BallMatch SWINGS.feverBehind). */
@@ -87,12 +89,61 @@ const PERFECT_ROAR = 2.5;
 /** The stands' "ooh" at the commonest moments (a TACKLE, eleven a match; a DIVING DIG, two dozen) rests this long
  *  (s), so it stays a reaction and not a murmur. */
 const OOH_REST = 7;
+/** The page's own touch of the ball, heard at once online (`own`). The room's word on a touch the page forecast
+ *  is looked for from `back` s before the room's time for it to `after` s past it (the room can play a backlog of
+ *  commands a few ticks sooner, a body's touch a tick or two later: BallField's `verdict` reads the same); with nothing
+ *  of this page's fighter's on the newest snapshot `refused` s past it, the room refused it (`listen`). Each is kept `keep`
+ *  s, at most `most` of them. The ball still on the page's fighter within `ride` s of a touch heard - riding the guard
+ *  after a block, off the body (the room's flight finds it a touch again; on this device it never comes apart from the
+ *  touch's own sound, online it came a round trip after it: a second block, measured in half the STUFF BLOCKs) - is that
+ *  touch's. */
+const OWN = { back: .15, after: .35, refused: .25, keep: 1.5, most: 16, ride: .25 } as const;
+/** BallMatch DOUBLE: a body's touch of the ball and the same fighter's swing landing on it within
+ *  DOUBLE.window s are one touch, the swing's. Heard as they came, that touch was two - the body's tap, then the swing's
+ *  strike a breath after (thirteen a Sky Spike match). So a body's touch of the page's own fighter, made while its swing
+ *  is under way and due to land inside the window (`nextContact`: main.ts reads it off the prediction's cast for a forecast
+ *  touch, off the frame's own body - its cast's move as the simulation picks it - for the room's), is heard that late (a tick over: still long before the
+ *  room's word online), and not at all if the swing lands on the ball first - its sound is the touch's. */
+/** The room's flight shows a swing's touch up to a snapshot or two after its contact: a body's tap heard late for it waits
+ *  this many ticks past the contact (a forecast one, in the prediction's own time, one). */
+const LATE_FRAMES = 2.5;
+/** Seconds until a swing's next contact (`age` s into it; one landed within `tol` s is landing now: 0), or Infinity. */
+export function nextContact(contacts: readonly number[] | undefined, age: number, tol = 1 / 30) {
+  for (const c of contacts ?? []) if (c >= age - tol) return Math.max(0, c - age);
+  return Infinity;
+}
+/** The events that sound a touch themselves (the flight's own tap is not heard beside them: `update`'s `struck`). */
+const STRUCK = new Set<BallEvent['kind']>(['strike', 'super', 'clash', 'save', 'block', 'perfect']);
+/** Which of the page's own touches an event of the room's can be the word on: a blow's, a guard's, a dig. */
+const familyOf = (kind: BallEvent['kind']) => kind === 'strike' || kind === 'super' || kind === 'clash' ? 'strike' : kind === 'save' || kind === 'block' || kind === 'perfect' ? 'guard' : kind === 'dig' ? 'dig' : null;
+/** What a moment's stands and caller are for: its kind, its name and whether it was perfect. */
+const signOf = (e: Pick<BallEvent, 'kind' | 'text' | 'perfect'>) => `${e.kind}|${e.text ?? ''}|${e.perfect ? 1 : 0}`;
+/** The moments whose stands and caller are heard with the page's own touch, at once: those the touch alone names, as the
+ *  room will (a PERFECT SPIKE; a PERFECT STRIKE off the floor - in the air a flair can name it otherwise; a STUFF BLOCK, a
+ *  BLOCK, a PERFECT SAVE, a TIP). The rest wait for the room's word: a SUPER SHOT can be a CLASH, a save DIVING or OFF THE
+ *  LINE, a spike a ROLL SPIKE or a LINK SHOT, a serve a JUMP SERVE; a dig's depends on the other side's spike. */
+const EARLY = new Set(['strike|SKY SPIKE|1', 'strike|PERFECT STRIKE|1', 'perfect|STUFF BLOCK|0', 'block|BLOCK|0', 'save|PERFECT SAVE|0', 'strike|TIP|0']);
+/** A hit's part in a touch: its contact (the strike's own take, a block's), the boom under it, the crack; the rest by name.
+ *  The page's own touch and the room's word on it are heard as one touch part by part. */
+const partOf = (id: BallSfx) => id.startsWith('strike-') || id === 'block' || id === 'block-stuff' ? 'contact' : id;
+/** One of the page's own touches, forecast and heard (`own`): its number (its sounds' owners are own<n> and own<n>r),
+ *  the room's time for it, the event it stands for (its family and its moment's sign) and whether that moment's stands
+ *  and caller were heard with it, the hits it played (`hits`; a touch with no event of its own, its `tap`), the caller's
+ *  line said for it; and what the room has made of it - its event heard (`event`), its flight's touch heard (`flown`), on
+ *  the newest snapshot `confirmed` or `refused` (`listen`). */
+interface Told {
+  n: number; room: number; family: ReturnType<typeof familyOf>; sign: string; early: boolean; hits: BallSfx[]; tap?: BallSfx; said?: string;
+  event: boolean; flown: boolean; confirmed: boolean; refused: boolean;
+  /** A body's touch heard late for the swing due to land on it (SWINGS): until when (the page clock, s). */
+  late?: number;
+}
 
 /** What BallAudio asks of the game's mixer (CombatAudio). */
 export interface BallMixer extends CallerVoice {
   sample(url: string, at: Vec3, gain: number, rate?: number, owner?: string, priority?: number, delay?: number): void;
   centred(url: string, gain: number, delay?: number, rate?: number, priority?: number): void;
-  stands(url: string, gain: number, delay?: number, rate?: number): void;
+  /** (`owner`: so they can be taken back, `takeBack`.) */
+  stands(url: string, gain: number, delay?: number, rate?: number, owner?: string): void;
   loopAt(key: string, url: string, gain: number, options?: { at?: Vec3; loop?: readonly [number, number]; bus?: 'sfx' | 'ambience'; rate?: number }): void;
   crowdTension(level: number): void;
   soften(id: string, share?: number): void;
@@ -154,24 +205,51 @@ export class BallAudio {
   private deficit: Record<BallTeam, number> = { red: 0, blue: 0 };
   private comeback = new Set<BallTeam>();
   private loaded = false;
+  // ─── The page's own touch, heard at once (online) ───────────────────────────────────────────────────────────────────
+  private told: Told[] = [];
+  private toldN = 0;
+  /** The last view heard, this page's fighter and its side (what a forecast touch is heard against), and the newest
+   *  event heard on the newest snapshots (`listen`) and the match it was in. */
+  private view: BallView | null = null; private self = ''; private home: BallTeam | null = null;
+  private newest = 0; private newestOf = NaN;
+  /** While a moment is heard: its hits played under `hitOwner` and listed in `hitsPlayed` (the page's own touch,
+   *  forecast), or those already heard skipped part by part (`skipHits`: the room's word on one); its stands and caller
+   *  played under `reactOwner`, or not at all (`quiet`); the touch its caller's line is for (`saying`); and whether it is
+   *  the page's own fighter's (`mine`, for the trace). */
+  private hitOwner: string | null = null; private hitsPlayed: BallSfx[] | null = null; private skipHits: BallSfx[] | null = null;
+  private reactOwner: string | undefined; private quiet = false; private saying: Told | null = null; private mine = false;
+  /** A body's touch heard late for the swing due to land on it (SWINGS): by how much (s), while it is played; and the
+   *  room's one, still to come, until when (page clock) and under which owner. */
+  private lateBy = 0; private lateTap: { owner: string; until: number } | null = null; private lateN = 0;
+  /** Seconds until the page's own fighter's swing under way lands its next contact, as the frame has it (Infinity: none). */
+  private due = Infinity;
+  /** For the checks on this machine (main.ts sets it there): each hit as it is played - the page's own forecast touch's
+   *  (`own`) or the room's, the page's own fighter's touch (`mine`) or not, and its delay (s). */
+  trace?: (id: BallSfx, own: boolean, mine: boolean, delay: number) => void;
+  /** For the same checks: the page's own touches heard at once, refused by the room and taken back; body's touches heard
+   *  late for a swing about to land (DOUBLE), and of those the swing's own touch took back. */
+  readonly counts = { own: 0, refused: 0, late: 0, merged: 0 };
   constructor(private readonly mix: BallMixer, private readonly music?: BallMusic, random: () => number = Math.random, private readonly clock = () => performance.now() / 1000) {
     this.caller = new BallCaller(mix, random, clock);
   }
 
   /** A snapshot of a ball match: every fresh event heard, the flight's touches and bounces, the heat, the stands, the
    *  caller and the music brought up to it. Returns the fresh events (main.ts lays its camera's punches on them). */
-  update(snapshot: GameSnapshot, selfId: string | null | undefined): BallEvent[] {
+  update(snapshot: GameSnapshot, selfId: string | null | undefined, swingDue = Infinity): BallEvent[] {
     const view = ballOf(snapshot);
     if (!view) return [];
     if (!this.loaded) { this.loaded = true; this.mix.preload([...ballSoundFiles(), ...callerFiles()]); this.mix.soften(BALL_ID, BLOW_SHARE); }
     const now = snapshot.serverTime;
     if (view.startedAt !== this.match || now < this.prevTime - 1) this.begin(view);
     const home = view.seats.find(s => s.id === selfId)?.team ?? null;
+    this.view = view; this.self = selfId ?? ''; this.home = home; this.due = swingDue;
     const fresh = view.events.filter(e => e.id > this.heard);
     if (fresh.length) this.heard = Math.max(this.heard, ...fresh.map(e => e.id));
-    const struck = fresh.some(e => e.kind === 'strike' || e.kind === 'super' || e.kind === 'clash' || e.kind === 'save' || e.kind === 'block' || e.kind === 'perfect');
-    for (const e of fresh) this.event(e, view, home, fresh, now);
+    const struck = fresh.some(e => STRUCK.has(e.kind));
+    for (const e of fresh) this.heardEvent(e, view, home, fresh, now);
     this.flight(view, now, struck);
+    if (this.told.length) this.told = this.told.filter(k => now - k.room < OWN.keep);
+    if (this.roomHeard.length) this.roomHeard = this.roomHeard.filter(h => now - h.at < OWN.keep);
     this.heat(view, now);
     this.phases(view);
     this.stands(view, home, now);
@@ -186,8 +264,123 @@ export class BallAudio {
     this.mix.soften(BALL_ID); this.loaded = false; this.match = NaN; this.prev = undefined; this.heard = 0;
   }
 
+  // ─── The page's own touch, heard at once (online) ───────────────────────────────────────────────────────────────────
+  /**
+   * Online the page forecasts its own fighter's touch of the ball and draws it at once (game/ball/touchForecast.ts,
+   * render/ball/BallField), but its sound came with the room's snapshot: a round trip, the room's input queue and the
+   * timeline's delay after the press. Now the forecast touch is heard at once too: its hits (the contact, the boom, the
+   * crack), and where the touch alone names its moment as the room will (EARLY) the stands and the caller with it. The
+   * room's own for the same touch, when it comes, is not heard again (`heardEvent`, `flight`); and if the room refuses
+   * the touch (`heard`), whatever of it still sounds or is still to come is taken back. `before`: the ball as the page
+   * drew it just before the touch, for a touch with no event of its own, heard from the ball as `flight` hears the room's.
+   */
+  own(touch: TouchForecast, before: BallState | null, swingDue = Infinity) {
+    const view = this.view, e = touch.event;
+    if (!view || view.replay || !this.self || !(view.phase === 'live' || view.phase === 'kickoff' && view.mode === 'sky-spike')) return;
+    const room = Number.isFinite(touch.room) ? touch.room! : this.prevTime;
+    // (Heard already: the room's word on it came first.)
+    const family = e ? familyOf(e.kind) : null;
+    if (this.roomHeard.some(h => (h.family === family || h.family === null && !(e && STRUCK.has(e.kind))) && h.at >= room - OWN.after && h.at <= room + OWN.after)) return;
+    const n = ++this.toldN, now = this.clock();
+    // (DOUBLE: a swing of the page's own landing on the ball is the touch its body made a breath ago - that one's sound,
+    // still to come, is taken back.)
+    if (touch.kind === 'strike') for (const k of this.told) if (k.late !== undefined && now < k.late) { this.mix.takeBack?.(`own${k.n}`); k.late = undefined; this.counts.merged++; }
+    const body = (touch.kind === 'bump' || touch.kind === 'body') && swingDue > 0 && swingDue <= DOUBLE.window;
+    const told: Told = { n, room, family, sign: e ? signOf(e) : '', early: !!e && EARLY.has(signOf(e)), hits: [], event: false, flown: false, confirmed: false, refused: false };
+    this.mine = true; this.hitOwner = `own${n}`; this.hitsPlayed = told.hits; this.saying = told; this.reactOwner = `own${n}r`; this.quiet = !told.early;
+    if (body) { this.lateBy = swingDue + 1 / 60; told.late = now + this.lateBy; this.counts.late++; }
+    try {
+      if (e) {
+        // (The moment as the room will hear it; what it keeps of the match - the last strike, a PERFECT SPIKE's roar to
+        // come, the stands' rest - is the room's event's to set.)
+        const keep = { lastStrike: this.lastStrike, perfectSpike: this.perfectSpike, oohAt: this.oohAt };
+        this.event({ id: 1e6 + n, at: room, ...e } as BallEvent, view, this.home, [], room);
+        this.lastStrike = keep.lastStrike; this.perfectSpike = keep.perfectSpike; this.oohAt = keep.oohAt;
+      }
+      // A touch the room names no event that sounds it: the flight's tap, if the room's flight would hear one.
+      if (!e || !STRUCK.has(e.kind)) {
+        const b = touch.ball, off = before ? Math.hypot(b.vx - before.vx, b.vy - before.vy, b.vz - before.vz) : Infinity;
+        if (!before || b.lastId !== before.lastId || b.shot !== before.shot || off > 4) { this.hitsPlayed = null; this.tap(b); told.tap = this.lastTap; }
+      }
+    } finally {
+      this.mine = false; this.hitOwner = null; this.hitsPlayed = null; this.saying = null; this.reactOwner = undefined; this.quiet = false; this.lateBy = 0;
+    }
+    if (!told.hits.length && !told.tap && !told.said && !told.early) return;
+    this.counts.own++;
+    this.told.push(told);
+    if (this.told.length > OWN.most) this.told.shift();
+  }
+  private lastTap?: BallSfx;
+  /** The page's own fighter's touches the room's word sounded with no forecast before it (`heardEvent`, `flight`): a
+   *  forecast of the same touch that comes after is not heard again. */
+  private roomHeard: { family: ReturnType<typeof familyOf>; at: number }[] = [];
+
+  /** The newest snapshot as it arrives (online: main.ts hands BallField the same), a round trip and the room's queue after
+   *  a touch the page forecast: the room's word on it. Its event, or the ball last touched by this page's fighter, from a
+   *  little before the room's time for the touch (`confirmed`); nothing of the kind by OWN.refused past it, and the room
+   *  refused it - what of it still sounds, or is still to come, is taken back: its hits, the stands', the caller's line. */
+  listen(snapshot: GameSnapshot, selfId: string | null | undefined) {
+    const view = ballOf(snapshot);
+    if (!view) return;
+    // (A new match: what it already had is old news.)
+    if (view.startedAt !== this.newestOf) { this.newestOf = view.startedAt; this.newest = Math.max(0, ...view.events.map(e => e.id)); }
+    const t = snapshot.serverTime, open = this.told.filter(k => !k.confirmed && !k.refused);
+    for (const e of view.events) {
+      if (e.id <= this.newest) continue;
+      this.newest = e.id;
+      const family = familyOf(e.kind);
+      if (!selfId || e.actorId !== selfId || !family) continue;
+      const k = nearest(open.filter(c => !c.confirmed && (c.family === family || c.family === null && STRUCK.has(e.kind)) && e.at >= c.room - OWN.back && e.at <= c.room + OWN.after), e.at);
+      if (k) k.confirmed = true;
+    }
+    if (selfId && view.ball.lastId === selfId) for (const k of open) if (t >= k.room - OWN.back && t <= k.room + OWN.after) k.confirmed = true;
+    for (const k of open) if (!k.confirmed && t >= k.room + OWN.refused) this.refuse(k);
+  }
+  /** A forecast touch the room refused: everything it played or put on is taken back, faded (or never started). */
+  private refuse(k: Told) {
+    k.refused = true; this.counts.refused++;
+    this.mix.takeBack?.(`own${k.n}`); this.mix.takeBack?.(`own${k.n}r`);
+    if (k.said) this.caller.takeBack(k.said);
+  }
+
+  /** One of the room's events heard. The room's word on the page's own touch, already heard (`own`): its hits not heard
+   *  again part by part, its stands and caller only if they were not heard with it - or were, for another moment than the
+   *  room's (those taken back first); what the forecast played that the room's word does not have is taken back. A
+   *  second event of the same touch (a strike that was a save as well) adds no second contact. */
+  private heardEvent(e: BallEvent, view: BallView, home: BallTeam | null, fresh: BallEvent[], now: number) {
+    this.mine = !!this.self && e.actorId === this.self;
+    // (DOUBLE: the swing's word on the touch its body made a breath ago - the body's tap still to come is not heard.)
+    if (this.mine && (familyOf(e.kind) === 'strike' || e.kind === 'dig')) this.cancelLate();
+    const family = familyOf(e.kind), mine = this.mine && !!family && this.told.length > 0;
+    const k = mine ? nearest(this.told.filter(c => !c.event && (c.family === family || c.family === null && !c.flown && STRUCK.has(e.kind)) && e.at >= c.room - OWN.back && e.at <= c.room + OWN.after), e.at) : null;
+    const again = mine && !k ? this.told.find(c => c.event && Math.abs(e.at - c.room) <= OWN.after) : undefined;
+    if (!k && !again) {
+      // (The room's word on a touch of the page's own that the page has not forecast yet - at a short round trip the room
+      // can play a guard a frame or two before the page's drawn ball reaches it: `own` then hears it no more.)
+      if (this.mine && family && STRUCK.has(e.kind)) this.roomHeard.push({ family, at: e.at });
+      this.event(e, view, home, fresh, now); this.mine = false; return;
+    }
+    if (k) {
+      k.event = k.confirmed = true;
+      if (k.family === null) k.flown = true;
+      const same = k.early && !k.refused && k.sign === signOf(e);
+      if (k.early && !same && !k.refused) { this.mix.takeBack?.(`own${k.n}r`); if (k.said) this.caller.takeBack(k.said); }
+      this.skipHits = [...k.hits, ...(k.tap ? [k.tap] : [])]; this.quiet = same;
+    } else this.skipHits = ['strike-tap-1'];
+    try { this.event(e, view, home, fresh, now); }
+    finally {
+      // (The forecast's hits the room's word has no part for: not the touch the room made.)
+      if (k && !k.refused) for (const id of this.skipHits) if (id !== k.tap) this.mix.takeBack?.(`own${k.n}`, url(id));
+      this.skipHits = null; this.quiet = false; this.mine = false;
+    }
+  }
+  /** The page's own forecast touch the room's flight found between `from` and `to` (its time), if one is waiting for it. */
+  private toldFlight(from: number, to: number) {
+    return this.told.find(k => !k.flown && (k.tap !== undefined || !k.event) && k.room >= from - OWN.after && k.room <= to + OWN.back) ?? null;
+  }
+
   private begin(view: BallView) {
-    this.match = view.startedAt; this.heard = Math.max(0, ...view.events.map(e => e.id)); this.prev = undefined;
+    this.match = view.startedAt; this.heard = Math.max(0, ...view.events.map(e => e.id)); this.prev = undefined; this.told = []; this.roomHeard = [];
     this.prevTier = heatTier(view.ball.heat); this.prevClock = view.clock; this.prevBest = view.best; this.peaked = false; this.matchPoint = false;
     this.chanting = false; this.chantFrom = Infinity; this.calmSince = Infinity; this.lastStrike = undefined; this.perfectSpike = null;
     this.deficit = { red: 0, blue: 0 }; this.comeback.clear(); this.caller.reset();
@@ -197,16 +390,25 @@ export class BallAudio {
   /** One of the ball's sounds centred, from outside (the intro's whistle, BallCeremony). */
   cue(id: BallSfx, scale = 1, delay = 0) { this.centred(id, scale, delay); }
   private play(id: BallSfx, at: Vec3, scale = 1, rate = 1, delay = 0, priority = 2) {
-    this.mix.sample(url(id), at, BALL_SFX[id] * scale, rate, 'ball', priority, delay);
+    // (The room's word on the page's own touch - a part of it the forecast already played is not played again.)
+    if (this.skipHits) { const k = this.skipHits.findIndex(h => partOf(h) === partOf(id)); if (k >= 0) { this.skipHits.splice(k, 1); return; } }
+    this.hitsPlayed?.push(id);
+    this.mix.sample(url(id), at, BALL_SFX[id] * scale, rate, this.hitOwner ?? 'ball', priority, delay + this.lateBy);
+    this.trace?.(id, !!this.hitOwner, this.mine, delay + this.lateBy);
   }
-  private centred(id: BallSfx, scale = 1, delay = 0, rate = 1) { this.mix.centred(url(id), BALL_SFX[id] * scale, delay, rate); }
-  private react(id: BallSfx, scale = 1, delay = 0) { this.mix.stands(url(id), BALL_SFX[id] * scale, delay); }
+  private centred(id: BallSfx, scale = 1, delay = 0, rate = 1) { if (!this.quiet) this.mix.centred(url(id), BALL_SFX[id] * scale, delay, rate); }
+  private react(id: BallSfx, scale = 1, delay = 0) { if (!this.quiet) this.mix.stands(url(id), BALL_SFX[id] * scale, delay, 1, this.reactOwner); }
+  private cheer(worth?: number, win?: boolean) { if (!this.quiet) this.mix.cheer(worth, win); }
   /** One of a few takes, in turn. */
   private take(ids: readonly BallSfx[], key: string): BallSfx {
     const n = (this.flavour.get(key) ?? 0) + 1; this.flavour.set(key, n);
     return ids[n % ids.length];
   }
-  private say(moment: CallerMoment, delay = 0, queue = false, avoid?: RegExp) { this.caller.say(moment, { delay, queue, avoid }); }
+  private say(moment: CallerMoment, delay = 0, queue = false, avoid?: RegExp) {
+    if (this.quiet) return;
+    const said = this.caller.say(moment, { delay, queue, avoid });
+    if (said && this.saying) this.saying.said = said;
+  }
   private side(team: BallTeam | null | undefined, home: BallTeam | null) { return !home || !team || team === home ? 1 : AWAY; }
 
   private event(e: BallEvent, view: BallView, home: BallTeam | null, fresh: BallEvent[], now: number) {
@@ -240,14 +442,14 @@ export class BallAudio {
       // roars when the shot dies on the guard, the striker's when it breaks through.
       case 'duel': this.play('clash-charge', at, 1, 1, 0, 5); this.react('crowd-gasp', .8); this.say('technique-duel', .05); break;
       case 'duel-won':
-        this.play('clash-break', at, 1.1, 1, 0, 6); this.mix.cheer(1.2, true);
+        this.play('clash-break', at, 1.1, 1, 0, 6); this.cheer(1.2, true);
         this.react('crowd-roar-2', side); if (!mine) this.react('crowd-groan', .5, .25);
         if (e.text === 'SHOT STOPPED') { this.play('block-stuff', at, 1, .9); this.say('duel-won', .2); }
         break;
       case 'super':
         this.lastStrike = e;
         this.play('strike-super', at, 1, 1, 0, 5); this.play('impact-boom', at, 1, .9, 0, 5);
-        this.mix.cheer(.9);
+        this.cheer(.9);
         if (mine) this.react('crowd-roar-1', .55); else this.react('crowd-jeer', 1, .15);
         this.say('super-shot', .3);
         break;
@@ -290,21 +492,21 @@ export class BallAudio {
           else if (e.text && CALLED_TEXT[e.text]) this.named(CALLED_TEXT[e.text], at, side);
         }
         break;
-      case 'kickoff': if (!view.practice) this.mix.cheer(.5); break;
+      case 'kickoff': if (!view.practice) this.cheer(.5); break;
       case 'overtime':
         this.centred('whistle-overtime'); this.centred('riser-overtime', 1, .35);
-        this.react('crowd-roar-1', .75, .5); this.mix.cheer(1.1);
+        this.react('crowd-roar-1', .75, .5); this.cheer(1.1);
         this.say('overtime', .6);
         break;
       case 'fever':
-        this.centred('riser-fever'); this.react('crowd-roar-1', .6, .3); this.mix.cheer(1);
+        this.centred('riser-fever'); this.react('crowd-roar-1', .6, .3); this.cheer(1);
         // (Goal Rush's FINAL PUSH is a 'fever' too: the caller's fever lines are Sky Spike's FEVER RALLY.)
         // (A FEVER point worth double to the side behind alone - the event's team - is never called "every point counts
         // double" or "double points".)
         if (view.mode === 'sky-spike') this.say('fever', .4, false, e.team ? FEVER_FOR_EVERYONE : undefined);
         break;
-      case 'match-point': this.matchPoint = true; this.mix.cheer(.8); this.say('match-point', .5); break;
-      case 'rally': this.mix.cheer(.5); this.react('crowd-applause', .4, .1); this.say('rally', .2); break;
+      case 'match-point': this.matchPoint = true; this.cheer(.8); this.say('match-point', .5); break;
+      case 'rally': this.cheer(.5); this.react('crowd-applause', .4, .1); this.say('rally', .2); break;
       case 'bowled': this.play('bowled', at); this.react('crowd-ooh-2', .4 * side, .1); break;
       // Goal Rush's fights heard. A WIPE-OUT: the knockout blow and the boom under it, the stands roaring for
       // their own side's and gasping at the other's. A BUMP: the body flattened, an "ooh".
@@ -382,7 +584,7 @@ export class BallAudio {
     }
     this.react(big || mine ? 'crowd-roar-2' : 'crowd-roar-1', (view.practice ? .45 : 1) * side, .05);
     if (!mine && !view.practice) this.react('crowd-groan', .5, .25);
-    this.mix.cheer(big ? 1.4 : 1.2, true);
+    this.cheer(big ? 1.4 : 1.2, true);
     // What the caller makes of it: the accolade it earned, else how it was struck.
     const feats = new Set(fresh.filter(f => f.kind === 'accolade').map(f => f.text));
     const strike = this.lastStrike && this.lastStrike.actorId === e.actorId ? this.lastStrike : undefined;
@@ -423,7 +625,7 @@ export class BallAudio {
       this.perfectSpike = null;
       this.react(perfect || rally > .6 || worth > 1 || e.text === 'SUPER SHOT' ? 'crowd-roar-2' : 'crowd-roar-1', (view.practice ? .4 : perfect ? 1 : .55 + .45 * rally) * side, .05);
       if (!mine && !view.practice) this.react('crowd-groan', .4, .2);
-      this.mix.cheer(.8 + .4 * rally);
+      this.cheer(.8 + .4 * rally);
       if (!view.practice) this.music?.punch(.5);
       if (servedPoint(e)) this.say('serve-winner', .3);
       else if (e.text === 'SUPER SHOT') this.say('super-goal', .3);
@@ -438,7 +640,7 @@ export class BallAudio {
     if (view.practice) return;
     this.centred('whistle-fulltime');
     const won = !!home && e.team === home, lost = !!home && !!e.team && e.team !== home;
-    if (won || !home) { this.react('crowd-roar-2', 1, .5); this.mix.cheer(1.4, true); }
+    if (won || !home) { this.react('crowd-roar-2', 1, .5); this.cheer(1.4, true); }
     else { this.react('crowd-groan', .7, .4); this.react('crowd-applause', .5, 1.4); }
     const other = home === 'red' ? 'blue' : 'red';
     const moment: CallerMoment = lost ? 'loss' : view.overtime ? 'overtime-win' : home && view.score[other] === 0 ? 'shutout' : 'win';
@@ -452,6 +654,7 @@ export class BallAudio {
   /** The flight between the last snapshot and this one (physics.ts, as the room ran it): what the ball met, and the touches
    *  no event names (a tap, a bump, a set, a body playing it), or the ball machine letting a ball go. */
   private flight(view: BallView, now: number, struck: boolean) {
+    this.mine = false;
     const b = view.ball, prev = this.prev, dt = now - this.prevTime;
     if (!prev || !(dt > 0) || dt > .3 || view.replay) return;
     if (prev.held && !b.held) {
@@ -465,12 +668,38 @@ export class BallAudio {
     const touched = b.lastId !== prev.lastId || b.shot !== prev.shot || (off > 4 && !contacts.length);
     if (touched) {
       if (!struck) {
-        const speed = Math.hypot(b.vx, b.vy, b.vz);
-        this.play(this.take(STRIKE[b.shot ?? 'tap'] ?? STRIKE.tap!, 'tap'), b, Math.max(.6, Math.min(1.1, .5 + speed / 30)), .96 + (this.taps++ % 5) * .02);
+        // (The page's own touch, heard when it was forecast, is not heard again.)
+        const mine = !!b.lastId && b.lastId === this.self, own = mine ? this.toldFlight(this.prevTime, now) : null;
+        if (own) { own.flown = true; return; }
+        if (mine && this.told.some(k => !k.refused && (k.event || k.flown) && k.room <= now + OWN.back && this.prevTime - k.room <= OWN.ride)) return;
+        this.mine = !!b.lastId && b.lastId === this.self;
+        if (this.mine) this.roomHeard.push({ family: null, at: now });
+        // (DOUBLE: a second touch of the page's own a breath after its body's, still to be heard, is the swing's - the
+        // body's is not heard; a body's touch with the fighter's own swing about to land on it is heard that late.)
+        const late = this.mine && !this.cancelLate() ? this.due : Infinity;
+        // (The frame's swing lands a tick or two before its flight shows it here: `LATE_FRAMES` over.)
+        if (late > 0 && late <= DOUBLE.window) { this.lateBy = late + LATE_FRAMES / 60; this.hitOwner = `late${++this.lateN}`; this.lateTap = { owner: this.hitOwner, until: this.clock() + this.lateBy }; this.counts.late++; }
+        try { this.tap(b); } finally { this.lateBy = 0; this.hitOwner = null; this.mine = false; }
       }
       return;
     }
     for (const c of contacts) this.bounce(view, c, now);
+  }
+
+  /** A body's touch heard late, still to come, taken back (DOUBLE): whether there was one. */
+  private cancelLate() {
+    const t = this.lateTap;
+    this.lateTap = null;
+    if (!t || this.clock() >= t.until) return false;
+    this.mix.takeBack?.(t.owner); this.counts.merged++;
+    return true;
+  }
+  /** A touch with no event of its own heard (a tap, a bump, a set, a dig, a body's touch): its shot's take, as loud as the
+   *  ball leaves it. */
+  private tap(b: BallState) {
+    const speed = Math.hypot(b.vx, b.vy, b.vz), id = this.take(STRIKE[b.shot ?? 'tap'] ?? STRIKE.tap!, 'tap');
+    this.lastTap = id;
+    this.play(id, b, Math.max(.6, Math.min(1.1, .5 + speed / 30)), .96 + (this.taps++ % 5) * .02);
   }
 
   private bounce(view: BallView, c: BallContact, now: number) {
@@ -503,7 +732,7 @@ export class BallAudio {
     if (tier > this.prevTier && live && (tier > this.heatHeard || this.clock() - this.heatHeardAt > HEAT_REST)) {
       this.heatHeard = tier; this.heatHeardAt = this.clock();
       this.play((['heat-1', 'heat-2', 'heat-3', 'heat-4'] as const)[tier - 1], b, 1, 1, 0, tier >= 4 ? 4 : 2);
-      if (tier >= 4) { this.mix.cheer(.7); this.say('overdrive', .25); }
+      if (tier >= 4) { this.cheer(.7); this.say('overdrive', .25); }
     }
     this.prevTier = tier;
     if (tier < this.heatHeard - 1) this.heatHeard = tier;
@@ -560,4 +789,11 @@ export class BallAudio {
       }
     }
   }
+}
+
+/** Of the page's own forecast touches, the one whose room's time is nearest `at`. */
+function nearest(list: readonly Told[], at: number) {
+  let best: Told | null = null;
+  for (const k of list) if (!best || Math.abs(at - k.room) < Math.abs(at - best.room)) best = k;
+  return best;
 }

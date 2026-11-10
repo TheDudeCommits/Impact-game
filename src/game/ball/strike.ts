@@ -86,6 +86,28 @@ export const PERFECT_SHOT = {speed: 1.15, reach: 1.45, wide: 5, inset: .3, heade
 export const SERVE_STYLE = {float: 14, floatTime: 1.25, drift: 3.2, drive: 19, jump: 27, jumpDeep: 10.2, floatDeep: 7.8, heat: 1.05, topspin: .12} as const;
 export const SPIKE_QUICK = {height: 4.5, z: 1.3, seconds: .62, wing: 4.6, back: 4, backSeconds: 1.05} as const;
 export const SPIKE_TIP = {near: 1.9, far: 3.7, seconds: .8, height: .5} as const;
+/** Sky Spike's PLACEMENT. The stick as the attack was pressed (BallMatch reads it at the press, as the aim) says where in the
+ *  far court an attack over the net comes down. The broadcast camera pans 26 degrees at most, so the aim alone put a
+ *  spike two metres either side of the set and always 4.8 m past the net, near the middle - where a digger stood: the
+ *  scripted skilled player's PERFECT SPIKEs into a double block were dug three times in four. Past `dead` of the stick:
+ *  - across: that side of the far court, `x` metres off its middle at full stick (whatever the aim's); a serve's less
+ *    (a FLOAT SERVE drifts on toward the line: placed at the corner, the first try's float was an ACE two times in five);
+ *  - toward the far court: deeper, to `deep` (by the kind: a spike, a serve, any other hit over) at full stick; back
+ *    toward your own: short, a sharp angle down to `short` - slower, as it must still clear the net.
+ *  A diagonal reaches its corner (the stick's circle read as a square: a keyboard's eight ways reach every zone). A
+ *  spike, a hit over from the floor (a drive, a power or bending shot, a blast) and every serve; never a TIP (it finds
+ *  the gap behind the block itself), a keep, a SCUFF or a SUPER SHOT. An off-time JUMP SERVE still sprays off the spot. */
+export const PLACE = {dead: .3, x: {spike: 5.2, serve: 3.8, other: 5.2} as Record<string, number>, deep: {spike: 8.6, serve: 9.2, other: 9} as Record<string, number>, short: {spike: 2.3, serve: 4.2, other: 3} as Record<string, number>} as const;
+/** The stick as the striker pressed it, as PLACE reads it: `a` across (the world's x), `f` toward the far court, each
+ *  -1..1 with the circle read as a square, 0 inside the dead zone. */
+export function placement(s: Striker, team: BallTeam): {a: number; f: number} | undefined {
+  const mx = s.forward * Math.sin(s.aimYaw) - s.lateral * Math.cos(s.aimYaw), mz = s.forward * Math.cos(s.aimYaw) + s.lateral * Math.sin(s.aimYaw);
+  let a = mx, f = team === 'red' ? mz : -mz;
+  const r = Math.hypot(a, f), m = Math.max(Math.abs(a), Math.abs(f));
+  if (r < PLACE.dead) return undefined;
+  a = Math.max(-1, Math.min(1, a * r / m)); f = Math.max(-1, Math.min(1, f * r / m));
+  return {a: Math.abs(a) < PLACE.dead ? 0 : a, f: Math.abs(f) < PLACE.dead ? 0 : f};
+}
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 /** Skill against mashing: a SCUFF, a blow out of a flurry of presses (BallMatch MASHED), comes off the boot at `speed`
  *  of the shot it would have been, off its aim, unhelped. Sky Spike's scuffed keep (a bump or a set) lands `keep` metres
@@ -279,7 +301,11 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
   const jumpServe = kind === 'serve' && !s.grounded && c.slot !== 'light', floatServe = kind === 'serve' && c.slot === 'light';
   if (kind === 'tip') return tip(ball, c, g);
   // The other side's court: [how far past the net it lands, flight time per metre, landing height].
-  const deep = kind === 'spike' ? 4.8 : jumpServe ? SERVE_STYLE.jumpDeep : floatServe ? SERVE_STYLE.floatDeep : kind === 'serve' ? 7.4 : kind === 'volley' ? 7 : kind === 'super' ? 0 : 7.8;
+  let deep = kind === 'spike' ? 4.8 : jumpServe ? SERVE_STYLE.jumpDeep : floatServe ? SERVE_STYLE.floatDeep : kind === 'serve' ? 7.4 : kind === 'volley' ? 7 : kind === 'super' ? 0 : 7.8;
+  const deep0 = deep;
+  // PLACE: the stick as pressed picks the zone (a SCUFF goes where it was mis-hit).
+  const zone = kind !== 'super' && !c.scuff ? placement(s, own) : undefined, family = kind === 'spike' || kind === 'serve' ? kind : 'other';
+  if (zone?.f) deep = zone.f > 0 ? deep + (Math.max(deep, PLACE.deep[family]) - deep) * zone.f : deep + (deep - Math.min(deep, PLACE.short[family])) * zone.f;
   const speedOf: Record<string, number> = {spike: 22, serve: jumpServe ? SERVE_STYLE.jump : floatServe ? SERVE_STYLE.float : SERVE_STYLE.drive, volley: 17, drive: 20, power: 21, curve: 19, sinker: 20, blast: 21, tap: 12, pop: 10, eruption: 11, super: 38};
   const intoFar = dz * -sign > .25;
   let tx: number, tz: number;
@@ -295,8 +321,8 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
   } else if (intoFar) {
     const reach = (Math.abs(ball.z) + deep) / Math.max(.25, Math.abs(dz));
     // (A SCUFF goes where it was mis-hit, inside the lines or not.)
-    tx = c.scuff ? ball.x + dx * reach : Math.max(-R.courtHalfX + .7, Math.min(R.courtHalfX - .7, ball.x + dx * reach));
-    tz = -sign * Math.max(1.2, Math.min(R.courtHalfZ - .7, deep + (kind === 'spike' || jumpServe ? 0 : -Math.abs(dx) * 1.5)));
+    tx = c.scuff ? ball.x + dx * reach : Math.max(-R.courtHalfX + .7, Math.min(R.courtHalfX - .7, zone?.a ? zone.a * PLACE.x[family] : ball.x + dx * reach));
+    tz = -sign * Math.max(1.2, Math.min(R.courtHalfZ - .7, deep + (kind === 'spike' || jumpServe || zone?.f ? 0 : -Math.abs(dx) * 1.5)));
   } else {
     // Aimed away from the other court: it flies the way it was aimed, and is probably out.
     tx = ball.x + dx * 9; tz = ball.z + dz * 9;
@@ -312,12 +338,21 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
   // It has to clear the net (a spike from too low becomes a tip that does): the slowest flight that does.
   // (Under the ball's cap first; a JUMP SERVE clears by more, its topspin dipping it a few tenths before the net.)
   for (let tries = 0; tries < 6 && Math.hypot(v.vx, v.vy, v.vz) > cap * .99; tries++) { t *= Math.hypot(v.vx, v.vy, v.vz) / (cap * .97); v = arc(ball, tx, R.ballRadius, tz, t, g, R.drag); }
+  // (PLACE, a short spike: the sharpest angle the height allows - as near the net as a flight at its own pace still
+  // clears; slowed into a lob instead, it was an easy dig. A serve or a hit from the floor laid short is a soft one, as
+  // slow as clearing the net asks.)
+  const cut = kind === 'spike' && intoFar && !!zone && zone.f < 0;
+  // (Clear of the net's cord by half a metre: skimming it, the cord turned a cut long - physics.ts.)
+  if (cut) for (let d = Math.abs(tz) + .25; d <= Math.max(Math.abs(tz), deep0) + 1e-6 && !clears(ball, v, g, .5); d += .25) {
+    tz = -sign * d; t = Math.max(.28, Math.hypot(tx - ball.x, tz - ball.z) / speed); v = arc(ball, tx, R.ballRadius, tz, t, g, R.drag);
+  }
   if (intoFar || kind === 'super') {
     for (let tries = 0; tries < 24 && !clears(ball, v, g, jumpServe ? .7 : .15); tries++) { t *= 1.08; v = arc(ball, tx, R.ballRadius, tz, t, g, R.drag); }
   }
   let sx = 0, sy = 0, sz = 0;
   if (kind === 'curve') sy = (s.lateral < -.2 ? -1 : 1) * 6;
-  if (kind === 'spike' || kind === 'sinker') { sx = -v.vz * .25; sz = v.vx * .25; }
+  // (Not a cut's: steep, its spin's hold carried it three metres past the spot it was laid for.)
+  if ((kind === 'spike' && !cut) || kind === 'sinker') { sx = -v.vz * .25; sz = v.vx * .25; }
   // A JUMP SERVE's topspin, which dips it in (the axis across the flight, the ball's top turning forward: physics.ts
   // bends the flight along spin × velocity). (The spike's and the sinker's spin above turns the other way and holds
   // them up a little; the spikes are tuned with it.)
