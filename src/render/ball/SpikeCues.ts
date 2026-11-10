@@ -218,9 +218,11 @@ export class SpikeCues {
     }
     // (The glint stays lit, settled, as long as the window is open: a swing now is still PERFECT.)
     if (open) this.put(KIND.glint, hand.x, hand.y, hand.z, 2.2, 1, .85, GOLD);
-    // DIVE: a hard ball of theirs whose line passes beyond your reach but inside a dive's, soon.
+    // DIVE: a hard ball of theirs whose line passes beyond your reach but inside a dive's, soon. (Not in LEARN TO
+    // PLAY's BLOCK step - the spike past your block is the step's miss, and a DIVE tick and chevron on it, right after
+    // the block's own tick, taught the next step's move in this one's place.)
     const speed = Math.hypot(b.vx, b.vy, b.vz);
-    if (!air && view.phase === 'live' && b.lastTeam && b.lastTeam !== team && speed >= CUE.hard && Math.sign(b.vz) === sign) {
+    if (!air && view.phase === 'live' && view.lesson?.step !== 'ss-block' && b.lastTeam && b.lastTeam !== team && speed >= CUE.hard && Math.sign(b.vz) === sign) {
       const g = SPIKE_RULES.gravity * (b.grav || 1);
       let best = Infinity, bx = 0, bz = 0;
       for (let t = 0; t <= CUE.diveWithin; t += 1 / 30) {

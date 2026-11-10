@@ -9,9 +9,9 @@ import {TRAIT_RULES, withTrait} from './traits';
 import {HEADER, MASHED, PERFECT_STRIKE, TOUCH_RULES} from './BallMatch';
 
 /** The page's own fighter as its prediction has it (game/prediction.ts `local`): what a forecast of its touch reads -
- *  the body, the last command, the swing under way and its blow's aim, the guard's press. */
+ *  the body, the last command, the swing under way and its blow's aim and stick (as pressed), the guard's press. */
 export interface LocalFighter {
-  state: PlayerState; input: PlayerInput; attackYaw?: number; attackSeq?: number; guardPressedAt: number;
+  state: PlayerState; input: PlayerInput; attackYaw?: number; attackSeq?: number; attackMoveX?: number; attackMoveZ?: number; guardPressedAt: number;
   cast: {id: number; start: number; move: Pick<MoveDefinition, 'style' | 'contacts'>} | null;
 }
 /** A forecast touch: the ball as the touch sends it (a copy), what kind of touch it was, and the moment the room will
@@ -50,12 +50,16 @@ export class TouchForecaster {
   private bodyTouch = -Infinity; private guardAt = -Infinity; private dashAt = -Infinity; private whiffAt = -Infinity; private outsideAt = -Infinity;
   private swing = -1; private touchedSwing = -1; private pressSeq = -1; private readonly pressed: number[] = [];
   private castFrom = {id: -1, y: 0}; private pre = {y: 0, cast: -1, vy: 0}; private climbing = false;
+  /** BallMatch DOUBLE: when the body last played the ball as a touch, whether it was one of Sky Spike's three,
+   *  and which of them - a swing landing just behind it is that touch. */
+  private bodyPlayed = {at: -Infinity, three: false, touches: 0};
   private last: {x: number; y: number; z: number; vx: number; vy: number; vz: number} | null = null;
 
   reset() {
     this.strikeCast = this.touchCast = this.swing = this.touchedSwing = this.pressSeq = -1;
     this.strikeAt = this.touchedAt = this.bodyTouch = this.guardAt = this.dashAt = this.whiffAt = this.outsideAt = -Infinity;
     this.pressed.length = 0; this.castFrom = {id: -1, y: 0}; this.pre = {y: 0, cast: -1, vy: 0}; this.climbing = false; this.last = null;
+    this.bodyPlayed = {at: -Infinity, three: false, touches: 0};
   }
 
   /** Before the prediction's tick: where the swing leaves from (BallMatch's preCast). */
@@ -91,19 +95,24 @@ export class TouchForecaster {
     if (!seat || this.locked(a, world) || !strikable(view) || b.clash > now) return null;
     const castId = a.cast?.id ?? -1;
     if (castId === this.strikeCast && now - this.strikeAt < BALL_RULES.restrike) return null;
+    // (BallMatch DOUBLE: the body's touch a breath ago, this swing's to play.)
+    const body = b.lastId === world.selfId && !b.held && now - this.bodyPlayed.at <= TOUCH_RULES.DOUBLE.window + 1e-6 && !this.mashed(now, blow.slot) ? this.bodyPlayed : undefined;
     if (mode === 'sky-spike') {
       if (sideOf(b.z) !== seat.team && Math.abs(b.z) > .9) return null;
-      if (sentBy(view, b, seat.team) && this.touchCast !== castId) return null;
+      if (sentBy(view, b, seat.team) && this.touchCast !== castId && !body?.three) return null;
       if (b.held && (view.phase !== 'kickoff' || world.selfId !== view.serverId)) return null;
       if ((b.shot === 'tip' && !p.grounded || overNet(b)) && b.lastTeam !== seat.team && Math.abs(b.z) < 2.4) return null;
     }
     this.strikeCast = castId; this.strikeAt = now; this.bodyTouch = now; this.touchedSwing = castId;
-    const yaw = a.attackYaw ?? a.input.yaw, mx = a.input.moveX, mz = a.input.moveZ;
+    const yaw = a.attackYaw ?? a.input.yaw, mx = a.attackMoveX ?? a.input.moveX, mz = a.attackMoveZ ?? a.input.moveZ;
     const serve = mode === 'sky-spike' && b.held;
     const again = b.lastId === world.selfId && (this.touchCast === castId || now - this.touchedAt < .3);
+    const merged = !again && !serve ? body : undefined;
+    if (merged) this.bodyPlayed = {at: -Infinity, three: false, touches: 0};
     this.touchedAt = now;
     if (again && mode === 'sky-spike' && b.shot === 'serve') return null;
-    const touches = mode === 'sky-spike' ? (serve ? SPIKE_RULES.touches : (view.touchTeam === seat.team ? view.touches : 0) + (again ? 0 : 1)) : 0;
+    // (Merged with the body's bump, the swing is that touch: the bump's own count, which the room's view may not have yet.)
+    const touches = mode === 'sky-spike' ? (serve ? SPIKE_RULES.touches : merged?.three ? merged.touches : (view.touchTeam === seat.team ? view.touches : 0) + (again ? 0 : 1)) : 0;
     this.touchCast = castId;
     const mates = mode === 'goal-rush' ? world.players.filter(q => q.id !== world.selfId && view.seats.some(s => s.id === q.id && s.team === seat.team)).map(q => ({x: q.x, z: q.z, vx: world.run?.(q.id)?.vx ?? 0, vz: world.run?.(q.id)?.vz ?? 0})) : undefined;
     const rivals = mode === 'sky-spike' ? world.players.filter(q => view.seats.some(s => s.id === q.id && s.team !== seat.team)) : undefined;
@@ -204,7 +213,7 @@ export class TouchForecaster {
       if (after > cap) { const k = cap / after; b.vx *= k; b.vy *= k; b.vz *= k; }
     }
     if (hostile && speed >= BALL_RULES.bowlSpeed && heatTier(b.heat) >= BALL_RULES.bowlTier) { b.vx *= .62; b.vy *= .62; b.vz *= .62; }
-    if (Math.abs(rel) > 1.5 && this.bodyTouch + .35 <= now) { this.bodyTouch = now; this.touch(b, seat.team, world.selfId); }
+    if (Math.abs(rel) > 1.5 && this.bodyTouch + .35 <= now) { this.bodyTouch = now; this.bodyPlayed = {at: now, three: false, touches: 0}; this.touch(b, seat.team, world.selfId); }
     // (A body that only rests against the ball changes nothing worth drawing ahead of the room; a dribble's every push is.)
     return Math.hypot(b.vx - ball.vx, b.vy - ball.vy, b.vz - ball.vz) < .3 ? null : {ball: b, kind: 'body'};
   }
@@ -276,6 +285,8 @@ export class TouchForecaster {
     const dug = result.shot === 'bump' && incoming >= SPIKE_DIG.from;
     if (dug) b.shot = 'dig';
     this.touch(b, seat.team, world.selfId);
+    // (Both callers have just set the body's touch to now.)
+    this.bodyPlayed = {at: this.bodyTouch, three: true, touches};
     return {ball: b, kind: 'bump', event: dug ? {team: seat.team, actorId: world.selfId, kind: 'dig', x: b.x, y: b.y, z: b.z, shot: 'dig', value: Math.round(incoming)} : undefined};
   }
 

@@ -12,6 +12,9 @@
 @media(max-height:520px) and (orientation:landscape){
   .mode-hud .learn-line .learn-cue{width:150px;height:11px}
   .mode-hud .learn-line .learn-cue>b{font-size:15px}
+  /* (On a phone the line stands left of the middle, beside the checklist; a long note - what the step asks and
+     why the last try missed - ran into the checklist's edge. It wraps instead.) */
+  .mode-hud .learn-line .lesson-note{white-space:pre-wrap;max-width:44vw;text-align:center}
 }
 
 /* The end card (BallUI.lessonCard): the steps as a row of ticks under YOU'RE READY, then the match. */

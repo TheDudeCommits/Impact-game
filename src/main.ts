@@ -109,7 +109,8 @@ import {modeOfSnapshot,type ModeId} from './ui/modes/catalogue';
 import {DamageNumbers} from './ui/DamageNumbers';
 import {MangaImpact} from './ui/MangaImpact';
 import {UI_SFX} from './originals/sfx';
-import {BallAudio,ballSfxUrl} from './audio/ballAudio'; // the ball modes' own sound
+import {BallAudio,ballSfxUrl,nextContact} from './audio/ballAudio'; // the ball modes' own sound
+import {castMove} from './render/ThreatOutline'; // (the move a cast in progress throws, for the ball's sound)
 import {MusicPanel} from './ui/MusicPanel';
 import {Hud} from './ui/Hud';
 import {Finale,FinaleSkip,finaleMine,finaleStateOf,finaleWinner} from './ui/results/finale';
@@ -372,9 +373,13 @@ const riftField=new RiftField(view.scene,grunts),riftUI=new RiftWarUI(root.query
 // The ball modes (game/ball): the ball, its trail and its moments in the world; the lobby and results over it.
 const ballField=new BallField(view.scene),ballUI=new BallUI(root.querySelector<HTMLElement>('#interface')??root),ballTargets=new BallTargets();
 // Online, the page's own touch of the ball is forecast from its prediction (game/ball/BallTargets,
-// touchForecast.ts) and drawn at once (BallField.forecastTouch), the room's word blended in when it comes.
+// touchForecast.ts) and drawn at once (BallField.forecastTouch), the room's word blended in when it comes; and heard
+// at once (BallAudio.own, from the ball as it was drawn just before), the room's own sound for it skipped.
 ballTargets.local=()=>prediction.local;ballTargets.clock=()=>prediction.localTime;ballTargets.replaying=()=>prediction.replaying;
-ballTargets.drawn=()=>ballField.drawnState();ballTargets.onTouch=touch=>{if(forecastTouches)ballField.forecastTouch(touch);};
+ballTargets.drawn=()=>ballField.drawnState();ballTargets.onTouch=touch=>{if(!forecastTouches)return;
+  // (BallMatch DOUBLE: how soon the page's own swing under way lands - a body's touch just ahead of it is its.)
+  if(network===online){const cast=prediction.local?.cast;ballAudio.own(touch,ballField.drawnState(),cast?nextContact(cast.move.contacts,prediction.localTime-cast.start):Infinity);}
+  ballField.forecastTouch(touch);};
 // A goal's replay, and a great point's (render/ball/BallReplay.ts): the page plays the room's window again from what it kept.
 const ballReplay=new BallReplayer();ballReplay.onSkip=()=>network.room?.send('ball-skip');let ballReplayBars=0,ballReplayed=false;
 // The ball modes' own camera (render/ball/BallCam.ts): the ball cam, on by default, Tab (a couch seat's TARGET) toggles it;
@@ -1045,10 +1050,16 @@ document.addEventListener('visibilitychange',pausePump);
  *  Goal Rush; Sky Spike's camera holds still and makes its own few moves (render/ball/SpikeCam.ts). */
 let ballHeard=0,ballHeardAt=-Infinity,ballMark='';
 const ballAudio=new BallAudio(audio,music);
+// (A check on this machine logs each hit of the ball as it is played: `__ballSfx = []` - page ms it sounds at, the sound,
+// the page's own forecast touch's or the room's, the page's own fighter's touch or not; `__ballAudio.counts` tallies.)
+if(['localhost','127.0.0.1','[::1]'].includes(location.hostname)){ballAudio.trace=(id,own,mine,delay)=>{(window as unknown as {__ballSfx?:unknown[][]}).__ballSfx?.push([performance.now()+delay*1000,id,own,mine,delay]);};(window as unknown as {__ballAudio:BallAudio}).__ballAudio=ballAudio;}
 function ballSounds(snapshot:GameSnapshot){
   const view=ballOf(snapshot);if(!view)return;
   if(snapshot.serverTime<ballHeardAt-1)ballHeard=0;ballHeardAt=snapshot.serverTime;
-  for(const e of ballAudio.update(snapshot,network.id)){if(e.id<=ballHeard)continue;ballHeard=e.id;if(view.mode==='sky-spike')continue;
+  // (BallMatch DOUBLE: how soon the page's own fighter's swing under way lands, its cast's move as the simulation
+  // picks it - a body's touch just ahead of it is the swing's.)
+  const me=snapshot.players.find(p=>p.id===network.id),move=me?castMove(me):undefined;
+  for(const e of ballAudio.update(snapshot,network.id,me&&move?nextContact(move.contacts,me.actionTime*me.actionDuration):Infinity)){if(e.id<=ballHeard)continue;ballHeard=e.id;if(view.mode==='sky-spike')continue;
     if(e.kind==='strike'&&e.text==='SKY SPIKE'&&e.actorId===network.id)camera.impact(.7);
     else if(e.kind==='clash'){const me=snapshot.players.find(p=>p.id===network.id);if(me&&Math.hypot(me.x-e.x,me.z-e.z)<18)camera.impact(.9);}
   }
@@ -1102,7 +1113,7 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   // A ball match puts everyone back on their marks for each kickoff and serve: the view turns with the body, behind it.
   {const ball=ballOf(snapshot),mark=ball&&(ball.phase==='kickoff'||ball.phase==='countdown')?`${ball.phase}:${ball.phaseUntil}:${ball.startsAt}`:'';
     if(mark&&mark!==ballMark){ballMark=mark;input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??input.yaw;camera.reset();ballChases[0].cut();ballChases[1].cut();}else if(!ball)ballMark='';}
-  timeline.push(snapshot,performance.now());if(ballOf(snapshot)){ballReplay.record(snapshot);if(network===online)ballField.heard(snapshot);}
+  timeline.push(snapshot,performance.now());if(ballOf(snapshot)){ballReplay.record(snapshot);if(network===online){ballField.heard(snapshot);ballAudio.listen(snapshot,network.id);}}
   // Lock combat (the fight's snapshots say it plays it, whichever mode, here or online): what it is, once a session.
   if(snapshot.lockCombat&&!lockTold&&snapshot.players.some(p=>p.id===network.id)){lockTold=true;hud.notify('LOCK COMBAT · MASH TO COMBO · GUARD WHEN THE RING CLOSES TO VANISH',4.5);}
   if(!started||!network.id||!network.predictionReady)return;

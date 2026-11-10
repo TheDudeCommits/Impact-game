@@ -89,7 +89,11 @@ export const callerFiles = () => [...new Set((Object.keys(CALLER) as CallerMomen
 /** Every file any voice may say: the package ships them all, the player switching voices any time. */
 export const allCallerFiles = () => [...new Set((['grandpa', 'arena'] as const).flatMap(v => (Object.keys(CALLER) as CallerMoment[]).flatMap(m => callerLines(m, v))))];
 
-export interface CallerVoice { announce(url: string, gain: number, delay?: number): void; sampleSeconds(url: string): number | undefined; preload(urls: readonly string[]): void }
+export interface CallerVoice {
+  announce(url: string, gain: number, delay?: number): void; sampleSeconds(url: string): number | undefined; preload(urls: readonly string[]): void;
+  /** A line taken back (CombatAudio.takeBack: the announcer's, that file's): stopped, or never started. */
+  takeBack?(owner: string, url?: string): void;
+}
 
 export class BallCaller {
   private busyUntil = -Infinity;
@@ -98,10 +102,12 @@ export class BallCaller {
   private rested = new Map<CallerMoment, number>();
   private bags = new Map<string, string[]>();
   private last = '';
+  /** How he stood before the last line (`takeBack` puts it back), and the moment it was for. */
+  private before: { busyUntil: number; lastStart: number; lastPriority: number; moment: CallerMoment; rested: number | undefined } | null = null;
   private voiceSaid: Commentary = commentary;
   constructor(private readonly voice: CallerVoice, private readonly random: () => number = Math.random, private readonly clock = () => performance.now() / 1000) {}
   /** A match's start: nothing rests from the last one. */
-  reset() { this.busyUntil = -Infinity; this.lastStart = -Infinity; this.lastPriority = 0; this.rested.clear(); }
+  reset() { this.busyUntil = -Infinity; this.lastStart = -Infinity; this.lastPriority = 0; this.rested.clear(); this.before = null; }
   /** Call `moment`, `delay` seconds from now, if the rules let him; `queue`: wait for the line being said rather than drop
    *  (a follow-up: the MVP after the result). Returns the file said, or nothing. */
   say(moment: CallerMoment, options: { delay?: number; queue?: boolean; /** Lines (their files) not to say this time: a FEVER rally's "every point counts double" when only the side behind's point does. */ avoid?: RegExp } = {}): string | undefined {
@@ -123,8 +129,20 @@ export class BallCaller {
     // Not decoded yet: fetched for next time, and this moment passes (a line is never said late).
     if (seconds === undefined) { this.voice.preload([url]); return; }
     this.voice.announce(url, CALLER_GAIN, at - now);
+    this.before = { busyUntil: this.busyUntil, lastStart: this.lastStart, lastPriority: this.lastPriority, moment, rested: this.rested.get(moment) };
     this.busyUntil = at + seconds; this.lastStart = at; this.lastPriority = rules.priority; this.rested.set(moment, at); this.last = url;
     return url;
+  }
+  /** The line `url` was said for the page's own touch of the ball, forecast, and the room
+   *  refused the touch (ballAudio.ts): if it is still his last, it is stopped (or never started), and he stands as he did
+   *  before it - free to talk, the moment not rested. */
+  takeBack(url: string) {
+    if (url !== this.last || !this.before) return;
+    this.voice.takeBack?.('announcer', url);
+    const b = this.before;
+    this.busyUntil = b.busyUntil; this.lastStart = b.lastStart; this.lastPriority = b.lastPriority;
+    if (b.rested === undefined) this.rested.delete(b.moment); else this.rested.set(b.moment, b.rested);
+    this.before = null; this.last = '';
   }
   /** Each moment's lines in a shuffled bag, so none comes round again before the others, and never the same twice running. */
   private pick(moment: string, lines: readonly string[]) {

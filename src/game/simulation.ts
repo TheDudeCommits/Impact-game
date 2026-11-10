@@ -326,6 +326,11 @@ interface Actor {
   attackSeq?: number;
   attackYaw?: number;
   attackAim?: { x: number; z: number };
+  /** The stick (moveX, moveZ) as the attack was pressed, beside `attackYaw`. Read only by the ball modes (BallMatch,
+   *  touchForecast: a set's wing, a spike's line, a curl), which judged the stick as the blow landed: a person who
+   *  pressed with it across had usually let go by the contact. */
+  attackMoveX?: number;
+  attackMoveZ?: number;
   /** How long an attack press stays live. Every light's cooldown outlasts its
    *  own duration - Kenzo's is 0.95 s against a 0.90 s swing - so a flat 0.18 s
    *  buffer ran out between 20 and 50 ms before the press would have been
@@ -1566,7 +1571,7 @@ export class ArenaSimulation {
     actor.lastSeq = input.seq;
     // Lag compensation: this tick less the server time of the frame the page drew (rewind).
     if (this.rewind > 0) actor.viewLag = input.view === undefined ? 0 : clamp(this.serverTime - input.view, 0, this.rewind);
-    if(input.attack){actor.attackSeq=input.seq;actor.attackYaw=input.yaw;actor.attackAim=input.attack==='area'?input.aim:undefined;this.pressPace(actor,input.attack);}
+    if(input.attack){actor.attackSeq=input.seq;actor.attackYaw=input.yaw;actor.attackMoveX=input.moveX;actor.attackMoveZ=input.moveZ;actor.attackAim=input.attack==='area'?input.aim:undefined;this.pressPace(actor,input.attack);}
     actor.lastInputAt = this.serverTime;
     // Preserve a pending edge if several movement packets arrive before the tick.
     actor.input = { ...input, jump: input.jump || actor.input.jump, dash: input.dash || actor.input.dash,

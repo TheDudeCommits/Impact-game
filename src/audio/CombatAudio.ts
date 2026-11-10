@@ -672,7 +672,7 @@ export class CombatAudio {
   /** The stands react (a roar, an "ooh", a groan): a one-shot on the place's own bus beside its crowd bed, not ducked
    *  under the voices and not counted against the effects' twenty, played wide (two copies panned apart, a few
    *  milliseconds and a hair of pitch between them, as a wide bed is). */
-  stands(url: string, gain: number, delay = 0, rate = 1) {
+  stands(url: string, gain: number, delay = 0, rate = 1, owner?: string) {
     const ctx = this.context, buffer = this.samples.get(url);
     if (!buffer) { void this.loadSample(url); return; }
     if (!ctx || ctx.state !== 'running' || !this.ambienceBus || this.dead || this.mix.master <= 0 || this.mix.sfx <= 0) return;
@@ -681,9 +681,32 @@ export class CombatAudio {
       const source = ctx.createBufferSource(), level = ctx.createGain(), pan = ctx.createStereoPanner();
       source.buffer = buffer; source.playbackRate.value = rate * bend; level.gain.value = gain * Math.SQRT1_2; pan.pan.value = side;
       source.connect(level).connect(pan).connect(this.ambienceBus!);
-      source.onended = () => { source.disconnect(); level.disconnect(); pan.disconnect(); };
+      const held = owner ? { source, level } : undefined;
+      if (held) { const list = this.standsBy.get(owner!) ?? []; list.push(held); this.standsBy.set(owner!, list); }
+      source.onended = () => {
+        source.disconnect(); level.disconnect(); pan.disconnect();
+        if (held) { const list = this.standsBy.get(owner!), at = list?.indexOf(held) ?? -1; if (at >= 0) list!.splice(at, 1); if (list && !list.length) this.standsBy.delete(owner!); }
+      };
       source.start(start + late);
     });
+  }
+  /** The stands' reactions played under an owner (`stands`'s last argument), so they can be taken back (`takeBack`). */
+  private standsBy = new Map<string, { source: AudioBufferSourceNode; level: GainNode }[]>();
+  /** Takes back what was played under `owner` - one-shots (`sample`, by its owner; with `url`, only that file's) and the
+   *  stands' reactions played under it - faded over `fade` s, or never started if they were still to come. In the
+   *  ball modes the page plays its own touch of the ball at once, and the room can refuse it (ballAudio.ts). (Not
+   *  `hush`, which steps every effect back for a parry's moment.) */
+  takeBack(owner: string, url?: string, fade = .1) {
+    const buffer = url === undefined ? undefined : this.samples.get(url);
+    if (url !== undefined && !buffer) return;
+    for (const sound of this.sounds) if (sound.owner === owner && (!buffer || sound.source.buffer === buffer)) this.stop(sound, fade);
+    if (url !== undefined) return;
+    const ctx = this.context, list = this.standsBy.get(owner);
+    if (!ctx || !list) return;
+    for (const { source, level } of list) {
+      try { const now = ctx.currentTime; holdAt(level.gain, now); level.gain.linearRampToValueAtTime(0, now + fade); source.stop(now + fade + .005); } catch { /* Already ended. */ }
+    }
+    this.standsBy.delete(owner);
   }
   /** How worked up the stands are (0-1): their bed held from quiet under play to loud at the peaks (StageAmbience.tension). */
   crowdTension(level: number) { this.ambience?.tension(level); }
@@ -956,6 +979,6 @@ export class CombatAudio {
     try { const now = this.context?.currentTime ?? 0; holdAt(sound.gain.gain, now); sound.gain.gain.linearRampToValueAtTime(0, now + fade); sound.source.stop(now + fade + .005); } catch { /* Already ended. */ }
     this.updateVoiceActivity();
   }
-  reset() { for (const key of [...this.loops.keys()]) this.letLoopGo(key, .3); for (const sound of this.sounds) this.stop(sound); this.auras.clear(); this.seen.clear(); this.dashStates.clear(); this.casts.clear(); this.quips.reset(); clearTimeout(this.bellTimer); this.bellTimer = undefined; this.saidAt.clear(); }
+  reset() { for (const key of [...this.loops.keys()]) this.letLoopGo(key, .3); for (const sound of this.sounds) this.stop(sound); this.auras.clear(); this.standsBy.clear(); this.seen.clear(); this.dashStates.clear(); this.casts.clear(); this.quips.reset(); clearTimeout(this.bellTimer); this.bellTimer = undefined; this.saidAt.clear(); }
   dispose() { this.dead = true; clearTimeout(this.duckTimer); clearTimeout(this.bellTimer); this.abort.abort(); this.ambience?.dispose(); this.ambienceBus?.disconnect(); this.reset(); this.buffers.clear(); this.samples.clear(); this.reverb?.out.disconnect(); this.irs.clear(); this.master?.disconnect(); this.sfx?.disconnect(); this.speech?.disconnect(); this.compressor?.disconnect();for(const source of this.musicSources.values())source.disconnect();this.musicSources.clear(); void this.context?.close().catch(() => {}); }
 }

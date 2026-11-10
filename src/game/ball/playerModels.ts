@@ -2,6 +2,7 @@ import type {AttackSlot, PlayerInput, PlayerState} from '../types';
 import {MOVES, jumpArc} from '../moves';
 import {BALL_ID, GOAL_RULES, SPIKE_RULES, otherTeam, type BallModeId, type BallSeat, type BallState, type BallTeam, type BallView} from './model';
 import {goalZ, landing, sideOf, stepBall, type BallContact} from './physics';
+import {PLACE, SERVE_STYLE} from './strike';
 
 /** Skill against mashing (a game worth coming back to rewards learning): scripted people for the headless sims, to
  *  show with numbers that a player who has learnt the modes beats one mashing
@@ -21,7 +22,11 @@ import {goalZ, landing, sideOf, stepBall, type BallContact} from './physics';
  *    never swings at nothing. Sky Spike - the spike from the top of the jump (PERFECT SPIKE), QUICK and BACK SETs, a TIP
  *    over a block that is up, the STUFF BLOCK timed to the hitter, the DIVE for a hard ball just out of reach, and the
  *    JUMP SERVE from the top. Every timed press is timed to the cue the page draws (JUMP, APEX, BLOCK, DIVE: SpikeCues;
- *    the gold ring of a ball coming in), not to the room's state of the instant. */
+ *    the gold ring of a ball coming in), not to the room's state of the instant. It places its spikes and
+ *    serves with the stick (strike.ts PLACE) into the zone the other side left open, and TIPs only with nobody of
+ *    theirs home short. (Tried and dropped: its set read off their block - a QUICK SET to a hitter nobody was across
+ *    from, a BACK SET away from a block on the setter's side. It set 4.8 QUICK and BACK SETs a match, not 3.1, and its
+ *    side won less: HARD's team-mates convert the floating set, PERFECT SPIKEs through a soft block, better.) */
 export type HumanStyle = 'masher' | 'casual' | 'skilled';
 export const HUMAN_STYLES: readonly HumanStyle[] = ['masher', 'casual', 'skilled'];
 
@@ -195,6 +200,18 @@ export class HumanHands {
   private press(input: Command, slot: AttackSlot, yaw: number, now: number, pace: readonly [number, number] = this.limits.pace) {
     input.attack = slot; input.yaw = wrap(yaw + this.normal() * this.limits.aim);
     this.nextPress = now + pace[0] + this.rng() * (pace[1] - pace[0]);
+  }
+  /** The stick (strike.ts PLACE) that sends an attack over to the zone of the far court farthest from the other
+   *  side as seen - one of a keyboard's eight ways, or none - `neutral` metres past the net with the stick let go. */
+  private place(input: Command, rivals: readonly Body[], b: BallState, sign: number, family: 'spike' | 'serve', neutral: number) {
+    let best = {a: 0, f: 0, d: -Infinity};
+    for (const a of [-1, 0, 1]) for (const f of [-1, 0, 1]) {
+      const x = a ? a * PLACE.x[family] : b.x, z = -sign * (f > 0 ? Math.max(neutral, PLACE.deep[family]) : f < 0 ? Math.min(neutral, PLACE.short[family]) : neutral);
+      const d = Math.min(9, ...rivals.map(p => Math.hypot(p.x + p.vx * .3 - x, p.z + p.vz * .3 - Math.max(-SPIKE_RULES.courtHalfZ + .7, Math.min(SPIKE_RULES.courtHalfZ - .7, z)))));
+      if (d > best.d + .3) best = {a, f, d};
+    }
+    const mx = best.a, mz = best.f * -sign, r = Math.hypot(mx, mz);
+    input.moveX = r ? mx / r : 0; input.moveZ = r ? mz / r : 0;
   }
   /** A slot picked at random from what the fighter has (the ultimate once it is full). */
   private anySlot(me: PlayerState): AttackSlot {
@@ -426,7 +443,7 @@ export class HumanHands {
     const home = {x: front && front.x > 0 ? -3.4 : 3.4, z: sign * (skilled && view.servingTeam !== team && view.rally <= 1 ? 6 : 3.2)};
     if (view.phase === 'kickoff') {
       if (view.serverId !== this.id) { this.stick(me, home, input, .5); return input; }
-      return this.serving(me, b, sign, now, input, empty, aimAt);
+      return this.serving(me, b, sign, now, input, empty, aimAt, rivals);
     }
     this.serveKind = null; this.serveAt = -1;
     const touches = view.touchTeam === team ? view.touches : 0;
@@ -476,8 +493,14 @@ export class HumanHands {
         // In the air for the attack: the swing at the top (the APEX cue), or on takeoff; a TIP over a block that is up.
         if (now - this.spikeAt >= this.swingAt && now >= this.nextPress && Math.hypot(b.x - me.x, b.y - (me.y + 1.1), b.z - me.z) < 3.8) {
           const blocked = rivals.some(p => !p.grounded && Math.abs(p.z) < 2 && Math.abs(p.x - b.x) < 1.8 && p.y > .8);
-          if (this.tipFor !== key) { this.tipFor = key; this.tipping = skilled && blocked && this.rng() < .5; }
+          // (The TIP when the block is up and nobody of theirs is home short to take it; into a block with the
+          // short zone covered, the spike placed past it - PLACE. An earlier skilled one tipped half its blocked attacks
+          // whatever stood behind the block.)
+          const short = rivals.some(p => p.grounded && Math.abs(p.z) < 4.2);
+          if (this.tipFor !== key) { this.tipFor = key; this.tipping = skilled && blocked && this.rng() < (short ? .15 : .85); }
           const to = empty([3, 5.5, 8.5]);
+          // (The skilled one places the spike with the stick - PLACE - into the zone the defence left open.)
+          if (skilled && !this.tipping) this.place(input, rivals, b, sign, 'spike', 4.8);
           this.press(input, this.tipping ? 'light' : 'heavy', aimAt(to, b), now);
         }
         return input;
@@ -522,12 +545,12 @@ export class HumanHands {
   /** The serve: walk up behind the hanging ball, a breath, then - skilled - a JUMP SERVE struck at the top of the jump
    *  (or a FLOAT now and then), aimed at the seam; casual, a FLOAT or a DRIVE at the middle of the far court. */
   private serving(me: PlayerState, b: BallState, sign: number, now: number, input: Command,
-    empty: (deep: readonly number[]) => {x: number; z: number}, aimAt: (to: {x: number; z: number}, from: {x: number; z: number}) => number) {
+    empty: (deep: readonly number[]) => {x: number; z: number}, aimAt: (to: {x: number; z: number}, from: {x: number; z: number}) => number, rivals: readonly Body[]) {
     const skilled = this.style === 'skilled';
     if (!this.serveKind) this.serveKind = skilled ? (this.rng() < .7 ? 'jump' : 'float') : this.rng() < .5 ? 'float' : 'drive';
     const yaw = aimAt(empty(this.serveKind === 'float' ? [3.5, 6, 9] : [6.5, 8, 9.5]), b);
     if (!me.grounded && this.serveKind === 'jump') {
-      if (now - this.serveJump >= this.swingAt && now >= this.nextPress) this.press(input, 'heavy', yaw, now);
+      if (now - this.serveJump >= this.swingAt && now >= this.nextPress) { if (skilled) this.place(input, rivals, b, sign, 'serve', SERVE_STYLE.jumpDeep); this.press(input, 'heavy', yaw, now); }
       input.yaw = yaw;
       return input;
     }
@@ -537,7 +560,7 @@ export class HumanHands {
       if (this.serveAt < 0) this.serveAt = now + .4 + this.rng() * .6;
       if (now >= this.serveAt && now >= this.nextPress && now >= this.nextJump) {
         if (this.serveKind === 'jump') { this.jump(input, now, this.rise + .05); this.serveJump = now; this.swingAt = this.rise - .1 + this.normal() * this.limits.timing; }
-        else { this.press(input, this.serveKind === 'float' ? 'light' : 'heavy', yaw, now); this.serveAt = -1; }
+        else { if (skilled) this.place(input, rivals, b, sign, 'serve', SERVE_STYLE.floatDeep); this.press(input, this.serveKind === 'float' ? 'light' : 'heavy', yaw, now); this.serveAt = -1; }
       }
     }
     return input;
