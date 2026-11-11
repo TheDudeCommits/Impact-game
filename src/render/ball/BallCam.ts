@@ -45,6 +45,13 @@ export class BallCam {
   on = true;
   /** Filming this frame. */
   active = false;
+  /** Goal Rush's SPORT mode (`?football`): FREE LOOK - the heading is the player's alone (the mouse, the right stick, a
+   *  drag) and never eased back to the ball; off, BALL LOCK, the ball cam as it always was. (render/ball/footballPage.ts) */
+  free = false;
+  /** SPORT mode: the seat this lens films (whose carry makes BALL LOCK hold, `calm`). main.ts sets it. */
+  selfId = '';
+  /** SPORT's BALL LOCK: the drawn body's run, sprung (m/s along x and z), for the heading a carrier is held toward. */
+  private runX = 0; private runZ = 0; private lastRunX = NaN; private lastRunZ = NaN;
   private presses = 0;
   private yaw = NaN;
   /** The heading's turning speed (radians a second): the spring's. */
@@ -83,6 +90,11 @@ export class BallCam {
     rig.mode = 'free'; rig.sportFov = SPORT_FOV;
     const placed = Math.hypot(self.x - this.lastX, self.z - this.lastZ) > PLACED;
     this.lastX = self.x; this.lastZ = self.z;
+    // (SPORT mode's BALL LOCK - `calm`: steadier than the classic ball cam's, which stays as it is without the flag.)
+    if (view.football && !fighting && !this.free) return this.calm(rig, dt, yaw, self, ball, view, team, placed);
+    // (FREE LOOK: the heading handed in, the player's, as it is; the lens no longer kept on the ball. Switched back to BALL
+    // LOCK, the spring takes up from this heading - a turn, never a cut.)
+    if (this.free && !fighting) { this.yaw = wrapped(yaw); this.handed = this.yaw; this.rate = 0; this.away = 0; this.still = 0; rig.keepInView = null; return this.yaw; }
     const turn = Number.isFinite(this.handed) ? wrapped(yaw - this.handed) : 0, reset = Math.abs(turn) > RESET || placed;
     if (reset) { this.away = 0; this.still = 0; }
     else if (Math.abs(turn) > 1e-6) { this.away = clamp(this.away + turn, -AWAY, AWAY); this.still = 0; }
@@ -120,8 +132,63 @@ export class BallCam {
     rig.keepInView = this.look.set(ball.x, ball.y, ball.z);
     return this.yaw;
   }
+  /** SPORT mode's BALL LOCK (CALM, below). */
+  private calm(rig: FollowCamera, dt: number, yaw: number, self: Vec3, ball: Vec3, view: BallView, team: BallTeam | undefined, placed: boolean): number {
+    const me = this;
+    // (The body's run, from its drawn steps: placed, the run starts again.)
+    if (Number.isFinite(me.lastRunX) && !placed && dt > 0) { const k = Math.min(1, dt * 8); me.runX += ((self.x - me.lastRunX) / dt - me.runX) * k; me.runZ += ((self.z - me.lastRunZ) / dt - me.runZ) * k; }
+    else { me.runX = me.runZ = 0; }
+    me.lastRunX = self.x; me.lastRunZ = self.z;
+    const turn = Number.isFinite(me.handed) ? wrapped(yaw - me.handed) : 0, reset = Math.abs(turn) > RESET || placed;
+    // (The player's own turn is taken as it is; for HOLD s after it the lens lets their view be, then eases in.)
+    if (reset || Math.abs(turn) > 1e-6) me.still = 0; else me.still += dt;
+    me.away = 0;
+    const dx = ball.x - self.x, dz = ball.z - self.z, d = Math.hypot(dx, dz), bearing = d > 1e-3 ? Math.atan2(dx, dz) : Number.isFinite(me.yaw) ? me.yaw : yaw;
+    const now = Number.isFinite(me.yaw) ? me.yaw : bearing, carrying = !!me.selfId && view.ball.carry === me.selfId;
+    let goal = now, k: number = CALM.rate, most: number = CALM.most, pull = 1;
+    if (carrying) {
+      // Held toward the run, and a share of the way to the goal attacked.
+      const speed = Math.hypot(me.runX, me.runZ), run = speed > CALM.run ? Math.atan2(me.runX, me.runZ) : now;
+      const gz = team === 'blue' ? -GOAL_RULES.halfZ : GOAL_RULES.halfZ, toGoal = Math.atan2(-self.x, gz - self.z);
+      goal = run + clamp(wrapped(toGoal - run) * CALM.goalShare, -CALM.goalMost, CALM.goalMost);
+      k = CALM.carryRate; most = CALM.carryMost; pull = smooth(speed, 1, 4);
+    } else {
+      // (The ball's bearing as the lens sees it, from its stand CALM.boom m behind the body: a ball close beside the body
+      // is well inside the frame, and swings the heading far less than it does off the body itself.)
+      const lx = self.x - Math.sin(now) * CALM.boom, lz = self.z - Math.cos(now) * CALM.boom, gap = wrapped(Math.atan2(ball.x - lx, ball.z - lz) - now);
+      if (Math.abs(gap) > CALM.dead) goal = now + gap - Math.sign(gap) * CALM.dead;
+      // (A ball gone out of the frame - a long ball behind you - is fetched back quicker, so it is lost only briefly.)
+      if (Math.abs(gap) > CALM.out) { most = CALM.fetch; k = CALM.rate * 1.3; }
+      const rise = Math.atan2(ball.y - self.y - 1.2, Math.max(d, .01));
+      pull = smooth(d, CALM.near - 1, CALM.near + 2) * (1 - smooth(rise, .85, 1.2));
+    }
+    pull *= reset ? 1 : smooth(me.still, HOLD, HOLD + .5);
+    if (!Number.isFinite(me.yaw) || reset) { me.yaw = me.resume && !reset ? yaw : bearing; me.rate = 0; me.resume = false; }
+    else {
+      me.yaw += turn;
+      for (let left = dt; left > 1e-6;) {
+        const h = Math.min(left, 1 / 60), g = wrapped(goal - me.yaw);
+        me.rate += (k * k * pull * g - 2 * k * me.rate) * h;
+        me.rate = clamp(me.rate, -most, most);
+        me.yaw += me.rate * h; left -= h;
+      }
+    }
+    me.yaw = wrapped(me.yaw); me.handed = me.yaw;
+    rig.keepInView = me.look.set(ball.x, ball.y, ball.z);
+    return me.yaw;
+  }
 }
 
+/** SPORT mode's BALL LOCK, calm (a view that chased the ball swung to a new background every half second while a small
+ *  fast ball was passed about nearby, and re-aimed W under the player's thumb):
+ *  - with the ball at your feet the view does not chase it there: it holds, easing toward the way you run and a share of
+ *    the way to the goal you attack (CALM.carry);
+ *  - with it anywhere else the view follows it with a dead zone - no turn while it is within CALM.dead radians of the
+ *    heading, well inside the frame - and only so far as to bring it back to that zone's edge; a ball gone out of the
+ *    frame (CALM.out rad off) is fetched back at up to CALM.fetch rad/s;
+ *  - every turn on a spring capped at CALM.most rad/s; a ball close by (CALM.near m) or overhead holds the view, as ever;
+ *    the player's own turn is taken as it is, and for HOLD s after it the lens lets it be. */
+const CALM = {boom: 6.4, dead: .5, rate: 2.6, most: 1.1, out: .9, fetch: 1.6, near: 3.2, carryRate: 2, carryMost: .9, goalShare: .35, goalMost: .35, run: 2} as const;
 /** Where the sun's shadow box centres in a ball match (main.ts, GameRenderer.shadowCentred): between the player and the
  *  ball, never more than SHADOW_REACH metres from the player, so the box (18 m either way) always holds them and holds
  *  the ball whenever it is near. Written into `out`. */

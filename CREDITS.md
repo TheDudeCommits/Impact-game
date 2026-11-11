@@ -72,7 +72,7 @@ one's layers and their sources (with their hashes), or how it was generated.
 | Barlow, Barlow Condensed | The Barlow Project Authors | https://github.com/jpt/barlow | SIL OFL 1.1 | `public/assets/ui/hud/fonts/` |
 | Electroharmonix | Ray Larabie / Typodermic Fonts | https://typodermicfonts.com/public-domain/ | CC0 1.0 | `public/assets/home/fonts/electroharmonix.otf` (the home and HUD lettering); `public/assets/survival/intro/rift-display.otf` is the same font with its K redrawn as a Latin K |
 | Yuji Boku | The Yuji Project Authors | https://fonts.google.com/specimen/Yuji+Boku | SIL OFL 1.1 | The area moves' seal glyphs (`src/render/area/glyphs.json`, outlines taken from the font) |
-| Dela Gothic One | The Dela Gothic Project Authors | https://github.com/syakuzen/DelaGothic | SIL OFL 1.1 | The ball modes' drawn lettering (`public/assets/vfx/ball-sound-words.webp`: the sound words, the last ten seconds' numerals and MATCH POINT, drawn from the font; no font file ships) |
+| Dela Gothic One | The Dela Gothic Project Authors | https://github.com/syakuzen/DelaGothic | SIL OFL 1.1 | The ball modes' drawn lettering (`public/assets/vfx/ball-sound-words.webp`: the sound words, the last ten seconds' numerals and MATCH POINT; `public/assets/ui/ball/ball-shot-names.webp`: the signature shots' names; drawn from the font, no font file ships) |
 
 The OFL texts are in `docs/provenance/fonts/`.
 

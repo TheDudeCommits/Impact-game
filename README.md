@@ -62,7 +62,6 @@ defaults.
 | Setting | Default | What it is |
 | --- | --- | --- |
 | `VITE_MATCH_SERVER` | this page's host, port 2567 | The match server the page connects to. |
-| `VITE_SITE_URL` | `http://localhost:5173` | Where the game is served: canonical and shared links, the legal pages. |
 | `VITE_SERVER_HOST`, `VITE_DISCORD_INVITE` | none | The server's host as the privacy page names it; a Discord button. |
 | `PORT` | `2567` | The server's port. |
 | `DATA_DIR` | none (memory only) | Where the server keeps accounts and progress. |

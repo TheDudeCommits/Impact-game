@@ -7,7 +7,7 @@ import type { RunResult } from '../../survival/SurvivalGame';
 import { RANKS as STYLE_RANKS } from '../../survival/style';
 import { resultFighterArt } from './resultArt';
 import { prefetchResultLink, resultLink } from '../results/resultLink';
-import { SITE_URL, TITLE } from '../../originals/brand';
+import { PUBLIC_ADDRESS, TITLE } from '../../originals/brand';
 
 export interface ShareCardInput {
   result: RunResult; fighter: FighterId;
@@ -68,7 +68,8 @@ export interface CardSpec {
   lower: { label: string; faces: { src: string; name: string; marked: boolean }[]; more: number };
   footer: string;
 }
-export const CARD_ADDRESS = SITE_URL.replace(/^https?:\/\//, '');
+/** Where anyone who sees a card can play: the game's public address (src/originals/brand.ts PUBLIC_URL, without its scheme). */
+export const CARD_ADDRESS = PUBLIC_ADDRESS;
 
 /** The same ending spread as the results overlay, composed from its real art. */
 export async function drawShareCard(input: ShareCardInput): Promise<HTMLCanvasElement> {
@@ -124,6 +125,7 @@ export async function drawCard(spec: CardSpec): Promise<HTMLCanvasElement> {
   const size=72;shown.forEach((boss,i)=>{const bx=x+i*105,top=by+14;ctx.fillStyle='#e3dfd7';ctx.fillRect(bx,top,size,size);if(faces[i]){cover(ctx,faces[i]!,bx,top,size,size,.3);ink(ctx,bx,top,size,size,1.1);}ctx.strokeStyle=boss.marked?accent:INK;ctx.lineWidth=2;ctx.strokeRect(bx,top,size,size);ctx.fillStyle=boss.marked?accent:INK;ctx.font=`800 12px ${CONDENSED}`;ctx.fillText(boss.name.toUpperCase(),bx,top+88,99);});
   if(!shown.length&&art){const top=by+18,height=550-top;ctx.save();ctx.globalAlpha=.55;cover(ctx,art,x,top,width,height,.55);ctx.restore();ink(ctx,x,top,width,height,1.05);}
   if(spec.lower.more>0){ctx.textAlign='right';ctx.fillStyle='#555';ctx.font=`800 14px ${CONDENSED}`;ctx.fillText(`+ ${spec.lower.more} MORE`,right,by);ctx.textAlign='left';}
+  // The footer: the line, then where to play - the game's public address beside its name (CARD_ADDRESS).
   ctx.strokeStyle='#14141433';ctx.beginPath();ctx.moveTo(x,575);ctx.lineTo(right,575);ctx.stroke();ctx.fillStyle='#555';ctx.font=`800 16px ${CONDENSED}`;ctx.fillText(spec.footer,x,604,width-390);
   ctx.textAlign='right';ctx.fillStyle=accent;ctx.font=`italic 900 23px ${IMPACT}`;ctx.fillText(TITLE.toUpperCase(),right,605,110);
   ctx.fillStyle=INK;ctx.font=`800 18px ${CONDENSED}`;ctx.fillText(CARD_ADDRESS,right-118,604,250);ctx.textAlign='left';

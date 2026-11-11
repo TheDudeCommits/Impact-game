@@ -1,6 +1,6 @@
 import type { FighterId } from './game/types';
 import { phone } from './input/device';
-import { chaseCamOf, spikeCamOf, type ChaseCamStyle, type SpikeCamStyle } from './render/ball/ballCamChoice';
+import { chaseCamOf, spikeCamOf, superCamOf, type ChaseCamStyle, type SpikeCamStyle, type SuperCamStyle } from './render/ball/ballCamChoice';
 
 export interface FighterDefinition {
   name:string; series:string; color:string; outlineWidth:number; moves:string[]; model:string; portrait:string;
@@ -192,7 +192,11 @@ export const vfxFromDensity=(density:number):VfxLevel=>density>=.85?'full':densi
 export interface Settings { /** The ball modes' COMMENTARY (audio/ballCaller.ts): the grandfather (default), the arena caller, or off. */ commentary?:'grandpa'|'arena'|'off';
   /** The ball modes' camera options (render/ball/ballCamChoice.ts), each off until picked: SKY SPIKE CAMERA,
    *  'classic' (absent: the same) or the COURT-SIDE stand; GOAL RUSH CAMERA, 'classic' or the CLOSE lens. */
-  spikeCam?:SpikeCamStyle; chaseCam?:ChaseCamStyle;
+  spikeCam?:SpikeCamStyle; chaseCam?:ChaseCamStyle; superCam?:SuperCamStyle;
+  /** Goal Rush's SPORT mode (`?football`, game/ball/football.ts): BALL LOCK ('lock', absent: the same - today's ball cam,
+   *  the view keeping the ball in frame) or FREE LOOK ('free': the heading is the player's alone). V, or the pad's left
+   *  stick click, switches it. */
+  goalLook?:'lock'|'free';
   sensitivity:number; shake:number; effects:number; vfx:VfxLevel; volume:number; sfxVolume:number; voiceVolume:number; musicVolume:number; musicEnabled:boolean; homeAnimations?:boolean; audioMixVersion:number; quality:'high'|'medium'|'low'; cameraMode:CameraMode; cameraStyle:CameraStyle; cameraVersion:number; cinematics:boolean; lockStyle:LockStyle;
   /** The player picked the quality themselves. Until then it is the machine's (render/qualityTier.ts): picked from the
    *  GPU at boot and stepped down in a fight that cannot hold its frame rate. A save holding the old default 'high'
@@ -243,6 +247,8 @@ export function loadSettings():Settings {
     // (Only a picked option is kept; anything else is the classic camera.)
     if(spikeCamOf(saved.spikeCam)!=='classic')defaults.spikeCam=spikeCamOf(saved.spikeCam);
     if(chaseCamOf(saved.chaseCam)!=='classic')defaults.chaseCam=chaseCamOf(saved.chaseCam);
+    if(saved.goalLook==='free')defaults.goalLook='free';
+    if(superCamOf(saved.superCam)!=='classic')defaults.superCam=superCamOf(saved.superCam);
     if(typeof saved.homeAnimations==='boolean')defaults.homeAnimations=saved.homeAnimations;
     if(typeof saved.errorReports==='boolean')defaults.errorReports=saved.errorReports;
     if((CAMERA_MODES as readonly string[]).includes(saved.cameraMode))defaults.cameraMode=saved.cameraMode;

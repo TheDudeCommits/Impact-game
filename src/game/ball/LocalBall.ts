@@ -14,7 +14,10 @@ import {DRILLS, isDrill, type DrillId} from './drills';
 
 /** What else a match on this device is played with: a mutator, a training drill (FREE PLAY's), and what the
  *  page's own player wears in the ball modes (their seat's look: ball skin, trail, goal burst, celebration). */
-export interface BallExtras { mutator?: BallMutator; drill?: DrillId; /** FREE PLAY as LEARN TO PLAY (lesson.ts). */ lesson?: boolean; look?: BallLook; /** The arena picked (arenas.ts); none: the mode's in turn. */ arena?: BallArenaId; /** The other side's bots' level (BallBrain BOT_LEVELS); none: NORMAL. */ difficulty?: BotLevel }
+export interface BallExtras { mutator?: BallMutator; drill?: DrillId; /** FREE PLAY as LEARN TO PLAY (lesson.ts). */ lesson?: boolean; look?: BallLook; /** The arena picked (arenas.ts); none: the mode's in turn. */ arena?: BallArenaId; /** The other side's bots' level (BallBrain BOT_LEVELS); none: NORMAL. */ difficulty?: BotLevel;
+  /** Goal Rush's SPORT mode (football.ts): `?football` in the address (main.ts). Only a match on this device has it. */ football?: boolean;
+
+  /** VOLLEYBALL (volley.ts): Sky Spike played as volleyball - `?volleyball` in the address. */ volleyball?: boolean }
 /** The arenas whose intro this page has flown over: a match there again opens with the
  *  short intro (ceremony.ts SHORT_INTRO), as a rematch does. For the page's session. */
 const flown = new Set<BallArenaId>();
@@ -70,7 +73,7 @@ export class LocalBall {
     const length = Number(here?.get('balllength')) || undefined;
     this.match = new BallMatch(mode, {collision, seed, access: 'bots', lockCombat: lockCombatOn(), length, replays: !partner, rumble, arena, practice: practice && !partner,
       mutator: rumble ? null : extras.mutator ?? null, drill: practice && !partner ? extras.drill : undefined, lesson: practice && !partner && !extras.drill ? extras.lesson : undefined, intro, round: typeof again === 'object' ? again.round : undefined,
-      difficulty: practice && !partner ? undefined : extras.difficulty});
+      difficulty: practice && !partner ? undefined : extras.difficulty, ...(extras.football ? {football: true} : {}), ...(extras.volleyball && mode === 'sky-spike' ? {volleyball: true} : {})});
     const team: BallTeam = 'red';
     this.match.add(this.id, fighter, name, false, team); this.match.sim.setPlayerSkill(this.id, keptSkill()); this.match.setLook(this.id, extras.look);
     // `?ballpilot` on this machine: a bot plays the page's own fighter (the captures and checks of the ball modes).

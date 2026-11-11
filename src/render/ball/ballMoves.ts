@@ -1,3 +1,4 @@
+import {startKick} from './kickLayer';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {Fighter} from '../Fighter';
@@ -281,9 +282,13 @@ const GET_UP = 600;
 
 /** The sports take `body` draws `state` with now, or nothing (its own clip). */
 export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | undefined {
+  // (Goal Rush's SPORT mode, `?football`: the kit always on, and the match's own touches drawn - sportKick.)
+  const sporting = !!context?.()?.view.football;
+  if (sporting) { const kick = sportKick(body, state); if (kick) return kick; }
+  const kit = everything || sporting;
   const sport = state.action === 'light' || state.action === 'heavy' || state.action === 'special' || state.action === 'guard';
   // (The kit's other actions only with the kit on, and nothing read for them otherwise.)
-  if (!sport && !((everything || forced) && KIT_ACTIONS.has(state.action))) { latches.delete(body); return undefined; }
+  if (!sport && !((kit || forced) && KIT_ACTIONS.has(state.action))) { latches.delete(body); return undefined; }
   if (state.action === 'idle') { latches.delete(body); return getUp(body, state); }
   const ctx = context?.();
   // (SHOOT's quick strike is drawn with a take on every page; anything else only with `?ballmoves`.)
@@ -292,7 +297,7 @@ export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | u
   // as the fighter's own heavy until the room's 'tap' came, after its blow.)
   const strike = ownStrike(state.id, state.actionSeq) ?? state.strike;
   const tap = state.action === 'heavy' && strike === 'tap';
-  if ((!ctx && !forced) || !(everything || tap || forced)) { latches.delete(body); return undefined; }
+  if ((!ctx && !forced) || !(kit || tap || forced)) { latches.delete(body); return undefined; }
   // (A run is chosen again whenever the body takes the ball on or loses it: the carry.)
   const carrying = state.action === 'run' && ctx?.view.ball.carry === state.id;
   const swing = `${state.action}|${state.actionSeq ?? state.actionStarted.toFixed(2)}|${state.chain ?? 0}|${state.branch ?? ''}|${strike ?? ''}${carrying ? '|carry' : ''}`;
@@ -329,6 +334,54 @@ export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | u
   swap.phase = `-ball-${latch.key}`;
   swap.slot = state.action as AttackSlot;
   return swap;
+}
+/** Goal Rush's SPORT mode (game/ball/football.ts): the match plays the ball itself, so no swing of the body's says a
+ *  touch - its PASS and SHOOT events do (BallEvent 'pass', 'strike'). Each is drawn with the kit's take (the side-foot
+ *  pass; SHOOT's snap on a tap, the DRIVE wound up; the header) played once from a beat before its contact - the ball
+ *  has already left - and then the body's own action again, but only on a body standing or walking as it struck
+ *  (under KICK.slow m/s): an in-place take on a running body slides its feet along the floor, so on the run the take is
+ *  laid over the run cycle (or the carry's jog) as an additive layer on the striking leg, the hips and the spine
+ *  (kickLayer.ts). */
+const KICK = {slow: 3, lead: .05, most: .9} as const;
+const kicked = new WeakMap<Fighter, {seen: number; id: number; at: number; key: BallMoveKey; swap: BallSwap}>();
+const pace = new WeakMap<Fighter, {x: number; z: number; t: number; speed: number}>();
+function sportKick(body: Fighter, state: PlayerState): Transplanted | undefined {
+  const ctx = context?.(), now = performance.now();
+  if (!ctx) return undefined;
+  const was = pace.get(body), dt = was ? (now - was.t) / 1000 : 0;
+  const speed = was && dt > 1e-3 && dt < .25 ? Math.hypot(state.x - was.x, state.z - was.z) / dt : was?.speed ?? 0;
+  pace.set(body, {x: state.x, z: state.z, t: now, speed: was ? was.speed + (speed - was.speed) * Math.min(1, dt * 12) : speed});
+  let k = kicked.get(body);
+  const seen = k?.seen ?? 0;
+  let newest = seen;
+  for (const e of ctx.view.events) {
+    if (e.id <= seen || e.actorId !== state.id || (e.kind !== 'pass' && e.kind !== 'strike')) continue;
+    newest = Math.max(newest, e.id);
+    const key: BallMoveKey = e.kind === 'pass' ? 'GR.pass' : e.shot === 'header' ? 'GR.head' : e.shot === 'power' ? 'GR.drive' : 'GR.power';
+    if ((pace.get(body)?.speed ?? 0) < KICK.slow && state.grounded) { k = {seen: e.id, id: e.id, at: now, key, swap: k?.swap ?? new BallSwap()}; kicked.set(body, k); }
+    // (On the run: the take laid over the run on the striking leg, the hips and the spine - kickLayer.ts.)
+    else if (state.grounded) { const row = BALL_MOVES[key], fit = row.on ? fitTo(body, state, key) : undefined; if (fit) startKick(body, fit.clip, fit.take.contact * fit.clip.duration, e.at); }
+  }
+  if (k && newest > k.seen) k.seen = newest; else if (!k && newest > 0) kicked.set(body, k = {seen: newest, id: 0, at: 0, key: 'GR.pass', swap: new BallSwap()});
+  if (!k || !k.id) return undefined;
+  const row = BALL_MOVES[k.key], fit = row.on ? fitTo(body, state, k.key) : undefined;
+  if (!fit) return undefined;
+  const clip = fromContact(fit.clip, fit.take.contact), long = Math.min(KICK.most, clip.duration / (row.pace ?? 1));
+  if ((now - k.at) / 1000 > long) { k.id = 0; return undefined; }
+  const swap = k.swap;
+  swap.clip = heldOn(clip, row.pace ?? 1);
+  swap.move = {name: state.action, duration: 0, contacts: [0]} as unknown as MoveDefinition;
+  swap.phase = `-ball-kick-${k.id}`; swap.slot = state.action as AttackSlot;
+  return swap;
+}
+/** `clip` from KICK.lead s before its contact (a share of it) on: the touch has already happened when it starts. */
+function fromContact(clip: THREE.AnimationClip, contact: number): THREE.AnimationClip {
+  return variant(clip, `from ${contact}`, () => {
+    const start = Math.max(0, contact * clip.duration - KICK.lead), out = clip.clone();
+    for (const track of out.tracks) track.times = Float32Array.from(track.times, t => t - start);
+    out.duration = clip.duration - start; out.name = clip.name;
+    return out;
+  });
 }
 /** The sport kit: the diving dig's get-up, on the idle straight after the dive - played through once at its
  *  row's pace, then the body's own idle again (the swap let go: Fighter blends back). */
@@ -427,6 +480,9 @@ function drawnShare(body: Fighter, state: PlayerState, t: number) {
 function choose(body: Fighter, state: PlayerState, ctx: BallMoveContext, quick?: MoveDefinition): BallMoveKey | null {
   const view = ctx.view, seat = view.seats.find(s => s.id === state.id);
   if (!seat) return null;
+  // (VOLLEYBALL: the rules say which touch this swing draws - game/ball/volley.ts - and it is the kit's.)
+  const named = view.volley?.takes[state.id];
+  if (named && named in BALL_MOVES) return named as BallMoveKey;
   const move = state.action === 'light' || state.action === 'heavy' || state.action === 'special' ? quick ?? body.movePlayed(state) : undefined;
   const r = ballRadius(view.mode), b = view.ball, drawn = ctx.ball;
   const g = (view.mode === 'goal-rush' ? GOAL_RULES.gravity : SPIKE_RULES.gravity) * (b.grav || 1);

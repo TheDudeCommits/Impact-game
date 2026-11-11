@@ -86,6 +86,10 @@ export class BallCeremony {
   readonly root = new THREE.Group();
   /** The intro's skip vote (main.ts sends `ball-skip`). */
   onSkip: () => void = () => {};
+  /** The room time of the frame the page draws (main.ts: the timeline's, what its inputs report as
+   *  their view and the room judges a TECHNIQUE DUEL's press against). The presented snapshot's own time can stand a
+   *  snapshot ahead of it - measured online at 120 ms, about 0.1 s - so the duel's mark is drawn on this one. */
+  clock: () => number | null = () => null;
   /** How far the letterbox bars close (0..1) for what shows now. */
   bars = 0;
   private show: CeremonyShow = null;
@@ -184,7 +188,7 @@ export class BallCeremony {
     // (Another match - its start is its own - never inherits the last one's goal, hype.ts forgetGoal, nor its
     // hold.)
     if (!this.matchKey.startsWith(`${view.startedAt}:`)) { this.hold.finish(); forgetGoal(); }
-    if (key !== this.matchKey || now < this.seenAt - 1) { this.matchKey = key; this.seen = 0; this.sequence = null; this.introVoted = false; this.closeVoted = ''; this.beats.clear(); this.podiumKey = ''; }
+    if (key !== this.matchKey || now < this.seenAt - 1) { this.ui.preloadNames(); this.matchKey = key; this.seen = 0; this.sequence = null; this.introVoted = false; this.closeVoted = ''; this.beats.clear(); this.podiumKey = ''; }
     this.seenAt = now; this.serverTime = now;
     if (!view.ball.held) this.flight.set(view.ball.vx, view.ball.vy, view.ball.vz);
     const one = !couch;
@@ -198,6 +202,8 @@ export class BallCeremony {
     // (The sequence holds the lens until the replay, or the kickoff when it has none - whenever a skip brings
     // either forward.)
     if (this.sequence && view.phase === 'scored') this.sequence.until = view.replay && view.replay.at > this.sequence.at ? view.replay.at : view.phaseUntil;
+    // (The face-off's mark on the page's drawn clock - what the room judges a press against.)
+    this.ui.duelBeat(this.clock() ?? now);
     let show: CeremonyShow = null;
     // (The goal's hold, on the page's clock.)
     this.hold.frame(performance.now() / 1000);
@@ -261,12 +267,16 @@ export class BallCeremony {
   // ---------------------------------------------------------------- the moments
 
   private moment(e: BallEvent, view: BallView, selfId: string, one: boolean) {
+    // A TECHNIQUE DUEL's face-off for its beat, and how it ended. (A couch split screen: a panel each
+    // half, each with its own person's prompt.)
+    if (e.kind === 'duel') { this.ui.faceOff(view, e, one ? [selfId] : [selfId, SECOND], !one && typeof document === 'object' && document.body.classList.contains('couch-split')); return; }
+    if (e.kind === 'duel-won') { this.ui.faceOffEnd(e); return; }
     if (e.kind === 'super' && e.actorId) {
       const seat = view.seats.find(s => s.id === e.actorId);
       if (!seat) return;
       const own = view.seats.find(s => s.id === selfId)?.team;
       const name = FIGHTERS[seat.fighter].name.toUpperCase();
-      this.ui.cutIn(seat.fighter, superShotName(seat.fighter), `${name} · SUPER SHOT`, seat.team, !own || own === seat.team, !!signatureShot(seat.fighter));
+      this.ui.cutIn(seat.fighter, superShotName(seat.fighter), `${name} · SUPER SHOT`, seat.team, !own || own === seat.team, !!signatureShot(seat.fighter), !one);
       // (Its sound word, stamped after this, keeps to the side the cut-in leaves clear; none is shown on Minimal.)
       this.words.superSide = VFX.level === 'minimal' ? 0 : !own || own === seat.team ? 1 : -1;
       this.hooks.inkFlash(.8); inkShown(.8);

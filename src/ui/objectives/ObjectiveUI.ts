@@ -56,7 +56,7 @@ export class ObjectiveUI {
     });
     this.panel.addEventListener('click',e=>{const b=(e.target as Element).closest<HTMLButtonElement>('button');if(!b)return;
       if(b.dataset.command)this.onCommand(b.dataset.command as 'start'|'rematch');if(b.dataset.fill!==undefined)this.onCustom('objective-fill',b.dataset.fill==='true');if(b.dataset.leave!==undefined)this.onLeave();
-      // The one SHARE (social/share.ts), as the private room's: the /join/ page's link, or Player Two's own (asked for as
+      // The one SHARE (social/share.ts), as the private room's: the public address with the code, or Player Two's own (asked for as
       // the lobby opened, social/presence.ts), copied or shared inside the press.
       if((b.dataset.copy!==undefined||b.dataset.share!==undefined)&&this.view?.code){const code=this.view.code,label=b.textContent;void shareInvite({mode:this.view.kind,room:code},b.dataset.share!==undefined).then(({result,url})=>{if(result==='copied'||result==='shared'){b.textContent=result==='shared'?'SHARED':'COPIED';setTimeout(()=>{if(b.isConnected)b.textContent=label;},2400);}else if(result==='failed')this.notice(`Share the room code ${code}, or this link: ${url}`);});}
     });

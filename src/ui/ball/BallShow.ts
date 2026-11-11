@@ -5,7 +5,11 @@ import type { FighterId } from '../../game/types';
 import { mangaPortrait } from '../MangaHome';
 import { vsArt, vsFaceAt } from '../VsSplash';
 import { brushStroke, inkSplats } from '../inkSplat';
-import { pictures } from '../hud/protos/proto';
+import { bust, pictures } from '../hud/protos/proto';
+import { mediaArt } from '../mediaArt';
+import { DUEL } from '../../game/ball/superShots';
+import type { BallEvent } from '../../game/ball/model';
+import { SHOT_NAMES, SHOT_NAMES_URL, shotNameRow } from './shotNames';
 import { VFX } from '../../render/vfxLevel';
 import './ballShow.css';
 
@@ -13,8 +17,31 @@ const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt
 const nameOf = (seat: BallSeat) => (seat.bot || seat.name === 'Fighter' ? FIGHTERS[seat.fighter].name : seat.name).toUpperCase();
 const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
 const SEAM = brushStroke(11, .8), STROKE = brushStroke(7, .62);
-/** The signature cut-in, start to finish (ballShow.css runs its beats inside it). */
-export const CUT_IN_SECONDS = 1.2;
+/** The signature shot's spread, start to finish (ballShow.css runs its beats inside it). 0.9 s (the
+ *  cut-in it replaced held 1.2). */
+export const CUT_IN_SECONDS = .9;
+/** How long a TECHNIQUE DUEL's face-off stays up once the beat is over, to show who was nearer the mark (s). */
+export const FACE_OFF_AFTER = .5;
+/** Where each fighter's eyes sit down their manga portrait (public/assets/home/portraits, 640 square),
+ *  as a share of its height - read off a contact sheet of every portrait (the band .2 of the portrait's height round it,
+ *  two thirds of its width across). Unlisted: EYES_DEFAULT. */
+export const EYES_DEFAULT = .37;
+export const EYES_AT: Readonly<Partial<Record<FighterId, number>>> = {
+  adad: .34, akagane: .34, akaito: .35, akayuri: .38, amagoi: .36, ampere: .38, aqrab: .31, aquilo: .36, asahi: .38, barrow: .29,
+  basilissa: .29, bellows: .32, bonsho: .31, bruin: .36, buria: .38, cardo: .36, chohan: .33, dorado: .29, 'full-beam': .28, gaku: .38,
+  gaunt: .34, gohaku: .43, gosu: .36, gummy: .39, hagure: .4, hakushi: .29, haldor: .26, hawser: .36, highsun: .24, hikui: .36,
+  hinomoto: .29, hisame: .36, imago: .38, ippon: .29, irbis: .41, jinlin: .35, jirenga: .32, kagari: .38, kenzo: .33, kinu: .42,
+  koko: .35, konta: .36, kosho: .34, kubiwa: .36, kuon: .35, kusushi: .36, kuzu: .36, lanthorn: .36, levin: .38, madake: .33,
+  magatsu: .35, mikage: .43, minase: .4, mizuhiki: .38, murex: .38, nigo: .46, onigawara: .34, oro: .36, ouga: .41, ovid: .42,
+  oyashio: .33, psyche: .36, pyroclast: .38, rook: .36, rotfalke: .42, sashigane: .36, sekka: .43, senko: .33, setsu: .4,
+  shakudo: .4, shakugo: .34, shanxiao: .38, shibuichi: .36, shidare: .36, shijima: .36, shirokane: .36, shiun: .36, sorayomi: .36,
+  sorrel: .4, strix: .33, suzuran: .36, taisei: .39, tempo: .41, tobari: .42, tokan: .34, torsion: .36, tsubute: .38, ume: .4,
+  unari: .36, vesper: .33, ward: .42, wataame: .4, wuming: .42, yodaka: .4,
+} as Partial<Record<FighterId, number>>;
+/** The eyes' strip: the portrait drawn 1.5 times the strip's width (two thirds of it across), the strip 10:3, so the
+ *  band shown is .2 of the portrait's height; `background-position-y` (%) that puts the eyes on its middle line. */
+export const eyesY = (fighter: FighterId) => { const e = EYES_AT[fighter] ?? EYES_DEFAULT; return Math.max(0, Math.min(100, (1.5 * e - .15) / 1.2 * 100)); };
+const portraitArt = (fighter: FighterId) => mediaArt(`/assets/home/portraits/${fighter}.webp`);
 /** What the show is doing, for the HUD's CSS (#interface[data-ball-show]): the intro, a goal's close-up, the podium. */
 export type ShowMode = 'intro' | 'close' | 'podium' | '';
 
@@ -24,8 +51,9 @@ export type ShowMode = 'intro' | 'close' | 'podium' | '';
  *
  * - the intro's title over the flyover (the arena, the mode), its splash page - both sides of three as a manga page, the
  *   VS stamped on the seam - and its skip prompt with the vote;
- * - a SUPER SHOT's cut-in: the screen goes ink, a slanted panel slams in with the striker's bust (the HUD's own busts) and
- *   the shot's name, 1.2 s;
+ * - a SUPER SHOT's spread (it replaced the earlier cut-in): a drawn page with the striker's ink portrait, a
+ *   panel cut in it for the shot's flight and the shot's name brushed across its foot, 0.9 s;
+ * - a TECHNIQUE DUEL's face-off - the two fighters' eyes, the ball white-hot between them and the mark;
  * - the podium's accolades dropping in as manga panels;
  * - a goal's held picture over the canvas at the net's furthest stretch (render/ball/GoalHold.ts).
  *
@@ -39,6 +67,7 @@ export class BallShow {
   private readonly skip: HTMLElement;
   private readonly cut: HTMLElement;
   private readonly podium: HTMLElement;
+  private readonly duel: HTMLElement;
   private titleKey = ''; private splashKey = ''; private podiumKey = ''; private skipText = '';
   private cutTimer = 0;
   /** The goal's held picture, laid over the game's canvas while it holds (holdFrame). */
@@ -48,7 +77,7 @@ export class BallShow {
     this.root.className = 'ball-show';
     this.root.setAttribute('aria-hidden', 'true');
     this.title = this.layer('bs-title'); this.splash = this.layer('bs-splash'); this.skip = this.layer('bs-skip');
-    this.cut = this.layer('bs-cut'); this.podium = this.layer('bs-podium');
+    this.cut = this.layer('bs-cut'); this.podium = this.layer('bs-podium'); this.duel = this.layer('bs-duel');
     host.append(this.root);
   }
   private layer(cls: string) { const el = document.createElement('div'); el.className = cls; el.hidden = true; this.root.append(el); return el; }
@@ -109,23 +138,93 @@ export class BallShow {
     this.skip.hidden = false;
   }
 
-  /** A SUPER SHOT's cut-in. `own`: the page's own side's (it slams in from the left; the other side's from the right). */
-  cutIn(fighter: FighterId, name: string, kicker: string, team: BallTeam, own: boolean, signature: boolean) {
+  /** A SUPER SHOT's spread (it replaced the earlier cut-in): a drawn page across the whole screen for
+   *  CUT_IN_SECONDS - paper, the striker's ink portrait bleeding off their side, the speed lines - with a panel cut in
+   *  it where the match goes on (the shot's flight is never hidden), and the shot's name brushed across its foot
+   *  (shotNames.ts: a signature shot's own name, else SUPER SHOT), then it is torn away and the shot is the screen's.
+   *  `own`: the page's own side's (the art on the left; the other side's on the right). In a couch split screen
+   *  (`couch`) only the name is laid, under each half's own lens. */
+  cutIn(fighter: FighterId, name: string, kicker: string, team: BallTeam, own: boolean, signature: boolean, couch = false) {
     if (VFX.level === 'minimal') return;
     clearTimeout(this.cutTimer);
-    const art = pictures(fighter, false), colour = FIGHTERS[fighter].color;
-    this.cut.className = `bs-cut ${own ? 'bs-mine' : 'bs-theirs'}${signature ? ' bs-sig' : ''}${VFX.level === 'reduced' ? ' bs-soft' : ''}`;
+    const colour = FIGHTERS[fighter].color, row = shotNameRow(name);
+    this.cut.className = `bs-cut ${own ? 'bs-mine' : 'bs-theirs'}${signature ? ' bs-sig' : ''}${couch ? ' bs-couch' : ''}${VFX.level === 'reduced' ? ' bs-soft' : ''}`;
     this.cut.style.setProperty('--tint', colour); this.cut.style.setProperty('--team', hex(BALL_TEAM_COLOURS[team]));
-    this.cut.innerHTML = `<div class="bs-cut-ink"></div><div class="bs-cut-panel"><div class="bs-cut-lines"></div><img alt="" decoding="async" draggable="false"><div class="bs-cut-tone"></div></div>
-      <div class="bs-cut-name"><small>${esc(kicker)}</small><svg viewBox="0 0 1000 200" preserveAspectRatio="none"><path d="${STROKE}"/></svg><b>${esc(name)}</b></div>`;
-    // The bust, else the next picture the HUD has (proto.ts pictures: the bust, the manga portrait).
-    const img = this.cut.querySelector('img')!;
+    this.cut.style.setProperty('--row', `${row / (SHOT_NAMES.length - 1) * 100}%`); this.cut.style.setProperty('--rows', `${SHOT_NAMES.length * 100}%`);
+    this.cut.style.setProperty('--names', `url("${SHOT_NAMES_URL}")`);
+    this.cut.innerHTML = `<div class="bs-cut-page"><div class="bs-cut-lines"></div><div class="bs-cut-art"><img alt="" decoding="async" draggable="false"></div><div class="bs-cut-tone"></div></div>
+      <svg class="bs-cut-frame" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="${own ? 'M41 11L97 7L93 70L45 74Z' : 'M3 7L59 11L55 74L7 70Z'}"/></svg>
+      <div class="bs-cut-name"><small>${esc(kicker)}</small><svg viewBox="0 0 1000 200" preserveAspectRatio="none"><path d="${STROKE}"/></svg>
+        <div class="bs-cut-word" role="img" aria-label="${esc(name)}"><i class="bs-ink"></i><i class="bs-fill"></i></div></div>`;
+    // The manga portrait (the ink the page is drawn in), else the HUD's pictures.
+    const img = this.cut.querySelector('img')!, art = [portraitArt(fighter), ...pictures(fighter, false)];
     let at = 0; img.addEventListener('error', () => { if (++at < art.length) img.src = art[at]; else img.remove(); });
     img.src = art[0];
     this.cut.hidden = false;
     this.restart(this.cut, 'bs-on');
     this.cutTimer = window.setTimeout(() => { this.cut.hidden = true; this.cut.innerHTML = ''; }, CUT_IN_SECONDS * 1000);
   }
+  /** The brushed names' atlas, asked for once a ball match starts so the first SUPER SHOT's name is there in time. */
+  preloadNames() { if (this.namesAsked || VFX.level === 'minimal') return; this.namesAsked = true; const img = new Image(); img.decoding = 'async'; img.src = SHOT_NAMES_URL; }
+  private namesAsked = false;
+
+  /** A TECHNIQUE DUEL's face-off, the picture of its beat. Two strips of the two fighters' eyes
+   *  (their manga portraits, EYES_AT) slam in across the screen, the page's own side's below; between them the ball,
+   *  white-hot, and the mark: a ring closing on the ball that meets its edge at the mark (DUEL.mark), as the page draws
+   *  the beat (duelBeat) - the moment the room judges a press against. `selves`: the people on this page (a couch split
+   *  screen's two, each half its own panel, its own prompt). */
+  faceOff(view: BallView, e: BallEvent, selves: readonly string[], split: boolean) {
+    const keeper = view.seats.find(s => s.id === e.actorId), striker = view.seats.find(s => s.id === e.targetId);
+    if (!keeper) return;
+    this.duelAt = e.at; this.duelEnd = Infinity; this.duelKey = e.id;
+    const halves = split && selves.length > 1 ? selves : [selves[0]];
+    const strip = (seat: BallSeat | undefined, role: 'keeper' | 'striker', low: boolean) => {
+      const f = seat?.fighter, team = seat?.team ?? (role === 'keeper' ? 'blue' : 'red');
+      const eyes = f ? `background-image:url('${portraitArt(f)}'),url('${bust(f, false)}');background-position:50% ${eyesY(f).toFixed(1)}%,50% 30%` : '';
+      return `<div class="bs-duel-strip ${low ? 'bs-low' : 'bs-high'}" data-role="${role}" style="--team:${hex(BALL_TEAM_COLOURS[team])};--tint:${f ? FIGHTERS[f].color : '#888'}">
+        <div class="bs-duel-eyes" style="${eyes}"></div><div class="bs-duel-tone"></div>
+        <div class="bs-duel-tag"><small>${role === 'keeper' ? 'THE GUARD' : 'THE SHOT'}</small><b>${seat ? esc(nameOf(seat)) : ''}</b><em></em></div></div>`;
+    };
+    const prompt = this.touch ? 'TAP DUEL ON THE MARK' : 'STRIKE ON THE MARK';
+    this.duel.innerHTML = halves.map((self, i) => {
+      const mine = self === keeper.id ? 'keeper' : self === striker?.id ? 'striker' : '';
+      const ownTeam = view.seats.find(s => s.id === self)?.team;
+      // (The page's own side's strip is the lower one.)
+      const keeperLow = ownTeam ? ownTeam === keeper.team : true;
+      return `<div class="bs-duel-half" data-half="${halves.length > 1 ? i : ''}">${strip(striker, 'striker', !keeperLow)}${strip(keeper, 'keeper', keeperLow)}
+        <div class="bs-duel-core"><i class="bs-duel-ball"></i><i class="bs-duel-ring"></i><b class="bs-duel-word">TECHNIQUE DUEL</b><small class="bs-duel-prompt">${mine ? prompt : ''}</small><strong class="bs-duel-stamp"></strong></div></div>`;
+    }).join('');
+    this.duel.className = `bs-duel${split && halves.length > 1 ? ' bs-split' : ''}${VFX.level === 'reduced' ? ' bs-soft' : ''}`;
+    this.rings = [...this.duel.querySelectorAll<HTMLElement>('.bs-duel-ring')];
+    this.duel.hidden = false; this.host.dataset.ballDuel = '';
+    this.restart(this.duel, 'bs-on');
+  }
+  /** Each frame, the face-off's beat on the page's drawn clock (`now`, room seconds): the ring closing to the ball's edge
+   *  at the mark, on past it, and the face-off taken down FACE_OFF_AFTER after its end. */
+  duelBeat(now: number) {
+    if (this.duel.hidden) return;
+    if (now >= this.duelEnd + FACE_OFF_AFTER || now < this.duelAt - 1) { this.closeDuel(); return; }
+    const t = now - this.duelAt, k = t <= DUEL.mark ? 1 + 2.2 * (1 - t / DUEL.mark) : Math.max(.55, 1 - (t - DUEL.mark) / (DUEL.hold - DUEL.mark) * .45);
+    for (const ring of this.rings) { ring.style.scale = k.toFixed(3); ring.classList.toggle('bs-at', Math.abs(t - DUEL.mark) < .04); }
+  }
+  /** The duel's end (its 'duel-won' event): the winner's strip flares, the other greys, each says how near it pressed. */
+  faceOffEnd(e: BallEvent) {
+    if (this.duel.hidden) return;
+    this.duelEnd = e.at;
+    const won = e.text === 'SHOT STOPPED' ? 'keeper' : 'striker';
+    const said = (ms: number | undefined) => ms === undefined ? 'MISSED' : Math.abs(ms) <= 30 ? 'ON THE MARK' : `${Math.abs(ms)} MS ${ms < 0 ? 'EARLY' : 'LATE'}`;
+    for (const strip of this.duel.querySelectorAll<HTMLElement>('.bs-duel-strip')) {
+      const role = strip.dataset.role as 'keeper' | 'striker';
+      strip.classList.add(role === won ? 'bs-won' : 'bs-lost');
+      strip.querySelector('em')!.textContent = said(e.presses?.[role]);
+    }
+    for (const stamp of this.duel.querySelectorAll<HTMLElement>('.bs-duel-stamp')) stamp.textContent = won === 'keeper' ? 'STOPPED!' : 'THROUGH!';
+    this.duel.classList.add('bs-done');
+  }
+  private closeDuel() { delete this.host.dataset.ballDuel; this.duel.hidden = true; this.duel.innerHTML = ''; this.rings = []; this.duelKey = -1; }
+  /** The duel the face-off is up for (its event's id; -1: none). */
+  duelKey = -1;
+  private duelAt = 0; private duelEnd = Infinity; private rings: HTMLElement[] = [];
 
   /** The podium's panels: the champions' banner, then each of the three's accolades dropping in. */
   podiumPanels(v: BallView | null, selfId: string, order: readonly string[]) {
@@ -177,6 +276,7 @@ export class BallShow {
   clear() {
     clearTimeout(this.cutTimer);
     for (const el of [this.title, this.splash, this.skip, this.cut, this.podium]) { el.hidden = true; el.innerHTML = ''; }
+    this.closeDuel();
     this.holdFrame(null);
     this.titleKey = this.splashKey = this.podiumKey = this.skipText = '';
     this.mode('');

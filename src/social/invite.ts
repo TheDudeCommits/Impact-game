@@ -1,31 +1,17 @@
-import { inPlayerTwo, inviteLink, joinHash } from '../boot/playerTwo';
-import { SITE_URL, TITLE } from '../originals/brand';
+import { inPlayerTwo, inviteLink } from '../boot/playerTwo';
+import { PUBLIC_URL, TITLE } from '../originals/brand';
 
-export const GAME_URL = SITE_URL;
+/** The game's address in anything shared: its public page, never the hosts behind it. */
+export const GAME_URL = PUBLIC_URL;
 export type RoomKind = 'private' | 'coop' | 'duel';
 export type ObjectiveMode = 'last-stand' | 'bad-blood' | 'rift-war';
 /** An invite's params, as Player Two's join payload and invite() take them and joinHash reads them back. */
 export type InviteParams = { room: string; kind: RoomKind } | { party: string } | { mode: ObjectiveMode; room: string };
 
-/** Hosts that serve a /join/<code> preview page for invites (none by default: a deployment that adds such a page names its
- *  host in VITE_JOIN_HOST). Anywhere else an invite is this page's address with the invite after #. */
-const JOIN_HOST = ((import.meta as { env?: Record<string, string | undefined> }).env?.VITE_JOIN_HOST ?? '').trim();
-export const JOIN_HOSTS = { test: (host: string) => !!JOIN_HOST && host === JOIN_HOST };
-
 const codeOf = (p: InviteParams) => 'party' in p ? p.party : p.room;
-/** The /join/ page's kind for these params: the room's kind, `party`, or the operation. */
-export const joinKind = (p: InviteParams) => 'party' in p ? 'party' : 'mode' in p ? p.mode : p.kind;
-/** The path whose page previews this invite and opens it. */
-export const joinPath = (p: InviteParams) => `/join/${codeOf(p)}?kind=${joinKind(p)}`;
-
-/** The game's own link for an invite: the /join/ page where this deployment serves it, else this page's address with
- *  the invite after # (search dropped: a link carries only the invitation). */
-export function ownInvite(p: InviteParams, href = location.href): string {
-  const url = new URL(href);
-  if (JOIN_HOSTS.test(url.hostname) && url.protocol === 'https:') return `${url.origin}${joinPath(p)}`;
-  url.search = ''; url.hash = joinHash(p).slice(1);
-  return url.href;
-}
+/** The game's own link for an invite, where Player Two makes none: the public address. The room travels as its code, in
+ *  the words beside the link (inviteWords) and in what is copied (social/share.ts shareInvite). */
+export function ownInvite(_p?: InviteParams): string { return GAME_URL; }
 
 const key = (p: InviteParams) => JSON.stringify(p);
 const made = new Map<string, string>(), asking = new Map<string, Promise<string>>();

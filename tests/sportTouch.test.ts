@@ -229,3 +229,18 @@ describe("Goal Rush's TRAP on the touch set (input/sportTouch.ts)", () => {
     expect(sportSet(m.view, 'me', false, false, m.sim.actors.get('me')!.state, cue.update(m.view, 'me', m.sim.actors.get('me')!.state, false, 2000)).side!.label).toBe('FIGHT');
   });
 });
+
+describe('the TECHNIQUE DUEL on the touch set', () => {
+  it('the shot\'s button reads DUEL for the beat of a duel of yours, and is SHOOT again after', async () => {
+    const { sportSet } = await import('../src/input/sportTouch');
+    const { DUEL } = await import('../src/game/ball/superShots');
+    const duel = { id: 9, at: 10, kind: 'duel' as const, actorId: 'me', targetId: 'them', x: 0, y: 1, z: 0, value: DUEL.hold };
+    const view = (events: unknown[], clash: number) => ({ mode: 'goal-rush', phase: 'live', seats: [{ id: 'me', team: 'red' }, { id: 'them', team: 'blue' }, { id: 'mate', team: 'red' }],
+      events, ball: { clash, lastTeam: 'blue' }, drill: null, practice: false }) as never;
+    expect(sportSet(view([duel], 10 + DUEL.hold), 'me', false, false).main).toMatchObject({ action: 'heavy', label: 'DUEL' });
+    expect(sportSet(view([duel], 10 + DUEL.hold), 'them', false, false).main?.label).toBe('DUEL');
+    expect(sportSet(view([duel], 10 + DUEL.hold), 'mate', false, false).main?.label).toBe('SHOOT');
+    expect(sportSet(view([duel, { ...duel, id: 10, kind: 'duel-won' }], 10 + DUEL.hold), 'me', false, false).main?.label).toBe('SHOOT');
+    expect(sportSet(view([duel], 0), 'me', false, false).main?.label).toBe('SHOOT');
+  });
+});

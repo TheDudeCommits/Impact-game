@@ -75,6 +75,11 @@ function offLine(p: {x: number; z: number}, a: {x: number; z: number}, b: {x: nu
  *  ball with a team-mate placed to finish it sets them up (a LINK SHOT) about `LINK_SET` of the time, no more than once
  *  every few seconds. Measured on headless bot matches. */
 const DUEL_TRY = [.55, .35] as const, GUARD_LEAD = .15, LINK_SET = .7, LINK_GAP = 2.6;
+/** A bot's press in a TECHNIQUE DUEL's beat (superShots.ts DUEL): off the mark by a bell-shaped spread
+ *  (`spread`, s: the standard deviation of its error) and not pressed at all `miss` of the time, by level. Two bots of
+ *  one level then give the striker 44-45% of duels, the old roll's 45%, at every level; a person pressing within 40 ms
+ *  of the mark beats NORMAL's about two times in three. */
+export const DUEL_BOT: Readonly<Record<BotLevel, {spread: number; miss: number}>> = {easy: {spread: .11, miss: .12}, normal: {spread: .07, miss: .05}, hard: {spread: .045, miss: .02}};
 /** LEVEL_EDGE.mark: how far goal-side of the runner it marks a HARD support stands (m). */
 const MARK = 1.8;
 /** Goal Rush's places and reaches, as shares of the pitch (GOAL_RULES halfX, halfZ), so the bots play the pitch they are
@@ -382,6 +387,14 @@ export class BallBrain {
   levelled(level: BotLevel, composed: boolean, plan?: {plan: BotPlan; wing: 1 | -1}) {
     const band = BOT_LEVELS[this.mode][level]; this.skill = band.lo + this.draw * band.span; this.composed = composed; this.level = level; this.edge = LEVEL_EDGE[level];
     this.plan = plan?.plan ?? null; this.wing = plan?.wing ?? 1;
+  }
+  /** This bot's press in a TECHNIQUE DUEL's beat, seconds from the mark, or undefined for none
+   *  (DUEL_BOT). `draw` is the duel's own random draw (BallMatch.duel), never this bot's stream. */
+  duelPress(draw: () => number): number | undefined {
+    const b = DUEL_BOT[this.level];
+    if (draw() < b.miss) return undefined;
+    // (A bell from four draws: the sum of n uniform draws has a variance of n / 12.)
+    return (draw() + draw() + draw() + draw() - 2) * Math.sqrt(3) * b.spread;
   }
   /** The level's own levers (LEVEL_EDGE), and its side's plan (PLAN) and wing. */
   private edge = LEVEL_EDGE.normal;

@@ -138,8 +138,8 @@ export class PartyUI extends SocialDialog {
     else if(d.partyLeader){this.menu='';c.send('party-leader',d.partyLeader);}
     else if(d.partyKick){this.menu='';c.send('party-kick',d.partyKick);}
     else if((d.partyCopy!==undefined||d.partyShare!==undefined)&&c.view){const code=c.view.code;
-      // The one SHARE (social/share.ts), as the private room's: the link at hand inside the press - the game's /join/
-      // page, or Player Two's own, asked for as the party formed (social/presence.ts) - so Safari copies it too.
+      // The one SHARE (social/share.ts), as the private room's: the link at hand inside the press - the public address
+      // with the code, or Player Two's own, asked for as the party formed (social/presence.ts) - so Safari copies it too.
       void shareInvite({party:code},d.partyShare!==undefined).then(({result,url})=>{if(result==='shared')this.notice('Invite shared.');else if(result==='copied')this.notice('Invite link copied. Send it to your friends.');else if(result==='failed')this.notice(`Share the party code ${spaced(code)}, or this link: ${url}`);});}
   }
   private closeMenu(refocus:boolean){if(!this.menu)return;const id=this.menu;this.menu='';this.render();if(refocus)this.element.querySelector<HTMLElement>(`[data-focus="more-${id}"]`)?.focus({preventScroll:true});}

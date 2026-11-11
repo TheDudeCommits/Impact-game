@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { BallMatch } from './BallMatch';
+import { BallMatch, SEEN } from './BallMatch';
 import { BALL_ID, GOAL_RULES } from './model';
 import { INTRO, PODIUM, podiumOf } from './ceremony';
-import { DUEL, LINK, SIGNATURE_FIGHTERS, SIGNATURE_SHOTS, superShotName } from './superShots';
+import { DUEL, LINK, SIGNATURE_FIGHTERS, SIGNATURE_SHOTS, duelWinner, superShotName } from './superShots';
+import { BallBrain } from './BallBrain';
 import { isReleasedFighter } from '../rosterAvailability';
 import type { ExternalBlow } from '../simulation';
 import type { MoveDefinition } from '../moves';
@@ -110,8 +111,11 @@ describe('the LINK SHOT', () => {
 });
 
 describe('the TECHNIQUE DUEL', () => {
-  type Duel = { duel(seat: unknown, actor: unknown, speed: number): void; rng: () => number };
-  function shoot(keeperWins: boolean) {
+  type Duel = { duel(seat: unknown, actor: unknown, speed: number): void };
+  let seq = 1;
+  /** A person's press: any strike (or a guard pressed afresh), `view` the room time its page drew. */
+  const press = (m: BallMatch, id: string, extra: Record<string, unknown> = { attack: 'heavy' }) => m.submit(id, { seq: seq++, moveX: 0, moveZ: 0, yaw: 0, ...extra });
+  function shoot() {
     const m = trio();
     until(m, () => m.view.phase === 'live');
     m.ball.x = 0; m.ball.z = 6; m.ball.y = 1;
@@ -120,27 +124,120 @@ describe('the TECHNIQUE DUEL', () => {
     expect(m.ball.super).toBe(true);
     // (The striker well away, as on a pitch: the dead ball pops up in front of the keeper.)
     m.sim.place('red-1', { x: 12, y: 0, z: -10 }, 0);
-    (m as unknown as Duel).rng = () => keeperWins ? 0 : .999;
     (m as unknown as Duel).duel(m.seats.get('blue-1'), m.sim.actors.get('blue-1'), 40);
     return m;
   }
-  it('holds the ball for its beat, then the keeper who wins it kills the shot', () => {
-    const m = shoot(true);
+  const ended = (m: BallMatch) => m.view.events.find(e => e.kind === 'duel-won');
+  it('holds the ball for its beat, then the keeper nearer the mark kills the shot', () => {
+    const m = shoot(), start = m.sim.serverTime;
     expect(m.view.events.at(-1)).toMatchObject({ kind: 'duel', actorId: 'blue-1', targetId: 'red-1', value: DUEL.hold });
     expect(m.ball.clash).toBeGreaterThan(m.sim.serverTime);
-    steps(m, DUEL.hold + .05);
-    expect(m.view.events.some(e => e.kind === 'duel-won' && e.actorId === 'blue-1' && e.text === 'SHOT STOPPED')).toBe(true);
+    steps(m, DUEL.mark - .1); press(m, 'red-1');
+    steps(m, .1); press(m, 'blue-1');
+    steps(m, DUEL.hold - DUEL.mark - .05);
+    expect(ended(m)).toBeUndefined();
+    steps(m, .1);
+    const e = ended(m)!;
+    expect(e).toMatchObject({ actorId: 'blue-1', targetId: 'red-1', text: 'SHOT STOPPED' });
+    expect(Math.abs(e.presses!.keeper!)).toBeLessThan(20);
+    expect(e.presses!.striker).toBeLessThan(-80);
+    // (The beat is as long as it was: the end lands DUEL.hold after the duel began.)
+    expect(e.at - start).toBeGreaterThanOrEqual(DUEL.hold - 1e-6);
+    expect(e.at - start).toBeLessThan(DUEL.hold + .02);
     expect(m.ball.super).toBe(false);
     expect(m.ball.heat).toBeLessThan(1);
     expect(m.ball.lastTeam).toBe('blue');
     expect(m.seats.get('blue-1')!.feats).toContain('TECHNIQUE DUEL');
   });
-  it('or the shot breaks through, and flies on', () => {
-    const m = shoot(false);
-    steps(m, DUEL.hold + .05);
-    expect(m.view.events.some(e => e.kind === 'duel-won' && e.actorId === 'red-1' && e.text === 'BREAKS THROUGH')).toBe(true);
+  it('the striker nearer the mark breaks through, and the shot flies on', () => {
+    const m = shoot();
+    steps(m, DUEL.mark - .15); press(m, 'blue-1');
+    steps(m, .15); press(m, 'red-1');
+    steps(m, DUEL.hold);
+    expect(ended(m)).toMatchObject({ actorId: 'red-1', text: 'BREAKS THROUGH' });
     expect(m.ball.super).toBe(true);
     expect(m.ball.vz).toBeGreaterThan(10);
+  });
+  it('a press beats none, either way; two misses fall back to the striker', () => {
+    const keeper = shoot();
+    steps(keeper, DUEL.mark + .1); press(keeper, 'blue-1'); steps(keeper, DUEL.hold);
+    expect(ended(keeper)).toMatchObject({ actorId: 'blue-1', text: 'SHOT STOPPED' });
+    const striker = shoot();
+    steps(striker, .05); press(striker, 'red-1'); steps(striker, DUEL.hold);
+    expect(ended(striker)).toMatchObject({ actorId: 'red-1', text: 'BREAKS THROUGH' });
+    const none = shoot();
+    steps(none, DUEL.hold + .05);
+    expect(ended(none)).toMatchObject({ actorId: 'red-1', text: 'BREAKS THROUGH', presses: {} });
+  });
+  it('the first press is the one, a fresh guard is a press, and a press in the beat swings nothing', () => {
+    const m = shoot();
+    steps(m, DUEL.mark); press(m, 'blue-1', { guard: false }); press(m, 'blue-1', { guard: true });
+    steps(m, .1); press(m, 'red-1'); press(m, 'red-1', { attack: 'light' });
+    expect(m.sim.actors.get('red-1')!.state.action).not.toBe('heavy');
+    steps(m, DUEL.hold);
+    const e = ended(m)!;
+    expect(Math.abs(e.presses!.keeper!)).toBeLessThan(20);
+    expect(e.presses!.striker).toBeGreaterThan(80);
+    expect(e.text).toBe('SHOT STOPPED');
+  });
+  it('a press past DUEL.late is no press: it loses to one in time', () => {
+    const m = shoot();
+    steps(m, DUEL.mark + DUEL.late + .05); press(m, 'red-1');
+    steps(m, .02); press(m, 'blue-1');
+    steps(m, DUEL.hold);
+    expect(ended(m)).toMatchObject({ text: 'BREAKS THROUGH', presses: {} });
+    const k = shoot();
+    steps(k, DUEL.mark + DUEL.late + .05); press(k, 'red-1');
+    steps(k, .0); press(k, 'blue-1', { guard: true });
+    steps(k, DUEL.hold);
+    expect(ended(k)?.text).toBe('BREAKS THROUGH');
+  });
+  it('online, a press counts when its page drew it (SEEN), at most SEEN.most back', () => {
+    const m = shoot();
+    m.compensate = SEEN.most;
+    // (The keeper's page draws the room 0.2 s behind: its press on its own mark is heard 0.2 s after the room's.)
+    const view = () => m.sim.serverTime - .2;
+    press(m, 'blue-1', { view: view(), moveX: 0 });
+    steps(m, DUEL.mark + .2); press(m, 'blue-1', { view: view(), attack: 'heavy' });
+    steps(m, DUEL.hold);
+    const e = ended(m)!;
+    expect(Math.abs(e.presses!.keeper!)).toBeLessThan(20);
+    expect(e.text).toBe('SHOT STOPPED');
+  });
+});
+
+describe('the bots\' duel (BallBrain DUEL_BOT)', () => {
+  it('two bots of a level give the striker about the old roll\'s 45%, a sharper keeper more', () => {
+    let x = 99;
+    const draw = () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return (x || 1) / 0x100000000; };
+    const brain = (level: 'easy' | 'normal' | 'hard') => { const b = new BallBrain('b', 'goal-rush', 0, draw); b.levelled(level, false); return b; };
+    const share = (k: 'easy' | 'normal' | 'hard', s: 'easy' | 'normal' | 'hard') => {
+      const keeper = brain(k), striker = brain(s);
+      let won = 0;
+      for (let i = 0; i < 20000; i++) if (duelWinner({ keeper: keeper.duelPress(draw), striker: striker.duelPress(draw) }) === 'striker') won++;
+      return won / 20000;
+    };
+    for (const level of ['easy', 'normal', 'hard'] as const) expect(share(level, level)).toBeGreaterThan(.41), expect(share(level, level)).toBeLessThan(.49);
+    expect(share('hard', 'easy')).toBeLessThan(share('easy', 'hard'));
+  });
+});
+
+describe('duelWinner', () => {
+  it('the nearer to the mark, the keeper\'s miss counted at DUEL.keeper of itself', () => {
+    expect(duelWinner({ keeper: .05, striker: -.1 })).toBe('keeper');
+    expect(duelWinner({ keeper: -.1, striker: .05 })).toBe('striker');
+    // (Within the keeper's fifth: .1 counts .08, so .09 loses to it.)
+    expect(duelWinner({ keeper: .1, striker: .09 })).toBe('keeper');
+    expect(duelWinner({ keeper: .1, striker: .07 })).toBe('striker');
+  });
+  it('one press beats none; none at all is the striker\'s', () => {
+    expect(duelWinner({ keeper: .3 })).toBe('keeper');
+    expect(duelWinner({ striker: .3 })).toBe('striker');
+    expect(duelWinner({})).toBe('striker');
+  });
+  it('awakened tilts it, as the roll did', () => {
+    expect(duelWinner({ keeper: .1, striker: .07 }, true)).toBe('keeper');
+    expect(duelWinner({ keeper: .1, striker: .09 }, false, true)).toBe('striker');
   });
 });
 

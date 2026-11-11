@@ -10,6 +10,7 @@ import { DRILLS } from '../../game/ball/drills';
 import { superShotName } from '../../game/ball/superShots';
 import { VFX } from '../../render/vfxLevel';
 import { ballSpeech } from '../../render/ball/BallTags';
+import { quietCounts, sportQuiet } from '../../render/ball/BallMoments';
 import { chargeFull, ownCharge, ownShot } from '../../render/ball/ownShot';
 import { padKey } from '../../input/glyphs';
 import { BallHints } from '../ball/ballHints';
@@ -74,6 +75,9 @@ class SeatStrip {
   private readonly boost: Fill; private readonly boostState: Data; private readonly boostBar: HTMLElement; private readonly boostKey: Markup;
   private readonly sup: Fill; private readonly supState: Data; private readonly supKey: Markup;
   private readonly stance: HTMLElement; private readonly stanceKind: Data; private readonly stanceOn: Flag; private readonly stanceName: Text; private readonly stanceKey: Markup; private readonly stanceHp: Fill;
+  /** Goal Rush's SPORT mode (`?football`): the badge says SPORT where it said BALL, and the legend under it names SPORT's
+   *  buttons and the camera's state (BALL LOCK or FREE LOOK). */
+  private readonly sportOn: Flag; private readonly legend: Markup;
   private readonly charge: HTMLElement; private readonly chargeFill: Fill; private readonly chargeState: Data; private readonly chargeSide: Data;
   /** Whether SHOOT's charge shown last reached full, and until when (ms) it stays after its blow. */
   private chargedFull = false; private chargeUntil = -Infinity;
@@ -85,6 +89,7 @@ class SeatStrip {
     el('b', '', this.stance); this.stanceName = new Text(el('span', '', this.stance));
     this.stanceHp = new Fill(el('b', '', el('i', 'bh-stance-hp', this.stance)));
     this.stanceKey = new Markup(el('small', 'ux-keys', this.stance));
+    this.sportOn = new Flag(this.stance, 'sport'); this.legend = new Markup(el('small', 'ux-keys bh-legend', this.stance));
     const hp = el('i', 'bh-hp', this.root); this.hp = new Fill(el('b', '', hp), .01); this.hpOn = new Flag(hp, 'on'); this.low = new Flag(hp, 'low');
     const bars = el('div', 'bh-bars', this.root);
     const bar = (kind: string, name: string) => {
@@ -117,7 +122,7 @@ class SeatStrip {
 
   /** `lock`: the opponent the seat's FIGHT stance is on, or null in the BALL stance; `stances`: whether the badge shows.
    *  Returns the stance shown ('' for none). */
-  update(v: BallView, self: PlayerState, lock: string | null, stances: boolean, players: readonly PlayerState[], keys: { boost: string; super: string; stance: string }): 'ball' | 'fight' | '' {
+  update(v: BallView, self: PlayerState, lock: string | null, stances: boolean, players: readonly PlayerState[], keys: { boost: string; super: string; stance: string; legend?: string }): 'ball' | 'fight' | '' {
     this.mode.set(v.mode); this.chargeSide.set(v.seats.find(s => s.id === self.id)?.team ?? '');
     const fights = v.mode === 'goal-rush' && (!v.practice || !!v.lesson);
     this.hpOn.set(fights);
@@ -140,10 +145,18 @@ class SeatStrip {
     this.stanceHp.set(foe && foe.maxHp > 0 ? foe.hp / foe.maxHp : 0);
     if (kind + lock !== this.stanceShown) { this.stanceShown = kind + lock; pulse(this.stance, 'pulse'); }
     this.stanceKey.set(keys.stance);
+    this.sportOn.set(!!v.football); this.legend.set(v.football && !lock ? keys.legend ?? '' : '');
     return kind;
   }
   remove() { this.root.remove(); }
 }
+
+/** SPORT mode (`?football`): what the banner and the line under the score still say. */
+const SPORT_SAID: ReadonlySet<BallEvent['kind']> = new Set<BallEvent['kind']>(['goal', 'own-goal', 'overtime', 'fever', 'win', 'super', 'duel', 'duel-won', 'wipeout', 'tackle', 'reversal', 'chat', 'accolade']);
+/** SPORT's great save, the one save the banner names: off the line, or a shot of GREAT_SAVE m/s or more stopped (a
+ *  charged one: a tap leaves at 24-30). A few a match. */
+const GREAT_SAVE = 31;
+const greatSave = (e: BallEvent) => e.text === 'OFF THE LINE' || (e.value ?? 0) >= GREAT_SAVE;
 
 class BallHud implements ModeHud {
   private board!: HTMLElement; private side!: Data; private boardMode!: Data; private boardLesson!: Flag;
@@ -295,7 +308,8 @@ class BallHud implements ModeHud {
       rest = v.phase === 'kickoff' ? `${BALL_TEAM_NAMES[v.servingTeam]} SERVE · ${nameOf(server)}` : v.phase === 'live' ? '' : `${v.rumble ? 'RUMBLE · ' : ''}FIRST TO ${v.target} · WIN BY 2`;
     }
     const tier = heatTier(v.ball.heat);
-    this.heat.set(String(tier)); this.heatLabel.set(tier >= 4 ? 'OVERDRIVE' : 'HEAT');
+    // (SPORT mode, `?football`: the ball has no heat - the place is left empty.)
+    this.heat.set(v.football ? 'none' : String(tier)); this.heatLabel.set(v.football ? '' : tier >= 4 ? 'OVERDRIVE' : 'HEAT');
     this.powerCount(v);
     this.charmChips(v, f, team);
     // The ball cam's key (Tab, the pad's target button: on by default, render/ball/BallCam.ts, and the key turns it off
@@ -311,9 +325,14 @@ class BallHud implements ModeHud {
     const serving = spike && v.phase === 'kickoff' && v.serverId === f.self.id && !v.lesson;
     const charged = v.rumble && v.effects.some(e => e.kind === 'charge' && e.id === f.self.id);
     const practice = v.practice && !v.drill && !v.lesson && (v.phase === 'live' || v.phase === 'kickoff');
-    const hint = serving || charged || practice ? '' : this.hints.frame({ view: v, self: f.self, players: f.snapshot.players, fight: !!hudView.ballLock(), device: f.input, family: f.family, serverTime: f.snapshot.serverTime }, now);
-    this.promptOn.set(!serving && !charged && !practice && !hint);
-    if (serving) this.promptText.set(promptText('YOUR SERVE · {light} LOB · {heavy} POWER SERVE', { device: f.input, family: f.family }));
+    // (VOLLEYBALL - game/ball/volley.ts: what PLAY does now, for the one button every touch is.)
+    const vol = v.volley, play = vol && v.phase === 'live' ? vol.prompt[f.self.id] : undefined;
+    // (SPORT mode, `?football`: the classic first-time hints teach the BALL stance's TRAP and carry - not shown.)
+    const hint = serving || charged || practice || play || v.football ? '' : this.hints.frame({ view: v, self: f.self, players: f.snapshot.players, fight: !!hudView.ballLock(), device: f.input, family: f.family, serverTime: f.snapshot.serverTime }, now);
+    this.promptOn.set(!serving && !charged && !practice && !hint && !play);
+    if (serving && vol) this.promptText.set(promptText('YOUR SERVE · {light} FLOAT SERVE · {jump} THEN {light} JUMP SERVE', { device: f.input, family: f.family }));
+    else if (serving) this.promptText.set(promptText('YOUR SERVE · {light} LOB · {heavy} POWER SERVE', { device: f.input, family: f.family }));
+    else if (play) this.promptText.set(promptText(play === 'JUMP' ? '{jump} THEN {light} SPIKE' : `{light} ${play}`, { device: f.input, family: f.family }));
     else if (charged) this.promptText.set(promptText('KI CHARGE · YOUR NEXT {heavy} FLIES AT OVERDRIVE', { device: f.input, family: f.family }));
     else if (practice) this.promptText.set(f.input === 'touch' ? '<span class="ux-prompt"><b>TAP: RESET BALL</b></span>' : `<span class="ux-prompt">${f.input === 'controller' ? padKey(f.family, 'select') : '<kbd>⌫</kbd>'}<b>RESET BALL</b></span>`);
     else if (hint) this.promptText.set(hint);
@@ -402,7 +421,9 @@ class BallHud implements ModeHud {
     const teach = f.snapshot.serverTime - v.startedAt < 40 || v.phase === 'kickoff' || v.phase === 'countdown';
     const kind = this.strip.update(v, f.self, lock, on, f.snapshot.players, {
       boost: keyed ? promptKey('dash', at) : '', super: keyed ? promptKey('ultimate', at) : '',
-      stance: keyed && teach ? promptText(lock ? '{target} BALL' : '{target} FIGHT', at) : '',
+      stance: keyed && teach ? promptText(lock ? `{target} ${v.football ? 'SPORT' : 'BALL'}` : '{target} FIGHT', at) : '',
+      // (SPORT mode: the buttons and the camera's state - its key while the match is young, its state always.)
+      legend: v.football ? (keyed && teach ? promptText('{light} PASS {heavy} SHOOT {dash} SPRINT', at) + ` <kbd>${f.input === 'controller' ? 'L3' : 'V'}</kbd> ` : '') + hudView.goalLook() : '',
     });
     if (this.root) { if (kind) this.root.dataset.ballStance = kind; else delete this.root.dataset.ballStance; }
     const two = half ? f.snapshot.players.find(p => p.id === SECOND) : undefined, seat = two ? v.seats.find(s => s.id === SECOND) : undefined;
@@ -421,6 +442,7 @@ class BallHud implements ModeHud {
   /** A banner for the one slot: `rank` is what it is worth (ballBanner.ts BANNER_RANK); its `line` is shown under the
    *  score while it is up. */
   private show(now: number, rank: number, kind: string, team: BallTeam | '', top: string, title: string, line: string, ms: number) {
+    quietCounts.banners++;
     this.banners.offer({ priority: rank, ms, kind, team, top, title, line }, now);
   }
   /** The kickoff's count: on its beat or not at all. */
@@ -429,6 +451,7 @@ class BallHud implements ModeHud {
   }
   /** A line under the score: who did what. */
   private tick(now: number, team: BallTeam | undefined, text: string, kind = '', rank: number = LINE_RANK.strike) {
+    quietCounts.lines++;
     this.lines.offer({ priority: rank, ms: LINE_MS, text, team: team ?? '', kind }, now);
   }
 
@@ -443,6 +466,9 @@ class BallHud implements ModeHud {
     const scored = e.kind === 'goal' || e.kind === 'own-goal' || POINT_WON.has(e.kind) || POINT_GIVEN.has(e.kind);
     if (v.lesson && scored && !mine) return;
     const lesson = !!v.lesson && scored;
+    // (SPORT mode, `?football`: the banner and the line under the score are a goal's - and a great save's (GREAT_SAVE) -
+    // and the FIGHT stance's own; never a pass, a first touch, an ordinary shot or save.)
+    if (v.football && sportQuiet && !(SPORT_SAID.has(e.kind) || e.kind === 'save' && greatSave(e))) return;
     switch (e.kind) {
       case 'goal': {
         const assist = seat(e.assistId);
@@ -518,8 +544,11 @@ class BallHud implements ModeHud {
         break;
       }
       case 'bowled': this.tick(now, e.team, `${who || 'THE BALL'} ${e.text === 'STAGGERED' ? 'STAGGERS' : 'BOWLS OVER'} ${nameOf(seat(e.targetId))} · ${Math.round((e.value ?? 0) * KMH)} KM/H`); break;
+      // (VOLLEYBALL: every touch named small, with how well it was timed - the strike's own line gives way.)
+      case 'touch': this.tick(now, e.team, [who, e.text].filter(Boolean).join(' · ')); break;
       // (Goal Rush: your own PERFECT STRIKE - PERFECT VOLLEY, PERFECT HEADER - is a short gold banner.)
       case 'strike':
+        if (v.volley) break;
         if (e.perfect && v.mode === 'goal-rush' && e.actorId === this.selfId) this.show(now, R.skill, 'perfect', e.team ?? '', speed, `${e.text ?? 'PERFECT STRIKE'}!`, '', 1000);
         else if (e.shot && e.shot !== 'tap' && e.shot !== 'bump' && e.shot !== 'set') this.tick(now, e.team, [who, e.perfect ? (v.mode === 'sky-spike' ? 'PERFECT SPIKE' : e.text ?? 'PERFECT STRIKE') : e.text ?? shot, speed].filter(Boolean).join(' · '));
         break;

@@ -8,4 +8,6 @@ import type { Camera } from 'three';
  * allocates: the camera is the one object
  * GameRenderer draws with, and `locked` reads a flag.
  */
-export const hudView: { camera?: Camera; locked: () => boolean; ballCam: () => boolean; ballLock: () => string | null } = { locked: () => false, ballCam: () => false, ballLock: () => null };
+export const hudView: { camera?: Camera; locked: () => boolean; ballCam: () => boolean; ballLock: () => string | null;
+  /** Goal Rush's SPORT mode (`?football`): the camera's state as the legend names it, BALL LOCK or FREE LOOK. */
+  goalLook: () => string } = { locked: () => false, ballCam: () => false, ballLock: () => null, goalLook: () => 'BALL LOCK' };

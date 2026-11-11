@@ -282,7 +282,9 @@ describe('what the screen shows', () => {
     const options = homeOptions(loadSettings()), page = legalPage();
     expect(options).toMatch(/<nav class="home-options-links"[^]*id="home-legal"[^]*<\/nav>/);
     expect(page).toContain(`${TITLE} is a free, open-source browser game. Its fighters are original characters made for it`);
-    expect(page).toContain(CONTACT ? contactHref(CONTACT) : 'Contact details for rights holders and players will be added here.'); expect(page).not.toMatch(/jump\.dude\.work/i);
+    expect(page).toContain(CONTACT ? contactHref(CONTACT) : 'Contact details for rights holders and players will be added here.');
+    // (No site under the contact address's domain is named: the game's one address is its public one.)
+    if (CONTACT?.includes('@')) expect(page).not.toMatch(new RegExp(`[a-z0-9-]+\\.${CONTACT.split('@')[1].replace(/\./g, '\\.')}`, 'i'));
     expect(page).toMatch(/OPEN ASSETS[^]*CC BY 4\.0/); expect(page).toContain('data-open-privacy');
     // (In a new tab, or over the game for a pad: pageViewer.ts openPage.)
     expect(readFileSync('src/ui/pageViewer.ts', 'utf8')).toMatch(/window\.open\(each, '_blank', 'noopener'\)/);

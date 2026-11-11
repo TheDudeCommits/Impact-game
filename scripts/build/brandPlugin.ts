@@ -4,7 +4,7 @@ import type { Plugin } from 'vite';
 import * as brand from '../../src/originals/brand.ts';
 
 /** What the pages name (brand.ts by default; a test may pass others). */
-export interface Brand { TITLE: string; SHORT_TITLE: string; SITE_URL: string; DESCRIPTION: string; OG_IMAGE: string | null; OG_IMAGE_ALT: string; CONTACT: string | null; DISCORD_INVITE: string | null; SERVER_HOST: string | null }
+export interface Brand { TITLE: string; SHORT_TITLE: string; PUBLIC_URL: string; DESCRIPTION: string; OG_IMAGE: string | null; OG_IMAGE_ALT: string; CONTACT: string | null; DISCORD_INVITE: string | null; SERVER_HOST: string | null }
 
 const html = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const json = (s: string) => JSON.stringify(s).slice(1, -1);
@@ -12,7 +12,8 @@ const json = (s: string) => JSON.stringify(s).slice(1, -1);
 /** The plain values a page may name (escaped for the file they go in). */
 const plain = (b: Brand): Record<string, string> => ({
   TITLE: b.TITLE, TITLE_UPPER: b.TITLE.toUpperCase(), SHORT_TITLE: b.SHORT_TITLE, DESCRIPTION: b.DESCRIPTION,
-  SITE_URL: b.SITE_URL, SITE_HOST: new URL(b.SITE_URL).host,
+  // The public address (brand.ts PUBLIC_URL), the only one a page names; the site the build is served from has no token.
+  PUBLIC_URL: b.PUBLIC_URL, PUBLIC_ADDRESS: b.PUBLIC_URL.replace(/^https?:\/\//, ''),
 });
 
 /** Fills `text`'s tokens: `markup` ones as they are, the plain ones through `escape`. Throws on a token it doesn't know. */
@@ -24,10 +25,12 @@ export function fill(text: string, file: string, escape: (s: string) => string, 
   return out;
 }
 
-/** The link-preview card's tags, or none while brand.ts has no card (twitter:card then falls back to 'summary'). */
+/** The link-preview card's tags, or none while brand.ts has no card (twitter:card then falls back to 'summary').
+ *  The card is named relative to the page: a host would be an address besides the public one, and a preview of this
+ *  page reads it from wherever the page is served. */
 function socialImage(b: Brand) {
   if (!b.OG_IMAGE) return '';
-  const url = html(new URL(b.OG_IMAGE, `${b.SITE_URL}/`).href), alt = html(b.OG_IMAGE_ALT);
+  const url = html(b.OG_IMAGE.replace(/^\//, '')), alt = html(b.OG_IMAGE_ALT);
   return `<meta property="og:image" content="${url}"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">\n`
     + `<meta property="og:image:alt" content="${alt}"><meta name="twitter:image" content="${url}"><meta name="twitter:image:alt" content="${alt}">\n`;
 }

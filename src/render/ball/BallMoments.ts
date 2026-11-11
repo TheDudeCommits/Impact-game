@@ -76,6 +76,15 @@ const smooth = (x: number, a: number, b: number) => { const t = Math.min(1, Math
  *  null for everything else. BallMoments.test.ts pins it. */
 export type PrintCause = 'goal' | 'decider' | 'super' | 'duel';
 /** The only event kinds that may ever print the whole screen. */
+/** How many of each loud thing a page has shown since it loaded - banners and lines (BallHud), impact frames, speed
+ *  lines and INK FLASHes (here) - for the checks' count a minute (main.ts `__ballQuiet` on this machine). */
+export const quietCounts = {banners: 0, lines: 0, frames: 0, speedLines: 0, inks: 0};
+/** `?quiet=0` on this machine: SPORT mode's quiet rule off, for the checks' before (it had none at first). */
+export const sportQuiet = !(typeof location === 'object' && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) && new URLSearchParams(location.search).get('quiet') === '0');
+/** Goal Rush's SPORT mode (`?football`): only these move the screen - a goal, the signature shot, a great save (BallHud's
+ *  rule: FOOTBALL's GREAT_SAVE) and the FIGHT stance's own (a wipe-out, a bump): never a pass, a first touch, an ordinary
+ *  shot or an ordinary save. */
+const SPORT_MOMENTS: ReadonlySet<BallEvent['kind']> = new Set<BallEvent['kind']>(['goal', 'own-goal', 'super', 'wipeout', 'demo', 'duel', 'duel-won', 'fever', 'win']);
 export const MAY_PRINT: ReadonlySet<BallEvent['kind']> = new Set<BallEvent['kind']>(['goal', 'own-goal', 'super', 'duel-won', 'kill', 'ace', 'point', 'out', 'touches', 'win']);
 export function printCause(e: BallEvent, view: Pick<BallView, 'mode' | 'score' | 'target' | 'practice'>): PrintCause | null {
   switch (e.kind) {
@@ -182,6 +191,7 @@ export class BallMoments {
   }
 
   private moment(e: BallEvent, now: number) {
+    if (this.view?.football && sportQuiet && !SPORT_MOMENTS.has(e.kind)) return;
     const at = this.at.set(e.x, e.y, e.z);
     switch (e.kind) {
       case 'super': this.print(PEAKS.super, at, now, false); break;
@@ -235,11 +245,11 @@ export class BallMoments {
   private peak(p: Peak, at: THREE.Vector3, print: 0 | 1 | 2 = 2) {
     // A near peak is the frame's only for a viewer near it (a wipe-out across the pitch is the ticker's, not the screen's).
     const d = p.near ? this.nearest(at) : 0, near = !p.near || d <= p.near, k = p.near ? 1 - smooth(d, p.near * .5, p.near) * .7 : 1;
-    if (near && print === 2 && p.frame > 0) this.frame.impactFrame(p.frame, at);
+    if (near && print === 2 && p.frame > 0) { this.frame.impactFrame(p.frame, at); quietCounts.frames++; }
     if (near && print === 2 && p.chroma > 0) this.frame.chromaticPulse(p.chroma);
-    if (p.lines > 0 && near) { this.lines = Math.max(this.linesLeft > 0 ? this.lines : 0, p.lines * k); this.linesLeft = Math.max(this.linesLeft, p.linesFor); this.frame.speedLines(p.lines * k); }
+    if (p.lines > 0 && near) { quietCounts.speedLines++; this.lines = Math.max(this.linesLeft > 0 ? this.lines : 0, p.lines * k); this.linesLeft = Math.max(this.linesLeft, p.linesFor); this.frame.speedLines(p.lines * k); }
     // (The sound word up meanwhile burns through the print in its side's colour, SoundWords.inkShown.)
-    if (near && print > 0 && p.ink > 0) { this.frame.inkFlash(p.ink); inkShown(p.ink); }
+    if (near && print > 0 && p.ink > 0) { this.frame.inkFlash(p.ink); inkShown(p.ink); quietCounts.inks++; }
     if (p.zoom > 0 && near) this.frame.screenPunch?.(p.zoom * k, at);
     // Sky Spike's lens stays where its camera puts it: its moments land on the screen.
     if (this.mode !== 'sky-spike' && p.shake > 0) this.shake(p.shake, at, p.punch);

@@ -1,15 +1,17 @@
-/** The game's name, its site and its contacts, in one place.
+/** The game's name, its public address and its contacts, in one place.
  *
  *  Change anything here and everything follows: index.html (the tab title, the description, the canonical link and the
  *  social-preview tags), public/privacy.html, public/terms.html and public/site.webmanifest, which
- *  scripts/build/brandPlugin.ts fills from this file when Vite builds or serves them; invite links, the first-visit
- *  notice, the CREDITS & LEGAL panel (src/ui/legal.ts) and every in-game line that names the game.
+ *  scripts/build/brandPlugin.ts fills from this file when Vite builds or serves them; invite links, the share card, the
+ *  result link, the first-visit notice, the CREDITS & LEGAL panel (src/ui/legal.ts) and every in-game line that names
+ *  the game.
  *
  *  What depends on where the game is deployed comes from the environment (Vite's VITE_* variables, or the same names in
  *  process.env for the build plugins and tests), with defaults for a local checkout:
- *    VITE_SITE_URL        where the game is served (default http://localhost:5173)
  *    VITE_SERVER_HOST     who hosts the game server, as the privacy page names it (default: none named)
  *    VITE_DISCORD_INVITE  the community invite behind the party page's Discord button (default: no button)
+ *  Where a build is served is not among them: nothing a build shows names it (code that needs it reads the page's own
+ *  `location`).
  *
  *  src/game, src/survival and src/server must not import this file (the match server builds them alone). */
 export interface BrandValues {
@@ -17,8 +19,10 @@ export interface BrandValues {
   TITLE: string;
   /** The label under an installed icon (best kept to about 12 characters). */
   SHORT_TITLE: string;
-  /** Where the game is served, without a trailing slash: the canonical link and the shared link's address. */
-  SITE_URL: string;
+  /** The game's public address, without a trailing slash: the only address any build shows, says, prints or tags - the
+   *  canonical link, the share previews, the legal pages, the share card, invites and the result link. Where the build is
+   *  served is never written into it: code that needs that takes it from the page's own `location`. */
+  PUBLIC_URL: string;
   /** One line for search results and shared links. */
   DESCRIPTION: string;
   /** The link-preview card, a 1200x630 JPEG at the site's root, or null for none. */
@@ -40,7 +44,7 @@ const setting = (name: string) => (viteEnv[name] ?? nodeEnv[name])?.trim() || un
 
 export const BRAND: Readonly<BrandValues> = {
   TITLE: 'Impact', SHORT_TITLE: 'Impact',
-  SITE_URL: (setting('VITE_SITE_URL') ?? 'http://localhost:5173').replace(/\/+$/, ''),
+  PUBLIC_URL: 'https://playertwo.plus/game/impact',
   DESCRIPTION: 'A free arena fighter in your browser, with a cast of original characters made for it. Pick a fighter and jump in.',
   OG_IMAGE: '/og-image-impact.jpg',
   OG_IMAGE_ALT: 'The IMPACT wordmark beside four of its original fighters, drawn in colour over a red ink burst.',
@@ -51,7 +55,9 @@ export const BRAND: Readonly<BrandValues> = {
 
 export const TITLE = BRAND.TITLE;
 export const SHORT_TITLE = BRAND.SHORT_TITLE;
-export const SITE_URL = BRAND.SITE_URL;
+export const PUBLIC_URL = BRAND.PUBLIC_URL;
+/** PUBLIC_URL as it is written for people to read and type: without its scheme (playertwo.plus/game/impact). */
+export const PUBLIC_ADDRESS = PUBLIC_URL.replace(/^https?:\/\//, '');
 export const DESCRIPTION = BRAND.DESCRIPTION;
 export const OG_IMAGE: string | null = BRAND.OG_IMAGE;
 export const OG_IMAGE_ALT = BRAND.OG_IMAGE_ALT;

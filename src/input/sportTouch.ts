@@ -2,6 +2,7 @@ import { ballRadius, type BallModeId, type BallView } from '../game/ball/model';
 import { hasStances } from '../game/ball/stance';
 import { headingInto, stepBall } from '../game/ball/physics';
 import { TOUCH_RULES } from '../game/ball/BallMatch';
+import { duelOn } from '../game/ball/superShots';
 import { PLAYER_RADIUS } from '../game/moves';
 import type { PlayerState } from '../game/types';
 import type { Spot } from './touchLayout';
@@ -28,6 +29,8 @@ import type { Spot } from './touchLayout';
  *    once it is not (`trapComing`, `TrapCue`). Never a ball the other side shoots at your goal (that is a save) nor one
  *    anybody carries (FIGHT is how you take that one). FREE PLAY shows it in the slot it leaves empty.
  *  - SUPER (ULT in a fight), gold, over the boost: only once the ultimate is charged.
+ *  - In a TECHNIQUE DUEL of yours (superShots.ts DUEL, `duelOn`) the shot's button reads DUEL for the
+ *    beat: its press is the duel's, on the mark.
  * The shot's button is held as its key is (`SportFace.held`: Input.touchKey, down with the finger and up with it), for
  * a rule that reads how long SHOOT is held.
  * Not on the set: SPECIAL (the curve), AREA, AWAKEN and Goal Rush's guard as the keeper's SAVE: a shot or a pass at a
@@ -40,7 +43,7 @@ export const SPORT_SLOTS: readonly SportSlot[] = ['main', 'pass', 'jump', 'run',
 /** The press each slot can send (Input.touchPress's actions, and guard, which is held: Input.touchHold). */
 export type SportAction = 'light' | 'heavy' | 'jump' | 'dash' | 'guard' | 'ultimate' | 'target';
 /** The faces (handheld.css draws each as a line glyph; 'art' is the move's own picture, input/touchArt.ts). */
-export type SportGlyph = 'shoot' | 'pass' | 'jump' | 'boost' | 'fist' | 'ball' | 'super' | 'dash' | 'art' | 'bump' | 'set' | 'tip' | 'lob' | 'spike' | 'block' | 'dive' | 'trap';
+export type SportGlyph = 'shoot' | 'pass' | 'jump' | 'boost' | 'fist' | 'ball' | 'super' | 'dash' | 'art' | 'bump' | 'set' | 'tip' | 'lob' | 'spike' | 'block' | 'dive' | 'trap' | 'duel';
 export interface SportFace {
   action: SportAction; label: string; glyph: SportGlyph;
   /** BOOST: held, it keeps the boost going and lifting stops it (TouchControls). */
@@ -162,6 +165,12 @@ export class TrapCue {
  *  `trap` whether Goal Rush's moment's button is TRAP (TrapCue). */
 export function sportSet(view: BallView, selfId: string, fight: boolean, superReady: boolean, at?: { z: number }, trap = false): SportSet {
   const superFace = (label: string): SportFace | null => superReady ? { action: 'ultimate', label, glyph: 'super' } : null;
+  // (In a TECHNIQUE DUEL of yours the shot's button is the duel's press - any strike is - and says so.)
+  const duel = duelOn(view), duelling = !!duel && (duel.actorId === selfId || duel.targetId === selfId);
+  const set = sportSetOf(view, selfId, fight, superFace, at, trap);
+  return duelling ? { ...set, main: { action: 'heavy', label: 'DUEL', glyph: 'duel', held: true } } : set;
+}
+function sportSetOf(view: BallView, selfId: string, fight: boolean, superFace: (label: string) => SportFace | null, at?: { z: number }, trap = false): SportSet {
   if (view.mode === 'sky-spike') {
     const serving = view.phase === 'kickoff' && view.serverId === selfId, light = spikeLight(view, selfId);
     return {
@@ -222,5 +231,7 @@ export const SPORT_GLYPHS: Readonly<Record<Exclude<SportGlyph, 'art'>, string>> 
   block: '<path d="M4.6 27v-9.6c0-1.9 1.2-3 3-3h3.6c1.8 0 3 1.1 3 3V27M5.9 14.4V7M9.4 14.4V5.2M12.9 14.4V7M17.8 27v-9.6c0-1.9 1.2-3 3-3h3.6c1.8 0 3 1.1 3 3V27M19.1 14.4V7M22.6 14.4V5.2M26.1 14.4V7"/>',
   dive: '<path d="M4 7.5l16 12.5"/><path d="M13.6 21.6h8.2v-8.2"/><path d="M3 17h5M3 22h3"/><circle cx="25.6" cy="25.4" r="3" class="tc-fill"/>',
   // (TRAP - the ball come to rest on the turf, the lines it came in on stopping short of it.)
+  // (DUEL - the ball inside the mark's ring.)
+  duel: '<circle cx="16" cy="16" r="12.5"/><circle cx="16" cy="16" r="5.6" class="tc-fill"/>',
   trap: '<circle cx="19.5" cy="18.4" r="6.6"/><path d="M19.5 14.6l3.2 2.3-1.2 3.7h-4l-1.2-3.7z" class="tc-fill"/><path d="M2.5 26.2h27M2.5 14.5h6M4 19.5h5"/>',
 };

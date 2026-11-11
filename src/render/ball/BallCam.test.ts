@@ -28,6 +28,33 @@ describe('the ball cam', () => {
     const held = run(cam, r, 30, cam.steer(r, 1 / 60, 0, 'dynamic', self, new THREE.Vector3(.5, 6, -.3), view(), 'red'), self, new THREE.Vector3(.5, 6, -.3));
     expect(Math.abs(held)).toBeLessThan(.15);
   });
+  it("SPORT's FREE LOOK: the player's heading is the view's, never eased back; BALL LOCK takes up from there", () => {
+    const cam = new BallCam(), r = rig(), self = new THREE.Vector3(), ball = new THREE.Vector3(0, 1, 12), v = view({football: true});
+    cam.free = true;
+    let yaw = run(cam, r, 30, 0, self, ball, v);
+    yaw = cam.steer(r, 1 / 60, yaw + 1.2, 'dynamic', self, ball, v, 'red');
+    yaw = run(cam, r, 300, yaw, self, ball, v);
+    expect(yaw).toBeCloseTo(1.2, 6);
+    expect(r.keepInView).toBeNull();
+    cam.free = false;
+    const next = cam.steer(r, 1 / 60, yaw, 'dynamic', self, ball, v, 'red');
+    expect(Math.abs(next - yaw)).toBeLessThan(.1);
+    // (SPORT's calm BALL LOCK brings the ball back to its dead zone's edge as the lens sees it, 6.4 m behind the body -
+    // not dead centre.)
+    const back = run(cam, r, 240, next, self, ball, v);
+    expect(Math.abs(back)).toBeLessThan(.85);
+  });
+  it("SPORT's BALL LOCK is calm: no turn while the ball is well inside the frame, and no faster than its cap", () => {
+    const cam = new BallCam(), r = rig(), self = new THREE.Vector3(), v = view({football: true});
+    let yaw = run(cam, r, 30, 0, self, new THREE.Vector3(0, 1, 12), v);
+    // The ball moved a little across, still inside the frame: the view holds.
+    const held = run(cam, r, 60, yaw, self, new THREE.Vector3(3, 1, 12), v);
+    expect(Math.abs(held - yaw)).toBeLessThan(1e-6);
+    // Behind: it comes round, never faster than the cap.
+    let most = 0; yaw = held;
+    for (let i = 0; i < 180; i++) { const next = cam.steer(r, 1 / 60, yaw, 'dynamic', self, new THREE.Vector3(0, 1, -12), v, 'red'); most = Math.max(most, Math.abs(Math.atan2(Math.sin(next - yaw), Math.cos(next - yaw))) * 60); yaw = next; }
+    expect(most).toBeLessThanOrEqual(1.6 + 1e-6);
+  });
   it('lets the player look away for a moment, then comes back to the ball', () => {
     const cam = new BallCam(), r = rig(), self = new THREE.Vector3(), ball = new THREE.Vector3(0, 1, 12);
     let yaw = run(cam, r, 30, 0, self, ball);

@@ -1,5 +1,5 @@
 import { commentaryOf } from '../audio/ballCaller';
-import { chaseCamOf, spikeCamOf } from '../render/ball/ballCamChoice';
+import { chaseCamOf, spikeCamOf, superCamOf } from '../render/ball/ballCamChoice';
 import { mediaArt } from './mediaArt';
 import {pulseClass} from './pulse';
 import {riftOf} from '../game/moba/model';
@@ -294,6 +294,7 @@ export class Hud {
     // The ball modes' camera options (render/ball/ballCamChoice.ts), where the ball modes are open.
     const spikeCam=this.root.querySelector<HTMLSelectElement>('[data-setting="spikeCam"]');if(spikeCam)spikeCam.value=spikeCamOf(settings.spikeCam);
     const chaseCam=this.root.querySelector<HTMLSelectElement>('[data-setting="chaseCam"]');if(chaseCam)chaseCam.value=chaseCamOf(settings.chaseCam);
+    const superCam=this.root.querySelector<HTMLSelectElement>('[data-setting="superCam"]');if(superCam)superCam.value=superCamOf(settings.superCam);
     this.root.querySelectorAll<HTMLInputElement|HTMLSelectElement>('[data-setting]').forEach(input=>input.addEventListener(input.type==='range'?'input':'change',()=>this.applySetting(input.dataset.setting!,input)));
     this.settingsPanel.addEventListener('keydown',event=>{if(event.key!=='Tab')return;const items=this.focusables(),first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}});
   }
@@ -306,6 +307,7 @@ export class Hud {
     else if(key==='commentary')this.settings.commentary=commentaryOf(input.value);   // the ball modes' voice (audio/ballCaller.ts)
     else if(key==='spikeCam')this.settings.spikeCam=spikeCamOf(input.value);   // Sky Spike's stand (render/ball/ballCamChoice.ts)
     else if(key==='chaseCam')this.settings.chaseCam=chaseCamOf(input.value);   // Goal Rush's chase lens
+    else if(key==='superCam')this.settings.superCam=superCamOf(input.value);   // The lens riding a SUPER SHOT (an option, off by default)
     else if(key==='hudSkin'){this.settings.hudSkin=(HUD_SKINS as readonly string[]).includes(input.value)?input.value as Settings['hudSkin']:'halo';this.applySkin();}
     else if(key==='moveLayout'){this.settings.moveLayout=(MOVE_LAYOUTS as readonly string[]).includes(input.value)?input.value as Settings['moveLayout']:'row';this.applyMoveLayout();}
     else if(key==='cinematics')this.settings.cinematics=(input as HTMLInputElement).checked;
@@ -370,8 +372,9 @@ export class Hud {
   private async shareInvite(native:boolean){
     const code=this.root.querySelector('#private-code')!.textContent?.replace(/\s/g,'')??'';
     if(!/^\d{6}$/.test(code))return;
-    // The one SHARE (social/share.ts): the link is at hand inside the press - the game's /join/ page outside Player Two,
-    // Player Two's own (asked for as the room opened, social/presence.ts) inside it - so Safari lets it copy or share.
+    // The one SHARE (social/share.ts): the link is at hand inside the press - the game's public address with the room's code
+    // outside Player Two, Player Two's own (asked for as the room opened, social/presence.ts) inside it - so Safari lets it
+    // copy or share.
     const {result,url}=await shareInvite({room:code,kind:this.privateKind},native);
     if(result==='shared')this.notify('INVITE SHARED');else if(result==='copied')this.notify('INVITE LINK COPIED');else if(result==='failed')this.text('private-hint',`Copy this invite: ${url}`);
   }
@@ -519,7 +522,7 @@ export class Hud {
     // Their camera proxy is not a roster fighter and must never show Taisei's portrait.
     if(target?.enemy==='rift-unit')target=undefined;
     // The ball modes' target key is the ball cam (render/ball/BallCam.ts), not a lock: the strip under the arena says so.
-    {const label=ballOf(snapshot)?'BALL CAM':'LOCK ON';if(label!==this.targetLabel){this.targetLabel=label;this.refreshBindingHints();}}
+    {const ball=ballOf(snapshot),label=ball?.football?'SPORT':ball?'BALL CAM':'LOCK ON';if(label!==this.targetLabel){this.targetLabel=label;this.refreshBindingHints();}}
     if(this.lastOwnHp!==null&&self.hp<this.lastOwnHp-1)this.pulseHit('own');
     this.lastOwnHp=self.hp;
     if(target?.id!==this.lastFoeId){this.lastFoeId=target?.id??null;this.lastFoeHp=null;}

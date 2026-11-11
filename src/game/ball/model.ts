@@ -18,8 +18,9 @@ export type BallModeId = 'goal-rush' | 'sky-spike';
 export const BALL_MODES: readonly BallModeId[] = ['goal-rush', 'sky-spike'];
 /** Bumped whenever a page and a room would disagree about the ball, its view or its messages. (10: Goal
  *  Rush's carried ball - BallState.carry - the TRAP, and quick chat's fourth INFO line, the call for the ball. 11: the
- *  TACKLE that won the ball - BallEvent.won - the REVERSAL, and the POWER PLAY's goal - BallEvent.short.) */
-export const BALL_PROTOCOL = 11;
+ *  TACKLE that won the ball - BallEvent.won - the REVERSAL, and the POWER PLAY's goal - BallEvent.short. 13: the
+ *  TECHNIQUE DUEL played - a press in its beat is the duel's, and BallEvent.presses.) */
+export const BALL_PROTOCOL = 13;
 export type BallTeam = 'red' | 'blue';
 export const BALL_TEAMS: readonly BallTeam[] = ['red', 'blue'];
 export const otherTeam = (team: BallTeam): BallTeam => team === 'red' ? 'blue' : 'red';
@@ -75,6 +76,9 @@ export interface BallState extends Vec3 {
    *  there every tick; a page draws it at the carrier's drawn feet (it is the page's to draw: online the carrier's body
    *  is drawn ahead of the room's ball). Absent: nobody carries it. */
   carry?: string;
+  /** Goal Rush's SPORT mode (football.ts, `?football` on this device only): how far a sprint has knocked the carried ball
+   *  on ahead of its spot (m). Absent: at the feet. */
+  ahead?: number;
 }
 
 export interface BallSeat {
@@ -127,8 +131,12 @@ export interface BallEvent {
     | 'target'
     /** A TECHNIQUE DUEL (superShots.ts DUEL): a PERFECT guard met a SUPER SHOT - actorId the keeper, targetId the striker,
      *  value the beat's seconds - and how it ended: actorId the winner, targetId the loser, text SHOT STOPPED or BREAKS
-     *  THROUGH. */
+     *  THROUGH, `presses` how near each pressed to the beat's mark. */
     | 'duel' | 'duel-won'
+    /** VOLLEYBALL (volley.ts; behind `?volleyball`, this device only - the online room never emits it):
+     *  a touch played - actorId who, shot what it became, text how well it was timed (PERFECT, GOOD, EARLY, LATE,
+     *  FLUBBED), value the ball's speed leaving (m/s). The HUD names it in the line under the score. */
+    | 'touch'
     /** Goal Rush's fights (GOAL_FIGHT): a fighter wiped out - actorId whoever landed the last blow (absent: nobody's,
      *  their team in `team`), targetId who went down, value the seconds they are out, x/y/z where they fell, text the
      *  blow's name or BUMP - and a boosting body's bump that knocked somebody flat ('demo': actorId the bumper, targetId
@@ -152,7 +160,10 @@ export interface BallEvent {
     /** Sky Spike: the swings of a match. 'deuce': the score tied at one short of the target or later, text
      *  DEUCE, value the score each side has. 'comeback': a side that trailed by four or more has drawn level - team the
      *  side, value the deepest deficit it came back from, text COMEBACK. */
-    | 'deuce' | 'comeback';
+    | 'deuce' | 'comeback'
+    /** Goal Rush's SPORT mode (football.ts): a PASS - actorId the passer, targetId the team-mate it went to (absent: into
+     *  space), text PASS or LOFTED, value its speed (m/s). Only a match on this device under `?football` says it. */
+    | 'pass';
   team?: BallTeam; actorId?: string; assistId?: string; targetId?: string;
   x: number; y: number; z: number;
   /** A shot's speed (m/s), a rally's length, a point's worth. */
@@ -171,6 +182,9 @@ export interface BallEvent {
   /** Goal Rush (the POWER PLAY): a goal scored into a side's goal while that side was short - the bodies
    *  in play then, the scorers' first (3 v 2). */
   short?: [number, number];
+  /** A TECHNIQUE DUEL's end (superShots.ts DUEL): each of the two's press, ms from the mark (late is
+   *  positive), absent for no press. */
+  presses?: {keeper?: number; striker?: number};
 }
 /** Goal Rush (the POWER PLAY): the bodies each side has in play - its seats less any wiped out
  *  (BallSeat.out) - read the same by the room (BallMatch) and every page (the score bug's count, the short side's goal
@@ -234,6 +248,9 @@ export interface BallView {
   /** LEARN TO PLAY (lesson.ts), FREE PLAY's guided first game - the step on now, what is done, why the last try
    *  missed. */
   lesson?: LessonView | null;
+  /** Goal Rush's SPORT mode (football.ts): possession, PASS, SHOOT and SPRINT in place of the BALL stance's swings. Set
+   *  only by a match on this device under `?football`; the online room never sets it. */
+  football?: boolean;
   /** RANKED (ranked.ts): a ranked queue's room, and whether the people at kickoff made the match ranked. */
   ranked?: boolean;
   /** The match's intro (ceremony.ts INTRO): it runs through the countdown, from `startsAt - seconds` to `startsAt`. The
@@ -243,6 +260,17 @@ export interface BallView {
    *  snapshot's ball and its time when the frame falls between two, so the page draws the ball where it is at the
    *  frame's time (render/ball/BallField) instead of where it was at the last snapshot. */
   sampledAt?: number; next?: BallState | null; nextAt?: number;
+  /** VOLLEYBALL (volley.ts): set only in a Sky Spike match on this device opened with `?volleyball`; the
+   *  online room never sets it. */
+  volley?: VolleyView;
+}
+/** VOLLEYBALL (volley.ts VolleyView's fields, kept here so the page reads them without the rules): whose
+ *  ball it is (`owner`, null: nobody's), the room's time of its touch's best moment (`at`) and where (`x`, `z`), which
+ *  of the side's touches it is (`touch`, 0 for the serve), the kit take each seat's last touch is drawn with (`takes`,
+ *  ballMoves.ts keys), and what PLAY does now for each person (`prompt`: SERVE, RECEIVE, SET, SPIKE, OVER). */
+export interface VolleyView {
+  owner: string | null; at: number; x: number; z: number; touch: number;
+  takes: Record<string, string>; prompt: Record<string, string>;
 }
 export interface BallIntro { seconds: number; skips?: number; people?: number; skipped?: boolean;
   /** The short intro (ceremony.ts SHORT_INTRO) - a rematch's, or an arena's this page has seen: no flyover. */

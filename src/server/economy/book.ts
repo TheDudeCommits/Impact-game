@@ -134,6 +134,8 @@ export class Book {
       if (line.t === 'merge') { if(line.into)this.moveCompletions(line.pk,line.into); if (line.into) for (const [h, pk] of this.tokens) if (pk === line.pk) this.tokens.set(h, line.into); this.accounts.delete(line.pk); continue; }
       this.accounts.set(line.pk, line.after ?? this.accounts.get(line.pk) ?? newAccount(line.pk, line.at));
       if (line.token) this.tokens.set(line.token, line.pk);
+      // (A `link` line with a login and no token - an older server wrote them when it moved a login onto another account -
+      // moves that login onto its account, as it did then: the accounts it joined stay one.)
       if (line.did) this.dids.set(line.did, line.pk);
       if (line.item && line.serial) this.sold.set(line.item, Math.max(this.sold.get(line.item) ?? 0, line.serial));
     }
@@ -216,7 +218,6 @@ export class Book {
     this.record('link', account, { did, token: hash(token) });
     return token;
   }
-  addLogin(account: Account, did: string) { this.dids.set(did, account.pk); this.record('link', account, { did }); }
   /** A token that opens nothing any more (signed out). */
   revoke(token: string) {
     const h = hash(token), pk = this.tokens.get(h), account = pk ? this.accounts.get(pk) : undefined;

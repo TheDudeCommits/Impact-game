@@ -43,6 +43,8 @@ export const actionName=(action:CombatAction,family:PadFamily)=>{
 /** `target`: what the target key does here (LOCK ON; a ball match's BALL CAM). */
 export function keyboardCombatHints(target='LOCK ON'){
   const map=getBindings().keyboard, key=(action:keyof typeof map)=>`<kbd>${keyName(map[action][0])}</kbd>`;
+  // (Goal Rush's SPORT mode, `?football`: the Sport keys - PASS, SHOOT, SPRINT, Tab to FIGHT, V the camera.)
+  if(target==='SPORT')return `<span class="control-item">${['forward','left','backward','right'].map(a=>key(a as keyof typeof map)).join('')} MOVE</span>`+([['jump','JUMP'],['light','PASS'],['heavy','SHOOT'],['dash','SPRINT'],['target','FIGHT']] as const).map(([a,l])=>`<span class="control-item">${key(a)} ${l}</span>`).join('')+`<span class="control-item"><kbd>V</kbd> CAMERA</span><span class="control-item"><kbd>${pauseKey()==='KeyP'?'P':'ESC'}</kbd> PAUSE</span>`;
   return `<span class="control-item">${['forward','left','backward','right'].map(a=>key(a as keyof typeof map)).join('')} MOVE</span>`+(['jump','dash','guard','target'] as const).map(a=>`<span class="control-item">${key(a)} ${a==='target'?target:a.toUpperCase()}</span>`).join('')+`<span class="control-item"><kbd>${pauseKey()==='KeyP'?'P':'ESC'}</kbd> PAUSE</span>`;
 }
 
@@ -58,6 +60,8 @@ export function padCombatHints(family: PadFamily, target = 'LOCK ON') {
   const item = (control: PadControl, label: string) => `<span class="control-item">${padKey(family, control)} ${label}</span>`;
   // The right stick turning the camera goes without saying; the strip only
   // has room for six.
+  if (target === 'SPORT') return [item('lstick', 'MOVE'), item(actionControl('light'), 'PASS'), item(actionControl('heavy'), 'SHOOT'), item(actionControl('dash'), 'SPRINT'),
+    item(actionControl('target'), 'FIGHT'), item('start', 'PAUSE')].join('');
   return [item('lstick', 'MOVE'), item(actionControl('jump'), 'JUMP'), item(actionControl('dash'), 'DASH'), item(actionControl('guard'), 'GUARD'),
     item(actionControl('target'), target), item('start', 'PAUSE')].join('');
 }

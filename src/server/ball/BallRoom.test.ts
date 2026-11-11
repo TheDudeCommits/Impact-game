@@ -31,9 +31,9 @@ describe('the ball room', () => {
       const c = client('x');
       expect(() => f.room.onAuth(c, { ...f.options('x'), ballProtocol: 0 })).toThrow('Refresh');
       // (Protocol 10, the carried ball; 11, the TACKLE that wins the ball, the REVERSAL and the POWER PLAY's
-      // goal - a page from before it is told to refresh, as is a room it would open.)
-      expect(BALL_PROTOCOL).toBe(11);
-      for (const old of [9, 10]) {
+      // goal; 13, the TECHNIQUE DUEL played - a page from before it is told to refresh, as is a room it would open.)
+      expect(BALL_PROTOCOL).toBe(13);
+      for (const old of [9, 10, 11, 12]) {
         expect(() => f.room.onAuth(c, { ...f.options('x'), ballProtocol: old })).toThrow('Refresh');
         await expect(new BallRoom().onCreate({ rosterProtocol: ROSTER_PROTOCOL, access: 'host', creationToken: TOKEN, ballProtocol: old, ball: 'goal-rush' })).rejects.toThrow('Refresh');
       }

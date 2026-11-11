@@ -72,29 +72,6 @@
 
 /* A SUPER SHOT's cut-in: the screen goes ink from its edge, a slanted panel slams in with the striker's bust in their
    colour, and the shot's name is brushed on under it. The page's own side's comes from the left. */
-.bs-cut{position:absolute;inset:0;z-index:3}
-.bs-cut-ink{position:absolute;inset:0;background:linear-gradient(100deg,rgb(11 12 14/.88) 0 40%,rgb(11 12 14/.5) 55%,#0000 72%)}
-.bs-theirs .bs-cut-ink{background:linear-gradient(-100deg,rgb(11 12 14/.88) 0 40%,rgb(11 12 14/.5) 55%,#0000 72%)}
-.bs-cut-panel{position:absolute;top:14vh;left:-2vw;width:min(44vw,640px);height:46vh;overflow:hidden;clip-path:polygon(0 0,100% 6%,88% 100%,0 94%);background:radial-gradient(circle at 55% 40%,color-mix(in srgb,var(--tint) 30%,#fff9ef) 0 18%,var(--tint) 58%,color-mix(in srgb,var(--tint) 40%,#0b0c0e) 115%);box-shadow:inset 0 0 0 5px var(--paper)}
-.bs-theirs .bs-cut-panel{left:auto;right:-2vw;clip-path:polygon(0 6%,100% 0,100% 94%,12% 100%)}
-.bs-cut-panel img{position:absolute;left:50%;bottom:-6%;height:118%;width:auto;translate:-46% 0;user-select:none}
-.bs-cut-lines{position:absolute;inset:0;background:repeating-conic-gradient(from 2deg at 55% 40%,#0000 0 2deg,rgb(255 251 240/.5) 2.15deg 2.55deg,#0000 2.7deg 4.4deg);-webkit-mask-image:radial-gradient(circle at 55% 40%,#0000 0 26%,#000 70%);mask-image:radial-gradient(circle at 55% 40%,#0000 0 26%,#000 70%)}
-.bs-cut-tone{position:absolute;inset:0;background:radial-gradient(rgb(11 12 14/.45) .9px,#0000 1.5px) 0 0/6px 6px;mix-blend-mode:multiply;-webkit-mask-image:linear-gradient(to top,#000,#0000 45%);mask-image:linear-gradient(to top,#000,#0000 45%)}
-.bs-cut-name{position:absolute;left:3vw;top:calc(14vh + 46vh - 4vh);display:flex;flex-direction:column;align-items:flex-start;max-width:70vw}
-.bs-theirs .bs-cut-name{left:auto;right:3vw;align-items:flex-end}
-.bs-cut-name small{padding:.38em .75em .32em;background:var(--team);color:#fff;font:800 clamp(10px,1vw,16px)/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;transform:skewX(-10deg);z-index:1}
-.bs-cut-name svg{position:absolute;left:-6%;top:42%;width:112%;height:70%;fill:var(--ink);overflow:visible}
-.bs-cut-name b{position:relative;font:italic 900 clamp(44px,7.4vw,140px)/.95 Impact,'Barlow Condensed',sans-serif;letter-spacing:.01em;color:#fff;-webkit-text-stroke:.07em var(--ink);paint-order:stroke fill;text-shadow:.05em .06em 0 var(--tint),.08em .1em 0 var(--ink);padding-right:.14em;white-space:nowrap}
-.bs-cut:not(.bs-sig) .bs-cut-name b{font-size:clamp(34px,5.4vw,100px)}
-.bs-cut.bs-soft .bs-cut-ink{opacity:.55}
-.bs-cut.bs-on .bs-cut-ink{animation:bs-wipe-in .14s ease-out both,bs-fade-out .25s .95s ease-in forwards}
-.bs-cut.bs-on .bs-cut-panel{animation:bs-slam-left .2s .04s cubic-bezier(.2,.85,.3,1.15) both,bs-out-left .22s .96s cubic-bezier(.5,0,.9,.45) forwards}
-.bs-theirs.bs-on .bs-cut-panel{animation:bs-slam-right .2s .04s cubic-bezier(.2,.85,.3,1.15) both,bs-out-right .22s .96s cubic-bezier(.5,0,.9,.45) forwards}
-.bs-cut.bs-on .bs-cut-panel img{animation:bs-drift 1.2s cubic-bezier(.2,.6,.4,1) both}
-.bs-cut.bs-on .bs-cut-name svg{animation:bs-reveal .16s .12s cubic-bezier(.3,.7,.3,1) both}
-.bs-cut.bs-on .bs-cut-name b{animation:bs-word .2s .16s cubic-bezier(.2,1.35,.4,1) both}
-.bs-cut.bs-on .bs-cut-name small{animation:bs-fade-in .15s .1s both}
-.bs-cut.bs-on .bs-cut-name{animation:bs-fade-out .2s .98s ease-in forwards}
 
 /* The podium: the winners' banner up top, the accolades dropping in as panels down the left. */
 .bs-podium{position:absolute;inset:0}
@@ -112,6 +89,96 @@
 .bs-panel.bs-mvp b{color:#f2c14e}
 .bs-podium.bs-on .bs-champs{animation:bs-stamp .3s .35s cubic-bezier(.2,.9,.3,1.25) both}
 .bs-podium.bs-on .bs-panel{animation:bs-drop .34s var(--d) cubic-bezier(.2,.9,.3,1.25) both}
+
+/* A SUPER SHOT's spread - a drawn page across the screen with a panel cut in it where the shot flies,
+   the striker's ink portrait bleeding off their side and the shot's name brushed across the foot (the atlas's masks:
+   ui/ball/shotNames.ts), 0.9 s in all, then torn away. Own side's art on the left, the other side's on the right. */
+.bs-cut{position:absolute;inset:0;z-index:3;container-type:size}
+.bs-cut-page{position:absolute;inset:0;background:var(--paper);clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,41% 11%,97% 7%,93% 70%,45% 74%,41% 11%)}
+.bs-theirs .bs-cut-page{clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,3% 7%,59% 11%,55% 74%,7% 70%,3% 7%)}
+.bs-cut-lines{position:absolute;inset:0;background:repeating-conic-gradient(from 1deg at 21% 38%,#0000 0 1.6deg,rgb(11 12 14/.8) 1.75deg 2.05deg,#0000 2.2deg 3.9deg);-webkit-mask-image:radial-gradient(circle at 21% 38%,#0000 0 24%,#000 62%);mask-image:radial-gradient(circle at 21% 38%,#0000 0 24%,#000 62%)}
+.bs-theirs .bs-cut-lines{background:repeating-conic-gradient(from 1deg at 79% 38%,#0000 0 1.6deg,rgb(11 12 14/.8) 1.75deg 2.05deg,#0000 2.2deg 3.9deg);-webkit-mask-image:radial-gradient(circle at 79% 38%,#0000 0 24%,#000 62%);mask-image:radial-gradient(circle at 79% 38%,#0000 0 24%,#000 62%)}
+.bs-cut-art{position:absolute;left:-4cqw;top:-2cqh;width:52cqw;height:86cqh;overflow:hidden;clip-path:polygon(0 0,86% 0,74% 100%,0 100%)}
+.bs-theirs .bs-cut-art{left:auto;right:-4cqw;clip-path:polygon(14% 0,100% 0,100% 100%,26% 100%)}
+.bs-cut-art img{position:absolute;left:50%;top:50%;width:max(100%,86cqh);aspect-ratio:1;object-fit:cover;translate:-50% -44%;filter:contrast(1.15);user-select:none}
+.bs-cut-art:after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,color-mix(in srgb,var(--tint) 75%,#fff) 0 30%,var(--tint) 75%);mix-blend-mode:multiply;opacity:.62}
+.bs-cut-tone{position:absolute;inset:0;background:radial-gradient(rgb(11 12 14/.5) .9px,#0000 1.5px) 0 0/6px 6px;mix-blend-mode:multiply;-webkit-mask-image:linear-gradient(to top,#000,#0000 38%);mask-image:linear-gradient(to top,#000,#0000 38%)}
+.bs-cut-frame{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.bs-cut-frame path{fill:none;stroke:var(--ink);stroke-width:7px;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.bs-cut-name{position:absolute;left:3cqw;right:3cqw;bottom:2cqh;display:flex;flex-direction:column;align-items:center}
+.bs-cut-name small{padding:.38em .75em .32em;background:var(--team);color:#fff;font:800 clamp(10px,1.1cqw,17px)/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;transform:skewX(-10deg);z-index:1;margin-bottom:-.4em}
+.bs-cut-name svg{position:absolute;left:4%;right:4%;bottom:8%;width:92%;height:62%;fill:var(--ink);overflow:visible}
+.bs-cut-word{position:relative;width:min(88cqw,calc(25cqh * 5.12));aspect-ratio:1024/200}
+.bs-cut:not(.bs-sig) .bs-cut-word{width:min(70cqw,calc(20cqh * 5.12))}
+.bs-cut-word i{position:absolute;inset:0;-webkit-mask:var(--names) 0 var(--row)/200% var(--rows) no-repeat;mask:var(--names) 0 var(--row)/200% var(--rows) no-repeat}
+.bs-cut-word .bs-ink{background:var(--ink);-webkit-mask-position:100% var(--row);mask-position:100% var(--row)}
+.bs-cut-word .bs-fill{background:linear-gradient(174deg,#fff 0 34%,color-mix(in srgb,var(--tint) 55%,#fff) 58%,var(--tint) 96%)}
+.bs-cut.bs-soft .bs-cut-lines{opacity:.5}
+/* (A phone: the name kept left of the buttons, which stand over the page.) */
+#interface[data-input="touch"] .bs-cut-name{right:33cqw;left:2cqw}
+#interface[data-input="touch"] .bs-cut-word{width:min(64cqw,calc(24cqh * 5.12))}
+.bs-cut.bs-on .bs-cut-page{animation:bs-page-in .12s cubic-bezier(.2,.85,.3,1.1) both,bs-tear-l .2s .68s cubic-bezier(.5,0,.9,.45) forwards}
+.bs-theirs.bs-on .bs-cut-page{animation:bs-page-in .12s cubic-bezier(.2,.85,.3,1.1) both,bs-tear-r .2s .68s cubic-bezier(.5,0,.9,.45) forwards}
+.bs-cut.bs-on .bs-cut-frame{animation:bs-fade-in .1s .04s both,bs-fade-out .14s .68s forwards}
+.bs-cut.bs-on .bs-cut-art img{animation:bs-art-drift .9s cubic-bezier(.2,.6,.4,1) both}
+.bs-cut.bs-on .bs-cut-name svg{animation:bs-reveal .14s .08s cubic-bezier(.3,.7,.3,1) both}
+.bs-cut.bs-on .bs-cut-word{animation:bs-word .18s .1s cubic-bezier(.2,1.35,.4,1) both}
+.bs-cut.bs-on .bs-cut-name{animation:bs-fade-out .16s .72s ease-in forwards}
+/* A couch split screen: only the name, laid low, under each half's own lens. */
+.bs-cut.bs-couch :is(.bs-cut-page,.bs-cut-frame){display:none}
+.bs-cut.bs-couch .bs-cut-name{bottom:6cqh}
+.bs-cut.bs-couch .bs-cut-word{width:min(46cqw,calc(14cqh * 5.12))}
+@keyframes bs-page-in{from{opacity:0;scale:1.06}to{opacity:1;scale:1}}
+@keyframes bs-tear-l{to{translate:-34% 3%;rotate:-3deg;opacity:0}}
+@keyframes bs-tear-r{to{translate:34% 3%;rotate:3deg;opacity:0}}
+@keyframes bs-art-drift{from{translate:-53% -41%;scale:1.08}to{translate:-50% -44%;scale:1}}
+
+/* A TECHNIQUE DUEL's face-off - two strips of eyes slammed in across the screen (the page's own side's
+   below), the ball white-hot between them and the mark: the ring closes to the ball's edge at the mark (BallShow
+   duelBeat). Each half of a couch split screen has its own (container units). */
+.bs-duel{position:absolute;inset:0;z-index:4}
+/* (The HUD's banner says it after: the face-off holds the screen's top for its beat.) */
+#interface[data-ball-duel] .bh-banner{opacity:0!important}
+.bs-duel-half{position:absolute;inset:0;container-type:size;overflow:hidden}
+.couch-split-v .bs-duel.bs-split .bs-duel-half[data-half="0"]{right:50%}
+.couch-split-v .bs-duel.bs-split .bs-duel-half[data-half="1"]{left:50%}
+.couch-split-h .bs-duel.bs-split .bs-duel-half[data-half="0"]{bottom:50%}
+.couch-split-h .bs-duel.bs-split .bs-duel-half[data-half="1"]{top:50%}
+.bs-duel-strip{position:absolute;width:min(60cqw,calc(24cqh * 10 / 3));aspect-ratio:10/3;background:var(--paper);border:max(3px,.5cqh) solid var(--ink);box-shadow:max(5px,.9cqh) max(5px,.9cqh) 0 var(--team);transform:skewX(-9deg);overflow:hidden}
+.bs-duel-strip.bs-high{left:4cqw;top:11cqh}
+.bs-duel-strip.bs-low{right:4cqw;bottom:13cqh}
+/* (A phone: the lower strip between the stick and the buttons, clear of both - placed by `left`: the slam's own
+   animation owns `translate`.) */
+#interface[data-input="touch"] .bs-duel-strip{--w:min(44cqw,calc(27cqh * 10 / 3));width:var(--w)}
+#interface[data-input="touch"] .bs-duel-strip.bs-high{left:15cqw;top:12cqh}
+#interface[data-input="touch"] .bs-duel-strip.bs-low{right:auto;left:calc(50% - var(--w) * .62);bottom:7cqh}
+.bs-duel-eyes{position:absolute;inset:0 -3%;background-size:150% auto,72% auto;background-repeat:no-repeat;transform:skewX(9deg);filter:contrast(1.2)}
+.bs-duel-tone{position:absolute;inset:0;background:linear-gradient(90deg,var(--tint) 0 4%,#0000 22% 78%,var(--tint) 96%);mix-blend-mode:multiply;opacity:.55}
+.bs-duel-tag{position:absolute;bottom:0;display:flex;align-items:baseline;gap:.5em;padding:.22em .7em .18em;background:var(--ink);color:var(--paper);font:800 clamp(9px,1.6cqh,15px)/1 'Barlow Condensed',sans-serif;letter-spacing:.14em}
+.bs-high .bs-duel-tag{right:0}
+.bs-low .bs-duel-tag{left:0}
+.bs-duel-tag b{font:italic 900 clamp(12px,2.6cqh,24px)/1 Impact,'Barlow Condensed',sans-serif;letter-spacing:.02em}
+.bs-duel-tag small{opacity:.7}
+.bs-duel-tag em{font-style:normal;color:#f2c14e}
+.bs-duel-tag em:empty{display:none}
+.bs-duel-core{position:absolute;left:50%;top:50%;width:min(15cqh,15cqw);aspect-ratio:1;translate:-50% -50%}
+.bs-duel-ball{position:absolute;inset:18%;border-radius:50%;background:radial-gradient(circle at 42% 38%,#fff 0 34%,#fff4c8 52%,#ffb347 74%,#ff6a2a 100%);box-shadow:0 0 2.2cqh 1cqh rgb(255 214 140/.75),0 0 0 max(2px,.35cqh) var(--ink)}
+.bs-duel-ring{position:absolute;inset:18%;border-radius:50%;border:max(3px,.55cqh) solid #fff;box-shadow:0 0 0 max(2px,.3cqh) var(--ink),inset 0 0 0 max(2px,.3cqh) var(--ink);scale:3.2}
+.bs-duel-ring.bs-at{border-color:#f2c14e}
+.bs-duel-word,.bs-duel-prompt,.bs-duel-stamp{position:absolute;left:50%;translate:-50% 0;white-space:nowrap;text-align:center}
+.bs-duel-word{bottom:100%;margin-bottom:1.4cqh;font:italic 900 clamp(14px,3.4cqh,34px)/1 Impact,'Barlow Condensed',sans-serif;color:#fff;-webkit-text-stroke:.12em var(--ink);paint-order:stroke fill;letter-spacing:.03em}
+.bs-duel-prompt{top:100%;margin-top:1.4cqh;padding:.35em .8em .3em;background:var(--ink);color:#f2c14e;font:800 clamp(10px,2cqh,18px)/1 'Barlow Condensed',sans-serif;letter-spacing:.16em}
+.bs-duel-prompt:empty{display:none}
+.bs-duel-stamp{top:50%;translate:-50% -50%;font:italic 900 clamp(22px,6.4cqh,64px)/1 Impact,'Barlow Condensed',sans-serif;color:#fff;-webkit-text-stroke:.1em var(--ink);paint-order:stroke fill;text-shadow:.05em .06em 0 var(--red)}
+.bs-duel-stamp:empty{display:none}
+.bs-duel.bs-done :is(.bs-duel-ring,.bs-duel-prompt){opacity:0}
+.bs-duel.bs-done .bs-duel-stamp{animation:bs-stamp .22s cubic-bezier(.2,.9,.3,1.25) both}
+.bs-duel-strip.bs-lost{filter:grayscale(1) brightness(.75);transition:filter .15s}
+.bs-duel-strip.bs-won{box-shadow:max(5px,.9cqh) max(5px,.9cqh) 0 var(--team),0 0 0 max(3px,.5cqh) #f2c14e}
+.bs-duel.bs-on .bs-high{animation:bs-slam-left .16s cubic-bezier(.2,.85,.3,1.15) both}
+.bs-duel.bs-on .bs-low{animation:bs-slam-right .16s cubic-bezier(.2,.85,.3,1.15) both}
+.bs-duel.bs-on .bs-duel-core{animation:bs-fade-in .1s .05s both}
+.bs-duel.bs-soft .bs-duel-ball{box-shadow:0 0 0 max(2px,.35cqh) var(--ink)}
 
 @keyframes bs-fade-in{from{opacity:0}}
 @keyframes bs-fade-out{to{opacity:0}}
@@ -136,13 +203,13 @@
 @media(max-height:500px){
   .bs-band{padding:1.2vh 2vw}.bs-band h3{font-size:clamp(16px,2vw,28px)}
   .bs-panels{top:30vh;width:min(36vw,360px)}
-  .bs-cut-panel{top:10vh;height:52vh}
 }
 @media(prefers-reduced-motion:reduce){
   .ball-show *,.ball-show *:before{animation:none!important}
-  .bs-title.bs-on,.bs-splash.bs-on,.bs-cut.bs-on,.bs-podium.bs-on{animation:bs-fade-in .25s both}
+  .bs-title.bs-on,.bs-splash.bs-on,.bs-podium.bs-on{animation:bs-fade-in .25s both}
   .bs-splash.bs-out{animation:bs-fade-out .25s forwards}
-  .bs-cut.bs-on{animation:bs-fade-in .15s both,bs-fade-out .25s .9s forwards}
+  .bs-cut.bs-on{animation:bs-fade-in .12s both,bs-fade-out .2s .68s forwards}
+  .bs-duel.bs-on{animation:bs-fade-in .1s both}
   .bs-flash{display:none}
 }
 

@@ -1,5 +1,5 @@
 import type {FighterId} from '../types';
-import type {BallModeId, ShotKind} from './model';
+import type {BallEvent, BallModeId, BallView, ShotKind} from './model';
 
 /** Every fighter's ultimate on the ball is their own named SUPER SHOT. This is the one table of the names.
  *
@@ -59,7 +59,50 @@ export const LINK = {
   finishes: new Set<ShotKind>(['power', 'volley', 'spike', 'curve', 'sinker', 'blast', 'eruption', 'super', 'drive']),
 };
 
-/** A TECHNIQUE DUEL: a PERFECT guard meeting a SUPER SHOT. The ball hangs `hold` seconds between them (the clash's beat),
- *  then the keeper wins `keeper` of the time (more awakened, less against an awakened striker) and the shot dies, or it
- *  breaks through and the keeper goes down (the winner's points: BallMatch MVP.duel, half to a striker breaking through). */
-export const DUEL = {hold: .7, keeper: .55, awakened: .15} as const;
+/** A TECHNIQUE DUEL: a PERFECT guard meeting a SUPER SHOT. The ball hangs `hold` seconds between them (the clash's beat)
+ *  and ends with the shot dying on the guard or breaking through, the keeper going down (the winner's points: BallMatch
+ *  MVP.duel, half to a striker breaking through).
+ *
+ *  The duel is played. It was a roll (the keeper won 55% of the time, 15 points more awakened, 15 less against an
+ *  awakened striker): nothing either player did in the beat counted, a big moment made small. Now the beat has a mark, `mark` seconds into it, and each of the two presses
+ *  once (any strike or a fresh guard - on a phone the shot's button, which reads DUEL for the beat): the nearer to the
+ *  mark wins (`duelWinner`). A press more than `late` seconds after the mark is no press: the beat has moved on. Nobody pressing loses to somebody who did, and two misses fall back to the striker - the
+ *  shot was on its way. The keeper's guard was perfect to get here, so their miss counts `keeper` of itself (a fifth
+ *  less); awakened, `awakened` of that, and against an awakened striker, the striker's is. Online each press is judged
+ *  as its page drew the beat: at the room time its input says the page drew (its view, as SEEN reads it), at most `seen`
+ *  seconds back - further than SEEN.most's 0.3 s, which a page at a 120 ms round trip passes (measured: 0.395 s from
+ *  the frame a press was made on to the room playing it, through the snapshot delay and the room's input queue). A
+ *  view claimed further back gains nothing a press timed on the page could not: nobody's press is seen before the end.
+ *  The room decides at the beat's end, which is where it decided before: `hold` is unchanged, so a duel adds no time
+ *  to a match. So a press must be heard by then: on the mark from a page `seen` behind (.25 + .45 = .7), and up to
+ *  `late` past it from one up to 0.31 s behind. (Played online at 120 ms with the mark at 0.35 s, a press 80 ms late
+ *  reached the room after the end.)
+ *
+ *  Tuned against the old roll: two bots of one level press the mark with BallBrain DUEL_BOT's spread, and with
+ *  `keeper` .8 the striker wins 43-48% at each level (the roll gave 45%; EASY's at the top, its late presses missing
+ *  more); a person who presses within 40 ms of the mark beats NORMAL's keeper about three times in four and its
+ *  striker five times in six (Monte Carlo of the rule, 100,000 duels each). */
+export const DUEL = {hold: .7, mark: .25, late: .14, keeper: .8, awakened: .7, seen: .45} as const;
+/** The two presses of a duel: seconds from the mark (late is positive), or undefined for no press. */
+export interface DuelPresses {keeper?: number; striker?: number}
+/** Who wins a duel from its presses (DUEL): the nearer to the mark, the keeper's distance counted at DUEL.keeper of itself
+ *  (DUEL.awakened of that again when the keeper is awakened; divided by it when the striker is). One press beats none;
+ *  no press at all, the striker. */
+export function duelWinner(p: DuelPresses, keeperAwake = false, strikerAwake = false): 'keeper' | 'striker' {
+  if (p.keeper === undefined) return 'striker';
+  if (p.striker === undefined) return 'keeper';
+  const k = DUEL.keeper * (keeperAwake ? DUEL.awakened : 1) / (strikerAwake ? DUEL.awakened : 1);
+  return Math.abs(p.keeper) * k < Math.abs(p.striker) ? 'keeper' : 'striker';
+}
+/** The TECHNIQUE DUEL on now, as a page sees it: its 'duel' event while the ball still hangs in that
+ *  beat (BallState.clash is the beat's end) and no end has come since - the keeper, the striker and when it began. A
+ *  page draws the mark at `at + DUEL.mark` on its own drawn clock, which is what the room judges a press against. */
+export function duelOn(view: Pick<BallView, 'events' | 'ball'> | null | undefined): BallEvent | undefined {
+  if (!view?.events || !view.ball) return undefined;
+  for (let i = view.events.length - 1; i >= 0; i--) {
+    const e = view.events[i];
+    if (e.kind === 'duel-won') return undefined;
+    if (e.kind === 'duel') return Math.abs(view.ball.clash - (e.at + DUEL.hold)) < 1e-3 ? e : undefined;
+  }
+  return undefined;
+}

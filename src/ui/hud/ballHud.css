@@ -83,6 +83,7 @@
 @keyframes bh-fever{to{background-position:200% 0}}
 /* The ball's heat, under the clock: four pips, and OVERDRIVE by name. */
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat{display:flex;align-items:center;gap:calc(4 * var(--bh-u))}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat[data-tier="none"]{visibility:hidden}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat small{margin-right:calc(4 * var(--bh-u));font:800 calc(24 * var(--bh-u))/.9 'Barlow Condensed',sans-serif;letter-spacing:.1em;color:#e9e3d6}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat i{width:calc(19 * var(--bh-u));height:calc(11 * var(--bh-u));background:#3a3832;transform:skewX(-18deg);transition:background .15s}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat:is([data-tier="1"],[data-tier="2"],[data-tier="3"],[data-tier="4"]) i:nth-of-type(1){background:#ffd36a}
@@ -286,6 +287,8 @@
   box-shadow:inset calc(5 * var(--bh-u)) 0 0 var(--bh-gold,#ffcf5a)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance.on{display:flex}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b::before{content:'BALL'}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance.sport:not([data-stance="fight"])>b::before{content:'SPORT'}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>small.bh-legend{font-size:calc(18 * var(--bh-u));color:#cfc8ba;letter-spacing:.08em}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b{display:flex;align-items:center;gap:calc(7 * var(--bh-u));color:var(--bh-gold,#ffcf5a)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b::after{content:'';order:-1;width:.62em;height:.62em;border-radius:50%;background:var(--bh-gold,#ffcf5a);box-shadow:0 0 6px var(--bh-gold,#ffcf5a)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>span:empty,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>small:empty{display:none}

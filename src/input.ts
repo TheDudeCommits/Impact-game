@@ -49,6 +49,8 @@ export class Input {
   /** The heavy held down on the pad (the keyboard's is read off its keys, and the touch set's SHOOT joins them: touchKey):
    *  the ball rooms' SHOOT is charged by holding it (PlayerInput.heavyHeld). */
   private padHeavyHeld=false;
+  /** Goal Rush's SPORT mode: the pad's light and dash buttons down (sportHeld). */
+  private padLightHeld=false;private padDashHeld=false;
   /** The on-screen stick, read where the pad's left stick is, and the held buttons (TouchControls.update). */
   private touchForward=0;
   private touchRight=0;
@@ -68,6 +70,9 @@ export class Input {
   onMenu=(_source:'keyboard'|'controller',_via:MenuVia='menu')=>{};
   onTarget=()=>{};
   onInteract=(_explicit=false)=>false;
+  /** Goal Rush's SPORT mode (`?football`): V (unless bound) or the pad's left stick click switches BALL LOCK and FREE
+   *  LOOK; whether the page took it. */
+  onView=()=>false;
   onModeChange=(_mode:InputMode)=>{};
   onUiAction=(_action:UiAction)=>{};
   constructor(readonly canvas:HTMLCanvasElement) {
@@ -82,6 +87,7 @@ export class Input {
       if (e.isTrusted&&this.mode==='touch') this.useMode('keyboard');
       if (!this.enabled) return;
       if(e.code==='KeyB'&&!e.repeat&&!ACTIONS.some(action=>boundTo(action,e.code))&&this.onInteract(true)){e.preventDefault();this.clear();return;}
+      if(e.code==='KeyV'&&!e.repeat&&!ACTIONS.some(action=>boundTo(action,e.code))&&this.onView()){e.preventDefault();return;}
       if (ACTIONS.some(action=>boundTo(action,e.code))||e.code.startsWith('Arrow')) e.preventDefault();
       this.keys.add(e.code);this.useMode('keyboard');
       if(e.repeat)return;
@@ -189,7 +195,7 @@ export class Input {
     if(!this.enabled)return;
     if((frame.interact||frame.jump)&&this.onInteract(!!frame.interact)){this.clear();return;}
     if(frame.attack)this.attack=frame.attack;
-    this.padJumpHeld=frame.jumpHeld;this.padHeavyHeld=!!frame.heavyHeld;this.jump ||= frame.jump;this.dash ||= frame.dash;this.awaken ||= frame.awaken;
+    this.padJumpHeld=frame.jumpHeld;this.padHeavyHeld=!!frame.heavyHeld;this.padLightHeld=!!frame.lightHeld;this.padDashHeld=!!frame.dashHeld;if(frame.view)this.onView();this.jump ||= frame.jump;this.dash ||= frame.dash;this.awaken ||= frame.awaken;
     if(frame.target)this.onTarget();
     // The area slot (gamepad.ts): R2 down aims, up casts; the AWAKEN chord or L1 puts the aim away.
     if(frame.area==='press')this.aim.begin('pad');
@@ -204,6 +210,12 @@ export class Input {
   }
   /** Rumbles the pad, when it is the pad being played and it can; on the touch controls, the phone's own buzz. */
   feel(pulse:Pulse){if(this.mode==='controller'&&this.focused&&this.actuator?.playEffect)this.rumble.add(pulse);else if(this.mode==='touch'&&this.focused){this.haptics.scale=this.rumble.scale;this.haptics.add(pulse);}}
+  /** Goal Rush's SPORT mode (game/ball/football.ts): whether PASS's and SPRINT's keys are down now - a held PASS is lofted,
+   *  SPRINT runs while held. The touch set says neither (its PASS is a tap; its BOOST holds as it always has). */
+  sportHeld():{lightHeld?:boolean;dashHeld?:boolean}{
+    if(this.mode==='touch')return {};
+    return {lightHeld:heldBinding('light',this.keys)||this.padLightHeld,dashHeld:heldBinding('dash',this.keys)||this.padDashHeld};
+  }
   command(targetId:string|null,viewYaw=this.yaw):PlayerInput {
     const arrows=!this.arrowsLook;
     const held=(action:BindingAction)=>heldBinding(action,this.keys);

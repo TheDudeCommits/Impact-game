@@ -24,6 +24,10 @@ export interface PadFrame {
   area?: 'press' | 'release' | 'cancel';
   /** The guard button went down this frame (it cancels an aim). */
   guardPressed?: boolean;
+  /** Goal Rush's SPORT mode (game/ball/football.ts, `?football`): the light's and the dash's buttons are down (a held PASS
+   *  is lofted, SPRINT runs while held), and the left stick's click went down (BALL LOCK / FREE LOOK) - unless a binding
+   *  has taken that button. */
+  lightHeld?: boolean; dashHeld?: boolean; view?: boolean;
 }
 const neutral = (): PadFrame => ({ attack:undefined, forward:0, right:0, lookX:0, lookY:0, guard:false, jump:false, jumpHeld:false, dash:false, awaken:false, target:false, menu:false, ui:[], active:false, label:'', family:'generic' });
 export const AWAKEN_CHORD = 100;
@@ -97,6 +101,8 @@ export class GamepadControls {
       frame.forward=-vertical;frame.right=right;frame.lookX=lookX;frame.lookY=lookY;frame.guard=!!buttons[b.guard]&&!baseline;
       frame.jump=edge(b.jump);frame.jumpHeld=!!buttons[b.jump]&&!baseline;frame.heavyHeld=!!buttons[b.heavy]&&!baseline;frame.dash=edge(b.dash);frame.target=edge(b.target);
       frame.guardPressed=edge(b.guard);
+      frame.lightHeld=!!buttons[b.light]&&!baseline;frame.dashHeld=!!buttons[b.dash]&&!baseline;
+      if(edge(10)&&!Object.values(b).includes(10))frame.view=true;
       if(edge(b.light))frame.attack='light';else if(edge(b.heavy))frame.attack='heavy';else if(edge(b.special))frame.attack='special';
       this.chord(frame,edge(b.ultimate),!!buttons[b.ultimate],edge(b.area),!!buttons[b.area],!!this.previous[b.area]&&!buttons[b.area],now);
     }else{

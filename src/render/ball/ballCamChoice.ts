@@ -8,22 +8,28 @@
  *   on a longer lens (SpikeCam.ts `SIDE`).
  * - GOAL RUSH CAMERA: CLASSIC, today's chase rig, or CLOSE, the same rig on a narrower lens stood a little higher
  *   (BallChase.ts `CLOSE`).
- * On this machine `?spikecam=side|classic`, `?chasecam=close|classic` and `?trim=0|1` (the sides' trim on the bodies,
+ * - SUPER SHOT CAMERA: CLASSIC, the match's own lens through a SUPER SHOT as ever, or
+ *   RIDE, the lens riding behind the ball for its flight (superRide.ts `RIDE`). Off by default, as every lens change is.
+ * On this machine `?spikecam=side|classic`, `?chasecam=close|classic`, `?supercam=ride|classic` and `?trim=0|1` (the sides' trim on the bodies,
  * TeamTrim.ts) override the settings for a visit, so a before and an after are filmed from one build.
  */
 export type SpikeCamStyle = 'classic' | 'side';
 export type ChaseCamStyle = 'classic' | 'close';
+export type SuperCamStyle = 'classic' | 'ride';
 /** What each menu offers, the default first; the third word is the note in the open list. */
 export const SPIKE_CAM_OPTIONS: readonly (readonly [SpikeCamStyle, string, string?])[] = [['classic', 'Classic', 'Default'], ['side', 'Court-side', 'Bigger fighters']];
 export const CHASE_CAM_OPTIONS: readonly (readonly [ChaseCamStyle, string, string?])[] = [['classic', 'Classic', 'Default'], ['close', 'Close', 'Bigger fighters']];
 export const spikeCamOf = (value: unknown): SpikeCamStyle => value === 'side' ? 'side' : 'classic';
 export const chaseCamOf = (value: unknown): ChaseCamStyle => value === 'close' ? 'close' : 'classic';
+export const SUPER_CAM_OPTIONS: readonly (readonly [SuperCamStyle, string, string?])[] = [['classic', 'Classic', 'Default'], ['ride', 'Ride the ball', 'Follows the shot']];
+export const superCamOf = (value: unknown): SuperCamStyle => value === 'ride' ? 'ride' : 'classic';
 
 /** What a visit's address asks for (this machine only; elsewhere nothing). */
-export function ballCamAsk(search: string, host: string): {spike?: SpikeCamStyle; chase?: ChaseCamStyle; trim?: boolean} {
+export function ballCamAsk(search: string, host: string): {spike?: SpikeCamStyle; chase?: ChaseCamStyle; trim?: boolean; ride?: SuperCamStyle} {
   if (!['localhost', '127.0.0.1', '[::1]'].includes(host)) return {};
-  const q = new URLSearchParams(search), spike = q.get('spikecam'), chase = q.get('chasecam'), trim = q.get('trim');
+  const q = new URLSearchParams(search), spike = q.get('spikecam'), chase = q.get('chasecam'), trim = q.get('trim'), ride = q.get('supercam');
   return {
+    ...(ride === 'ride' || ride === 'classic' ? {ride} : {}),
     spike: spike === 'side' || spike === 'classic' ? spike : undefined,
     chase: chase === 'close' || chase === 'classic' ? chase : undefined,
     trim: trim === '0' || trim === 'off' ? false : trim === '1' || trim === 'on' ? true : undefined,
@@ -35,13 +41,16 @@ const asked = typeof location === 'object' ? ballCamAsk(location.search, locatio
 export const spikeCamChoice = (settings: {spikeCam?: unknown}): SpikeCamStyle => asked.spike ?? spikeCamOf(settings.spikeCam);
 /** The lens a Goal Rush match's BALL stance is filmed with: the address's on this machine, else the player's setting. */
 export const chaseCamChoice = (settings: {chaseCam?: unknown}): ChaseCamStyle => asked.chase ?? chaseCamOf(settings.chaseCam);
+/** The lens through a SUPER SHOT's flight: the address's on this machine, else the player's setting (classic unless
+ *  RIDE is picked). */
+export const superCamChoice = (settings: {superCam?: unknown}): SuperCamStyle => asked.ride ?? superCamOf(settings.superCam);
 /** Whether the sides' trim is drawn on the bodies in a ball match: always, but for `?trim=0` on this machine (and a
  *  check's own switch there, `askTeamTrim`, for one moment drawn both ways). */
 export const teamTrimOn = (): boolean => asked.trim ?? true;
 export const askTeamTrim = (on: boolean | undefined) => { asked.trim = on; };
 /** A check's own switch for the cameras on this machine (main.ts `__ballCams.ask`), as the address's: one held moment
  *  filmed from both. Undefined hands that camera back to the setting. */
-export const askBallCams = (o: {spike?: SpikeCamStyle; chase?: ChaseCamStyle}) => { asked.spike = o.spike; asked.chase = o.chase; };
+export const askBallCams = (o: {spike?: SpikeCamStyle; chase?: ChaseCamStyle; ride?: SuperCamStyle}) => { asked.spike = o.spike; asked.chase = o.chase; asked.ride = o.ride; };
 
 /** How see-through Sky Spike's net is drawn (0: as it is; 1: thinned for the COURT-SIDE stand, which looks at the far
  *  court through it). One for the page, as the arena's other shared uniforms are (hype.ts): main.ts sets it from the

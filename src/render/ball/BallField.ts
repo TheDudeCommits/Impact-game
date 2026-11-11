@@ -97,6 +97,19 @@ const SHAPE={squash:.3,squashFor:.14,stretch:.18,from:12,over:90,spinFrom:2.5,sp
  *  the one sign of whose ball it is, a ring in the carrier's side's colour on the floor round it - its card's size (by the
  *  ball's radius; the band lies at 0.8 of it, half a metre clear of the ball's foot, or the ball itself hides it from the
  *  match's lens past ten metres) and strength. */
+/** SPORT mode (game/ball/football.ts): the ball's ring on the floor at least this wide (m), lit whatever its height. */
+const FOOT_RING=.5;
+/** SPORT mode: the drawn ball (only: the rules' ball is the room's) is never under FOOT_FLOOR px tall on the screen - 12 at
+ *  720 px of height, 9 at 390, in between by the height - so a 0.6 m ball 35 m off still reads (it was 8.7 px at 1280 x
+ *  720 and 4.7 at 844 x 390). The radius to draw `r` at, from `camera` (a perspective lens) to `at`. */
+const FOOT_FLOOR={high:720,highPx:12,low:390,lowPx:9} as const;
+function footDrawn(r:number,camera:THREE.Camera,at:{x:number;y:number;z:number}){
+  const lens=camera as THREE.PerspectiveCamera,h=typeof innerHeight==='number'&&innerHeight>0?innerHeight:720;
+  if(!lens.isPerspectiveCamera)return r;
+  const F=FOOT_FLOOR,px=F.lowPx+(F.highPx-F.lowPx)*THREE.MathUtils.clamp((h-F.low)/(F.high-F.low),0,1);
+  const d=Math.hypot(at.x-lens.position.x,at.y-lens.position.y,at.z-lens.position.z),least=px*d*Math.tan(lens.fov*Math.PI/360)/h;
+  return Math.max(r,least);
+}
 const CARRY_DRAW={in:.12,inMost:.2,inPace:5,out:.16,settle:.025,near:.35,follow:18,run:1.2,ring:2,alpha:.9} as const;
 /** A TRAP's mark (BallMatch TRAP): how long its ring closing on the ball lasts (s), where it starts and ends
  *  (by the ball's radius: it ends on the carried ball's own ring, CARRY_DRAW.ring's band), its strength, and how hard the
@@ -1208,6 +1221,8 @@ export class BallField {
     // (Its place: the body's this frame - a drawn one is drawn after the ball, main.ts, so here a frame old: carried on by
     // its own run - and held inside the boards as the room's flight holds the ball, a goal's mouth open to its net.)
     const old=this.bodyOf(id)?dt:0,size=this.players.find(p=>p.id===id)?.size??1,spot=carrySpot({x:body.x+c.vx*old,z:body.z+c.vz*old,size},c.heading,r);
+    // (SPORT mode, game/ball/football.ts: a sprint's knock-on, out ahead of the spot along the run.)
+    {const ah=this.base.ahead??0;if(ah>0){spot.x+=Math.sin(c.heading)*ah;spot.z+=Math.cos(c.heading)*ah;}}
     {const R=GOAL_RULES,ix=R.halfX-r,iz=Math.abs(spot.x)<R.goalHalfWidth-r?R.halfZ+R.goalDepth-r:R.halfZ-r;spot.x=Math.max(-ix,Math.min(ix,spot.x));spot.z=Math.max(-iz,Math.min(iz,spot.z));}
     // (What lay between the ball as drawn and the feet as the carry began, let out over CARRY_DRAW.in: the feet carry it on
     // from there whatever the room's flight does meanwhile.)
@@ -1289,7 +1304,7 @@ export class BallField {
     // RUMBLE's GIANT BALL swells it (and lets it go) over a few frames.
     this.grown+=((this.base.size||1)-this.grown)*Math.min(1,dt*6);
     const b=this.lookBall(),r=ballRadius(view.mode)*this.grown,frozen=this.frozen,speed=this.velocity.length(),fx=this.fx;
-    this.ball.scale.setScalar(r);
+    this.ball.scale.setScalar(view.football?footDrawn(r,camera,b):r);
     if(!frozen)this.time.value+=dt;
     this.heat+=(b.heat-this.heat)*Math.min(1,dt*8);this.flash=Math.max(0,this.flash-dt*6);
     const tier=heatTier(this.heat+.05),hot=!frozen&&!b.held;
@@ -1445,7 +1460,9 @@ export class BallField {
     fx.begin();
     // The shadow straight under the ball, softer and wider the higher it is; a fine ring to find it by when high.
     const height=Math.max(0,y-r);
-    fx.put(K.shadow,x,.035,z,r*(1.15+height*.06),INK,.55/(1+height*.22),Math.min(1,Math.max(0,(height-1.5)/4))*.6);
+    // (SPORT mode: the small ball's ring is always lit and never smaller than a stride's half metre, to find it by.)
+    if(view.football)fx.put(K.shadow,x,.035,z,Math.max(FOOT_RING,r*(1.15+height*.06)),INK,.55/(1+height*.22),Math.max(.6,Math.min(1,Math.max(0,(height-1.5)/4))*.6));
+    else fx.put(K.shadow,x,.035,z,r*(1.15+height*.06),INK,.55/(1+height*.22),Math.min(1,Math.max(0,(height-1.5)/4))*.6);
     // A carried ball's one sign of whose it is - a ring in the carrier's side's colour on the floor round it, as
     // each fighter's own lies under them - so a team-mate knows to run and the other side whom to tackle.
     const holder=this.carried;
@@ -1465,8 +1482,16 @@ export class BallField {
     // Where it comes down, closing in as it falls: Sky Spike's in the colour of the court it lands in (urgent on your
     // own side), a cross when it lands out; Goal Rush's a quiet ring.
     const land=this.land,left=land.t-Math.max(0,seconds-this.landAt);
-    if(land.show&&!b.held&&!frozen&&left>0){
-      let mine=false;for(let i=0;i<view.seats.length;i++)if(view.seats[i].id===selfId){mine=!!land.team&&view.seats[i].team===land.team;break;}
+    // (VOLLEYBALL - game/ball/volley.ts: your ball to receive or set is the same sight in your colour on the
+    // touch's own spot, closing on its best moment - the beat to press PLAY on; the others' as before, never pulsing.)
+    const vol=view.volley,yours=!!vol&&vol.owner===selfId&&(vol.touch===1||vol.touch===2),until=vol?vol.at-(this.baseServer+(seconds-this.baseAt)):0;
+    if(vol&&yours&&!b.held&&!frozen&&until>-.15){
+      let team:BallTeam|undefined;for(let i=0;i<view.seats.length;i++)if(view.seats[i].id===selfId){team=view.seats[i].team;break;}
+      const pulse=.75+.25*Math.sin(seconds*22);
+      fx.put(K.landing,vol.x,.045,vol.z,(r*1.6+Math.min(Math.max(0,until),1.6)*2.2)*1.12,team?TEAM[team]:WHITE,.95*pulse,0,0,0,seconds*1.4,.5);
+    }
+    else if(land.show&&!b.held&&!frozen&&left>0){
+      let mine=false;for(let i=0;i<view.seats.length;i++)if(view.seats[i].id===selfId){mine=!vol&&!!land.team&&view.seats[i].team===land.team;break;}
       const spike=view.mode==='sky-spike',colour=spike?land.team?TEAM[land.team]:WHITE:PALE,pulse=mine?.75+.25*Math.sin(seconds*22):1;
       fx.put(K.landing,land.x,.045,land.z,(r*1.6+Math.min(left,1.6)*2.2)*(mine?1.12:1),colour,(spike?.95:.5)*pulse,0,spike&&!land.team?1:0,0,seconds*1.4,.5);
     }

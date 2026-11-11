@@ -15,17 +15,22 @@ import {ballOf,ballAssist,BALL_ID} from './game/ball/model';
 import {BallTargets} from './game/ball/BallTargets';
 import {BallField} from './render/ball/BallField';
 import {ownShot} from './render/ball/ownShot';
+import {quietCounts} from './render/ball/BallMoments';
+import {applyKicks,clearKicks} from './render/ball/kickLayer';
+import {GOAL_LOOK_NAME,PassMark,footballWanted,goalLookChoice,switchGoalLook} from './render/ball/footballPage';
 import {BallReplayer} from './render/ball/BallReplay';
 import {BallCam,ballShadowFocus,teamOf} from './render/ball/BallCam';
 import {BallMoments} from './render/ball/BallMoments';
 import {SpikeCam} from './render/ball/SpikeCam';
 import {SpikeCues,type SpikeCueTick} from './render/ball/SpikeCues';
 import {BallChase,type ChaseFrame} from './render/ball/BallChase';
-import {askBallCams,askTeamTrim,chaseCamChoice,netSheer,spikeCamChoice} from './render/ball/ballCamChoice';
+import {askBallCams,askTeamTrim,chaseCamChoice,netSheer,spikeCamChoice,superCamChoice} from './render/ball/ballCamChoice';
+import {SuperRide} from './render/ball/superRide';
 import {TeamTrimmer} from './render/ball/TeamTrim';
 import {StanceMarks} from './render/ball/StanceMarks';
 import {StanceControl,hasStances} from './game/ball/stance';
 import {ballMovesReady,ballMovesWanted,installBallMoves,noteBallStick} from './render/ball/ballMoves';
+import {volleyballWanted} from './game/ball/volley';
 import {BallCeremony} from './render/ball/BallCeremony';
 import {BallShow} from './ui/ball/BallShow';
 import {QuickChat} from './ui/ball/QuickChat';
@@ -431,6 +436,7 @@ function ballAim<T extends {targetId?:string|null;lock?:boolean}>(command:T|unde
   const v=ballOf(network.snapshot);if(!command||!v)return command;
   const stance=hasStances(v)?ballStances[seat]:undefined;command.targetId=stance?.targetId()??BALL_ID;command.lock=!!stance?.lock;return command;}
 const ballLenses=[{impact:(w:number,d?:THREE.Vector3,t:0|1|2=0)=>{camera.impact(w,d,t);ballChases[0].impact(w,d,t);}},{impact:(w:number,d?:THREE.Vector3,t:0|1|2=0)=>{camera2?.impact(w,d,t);ballChases[1].impact(w,d,t);}}] as const;
+const superRide=new SuperRide(); // The lens riding a SUPER SHOT, an option (render/ball/superRide.ts)
 const ballMoments=new BallMoments(view,()=>couch.split&&camera2?[[ballLenses[0],fighters.get(couch.ids[0])?.group.position],[ballLenses[1],fighters.get(couch.ids[1])?.group.position]]:[[ballLenses[0],shownSelf]],()=>ballField.ballPosition());
 ballField.bodyOf=id=>fighters.get(id)?.group.position;
 // (The page's own swing as its prediction has it - offline, as the match in this browser has it,
@@ -477,6 +483,24 @@ const autoLock=new AutoLock();
 let lockExchangeAt=-Infinity;const LOCK_EXCHANGE_MS=1100;
 /** Lock combat: whether this page has said what it is in a fight yet (once a session). */
 let lockTold=false;
+// Goal Rush's SPORT mode (game/ball/football.ts; `?football` in the address, any host): this device's Goal Rush matches
+// play possession, PASS, SHOOT and SPRINT in the place of the BALL stance's swings. The camera's two states (BALL LOCK,
+// FREE LOOK: render/ball/footballPage.ts) are V's or the pad's left stick click's, kept in the settings; one quiet mark
+// shows who a PASS would find.
+const footballOn=footballWanted(location),passMark=footballOn?new PassMark(root.querySelector<HTMLElement>('#interface')??root):null,footStick={x:0,z:0};
+const sporting=()=>!!ballOf(network.snapshot)?.football;
+/** `?ballpilot` in SPORT's FREE LOOK: the view eased toward the drawn body's run (at most 2.4 rad/s, once it runs). */
+const pilotRun={x:NaN,z:NaN,vx:0,vz:0};
+function pilotLook(yaw:number,at:THREE.Vector3,dt:number){
+  if(Number.isFinite(pilotRun.x)&&dt>0){const k=Math.min(1,dt*6);pilotRun.vx+=((at.x-pilotRun.x)/dt-pilotRun.vx)*k;pilotRun.vz+=((at.z-pilotRun.z)/dt-pilotRun.vz)*k;}
+  pilotRun.x=at.x;pilotRun.z=at.z;
+  if(Math.hypot(pilotRun.vx,pilotRun.vz)<3)return yaw;
+  const gap=Math.atan2(Math.sin(Math.atan2(pilotRun.vx,pilotRun.vz)-yaw),Math.cos(Math.atan2(pilotRun.vx,pilotRun.vz)-yaw)),most=2.4*dt;
+  return yaw+Math.max(-most,Math.min(most,gap*Math.min(1,dt*3)));
+}
+hudView.goalLook=()=>GOAL_LOOK_NAME[goalLookChoice(settings)];
+if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))(window as unknown as {__ballQuiet:unknown}).__ballQuiet=quietCounts;
+input.onView=()=>{if(!sporting()||couch.on)return false;switchGoalLook(settings);try{localStorage.setItem('rift-settings',JSON.stringify(settings));}catch{/* The choice still holds this session. */}hud.notify(GOAL_LOOK_NAME[goalLookChoice(settings)],.7);return true;};
 hudView.camera=view.camera;hudView.locked=()=>targeting.locked;hudView.ballCam=()=>ballCams[0].on;hudView.ballLock=()=>hasStances(ballOf(network.snapshot))?ballStances[0].lock:null; // Round 5 (UX, WP2): the mode HUDs' edge markers and target plate (src/ui/hud/hudView.ts).
 // Compact Arcade enemies join the same camera and target selection as every other mode.
 const survivalTargets=new SurvivalTargets(),riftTargets=new RiftTargets(),riftAssets=new RiftAssets(),riftPredictionTargets=new RiftPredictionTargets();
@@ -489,9 +513,9 @@ if(lockCombatOn())void installBorrowedStrikes();
 // Techniques (game/techniques.ts): each style's takes, fitted to the bodies that throw them (engine/client/styleMoves.ts).
 void installStyleMoves();
 // Ball modes, sports moves (render/ball/ballMoves.ts): a pass, a header, a dig, a spike drawn for a ball match's swings -
-// only with `?ballmoves` in the address, so the game as played is untouched. (But SHOOT's quick strike, which is nobody's
-// own clip, is drawn with a take on every page.)
-installBallMoves(()=>{const view=ballOf(network.snapshot);return view?{view,ball:ballField.ballPosition()}:undefined;},ballMovesWanted(location));
+// only with `?ballmoves` (or `?volleyball`) in the address, so the game as played is untouched. (But SHOOT's quick strike,
+// which is nobody's own clip, is drawn with a take on every page.)
+installBallMoves(()=>{const view=ballOf(network.snapshot);return view?{view,ball:ballField.ballPosition()}:undefined;},ballMovesWanted(location)||volleyballWanted(location));
 riftField.glows=riftTargets.glows;
 grunts.threats=survivalTargets.glows;
 const targetPlayers=(snapshot:GameSnapshot)=>{const self=snapshot.players.find(p=>p.id===network.id);return ballOf(snapshot)?ballTargets.update(snapshot,ballField.ballPosition()):riftOf(snapshot)&&self?riftTargets.update(snapshot,self):survival()&&self?survivalTargets.update(snapshot.players,hordeFrames()?.around(snapshot.serverTime)?.b,self):snapshot.players;};
@@ -617,7 +641,7 @@ vsSplash.onBeat=onVsBeat;hud.introSplash.onBeat=onVsBeat;
 // super shots' cut-ins, the podium, FREE PLAY's ball machine. Its splash page is heard as the VS splash is.
 const ballShow=new BallShow(document.querySelector<HTMLElement>('#interface')??root);
 const ballCeremony=new BallCeremony(view.scene,ballShow,{body:id=>fighters.get(id)?.group,inkFlash:seconds=>view.inkFlash(seconds),beat:beat=>{if(beat==='whistle')ballAudio.cue('whistle-serve');else onVsBeat(beat);}});
-ballCeremony.onSkip=()=>network.room?.send('ball-skip');let ballCeremonyShown=false;const ceremonyBodies:Fighter[]=[];
+ballCeremony.onSkip=()=>network.room?.send('ball-skip');ballCeremony.clock=()=>timeline.drawnAt;/* (The duel mark on the drawn clock) */let ballCeremonyShown=false;const ceremonyBodies:Fighter[]=[];
 /** An ultimate's cinema heard (render/FinisherCuts.ts): the player's own hit-confirmed one's camera move as it opens -
  *  the swoop under the glide; its blows and the finisher carry their own. */
 let heardCinema=0;
@@ -829,7 +853,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     clearFighters();resetSwaps();
     pauseLink.reset();roomFrozen=false;fightShown=false;
     network=riftRun?localRift:ballRun?localBall:royaleRun?royale:duelRun?duel:arcadeRun?arcade:practiceRun?practice:objectiveRun?localObjective:online;timeline.delayMs=riftRun||ballRun||royaleRun||duelRun||arcadeRun||practiceRun||objectiveRun?LOCAL_DELAY:ONLINE_DELAY;
-    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();camera.reset();
+    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();camera.reset();
     horde.clear();grunts.clear();gore.clear();survivalFx.reset();techniques.reset();lastEntrance=0;lastRoar=0;bossesWanted='';lastHordeVoice=0;lastBossVoice=0;lastSmash=0;bossShoutAt.clear();stages.rift?.restore();
     if(arcadeRun||coopRun)audio.preload(everyTake());
     if(access?.kind==='objective'&&access.objective==='last-stand'||access?.kind==='party'&&access.travel.mode==='last-stand')objectiveAudio.preload();
@@ -838,7 +862,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     /** The couch's seats for this mode - the ones its sheet showed (CouchStart.seats), else planned now (swapped as the sheet
      *  says) - Player 1 under the mode's own id for the page. */
     const seatCouch=(kind:CouchKind,sheet:ModeId)=>couch.begin(kind,couchStart?.seats??plannedSeats(!!modePrefs(sheet).couchSwap),{ids:[network.id,SECOND],screen:couchStart?.screen});
-    if(ballRun&&access?.kind==='ball'){await localBall.connect(access.mode,fighter,name,couchKind==='field'?couchStart?.partner:undefined,couchStart?.sides==='rivals',!!access.rumble,!!access.practice,{mutator:access.mutator,drill:access.drill,lesson:access.lesson,look:myBallLook(),arena:access.arena,difficulty:access.difficulty});localClock=localBall.snapshot?.serverTime??0;
+    if(ballRun&&access?.kind==='ball'){await localBall.connect(access.mode,fighter,name,couchKind==='field'?couchStart?.partner:undefined,couchStart?.sides==='rivals',!!access.rumble,!!access.practice,{mutator:access.mutator,drill:access.drill,lesson:access.lesson,look:myBallLook(),arena:access.arena,difficulty:access.difficulty,volleyball:volleyballWanted(location),...(footballOn&&access.mode==='goal-rush'?{football:true}:{})});localClock=localBall.snapshot?.serverTime??0;
       if(couchKind==='field'){seatCouch('field',access.mode);localBall.second=()=>ballAim(couch.command(SECOND),1);}
     }else if(riftRun){await localRift.connect(fighter,name,1,couchKind==='field'?couchStart?.partner:undefined);localClock=localRift.snapshot?.serverTime??0;
       if(couchKind==='field'){seatCouch('field','rift-war');localRift.second=()=>couch.command(SECOND);}
@@ -1002,12 +1026,16 @@ function sendCommand(){
   command.yaw=chased?ballChases[0].yaw:camera.aimYaw;
   command.lock=targeting.locked; // Round 3b (TARGET): unlocked, each attack goes to the enemy faced (simulation chooseIntent).
   ballAim(command,0); // Goal Rush's stance (game/ball/stance.ts): the ball, or the opponent locked.
+  // (SPORT mode: whether PASS and SPRINT are held - a held PASS is lofted, SPRINT runs while held - for the match on this
+  // device; the online room never has SPORT mode.)
+  if(sporting()&&!ballStances[0].lock)Object.assign(command,input.sportHeld());
   // Lag compensation: when the others were, as this page is drawing them (ArenaSimulation.rewind).
   if(network===online&&timeline.drawnAt!==null)command.view=timeline.drawnAt;
   // `?autopilot`: the arcade plays itself, for captures and checks.
   if(pilot&&survival()){const auto=pilot.command(snapshot.players,snapshot.serverTime);command={...auto,seq:command.seq};if(auto.targetId)targetId=auto.targetId;}
   const sent=exercise.active?exercise.command(command,snapshot,network.id)
     :input.enabled?command:{...command,moveX:0,moveZ:0,attack:undefined,jump:false,dash:false,guard:false,awaken:false};
+  footStick.x=sent.moveX;footStick.z=sent.moveZ;
   noteBallStick(network.id,sent.moveX,sent.moveZ); // The sport kit: the stick a spike's arm and a BACK SET are chosen by (ballMoves.ts)
   if(!network.send(sent))return;if(network===online)unacked.push(sent.seq);
   // (An online ball room's own touch of the ball, forecast around the prediction's step - BallTargets.)
@@ -1080,7 +1108,7 @@ function ballSounds(snapshot:GameSnapshot){
     else if(e.kind==='clash'){const me=snapshot.players.find(p=>p.id===network.id);if(me&&Math.hypot(me.x-e.x,me.z-e.z)<18)camera.impact(.9);}
   }
 }
-function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
+function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
 // Out of a party's match: home, and back on the party's sheet, where the others are seen coming home too.
 hud.onLeave=()=>{returnToLobby();if(party.joined)partyUI.show();};
 for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onDisconnect=(reason,code)=>{
@@ -1093,7 +1121,7 @@ for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,l
 // begins its clock and its events again from nothing, so the page lets go of the last one's, as for a Duel's next set; the
 // bodies are built again under the short intro's splash page.
 // An online ball room's rematch (its next round, BallRoom.rematch) is let go of the same way (onSnapshot).
-function ballRestart(){clearFighters();timeline.reset();lastEvent=0;localClock=0;camera.reset();introFor=null;victoryFor=null;finale.reset();targetId=null;targeting.reset();ballField.clear();ballUI.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;ballMark='';network.onControlReset();}
+function ballRestart(){clearFighters();timeline.reset();lastEvent=0;localClock=0;camera.reset();introFor=null;victoryFor=null;finale.reset();targetId=null;targeting.reset();ballField.clear();ballUI.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;ballMark='';network.onControlReset();}
 localBall.onRestart=ballRestart;let ballRound='';
 for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onControlReset=()=>{unacked.length=0;input.clear();input.enabled=false;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;inputClock.reset();};
 let objectiveRound=0,objectivePhase='',duelRoundKey='';
@@ -1845,6 +1873,8 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     viewProjection.multiplyMatrices(view.camera.projectionMatrix,view.camera.matrixWorldInverse);viewFrustum.setFromProjectionMatrix(viewProjection);
     const lens2=couch.split?camera2?.camera:undefined;if(lens2){viewProjection.multiplyMatrices(lens2.projectionMatrix,lens2.matrixWorldInverse);secondFrustum.setFromProjectionMatrix(viewProjection);}
     for(const p of snapshot.players){if(p.enemy||!fighters.has(p.id))continue;const fighter=fighters.get(p.id)!,opponent=snapshot.players.find(o=>o.id===(p.id===network.id?targetId:p.target));const shown=ballCeremony.posed(p.id,replayed?replayed.snapshot.players.find(q=>q.id===p.id)??p:p.id===network.id?(prediction.sample(steps.correction,p,renderAlpha)??p):prediction.sampleRemote(steps.correction,p,renderAlpha));fighter.targetDistance=opponent?Math.hypot(opponent.x-shown.x,opponent.z-shown.z):Infinity;fighter.targetPoint=opponent?(fighter.targetPoint??new THREE.Vector3()).set(opponent.x,opponent.y+1.45,opponent.z):undefined;fighter.cameraPoint=view.camera.position;fighter.unseen=p.id!==network.id&&p.id!==targetId&&p.id!==spectating&&!fighter.inView(viewFrustum,view.camera.position)&&!(lens2&&fighter.inView(secondFrustum,lens2.position));fighter.update(dt,shown,true,rawDt);if(p.id===network.id){self=shown;shownSelf=shown;}}
+    // (Goal Rush's SPORT mode: a kick on the run laid over the run, after the bodies are posed - render/ball/kickLayer.ts.)
+    if(ballOf(snapshot)?.football)applyKicks(timeline.drawnAt??snapshot.serverTime);
     // The arcade's horde: its bosses, its grunts, the rifts and orbs, and its HUD.
     if(objectiveOf(snapshot)?.kind==='last-stand'){survivalFx.uploadNextTexture();horde.update(snapshot.players,dt,serverTime,view.camera);horde.handle(snapshot.events);techniques.handle(snapshot.events,serverTime);techniques.feed(objectiveOf(snapshot)?.village?.warnings??[],serverTime);}
     if(survival()){
@@ -1957,6 +1987,10 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
         // the BALL stance, on the opponent locked in the FIGHT stance (closer and lower, a fight's lock-on). The follow
         // camera's own shots (an awakening's, an ultimate's) still have the lens while they run; the rig's fading of
         // what stands in the way is judged from its own lens. Sky Spike is filmed by its broadcast camera (SpikeCam).
+        cam.free=!!ballView?.football&&goalLookChoice(settings)==='free';cam.selfId=network.id;
+        // (`?ballpilot` in FREE LOOK: nobody's hand is on the view, so the pilot turns it toward where its body runs, at a
+        // person's pace - a film of FREE LOOK as it is held.)
+        if(cam.free&&ballPiloted)input.yaw=pilotLook(input.yaw,own.group.position,rawDt);
         const yaw=cam.steer(camera,rawDt,input.yaw,settings.cameraMode,own.group.position,subject,ballView,teamOf(ballView,network.id),!!foe);
         // (Each camera's option, off unless picked - render/ball/ballCamChoice.ts; the COURT-SIDE stand looks
         // through the net, which is drawn thinner for it.)
@@ -1964,8 +1998,10 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
         const heading=spike.steer(camera,rawDt,input.yaw,yaw,cam.on,own.group.position,ballField.ballPosition(),ballView,teamOf(ballView,network.id),view.camera.aspect);netSheer.value=spike.sheer;
         const chase=cam.active&&ballView?.mode==='goal-rush'&&!((view.camera.userData.rig as {shotWeight?:number}|undefined)?.shotWeight! > .5);camera.fading=!chase;
         camera.update(rawDt,own,heading,input.pitch,occluders(),settings.shake,!cam.active&&!spike.active&&held?bodyOf(held):undefined,!cam.active&&!spike.active&&targeting.locked);spike.aim(camera,view.camera,settings.shake);
-        chaseFrame.self.copy(own.group.position);chaseFrame.heading=yaw;chaseFrame.ball=subject;chaseFrame.fight=!!foe;chaseFrame.boosting=!!own.state.boost;chaseFrame.shake=settings.shake;if(ballView)chaseFrame.mode=ballView.mode;
+        chaseFrame.self.copy(own.group.position);chaseFrame.heading=yaw;chaseFrame.ball=cam.free&&!foe?null:subject;chaseFrame.fight=!!foe;chaseFrame.boosting=!!own.state.boost;chaseFrame.shake=settings.shake;if(ballView)chaseFrame.mode=ballView.mode;
+        passMark?.update(ballView,snapshot.players.find(p=>p.id===network.id),snapshot.players,footStick,yaw,view.camera,view.renderer.domElement.clientWidth,view.renderer.domElement.clientHeight,id=>fighters.get(id)?.group.position);
         ballChases[0].aim(view.camera,rawDt,chase,ballView?chaseFrame:null);
+        superRide.aim(view.camera,rawDt,ballView,ballField.ballPosition(),superCamChoice(settings),snapshot.serverTime); // (An option, off by default)
         if(chase)camera.fader.update(rawDt,view.camera,camera.director.crowd,own,undefined,NO_FOCUS);}
       // Locked on, the camera steers the heading, so the accumulator the next
       // mouse delta is added to must be the heading on screen (Targeting reads

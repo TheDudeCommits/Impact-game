@@ -1,4 +1,4 @@
-import { inviteFor, inviteNow, inviteWords, type InviteParams } from './invite';
+import { GAME_URL, inviteFor, inviteNow, inviteWords, type InviteParams } from './invite';
 
 export type Delivered = 'shared' | 'copied' | 'aborted' | 'failed';
 type ShareNav = Navigator & { canShare?: (data: ShareData) => boolean };
@@ -30,9 +30,9 @@ export async function copyText(text: string): Promise<boolean> {
   try { await clip.writeText(text); return true; } catch { return copyBySelection(text); }
 }
 
-/** The share sheet with this link (`native`, where there is one), else the link copied. Call it straight from the
- *  press, with the link already made. */
-export async function shareOrCopy(data: { title: string; text: string; url: string }, native: boolean): Promise<Delivered> {
+/** The share sheet with this link (`native`, where there is one), else the link copied (or `copy`, when what is copied must
+ *  say more than the link). Call it straight from the press, with the link already made. */
+export async function shareOrCopy(data: { title: string; text: string; url: string }, native: boolean, copy = data.url): Promise<Delivered> {
   if (native && canNativeShare()) {
     try { await navigator.share(data); return 'shared'; }
     catch (error) {
@@ -40,17 +40,18 @@ export async function shareOrCopy(data: { title: string; text: string; url: stri
       // Not allowed here after all (a frame's policy): copied instead, which the press may still allow.
     }
   }
-  return await copyText(data.url) ? 'copied' : 'failed';
+  return await copyText(copy) ? 'copied' : 'failed';
 }
 
 /** An invite shared or copied from the press: its link at once where it is at hand (outside Player Two always; inside,
  *  once Player Two has answered the prefetch), else after Player Two answers - where Safari may refuse, and the caller
- *  shows the link to copy by hand. */
+ *  shows the link to copy by hand. A link that carries no room (the public address: social/invite.ts ownInvite) is copied
+ *  with the invite's words before it, so the code goes with it. */
 export async function shareInvite(p: InviteParams, native: boolean): Promise<{ result: Delivered; url: string }> {
-  const words = inviteWords(p), now = inviteNow(p);
-  if (now) return { url: now, result: await shareOrCopy({ ...words, url: now }, native) };
+  const words = inviteWords(p), copied = (url: string) => url === GAME_URL ? `${words.text} ${url}` : url, now = inviteNow(p);
+  if (now) return { url: now, result: await shareOrCopy({ ...words, url: now }, native, copied(now)) };
   const url = await inviteFor(p);
-  return { url, result: await shareOrCopy({ ...words, url }, native) };
+  return { url, result: await shareOrCopy({ ...words, url }, native, copied(url)) };
 }
 
 /** A picture shared with its words and link, where the device's sheet takes files. */

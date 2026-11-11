@@ -5,7 +5,7 @@ import { HOME_ASSETS } from '../src/ui/MangaHome';
 import { ROSTER_REFRESH_MESSAGE } from '../src/game/rosterProtocol';
 import { joinFailure } from '../src/network';
 import { brandIndexHtml, brandManifest, brandPrivacyHtml } from '../scripts/build/brandPlugin';
-import { DESCRIPTION, OG_IMAGE, OG_IMAGE_ALT, SHORT_TITLE, SITE_URL, TITLE } from '../src/originals/brand';
+import { CONTACT, DESCRIPTION, OG_IMAGE, OG_IMAGE_ALT, PUBLIC_URL, SHORT_TITLE, TITLE } from '../src/originals/brand';
 
 const html = brandIndexHtml(fs.readFileSync('index.html', 'utf8'));
 const meta = (attr: 'name' | 'property', key: string) => html.match(new RegExp(`<meta ${attr}="${key.replace(/[.:]/g, '\\$&')}" content="([^"]*)"`))?.[1];
@@ -21,14 +21,15 @@ describe('the name, the metadata and the icons (brand.ts)', () => {
     expect(html).toContain(`<title>${TITLE}</title>`);
     for (const file of ['index.html', 'src/ui/BugReport.ts']) expect(fs.readFileSync(file, 'utf8'), file).not.toMatch(/Rift Arena|RIFT ARENA|Manga Impact<\/title>/);
   });
-  it('describes it for search and for a shared link, with an absolute preview image of its real size', () => {
+  it('describes it for search and for a shared link, with a preview image of its real size', () => {
     expect(meta('name', 'description')).toMatch(/arena fighter/i);
     expect(meta('property', 'og:type')).toBe('website');
-    expect(meta('property', 'og:url')).toBe(`${SITE_URL}/`);
+    expect(meta('property', 'og:url')).toBe(PUBLIC_URL);
     expect(meta('property', 'og:site_name')).toBe(TITLE);
     expect(meta('property', 'og:title')).toBe(TITLE);
     expect(meta('property', 'og:description')).toBe(DESCRIPTION);
-    expect(meta('property', 'og:image')).toBe(OG_IMAGE ? new URL(OG_IMAGE, `${SITE_URL}/`).href : undefined);
+    // (Relative to the page: a host would be an address besides the public one.)
+    expect(meta('property', 'og:image')).toBe(OG_IMAGE ? OG_IMAGE.slice(1) : undefined);
     expect(meta('property', 'og:image:alt')).toBe(OG_IMAGE ? OG_IMAGE_ALT : undefined);
     if (OG_IMAGE) expect(jpeg(`public${OG_IMAGE}`)).toEqual({ width: 1200, height: 630 });
     expect([meta('property', 'og:image:width'), meta('property', 'og:image:height')]).toEqual(OG_IMAGE ? ['1200', '630'] : [undefined, undefined]);
@@ -56,7 +57,7 @@ describe('the name, the metadata and the icons (brand.ts)', () => {
     expect(svg).toMatch(/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"[^>]* viewBox="0 0 64 64"/);
     expect(svg.length).toBeLessThan(2048);
     const home = HOME_ASSETS.map(url => url.split(/[?#]/, 1)[0].slice(1));
-    for (const file of [...linked, ...icons.map(i => i.src.slice(1)), ...(OG_IMAGE ? [new URL(meta('property', 'og:image')!).pathname.slice(1)] : [])]) {
+    for (const file of [...linked, ...icons.map(i => i.src.slice(1)), ...(OG_IMAGE ? [new URL(meta('property', 'og:image')!, 'https://play.example.com/').pathname.slice(1)] : [])]) {
       if (file.startsWith('assets/')) expect(home, file).toContain(file);
       else expect(BRAND_FILES, file).toContain(file);
       expect(fs.existsSync(`public/${file}`), file).toBe(true);
@@ -87,10 +88,13 @@ describe('the game is named by brand.ts', () => {
   });
 
 
-  it('names its own site wherever these pages write an address, and keeps the repository and the saved keys', () => {
-    expect(meta('property', 'og:url')).toBe(`${SITE_URL}/`);
-    expect(html).toContain(`<link rel="canonical" href="${SITE_URL}/">`);
-    for (const file of ['index.html', 'public/privacy.html', 'public/site.webmanifest']) expect(fs.readFileSync(file, 'utf8'), file).not.toMatch(/jump\.dude\.work|impact\.dude\.work|playertwo/i);
+  // The pages name the public address (brand.ts PUBLIC_URL) wherever they write one, and the game's own site nowhere: no
+  // host under the contact address's domain, and no Player Two address.
+  it('names the public address wherever these pages write an address, and keeps the repository and the saved keys', () => {
+    expect(meta('property', 'og:url')).toBe(PUBLIC_URL);
+    expect(html).toContain(`<link rel="canonical" href="${PUBLIC_URL}">`);
+    const siteHost = new RegExp(`[a-z0-9-]+\\.${CONTACT!.split('@')[1].replace(/\./g, '\\.')}|playertwo`, 'i');
+    for (const file of ['index.html', 'public/privacy.html', 'public/site.webmanifest']) expect(fs.readFileSync(file, 'utf8'), file).not.toMatch(siteHost);
     // The one GitHub address the pages carry is the game's own repository (legalLinks.ts REPO_PAGE).
     expect(fs.readFileSync('src/ui/legalLinks.ts', 'utf8')).toMatch(/export const REPO_PAGE = 'https:\/\/github\.com\/TheDudeCommits\/Impact-game';/);
     for (const file of ['public/privacy.html', 'public/terms.html']) expect([...fs.readFileSync(file, 'utf8').matchAll(/https:\/\/github\.com[^"' <]*/g)].map(m => m[0]).every(url => url === 'https://github.com/TheDudeCommits/Impact-game'), file).toBe(true);

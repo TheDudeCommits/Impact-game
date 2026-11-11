@@ -106,12 +106,14 @@ describe('Player Two presence: the line, and a Join while a friend can come in (
 describe('Invite links (src/social/invite.ts)', () => {
   const ALL = [{ room: '518389', kind: 'duel' }, { room: '518389', kind: 'private' }, { room: '518389', kind: 'coop' }, { party: '518389' }, { mode: 'last-stand', room: '518389' }, { mode: 'bad-blood', room: '518389' }, { mode: 'rift-war', room: '518389' }] as const;
 
-  it('makes the # link on the page\'s own address', async () => {
+  it('is the public address with the code outside Player Two\'s player, wherever the page is served', async () => {
     vi.resetModules();
-    const { ownInvite, JOIN_HOSTS } = await import('../src/social/invite');
-    expect(ownInvite({ room: '518389', kind: 'duel' }, 'https://game.example.com/?x=1#old')).toBe('https://game.example.com/#room=518389&kind=duel');
-    expect(ownInvite({ mode: 'rift-war', room: '111222' }, 'http://127.0.0.1:5403/?local-training')).toBe('http://127.0.0.1:5403/#mode=rift-war&room=111222');
-    expect(JOIN_HOSTS.test('game.example.com')).toBe(false);
+    for (const page of ['https://play.example.com/?x=1#old', 'http://127.0.0.1:5403/?local-training', 'https://impact.playertwo.cc/~b1/index.html']) {
+      vi.stubGlobal('location', new URL(page));
+      const { ownInvite, inviteNow, GAME_URL: url } = await import('../src/social/invite');
+      expect(url).toBe('https://playertwo.plus/game/impact');
+      for (const params of ALL) { expect(ownInvite(params), page).toBe(url); expect(inviteNow(params), page).toBe(url); }
+    }
   });
 
   it('says what the invite is beside its link', async () => {
@@ -135,11 +137,16 @@ describe('One SHARE (src/social/share.ts)', () => {
     const copying = shareOrCopy(data, false);
     expect(copied).toEqual([data.url]);
     expect(await copying).toBe('copied');
-    // An invite outside Player Two: its link is made at once, so the copy starts inside the press too.
-    vi.stubGlobal('location', new URL('https://game.example.com/'));
+    // An invite outside Player Two: its link is made at once, so the copy starts inside the press too. It is the public
+    // address, so the copy carries the invite's words and the party's code before it.
+    vi.stubGlobal('location', new URL('https://play.example.com/'));
     const invited = shareInvite({ party: '654321' }, false);
-    expect(copied.at(-1)).toBe('https://game.example.com/#party=654321');
-    expect(await invited).toEqual({ result: 'copied', url: 'https://game.example.com/#party=654321' });
+    expect(copied.at(-1)).toBe(`Join my party in ${TITLE}. Party code 654321. https://playertwo.plus/game/impact`);
+    expect(await invited).toEqual({ result: 'copied', url: 'https://playertwo.plus/game/impact' });
+    // The share sheet gets the words and the link apart, as before.
+    const sheet = shareInvite({ room: '518389', kind: 'duel' }, true);
+    expect(shared.at(-1)).toEqual({ title: `Join my Duel · ${TITLE}`, text: `Join my Duel in ${TITLE}. Room code 518389.`, url: 'https://playertwo.plus/game/impact' });
+    expect((await sheet).result).toBe('shared');
   });
 
   it('copies when the sheet is closed by refusal, and says nothing when the player cancels it', async () => {
