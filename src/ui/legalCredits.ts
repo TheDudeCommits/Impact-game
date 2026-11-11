@@ -18,8 +18,8 @@ export interface Credit { work: string; by?: string; sources: readonly (readonly
 const CC_BY_4 = 'https://creativecommons.org/licenses/by/4.0/', CC_BY_3 = 'https://creativecommons.org/licenses/by/3.0/', CC0 = 'https://creativecommons.org/publicdomain/zero/1.0/';
 
 /** The fighters' files whose stance, walk, run, dash, jump, fall, tumble, knockback, get-up or death fall (or a strike, a
- *  rush cut or an idle's fidget) is cut from the Universal Animation Library, and the survival bosses' whose moves are: its
- *  credit stays while any of them ships. */
+ *  rush cut or an idle's fidget) is cut from the Universal Animation Library, and the survival bosses' whose moves or shared
+ *  states (a stance, a hurt, a fall, a get-up, a death, a taunt) are: its credit stays while any of them ships. */
 const UAL_CUTS = [
   'akagane-tr1', 'akaito-tr1', 'akayuri-awakened-tr1', 'akayuri-tr1', 'amagoi-tr1', 'ampere-awakened-tr1',
   'ampere-tr1', 'aqrab-tr1', 'aquilo-tr1', 'asahi-tr1', 'barrow-tr1', 'bonsho-tr1', 'bruin-tr1', 'chohan-tr1', 'gaku-awakened-tr1',
@@ -33,8 +33,9 @@ const UAL_CUTS = [
   'rotfalke-tr1', 'sashigane-tr1', 'senko-tr1', 'setsu-tr1', 'shakudo-px1', 'shidare-tr1', 'shijima-form-tr1',
   'shijima-tr1', 'shirokane-tr1', 'strix-tr1', 'suzuran-px1', 'svanhild-tr1', 'tancho-tr1', 'tempo-tr1', 'tokan-tr1',
   'ume-form-tr1', 'ume-tr1', 'unari-px1', 'wataame-tr1', 'wukong-tr1', 'yodaka-tr1'
-].map(name => `assets/fighters/${name}.glb`).concat(['barrow', 'caldera', 'gandang', 'gantry', 'gorai-wyrm', 'harrow', 'jinlin', 'kanuki', 'nightfall', 'nihil', 'rakshasa', 'rime',
-  'takane', 'zarek'].map(name => `assets/survival/enemies/${name}.glb`));
+].map(name => `assets/fighters/${name}.glb`).concat(['akagane', 'ashwing', 'barrow', 'caldera', 'gandang', 'gantry', 'gorai', 'gorai-wyrm', 'haldor', 'harrow', 'jinlin', 'kade',
+  'kanuki', 'kuromitsu', 'lumen', 'mirabel', 'nightfall', 'nihil', 'rakshasa', 'rime', 'shiun', 'takane', 'wuming', 'zarek']
+  .map(name => `assets/survival/enemies/${name}.glb`));
 
 /** The works whose licences ask for a credit (the LICENSE files beside each kit under public/assets/environment,
  *  environment/br/parts.json, src/audio/data/ambience.json). */

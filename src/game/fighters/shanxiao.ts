@@ -44,8 +44,8 @@ export const SHANXIAO_CONTACTS = {
 
 export const SHANXIAO_AWAKENING = {
   name: 'JADE STORM', clip: 'Unbound Fury', duration: 1.5,
-  baseModel: '/assets/fighters/shanxiao-base-df1.glb',
-  model: '/assets/fighters/shanxiao-lssj-df1.glb',
+  baseModel: '/assets/fighters/shanxiao-tr1.glb',
+  model: '/assets/fighters/shanxiao-awakened-tr1.glb',
   baseHeight: 2.1, awakenedHeight: 2.26,
   beats: { gather: .27, strain: .54, transform: .795, settle: 1.17 },
   // Keep both forms on the same clip phase across the mesh swap.
