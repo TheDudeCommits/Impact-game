@@ -53,6 +53,31 @@ describe('Arcade Survival in the the game', () => {
     for (const id of SHADOW_RIVALS) expect(ENEMIES[id].name, id).toBe(`Shadow ${FIGHTERS[ENEMIES[id].rival as keyof typeof FIGHTERS].name}`); // each shadow named as the roster names its fighter
   });
 
+  // Every boss but the fox speaks with a voice of the game's own, where the horde's CC0 war cries stood in for all of them
+  // (src/originals/survival.ts ORIGINAL_BOSS_LINES).
+  it('gives every boss of the rotation its own voice at its entrance, rage, stagger and fall: the game\'s own lines, on disk, recorded', () => {
+    const rows = new Map((JSON.parse(readFileSync('public/assets/audio/survival/manifest.json', 'utf8')) as { assets: { file: string; source: string; license: string; sourceSha256: string }[] }).assets.map(a => [a.file, a]));
+    const voiced = BOSSES.map(entry => entry.id).filter(id => id !== 'kurobi');
+    expect(voiced.length).toBe(27);
+    for (const id of [...voiced, 'gorai-wyrm']) {
+      const voice = BOSS_VOICES[id];
+      for (const moment of ['entrance', 'rage', 'hurt', 'defeat', 'attack'] as const) {
+        const urls = voice.own?.[moment] ?? [];
+        expect(urls.length, `${id} ${moment}`).toBeGreaterThan(0);
+        for (const url of urls) {
+          expect(url, url).toMatch(/^\/assets\/audio\/survival\/voice-[a-z]+-[a-z]+-\d\.m4a$/);
+          expect(statSync(`public${url}`).size, url).toBeGreaterThan(2000);
+          const row = rows.get(url);
+          expect(row, `${url} has a provenance row`).toBeDefined();
+          expect(row!.license, url).toBe('Original (made for the game)');
+          expect(row!.source, url).toMatch(/own line .* Higgsfield/);
+        }
+      }
+    }
+    // Lord ORO names his barrage and his hour as he throws them (his moves' own names, src/survival/enemies.ts).
+    for (const move of Object.keys(BOSS_VOICES.oro.moves ?? {})) expect(ENEMIES.oro.moves.map(m => m.name), move).toContain(move);
+  });
+
 
 
 

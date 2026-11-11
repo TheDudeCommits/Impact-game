@@ -61,6 +61,25 @@ describe('Setsu (round 3 body)', () => {
     expect(json.meshes.map((m: { name: string }) => m.name).sort()).toEqual(['setsu_body', 'setsu_hair']);
   });
 
+  it('carries the whole set, every clip keying every joint, every track binding', () => {
+    const names = body.animations.map(c => c.name);
+    // Setsu's body carries his own takes too, the victory and the awakening with them.
+    expect([...names].sort()).toEqual([...SET, ...ORIGINALS.setsu ? ['victory_in', 'victory_lp', 'Setsu awaken'] : []].sort());
+    for (const clip of def.clips!) expect(names, clip).toContain(clip);
+    for (const clip of body.animations) {
+      const nodes = new Set<string>();
+      for (const track of clip.tracks) {
+        const parsed = THREE.PropertyBinding.parseTrackName(track.name);
+        expect(THREE.PropertyBinding.findNode(body.scene, parsed.nodeName), `${clip.name}: ${parsed.nodeName}`).toBeTruthy();
+        if (parsed.propertyName === 'quaternion') nodes.add(parsed.nodeName);
+      }
+      // His rig adds fingers, twist and helper joints to the canonical ones (every clip keys 52
+      // of its 77; no clip keys the twist and helper joints, so they stay at rest): every canonical joint keyed.
+      if (ORIGINALS.setsu) expect(CANONICAL.filter(joint => !nodes.has(joint)), `${clip.name} leaves joints unkeyed`).toEqual([]);
+      else expect([...nodes].sort(), `${clip.name} leaves joints unkeyed`).toEqual([...CANONICAL].sort());
+    }
+  });
+
 
   it('loads into a fighter that resolves every joint its effects are drawn from', () => {
     const fighter = new Fighter(base('setsu'), body);

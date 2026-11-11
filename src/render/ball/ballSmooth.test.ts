@@ -20,11 +20,15 @@ async function measure(mode:BallModeId,path:Path,hz:number,seconds:number,seed=7
   const field=new BallField(new THREE.Scene()),camera=new THREE.PerspectiveCamera(),timeline=new CombatTimeline({delayMs:path==='local'?1000/60:60});
   let rnd=seed;const random=()=>((rnd=(rnd*16807)%2147483647)/2147483647);
   const ticks:BallState[]=[];let tick=0;
-  const truth=(t:number)=>{const k=Math.min(ticks.length-1,Math.floor(t*60+1e-6)),b={...ticks[k]};if(!b.held)for(let left=t-k/60;left>1e-6;left-=1/60)stepBall(mode,b,Math.min(1/60,left));return b;};
+  // (A carried ball is put at its carrier's feet every tick - BallMatch CARRY - never flown: between two ticks
+  // it is between the two places the room put it.)
+  const truth=(t:number)=>{const k=Math.min(ticks.length-1,Math.floor(t*60+1e-6)),b={...ticks[k]},n=ticks[k+1];
+    if(b.carry!==undefined&&n){const s=t*60-k;b.x+=(n.x-b.x)*s;b.y+=(n.y-b.y)*s;b.z+=(n.z-b.z)*s;return b;}
+    if(!b.held)for(let left=t-k/60;left>1e-6;left-=1/60)stepBall(mode,b,Math.min(1/60,left));return b;};
   // The room's ticks: on this device a 60 Hz timer that wanders 4 ms; online the server's own steady 60 Hz.
   const tickAt=(k:number)=>k*1000/60+(path==='local'?(random()-.5)*8:0);
   const inbox:{at:number;snap:ReturnType<BallMatch['snapshot']>}[]=[];
-  let localClock=0,shown=0;const misses:number[]=[],lurches:number[]=[];let prevDrawn:THREE.Vector3|null=null,prevTruth:{x:number;y:number;z:number}|null=null;
+  let localClock=0;const misses:[number,number][]=[],lurches:[number,number][]=[];let prevDrawn:THREE.Vector3|null=null,prevTruth:{x:number;y:number;z:number}|null=null;
   const frameMs=1000/hz;
   for(let w=0;w<seconds*1000;w+=frameMs){
     while(tickAt(tick+1)<=w){
@@ -42,15 +46,20 @@ async function measure(mode:BallModeId,path:Path,hz:number,seconds:number,seed=7
     if(!view||!drawn||view.phase!=='live'){prevDrawn=null;continue;}
     const t=truth(presented.time),speed=Math.hypot(t.vx,t.vy,t.vz);
     if(speed>6&&!t.held){
-      shown++;misses.push(Math.hypot(drawn.x-t.x,drawn.y-t.y,drawn.z-t.z));
-      if(prevDrawn&&prevTruth)lurches.push(Math.hypot(drawn.x-prevDrawn.x-(t.x-prevTruth.x),drawn.y-prevDrawn.y-(t.y-prevTruth.y),drawn.z-prevDrawn.z-(t.z-prevTruth.z)));
+      misses.push([presented.time,Math.hypot(drawn.x-t.x,drawn.y-t.y,drawn.z-t.z)]);
+      if(prevDrawn&&prevTruth)lurches.push([presented.time,Math.hypot(drawn.x-prevDrawn.x-(t.x-prevTruth.x),drawn.y-prevDrawn.y-(t.y-prevTruth.y),drawn.z-prevDrawn.z-(t.z-prevTruth.z))]);
       prevDrawn=drawn.clone();prevTruth={x:t.x,y:t.y,z:t.z};
     }else prevDrawn=null;
   }
   collision.dispose?.();
+  // (Not the frames round a carry beginning or ending - the room puts the ball onto the feet in one tick, and
+  // strikes it or lets it go from there: its own jump, which BallField.test.ts's carry checks judge against the drawn feet.)
+  const carryAt=(t:number)=>ticks[Math.max(0,Math.min(ticks.length-1,Math.floor(t*60+1e-6)))]?.carry;
+  const steady=([t]:[number,number])=>carryAt(t-.15)===carryAt(t)&&carryAt(t)===carryAt(t+.1);
+  const kept=misses.filter(steady).map(([,v])=>v),steps=lurches.filter(steady).map(([,v])=>v),shown=kept.length;
   const q=(a:number[],p:number)=>{const s=[...a].sort((x,y)=>x-y);return s[Math.min(s.length-1,Math.floor(p*s.length))]??0;};
   const mean=(a:number[])=>a.reduce((x,y)=>x+y,0)/Math.max(1,a.length);
-  return {mode,path,hz,frames:shown,missMean:+mean(misses).toFixed(3),missP95:+q(misses,.95).toFixed(3),missMax:+q(misses,1).toFixed(3),lurchMean:+mean(lurches).toFixed(3),lurchP95:+q(lurches,.95).toFixed(3),lurchMax:+q(lurches,1).toFixed(3)};
+  return {mode,path,hz,frames:shown,missMean:+mean(kept).toFixed(3),missP95:+q(kept,.95).toFixed(3),missMax:+q(kept,1).toFixed(3),lurchMean:+mean(steps).toFixed(3),lurchP95:+q(steps,.95).toFixed(3),lurchMax:+q(steps,1).toFixed(3)};
 }
 
 /** The page's own touch online, forecast (game/ball/touchForecast) and drawn at once. A ball rolls at the page's

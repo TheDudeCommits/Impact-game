@@ -71,4 +71,8 @@ describe('the speed pass: a place of many pieces merged by material', () => {
     expect(corners(model)).toEqual(before);
   });
 
+  it('is only switched on for real places', () => {
+    for (const stage of MERGED_PLACES) expect(STAGES[stage]?.model, stage).toBeTruthy();
+  });
+
 });

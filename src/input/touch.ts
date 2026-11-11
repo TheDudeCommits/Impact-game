@@ -4,7 +4,7 @@ import type { PlayerState } from '../game/types';
 import { phone, tablet } from './device';
 import { coolSeconds, METER_HZ, spotStyle, TOUCH_LAYOUT, touchMeters, type ClusterButton } from './touchLayout';
 import { TouchArt } from './touchArt';
-import { BOOST_HOLD_MS, BOOST_REPRESS_MS, SPORT_GLYPHS, SPORT_SLOTS, SPORT_LAYOUT, sportSet, type SportFace, type SportSet, type SportSlot } from './sportTouch';
+import { BOOST_HOLD_MS, BOOST_REPRESS_MS, SPORT_GLYPHS, SPORT_SLOTS, SPORT_LAYOUT, TrapCue, sportSet, type SportFace, type SportSet, type SportSlot } from './sportTouch';
 import type { BallView } from '../game/ball/model';
 import { hudView } from '../ui/hud/hudView';
 import { chargeFull, ownCharge } from '../render/ball/ownShot';
@@ -169,6 +169,8 @@ export class TouchControls {
   private readonly sportFaces = new Map<SportSlot, string>();
   private sportOn = false;
   private sportCool = { light: new CooldownLeft(), heavy: new CooldownLeft() };
+  /** Goal Rush's TRAP on the moment's button while a ball you could trap is on its way (sportTouch.ts). */
+  private readonly trapCue = new TrapCue();
   private ball?: BallView;
   private self?: PlayerState;
   /** SHOOT's charge on its button's ring (`shotRing`): the share shown last, whether it was full, until when (ms) it stays. */
@@ -294,14 +296,14 @@ export class TouchControls {
    *  awakening's charge, the cooldowns' wipes and seconds, the dashes in hand, and the fighter's art. Called every frame;
    *  written METER_HZ times a second, each value only when it changed - custom properties and classes on the buttons
    *  themselves, never a layout read. */
-  meters(self: PlayerState, serverTime: number, ball?: BallView) {
+  meters(self: PlayerState, serverTime: number, ball?: BallView, players: readonly PlayerState[] = []) {
     this.self = self;
     if (!this.shown) return;
     const now = performance.now();
     if (now - this.metersAt < 1000 / METER_HZ) return;
     this.metersAt = now;
     const m = touchMeters(self, serverTime);
-    this.sports(ball, self, m.ultimate >= 1);
+    this.sports(ball, self, m.ultimate >= 1, players);
     if (this.sportOn) this.sportMeters(self, m);
     this.meter('ultimate', '--charge', m.ultimate); this.flag('ultimate', 'ready', m.ultimate >= 1);
     this.meter('awaken', '--charge', m.awakening); this.flag('awaken', 'ready', !m.awake && m.awakening >= 1); this.flag('awaken', 'awake', m.awake);
@@ -316,16 +318,16 @@ export class TouchControls {
     this.art.update(self);
   }
   /** The ball modes' set on or off, and each of its buttons' face, label and press, written only when they change. */
-  private sports(ball: BallView | undefined, self: PlayerState, superReady: boolean) {
+  private sports(ball: BallView | undefined, self: PlayerState, superReady: boolean, players: readonly PlayerState[] = []) {
     const on = !!ball; this.ball = ball;
     if (on !== this.sportOn) {
       this.sportOn = on; this.root.classList.toggle('tc-sports', on);
-      if (!on) { for (const node of this.sport.values()) node.hidden = true; this.sportFaces.clear(); delete this.root.dataset.sport; delete this.root.dataset.stance; }
+      if (!on) { for (const node of this.sport.values()) node.hidden = true; this.sportFaces.clear(); this.trapCue.reset(); delete this.root.dataset.sport; delete this.root.dataset.stance; }
     }
     if (!ball) return;
     const fight = !!hudView.ballLock();
     this.root.dataset.sport = ball.mode; this.root.dataset.stance = fight ? 'fight' : 'ball';
-    const set: SportSet = sportSet(ball, self.id, fight, superReady, self);
+    const set: SportSet = sportSet(ball, self.id, fight, superReady, self, this.trapCue.update(ball, self.id, self, fight, performance.now(), players));
     for (const slot of SPORT_SLOTS) this.sportFace(slot, set[slot]);
   }
   private sportFace(slot: SportSlot, face: SportFace | null) {

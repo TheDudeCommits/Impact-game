@@ -317,6 +317,16 @@ describe('the transformation table', () => {
     }
   });
 
+  it('resolves its transformation clip in the fighter that has to play it', () => {
+    // A name that matches nothing silently falls back to the idle, which reads
+    // as the transformation never happening.
+    for (const id of roster) {
+      const names = clips(id), patterns = AWAKENINGS[id].clips ?? [];
+      const found = patterns.some(p => names.some(n => clean(n) === clean(p) || clean(n).includes(clean(p))));
+      expect(found, `${id} has no clip among ${patterns.join(', ')}`).toBe(true);
+    }
+  });
+
 
   it('only changes a move for a fighter whose transformation is the move', () => {
     for (const id of roster) for (const slot of ['light', 'heavy', 'special', 'ultimate'] as const) {

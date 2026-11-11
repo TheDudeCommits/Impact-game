@@ -33,6 +33,13 @@ const state = (over: Partial<PlayerState> = {}): PlayerState => ({ ...base('gumm
 const world = (o: THREE.Object3D) => o.getWorldPosition(new THREE.Vector3());
 
 describe('Rubber no Bazooka', () => {
+  it('is its own take, landing its blow on the move\'s contact', () => {
+    const take = assets.body.animations.find(c => c.name === 'Rogue Wave')!;
+    expect(take.duration, 'his own take, not the earlier flip kick (1.29 s)').toBeCloseTo(.9, 2);
+    expect((contactFrames as Record<string, Record<string, number>>).gummy.heavy * MOVES.gummy.heavy.duration).toBeCloseTo(MOVES.gummy.heavy.contacts[0], 2);
+    // SUNRISE throws it too, on his own body.
+    expect(assets.form.animations.find(c => c.name === 'Rogue Wave')!.duration).toBeCloseTo(.9, 2);
+  });
 
   it.skipIf(!!ORIGINALS.gummy)('throws both arms back behind him, then both palms out together, side by side, and opens his hands for it', () => {
     const f = new Fighter(state(), assets.body);

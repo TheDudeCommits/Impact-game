@@ -33,7 +33,8 @@ const UAL_CUTS = [
   'rotfalke-tr1', 'sashigane-tr1', 'senko-tr1', 'setsu-tr1', 'shakudo-px1', 'shidare-tr1', 'shijima-form-tr1',
   'shijima-tr1', 'shirokane-tr1', 'strix-tr1', 'suzuran-px1', 'svanhild-tr1', 'tancho-tr1', 'tempo-tr1', 'tokan-tr1',
   'ume-form-tr1', 'ume-tr1', 'unari-px1', 'wataame-tr1', 'wukong-tr1', 'yodaka-tr1'
-].map(name => `assets/fighters/${name}.glb`).concat(['barrow', 'gandang', 'jinlin'].map(name => `assets/survival/enemies/${name}.glb`));
+].map(name => `assets/fighters/${name}.glb`).concat(['barrow', 'caldera', 'gandang', 'gantry', 'gorai-wyrm', 'harrow', 'jinlin', 'kanuki', 'nightfall', 'nihil', 'rakshasa', 'rime',
+  'takane', 'zarek'].map(name => `assets/survival/enemies/${name}.glb`));
 
 /** The works whose licences ask for a credit (the LICENSE files beside each kit under public/assets/environment,
  *  environment/br/parts.json, src/audio/data/ambience.json). */

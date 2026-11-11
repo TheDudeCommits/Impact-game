@@ -1,6 +1,6 @@
 import type {AttackSlot, PlayerInput, PlayerState} from '../types';
 import {MOVES, jumpArc} from '../moves';
-import {BALL_ID, GOAL_RULES, SHOOT, SPIKE_RULES, otherTeam, type BallModeId, type BallSeat, type BallState, type BallTeam, type BallView} from './model';
+import {BALL_ID, GOAL_RULES, PASS_CALL, SHOOT, SPIKE_RULES, otherTeam, quickChat, type BallModeId, type BallSeat, type BallState, type BallTeam, type BallView} from './model';
 import {goalZ, landing, sideOf, stepBall, type BallContact} from './physics';
 import {PLACE, SERVE_STYLE} from './strike';
 
@@ -56,6 +56,15 @@ export const HUMAN = {
  *  lands, as a person feels it; `air`: how long the key is held for a wound-up air strike; `through`: how much later
  *  than a charged spike's the swing of a spike tapped past a block goes (the air strike's 0.23 s less the tap's). */
 const ROOM = {near: 2.2, run: 5, line: 3.5, tap: SHOOT.contact + 1 / 60, air: .34, through: .23 - (SHOOT.contact + 1 / 60)} as const;
+/** (BallMatch TRAP, CARRY) The SKILLED player's first touch and carry. Out of range of their goal it traps
+ *  a ball coming in that is no shot at its own goal (the guard `lead` s before it arrives, as the gold ring of a ball
+ *  coming in shows it, its timing error on top), and runs into a slow ball (`slow` m/s or less, on the floor) to carry
+ *  it when nobody of theirs is within `room` m of it; carrying, it shoots within `close` m of their goal and lets it go -
+ *  a pass, or the shot in range - once one of theirs is within `pressure` m of the ball. With a team-mate on the ball and
+ *  itself in range of their goal, more than 5 m off the ball and nobody of theirs within `open` m, it calls for it
+ *  (PASS_CALL), once a call's five seconds. And it locks on and tackles one of theirs carrying the ball anywhere, not only
+ *  in its own half (the TACKLE pops it LOOSE toward it). */
+const SKILL_CARRY = {lead: .12, slow: 6, room: 5, close: 15, pressure: 4.2, open: 3} as const;
 type Command = Omit<PlayerInput, 'seq'>;
 type Body = {id: string; team?: string; x: number; y: number; z: number; vx: number; vz: number; grounded: boolean; alive: boolean; action: string};
 const gap = (a: {x: number; z: number}, b: {x: number; z: number}) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -154,6 +163,9 @@ export class HumanHands {
   private holdUntil = 0; private holdYaw = 0;
   /** What the hands did this tick (a word, for a sim's tally). */
   did = '';
+  /** (PASS_CALL) The quick chat line these hands send this tick (an index into quickChat), if any - the
+   *  driver sends it as a page does (BallMatch.chat) - and when the last call went. */
+  chat: number | undefined; private calledAt = -Infinity;
   constructor(readonly id: string, readonly mode: BallModeId, readonly style: HumanStyle, seed = 1) {
     this.eyes = new Eyes(mode);
     this.limits = HUMAN[style];
@@ -297,12 +309,23 @@ export class HumanHands {
     const mates = bodies.filter(q => q.team === team && q.id !== this.id && q.alive);
     const rivals = bodies.filter(q => q.team !== team && q.alive && view.seats.find(s => s.id === q.id)?.out === undefined);
     const nearestMate = Math.min(...mates.map(q => gap(q, b)));
+    // (PASS_CALL: a team-mate on the ball - carrying it, or it at their feet - and this player in range of
+    // their goal and open: "Pass it here!", once a call's five seconds.)
+    this.chat = undefined;
+    const mateOnIt = view.ball.carry !== undefined ? mates.some(q => q.id === view.ball.carry) : mates.some(q => gap(q, b) < 2) && b.y < 2;
+    if (mateOnIt && now - this.calledAt > PASS_CALL.seconds && this.inRange(me, enemyZ) && gap(me, b) > 5 && rivals.every(r => gap(r, me) > SKILL_CARRY.open)) {
+      this.calledAt = now; this.chat = quickChat('goal-rush').indexOf(PASS_CALL.line);
+    }
     // A tackle under way (the FIGHT stance) goes on until it is done.
     if (this.tackling(me, b, rivals, now, input)) { this.did = 'tackle'; return input; }
+    // (BallMatch CARRY) The ball at its feet - carried at the goal, shot close in (wound up with room), and
+    // passed or shot once one of theirs closes in.
+    if (view.ball.carry === this.id) return this.carrying(me, view, rivals, mates, aim, aimYaw, enemyZ, now, input);
     // A striker of theirs on the ball, nearer it than this player, in this half or running at its goal: Tab, and knock
-    // them off it - when the ball is not about to come loose here.
+    // them off it - when the ball is not about to come loose here. (One carrying it anywhere - a TACKLE pops
+    // it LOOSE toward the tackler.)
     const carrier = rivals.filter(q => gap(q, b) < 2.4 && b.y < 2.4).sort((x, y) => gap(x, b) - gap(y, b))[0];
-    if (carrier && now >= this.nextTackle && !inReach && gap(me, carrier) < 6 && gap(carrier, b) + .4 < gap(me, b) && Math.sign(b.z) === Math.sign(ownZ)) {
+    if (carrier && now >= this.nextTackle && !inReach && gap(me, carrier) < 6 && gap(carrier, b) + .4 < gap(me, b) && (Math.sign(b.z) === Math.sign(ownZ) || view.ball.carry === carrier.id)) {
       this.fight = {id: carrier.id, since: now};
       if (this.tackling(me, b, rivals, now, input)) { this.did = 'lock'; return input; }
     }
@@ -323,6 +346,14 @@ export class HumanHands {
     if (SWINGING.has(me.action)) this.nextPress = Math.max(this.nextPress, now + 1 / 60);
     if (eta !== undefined && slot && me.grounded) {
       input.yaw = aimYaw;
+      // (BallMatch TRAP: out of range of their goal, a ball that is no shot at its own goal is trapped dead -
+      // the guard up as it arrives, the gold ring's cue - to carry.)
+      const shotAtUs = b.lastTeam !== team && Math.sign(b.vz) === Math.sign(ownZ) && Math.abs(b.z - ownZ) < 16 && Math.hypot(b.vx, b.vz) > 9;
+      if (!this.inRange(b, enemyZ) && !shotAtUs && view.ball.carry === undefined && b.y < 2.4) {
+        input.moveX = input.moveZ = 0; this.did = 'trap';
+        if (eta <= SKILL_CARRY.lead + this.timeErr) input.guard = true;
+        return input;
+      }
       this.did = 'meet';
       // (SHOOT: the quick strike, pressed the one moment before the ball arrives that every fighter shares.)
       if (now >= this.nextPress && this.onTime(me, slot, eta)) { this.press(input, me.ultimate >= 100 && this.inRange(b, enemyZ) ? 'ultimate' : slot, aimYaw, now); this.did = 'meet-press'; }
@@ -333,9 +364,11 @@ export class HumanHands {
     // from further out; a pass to a team-mate up the pitch and open, now and then.
     const lined = Math.abs(wrap(Math.atan2(b.x - me.x, b.z - me.z) - aim)) < .7 && Math.abs(wrap(aimYaw - aim)) < .3;
     const run = eta === undefined ? this.runEta(me, b) : undefined;
-    if (lined && run !== undefined && now >= this.nextPress && dy < 1.7 && dy > -1.4) {
+    // (CARRY: out of range, a slow ball on the floor with room round it is run into and carried, not struck.)
+    const carry = !this.inRange(b, enemyZ) && b.y < GOAL_RULES.ballRadius + .3 && Math.hypot(b.vx, b.vz) < SKILL_CARRY.slow && rivals.every(r => gap(r, b) > SKILL_CARRY.room);
+    if (lined && run !== undefined && now >= this.nextPress && dy < 1.7 && dy > -1.4 && !carry) {
       const mate = mates.filter(q => toward * (q.z - b.z) > 3 && gap(q, b) < 12 && rivals.every(r => gap(r, q) > 2.5)).sort((x, y) => Math.abs(enemyZ - x.z) - Math.abs(enemyZ - y.z))[0];
-      if (mate && !this.inRange(b, enemyZ) && this.rng() < .02) { const to = Math.atan2(mate.x - b.x, mate.z - b.z); input.yaw = this.heading.turn(to); this.press(input, 'light', input.yaw, now); this.did = 'pass'; return input; }
+      if (mate && !this.inRange(b, enemyZ) && this.rng() < .02) { const to = Math.atan2(mate.x - b.x, mate.z - b.z); input.yaw = this.heading.turn(to); this.stick(me, {x: me.x + mate.x - b.x, z: me.z + mate.z - b.z}, input, 0); this.press(input, 'light', input.yaw, now); this.did = 'pass'; return input; }
       const strike = me.ultimate >= 100 && this.inRange(b, enemyZ) ? 'ultimate' : slot ?? 'heavy';
       // (SHOOT held on: the goal in range, the stamina for it, and room to wind the heavy up in - else the quick strike.)
       const own = MOVES[me.fighter].heavy, wind = strike === 'heavy' && me.grounded && this.inRange(b, enemyZ) && me.stamina >= own.stamina && this.room(me, rivals, own.contacts[0], enemyZ) ? own.contacts[0] : 0;
@@ -365,6 +398,25 @@ export class HumanHands {
       this.boost(me, d, input, now, 12);
       this.did = 'support';
     }
+    return input;
+  }
+  /** (BallMatch CARRY) The ball carried at its feet. On at the goal (the stick along the aim); within
+   *  SKILL_CARRY.close m of it a shot, wound up with room; with one of theirs within SKILL_CARRY.pressure m of the ball, a
+   *  pass to a team-mate ahead and open - the stick at them (strike.ts PASS_AIM leads it) - or the shot in range, else a
+   *  drive on up the pitch. */
+  private carrying(me: PlayerState, view: BallView, rivals: Body[], mates: Body[], aim: number, aimYaw: number, enemyZ: number, now: number, input: Command) {
+    const b = view.ball, C = SKILL_CARRY, toward = Math.sign(enemyZ), close = Math.abs(enemyZ - b.z) < C.close, pressed = rivals.some(r => gap(r, b) < C.pressure);
+    this.did = 'carry';
+    this.stick(me, {x: me.x + Math.sin(aim) * 5, z: me.z + Math.cos(aim) * 5}, input, 0);
+    input.yaw = aimYaw;
+    if (now < this.nextPress || !(close || pressed)) return input;
+    if (pressed && !close) {
+      const mate = mates.filter(q => toward * (q.z - b.z) > 2 && gap(q, b) > 4 && gap(q, b) < 18 && rivals.every(r => gap(r, q) > 2.5)).sort((x, y) => Math.abs(enemyZ - x.z) - Math.abs(enemyZ - y.z))[0];
+      if (mate) { this.stick(me, {x: me.x + mate.x - b.x, z: me.z + mate.z - b.z}, input, 0); this.press(input, 'light', this.heading.turn(Math.atan2(mate.x - b.x, mate.z - b.z)), now); this.did = 'pass'; return input; }
+    }
+    const own = MOVES[me.fighter].heavy, wind = close && me.stamina >= own.stamina && this.room(me, rivals, own.contacts[0], enemyZ) ? own.contacts[0] : 0;
+    this.press(input, me.ultimate >= 100 && this.inRange(b, enemyZ) ? 'ultimate' : 'heavy', aimYaw, now, this.limits.pace, wind);
+    this.did = wind ? 'charge' : 'shoot';
     return input;
   }
   /** A tackle held: the lock on them (Tab), run them down, a heavy in reach (a knockdown takes the ball off them). Let go
@@ -441,7 +493,7 @@ export class HumanHands {
   /** The slot a person learns makes a real strike with their fighter: SHOOT, whose quick strike is the same blow for
    *  every fighter (a heavy that launched or was no melee blow had none, and its special stood in). */
   private strikeSlot(_me: PlayerState, _now: number): AttackSlot | undefined { return 'heavy'; }
-  private inRange(b: BallState, enemyZ: number) { return Math.abs(enemyZ - b.z) < GOAL_RULES.halfZ * 1.15 && Math.abs(b.x) < GOAL_RULES.halfX * .85; }
+  private inRange(b: {x: number; z: number}, enemyZ: number) { return Math.abs(enemyZ - b.z) < GOAL_RULES.halfZ * 1.15 && Math.abs(b.x) < GOAL_RULES.halfX * .85; }
 
   // ─── Sky Spike ────────────────────────────────────────────────────────────────────────────────────────────────────
   /** MASHER: the stick at the ball (on this side of the net), every button near it, a jump now and then. */

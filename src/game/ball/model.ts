@@ -16,8 +16,9 @@ import type {MoveDefinition} from '../moves';
  *  out. Sky Spike's sides never meet across the net. Data and rules only, as everything under src/game. */
 export type BallModeId = 'goal-rush' | 'sky-spike';
 export const BALL_MODES: readonly BallModeId[] = ['goal-rush', 'sky-spike'];
-/** Bumped whenever a page and a room would disagree about the ball, its view or its messages. */
-export const BALL_PROTOCOL = 9;
+/** Bumped whenever a page and a room would disagree about the ball, its view or its messages. (10: Goal
+ *  Rush's carried ball - BallState.carry - the TRAP, and quick chat's fourth INFO line, the call for the ball.) */
+export const BALL_PROTOCOL = 10;
 export type BallTeam = 'red' | 'blue';
 export const BALL_TEAMS: readonly BallTeam[] = ['red', 'blue'];
 export const otherTeam = (team: BallTeam): BallTeam => team === 'red' ? 'blue' : 'red';
@@ -68,6 +69,11 @@ export interface BallState extends Vec3 {
   clash: number;
   /** A LINK SHOT in flight (superShots.ts LINK): the team-mate who set it up, whose colour shares the trail. */
   link?: string | null;
+  /** Goal Rush (BallMatch CARRY): the seat carrying the ball - it is at their feet, CARRY.ahead in front of
+   *  their body along the way they run, on the floor, until they strike it, lose it or let the stick go. The room puts it
+   *  there every tick; a page draws it at the carrier's drawn feet (it is the page's to draw: online the carrier's body
+   *  is drawn ahead of the room's ball). Absent: nobody carries it. */
+  carry?: string;
 }
 
 export interface BallSeat {
@@ -233,8 +239,12 @@ export function ballReportOf(view: BallView | undefined, id: string): {ball?: Ba
 /** Quick chat: four menus of four lines, the same everywhere, so a room relays an index and never
  *  free text. The first menu's lines are each mode's own calls. */
 export const QUICK_CHAT_MENUS = ['INFO', 'PRAISE', 'REACT', 'SORRY'] as const;
+/** Goal Rush's call for the ball (no new key): a person's "Pass it here!" has the carrying bot of
+ *  their side look for them first for `seconds` (BallBrain CALLED) - a pass if the lane is open, never a blind one. It
+ *  took the fourth INFO line's place ('Centering!'). */
+export const PASS_CALL = {line: 'Pass it here!', seconds: 5} as const;
 export function quickChat(mode: BallModeId): readonly string[] {
-  const info = mode === 'goal-rush' ? ['I got it!', 'Take the shot!', 'Defending...', 'Centering!'] : ['I got it!', 'Set me up!', 'Block!', 'Mine!'];
+  const info = mode === 'goal-rush' ? ['I got it!', 'Take the shot!', 'Defending...', PASS_CALL.line] : ['I got it!', 'Set me up!', 'Block!', 'Mine!'];
   return [...info, 'Nice shot!', 'Great pass!', 'What a save!', 'Thanks!', 'OMG!', 'Wow!', 'Close one!', 'Noooo!', 'Whoops...', 'My bad...', 'Sorry!', 'No problem.'];
 }
 /** A person's quick chat: no sooner than `gap` s after their last line, and no more than `burst` lines in `window` s. */

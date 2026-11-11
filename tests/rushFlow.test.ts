@@ -45,6 +45,27 @@ function pipeline(fighter: FighterId, delay: number, press: (tick: number) => bo
   return { frames, serverEvents };
 }
 
+describe('a mashed string in the simulation', () => {
+  it('goes from stage to stage without a tick of idle, hit or miss, at any mashing rate, for all sixteen', () => {
+    for (const fighter of ROSTER) for (const gap of [1.6, 14]) for (const every of [4, 8, 13, 20]) {
+      const sim = new ArenaSimulation({ trainingBot: false, seed: 9 });
+      sim.addPlayer('a', fighter, 'A', false, { x: 0, y: 0, z: 0 });
+      sim.addPlayer('b', 'taisei', 'B', false, { x: 0, y: 0, z: gap });
+      const events: CombatEvent[] = [];
+      const actions: string[] = [];
+      let seq = 0;
+      for (let tick = 0; tick < 240 && !events.some(e => e.kind === 'cast' && e.actorId === 'a' && e.chain === RUSH_STAGES - 1); tick++) {
+        sim.submitInput('a', { seq: seq++, moveX: 0, moveZ: 0, yaw: 0, targetId: 'b', attack: tick % every === 0 ? 'light' : undefined });
+        sim.step(); events.push(...sim.snapshot(true).events);
+        actions.push(sim.getPlayer('a')!.action);
+      }
+      const casts = events.filter(e => e.kind === 'cast' && e.actorId === 'a').map(e => e.chain);
+      expect(casts, `${fighter} ${gap} m every ${every}`).toEqual([0, 1, 2, 3]);
+      expect(actions.filter(a => a !== 'light'), `${fighter} ${gap} m every ${every}: idle between stages`).toEqual([]);
+      sim.dispose();
+    }
+  });
+});
 describe('a mashed string as the client draws it', () => {
   it('holds a swing the server started late on its last frame instead of dropping to idle while it is still thrown', () => {
     // The first stage lands on the client's copy, which carries the one

@@ -60,11 +60,38 @@ function checkRow(label: string, own: ComboClip, clips: Map<string, number>, dur
 }
 
 describe('the Vol.1 enders\' clips', () => {
+  it('names a clip each body plays - its own, its rush\'s, its extra files\' or its idle\'s - and a segment inside it', () => {
+    for (const id of VOL1) {
+      const row = COMBO_CLIPS[id];
+      if (hasCombos(id)) expect(row, `${id} has combo enders and no clips for them`).toBeDefined();
+      if (!row) continue;
+      const clips = bodyClips(id);
+      for (const key of COMBO_KEYS) {
+        const own = row[key];
+        if (hasCombos(id)) expect(own, `${id} ${key}`).toBeDefined();
+        if (own) checkRow(`${id} ${key}`, own, clips, hasCombos(id) ? comboMove(id, key)?.duration : undefined);
+      }
+    }
+  });
 
   it('measures every segment\'s take, so a body with another take under the same name throws the slot\'s clip', () => {
     for (const id of VOL1) for (const key of COMBO_KEYS) {
       const own = COMBO_CLIPS[id]?.[key];
       if (own) expect(own.span, `${id} ${key}: ${own.clip} needs its span`).toBeDefined();
+    }
+  });
+
+  it('names a form\'s own clips in its own body', () => {
+    for (const id of VOL1) {
+      const row = COMBO_FORM_CLIPS[id];
+      if (!row) continue;
+      const form = FIGHTERS[id].formModel;
+      expect(form, `${id} has form clips and no form`).toBeDefined();
+      const clips = clipsOf(form!);
+      for (const key of COMBO_KEYS) {
+        const own = row[key];
+        if (own) checkRow(`${id} form ${key}`, own, clips, hasCombos(id) ? comboMove(id, key, true)?.duration : undefined);
+      }
     }
   });
 

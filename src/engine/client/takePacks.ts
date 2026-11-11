@@ -159,17 +159,11 @@ export function decodeTakePack(bytes: ArrayBuffer): { fighter: FighterId; takes:
   return { fighter: json.fighter, takes };
 }
 
-const viteEnv = (typeof import.meta.env === 'object' ? import.meta.env : {}) as Record<string, string | undefined>;
-/** Whether this build carries the fighters' take packs (assets/fighters/takes/). */
-export const TAKE_PACKS_SHIPPED = viteEnv.VITE_TAKE_PACKS === '1';
 /** Packs being fetched or fetched, by fighter: one request each, ever. */
 const fetched = new Map<FighterId, Promise<Partial<PackedTakes> | undefined>>();
 /** A fighter's takes from its pack, fetched once; undefined when it has none (or it could not be read). */
 export function loadTakePack(id: FighterId): Promise<Partial<PackedTakes> | undefined> {
   let pending = fetched.get(id);
-  // No packs ship in this repository (they are caches made from the clip files, and some of those are held back:
-  // README.md), so none is asked for unless a build says it carries them (VITE_TAKE_PACKS=1).
-  if (!pending && !TAKE_PACKS_SHIPPED) { pending = Promise.resolve(undefined); fetched.set(id, pending); }
   if (!pending) {
     // Ahead of whatever else the pick sets loading (the move's art, an effect's model): the throw waits on this alone.
     pending = fetch(takePackUrl(id), { priority: 'high' } as RequestInit)

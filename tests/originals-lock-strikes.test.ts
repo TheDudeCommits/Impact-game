@@ -21,6 +21,11 @@ const bodyFiles = (id: FighterId) => { const def = FIGHTERS[id]; return new Set(
 const borrows = Object.entries(LOCK_ROUND_BORROW).flatMap(([id, stages]) => (stages ?? []).flatMap((borrow, stage) => borrow ? [{ id: id as FighterId, stage, ...borrow }] : []));
 
 describe('the take packs', () => {
+  it("are every shown original's own, written from the files its body loads now", () => {
+    const owners = Object.fromEntries(ALL_FIGHTERS.filter(fighterShown).map(id => [id, takePackOwner(id)]));
+    const off = Object.entries(owners).filter(([, owner]) => owner !== 'own');
+    expect(off, `take packs to rewrite: ${off.map(([id]) => id).join(',')}`).toEqual([]);
+  });
   it('ship: the gate leaves out only a pack that is not the original\'s own', () => {
     const packs = ALL_FIGHTERS.map(id => takePackUrl(id).slice(1));
     const away = new Set(launchUnshipped(packs));
@@ -29,6 +34,22 @@ describe('the take packs', () => {
 });
 
 describe("lock combat's borrowed strikes", () => {
+  it("find their clip on the donor's take pack's rig, in a small file with no body in it", () => {
+    for (const borrow of borrows) {
+      const label = `${borrow.id} ${borrow.stage}: ${borrow.from} ${borrow.clip} (${borrow.file})`;
+      expect(fs.statSync(`public${borrow.file}`).size, label).toBeLessThan(1024 * 1024);
+      const file = glb(borrow.file), clip = file.animations?.find(each => each.name === borrow.clip);
+      expect(clip, label).toBeTruthy();
+      expect(file.meshes ?? [], label).toEqual([]);
+      const bytes = fs.readFileSync(`public${takePackUrl(borrow.from)}`);
+      const rig = decodeTakePack(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)).takes.light!.open.rig;
+      // The clip keys the donor's own canonical joints (the same skeleton the pack's rig was read from).
+      const keyed = new Set(clip!.channels.map(channel => file.nodes[channel.target.node].name));
+      const joints = [...rig.joints.values()].map(index => rig.nodes[index].name);
+      expect(joints.length, label).toBeGreaterThan(10);
+      expect(joints.filter(name => keyed.has(name)).length / joints.length, `${label}: ${joints.filter(name => !keyed.has(name)).join(', ')}`).toBeGreaterThan(.8);
+    }
+  });
   it("name only the originals' own files, never the earlier donors'", () => {
     expect(borrows.length).toBeGreaterThan(30);
     for (const borrow of borrows) {

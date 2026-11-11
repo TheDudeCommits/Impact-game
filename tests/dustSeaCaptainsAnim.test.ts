@@ -167,6 +167,48 @@ describe('Haldor: the bisento in his hand and out of the floor', () => {
   });
 });
 
+describe('Sorrel: one arm, and nothing where the other was', () => {
+  it('no clip he plays turns his missing arm (the empty sleeve on its stump holds still, as in all his own clips)', async () => {
+    const r = await rig('sorrel'), { p: idle } = stance(r);
+    const still = ['LeftArm', 'LeftForeArm', 'LeftHand'].map(j => [j, idle.local(j)] as const);
+    const played = new Set<string>(['Wake Cutter', 'Redline Thrust', 'Sovereign Will', 'Horizon Sunder', 'Punch 01', 'Run', 'Walk', 'Dash',
+      'jump', 'Jump Fall', 'Block', 'Hit 01', 'shake', 'stun', 'slammed', 'down_lp', 'down_end', 'awaken-will', 'victory_lp', 'idlehome_a', '_Idle']);
+    for (const seg of Object.values(COMBO_CLIPS.sorrel!)) played.add(seg!.clip);
+    // Sorrel has both arms, his left hanging dead from the shoulder in every clip and swinging after his moves. It
+    // turns as a dead arm turns, so what holds is that it never lifts or strikes: the hand at least
+    // three fifths of the arm's reach below the shoulder, and the elbow within a few degrees of its idle's bend (it
+    // swings with the arm, a dead elbow never folds).
+    const dead = !!ORIGINALS.sorrel;
+    const reach = idle.at('LeftArm').distanceTo(idle.at('LeftForeArm')) + idle.at('LeftForeArm').distanceTo(idle.at('LeftHand'));
+    const bend = (q: { at(j: string): THREE.Vector3 }) => q.at('LeftForeArm').clone().sub(q.at('LeftArm')).angleTo(q.at('LeftHand').clone().sub(q.at('LeftForeArm'))) * 180 / Math.PI;
+    for (const name of played) {
+      const c = r.clips.get(name);
+      expect(c, name).toBeDefined();
+      for (const t of times(0, c!.duration, 1 / 30)) {
+        const p = pose(r, name, t);
+        if (dead) {
+          expect((p.at('LeftArm').y - p.at('LeftHand').y) / reach, `${name}: the left hand's drop at ${t.toFixed(2)}`).toBeGreaterThan(.6);
+          expect(Math.abs(bend(p) - bend(idle)), `${name}: the left elbow at ${t.toFixed(2)}`).toBeLessThan(3);
+          continue;
+        }
+        for (const [j, q] of still) expect(deg(p.local(j), q), `${name}: ${j} at ${t.toFixed(2)}`).toBeLessThan(2);
+      }
+    }
+  });
+});
+
+describe('Dorado: his flinch with his own arms', () => {
+  it('every light blow he takes leaves his arms their own length (the flinch stretched them to three to five times)', async () => {
+    const r = await rig('dorado'), { p: idle } = stance(r);
+    const segs = ['Left', 'Right'].flatMap(s => [[s + 'Arm', s + 'ForeArm'], [s + 'ForeArm', s + 'Hand']]);
+    const length = (p: { at(name: string): THREE.Vector3 }, [a, b]: string[]) => p.at(a).distanceTo(p.at(b));
+    for (const t of times(0, r.clips.get('shake')!.duration, 1 / 30)) {
+      const p = pose(r, 'shake', t);
+      for (const s of segs) expect(Math.abs(length(p, s) / length(idle, s) - 1), `${s.join('-')} at ${t.toFixed(2)}`).toBeLessThan(.05);
+    }
+  });
+});
+
 
 
 describe('Dorado: HORIZON SUNDER, the blade brought down from on high onto the blow', () => {

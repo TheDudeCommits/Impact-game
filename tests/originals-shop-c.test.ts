@@ -66,6 +66,36 @@ describe('team C\'s shop originals', () => {
     }
   });
 
+  it('awaken as their own: a worn guardian, a looming one, and two bodies of their own', () => {
+    const clipNames = (file: string) => (glbJson(file).animations ?? []).map(a => a.name);
+    if (SHOP_C.tobari) {
+      // Tobari's CROW TENGU is worn round him as the Guardian was (a summon), so it plays every clip his body plays.
+      expect(AWAKENINGS.tobari.kind).toBe('summon');
+      const shell = clipNames(FIGHTERS.tobari.formModel!), body = clipNames(FIGHTERS.tobari.model);
+      for (const clip of body) expect(shell, `the tengu's ${clip}`).toContain(clip);
+    }
+    if (SHOP_C.akagane) {
+      // Akagane's WRATHFUL KING looms behind him as the WRATHFUL KING did (GuardianShell), with the Guardian's seven
+      // takes under the joint names the renderer reads; Shiden's and Shirokane's guardian stays theirs.
+      expect(GUARDIAN_USERS).toContain('akagane');
+      const loom = guardianAsset('akagane');
+      expect(loom).toBe(ORIGINALS.akagane!.guardian);
+      expect(loom).toMatch(OWN.akagane);
+      expect(guardianAsset('shiden')).toBe(ORIGINALS.shiden!.guardian);
+      expect(NINJA_ASSETS).toContain(loom);
+      const json = glbJson(loom);
+      expect((json.animations ?? []).map(a => a.name).sort()).toEqual(['Guardian bow', 'Guardian cast', 'Guardian guard', 'Guardian idle', 'Guardian rise', 'Guardian strike', 'Guardian strike L']);
+      for (const joint of ['WAIST_04', 'SPINE3_07', 'HEAD_09', 'SHOULDER_L_033', 'SHOULDER_R_055', 'ELBOW_L_034', 'ELBOW_R_056', 'WRIST_L_036', 'WRIST_R_058'])
+        expect(json.nodes.some(n => n.name === joint), joint).toBe(true);
+    }
+    // Shiun's PALE SERAPH and Magatsu's CALAMITY KING are bodies of their own, in the forms' places.
+    for (const id of ['shiun', 'magatsu'] as const) if (SHOP_C[id]) {
+      expect(AWAKENINGS[id].kind, id).toBe('form');
+      expect(FIGHTERS[id].formModel, id).toMatch(OWN[id]);
+      expect(clipNames(FIGHTERS[id].formModel!).length, id).toBeGreaterThan(20);
+    }
+  });
+
 
 
 

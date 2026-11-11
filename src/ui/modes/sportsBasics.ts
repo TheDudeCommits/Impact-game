@@ -14,12 +14,13 @@ export interface SportBasic { action: PromptAction; name: string; how: string; l
  */
 export const SPORTS_BASICS: Readonly<Record<BallModeId, readonly SportBasic[]>> = {
   'goal-rush': [
-    { action: 'light', name: 'Pass', how: 'To a team-mate', line: 'Face someone on your side and tap it: the pass finds their run.' },
+    { action: 'light', name: 'Pass', how: 'The stick at a team-mate', line: 'Hold the stick at someone on your side and tap it: the pass is led into their run. With the stick let go it finds the one you face.' },
     { action: 'heavy', name: 'Shoot', how: 'Tap, or hold to charge', line: 'A tap shoots at once, where you look. Hold it to wind up your own move: a charged shot, harder and hotter.' },
     { action: 'heavy', name: 'Perfect Strike', how: 'As it arrives', line: 'Meet a pass, a cross or a rebound just as it gets to you: faster and hotter, and worth the most.' },
     { action: 'jump', name: 'Header', how: 'Into a cross', line: 'Jump into a high ball and it is headed on, the way you face. At the top of the jump: a perfect one.' },
     { action: 'dash', name: 'Boost', how: 'On the run', line: 'Burns the gold bar. Run a boost into a rival and they go flat.' },
-    { action: 'target', name: 'Fight & Tackle', how: 'Lock on, knock down', line: 'Fight the one on the ball: knock them down and the ball is yours. Press it again to play the ball.' },
+    { action: 'guard', name: 'Trap & Carry', how: 'Guard as it arrives', line: 'Guard just as a pass or a loose ball gets to you and it dies at your feet. Run into a slow ball and you carry it, a little slower: a tackle, or a rival in its way, takes it off you.' },
+    { action: 'target', name: 'Fight & Tackle', how: 'Lock on, knock down', line: 'Fight the one on the ball: knock them down and it pops loose toward you. Press it again to play the ball.' },
   ],
   'sky-spike': [
     { action: 'light', name: 'Bump & Set', how: 'Under it', line: 'Three touches a side: bump it up, set it high at the net, and the third goes over.' },

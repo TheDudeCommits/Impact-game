@@ -3,6 +3,7 @@ import { ArenaSimulation } from '../src/game/simulation';
 import { Prediction } from '../src/game/prediction';
 import { THREE_BLOW_STRING, withMove } from './retiredMoves';
 import type { PlayerInput } from '../src/game/types';
+import { SHOOT, ballAssist } from '../src/game/ball/model';
 
 /** A server and a client of it, with a latency you choose in whole ticks. */
 function wire(latencyTicks = 6) {
@@ -257,5 +258,47 @@ describe('your own fighter answers the frame you press', () => {
     expect(server.getPlayer('me')!.hp, 'a passive bot does nothing').toBe(1000);
     for (const reaction of ['hurt', 'flinch', 'launched', 'knockdown', 'getup', 'stun', 'splat'])
       expect([...seen], `the client invented a ${reaction}`).not.toContain(reaction);
+  });
+});
+
+describe('the ball rooms\' SHOOT, wound up', () => {
+  /** A server and a client of it with the ball rooms' sports feel (SportFeel.strike: a heavy is SHOOT), `latencyTicks` apart. */
+  function sport(latencyTicks = 8) {
+    const server = new ArenaSimulation({ trainingBot: false });
+    server.assist = ballAssist('goal-rush');
+    server.addPlayer('me', 'kenzo', 'Me', false, { x: 0, y: 0, z: 0 });
+    const prediction = new Prediction();
+    prediction.start('me', server.snapshot(false, true));
+    prediction.setExternalTargets(undefined, ballAssist('goal-rush'));
+    let seq = 0, tick = 0;
+    const queue: { at: number; input: PlayerInput }[] = [];
+    /** One frame: the input predicted, posted, a server tick; and the swing as the page draws it - its clip, its clock. */
+    const frame = (more: Partial<PlayerInput> = {}) => {
+      const input: PlayerInput = { seq: seq++, moveX: 0, moveZ: 0, yaw: 0, ...more };
+      prediction.submit(input); queue.push({ at: tick + latencyTicks, input });
+      tick++;
+      while (queue.length && queue[0].at <= tick) server.submitInput('me', queue.shift()!.input);
+      server.step();
+      const shown = prediction.sample(1 / 60, server.getPlayer('me')!)!;
+      return { action: shown.action, strike: shown.strike, clock: (shown.actionTime ?? 0) * (shown.actionDuration ?? 0) };
+    };
+    return { frame };
+  }
+  it('keeps a tap wound into a charge on the press\'s clock across the split; an ordinary second cast still starts its own', () => {
+    const { frame } = sport();
+    const drawn = [frame({ attack: 'heavy', heavyHeld: true })];
+    for (let i = 1; i < 30; i++) drawn.push(frame({ heavyHeld: true }));
+    // The quick strike, then past SHOOT.hold the fighter's own heavy (a charge), one swing.
+    const split = drawn.findIndex(d => d.strike === 'charge');
+    expect(split, 'wound up at the split').toBeGreaterThan(Math.round(SHOOT.hold * 60) - 2);
+    expect(drawn[split - 1].strike).toBe('tap');
+    // Its drawn clock runs on from the press through the split, never back to the start.
+    for (let i = 1; i < 30 && drawn[i].action === 'heavy'; i++) expect(drawn[i].clock, `frame ${i}`).toBeGreaterThan(drawn[i - 1].clock);
+    expect(drawn[split].clock, 'the press\'s age at the split').toBeGreaterThan(SHOOT.hold - .05);
+    // A second press, after the first is over: a cast of its own, drawn from its start.
+    for (let i = 0; i < 90; i++) frame();
+    const again = frame({ attack: 'heavy' });
+    expect(again.action).toBe('heavy');
+    expect(again.clock, 'a new swing starts at its own beginning').toBeLessThan(.05);
   });
 });

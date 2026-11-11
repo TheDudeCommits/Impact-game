@@ -379,6 +379,7 @@ const ballField=new BallField(view.scene),ballUI=new BallUI(root.querySelector<H
 // touchForecast.ts) and drawn at once (BallField.forecastTouch), the room's word blended in when it comes; and heard
 // at once (BallAudio.own, from the ball as it was drawn just before), the room's own sound for it skipped.
 ballTargets.local=()=>prediction.local;ballTargets.clock=()=>prediction.localTime;ballTargets.replaying=()=>prediction.replaying;
+ballField.ownStick=()=>prediction.local?.input;// (Its own carried ball turned toward its stick, as the room turns it.)
 ballTargets.drawn=()=>ballField.drawnState();ballTargets.onTouch=touch=>{if(!forecastTouches)return;
   // (BallMatch DOUBLE: how soon the page's own swing under way lands - a body's touch just ahead of it is its.)
   if(network===online){const cast=prediction.local?.cast;ballAudio.own(touch,ballField.drawnState(),cast?nextContact(cast.move.contacts,prediction.localTime-cast.start):Infinity);}
@@ -1971,7 +1972,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
       input.yaw=couch.on?couch.yaw:camera.inputYaw;stanceYaw=input.yaw;
       // Round 4: and the pitch, which the dynamic camera levels once it is left alone.
       if(!couch.on)input.pitch=camera.inputPitch;
-      touch.meters(self,snapshot.serverTime,couch.on?undefined:ballOf(snapshot)); // (A ball match: its own sports set, input/sportTouch.ts.)
+      touch.meters(self,snapshot.serverTime,couch.on?undefined:ballOf(snapshot),snapshot.players); // (A ball match: its own sports set, input/sportTouch.ts; the players for its TRAP.)
       const target=(ballOf(snapshot)?ballTargets.players:riftOf(snapshot)?riftTargets.players:survival()?survivalTargets.players:snapshot.players).find(p=>p.id===targetId);if(now-lastHud>70){hud.update(snapshot,self,target,network!==online||now-network.receivedAt<1500);hud.link(network===online?online.link.note(now):undefined);const phase=snapshot.status==='finished'?'results':'combat';
         // An arcade enemy is not a matchup. The run plays its act's world's
         // score first - one piece under Shiun, another on Gorai's roof -

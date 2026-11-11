@@ -138,9 +138,46 @@ describe('a public match fills its field with bots at kickoff', () => {
     } finally { room.onDispose(); }
   });
 
-  // The performance sweep, 24 October 2026: the bots' models came down after the countdown, everyone waiting on the
-  // AssetGate. The room drafts them as the countdown starts and says whom (ArenaRoom.planBots), so every page fetches them
-  // meanwhile; the kickoff seats exactly those - less any a human picked since - and still never before it.
+  // The bots' models once came down after the countdown, everyone waiting on the AssetGate. The room drafts them as the
+  // countdown starts and says whom (ArenaRoom.planBots), so every page fetches them meanwhile; the kickoff seats exactly
+  // those - less any a human picked since - and still never before it.
+  it('plans its bots as the countdown starts, tells every page, and seats those at kickoff', async () => {
+    const { room, advance, join, untilActive } = await publicRoom();
+    // (The plan is drawn off the simulation's seeded stream, which a room seeds from the clock; seeded here so every run
+    // drafts the same field.)
+    (room.simulation as unknown as { randomState: number }).randomState = 3;
+    try {
+      const plans = () => (room.broadcast as unknown as { mock: { calls: unknown[][] } }).mock.calls.filter(c => c[0] === 'planned-bots').map(c => c[1] as FighterId[]);
+      join('solo', 'kenzo');
+      advance();
+      expect(plans()).toHaveLength(1);
+      const first = plans()[0];
+      expect(first).toHaveLength(MIN_MATCH_FIELD - 1);
+      expect(new Set(first).size, 'different fighters').toBe(first.length);
+      expect(first, 'none of them a mirror of the human').not.toContain('kenzo');
+      expect(room.simulation.snapshot().players.filter(p => p.isBot), 'planned, not seated').toHaveLength(0);
+      advance(60);
+      expect(plans(), 'drafted again only as the humans change').toHaveLength(1);
+      // A second human, playing one of the planned bots: told the plan as they join, and the plan drops that one, keeping
+      // the rest. (Every fighter past the first sixteen is sold, and the plan may hold none of the sixteen: this joins past
+      // onAuth's lock check, as an owner of the pick would. onAuth checks this one join without the fighter, which only
+      // the released and lock checks read - a drafted bot is released - and every other check still runs.)
+      const pick = first.find(f => !lockedOut(f, undefined)) ?? first[0];
+      if (lockedOut(pick, undefined)) {
+        const auth = room.onAuth.bind(room);
+        vi.spyOn(room, 'onAuth').mockImplementationOnce((c, o = {}) => auth(c, { ...o, fighter: undefined }));
+      }
+      const late = join('late', pick);
+      expect(late.send).toHaveBeenCalledWith('planned-bots', first);
+      advance();
+      expect(plans()).toHaveLength(2);
+      const second = plans()[1];
+      expect(second).toEqual(first.filter(f => f !== pick));
+      untilActive(SOLO_COUNTDOWN + 3);
+      expect(room.simulation.status).toBe('active');
+      expect(room.simulation.snapshot().players.filter(p => p.isBot).map(p => p.fighter), 'the kickoff seats the plan').toEqual(second);
+    } finally { room.onDispose(); }
+  });
 
   it('tops the plan up when a human leaves before the kickoff', async () => {
     const { room, advance, join, untilActive } = await publicRoom();

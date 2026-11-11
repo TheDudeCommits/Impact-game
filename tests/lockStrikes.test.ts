@@ -37,4 +37,23 @@ describe('the borrowed strikes', () => {
     }
   });
 
+  it('every one fits its body: keyed on the body\'s own joints, finite, never refused', async () => {
+    const refused: string[] = [];
+    for (const id of NINE) {
+      const { source } = await assembleFighter(id);
+      for (let stage = 0; stage < 3; stage++) {
+        if (!LOCK_ROUND_BORROW[id]![stage]) continue;
+        const clip = borrowedStrike(source.scene, source.animations, id, stage);
+        if (!clip) { refused.push(`${id} ${stage}: ${JSON.stringify(strikeReport())}`); continue; }
+        expect(clip.duration, `${id} ${stage}`).toBeGreaterThan(.2);
+        for (const track of clip.tracks) {
+          expect(THREE.PropertyBinding.findNode(source.scene, THREE.PropertyBinding.parseTrackName(track.name).nodeName), `${id} ${track.name}`).toBeTruthy();
+          expect(Array.from(track.values).every(Number.isFinite), `${id} ${track.name}`).toBe(true);
+        }
+      }
+    }
+    expect(refused).toEqual([]);
+    if (process.env.STRIKE_REPORT) fs.writeFileSync(process.env.STRIKE_REPORT, JSON.stringify(strikeReport(), null, 1));
+  }, 120000);
+
 });

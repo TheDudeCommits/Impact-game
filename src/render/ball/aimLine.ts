@@ -98,7 +98,10 @@ export class AimLine {
     // reaches it there: its edge within `near` of the body along the floor, and as far again as the move's own lunge can
     // still carry the body in the wind-up left (`lunge` at the most); `above` over it. (A body walked off the ball while it
     // winds up - the key held, the stick across - loses the line before the swing misses.)
-    for (let t = 0; t < own.left - 1e-6; t += 1 / 60) stepBall(mode, b, Math.min(1 / 60, own.left - t), this.contacts);
+    // (The page's own carried ball rides the feet to the blow, which strikes it as a ball at rest - BallMatch
+    // CARRY - so the line starts from the ball at the feet.)
+    if (b.carry === p.id) { b.x += (run?.vx ?? 0) * own.left; b.z += (run?.vz ?? 0) * own.left; b.vx = b.vy = b.vz = 0; }
+    else for (let t = 0; t < own.left - 1e-6; t += 1 / 60) stepBall(mode, b, Math.min(1 / 60, own.left - t), this.contacts);
     const reach = AIM.near + r + Math.min(AIM.lunge, (a.cast?.move.lunge ?? 0) * own.left);
     if (Math.hypot(b.x - p.x, b.z - p.z) > reach || Math.abs(b.y - (p.y + 1)) > AIM.above) return false;
     const yaw = a.attackYaw ?? a.input.yaw, mx = a.attackMoveX ?? a.input.moveX, mz = a.attackMoveZ ?? a.input.moveZ;

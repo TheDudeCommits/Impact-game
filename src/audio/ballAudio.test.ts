@@ -101,6 +101,25 @@ describe('the ball modes\' sound', () => {
     expect(played.filter(id => id.startsWith('strike-'))).toEqual([expect.stringMatching(/^strike-tap-/), expect.stringMatching(/^strike-power-/)]);
   });
 
+  it('hears Goal Rush\'s TRAP as a soft thud on the turf, nothing more, and a PERFECT GUARD as its block', () => {
+    const r = rig(), at = { team: 'red' as const, actorId: 'me', shot: 'save' as const };
+    r.audio.update(snap(view({ ball: ball({ y: .8, vz: -9, lastId: 'mate', lastTeam: 'red', shot: 'tap' }) }), 10 - 1 / 30), 'me');
+    r.audio.update(snap(view({ events: [event(5, 'perfect', { ...at, text: 'TRAP' })], ball: ball({ y: .8, lastId: 'me', lastTeam: 'red', shot: 'save', carry: 'me' }) }), 10), 'me');
+    expect(r.played).toEqual(['bounce-turf-soft']); expect(r.stands).toEqual([]); expect(r.said).toEqual([]);
+    const guard = rig();
+    guard.audio.update(snap(view({ ball: ball({ y: 2, vz: -9, lastId: 'mate', lastTeam: 'red', shot: 'tap' }) }), 10 - 1 / 30), 'me');
+    guard.audio.update(snap(view({ events: [event(5, 'perfect', { ...at, text: 'PERFECT GUARD' })], ball: ball({ y: 2, vy: 8, vz: 11, lastId: 'me', lastTeam: 'red', shot: 'save' }) }), 10), 'me');
+    expect(guard.played).toEqual(['block']);
+  });
+  it('hears no touch in a carried ball turning and stopping at its carrier\'s feet (BallMatch CARRY)', () => {
+    const { audio, played } = rig(), at = (t: number, vx: number, vz: number, carry?: string) => audio.update(snap(view({ ball: ball({ y: .8, vx, vz, lastId: 'me', lastTeam: 'red', shot: 'save', carry }) }), t), 'me');
+    at(10, 0, 7, 'me'); at(10 + 1 / 30, 6, 2, 'me'); at(10 + 2 / 30, 0, 0, 'me');
+    expect(played).toEqual([]);
+    // (A ball nobody carries that turns as sharply is a touch, as ever.)
+    at(11, 0, 7); at(11 + 1 / 30, 6, 2);
+    expect(played.filter(id => id.startsWith('strike-'))).toHaveLength(1);
+  });
+
   it('hears a Sky Spike kill come down on the planks, and a ball out on the stone, though the room holds the ball that tick', () => {
     const { audio, played } = rig();
     audio.update(snap(view({ mode: 'sky-spike', ball: ball({ y: 2, vy: -14 }) }), 10), 'me');

@@ -34,6 +34,19 @@ describe('r8: the places built whole in code', () => {
     expect(ownStageModel('blood-citadel')).toBeUndefined();
   });
 
+  it("keeps the earlier model of each out of the package, unless what still loads it ships", () => {
+    const files = Object.values(STAGES).flatMap(s => s.model ? [s.model.slice(1)] : []);
+    const out = new Set(launchUnshipped([...files, ...RETIRED_FILES, 'assets/environment/br/sky-hollowmere-quarry.webp']));
+    for (const id of built) {
+      const model = STAGES[id].model!.slice(1);
+      const kept = id === 'ashfall-weir' && modeOpen('rift-war');
+      if (STILL_LOADED[id] && kept) expect(out.has(model), id).toBe(false);
+      else expect(out.has(model), id).toBe(true);
+    }
+    for (const file of RETIRED_FILES) expect(out.has(file), file).toBe(true);
+    expect(out.has('assets/environment/br/sky-hollowmere-quarry.webp')).toBe(false);
+  });
+
 
   it("keeps the retired files' sources and hangs none of them", () => {
     for (const file of RETIRED_FILES) expect(fs.existsSync(`public/${file}`), file).toBe(true);
