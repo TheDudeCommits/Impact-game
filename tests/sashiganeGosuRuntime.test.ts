@@ -38,6 +38,17 @@ describe('native Ratio blade and manually commanded the mender',()=>{
    for(let i=0;i<90;i++)f.tick({...f.state,action:'idle',actionSeq:3,actionStarted:2},2+i/120);expect(spirit.group.visible).toBe(false);
   }finally{f.dispose();}
  });
+
+ it('human ground light commands while the mender throws its own exact attack clip',()=>{
+  const f=fixture();try{const spirit=sequence(f,'light',.21);expect(f.owner.motionEvidence().clip).toBe('Gosu Command');expect(spirit.motionEvidence().clip).toBe('Porcelain Jab');const p=new THREE.Vector3();expect(f.owner.meleeContactPoint(0,p)).toBe(true);expect(p.distanceTo(spirit.joints.get('RightHand')!.getWorldPosition(new THREE.Vector3()))).toBeLessThan(1e-6);expect(p.distanceTo(f.owner.handR)).toBeGreaterThan(.15);}finally{f.dispose();}
+ });
+
+ it('retains all eight ultimate windows and alternates the real spirit hand only after confirmation',()=>{
+  const f=fixture();try{const m=MOVES.gosu.ultimate;for(let index=0;index<m.contacts.length;index++){
+   const spirit=sequence(f,'ultimate',m.contacts[index],index?{confirmedAt:1+m.contacts[0]}:{});expect(spirit.motionEvidence().clip).toBe('Gilded Scars');expect(spirit.state.confirmedAt).toBe(index?1+m.contacts[0]:undefined);
+   const p=new THREE.Vector3();expect(f.owner.meleeContactPoint(index,p)).toBe(true);const joint=spirit.joints.get(index%2?'LeftHand':'RightHand')!;expect(p.distanceTo(joint.getWorldPosition(new THREE.Vector3()))).toBeLessThan(1e-6);expect(f.inner.timeFields.size).toBe(0);expect(f.owner.motionEvidence().formVisible).toBe(false);
+  }}finally{f.dispose();}
+ });
  it.each([false,true])('native airborne string and KIN KIN contacts remain manual (awakened=%s)',awakened=>{
   const f=fixture();try{
    for(let stage=0;stage<3;stage++){

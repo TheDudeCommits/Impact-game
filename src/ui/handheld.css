@@ -320,8 +320,9 @@ html.tc-upright .tc-turn{display:grid}
 .touch-controls[data-stance="ball"] .tc-sp-side[data-face="fist"]{border-color:#ff5a6e}
 .touch-controls[data-sport="goal-rush"][data-stance="fight"] .tc-sp:not(.tc-sp-side){border-color:var(--tc-red);box-shadow:0 0 0 1px #0b0c0e80,0 0 calc(8px * var(--tc-k)) #cc202b80}
 .touch-controls[data-sport="goal-rush"][data-stance="fight"] .tc-sp-side{border-color:var(--tc-gold);box-shadow:0 0 0 1px #0b0c0e80,0 0 calc(10px * var(--tc-k)) #f0c35a73}
-/* Sky Spike's button of the moment: DIVE, while it is that, has a gold rim (it is BLOCK's place: the change is seen). */
-.tc-sp-side[data-face="dive"]{border-color:var(--tc-gold)}
+/* The button of the moment: Sky Spike's DIVE, and Goal Rush's TRAP, have a gold rim while they are that (it
+   is BLOCK's place, and FIGHT's: the change is seen). */
+.tc-sp-side[data-face="dive"],.tc-sp-side[data-face="trap"]{border-color:var(--tc-gold)}
 /* SUPER: no button short of its charge (the HUD's SUPER bar fills); charged, a gold button that pops in. */
 .tc-sp-super{--ring:var(--tc-gold);border-color:var(--tc-gold);background:radial-gradient(circle at 50% 30%,#ffd978,#b07a12 74%);
   box-shadow:0 0 0 1px #0b0c0e80,0 0 calc(14px * var(--tc-k)) #f0c35aa6;animation:tc-super-in .38s cubic-bezier(.2,1.5,.4,1)}

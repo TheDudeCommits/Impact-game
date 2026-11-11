@@ -1,92 +1,12 @@
 {
- "tests/amagoiSharedIntegration.test.ts": [
-  "air stages retain their individual authored receiver/repulsion clips"
- ],
- "tests/areaStamp.test.ts": [
-  "keeps each data entry's animation to a fighter that exists and a clip its body has"
- ],
- "tests/awakening.test.ts": [
-  "resolves its transformation clip in the fighter that has to play it"
- ],
- "tests/combosVol1Clips.test.ts": [
-  "names a clip each body plays - its own, its rush's, its extra files' or its idle's - and a segment inside it",
-  "names a form's own clips in its own body"
- ],
- "tests/dustSeaCaptainsAnim.test.ts": [
-  "every light blow he takes leaves his arms their own length (the flinch stretched them to three to five times)",
-  "no clip he plays turns his missing arm (the empty sleeve on its stump holds still, as in all his own clips)"
- ],
- "tests/fighterAssets.test.ts": [
-  "names only files that exist, so the package step cannot fail on one"
- ],
- "tests/footContact.test.ts": [
-  "measures the whole roster",
-  "reports a plausible number of steps for the ground covered"
- ],
- "tests/gummyRound5.test.ts": [
-  "is its own take, landing its blow on the move's contact"
- ],
- "tests/lockStrikes.test.ts": [
-  "every one fits its body: keyed on the body's own joints, finite, never refused"
- ],
- "tests/matchFill.test.ts": [
-  "plans its bots as the countdown starts, tells every page, and seats those at kickoff"
- ],
  "tests/mergeStatic.test.ts": [
   "is only switched on for real places"
- ],
- "tests/originals-authored-kicks.test.ts": [
-  "name shown originals and clips in their body or rush file"
- ],
- "tests/originals-lock-strikes.test.ts": [
-  "are every shown original's own, written from the files its body loads now",
-  "find their clip on the donor's take pack's rig, in a small file with no body in it"
  ],
  "tests/originals-places-r8.test.ts": [
   "keeps the earlier model of each out of the package, unless what still loads it ships"
  ],
  "tests/originals-places-r9.test.ts": [
-  "leaves no built place's model loaded by anything else (modes-places: Rift War's map builds its own), so none ships"
- ],
- "tests/originals-shop-a.test.ts": [
-  "carry their weapons in their own right hands through every clip",
-  "stand on their boots in their idles, never on a tail or a coat's hem"
- ],
- "tests/originals-shop-b.test.ts": [
-  "carry every clip from beside the body, on the body's own joints"
- ],
- "tests/originals-shop-c.test.ts": [
-  "awaken as their own: a worn guardian, a looming one, and two bodies of their own"
- ],
- "tests/originals-shop-e.test.ts": [
-  "play every clip the slot's tables name, from their own files"
- ],
- "tests/originals-survival.test.ts": [
-  "gives every boss of the rotation its own voice at its entrance, rage, stagger and fall: the game's own lines, on disk, recorded"
- ],
- "tests/originals.test.ts": [
-  "carry every clip from beside the body with its travel, on the body's own joints",
-  "carry their blades in their own hands (and teeth), through every clip",
-  "draw only their own bodies, clips, idles and portraits, and every one of them ships",
-  "key every joint the transfer moves in every clip, so the renderer's layers never pile up on a stale pose"
- ],
- "tests/rushFlow.test.ts": [
-  "goes from stage to stage without a tick of idle, hit or miss, at any mashing rate, for all sixteen"
- ],
- "tests/rushStages.test.ts": [
-  "never plays the same swing twice running where the rig has another",
-  "plays the clips the config names, and falls back for one it cannot find",
-  "uses the air normals for airborne stages only where they are smooth"
- ],
- "tests/sashiganeGosuRuntime.test.ts": [
-  "human ground light commands while the mender throws its own exact attack clip",
-  "retains all eight ultimate windows and alternates the real spirit hand only after confirmation"
- ],
- "tests/setsu.test.ts": [
-  "carries the whole set, every clip keying every joint, every track binding"
- ],
- "tests/tokanSharedIntegration.test.ts": [
-  "plays its own DEAD OF WINTER entry with moving hands and no body swap"
+  "leaves no built place's model loaded by anything else (Rift War's map builds its own), so none ships"
  ],
  "tests/armoryRetention.test.ts": [
   "lets go of the types a room does not draw - pool, scene objects, buffers - and keeps the ones it does"

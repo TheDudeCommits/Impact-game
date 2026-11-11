@@ -4,8 +4,11 @@ import {BallField} from './BallField';
 import {VfxKit} from '../vfx/VfxKit';
 import type {GroundMarks} from '../vfx/GroundMarks';
 import {BallArena} from './BallArena';
-import {freshBall} from '../../game/ball/physics';
-import {GOAL_RULES,SPIKE_RULES,type BallEvent,type BallModeId,type BallState,type BallView} from '../../game/ball/model';
+import {freshBall,stepBall} from '../../game/ball/physics';
+import {BALL_TEAM_COLOURS,GOAL_RULES,SPIKE_RULES,type BallEvent,type BallModeId,type BallState,type BallView} from '../../game/ball/model';
+import {CARRY,carrySpot} from '../../game/ball/BallMatch';
+import {crowdHype} from './hype';
+import {BallMoments} from './BallMoments';
 import type {GameSnapshot} from '../../game/types';
 
 // No renderer: the field is built, fed snapshots and read back, never drawn.
@@ -224,5 +227,123 @@ describe('the ball arenas',()=>{
     expect(net.max.x).toBeCloseTo(S.courtHalfX+S.netPost);expect(net.max.y).toBeCloseTo(S.netHeight);expect(net.max.z).toBeCloseTo(0);
     expect(court.occluders).toHaveLength(0);
     court.dispose();
+  });
+});
+
+// Goal Rush's carried ball (BallMatch CARRY; whose, BallState.carry) is drawn at its carrier's DRAWN feet, and
+// a TRAP is a small moment of its own.
+describe('the ball field: a carried ball and the TRAP',()=>{
+  const r=GOAL_RULES.ballRadius,pace=6.8;
+  const seats=[{id:'me',team:'red',fighter:'konta'},{id:'you',team:'blue',fighter:'konta'}] as unknown as BallView['seats'];
+  type Body={x:number;z:number;heading?:number};
+  /** The room, 30 snapshots a second: its body `body(t)` and ball `ball(t)` at room time t. Each frame (60 Hz) presents
+   *  the room at its own time as the timeline does (the snapshot before it, the next one); the page hears each snapshot
+   *  0.1 s before the frame reaches it (online: field.heard); the carrier is drawn `ahead` s ahead of the room (the page's
+   *  own fighter online, its view lag) when it is the page's own (`self`). Per frame: the room's time, the drawn ball,
+   *  the drawn body, the drawn ball as a whole (drawnState). */
+  const play=(o:{body:(t:number)=>Body;ball:(t:number,b:Body)=>Partial<BallState>;seconds:number;ahead?:number;self?:string;stick?:(t:number)=>number})=>{
+    // (`body` the drawn body this frame, for the checks.)
+    const field=new BallField(new THREE.Scene()),camera=new THREE.PerspectiveCamera(),drawnBody=new THREE.Vector3(),self=o.self??'me',ahead=self==='me'?o.ahead??0:0;
+    field.bodyOf=id=>id==='me'?drawnBody:undefined;field.viewLag=ahead;let now=1;
+    // (The page's own stick as its prediction has it, in its own time: `stick(t)` its way.)
+    if(o.stick)field.ownStick=()=>({moveX:Math.sin(o.stick!(now+ahead)),moveZ:Math.cos(o.stick!(now+ahead))});
+    const at=(k:number)=>{const t=k/30,b=o.body(t);return {t,ball:{...freshBall(),held:false,lastId:'me',lastTeam:'red',shot:'tap',...o.ball(t,b)} as BallState};};
+    const frame=(k:number)=>{const s=at(k),v=view(s.ball);v.seats=seats;return {...snap(s.t,v),players:[{id:'me',...o.body(s.t),y:0,alive:true}]} as unknown as GameSnapshot;};
+    const rows:{t:number;ball:THREE.Vector3;body:THREE.Vector3;state:BallState;k:number}[]=[];let heard=-1;
+    for(let f=0;f<o.seconds*60;f++){
+      const t=1+f/60,k=Math.floor(t*30+1e-9);now=t;
+      if(o.ahead)for(;(heard+1)/30<=t+.1;heard++)if(heard+1>=30)field.heard(frame(heard+1));
+      const s=at(k),n=at(k+1),v=view(s.ball);v.seats=seats;Object.assign(v,{sampledAt:s.t,next:n.ball,nextAt:n.t});
+      // (The drawn bodies are drawn after the ball each frame, as main.ts does: the field reads last frame's.)
+      const p=o.body(t),q=o.body(t+ahead),was=o.body(t-1/60+ahead);drawnBody.set(was.x,0,was.z);
+      field.update({...snap(t,v),players:[{id:'me',x:p.x,y:0,z:p.z,alive:true}]} as unknown as GameSnapshot,self,camera,1/60,t*1000);
+      rows.push({t,ball:field.ballPosition()!.clone(),body:new THREE.Vector3(q.x,0,q.z),state:{...field.drawnState()!},k:field.carryLook.k});
+    }
+    return {field,rows};
+  };
+  const flat=(a:{x:number;z:number},b:{x:number;z:number})=>Math.hypot(a.x-b.x,a.z-b.z);
+  const runner=(t:number):Body=>({x:0,z:-10+pace*(t-1)});
+  const carried=(t:number,b:Body)=>({...carrySpot(b,b.heading??0,r),vx:0,vz:pace,carry:'me'});
+  it('draws it at the carrier\'s drawn feet, on this device and for the page\'s own fighter drawn ahead online',()=>{
+    for(const ahead of [0,.15]){
+      const {rows}=play({body:runner,ball:carried,seconds:1,ahead});
+      for(const row of rows.filter(x=>x.t>1.2)){
+        expect(flat(row.ball,carrySpot(row.body,0,r)),`ahead ${ahead} at ${row.t}`).toBeLessThan(.03);
+        expect(row.ball.y).toBeCloseTo(r,2);expect(row.state.carry).toBe('me');
+      }
+      // (The room's own ball, which the page drew there before, trails the drawn body online by the lag times the pace.)
+      if(ahead)expect(flat(carried(2,runner(2)),carrySpot(runner(2+ahead),0,r))).toBeGreaterThan(.9);
+    }
+    // Somebody else's page draws the same carrier where the room has them, in the frame's time.
+    const {rows}=play({body:runner,ball:carried,seconds:1,ahead:.15,self:'you'});
+    for(const row of rows.filter(x=>x.t>1.2))expect(flat(row.ball,carrySpot(runner(row.t),0,r))).toBeLessThan(.03);
+  });
+  it('turns it round the body as the run turns: the room\'s way in the frame\'s time, the drawn run\'s for the page\'s own',()=>{
+    // A run up the pitch that turns to the right at the room's 9 rad/s from t = 1.3 s: the ball sits along the turn.
+    const heading=(t:number)=>Math.min(Math.PI/2,Math.max(0,(t-1.3)*CARRY.turn));
+    const turning=(t:number):Body=>{let x=0,z=-10;for(let s=1;s<t;s+=1/240){const h=heading(s),d=Math.min(1/240,t-s);x+=Math.sin(h)*pace*d;z+=Math.cos(h)*pace*d;}return {x,z,heading:heading(t)};};
+    const device=play({body:turning,ball:carried,seconds:1.2});
+    for(const row of device.rows.filter(x=>x.t>1.2))expect(flat(row.ball,carrySpot(row.body,heading(row.t),r)),`at ${row.t}`).toBeLessThan(.08);
+    // Online, the page's own: toward its own stick at the room's rate - where the room will have it - never a lag behind;
+    // with no stick to read, along its drawn run (a run's way lags the stick's into a hard turn).
+    const own=play({body:turning,ball:carried,seconds:1.2,ahead:.15,stick:heading});
+    for(const row of own.rows.filter(x=>x.t>1.2))expect(flat(row.ball,carrySpot(row.body,heading(row.t+.15),r)),`at ${row.t}`).toBeLessThan(.03);
+    const run=play({body:turning,ball:carried,seconds:1.2,ahead:.15});
+    for(const row of run.rows.filter(x=>x.t>1.2))expect(flat(row.ball,carrySpot(row.body,heading(row.t+.15),r)),`at ${row.t}`).toBeLessThan(.5);
+  });
+  it('comes onto the feet as a carry begins and leaves them as it ends, with no jump either way',()=>{
+    for(const ahead of [0,.15]){
+      // A ball rolled at the runner's feet, taken on at 1.4 s, and off them at 2 s: on this device struck up the pitch at
+      // 20 m/s (online the page's own strike is drawn by its forecast: ballSmooth.test.ts), online the stick let go - the
+      // ball rolling on at the carrier's pace, which the page hears of only from the room.
+      const from=carrySpot(runner(2),0,r),rolled:BallState={...freshBall(),held:false,...from,vx:0,vy:0,vz:pace};const roll:BallState[]=[];
+      for(let i=0;i<120;i++){roll.push({...rolled});stepBall('goal-rush',rolled,1/60);}
+      const ball=(t:number,b:Body):Partial<BallState>=>{
+        if(t<1.4){const at=carrySpot(runner(1.4),0,r);return {x:0,y:r,z:at.z+8*(1.4-t),vx:0,vz:-8};}
+        if(t<2)return carried(t,b);
+        if(!ahead)return {x:0,y:r,z:from.z+20*(t-2),vx:0,vz:20,shot:'power'};
+        const k=Math.min(119,Math.floor((t-2)*60+1e-6));return {...roll[k]};
+      };
+      const {rows}=play({body:runner,ball,seconds:1.6,ahead});
+      let most=0;for(let i=1;i<rows.length;i++)most=Math.max(most,rows[i].ball.distanceTo(rows[i-1].ball));
+      // (The fastest true step a frame: the strike's 20/60 m; the run's and the roll's 6.8/60. Online the room's carry the page
+      // did not forecast - its own forecast draws one at once - begins a lag behind the drawn feet: a metre let out over
+      // CARRY_DRAW.inMost.)
+      expect(most,`ahead ${ahead}`).toBeLessThan(ahead?.26:20/60+.05);
+      for(let i=1;i<rows.length;i++)if(rows[i].t>2&&rows[i].t<2.3)expect(rows[i].ball.z-rows[i-1].ball.z,`ahead ${ahead} at ${rows[i].t}`).toBeGreaterThan(0);
+      const on=rows.find(x=>x.t>=1.4+.2+.05)!;expect(flat(on.ball,carrySpot(on.body,0,r)),`ahead ${ahead}`).toBeLessThan(.05);
+      // Off the feet the room's flight takes it: there a tenth of a second on (in the page's own time online).
+      const off=rows.find(x=>x.t>=2.12+ahead)!,truth=ball(off.t+ahead,runner(off.t+ahead));
+      expect(Math.abs(off.ball.z-truth.z!),`ahead ${ahead}`).toBeLessThan(.12);
+    }
+  });
+  it('lays the carrier\'s side\'s ring under it, and no trail behind it',()=>{
+    const {field,rows}=play({body:runner,ball:carried,seconds:.6});
+    const fx=Reflect.get(field,'fx') as {count:number;misc:THREE.InstancedBufferAttribute;pos:THREE.InstancedBufferAttribute;col:THREE.InstancedBufferAttribute};
+    const last=rows[rows.length-1].ball,ring=[...Array(fx.count).keys()].filter(i=>fx.misc.array[i*4]===25&&Math.hypot(fx.pos.array[i*4]-last.x,fx.pos.array[i*4+2]-last.z)<.01);
+    expect(ring).toHaveLength(1);
+    const red=new THREE.Color(BALL_TEAM_COLOURS.red);expect(fx.col.array[ring[0]*4]).toBeCloseTo(red.r,3);expect(fx.col.array[ring[0]*4+2]).toBeCloseTo(red.b,3);
+    const trail=Reflect.get(field,'trail') as {w:Float32Array;head:number};expect(trail.w[trail.head]).toBe(0);
+    const free=play({body:runner,ball:(t,b)=>({...carried(t,b),carry:undefined}),seconds:.6}),ffx=Reflect.get(free.field,'fx') as typeof fx,at=free.rows[free.rows.length-1].ball;
+    expect([...Array(ffx.count).keys()].filter(i=>ffx.misc.array[i*4]===25&&Math.hypot(ffx.pos.array[i*4]-at.x,ffx.pos.array[i*4+2]-at.z)<.01)).toHaveLength(0);
+  });
+  it('marks a TRAP small - a ring on the turf in the side\'s colour closing on the ball - and a PERFECT GUARD as ever',()=>{
+    const scene=new THREE.Scene(),kit=VfxKit.for(scene),sprites=()=>kit.sparks.live(kit.now)+kit.dust.live(kit.now);
+    const guard=(text:string)=>{
+      const field=new BallField(scene),camera=new THREE.PerspectiveCamera(),v=view({x:0,y:r,z:-4.6,lastId:'me',lastTeam:'red'},{events:[{id:9,at:5,kind:'perfect',team:'red',actorId:'me',x:0,y:r,z:-4.6,text,shot:'save'}]});
+      v.seats=seats;const before=sprites();crowdHype.value=0;
+      field.update({...snap(5,v),players:[{id:'me',x:0,y:0,z:-6,alive:true}]} as unknown as GameSnapshot,'me',camera,1/60,5000);
+      const fx=Reflect.get(field,'fx') as {data:Float32Array};let rings=0;for(let o=0;o<900*25;o+=25)if(fx.data[o+7]>0&&fx.data[o+14]===26)rings++;
+      const out={sprites:sprites()-before,pool:effects(field),rings,hype:crowdHype.value};field.dispose();return out;
+    };
+    expect(guard('TRAP')).toEqual({sprites:0,pool:1,rings:1,hype:0});
+    // And nothing on the screen for it (BallMoments): no speed lines, no screen punch - a PERFECT GUARD keeps both.
+    const felt=(text:string)=>{let n=0;const frame={impactFrame(){n++;},chromaticPulse(){n++;},speedLines(){n++;},inkFlash(){n++;},inkKeep(){},screenPunch(){n++;}};
+      const v=view({x:0,y:r,z:-4.6},{events:[{id:3,at:5,kind:'perfect',team:'red',actorId:'me',x:0,y:r,z:-4.6,text,shot:'save'}]});
+      new BallMoments(frame,()=>[],()=>null).handle(snap(5,v));return n;};
+    expect(felt('TRAP')).toBe(0);expect(felt('PERFECT GUARD')).toBeGreaterThan(0);
+
+    const perfect=guard('PERFECT GUARD');
+    expect(perfect.sprites).toBe(2);expect(perfect.pool).toBe(0);expect(perfect.hype).toBeGreaterThan(.5);
   });
 });

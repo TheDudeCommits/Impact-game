@@ -30,6 +30,10 @@ describe('the ball room', () => {
     try {
       const c = client('x');
       expect(() => f.room.onAuth(c, { ...f.options('x'), ballProtocol: 0 })).toThrow('Refresh');
+      // (Protocol 10, the carried ball - a page from before it is told to refresh, as is a room it would open.)
+      expect(BALL_PROTOCOL).toBe(10);
+      expect(() => f.room.onAuth(c, { ...f.options('x'), ballProtocol: 9 })).toThrow('Refresh');
+      await expect(new BallRoom().onCreate({ rosterProtocol: ROSTER_PROTOCOL, access: 'host', creationToken: TOKEN, ballProtocol: 9, ball: 'goal-rush' })).rejects.toThrow('Refresh');
       expect(() => f.room.onAuth(c, { ...f.options('x'), ball: 'sky-spike' })).toThrow('another mode');
       expect(() => f.room.onAuth(c, { ...f.options('x'), code: '000000' })).toThrow('room code');
       expect(f.room.onAuth(c, f.options('x'))).toBe(true);

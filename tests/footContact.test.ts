@@ -290,6 +290,29 @@ describe('a walk and a run are one gait with a dial on it', () => {
 });
 
 describe('a foot coming down is an event, not just a pose', () => {
+  it('reports a plausible number of steps for the ground covered', () => {
+    // There were no footsteps in the game at all, and the plant detector was
+    // already deciding the exact frame one happens.
+    const body = new Fighter(baseState('kenzo'), rigs.get('kenzo')!);
+    try {
+      const state = baseState('kenzo'), dt = 1 / 60, speed = 7.5;
+      let z = 0, steps = 0;
+      for (let i = 0; i < 40; i++) { z += speed * dt; body.update(dt, { ...state, action: 'run', z }, true); }
+      body.steps.length = 0;
+      const seconds = 2;
+      for (let i = 0; i < seconds * 60; i++) {
+        z += speed * dt;
+        body.update(dt, { ...state, action: 'run', z }, true);
+        steps += body.steps.length;
+        body.steps.length = 0;
+      }
+      const rate = steps / seconds;
+      // A sprint is three to six footfalls a second. Nothing is a foot that
+      // never lands; twenty is the plant detector chattering.
+      expect(rate, `${rate.toFixed(1)} steps a second at a run`).toBeGreaterThan(2);
+      expect(rate).toBeLessThan(9);
+    } finally { body.dispose(); }
+  });
 
   it('says nothing at a standstill', () => {
     const body = new Fighter(baseState('kenzo'), rigs.get('kenzo')!);

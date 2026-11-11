@@ -49,7 +49,9 @@ export interface StrikeContext {
 /** `perfect`: the strike was a PERFECT one (StrikeContext.perfect, on a shot that can be). `style`: Sky Spike's choice the
  *  strike made, named for the screen and the caller (FLOAT SERVE, JUMP SERVE - PERFECT SERVE from the top of the
  *  jump - QUICK SET, BACK SET; a TIP is its own shot, its strike's text TIP). Absent: the shot as it always was. */
-export interface StrikeResult { vx: number; vy: number; vz: number; sx: number; sy: number; sz: number; shot: ShotKind; heat: number; super: boolean; perfect: boolean; style?: SpikeStyle }
+export interface StrikeResult { vx: number; vy: number; vz: number; sx: number; sy: number; sz: number; shot: ShotKind; heat: number; super: boolean; perfect: boolean; style?: SpikeStyle;
+  /** Goal Rush (PASS_AIM): a pass the stick aimed - the team-mate it went to, by their index in `mates`. */
+  aimed?: number }
 export type SpikeStyle = 'FLOAT SERVE' | 'JUMP SERVE' | 'QUICK SET' | 'BACK SET';
 
 const DEG = Math.PI / 180;
@@ -200,7 +202,8 @@ export function strikeBall(ball: BallState, c: StrikeContext): StrikeResult {
   const out = c.mode === 'goal-rush' ? goalShot(ball, {...c, perfect}, kind, power, cap) : spikeShot(ball, c, kind, power, cap);
   const s = Math.hypot(out.vx, out.vy, out.vz);
   if (s > cap) { const k = cap / s; out.vx *= k; out.vy *= k; out.vz *= k; }
-  return {vx: out.vx, vy: out.vy, vz: out.vz, sx: out.sx, sy: out.sy, sz: out.sz, shot: out.shot ?? kind, heat: heat - ball.heat, super: kind === 'super', perfect, ...('style' in out && out.style ? {style: out.style} : {})};
+  return {vx: out.vx, vy: out.vy, vz: out.vz, sx: out.sx, sy: out.sy, sz: out.sz, shot: out.shot ?? kind, heat: heat - ball.heat, super: kind === 'super', perfect, ...('style' in out && out.style ? {style: out.style} : {}),
+    ...(out.aimed !== undefined ? {aimed: out.aimed} : {})};
 }
 
 /** The ball's top speed `over` heat tiers above its own (physics.ts speedCap by whole tiers; a part of one - a charge
@@ -251,7 +254,41 @@ function arc(from: Vec3, toX: number, toY: number, toZ: number, t: number, g: nu
   return {vx: (toX - from.x) / t * k, vy: ((toY - from.y) + .5 * g * t * t) / t, vz: (toZ - from.z) / t * k};
 }
 
-type Flight = {vx: number; vy: number; vz: number; sx: number; sy: number; sz: number; shot?: ShotKind; style?: SpikeStyle};
+type Flight = {vx: number; vy: number; vz: number; sx: number; sy: number; sz: number; shot?: ShotKind; style?: SpikeStyle; aimed?: number};
+
+/** Goal Rush's PASS - a light's tap - with the stick held
+ *  is aimed. The stick as the press was made (`stick` of it or more: a keyboard's key, a pad's stick pushed well over) picks
+ *  the team-mate nearest its line from the ball, ahead of the ball along it and within `cone` radians of it, `near` to
+ *  `far` metres off; the pass is led by their run so it arrives where they will be (their run carried on over the
+ *  flight, the flight's time worked out again from the led spot `rounds` times, inside the pitch by `wall` m), and comes
+ *  down at a foot's height there as the tap's pass always has. With no stick (or nobody near its line) the tap is as it
+ *  always was: the team-mate within 28 degrees of the view, led by four fifths of their run. The bots press their
+ *  passes with the stick at the team-mate, so their passes are led the same way (BallBrain). */
+export const PASS_AIM = {stick: .6, cone: 40 * DEG, near: 2.5, far: 30, rounds: 3, wall: 1.2} as const;
+/** The aimed pass (PASS_AIM), or undefined with no stick held or nobody near its line. `pace` is the pass's speed along
+ *  the floor (as the tap's own pass reads it). */
+function aimedPass(ball: BallState, c: StrikeContext, pace: number, g: number): Flight | undefined {
+  const s = c.striker, R = GOAL_RULES, A = PASS_AIM;
+  // (The stick as the world has it: placement's sum, from the stick against the aim.)
+  const sx = s.forward * Math.sin(s.aimYaw) - s.lateral * Math.cos(s.aimYaw), sz = s.forward * Math.cos(s.aimYaw) + s.lateral * Math.sin(s.aimYaw), m = Math.hypot(sx, sz);
+  if (m < A.stick || !c.mates?.length) return undefined;
+  const ux = sx / m, uz = sz / m, slope = Math.tan(A.cone);
+  let pick = -1, best = Infinity;
+  c.mates.forEach((mate, i) => {
+    const ex = mate.x - ball.x, ez = mate.z - ball.z, d = Math.hypot(ex, ez), along = ex * ux + ez * uz, off = Math.abs(ex * uz - ez * ux);
+    if (d < A.near || d > A.far || along <= 0 || off > along * slope || off >= best) return;
+    pick = i; best = off;
+  });
+  if (pick < 0) return undefined;
+  const mate = c.mates[pick], inX = R.halfX - A.wall, inZ = R.halfZ - A.wall;
+  let tx = mate.x, tz = mate.z, t = .35;
+  for (let i = 0; i < A.rounds; i++) {
+    t = Math.max(.35, Math.hypot(tx - ball.x, tz - ball.z) / pace);
+    tx = Math.max(-inX, Math.min(inX, mate.x + mate.vx * t)); tz = Math.max(-inZ, Math.min(inZ, mate.z + mate.vz * t));
+  }
+  t = Math.max(.35, Math.hypot(tx - ball.x, tz - ball.z) / pace);
+  return {...arc(ball, tx, R.ballRadius + .4, tz, t, g, R.drag), sx: 0, sy: 0, sz: 0, aimed: pick};
+}
 
 function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: number, cap = Infinity): Flight {
   const R = GOAL_RULES, s = c.striker, g = R.gravity * (c.gravity ?? 1);
@@ -287,8 +324,10 @@ function goalShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: numb
     // (A header sends back a share of how hard the ball came in.)
     + (kind === 'header' ? Math.min(PERFECT_SHOT.headerBackMost, (c.incoming ?? 0) * PERFECT_SHOT.headerBack) : 0));
   if (c.scuff) speed *= SCUFF.speed;
-  // A tap toward a team-mate is a pass to where they are running.
+  // A tap toward a team-mate is a pass to where they are running. (The stick held aims it - PASS_AIM.)
   if (kind === 'tap' && c.mates?.length && !c.scuff) {
+    const aimed = aimedPass(ball, c, speed * .9, g);
+    if (aimed) return aimed;
     let best: {x: number; z: number; t: number} | undefined, bestCos = Math.cos(28 * DEG);
     for (const m of c.mates) {
       const ex = m.x - ball.x, ez = m.z - ball.z, d = Math.hypot(ex, ez);

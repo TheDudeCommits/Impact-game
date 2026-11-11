@@ -1,5 +1,9 @@
-import type { BallModeId, BallView } from '../game/ball/model';
+import { ballRadius, type BallModeId, type BallView } from '../game/ball/model';
 import { hasStances } from '../game/ball/stance';
+import { headingInto, stepBall } from '../game/ball/physics';
+import { TOUCH_RULES } from '../game/ball/BallMatch';
+import { PLAYER_RADIUS } from '../game/moves';
+import type { PlayerState } from '../game/types';
 import type { Spot } from './touchLayout';
 
 /**
@@ -19,10 +23,14 @@ import type { Spot } from './touchLayout';
  *    (guard, held) at the net, DIVE (the dash again, by the name of what it is for) in the back court while the ball is
  *    the other side's (`spikeMoment`).
  *  - FREE PLAY in Goal Rush has no stances, so no FIGHT button (a drill with fights, the TACKLE drill, has it).
+ *  - Goal Rush, BALL stance (BallMatch TRAP): while a ball you could trap is on its way to you, the moment's
+ *    button is TRAP - the guard, held, which as the ball arrives kills it dead at your feet to carry - and FIGHT again
+ *    once it is not (`trapComing`, `TrapCue`). Never a ball the other side shoots at your goal (that is a save) nor one
+ *    anybody carries (FIGHT is how you take that one). FREE PLAY shows it in the slot it leaves empty.
  *  - SUPER (ULT in a fight), gold, over the boost: only once the ultimate is charged.
  * The shot's button is held as its key is (`SportFace.held`: Input.touchKey, down with the finger and up with it), for
  * a rule that reads how long SHOOT is held.
- * Not on the set: SPECIAL (the curve), AREA, AWAKEN and Goal Rush's guard (the keeper's SAVE): a shot or a pass at a
+ * Not on the set: SPECIAL (the curve), AREA, AWAKEN and Goal Rush's guard as the keeper's SAVE: a shot or a pass at a
  * ball coming at your goal is a save all the same.
  *
  * Data and rules only: input/touch.ts draws it, handheld.css styles it, ui/prompts.ts names its buttons in prompts.
@@ -32,7 +40,7 @@ export const SPORT_SLOTS: readonly SportSlot[] = ['main', 'pass', 'jump', 'run',
 /** The press each slot can send (Input.touchPress's actions, and guard, which is held: Input.touchHold). */
 export type SportAction = 'light' | 'heavy' | 'jump' | 'dash' | 'guard' | 'ultimate' | 'target';
 /** The faces (handheld.css draws each as a line glyph; 'art' is the move's own picture, input/touchArt.ts). */
-export type SportGlyph = 'shoot' | 'pass' | 'jump' | 'boost' | 'fist' | 'ball' | 'super' | 'dash' | 'art' | 'bump' | 'set' | 'tip' | 'lob' | 'spike' | 'block' | 'dive';
+export type SportGlyph = 'shoot' | 'pass' | 'jump' | 'boost' | 'fist' | 'ball' | 'super' | 'dash' | 'art' | 'bump' | 'set' | 'tip' | 'lob' | 'spike' | 'block' | 'dive' | 'trap';
 export interface SportFace {
   action: SportAction; label: string; glyph: SportGlyph;
   /** BOOST: held, it keeps the boost going and lifting stops it (TouchControls). */
@@ -100,10 +108,59 @@ export function spikeMoment(view: Pick<BallView, 'phase' | 'ball' | 'seats'>, se
   return { action: 'guard', label: 'BLOCK', glyph: 'block' };
 }
 
+/** TRAP on the touch set (BallMatch TRAP). TRAP_CUE: how far ahead (s) the ball's own flight is looked
+ *  along for it reaching the body, how much further than the guard's reach it may pass (m), how fast it must be coming
+ *  (m/s, toward the body) and from at least how far (m past that reach: one already there is too late to show), and how
+ *  long (ms) TRAP stays up after the ball stops being on its way - so a thumb already going for it finds it; and while
+ *  one of the other side is on the ball - within `rival` m of it, it no higher than `low` m: the TACKLE hint's carrier,
+ *  ui/ball/ballHints.ts - FIGHT stays, which is how that ball is won. */
+export const TRAP_CUE = { look: 1.1, slack: .35, closing: 2.5, keep: 450, rival: 3.2, low: 2.6 } as const;
+/** Whether a ball the room would TRAP is on its way to this body (BallMatch TRAP, guardBall): Goal Rush's live play with
+ *  no ball machine, the body on its feet; the ball nobody's to carry, not held, not a SUPER SHOT, not a shot of the other
+ *  side's at its own goal (`headingInto`: that is a save); coming at it, and its own flight bringing it within the
+ *  guarding body's reach - and height - inside TRAP_CUE.look. */
+export function trapComing(view: Pick<BallView, 'mode' | 'phase' | 'drill' | 'lesson' | 'seats' | 'ball'>, selfId: string, at: Pick<PlayerState, 'x' | 'y' | 'z' | 'grounded' | 'size'>, players: readonly Pick<PlayerState, 'id' | 'x' | 'z' | 'alive'>[] = []): boolean {
+  if (view.mode !== 'goal-rush' || view.phase !== 'live' || view.drill || view.lesson || !at.grounded) return false;
+  const team = view.seats.find(s => s.id === selfId)?.team, b = view.ball;
+  if (!team || !b || b.held || b.super || b.carry !== undefined) return false;
+  if (b.lastTeam && b.lastTeam !== team && headingInto(b, team)) return false;
+  if (rivalOn(view, selfId, players)) return false;
+  const size = at.size ?? 1, r = ballRadius(view.mode) * (b.size || 1), reach = r + PLAYER_RADIUS * size + TOUCH_RULES.GUARD_REACH + TRAP_CUE.slack;
+  const dx = at.x - b.x, dz = at.z - b.z, d = Math.hypot(dx, dz);
+  if (d <= reach + TRAP_CUE.slack || (b.vx * dx + b.vz * dz) / d < TRAP_CUE.closing) return false;
+  const top = at.y + TOUCH_RULES.BODY_HIGH * size + r + TOUCH_RULES.GUARD_REACH, g = { ...b, held: false };
+  for (let t = 0; t <= TRAP_CUE.look; t += 1 / 30) {
+    stepBall('goal-rush', g, 1 / 30);
+    if (Math.hypot(g.x - at.x, g.z - at.z) <= reach && g.y <= top) return true;
+  }
+  return false;
+}
+/** One of the other side on the ball (TRAP_CUE.rival, .low): FIGHT's moment, not TRAP's. */
+function rivalOn(view: Pick<BallView, 'seats' | 'ball'>, selfId: string, players: readonly Pick<PlayerState, 'id' | 'x' | 'z' | 'alive'>[]) {
+  const team = view.seats.find(s => s.id === selfId)?.team, b = view.ball;
+  if (!team || !b || b.y > TRAP_CUE.low) return false;
+  return players.some(q => q.alive !== false && view.seats.some(s => s.id === q.id && s.team !== team && s.out === undefined) && Math.hypot(q.x - b.x, q.z - b.z) < TRAP_CUE.rival);
+}
+/** TRAP shown on the moment's button (`trapComing`), held TRAP_CUE.keep ms past the ball's coming; never in the FIGHT
+ *  stance. One a page. */
+export class TrapCue {
+  private until = -Infinity;
+  /** `now`: the page's clock, ms. */
+  update(view: BallView, selfId: string, at: Pick<PlayerState, 'x' | 'y' | 'z' | 'grounded' | 'size'>, fight: boolean, now: number, players: readonly Pick<PlayerState, 'id' | 'x' | 'z' | 'alive'>[] = []): boolean {
+    if (fight || view.mode !== 'goal-rush' || view.phase !== 'live') { this.until = -Infinity; return false; }
+    if (trapComing(view, selfId, at, players)) this.until = now + TRAP_CUE.keep;
+    // (Somebody has it at their feet now - perhaps you, trapped - or one of theirs is on it: FIGHT is what is wanted next.)
+    else if (view.ball.carry !== undefined || rivalOn(view, selfId, players)) this.until = -Infinity;
+    return now < this.until;
+  }
+  reset() { this.until = -Infinity; }
+}
+
 /** The set a ball match shows now: per slot what it presses and how it reads, or null where the slot is empty. `fight`
  *  is Goal Rush's FIGHT stance (the page's own lock, hudView.ballLock); `superReady` whether the ultimate is charged
- *  (short of it there is no button: the HUD's SUPER bar is its charge); `at` the body's place (Sky Spike's moment). */
-export function sportSet(view: BallView, selfId: string, fight: boolean, superReady: boolean, at?: { z: number }): SportSet {
+ *  (short of it there is no button: the HUD's SUPER bar is its charge); `at` the body's place (Sky Spike's moment);
+ *  `trap` whether Goal Rush's moment's button is TRAP (TrapCue). */
+export function sportSet(view: BallView, selfId: string, fight: boolean, superReady: boolean, at?: { z: number }, trap = false): SportSet {
   const superFace = (label: string): SportFace | null => superReady ? { action: 'ultimate', label, glyph: 'super' } : null;
   if (view.mode === 'sky-spike') {
     const serving = view.phase === 'kickoff' && view.serverId === selfId, light = spikeLight(view, selfId);
@@ -130,7 +187,7 @@ export function sportSet(view: BallView, selfId: string, fight: boolean, superRe
     pass: { action: 'light', label: 'PASS', glyph: 'pass' },
     jump: { action: 'jump', label: 'JUMP', glyph: 'jump' },
     run: { action: 'dash', label: 'BOOST', glyph: 'boost', hold: true },
-    side: stances ? { action: 'target', label: 'FIGHT', glyph: 'fist' } : null,
+    side: trap ? { action: 'guard', label: 'TRAP', glyph: 'trap' } : stances ? { action: 'target', label: 'FIGHT', glyph: 'fist' } : null,
     super: superFace('SUPER'),
   };
 }
@@ -141,9 +198,10 @@ export function sportSet(view: BallView, selfId: string, fight: boolean, superRe
  *  there (the moment's DIVE is the same press, when it shows). */
 export function sportTouchName(mode: BallModeId, fight: boolean, action: string): string | undefined {
   if (mode === 'sky-spike') return ({ light: 'SET', heavy: 'SPIKE', jump: 'JUMP', dash: 'BOOST', guard: 'BLOCK', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
+  // (The BALL stance's guard is TRAP, the moment's button as a ball comes at you.)
   return (fight
     ? { light: 'LIGHT', heavy: 'HEAVY', jump: 'JUMP', dash: 'DASH', target: 'BALL', ultimate: 'ULT', interact: 'JUMP' }
-    : { light: 'PASS', heavy: 'SHOOT', jump: 'JUMP', dash: 'BOOST', target: 'FIGHT', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
+    : { light: 'PASS', heavy: 'SHOOT', jump: 'JUMP', dash: 'BOOST', target: 'FIGHT', guard: 'TRAP', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
 }
 
 /** The glyphs: line drawings in the paper's colour on a 32-unit box (handheld.css .tc-glyph), as the fan's. */
@@ -163,4 +221,6 @@ export const SPORT_GLYPHS: Readonly<Record<Exclude<SportGlyph, 'art'>, string>> 
   spike: '<path d="M28 4L14.5 17.5"/><path d="M13 10.5v8.4h8.4"/><circle cx="8.6" cy="24.4" r="4.6" class="tc-fill"/>',
   block: '<path d="M4.6 27v-9.6c0-1.9 1.2-3 3-3h3.6c1.8 0 3 1.1 3 3V27M5.9 14.4V7M9.4 14.4V5.2M12.9 14.4V7M17.8 27v-9.6c0-1.9 1.2-3 3-3h3.6c1.8 0 3 1.1 3 3V27M19.1 14.4V7M22.6 14.4V5.2M26.1 14.4V7"/>',
   dive: '<path d="M4 7.5l16 12.5"/><path d="M13.6 21.6h8.2v-8.2"/><path d="M3 17h5M3 22h3"/><circle cx="25.6" cy="25.4" r="3" class="tc-fill"/>',
+  // (TRAP - the ball come to rest on the turf, the lines it came in on stopping short of it.)
+  trap: '<circle cx="19.5" cy="18.4" r="6.6"/><path d="M19.5 14.6l3.2 2.3-1.2 3.7h-4l-1.2-3.7z" class="tc-fill"/><path d="M2.5 26.2h27M2.5 14.5h6M4 19.5h5"/>',
 };

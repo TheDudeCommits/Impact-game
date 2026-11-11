@@ -3,6 +3,7 @@ import {BallGear,patchBallSkin,type Emit} from './ballCosmetics';
 import type {GameSnapshot} from '../../game/types';
 import {BALL_TEAM_COLOURS,CHARM_COLOURS,GOAL_RULES,SPIKE_RULES,ballOf,ballRadius,heatTier,type BallEvent,type BallModeId,type BallState,type BallTeam,type BallView} from '../../game/ball/model';
 import {courtSide,landing,stepBall,type BallContact} from '../../game/ball/physics';
+import {CARRY,carrySpot} from '../../game/ball/BallMatch';
 import type {TouchForecast} from '../../game/ball/touchForecast';
 import {noiseTexture} from '../vfx/noiseTexture';
 import {VFX} from '../vfxLevel';
@@ -29,7 +30,9 @@ const K={spark:0,smoke:1,burst:2,ring:3,petal:4,confetti:5,streak:6,shield:7,chu
   // A manga cloud, a column off the floor. (12, 13, 16 and 24 are free: a touch's mark is one of the engine's drawn
   // impacts now, `ink` below.)
   cloud:14,pillar:15,
-  groundRing:20,splat:21,shadow:22,landing:23,side:25} as const;
+  groundRing:20,splat:21,shadow:22,landing:23,side:25,
+  // A TRAP's ring closing on the ball's foot.
+  settle:26} as const;
 /** The kinds drawn in the covering layer (ink and paper over what is behind them), before the light. */
 const COVERS=new Uint8Array(32);for(const k of [K.smoke,K.petal,K.confetti,K.chunk,K.burst,K.cloud,K.pillar])COVERS[k]=1;
 /** Stretched along its own flight, stretched along a fixed axis, stopped by the floor, fluttering as paper falls. */
@@ -79,6 +82,26 @@ const MARKS={life:60,most:{high:48,medium:32,low:14},skidGap:.6} as const;
  *  quarters), so the ball you are playing never thins. The stroke a power shot's path leaves: how long it hangs (s), how long
  *  it is drawn for after the strike (s), the gap between its points and its width (m, by the ball's radius). */
 const SHAPE={squash:.3,squashFor:.14,stretch:.18,from:12,over:90,spinFrom:2.5,spinFull:6.5,thinFrom:.3,thinFull:.45,strokeFor:1,strokeDraw:.9,strokeGap:.8,strokeWidth:.7} as const;
+/** Goal Rush's carried ball (BallMatch CARRY; whose it is, BallState.carry). The room has it at its carrier's
+ *  feet (`carrySpot`); the page draws it at the carrier's DRAWN feet, rolling as the drawn body runs - online the page's
+ *  own fighter is drawn ahead of the room's ball by the page's lag, and the room's ball trailed it by about a metre.
+ *  CARRY_DRAW: how long (s) the drawn ball takes to come onto the feet as a carry begins (`in`; from further off, at
+ *  `inPace` m/s, up to `inMost` - a page's own fighter drawn a lag ahead of a carry it did not forecast), and to blend what lies between
+ *  the feet and the room's flight out as it ends (a miss over `near` m; a smaller one, the frame's own, over `settle`:
+ *  the room's flight is the truth from there, and the answers' gentler spring held a carried place a third of a second
+ *  past it); how fast
+ *  (rad/s) the way it sits round a body follows the room's (which turns it at CARRY.turn) - for the page's own fighter
+ *  drawn ahead of the room, the drawn body's own run from `run` m/s, at half as fast again as the room turns it (a run's
+ *  way lags the stick's a little; slower, it holds where it was); and
+ *  the one sign of whose ball it is, a ring in the carrier's side's colour on the floor round it - its card's size (by the
+ *  ball's radius; the band lies at 0.8 of it, half a metre clear of the ball's foot, or the ball itself hides it from the
+ *  match's lens past ten metres) and strength. */
+const CARRY_DRAW={in:.12,inMost:.2,inPace:5,out:.16,settle:.025,near:.35,follow:18,run:1.2,ring:2,alpha:.9} as const;
+/** A TRAP's mark (BallMatch TRAP): how long its ring closing on the ball lasts (s), where it starts and ends
+ *  (by the ball's radius: it ends on the carried ball's own ring, CARRY_DRAW.ring's band), its strength, and how hard the
+ *  ball is pressed down onto the turf (of a blow's). */
+const TRAP_MARK={life:.34,from:2.6,to:1.6,alpha:.85,press:.4} as const;
+const wrapAngle=(a:number)=>Math.atan2(Math.sin(a),Math.cos(a));
 const UP=new THREE.Vector3(0,1,0);
 const smooth=(x:number,a:number,b:number)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
 /** The light a burning ball throws, by heat tier (none cold). */
@@ -91,9 +114,13 @@ function copyBall(to:BallState,from:BallState){
   to.heat=from.heat;to.lastId=from.lastId;to.lastTeam=from.lastTeam;to.shot=from.shot;to.held=from.held;to.frozenUntil=from.frozenUntil;to.super=from.super;to.size=from.size??1;to.grav=from.grav??1;to.wall=from.wall??null;to.clash=from.clash??0;to.link=from.link??null;
   // (The arena's floor and wind - arenas.ts twist - which the flight reads.)
   to.ground=from.ground;to.spring=from.spring;to.windX=from.windX;to.windZ=from.windZ;
+  // (Whose carried ball it is - what the page draws at their feet, and what the page's own forecast reads:
+  // dropped here, the forecast never knew its own fighter carried the ball, took it on again whenever its body met the
+  // drawn one - 13 times in four carries online at 120 ms, three refused - and would strike it as a moving ball.)
+  to.carry=from.carry;
   return to;
 }
-const sameBall=(a:BallState,b:BallState)=>a.x===b.x&&a.y===b.y&&a.z===b.z&&a.vx===b.vx&&a.vy===b.vy&&a.vz===b.vz&&a.held===b.held&&a.frozenUntil===b.frozenUntil&&a.heat===b.heat&&a.lastTeam===b.lastTeam&&a.super===b.super&&a.size===b.size&&a.grav===b.grav&&a.wall===b.wall&&a.clash===b.clash&&(a.link??null)===(b.link??null);
+const sameBall=(a:BallState,b:BallState)=>a.x===b.x&&a.y===b.y&&a.z===b.z&&a.vx===b.vx&&a.vy===b.vy&&a.vz===b.vz&&a.held===b.held&&a.frozenUntil===b.frozenUntil&&a.heat===b.heat&&a.lastTeam===b.lastTeam&&a.super===b.super&&a.size===b.size&&a.grav===b.grav&&a.wall===b.wall&&a.clash===b.clash&&(a.link??null)===(b.link??null)&&a.carry===b.carry;
 const PREMULTIPLIED={transparent:true,depthWrite:false,forceSinglePass:true,blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor} as const;
 const golden=(1+Math.sqrt(5))/2;
 const unit=(x:number,y:number,z:number)=>new THREE.Vector3(x,y,z).normalize();
@@ -339,7 +366,7 @@ class InkFx{
             float fill=(1.-smoothstep(.2,.88,r))*.1;
             cover=(max(max(hair,tickInk),heartInk)*.7+fill)*al;
             rgb=col*(ring*1.7+tick*1.5+heart*1.4+xmark*1.5+fill*.4)*al;
-          }else{
+          }else if(kind<25.5){
             // A fighter's side, on the floor under them: a ring in the side's colour on an ink edge - brighter and with a
             // second, finer ring outside it under your own (vAxis.x).
             float own=vAxis.x,px=max(fwidth(r),.004);
@@ -347,6 +374,14 @@ class InkFx{
             float outer=own*(1.-smoothstep(.022,.022+px,abs(r-.95)));
             cover=max(edge*.6,outer*.5)*al;
             rgb=col*(band*(.85+own*.75)+outer*1.3)*al;
+          }else{
+            // A TRAP: a thin ring in the trapper's side's colour on an ink edge, closing in from the card's rim
+            // to the ball's foot (vAxis.x, of the card) as the ball is killed dead, coming in and gone at its ends.
+            float e=1.-(1.-t)*(1.-t),rr=mix(.96,vAxis.x,e),px=max(fwidth(r),.004),w=mix(.03,.05,e);
+            float line=1.-smoothstep(w,w+px,abs(r-rr)),edge=1.-smoothstep(w+.035,w+.035+px,abs(r-rr));
+            float fade=al*smoothstep(0.,.1,t)*(1.-smoothstep(.65,1.,t));
+            cover=edge*.6*fade;
+            rgb=col*line*1.5*fade;
           }
           // What stands up to the lens fades out as the lens closes on it (gone a metre off), so a burst or a cloud
           // the ball carries past the camera never washes the whole frame.
@@ -521,6 +556,19 @@ export class BallField {
    *  shows, for the checks (window.__ballField on this machine). */
   private readonly aimLine=new AimLine();
   get aim(){return this.aimLine.look;}
+  /** The carry drawn (CARRY_DRAW): whose, their side, the way the ball sits round their drawn body (rad),
+   *  where that body was drawn a frame ago and how it runs (m/s, smoothed), how far the ball has come onto its feet (0..1)
+   *  from where it was drawn as the carry began (`o`: off the feet then), and the ball as drawn, place and pace. Null while
+   *  nobody carries it. */
+  private carried:{id:string;team:BallTeam|null;heading:number;bx:number;bz:number;vx:number;vz:number;k:number;ox:number;oy:number;oz:number;over:number;x:number;z:number;ux:number;uz:number}|null=null;
+  private readonly carryBody=new THREE.Vector3();
+  /** For the checks (window.__ballField on this machine): the seat whose carried ball is drawn at its feet ('' none), and
+   *  how far onto them it has come (0..1). */
+  readonly carryLook={id:'',k:0};
+  /** The page's own stick as its prediction steps it (main.ts: the command's world moveX/moveZ), for its own carried ball:
+   *  the room turns a carried ball toward its carrier's stick (BallMatch CARRY), so the page turns its own the same way,
+   *  in its own time. Unset, along the drawn body's run. */
+  ownStick:()=>{moveX:number;moveZ:number}|undefined=()=>undefined;
   private players:GameSnapshot['players']=[];
   /** The ball gear (ballCosmetics.ts): your ball skin, the striker's trail, the scorer's goal burst. */
   private readonly gear=new BallGear();
@@ -752,6 +800,7 @@ export class BallField {
     this.lastServer=serverTime;this.root.visible=true;this.self=selfId;this.players=snapshot.players;this.lastView=view;
     this.receive(view.ball,view.sampledAt??serverTime,seconds,view.sampledAt!==undefined);
     this.place(serverTime,seconds,view,replaying?0:step);
+    this.carry(view,seconds,step);
     this.moments(view,serverTime,seconds);
     this.dress(view,selfId,camera,step,seconds,serverTime);
     this.aimLine.update(view,selfId,this.drawnState(),this.bodies.get(selfId),step,!replaying);
@@ -776,6 +825,7 @@ export class BallField {
     this.ring.length=0;this.ahead=null;this.lead=0;this.rewind=null;this.mend.set(0,0,0);this.mendV.set(0,0,0);this.drawnT=NaN;this.ringSeen=-Infinity;this.told=null;
     this.strokeTrail.count=0;this.stroke.clear();this.stroke.mesh.visible=false;this.strokeLeft=0;this.bodies.clear();this.marks.mesh.visible=false;
     this.pressAt=-Infinity;this.length=1;this.thin=0;this.spinShown=0;this.spinLines.visible=false;this.aimLine.hide();
+    this.carried=null;this.carryLook.id='';this.carryLook.k=0;
   }
 
   // ─── The page's own touch, drawn at once ─────────────────────────────────────────────────────────────────────────
@@ -1100,6 +1150,71 @@ export class BallField {
     this.shown=true;
   }
 
+  /** Goal Rush's carried ball (CARRY_DRAW), after the frame's ball is placed. Carried - by the ball the page
+   *  draws from: the forecast's, the room's ahead of the frame, the frame's - it is drawn at its carrier's drawn feet as
+   *  the room has it at theirs (carrySpot), the way it sits round them followed from where the room's flight has it (the
+   *  frame's time, as every other body is drawn) or, for the page's own fighter drawn ahead of the room, turned along the
+   *  drawn body's own run as the room turns it along the stick; it comes onto the feet over CARRY_DRAW.in from wherever
+   *  it was drawn. Let go, the room's flight takes it from there, the place between the two blended out (the answers'
+   *  spring) and the pace its own - a strike leaves at once - so nothing jumps either way. */
+  private carry(view:BallView,seconds:number,dt:number){
+    // (In the frame's own time the snapshot after the frame's says whether the carry lasts the gap between them: one that
+    // ends in it is the room's flight's from the gap's start, its bend taking the ball off the feet as the room did.)
+    const b=this.lookBall(),next=b===this.base?this.nextRef:null,lasts=!next||next.carry===b.carry;
+    const id=view.mode==='goal-rush'&&!b.held&&!this.frozen&&lasts?b.carry:undefined,body=id?this.where(id,this.carryBody):null,r=ballRadius(view.mode)*this.grown;
+    let c=this.carried;
+    if(!id||!body){
+      if(!c)return;
+      this.carried=null;this.carryLook.id='';this.carryLook.k=0;
+      // (Where the carried ball would be drawn now, against the room's: only the place is blended out.)
+      const x=c.x+c.ux*dt,z=c.z+c.uz*dt,dx=x-this.drawn.x,dy=r-this.drawn.y,dz=z-this.drawn.z,miss=Math.hypot(dx,dy,dz);
+      if(view.sampledAt!==undefined&&miss>1e-3&&miss<SNAP){this.mendBy(seconds,dx,dy,dz,0,0,0,miss>CARRY_DRAW.near?CARRY_DRAW.out:CARRY_DRAW.settle);this.drawn.set(x,r,z);}
+      return;
+    }
+    let begun=false;
+    if(!c||c.id!==id){
+      // (Begun: the way it sits round the body from where it is drawn now - where it met them.)
+      const hx=this.drawn.x-body.x,hz=this.drawn.z-body.z,seat=view.seats.find(s=>s.id===id);
+      this.carried=c={id,team:seat?.team??null,heading:Math.hypot(hx,hz)>.2?Math.atan2(hx,hz):0,bx:body.x,bz:body.z,vx:0,vz:0,k:0,ox:0,oy:0,oz:0,over:CARRY_DRAW.in,x:this.drawn.x,z:this.drawn.z,ux:this.velocity.x,uz:this.velocity.z};
+      begun=true;
+    }
+    if(dt>1e-4){
+      const mx=(body.x-c.bx)/dt,mz=(body.z-c.bz)/dt,e=Math.min(1,dt*40);
+      if(Math.abs(mx)+Math.abs(mz)<60){c.vx+=(mx-c.vx)*e;c.vz+=(mz-c.vz)*e;}
+    }
+    c.bx=body.x;c.bz=body.z;
+    // The page's own fighter drawn ahead of the room (online): toward its own stick at the room's rate, as the room will
+    // turn it (`ownStick`; else along its drawn run). Everyone else, and this device's own: as the room's flight has the
+    // ball round them in the frame's time.
+    const ahead=id===this.self&&this.viewLag>1/60;
+    // (And the ball the room's flight draws is held in this page's own time meanwhile, the lead at the page's lag: what the
+    // room makes of the ball next - the stick let go, a tackle - is drawn from its newest word, where this page's fighter
+    // is, never a lag behind it; the lead is eased back as ever once the ball is gone from the feet.)
+    if(ahead&&!this.ahead&&!this.rewind&&this.ring.length&&this.lead<this.viewLag){
+      if(this.lead<=0)this.ringSeen=this.ring[this.ring.length-1].t;
+      this.lead=this.viewLag;this.leadRate=0;
+    }
+    let want=c.heading,rate:number=CARRY_DRAW.follow;
+    const stick=ahead?this.ownStick():undefined;
+    if(stick){rate=CARRY.turn;if(Math.hypot(stick.moveX,stick.moveZ)>=CARRY.stick)want=Math.atan2(stick.moveX,stick.moveZ);}
+    else if(ahead){rate=CARRY.turn*1.5;if(Math.hypot(c.vx,c.vz)>=CARRY_DRAW.run)want=Math.atan2(c.vx,c.vz);}
+    else{const hx=this.drawn.x-body.x,hz=this.drawn.z-body.z;if(Math.hypot(hx,hz)>.3)want=Math.atan2(hx,hz);}
+    const most=rate*dt;c.heading=wrapAngle(c.heading+Math.max(-most,Math.min(most,wrapAngle(want-c.heading))));
+    // (Its place: the body's this frame - a drawn one is drawn after the ball, main.ts, so here a frame old: carried on by
+    // its own run - and held inside the boards as the room's flight holds the ball, a goal's mouth open to its net.)
+    const old=this.bodyOf(id)?dt:0,size=this.players.find(p=>p.id===id)?.size??1,spot=carrySpot({x:body.x+c.vx*old,z:body.z+c.vz*old,size},c.heading,r);
+    {const R=GOAL_RULES,ix=R.halfX-r,iz=Math.abs(spot.x)<R.goalHalfWidth-r?R.halfZ+R.goalDepth-r:R.halfZ-r;spot.x=Math.max(-ix,Math.min(ix,spot.x));spot.z=Math.max(-iz,Math.min(iz,spot.z));}
+    // (What lay between the ball as drawn and the feet as the carry began, let out over CARRY_DRAW.in: the feet carry it on
+    // from there whatever the room's flight does meanwhile.)
+    if(begun){c.ox=this.drawn.x-spot.x;c.oy=this.drawn.y-spot.y;c.oz=this.drawn.z-spot.z;c.over=Math.min(CARRY_DRAW.inMost,Math.max(CARRY_DRAW.in,Math.hypot(c.ox,c.oy,c.oz)/CARRY_DRAW.inPace));}
+    c.k=Math.min(1,c.k+(dt>0?dt:0)/c.over);
+    const w=1-c.k*c.k*(3-2*c.k),x=spot.x+c.ox*w,y=spot.y+c.oy*w,z=spot.z+c.oz*w;
+    if(dt>1e-4){const e=Math.min(1,dt*20),ux=(x-c.x)/dt,uz=(z-c.z)/dt;if(Math.abs(ux)+Math.abs(uz)<60){c.ux+=(ux-c.ux)*e;c.uz+=(uz-c.uz)*e;}}
+    c.x=x;c.z=z;
+    this.drawn.set(x,y,z);this.velocity.set(c.ux,0,c.uz);
+    this.carryLook.id=id;this.carryLook.k=c.k;
+  }
+
   /** The base's own flight run on to `at` (server s) into this.sim: it stands still while stopped or clashing, then flies. */
   private flown(at:number){
     const b=this.base,from=Math.max(this.baseServer,b.frozenUntil,b.clash),age=Math.min(.5,Math.max(0,at-from));
@@ -1233,7 +1348,8 @@ export class BallField {
     (a.uVel.value as THREE.Vector3).copy(this.velocity);(a.uTeam.value as THREE.Color).copy(team);
     // The trail: a point wherever the ball has gone a fifth of a metre, the newest following it every frame, the
     // oldest let go after its life; wider for a faster, hotter ball, nothing at a roll.
-    const life=.3+tier*.06+(b.super?.25:0),width=Math.min(1,Math.max(0,(speed-3)/14))*r*2*(1+tier*.22)*(b.super?1.35:1),stroke=this.gear.trailColour(view,b,team);
+    // (None behind a carried ball - it runs at a body's pace at a body's feet, and the ring under it says whose.)
+    const life=.3+tier*.06+(b.super?.25:0),width=Math.min(1,Math.max(0,(speed-3)/14))*r*2*(1+tier*.22)*(b.super?1.35:1)*(this.carried?1-this.carried.k:1),stroke=this.gear.trailColour(view,b,team);
     if(!frozen){
       this.trailClock+=dt;const trail=this.trail;
       // The ribbon's colours: a SUPER SHOT's or a LINK SHOT's own two, else the striker's ball gear trail.
@@ -1325,6 +1441,10 @@ export class BallField {
     // The shadow straight under the ball, softer and wider the higher it is; a fine ring to find it by when high.
     const height=Math.max(0,y-r);
     fx.put(K.shadow,x,.035,z,r*(1.15+height*.06),INK,.55/(1+height*.22),Math.min(1,Math.max(0,(height-1.5)/4))*.6);
+    // A carried ball's one sign of whose it is - a ring in the carrier's side's colour on the floor round it, as
+    // each fighter's own lies under them - so a team-mate knows to run and the other side whom to tackle.
+    const holder=this.carried;
+    if(holder?.team)fx.put(K.side,x,.045,z,r*CARRY_DRAW.ring,TEAM[holder.team],CARRY_DRAW.alpha*holder.k,0);
     // Each fighter's side, in a ring on the floor under them (yours brighter, and doubled). (The others'
     // step back - TeamTrim.ts sideRing - now that each body wears its side's colour.)
     const ring=sideRing();
@@ -1356,7 +1476,10 @@ export class BallField {
   private moment(e:BallEvent,view:BallView){
     // The crowd: on its feet for a goal, up for a clash, a save, a post, a super shot.
     this.gear.burst(this.emit,e,view,VFX.spriteGain);
-    const hype=({goal:1,'own-goal':1,clash:.75,super:.7,save:.55,perfect:.55,post:.5,shield:.6,win:1} as Partial<Record<BallEvent['kind'],number>>)[e.kind];
+    // (Goal Rush's TRAP - a 'perfect' event with the text TRAP, twenty a match - is the sport's first touch,
+    // not a moment the stands rise for.)
+    const trap=e.kind==='perfect'&&e.text==='TRAP';
+    const hype=trap?0:({goal:1,'own-goal':1,clash:.75,super:.7,save:.55,perfect:.55,post:.5,shield:.6,win:1} as Partial<Record<BallEvent['kind'],number>>)[e.kind];
     if(hype)crowdHype.value=Math.max(crowdHype.value,hype);
     const team=e.team?TEAM[e.team]:WHITE,n=(k:number)=>Math.max(1,Math.round(k*VFX.spriteGain)),r=ballRadius(view.mode),mk=markScale(r);
     // (A power shot's stroke ends where the ball is next met.)
@@ -1394,6 +1517,10 @@ export class BallField {
         break;
       }
       case 'save':case 'perfect':case 'block':{
+        // Goal Rush's TRAP (BallMatch TRAP): the ball killed dead at the feet is a small moment of its own - a
+        // thin ring on the turf in the trapper's side's colour closing in on the ball's foot, the ball pressed down onto the
+        // floor - with none of a PERFECT GUARD's gold ring, glint or flash (TRAP_MARK).
+        if(trap){const o=this.fx.spawn(K.settle,e.x,.06,e.z,0,0,0,TRAP_MARK.life,r*TRAP_MARK.from,r*TRAP_MARK.from,team,TRAP_MARK.alpha),d=this.fx.data;d[o+FLAGS]=ALONG_AXIS;d[o+AX]=TRAP_MARK.to/TRAP_MARK.from;this.press(0,1,0,TRAP_MARK.press);break;}
         // A guard. One mark, the engine's brushed ring where the ball met it - pale; a PERFECT one (or a
         // STUFF BLOCK) gold and bigger, with a glint. (The hexagon shield, two shocks, a hit star with its lines, a
         // burst and the sparks are retired.) A DIVING SAVE leaves its skid.

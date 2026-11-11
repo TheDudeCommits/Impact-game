@@ -1,7 +1,7 @@
 import type {AttackSlot, PlayerInput, PlayerState} from '../types';
 import {MOVES, jumpArc} from '../moves';
 import {BALL_ID, GOAL_RULES, SHOOT, SPIKE_RULES, otherTeam, type BallModeId, type BallSeat, type BallTeam, type BallView} from './model';
-import {goalZ, landing, sideOf, stepBall, type BallContact} from './physics';
+import {goalZ, headingInto, landing, sideOf, stepBall, type BallContact} from './physics';
 import type {BallState} from './model';
 
 type Command = Omit<PlayerInput, 'seq'>;
@@ -264,6 +264,29 @@ const COMMIT = {lead: .06, rise: .8, late: .25, quick: .2, quickSkill: .3} as co
 const STUFF = {base: .06, skill: .2} as const;
 /** A setter swings for the set with the ball falling this far above its waist or less (a bump: 1.7 m). */
 const SET_SWING = 3;
+/** Goal Rush's bots with the first touch, the carry and the call (BallMatch TRAP,
+ *  CARRY; strike.ts PASS_AIM; model.ts PASS_CALL).
+ *  - **The carry:** a bot behind a slow ball on the floor (`slow` m/s or less), with nobody of the other side within
+ *    `room` m of it and their goal more than `shoot` m off, runs through it instead of striking it - and carries it at
+ *    their goal (a WING side's up its channel), the view on the way it goes. It lets it go under pressure - one of theirs
+ *    within `pressure` m of the ball (by level: HARD's read it sooner; a rival meets the ball 1.25 m off and closes at up
+ *    to 17 m/s with the carrier running at them, the release's blow lands 0.13 s after its press), or `most` s carried - with a pass to a team-mate ahead who is
+ *    `passNear`-`passFar` m off and open (nobody of theirs within `open` m of them or `lane` m of the line), else a shot;
+ *    within `shoot` m it shoots (wound up with room, as CHARGE says: the ball at its feet is still to it). A keeper
+ *    carries only inside its box (`box` m of its line) and clears it from there.
+ *  - **The trap:** a ball coming at it that is no shot at its own goal - a team-mate's pass when their goal is far, a
+ *    clearance, a loose ball - with room around it is guarded as it arrives (`lead` s before, its timing error on top),
+ *    `trap` of the time by level, decided once a ball; it then carries it.
+ *  - **The call:** a person of its side who called for the ball (PASS_CALL) is looked for first while the call lasts: a
+ *    bot carrying the ball, or with it at its feet, passes to them when they are `passNear`-`callFar` m off and open as
+ *    above - never a blind one - and otherwise plays on.
+ *  NORMAL's bots pass no more often than before (LEVEL_EDGE.link stays HARD's): what changes for every level is that a
+ *  pass is pressed with the stick at its team-mate, so it is led into their run (PASS_AIM). */
+/** How far a bot's stick is eased for a light that is no pass (PASS_AIM.stick's .6 is an aimed pass; the boost holds
+ *  from .5). */
+const AIM_EASED = .55;
+export const CARRY_BOT = {slow: 5.5, room: 4, shoot: 13, pressure: {easy: 3.8, normal: 4.2, hard: 4.8}, most: 2.6, passNear: 4, passFar: 18, callFar: 24, open: 2.2, lane: 1.1, box: 8,
+  lead: .12, trap: {easy: .3, normal: .5, hard: .7}} as const;
 
 
 /** A bot that plays the ball game it was seated in, through the same inputs a person sends (a stick, a view, the
@@ -313,6 +336,13 @@ export class BallBrain {
   private spotX = NaN; private spotZ = 0;
   private serveKind: 'jump' | 'float' | 'drive' | null = null; private serveJump = -Infinity; private serveSwing = 0;
   private setKind: 'quick' | 'back' | 'high' | null = null; private setFor = '';
+  /** Goal Rush (CARRY_BOT): since when this bot has carried the ball; the ball a trap was decided for and
+   *  the decision; the call for the ball from a person of its side (PASS_CALL), until when. */
+  private carrySince = -Infinity;
+  private trapFor = ''; private trapIt = false;
+  private call: {id: string; until: number} | null = null;
+  /** A person of this bot's side called for the ball (BallMatch.chat: PASS_CALL), until `until`. */
+  called(id: string, until: number) { this.call = {id, until}; }
   constructor(readonly id: string, readonly mode: BallModeId, readonly index: number, private readonly rng: () => number) {
     // (One draw, as before: the level only places it in its band - levelled.)
     this.draw = rng(); this.skill = BOT_LEVELS[mode].normal.lo + this.draw * BOT_LEVELS[mode].normal.span;
@@ -432,8 +462,11 @@ export class BallBrain {
     return best;
   }
   /** (`wind`: SHOOT held on for this long - the fighter's own heavy wound up, CHARGE; 0: a tap.) */
-  private press(input: Command, slot: NonNullable<Command['attack']>, yaw: number, now: number, wait = .4, wind = 0) {
+  private press(input: Command, slot: NonNullable<Command['attack']>, yaw: number, now: number, wait = .4, wind = 0, aimed = false) {
     input.attack = slot; input.yaw = yaw + (this.rng() - .5) * (1 - this.sk) * .5;
+    // (PASS_AIM: a light with the stick held is a pass the stick aims - a bot's is pressed so only when it
+    // passes to a team-mate (passTo); any other light it presses with the stick eased under the aim's.)
+    if (this.mode === 'goal-rush' && slot === 'light' && !aimed) { const m = Math.hypot(input.moveX, input.moveZ); if (m > AIM_EASED) { input.moveX *= AIM_EASED / m; input.moveZ *= AIM_EASED / m; } }
     // (Goal Rush: now and then a shot is shanked - PRESSURE.)
     if (this.mode === 'goal-rush' && this.rng() < PRESSURE.shank * (1 - this.sk)) input.yaw += (this.rng() < .5 ? -1 : 1) * PRESSURE.shankYaw;
     this.nextPress = now + wait + this.rng() * .25;
@@ -550,6 +583,15 @@ export class BallBrain {
     if (this.brace(me, b, team, now, input, role === 'keeper')) { this.fight = null; return input; }
     // A tackle under way (the FIGHT stance) goes on until it lets go.
     if (this.fighting(me, seat, players, view, b, input, now)) return input;
+    // (CARRY_BOT) The ball at its feet, carried - on with it, or let go of it; a team-mate's carried ball is
+    // theirs (a swing at it would play nothing), so the side gets up the pitch for the pass.
+    if (b.carry === me.id) { if (this.carrySince === -Infinity) this.carrySince = now; return this.carrying(me, seat, players, view, now, input, role, shotYaw); }
+    this.carrySince = -Infinity;
+    const mateCarry = b.carry !== undefined && seatOf(view, b.carry)?.team === team;
+    if (mateCarry && role !== 'keeper') {
+      this.run(me, {x: clamp(this.flank * PITCH.flank * R.halfX * 1.2, -R.halfX + 2, R.halfX - 2), z: clamp(b.z + toward * 8, -R.halfZ + 3, R.halfZ - 3)}, input, now, .8, 12);
+      return input;
+    }
     if (role === 'keeper') {
       // (Behind in the last seconds, the keeper comes off its line: PRESSURE.)
       const sweep = push && (view.overtime || view.clock < PRESSURE.sweepFrom);
@@ -566,8 +608,8 @@ export class BallBrain {
           dive = this.shotRead && me.grounded && me.stamina > 25 && now - this.diveAt > 1 && t > .1 && t < 1 && across > PRESSURE.runs * t + PRESSURE.reach && across < (PRESSURE.dives + this.edge.dive) * t + PRESSURE.reach;
         }
       }
-      // A ball loose near the goal is the keeper's to clear.
-      if (gap(b, {x: 0, z: ownZ}) < PITCH.clear * R.halfZ && !ownDanger && b.y < 2.4) spot = {x: b.x - Math.sin(shotYaw) * 1.2, z: b.z - Math.cos(shotYaw) * 1.2};
+      // A ball loose near the goal is the keeper's to clear. (Not a team-mate's carried one: CARRY.)
+      if (!mateCarry && gap(b, {x: 0, z: ownZ}) < PITCH.clear * R.halfZ && !ownDanger && b.y < 2.4) spot = {x: b.x - Math.sin(shotYaw) * 1.2, z: b.z - Math.cos(shotYaw) * 1.2};
       // A charm near the goal, with the ball far off, is worth the few steps.
       const near = !ownDanger && gap(b, {x: 0, z: ownZ}) > PITCH.keeperCharm * R.halfZ ? this.charm(me, view, 5) : undefined;
       if (near) spot = near;
@@ -578,7 +620,7 @@ export class BallBrain {
       const speed = Math.hypot(b.vx, b.vy, b.vz), pass = this.passing(me, b);
       // (Diving, it goes up at the ball whatever the line: the dive is the lunge to put it there.)
       if (speed > 13 && ownDanger && this.shotRead && pass.t > -.05 && (pass.miss < PRESSURE.guardReach || now - this.diveAt < .6) && !dive && dBall < PRESSURE.guardFrom + speed * this.guardErr) { input.guard = true; input.yaw = Math.atan2(b.x - me.x, b.z - me.z); }
-      else if ((inReach || (!ownDanger && this.arriving(me, b) !== undefined)) && now >= this.nextPress) {
+      else if (!mateCarry && (inReach || (!ownDanger && this.arriving(me, b) !== undefined)) && now >= this.nextPress) {
         const slot = me.ultimate >= 100 ? 'ultimate' : 'heavy', eta = this.arriving(me, b);
         if (eta === undefined || this.onTime(me, slot, eta, b)) this.press(input, slot, Math.atan2(toward * 9 * this.flank, toward * 20), now, .5);
       }
@@ -586,6 +628,8 @@ export class BallBrain {
       else if (!inReach && Math.abs(b.z - ownZ) < PITCH.clear * R.halfZ) this.tackle(me, seat, players, view, b, input, now, 2.2, 5);
       return input;
     }
+    // (CARRY_BOT) A ball on its way here, no shot at its goal, with their goal far: trapped, to carry.
+    if (this.trapping(me, team, players, view, b, this.arriving(me, b), now, input)) return input;
     // A team-mate's pass on its way here: met first time at the goal (a LINK SHOT).
     if (this.meet(me, b, team, enemyZ, now, input, players)) return input;
     if (role === 'support') {
@@ -647,6 +691,9 @@ export class BallBrain {
     if (near) approach = near;
     this.run(me, approach, input, now, .3, 9);
     if (dBall < 3.5) input.yaw = driveYaw;
+    // (CARRY_BOT) Behind a slow ball on the floor, room round it and their goal far - run through it, to
+    // carry it.
+    if (this.takes(me, b, team, players, view, ahead, ux, uz)) { this.run(me, {x: b.x + ux * 2.5, z: b.z + uz * 2.5}, input, now, 0, 99); input.yaw = driveYaw; return input; }
     // The aerial (BALL_SPORT): off the floor under a high ball, up again off the air and a dash at it.
     if (!me.grounded && now >= this.nextAerial && b.y > me.y + 2 && b.y < 10 && gap(me, b) < 4.5 && this.rng() < .25 + this.sk * .5) {
       const up = Math.hypot(b.x - me.x, b.y - (me.y + 1), b.z - me.z);
@@ -705,7 +752,11 @@ export class BallBrain {
    *  them or across the pass), and this bot farther out than they are: a tap to them (strike.ts leads their run), now
    *  and then. True when it passed. */
   private setUp(me: PlayerState, b: BallState, team: BallTeam, toward: number, enemyZ: number, players: readonly PlayerState[], view: BallView, now: number, input: Command): boolean {
-    if (now < this.nextLink || !me.grounded || b.y > 1.3) return false;
+    if (!me.grounded || b.y > 1.3) return false;
+    // (PASS_CALL: the person of its side who called for it, first - if they are open.)
+    const caller = this.callee(me, team, players, view, now, b);
+    if (caller) { this.passTo(input, b, caller, now); return true; }
+    if (now < this.nextLink) return false;
     let mate: PlayerState | undefined, best = Infinity;
     for (const p of players) {
       if (p.id === me.id || !p.alive || !p.grounded) continue;
@@ -727,7 +778,7 @@ export class BallBrain {
     const pass = this.rng() < LINK_SET + this.edge.link;
     this.nextLink = now + (pass ? LINK_GAP : 1);
     if (!pass) return false;
-    this.press(input, 'light', Math.atan2(mate.x - b.x, mate.z - b.z), now, .45);
+    this.passTo(input, b, mate, now);
     return true;
   }
   /** A team-mate's pass coming to this bot: stand for it facing the goal, and strike it first time, the blow timed to land
@@ -750,6 +801,113 @@ export class BallBrain {
     return true;
   }
   private meetFor = ''; private meetWind = 0;
+
+  // ─── Goal Rush's carry, trap and call (CARRY_BOT) ─────────────────────────────────────────────────────
+  /** Whether anyone of the other side (as the view seats them) stands within `within` m of `at`. */
+  private crowded(me: PlayerState, team: BallTeam, players: readonly PlayerState[], view: BallView, at: {x: number; z: number}, within: number) {
+    for (const q of players) { const s = q.id === me.id ? undefined : seatOf(view, q.id); if (s && s.team !== team && s.out === undefined && q.alive && gap(q, at) < within) return true; }
+    return false;
+  }
+  /** A team-mate open for a pass from `b`: nobody of the other side within CARRY_BOT.open m of them or CARRY_BOT.lane m of
+   *  the line to them. */
+  private open(q: PlayerState, b: {x: number; z: number}, team: BallTeam, players: readonly PlayerState[], view: BallView) {
+    for (const r of players) {
+      const s = seatOf(view, r.id);
+      if (!r.alive || !s || s.team === team || s.out !== undefined) continue;
+      if (gap(r, q) < CARRY_BOT.open || offLine(r, b, q) < CARRY_BOT.lane) return false;
+    }
+    return true;
+  }
+  /** Behind a slow ball on the floor, lined up on the way it goes (`ux`, `uz`; `ahead`: how far past the ball along it
+   *  this bot is), room round it and their goal far: a carry to begin by running through it. */
+  private takes(me: PlayerState, b: BallState, team: BallTeam, players: readonly PlayerState[], view: BallView, ahead: number, ux: number, uz: number) {
+    const C = CARRY_BOT, R = GOAL_RULES;
+    if (b.carry !== undefined || !me.grounded || b.y > R.ballRadius + .3 || Math.abs(b.vy) > 2 || Math.hypot(b.vx, b.vz) > C.slow || gap(me, b) > 3.5 || ahead > -.3) return false;
+    if (Math.abs((me.x - b.x) * uz - (me.z - b.z) * ux) > 1.2 || Math.abs(goalZ(otherTeam(team)) - b.z) < C.shoot) return false;
+    return !this.crowded(me, team, players, view, b, C.room);
+  }
+  /** A ball on its way here (`eta`: BallBrain.arriving) that is no shot at this bot's goal, with their goal far and room
+   *  round it: the guard put up as it arrives (BallMatch TRAP), decided once a ball, CARRY_BOT.trap of the time by level.
+   *  True while it is being trapped. */
+  private trapping(me: PlayerState, team: BallTeam, players: readonly PlayerState[], view: BallView, b: BallState, eta: number | undefined, now: number, input: Command) {
+    const C = CARRY_BOT;
+    if (eta === undefined || !me.grounded || b.super || b.carry !== undefined || b.y > 2.4 || Math.abs(goalZ(otherTeam(team)) - me.z) < C.shoot) return false;
+    // (A shot at its own goal is saved, not trapped - TRAP. The room's own test for one (physics.ts headingInto), on any
+    // ball on its way in, whoever struck it last: a bot's looser read of a shot pressed the guard as a trap on balls the
+    // room counted as shots, and its plain saves came out PERFECT ones, 7.3 to 12 a match.)
+    if (headingInto(b, team)) return false;
+    const key = `${b.lastId}:${Math.round(Math.atan2(b.vx, b.vz) * 2)}`;
+    if (key !== this.trapFor) { this.trapFor = key; this.trapIt = !this.crowded(me, team, players, view, me, C.room) && this.rng() < C.trap[this.level]; }
+    if (!this.trapIt) return false;
+    this.roll(b);
+    input.moveX = input.moveZ = 0; input.yaw = Math.atan2(b.x - me.x, b.z - me.z);
+    if (eta <= C.lead + this.timingErr) input.guard = true;
+    return true;
+  }
+  /** The person of this bot's side who called for the ball (PASS_CALL), while the call lasts, if they are a pass away and
+   *  open - never a blind one. */
+  private callee(me: PlayerState, team: BallTeam, players: readonly PlayerState[], view: BallView, now: number, b: {x: number; z: number}) {
+    const c = this.call;
+    if (!c || now >= c.until || c.id === me.id) return undefined;
+    const q = players.find(p => p.id === c.id), s = seatOf(view, c.id);
+    if (!q?.alive || !s || s.team !== team || s.out !== undefined) return undefined;
+    const d = gap(q, b);
+    return d >= CARRY_BOT.passNear && d <= CARRY_BOT.callFar && this.open(q, b, team, players, view) ? q : undefined;
+  }
+  /** A team-mate to pass to from `b` under pressure: ahead (or, for a keeper, anyone but a keeper), a pass away and open;
+   *  the one nearest their goal, a little for the shorter pass. */
+  private outlet(me: PlayerState, b: {x: number; z: number}, team: BallTeam, players: readonly PlayerState[], view: BallView, keeper: boolean) {
+    const C = CARRY_BOT, enemyZ = goalZ(otherTeam(team)), toward = Math.sign(enemyZ);
+    let pick: PlayerState | undefined, best = Infinity;
+    for (const p of players) {
+      const s = p.id === me.id ? undefined : seatOf(view, p.id);
+      if (!s || !p.alive || s.team !== team || s.out !== undefined || s.role === 'keeper') continue;
+      const d = gap(p, b), ahead = toward * (p.z - b.z), score = Math.abs(enemyZ - p.z) + d * .3;
+      if (d < C.passNear || d > C.passFar || (!keeper && ahead < -3) || score >= best || !this.open(p, b, team, players, view)) continue;
+      pick = p; best = score;
+    }
+    return pick;
+  }
+  /** A pass to `q`: the stick at them as it is pressed, so the room leads it into their run (strike.ts PASS_AIM). */
+  private passTo(input: Command, b: {x: number; z: number}, q: PlayerState, now: number) {
+    const dx = q.x - b.x, dz = q.z - b.z, d = Math.hypot(dx, dz) || 1;
+    input.moveX = dx / d; input.moveZ = dz / d;
+    this.press(input, 'light', Math.atan2(dx, dz), now, .45, 0, true);
+  }
+  /** The stick held on along `yaw` (inside the walls), the view the same way: a carry going on. */
+  private carryOn(me: PlayerState, input: Command, yaw: number) {
+    const R = GOAL_RULES, x = clamp(me.x + Math.sin(yaw) * 6, -R.halfX + 2.5, R.halfX - 2.5), z = clamp(me.z + Math.cos(yaw) * 6, -R.halfZ + 1, R.halfZ - 1);
+    const dx = x - me.x, dz = z - me.z, d = Math.hypot(dx, dz) || 1;
+    input.moveX = dx / d; input.moveZ = dz / d; input.yaw = yaw;
+  }
+  /** Carrying the ball (CARRY_BOT): the call first; within range of their goal a shot (wound up with room); under
+   *  pressure, carried long enough, or a keeper at the edge of its box, a pass to an open team-mate or else a shot or a
+   *  clearance; otherwise on with it at their goal - a WING side's up its channel from far out - a keeper's up the pitch. */
+  private carrying(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, now: number, input: Command, role: string, shotYaw: number): Command {
+    const b = view.ball, R = GOAL_RULES, C = CARRY_BOT, team = seat.team, ownZ = goalZ(team), enemyZ = goalZ(otherTeam(team)), toward = Math.sign(enemyZ);
+    const keeper = role === 'keeper', toGoal = Math.abs(enemyZ - b.z), held = now - this.carrySince;
+    const caller = this.callee(me, team, players, view, now, b);
+    if (caller && now >= this.nextPress) { this.passTo(input, b, caller, now); return input; }
+    const far = toGoal > PLAN.crossFrom * R.halfZ && toGoal < PLAN.carryFrom * R.halfZ;
+    const dir = keeper ? Math.atan2(-me.x * .3, toward * 10) : this.plan === 'wing' && far ? Math.atan2(this.wing * PLAN.channel * R.halfX - b.x, toward * 9) : shotYaw;
+    if (!keeper && toGoal < C.shoot && now >= this.nextPress) {
+      const slot = me.ultimate >= 100 && Math.abs(b.x) < SUPER_WIDE ? 'ultimate' : 'heavy';
+      this.carryOn(me, input, shotYaw);
+      this.press(input, slot, shotYaw, now, .5, slot === 'heavy' ? this.winds(me, team, players, true) : 0);
+      return input;
+    }
+    const pressed = this.crowded(me, team, players, view, b, C.pressure[this.level]) || held > C.most || (keeper && Math.abs(me.z - ownZ) > C.box);
+    if (pressed && now >= this.nextPress) {
+      const mate = this.outlet(me, b, team, players, view, keeper);
+      if (mate) { this.passTo(input, b, mate, now); return input; }
+      const out = keeper || toGoal > PITCH.heavy * R.halfZ ? Math.atan2(this.flank * 6, toward * 20) : shotYaw;
+      this.carryOn(me, input, out);
+      this.press(input, 'heavy', out, now, .5);
+      return input;
+    }
+    this.carryOn(me, input, dir);
+    return input;
+  }
 
   // ─── Sky Spike ────────────────────────────────────────────────────────────────────────────────────────────────────
   private volley(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, now: number, input: Command): Command {

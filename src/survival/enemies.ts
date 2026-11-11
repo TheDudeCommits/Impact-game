@@ -386,7 +386,7 @@ ENEMIES.rakshasa = {
     multi(melee('Unchained Flurry', 'heavy', ['skill_1_6'], 2.2, .35, 30, { chain: ['skill_1_1', 'skill_1_2', 'skill_1_3', 'skill_1_4', 'skill_1_5', 'skill_1_6', 'skill_1_7'], range: 2.8, radius: 1, lunge: 6, close: 7, knockback: 3, maxRange: 6, rest: 3, element: 'light' }), [.35, .7, 1.05, 1.4, 1.75], 70),
     melee('Oni Cleave', 'special', ['skill_3'], 2.3, 1.25, 150, { clipSeconds: 2.03, range: 7, radius: 2.1, lunge: 2, knockback: 13, stun: .8, guardBreak: true, maxRange: 7.5, rest: 7, telegraph: 'cone', element: 'light', callout: true }),
   ],
-  clips: cinderRequiemClips(), xp: 20, score: 2800, cost: 6, color: 0xffd21e,
+  clips: withClean(cinderRequiemClips()), xp: 20, score: 2800, cost: 6, color: 0xffd21e,
 };
 ENEMIES['nightfall'] = {
   id: 'nightfall', name: 'Nightfall', title: 'The Starless Edge', series: 'Cinder Requiem', role: 'elite', brain: 'boss',

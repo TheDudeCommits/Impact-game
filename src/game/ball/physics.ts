@@ -21,6 +21,17 @@ const SQRT2 = Math.SQRT2;
 /** The red team defends the -z end (Goal Rush) or the -z half (Sky Spike); blue the +z. */
 export const sideOf = (z: number): BallTeam => z < 0 ? 'red' : 'blue';
 export const goalZ = (team: BallTeam) => team === 'red' ? -GOAL_RULES.halfZ : GOAL_RULES.halfZ;
+/** Goal Rush: whether the ball is on its way into `team`'s goal inside `within` seconds - under the bar, between the posts
+ *  and a little - the room's test for a shot on target and a save to be made (BallMatch). Exported, so the
+ *  bots' TRAP and the page's forecast read the same rule (BallBrain CARRY_BOT, touchForecast.ts). */
+export function headingInto(b: BallState, team: BallTeam, within = 1.8) {
+  const R = GOAL_RULES, gz = goalZ(team);
+  if (Math.sign(b.vz) !== Math.sign(gz) || Math.abs(b.vz) < 2) return false;
+  const t = (gz - b.z) / b.vz;
+  if (t < 0 || t > within) return false;
+  const x = b.x + b.vx * t, y = b.y + b.vy * t - .5 * R.gravity * (b.grav || 1) * t * t;
+  return Math.abs(x) < R.goalHalfWidth + .4 && y < R.goalHeight + .5;
+}
 
 /** One step of the ball's flight and everything it bounced off, sub-stepped so a fifty-metre-a-second super shot cannot
  *  pass through a post or the net between two ticks. Deterministic: the server and every page agree on it. */

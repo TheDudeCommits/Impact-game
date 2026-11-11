@@ -79,6 +79,21 @@ describe('team A\'s originals (the Dust Sea\'s great captains)', () => {
     expect(displayMove('gorai', AWAKENINGS.gorai.name)).toBe('STORM WYRM');
   });
 
+  it('carry their weapons in their own right hands through every clip', () => {
+    for (const id of IDS) {
+      const [boneName, meshName] = WEAPONS[id]!;
+      for (const file of [FIGHTERS[id].model, FIGHTERS[id].formModel].filter((f): f is string => !!f && OWN[id]!.test(f))) {
+        const json = glbJson(file);
+        const bone = json.nodes.findIndex(n => n.name === boneName), hand = json.nodes.findIndex(n => n.name === 'RightHand');
+        expect(bone, `${file} ${boneName}`).toBeGreaterThan(-1);
+        expect(json.nodes[hand].children ?? [], `${file} ${boneName}`).toContain(bone);
+        expect(json.nodes.some(n => n.name === meshName), `${file} ${meshName}`).toBe(true);
+        const keyed = (json.animations ?? []).filter(a => a.channels.some(c => c.target.node === bone)).length;
+        expect(keyed, `${file} ${boneName}`).toBeGreaterThan(15);
+      }
+    }
+  });
+
 
 
 
@@ -120,6 +135,35 @@ describe('team A\'s originals (the Dust Sea\'s great captains)', () => {
       const fighter = new Fighter(base(id), rig);
       try { expect(fighter.motionEvidence().springBones, file).toBeGreaterThanOrEqual(chains.length); } finally { fighter.dispose(); }
     }
+  });
+
+  it('stand on their boots in their idles, never on a tail or a coat\'s hem', async () => {
+    // The renderer stands a body on its idle's lowest point, leaving out what it carries (Fighter.ts CARRIED). The model's
+    // skin gave the STORM WYRM's tail to a thigh, and in the half-wyrm form's crouched idle it dropped 0.7 m under his
+    // feet - the whole form would have floated by it. His tail below the coat is a mesh of its own the silhouette leaves
+    // out, and every body's lowest point in its idle is its own boots.
+    const CARRIED = /weapon|equipment-held|^awaken-on|wings/i, FEET = /^(Left|Right)(Foot|ToeBase)$/;
+    for (const id of IDS) for (const file of [FIGHTERS[id].model, FIGHTERS[id].formModel].filter((f): f is string => !!f && OWN[id]!.test(f))) {
+      const rig = await loadRig(file);
+      const mixer = new THREE.AnimationMixer(rig.scene);
+      mixer.clipAction(rig.animations.find(c => c.name === '_Idle')!).play(); mixer.update(0); rig.scene.updateMatrixWorld(true);
+      let lowest = Infinity, feet = Infinity;
+      const v = new THREE.Vector3();
+      rig.scene.traverse(o => {
+        const m = o as THREE.SkinnedMesh;
+        if (!m.isSkinnedMesh || CARRIED.test(m.name)) return;
+        const index = m.geometry.getAttribute('skinIndex'), weight = m.geometry.getAttribute('skinWeight');
+        for (let i = 0; i < m.geometry.getAttribute('position').count; i += 2) {
+          m.getVertexPosition(i, v).applyMatrix4(m.matrixWorld);
+          lowest = Math.min(lowest, v.y);
+          let top = 0, at = 0;
+          for (let j = 0; j < 4; j++) if (weight.getComponent(i, j) > top) { top = weight.getComponent(i, j); at = index.getComponent(i, j); }
+          if (FEET.test(m.skeleton.bones[at]?.name ?? '')) feet = Math.min(feet, v.y);
+        }
+      });
+      expect(lowest, `${file}: its idle's lowest point is ${(feet - lowest).toFixed(2)} m under its boots`).toBeGreaterThan(feet - .03);
+    }
+    if (built('gorai')) expect(glbJson(FIGHTERS.gorai.formModel!).nodes.some(n => n.name === 'wyrm-tail-wings')).toBe(true);
   });
 
 

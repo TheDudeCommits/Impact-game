@@ -40,6 +40,17 @@ const OWN: Record<string, RegExp> = { taisei: /\/wukong-/, konta: /\/(konta|homu
 afterEach(() => vi.restoreAllMocks());
 
 describe('the originals', () => {
+  it('draw only their own bodies, clips, idles and portraits, and every one of them ships', () => {
+    for (const id of ORIGINAL_IDS) {
+      const f = FIGHTERS[id];
+      const files = [f.model, f.portrait, f.rushModel, ...(f.extraModels ?? []), IDLE_PROFILES[id]?.model, f.formModel]
+        .filter((file): file is string => !!file);
+      for (const file of files) {
+        expect(file, id).toMatch(OWN[id]);
+        expect(fs.existsSync(`public${file}`), file).toBe(true);
+      }
+    }
+  });
 
 
   it('show their own 2D art, each sheet fetched by its own bytes', () => {
@@ -51,6 +62,34 @@ describe('the originals', () => {
       const sheet = SPRITES.fighters.find(f => f.id === id) as { file: string; poster: string; sha256?: string; posterSha256?: string };
       expect([sheet.sha256, sheet.posterSha256], id).toEqual([sha(`home/sprites/${sheet.file}`), sha(`home/sprites/${sheet.poster}`)]);
       expect(MOVE_ART[id as keyof typeof MOVE_ART], id).toBe(sha(`ui/moves/${id}.webp`).slice(0, 12));
+    }
+  });
+
+  it('carry their blades in their own hands (and teeth), through every clip', () => {
+    // The renderer reads a weapon_*hand mesh rigid on a bone under a hand as held steel.
+    const blades: [string, string, string, string][] = [
+      [FIGHTERS.nigo.model, 'weapon_cleaver_R', 'RightHand', 'weapon_cleaver_hand_R'], [FIGHTERS.nigo.formModel!, 'weapon_cleaver_R', 'RightHand', 'weapon_cleaver_hand_R'],
+      [FIGHTERS.shiden.model, 'weapon_katana_R', 'RightHand', 'weapon_katana_hand_R'],
+      [FIGHTERS.shirokane.model, 'prop_kunai_R', 'RightHand', 'shirokane_equipment-held_kunai'],
+      [FIGHTERS.ward.model, 'weapon_nodachi_R', 'RightHand', 'weapon_nodachi_hand_R'],
+      [FIGHTERS.gaunt.model, 'weapon_slab_R', 'RightHand', 'weapon_slab_hand_R'], [FIGHTERS.gaunt.formModel!, 'weapon_slab_R', 'RightHand', 'weapon_slab_hand_R'],
+      // Kenzo fights with two (his redesign took the third, in his teeth, away).
+      ...[FIGHTERS.kenzo.model, FIGHTERS.kenzo.formModel!].flatMap(file => [[file, 'weapon_katana_R', 'RightHand', 'weapon_katana_hand_R'],
+        [file, 'weapon_katana_L', 'LeftHand', 'weapon_katana_hand_L']] as [string, string, string, string][]),
+    ];
+    for (const file of [FIGHTERS.kenzo.model, FIGHTERS.kenzo.formModel!]) {
+      expect((glbJson(file) as unknown as { nodes: { name?: string }[] }).nodes.some(n => /mouth/.test(n.name ?? '')), `${file}: no blade in his teeth`).toBe(false);
+    }
+    for (const [file, boneName, handName, meshName] of blades) {
+      const json = glbJson(file) as unknown as { nodes: { name?: string; children?: number[] }[]; meshes: { name?: string }[]; animations?: { name: string; channels: { target: { node: number } }[] }[] };
+      const bone = json.nodes.findIndex(n => n.name === boneName);
+      const hand = json.nodes.findIndex(n => n.name === handName);
+      expect(bone, `${file} ${boneName}`).toBeGreaterThan(-1);
+      expect(json.nodes[hand].children ?? [], `${file} ${boneName}`).toContain(bone);
+      // The node is the object the renderer names (three.js takes a mesh's name from its node).
+      expect(json.nodes.some(n => n.name === meshName), `${file} ${meshName}`).toBe(true);
+      const keyed = (json.animations ?? []).filter(a => a.channels.some(c => c.target.node === bone)).length;
+      expect(keyed, `${file} ${boneName}`).toBeGreaterThan(15);
     }
   });
 
@@ -91,6 +130,33 @@ describe('the originals', () => {
       // (kenzo-build: Kenzo's base body springs his beard's three chains too, Detail_CLOTH_Beard_*: tests/originals-kenzo-beard.test.ts.)
       const beard = json.nodes.filter(n => /^Detail_CLOTH_Beard_/.test(n.name ?? '')).length;
       try { expect(fighter.motionEvidence().springBones, file).toBe(chains.length + beard); } finally { fighter.dispose(); }
+    }
+  });
+
+  it('carry every clip from beside the body with its travel, on the body\'s own joints', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    for (const id of ORIGINAL_IDS) {
+      const body = await loadRig(FIGHTERS[id].model);
+      for (const url of [FIGHTERS[id].rushModel!, ...(FIGHTERS[id].extraModels ?? [])]) {
+        const clips = (await loadRig(url)).animations, bound = bindClips(body.scene, clips, id);
+        expect(bound.map(c => c.name), url).toEqual(clips.map(c => c.name));
+        bound.forEach((clip, i) => expect(clip.tracks.length, `${url} ${clip.name}`).toBe(clips[i].tracks.length));
+      }
+    }
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('key every joint the transfer moves in every clip, so the renderer\'s layers never pile up on a stale pose', () => {
+    // A joint no playing clip keys is never put back, and the hit lean compounded on it.
+    const CORE = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder',
+      'RightArm', 'RightForeArm', 'RightHand', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase'];
+    for (const id of ORIGINAL_IDS) for (const file of [FIGHTERS[id].model, FIGHTERS[id].rushModel, ...(FIGHTERS[id].extraModels ?? []), FIGHTERS[id].formModel].filter((f): f is string => !!f)) {
+      const json = glbJson(file);
+      const present = json.nodes.map((n, i) => [n.name ?? '', i] as const).filter(([n]) => CORE.includes(n));
+      for (const clip of json.animations ?? []) {
+        const keyed = new Set(clip.channels.filter(c => c.target.path === 'rotation').map(c => c.target.node));
+        expect(present.filter(([, i]) => !keyed.has(i)).map(([n]) => n), `${file} ${clip.name}`).toEqual([]);
+      }
     }
   });
 

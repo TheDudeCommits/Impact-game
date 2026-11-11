@@ -210,7 +210,12 @@ export class Prediction {
     for (const event of events) {
       if (casts&&event.kind === 'cast' && event.actorId === this.id) {
         this.casts.push(event);
-        if(event.actionSeq!==undefined)this.playback={seq:event.actionSeq,slot:current.action,age:0,duration:current.actionDuration,started:current.actionStarted};
+        // (The ball rooms' SHOOT: a quick strike whose key stayed down past SportFeel.strike's hold is turned
+        // into the fighter's own heavy and announced again under the press's own number, on the press's clock - the drawn
+        // swing keeps its age and its start and takes the heavy's clip and length. Restarted, the heavy was drawn from 0
+        // at the split and its blow a fifth of a second after the ball had gone. Every other cast starts its own.)
+        if(event.actionSeq!==undefined&&this.playback?.seq===event.actionSeq&&current.strike==='charge')this.playback={...this.playback,slot:current.action,duration:current.actionDuration};
+        else if(event.actionSeq!==undefined)this.playback={seq:event.actionSeq,slot:current.action,age:0,duration:current.actionDuration,started:current.actionStarted};
       }
       // Round 3e (REACT): previewed only on a body that cannot get out of its
       // way (`committed`). On one free to move or guard, the local copy - which

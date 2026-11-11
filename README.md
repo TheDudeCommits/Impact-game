@@ -97,13 +97,12 @@ own fighter. Collision is [Rapier](https://rapier.rs). The tests are [Vitest](ht
 ## What is not included, and why
 
 Some of the game's assets are held back from this repository until they are replaced with ones that are the project's own
-or clearly licensed: a number of fighters' animation clips, some fighter bodies, some stage models, much of the sound and
-music, a separate effects library (the VFX Armory, which has its own licence), and two fonts. They will be added as they
-are replaced.
+or clearly licensed: some stage models, much of the sound and music, a separate effects library (the VFX Armory, which
+has its own licence), and two fonts. They will be added as they are replaced. Every fighter's and every survival boss's
+animation is here, with the fighters' take packs (`public/assets/fighters/takes/`).
 
-The game runs without them. A fighter whose clip is missing falls back to a shared clip where one exists, a missing stage
-model or effect is drawn without it, and the fonts fall back to Barlow Condensed and the system's. Expect some fighters to
-move more plainly than they will, and some moves to look sparser. Each held-back sound effect plays a CC0 stand-in made for
+The game runs without them. A missing stage model or effect is drawn without it, and the fonts fall back to Barlow
+Condensed and the system's. Expect some moves to look sparser. Each held-back sound effect plays a CC0 stand-in made for
 its slot (`public/assets/audio/v2/cc0/`, listed in its `manifest.json`; `src/audio/standIns.ts` picks it only where the
 sound's own file is absent). The held-back soundtrack's slots play the game's own earlier score
 (`src/originals/scoreStandIns.ts` names the piece that stands in for each), and its two stings play nothing.

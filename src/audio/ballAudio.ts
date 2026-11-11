@@ -84,6 +84,9 @@ export const CALLED_TEXT: Readonly<Record<string, CallerMoment>> = {
   'PERFECT SET': 'clever-touch', 'QUICK SET': 'clever-touch', 'BACK SET': 'clever-touch', 'JUMP SET': 'clever-touch',
   TIP: 'clever-touch', DUMP: 'clever-touch', FEINT: 'clever-touch', 'NO-LOOK PASS': 'clever-touch', 'BACKHEEL': 'clever-touch',
 };
+/** Goal Rush's TRAP (BallMatch TRAP, the ball killed dead at the feet) heard as the turf's soft take, a
+ *  little lower and quieter than a bounce's: its share of that take's gain, and its rate. */
+export const TRAP_THUD = { gain: .8, rate: .88 } as const;
 /** A point won this soon (s) after its side's PERFECT SPIKE is that spike's - the stands' biggest roar. */
 const PERFECT_ROAR = 2.5;
 /** The stands' "ooh" at the commonest moments (a TACKLE, eleven a match; a DIVING DIG, two dozen) rests this long
@@ -473,6 +476,9 @@ export class BallAudio {
       }
       case 'perfect':
         if (e.text === 'STUFF BLOCK') { this.play('block-stuff', at); this.react('crowd-roar-1', .6 * side, .1); this.say('stuff-block', .15); }
+        // (Goal Rush's TRAP - twenty a match - is the ball killed dead on the turf: a soft thud of its own, no
+        // stands and no caller. A PERFECT GUARD keeps its block.)
+        else if (e.text === 'TRAP') this.play('bounce-turf-soft', at, TRAP_THUD.gain, TRAP_THUD.rate);
         else this.play('block', at, .8);
         break;
       case 'block': this.play('block', at); this.react(this.take(['crowd-ooh-2', 'crowd-ooh-1'], 'ooh'), .55 * side, .1); break;
@@ -665,7 +671,10 @@ export class BallAudio {
     if (prev.held || b.held || prev.clash > this.prevTime || b.clash > now || prev.frozenUntil > this.prevTime || b.frozenUntil > now) return;
     const ghost = { ...prev }, contacts = stepBall(view.mode, ghost, dt, this.contacts);
     const off = Math.hypot(ghost.vx - b.vx, ghost.vy - b.vy, ghost.vz - b.vz);
-    const touched = b.lastId !== prev.lastId || b.shot !== prev.shot || (off > 4 && !contacts.length);
+    // (A ball carried by the same body on both snapshots goes as the body goes - BallMatch CARRY - and its
+    // turns and stops are no touch: heard as one, fifteen taps a match sounded mid-run in the bot sims.)
+    const carried = b.carry !== undefined && b.carry === prev.carry;
+    const touched = b.lastId !== prev.lastId || b.shot !== prev.shot || (off > 4 && !contacts.length && !carried);
     if (touched) {
       if (!struck) {
         // (The page's own touch, heard when it was forecast, is not heard again.)

@@ -69,6 +69,23 @@ describe("team B's originals (the Last Sun)", () => {
     }
   });
 
+  it('carry every clip from beside the body, on the body\'s own joints', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    for (const id of IDS) {
+      const body = await loadRig(FIGHTERS[id].model);
+      for (const url of [FIGHTERS[id].rushModel, ...(FIGHTERS[id].extraModels ?? []), IDLE_PROFILES[id]?.model].filter((u): u is string => !!u)) {
+        const clips = (await loadRig(url)).animations, bound = bindClips(body.scene, clips, id);
+        expect(bound.map(c => c.name), url).toEqual(clips.map(c => c.name));
+      }
+      // The slot's own clip names, every one on the body: its moves, its rush stages, its awakening and its idle.
+      const names = new Set(body.animations.map(c => c.name));
+      const slot = FIGHTERS[id] as { clips?: string[]; rushClips?: string[] };
+      for (const clip of [...(slot.clips ?? []), ...(slot.rushClips ?? []), ...(AWAKENINGS[id].clips ?? []).filter(c => c !== '_Idle'), '_Idle', 'Run', 'Block', 'Hit 01', 'down_lp'])
+        expect(names.has(clip), `${id} ${clip}`).toBe(true);
+    }
+    expect(warn).not.toHaveBeenCalled();
+  });
+
 
   it('key every joint the transfer moves in every clip, so the renderer\'s layers never pile up on a stale pose', () => {
     const CORE = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder',

@@ -63,6 +63,18 @@ describe('a light rush plays a clip per stage', () => {
     } finally { body.dispose(); }
   }, 60_000);
 
+  it('never plays the same swing twice running where the rig has another', () => {
+    // KoKo's body carries Spirit Command (in koko-tr1.glb): on the body alone he commands his spirit on every stage, as
+    // he does in the game.
+    for (const id of (['koko', 'kenzo', 'taisei', 'konta', 'gummy', 'ward'] as FighterId[]).filter(id => !(id === 'koko' && ORIGINALS.koko))) {
+      const { body, frames } = rush(id);
+      try {
+        const clips = Array.from({ length: RUSH_STAGES }, (_, stage) => frames.find(f => f.stage === stage)!.clip);
+        for (let stage = 1; stage < RUSH_STAGES; stage++) expect(clips[stage], `${id}: ${clips.join(' | ')}`).not.toBe(clips[stage - 1]);
+      } finally { body.dispose(); }
+    }
+  }, 60_000);
+
 
 
   it('keeps a held blade in hand: an armed fighter never borrows a clip that does not key it, and is never mirrored', () => {
@@ -81,6 +93,16 @@ describe('a light rush plays a clip per stage', () => {
         }
       } finally { body.dispose(); }
     }
+  }, 60_000);
+
+  it('uses the air normals for airborne stages only where they are smooth', () => {
+    const konta = rush('konta', false), koko = rush('koko', false);
+    try {
+      // Konta's are the source clips; everyone else's are donated and turn a
+      // joint up to sixty degrees a frame, so they keep their grounded stages.
+      expect(konta.frames.find(f => f.stage === 1)!.clip).toBe('air Attack 02');
+      expect(koko.frames.find(f => f.stage === 1)!.clip).not.toMatch(/air Attack/);
+    } finally { konta.body.dispose(); koko.body.dispose(); }
   }, 60_000);
 
 
@@ -107,6 +129,21 @@ describe('a light rush plays a clip per stage', () => {
 });
 
 describe('rushClips and rushModel', () => {
+  it('plays the clips the config names, and falls back for one it cannot find', () => {
+    const id: FighterId = 'gummy', saved = FIGHTERS[id].rushClips;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    FIGHTERS[id].rushClips = ['Punch 02', 'No Such Clip', 'Punch 01'];
+    try {
+      const { body, frames } = rush(id);
+      try {
+        const clips = Array.from({ length: RUSH_STAGES }, (_, stage) => frames.find(f => f.stage === stage)!.clip);
+        expect(clips[1]).toBe('Punch 02');
+        expect(clips[3]).toBe('Punch 01');
+        expect(clips[2]).not.toBe('No Such Clip');
+        expect(warn).toHaveBeenCalled();
+      } finally { body.dispose(); }
+    } finally { FIGHTERS[id].rushClips = saved; warn.mockRestore(); }
+  });
 
   it.skipIf(!!ORIGINALS.koko)('binds an animation-only file by bone name and plays its clips as stages', () => {
     const id: FighterId = 'koko', saved = FIGHTERS[id].rushClips;

@@ -1,12 +1,12 @@
 import type {ExternalBlow} from '../simulation';
 import {JUST_GUARD_WINDOW, PLAYER_RADIUS, jumpArc, type MoveDefinition} from '../moves';
 import type {AttackSlot, PlayerInput, PlayerState} from '../types';
-import {BALL_RULES, GOAL_RULES, SPIKE_RULES, ballRadius, heatTier, type BallEvent, type BallState, type BallTeam, type BallView} from './model';
-import {goalZ, sideOf, speedCap} from './physics';
+import {BALL_RULES, SPIKE_RULES, ballRadius, heatTier, type BallEvent, type BallState, type BallTeam, type BallView} from './model';
+import {headingInto, sideOf, speedCap} from './physics';
 import {SPIKE_DIG, strikeBall, type StrikeContext} from './strike';
 import {baseGravity} from './mutators';
 import {TRAIT_RULES, withTrait} from './traits';
-import {HEADER, MASHED, PERFECT_STRIKE, TOUCH_RULES} from './BallMatch';
+import {HEADER, MASHED, PERFECT_STRIKE, TOUCH_RULES, carries, carrySpot} from './BallMatch';
 
 /** The page's own fighter as its prediction has it (game/prediction.ts `local`): what a forecast of its touch reads -
  *  the body, the last command, the swing under way and its blow's aim and stick (as pressed), the guard's press. */
@@ -54,12 +54,15 @@ export class TouchForecaster {
    *  and which of them - a swing landing just behind it is that touch. */
   private bodyPlayed = {at: -Infinity, three: false, touches: 0};
   private last: {x: number; y: number; z: number; vx: number; vy: number; vz: number} | null = null;
+  /** (BallMatch CARRY) Whether the ball as drawn was this seat's to carry, and when it last stopped being
+   *  (CARRY.again). */
+  private carrying = false; private lostAt = -Infinity;
 
   reset() {
     this.strikeCast = this.touchCast = this.swing = this.touchedSwing = this.pressSeq = -1;
     this.strikeAt = this.touchedAt = this.bodyTouch = this.guardAt = this.dashAt = this.whiffAt = this.outsideAt = -Infinity;
     this.pressed.length = 0; this.castFrom = {id: -1, y: 0}; this.pre = {y: 0, cast: -1, vy: 0}; this.climbing = false; this.last = null;
-    this.bodyPlayed = {at: -Infinity, three: false, touches: 0};
+    this.bodyPlayed = {at: -Infinity, three: false, touches: 0}; this.carrying = false; this.lostAt = -Infinity;
   }
 
   /** Before the prediction's tick: where the swing leaves from (BallMatch's preCast). */
@@ -85,6 +88,10 @@ export class TouchForecaster {
     }
     if (!ball) return null;
     if (world.view.mode === 'goal-rush' && Math.hypot(ball.x - p.x, ball.y - (p.y + 1), ball.z - p.z) > PERFECT_STRIKE.shell) this.outsideAt = now;
+    // (BallMatch CARRY: a carry of this seat's that has ended, as the ball drawn says.)
+    const mine = ball.carry === world.selfId;
+    if (this.carrying && !mine) this.lostAt = now;
+    this.carrying = mine;
     return this.body(a, now, ball, world);
   }
 
@@ -93,8 +100,14 @@ export class TouchForecaster {
   blow(a: LocalFighter, blow: ExternalBlow, now: number, ball: BallState, world: ForecastWorld): TouchForecast | null {
     const {view} = world, mode = view.mode, b = {...ball}, p = a.state, seat = this.seat(world);
     if (!seat || this.locked(a, world) || !strikable(view) || b.clash > now) return null;
+    // (BallMatch CARRY: a team-mate's carried ball lets this seat's swing be.)
+    const carrier = b.carry !== undefined && b.carry !== world.selfId ? view.seats.find(s => s.id === b.carry) : undefined;
+    if (carrier && carrier.team === seat.team) return null;
     const castId = a.cast?.id ?? -1;
     if (castId === this.strikeCast && now - this.strikeAt < BALL_RULES.restrike) return null;
+    // (Its own carried ball is struck from the feet as a ball at rest; anyone's is free once struck.)
+    if (b.carry === world.selfId) { b.vx = b.vy = b.vz = 0; this.carrying = false; this.lostAt = now; }
+    delete b.carry;
     // (BallMatch DOUBLE: the body's touch a breath ago, this swing's to play.)
     const body = b.lastId === world.selfId && !b.held && now - this.bodyPlayed.at <= TOUCH_RULES.DOUBLE.window + 1e-6 && !this.mashed(now, blow.slot) ? this.bodyPlayed : undefined;
     if (mode === 'sky-spike') {
@@ -167,6 +180,9 @@ export class TouchForecaster {
     const {view} = world, mode = view.mode, p = a.state, seat = this.seat(world), T = TOUCH_RULES;
     if (!seat || !strikable(view) || ball.held || !p.alive || ball.frozenUntil > now || ball.clash > now) return null;
     const b = {...ball}, r = ballRadius(mode) * (b.size || 1);
+    // (BallMatch CARRY: a carried ball is its carrier's - this body lets its own and a team-mate's be; one of the other
+    // side's is knocked off them by meeting it.)
+    if (b.carry !== undefined && (b.carry === world.selfId || view.seats.find(s => s.id === b.carry)?.team === seat.team)) return null;
     if (mode === 'sky-spike' && sentBy(view, b, seat.team)) return null;
     if (mode === 'sky-spike' && !p.grounded && a.cast && !b.super) return null;
     if (mode === 'sky-spike' && (b.shot === 'tip' && !p.grounded || overNet(b)) && b.lastTeam !== seat.team && Math.abs(b.z) < 2.4) return null;
@@ -187,6 +203,7 @@ export class TouchForecaster {
       this.climbing = false;
     } else if (p.grounded) this.climbing = false;
     if (d >= reach) return null;
+    delete b.carry;
     const hostile = b.lastTeam !== null && b.lastTeam !== seat.team;
     if (b.super && hostile) return null;
     if (d < 1e-5) { nx = Math.sin(p.yaw); ny = 0; nz = Math.cos(p.yaw); } else { nx /= d; ny /= d; nz /= d; }
@@ -203,6 +220,12 @@ export class TouchForecaster {
     if (mode === 'sky-spike' && rel < -1.5 && sideOf(b.z) === seat.team && used < SPIKE_RULES.touches && this.bodyTouch + .4 <= now) {
       this.bodyTouch = now;
       return this.bump(a, b, seat, speed, world);
+    }
+    // (BallMatch CARRY: a run into a slow ball with the stick held takes it on, at the feet.)
+    if (mode === 'goal-rush' && ball.carry === undefined && carryable(view) && now - this.lostAt >= T.CARRY.again
+      && carries(b, r, {grounded: p.grounded, alive: p.alive, action: p.action, swinging: !!a.cast, locked: this.locked(a, world), stick: Math.hypot(a.input.moveX, a.input.moveZ)}, v.vx * nx + v.vz * nz, now)) {
+      if (this.bodyTouch + .35 <= now) { this.bodyTouch = now; this.bodyPlayed = {at: now, three: false, touches: 0}; }
+      return {ball: this.carried(b, p, Math.atan2(nx, nz), r, world.selfId, seat.team), kind: 'body'};
     }
     if (rel < 0) {
       const e = mode === 'goal-rush' ? T.GOAL_BODY_BOUNCE : T.BODY_BOUNCE;
@@ -221,9 +244,17 @@ export class TouchForecaster {
   }
 
   /** A guard meets the ball (BallMatch `guardBall`): a block at the net, a save; a STUFF BLOCK or a PERFECT one in the
-   *  just-guard window. (A soft block's lob: the middle of the room's roll.) */
+   *  just-guard window; Goal Rush's TRAP. (A soft block's lob: the middle of the room's roll.) */
   private guard(a: LocalFighter, b: BallState, seat: {team: BallTeam}, now: number, nx: number, ny: number, nz: number, world: ForecastWorld): TouchForecast {
     const perfect = now - a.guardPressedAt <= JUST_GUARD_WINDOW, mode = world.view.mode, at = {team: seat.team, actorId: world.selfId};
+    // (BallMatch TRAP: on its feet, the guard pressed as a ball that is no shot at its goal arrives - dead at the feet,
+    // carried. The page's own press against the ball it draws: the room judges it the same way, SEEN.)
+    const shot = mode === 'goal-rush' && headingInto(b, seat.team) && b.lastTeam !== null && b.lastTeam !== seat.team;
+    if (mode === 'goal-rush' && !shot && !b.super && !this.locked(a, world) && a.state.grounded && carryable(world.view) && now - a.guardPressedAt <= TOUCH_RULES.TRAP.window + 1e-6) {
+      b.heat = Math.max(0, b.heat - BALL_RULES.guardHeat); b.super = false;
+      const r = ballRadius(mode) * (b.size || 1), trapped = this.carried(b, a.state, Math.atan2(nx, nz), r, world.selfId, seat.team);
+      return {ball: trapped, kind: 'guard', event: {...at, kind: 'perfect', x: trapped.x, y: trapped.y, z: trapped.z, shot: 'save', text: 'TRAP'}};
+    }
     if (mode === 'sky-spike' && Math.abs(b.z) < 2.6 && b.y > SPIKE_RULES.netHeight - .6) {
       const away = seat.team === 'red' ? 1 : -1;
       if (perfect) { b.vz = away * Math.max(7, Math.abs(b.vz) * .95); b.vy = -Math.max(3, Math.abs(b.vy) * .5) - 5; b.vx *= .5; }
@@ -320,7 +351,17 @@ export class TouchForecaster {
     return world.view.mode === 'goal-rush' && !!a.input.lock && typeof a.input.targetId === 'string' && world.view.seats.some(s => s.id === a.input.targetId);
   }
   private touch(b: BallState, team: BallTeam, id: string) { b.lastId = id; b.lastTeam = team; b.link = null; }
+  /** The ball taken on as this seat's carry (BallMatch startCarry): at the feet along `heading`, moving as the body does. */
+  private carried(b: BallState, p: {x: number; z: number; size?: number}, heading: number, r: number, id: string, team: BallTeam) {
+    const spot = carrySpot(p, heading, r), v = this.last;
+    Object.assign(b, {x: spot.x, y: spot.y, z: spot.z, vx: v?.vx ?? 0, vy: 0, vz: v?.vz ?? 0, sx: 0, sy: 0, sz: 0, carry: id});
+    this.touch(b, team, id);
+    return b;
+  }
 }
+
+/** (BallMatch carryable: live play, no ball machine - a drill, the lesson.) */
+const carryable = (view: BallView) => view.mode === 'goal-rush' && view.phase === 'live' && !view.drill && !view.lesson;
 
 /** Seconds after a forecast block or save before the guard is forecast to meet the ball again. */
 const GUARD_GAP = .3;
@@ -329,12 +370,4 @@ const overNet = (b: BallState) => b.shot === 'serve' && b.y > SPIKE_RULES.netHei
 function sentBy(view: BallView, b: BallState, team: BallTeam) {
   if (view.touchTeam !== team || view.touches < SPIKE_RULES.touches || b.held) return false;
   return Math.sign(b.vz) === (team === 'red' ? 1 : -1) && sideOf(b.z) === team;
-}
-function headingInto(b: BallState, team: BallTeam, within = 1.8) {
-  const R = GOAL_RULES, gz = goalZ(team);
-  if (Math.sign(b.vz) !== Math.sign(gz) || Math.abs(b.vz) < 2) return false;
-  const t = (gz - b.z) / b.vz;
-  if (t < 0 || t > within) return false;
-  const x = b.x + b.vx * t, y = b.y + b.vy * t - .5 * R.gravity * (b.grav || 1) * t * t;
-  return Math.abs(x) < R.goalHalfWidth + .4 && y < R.goalHeight + .5;
 }

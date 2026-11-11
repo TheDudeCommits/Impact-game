@@ -73,6 +73,20 @@ describe('the cast: animation and voice', () => {
     expect(moveProblems({ ...MOVES.taisei.area, area: { ...MOVES.taisei.area.area!, voice: 'Not A Cue' } }, 'x').errors.join()).toMatch(/is not a voice cue id/);
   });
 
+  it("keeps each data entry's animation to a fighter that exists and a clip its body has", () => {
+    const glbClips = (id: FighterId): string[] => {
+      const body = (clips as Record<string, { body: string }>)[id]?.body;
+      if (!body) return [];
+      const bytes = readFileSync(`public${body}`), length = bytes.readUInt32LE(12);
+      return (JSON.parse(bytes.subarray(20, 20 + length).toString('utf8')).animations ?? []).map((a: { name: string }) => a.name);
+    };
+    for (const id of FIGHTER_IDS) {
+      const anim = areaAnimOf(id, MOVES[id].area);
+      expect(FIGHTER_IDS, `${id}: area.anim.from`).toContain(anim.fighter);
+      if (anim.clip) expect(glbClips(id), `${id}: area.anim.clip "${anim.clip}"`).toContain(anim.clip);
+    }
+  });
+
 
   it("says an area move's own line on the cast (a registered cue), and none without one: no line reused by default", () => {
     for (const id of FIGHTER_IDS) {

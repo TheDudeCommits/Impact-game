@@ -24,9 +24,11 @@ import { ballHintsShown, coachOn, markBallHint } from '../modes/prefs';
  *  - Both: SCUFFED (your own strike just came out of a flurry of presses and was mis-hit: BallMatch MASHED) -
  *    one press, on time.
  *  - Goal Rush: TAP TO SHOOT · HOLD TO CHARGE (the ball at your feet with the goal ahead and nobody on
- *    you: the moment SHOOT's two ways matter - model.ts SHOOT).
+ *    you: the moment SHOOT's two ways matter - model.ts SHOOT); AS IT ARRIVES (a team-mate's pass rolling at you: the
+ *    guard then TRAPs it - BallMatch TRAP; on touch the moment's button is TRAP then, sportTouch.ts); PASS · THE STICK AT A TEAM-MATE AIMS IT
+ *    (the ball carried at your feet - BallMatch CARRY, strike.ts PASS_AIM).
  */
-export type BallHintId = 'gr-tackle' | 'gr-knock' | 'gr-boost' | 'gr-aerial' | 'gr-save' | 'gr-scuff' | 'gr-shoot' | 'ss-spike' | 'ss-dig' | 'ss-block' | 'ss-scuff';
+export type BallHintId = 'gr-tackle' | 'gr-knock' | 'gr-boost' | 'gr-aerial' | 'gr-save' | 'gr-scuff' | 'gr-shoot' | 'gr-trap' | 'gr-carry' | 'ss-spike' | 'ss-dig' | 'ss-block' | 'ss-scuff';
 /** How long a hint stays up (ms) unless it is done sooner; the breath after one before another may come; the most a
  *  match shows; the quiet start of a match (the coach's own opening line). */
 export const HINT_MS = 4500, HINT_GAP_MS = 12000, HINTS_A_MATCH = 3, HINT_QUIET_S = 6;
@@ -120,6 +122,20 @@ export const HINTS: readonly Hint[] = [
     },
     done: c => c.mine('save') || c.mine('perfect'),
     draw: c => prompt('guard', 'SAVE', keys(c, { detail: 'ON TIME, IT KILLS THE HEAT' })) },
+  // (The TRAP, said once as a team-mate's pass rolls at you; the carry's aimed pass, said once the ball is at
+  // your feet.)
+  { id: 'gr-trap', mode: 'goal-rush',
+    fire: c => {
+      const b = c.ball, d = flat(c.me, b);
+      if (c.fight || !c.me.grounded || b.carry !== undefined || b.shot !== 'tap' || b.lastTeam !== c.team || b.lastId === c.me.id || b.y > 2 || d < 4 || d > 12) return false;
+      return ((c.me.x - b.x) * b.vx + (c.me.z - b.z) * b.vz) / d > 5;
+    },
+    done: c => c.ball.carry === c.me.id || c.mine('strike') || c.mine('perfect'),
+    draw: c => prompt('guard', 'AS IT ARRIVES', keys(c, { detail: 'TRAPS IT DEAD AT YOUR FEET' })) },
+  { id: 'gr-carry', mode: 'goal-rush',
+    fire: c => !c.fight && c.ball.carry === c.me.id,
+    done: c => c.ball.carry !== c.me.id,
+    draw: c => prompt('light', 'PASS', keys(c, { detail: 'THE STICK AT A TEAM-MATE AIMS IT' })) },
   // ─── Sky Spike ───
   { id: 'ss-scuff', mode: 'sky-spike', fire: c => !!c.scuffed, draw: scuffed },
   { id: 'ss-spike', mode: 'sky-spike',

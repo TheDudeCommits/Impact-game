@@ -190,7 +190,9 @@ export class BallMoments {
       // (A DIVING SAVE and one OFF THE LINE are as big a moment as a PERFECT SAVE.)
       case 'save': if (e.text === 'PERFECT SAVE' || e.text === 'DIVING SAVE' || e.text === 'OFF THE LINE') this.peak(PEAKS.perfect, at); break;
       case 'fever': if (this.mode === 'goal-rush') this.peak(PEAKS.finalPush, at); break;
-      case 'perfect': this.peak(PEAKS.perfect, at); break;
+      // (Goal Rush's TRAP - 'perfect', the text TRAP, twenty a match - moves nothing on the screen: its mark is
+      // BallField's.)
+      case 'perfect': if (e.text !== 'TRAP') this.peak(PEAKS.perfect, at); break;
       case 'strike':
         if (e.perfect && this.mode === 'goal-rush') this.peak(PEAKS.perfectStrike, at);
         else if (e.text === 'SKY SPIKE' || e.text === 'ROLL SPIKE') this.peak(PEAKS.skySpike, at);

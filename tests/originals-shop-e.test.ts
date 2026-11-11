@@ -61,6 +61,25 @@ describe('team E\'s shop originals', () => {
     }
   });
 
+  it('play every clip the slot\'s tables name, from their own files', () => {
+    for (const id of IDS) {
+      const have = new Set(files(id).flatMap(file => [...clipLengths(file).keys()]));
+      const idle = IDLE_PROFILES[id];
+      // An armed fighter's idle profile (Asahi's here) is a stance over the body's own _Idle, with no file of its own.
+      if (idle?.model) for (const name of clipLengths(idle.model).keys()) have.add(name);
+      const f = FIGHTERS[id] as typeof FIGHTERS[FighterId] & { clips?: string[]; rushClips?: string[] };
+      const want = [...(f.clips ?? []), ...(f.rushClips ?? []), ...(AWAKENINGS[id].clips ?? []),
+        ...Object.values(COMBO_CLIPS[id] ?? {}).map(c => c!.clip),
+        ...(idle ? [idle.clip, ...(idle.fidgets ?? []), ...(idle.ready ? [idle.ready] : [])] : [])].filter((name): name is string => !!name);
+      for (const name of want) expect(have.has(name), `${id} ${name}`).toBe(true);
+      // The form plays the same moves, on its own body.
+      if (f.formModel) {
+        const form = clipLengths(f.formModel);
+        for (const name of [...(f.clips ?? []), ...(f.rushClips ?? []), ...(AWAKENINGS[id].clips ?? [])]) expect(form.has(name), `${id} form ${name}`).toBe(true);
+      }
+    }
+  });
+
 
 
   it('keep each carried clip at its donor\'s length, so every contact lands where the donor\'s did', () => {

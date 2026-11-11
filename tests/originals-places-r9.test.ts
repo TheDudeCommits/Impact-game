@@ -31,6 +31,12 @@ describe('r9: the last places on the earlier model, and Last Stand\'s backdrop',
     expect(host).toMatch(/if\(await lastStandBackdrop\(this\.root\)\)return;/);
   });
 
+  it("leaves no built place's model loaded by anything else (Rift War's map builds its own), so none ships", () => {
+    expect(Object.keys(STILL_LOADED)).toEqual([]);
+    const models = (Object.keys(BUILT_PLACES) as StageId[]).map(id => STAGES[id].model!.slice(1));
+    expect(launchUnshipped(models).sort()).toEqual([...models].sort());
+  });
+
 
   it("splashes the Mirror Mere's pale water, not blood", () => {
     const mere = originalLiquid('mirror-mere')!;

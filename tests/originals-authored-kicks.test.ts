@@ -10,6 +10,18 @@ const names = (url: string) => {
 };
 
 describe('the originals\' authored kicks', () => {
+  it('name shown originals and clips in their body or rush file', () => {
+    const entries = Object.entries(ORIGINAL_AUTHORED_KICKS);
+    expect(entries.length).toBeGreaterThan(0);
+    for (const [slot, clips] of entries) {
+      const original = (ORIGINALS as Record<string, { model?: string; rushModel?: string; extraModels?: string[] }>)[slot];
+      expect(original, `${slot} is an original`).toBeDefined();
+      expect((clipsJson as Record<string, unknown>)[slot], `${slot} has a clip map`).toBeDefined();
+      const files = [original.model, original.rushModel, ...(original.extraModels ?? [])].filter((f): f is string => !!f);
+      const carried = new Set(files.flatMap(names));
+      for (const clip of clips) expect(carried.has(clip), `${slot}: ${clip} in ${files.join(', ')}`).toBe(true);
+    }
+  });
 
   it('match only the clip named, on its own slot', () => {
     expect(originalAuthoredKick('setsu', 'Rush 2')).toBe(true);

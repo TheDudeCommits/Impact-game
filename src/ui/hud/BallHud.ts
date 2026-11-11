@@ -446,9 +446,11 @@ class BallHud implements ModeHud {
       case 'out': this.show(now, R.score, 'out', e.team ?? '', `${BALL_TEAM_NAMES[e.team!]} POINT`, 'OUT!', who ? `OFF ${who}` : '', 1900); break;
       case 'touches': this.show(now, R.score, 'out', e.team ?? '', `${BALL_TEAM_NAMES[e.team!]} POINT`, 'FOUR TOUCHES!', `${SPIKE_RULES.touches} A SIDE`, 1900); break;
       // (Sky Spike's block stands under the score now, over the net it was struck at, while the ball is live.)
+      // (Goal Rush's TRAP - twenty a match - is the sport's first touch: no line under the score, which a
+      // PERFECT GUARD keeps; its mark and its thud are the pitch's.)
       case 'block': case 'perfect':
         if (v.mode === 'sky-spike') this.show(now, R.stop, 'save', e.team ?? '', who, e.kind === 'perfect' ? 'STUFF BLOCK!' : 'BLOCK!', '', 1400);
-        else if (e.text) this.tick(now, e.team, `${e.text} · ${who}`, '', LINE_RANK.named);
+        else if (e.text && e.text !== 'TRAP') this.tick(now, e.team, `${e.text} · ${who}`, '', LINE_RANK.named);
         break;
       // (Goal Rush's FINAL PUSH: the last half minute of a match in reach - the ball burns, the side behind charges.)
       // (Sky Spike's FEVER point counts double to the side behind - the event's team - or to either side level.)
