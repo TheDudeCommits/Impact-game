@@ -9,6 +9,7 @@ import { GUARD_HINT } from '../guardGuide';
 import { phone } from '../../input/device';
 import { DUEL_KICKER, LAST_STAND } from '../../originals/stages';
 import { gateModes } from '../../originals/launch';
+import { sportPage } from '../../game/ball/sportRules';
 
 export type ModeId = 'duel' | 'royale' | 'training' | 'arcade' | 'last-stand' | 'bad-blood' | 'rift-war' | 'goal-rush' | 'sky-spike';
 export type VariantId = 'offline' | 'couch' | 'online' | 'friends';
@@ -231,6 +232,45 @@ export const MODES: Readonly<Record<ModeId, ModeInfo>> = {
     },
   },
 };
+
+/** The two ball modes' words on a page on the sport rules (game/ball/sportRules.ts: the default; `?classic` keeps the
+ *  words above), where this device's matches play Goal Rush as football (game/ball/football.ts) and Sky Spike as
+ *  volleyball (game/ball/volley.ts). Their ONLINE and FRIENDS are closed there (launch.ts: the room plays the classic
+ *  rules), so only BOTS' and COUCH's notes. */
+export const SPORT_WORDS: Readonly<Record<'goal-rush' | 'sky-spike', Pick<ModeInfo, 'kicker' | 'tagline' | 'goal' | 'win' | 'facts' | 'howTo' | 'rulesVersion'> & { notes: Partial<Record<VariantId, string>> }>> = {
+  // (rulesVersion one past the classic words': the first-time explainer shows once more for the new rules.)
+  'goal-rush': {
+    rulesVersion: 3, kicker: 'THE INK BOWL · 3 V 3 FOOTBALL',
+    tagline: 'Pass, shoot, score.',
+    goal: 'Three a side and a keeper in each goal. Keep the ball at your feet, pass it on and score.',
+    win: `Lead when the ${Math.round(GOAL_RULES.matchSeconds / 60)} minutes run out. Tied: the next goal wins.`,
+    facts: { players: '3 V 3 + KEEPERS', length: `${Math.round(GOAL_RULES.matchSeconds / 60)} MIN + OVERTIME`, lives: `WIPE-OUTS · ${GOAL_FIGHT.seconds} S` },
+    howTo: [
+      'Run onto the ball and it stays at your feet. {light} passes to the team-mate you point at; without the ball it calls for it. {heavy} shoots: tap to place it, hold for power. Hold {dash} to sprint.',
+      '{guard} tackles: a poke from in front, a slide while you sprint. With the ball, {special} is a trick that beats a tackle. {jump} into a high ball to head it.',
+      `{target} switches SPORT and FIGHT. In FIGHT your buttons are your fighter's moves: knock the one on the ball down and it is loose. A full meter: {ultimate} is your SUPER SHOT. Its goal counts ${GOAL_RULES.superGoal}.`,
+    ],
+    notes: { offline: 'A full 3 v 3 on this device: bots on both sides, a keeper in each goal.' },
+  },
+  'sky-spike': {
+    rulesVersion: 4, kicker: 'THE SKY COURT · 3 V 3 VOLLEYBALL',
+    tagline: 'Spike it into their court.',
+    goal: 'Three against three across a net. Receive, set, spike: keep the ball off your floor and put it on theirs.',
+    win: `First to ${SPIKE_RULES.target}, win by two (${SPIKE_RULES.cap} caps it). Every point counts one.`,
+    facts: { players: '3 V 3', length: '~5–8 MIN', lives: `FIRST TO ${SPIKE_RULES.target}` },
+    howTo: [
+      `{light} plays every touch: the serve, the receive, the set and the spike. The game walks you the last step to the ball. Press as it comes down to you: the better the timing, the better the touch. ${SPIKE_RULES.touches} touches a side.`,
+      'On the third touch, {jump} as the ring closes and press {light} in the air to spike. The stick aims it. {heavy} tips it short over the block instead.',
+      'At the net, hold {jump} as their hitter goes up: the jump is the block. {dash} dives for a low ball just out of reach. A full meter, up for the attack: {ultimate} is a SUPER SPIKE.',
+    ],
+    notes: {},
+  },
+};
+if (sportPage()) for (const mode of ['goal-rush', 'sky-spike'] as const) {
+  const { notes, ...words } = SPORT_WORDS[mode], info = MODES[mode] as ModeInfo;
+  Object.assign(info, words);
+  for (const [way, note] of Object.entries(notes) as [VariantId, string][]) if (info.variants[way]) info.variants[way] = { ...info.variants[way]!, note };
+}
 
 gateModes(MODES);
 

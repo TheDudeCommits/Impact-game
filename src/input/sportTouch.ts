@@ -3,6 +3,7 @@ import { hasStances } from '../game/ball/stance';
 import { headingInto, stepBall } from '../game/ball/physics';
 import { TOUCH_RULES } from '../game/ball/BallMatch';
 import { duelOn } from '../game/ball/superShots';
+import { sportPage } from '../game/ball/sportRules';
 import { PLAYER_RADIUS } from '../game/moves';
 import type { PlayerState } from '../game/types';
 import type { Spot } from './touchLayout';
@@ -254,6 +255,14 @@ function sportSetOf(view: BallView, selfId: string, fight: boolean, superFace: (
  *  alone). Sky Spike's light is SET in prompts, whatever touch it is for; its dash is BOOST, the button that is always
  *  there (the moment's DIVE is the same press, when it shows). */
 export function sportTouchName(mode: BallModeId, fight: boolean, action: string): string | undefined {
+  // (On a page on the sport rules - game/ball/sportRules.ts, the default - the football and volleyball sets'
+  // own buttons: volleySet's PLAY, TIP, BOOST (the DIVE's press), SUPER; football's SPRINT, TACKLE, TRICK, and SPORT in FIGHT.)
+  if (sportPage()) {
+    if (mode === 'sky-spike') return ({ light: 'PLAY', heavy: 'TIP', jump: 'JUMP', dash: 'BOOST', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
+    return (fight
+      ? { light: 'LIGHT', heavy: 'HEAVY', jump: 'JUMP', dash: 'DASH', target: 'SPORT', ultimate: 'ULT', interact: 'JUMP' }
+      : { light: 'PASS', heavy: 'SHOOT', jump: 'JUMP', dash: 'SPRINT', target: 'FIGHT', guard: 'TACKLE', special: 'TRICK', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
+  }
   if (mode === 'sky-spike') return ({ light: 'SET', heavy: 'SPIKE', jump: 'JUMP', dash: 'BOOST', guard: 'BLOCK', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
   // (The BALL stance's guard is TRAP, the moment's button as a ball comes at you.)
   return (fight

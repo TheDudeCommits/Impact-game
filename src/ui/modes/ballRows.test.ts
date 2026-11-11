@@ -43,7 +43,7 @@ describe('the ball modes\' rows on the mode sheet', () => {
     store.set(DRILLS_KEY, '{"gr-keeper": 99}'); expect(drillBest('gr-keeper')).toBe(10);
     store.set(DRILLS_KEY, 'not json'); expect(drillBest('gr-keeper')).toBe(0);
   });
-  it('shows the ball gear in Account only where the ball modes show (never on Player Two while they are "site")', async () => {
+  it('shows the ball gear in Account only where the ball modes show (Player Two\'s copy too, now they are "open")', async () => {
     const { GEAR, gearShelf, gearShown, gearDetail } = await import('../shop/ballGear');
     expect(GEAR.map(item => item.kind)).toEqual([...Array(5).fill('ball'), ...Array(4).fill('balltrail'), ...Array(4).fill('goalburst'), ...Array(3).fill('celebration')]);
     for (const item of GEAR) { expect(item.stage, item.id).toBe('live'); expect(item.price! % 100, item.id).toBe(0); }
@@ -51,7 +51,7 @@ describe('the ball modes\' rows on the mode sheet', () => {
     expect(gearDetail(GEAR[0], undefined, 0, false)).toMatch(/UNLOCK ·|disabled/); expect(gearDetail(GEAR[0], undefined, 0, false)).not.toMatch(/\bBUY\b|\bPRICE\b/);
     try {
       vi.stubGlobal('location', new URL('https://impact.playertwo.cc/~b1/index.html'));
-      expect(gearShown()).toBe(false); expect(gearShelf(undefined, undefined)).toBe('');
+      expect(gearShown()).toBe(true); expect(gearShelf(undefined, undefined)).toContain('BALL SKINS');
     } finally { vi.unstubAllGlobals(); }
   });
   it('draws a standing as its ink stamp, the placements first, and names the fighter\'s trait', () => {

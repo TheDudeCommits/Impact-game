@@ -4,6 +4,7 @@ import { BALL_ID, GOAL_RULES, type BallModeId } from './model';
 import { hasStances } from './stance';
 import { LESSON, LESSON_MATE, STRIKE_MEET, strikesPerfect, type LessonStepId } from './lesson';
 import { MOVES } from '../moves';
+import { VOLLEY } from './volley';
 import { isReleasedFighter } from '../rosterAvailability';
 import type { FighterId, PlayerInput } from '../types';
 
@@ -167,5 +168,18 @@ describe('LEARN TO PLAY: the guided first game', () => {
     m.lessonCommand('me', 'skip');
     expect(shot.skipped).toEqual([]);
     expect(m.view.lesson!.skipped).toEqual(['gr-run']);
+  });
+});
+
+describe('LEARN TO PLAY on volleyball\'s rules', () => {
+  it('feeds volleyball\'s ball, 0.7 of the classic one, and the classic lesson its own', () => {
+    for (const volleyball of [true, false]) {
+      const m = new BallMatch('sky-spike', { seed: 3, access: 'bots', practice: true, lesson: true, volleyball });
+      m.add('me', 'taisei', 'Me', false, 'red'); m.start();
+      let fed = 0;
+      for (let i = 0; i < 60 * 12 && !fed; i++) { m.step(1 / 60); if (m.view.phase === 'live' && !m.ball.held) fed = m.ball.size; }
+      expect(fed, String(volleyball)).toBeCloseTo(volleyball ? VOLLEY.size : 1, 5);
+      expect(!!m.view.lesson?.volley).toBe(volleyball);
+    }
   });
 });

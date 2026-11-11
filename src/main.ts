@@ -489,7 +489,8 @@ const autoLock=new AutoLock();
 let lockExchangeAt=-Infinity;const LOCK_EXCHANGE_MS=1100;
 /** Lock combat: whether this page has said what it is in a fight yet (once a session). */
 let lockTold=false;
-// Goal Rush's SPORT mode (game/ball/football.ts; `?football` in the address, any host): this device's Goal Rush matches
+// Goal Rush's SPORT mode (game/ball/football.ts; on the sport rules, game/ball/sportRules.ts - the default on any host,
+// `?classic` for the classic rules): this device's Goal Rush matches
 // play possession, PASS, SHOOT and SPRINT in the place of the BALL stance's swings. The camera's two states (BALL LOCK,
 // FREE LOOK: render/ball/footballPage.ts) are V's or the pad's left stick click's, kept in the settings; one quiet mark
 // shows who a PASS would find.

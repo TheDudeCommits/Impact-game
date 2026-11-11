@@ -88,16 +88,37 @@ describe('the launch gate: modes and stages', () => {
     for (const card of ['arcade', 'last-stand', 'bad-blood', 'rift-war']) expect(HOME_RAIL.includes(card as 'arcade'), card).toBe(modeOpen(card)); // (Rift War: LAUNCH.riftWar, open since rift-war)
     expect(HOME_RAIL).toEqual(expect.arrayContaining(['duel', 'bots', 'training']));
   });
-  it('shows the ball modes on a site of its own and the match server, never in Player Two\'s copy while LAUNCH.ballModes is "site"', () => {
-    expect(LAUNCH.ballModes).toBe('site');
-    expect(modeOpen('goal-rush')).toBe(true); expect(modeOpen('sky-spike')).toBe(true); // (node: the match server serves their rooms)
+  it('shows the ball modes everywhere, Player Two\'s copy too, now LAUNCH.ballModes is "open"', () => {
+    expect(LAUNCH.ballModes).toBe('open');
+    const answers = () => ['goal-rush', 'sky-spike'].map(mode => [modeOpen(mode), homeCardOpen(mode), partyModeOpen(mode)]);
+    // (Node: the match server serves their rooms, and its party offers them, as before.)
+    const node = answers();
+    expect(node).toEqual([[true, true, LAUNCH.online], [true, true, LAUNCH.online]]);
     expect(HOME_RAIL).toEqual(expect.arrayContaining(['goal-rush', 'sky-spike']));
     try {
+      // (Any page on the classic rules answers as node does; the sport rules close the party's two cards alone.)
+      for (const search of ['?classic', '']) {
+        vi.stubGlobal('location', new URL(`https://impact.playertwo.cc/~b1/index.html${search}`));
+        const p2 = answers();
+        vi.stubGlobal('location', new URL(`https://play.example.com/${search}`));
+        expect(answers(), search).toEqual(p2);
+        expect(p2.map(([open, card]) => [open, card]), search).toEqual(node.map(([open, card]) => [open, card]));
+        expect(p2.map(([, , party]) => party), search).toEqual(search ? node.map(([, , party]) => party) : [false, false]);
+        expect(modeOpen('duel')).toBe(true); expect(partyModeOpen('duel')).toBe(LAUNCH.online);
+      }
+    } finally { vi.unstubAllGlobals(); }
+  });
+  it('closes the two ball modes\' ONLINE and FRIENDS on a page on the sport rules (the room plays the classic ones), and keeps them under ?classic and on the server', () => {
+    const ways = () => ['goal-rush', 'sky-spike'].flatMap(mode => ['offline', 'couch', 'online', 'friends'].map(way => wayOpen(mode, way, way === 'offline' || way === 'couch')));
+    expect(ways()).toEqual([true, true, LAUNCH.online, LAUNCH.online, true, true, LAUNCH.online, LAUNCH.online]);
+    try {
       vi.stubGlobal('location', new URL('https://impact.playertwo.cc/~b1/index.html'));
-      for (const mode of ['goal-rush', 'sky-spike']) { expect(modeOpen(mode), mode).toBe(false); expect(homeCardOpen(mode), mode).toBe(false); expect(partyModeOpen(mode), mode).toBe(false); }
-      expect(modeOpen('duel')).toBe(true);
-      vi.stubGlobal('location', new URL('https://play.example.com/'));
-      expect(modeOpen('goal-rush')).toBe(true); expect(homeCardOpen('sky-spike')).toBe(true);
+      expect(ways()).toEqual([true, true, false, false, true, true, false, false]);
+      expect(wayOpen('duel', 'online')).toBe(LAUNCH.online); expect(wayOpen('rift-war', 'friends')).toBe(LAUNCH.online);
+      vi.stubGlobal('location', new URL('https://impact.playertwo.cc/~b1/index.html?classic'));
+      expect(ways()).toEqual([true, true, LAUNCH.online, LAUNCH.online, true, true, LAUNCH.online, LAUNCH.online]);
+      vi.stubGlobal('location', new URL('https://play.example.com/?football&volleyball'));
+      expect(ways()).toEqual([true, true, false, false, true, true, false, false]);
     } finally { vi.unstubAllGlobals(); }
   });
   it('offers the ways to play that need a match server only while LAUNCH.online is on (on by default; off in a build for no server)', () => {

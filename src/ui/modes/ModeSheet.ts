@@ -19,7 +19,7 @@ import { padKey } from '../../input/glyphs';
 import { preloadLoadingArt, type LoadingMode } from '../LoadingScreen';
 import { readInvite } from '../roomInvite';
 import { modeOpen } from '../../originals/launch';
-import { ballChoice, ballLevelRow, ballPlayRow, ballRulesRow, ballStart, traitBadge } from '../ball/ballSheet';
+import { ballChoice, ballLevelRow, ballPlayRow, ballPrefs, ballRulesRow, ballStart, traitBadge } from '../ball/ballSheet';
 import { onRanks } from '../ball/ranks';
 import { nearest, type Direction } from '../spatialFocus';
 import { MODES, VARIANT_ORDER, modeHere, type ModeId, type Panel, type VariantId } from './catalogue';
@@ -200,7 +200,8 @@ export class ModeSheet {
 
   private get info() { return modeHere(this.mode); }
   private fighter(): FighterId { return (this.mode === 'bad-blood' || this.mode === 'rift-war') ? this.bbFighter : this.host.fighter(); }
-  private prefs() { return modePrefs(this.mode); }
+  // (A ball mode's as this page plays it - ballSheet.ts ballPrefs: on the sport rules, no extra it does not offer.)
+  private prefs() { const prefs = modePrefs(this.mode); return this.mode === 'goal-rush' || this.mode === 'sky-spike' ? ballPrefs(this.mode, prefs) : prefs; }
 
   private draw() {
     const info = this.info, v = info.variants[this.variant]!, fighter = this.fighter(), seen = explainerSeen(this.mode);

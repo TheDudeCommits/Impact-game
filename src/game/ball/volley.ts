@@ -4,6 +4,7 @@ import type {PlayerState, Vec3} from '../types';
 import {SHOOT, SPIKE_RULES, BALL_RULES, otherTeam, type BallEvent, type BallSeat, type BallState, type BallTeam, type BallView, type ShotKind, type VolleyView} from './model';
 import {courtSide, sideOf, stepBall, type BallContact} from './physics';
 import {PLACE, SPIKE_DIG, placement, strikeBall, type Striker} from './strike';
+import {ballRulesOf} from './sportRules';
 
 /** VOLLEYBALL: Sky Spike played as volleyball. One button a touch, chosen by the moment; the game walks you the last
  *  step to the landing mark; timing decides how good the touch is, not whether it happens; you aim the set and the
@@ -101,9 +102,10 @@ export const VOLLEY = {
    *  and half `spray` + `wide` across, all of it from `low` down. */
   jumpServe: {apex: .92, spray: 1.2, wild: 4, wide: 2.4, low: .7},
 } as const;
-/** `?volleyball` in the address, on any host (main.ts; as `?ballmoves` is): the only way the rules are switched on. */
+/** Whether a page plays Sky Spike as volleyball (main.ts): on the sport rules (sportRules.ts - the default on any host,
+ *  `?classic` for the classic rules; `?volleyball` is still accepted and changes nothing). */
 export function volleyballWanted(location?: {search: string}): boolean {
-  return !!location && new URLSearchParams(location.search).has('volleyball');
+  return ballRulesOf(location) === 'sport';
 }
 export type VolleyTier = 'PERFECT' | 'GOOD' | 'EARLY' | 'LATE' | 'FLUBBED';
 export type VolleyKind = 'float' | 'jumpServe' | 'receive' | 'set' | 'spike' | 'over' | 'keep';

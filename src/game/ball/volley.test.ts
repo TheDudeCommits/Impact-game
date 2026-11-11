@@ -33,10 +33,13 @@ function send(m: BallMatch, id: string, stick = { x: 0, z: 0 }, play = false, ya
 const touches = (m: BallMatch, id: string) => m.view.events.filter(e => e.kind === 'touch' && e.actorId === id);
 
 describe('volleyball: the switch', () => {
-  it('is `?volleyball` in the address, on any host', () => {
+  it('is the page\'s rules (sportRules.ts): on with nothing in the address, off with `?classic`, off under node', () => {
+    expect(volleyballWanted({ search: '' })).toBe(true);
+    expect(volleyballWanted({ search: '?ballmoves' })).toBe(true);
+    // (The old flag is still accepted and changes nothing.)
     expect(volleyballWanted({ search: '?volleyball' })).toBe(true);
-    expect(volleyballWanted({ search: '?ballmoves&volleyball' })).toBe(true);
-    expect(volleyballWanted({ search: '?ballmoves' })).toBe(false);
+    expect(volleyballWanted({ search: '?classic' })).toBe(false);
+    expect(volleyballWanted({ search: '?volleyball&classic' })).toBe(false);
     expect(volleyballWanted(undefined)).toBe(false);
   });
   it('is off without the option: no rules, no view field, the ball as big as ever', () => {

@@ -133,8 +133,9 @@ export class BallUI {
     const counts = new Map<string, number>();
     for (const f of feats ? seat.feats ?? [] : []) counts.set(f, (counts.get(f) ?? 0) + 1);
     const badges = counts.size ? `<span class="bu-feats">${[...counts].map(([f, n]) => `<i>${escape(f)}${n > 1 ? ` ×${n}` : ''}</i>`).join('')}</span>` : '';
-    // The fighter's ball trait under the name, and a ranked match's stamps (with the change, at the end).
-    const trait = seat.trait ? `<span class="bu-trait">${TRAIT_NAMES[seat.trait]}</span>` : '';
+    // The fighter's ball trait under the name, and a ranked match's stamps (with the change, at the end). Not in a
+    // football or volleyball match, whose touches read no trait (ballSheet.ts traitBadge).
+    const trait = seat.trait && !this.view?.football && !this.view?.volley ? `<span class="bu-trait">${TRAIT_NAMES[seat.trait]}</span>` : '';
     const rank = this.view?.ranked !== undefined && seat.rank && !seat.bot ? stampHtml(seat.rank, seat.rank.delta) : '';
     return `<li class="${seat.id === selfId ? 'self' : ''}"><span class="bu-face">${mangaPortrait(seat.fighter)}</span><span class="bu-who"><b>${escape(nameOf(seat))}</b>${trait}${badges}</span>${rank}${seat.bot ? '<small>BOT</small>' : ''}${stats}</li>`;
   }

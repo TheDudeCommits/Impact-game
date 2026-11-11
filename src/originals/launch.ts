@@ -5,6 +5,7 @@ import { ROAD } from '../game/economy/unlocks';
 import { MOVES } from '../game/moves';
 import { ARENAS, DUEL_ARENAS } from '../game/social/custom';
 import { HOME_ARENA } from '../game/social/party';
+import { sportPage } from '../game/ball/sportRules';
 import { FIGHTER_SERIES, ROYALE_STAGES, SMALL_ROYALE_STAGES, STAGES, type StageId } from '../game/stages';
 import type { FighterId } from '../game/types';
 import { VOICE_CUES } from '../audio/voiceCues';
@@ -32,8 +33,9 @@ export const LAUNCH = {
   riftWar: 'open' as 'gate' | 'open',
   /** The ball modes, Goal Rush and Sky Spike (src/game/ball), everything in them drawn in code: 'gate' hides both -
    *  their cards, sheets, the party's cards, the server's rooms; 'site' opens them everywhere but Player Two's copy of the
-   *  build, where they are hidden as 'gate' hides them (the match server serves their rooms); 'open' opens them there too. */
-  ballModes: 'site' as 'gate' | 'site' | 'open',
+   *  build, where they are hidden as 'gate' hides them (the match server serves their rooms); 'open' opens them there too.
+   *  They are open: both show on every build. Their online ways follow the page's rules as well (ballRoomsHere, below). */
+  ballModes: 'open' as 'gate' | 'site' | 'open',
 };
 
 /** Whether this page is Player Two's copy of the build (the one its player frames; src/boot/playerTwo.ts): never under
@@ -41,6 +43,12 @@ export const LAUNCH = {
 const onPlayerTwo = () => typeof location === 'object' && /(?:^|\.)playertwo\.(?:cc|lol)$/i.test(location.hostname);
 /** Whether the ball modes show here (LAUNCH.ballModes). */
 const ballModesHere = () => LAUNCH.ballModes === 'open' || LAUNCH.ballModes === 'site' && !onPlayerTwo();
+const ballMode = (mode: string) => mode === 'goal-rush' || mode === 'sky-spike';
+/** Whether a ball mode's rooms on the match server - ONLINE, FRIENDS, the party's card - are offered here. The room
+ *  plays the classic rules only, and one card must not play two games, so a page on the sport rules
+ *  (game/ball/sportRules.ts: the default; `?classic` for the classic rules) offers none. Under node (the match server:
+ *  serverGate.ts) the rules are classic, so nothing there changes. */
+const ballRoomsHere = (mode: string) => !ballMode(mode) || !sportPage();
 
 /** The places that are the game's own or neutral: the harbour (RG Poly and AVATTA's kits), the Fallen Citadel (Bad
  *  Blood's courtyard, RG Poly and a CC BY keep) and the Rift's procedural arenas. */
@@ -149,7 +157,7 @@ gateSeries();
  *  and its map; any other by its stage. */
 export function modeOpen(mode: ModeKey | string): boolean {
   if (mode === 'rift-war' && LAUNCH.riftWar !== 'open') return false;
-  if ((mode === 'goal-rush' || mode === 'sky-spike') && !ballModesHere()) return false;
+  if (ballMode(mode) && !ballModesHere()) return false;
   if (mode === 'arcade') return LAUNCH.survival === 'open';
   if ((mode === 'last-stand' || mode === 'bad-blood') && LAUNCH.objectives !== 'open') return false;
   const stage = MODE_STAGE[mode as ModeKey];
@@ -160,8 +168,9 @@ export function modeOpen(mode: ModeKey | string): boolean {
 export const hordeOpen = () => modeOpen('arcade') || modeOpen('last-stand');
 /** Whether any open mode fields the objective modes' own raiders (src/game/objectives/siegeEnemies.ts). */
 export const raidersOpen = () => modeOpen('last-stand') || modeOpen('bad-blood');
-/** Whether a way to play a mode shows: the mode's, and a match server's for any way not played on this device. */
-export const wayOpen = (mode: ModeKey | string, way: WayKey | string, onDevice = way === 'offline') => modeOpen(mode) && (onDevice || LAUNCH.online);
+/** Whether a way to play a mode shows: the mode's, and a match server's for any way not played on this device (and for
+ *  a ball mode, rooms this page's rules may play: ballRoomsHere). */
+export const wayOpen = (mode: ModeKey | string, way: WayKey | string, onDevice = way === 'offline') => modeOpen(mode) && (onDevice || LAUNCH.online && ballRoomsHere(mode));
 
 /** The home screen's cards (src/ui/MangaHome.ts HomeMode), as the catalogue's modes and ways (catalogue.ts MODE_OF_HOME):
  *  BR vs Players and Private Room are the royale's ONLINE and FRIENDS, Battle Royale its BOTS. */
@@ -207,7 +216,7 @@ export function gateModes<M extends { kicker?: string; variants: Partial<Record<
 
 /** A party's mode (src/game/social/party.ts PARTY_ORDER: 'survival' is Arcade Survival's co-op) as the party may offer
  *  it: an open mode, with a match server to play it on. */
-export const partyModeOpen = (mode: string) => LAUNCH.online && modeOpen(mode === 'survival' ? 'arcade' : mode);
+export const partyModeOpen = (mode: string) => LAUNCH.online && modeOpen(mode === 'survival' ? 'arcade' : mode) && ballRoomsHere(mode);
 
 export function launchInvite<T extends { kind: string }>(invite: T | null): T | null {
   if (!invite || !LAUNCH.online) return null;

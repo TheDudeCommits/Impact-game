@@ -1168,6 +1168,8 @@ export class BallMatch implements ExternalTargets, LessonHost {
     b.grav = baseGravity(m); b.size = baseSize(m); b.heat = Math.max(f.ball.heat ?? 0, m === 'heat-rush' ? MUTATOR_RULES.heatStart : 0);
     // (SPORT mode's LEARN TO PLAY: the machine feeds SPORT's ball - its size, weight and floor - set on the ball at rest.)
     if (this.football) { b.size = FOOTBALL_SIZE; b.grav = FOOTBALL.gravity / GOAL_RULES.gravity; b.ground = FOOTBALL.roll / GOAL_RULES.roll; b.heat = 0; b.y = Math.max(b.y, this.radius * b.size); }
+    // (VOLLEYBALL's LEARN TO PLAY: the machine feeds volleyball's ball, as placeBallAtRest sizes it.)
+    if (this.volley) b.size *= VOLLEY.size;
     this.stack = null; this.lastStrike = null; this.touchesLog = []; this.flair = null; this.endWait = false; this.shed.clear();
     this.view.phase = 'live'; this.view.phaseUntil = now; this.liveSince = now; this.view.aim = f.aim ?? null;
     if (this.mode === 'sky-spike') { this.view.touchTeam = f.touchTeam ?? f.team; this.view.touches = f.touches ?? 0; this.view.rally = 1; }

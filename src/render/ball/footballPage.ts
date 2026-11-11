@@ -2,19 +2,21 @@ import * as THREE from 'three';
 import {FOOTBALL, passPick, type Mate} from '../../game/ball/football';
 import type {BallView} from '../../game/ball/model';
 import type {PlayerState} from '../../game/types';
+import {ballRulesOf} from '../../game/ball/sportRules';
 
 /**
  * Goal Rush's SPORT mode on the page (game/ball/football.ts has the rules): the switch in the address, the camera's two
  * states, and the mark over the team-mate a PASS would find now.
  *
- * - `?football` in the address, on any host (as `?ballmoves` is), puts the
- *   matches this device plays (BOTS, COUCH) on SPORT mode. The online room never has it.
+ * - The matches this device plays (BOTS, COUCH) are on SPORT mode on any page whose rules are the sport's
+ *   (game/ball/sportRules.ts: the default; `?classic` in the address for the classic rules; the old `?football` is
+ *   still accepted and changes nothing). The online room never has it.
  * - The camera (Settings.goalLook): BALL LOCK, today's ball cam (render/ball/BallCam.ts: the view keeps the ball in
  *   frame), or FREE LOOK, the heading the player's alone (the mouse, the right stick, a drag) and never eased back. V or
  *   the pad's left stick click switches it; `?look=free|lock` on this machine sets it for a visit (the films).
  */
 export function footballWanted(location?: {search: string}): boolean {
-  return !!location && new URLSearchParams(location.search).has('football');
+  return ballRulesOf(location) === 'sport';
 }
 export type GoalLook = 'lock' | 'free';
 export const goalLookOf = (value: unknown): GoalLook => value === 'free' ? 'free' : 'lock';
@@ -28,7 +30,7 @@ export function switchGoalLook(settings: {goalLook?: GoalLook}): GoalLook {
   settings.goalLook = next; if (asked) asked = next;
   return next;
 }
-/** The pause menu's SPORT MODE VIEW (under `?football` only), the default first. */
+/** The pause menu's SPORT MODE VIEW (on a page on the sport rules only), the default first. */
 export const GOAL_LOOK_OPTIONS: readonly (readonly [GoalLook, string, string?])[] = [['lock', 'Ball lock', 'Default'], ['free', 'Free look']];
 /** What the legend and the notice call each state. */
 export const GOAL_LOOK_NAME: Record<GoalLook, string> = {lock: 'BALL LOCK', free: 'FREE LOOK'};

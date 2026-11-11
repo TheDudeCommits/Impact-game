@@ -5,6 +5,7 @@ import { LAST_STAND } from '../originals/stages';
 import { ULTIMATE_COST, type MoveDefinition } from '../game/moves';
 import type { AttackSlot, FighterId } from '../game/types';
 import { RULES } from '../game/objectives/model';
+import { sportPage } from '../game/ball/sportRules';
 import { keyNames } from '../input/bindings';
 import { HOME_FIGHTERS, fighterArt, mangaPortrait } from './MangaHome';
 import { packArt } from '../engine/packs/active';
@@ -62,8 +63,12 @@ function tipsFor(fighter: FighterId, mode: LoadingMode) {
   ];
   // Round 5 (UX): the ring was removed on 5 October (simulation.ts); a fighter who hides is hunted instead.
   if (mode === 'bots' || mode === 'players' || mode === 'private' || mode === 'party') rules.unshift(`One life each, last one standing. Stay in the action: fighters who hide get hunted.`);
-  if (mode === 'goal-rush') rules.unshift('Every move you have hits the ball, never a player: it goes where you look.','A launcher pops the ball into the sky: jump after it and strike it again for a volley or a spike.','Guard just as the ball reaches you for a perfect save: its heat is gone.');
-  if (mode === 'sky-spike') rules.unshift('A light keeps the ball on your side; a heavy or a special sends it over.','Three touches a side. Jump for a spike; guard in the air at the net to block.','Long rallies heat the ball: from the eighth crossing it is a FEVER rally, its point double to the side behind.');
+  // (On a page on the sport rules - game/ball/sportRules.ts, the default - the football and volleyball ones.)
+  const sport = sportPage();
+  if (mode === 'goal-rush' && sport) rules.unshift('Run onto the ball and it stays at your feet. Sprint, and it runs further ahead of you.','Point the stick at a team-mate to pass to them. Tap to place a shot; hold for power.','Tackle from in front, or slide in on a sprint. Each side has a keeper the game plays.');
+  else if (mode === 'goal-rush') rules.unshift('Every move you have hits the ball, never a player: it goes where you look.','A launcher pops the ball into the sky: jump after it and strike it again for a volley or a spike.','Guard just as the ball reaches you for a perfect save: its heat is gone.');
+  if (mode === 'sky-spike' && sport) rules.unshift('One button plays every touch: the serve, the receive, the set and the spike. Timing makes it better.','Three touches a side. On the third, jump as the ring closes and press in the air to spike.','Hold your jump at the net as their hitter goes up: that is the block. Every point counts one.');
+  else if (mode === 'sky-spike') rules.unshift('A light keeps the ball on your side; a heavy or a special sends it over.','Three touches a side. Jump for a spike; guard in the air at the net to block.','Long rallies heat the ball: from the eighth crossing it is a FEVER rally, its point double to the side behind.');
   if (mode === 'rift-war') rules.unshift('Push with your wave. Towers prefer grunts until you attack an enemy fighter under their protection.','Recall to your fountain to heal and buy equipment. Movement or damage cancels the channel.');
   if (mode === 'duel') rules.unshift('A straight 1v1. Best of three: win two rounds to take the set. Run it back with the same rival.');
   if (mode === 'last-stand') rules.unshift('Defend the village and keep one ally standing. Stand beside a fallen teammate to revive them.', 'Your squad shares its points. Visit the quartermaster inside the gate to repair and upgrade the village.');

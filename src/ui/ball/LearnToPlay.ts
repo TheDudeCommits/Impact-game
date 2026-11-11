@@ -5,7 +5,7 @@ import type { ModeHudFrame, HudLayoutId } from '../hud/modeHud';
 import type { ModeHudHost } from '../hud/host';
 import { isCapturingBinding } from '../../input/bindings';
 import { hudView } from '../hud/hudView';
-import { learnLine, learnNote, markLearn, SKIP_BUTTON, SKIP_KEY, SPORT_TITLES, skipKey, skipKeyFree, type LearnDevice } from './learnCopy';
+import { learnLine, learnNote, markLearn, SKIP_BUTTON, SKIP_KEY, skipKey, stepTitle, skipKeyFree, type LearnDevice } from './learnCopy';
 import '../../tutorial/tutorial.css';
 import './learnToPlay.css';
 
@@ -169,7 +169,7 @@ export class LearnToPlay {
       this.panel.dataset.key = panelKey;
       const items = steps.map((s, i) => {
         const state = v.done.includes(s.id) ? 'done' : v.skipped.includes(s.id) ? 'skipped' : i === v.index ? 'now' : 'next';
-        return `<li data-state="${state}"><i aria-hidden="true">${state === 'done' ? '✓' : state === 'skipped' ? '–' : state === 'now' ? '▸' : '·'}</i>${v.sport ? SPORT_TITLES[s.id] ?? s.title : s.title}</li>`;
+        return `<li data-state="${state}"><i aria-hidden="true">${state === 'done' ? '✓' : state === 'skipped' ? '–' : state === 'now' ? '▸' : '·'}</i>${stepTitle(v, s)}</li>`;
       }).join('');
       this.panel.innerHTML = `<header><b>LEARN TO PLAY</b><small>${Math.min(v.index + 1, steps.length)} / ${steps.length}</small></header>
         <ol>${items}</ol>

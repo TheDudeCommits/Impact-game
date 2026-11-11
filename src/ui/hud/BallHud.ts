@@ -73,7 +73,7 @@ class SeatStrip {
   readonly root: HTMLElement;
   private readonly mode: Data; private readonly hpOn: Flag; private readonly low: Flag; private readonly hp: Fill;
   private readonly boost: Fill; private readonly boostState: Data; private readonly boostBar: HTMLElement; private readonly boostKey: Markup;
-  private readonly sup: Fill; private readonly supState: Data; private readonly supKey: Markup; private readonly supName: Text;
+  private readonly sup: Fill; private readonly supState: Data; private readonly supKey: Markup; private readonly supName: Text; private readonly boostName: Text;
   private readonly stance: HTMLElement; private readonly stanceKind: Data; private readonly stanceOn: Flag; private readonly stanceName: Text; private readonly stanceKey: Markup; private readonly stanceHp: Fill;
   /** Goal Rush's SPORT mode (`?football`): the badge says SPORT where it said BALL, and the legend under it names SPORT's
    *  buttons and the camera's state (BALL LOCK or FREE LOOK). */
@@ -98,7 +98,7 @@ class SeatStrip {
       return { node, key, label, fill: new Fill(el('b', '', el('i', '', node)), .01), state: new Data(node, 'state') };
     };
     const boost = bar('boost', 'BOOST'), sup = bar('super', 'SUPER');
-    this.boost = boost.fill; this.boostState = boost.state; this.boostBar = boost.node; this.boostKey = boost.key;
+    this.boost = boost.fill; this.boostState = boost.state; this.boostBar = boost.node; this.boostKey = boost.key; this.boostName = boost.label;
     this.sup = sup.fill; this.supState = sup.state; this.supKey = sup.key; this.supName = sup.label;
     // SHOOT's charge, in the place the bars left for it: nothing on a tap; held past the
     // split, a small fill in the side's colour that fills over the fighter's own wind-up and flashes as it is full.
@@ -149,6 +149,8 @@ class SeatStrip {
     this.stanceHp.set(foe && foe.maxHp > 0 ? foe.hp / foe.maxHp : 0);
     if (kind + lock !== this.stanceShown) { this.stanceShown = kind + lock; pulse(this.stance, 'pulse'); }
     this.stanceKey.set(keys.stance);
+    // (Football's dash is SPRINT - its legend's, its phone button's - so its bar is too.)
+    this.boostName.set(v.football ? 'SPRINT' : 'BOOST');
     this.sportOn.set(!!v.football); this.legend.set(v.football && !lock ? keys.legend ?? '' : '');
     return kind;
   }
@@ -331,8 +333,9 @@ class BallHud implements ModeHud {
     const practice = v.practice && !v.drill && !v.lesson && (v.phase === 'live' || v.phase === 'kickoff');
     // (VOLLEYBALL - game/ball/volley.ts: what PLAY does now, for the one button every touch is.)
     const vol = v.volley, play = vol && v.phase === 'live' ? vol.prompt[f.self.id] : undefined;
-    // (SPORT mode, `?football`: the classic first-time hints teach the BALL stance's TRAP and carry - not shown.)
-    const hint = serving || charged || practice || play || v.football ? '' : this.hints.frame({ view: v, self: f.self, players: f.snapshot.players, fight: !!hudView.ballLock(), device: f.input, family: f.family, serverTime: f.snapshot.serverTime }, now);
+    // (SPORT mode, `?football`: the classic first-time hints teach the BALL stance's TRAP and carry - not shown. Nor under
+    // VOLLEYBALL: they teach the classic spike, the guard's block and the dash's dig; PLAY's own word says the touch.)
+    const hint = serving || charged || practice || play || v.football || vol ? '' : this.hints.frame({ view: v, self: f.self, players: f.snapshot.players, fight: !!hudView.ballLock(), device: f.input, family: f.family, serverTime: f.snapshot.serverTime }, now);
     this.promptOn.set(!serving && !charged && !practice && !hint && !play);
     if (serving && vol) this.promptText.set(promptText('YOUR SERVE · {light} FLOAT SERVE · {jump} THEN {light} JUMP SERVE', { device: f.input, family: f.family }));
     else if (serving) this.promptText.set(promptText('YOUR SERVE · {light} LOB · {heavy} POWER SERVE', { device: f.input, family: f.family }));

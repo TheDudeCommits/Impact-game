@@ -1,5 +1,6 @@
 import type { CombatEvent, GameSnapshot } from '../../game/types';
 import { RULES } from '../../game/objectives/model';
+import { ballOf } from '../../game/ball/model';
 import { ULTIMATE_COST } from '../../game/moves';
 import { AWAKENING_COST } from '../../game/awakening';
 import { boundTo } from '../../input/bindings';
@@ -36,10 +37,12 @@ export const TIPS: Readonly<Record<ModeId, readonly Tip[]>> = {
   // The ball modes: the goal at the whistle, then the super shot and the awakening (both fill from touching it). The
   // skills - the stances and the tackle, the boost, the spike's timing, the dig, the block - are taught when they are the
   // play, by the ball modes' own hints in the same lane (ui/ball/ballHints.ts), not on a clock.
-  'goal-rush': [opening('goal-goal', () => 'EVERY SWING HITS THE BALL · IT GOES WHERE YOU LOOK'),
+  // (The match's own rules decide the words - football's and volleyball's on this device's matches on a page
+  // on the sport rules, the classic ones in the online room.)
+  'goal-rush': [opening('goal-goal', f => ballOf(f.snapshot)?.football ? 'THE BALL IS YOURS AT YOUR FEET · PASS, SHOOT, SCORE' : 'EVERY SWING HITS THE BALL · IT GOES WHERE YOU LOOK'),
     { ...ultimate, text: () => ({ action: 'ultimate', verb: 'SUPER SHOT READY', detail: 'A SUPER GOAL COUNTS TWO' }) }, awaken],
-  'sky-spike': [opening('spike-goal', () => 'THREE TOUCHES A SIDE · BUMP, SET, SPIKE'),
-    { ...ultimate, text: () => ({ action: 'ultimate', verb: 'SUPER SHOT READY', detail: 'INTO THEIR EMPTIEST CORNER' }) }, awaken],
+  'sky-spike': [opening('spike-goal', f => ballOf(f.snapshot)?.volley ? 'THREE TOUCHES A SIDE · RECEIVE, SET, SPIKE' : 'THREE TOUCHES A SIDE · BUMP, SET, SPIKE'),
+    { ...ultimate, text: f => ballOf(f.snapshot)?.volley ? { action: 'ultimate', verb: 'SUPER SPIKE READY', detail: 'UP FOR THE ATTACK' } : { action: 'ultimate', verb: 'SUPER SHOT READY', detail: 'INTO THEIR EMPTIEST CORNER' } }, awaken],
   // No lock-on tip in a duel: there is nobody to switch to (the critic: "again to switch target" against one rival).
   duel: [opening('duel-goal', () => 'BEST OF THREE · WIN TWO ROUNDS'), techniques, parry, ultimate, awaken],
   royale: [opening('royale-goal', f => `${f.snapshot.players.length} FIGHTERS · LAST ONE STANDING WINS`), lockOn, parry, ultimate, awaken],

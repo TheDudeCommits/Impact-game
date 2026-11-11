@@ -4,6 +4,7 @@ import { ACTIONS, boundTo } from '../../input/bindings';
 import { keyLabel, prompt as drawPrompt, promptKey, touchKey, type PromptAction, type PromptDevice, type PromptOptions, type PromptSport } from '../prompts';
 import { sportTouchName } from '../../input/sportTouch';
 import type { BallModeId } from '../../game/ball/model';
+import { sportPage } from '../../game/ball/sportRules';
 import type { LessonMiss, LessonStepId, LessonView } from '../../game/ball/lesson';
 
 /**
@@ -125,6 +126,10 @@ export function learnAsk(v: LessonView, d: LearnDevice): string {
 }
 /** SPORT mode's titles where they differ (LearnToPlay's list): its PERFECT STRIKE step is FIRST TIME. */
 export const SPORT_TITLES: Partial<Record<string, string>> = {'gr-run': 'RUN & SPRINT', 'gr-perfect': 'FIRST TIME'};
+/** VOLLEYBALL's titles where they differ: its lines say RECEIVE and SPIKE, so its list does too. */
+export const VOLLEY_TITLES: Partial<Record<string, string>> = {'ss-bump': 'RECEIVE', 'ss-spike': 'SPIKE'};
+/** A step's title in the list, by the lesson's rules. */
+export const stepTitle = (v: Pick<LessonView, 'sport' | 'volley'>, s: {id: string; title: string}) => (v.sport ? SPORT_TITLES[s.id] : v.volley ? VOLLEY_TITLES[s.id] : undefined) ?? s.title;
 const MISSES: Record<LessonMiss, string> = {
   boost: 'YOU GOT THERE · NOW WITH BOOST', pass: 'FACE THEM FIRST · THE VIEW AIMS IT', wide: 'WIDE · AIM AT THE GOAL',
   early: 'EARLY · WAIT FOR THE BAR', late: 'LATE · PRESS AS THE BAR FILLS', plain: 'NOW TIME IT', jump: 'JUMP INTO IT',
@@ -170,8 +175,12 @@ export function markLearn(mode: BallModeId, state: 'done' | 'skipped') {
     all[mode] = state; globalThis.localStorage?.setItem(LEARN_KEY, JSON.stringify(all));
   } catch { /* the visit keeps it */ }
 }
-/** The lesson's titles, for HOW TO PLAY's button. */
-export const LEARN_PITCH: Readonly<Record<BallModeId, string>> = {
+/** The lesson's titles, for HOW TO PLAY's button (and the first match's offer): on a page on the sport rules
+ *  (game/ball/sportRules.ts, the default) the football and volleyball lessons' own. */
+export const LEARN_PITCH: Readonly<Record<BallModeId, string>> = sportPage() ? {
+  'goal-rush': 'A GUIDED FIRST GAME: PASS, SHOOT, A FIRST-TIME SHOT, A HEADER, A TACKLE',
+  'sky-spike': 'A GUIDED FIRST GAME: RECEIVE, SET, SPIKE, A BLOCK, A DIVE, A JUMP SERVE',
+} : {
   'goal-rush': 'A GUIDED FIRST GAME: PASS, SHOOT, A PERFECT STRIKE, A HEADER, A TACKLE',
   'sky-spike': 'A GUIDED FIRST GAME: BUMP, SET, A PERFECT SPIKE, A BLOCK, A JUMP SERVE',
 };

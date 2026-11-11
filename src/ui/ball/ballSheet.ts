@@ -1,9 +1,10 @@
-import { BALL_MUTATORS, MUTATOR_NAMES, isMutator, mutatorLine, weeklyMutator, weeklyTurnover } from '../../game/ball/mutators';
+import { BALL_MUTATORS, MUTATOR_NAMES, isMutator, mutatorLine, weeklyMutator, weeklyTurnover, type BallMutator } from '../../game/ball/mutators';
 import { DRILLS, MODE_DRILLS, isDrill, type DrillId } from '../../game/ball/drills';
 import { TRAIT_LINES, TRAIT_NAMES, traitOf } from '../../game/ball/traits';
 import { RANKED } from '../../game/ball/ranked';
 import { isBotLevel, type BotLevel } from '../../game/ball/BallBrain';
 import type { BallModeId } from '../../game/ball/model';
+import { sportPage } from '../../game/ball/sportRules';
 import type { FighterId } from '../../game/types';
 import type { CouchStart, NetworkAccess } from '../../network';
 import type { ModePrefs } from '../modes/prefs';
@@ -20,6 +21,32 @@ import './ballSheet.css';
  *  And the fighter's ball trait (game/ball/traits.ts) under YOUR FIGHTER. Every button is `data-ms-ball="key:value"`;
  *  `ballChoice` turns a press into the preferences to keep. */
 type Variant = 'offline' | 'online' | 'friends' | 'couch';
+/** What the rows offer on a page on the sport rules (game/ball/sportRules.ts: the default; `?classic` offers everything
+ *  above), where this device's matches play football and volleyball. Each extra was started there and played; what does not play right under those rules is not drawn there, and stays under `?classic`:
+ *  - RUMBLE: its KI CHARGE charm is picked up and does nothing (neither rule set plays the classic strike that reads it).
+ *  - Goal Rush: HEAT RUSH, LOW GRAVITY and GIANT BALL do nothing (football's ball sets its own size and weight and has no
+ *    heat); SUDDEN DEATH plays as it says. The drills run the classic rules (BallMatch: none with a drill); FREE PLAY is
+ *    football's.
+ *  - Sky Spike: SUDDEN DEATH's points are worth one (volleyball's scoring), and LOW GRAVITY's flights keep their times
+ *    (the touches aim the ball to arrive on time), so neither does what it says; HEAT RUSH and GIANT BALL do. FREE PLAY and
+ *    the drills run the classic rules (LocalBall). */
+export const SPORT_EXTRAS: Readonly<Record<BallModeId, { mutators: readonly BallMutator[]; rumble: boolean; free: boolean; drills: boolean }>> = {
+  'goal-rush': { mutators: ['sudden-death'], rumble: false, free: true, drills: false },
+  'sky-spike': { mutators: ['heat-rush', 'giant-ball'], rumble: false, free: false, drills: false },
+};
+/** The extras this page offers for `mode`: all of them on the classic rules, SPORT_EXTRAS on the sport rules. */
+const extrasHere = (mode: BallModeId) => sportPage() ? SPORT_EXTRAS[mode] : { mutators: BALL_MUTATORS, rumble: true, free: true, drills: true };
+/** A mode's kept preferences as this page may play them: on the sport rules, a pick it does not offer (kept from a page on
+ *  the classic ones) is read as the plain match. */
+export function ballPrefs(mode: BallModeId, prefs: ModePrefs): ModePrefs {
+  if (!sportPage()) return prefs;
+  const here = extrasHere(mode), out = { ...prefs };
+  if (out.rumble && !here.rumble) out.rumble = false;
+  if (isMutator(out.mutator) && !here.mutators.includes(out.mutator)) out.mutator = null;
+  if (out.drills && !here.drills) out.drills = false;
+  if (out.practice && !here.free) out.practice = false;
+  return out;
+}
 const escape = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const pressed = (on: boolean) => `aria-pressed="${on}"`;
 const rulesOf = (prefs: ModePrefs) => prefs.rumble ? 'rumble' : isMutator(prefs.mutator) ? prefs.mutator : 'classic';
@@ -28,8 +55,12 @@ const queueOf = (prefs: ModePrefs) => prefs.queue === 'ranked' || prefs.queue ==
 
 /** BOTS' PLAY row: a match, FREE PLAY, or a drill. */
 export function ballPlayRow(mode: BallModeId, prefs: ModePrefs): string {
+  const here = extrasHere(mode);
+  prefs = ballPrefs(mode, prefs);
+  // (A page on the sport rules: Sky Spike's FREE PLAY and both modes' drills are not offered, so a row of one is none.)
+  if (!here.free && !here.drills) return '';
   const play = prefs.drills ? 'drills' : prefs.practice ? 'free' : 'match';
-  const row = `<div class="ms-option" role="group" aria-label="Play"><b>PLAY</b><button type="button" data-ms-ball="play:match" ${pressed(play === 'match')}>3 V 3 MATCH</button><button type="button" data-ms-ball="play:free" ${pressed(play === 'free')}>FREE PLAY</button><button type="button" data-ms-ball="play:drills" ${pressed(play === 'drills')}>DRILLS</button></div>`;
+  const row = `<div class="ms-option" role="group" aria-label="Play"><b>PLAY</b><button type="button" data-ms-ball="play:match" ${pressed(play === 'match')}>3 V 3 MATCH</button>${here.free ? `<button type="button" data-ms-ball="play:free" ${pressed(play === 'free')}>FREE PLAY</button>` : ''}${here.drills ? `<button type="button" data-ms-ball="play:drills" ${pressed(play === 'drills')}>DRILLS</button>` : ''}</div>`;
   if (play === 'free') return `${row}<p class="ms-note">Just you and the ball: no clock, no bots. ${mode === 'sky-spike' ? 'A ball machine keeps sending balls over to spike.' : 'The ball goes back on the spot after each goal.'} Backspace resets the ball.</p>`;
   if (play !== 'drills') return row;
   const chosen = drillOf(mode, prefs);
@@ -77,8 +108,9 @@ export function ballRulesRow(mode: BallModeId, variant: Variant, prefs: ModePref
     }
     return row;
   }
-  const rules = rulesOf(prefs);
-  const names: [string, string][] = [['classic', 'CLASSIC'], ['rumble', 'RUMBLE'], ...BALL_MUTATORS.map(m => [m, MUTATOR_NAMES[m]] as [string, string])];
+  const here = extrasHere(mode), rules = rulesOf(ballPrefs(mode, prefs));
+  // (On the sport rules the plain match is STANDARD: CLASSIC there would read as the classic rules, `?classic`.)
+  const names: [string, string][] = [['classic', sportPage() ? 'STANDARD' : 'CLASSIC'], ...(here.rumble ? [['rumble', 'RUMBLE'] as [string, string]] : []), ...here.mutators.map(m => [m, MUTATOR_NAMES[m]] as [string, string])];
   const row = `<div class="ms-option bs-rules" role="group" aria-label="Rules"><b>RULES</b>${names.map(([id, name]) => `<button type="button" data-ms-ball="rules:${id}" ${pressed(rules === id)}>${name}</button>`).join('')}</div>`;
   if (rules === 'rumble') return `${row}<p class="ms-note">Charms appear on the field. Run through one: a KI CHARGE shot, a GIANT BALL, an IRON WALL over your goal and more.</p>`;
   if (isMutator(rules)) return `${row}<p class="ms-note">${escape(mutatorLine(rules, mode))}</p>`;
@@ -98,6 +130,7 @@ export function ballChoice(value: string | undefined): Partial<ModePrefs> | unde
 
 /** GO on a ball mode's sheet, as the start code's access. */
 export function ballStart(mode: BallModeId, variant: Variant, prefs: ModePrefs, join: boolean, code: string, couch?: CouchStart): Extract<NetworkAccess, { kind: 'ball' }> {
+  prefs = ballPrefs(mode, prefs);
   const rules = rulesOf(prefs), mutator = isMutator(rules) ? rules : undefined, rumble = rules === 'rumble';
   // (The BOTS row's level rides with a match against bots, never FREE PLAY or a drill.)
   const difficulty = levelOf(prefs);
@@ -113,6 +146,9 @@ export function ballStart(mode: BallModeId, variant: Variant, prefs: ModePrefs, 
 
 /** The fighter's ball trait, under YOUR FIGHTER. */
 export function traitBadge(fighter: FighterId): string {
+  // (A trait is read by the classic strike, header, bump and guard only - football's and volleyball's touches
+  // pass them by - so a page on the sport rules does not name one: a line for something that does not happen.)
+  if (sportPage()) return '';
   const trait = traitOf(fighter);
   return `<span class="bs-trait t-${trait}" title="${escape(TRAIT_LINES[trait])}"><b>${TRAIT_NAMES[trait]}</b><small>${escape(TRAIT_LINES[trait])}</small></span>`;
 }
