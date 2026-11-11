@@ -8,6 +8,26 @@ import { RIFT_TROOP_MODELS } from '../src/render/moba/troopAssets';
 import { modeOpen } from '../src/originals/launch';
 
 describe('the horde\'s bodies', () => {
+  it('give those four bodies of their own, which the kinds that wore them wear too', () => {
+    for (const [kind, url] of Object.entries(OWN_GRUNT_MODELS)) {
+      expect(MODEL_LOOKS[kind], kind).toBe(url);
+      expect(ownGruntModel(url)).toBe(true);
+      expect(fs.existsSync(`public${url}`), url).toBe(true);
+    }
+    // All shipped, asked in one call: launchUnshipped rebuilds the whole package's list (about half a second), so fifteen calls of
+    // one file each ran past the test's five seconds.
+    expect(launchUnshipped(Object.values(OWN_GRUNT_MODELS).map(url => url.slice(1)))).toEqual([]);
+    expect(MODEL_LOOKS['cutthroat-mender']).toBe(OWN_GRUNT_MODELS['cutthroat']);
+    expect(MODEL_LOOKS['cutthroat-caller']).toBe(OWN_GRUNT_MODELS['cutthroat']);
+    expect(MODEL_LOOKS['bat-wraith']).toBe(OWN_GRUNT_MODELS['ash-wraith']);
+    expect(MODEL_LOOKS['wraith-caller']).toBe(OWN_GRUNT_MODELS['ash-caster']);
+    expect(MODEL_LOOKS['iron-bulwark']).toBe(OWN_GRUNT_MODELS['iron-warden']);
+    expect(MODEL_LOOKS['iron-chaplain']).toBe(OWN_GRUNT_MODELS['iron-warden']);
+    // Eleven distinct bodies again, as before the four were stood in (and more since, each its own).
+    const kept = ['graft-raider', 'graft-brute', 'husk', 'rift-spawn'].filter(kind => !OWN_GRUNT_MODELS[kind]);
+    expect(new Set([...kept, ...Object.keys(OWN_GRUNT_MODELS)].map(kind => MODEL_LOOKS[kind])).size).toBe(kept.length + new Set(Object.values(OWN_GRUNT_MODELS)).size);
+    expect(new Set(Object.values(MODEL_LOOKS)).size).toBeGreaterThanOrEqual(11);
+  });
   it('wear none of the four that read as withheld', () => {
     const worn = new Set([...Object.values(MODEL_LOOKS), ...Object.values(ENEMIES).map(e => e.model)].filter(Boolean).map(url => url!.slice(1)));
     expect(WITHHELD_GRUNT_FILES.filter(file => worn.has(file))).toEqual([]);

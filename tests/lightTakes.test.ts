@@ -11,7 +11,6 @@ import { MOVES } from '../src/game/moves';
 import * as THREE from 'three';
 import { buildBody, localRun } from './reactHarness';
 import { ORIGINALS } from '../src/originals/roster';
-import { hasAsset } from './assets';
 
 /** The feel pass: the most-used strings hand-posed (scripts/fanim/lights.py) - each fighter's light and its
  *  three rush stages, replacing the clips of the same names. Presentation only: each take keeps the length of the clip
@@ -105,6 +104,15 @@ describe('the re-posed shop stages stay drawn where they were first drawn', () =
 });
 
 const ON_RIP: Partial<Record<FighterId, string[]>> = { tobari: ['llh'] };
+/** The clip of a name as FighterLibrary binds it: the body's, an extra file's in its place, the rush file's only for a name
+ *  nothing else carries. */
+async function played(id: FighterId, name: string) {
+  const def = FIGHTERS[id];
+  let found: THREE.AnimationClip | undefined;
+  for (const url of [def.model, ...def.extraModels ?? []]) found = (await loadRig(url)).animations.find(c => c.name === name) ?? found;
+  if (!found && def.rushModel) found = (await loadRig(def.rushModel)).animations.find(c => c.name === name);
+  return found!;
+}
 describe('the combo enders that play a re-posed clip land on its blow', () => {
   for (const [id, take, clips] of TAKES) {
     for (const [key, row] of Object.entries(COMBO_CLIPS[id] ?? {})) {
@@ -132,11 +140,14 @@ describe('the combo enders that play a re-posed clip land on its blow', () => {
         }, 60_000);
         continue;
       }
-      it.skipIf(!hasAsset(`/assets/fighters/${take}`))(`${id} ${key}: ${row.clip}`, async () => {
+      it(`${id} ${key}: ${row.clip}`, async () => {
         const light = MOVES[id].light;
         const blow = TABLE[id]?.[row.clip] ?? (row.clip === FIGHTERS[id].clips?.[0] ? TABLE[id]?.light ?? light.contacts[0] / light.duration : undefined);
         expect(blow, `${id} ${row.clip}: the take's blow`).toBeDefined();
-        const clip = (await loadRig(`/assets/fighters/${take}`)).animations.find(c => c.name === row.clip)!;
+        // (An original carries its take in its own files, at the take's length (tests/originals.test.ts), so the clip is the one
+        // its body plays.)
+        const clip = ORIGINALS[id] ? await played(id, row.clip) : (await loadRig(`/assets/fighters/${take}`)).animations.find(c => c.name === row.clip)!;
+        expect(clip, `${id} ${row.clip}: a clip the body plays`).toBeDefined();
         const at = row.from !== undefined ? (row.from + (row.contact ?? .5) * (row.to! - row.from)) / clip.duration : row.contact ?? .5;
         expect(at, `${id} ${key}: drawn at`).toBeCloseTo(blow!, 2);
       }, 60_000);

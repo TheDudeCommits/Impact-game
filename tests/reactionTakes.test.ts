@@ -39,10 +39,11 @@ guardNewTakes('the downed poses', [
 /** Each re-keyed clip on its body: [fighter, clip, how far the chest is turned at the peak against the clip's last
  *  frame - the stance it settles in - at the least, degrees]. */
 const STRUCK: [FighterId, string, number][] = [
-  ['konta', 'Hit 01', 25], ['konta', 'shake', 12], ['taisei', 'shake', 12], ['shiden', 'shake', 12], ['nigo', 'shake', 12],
-  ['ouga', 'shake', 12], ['shirokane', 'shake', 12], ['kagari', 'Hit 01', 25],
-  ['ward', 'Hit 01', 20], ['kuon', 'shake', 12], ['setsu', 'shake', 12],
-  ['kosho', 'Hit 01', 25], ['koko', 'shake', 12], ['oro', 'shake', 12],
+  ['konta', 'Hit 01', 25], ['konta', 'shake', 12], ['taisei', 'shake', 12], ['gummy', 'shake', 12],
+  ['kenzo', 'shake', 10], ['shiden', 'shake', 12], ['nigo', 'shake', 12],
+  ['ouga', 'shake', 12], ['shirokane', 'shake', 12], ['kagari', 'Hit 01', 25], ['kagari', 'shake', 12],
+  ['ward', 'Hit 01', 20], ['ward', 'shake', 10], ['kuon', 'shake', 12], ['setsu', 'shake', 12],
+  ['kosho', 'Hit 01', 25], ['kosho', 'shake', 12], ['koko', 'shake', 12], ['oro', 'shake', 12],
   ...SHOP.flatMap(id => [[id, 'shake', 10] as [FighterId, string, number], ...(TURNING.has(id) || FLUNG.has(id) ? [[id, 'Hit 01', 20] as [FighterId, string, number]] : [])]),
 ];
 describe('a reaction strikes its pose at the recoil\'s peak and settles back into the stance', () => {
@@ -145,6 +146,7 @@ const KNOWN: Partial<Record<FighterId, RegExp>> = {
 };
 /** The rigs given a downed pose, by the name of it. */
 const DOWNED: Partial<Record<FighterId, string>> = {
+  gummy: 'down_lp', kagari: 'down_lp', ward: 'down_lp', kosho: 'down_lp',
   ...Object.fromEntries(SHOP.filter(id => id !== 'gaunt').map(id => [id, 'down_lp'])),
 };
 describe('a body taking blows in the new reactions never jumps a frame', () => {

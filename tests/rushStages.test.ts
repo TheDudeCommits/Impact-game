@@ -10,6 +10,7 @@ import { mirrorClip, sceneJoints, swapSide } from '../src/render/characterMotion
 import { resolveSkeleton } from '../src/render/skeleton';
 import { loadRig, base } from './rigHarness';
 import type { FighterId, PlayerState } from '../src/game/types';
+import contactFrames from '../src/game/data/contactFrames.json';
 
 /** A light rush drawn from hand-built states, the way the combat simulation
  *  sends one: action 'light', `chain` 0..3, a fresh `actionSeq` per press, each
@@ -75,7 +76,19 @@ describe('a light rush plays a clip per stage', () => {
     }
   }, 60_000);
 
-
+  it('lands each stage on the contract contact, wherever the clip draws its blow', () => {
+    // (Taisei's stage 2 on the floor plays his dream take, 'DZ Rush 2' (Fighter.ts DREAM_STAGES), struck on the stage's own
+    // measured contact, contactFrames' rush2.)
+    const { body, frames } = rush('taisei');
+    try {
+      const stage = frames.filter(f => f.stage === 2), contact = RUSH.taisei[1].contacts[0], at = (contactFrames as Record<string, Record<string, number>>).taisei.rush2;
+      expect(stage[0].clip).toBe('DZ Rush 2');
+      const clip = body.clips.find(c => c.name === 'DZ Rush 2')!;
+      const before = [...stage].reverse().find(f => f.t <= contact)!, after = stage.find(f => f.t > contact)!;
+      expect(before.time / clip.duration).toBeLessThanOrEqual(at + 1e-3);
+      expect(after.time / clip.duration).toBeGreaterThanOrEqual(at - 1e-3);
+    } finally { body.dispose(); }
+  });
 
   it('keeps a held blade in hand: an armed fighter never borrows a clip that does not key it, and is never mirrored', () => {
     for (const id of ['kenzo', 'shiden', 'ward'] as FighterId[]) {

@@ -159,19 +159,6 @@ export function fitTake(scene: THREE.Object3D, clips: readonly THREE.AnimationCl
   }
   return fitted ? { clip: fitted, contact: pick.contact } : null;
 }
-/** The shared take an action falls back to on a body with no clip of its own for it (Fighter.fallbackTake): the library's
- *  idle, and a plain strike for each attack slot. The takes are the project's own (TECHNIQUE_TAKES). */
-export const FALLBACK_TAKES: Readonly<Record<string, StyleTake>> = {
-  idle: { take: 'Idle', contact: 0 }, guard: { take: 'Idle', contact: 0 }, victory: { take: 'C.charged1', contact: .5 },
-  light: { take: 'F.jab', contact: .45 }, heavy: { take: 'F.straight', contact: .5 }, special: { take: 'C.cast', contact: .5 },
-  ultimate: { take: 'C.charged', contact: .6 }, area: { take: 'C.slam', contact: .55 }, awaken: { take: 'C.charged1', contact: .5 },
-};
-/** Fighter.fallbackTake: `action`'s shared take fitted to the rig of `scene`; undefined while the takes load or where none fits. */
-export function fallbackTake(scene: THREE.Object3D, clips: readonly THREE.AnimationClip[], fighter: FighterId, action: string): THREE.AnimationClip | undefined {
-  const pick = FALLBACK_TAKES[action];
-  if (!pick) return undefined;
-  return fitTake(scene, clips, fighter, `fallback ${action}` as TechniqueKey, pick)?.clip ?? undefined;
-}
 /** Installs the hook. `from` loads the takes another way (the tests read the file off the disk); resolves once they are in. */
 export function installStyleMoves(from?: () => Promise<Takes | undefined>) {
   if (from) { load = from; takes = undefined; fetching = undefined; }
@@ -179,11 +166,10 @@ export function installStyleMoves(from?: () => Promise<Takes | undefined>) {
   Fighter.styleLegs = (fighter, key) => !OWN_CLIPS_ONLY.has(fighter) && (styleOf(fighter) === 'kicks' || !!styleTake(fighter, key).level);
   // (Fetched as the first body is made - FighterLibrary.create - not with the page: the home screen never needs it.)
   Fighter.stylesAhead = () => { void fetchTakes(); };
-  Fighter.fallbackTake = fallbackTake;
   return from ? fetchTakes() : Promise.resolve(undefined);
 }
 /** The takes in hand (or known to be missing): main.ts waits on it beside a room's other files, so every body built behind
  *  the loading screen fits its techniques there (Fighter.prepareMoves) rather than on its first technique mid-fight. */
 export function stylesReady(): Promise<unknown> { return Fighter.styleMove ? fetchTakes().catch(() => undefined) : Promise.resolve(); }
 /** For tests: forget the takes and every fit, and take the hook out. */
-export function resetStyleMoves() { takes = undefined; fetching = undefined; fits = new WeakMap(); report.clear(); Fighter.styleMove = undefined; Fighter.stylesAhead = undefined; Fighter.styleLegs = undefined; Fighter.fallbackTake = undefined; }
+export function resetStyleMoves() { takes = undefined; fetching = undefined; fits = new WeakMap(); report.clear(); Fighter.styleMove = undefined; Fighter.stylesAhead = undefined; Fighter.styleLegs = undefined; }

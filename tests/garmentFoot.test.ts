@@ -102,6 +102,12 @@ function specs() {
 }
 
 describe('the foot capsule round a garment\'s links', () => {
+  it('is set by Vesper\'s cape alone: every other garment\'s legs spec is as it was', () => {
+    const footed = specs().filter(([, spec]) => spec.foot !== undefined).map(([where]) => where);
+    // (The form's part of the cape's pattern is written `blackVespers` in the code.)
+    expect(footed).toEqual(['vesper /^Detail_CLOTH_vesper(-blackVespers)?_hem_/']);
+    expect(specs().length).toBeGreaterThan(footed.length);
+  });
 
   it('collides a garment without it exactly as the code before it did, link for link', () => {
     // Every spec in the game without a foot (Nigo's coat's and the rest), and the leg sizes about them.

@@ -97,6 +97,19 @@ describe('FighterLibrary lets go of the parser each file came back with', () => 
   beforeAll(() => { GLTFLoader.prototype.loadAsync = function (url: string) { return loadRig(url.split('?')[0]); }; console.warn = () => {}; });
   afterAll(() => { GLTFLoader.prototype.loadAsync = load; console.warn = warn; });
 
+  it('keeps no parser on a body or its form, and shares the arrays of the clips it holds', async () => {
+    await library.ensure(['hawser']);
+    const held = library as unknown as Held, body = held.sources.get('hawser')!, form = held.forms.get('hawser')!;
+    expect(body.parser).toBeUndefined();
+    expect(form.parser).toBeUndefined();
+    // Every channel held at one value shares one array with every other of the same bits, and some are shared. (Hawser's body
+    // holds about a seventh of its channels at one value, so the measure is the held channels' own.)
+    const tracks = body.animations.flatMap(clip => clip.tracks), bits = (values: ArrayLike<number>) => Array.from(values, v => Object.is(v, -0) ? '-0' : String(v)).join(',');
+    const still = tracks.filter(track => { const n = track.values.length / track.times.length; for (let k = 1; k < track.times.length; k++) for (let p = 0; p < n; p++) if (!Object.is(track.values[k * n + p], track.values[p])) return false; return true; });
+    expect(still.length, 'held channels').toBeGreaterThan(0);
+    expect(new Set(still.map(track => track.values)).size, 'one array for each held value').toBe(new Set(still.map(track => bits(track.values))).size);
+    expect(new Set(still.map(track => track.values)).size).toBeLessThan(still.length);
+  });
 
   it('keeps Gummy\'s, whose plain face and open palms are found by the file\'s own JSON', async () => {
     await library.ensure(['gummy']);
