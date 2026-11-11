@@ -6,13 +6,12 @@ import {FIGHTERS} from '../src/config';
 import {MOVES} from '../src/game/moves';
 import type {PlayerState} from '../src/game/types';
 import {base,loadRig} from './rigHarness';
-import { hasAsset } from './assets';
 function advance(actor:Fighter,state:PlayerState,end:number){for(let i=0;i<=Math.ceil(end*120);i++)actor.update(1/120,{...state,actionTime:Math.min(end,i/120)/state.actionDuration},true);}
 describe('new native palm and bokken sockets through actual Fighter layers',()=>{
- it.each(([['suzuran','light','Left'],['suzuran','heavy','Both'],['suzuran','special','Right'],['oyashio','light','Right'],['oyashio','heavy','Left']]as const).filter(([id])=>id!=='oyashio'||hasAsset('/assets/fighters/oyashio-night1.glb')))('%s %s uses the posed %s palm',async(id,slot,side)=>{
-  // Oyashio plays his baked takes over the body's own clips, as FighterLibrary lays the night file on (15 October: his first
-  // light is Jirenga's jab under Tide Palm, thrown with the right; scripts/night/anim/picks.json, src/engine/client/sockets.ts).
-  const rig=await loadRig(FIGHTERS[id].model);if(id==='oyashio'){const night=await loadRig('/assets/fighters/oyashio-night1.glb'),names=new Set(night.animations.map(clip=>clip.name));rig.animations=[...rig.animations.filter(clip=>!names.has(clip.name)),...night.animations];}
+ it.each([['suzuran','light','Left'],['suzuran','heavy','Both'],['suzuran','special','Right'],['oyashio','light','Right'],['oyashio','heavy','Left']]as const)('%s %s uses the posed %s palm',async(id,slot,side)=>{
+  // Oyashio plays his extra files over the body's own clips, as FighterLibrary lays them on (his first light, Tide Palm, is
+  // thrown with the right; src/engine/client/sockets.ts).
+  const rig=await loadRig(FIGHTERS[id].model);if(id==='oyashio')for(const url of FIGHTERS[id].extraModels??[]){const extra=await loadRig(url),names=new Set(extra.animations.map(clip=>clip.name));rig.animations=[...rig.animations.filter(clip=>!names.has(clip.name)),...extra.animations];}
   const state=base(id),actor=new Fighter(state,rig);actor.prepareRush();actor.targetPoint=new THREE.Vector3(0,1.3,4);actor.targetDistance=4;
   try{for(let i=0;i<60;i++)actor.update(1/60,state,true);const m=MOVES[id][slot];advance(actor,{...state,action:slot,actionSeq:1,actionStarted:1,actionDuration:m.duration},m.contacts[0]);
    const l=actor.joints.get('LeftHand')!.getWorldPosition(new THREE.Vector3()),r=actor.joints.get('RightHand')!.getWorldPosition(new THREE.Vector3()),expected=side==='Both'?l.clone().lerp(r,.5):side==='Left'?l:r,p=new THREE.Vector3();

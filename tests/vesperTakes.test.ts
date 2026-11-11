@@ -372,7 +372,8 @@ async function blackVespers() {
   }
   return form;
 }
-const BLACK_VESPERS_TAKES = '/assets/fighters/vesper-black-vespers-fanim1.glb';
+// (Vesper's own form carries the eight takes in its own file, so that file is where they are held.)
+const BLACK_VESPERS_TAKES = ORIGINALS.vesper ? FIGHTERS[ID].formModel! : '/assets/fighters/vesper-black-vespers-fanim1.glb';
 /** Each clip's length in a GLB, read off its key times. */
 const durations = (path: string) => {
   const file = fs.readFileSync(`public${path}`);
@@ -382,7 +383,47 @@ const durations = (path: string) => {
 };
 
 describe('Black Vespers\'s moves', () => {
+  it('throws every slot and each stage of the string on a take of his own', async () => {
+    // His string threw the light's thrust three times over (a form picks its rush clips by their names: Fighter.ts
+    // FORM_NAMED_RUSH), and his special the idle (he had no Pale Lance).
+    const own = durations(BLACK_VESPERS_TAKES), fighter = body();
+    try {
+      fighter.attachForm(await blackVespers());
+      const plays = (state: Partial<PlayerState>, frames: number) => {
+        const seen = new Set<string>();
+        for (let i = 0; i < frames; i++) {
+          fighter.update(1 / 60, { ...base(ID), awakened: true, ...state, actionTime: i / frames } as PlayerState, true, 1 / 60);
+          const e = fighter.motionEvidence();
+          if (e.formVisible && e.formClip) seen.add(e.formClip);
+        }
+        for (let i = 0; i < 30; i++) fighter.update(1 / 60, { ...base(ID), awakened: true, action: 'idle' }, true, 1 / 60);
+        return [...seen];
+      };
+      FIGHTERS[ID].rushClips!.forEach((name, k) => {
+        const stage = k + 1;
+        expect(plays({ action: 'light', chain: stage, actionSeq: 20 + stage, actionStarted: 2 + stage, actionDuration: .3 }, 18), `stage ${stage}`).toEqual([name]);
+        expect(own.has(name), `${name} is a take of his`).toBe(true);
+      });
+      (['light', 'heavy', 'special', 'ultimate'] as const).forEach((slot, k) => {
+        const name = FIGHTERS[ID].clips![k], d = MOVES[ID][slot].duration;
+        expect(plays({ action: slot, actionSeq: 40 + k, actionStarted: 9 + k, actionDuration: d }, Math.round(d * 60)), slot).toEqual([name]);
+        expect(own.has(name), `${name} is a take of his`).toBe(true);
+      });
+    } finally { fighter.dispose(); }
+  }, 120_000);
 
+  it('keeps each clip\'s length (the Pale Lance new, of the move\'s own)', () => {
+    const before = durations(FIGHTERS[ID].formModel!), after = durations(BLACK_VESPERS_TAKES);
+    const takes = ['Reverse Quill', 'The Offering', 'Raven Dive', 'Feather Slash', 'Hawks Talon', 'Updraft', 'Quill Thrust', 'Pale Lance'];
+    // (An original's form file is the takes' own and carries his other clips besides: each take is in it.)
+    if (ORIGINALS.vesper) for (const name of [...after.keys()]) if (!takes.includes(name)) after.delete(name);
+    expect([...after.keys()].sort()).toEqual(takes.sort());
+    for (const [name, seconds] of after) {
+      const was = name === 'Pale Lance' ? MOVES[ID].special.duration : before.get(name);
+      expect(was, name).toBeDefined();
+      expect(Math.abs(seconds - was!), name).toBeLessThan(1e-3);
+    }
+  });
 
   /** Black Vespers's body drawn at a fraction of one of his clips, and his left wrist: the auto-rig put his LeftHand joint 32 cm
    *  up his wing, so the wrist is the right's mirrored across him at rest, carried on his left forearm. */

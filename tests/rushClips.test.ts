@@ -7,6 +7,7 @@ import contactFrames from '../src/game/data/contactFrames.json';
 import type { FighterId, PlayerState } from '../src/game/types';
 import { Fighter } from '../src/render/Fighter';
 import { ORIGINALS } from '../src/originals/roster';
+import { appendClips, findClipIn } from '../src/render/clipMatch';
 
 async function parse(buffer: Buffer) {
   return new GLTFLoader().parseAsync(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer, "");
@@ -38,7 +39,10 @@ describe('rush string clips', () => {
     }
   });
 
-  it.each(withRush.filter(id => !['hisame', 'suzuran', 'kosho', 'ouga', 'taisei'].includes(id)))('%s: the rush file binds onto the body, names its stages, and has their contacts', async id => {
+  // Suzuran's and Ouga's rush files leave joints unkeyed that their body clips key (Suzuran's elbow and knee share bones
+  // and forearm twists, and Rush 3's Hips scale; Ouga's three cape scales): a known fault in those two shipped files, out
+  // of this case until they are re-keyed.
+  it.each(withRush.filter(id => !['suzuran', 'ouga'].includes(id)))('%s: the rush file binds onto the body, names its stages, and has their contacts', async id => {
     const def = FIGHTERS[id];
     expect(fs.existsSync(`public${def.rushModel}`), `${def.rushModel} missing`).toBe(true);
     const body = await loadRig(def.model);
@@ -49,7 +53,11 @@ describe('rush string clips', () => {
     const clips = def.rushClips!.map((pattern, stage) => {
       const found = rush.animations.filter(c => clean(c.name) === clean(pattern));
       expect(found, `${id} stage ${stage + 1}: "${pattern}"`).toHaveLength(1);
-      expect(body.animations.some(c => clean(c.name).includes(clean(pattern))), `${id}: a body clip answers to "${pattern}"`).toBe(false);
+      // (The renderer finds a clip by its exact name first (clipMatch.ts findClipIn) over the body's clips with the rush
+      // file's appended (appendClips), and Taisei's body carries his stage takes 'DZ Rush 1-3' (Fighter.ts DREAM_STAGES),
+      // which contain the names without shadowing them. So the stage is resolved as the renderer resolves it, and still
+      // fails if a body clip would answer first.)
+      expect(findClipIn(appendClips(body.animations, rush.animations), [pattern]), `${id}: a body clip answers to "${pattern}"`).toBe(found[0]);
       return found[0];
     });
     expect(new Set(clips).size).toBe(3);
@@ -77,7 +85,7 @@ describe('rush string clips', () => {
     }
   }, 60_000);
 
-  it.each(withRush.filter(id => !['kenzo', 'ward'].includes(id)))('%s: the rush clips stand on the idle\'s floor and stay near the capsule', async id => {
+  it.each(withRush)('%s: the rush clips stand on the idle\'s floor and stay near the capsule', async id => {
     const def = FIGHTERS[id];
     const gltf = await loadRig(def.model);
     const rush = await parse(fs.readFileSync(`public${def.rushModel}`));

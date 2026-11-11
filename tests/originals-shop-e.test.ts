@@ -141,6 +141,53 @@ describe('team E\'s shop originals', () => {
     }
   });
 
+  it('stand in their own kamae: Sekka\'s left hand out before him, his right fist drawn back', async () => {
+    if (!IDS.includes('sekka')) return;
+    const body = await loadRig(FIGHTERS.sekka.model), file = await loadRig(IDLE_PROFILES.sekka!.model!), model = body.scene;
+    for (const name of ['Sekka idle', 'Sekka idle fidget']) {
+      const clip = file.animations.find(c => c.name === name)!;
+      for (const u of [0, .3, .7]) {
+        const done = at(model, clip, u * clip.duration);
+        const [left, right, chest, head, foot] = ['LeftHand', 'RightHand', 'Spine2', 'Head', 'LeftFoot'].map(n => where(named(model, n)));
+        done();
+        const h = (head.y - foot.y) / .86;
+        expect((left.z - chest.z) / h, `${name} ${u}: the left hand out before him`).toBeGreaterThan(.2);
+        expect((left.z - right.z) / h, `${name} ${u}: the right drawn back behind it`).toBeGreaterThan(.2);
+        expect((chest.y - right.y) / h, `${name} ${u}: the right fist down at his ribs`).toBeGreaterThan(.05);
+      }
+    }
+  });
+
+  it('stand in their own kamae: Asahi\'s blade pointed forward and up at them, both hands on the hilt', async () => {
+    if (!IDS.includes('asahi')) return;
+    const body = await loadRig(FIGHTERS.asahi.model), model = body.scene, carrier = named(model, 'weapon_katana_R');
+    // The point: the vertex of the blade's mesh furthest from its bone, in the bone's frame at bind.
+    let tip = new THREE.Vector3(), far = 0;
+    model.traverse(o => {
+      const mesh = o as THREE.SkinnedMesh;
+      // (His solid katana has two materials, so the loader hangs its two primitives under a group of that name.)
+      if (!mesh.isSkinnedMesh || (mesh.name !== 'weapon_katana_hand_R' && mesh.parent?.name !== 'weapon_katana_hand_R')) return;
+      const index = mesh.skeleton.bones.indexOf(carrier as THREE.Bone), inverse = mesh.skeleton.boneInverses[index], v = new THREE.Vector3();
+      for (let i = 0; i < mesh.geometry.attributes.position.count; i++) {
+        v.fromBufferAttribute(mesh.geometry.attributes.position as THREE.BufferAttribute, i).applyMatrix4(mesh.bindMatrix).applyMatrix4(inverse);
+        if (v.length() > far) { far = v.length(); tip = v.clone(); }
+      }
+    });
+    expect(far, 'no blade').toBeGreaterThan(.5);
+    for (const [name, u] of [['_Idle', 0], ['_Idle', .5], ['Block', .5]] as const) {
+      const clip = body.animations.find(c => c.name === name)!, done = at(model, clip, u * clip.duration);
+      const hilt = where(carrier), way = tip.clone().applyMatrix4(carrier.matrixWorld).sub(hilt).normalize();
+      const [right, left, head, foot] = ['RightHand', 'LeftHand', 'Head', 'LeftFoot'].map(n => where(named(model, n)));
+      done();
+      const hands = right.distanceTo(left) / ((head.y - foot.y) / .86);
+      if (name === '_Idle') {
+        expect(way.z, `${name} ${u}: forward`).toBeGreaterThan(.6);
+        expect(way.y, `${name} ${u}: up`).toBeGreaterThan(.3);
+      } else expect(way.y, `${name}: raised`).toBeGreaterThan(.7);
+      expect(hands, `${name} ${u}: both hands on the hilt`).toBeLessThan(.08);
+    }
+  });
+
   const at = (model: THREE.Object3D, clip: THREE.AnimationClip, time: number) => {
     const mixer = new THREE.AnimationMixer(model), action = mixer.clipAction(clip).play();
     action.time = time; mixer.update(0); model.updateMatrixWorld(true);

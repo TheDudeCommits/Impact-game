@@ -144,5 +144,48 @@ describe("team B's originals (the Last Sun)", () => {
     }
   });
 
+  it('wake Emperor Jinlin as BLACK TIDE, a body of his own carrying the form\'s reactions, under his own tail', async () => {
+    // His form is his own file, and it carries the takes the slot's formExtraModels held (the flinch and the downed pose
+    // among them, reactionTakes.test.ts).
+    const form = await loadRig(FIGHTERS['jinlin'].formModel!);
+    for (const clip of ['_Idle', 'down_lp', 'Hit 01', 'shake', 'Run', 'jump', 'Block', 'Jump Fall', 'Drowned Sun'])
+      expect(form.animations.some(c => c.name === clip), clip).toBe(true);
+    // The tail: a root under the hips, then five links the runtime springs, in both bodies, which no clip keys.
+    for (const file of [FIGHTERS['jinlin'].model, FIGHTERS['jinlin'].formModel!]) {
+      const json = glbJson(file);
+      const index = (name: string) => json.nodes.findIndex(n => n.name === name);
+      const hips = index('Hips'), root = index('TAIL0');
+      expect(json.nodes[hips].children ?? [], file).toContain(root);
+      let parent = root;
+      for (let i = 1; i <= 5; i++) {
+        const link = index(`TAIL${i}_tassel`);
+        expect(json.nodes[parent].children ?? [], `${file} TAIL${i}`).toContain(link);
+        expect(isDynamicBoneName(`TAIL${i}_tassel`)).toBe(true);
+        parent = link;
+      }
+      const tail = new Set(json.nodes.map((n, i) => [n.name ?? '', i] as const).filter(([n]) => /^TAIL\d/.test(n)).map(([, i]) => i));
+      for (const clip of json.animations ?? []) expect(clip.channels.filter(c => tail.has(c.target.node)).length, `${file} ${clip.name}`).toBe(0);
+    }
+  });
+
+  it('give Gohaku a mane of its own material, which the slot darkens at rest, and an idle of his own', async () => {
+    // Fighter.ts finds the hair AWAKENINGS['gohaku'].baseHair darkens by its material's name: the mane alone, never the body.
+    expect(AWAKENINGS['gohaku'].baseHair).toBeDefined();
+    const rig = await loadRig(FIGHTERS['gohaku'].model);
+    let hair = 0, rest = 0;
+    rig.scene.traverse(o => {
+      const mesh = o as THREE.SkinnedMesh;
+      if (!mesh.isSkinnedMesh) return;
+      const count = (mesh.geometry.index?.count ?? 0) / 3, named = /hair/i.test((mesh.material as THREE.Material).name);
+      if (named) hair += count; else rest += count;
+    });
+    expect(hair).toBeGreaterThan(3000);
+    expect(hair).toBeLessThan(rest / 2);
+    // The slot's idle is a file of its own with the profile's clip names, carried as every clip is.
+    const idle = IDLE_PROFILES['gohaku']!;
+    expect(idle.model).toBe('/assets/fighters/tongbi-idle1.glb');
+    const clips = (await loadRig(idle.model!)).animations.map(c => c.name);
+    expect(clips).toEqual(expect.arrayContaining(['Gohaku idle', 'Gohaku idle fidget']));
+  });
 
 });

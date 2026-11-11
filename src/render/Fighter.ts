@@ -2072,10 +2072,6 @@ export class Fighter {
   /** Techniques (game/techniques.ts): a style's take for a technique fitted to this body, and its blow's share
    *  (engine/client/styleMoves.ts); undefined while the takes are coming. Installed by main.ts. */
   static styleMove?:(scene:THREE.Object3D,clips:readonly THREE.AnimationClip[],fighter:FighterId,key:TechniqueKey)=>{clip:THREE.AnimationClip;contact:number}|null|undefined;
-  /** A clean shared take fitted to this body for an action it has no clip of its own for (some fighters' clips are held back
-   *  from the public repository until they are replaced: README.md). Installed by engine/client/styleMoves.ts; undefined
-   *  while the takes load, or where none fits. */
-  static fallbackTake?:(scene:THREE.Object3D,clips:readonly THREE.AnimationClip[],fighter:FighterId,action:string)=>THREE.AnimationClip|undefined;
   static stylesAhead?:()=>void;
   /** Whether a technique's take carries its own legs in the air - a leap's, a kick's - so the air string's tuck
    *  (`airTuck`) leaves them be (engine/client/styleMoves.ts). */
@@ -3710,13 +3706,6 @@ export class Fighter {
     return colour;
   }
   private findClip(patterns:string[]){return findClipIn(this.clips,patterns);}
-  /** What an action plays when the body has no clip for it: a shared take fitted to the body (Fighter.fallbackTake), else
-   *  the body's own idle, else the idle take. Undefined only when nothing at all fits (the body's first clip then). */
-  private fallbackClip(action:string):THREE.AnimationClip|undefined{
-    const take=Fighter.fallbackTake?.(this.source.scene,this.clips,this.state.fighter,action);
-    if(take)return take;
-    return this.findClip(['_Idle','Idle'])??(action==='idle'?undefined:Fighter.fallbackTake?.(this.source.scene,this.clips,this.state.fighter,'idle'));
-  }
   /** Engine VOL.7, step four: the clips written down for this body (src/engine/client/clips.ts), where it carries
    *  the very clips they were written for; and whether bodies read them (scripts/engine/clipMap.mts writes them with it
    *  off). */
@@ -3767,11 +3756,11 @@ export class Fighter {
    *  at a walk its walk - unless the action's clip is one characterMotion.ts authored for it. */
   private mappedClip(state:PlayerState,map:Readonly<Record<string,string|null>>){
     const named=(key:string)=>{const name=map[key];return name?this.clips.find(c=>c.name===name):undefined;};
-    if(!state.grounded&&(state.action==='light'||state.action==='heavy')&&!(state.awakened&&state.fighter==='koko'))return named(`air ${state.action}`)??named(state.action)??this.fallbackClip(state.action)??this.clips[0];
+    if(!state.grounded&&(state.action==='light'||state.action==='heavy')&&!(state.awakened&&state.fighter==='koko'))return named(`air ${state.action}`)??this.clips[0];
     const own=named(state.action),authored=own?.name===`Authored ${state.fighter} ${state.action}`;
     if(state.action==='jump'&&this.falling&&!authored){const fall=this.fallClip();if(fall)return fall;}
     if(state.action==='run'&&this.walking&&this.walkClip&&!this.blended&&!authored)return this.walkClip;
-    return own??this.fallbackClip(state.action)??this.clips[0];
+    return own??this.clips[0];
   }
   /** Engine VOL.7, step four: every clip this body finds by name, as it did before its clip map and as a body the
    *  map was not written for still does - each action standing (MAP_ACTIONS) and a light and a heavy off the floor
@@ -4300,10 +4289,10 @@ export class Fighter {
     }
     const isTaisei=state.fighter==='taisei';
     const authored=this.slotClips(state.fighter);
-    if(authored){const slot=['light','heavy','special','ultimate'].indexOf(state.action);const name=slot>=0?authored[slot]:(state.action==='victory'?this.findClip(state.fighter==='full-beam'?['Lighthouse Salute',...VICTORY]:VICTORY)?.name:undefined)??({idle:'_Idle',run:'Run',dash:'Dash',jump:'jump',guard:'Block',hurt:'Hit 01',defeated:'Die fall'}as Record<string,string>)[state.action];const before=name?SLOT_CLIP_BEFORE[state.fighter]?.[name]:undefined;return this.findClip(before?[name!,before.clip]:[name??'_Idle'])??this.fallbackClip(state.action)??this.clips[0];}
+    if(authored){const slot=['light','heavy','special','ultimate'].indexOf(state.action);const name=slot>=0?authored[slot]:(state.action==='victory'?this.findClip(state.fighter==='full-beam'?['Lighthouse Salute',...VICTORY]:VICTORY)?.name:undefined)??({idle:'_Idle',run:'Run',dash:'Dash',jump:'jump',guard:'Block',hurt:'Hit 01',defeated:'Die fall'}as Record<string,string>)[state.action];const before=name?SLOT_CLIP_BEFORE[state.fighter]?.[name]:undefined;return this.findClip(before?[name!,before.clip]:[name??'_Idle'])??this.clips[0];}
     // (Round 5: his body throws no part of the GRAND TIDE - SUNRISE's does all of it - and stands in his stance for the
     // beats either side of it the form is not drawn for.)
-    if(state.fighter==='gummy'){const names:Record<string,string[]>={idle:['_Idle'],victory:VICTORY,run:['Run'],dash:['Dash'],jump:['jump'],guard:['Block'],light:['Snapback Jab'],heavy:['Rogue Wave'],special:['SUNSET BARRAGE','Punch 01'],ultimate:[...(LUCY_TIDE?[TIDE_CLIP]:[]),'Sunrise Tide','_Idle'],hurt:['Hit 01'],defeated:['Die fall']};return this.findClip(names[state.action]??['_Idle'])??this.fallbackClip(state.action)??this.clips[0];}
+    if(state.fighter==='gummy'){const names:Record<string,string[]>={idle:['_Idle'],victory:VICTORY,run:['Run'],dash:['Dash'],jump:['jump'],guard:['Block'],light:['Snapback Jab'],heavy:['Rogue Wave'],special:['SUNSET BARRAGE','Punch 01'],ultimate:[...(LUCY_TIDE?[TIDE_CLIP]:[]),'Sunrise Tide','_Idle'],hurt:['Hit 01'],defeated:['Die fall']};return this.findClip(names[state.action]??['_Idle'])??this.clips[0];}
     // Taisei's rebuild names its clips `adapted_*`, and nothing else on him
     // answers to `Dash`, `Block`, `jump` or `Hit 01` - so those still come
     // from here. `run` deliberately does not. He has been given a donated
@@ -4314,7 +4303,7 @@ export class Fighter {
     // different animations. Where a properly named clip exists it wins.
     if(isTaisei&&['dash','jump','guard','light','heavy','hurt'].includes(state.action)){const adapted=this.findClip(['adapted_'+(state.action==='hurt'?'hit':state.action)]);if(adapted)return adapted;}
     const table:Record<string,string[]>={idle:isTaisei?['taisei-ready','02-STANCE','stance','idle']:['_Idle','Idle'],victory:VICTORY,run:['Run','Walk'],dash:['Dash','Run'],jump:['jump','Jump Fall'],guard:['Block','Guard','02-STANCE'],light:['Punch 01','Punch','Light'],heavy:isTaisei?['Meteor','Kick 01','Punch 03']:['Whirlsphere Attack'],special:isTaisei?['03-SUNPALM-CANNON','Sunpalm Cannon']:['Whirlsphere Ready','Whirlsphere charge'],ultimate:isTaisei?['LAST SUN','Ultimate','01-OSSU']:['Whirlsphere charge Clone','Whirlsphere charge'],hurt:['Hit 01','Hit','Hurt'],defeated:['Die fall','Fall','Defeated']};
-    return this.findClip(table[state.action]??table.idle)??this.fallbackClip(state.action)??this.clips[0];
+    return this.findClip(table[state.action]??table.idle)??this.findClip(table.idle)??this.clips[0];
   }
   /** Map elapsed move time onto clip time so the clip's own contact frame lands
    *  on the move's contact time, and so the way it gets there is a strike
