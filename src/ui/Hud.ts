@@ -294,6 +294,7 @@ export class Hud {
     // The ball modes' camera options (render/ball/ballCamChoice.ts), where the ball modes are open.
     const spikeCam=this.root.querySelector<HTMLSelectElement>('[data-setting="spikeCam"]');if(spikeCam)spikeCam.value=spikeCamOf(settings.spikeCam);
     const chaseCam=this.root.querySelector<HTMLSelectElement>('[data-setting="chaseCam"]');if(chaseCam)chaseCam.value=chaseCamOf(settings.chaseCam);
+    const goalLook=this.root.querySelector<HTMLSelectElement>('[data-setting="goalLook"]');if(goalLook)goalLook.value=settings.goalLook==='free'?'free':'lock';
     const superCam=this.root.querySelector<HTMLSelectElement>('[data-setting="superCam"]');if(superCam)superCam.value=superCamOf(settings.superCam);
     this.root.querySelectorAll<HTMLInputElement|HTMLSelectElement>('[data-setting]').forEach(input=>input.addEventListener(input.type==='range'?'input':'change',()=>this.applySetting(input.dataset.setting!,input)));
     this.settingsPanel.addEventListener('keydown',event=>{if(event.key!=='Tab')return;const items=this.focusables(),first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}});
@@ -307,6 +308,7 @@ export class Hud {
     else if(key==='commentary')this.settings.commentary=commentaryOf(input.value);   // the ball modes' voice (audio/ballCaller.ts)
     else if(key==='spikeCam')this.settings.spikeCam=spikeCamOf(input.value);   // Sky Spike's stand (render/ball/ballCamChoice.ts)
     else if(key==='chaseCam')this.settings.chaseCam=chaseCamOf(input.value);   // Goal Rush's chase lens
+    else if(key==='goalLook'){if(input.value==='free')this.settings.goalLook='free';else delete this.settings.goalLook;}   // Goal Rush's SPORT mode: BALL LOCK / FREE LOOK (render/ball/footballPage.ts)
     else if(key==='superCam')this.settings.superCam=superCamOf(input.value);   // The lens riding a SUPER SHOT (an option, off by default)
     else if(key==='hudSkin'){this.settings.hudSkin=(HUD_SKINS as readonly string[]).includes(input.value)?input.value as Settings['hudSkin']:'halo';this.applySkin();}
     else if(key==='moveLayout'){this.settings.moveLayout=(MOVE_LAYOUTS as readonly string[]).includes(input.value)?input.value as Settings['moveLayout']:'row';this.applyMoveLayout();}

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {passPick, type Mate} from '../../game/ball/football';
+import {FOOTBALL, passPick, type Mate} from '../../game/ball/football';
 import type {BallView} from '../../game/ball/model';
 import type {PlayerState} from '../../game/types';
 
@@ -28,12 +28,15 @@ export function switchGoalLook(settings: {goalLook?: GoalLook}): GoalLook {
   settings.goalLook = next; if (asked) asked = next;
   return next;
 }
+/** The pause menu's SPORT MODE VIEW (under `?football` only), the default first. */
+export const GOAL_LOOK_OPTIONS: readonly (readonly [GoalLook, string, string?])[] = [['lock', 'Ball lock', 'Default'], ['free', 'Free look']];
 /** What the legend and the notice call each state. */
 export const GOAL_LOOK_NAME: Record<GoalLook, string> = {lock: 'BALL LOCK', free: 'FREE LOOK'};
 
 /** The one quiet mark over the team-mate a PASS would find now, while the page's own fighter has the ball: a small
  *  downward chevron in white over their head, no glow, gone the moment the ball is not at their feet. The pick is the
- *  match's own (football.ts passPick), from the stick (else the view) as the page reads it. */
+ *  match's own (football.ts passPick), from the stick (else the view) as the page reads it. The same chevron
+ *  over a team-mate's ball coming to you in the moment a first-time press would play it. */
 export class PassMark {
   private readonly el: HTMLElement;
   private readonly at = new THREE.Vector3();
@@ -49,8 +52,15 @@ export class PassMark {
   /** Each frame: `stick` the page's move as the world has it (x, z; under half: the view's `yaw`). */
   update(view: BallView | undefined, me: PlayerState | undefined, players: readonly PlayerState[], stick: {x: number; z: number}, yaw: number, camera: THREE.Camera, width: number, height: number, drawn: (id: string) => THREE.Vector3 | undefined) {
     const b = view?.ball;
-    if (!view?.football || !me || !b || b.carry !== me.id || view.phase !== 'live') { this.hide(); return; }
+    if (!view?.football || !me || !b || view.phase !== 'live') { this.hide(); return; }
     const team = view.seats.find(s => s.id === me.id)?.team, mates: Mate[] = [];
+    // (A team-mate's ball coming to you, inside the moment a first-time PASS or SHOOT pressed now would play -
+    // FOOTBALL.press.buffer - is marked by the same chevron, over the ball.)
+    if (b.carry === undefined && b.lastTeam === team && b.lastId !== me.id) {
+      const dx = me.x - b.x, dz = me.z - b.z, d = Math.hypot(dx, dz), closing = d > .1 ? (b.vx * dx + b.vz * dz) / d : 0;
+      if (closing > 2 && d > .8 && d / closing <= FOOTBALL.press.buffer) { this.place(b.x, b.y + .55, b.z, 'ball', camera, width, height); return; }
+    }
+    if (b.carry !== me.id) { this.hide(); return; }
     for (const p of players) {
       if (p.id === me.id || !p.alive) continue;
       const s = view.seats.find(q => q.id === p.id);
@@ -60,11 +70,15 @@ export class PassMark {
     const pick = passPick(b, aim, mates), body = pick && players.find(p => p.id === pick.id), where = pick && drawn(pick.id);
     if (!body || !pick) { this.hide(); return; }
     // (Over the drawn body's head: a fighter is about 1.9 m tall at size 1.)
-    this.at.set(where?.x ?? body.x, (where?.y ?? body.y) + 1.9 * (body.size ?? 1) + .35, where?.z ?? body.z).project(camera);
+    this.place(where?.x ?? body.x, (where?.y ?? body.y) + 1.9 * (body.size ?? 1) + .35, where?.z ?? body.z, pick.id, camera, width, height);
+  }
+  /** The chevron over a point of the world (projected through `camera`), or hidden when the point is off the screen. */
+  private place(x: number, y: number, z: number, key: string, camera: THREE.Camera, width: number, height: number) {
+    this.at.set(x, y, z).project(camera);
     if (this.at.z > 1 || Math.abs(this.at.x) > 1.05 || Math.abs(this.at.y) > 1.05) { this.hide(); return; }
-    const x = (this.at.x * .5 + .5) * width - 7, y = (-this.at.y * .5 + .5) * height - 9;
-    this.el.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;
-    if (this.shown !== pick.id) { this.el.style.display = 'block'; this.shown = pick.id; }
+    const sx = (this.at.x * .5 + .5) * width - 7, sy = (-this.at.y * .5 + .5) * height - 9;
+    this.el.style.transform = `translate(${sx.toFixed(1)}px,${sy.toFixed(1)}px)`;
+    if (this.shown !== key) { this.el.style.display = 'block'; this.shown = key; }
   }
   hide() { if (this.shown) { this.el.style.display = 'none'; this.shown = ''; } }
   dispose() { this.el.remove(); }

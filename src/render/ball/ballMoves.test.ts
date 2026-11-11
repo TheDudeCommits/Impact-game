@@ -124,6 +124,23 @@ describe('the shared file', () => {
       for (const word of ['run', 'jump', 'hit', 'block', 'idle']) expect(clipKey(clip.name).includes(word), `${clip.name} holds ${word}`).toBe(false);
     }
   });
+  // The football takes: off until the SPORT mode's rules ask, each saying what its rules need to lay it.
+  it('holds the football takes, switched off, with their contacts in seconds and a running take\'s run', async () => {
+    const pack = readPack(await loadRig(FILE));
+    for (const key of ['GR.stridePass', 'GR.strideShot', 'GR.poke', 'GR.catch', 'GR.slideUp'] as const) expect(BALL_MOVES[key].on, key).toBe(false);
+    for (const name of ['K.stridePass', 'K.strideShot', 'K.poke', 'K.catch']) {
+      const take = pack.takes.get(name)!, extras = take.clip.userData as {at?: number};
+      expect(extras.at, name).toBeCloseTo(take.contact * take.clip.duration, 2);
+    }
+    for (const name of ['K.stridePass', 'K.strideShot']) {
+      const extras = pack.takes.get(name)!.clip.userData as {stride?: {cycle: number; speed: number}};
+      expect(extras.stride!.cycle, name).toBeGreaterThan(.3);
+      expect(extras.stride!.speed, name).toBeGreaterThan(2);
+    }
+    expect(pack.takes.get('K.poke')!.clip.duration).toBeLessThan(.5);
+    expect(pack.takes.get('K.catch')!.once).toBe(true);
+    expect(pack.takes.get('K.slideUp')!.once).toBe(true);
+  });
   it('is under its size: fetched as every ball room loads (about 650 KB with the kit, under 1 MB)', async () => {
     const {statSync} = await import('node:fs');
     expect(statSync(new URL('../../../public/assets/fighters/ball-moves.glb', import.meta.url)).size).toBeLessThan(1024 * 1024);

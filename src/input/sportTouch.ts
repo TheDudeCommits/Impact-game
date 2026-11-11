@@ -41,7 +41,7 @@ import type { Spot } from './touchLayout';
 export type SportSlot = 'main' | 'pass' | 'jump' | 'run' | 'side' | 'super';
 export const SPORT_SLOTS: readonly SportSlot[] = ['main', 'pass', 'jump', 'run', 'side', 'super'];
 /** The press each slot can send (Input.touchPress's actions, and guard, which is held: Input.touchHold). */
-export type SportAction = 'light' | 'heavy' | 'jump' | 'dash' | 'guard' | 'ultimate' | 'target';
+export type SportAction = 'light' | 'heavy' | 'jump' | 'dash' | 'guard' | 'ultimate' | 'target' | 'special';
 /** The faces (handheld.css draws each as a line glyph; 'art' is the move's own picture, input/touchArt.ts). */
 export type SportGlyph = 'shoot' | 'pass' | 'jump' | 'boost' | 'fist' | 'ball' | 'super' | 'dash' | 'art' | 'bump' | 'set' | 'tip' | 'lob' | 'spike' | 'block' | 'dive' | 'trap' | 'duel';
 export interface SportFace {
@@ -98,6 +98,39 @@ export function spikeLight(view: Pick<BallView, 'phase' | 'serverId' | 'touchTea
   }
   return { label: 'BUMP', glyph: 'bump' };
 }
+
+/** Where the page's own body is, as the phone's VOLLEYBALL set reads it. */
+type VolleyAt = { z: number; x?: number; y?: number; grounded?: boolean };
+/** VOLLEYBALL (game/ball/volley.ts; `?volleyball`): one PLAY a touch, so the big button is PLAY, named for
+ *  what it does now (SERVE, RECEIVE, SET, SPIKE, OVER - the rules' own word, BallView.volley.prompt); the pass's button is
+ *  the TIP only while you are up for the attack (and hidden otherwise: any other press of it is PLAY too); JUMP is named
+ *  BLOCK at the net while the other side attacks (the jump is the block); BOOST is the DIVE at a low ball of yours just
+ *  out of reach; no moment's button; SUPER only with the meter full and you up for the attack - the one moment it does
+ *  something. */
+function volleySet(view: BallView, selfId: string, superFace: (label: string) => SportFace | null, at?: VolleyAt): SportSet {
+  const vol = view.volley!, team = view.seats.find(s => s.id === selfId)?.team, b = view.ball;
+  const serving = view.phase === 'kickoff' && view.serverId === selfId && b.held;
+  const word = serving ? 'SERVE' : vol.prompt[selfId] ?? '';
+  const attack = word === 'SPIKE' || word === 'JUMP';
+  const label = word === 'JUMP' ? 'SPIKE' : word === 'BLOCK' || !word ? 'PLAY' : word;
+  const glyph: SportGlyph = serving ? 'shoot' : label === 'SET' ? 'set' : label === 'RECEIVE' ? 'bump' : label === 'SPIKE' ? 'spike' : label === 'OVER' ? 'lob' : 'pass';
+  // (The other side attacking: their third touch under way.)
+  const theirs = word === 'BLOCK' || (!!team && vol.touch === 3 && b.lastTeam !== null && b.lastTeam !== team);
+  const atNet = word === 'BLOCK' || (!!at && Math.abs(at.z) <= VOLLEY_NET);
+  // (A low ball on your side, just past a stride: the dash's dive reaches it.)
+  const low = !!at && at.x !== undefined && !!team && !b.held && b.y < 2.5 && (b.z < 0 ? 'red' : 'blue') === team && b.lastId !== selfId
+    && Math.hypot(b.x - at.x, b.z - at.z) > 1.6 && Math.hypot(b.x - at.x, b.z - at.z) < 3.4;
+  return {
+    main: { action: 'light', label, glyph },
+    pass: attack ? { action: 'heavy', label: 'TIP', glyph: 'tip' } : null,
+    jump: { action: 'jump', label: theirs && atNet ? 'BLOCK' : 'JUMP', glyph: theirs && atNet ? 'block' : 'jump' },
+    run: { action: 'dash', label: low ? 'DIVE' : 'BOOST', glyph: low ? 'dive' : 'boost', hold: !low },
+    side: null,
+    super: attack ? superFace('SUPER') : null,
+  };
+}
+/** VOLLEYBALL: how near the net a body's jump is a block (volley.ts VOLLEY.block.net). */
+const VOLLEY_NET = 1.4;
 
 /** Sky Spike's back court for the moment's button: this far from the net (m) and further, a body digs; nearer, it
  *  blocks (ui/ball/ballHints.ts: the BLOCK hint's net is 3.2 m, the DIVE hint's back court from 4.5). */
@@ -163,14 +196,15 @@ export class TrapCue {
  *  is Goal Rush's FIGHT stance (the page's own lock, hudView.ballLock); `superReady` whether the ultimate is charged
  *  (short of it there is no button: the HUD's SUPER bar is its charge); `at` the body's place (Sky Spike's moment);
  *  `trap` whether Goal Rush's moment's button is TRAP (TrapCue). */
-export function sportSet(view: BallView, selfId: string, fight: boolean, superReady: boolean, at?: { z: number }, trap = false): SportSet {
+export function sportSet(view: BallView, selfId: string, fight: boolean, superReady: boolean, at?: VolleyAt, trap = false): SportSet {
   const superFace = (label: string): SportFace | null => superReady ? { action: 'ultimate', label, glyph: 'super' } : null;
   // (In a TECHNIQUE DUEL of yours the shot's button is the duel's press - any strike is - and says so.)
   const duel = duelOn(view), duelling = !!duel && (duel.actorId === selfId || duel.targetId === selfId);
   const set = sportSetOf(view, selfId, fight, superFace, at, trap);
   return duelling ? { ...set, main: { action: 'heavy', label: 'DUEL', glyph: 'duel', held: true } } : set;
 }
-function sportSetOf(view: BallView, selfId: string, fight: boolean, superFace: (label: string) => SportFace | null, at?: { z: number }, trap = false): SportSet {
+function sportSetOf(view: BallView, selfId: string, fight: boolean, superFace: (label: string) => SportFace | null, at?: VolleyAt, trap = false): SportSet {
+  if (view.mode === 'sky-spike' && view.volley) return volleySet(view, selfId, superFace, at);
   if (view.mode === 'sky-spike') {
     const serving = view.phase === 'kickoff' && view.serverId === selfId, light = spikeLight(view, selfId);
     return {
@@ -188,9 +222,23 @@ function sportSetOf(view: BallView, selfId: string, fight: boolean, superFace: (
     pass: { action: 'light', label: 'LIGHT', glyph: 'fist' },
     jump: { action: 'jump', label: 'JUMP', glyph: 'jump' },
     run: { action: 'dash', label: 'DASH', glyph: 'dash', hold: true },
-    side: { action: 'target', label: 'BALL', glyph: 'ball' },
+    side: { action: 'target', label: view.football ? 'SPORT' : 'BALL', glyph: 'ball' },
     super: superFace('ULT'),
   };
+  // Goal Rush's SPORT mode (game/ball/football.ts, `?football`): the moment's button is TACKLE (the guard's press) while
+  // the ball is not yours - SLIDE on the boost, the same press - and TRICK (the special) while it is at your feet; FIGHT
+  // (Tab's) stands where SUPER does until the ultimate is charged.
+  if (view.football) {
+    const mine = view.ball?.carry === selfId;
+    return {
+      main: { action: 'heavy', label: 'SHOOT', glyph: 'shoot', held: true },
+      pass: { action: 'light', label: 'PASS', glyph: 'pass' },
+      jump: { action: 'jump', label: 'JUMP', glyph: 'jump' },
+      run: { action: 'dash', label: 'SPRINT', glyph: 'boost', hold: true },
+      side: mine ? { action: 'special', label: 'TRICK', glyph: 'trap' } : { action: 'guard', label: 'TACKLE', glyph: 'fist' },
+      super: superFace('SUPER') ?? (stances ? { action: 'target', label: 'FIGHT', glyph: 'fist' } : null),
+    };
+  }
   return {
     main: { action: 'heavy', label: 'SHOOT', glyph: 'shoot', held: true },
     pass: { action: 'light', label: 'PASS', glyph: 'pass' },

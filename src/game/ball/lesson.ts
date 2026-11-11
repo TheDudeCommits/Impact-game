@@ -91,12 +91,17 @@ export interface LessonView {
   parts: boolean[];
   /** The step's praise once it is done: GOOD RUN, PERFECT STRIKE!, STUFF BLOCK! ... */
   praise: string;
+  /** VOLLEYBALL (volley.ts): Sky Spike's lesson played by volleyball's rules (`?volleyball`), for its copy. */
+  volley?: boolean;
   /** The PERFECT STRIKE's timing cue while the pass comes in: 0 as it leaves the team-mate, 1 the moment to press (the
    *  blow's wind-up and lunge before the ball arrives: `pressAt`), past 1 a moment after; null with no ball coming. */
   cue: number | null;
   /** The PERFECT STRIKE step for a fighter whose SHOOT is not a melee blow (a beam, a projectile: no PERFECT STRIKE can
    *  come off it): a goal struck first time off the pass instead. */
   firstTime?: boolean;
+  /** Goal Rush's SPORT mode (football.ts, `?football`): the lesson is played on its rules - possession, PASS, SHOOT, and
+   *  its FIRST TIME step in the PERFECT STRIKE's place. */
+  sport?: boolean;
   /** SHOOT for a fighter whose heavy launches (Konta, Taisei and a quarter of the roster): their SHOOT pops a ball at
    *  rest straight up, so the step is a SHOOT met as the team-mate's pass arrives (the timing bar: a timed one flies,
    *  strike.ts), the way they score in a match; and SCORE asks for the pass to the team-mate's run. */
@@ -198,8 +203,8 @@ export class BallLesson {
   /** The DIVE step's drive goes this way across the person (-1, 1). */
   private dive = 1;
   private seq = 0;
-  constructor(readonly mode: BallModeId, private readonly rng: () => number) {
-    this.view = {mode, index: 0, step: LESSON[mode][0].id, state: 'intro', at: -1, done: [], skipped: [], tries: 0, miss: null, parts: [], praise: '', cue: null};
+  constructor(readonly mode: BallModeId, private readonly rng: () => number, sport = false) {
+    this.view = {mode, index: 0, step: LESSON[mode][0].id, state: 'intro', at: -1, done: [], skipped: [], tries: 0, miss: null, parts: [], praise: '', cue: null, ...(sport ? {sport: true} : {})};
   }
   private get def(): LessonStepDef | undefined { return LESSON[this.mode][this.view.index]; }
   private rand(a: number, b: number) { return a + (b - a) * this.rng(); }
@@ -266,8 +271,10 @@ export class BallLesson {
     const v = this.view, def = this.def!, me = host.person();
     v.step = def.id; v.state = 'intro'; v.at = host.now(); v.tries = 0; v.miss = null; v.parts = def.id === 'gr-run' ? [false, false] : []; v.praise = ''; v.cue = null;
     const fighter = me && host.stateOf(me.id)?.fighter;
-    if (def.id === 'gr-perfect' && fighter && !strikesPerfect(fighter)) v.firstTime = true; else delete v.firstTime;
-    if ((def.id === 'gr-shoot' || def.id === 'gr-score') && fighter && launches(fighter)) v.pops = true; else delete v.pops;
+    // (Goal Rush's SPORT mode, football.ts: no PERFECT STRIKE and no fighter's heavy - its step is FIRST TIME, and SHOOT
+    // never pops a ball.)
+    if (def.id === 'gr-perfect' && (v.sport || fighter && !strikesPerfect(fighter))) v.firstTime = true; else delete v.firstTime;
+    if ((def.id === 'gr-shoot' || def.id === 'gr-score') && fighter && launches(fighter) && !v.sport) v.pops = true; else delete v.pops;
     this.subRead = 0; this.want = false; this.finished = false;
     this.fresh();
     if (!me) return;

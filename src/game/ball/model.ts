@@ -79,6 +79,8 @@ export interface BallState extends Vec3 {
   /** Goal Rush's SPORT mode (football.ts, `?football` on this device only): how far a sprint has knocked the carried ball
    *  on ahead of its spot (m). Absent: at the feet. */
   ahead?: number;
+  /** SPORT mode: how far the carrier's held SHOOT is wound up (0-1), for the page's take of its wind-up. Absent: none. */
+  wind?: number;
 }
 
 export interface BallSeat {
@@ -86,6 +88,9 @@ export interface BallSeat {
   /** The bot's (or an idle human's stand-in's) job this moment: Goal Rush's attacker, support and keeper; Sky Spike's
    *  front and back row. */
   role?: 'attack' | 'support' | 'keeper' | 'front' | 'back';
+  /** Goal Rush's SPORT mode (game/ball/football.ts): the side's keeper, a fourth body the game plays - not one of the
+   *  three a side (BALL_RULES.teamSize), not counted in the score bug's faces. Only a match on this device has one. */
+  keeper?: boolean;
   goals: number; assists: number; saves: number; shots: number; touches: number;
   /** Sky Spike: points won with a strike that landed, aces, blocks, digs. */
   kills: number; aces: number; blocks: number; digs: number;
@@ -163,7 +168,11 @@ export interface BallEvent {
     | 'deuce' | 'comeback'
     /** Goal Rush's SPORT mode (football.ts): a PASS - actorId the passer, targetId the team-mate it went to (absent: into
      *  space), text PASS or LOFTED, value its speed (m/s). Only a match on this device under `?football` says it. */
-    | 'pass';
+    | 'pass'
+    /** Goal Rush's SPORT mode (football.ts): a TACKLE or a TRICK - actorId who made it, targetId on whom, text
+     *  POKE or SLIDE (`won` when it took the ball; MISSED when a slide won nothing; SLIDING and POKING as each starts), BEATEN (a tackle into a trick: the
+     *  trickster is actorId) or TRICK. Only a match on this device under `?football` says it. */
+    | 'steal';
   team?: BallTeam; actorId?: string; assistId?: string; targetId?: string;
   x: number; y: number; z: number;
   /** A shot's speed (m/s), a rally's length, a point's worth. */
@@ -189,9 +198,10 @@ export interface BallEvent {
 /** Goal Rush (the POWER PLAY): the bodies each side has in play - its seats less any wiped out
  *  (BallSeat.out) - read the same by the room (BallMatch) and every page (the score bug's count, the short side's goal
  *  glowing). */
-export function inPlay(seats: readonly Pick<BallSeat, 'team' | 'out'>[]): Record<BallTeam, number> {
+export function inPlay(seats: readonly Pick<BallSeat, 'team' | 'out' | 'keeper'>[]): Record<BallTeam, number> {
   const n = {red: 0, blue: 0};
-  for (const s of seats) if (s.out === undefined) n[s.team]++;
+  // (SPORT mode's keeper - football.ts, a fourth body - is not counted: the count is of the three a side.)
+  for (const s of seats) if (s.out === undefined && !s.keeper) n[s.team]++;
   return n;
 }
 /** The side a POWER PLAY is against - the one with fewer bodies in play while both have someone on the pitch - or null.

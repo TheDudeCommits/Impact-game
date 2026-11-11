@@ -15,7 +15,11 @@ import type {Fighter} from '../Fighter';
  */
 /** `trunk`: the share of the take's hips and spine laid on (the leg carries the kick; the trunk only leans - all of it
  *  folded a running shot nearly flat for a frame, filmed). */
-export const LAYER = {in: .1, hold: .08, out: .2, lead: .25, trunk: .2} as const;
+export const LAYER = {in: .1, hold: .08, out: .2, lead: .25, trunk: .2,
+  /** The side-foot pass, faint seen from behind: its striking leg's turn laid on wider (`leg` times the take's), and
+   *  the hips' turn (`hips`) more than the spine's, which is the side-foot's swing. */
+  pass: {leg: 1.35, hips: .5}, tackle: .45} as const;
+const HIPS = /(hip|pelvis)/i;
 const LEG = /(up.?leg|thigh|upper.?leg|leg|knee|calf|shin|foot|toe|ankle)/i, CORE = /(hip|pelvis|spine|chest|torso|waist|abdomen)/i;
 const RIGHT = /(right|(^|[^a-z])r([^a-z]|$))/i, LEFT = /(left|(^|[^a-z])l([^a-z]|$))/i;
 
@@ -47,13 +51,16 @@ function tracksOf(clip: THREE.AnimationClip, contact: number) {
 
 /** A kick on the run: `clip` (the take fitted to this body's rig), its contact (seconds into it), and the event's server
  *  time - the moment the drawn ball leaves. */
-export function startKick(body: Fighter, clip: THREE.AnimationClip, contact: number, at: number) {
+export function startKick(body: Fighter, clip: THREE.AnimationClip, contact: number, at: number, pass = false, tackle = false) {
   const tracks: Track[] = [];
   for (const {name, track} of tracksOf(clip, contact).tracks) {
     const node = body.model.getObjectByName(name);
     if (!node) continue;
     const sample = interp(track);
-    tracks.push({node, sample, ref: new THREE.Quaternion().fromArray(sample.evaluate(0) as unknown as number[]).invert(), share: CORE.test(name) && !LEG.test(name) ? LAYER.trunk : 1});
+    const trunk = CORE.test(name) && !LEG.test(name);
+    // (A TACKLE's take - the shoulder charge, the slide - leans the trunk more than a kick does: LAYER.tackle of it.)
+    const share = trunk ? (tackle ? LAYER.tackle : pass && HIPS.test(name) ? LAYER.pass.hips : LAYER.trunk) : pass ? LAYER.pass.leg : 1;
+    tracks.push({node, sample, ref: new THREE.Quaternion().fromArray(sample.evaluate(0) as unknown as number[]).invert(), share});
   }
   if (tracks.length) layers.set(body, {tracks, at, contact, duration: clip.duration});
   return tracks.length;
@@ -63,6 +70,7 @@ const weight = (t: number) => t < -LAYER.in ? 0 : t < 0 ? THREE.MathUtils.smooth
 
 /** Every frame, after the bodies are posed: each layer at the drawn clock `drawn` (server seconds). */
 export function applyKicks(drawn: number) {
+  applyFull(drawn);
   for (const [body, layer] of layers) {
     const t = drawn - layer.at, w = weight(t);
     if (t > LAYER.hold + LAYER.out || t < -LAYER.lead - 1) { layers.delete(body); continue; }
@@ -76,6 +84,71 @@ export function applyKicks(drawn: number) {
     }
   }
 }
-/** For the checks: how many bodies have a layer on now. */
-export const kicksOn = () => layers.size;
-export function clearKicks() { layers.clear(); }
+
+/**
+ * The football takes (made for SPORT: the pass and the shot in stride, the poke, the keeper's catch, the
+ * slide's get-up), laid FULL BODY over what the body drew this frame - each bone turned toward the take's pose by the
+ * layer's weight, its run cycle underneath - on the same drawn clock. A press is answered at once (the ball leaves on the
+ * press's tick), so a take cannot be started early: it is entered at its contact frame less what the page's display
+ * delay leaves before the drawn ball goes (the event is heard before the drawn clock reaches it), weighted in over
+ * TAKE.in, played on at `rate` (a stride take's cycle matched to the body's own run), and blended back to the run over
+ * TAKE.out from `end` (a stride take: TAKE.after past the contact, before its follow-through slows and the feet would
+ * slide). `hold` keeps it on its last frame (the keeper's catch, while it holds the ball); `then` plays a second take
+ * straight after (the slide's get-up); `wind` is a held SHOOT's wind-up - the take's lead-in run by how far it is wound
+ * (0-1), up to TAKE.wind s before the contact - until the shot's own event takes it on from there.
+ */
+export const TAKE = {in: .08, out: .2, after: .3, wind: .45} as const;
+interface FullTrack { node: THREE.Object3D; sample: THREE.Interpolant }
+interface Full {
+  tracks: FullTrack[]; clip: THREE.AnimationClip; at: number; contact: number; rate: number; end: number;
+  first: number; hold?: () => boolean; then?: {clip: THREE.AnimationClip; tracks: FullTrack[]}; wind?: () => number | undefined;
+}
+const full = new Map<Fighter, Full>();
+const tracksFull = (body: Fighter, clip: THREE.AnimationClip): FullTrack[] => {
+  const out: FullTrack[] = [];
+  for (const t of clip.tracks) {
+    if (!(t instanceof THREE.QuaternionKeyframeTrack) && t.ValueTypeName !== 'quaternion') continue;
+    const node = body.model.getObjectByName(THREE.PropertyBinding.parseTrackName(t.name).nodeName);
+    if (node) out.push({node, sample: interp(t)});
+  }
+  return out;
+};
+/** A football take on `body`, full body (see TAKE). `at`: the event's server time (NaN: now, entered just before the
+ *  contact); `contact` s into the clip; `end` s into it where it blends back (default: its end). */
+export function startTake(body: Fighter, clip: THREE.AnimationClip, o: {at: number; contact: number; rate?: number; end?: number; hold?: () => boolean; then?: THREE.AnimationClip; wind?: () => number | undefined}) {
+  const tracks = tracksFull(body, clip);
+  if (!tracks.length) return 0;
+  layers.delete(body);
+  // (A shot's own event after its wind-up carries on from where the wind-up stands: no blend in again.)
+  const was = full.get(body), carried = !!was?.wind && !o.wind && was.clip === clip;
+  full.set(body, {tracks, clip, at: o.at, contact: o.contact, rate: o.rate ?? 1, end: Math.min(clip.duration, o.end ?? clip.duration), first: carried ? -Infinity : NaN, hold: o.hold, wind: o.wind,
+    then: o.then ? {clip: o.then, tracks: tracksFull(body, o.then)} : undefined});
+  return tracks.length;
+}
+export const takeOn = (body: Fighter) => full.get(body);
+function applyFull(drawn: number) { for (const [body, f] of full) stepFull(body, f, drawn); }
+function stepFull(body: Fighter, f: Full, drawn: number) {
+  if (Number.isNaN(f.first)) f.first = drawn;
+  if (!Number.isFinite(f.at)) f.at = drawn + .05;
+  let time: number, w = THREE.MathUtils.smoothstep(drawn - f.first, 0, TAKE.in);
+  if (f.wind) {
+    const share = f.wind();
+    if (share === undefined) { full.delete(body); return; }
+    time = Math.max(0, f.contact - TAKE.wind * (1 - share));
+  } else {
+    time = Math.max(0, Math.min(f.clip.duration, f.contact + (drawn - f.at) * f.rate));
+    const holding = !!f.hold?.();
+    if (!holding && time >= f.end) {
+      const out = (time - f.end) / f.rate;
+      // (A second take straight after - the slide's get-up - from the frame the first ends on, drawn this same frame.)
+      if (f.then) { const next: Full = {tracks: f.then.tracks, clip: f.then.clip, at: drawn, contact: 0, rate: 1, end: f.then.clip.duration, first: -Infinity}; full.set(body, next); stepFull(body, next, drawn); return; }
+      if (out >= TAKE.out) { full.delete(body); return; }
+      w = Math.min(w, 1 - THREE.MathUtils.smoothstep(out, 0, TAKE.out));
+    }
+    if (holding) time = Math.min(time, f.clip.duration - 1e-3);
+  }
+  for (const tr of f.tracks) { _q.fromArray(tr.sample.evaluate(time) as unknown as number[]); tr.node.quaternion.slerp(_q, w); }
+}
+/** For the checks: how many bodies have a layer or a take on now. */
+export const kicksOn = () => layers.size + full.size;
+export function clearKicks() { layers.clear(); full.clear(); }

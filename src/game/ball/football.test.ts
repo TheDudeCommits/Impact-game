@@ -42,11 +42,12 @@ function take(m: BallMatch) {
 }
 
 describe("Goal Rush's SPORT mode", () => {
-  it('is a match on this device asking for it, Goal Rush only, never LEARN TO PLAY or a drill', () => {
+  it('is a match on this device asking for it, Goal Rush only (LEARN TO PLAY on its rules), never a drill', () => {
     expect(new BallMatch('goal-rush', { football: true }).view.football).toBe(true);
     expect(new BallMatch('goal-rush', {}).view.football).toBeUndefined();
     expect(new BallMatch('sky-spike', { football: true }).view.football).toBeUndefined();
-    expect(new BallMatch('goal-rush', { football: true, practice: true, lesson: true }).view.football).toBeUndefined();
+    expect(new BallMatch('goal-rush', { football: true, practice: true, lesson: true }).view.lesson?.sport).toBe(true);
+    expect(new BallMatch('goal-rush', { football: true, practice: true, drill: 'gr-tackle' }).view.football).toBeUndefined();
   });
   it('has the nearer-real ball: 0.6 m across, heavier, no heat', () => {
     const m = match();
@@ -172,6 +173,62 @@ describe("Goal Rush's SPORT mode", () => {
     expect(groundPass(15).v0).toBeLessThanOrEqual(FOOTBALL.pass.most);
     const s = shotAt({ x: 0, y: .22, z: 8 }, 0, 0, 'red', { vx: 0, vz: 0 }, FOOTBALL.gravity, .22);
     expect(s.speed).toBe(FOOTBALL.shot.tap);
+  });
+});
+
+describe("Goal Rush's SPORT mode: the tackle, the trick and the keeper", () => {
+  /** Blue's 'r' carrying the ball at (0, 0) running up +z; red's 'p' stood `ahead` m in front of it facing it. */
+  function carried(ahead: number) {
+    const m = match();
+    m.put('r', 0, 0, 0); m.put('p', 0, ahead, Math.PI); m.put('q', -10, -10, 0);
+    const r = m.sim.actors.get('r')!, seat = m.seats.get('r')!;
+    Object.assign(m.ball, { x: 0, z: .9, vx: 0, vz: 0 });
+    (m as unknown as { startCarry(s: unknown, a: unknown, h: number): void }).startCarry(seat, r, 0);
+    return m;
+  }
+  it('POKE: live in the press\'s own tick, wins it clean to the tackler\'s feet', () => {
+    const m = carried(2.1);
+    m.submit('r', { seq: ++seq, moveX: 0, moveZ: 0, yaw: 0 });
+    tick(m, 'p', { yaw: Math.PI, guard: true });
+    expect(m.ball.carry).toBe('p');
+    expect(m.view.events.some(e => e.kind === 'steal' && e.text === 'POKE' && e.won)).toBe(true);
+  });
+  it('POKE out of reach wins nothing', () => {
+    const m = carried(4);
+    for (let i = 0; i < 15; i++) tick(m, 'p', { yaw: Math.PI, guard: i === 0 });
+    expect(m.ball.carry).toBe('r');
+  });
+  it('TRICK: a poke into it inside its window misses and is BEATEN', () => {
+    const m = carried(1.7);
+    m.submit('r', { seq: ++seq, moveX: 0, moveZ: 0, yaw: 0, attack: 'special' }); m.step(1 / 60);
+    tick(m, 'p', { yaw: Math.PI, guard: true });
+    expect(m.ball.carry).toBe('r');
+    expect(m.view.events.some(e => e.kind === 'steal' && e.text === 'BEATEN')).toBe(true);
+    for (let i = 0; i < 6; i++) tick(m, 'p', { yaw: Math.PI, guard: i % 2 === 0 });
+    expect(m.ball.carry).toBe('r');
+  });
+  it('SLIDE: on the boost, longer, and a miss leaves the slider down', () => {
+    const m = match();
+    m.put('p', 0, -6, 0); m.put('r', 8, 12, 0); Object.assign(m.ball, { x: -10, z: -12 });
+    tick(m, 'p', { moveZ: 1, dash: true });
+    for (let i = 0; i < 20; i++) tick(m, 'p', { moveZ: 1 });
+    expect(m.sim.actors.get('p')!.boosting).toBe(true);
+    tick(m, 'p', { moveZ: 1, guard: true });
+    for (let i = 0; i < 30; i++) tick(m, 'p', { moveZ: 1 });
+    expect(m.view.events.some(e => e.kind === 'steal' && e.text === 'MISSED')).toBe(true);
+    expect(m.footCounts.slidesMissed).toBe(1);
+  });
+  it('seats a keeper a side, a fourth body the game plays, on its line', () => {
+    const m = new BallMatch('goal-rush', { seed: 5, access: 'bots', football: true });
+    m.add('p', 'konta', 'P', false, 'red'); m.start();
+    const keepers = [...m.seats.values()].filter(s => s.keeper);
+    expect(keepers.map(s => s.team).sort()).toEqual(['blue', 'red']);
+    expect([...m.seats.values()].filter(s => !s.keeper && s.team === 'red').length).toBe(3);
+    expect(Math.abs(m.sim.actors.get('keeper-red')!.state.z)).toBeGreaterThan(GOAL_RULES.halfZ - 2);
+    const classic = new BallMatch('goal-rush', { seed: 5, access: 'bots' });
+    classic.add('p', 'konta', 'P', false, 'red'); classic.start();
+    expect([...classic.seats.values()].some(s => s.keeper)).toBe(false);
+    expect(classic.seats.size).toBe(6);
   });
 });
 const BALL_RUN = 9.5 * FOOTBALL.pace;

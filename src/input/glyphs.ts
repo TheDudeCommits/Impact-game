@@ -61,7 +61,7 @@ export function padCombatHints(family: PadFamily, target = 'LOCK ON') {
   // The right stick turning the camera goes without saying; the strip only
   // has room for six.
   if (target === 'SPORT') return [item('lstick', 'MOVE'), item(actionControl('light'), 'PASS'), item(actionControl('heavy'), 'SHOOT'), item(actionControl('dash'), 'SPRINT'),
-    item(actionControl('target'), 'FIGHT'), item('start', 'PAUSE')].join('');
+    item(actionControl('target'), 'FIGHT'), item('l3', 'CAMERA')].join('');
   return [item('lstick', 'MOVE'), item(actionControl('jump'), 'JUMP'), item(actionControl('dash'), 'DASH'), item(actionControl('guard'), 'GUARD'),
     item(actionControl('target'), target), item('start', 'PAUSE')].join('');
 }

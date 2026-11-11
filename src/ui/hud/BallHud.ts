@@ -73,7 +73,7 @@ class SeatStrip {
   readonly root: HTMLElement;
   private readonly mode: Data; private readonly hpOn: Flag; private readonly low: Flag; private readonly hp: Fill;
   private readonly boost: Fill; private readonly boostState: Data; private readonly boostBar: HTMLElement; private readonly boostKey: Markup;
-  private readonly sup: Fill; private readonly supState: Data; private readonly supKey: Markup;
+  private readonly sup: Fill; private readonly supState: Data; private readonly supKey: Markup; private readonly supName: Text;
   private readonly stance: HTMLElement; private readonly stanceKind: Data; private readonly stanceOn: Flag; private readonly stanceName: Text; private readonly stanceKey: Markup; private readonly stanceHp: Fill;
   /** Goal Rush's SPORT mode (`?football`): the badge says SPORT where it said BALL, and the legend under it names SPORT's
    *  buttons and the camera's state (BALL LOCK or FREE LOOK). */
@@ -94,12 +94,12 @@ class SeatStrip {
     const bars = el('div', 'bh-bars', this.root);
     const bar = (kind: string, name: string) => {
       const node = el('div', `bh-bar ${kind}`, bars), key = new Markup(el('span', 'bh-key ux-keys', node));
-      el('small', '', node, name);
-      return { node, key, fill: new Fill(el('b', '', el('i', '', node)), .01), state: new Data(node, 'state') };
+      const label = new Text(el('small', '', node)); label.set(name);
+      return { node, key, label, fill: new Fill(el('b', '', el('i', '', node)), .01), state: new Data(node, 'state') };
     };
     const boost = bar('boost', 'BOOST'), sup = bar('super', 'SUPER');
     this.boost = boost.fill; this.boostState = boost.state; this.boostBar = boost.node; this.boostKey = boost.key;
-    this.sup = sup.fill; this.supState = sup.state; this.supKey = sup.key;
+    this.sup = sup.fill; this.supState = sup.state; this.supKey = sup.key; this.supName = sup.label;
     // SHOOT's charge, in the place the bars left for it: nothing on a tap; held past the
     // split, a small fill in the side's colour that fills over the fighter's own wind-up and flashes as it is full.
     this.charge = el('i', 'bh-charge', bars); this.charge.setAttribute('aria-hidden', 'true');
@@ -135,7 +135,11 @@ class SeatStrip {
     if (full && !this.wasFull) pulse(this.boostBar, 'pulse');
     this.wasFull = full;
     const charge = Math.max(0, Math.min(1, (self.ultimate ?? 0) / ULTIMATE_COST));
-    this.sup.set(charge); this.supState.set(charge >= 1 ? 'ready' : '');
+    // (VOLLEYBALL: the meter is the SUPER SPIKE's, lit only when its button would fire it - full, and up
+    // for the attack: game/ball/volley.ts superReady.)
+    const vol = v.volley;
+    this.supName.set(vol ? 'SUPER SPIKE' : 'SUPER');
+    this.sup.set(charge); this.supState.set(charge >= 1 && (!vol || vol.prompt[self.id] === 'SPIKE') ? 'ready' : '');
     this.boostKey.set(keys.boost); this.supKey.set(keys.super);
     this.stanceOn.set(stances);
     if (!stances) { this.stanceShown = ''; return ''; }
@@ -332,7 +336,15 @@ class BallHud implements ModeHud {
     this.promptOn.set(!serving && !charged && !practice && !hint && !play);
     if (serving && vol) this.promptText.set(promptText('YOUR SERVE · {light} FLOAT SERVE · {jump} THEN {light} JUMP SERVE', { device: f.input, family: f.family }));
     else if (serving) this.promptText.set(promptText('YOUR SERVE · {light} LOB · {heavy} POWER SERVE', { device: f.input, family: f.family }));
-    else if (play) this.promptText.set(promptText(play === 'JUMP' ? '{jump} THEN {light} SPIKE' : `{light} ${play}`, { device: f.input, family: f.family }));
+    // (On the attack the TIP's button too, and the SUPER SHOT's once the meter is full; the block is the jump.)
+    else if (play) {
+      const ready = (f.self.ultimate ?? 0) >= 100, attack = play === 'SPIKE' || play === 'JUMP';
+      const line = play === 'BLOCK' ? '{jump} BLOCK' : play === 'JUMP' ? '{jump} THEN {light} SPIKE' : attack ? '{light} SPIKE · {heavy} TIP' : `{light} ${play}`;
+      // (On a phone the buttons carry the words - sportTouch.ts volleySet - so the lane says only the BLOCK's.)
+      const words = attack && ready ? `${line} · {ultimate} SUPER` : line;
+      if (f.input === 'touch') this.promptOn.set(play !== 'BLOCK');
+      this.promptText.set(f.input === 'touch' ? '<span class="ux-prompt"><b>JUMP TO BLOCK</b></span>' : promptText(words, { device: f.input, family: f.family }));
+    }
     else if (charged) this.promptText.set(promptText('KI CHARGE · YOUR NEXT {heavy} FLIES AT OVERDRIVE', { device: f.input, family: f.family }));
     else if (practice) this.promptText.set(f.input === 'touch' ? '<span class="ux-prompt"><b>TAP: RESET BALL</b></span>' : `<span class="ux-prompt">${f.input === 'controller' ? padKey(f.family, 'select') : '<kbd>⌫</kbd>'}<b>RESET BALL</b></span>`);
     else if (hint) this.promptText.set(hint);
@@ -392,6 +404,8 @@ class BallHud implements ModeHud {
       for (const slot of this.slots) slot.root.remove();
       this.slots = [];
       for (const seat of v.seats) {
+        // (SPORT mode's keeper, a fourth body the game plays, is not one of the three faces a side.)
+        if (seat.keeper) continue;
         const root = el('div', `bh-face ${seat.team}`, this.faces[seat.team]);
         const face = new Face(el('span', '', root)); face.set(seat.fighter);
         root.title = nameOf(seat);
@@ -486,7 +500,8 @@ class BallHud implements ModeHud {
       case 'overtime': this.show(now, R.turn, 'overtime', '', 'ALL SQUARE', 'OVERTIME', 'NEXT GOAL WINS', 2600); break;
       // Each fighter's super shot by its own name (game/ball/superShots.ts). Its cut-in (ui/ball/BallShow.ts) names it
       // big; the banner only where the VISUAL EFFECTS level leaves the cut-in out.
-      case 'super': if (VFX.level !== 'minimal') { this.tick(now, e.team, `${who} · ${superShotName(seat(e.actorId)?.fighter)}`, 'accolade', LINE_RANK.named); break; }
+      // (VOLLEYBALL: the SUPER SHOT is a touch - its own show, and no line or banner under the score.)
+      case 'super': if (v.volley) break; if (VFX.level !== 'minimal') { this.tick(now, e.team, `${who} · ${superShotName(seat(e.actorId)?.fighter)}`, 'accolade', LINE_RANK.named); break; }
         this.show(now, R.duel, 'super', e.team ?? '', `${who} · SUPER SHOT`, superShotName(seat(e.actorId)?.fighter), v.mode === 'goal-rush' ? `A GOAL FROM IT COUNTS ${GOAL_RULES.superGoal}` : 'INTO THE EMPTIEST CORNER', 1900); break;
       case 'duel': this.show(now, R.duel, 'clash', e.team ?? '', `${who} MEETS ${superShotName(seat(e.targetId)?.fighter)}`, 'TECHNIQUE DUEL!!', 'A PERFECT GUARD AGAINST A SUPER SHOT', 1200); break;
       case 'duel-won': this.show(now, R.duel, e.text === 'SHOT STOPPED' ? 'save' : 'super', e.team ?? '', e.text === 'SHOT STOPPED' ? `${who} WINS THE DUEL` : `${who} BREAKS THROUGH`, e.text === 'SHOT STOPPED' ? 'SHOT STOPPED!!' : 'BREAKS THROUGH!!', nameOf(seat(e.targetId)) ? `OVER ${nameOf(seat(e.targetId))}` : '', 1800); break;
@@ -498,6 +513,8 @@ class BallHud implements ModeHud {
       // (Goal Rush's TRAP - twenty a match - is the sport's first touch: no line under the score, which a
       // PERFECT GUARD keeps; its mark and its thud are the pitch's.)
       case 'block': case 'perfect':
+        // (VOLLEYBALL: a block is a touch - its word over the blocker; the banner is the points'.)
+        if (v.volley) break;
         if (v.mode === 'sky-spike') this.show(now, R.stop, 'save', e.team ?? '', who, e.kind === 'perfect' ? 'STUFF BLOCK!' : 'BLOCK!', '', 1400);
         else if (e.text && e.text !== 'TRAP') this.tick(now, e.team, `${e.text} · ${who}`, '', LINE_RANK.named);
         break;
@@ -544,8 +561,9 @@ class BallHud implements ModeHud {
         break;
       }
       case 'bowled': this.tick(now, e.team, `${who || 'THE BALL'} ${e.text === 'STAGGERED' ? 'STAGGERS' : 'BOWLS OVER'} ${nameOf(seat(e.targetId))} · ${Math.round((e.value ?? 0) * KMH)} KM/H`); break;
-      // (VOLLEYBALL: every touch named small, with how well it was timed - the strike's own line gives way.)
-      case 'touch': this.tick(now, e.team, [who, e.text].filter(Boolean).join(' · ')); break;
+      // (VOLLEYBALL: a touch's tier is a word over the fighter who made it - render/ball/touchWord.ts - not a
+      // line under the score; the line and the banner are the points'.)
+      case 'touch': break;
       // (Goal Rush: your own PERFECT STRIKE - PERFECT VOLLEY, PERFECT HEADER - is a short gold banner.)
       case 'strike':
         if (v.volley) break;

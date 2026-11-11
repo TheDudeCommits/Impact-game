@@ -11,19 +11,32 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
 /** How the SPORT bots play (football.ts), by level: `think` s between looks at the game (a pass to a caller is looked
  *  for every tick), `aim` rad of error on a shot, `shoot` m from goal it shoots inside, `hold` s it carries before it
  *  looks to pass with nobody on it, `press` m an opponent on it counts as pressure, `read` s before the other side's
- *  pass is read and chased. */
-export const SPORT_BOT: Readonly<Record<BotLevel, {think: number; aim: number; shoot: number; hold: number; press: number; read: number}>> = {
-  easy: {think: .3, aim: .2, shoot: 9, hold: 1.6, press: 2.6, read: .5},
-  normal: {think: .18, aim: .13, shoot: 11, hold: 1.1, press: 3.2, read: .35},
-  hard: {think: .1, aim: .08, shoot: 13, hold: .8, press: 3.6, read: .2},
+ *  pass is read and chased. The chance a tenth of a second that a TACKLE in reach is pressed (`tackle`, a
+ *  SLIDE from behind `slide`), that a carrier met head on tries the TRICK (`trick`), that the right ball is met first
+ *  time (`first`), and that a bot a person fights guards against a blow coming (`guard`); `err` m either way its poke's
+ *  timing is off by (tuned so about half the pokes win between equal bots). */
+export const SPORT_BOT: Readonly<Record<BotLevel, {think: number; aim: number; shoot: number; hold: number; press: number; read: number; tackle: number; slide: number; trick: number; first: number; guard: number; err: number}>> = {
+  easy: {think: .3, aim: .2, shoot: 14, hold: 3, press: 2.2, read: .5, tackle: .035, slide: .025, trick: .07, first: .35, guard: .2, err: .85},
+  normal: {think: .18, aim: .13, shoot: 16, hold: 2.6, press: 2.6, read: .35, tackle: .05, slide: .04, trick: .1, first: .65, guard: .4, err: .62},
+  hard: {think: .1, aim: .08, shoot: 18, hold: 2.2, press: 3, read: .2, tackle: .065, slide: .055, trick: .13, first: .85, guard: .55, err: .45},
 };
 /** A team-mate who is a person is worth this much more as a pass (one person among bots is never a spectator); one in a
  *  good spot (open, not behind the ball) is passed to after `personAfter` s on the ball. A call (FOOTBALL.call) is
  *  answered the first tick a lane to them is open. */
-const PERSON = {bonus: 5, personAfter: .35, open: 3} as const;
+const PERSON = {bonus: 5, personAfter: .8, open: 3} as const;
 /** A shot is taken at this chance or better (spChance: about 7 m out, central, a line to goal) - SHOT_GREAT within
  *  SHOT_AGAIN s of the side's last - and a carrier makes for the edge of the box, BOX_EDGE m out, rather than the net. */
-const SHOT_CHANCE = .3, SHOT_GREAT = .6, SHOT_AGAIN = 5, BOX_EDGE = 7.5;
+/** The attacker's run in behind (spShape): for `for` s, `beyond` m past their last field player, `wide` m off the middle;
+ *  once every `again` s. */
+const RUN = {for: 1.6, again: 3.5, beyond: 3, wide: 4.5} as const;
+/** Spacing: a support covers `cover` m off the ball toward its goal; a marker stands no nearer the ball
+ *  than `standOff`; an offer stands `offer` m from the ball and `mate` m from a team-mate. */
+const SPACE = {cover: 8.5, standOff: 7.5, offer: 9, mate: 6, jockey: 1.9} as const;
+/** A body's bounds (PLAYER_RADIUS): a TACKLE's reach is from them. */
+const PLAYER_REACH = .45;
+/** The chance a bot with nobody near plays a pass on first time into a team-mate's run well ahead (spFirst). */
+const FIRST_ON = .45;
+const SHOT_CHANCE = .12, SHOT_GREAT = .38, SHOT_AGAIN = 5, BOX_EDGE = 7.5;
 
 /**
  * A bot of Goal Rush's SPORT mode (football.ts): it presses only what a person can - the stick, the view, PASS with the
@@ -66,6 +79,9 @@ export class SportBrain extends BallBrain {
     // A SHOOT held on: the key down, the view on the shot's line, until it is let go.
     if (now < this.holdTo && b.carry === me.id) { input.heavyHeld = true; input.yaw = this.holdAim; input.moveX = Math.sin(this.holdAim); input.moveZ = Math.cos(this.holdAim); return input; }
     this.holdTo = 0;
+    // A person locked on this bot in the FIGHT stance: it answers in kind, then back to the ball once the lock lets go.
+    const hunter = view.seats.find(s => !s.bot && s.team !== team && s.lock === me.id && s.out === undefined);
+    if (hunter) return this.spFight(me, players.find(p => p.id === hunter.id), input, now);
     if (b.carry === me.id) { if (this.since === -Infinity) this.since = now; return this.spOnBall(me, seat, mates, foes, view, b, now, input, dir); }
     this.since = -Infinity;
     const role = seat.role ?? 'attack';
@@ -84,17 +100,38 @@ export class SportBrain extends BallBrain {
       if (quickest) return this.spMeet(me, b, input, now, 1.1);
       return this.spShape(me, seat, b, b, mates, input, now, dir, ownZ, false);
     }
-    if (!theirs) return this.spShape(me, seat, carrier, b, mates, input, now, dir, ownZ, true);
+    if (!theirs) return this.spShape(me, seat, carrier, b, mates, input, now, dir, ownZ, true, foes);
     // Their carrier: the nearest of this side (not the keeper) meets them from in front; the rest stand goal-side.
     const mineD = gap(me, carrier), nearest = mates.every(q => seatOf(q.id)?.role === 'keeper' || gap(q, carrier) >= mineD - .05);
     if (nearest) {
       const gx = 0 - carrier.x, gz = ownZ - carrier.z, gd = Math.hypot(gx, gz) || 1;
-      return this.spGo(me, {x: carrier.x + gx / gd * .9, z: carrier.z + gz / gd * .9}, input, now, 6, .1);
+      // (Jockeyed, a stride off in front of them - SPACE.jockey m - the poke made from there.)
+      this.spGo(me, {x: carrier.x + gx / gd * SPACE.jockey, z: carrier.z + gz / gd * SPACE.jockey}, input, now, 6, .1);
+      // (The TACKLE - a POKE with the ball in reach, a SLIDE on the boost from behind - pressed by the level's
+      // chance a tenth of a second, as a person's eye and thumb would.)
+      const L = SPORT_BOT[this.lvl], db = gap(me, b);
+      if (now >= this.tackleAt && now >= this.lookAt) {
+        this.lookAt = now + .1;
+        // (The press is timed with an error by level - SPORT_BOT.err m of the ball's reach, either way: early it misses
+        // out of reach, and a poke from beside a carrier turned away is shielded.)
+        if (Number.isNaN(this.pokeErr)) this.pokeErr = (this.rnd() * 2 - 1) * L.err;
+        if (me.boost && db < PLAYER_REACH + FOOTBALL.tackle.slide.reach - .3 + this.pokeErr && this.rnd() < L.slide) { input.guard = true; this.tackleAt = now + FOOTBALL.tackle.again + .3; this.pokeErr = NaN; }
+        else if (!me.boost && db < PLAYER_REACH + FOOTBALL.tackle.reach + this.pokeErr && this.rnd() < L.tackle) { input.guard = true; this.tackleAt = now + FOOTBALL.tackle.again + 1.4; this.pokeErr = NaN; }
+      }
+      return input;
+    }
+    // (Spacing: one presses; a support covers - on the line from the ball to its goal, COVER m off the
+    // ball - and an attacker marks the nearest of theirs off the ball, goal-side, never nearer the ball than STAND_OFF.)
+    if ((seat.role ?? 'attack') === 'support') {
+      const cx = 0 - b.x, cz = ownZ - b.z, cd = Math.hypot(cx, cz) || 1, k = Math.min(SPACE.cover, cd * .6) / cd;
+      return this.spGo(me, {x: b.x + cx * k, z: b.z + cz * k}, input, now, 9, .6);
     }
     let mark: PlayerState | undefined, best = Infinity;
     for (const f of foes) { if (f.id === carrier.id) continue; const d = gap(f, me); if (d < best) { best = d; mark = f; } }
     const m = mark ?? carrier, mx = 0 - m.x, mz = ownZ - m.z, md = Math.hypot(mx, mz) || 1;
-    return this.spGo(me, {x: m.x + mx / md * 2.5, z: m.z + mz / md * 2.5}, input, now, 9, .6);
+    const spot = {x: m.x + mx / md * 2.5, z: m.z + mz / md * 2.5}, off = gap(spot, b);
+    if (off < SPACE.standOff) { const ux = (spot.x - b.x) / (off || 1), uz = (spot.z - b.z) / (off || 1); spot.x = b.x + ux * SPACE.standOff; spot.z = b.z + uz * SPACE.standOff; }
+    return this.spGo(me, spot, input, now, 9, .6);
   }
 
   /** With the ball: answer a call, pass under pressure or to a better place (a person first), shoot in range, or dribble
@@ -109,6 +146,10 @@ export class SportBrain extends BallBrain {
       const ahead = (q.z - me.z) * dir;
       return {q, lane, open, score: (lane ? 0 : -8) + ahead * .5 + Math.min(open, 7) * 1.1 - d * .08 + (person(q.id) ? PERSON.bonus : 0) - (seatOf(q.id)?.role === 'keeper' ? 6 : 0)};
     };
+    // (Met head on by one of theirs closing, the TRICK - by the level's chance a tenth of a second.)
+    // (Only with a tackler closing: in front, within 2.4 m, coming at this bot.)
+    const facing = foes.find(f => { const d = gap(f, me); if (d > 2.4 || ((f.x - me.x) * Math.sin(me.yaw) + (f.z - me.z) * Math.cos(me.yaw)) <= 0) return false; const was = this.closeSeen.get(f.id); this.closeSeen.set(f.id, d); return was !== undefined && was - d > .02; });
+    if (facing && now >= this.trickAt && now >= this.lookAt) { this.lookAt = now + .1; if (this.rnd() < L.trick) { this.trickAt = now + FOOTBALL.trick.again + .3; input.attack = 'special'; input.moveX = Math.sin(me.yaw); input.moveZ = Math.cos(me.yaw); return input; } }
     // The call: the first tick a lane to the caller is open, the ball goes.
     const call = this.sportCall && now < this.sportCall.until ? mates.find(q => q.id === this.sportCall!.id) : undefined;
     if (call && held > .05 && laneOpen(b, call, foes) && gap(call, me) > FOOTBALL.pass.near) { this.sportCall = null; return this.spPassTo(me, call, input, false); }
@@ -123,7 +164,7 @@ export class SportBrain extends BallBrain {
       // (A side that has just shot works the ball again first: another inside SHOT_AGAIN s only from a great chance.)
       const lately = view.events.some(e => e.kind === 'strike' && e.team === seat.team && now - e.at < SHOT_AGAIN);
       if (mine0 >= (lately ? SHOT_GREAT : SHOT_CHANCE) && mine0 >= mateBest - .05 && (held > .45 || pressure < 2)) {
-        const side = keeperOf && keeperOf.x > 0 ? -1 : 1, tx = side * (GOAL_RULES.goalHalfWidth - .9) * (.3 + .7 * this.rnd());
+        const side = keeperOf && keeperOf.x > 0 ? -1 : 1, tx = side * (GOAL_RULES.goalHalfWidth - .9) * (.6 + .4 * this.rnd());
         const aim = Math.atan2(tx - me.x, gz - me.z) + (this.rnd() * 2 - 1) * L.aim;
         input.yaw = aim; input.attack = 'heavy'; input.moveX = Math.sin(aim); input.moveZ = Math.cos(aim);
         if (toGoal > 8 && pressure > 2.5) { input.heavyHeld = true; this.holdTo = now + .25 + this.rnd() * .3; this.holdAim = aim; }
@@ -133,11 +174,12 @@ export class SportBrain extends BallBrain {
       const options = mates.map(option).sort((x, y) => y.score - x.score), top = options[0];
       const mine = Math.min(foes.reduce((m, f) => Math.min(m, gap(f, me)), Infinity), 7) * 1.1;
       const personSpot = options.find(o => person(o.q.id) && o.lane && o.open > PERSON.open && (o.q.z - me.z) * dir > -3);
-      if (personSpot && held > PERSON.personAfter) return this.spPassTo(me, personSpot.q, input, false);
+      if (personSpot && held > PERSON.personAfter && (pressure < 5 || (personSpot.q.z - me.z) * dir > 4)) return this.spPassTo(me, personSpot.q, input, false);
       // (A touch to settle it first, unless somebody is on top of this bot already.)
       // (The keeper gives it to a team-mate at once; anyone on it too long gives it to the best there is.)
-      const keeper = seat.role === 'keeper', long = held > (keeper ? .5 : 3);
-      if (top && top.score > -Infinity && (long || (held > .2 || pressure < 2) && (pressure < L.press && top.score > -4 || held > L.hold && top.score > mine))) return this.spPassTo(me, top.q, input, !top.lane && gap(top.q, me) > 9);
+      const keeper = seat.role === 'keeper', long = held > (keeper ? .5 : 4);
+      // (Space ahead: carry it on - a pass is for pressure, a better place, or a carry gone on long enough.)
+      if (top && top.score > -Infinity && (long || (held > .6 || pressure < 1.2) && (pressure < L.press && top.score > -4 || held > L.hold && top.score > mine + 2))) return this.spPassTo(me, top.q, input, !top.lane && gap(top.q, me) > 9);
     }
     // Dribble at goal, edging away from the nearest opponent in front; sprint into open grass. Toward the edge of the
     // box (BOX_EDGE m out), not into the net, unless their keeper is off its line and the goal is open.
@@ -165,14 +207,16 @@ export class SportBrain extends BallBrain {
     const d = gap(me, b), closing = (b.vx * (me.x - b.x) + b.vz * (me.z - b.z)) / Math.max(d, 1e-3), eta = closing > 1 ? d / closing : Infinity;
     if (eta > FOOTBALL.press.buffer * .8 || this.firstFor === b.lastId + b.x.toFixed(0)) return met;
     this.firstFor = b.lastId + b.x.toFixed(0);
-    if (this.rnd() > .5) return met;
+    if (this.rnd() > SPORT_BOT[this.lvl].first) return met;
     const gz = dir * GOAL_RULES.halfZ, toGoal = Math.hypot(me.x, gz - me.z);
     if (toGoal < SPORT_BOT[this.lvl].shoot + 2 && (gz - me.z) * dir > 3) {
       const aim = Math.atan2((this.rnd() * 2 - 1) * (GOAL_RULES.goalHalfWidth - 1) - me.x, gz - me.z);
       met.attack = 'heavy'; met.yaw = aim; return met;
     }
-    const near = foes.some(f => gap(f, me) < 3.5), open = mates.find(q => seat.role !== 'keeper' && laneOpen(me, q, foes) && (q.z - me.z) * dir > 0 && gap(q, me) > 5);
-    if (near && open) { const yaw = Math.atan2(open.x - me.x, open.z - me.z); met.attack = 'light'; met.yaw = yaw; met.moveX = Math.sin(yaw); met.moveZ = Math.cos(yaw); }
+    // (A lay-off: one of theirs on this bot as the ball comes, an open team-mate ahead - it goes on first time.)
+    // (Or a ball played on into a team-mate's run well ahead - the wall pass - now and then with nobody near.)
+    const near = foes.some(f => gap(f, me) < 3.5), open = mates.find(q => seat.role !== 'keeper' && laneOpen(me, q, foes) && (q.z - me.z) * dir > (near ? 0 : 6) && gap(q, me) > 5);
+    if (open && (near || this.rnd() < FIRST_ON)) { const yaw = Math.atan2(open.x - me.x, open.z - me.z); met.attack = 'light'; met.yaw = yaw; met.moveX = Math.sin(yaw); met.moveZ = Math.cos(yaw); }
     return met;
   }
   private firstFor = '';
@@ -181,7 +225,7 @@ export class SportBrain extends BallBrain {
   private spChance(p: {x: number; z: number}, gz: number, dir: number, field: readonly PlayerState[]) {
     const ahead = (gz - p.z) * dir, d = Math.hypot(p.x, gz - p.z), range = SPORT_BOT[this.lvl].shoot;
     if (ahead < 2 || d > range) return 0;
-    return (1 - d / range) * (1 - Math.min(1, Math.abs(p.x) / d * 1.2)) * (laneOpen(p, {x: 0, z: gz}, field, 1.2) ? 1 : .25);
+    return (1 - d / range) * (1 - Math.min(1, Math.abs(p.x) / d * 1.2)) * (laneOpen(p, {x: 0, z: gz}, field, 1.2) ? 1 : .55);
   }
   /** A PASS at a team-mate: the stick and the view at their run  /** A PASS at a team-mate: the stick and the view at their run (the match leads it), lofted over a blocked lane. */
   private spPassTo(me: PlayerState, q: PlayerState, input: Command, lofted: boolean): Command {
@@ -208,14 +252,47 @@ export class SportBrain extends BallBrain {
   }
   /** Off the ball with the side in possession (or a loose ball the side is not chasing): an attacker offers ahead on a
    *  wing, a support behind and across; the keeper keeps. */
-  private spShape(me: PlayerState, seat: BallSeat, at: {x: number; z: number}, b: BallState, mates: PlayerState[], input: Command, now: number, dir: number, ownZ: number, ours: boolean): Command {
+  private spShape(me: PlayerState, seat: BallSeat, at: {x: number; z: number}, b: BallState, mates: PlayerState[], input: Command, now: number, dir: number, ownZ: number, ours: boolean, foes: readonly PlayerState[] = []): Command {
     const role = seat.role ?? 'attack', side = at.x > 0 ? -1 : 1, R = GOAL_RULES;
-    const ahead = role === 'attack' || role === 'front' ? (ours ? 9 : 4) : (ours ? -4 : -8);
+    // (The run: the side on the ball, its carrier turned up the pitch - the attacker goes in behind their last
+    // field player for RUN.for s, on the far side of the ball from the carrier, then offers again; once in RUN.again s.)
+    if (ours && role === 'attack' && foes.length) {
+      const carrierRun = (b.vx * 0 + b.vz) * dir, keeperZ = dir * R.halfZ;
+      const field = foes.filter(f => Math.abs(f.z - keeperZ) > 3), last = field.length ? Math.max(...field.map(f => f.z * dir)) : at.z * dir + 6;
+      if (now >= this.runAgain && carrierRun > 3 && me.z * dir < last + 1) { this.runUntil = now + RUN.for; this.runAgain = now + RUN.again; }
+      if (now < this.runUntil) {
+        const z = clamp((last + RUN.beyond) * dir, -R.halfZ + 3, R.halfZ - 3), x = clamp(side * RUN.wide, -R.halfX + 2, R.halfX - 2);
+        return this.spGo(me, {x, z}, input, now, 4, .6);
+      }
+    }
+    const ahead = role === 'attack' || role === 'front' ? (ours ? 9 : 4) : (ours ? -7 : -8);
     const x = clamp(role === 'attack' || role === 'front' ? side * 6.5 : at.x * .3 - side * 4, -R.halfX + 1.5, R.halfX - 1.5);
-    const z = clamp(at.z + dir * ahead, -R.halfZ + 2, R.halfZ - 2);
-    void mates; void b; void ownZ;
-    return this.spGo(me, {x, z}, input, now, 10, .8);
+    const z = clamp(at.z + dir * ahead, -R.halfZ + 2, R.halfZ - 2), spot = {x, z};
+    // (Never on top of the ball or a team-mate: an offer stands SPACE.offer m from the ball, and steps off a team-mate
+    // nearer than SPACE.mate m.)
+    const off = gap(spot, at);
+    if (off < SPACE.offer) { const ux = off > .1 ? (spot.x - at.x) / off : side, uz = off > .1 ? (spot.z - at.z) / off : 0; spot.x = clamp(at.x + ux * SPACE.offer, -R.halfX + 1.5, R.halfX - 1.5); spot.z = clamp(at.z + uz * SPACE.offer, -R.halfZ + 2, R.halfZ - 2); }
+    for (const q of mates) { const d = gap(q, spot); if (d < SPACE.mate && d > .01) { spot.x = clamp(spot.x + (spot.x - q.x) / d * (SPACE.mate - d), -R.halfX + 1.5, R.halfX - 1.5); spot.z = clamp(spot.z + (spot.z - q.z) / d * (SPACE.mate - d), -R.halfZ + 2, R.halfZ - 2); } }
+    void b; void ownZ;
+    return this.spGo(me, spot, input, now, 10, .8);
   }
+  /** Locked on by a person in the FIGHT stance: this bot locks back on them, closes, strikes when in reach and guards
+   *  against a blow coming by the level's chance (SPORT_BOT.guard) - the fight is the person's choice, never one-sided. */
+  private spFight(me: PlayerState, q: PlayerState | undefined, input: Command, now: number): Command {
+    if (!q) return input;
+    input.targetId = q.id; input.lock = true;
+    this.spGo(me, q, input, now, 8, 1.6);
+    const d = gap(me, q), coming = q.action === 'light' || q.action === 'heavy' || q.action === 'special';
+    if (now < this.guardUntil) { input.guard = true; return input; }
+    if (d < 2.4 && now >= this.fightAt) {
+      this.fightAt = now + .35 + this.rnd() * .3;
+      if (coming && this.rnd() < SPORT_BOT[this.lvl].guard) { this.guardUntil = now + .45; input.guard = true; }
+      else input.attack = this.rnd() < .7 ? 'light' : 'heavy';
+    }
+    return input;
+  }
+  private readonly closeSeen = new Map<string, number>();
+  private pokeErr = NaN; private tackleAt = 0; private lookAt = 0; private trickAt = 0; private fightAt = 0; private guardUntil = 0; private runUntil = 0; private runAgain = 0;
   /** The keeper: on the line from the ball to the middle of its goal, a stride or three off it, inside the posts. */
   private spKeep(me: PlayerState, b: BallState, input: Command, now: number, ownZ: number, dir: number): Command {
     const R = GOAL_RULES, d = Math.hypot(b.x, b.z - ownZ), out = clamp(1 + d * .08, 1, 3), k = out / Math.max(d, 1e-3);

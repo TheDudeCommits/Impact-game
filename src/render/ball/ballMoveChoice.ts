@@ -19,7 +19,9 @@ export type BallMoveKey = 'GR.pass' | 'GR.power' | 'GR.volley' | 'GR.head' | 'GR
   | 'SS.dig' | 'SS.set' | 'SS.setAir' | 'SS.spike' | 'SS.wall'
   | 'GR.drive' | 'GR.bicycle' | 'GR.trap' | 'GR.carry' | 'GR.shoulder' | 'GR.slide' | 'GR.diveL' | 'GR.diveR' | 'GR.parry'
   | 'SS.pancake' | 'SS.pancakeUp' | 'SS.backSet' | 'SS.spikeCut' | 'SS.spikeRoll' | 'SS.tip' | 'SS.float' | 'SS.jumpServe'
-  | 'C.slide' | 'C.pump' | 'C.flex' | 'C.point' | 'C.leap' | 'C.bow';
+  | 'C.slide' | 'C.pump' | 'C.flex' | 'C.point' | 'C.leap' | 'C.bow'
+  // (The football takes: the SPORT mode's, which the chooser never picks - its rules ask for them.)
+  | 'GR.stridePass' | 'GR.strideShot' | 'GR.poke' | 'GR.catch' | 'GR.slideUp';
 
 export interface BallMoveAsk {
   mode: BallModeId;

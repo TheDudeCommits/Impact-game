@@ -49,8 +49,9 @@ function move(d: LearnDevice) {
 /** The step's line: its keys and verb. `fight`: Goal Rush's FIGHT stance is on (its buttons are fight moves). */
 export function learnLine(v: LessonView, d: LearnDevice): string {
   const fight = !!d.sport.fight, o = opts(d);
+  if (v.volley) { const line = volleyLine(v, d); if (line) return line; }
   switch (v.step) {
-    case 'gr-run': return keys([move(d)], 'RUN') + prompt('dash', 'BOOST', opts(d, { hold: d.device === 'touch' }));
+    case 'gr-run': return keys([move(d)], 'RUN') + prompt('dash', v.sport ? 'SPRINT' : 'BOOST', opts(d, { hold: d.device === 'touch' }));
     case 'gr-pass': return fight ? prompt('target', 'BALL', o) : prompt('light', 'PASS', o);
     case 'gr-shoot': return fight ? prompt('target', 'BALL', o) : prompt('heavy', v.pops ? 'SHOOT AS IT ARRIVES' : 'SHOOT', o);
     case 'gr-perfect': return fight ? prompt('target', 'BALL', o) : prompt('heavy', v.firstTime ? 'FIRST TIME' : 'AS IT ARRIVES', o);
@@ -68,10 +69,42 @@ export function learnLine(v: LessonView, d: LearnDevice): string {
     default: return keyless('');
   }
 }
+/** VOLLEYBALL (game/ball/volley.ts; `?volleyball`): Sky Spike's lesson on volleyball's rules - one PLAY a
+ *  touch (the light; on a phone the big button, named for the touch), the jump the block, BOOST the dive. */
+function volleyLine(v: LessonView, d: LearnDevice): string {
+  const o = opts(d), play = (word: string) => d.device === 'touch' ? `<span class="ux-prompt"><kbd class="touch-key">${word}</kbd></span>` : prompt('light', word, o);
+  switch (v.step) {
+    case 'ss-bump': return play('RECEIVE');
+    case 'ss-set': return play('SET');
+    case 'ss-spike': return `<span class="ux-prompt">${key(d, 'jump')}<b>ON THE RING</b>${d.device === 'touch' ? '<kbd class="touch-key">SPIKE</kbd>' : key(d, 'light')}<b>IN THE AIR</b></span>`;
+    case 'ss-block': return prompt('jump', 'BLOCK', o);
+    case 'ss-dive': return prompt('dash', 'DIVE', o);
+    case 'ss-serve': return `<span class="ux-prompt">${key(d, 'jump')}<b>THEN</b>${d.device === 'touch' ? '<kbd class="touch-key">SERVE</kbd>' : `${key(d, 'light')}<b>SERVE</b>`}</span>`;
+    default: return '';
+  }
+}
+const VOLLEY_ASK: Partial<Record<LessonStepId, string>> = {
+  'ss-bump': 'PRESS AS THE RING CLOSES · THE GAME WALKS YOU IN',
+  'ss-set': 'PRESS AS IT DROPS TO YOU · THE STICK PICKS THE HITTER',
+  'ss-spike': 'JUMP AS THE RING CLOSES · PRESS ANY TIME IN THE AIR',
+  'ss-block': 'JUMP AT THE NET AS THEIR HITTER GOES UP · NO OTHER PRESS',
+  'ss-dive': 'BOOST AT A LOW BALL JUST OUT OF REACH',
+  'ss-serve': 'JUMP SERVE · THE BALL GOES UP WITH YOU',
+};
 /** What the step asks, in a few words (the note's first half). */
 export function learnAsk(v: LessonView, d: LearnDevice): string {
   const fight = !!d.sport.fight;
-  if (fight && v.step && v.step.startsWith('gr-') && v.step !== 'gr-tackle') return 'BACK TO THE BALL STANCE · YOUR SWINGS PLAY THE BALL';
+  if (v.volley && v.step && VOLLEY_ASK[v.step]) return VOLLEY_ASK[v.step]!;
+  if (fight && v.step && v.step.startsWith('gr-') && v.step !== 'gr-tackle') return v.sport ? 'BACK TO SPORT · TAB' : 'BACK TO THE BALL STANCE · YOUR SWINGS PLAY THE BALL';
+  // (Goal Rush's SPORT mode, `?football` - game/ball/football.ts: the ball is yours when you reach it; PASS finds the
+  // team-mate you point at; SHOOT is placed on a tap, powered on a hold; FIRST TIME is a press as the ball comes.)
+  if (v.sport) switch (v.step) {
+    case 'gr-run': return d.device === 'touch' ? 'HOLD SPRINT AND PUSH THE STICK · RUN ONTO THE BALL' : 'SPRINT ONTO THE BALL · IT IS YOURS AT YOUR FEET';
+    case 'gr-pass': return 'POINT THE STICK AT YOUR TEAM-MATE · THE PASS FINDS THEIR RUN';
+    case 'gr-shoot': return 'TAP TO PLACE IT · HOLD FOR POWER';
+    case 'gr-perfect': return 'SHOOT AS IT COMES · THE MARK OVER THE BALL SAYS WHEN';
+    default: break;
+  }
   switch (v.step) {
     case 'gr-run': return d.device === 'touch' ? 'HOLD BOOST AND PUSH THE STICK' : 'BOOST ON THE RUN · THE GOLD BAR';
     case 'gr-pass': return 'FACE YOUR TEAM-MATE · THE PASS FINDS THEM';
@@ -90,6 +123,8 @@ export function learnAsk(v: LessonView, d: LearnDevice): string {
     default: return '';
   }
 }
+/** SPORT mode's titles where they differ (LearnToPlay's list): its PERFECT STRIKE step is FIRST TIME. */
+export const SPORT_TITLES: Partial<Record<string, string>> = {'gr-run': 'RUN & SPRINT', 'gr-perfect': 'FIRST TIME'};
 const MISSES: Record<LessonMiss, string> = {
   boost: 'YOU GOT THERE · NOW WITH BOOST', pass: 'FACE THEM FIRST · THE VIEW AIMS IT', wide: 'WIDE · AIM AT THE GOAL',
   early: 'EARLY · WAIT FOR THE BAR', late: 'LATE · PRESS AS THE BAR FILLS', plain: 'NOW TIME IT', jump: 'JUMP INTO IT',
@@ -100,16 +135,23 @@ const MISSES: Record<LessonMiss, string> = {
 /** Why the last try missed, for this step (some misses read differently by step). */
 export function learnMiss(v: LessonView): string {
   if (!v.miss) return '';
+  // (SPORT mode: no bar to time - the first-time press is shown by the mark over the ball; the ball is yours on reaching it.)
+  if (v.sport && (v.miss === 'late' || v.miss === 'early') && v.step === 'gr-perfect') return v.miss === 'late' ? 'LATE · PRESS AS THE MARK SHOWS' : 'EARLY · WAIT FOR THE MARK';
+  if (v.sport && v.miss === 'boost') return 'YOU GOT THERE · NOW SPRINTING';
+  if (v.sport && v.miss === 'pass') return 'POINT THE STICK AT THEM · THE PASS FINDS THEM';
   if (v.miss === 'plain' && v.step === 'gr-perfect') return 'A GOAL · NOW MAKE IT PERFECT';
   if (v.miss === 'plain' && v.step === 'ss-set') return 'A SOFT TOUCH SETS IT';
   if (v.miss === 'jump' && v.step === 'ss-spike') return 'JUMP FIRST · SWING IN THE AIR';
   if (v.miss === 'jump' && v.step === 'gr-header') return 'JUMP AS IT COMES · MEET IT WITH YOUR HEAD';
   if (v.miss === 'under' && v.step === 'ss-spike') return 'A STEP BACK FROM WHERE IT COMES DOWN';
+  // (VOLLEYBALL: the block is the jump alone; the spike's timing is the jump's.)
+  if (v.volley && v.miss === 'block') return 'JUMP AT THE NET AS THEY HIT';
+  if (v.volley && v.miss === 'top') return 'JUMP SOONER · YOU HIT FROM WHERE THE JUMP IS';
   return MISSES[v.miss];
 }
 /** The note under the line: the ask, then how it stands (RUN & BOOST's halves; the last miss). */
 export function learnNote(v: LessonView, d: LearnDevice): string {
-  const parts = v.step === 'gr-run' ? `${v.parts[0] ? '✓' : '○'} BOOST   ${v.parts[1] ? '✓' : '○'} REACH THE BALL` : '';
+  const parts = v.step === 'gr-run' ? `${v.parts[0] ? '✓' : '○'} ${v.sport ? 'SPRINT' : 'BOOST'}   ${v.parts[1] ? '✓' : '○'} REACH THE BALL` : '';
   return [learnAsk(v, d), parts, learnMiss(v)].filter(Boolean).join('  ·  ');
 }
 

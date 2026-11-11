@@ -355,3 +355,13 @@
 /* Your own PERFECT STRIKE (PERFECT VOLLEY, PERFECT HEADER) - a short gold banner. */
 #interface[data-hud="goal-rush"] .bh-banner[data-kind="perfect"]{background:linear-gradient(100deg,#0b0c0e 62%,#ffcf5a 63% 67%,#0b0c0e 68%)}
 #interface[data-hud="goal-rush"] .bh-banner[data-kind="perfect"] strong{color:#ffcf5a;text-shadow:calc(4 * var(--bh-u)) calc(4 * var(--bh-u)) 0 #0b0c0e,calc(-2 * var(--bh-u)) calc(-2 * var(--bh-u)) 0 #c8102e}
+
+/* VOLLEYBALL (render/ball/ghostBug.ts, `?volleyball` only): the score bug a ghost while the ball is behind
+   it, back as it clears. */
+#interface[data-hud="sky-spike"] .mode-hud .bh-board{transition:opacity .12s linear}
+#interface[data-hud="sky-spike"][data-ball-behind] .mode-hud .bh-board{opacity:.18}
+/* VOLLEYBALL (render/ball/touchWord.ts): a touch's tier, one small word over the fighter who made it. */
+#interface .vb-word{position:fixed;left:0;top:0;z-index:5;pointer-events:none;font:italic 900 clamp(12px,2.1vh,15px)/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.04em;
+  color:#f4f1ea;text-shadow:0 1px 0 #000,0 0 3px rgba(0,0,0,.8);opacity:0;white-space:nowrap}
+#interface .vb-word.on{animation:vb-word .7s linear forwards}
+@keyframes vb-word{0%{opacity:0}10%{opacity:1}75%{opacity:1}100%{opacity:0}}

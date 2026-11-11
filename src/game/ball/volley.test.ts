@@ -190,3 +190,122 @@ describe('volleyball: scoring', () => {
     expect(m.view.score).toEqual({ red: 3, blue: 8 });
   });
 });
+
+// ─── The block, the TIP, the SUPER SHOT, the DIVE, a held dig, the phone's set ───────────────────────────
+/** Blue's spike struck now from 1 m off the net at 6.4 m, at a red body 0.7 m off it. */
+function spikeAt(m: BallMatch, perfect = false) {
+  Object.assign(m.ball, { held: false, x: 0, y: 6.4, z: 1, vx: 0, vy: -10.5, vz: -19, sx: 0, sy: 0, sz: 0, lastId: 'blue-1', lastTeam: 'blue', shot: 'spike' });
+  if (perfect) (m.volley as unknown as { hotSpike: boolean }).hotSpike = true;
+}
+function blockTry(jumpBefore: number | null, perfect = false, shot: 'spike' | 'tip' = 'spike') {
+  const m = pair();
+  m.sim.place('red-1', { x: 0, y: 0, z: -.7 }, 0); m.sim.place('blue-1', { x: 0, y: 0, z: 5 }, Math.PI);
+  m.view.phase = 'live'; m.view.rally = 1; m.view.touchTeam = 'blue'; m.view.touches = 3;
+  Object.assign(m.ball, { held: false, x: 0, y: 7, z: 3, vx: 0, vy: 0, vz: 0, lastId: 'blue-1', lastTeam: 'blue', shot: 'set' });
+  const t0 = m.now() + .8;
+  let spiked = false, jumped = false;
+  for (let i = 0; i < 150; i++) {
+    const t = m.now() - t0;
+    if (!spiked && t >= 0) { spiked = true; spikeAt(m, perfect); m.ball.shot = shot; }
+    if (!spiked) Object.assign(m.ball, { x: 0, y: 7, z: 3, vx: 0, vy: 0, vz: 0 });
+    const jump = jumpBefore !== null && !jumped && t >= -jumpBefore; if (jump) jumped = true;
+    m.submit('red-1', { seq: ++seq, moveX: 0, moveZ: 0, yaw: 0, targetId: BALL_ID, ...(jump ? { jump: true, jumpHeld: true } : jumped ? { jumpHeld: true } : {}) });
+    m.step(1 / 60);
+    const e = m.view.events.find(e => (e.kind === 'block' || e.kind === 'perfect') && e.actorId === 'red-1');
+    if (e) return e.text;
+    if (spiked && m.ball.z < -2) break;
+  }
+  return 'none';
+}
+describe('volleyball: the block is the jump', () => {
+  it('stuffs a spike from the top of a jump timed with the hitter, softens one from a jump early or late, and lets it by with no jump', () => {
+    expect(blockTry(.45)).toBe('STUFF BLOCK');
+    expect(blockTry(.2)).toBe('BLOCK');
+    expect(blockTry(null)).toBe('none');
+  });
+  it('lets a PERFECT SPIKE through all but a STUFF BLOCK, and never blocks a TIP', () => {
+    expect(blockTry(.45, true)).toBe('STUFF BLOCK');
+    expect(blockTry(.2, true)).toBe('none');
+    expect(blockTry(.45, false, 'tip')).toBe('none');
+  });
+});
+
+/** A red hitter up in the air under its side's set, the meter as given, one press of `attack` held for the ball. */
+function attackWith(attack: 'light' | 'heavy' | 'ultimate', meter = 0) {
+  const m = pair();
+  const a = m.sim.actors.get('red-1')!;
+  m.sim.place('red-1', { x: 0, y: 0, z: -1.6 }, 0);
+  rally(m, 'red', 2, { x: 0, y: 9, z: -1.5, vy: 0, lastId: 'red-2', lastTeam: 'red', shot: 'set' });
+  a.state.ultimate = meter;
+  let pressed = false;
+  for (let i = 0; i < 120; i++) {
+    const air = !a.state.grounded, press = air && !pressed; if (press) pressed = true;
+    m.submit('red-1', { seq: ++seq, moveX: 0, moveZ: 0, yaw: 0, targetId: BALL_ID, ...(i === 18 ? { jump: true, jumpHeld: true } : { jumpHeld: true }), ...(press ? { attack } : {}) });
+    m.step(1 / 60);
+    if (touches(m, 'red-1').length) break;
+  }
+  return { m, e: touches(m, 'red-1')[0], meter: a.state.ultimate };
+}
+describe('volleyball: the attack\'s three buttons', () => {
+  it('spikes on PLAY, TIPs on the heavy\'s button', () => {
+    expect(attackWith('light').e?.shot).toBe('spike');
+    expect(attackWith('heavy').e?.shot).toBe('tip');
+  });
+  it('is the SUPER SHOT on the ultimate\'s button with a full meter - spent, and announced - and nothing without one', () => {
+    const full = attackWith('ultimate', 100);
+    expect(full.e?.shot).toBe('super');
+    expect(full.meter).toBeLessThan(100);
+    expect(full.m.view.events.some(e => e.kind === 'super' && e.actorId === 'red-1')).toBe(true);
+    const empty = attackWith('ultimate', 40);
+    expect(empty.e?.shot).not.toBe('super');
+    expect(empty.m.view.events.some(e => e.kind === 'super')).toBe(false);
+  });
+});
+
+describe('volleyball: a hard ball and the DIVE', () => {
+  it('digs a hard ball with a press held from before the attack, tiered by where the ball meets the body', () => {
+    for (const [off, tier] of [[.2, 'PERFECT'], [.9, 'GOOD'], [1.4, 'LATE']] as const) {
+      const m = pair();
+      m.sim.place('red-1', { x: 0, y: 0, z: -6 }, 0);
+      rally(m, 'blue', 3, { x: off, y: 4, z: -1, vx: 0, vy: -10.6, vz: -20, lastId: 'blue-1', lastTeam: 'blue', shot: 'spike' });
+      m.view.touchTeam = 'red'; m.view.touches = 0;
+      send(m, 'red-1', { x: 0, z: 0 }, true);
+      for (let i = 0; i < 60 && !touches(m, 'red-1').length; i++) { send(m, 'red-1'); m.step(1 / 60); }
+      const e = touches(m, 'red-1')[0];
+      expect(e?.text, `${off} m`).toBe(`DIG · ${tier}`);
+    }
+  });
+  it('reaches a low ball just out of reach on BOOST - the DIVE - and not without it', () => {
+    const run = (dash: boolean) => {
+      const m = pair();
+      m.sim.place('red-1', { x: 0, y: 0, z: -6 }, 0);
+      rally(m, 'red', 0, { x: 2.7, y: 2.3, z: -6, vy: -1, lastId: 'blue-1', lastTeam: 'blue', shot: 'pop' });
+      for (let i = 0; i < 60 && !touches(m, 'red-1').length && m.view.phase === 'live'; i++) {
+        m.submit('red-1', { seq: ++seq, moveX: 0, moveZ: 0, yaw: 0, targetId: BALL_ID, ...(dash && i === 8 ? { dash: true } : {}) });
+        m.step(1 / 60);
+      }
+      return touches(m, 'red-1')[0];
+    };
+    expect(run(true)?.text).toMatch(/^RECEIVE · (GOOD|EARLY|LATE)$/);
+    expect(run(false)).toBeUndefined();
+  });
+});
+
+describe('volleyball: the phone\'s set', () => {
+  it('is PLAY named for the touch, the TIP and SUPER only on the attack, JUMP named BLOCK at the net', async () => {
+    const { sportSet } = await import('../../input/sportTouch');
+    const m = pair();
+    const view = (prompt: string) => ({ ...m.view, phase: 'live' as const, ball: { ...m.ball, held: false }, volley: { ...m.view.volley!, prompt: { 'red-1': prompt } } });
+    const attack = sportSet(view('SPIKE'), 'red-1', false, true, { x: 0, z: -1 });
+    expect(attack.main).toMatchObject({ action: 'light', label: 'SPIKE' });
+    expect(attack.pass).toMatchObject({ action: 'heavy', label: 'TIP' });
+    expect(attack.super).toMatchObject({ action: 'ultimate' });
+    const receive = sportSet(view('RECEIVE'), 'red-1', false, true, { x: 0, z: -6 });
+    expect(receive.main?.label).toBe('RECEIVE');
+    expect(receive.pass).toBeNull();
+    expect(receive.super).toBeNull();
+    const block = sportSet(view('BLOCK'), 'red-1', false, false, { x: 0, z: -.8 });
+    expect(block.main?.label).toBe('PLAY');
+    expect(block.jump).toMatchObject({ action: 'jump', label: 'BLOCK' });
+  });
+});

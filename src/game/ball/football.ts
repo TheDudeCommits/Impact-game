@@ -39,8 +39,11 @@ export const FOOTBALL = {
   reach: .3,
   /** The side's keeper (today's keeper role, a bot, inside its own box: `box` m out from its line, `wide` m either side)
    *  gathers what it reaches: `reach` m out from its bounds, as fast as `slow` m/s (`chestSlow` up to `chest` m, its
-   *  hands) - a shot it gets to is caught and is a save. A stand-in until the side has a keeper of its own. */
-  keeper: {reach: .8, slow: 34, chest: 2.6, chestSlow: 34, box: 6, wide: 7},
+   *  hands) - a shot it gets to is caught and is a save. */
+  keeper: {reach: .3, slow: 19, chest: 2.6, chestSlow: 17, box: 6, wide: 7},
+  /** Each side's keeper is a fourth body the game plays (`on`), stood `line` m off its line at the kickoff -
+   *  three a side outfield, so a PASS always has two team-mates to choose from and no person keeps goal. */
+  keeper4: {on: true, line: 1.2},
   /** The carry: the body runs at `pace` of its speed (the boost's too), the ball `gap` m in front of it, turned round it at
    *  up to `turn` rad/s toward the stick (`steer` of the stick or more). */
   pace: .94, gap: .12, turn: 12, steer: .3,
@@ -63,11 +66,28 @@ export const FOOTBALL = {
    *  bends the aim up to `bend` rad. A line within `help` m of the frame and `reach` half-lengths of the goal is laid inside
    *  the post (`inset` m in from it), at `lowY` m (a tap) to `highY` (full), under the bar. The run adds `momentum` of
    *  itself along the aim, at most `runMost`. */
-  shot: {tap: 24, full: 33, wind: .7, slow: .85, bend: .2, help: 2.5, reach: 1.25, inset: .3, lowY: .6, highY: 2.2, momentum: .5, runMost: 6.5},
+  shot: {tap: 26, full: 34, wind: .7, slow: .85, bend: .2, help: 2.5, reach: 1.25, inset: .15, lowY: .6, highY: 2.2, momentum: .5, runMost: 6.5},
   /** SPRINT is the boost (BALL_SPORT: 13.5 m/s on 42 of the bar a second, the bar 225): the bar comes back `refill`
    *  times as fast as a fighter's stamina does (STAMINA_REGEN 32 a second, so 48), so a two-second run (84 of it) is
    *  back in under two seconds and a full bar in under five. */
   sprint: {refill: 1.5},
+  /** TACKLE (the guard's button): pressed with one of the other side carrying the ball, a standing POKE reaches
+   *  `reach` m from the tackler's body to the ball for `live` s and wins it clean to the tackler's feet; pressed on the
+   *  boost it is a SLIDE - `slide.reach` m, within `slide.cone` rad of the run, for `slide.live` s - that knocks the ball
+   *  loose ahead at `slide.pop` m/s, and a slide that wins nothing leaves the slider down `slide.down` s. Again after
+   *  `again` s. No fouls. (A short poke is a timing; the slide's reach costs the slider the next moment when it misses.) */
+  tackle: {reach: 1.3, live: .15, again: .5, slide: {reach: 2.6, cone: 1.05, live: .35, pop: 6, down: .6},
+    /** The contest (steals came too often - about 16 in 80 s of play): a POKE wins only from within `front` rad of
+     *  the carrier's run - one who has turned the ball away from the tackler shields it, and the poke misses. A miss (a
+     *  poke shielded or out of reach in its time, a slide that wins nothing) costs the tackler `missPace` of its run for
+     *  `miss` s and no tackle again for `missAgain` s; the carrier who loses it takes one checked stride - `checkPace` for
+     *  `check` s - and lets it go `lost` s. So a miss costs the tackler about four times what a win costs the carrier.
+     *  A slide that misses: `slideMissPace` for `slideMiss` s (a stumble, never a knockdown: that is the FIGHT stance's). */
+    front: 70 * Math.PI / 180, missPace: .55, miss: .5, missAgain: 1, checkPace: .6, check: .25, slideMissPace: .35, slideMiss: .6},
+  /** The TRICK (the special's button, with the ball): the carrier jinks `jink` rad off its run; a TACKLE that lands inside
+   *  `window` s of it misses and leaves the tackler BEATEN, unable to tackle again for `beaten` s (the REVERSAL's idea,
+   *  in the sport's clothes). Again after `again` s. */
+  trick: {window: .25, beaten: .4, again: 1.2, jink: 1.1},
   /** A person's PASS without the ball calls for it: their side's bots carrying it look for them first for `call` s. */
   call: 1.5,
 } as const;

@@ -73,7 +73,7 @@ export class LocalBall {
     const length = Number(here?.get('balllength')) || undefined;
     this.match = new BallMatch(mode, {collision, seed, access: 'bots', lockCombat: lockCombatOn(), length, replays: !partner, rumble, arena, practice: practice && !partner,
       mutator: rumble ? null : extras.mutator ?? null, drill: practice && !partner ? extras.drill : undefined, lesson: practice && !partner && !extras.drill ? extras.lesson : undefined, intro, round: typeof again === 'object' ? again.round : undefined,
-      difficulty: practice && !partner ? undefined : extras.difficulty, ...(extras.football ? {football: true} : {}), ...(extras.volleyball && mode === 'sky-spike' ? {volleyball: true} : {})});
+      difficulty: practice && !partner ? undefined : extras.difficulty, ...(extras.football ? {football: true} : {}), ...(extras.volleyball && mode === 'sky-spike' && (!practice || (extras.lesson && !extras.drill)) ? {volleyball: true} : {})});
     const team: BallTeam = 'red';
     this.match.add(this.id, fighter, name, false, team); this.match.sim.setPlayerSkill(this.id, keptSkill()); this.match.setLook(this.id, extras.look);
     // `?ballpilot` on this machine: a bot plays the page's own fighter (the captures and checks of the ball modes).

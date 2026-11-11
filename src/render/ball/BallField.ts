@@ -1504,6 +1504,9 @@ export class BallField {
   // ---------------------------------------------------------------- moments
 
   private moment(e:BallEvent,view:BallView){
+    // (SPORT mode, `?football`: an ordinary save - the keeper's catch, a block - is the game's, not a moment: no burst, no
+    // ring, no flash; only a great one (a shot of 31 m/s or more stopped, or off the line: BallHud's rule) is.)
+    if(view.football&&e.kind==='save'&&!(e.text==='OFF THE LINE'||(e.value??0)>=31))return;
     // The crowd: on its feet for a goal, up for a clash, a save, a post, a super shot.
     this.gear.burst(this.emit,e,view,VFX.spriteGain);
     // (Goal Rush's TRAP - a 'perfect' event with the text TRAP, twenty a match - is the sport's first touch,

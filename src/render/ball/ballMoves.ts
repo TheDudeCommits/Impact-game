@@ -1,4 +1,4 @@
-import {startKick} from './kickLayer';
+import {TAKE, startKick, startTake, takeOn} from './kickLayer';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {Fighter} from '../Fighter';
@@ -109,6 +109,16 @@ export const BALL_MOVES: Readonly<Record<BallMoveKey, BallMoveRow>> = {
   'C.point': {on: true, take: 'C.point', back: 1, travel: .1, armed: .5},
   'C.leap': {on: true, take: 'C.leap', back: 1, travel: .15, armed: .5},
   'C.bow': {on: true, take: 'C.bow', back: 1, travel: .1, armed: .5},
+  // The football takes: Goal Rush's SPORT mode's, off until its rules ask
+  // for them - a side-foot pass and a full instep shot inside a running stride (in place, the body's run carrying it;
+  // ending on the running pose it starts on, its extras' `stride` the run it was cut to), the poke tackle, the keeper's
+  // catch (played once from its contact, `at` in its extras, and held) and the slide's get-up (the slide's own clip,
+  // from where K.slide ends).
+  'GR.stridePass': {on: false, take: 'K.stridePass', back: .85, travel: 0, armed: .4},
+  'GR.strideShot': {on: false, take: 'K.strideShot', back: .85, travel: 0, armed: .4},
+  'GR.poke': {on: false, take: 'K.poke', back: .9, travel: .2, armed: .4},
+  'GR.catch': {on: false, take: 'K.catch', back: .9, travel: .1},
+  'GR.slideUp': {on: false, take: 'K.slideUp', back: 1, travel: .2, armed: .5},
 };
 /** The take a row draws: its kit take with the kit on. */
 export const takeOf = (row: BallMoveRow, kit: boolean) => kit && row.kit ? row.kit : row.take;
@@ -355,12 +365,31 @@ function sportKick(body: Fighter, state: PlayerState): Transplanted | undefined 
   const seen = k?.seen ?? 0;
   let newest = seen;
   for (const e of ctx.view.events) {
-    if (e.id <= seen || e.actorId !== state.id || (e.kind !== 'pass' && e.kind !== 'strike')) continue;
+    if (e.id <= seen || e.actorId !== state.id || (e.kind !== 'pass' && e.kind !== 'strike' && e.kind !== 'steal')) continue;
     newest = Math.max(newest, e.id);
-    const key: BallMoveKey = e.kind === 'pass' ? 'GR.pass' : e.shot === 'header' ? 'GR.head' : e.shot === 'power' ? 'GR.drive' : 'GR.power';
-    if ((pace.get(body)?.speed ?? 0) < KICK.slow && state.grounded) { k = {seen: e.id, id: e.id, at: now, key, swap: k?.swap ?? new BallSwap()}; kicked.set(body, k); }
-    // (On the run: the take laid over the run on the striking leg, the hips and the spine - kickLayer.ts.)
-    else if (state.grounded) { const row = BALL_MOVES[key], fit = row.on ? fitTo(body, state, key) : undefined; if (fit) startKick(body, fit.clip, fit.take.contact * fit.clip.duration, e.at); }
+    if (e.kind === 'steal' && (e.text === 'BEATEN')) continue;
+    // (The football takes - kickLayer.ts startTake, full body, entered at the contact: a POKE with the poke's lunge, won
+    // or not; a SLIDE, won or missed, with the slide and its get-up straight after; on the run a PASS or a SHOOT with
+    // the pass or the shot in stride, its cycle matched to the body's run; the TRICK the sole's drag through the layer.)
+    const running = (pace.get(body)?.speed ?? 0) >= KICK.slow && state.grounded;
+    if (e.kind === 'steal' && e.text === 'POKING') { footTake(body, state, 'GR.poke', e.at); continue; }
+    if (e.kind === 'steal' && e.text === 'POKE') continue;
+    if (e.kind === 'steal' && e.text === 'SLIDING') { footTake(body, state, 'GR.slide', e.at, {then: 'GR.slideUp', start: true}); continue; }
+    if (e.kind === 'steal' && (e.text === 'SLIDE' || e.text === 'MISSED')) continue;
+    if (running && (e.kind === 'pass' || e.kind === 'strike' && e.shot !== 'header')) { footTake(body, state, e.kind === 'pass' ? 'GR.stridePass' : 'GR.strideShot', e.at, {stride: true}); continue; }
+    const key: BallMoveKey = e.kind === 'steal' ? 'GR.trap' : e.kind === 'pass' ? 'GR.pass' : e.shot === 'header' ? 'GR.head' : e.shot === 'power' ? 'GR.drive' : 'GR.power';
+    if (!running && state.grounded) { k = {seen: e.id, id: e.id, at: now, key, swap: k?.swap ?? new BallSwap()}; kicked.set(body, k); }
+    else if (state.grounded) { const row = BALL_MOVES[key], fit = row.on ? fitTo(body, state, key) : undefined; if (fit) startKick(body, fit.clip, fit.take.contact * fit.clip.duration, e.at, key === 'GR.pass'); }
+  }
+  // (A held SHOOT winding up at this body's feet: the shot in stride's lead-in, run by how far it is wound.)
+  const b = ctx.view.ball;
+  if (b.carry === state.id && (b.wind ?? 0) > 0 && !takeOn(body)?.wind && state.grounded) footTake(body, state, 'GR.strideShot', NaN, {wind: () => { const v = context?.()?.view.ball; return v && v.carry === state.id && (v.wind ?? 0) > 0 ? v.wind : undefined; }});
+  // (SPORT's keeper with the ball at its feet - a catch, a gather - the keeper's catch, held while it keeps it.)
+  const keeper = ctx.view.seats.find(s => s.id === state.id)?.keeper;
+  if (keeper) {
+    const holding = b.carry === state.id;
+    if (holding && !caught.has(body)) { caught.add(body); footTake(body, state, 'GR.catch', NaN, {hold: () => context?.()?.view.ball.carry === state.id}); }
+    else if (!holding) caught.delete(body);
   }
   if (k && newest > k.seen) k.seen = newest; else if (!k && newest > 0) kicked.set(body, k = {seen: newest, id: 0, at: 0, key: 'GR.pass', swap: new BallSwap()});
   if (!k || !k.id) return undefined;
@@ -374,6 +403,26 @@ function sportKick(body: Fighter, state: PlayerState): Transplanted | undefined 
   swap.phase = `-ball-kick-${k.id}`; swap.slot = state.action as AttackSlot;
   return swap;
 }
+/** The keepers whose catch is drawn now (one take a catch). */
+const caught = new WeakSet<Fighter>();
+/** The football takes' extras: `at` the contact in seconds; a stride take's run. */
+type FootExtras = {at?: number; stride?: {cycle: number; speed: number}};
+/** A football take on `body` (kickLayer startTake): fitted to its rig (the rows are off until SPORT asks: switched on
+ *  here, under the flag), entered at its contact; a stride take at the rate that matches the body's own run (its run's
+ *  hip heights a second against the take's, the body's size its hip height in metres, near enough) and blended back
+ *  TAKE.after past the contact; `then` played straight after; `hold` and `wind` as startTake says. */
+function footTake(body: Fighter, state: PlayerState, key: BallMoveKey, at: number, o: {stride?: boolean; then?: BallMoveKey; hold?: () => boolean; wind?: () => number | undefined; start?: boolean} = {}) {
+  const fit = fitTo(body, state, key);
+  if (!fit) return 0;
+  // (`start`: a take pressed now and played from its first frame - a slide's run in to the ball.)
+  const x = fit.take.clip.userData as FootExtras, contact = o.start ? 0 : x.at ?? fit.take.contact * fit.clip.duration;
+  const speed = pace.get(body)?.speed ?? 0, hip = HIP * (state.size ?? 1);
+  const rate = o.stride && x.stride ? THREE.MathUtils.clamp(speed / hip / x.stride.speed, .7, 1.8) : 1;
+  const then = o.then ? fitTo(body, state, o.then)?.clip : undefined;
+  return startTake(body, fit.clip, {at, contact, rate, end: o.stride ? contact + TAKE.after * rate : undefined, hold: o.hold, wind: o.wind, then});
+}
+/** A body's hip height at size 1 (m), for a stride take's rate. */
+const HIP = 1;
 /** `clip` from KICK.lead s before its contact (a share of it) on: the touch has already happened when it starts. */
 function fromContact(clip: THREE.AnimationClip, contact: number): THREE.AnimationClip {
   return variant(clip, `from ${contact}`, () => {

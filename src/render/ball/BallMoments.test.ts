@@ -37,7 +37,7 @@ const KINDS: Record<BallEvent['kind'], readonly (string | undefined)[]> = {
   point: [undefined], ace: [undefined], kill: [undefined, 'SUPER SHOT'], block: [undefined], fault: [undefined], out: ['OUT'], net: [undefined], touches: ['FOUR TOUCHES'], rally: [undefined], fever: [undefined],
   super: [undefined], bowled: [undefined], perfect: ['PERFECT GUARD', 'STUFF BLOCK'], serve: [undefined], 'side-out': [undefined], 'match-point': ['MATCH POINT'], demo: [undefined],
   strike: [undefined, 'SKY SPIKE', 'ROLL SPIKE', 'LINK SHOT', 'PERFECT STRIKE', 'BICYCLE KICK', 'HEADER'], win: [undefined], accolade: ['HAT TRICK'], chat: [undefined], charm: [undefined], shield: [undefined],
-  clash: [undefined], target: [undefined], duel: ['TECHNIQUE DUEL'], 'duel-won': ['SHOT STOPPED', 'BREAKS THROUGH'], wipeout: ['BUMP'], dig: ['DIG'], touch: ['SET · PERFECT', 'SPIKE · FLUBBED'], tackle: ['TACKLE'], reversal: ['REVERSAL'], set: ['QUICK SET'], deuce: ['DEUCE'], comeback: ['COMEBACK'], pass: ['PASS', 'LOFTED'],
+  clash: [undefined], target: [undefined], duel: ['TECHNIQUE DUEL'], 'duel-won': ['SHOT STOPPED', 'BREAKS THROUGH'], wipeout: ['BUMP'], dig: ['DIG'], touch: ['SET · PERFECT', 'SPIKE · FLUBBED'], tackle: ['TACKLE'], reversal: ['REVERSAL'], set: ['QUICK SET'], deuce: ['DEUCE'], comeback: ['COMEBACK'], pass: ['PASS', 'LOFTED'], steal: ['POKE', 'SLIDE', 'SLIDING', 'POKING', 'MISSED', 'BEATEN', 'TRICK'],
 };
 
 describe('the ball moments on the screen', () => {

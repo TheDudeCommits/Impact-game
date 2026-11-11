@@ -254,7 +254,9 @@ export class SpikeCues {
       const p = attack ? players.find(q => q.id === s.id) : undefined, body = p ? at(s.id) : undefined;
       if (!p || !body || body.y < .15) { this.theirsTold.set(s.id, false); continue; }
       const hand = this.at.set(body.x, body.y + CUE.hand, body.z);
-      const open = body.y / Math.max(.1, jumpArc(s.fighter).apex) >= T.apex && hand.distanceTo(ball) < 3.6;
+      // (VOLLEYBALL - game/ball/volley.ts: the block is your jump, so its beat is their hitter leaving the
+      // floor - jump with them - not the top of their jump, by which time a jump is too late.)
+      const open = view.volley ? body.y > .15 && body.y < 1.6 && Math.abs(body.z) < T.net && hand.distanceTo(ball) < 8 : body.y / Math.max(.1, jumpArc(s.fighter).apex) >= T.apex && hand.distanceTo(ball) < 3.6;
       if (open && !this.theirsTold.get(s.id)) {
         this.theirsFlare.set(s.id, 0);
         if (me && Math.abs(me.z) < 3 && Math.abs(me.x - body.x) < 4) this.onTick('block');

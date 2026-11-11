@@ -16,7 +16,7 @@ import {BallTargets} from './game/ball/BallTargets';
 import {BallField} from './render/ball/BallField';
 import {ownShot} from './render/ball/ownShot';
 import {quietCounts} from './render/ball/BallMoments';
-import {applyKicks,clearKicks} from './render/ball/kickLayer';
+import {applyKicks,clearKicks,kicksOn} from './render/ball/kickLayer';
 import {GOAL_LOOK_NAME,PassMark,footballWanted,goalLookChoice,switchGoalLook} from './render/ball/footballPage';
 import {BallReplayer} from './render/ball/BallReplay';
 import {BallCam,ballShadowFocus,teamOf} from './render/ball/BallCam';
@@ -31,6 +31,8 @@ import {StanceMarks} from './render/ball/StanceMarks';
 import {StanceControl,hasStances} from './game/ball/stance';
 import {ballMovesReady,ballMovesWanted,installBallMoves,noteBallStick} from './render/ball/ballMoves';
 import {volleyballWanted} from './game/ball/volley';
+import {GhostBug} from './render/ball/ghostBug';
+import {TouchWords} from './render/ball/touchWord';
 import {BallCeremony} from './render/ball/BallCeremony';
 import {BallShow} from './ui/ball/BallShow';
 import {QuickChat} from './ui/ball/QuickChat';
@@ -419,8 +421,12 @@ if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))Object.assign(w
   // (The cameras, their options' numbers and the drawn bodies, for the checks' measures: `__ballCams`;
   // `hold(true)` stops a match on this device where it is, still drawn, so one moment is filmed from both cameras
   // (`ask({spike:'side'})`), and `trim(false)` draws it without the sides' trim.)
-  __ballCams:{spike:spikeCams,chase:ballChases,chaseFrame,SpikeCam,BallChase,body:(id:string)=>fighters.get(id),lens:()=>view.camera,lens2:()=>camera2?.camera,scene:()=>view.scene,hold:(on:boolean)=>{ballHeld=on;},trim:askTeamTrim,ask:askBallCams}});
+  __ballCams:{spike:spikeCams,chase:ballChases,chaseFrame,SpikeCam,BallChase,body:(id:string)=>fighters.get(id),lens:()=>view.camera,lens2:()=>camera2?.camera,scene:()=>view.scene,hold:(on:boolean)=>{ballHeld=on;},side:(on:boolean)=>{sideLens=on;},kicks:()=>kicksOn(),trim:askTeamTrim,ask:askBallCams}});
 let ballHeld=false;
+/** The checks' side lens (localhost, `__ballCams.side(true)`): the drawn lens stood 6 m beside the page's own body, level with it, as the frame is drawn - a take seen from the side. */
+let sideLens=false;
+const ghostBug=new GhostBug(),touchWords=new TouchWords();
+if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))Object.assign(window as unknown as {__ghostBug:GhostBug;__touchWords:TouchWords},{__ghostBug:ghostBug,__touchWords:touchWords});
 /** `?ballpilot` on this machine (a bot plays the page's fighter, LocalBall): the page films the bot's stance. */
 const ballPiloted=['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).has('ballpilot');
 // A TACKLE (game/ball/model.ts GOAL_STANCE): the lens punches for the tackler and the one tackled, the frame's ink for a
@@ -1851,6 +1857,10 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   // room puts back into this page's time: BallField `rewound`.)
   ballField.viewLag=forecastTouches&&network===online&&prediction.enabled&&presented?Math.max(0,prediction.localTime-presented.time):0;
   ballField.update(replayed?.snapshot??snapshot,network.id,view.camera,replayed?dt*replayed.rate:dt,performance.now(),!!replayed);
+  // (VOLLEYBALL: the score bug a ghost while the ball is behind it - render/ball/ghostBug.ts.)
+  ghostBug.update(started?ballOf(snapshot):undefined,ballField.ballPosition(),view.camera,performance.now());
+  // (And each touch's tier as a word over the one who made it - render/ball/touchWord.ts.)
+  touchWords.update(started&&!replayed?ballOf(snapshot):undefined,snapshot?.players,network.id,view.camera,performance.now());
   // Goal Rush's stances under the feet (render/ball/StanceMarks.ts), and its tackles felt.
   {const v=ballOf(snapshot);teamTrims.update(started?ballOf(replayed?.snapshot??snapshot):undefined,trimBody,view.camera.position,couch.split?camera2?.camera.position:null);stanceMarks.update(rawDt,v,network.id,hasStances(v)?ballStances[0].lock:null,ballField.ballPosition(),stanceBody,!!v&&started&&!replayed&&!ceremony);
     spikeCues.update(rawDt,v,network.id,snapshot?.players??[],stanceBody,ballField.ballPosition(),!!v&&started&&!replayed&&!ceremony);
@@ -2044,7 +2054,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     const own=fighters.get(network.id);if(own){ceremonyBodies.length=0;for(const f of fighters.values())ceremonyBodies.push(f);camera.fader.update(rawDt,view.camera,undefined,own,undefined,ceremonyBodies);}}else if(shownSelf)view.setFocus(view.shadowCentred?ballShadowFocus(shownSelf,ballField.ballPosition(),ballShadow[0]):shownSelf);// look: the sun's shadow box and the screen effects follow the fight (a replay's, the ball)
   ballReplayBars+=((replayed?1:0)-ballReplayBars)*Math.min(1,rawDt*7);
   hud.tick();damageNumbers.update(view.camera);manga.update(view.camera);letterbox.set(couch.on?0:Math.max(camera.cuts.bars,ballReplayBars,ballCeremony.bars));view.cinemaGrade(couch.on?0:camera.cuts.grade);if(camera.cuts.opened!==heardCinema){heardCinema=camera.cuts.opened;if(camera.cuts.openedKind==='confirm'&&camera.cuts.active)audio.ui('fx-swing-huge',.22,.1);}
-  if(((started||!hud.homeVisible)&&!survivalHud.treeShown)||reportCapture){if(!couch.split)grunts.prepareCamera(view.camera);view.render(rawDt);ballCeremony.afterDraw(view.renderer.domElement);drawnSize=view.renderer.domElement.width*65536+view.renderer.domElement.height;}
+  if(((started||!hud.homeVisible)&&!survivalHud.treeShown)||reportCapture){if(sideLens){const o=fighters.get(network.id)?.group.position;if(o){view.camera.position.set(o.x+6,1.3,o.z);view.camera.lookAt(o.x,1,o.z);view.camera.updateMatrixWorld();}}if(!couch.split)grunts.prepareCamera(view.camera);view.render(rawDt);ballCeremony.afterDraw(view.renderer.domElement);drawnSize=view.renderer.domElement.width*65536+view.renderer.domElement.height;}
   // Training's switch, measured: the frame that drew the new body (swapLog).
   for(let i=swapLanding.length-1;i>=0;i--){const landing=swapLanding[i];if(fighters.get(landing.actor)?.bodyFighter===landing.fighter){landing.entry.shownMs=Math.round(performance.now()-landing.askedAt);swapLanding.splice(i,1);}}
   if(reportCapture){const capture=reportCapture;reportCapture=undefined;try{capture(view.renderer.domElement.toDataURL('image/jpeg',.8));}catch{/* The capture timeout reports unavailable. */}}
