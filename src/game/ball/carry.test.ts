@@ -136,7 +136,9 @@ describe('Goal Rush\'s carry (CARRY)', () => {
       else { m.sim.actors.get('blue-1')!.boosting = true; inside(m).last.set('blue-1', { x: p.x + 1.2, y: 0, z: p.z + .2, vx: -13, vy: 0, vz: 0 }); inside(m).last.set('red-1', { x: p.x, y: 0, z: p.z, vx: 0, vy: 0, vz: 0 }); inside(m).bumps(); }
       const b = m.ball, q = body(m, 'blue-1'), toward = ((q.x - b.x) * b.vx + (q.z - b.z) * b.vz) / (flat(q, b) * Math.hypot(b.vx, b.vz));
       expect(b.carry, how).toBeUndefined();
-      expect(Math.hypot(b.vx, b.vz), how).toBeCloseTo(LOOSE.speed, 5);
+      // (No further than their feet - fightPays.test.ts.)
+      expect(Math.hypot(b.vx, b.vz), how).toBeLessThanOrEqual(LOOSE.speed + 1e-9);
+      expect(Math.hypot(b.vx, b.vz), how).toBeGreaterThan(0);
       expect(b.vy, how).toBe(LOOSE.up);
       expect(toward, how).toBeGreaterThan(.99);
       expect(m.counts.loose, how).toBe(1);

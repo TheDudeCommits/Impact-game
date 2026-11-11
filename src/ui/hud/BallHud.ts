@@ -1,5 +1,5 @@
 import { FIGHTERS } from '../../config';
-import { ballOf, BALL_TEAM_NAMES, CHARM_COLOURS, POINT_GIVEN, POINT_WON, GOAL_RULES, SHOT_NAMES, SPIKE_RULES, charmLine, charmName, heatTier, otherTeam, type BallEvent, type BallSeat, type BallTeam, type BallView } from '../../game/ball/model';
+import { ballOf, BALL_TEAM_NAMES, CHARM_COLOURS, POINT_GIVEN, POINT_WON, GOAL_RULES, SHOT_NAMES, SPIKE_RULES, charmLine, charmName, heatTier, inPlay, otherTeam, shortSide, type BallEvent, type BallSeat, type BallTeam, type BallView } from '../../game/ball/model';
 import type { PlayerState } from '../../game/types';
 import type { ModeHud, ModeHudFrame, ModeHudMount } from './modeHud';
 import { el, Text, Flag, Data, Face, Markup, Fill, clockOf, pulse } from './kit';
@@ -154,6 +154,8 @@ class BallHud implements ModeHud {
   private labels: Record<BallTeam, Text> = {} as Record<BallTeam, Text>;
   private dots: Record<BallTeam, { used: Data; last: Flag }> = {} as Record<BallTeam, { used: Data; last: Flag }>;
   private middle!: Text; private middleKind!: Data;
+  /** The POWER PLAY: the count in the bug's middle while a side is short (3 v 2), in place of the heat. */
+  private power!: Data; private powerRed!: Text; private powerBlue!: Text; private powerShown = '';
   private slots: Slotted[] = []; private rosterKey = '';
   private heat!: Data; private heatLabel!: Text;
   /** The one banner (ballBanner.ts): what is up now, and the one shown last tick. */
@@ -200,6 +202,9 @@ class BallHud implements ModeHud {
     // Order: red plate, red score, middle, blue score, blue plate (the CSS grid places them by class).
     const middle = el('div', 'bh-middle', this.board);
     this.middle = new Text(el('strong', '', middle)); this.middleKind = new Data(middle, 'kind');
+    // (The POWER PLAY's count - red's bodies in play, then blue's - in the heat's place while it lasts.)
+    const power = el('div', 'bh-power', middle); this.power = new Data(middle, 'power');
+    this.powerRed = new Text(el('b', 'red', power)); el('small', '', power, 'V'); this.powerBlue = new Text(el('b', 'blue', power));
     const heat = el('div', 'bh-heat', middle); this.heat = new Data(heat, 'tier');
     this.heatLabel = new Text(el('small', '', heat)); for (let i = 0; i < 4; i++) el('i', '', heat);
     // The one line under the score, then the one banner under it: both in the score bug's own zone, one
@@ -291,6 +296,7 @@ class BallHud implements ModeHud {
     }
     const tier = heatTier(v.ball.heat);
     this.heat.set(String(tier)); this.heatLabel.set(tier >= 4 ? 'OVERDRIVE' : 'HEAT');
+    this.powerCount(v);
     this.charmChips(v, f, team);
     // The ball cam's key (Tab, the pad's target button: on by default, render/ball/BallCam.ts, and the key turns it off
     // for the follow camera), and quick chat's (ui/ball/QuickChat.ts; none in FREE PLAY, where nobody hears it): taught in
@@ -349,6 +355,17 @@ class BallHud implements ModeHud {
     if (shown !== this.lineShown) { this.lineShown = shown; if (shown) pulse(this.line, 'pulse'); }
   }
 
+  /** The POWER PLAY: while a side of Goal Rush has a body wiped out, the bug's middle reads the count -
+   *  red's bodies in play, then blue's (3 v 2, 2 v 3, 3 v 1), the short side's number dim - where the heat was; the
+   *  wiped-out faces fade (roster). */
+  private powerCount(v: BallView) {
+    const short = v.mode === 'goal-rush' && !v.practice && (v.phase === 'live' || v.phase === 'kickoff' || v.phase === 'scored') ? shortSide(v.seats) : null;
+    const n = short ? inPlay(v.seats) : null, key = n ? `${short}:${n.red}:${n.blue}` : '';
+    if (key === this.powerShown) return;
+    this.powerShown = key; this.power.set(short ?? '');
+    if (n) { this.powerRed.set(String(n.red)); this.powerBlue.set(String(n.blue)); }
+  }
+
   private roster(v: BallView, f: ModeHudFrame) {
     const key = v.seats.map(s => `${s.id}:${s.team}:${s.fighter}`).join('|');
     if (key !== this.rosterKey) {
@@ -367,6 +384,8 @@ class BallHud implements ModeHud {
       const seat = v.seats.find(s => s.id === slot.seat);
       slot.root.classList.toggle('touch', v.ball.lastId === slot.seat);
       slot.root.classList.toggle('gone', !!seat?.disconnected);
+      // (Wiped out - the POWER PLAY's missing body - faded on the bug while they are off.)
+      slot.root.classList.toggle('out', seat?.out !== undefined);
     }
   }
 
@@ -427,8 +446,12 @@ class BallHud implements ModeHud {
     switch (e.kind) {
       case 'goal': {
         const assist = seat(e.assistId);
+        // (A goal into a short side's goal is the POWER PLAY's - named in the banner's line, its count first,
+        // and in the ticker after it; no print of its own.)
+        const power = e.short ? `POWER PLAY GOAL · ${e.short[0]} V ${e.short[1]}` : '';
         this.show(now, R.score, 'goal', e.team ?? '', lesson ? '' : mine ? 'YOUR TEAM SCORES' : `${BALL_TEAM_NAMES[e.team!]} SCORES`, e.text === 'SUPER GOAL' ? 'SUPER GOAL!!' : 'GOOOAL!!',
-          [who, shot, speed, assist ? `ASSIST ${nameOf(assist)}` : ''].filter(Boolean).join(' · '), v.drill || v.lesson ? 1500 : 3600); // (A drill's next ball comes a breath after, and LEARN TO PLAY's: its banner goes before it does.)
+          [power, who, shot, speed, assist ? `ASSIST ${nameOf(assist)}` : ''].filter(Boolean).join(' · '), v.drill || v.lesson ? 1500 : 3600); // (A drill's next ball comes a breath after, and LEARN TO PLAY's: its banner goes before it does.)
+        if (power) this.tick(now, e.team, `${power} · ${who}`, 'accolade', LINE_RANK.named);
         break;
       }
       case 'own-goal': this.show(now, R.score, 'goal', e.team ?? '', `${BALL_TEAM_NAMES[e.team!]} SCORES`, 'OWN GOAL!', who, 3200); break;
@@ -470,17 +493,28 @@ class BallHud implements ModeHud {
       // Goal Rush's fights (GOAL_FIGHT): your own wipe-out a banner, anyone else's and every bump a line.
       case 'wipeout': {
         const down = nameOf(seat(e.targetId)), self = v.seats.find(s => s.id === this.selfId);
+        // (The wipe-out that makes a POWER PLAY says its count.)
+        const short = v.mode === 'goal-rush' && !v.practice ? shortSide(v.seats) : null, n = inPlay(v.seats), power = short ? `POWER PLAY · ${n.red} V ${n.blue}` : '';
         if (e.targetId === this.selfId) this.show(now, R.fight, 'out', e.team ?? '', who ? `BY ${who}` : 'DOWN', 'WIPED OUT!', `BACK IN ${Math.round(e.value ?? 3)} S`, 1500);
-        else if (e.actorId === this.selfId) this.show(now, R.fight, 'kill', self?.team ?? '', down, 'WIPED OUT!', e.text ? `${e.text}` : '', 1300);
-        else this.tick(now, e.team, `${who || 'DOWN'} ${who ? 'WIPES OUT' : ''} ${down}`.replace(/\s+/g, ' ').trim(), '', LINE_RANK.fight);
+        else if (e.actorId === this.selfId) this.show(now, R.fight, 'kill', self?.team ?? '', down, 'WIPED OUT!', [e.text, power].filter(Boolean).join(' · '), 1300);
+        else this.tick(now, e.team, `${who || 'DOWN'} ${who ? 'WIPES OUT' : ''} ${down}${power ? ` · ${power}` : ''}`.replace(/\s+/g, ' ').trim(), '', LINE_RANK.fight);
         break;
       }
       case 'demo': this.tick(now, e.team, `${who} BUMPS ${nameOf(seat(e.targetId))} · ${Math.round((e.value ?? 0) * KMH)} KM/H`); break;
       // Goal Rush's FIGHT stance (game/ball/model.ts GOAL_STANCE): yours a banner, anyone's a line.
       case 'tackle': {
+        // (A TACKLE that knocked the ball off its carrier says so - BALL WON - on the tackler's banner and
+        // in everyone's line.)
         const down = nameOf(seat(e.targetId)), big = e.text === 'TAKEDOWN';
-        if (e.actorId === this.selfId) this.show(now, R.fight, 'tackle', e.team ?? '', `${down} · OFF THE BALL`, big ? 'TAKEDOWN!!' : 'TACKLE!', '', big ? 1400 : 1000);
-        else this.tick(now, e.team, `${who} ${big ? 'TAKES DOWN' : 'TACKLES'} ${down}${e.targetId === this.selfId ? ' · YOU' : ''}`, 'tackle', LINE_RANK.fight);
+        if (e.actorId === this.selfId) this.show(now, R.fight, 'tackle', e.team ?? '', `${down} · ${e.won ? 'BALL WON' : 'OFF THE BALL'}`, big ? 'TAKEDOWN!!' : 'TACKLE!', '', big ? 1400 : 1000);
+        else this.tick(now, e.team, `${who} ${big ? 'TAKES DOWN' : 'TACKLES'} ${down}${e.targetId === this.selfId ? ' · YOU' : ''}${e.won ? ' · BALL WON' : ''}`, 'tackle', LINE_RANK.fight);
+        break;
+      }
+      // (A REVERSAL - a guard timed against a tackle - is named small, as a touch is: a line under the
+      // score, the guard's side's.)
+      case 'reversal': {
+        const down = nameOf(seat(e.targetId));
+        this.tick(now, e.team, e.actorId === this.selfId ? `REVERSAL! · ${down} DOWN` : e.targetId === this.selfId ? `${who} · REVERSAL · YOU'RE DOWN` : `${who} · REVERSAL · ${down} DOWN`, 'tackle', LINE_RANK.fight);
         break;
       }
       case 'bowled': this.tick(now, e.team, `${who || 'THE BALL'} ${e.text === 'STAGGERED' ? 'STAGGERS' : 'BOWLS OVER'} ${nameOf(seat(e.targetId))} · ${Math.round((e.value ?? 0) * KMH)} KM/H`); break;

@@ -92,6 +92,16 @@
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat[data-tier="4"] small{color:#e2b6ff;animation:bh-throb .6s ease-in-out infinite}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-heat[data-tier="4"] i{width:calc(9 * var(--bh-u))}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-board.lesson .bh-heat{display:none}
+/* The POWER PLAY: while a side has a body wiped out, the count stands where the heat was - red's bodies
+   in play, then blue's, each in its side's colour, the short side's dim - and the wiped-out faces fade. */
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-power{display:none;align-items:baseline;gap:calc(7 * var(--bh-u));font:italic 900 calc(30 * var(--bh-u))/.9 'Barlow Condensed',sans-serif;letter-spacing:.02em}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle:is([data-power="red"],[data-power="blue"]) .bh-power{display:flex;animation:bh-throb 1s ease-in-out infinite}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle:is([data-power="red"],[data-power="blue"]) .bh-heat{display:none}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-power b.red{color:var(--bh-red)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-power b.blue{color:var(--bh-blue)}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle[data-power="red"] .bh-power b.red,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-middle[data-power="blue"] .bh-power b.blue{opacity:.5}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-power small{font-size:calc(20 * var(--bh-u));color:#e9e3d6}
+#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-face.out{opacity:.3;filter:grayscale(1)}
 
 /* ---- The one line under the score (it was a ticker down the right edge, over a feed of the bots' chat):
    who did what, the banner's own detail while one is up, or what the match says at rest. It keeps its place when it has

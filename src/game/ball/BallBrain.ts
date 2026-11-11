@@ -287,6 +287,27 @@ const SET_SWING = 3;
 const AIM_EASED = .55;
 export const CARRY_BOT = {slow: 5.5, room: 4, shoot: 13, pressure: {easy: 3.8, normal: 4.2, hard: 4.8}, most: 2.6, passNear: 4, passFar: 18, callFar: 24, open: 2.2, lane: 1.1, box: 8,
   lead: .12, trap: {easy: .3, normal: .5, hard: .7}} as const;
+/** The fight pays in the sport: Goal Rush's bots fight for the ball (BallMatch TACKLE_WON, REVERSAL). Without this a
+ *  carrying bot let the ball go the moment one of theirs came within reach of it, and nobody went for a carrier as such:
+ *  the bots lost a carry to a tackle 0.0 times a match.
+ *  - **The carrier hunted:** one of the other side carrying the ball within `range` m of a bot that is the nearest of
+ *    its side to them (a person nearer counts only locked on them: one who is not hunting leaves it to the bots, or a
+ *    side with a person in it hunted less than a side of bots) is locked on and run down (the boost from afar) `go` of
+ *    the time by level, decided once a carry -
+ *    at their flank, `flank` m off the line of their run, not through the ball at their feet - and struck the moment it
+ *    is in reach with the light, the quickest blow: any blow on a carrier wins the ball. A keeper hunts one only inside
+ *    its box (CARRY_BOT.box).
+ *  - **The read:** a carrying bot reads the pressure on it (CARRY_BOT.pressure) from one of theirs coming from the side
+ *    `read` s after it comes, by level (it let go on the tick one of theirs came near, before any blow could reach it);
+ *    one straight ahead of it (within `ahead` rad of its run, in the ball's way) at once; one coming from behind (more
+ *    than `behind` rad off its run) only within `blind` m of the ball - a tackle from the side or behind, closing faster
+ *    than the read, lands before it lets the ball go.
+ *  - **The REVERSAL:** a carrying bot with a rival locked on it swinging within `near` m puts the guard up as the blow
+ *    comes (`lead` s before its contact, its timing error on top) and holds it `hold` s, `reverse` of the time by level,
+ *    decided once a swing - in place of the pass or the shot it would not get away in time.
+ *  Drawn from the match's stream in Goal Rush only (Sky Spike's matches play as they did). */
+export const FIGHT_BOT = {range: {easy: 6, normal: 7, hard: 8}, go: {easy: .45, normal: .6, hard: .75}, behind: 2, blind: {easy: 2.4, normal: 2.8, hard: 3.6},
+  read: {easy: .3, normal: .2, hard: .1}, ahead: .6, flank: 1.2, strike: 3.2, near: 3.2, lead: .1, hold: .3, reverse: {easy: 0, normal: .25, hard: .5}} as const;
 
 
 /** A bot that plays the ball game it was seated in, through the same inputs a person sends (a stick, a view, the
@@ -340,6 +361,11 @@ export class BallBrain {
    *  the decision; the call for the ball from a person of its side (PASS_CALL), until when. */
   private carrySince = -Infinity;
   private trapFor = ''; private trapIt = false;
+  /** Goal Rush (FIGHT_BOT): the carry a hunt was decided for and the decision; the swing a REVERSAL was
+   *  decided for and the decision. */
+  private huntFor = ''; private huntIt = false; private guardFor = ''; private guardIt = false; private guardUp = Infinity;
+  /** Since when the pressure on this carrying bot has been there unread (FIGHT_BOT.read). */
+  private pressSince = Infinity;
   private call: {id: string; until: number} | null = null;
   /** A person of this bot's side called for the ball (BallMatch.chat: PASS_CALL), until `until`. */
   called(id: string, until: number) { this.call = {id, until}; }
@@ -425,13 +451,39 @@ export class BallBrain {
     }
     input.targetId = q!.id; input.lock = true;
     const yaw = Math.atan2(q!.x - me.x, q!.z - me.z);
-    this.run(me, {x: q!.x, z: q!.z}, input, now, 1.3, 5);
+    // (A carrier is closed on at their flank, not through the ball at their feet - a body that meets
+    // the ball knocks it off them but wins nothing.)
+    const carried = view.ball.carry === q!.id, ux = carried ? (b.x - q!.x) / Math.max(.1, theirs) : 0, uz = carried ? (b.z - q!.z) / Math.max(.1, theirs) : 0;
+    const side = (me.x - q!.x) * uz - (me.z - q!.z) * ux >= 0 ? 1 : -1;
+    this.run(me, carried && d > 1.6 ? {x: q!.x + uz * side * FIGHT_BOT.flank - ux * .4, z: q!.z - ux * side * FIGHT_BOT.flank - uz * .4} : {x: q!.x, z: q!.z}, input, now, carried ? .3 : 1.3, 5);
     input.yaw = yaw;
-    if (d < 2.6 && Math.abs(q!.y - me.y) < 1.6 && now >= this.nextPress) {
+    if (d < (carried ? FIGHT_BOT.strike : 2.6) && Math.abs(q!.y - me.y) < 1.6 && now >= this.nextPress) {
+      // (A carrier is struck with the light, the quickest blow - any blow on them wins the ball - from as
+      // far as its lunge carries it to them as they run on.)
+      if (carried) { this.press(input, 'light', yaw, now, .14); return true; }
       const special = (me.cooldowns.special ?? 0) <= now && this.rng() < .15;
       const string = !special && this.rng() < .45 + this.skill * .4;
       this.press(input, special ? 'special' : string ? 'light' : 'heavy', yaw, now, string ? .14 : .45);
     }
+    return true;
+  }
+  /** (FIGHT_BOT) One of the other side carrying the ball within FIGHT_BOT.range of this bot, which is the
+   *  nearest of its side to them (a keeper: only with them in its box), hunted FIGHT_BOT.go of the time - decided once a
+   *  carry. Whether the hunt is on (the lock is this.fight). */
+  private hunt(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, b: BallState, now: number, role: string, ownZ: number) {
+    const id = b.carry, theirs = id !== undefined ? seatOf(view, id) : undefined;
+    if (!id || !theirs || theirs.team === seat.team || theirs.out !== undefined || this.fight || now < this.nextTackle) { if (!id) this.huntFor = ''; return false; }
+    const q = players.find(p => p.id === id);
+    if (!q?.alive) return false;
+    const d = gap(me, q);
+    if (d > FIGHT_BOT.range[this.level] || Math.abs(q.y - me.y) > 1.4 || (role === 'keeper' && Math.abs(q.z - ownZ) > CARRY_BOT.box)) return false;
+    // (A team-mate nearer them hunts them instead: a bot, or a person locked on them - a person who is not leaves it to
+    // the bots, as a side of bots would have it.)
+    for (const p of players) { const s = p.id === me.id ? undefined : seatOf(view, p.id); if (s && s.team === seat.team && s.out === undefined && p.alive && s.role !== 'keeper' && (s.bot || s.lock === id) && gap(p, q) < d) return false; }
+    const key = `${id}:${theirs.touches}`;
+    if (key !== this.huntFor) { this.huntFor = key; this.huntIt = this.rng() < FIGHT_BOT.go[this.level]; }
+    if (!this.huntIt) return false;
+    this.fight = {id, since: now};
     return true;
   }
   /** Goal Rush's press: the one of the other side on the ball (within 2.5 m of it and nearer it than anyone of this
@@ -583,10 +635,12 @@ export class BallBrain {
     if (this.brace(me, b, team, now, input, role === 'keeper')) { this.fight = null; return input; }
     // A tackle under way (the FIGHT stance) goes on until it lets go.
     if (this.fighting(me, seat, players, view, b, input, now)) return input;
+    // (FIGHT_BOT) One of theirs carrying the ball near it, and it the nearest of its side: hunted.
+    if (this.hunt(me, seat, players, view, b, now, role, ownZ) && this.fighting(me, seat, players, view, b, input, now)) return input;
     // (CARRY_BOT) The ball at its feet, carried - on with it, or let go of it; a team-mate's carried ball is
     // theirs (a swing at it would play nothing), so the side gets up the pitch for the pass.
     if (b.carry === me.id) { if (this.carrySince === -Infinity) this.carrySince = now; return this.carrying(me, seat, players, view, now, input, role, shotYaw); }
-    this.carrySince = -Infinity;
+    this.carrySince = -Infinity; this.pressSince = Infinity;
     const mateCarry = b.carry !== undefined && seatOf(view, b.carry)?.team === team;
     if (mateCarry && role !== 'keeper') {
       this.run(me, {x: clamp(this.flank * PITCH.flank * R.halfX * 1.2, -R.halfX + 2, R.halfX - 2), z: clamp(b.z + toward * 8, -R.halfZ + 3, R.halfZ - 3)}, input, now, .8, 12);
@@ -868,6 +922,43 @@ export class BallBrain {
     }
     return pick;
   }
+  /** (FIGHT_BOT) The pressure on a carrying bot - one of the other side within CARRY_BOT.pressure m of
+   *  the ball in front of it or beside it, or within FIGHT_BOT.blind m of it from behind (more than FIGHT_BOT.behind rad
+   *  off its run, the way from it to the ball at its feet). */
+  private pressedOn(me: PlayerState, team: BallTeam, players: readonly PlayerState[], view: BallView, b: {x: number; z: number}): 'ahead' | 'near' | null {
+    const run = Math.atan2(b.x - me.x, b.z - me.z), front = CARRY_BOT.pressure[this.level], blind = FIGHT_BOT.blind[this.level];
+    let near: 'ahead' | 'near' | null = null;
+    for (const q of players) {
+      const s = q.id === me.id ? undefined : seatOf(view, q.id);
+      if (!s || s.team === team || s.out !== undefined || !q.alive) continue;
+      const d = gap(q, b), off = Math.abs(Math.atan2(Math.sin(Math.atan2(q.x - me.x, q.z - me.z) - run), Math.cos(Math.atan2(q.x - me.x, q.z - me.z) - run)));
+      if (d >= (off > FIGHT_BOT.behind ? blind : front)) continue;
+      if (off < FIGHT_BOT.ahead) return 'ahead';
+      near = 'near';
+    }
+    return near;
+  }
+  /** (FIGHT_BOT) A rival locked on this carrying bot, swinging within FIGHT_BOT.near m, its blow due in
+   *  FIGHT_BOT.lead s (this bot's timing error on top): the guard up for the REVERSAL, FIGHT_BOT.reverse of the time by
+   *  level, decided once a swing. */
+  private guards(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, now: number, input: Command) {
+    const share = FIGHT_BOT.reverse[this.level];
+    if (!share || me.action === 'light' || me.action === 'heavy' || me.action === 'special' || me.action === 'ultimate') return false;
+    for (const s of view.seats) {
+      if (s.lock !== me.id || s.team === seat.team || s.out !== undefined) continue;
+      const q = players.find(p => p.id === s.id);
+      if (!q?.alive || gap(q, me) > FIGHT_BOT.near || (q.action !== 'light' && q.action !== 'heavy' && q.action !== 'special')) continue;
+      const key = `${q.id}:${q.actionStarted}`;
+      if (key !== this.guardFor) { this.guardFor = key; this.guardIt = this.rng() < share; this.guardUp = Infinity; }
+      if (!this.guardIt) continue;
+      // (Up as the blow comes, and held up through the swing: its contact is the move's own, give or take the kernel's
+      // freezes along the way.)
+      const due = (MOVES[q.fighter][q.action].contacts[0] ?? .15) - q.actionTime;
+      if (this.guardUp === Infinity && due <= FIGHT_BOT.lead + this.timingErr) this.guardUp = now;
+      if (now - this.guardUp < FIGHT_BOT.hold) { input.yaw = Math.atan2(q.x - me.x, q.z - me.z); return true; }
+    }
+    return false;
+  }
   /** A pass to `q`: the stick at them as it is pressed, so the room leads it into their run (strike.ts PASS_AIM). */
   private passTo(input: Command, b: {x: number; z: number}, q: PlayerState, now: number) {
     const dx = q.x - b.x, dz = q.z - b.z, d = Math.hypot(dx, dz) || 1;
@@ -886,17 +977,24 @@ export class BallBrain {
   private carrying(me: PlayerState, seat: BallSeat, players: readonly PlayerState[], view: BallView, now: number, input: Command, role: string, shotYaw: number): Command {
     const b = view.ball, R = GOAL_RULES, C = CARRY_BOT, team = seat.team, ownZ = goalZ(team), enemyZ = goalZ(otherTeam(team)), toward = Math.sign(enemyZ);
     const keeper = role === 'keeper', toGoal = Math.abs(enemyZ - b.z), held = now - this.carrySince;
-    const caller = this.callee(me, team, players, view, now, b);
-    if (caller && now >= this.nextPress) { this.passTo(input, b, caller, now); return input; }
     const far = toGoal > PLAN.crossFrom * R.halfZ && toGoal < PLAN.carryFrom * R.halfZ;
     const dir = keeper ? Math.atan2(-me.x * .3, toward * 10) : this.plan === 'wing' && far ? Math.atan2(this.wing * PLAN.channel * R.halfX - b.x, toward * 9) : shotYaw;
+    // (FIGHT_BOT: a rival locked on it swinging in reach - the guard as the blow comes, the REVERSAL - in
+    // place of a pass or a shot it would not get away in time.)
+    if (this.guards(me, seat, players, view, now, input)) { const yaw = input.yaw; this.carryOn(me, input, dir); input.yaw = yaw; input.guard = true; return input; }
+    const caller = this.callee(me, team, players, view, now, b);
+    if (caller && now >= this.nextPress) { this.passTo(input, b, caller, now); return input; }
     if (!keeper && toGoal < C.shoot && now >= this.nextPress) {
       const slot = me.ultimate >= 100 && Math.abs(b.x) < SUPER_WIDE ? 'ultimate' : 'heavy';
       this.carryOn(me, input, shotYaw);
       this.press(input, slot, shotYaw, now, .5, slot === 'heavy' ? this.winds(me, team, players, true) : 0);
       return input;
     }
-    const pressed = this.crowded(me, team, players, view, b, C.pressure[this.level]) || held > C.most || (keeper && Math.abs(me.z - ownZ) > C.box);
+    // (FIGHT_BOT: the pressure read off the rivals in front of it and beside it a moment after they
+    // come, one from behind only close: the blind side.)
+    const near = this.pressedOn(me, team, players, view, b);
+    if (!near) this.pressSince = Infinity; else if (this.pressSince === Infinity) this.pressSince = now;
+    const pressed = near === 'ahead' || near && now - this.pressSince >= FIGHT_BOT.read[this.level] || held > C.most || (keeper && Math.abs(me.z - ownZ) > C.box);
     if (pressed && now >= this.nextPress) {
       const mate = this.outlet(me, b, team, players, view, keeper);
       if (mate) { this.passTo(input, b, mate, now); return input; }

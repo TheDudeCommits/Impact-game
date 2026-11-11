@@ -10,8 +10,10 @@ import type {BodyType} from '../../engine/sim/archetypes';
 import type {Canonical} from '../skeleton';
 import {styleOf} from '../../game/techniques';
 import {FIGHTERS} from '../../config';
-import {BALL_SPORT, GOAL_RULES, SPIKE_RULES, ballRadius, otherTeam, type BallView} from '../../game/ball/model';
+import {BALL_SPORT, GOAL_RULES, GOAL_STANCE, SPIKE_RULES, ballRadius, otherTeam, type BallView} from '../../game/ball/model';
 import {goalZ} from '../../game/ball/physics';
+import {SPIKE_QUICK, placement} from '../../game/ball/strike';
+import {TRAP} from '../../game/ball/BallMatch';
 import {chooseBallMove, type BallMoveAsk, type BallMoveKey} from './ballMoveChoice';
 import {ownStrike} from './ownShot';
 
@@ -39,28 +41,76 @@ import {ownStrike} from './ownShot';
  *    the swing into the fighter's own move (PlayerState.strike 'charge'), which is their own clip again.
  *
  *  Which take a swing is drawn with is ballMoveChoice.ts's to say. A take that looks worse than the fighter's own attack
- *  is switched off in BALL_MOVES (`on: false`). */
+ *  is switched off in BALL_MOVES (`on: false`).
+ *
+ *  **The sport kit**: beside the prototypes the file holds the kit - 30 takes made with Meshy's text to motion from
+ *  plain descriptions of the motion, carried
+ *  onto the same mannequin - and with the kit on (`?ballmoves`, or BALL_KIT_DEFAULT) every row draws its kit take
+ *  (`kit`) and the chooser knows the whole kit. Swings are timed as the prototypes are; the rest are played as their
+ *  extras say: once and held on the last frame (a guard's TRAP, dives and parry, a celebration on the victory pose, the
+ *  diving dig's get-up on the idle after it), held in a loop (the block), or the carry's run cycle laid on the body's
+ *  own run (so the run's cadence drives it). Without the kit nothing here changes what a page draws. */
 export const BALL_MOVES_FILE = '/assets/fighters/ball-moves.glb';
+/** The kit for everyone: true would draw every page's ball matches with the whole kit, as
+ *  `?ballmoves` does. Off: the kit is asked for with `?ballmoves`. */
+export const BALL_KIT_DEFAULT = false;
 
 /** Each take's switch, and how it is fitted: `back` how much of the take's bend and turn of the back the body takes on
  *  its own stance (retarget.ts ownBack), `travel` how far it may carry the body along the floor (hip heights), and
  *  `armed` how much of the take's arm swing a body holding a blade or a polearm keeps (a kick's or a header's arms are
  *  balance, and swung by a fighter carrying a cleaver they flail it through a slash: gaunt, filmed). Judged from the
  *  gameplay camera against the fighters' own attacks. */
-export interface BallMoveRow {on: boolean; take: string; back: number; travel: number; armed?: number}
+export interface BallMoveRow {
+  on: boolean; take: string; back: number; travel: number; armed?: number;
+  /** The sport kit: the take drawn with the kit on, in place of `take` (the prototype's, which SHOOT's
+   *  quick strike ships with); `level` thrown as from the air whatever the take's extras say (one take serves a header
+   *  on the floor and in the air); `pace` how much faster than made a take played through is played. */
+  kit?: string; level?: boolean; pace?: number;
+}
 export const BALL_MOVES: Readonly<Record<BallMoveKey, BallMoveRow>> = {
-  'GR.pass': {on: true, take: 'GR.pass', back: .8, travel: .12, armed: .3},
+  // (The sport kit: the kit's pass, dig and block replaced the hand-posed prototypes, which are gone from the
+  // file - nothing without the kit drew them; the posed set stays, kit or not: its hands push up through the contact,
+  // where the generated set holds them up from the start and its fastest frame was the swing's blend into it.)
+  'GR.pass': {on: true, take: 'K.pass', back: .8, travel: .12, armed: .3},
+  // (The quick strike's kick keeps its prototype, kit or not: SHOOT's tap is a short snap, and the kit's DRIVE is the
+  // charge's wound-up shot.)
   'GR.power': {on: true, take: 'GR.power', back: .85, travel: .2, armed: .4},
-  'GR.volley': {on: true, take: 'GR.volley', back: .85, travel: .15, armed: .4},
-  'GR.head': {on: true, take: 'GR.head', back: 1, travel: .1, armed: .3},
-  'GR.headAir': {on: true, take: 'GR.headAir', back: 1, travel: .1, armed: .3},
+  'GR.volley': {on: true, take: 'GR.volley', kit: 'K.volley', back: .85, travel: .15, armed: .4},
+  'GR.head': {on: true, take: 'GR.head', kit: 'K.head', back: 1, travel: .1, armed: .3},
+  'GR.headAir': {on: true, take: 'GR.headAir', kit: 'K.head', level: true, back: 1, travel: .1, armed: .3},
   'GR.keeper': {on: true, take: 'GR.keeper', back: .9, travel: .1},
-  'SS.dig': {on: true, take: 'SS.dig', back: .9, travel: .1},
+  'SS.dig': {on: true, take: 'K.dig', back: .9, travel: .1},
   'SS.set': {on: true, take: 'SS.set', back: .9, travel: .1},
   'SS.setAir': {on: true, take: 'SS.setAir', back: .9, travel: .1},
-  'SS.spike': {on: true, take: 'SS.spike', back: 1, travel: .1},
-  'SS.wall': {on: true, take: 'SS.wall', back: .9, travel: .05},
+  'SS.spike': {on: true, take: 'SS.spike', kit: 'K.spike', back: 1, travel: .1},
+  'SS.wall': {on: true, take: 'K.wall', back: .9, travel: .05},
+  // The kit's own (with the kit on only).
+  'GR.drive': {on: true, take: 'K.drive', back: .85, travel: .2, armed: .4},
+  'GR.bicycle': {on: true, take: 'K.bicycle', back: 1, travel: .15, armed: .4},
+  'GR.trap': {on: true, take: 'K.trap', back: .85, travel: .1, armed: .3, pace: 1.2},
+  'GR.carry': {on: true, take: 'K.carry', back: .9, travel: 0, armed: .5},
+  'GR.shoulder': {on: true, take: 'K.shoulder', back: .9, travel: .25, armed: .4},
+  'GR.slide': {on: true, take: 'K.slide', back: .9, travel: .3, armed: .4},
+  'GR.diveL': {on: true, take: 'K.diveL', back: 1, travel: .4, pace: 1.5},
+  'GR.diveR': {on: true, take: 'K.diveR', back: 1, travel: .4, pace: 1.5},
+  'GR.parry': {on: true, take: 'K.parry', back: .9, travel: .1, pace: 1.3},
+  'SS.pancake': {on: true, take: 'K.pancake', back: 1, travel: .3},
+  'SS.pancakeUp': {on: true, take: 'K.pancakeUp', back: 1, travel: .1, pace: 2.4},
+  'SS.backSet': {on: true, take: 'K.backSet', back: .9, travel: .1},
+  'SS.spikeCut': {on: true, take: 'K.spikeCut', back: 1, travel: .1},
+  'SS.spikeRoll': {on: true, take: 'K.spikeRoll', back: 1, travel: .1},
+  'SS.tip': {on: true, take: 'K.tip', back: 1, travel: .1},
+  'SS.float': {on: true, take: 'K.float', back: .9, travel: .15},
+  'SS.jumpServe': {on: true, take: 'K.topServe', back: 1, travel: .1},
+  'C.slide': {on: true, take: 'C.slide', back: 1, travel: .3, armed: .5},
+  'C.pump': {on: true, take: 'C.pump', back: 1, travel: .1, armed: .5},
+  'C.flex': {on: true, take: 'C.flex', back: 1, travel: .1, armed: .5},
+  'C.point': {on: true, take: 'C.point', back: 1, travel: .1, armed: .5},
+  'C.leap': {on: true, take: 'C.leap', back: 1, travel: .15, armed: .5},
+  'C.bow': {on: true, take: 'C.bow', back: 1, travel: .1, armed: .5},
 };
+/** The take a row draws: its kit take with the kit on. */
+export const takeOf = (row: BallMoveRow, kit: boolean) => kit && row.kit ? row.kit : row.take;
 
 /** `?ballmoves` in the address, on any host: the only way the path is switched on (main.ts). */
 export function ballMovesWanted(location?: {hostname: string; search: string}): boolean {
@@ -71,7 +121,9 @@ export function ballMovesWanted(location?: {hostname: string; search: string}): 
 /** What the hook reads of the match on the page: the room's ball view and where the ball is drawn now. */
 export interface BallMoveContext {view: BallView; ball?: THREE.Vector3 | null}
 
-interface Take {clip: THREE.AnimationClip; contact: number; level: boolean; held: boolean}
+/** A take as the file has it: its contact, thrown in the air (`level`), held through a guard (`held`); the sport
+ *  kit adds a take played through once and held on its last frame (`once`) and a run's cycle (`loop`). */
+interface Take {clip: THREE.AnimationClip; contact: number; level: boolean; held: boolean; once: boolean; loop: boolean}
 interface Pack {rig: Rig; takes: Map<string, Take>}
 let load: () => Promise<Pack> = async () => readPack(await new GLTFLoader().loadAsync(BALL_MOVES_FILE));
 /** The file read: its rig (against `Stance`) and its takes, each with what its extras say. */
@@ -79,8 +131,8 @@ export function readPack(file: {scene: THREE.Object3D; animations: THREE.Animati
   const stance = file.animations.find(c => c.name === 'Stance');
   const takes = new Map<string, Take>();
   for (const clip of file.animations) {
-    const extras = clip.userData as {contact?: number; level?: boolean; held?: boolean};
-    takes.set(clip.name, {clip, contact: THREE.MathUtils.clamp(extras.contact ?? .5, .05, .95), level: !!extras.level, held: !!extras.held});
+    const extras = clip.userData as {contact?: number; level?: boolean; held?: boolean; once?: boolean; loop?: boolean};
+    takes.set(clip.name, {clip, contact: THREE.MathUtils.clamp(extras.contact ?? .5, .05, .95), level: !!extras.level, held: !!extras.held, once: !!extras.once, loop: !!extras.loop});
   }
   return {rig: rigOf(file.scene, stance), takes};
 }
@@ -117,22 +169,23 @@ let lastAsk: BallMoveAsk | undefined;
 export const ballFitCost = {ms: 0, fits: 0, refused: 0, hookMs: 0, hookCalls: 0};
 export const ballMoveReport = () => Object.fromEntries(report);
 
-/** `key`'s take fitted to the rig of `scene` (cached): undefined while the file is coming, null where it was refused. */
-export function fitBallMove(scene: THREE.Object3D, clips: readonly THREE.AnimationClip[], key: BallMoveKey, fighter?: FighterId): {clip: THREE.AnimationClip; take: Take} | null | undefined {
+/** `key`'s take fitted to the rig of `scene` (cached): undefined while the file is coming, null where it was refused.
+ *  `kit`: the row's kit take (the kit is on when the hook was installed with every take). */
+export function fitBallMove(scene: THREE.Object3D, clips: readonly THREE.AnimationClip[], key: BallMoveKey, fighter?: FighterId, kit = everything): {clip: THREE.AnimationClip; take: Take} | null | undefined {
   const label = fighter ?? '';
   if (pack === undefined) { void fetchPack(); return undefined; }
   if (pack === null) return null;
-  const row = BALL_MOVES[key], take = pack.takes.get(row.take);
+  const row = BALL_MOVES[key], name = takeOf(row, kit), take = pack.takes.get(name);
   if (!take) return null;
   let byTake = fits.get(scene);
   if (!byTake) fits.set(scene, byTake = new Map());
-  const armed = fighter && ARMED.has(styleOf(fighter)) ? row.armed ?? 1 : 1;
-  const as = `${row.take}|${row.back}|${row.travel}|${armed}`;
+  const armed = fighter && ARMED.has(styleOf(fighter)) ? row.armed ?? 1 : 1, level = row.level ?? take.level;
+  const as = `${name}|${row.back}|${row.travel}|${armed}|${level}`;
   let fitted = byTake.get(as);
   if (fitted === undefined) {
     const t0 = performance.now();
     const body = rigOf(scene, findClipIn(clips, REFERENCE));
-    const result = retarget(pack.rig, take.clip, body, 60, {ownBack: row.back, ownHands: true, facing: {source: 0, target: 0}, level: take.level, travel: row.travel});
+    const result = retarget(pack.rig, take.clip, body, 60, {ownBack: row.back, ownHands: true, facing: {source: 0, target: 0}, level, travel: row.travel});
     const ms = performance.now() - t0;
     ballFitCost.ms += ms; ballFitCost.fits++;
     if (result.clip) { result.clip.name = `ball ${key}`; if (armed < 1) holdArms(result.clip, body, armed); }
@@ -208,9 +261,30 @@ let everything = false;
 let forced: BallMoveKey | null = null;
 export function forceBallMove(key: BallMoveKey | null) { forced = key; }
 
+/** The sport kit: the stick the page's own body pressed with (main.ts notes each command it sends), for the
+ *  choices read off it - the spike's arm by PLACEMENT, the BACK SET. Nobody else's stick is known on a page: their spikes
+ *  are the straight arm, their sets as the floor's. */
+const sticks = new Map<string, {x: number; z: number}>();
+export function noteBallStick(id: string, x: number, z: number) {
+  const s = sticks.get(id);
+  if (s) { s.x = x; s.z = z; } else sticks.set(id, {x, z});
+}
+/** The kit's actions besides a swing and a guard: Sky Spike's DIVE, the carry's run, the victory pose, and
+ *  the idle a diving dig gets up in. */
+const KIT_ACTIONS: ReadonlySet<string> = new Set(['dash', 'run', 'victory', 'idle']);
+/** Each body's last diving dig (page ms), and when the idle after it began: its get-up (SS.pancakeUp) is drawn there. */
+const dove = new WeakMap<Fighter, {at: number; up?: number; swap?: BallSwap}>();
+/** Sky Spike: a dash is drawn as the diving dig at a ball this near along the floor (metres) and this low. */
+const DIVE_AT = {reach: 6, height: 2.6} as const;
+/** How long after the dive the idle may begin and still get up from the floor, ms (the dash is 0.16-0.22 s). */
+const GET_UP = 600;
+
 /** The sports take `body` draws `state` with now, or nothing (its own clip). */
 export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | undefined {
   const sport = state.action === 'light' || state.action === 'heavy' || state.action === 'special' || state.action === 'guard';
+  // (The kit's other actions only with the kit on, and nothing read for them otherwise.)
+  if (!sport && !((everything || forced) && KIT_ACTIONS.has(state.action))) { latches.delete(body); return undefined; }
+  if (state.action === 'idle') { latches.delete(body); return getUp(body, state); }
   const ctx = context?.();
   // (SHOOT's quick strike is drawn with a take on every page; anything else only with `?ballmoves`.)
   // (The page's own swing is the tap or the charge its prediction says - ownShot.ts. The
@@ -218,28 +292,104 @@ export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | u
   // as the fighter's own heavy until the room's 'tap' came, after its blow.)
   const strike = ownStrike(state.id, state.actionSeq) ?? state.strike;
   const tap = state.action === 'heavy' && strike === 'tap';
-  if (!sport || (!ctx && !forced) || !(everything || tap || forced)) { latches.delete(body); return undefined; }
-  const swing = `${state.action}|${state.actionSeq ?? state.actionStarted.toFixed(2)}|${state.chain ?? 0}|${state.branch ?? ''}|${strike ?? ''}`;
+  if ((!ctx && !forced) || !(everything || tap || forced)) { latches.delete(body); return undefined; }
+  // (A run is chosen again whenever the body takes the ball on or loses it: the carry.)
+  const carrying = state.action === 'run' && ctx?.view.ball.carry === state.id;
+  const swing = `${state.action}|${state.actionSeq ?? state.actionStarted.toFixed(2)}|${state.chain ?? 0}|${state.branch ?? ''}|${strike ?? ''}${carrying ? '|carry' : ''}`;
   let latch = latches.get(body);
   if (!latch || latch.swing !== swing) {
     lastAsk = undefined;
     const strike = tap && ctx ? BALL_SPORT[ctx.view.mode].strike : undefined, quick = strike ? (state.grounded ? strike.move : strike.air ?? strike.move) : undefined;
     latch = {swing, key: forced ?? (ctx ? choose(body, state, ctx, quick) : null), quick};
     latches.set(body, latch);
-    chosen.push({at: performance.now(), id: state.id, fighter: state.fighter, action: state.action, grounded: state.grounded, key: latch.key, ask: lastAsk});
+    // (The probes' log: every swing and guard, and the kit's other actions only when a take is chosen - every body's
+    // runs filled it.)
+    if (sport || latch.key) chosen.push({at: performance.now(), id: state.id, fighter: state.fighter, action: state.action, grounded: state.grounded, key: latch.key, ask: lastAsk});
     if (chosen.length > 400) chosen.splice(0, chosen.length - 400);
   }
   const fit = latch.key && BALL_MOVES[latch.key].on ? fitTo(body, state, latch.key) : undefined;
   if (!fit) return latch.quick ? ownQuick(body, state, latch, latch.quick) : undefined;
-  const swap = latch.swap ??= new BallSwap();
-  const held = state.action === 'guard';
-  const move = held ? undefined : latch.quick ?? body.movePlayed(state);
-  const at = move && state.actionDuration > 0 ? latch.quick ? drawnShare(body, state, move.contacts[0]) : move.contacts[0] / state.actionDuration : fit.take.contact;
-  swap.clip = held ? fit.clip : retimed(fit.clip, fit.take.contact, at);
+  const swap = latch.swap ??= new BallSwap(), take = fit.take, row = BALL_MOVES[latch.key!];
+  if (state.action === 'guard' || state.action === 'victory' || state.action === 'run' || take.held || take.once || take.loop) {
+    // Played through on the body's own clock (Fighter loops a guard, a run and the victory pose): once and held on its
+    // last frame, looped, or the run's cycle laid on the body's own run.
+    swap.clip = take.loop ? cycled(fit.clip, ownRun(body, state, fit.clip)) : take.once ? heldOn(fit.clip, row.pace ?? 1) : paced(fit.clip, row.pace ?? 1);
+    swap.move = {name: state.action, duration: 0, contacts: [0]} as unknown as MoveDefinition;
+  } else if (state.action === 'dash') {
+    // Sky Spike's DIVE: the diving dig laid across the dash, its get-up on the idle after it (getUp).
+    swap.clip = fit.clip;
+    swap.move = {name: 'dash', duration: state.actionDuration, contacts: [take.contact * state.actionDuration]} as unknown as MoveDefinition;
+    if (latch.key === 'SS.pancake') dove.set(body, {at: performance.now()});
+  } else {
+    const move = latch.quick ?? body.movePlayed(state);
+    const at = move && state.actionDuration > 0 ? latch.quick ? drawnShare(body, state, move.contacts[0]) : move.contacts[0] / state.actionDuration : take.contact;
+    swap.clip = retimed(fit.clip, take.contact, at);
+    swap.move = move;
+  }
   swap.phase = `-ball-${latch.key}`;
-  swap.move = move ?? ({name: 'guard', duration: 0, contacts: [0]} as unknown as MoveDefinition);
   swap.slot = state.action as AttackSlot;
   return swap;
+}
+/** The sport kit: the diving dig's get-up, on the idle straight after the dive - played through once at its
+ *  row's pace, then the body's own idle again (the swap let go: Fighter blends back). */
+function getUp(body: Fighter, state: PlayerState): Transplanted | undefined {
+  const d = dove.get(body);
+  if (!d) return undefined;
+  const now = performance.now(), row = BALL_MOVES['SS.pancakeUp'];
+  if (d.up === undefined) {
+    if (now - d.at > GET_UP || !state.grounded) { dove.delete(body); return undefined; }
+    d.up = now;
+  }
+  const fit = row.on ? fitTo(body, state, 'SS.pancakeUp') : undefined;
+  if (!fit || now - d.up > fit.clip.duration / (row.pace ?? 1) * 1000) { dove.delete(body); return undefined; }
+  const swap = d.swap ??= new BallSwap();
+  swap.clip = heldOn(fit.clip, row.pace ?? 1);
+  swap.move = {name: 'idle', duration: 0, contacts: [0]} as unknown as MoveDefinition;
+  swap.phase = '-ball-SS.pancakeUp'; swap.slot = state.action as AttackSlot;
+  return swap;
+}
+/** How long the body's own run takes (its cycle, which Fighter's cadence runs the carry's on), seconds. */
+function ownRun(body: Fighter, state: PlayerState, fallback: THREE.AnimationClip) {
+  return body.take({...state, action: 'run'}).clip?.duration ?? fallback.duration;
+}
+/** How much longer than its last key a take played through once is held there, seconds (longer than any celebration). */
+const HOLD = 30;
+const played = new WeakMap<THREE.AnimationClip, Map<string, THREE.AnimationClip>>();
+function variant(clip: THREE.AnimationClip, key: string, make: () => THREE.AnimationClip) {
+  let by = played.get(clip);
+  if (!by) played.set(clip, by = new Map());
+  let out = by.get(key);
+  if (!out) by.set(key, out = make());
+  return out;
+}
+/** `clip` played `pace` times as fast (the take itself at 1). */
+function paced(clip: THREE.AnimationClip, pace: number): THREE.AnimationClip {
+  if (pace === 1) return clip;
+  return variant(clip, `pace ${pace}`, () => {
+    const out = clip.clone();
+    for (const track of out.tracks) track.times = Float32Array.from(track.times, t => t / pace);
+    out.duration = clip.duration / pace; out.name = clip.name;
+    return out;
+  });
+}
+/** `clip` played once at `pace` and held on its last frame for HOLD seconds: looped by Fighter as a guard or a victory
+ *  pose is, it never comes round again. */
+export function heldOn(clip: THREE.AnimationClip, pace = 1): THREE.AnimationClip {
+  return variant(clip, `held ${pace}`, () => {
+    const out = paced(clip, pace).clone();
+    for (const track of out.tracks) {
+      const n = track.times.length, size = track.getValueSize(), times = new Float32Array(n + 1), values = new Float32Array((n + 1) * size);
+      times.set(track.times); times[n] = track.times[n - 1] + HOLD;
+      values.set(track.values); values.set(track.values.subarray((n - 1) * size, n * size), n * size);
+      track.times = times; track.values = values;
+    }
+    out.duration = clip.duration / pace + HOLD; out.name = clip.name;
+    return out;
+  });
+}
+/** A run's cycle laid across `length` seconds (the body's own run: Fighter's cadence then runs it as it runs that). */
+function cycled(clip: THREE.AnimationClip, length: number): THREE.AnimationClip {
+  return variant(clip, `cycle ${Math.round(length * 1000)}`, () => paced(clip, clip.duration / Math.max(.1, length)).clone());
 }
 function fitTo(body: Fighter, state: PlayerState, key: BallMoveKey) {
   const read = body.take({...state, action: 'idle'});
@@ -277,7 +427,7 @@ function drawnShare(body: Fighter, state: PlayerState, t: number) {
 function choose(body: Fighter, state: PlayerState, ctx: BallMoveContext, quick?: MoveDefinition): BallMoveKey | null {
   const view = ctx.view, seat = view.seats.find(s => s.id === state.id);
   if (!seat) return null;
-  const move = state.action === 'guard' ? undefined : quick ?? body.movePlayed(state);
+  const move = state.action === 'light' || state.action === 'heavy' || state.action === 'special' ? quick ?? body.movePlayed(state) : undefined;
   const r = ballRadius(view.mode), b = view.ball, drawn = ctx.ball;
   const g = (view.mode === 'goal-rush' ? GOAL_RULES.gravity : SPIKE_RULES.gravity) * (b.grav || 1);
   // Where the ball will be when the blow lands: its flight run on from where it is drawn (drag and bounces left out).
@@ -288,11 +438,52 @@ function choose(body: Fighter, state: PlayerState, ctx: BallMoveContext, quick?:
   const height = (FIGHTERS[state.fighter]?.height ?? 1.7) * (state.size ?? 1);
   const own = seat.team, used = view.touchTeam === own ? view.touches : 0;
   const goal = goalZ(own), fromGoal = Math.abs(state.z - goal), incoming = Math.sign(goal - b.z) === Math.sign(b.vz) && Math.hypot(b.vx, b.vz) > 4 && b.lastTeam === otherTeam(own);
-  return chooseBallMove(lastAsk = {
+  const ask: BallMoveAsk = {
     mode: view.mode, action: state.action, grounded: state.grounded, style: move?.style, blows: move?.contacts.length ?? 1, lock: seat.lock,
     ball: {ahead: dx * s + dz * c, left: dx * c - dz * s, up: by - state.y, radius: r * (b.size || 1)}, height,
     touch: used + 1, fromGoal, incoming, fromNet: Math.abs(state.z),
-  });
+  };
+  if (everything) kitAsk(ask, body, state, view, {x: bx, y: by, z: bz});
+  return chooseBallMove(lastAsk = ask, everything);
+}
+/** The sport kit: what the kit's choices read besides the prototype's (ballMoveChoice.ts BallMoveAsk). */
+function kitAsk(ask: BallMoveAsk, body: Fighter, state: PlayerState, view: BallView, at: {x: number; y: number; z: number}) {
+  const b = view.ball, s = Math.sin(state.yaw), c = Math.cos(state.yaw), seat = view.seats.find(q => q.id === state.id)!, team = seat.team;
+  ask.strike = ownStrike(state.id, state.actionSeq) ?? state.strike;
+  ask.carrying = b.carry === state.id;
+  if (view.mode === 'sky-spike') {
+    ask.serve = view.serverId === state.id && b.held;
+    // (A dive is at a ball the other side sent, near and low enough to reach off the floor.)
+    ask.diving = !b.held && b.lastTeam !== null && b.lastTeam !== team && Math.hypot(at.x - state.x, at.z - state.z) < DIVE_AT.reach && at.y < DIVE_AT.height;
+    // (strike.ts: a light from the air on the attacking touch with the ball over the net is a TIP.)
+    ask.tip = !state.grounded && state.action === 'light' && (ask.touch ?? 1) >= SPIKE_RULES.touches && at.y > SPIKE_RULES.netHeight;
+    const stick = sticks.get(state.id);
+    if (stick) {
+      // The stick as the striker read it (BallMatch: forward and across the aim), then as PLACEMENT and the sets read it.
+      const forward = stick.x * s + stick.z * c, lateral = -stick.x * c + stick.z * s;
+      ask.place = placement({forward, lateral, aimYaw: state.yaw} as Parameters<typeof placement>[0], team);
+      const across = -lateral * Math.cos(state.yaw), wing = Math.sign(across || 1) * SPIKE_QUICK.wing;
+      ask.backSet = Math.abs(lateral) > .55 && Math.abs(wing - at.x) >= SPIKE_QUICK.back;
+    }
+  } else {
+    // The keeper: where the ball coming crosses the body's line, and when.
+    const ahead = ask.ball!.ahead, va = b.vx * s + b.vz * c, vl = b.vx * c - b.vz * s;
+    if (va < -1) { const t = Math.max(0, ahead / -va); ask.shot = {left: ask.ball!.left + vl * t, eta: t}; }
+    // A TRAP's ball: near, free, and coming to the body.
+    const dx = state.x - at.x, dz = state.z - at.z;
+    ask.arriving = !b.held && b.carry === undefined && Math.hypot(dx, dz) < TRAP.reach + ballRadius(view.mode) && dx * b.vx + dz * b.vz > 0 && Math.hypot(b.vx, b.vz) > 2;
+    // The TACKLE: the one locked on (the body's target, as main.ts sets it) on the ball - carrying it, or by it.
+    if (seat.lock && body.targetPoint) {
+      const p = body.targetPoint;
+      ask.foe = {distance: body.targetDistance, onBall: b.carry === seat.lock || Math.hypot(p.x - at.x, p.z - at.z) <= GOAL_STANCE.tackle.near};
+    }
+  }
+  if (state.action === 'victory') {
+    ask.celebrate = view.phase === 'over' ? 'podium' : view.mode === 'goal-rush' ? 'goal' : 'point';
+    let h = 0;
+    for (let i = 0; i < state.id.length; i++) h = (h * 31 + state.id.charCodeAt(i)) | 0;
+    ask.seed = Math.abs(h) + view.score.red + view.score.blue + view.round;
+  }
 }
 
 /** Installs the hook (main.ts): Fighter.transplant asks for a sports take first, and hands on to the hook installed
@@ -300,7 +491,7 @@ function choose(body: Fighter, state: PlayerState, ctx: BallMoveContext, quick?:
  *  address); without it only SHOOT's quick strike is drawn with one. */
 export function installBallMoves(read: () => BallMoveContext | undefined, all = true) {
   if (installed) return;
-  installed = true; context = read; everything = all;
+  installed = true; context = read; everything = all || BALL_KIT_DEFAULT;
   const before = Fighter.transplant;
   Fighter.transplant = (body, state) => {
     const t0 = performance.now(), swap = ballSwapFor(body, state);
@@ -314,7 +505,7 @@ export function installBallMoves(read: () => BallMoveContext | undefined, all = 
 export function loadBallMovesFrom(from: () => Promise<Pack>) { load = from; pack = undefined; fetching = undefined; return fetchPack(); }
 /** For tests: forget the takes, every fit and the hook. */
 export function resetBallMoves(transplant?: typeof Fighter.transplant) {
-  pack = undefined; fetching = undefined; fits = new WeakMap(); timed = new WeakMap(); report.clear(); forced = null; chosen.length = 0;
+  pack = undefined; fetching = undefined; fits = new WeakMap(); timed = new WeakMap(); report.clear(); forced = null; chosen.length = 0; sticks.clear();
   if (installed) Fighter.transplant = transplant; installed = false; context = undefined; everything = false;
   Object.assign(ballFitCost, {ms: 0, fits: 0, refused: 0, hookMs: 0, hookCalls: 0});
 }

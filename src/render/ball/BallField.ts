@@ -17,6 +17,7 @@ import {arenaMood,crowdHype} from './hype';
 import {sideRing} from './TeamTrim';
 import {MOTIF_RATE,fighterColour,superLook} from './superShotLooks';
 import {AimLine} from './aimLine';
+import {FightMarks} from './FightMarks';
 import type {FighterId} from '../../game/types';
 
 /** Points in the trail, effects in the pool, and the instances drawn each frame beyond the pool (the shadow, the
@@ -552,6 +553,8 @@ export class BallField {
    *  it, where the snapshot puts them. */
   bodyOf:(id:string)=>THREE.Vector3|undefined=()=>undefined;
   private readonly tags=new BallTags();
+  /** The POWER PLAY's glowing goal and the marks of a TACKLE that won the ball and a REVERSAL. */
+  private readonly fight:FightMarks;
   /** The page's own charged shot's aim line on the pitch (aimLine.ts); `aim` is what it
    *  shows, for the checks (window.__ballField on this machine). */
   private readonly aimLine=new AimLine();
@@ -584,6 +587,7 @@ export class BallField {
     this.kit=VfxKit.for(scene);
     this.marks=new GroundMarks(scene,MARKS.most.high);this.marks.mesh.name='Ball modes · the pitch\'s marks';this.marks.mesh.visible=false;
     this.root.name='Ball modes · the ball and its moments';this.root.visible=false;scene.add(this.root);this.root.add(this.charms.root);
+    this.fight=new FightMarks(this.root);this.fight.toward=id=>this.where(id,this.spot)??undefined;
     // The football's panels: twelve black pentagons on an icosahedron's corners, twenty white hexagons on its faces.
     const ico=[[0,1,golden],[0,1,-golden],[0,-1,golden],[0,-1,-golden],[1,golden,0],[-1,golden,0],[1,-golden,0],[-1,-golden,0],[golden,0,1],[golden,0,-1],[-golden,0,1],[-golden,0,-1]].map(([x,y,z])=>unit(x,y,z));
     const dodeca:THREE.Vector3[]=[];
@@ -807,6 +811,7 @@ export class BallField {
     // The name tags: in play, not over a replay (its tag names the goal) nor the results.
     this.tags.update(view.seats,selfId,this.where,!replaying&&view.phase!=='lobby'&&view.phase!=='over');
     this.charms.update(view,snapshot.players,this.shown?this.drawn:null,step,serverTime);
+    this.fight.update(view,replaying?0:step,seconds);
     // FEVER (Sky Spike) and OVERTIME (Goal Rush): the place at its peak while they last, the crowd on its feet.
     // (Goal Rush's FINAL PUSH too - its `fever`.)
     const peak=(view.mode==='sky-spike'?view.fever:view.overtime||view.fever)&&view.phase!=='over'?1:0;
@@ -825,7 +830,7 @@ export class BallField {
     this.ring.length=0;this.ahead=null;this.lead=0;this.rewind=null;this.mend.set(0,0,0);this.mendV.set(0,0,0);this.drawnT=NaN;this.ringSeen=-Infinity;this.told=null;
     this.strokeTrail.count=0;this.stroke.clear();this.stroke.mesh.visible=false;this.strokeLeft=0;this.bodies.clear();this.marks.mesh.visible=false;
     this.pressAt=-Infinity;this.length=1;this.thin=0;this.spinShown=0;this.spinLines.visible=false;this.aimLine.hide();
-    this.carried=null;this.carryLook.id='';this.carryLook.k=0;
+    this.carried=null;this.carryLook.id='';this.carryLook.k=0;this.fight.clear();
   }
 
   // ─── The page's own touch, drawn at once ─────────────────────────────────────────────────────────────────────────
@@ -1604,7 +1609,8 @@ export class BallField {
         this.skid(e.targetId,0,0,1.9);
         break;
       }
-      case 'tackle':this.skid(e.targetId,0,0,1.5);break;
+      case 'tackle':this.skid(e.targetId,0,0,1.5);this.fight.moment(e,view);break;
+      case 'reversal':this.skid(e.targetId,0,0,1.2);this.fight.moment(e,view);break;
       case 'dig':if(e.text==='DIVING DIG')this.skid(e.actorId,0,0,1.4);break;
       case 'kill':case 'ace':case 'point':{
         // A point won where the ball came down (the spike slams in). A kill or an ace hardest; a point won

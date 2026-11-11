@@ -88,7 +88,7 @@ describe('the launch gate: modes and stages', () => {
     for (const card of ['arcade', 'last-stand', 'bad-blood', 'rift-war']) expect(HOME_RAIL.includes(card as 'arcade'), card).toBe(modeOpen(card)); // (Rift War: LAUNCH.riftWar, open since rift-war)
     expect(HOME_RAIL).toEqual(expect.arrayContaining(['duel', 'bots', 'training']));
   });
-  it('shows the ball modes on play.example.com and the match server, never in Player Two\'s copy while LAUNCH.ballModes is "site"', () => {
+  it('shows the ball modes on a site of its own and the match server, never in Player Two\'s copy while LAUNCH.ballModes is "site"', () => {
     expect(LAUNCH.ballModes).toBe('site');
     expect(modeOpen('goal-rush')).toBe(true); expect(modeOpen('sky-spike')).toBe(true); // (node: the match server serves their rooms)
     expect(HOME_RAIL).toEqual(expect.arrayContaining(['goal-rush', 'sky-spike']));

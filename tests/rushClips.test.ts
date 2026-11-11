@@ -39,10 +39,7 @@ describe('rush string clips', () => {
     }
   });
 
-  // Suzuran's and Ouga's rush files leave joints unkeyed that their body clips key (Suzuran's elbow and knee share bones
-  // and forearm twists, and Rush 3's Hips scale; Ouga's three cape scales): a known fault in those two shipped files, out
-  // of this case until they are re-keyed.
-  it.each(withRush.filter(id => !['suzuran', 'ouga'].includes(id)))('%s: the rush file binds onto the body, names its stages, and has their contacts', async id => {
+  it.each(withRush)('%s: the rush file binds onto the body, names its stages, and has their contacts', async id => {
     const def = FIGHTERS[id];
     expect(fs.existsSync(`public${def.rushModel}`), `${def.rushModel} missing`).toBe(true);
     const body = await loadRig(def.model);

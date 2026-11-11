@@ -16,6 +16,8 @@ import type {PlayerState, Vec3} from '../types';
  *   next opponent that way: the cycle is never in the way of going back to the ball.
  * - The lock lets go by itself when its opponent is wiped out (a TAKEDOWN: a beat later, so the hit is seen), leaves the
  *   pitch or gets out of reach, when play stops (a goal, a kickoff), or when the room did not take it.
+ * - And when this seat's TACKLE (BallMatch TACKLE_WON) has just won the ball off its carrier (a beat
+ *   later, WON_HOLD) - the ball pops loose this way, and it is the ball's stance's to play.
  */
 export type Stance = 'ball' | 'fight';
 /** Whether a match has the two stances: Goal Rush outside FREE PLAY (Sky Spike never fights), and FREE PLAY's drill with
@@ -28,6 +30,11 @@ const FLICK = .32, FLICK_WINDOW = .28, FLICK_REST = .35;
 const ROOM_GRACE = .9;
 /** A TAKEDOWN's beat: the lock holds this long on the body going down before the ball is the stance again. */
 const TAKEDOWN_HOLD = .55;
+/** A TACKLE that won the ball - the lock holds this long on the blow, then the ball popping loose this
+ *  seat's way is the stance: as it comes down at the tackler's feet (LOOSE: about half a second after the blow). Sooner,
+ *  and the swing that won it played the ball as it went up with what was left of it (seen on the page: a light's last
+ *  contact drove the ball 15 m up the pitch). */
+export const WON_HOLD = .45;
 /** pickFoe: an opponent within ON_BALL metres of the ball (and the nearest of their side to it) is the one on it, and
  *  counts this many metres nearer than they are; one off the view's line counts AWAY metres a radian further. */
 const ON_BALL = 4, ON_BALL_PULL = 12, AWAY = 6;
@@ -85,17 +92,20 @@ export class StanceControl {
   /** Seconds since the stance last changed (the camera's blend, the HUD's flash). */
   since = 0;
   /** What last changed it, for the page to say: a Tab, a flick to another opponent, or the lock let go by itself. */
-  lastChange: 'press' | 'flick' | 'takedown' | 'lost' | 'stop' | '' = '';
+  lastChange: 'press' | 'flick' | 'takedown' | 'won' | 'lost' | 'stop' | '' = '';
   private presses = 0;
   private flickSum = 0;
   private flickAge = 0;
   private flickRest = 0;
   private unconfirmed = 0;
   private downFor = 0;
+  /** The newest event of the room's read, and how long since this seat's TACKLE won the ball (-1: none pending). */
+  private eventSeen = 0;
+  private wonFor = -1;
 
   get stance(): Stance { return this.lock ? 'fight' : 'ball'; }
   /** A new match: the BALL stance. (A couch seat's press count is kept: its next count says whether it is new.) */
-  reset() { this.lock = null; this.since = 0; this.lastChange = ''; this.flickSum = this.flickAge = this.flickRest = 0; this.unconfirmed = 0; this.downFor = 0; }
+  reset() { this.lock = null; this.since = 0; this.lastChange = ''; this.flickSum = this.flickAge = this.flickRest = 0; this.unconfirmed = 0; this.downFor = 0; this.eventSeen = 0; this.wonFor = -1; }
 
   /** Tab: the BALL stance locks the best opponent (pickFoe), the FIGHT stance is the ball again. Whether it changed. */
   toggle(view: BallView | undefined, me: PlayerState | undefined, players: readonly PlayerState[], yaw: number, ball: Vec3 | null): boolean {
@@ -118,7 +128,10 @@ export class StanceControl {
    *  drag), for the flick. Lets the lock go when it should (see the class). */
   update(dt: number, view: BallView | undefined, me: PlayerState | undefined, players: readonly PlayerState[], turn: number) {
     this.since += dt;
-    if (!this.lock) { this.flickSum = 0; this.unconfirmed = 0; this.downFor = 0; return; }
+    // (This seat's TACKLE won the ball off the one locked - WON_HOLD, then the ball.)
+    if (view) for (const e of view.events) if (e.id > this.eventSeen) { this.eventSeen = e.id; if (e.kind === 'tackle' && e.won && me && e.actorId === me.id && e.targetId === this.lock) this.wonFor = 0; }
+    if (!this.lock) { this.flickSum = 0; this.unconfirmed = 0; this.downFor = 0; this.wonFor = -1; return; }
+    if (this.wonFor >= 0 && (this.wonFor += dt) >= WON_HOLD) { this.set(null, 'won'); return; }
     if (!hasStances(view) || !me || view.phase !== 'live' || !me.alive || seatOf(view, me.id)?.out !== undefined) { this.set(null, 'stop'); return; }
     const seat = seatOf(view, this.lock), q = players.find(p => p.id === this.lock);
     // Wiped out: a TAKEDOWN - held a beat on the body going down, then the ball.
@@ -150,6 +163,6 @@ export class StanceControl {
 
   private set(lock: string | null, why: StanceControl['lastChange']) {
     if (lock === this.lock) return;
-    this.lock = lock; this.since = 0; this.lastChange = why; this.unconfirmed = 0; this.downFor = 0; this.flickSum = 0; this.flickAge = 0;
+    this.lock = lock; this.since = 0; this.lastChange = why; this.unconfirmed = 0; this.downFor = 0; this.flickSum = 0; this.flickAge = 0; this.wonFor = -1;
   }
 }

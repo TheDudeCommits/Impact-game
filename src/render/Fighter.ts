@@ -2076,6 +2076,8 @@ export class Fighter {
   /** Whether a technique's take carries its own legs in the air - a leap's, a kick's - so the air string's tuck
    *  (`airTuck`) leaves them be (engine/client/styleMoves.ts). */
   static styleLegs?:(fighter:FighterId,key:TechniqueKey)=>boolean;
+  /** The ball modes' faces (src/render/ball/ballFaces.ts): the face's bones posed on the body as drawn. */
+  static face?:(body:Fighter,state:PlayerState,real:number)=>void;
   /** The borrowed takes this body has drawn, each given its pose nodes once (`ensurePoseNodes`). */
   private borrowedSeen?:WeakSet<THREE.AnimationClip>;
   private swap?:Transplanted;
@@ -6356,6 +6358,7 @@ export class Fighter {
         previous.copy(bone.quaternion);
       }
       this.mouthBlade();
+      Fighter.face?.(this,state,real); // The ball modes' faces, on the pose that is drawn, before the hair answers it
       // Cloth and hair are solved last, against finished world matrices, so the
       // lag reflects where the body actually ended up this frame, and the hair
       // answers the head turn above as well as the body.

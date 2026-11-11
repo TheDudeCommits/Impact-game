@@ -8,6 +8,7 @@ import type {CollisionWorld, CombatEvent, FighterId, PlayerState, Vec3} from '..
 import {BOT_LEVELS, BallBrain, PLAN_LINES, dealPlan, isBotLevel, type BotLevel} from './BallBrain';
 import {
   BALL_ID, BALL_RULES, BALL_SPORT, BALL_STAGE, BALL_TEAMS, CHARM_KINDS, CLASH, GOAL_FIGHT, GOAL_STANCE, PASS_CALL, QUICK_CHAT_LIMIT, quickChat, GOAL_RULES, RUMBLE, SPIKE_RULES, ballAssist, charmName, heatTier, otherTeam,
+  inPlay, shortSide,
   type BallAccess, type BallCharm, type BallEffect, type CharmKind, type BallEvent, type BallModeId, type BallSeat, type BallSnapshot, type BallState,
   type BallTeam, type BallView, type ShotKind,
 } from './model';
@@ -109,7 +110,7 @@ const RATTLE = {post: .6, net: .6} as const;
 export const MVP = {
   touch: 1, shot: 10, scuffTouch: 0, scuffShot: 0, goal: 120, scuffGoal: 40, ownGoal: -60, assist: 50,
   save: 50, divingSave: 60, perfectSave: 80, shield: 30,
-  perfectStrike: 100, perfectSpike: 80, tackle: 30, takedown: 50, wipeout: 10,
+  perfectStrike: 100, perfectSpike: 80, tackle: 30, takedown: 50, wipeout: 10, reversal: 40,
   block: 30, stuff: 110, dig: 30, divingDig: 50, kill: 80, scuffKill: 20, superKill: 140, ace: 90, fault: -60, serve: 2, perfectServe: 50,
   link: 25, linkSetter: 10, duel: 90, clash: 15, charm: 5, win: 25,
 } as const;
@@ -267,11 +268,43 @@ export function carries(b: BallState, r: number, body: {grounded: boolean; alive
   return !b.held && !b.super && b.frozenUntil <= now && b.clash <= now && Math.hypot(b.vx, b.vz) <= CARRY.slow && b.y <= r + CARRY.low && Math.abs(b.vy) <= CARRY.lift
     && body.alive && body.grounded && !body.swinging && !body.locked && !REELING.has(body.action) && body.stick >= CARRY.stick && run >= CARRY.run;
 }
-/** The velocity a carried ball pops LOOSE with from `b` toward `to` (LOOSE). */
-export function looseToward(b: Vec3, to: {x: number; z: number}) {
+/** The velocity a carried ball pops LOOSE with from `b` toward `to` (LOOSE). (No further than the feet of
+ *  `to` - the ball's edge `CARRY.gap` short of their body - so a tackler a stride off has it come down at their feet: at
+ *  LOOSE.speed whatever the distance, a tackle won from 1.8 m off popped the ball into the tackler's shins, and it came
+ *  back off them to the carrier.) */
+export function looseToward(b: Vec3 & {grav?: number}, to: {x: number; z: number; size?: number}, r: number = GOAL_RULES.ballRadius) {
   const dx = to.x - b.x, dz = to.z - b.z, d = Math.hypot(dx, dz) || 1;
-  return {vx: dx / d * LOOSE.speed, vy: LOOSE.up, vz: dz / d * LOOSE.speed};
+  const feet = Math.max(0, d - PLAYER_RADIUS * (to.size ?? 1) - r - CARRY.gap), air = 2 * LOOSE.up / (GOAL_RULES.gravity * (b.grav ?? 1));
+  const speed = Math.min(LOOSE.speed, feet / air);
+  return {vx: dx / d * speed, vy: LOOSE.up, vz: dz / d * speed};
 }
+/** The fight pays in the sport. The two stances stay; a TACKLE on the carrier pops the ball to the tackler; a WIPE-OUT
+ *  is a POWER PLAY (the score bug reads 3 v 2, the short side's goal glows, a goal in it is named); a perfect guard
+ *  against a tackle is a REVERSAL. Goal Rush only.
+ *  - **The TACKLE that wins the ball:** a FIGHT-stance blow of the other side that lands on the carrier is a TACKLE
+ *    whatever it does to them - a flinch is enough, where one on anybody else on the ball must knock them down, launch
+ *    them or wipe them out (GOAL_STANCE.tackle) - and the ball pops LOOSE toward the tackler (its event `won`). Before, a
+ *    flinch ended the carry where the carrier stood (the ball rolled on, nobody's), and the knockdown that LOOSE waited
+ *    for came after it: the bots lost a carry to a tackle 0.0 times a match.
+ *  - Online, a person's carrier the blow left on their feet is the room's to wait on for `hold` (their page's lag and
+ *    SEEN.over, never more than SEEN.most and that): the ball stays at their feet, the tackle untold, while a guard they
+ *    pressed in time on their page may still be on its way (REVERSAL). */
+export const TACKLE_WON = {hold: SEEN.most + SEEN.over} as const;
+/** - **REVERSAL:** the one on the ball (the carrier, or as GOAL_STANCE.tackle names one) with the guard pressed `window` s
+ *    or less before a FIGHT-stance blow of the other side lands on them turns it: the blow does nothing, the tackler is
+ *    put down (REVERSED: a knockdown with no harm in it, the guard's) and a carrier keeps the ball. A fresh press, as the
+ *    kernel dates one (`guardAt`: the button up a moment first, no whiffed window's lockout running), never a guard held
+ *    up or mashed. Facing the tackle it is the kernel's own just guard (the tackler reels and the guard slips past them);
+ *    turned away, a press in time is a REVERSAL all the same. (`window` 0.25: the just guard's own, so a fighter's guard
+ *    means one thing in either stance.) Worth MVP.reversal and `meter` of the super shot's (GOAL_STANCE.tackle's).
+ *    Judged as the guard's page drew it (SEEN): a press heard after the blow landed in the room counts when, on the page,
+ *    it came `window` s or less before the blow landed there (and no more than `over` after: the frame the press rode on),
+ *    so long as the blow left them on their feet (TACKLE_WON.hold) - its flinch is taken back and its harm healed. */
+export const REVERSAL = {window: JUST_GUARD_WINDOW, over: SEEN.over, meter: 12, awaken: 6} as const;
+/** A REVERSAL's blow on the tackler: down a moment, with no harm in it (nobody's health counts for it). */
+const REVERSED: MoveDefinition = {name: 'REVERSAL', duration: .4, contacts: [0], damage: 1, range: 1, radius: 1, stamina: 0, cooldown: 0, stun: .6, knockback: 6, style: 'melee', outcome: 'knockdown'};
+/** A blow that leaves its body on its feet (a flinch, a hurt): what a REVERSAL heard late can take back. */
+const ON_FEET: ReadonlySet<string> = new Set(['flinch', 'hurt']);
 const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 /** The rules of a touch that the page forecasts for its own fighter (touchForecast.ts), read from here so the
  *  page's forecast and the room's touch cannot drift apart. */
@@ -379,6 +412,12 @@ export class BallMatch implements ExternalTargets, LessonHost {
   private readonly bumpAt = new Map<string, number>();
   /** When each striker was last tackled (GOAL_STANCE.tackle.gap). */
   private readonly tackledAt = new Map<string, number>();
+  /** (TACKLE_WON) Online, a FIGHT-stance blow on a person's carrier the room is waiting on - whose, on
+   *  whom, when it landed, until when the room waits for the guard their page may have pressed in time (REVERSAL), and
+   *  the harm it did (healed if it is turned). */
+  private held: {by: string; on: string; at: number; until: number; harm: number} | null = null;
+  /** The POWER PLAY on now - the side short, since when (live play) - for the counts. */
+  private power: {short: BallTeam; since: number} | null = null;
   /** (CARRY) The carry on now - whose, the way the ball sits round their body, since when, and until when it
    *  is held for them with the stick let go (a TRAP's grace) - and when each seat last lost one (CARRY.again). */
   private carrier: {id: string; heading: number; since: number; settle: number} | null = null;
@@ -392,7 +431,9 @@ export class BallMatch implements ExternalTargets, LessonHost {
   /** Goal Rush's first touches and passes, counted for the measures: TRAPs, carries
    *  begun (a TRAP's among them) and the seconds carried, passes the stick aimed (PASS_AIM), bots' passes to a person who
    *  called for it, and carried balls popped LOOSE. */
-  readonly counts = {traps: 0, carries: 0, carried: 0, aimed: 0, called: 0, loose: 0};
+  readonly counts = {traps: 0, carries: 0, carried: 0, aimed: 0, called: 0, loose: 0,
+    /** (TACKLEs that won the ball, REVERSALs, POWER PLAYs begun and their live seconds, goals in them.) */
+    won: 0, reversals: 0, powerPlays: 0, powerSeconds: 0, powerGoals: 0};
   /** How each carry ended, by cause (the measures'). */
   readonly carryEnds: Record<string, number> = {};
   private onTargetSince = -Infinity;
@@ -936,7 +977,9 @@ export class BallMatch implements ExternalTargets, LessonHost {
     // (Read at once, for Goal Rush's knock-outs: each one a wipe-out.)
     const fresh = this.sim.drainEvents();
     this.events.push(...fresh);
-    if (this.pvp) { this.tackles(fresh); this.wipeOuts(fresh); this.holdLocks(); }
+    // (A guard timed against a tackle first - REVERSAL - then the tackles, and a blow on a person's carrier
+    // the room waits on, settled.)
+    if (this.pvp) { this.reversals(fresh); this.tackles(fresh); this.settleHeld(); this.wipeOuts(fresh); this.holdLocks(); }
     // (TRAP online: a guard press heard after the room's ball met the body, judged as the page drew it.)
     if (this.compensate > 0 && this.mode === 'goal-rush') this.trapsSeen();
     this.tidyBodies(dt);
@@ -952,6 +995,8 @@ export class BallMatch implements ExternalTargets, LessonHost {
     if (this.events.length > 600) this.events.splice(0, this.events.length - 600);
     // (CARRY: only live play carries.)
     if (this.carrier && this.view.phase !== 'live') this.drop(undefined, 'phase');
+    // (A held tackle and the POWER PLAY are live play's.)
+    if (this.mode === 'goal-rush' && this.pvp) this.powerPlay();
     if (this.view.phase === 'live' || (this.view.phase === 'kickoff' && this.mode === 'sky-spike')) this.play(dt);
     else if (this.view.phase === 'scored') this.coast(dt);
     if (this.view.rumble && this.view.phase === 'live') this.rumbleStep(dt);
@@ -1222,14 +1267,14 @@ export class BallMatch implements ExternalTargets, LessonHost {
       const d = Math.hypot(nx, ny, nz), reach = r + PLAYER_RADIUS * size + guardReach + dive;
       // (CARRY: a carried ball is its carrier's - their body and their team-mates' let it be; a body of the
       // other side that meets it knocks it off them, and meets it as any body meets a ball.)
-      const carried = this.carrier;
+      const carried = this.carrier, shed = this.shed.get(seat.id);
       if (carried) {
         if (carried.id === seat.id || this.seats.get(carried.id)?.team === seat.team) continue;
-        if (d < reach) this.drop(undefined, 'met');
+        // (A tackler a REVERSAL has just put down lets the carried ball by - shed, below.)
+        if (d < reach && !(shed !== undefined && now < shed)) this.drop(undefined, 'met');
       }
       // (GUARD_OFF: a body whose guard has just turned the ball away, or that a SUPER SHOT has just bowled over,
       // lets it go until it is clear.)
-      const shed = this.shed.get(seat.id);
       if (shed !== undefined) { if (now < shed && d < reach) continue; this.shed.delete(seat.id); }
       // Sky Spike, the attacking touch: a hitter still climbing lets the ball by the body, for the swing (one
       // jumping straight up under the set would meet it with the head first: a PERFECT SPIKE off a set right overhead
@@ -1470,7 +1515,13 @@ export class BallMatch implements ExternalTargets, LessonHost {
     this.sim.setMods(c.id, {speed: 1});
     this.lostAt.set(c.id, now); this.counts.carried += now - c.since;
     const q = pop && this.sim.actors.get(pop.id)?.state, b = this.ball;
-    if (q) { Object.assign(b, looseToward(b, q), {sx: 0, sy: 0, sz: 0}); this.counts.loose++; }
+    if (q) {
+      Object.assign(b, looseToward(b, q, this.radius * b.size), {sx: 0, sy: 0, sz: 0}); this.counts.loose++;
+      // (The two bodies let the popped ball by until it is clear of them - shed, as a guard's does. A
+      // tackle lands from beside or behind, a stride off: the carrier ran on into the ball at their feet and drove it up
+      // the pitch at 15 m/s, or it met the tackler's shins at once and came back off them.)
+      this.shed.set(c.id, now + GUARD_OFF.clear); this.shed.set(pop!.id, now + GUARD_OFF.clear);
+    }
   }
   /** Each tick of a carry, before the ball's flight (CARRY): whether it still is one, the way the run turns it round the
    *  body, and the ball sent to the carrier's feet - the spot it is sent to, or undefined when the carry has ended. */
@@ -1479,8 +1530,10 @@ export class BallMatch implements ExternalTargets, LessonHost {
     if (!c) return undefined;
     const b = this.ball, now = this.sim.serverTime, seat = this.seats.get(c.id), a = seat && this.sim.actors.get(c.id), p = a?.state;
     const stick = a ? Math.hypot(a.input.moveX, a.input.moveZ) : 0;
+    // (A blow on a person's carrier the room waits on - TACKLE_WON - leaves the ball at their feet meanwhile.)
+    const held = this.held?.on === c.id;
     const why = !seat || !a || !p || !this.carryable() || !p.alive || seat.out !== undefined || b.held || b.super ? 'gone' : seat.lock ? 'lock' : !p.grounded ? 'air'
-      : REELING.has(p.action) || now < a.stunUntil ? 'reeling' : stick < CARRY.stick && now >= c.settle ? 'stick' : '';
+      : !held && (REELING.has(p.action) || now < a.stunUntil) ? 'reeling' : stick < CARRY.stick && now >= c.settle && !held ? 'stick' : '';
     if (why || !a || !p) { this.drop(undefined, why || 'gone'); return undefined; }
     if (stick >= CARRY.stick) { const turn = wrapAngle(Math.atan2(a.input.moveX, a.input.moveZ) - c.heading), most = CARRY.turn * dt; c.heading = wrapAngle(c.heading + Math.max(-most, Math.min(most, turn))); }
     const r = this.radius * b.size, spot = carrySpot(p, c.heading, r);
@@ -1568,18 +1621,102 @@ export class BallMatch implements ExternalTargets, LessonHost {
     for (const e of events) {
       if (e.kind !== 'hit' || !e.targetId) continue;
       const by = this.seats.get(e.actorId), seat = this.seats.get(e.targetId);
-      if (!by?.lock || !seat || seat.team === by.team || seat.out !== undefined || now - (this.tackledAt.get(seat.id) ?? -Infinity) < T.gap) continue;
+      if (!by?.lock || !seat || seat.team === by.team || seat.out !== undefined) continue;
       const q = this.sim.actors.get(seat.id)?.state;
       if (!q) continue;
       const down = !q.alive || q.hp <= 0, flat = down || e.reaction === 'knockdown' || e.reaction === 'launched';
+      // (A blow held on a person's carrier - TACKLE_WON - takes the next ones of the string with it; one
+      // that puts them down settles it now.)
+      const held = this.held?.on === seat.id ? this.held : null;
+      if (held) { held.harm += e.damage ?? 0; if (flat) this.settleHeld(true); continue; }
+      if (now - (this.tackledAt.get(seat.id) ?? -Infinity) < T.gap) continue;
+      // (TACKLE_WON: any blow on the carrier is a TACKLE.)
+      const carried = this.carrier?.id === seat.id && this.mode === 'goal-rush';
       // (Online, the one on the ball as the tackler's page drew them: SEEN.)
-      if (!flat || !(this.onBall(seat, q) || this.onBallSeen(by.id, seat))) continue;
-      this.tackledAt.set(seat.id, now);
-      by.tackles = (by.tackles ?? 0) + 1; this.award(by, down ? 'takedown' : 'tackle'); this.sim.addMeter(by.id, T.meter, T.awaken);
-      this.emit('tackle', {team: by.team, actorId: by.id, targetId: seat.id, x: q.x, y: q.y + 1, z: q.z, text: down ? 'TAKEDOWN' : 'TACKLE'});
-      // (LOOSE: the carrier tackled - the ball pops loose toward the tackler.)
-      if (this.carrier?.id === seat.id) this.drop(by, 'tackle');
+      if (!carried && (!flat || !(this.onBall(seat, q) || this.onBallSeen(by.id, seat)))) continue;
+      // (Online, a person's carrier left on their feet - the room waits on their page's guard: REVERSAL.)
+      if (carried && !flat && ON_FEET.has(e.reaction ?? '') && this.compensate > 0 && !this.brains.has(seat.id)) {
+        this.held = {by: by.id, on: seat.id, at: now, until: now + Math.min(TACKLE_WON.hold, this.lagOf(seat.id) + REVERSAL.over + 1.5 / 60), harm: e.damage ?? 0};
+        continue;
+      }
+      this.tackled(by, seat, down);
     }
+  }
+  /** A TACKLE (GOAL_STANCE.tackle): its count, worth and meter, its event, and - the carrier tackled (LOOSE,
+   *  TACKLE_WON) - the ball popped loose toward the tackler. */
+  private tackled(by: BallSeat, seat: BallSeat, down: boolean) {
+    const T = GOAL_STANCE.tackle, now = this.sim.serverTime, q = this.sim.actors.get(seat.id)?.state;
+    if (!q) return;
+    this.tackledAt.set(seat.id, now);
+    by.tackles = (by.tackles ?? 0) + 1; this.award(by, down ? 'takedown' : 'tackle'); this.sim.addMeter(by.id, T.meter, T.awaken);
+    const won = this.carrier?.id === seat.id;
+    this.emit('tackle', {team: by.team, actorId: by.id, targetId: seat.id, x: q.x, y: q.y + 1, z: q.z, text: down ? 'TAKEDOWN' : 'TACKLE', ...(won ? {won} : {})});
+    if (won) { this.drop(by, 'tackle'); this.counts.won++; }
+  }
+  /** (TACKLE_WON) A blow on a person's carrier the room is waiting on, settled - turned, if the guard their
+   *  page pressed in time has come (REVERSAL, as SEEN judges it), else a TACKLE once the wait is over (or at once, `now`:
+   *  a blow since has put them down). */
+  private settleHeld(now = false) {
+    const h = this.held, t = this.sim.serverTime;
+    if (!h) return;
+    const seat = this.seats.get(h.on), by = this.seats.get(h.by), a = seat && this.sim.actors.get(seat.id);
+    if (!seat || !by || !a || seat.out !== undefined || this.view.phase !== 'live') { this.held = null; return; }
+    // (A fresh press heard since the blow landed, made on the page REVERSAL.window or less before it landed there.)
+    const drew = a.guardAt - this.lagOf(seat.id);
+    if (!now && a.guardAt > h.at - 1e-9 && drew >= h.at - REVERSAL.window - 1e-6 && drew <= h.at + REVERSAL.over + 1e-6) {
+      this.held = null;
+      // (The flinch taken back - the body free again, its run on - and the harm healed.)
+      a.stunUntil = Math.min(a.stunUntil, t); a.reaction = null; a.kx = a.kz = 0; this.sim.heal(seat.id, h.harm);
+      this.reverse(seat, by);
+      return;
+    }
+    if (!now && t < h.until - 1e-9) return;
+    this.held = null;
+    const q = a.state;
+    this.tackled(by, seat, !q.alive || q.hp <= 0);
+  }
+  /** (REVERSAL) This step's guards against a FIGHT-stance blow on the one on the ball - the kernel's own
+   *  just guard (facing it), or a block with the press fresh inside the window (turned away from it). */
+  private reversals(events: readonly CombatEvent[]) {
+    if (this.mode !== 'goal-rush') return;
+    const now = this.sim.serverTime;
+    for (const e of events) {
+      if ((e.kind !== 'just-guard' && e.kind !== 'blocked') || !e.targetId || e.slot === 'ultimate') continue;
+      const seat = this.seats.get(e.targetId), by = this.seats.get(e.actorId), a = seat && this.sim.actors.get(seat.id);
+      if (!seat || !by?.lock || !a || by.team === seat.team || seat.out !== undefined || by.out !== undefined) continue;
+      if (this.carrier?.id !== seat.id && !this.onBall(seat, a.state)) continue;
+      if (e.kind === 'blocked') {
+        if (!(a.guardAt > -Infinity && now - a.guardAt <= REVERSAL.window + 1e-6)) continue;
+        // (Its blockstun let go, so a carrier runs on with it, and the chip healed.)
+        a.stunUntil = a.blockedUntil = Math.min(a.blockedUntil, now); this.sim.heal(seat.id, e.damage ?? 0);
+      }
+      this.reverse(seat, by);
+    }
+  }
+  /** A REVERSAL: the tackler put down (REVERSED, the guard's blow), the guard's worth and meter, the event. A carrier keeps
+   *  the ball: nothing here ends the carry. */
+  private reverse(seat: BallSeat, by: BallSeat) {
+    const now = this.sim.serverTime, p = this.sim.actors.get(seat.id)?.state;
+    if (!p) return;
+    // (The REVERSAL's own blow on them is no TACKLE back; their swing is over, as the kernel's just guard ends it - a body
+    // still in its swing takes a blow on its armour - and they let a carried ball by until it is clear of them: the
+    // guard slips past them with it.)
+    this.tackledAt.set(by.id, now);
+    const t = this.sim.actors.get(by.id);
+    if (t) { t.cast = null; t.rushUntil = -Infinity; }
+    this.shed.set(by.id, now + GUARD_OFF.clear);
+    this.sim.strike(seat.id, by.id, 'heavy', REVERSED, {x: p.x, y: p.y + 1, z: p.z});
+    this.award(seat, 'reversal'); this.sim.addMeter(seat.id, REVERSAL.meter, REVERSAL.awaken);
+    this.counts.reversals++;
+    this.emit('reversal', {team: seat.team, actorId: seat.id, targetId: by.id, x: p.x, y: p.y + 1, z: p.z, text: 'REVERSAL'});
+  }
+  /** The POWER PLAY - a side with a body wiped out (shortSide) - kept for the counts: how many, their
+   *  live seconds. The pages read it off the seats themselves (BallSeat.out). */
+  private powerPlay() {
+    const now = this.sim.serverTime, live = this.view.phase === 'live' && !this.view.practice;
+    const short = live ? shortSide([...this.seats.values()]) : null;
+    if (this.power && this.power.short !== short) { this.counts.powerSeconds += now - this.power.since; this.power = null; }
+    if (short && !this.power) { this.power = {short, since: now}; this.counts.powerPlays++; }
   }
   /** Whether a seat is the one on the ball: the last to touch it a moment ago, or the nearest of their side to it and
    *  within reach of it. */
@@ -2174,7 +2311,11 @@ export class BallMatch implements ExternalTargets, LessonHost {
     if (helper && helper.assists === 3) this.accolade(helper, 'PLAYMAKER', 40);
     this.chatter(scorers, own ? CHAT.gifted : helper ? CHAT.assisted : CHAT.scored, scorer?.id);
     this.chatter(conceded, own ? CHAT.ownGoal : CHAT.conceded, own ? undefined : scorer?.id, .45);
-    this.emit(own ? 'own-goal' : 'goal', {team: scorers, actorId: scorer?.id, assistId: helper?.id, x: b.x, y: b.y, z: b.z, value: speed, shot: b.shot ?? undefined, text: b.super ? 'SUPER GOAL' : undefined});
+    // (A goal into the goal of a side short a body - the POWER PLAY's - says the count.)
+    const seated = [...this.seats.values()], short = !own && this.pvp && !this.view.practice && shortSide(seated) === conceded ? inPlay(seated) : null;
+    if (short) this.counts.powerGoals++;
+    this.emit(own ? 'own-goal' : 'goal', {team: scorers, actorId: scorer?.id, assistId: helper?.id, x: b.x, y: b.y, z: b.z, value: speed, shot: b.shot ?? undefined, text: b.super ? 'SUPER GOAL' : undefined,
+      ...(short ? {short: [short[scorers], short[conceded]] as [number, number]} : {})});
     b.held = true; b.vx = b.vy = b.vz = 0;
     this.view.phase = 'scored'; this.view.phaseUntil = now + (this.view.practice ? 1.6 : GOAL_RULES.goalSeconds);
     if (this.view.overtime) this.view.phaseUntil = now + GOAL_RULES.goalSeconds * .8;

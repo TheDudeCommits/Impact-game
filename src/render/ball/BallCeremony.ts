@@ -16,7 +16,11 @@ import {SoundWords, inkShown} from './SoundWords';
 import {PitchCount} from './PitchCount';
 import {GoalHold} from './GoalHold';
 import {GoalHuddle} from './GoalHuddle';
+import {faceTheMoment} from './ballFaces';
 import type {BallShow, ShowMode} from '../../ui/ball/BallShow';
+import {BallCover, COVER, coverFace, coverWanted, winningMoment} from '../../ui/ball/BallCover';
+import {coverWorth, keepCover, volumeNext, type CoverFace} from '../../ui/ball/coverShelf';
+import {SECOND} from '../../game/couchSeat';
 
 /** What the ceremony needs of the page (main.ts): a fighter's drawn body, the frame's INK FLASH, and the beats' sounds. */
 export interface CeremonyHooks {
@@ -44,6 +48,8 @@ const PAD_SKIP = [0, 1, 2, 3, 9], PAD_CLOSE = [0, 9];
 const KEY_SKIP = ['Space', 'Enter', 'NumpadEnter'];
 /** Keys that never vote: the pause menu's, and the modifiers. */
 const KEY_NEVER = ['Escape', 'ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight'];
+/** The final whistle's cover (`?cover=0` on this machine leaves it out: BallCover.coverWanted). */
+const COVER_ON = coverWanted(typeof location === 'object' ? location : undefined);
 /** One person in the match (the rest bots): any press is theirs to skip with (BallMatch.skip). */
 export const soloMatch = (view: BallView | null | undefined) => !!view && view.seats.filter(s => !s.bot).length <= 1;
 
@@ -67,6 +73,10 @@ export const soloMatch = (view: BallView | null | undefined) => !!view && view.s
  *   scorer's side runs in to them through the sequence (GoalHuddle, drawn on the page only); and two layers of drawn
  *   lettering of their own, driven from here: the sound words at the biggest hits (SoundWords) and Goal Rush's last ten
  *   seconds and Sky Spike's MATCH POINT on the floor (PitchCount).
+ * - The final whistle: the winning frame - drawn as the clock ran out, or as the deciding goal or point
+ *   went in - frozen under a volume's cover at the whistle (ui/ball/BallCover.ts), for the podium's first COVER.seconds;
+ *   the podium's panels drop in once it lifts. A win on this device with an accolade keeps it (ui/ball/coverShelf.ts).
+ *   In a couch split screen too: its frame is both halves, its art the winner's half.
  *
  * Not in a couch split screen (two lenses) nor FREE PLAY, except the machine. Reduced motion holds every shot still (cuts,
  * no moves); the VISUAL EFFECTS level dims the spotlights and drops the cut-in on Minimal. Nothing allocates in a frame
@@ -106,9 +116,17 @@ export class BallCeremony {
   readonly hold: GoalHold; private readonly huddle = new GoalHuddle();
   /** For the checks (localhost): the two lettering layers left undrawn, to measure what they cost a frame. */
   hideLettering = false;
+  /** The final whistle: the cover, and its watch over the match - which match; whether this page saw it
+   *  played; the phase last seen; when the deciding goal's or point's frame is due (page s); this frame to be kept as
+   *  the winning one; the whistle met; the cover to lay once this frame is drawn (with its worth to the shelf). */
+  readonly cover: BallCover;
+  private readonly whistle = {key: '', played: false, phase: '', due: -1, copy: false, copied: -Infinity, frame: 0, met: false, lay: null as {face: CoverFace; worth: number | null; half: 0 | 1} | null};
+  /** For the checks: the last cover kept on the shelf this page (its volume), and the frames kept as the winning one. */
+  readonly coverLast = {kept: 0, frames: 0};
 
   constructor(scene: THREE.Scene, private readonly ui: BallShow, private readonly hooks: CeremonyHooks) {
     this.bodiesOf = hooks.body;
+    this.cover = new BallCover(ui.root.parentElement ?? ui.root);
     this.root.name = 'Ball ceremony';
     this.podium.name = 'Ball podium'; this.trophy.name = 'Ball trophy'; this.machine.name = 'Ball machine'; this.spots.name = 'Ball spotlights';
     this.podium.visible = this.trophy.visible = this.machine.visible = this.spots.visible = false;
@@ -199,7 +217,9 @@ export class BallCeremony {
       // (A match with one person in it: any press skips the close-up and the replay after it.)
       this.ui.skipPrompt(show === 'close' && soloMatch(view) && this.closeVoted !== this.sequence?.key ? this.ui.touch ? 'TAP TO SKIP' : 'ANY KEY TO SKIP' : null);
     }
+    this.finalWhistle(view, selfId);
     this.props(view, snapshot, dt);
+    faceTheMoment(view, snapshot, show, couch ? null : this.sequence, this.podiumOrder); // The faces the moment asks for (ballFaces.ts)
     this.spotlights(view, snapshot, dt);
     this.words.update(view, now, this.hideLettering);
     // (The floor's mark is the match's, not a ceremony's: none while one holds the lens.)
@@ -276,8 +296,55 @@ export class BallCeremony {
     return this.huddle.active ? this.huddle.posed(id, state, performance.now() / 1000) : state;
   }
   /** Just after the page drew the frame, before it yields (main.ts): the canvas still holds the frame, to keep as the
-   *  goal's held picture. */
-  afterDraw(canvas: HTMLCanvasElement) { this.hold.afterDraw(canvas); }
+   *  goal's held picture - and, as the winning one, with the cover laid on it at the whistle. */
+  afterDraw(canvas: HTMLCanvasElement) {
+    this.hold.afterDraw(canvas);
+    const w = this.whistle;
+    if (w.copy) { w.copy = false; this.cover.capture(canvas, w.key); w.copied = performance.now() / 1000; this.coverLast.frames++; }
+    if (w.lay) { const lay = w.lay; w.lay = null; this.layCover(lay, canvas); }
+  }
+
+  // ---------------------------------------------------------------- the final whistle
+
+  /** Every frame, before the podium's props: which frame is the winning one (winningMoment: each of Goal Rush's last
+   *  frames of play, the last before the whistle standing; while the next goal or point may decide, every COVER.every
+   *  frames, the last before the deciding one standing - else the deciding one's, COVER.settle after it is drawn), and at
+   *  the whistle the cover, with its volume and its worth to the shelf. An end this page never saw
+   *  played (a room joined over, a reconnection) has none, as the finale holds none for it; FREE PLAY never ends. */
+  private finalWhistle(view: BallView, selfId: string) {
+    const w = this.whistle, key = `${view.startedAt}:${view.round}:${view.mode}`, page = performance.now() / 1000;
+    if (w.key !== key) { w.key = key; w.played = false; w.phase = ''; w.due = -1; w.copy = false; w.copied = -Infinity; w.met = false; w.lay = null; }
+    this.cover.tick(page);
+    if (view.practice || !COVER_ON) return;
+    if (view.phase !== 'over') {
+      if (view.phase === 'live') w.played = true;
+      const moment = winningMoment(view);
+      // (The deciding frame itself only when no frame from just before it was kept: it is printed two-tone.)
+      if (moment === 'decided' && w.phase !== view.phase && !(page - w.copied <= COVER.fresh)) w.due = page + COVER.settle;
+      w.phase = view.phase;
+      if (moment === 'live' || (moment === 'next' && ++w.frame % COVER.every === 0)) w.copy = true;
+      else if (w.due >= 0 && page >= w.due) { w.copy = true; w.due = -1; }
+      return;
+    }
+    if (w.met) return;
+    w.met = true;
+    if (!w.played || !view.winner) return;
+    // (No frame kept - a page that missed the last ones: the whistle's own, the podium as it begins.)
+    if (!this.cover.holds(key)) w.copy = true;
+    // (A couch's split screen: the art from the half of the person who won, Player 1's when both did or neither.)
+    const winners = view.seats.filter(s => s.team === view.winner).map(s => s.id), half: 0 | 1 = !winners.includes(selfId) && winners.includes(SECOND) ? 1 : 0;
+    w.lay = {face: coverFace(view, volumeNext(view.mode)), worth: coverWorth(view, [selfId, SECOND]), half};
+  }
+  /** The cover laid on the winning frame, once the whistle's frame is drawn; its still kept on the shelf when it earns it. */
+  private layCover(lay: {face: CoverFace; worth: number | null; half: 0 | 1}, canvas: HTMLCanvasElement) {
+    if (!this.cover.holds(this.whistle.key)) return;
+    this.cover.show(lay.face, canvas, performance.now() / 1000, lay.half);
+    const worth = lay.worth;
+    const match = this.whistle.key;
+    if (worth !== null) void this.cover.still().then(still => { if (still && keepCover(lay.face, worth, still, match)) this.coverLast.kept = lay.face.vol; }).catch(() => {});
+  }
+  /** The cover holds the screen, or is about to (the podium's panels wait for it). */
+  private get coverHolds() { return this.cover.up || !!this.whistle.lay; }
 
   private netHit(e: BallEvent) {
     const R = GOAL_RULES, sz = Math.sign(e.z) || 1, v = this.flight, back = sz * (R.halfZ + R.goalDepth);
@@ -399,7 +466,8 @@ export class BallCeremony {
         this.trophy.rotation.y += dt * (reduced() ? 0 : .9);
         this.trophy.visible = true;
       } else this.trophy.visible = false;
-      if (this.show === 'podium') this.ui.podiumPanels(view, '', this.podiumOrder); else this.ui.podiumPanels(null, '', []);
+      // (They drop in once the whistle's cover has lifted.)
+      if (this.show === 'podium' && !this.coverHolds) this.ui.podiumPanels(view, '', this.podiumOrder); else this.ui.podiumPanels(null, '', []);
     } else { this.podium.visible = this.trophy.visible = false; if (this.podiumKey) { this.podiumKey = ''; this.ui.podiumPanels(null, '', []); } }
     // Sky Spike's FREE PLAY: the ball machine, at the serving mark on the empty side, kicking back as it fires.
     const machine = view.practice && view.mode === 'sky-spike';
@@ -488,6 +556,7 @@ export class BallCeremony {
     this.podium.visible = this.trophy.visible = this.machine.visible = this.spots.visible = false; this.root.visible = false;
     // (The hold let go before the goal is put away: letting go sets the net's clock running again.)
     this.hold.finish(); this.huddle.stop(); this.words.clear(); this.count.clear();
+    this.cover.clear(); this.whistle.key = ''; this.whistle.lay = null; this.whistle.copy = false;
     this.spotMaterial.uniforms.uLevel.value = 0; forgetGoal();
     MangaScreens.focus(null, 0);
     this.ui.clear();
@@ -495,13 +564,13 @@ export class BallCeremony {
   /** For the checks: what shows, and where the lens is told to stand. */
   evidence() { return {show: this.show, shot: this.shotIndex, eye: this.eye.toArray(), look: this.look.toArray(), podium: this.podiumLayout, sequence: this.sequence ? {...this.sequence} : null,
     words: {stamped: {...this.words.stampedCount}, last: this.words.last, up: this.words.mesh.visible}, floor: this.count.shown, floorUp: this.count.mesh.visible,
-    hold: {...this.hold.last, holding: this.hold.holding}, huddle: this.huddle.active}; }
+    hold: {...this.hold.last, holding: this.hold.holding}, huddle: this.huddle.active, cover: {up: this.cover.up, ...this.coverLast}}; }
   dispose() {
     this.clear();
     if (typeof window === 'object') { window.removeEventListener('keydown', this.onKey); window.removeEventListener('pointerdown', this.onTap); }
     for (const kit of this.kits.values()) kit.dispose();
     this.spotMaterial.dispose();
-    this.words.dispose(); this.count.dispose();
+    this.words.dispose(); this.count.dispose(); this.cover.dispose();
     (this.spots.children[0] as THREE.Mesh | undefined)?.geometry.dispose();
   }
 }

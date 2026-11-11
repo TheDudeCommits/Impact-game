@@ -1,5 +1,5 @@
 /**
- * The folder the game's page is served from: `/` on play.example.com, a dev server or any copy at a site's root;
+ * The folder the game's page is served from: `/` on a site of its own, a dev server or any copy at a site's root;
  * `/~<build>/` on Player Two, whose host keeps each build under a folder of its own and answers a root address of a file
  * (`/assets/x.glb`) with a redirect into the build its Referer names - a redirect that is never cached, costing a round trip
  * on every request of every visit, and a stale tab's lazy file looked for in the newest build (loading/staleBuild.ts). The

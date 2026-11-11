@@ -87,6 +87,10 @@ export const CALLED_TEXT: Readonly<Record<string, CallerMoment>> = {
 /** Goal Rush's TRAP (BallMatch TRAP, the ball killed dead at the feet) heard as the turf's soft take, a
  *  little lower and quieter than a bounce's: its share of that take's gain, and its rate. */
 export const TRAP_THUD = { gain: .8, rate: .88 } as const;
+/** A TACKLE that won the ball - the ball knocked off its carrier's feet: a struck knock, quieter and
+ *  lower than a shot's; the flight's own tap for the pop is not heard within `hush` s of it. A REVERSAL's crack: the
+ *  block's, a touch lower. */
+export const WON_KNOCK = { gain: .7, rate: .86, hush: .4 } as const, REVERSAL_CRACK = { gain: .85, rate: .9 } as const;
 /** A point won this soon (s) after its side's PERFECT SPIKE is that spike's - the stands' biggest roar. */
 const PERFECT_ROAR = 2.5;
 /** The stands' "ooh" at the commonest moments (a TACKLE, eleven a match; a DIVING DIG, two dozen) rests this long
@@ -191,6 +195,8 @@ export class BallAudio {
   private prevBest = 0;
   private lastBounce = -Infinity;
   private taps = 0;
+  /** (WON_KNOCK) Until when (the page's clock, as `now`) a carried ball popping loose is the tackle's knock. */
+  private popUntil = 0;
   private flavour = new Map<string, number>();
   private contacts: BallContact[] = [];
   private tension = 0;
@@ -532,7 +538,13 @@ export class BallAudio {
       case 'tackle':
         if (e.text === 'TAKEDOWN') { this.react('crowd-gasp', .9, .02); this.say('takedown', .2); }
         else { this.play('impact-boom', at, .4, 1.06, 0, 3); this.ooh(.5 * side, .08); this.say('tackle', .2); }
+        // A TACKLE that won the ball - the ball knocked off the carrier's feet (a struck knock, low and
+        // short, in place of the flight's own tap for the pop: WON_KNOCK) and the stands up for it, the home side's louder.
+        if (e.won) { this.play('strike-power-2', at, WON_KNOCK.gain, WON_KNOCK.rate, 0, 3); this.popUntil = now + WON_KNOCK.hush; this.react('crowd-ooh-1', .6 * side, .12); }
         break;
+      // A REVERSAL - a guard timed against a tackle turned it: the guard's crack, a little weight under it
+      // and an "ooh" (the kernel's own just guard, when it was one, is the fight's sound beside it).
+      case 'reversal': this.play('block', at, REVERSAL_CRACK.gain, REVERSAL_CRACK.rate, 0, 3); this.play('impact-boom', at, .3, 1.12, .02, 2); this.ooh(.45 * side, .1); break;
       // Sky Spike's DIG (thirty a match: the caller now and then) and DIVING DIG; a PERFECT SPIKE dug up is the
       // stands' "ooh" and their applause.
       case 'dig': {
@@ -674,6 +686,8 @@ export class BallAudio {
     // (A ball carried by the same body on both snapshots goes as the body goes - BallMatch CARRY - and its
     // turns and stops are no touch: heard as one, fifteen taps a match sounded mid-run in the bot sims.)
     const carried = b.carry !== undefined && b.carry === prev.carry;
+    // (A carried ball popped loose by a TACKLE is the tackle's knock, heard with its event: WON_KNOCK.)
+    if (prev.carry !== undefined && b.carry === undefined && now < this.popUntil) { this.popUntil = 0; return; }
     const touched = b.lastId !== prev.lastId || b.shot !== prev.shot || (off > 4 && !contacts.length && !carried);
     if (touched) {
       if (!struck) {

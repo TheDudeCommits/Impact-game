@@ -17,8 +17,9 @@ import type {MoveDefinition} from '../moves';
 export type BallModeId = 'goal-rush' | 'sky-spike';
 export const BALL_MODES: readonly BallModeId[] = ['goal-rush', 'sky-spike'];
 /** Bumped whenever a page and a room would disagree about the ball, its view or its messages. (10: Goal
- *  Rush's carried ball - BallState.carry - the TRAP, and quick chat's fourth INFO line, the call for the ball.) */
-export const BALL_PROTOCOL = 10;
+ *  Rush's carried ball - BallState.carry - the TRAP, and quick chat's fourth INFO line, the call for the ball. 11: the
+ *  TACKLE that won the ball - BallEvent.won - the REVERSAL, and the POWER PLAY's goal - BallEvent.short.) */
+export const BALL_PROTOCOL = 11;
 export type BallTeam = 'red' | 'blue';
 export const BALL_TEAMS: readonly BallTeam[] = ['red', 'blue'];
 export const otherTeam = (team: BallTeam): BallTeam => team === 'red' ? 'blue' : 'red';
@@ -138,8 +139,12 @@ export interface BallEvent {
      *  make a moment of it; the HUD need not (thirty a match). */
     | 'dig'
     /** Goal Rush's FIGHT stance (GOAL_STANCE.tackle): a fighter locked on the one on the ball put them down - actorId the
-     *  tackler, targetId the striker, text TACKLE (knocked down or sent flying) or TAKEDOWN (wiped out), x/y/z where. */
+     *  tackler, targetId the striker, text TACKLE (knocked down or sent flying) or TAKEDOWN (wiped out), x/y/z where.
+     *  (BallMatch TACKLE_WON) `won` when it knocked the ball off its carrier, popped LOOSE to the tackler. */
     | 'tackle'
+    /** Goal Rush (BallMatch REVERSAL): a guard timed against a TACKLE turned it - actorId the one on the
+     *  ball who guarded, targetId the tackler put down, text REVERSAL, x/y/z where; a carrier kept the ball. */
+    | 'reversal'
     /** Sky Spike: a set that is a choice - actorId the setter, text QUICK SET (a jump set, at the hitter's hand
      *  on the way up: no PERFECT SPIKE, but no time for the block) or BACK SET (to the wing across the court). The
      *  floating set has none (it comes every rally). */
@@ -161,6 +166,28 @@ export interface BallEvent {
    *  PERFECT_STRIKE) - text PERFECT STRIKE, PERFECT VOLLEY (in the air), PERFECT HEADER (shot `header`), or a flair's
    *  name (BICYCLE KICK). A plain HEADER is a strike too: shot `header`, text HEADER. */
   perfect?: boolean;
+  /** Goal Rush: a TACKLE that knocked the ball off its carrier (BallMatch TACKLE_WON). */
+  won?: boolean;
+  /** Goal Rush (the POWER PLAY): a goal scored into a side's goal while that side was short - the bodies
+   *  in play then, the scorers' first (3 v 2). */
+  short?: [number, number];
+}
+/** Goal Rush (the POWER PLAY): the bodies each side has in play - its seats less any wiped out
+ *  (BallSeat.out) - read the same by the room (BallMatch) and every page (the score bug's count, the short side's goal
+ *  glowing). */
+export function inPlay(seats: readonly Pick<BallSeat, 'team' | 'out'>[]): Record<BallTeam, number> {
+  const n = {red: 0, blue: 0};
+  for (const s of seats) if (s.out === undefined) n[s.team]++;
+  return n;
+}
+/** The side a POWER PLAY is against - the one with fewer bodies in play while both have someone on the pitch - or null.
+ *  (A side with nobody seated is not short: FREE PLAY, a drill.) */
+export function shortSide(seats: readonly Pick<BallSeat, 'team' | 'out'>[]): BallTeam | null {
+  let red = 0, blue = 0;
+  for (const s of seats) if (s.team === 'red') red++; else blue++;
+  if (!red || !blue) return null;
+  const n = inPlay(seats);
+  return n.red < n.blue ? 'red' : n.blue < n.red ? 'blue' : null;
 }
 
 /** The view a room publishes beside the fighters: `GameSnapshot & {ball: BallView}`. */

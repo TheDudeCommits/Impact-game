@@ -8,6 +8,8 @@ bots, private rooms, a Training Ground, co-op Arcade Survival against waves and 
 Bad Blood and Rift War, and the ball modes Goal Rush (three-a-side football) and Sky Spike (three-a-side volleyball over a
 net), where every move strikes the ball. It plays with a keyboard and mouse, a controller or touch.
 
+**Play it at [playertwo.plus/game/impact](https://playertwo.plus/game/impact).**
+
 ![The home screen: the modes above, the fighter select below](docs/screenshots/home.jpg)
 
 ![Taisei mid-combo in a Training match at the Ashfall Weir](docs/screenshots/fight.jpg)

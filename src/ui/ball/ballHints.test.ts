@@ -33,10 +33,38 @@ describe('the ball modes\' first-time hints (ui/ball/ballHints.ts)', () => {
     expect(fires('gr-tackle', frame({ ball: { x: 9, z: 9 }, players: [{ id: 'foe', x: 0, z: 1 }] }))).toBe(false);
     // FREE PLAY has no stances.
     expect(fires('gr-tackle', frame({ view: { practice: true }, ball: { x: 0, z: 2 } }))).toBe(false);
+    // The ball carried by your side - one of theirs beside it, put down by your REVERSAL: no.
+    const seats = [{ id: 'me', team: 'red' }, { id: 'mate', team: 'red' }, { id: 'foe', team: 'blue' }, { id: 'foe2', team: 'blue' }];
+    expect(fires('gr-tackle', frame({ ball: { x: 0, z: 2, carry: 'me' }, view: { seats } } as never))).toBe(false);
+    expect(fires('gr-tackle', frame({ ball: { x: 0, z: 2, carry: 'mate' }, view: { seats } } as never))).toBe(false);
+    // Carried by theirs: yes, and its copy says one blow on the carrier wins it.
+    const theirs = frame({ ball: { x: 0, z: 2, carry: 'foe' }, view: { seats } } as never);
+    expect(fires('gr-tackle', theirs)).toBe(true);
+    expect(hints().h.frame(theirs, 1000)).toContain('ONE BLOW ON THE CARRIER WINS THE BALL');
     const { h } = hints();
     expect(h.frame(f, 1000)).toMatch(/<kbd>Tab<\/kbd><b>FIGHT TO TACKLE<\/b>/);
     const touch = hints().h.frame(frame({ ball: { x: 0, z: 2 }, device: 'touch' }), 1000);
     expect(touch).toContain('<b>TO TACKLE</b>');
+  });
+  // The POWER PLAY said as it begins (a side with a body wiped out), from your side of it; the REVERSAL
+  // with the ball at your feet and one of theirs locked on you (not on touch, whose button is FIGHT then).
+  it('Goal Rush: POWER PLAY when a side is a body short, and AS THE TACKLE COMES with one of theirs locked on your carry', () => {
+    const short = { view: { seats: [{ id: 'me', team: 'red' }, { id: 'mate', team: 'red' }, { id: 'foe', team: 'blue', out: 30 }, { id: 'foe2', team: 'blue' }] } } as never;
+    expect(fires('gr-power', frame())).toBe(false);
+    expect(fires('gr-power', frame(short))).toBe(true);
+    const up = hints().h.frame(frame(short), 1000);
+    expect(up).toContain('POWER PLAY · 2 V 1');
+    expect(up).toContain('THEIR GOAL GLOWS');
+    const down = hints().h.frame(frame({ view: { seats: [{ id: 'me', team: 'red' }, { id: 'mate', team: 'red', out: 30 }, { id: 'foe', team: 'blue' }, { id: 'foe2', team: 'blue' }] } } as never), 1000);
+    expect(down).toContain('POWER PLAY · 1 V 2');
+    expect(down).toContain('YOUR GOAL GLOWS');
+    const carrying = { ball: { carry: 'me', x: 0, z: -4.6 }, view: { seats: [{ id: 'me', team: 'red' }, { id: 'mate', team: 'red' }, { id: 'foe', team: 'blue', lock: 'me' }, { id: 'foe2', team: 'blue' }] } } as never;
+    expect(fires('gr-reverse', frame(carrying))).toBe(true);
+    // Nobody locked on you, or the ball not yours: no.
+    expect(fires('gr-reverse', frame({ ball: { carry: 'me', x: 0, z: -4.6 } }))).toBe(false);
+    expect(fires('gr-reverse', frame({ ...(carrying as object), ball: { carry: 'mate' } } as never))).toBe(false);
+    expect(hints().h.frame(frame(carrying), 1000)).toMatch(/<kbd>F<\/kbd><b>AS THE TACKLE COMES<\/b>/);
+    expect(HINTS.find(h => h.id === 'gr-reverse')!.touch).toBe(false);
   });
   it('Sky Spike: the PERFECT SPIKE\'s timing when a team-mate\'s set comes down to you', () => {
     const set = { view: { mode: 'sky-spike' }, ball: { x: 0, y: 3, z: -5, vx: 0, vy: 6, vz: 2.4, shot: 'set', lastTeam: 'red', lastId: 'mate' }, me: { z: -2.5 }, players: [{ id: 'mate', x: -4, z: -8 }, { id: 'foe', x: 0, z: 4 }, { id: 'foe2', x: 3, z: 8 }] } as const;

@@ -25,7 +25,7 @@ import {askBallCams,askTeamTrim,chaseCamChoice,netSheer,spikeCamChoice} from './
 import {TeamTrimmer} from './render/ball/TeamTrim';
 import {StanceMarks} from './render/ball/StanceMarks';
 import {StanceControl,hasStances} from './game/ball/stance';
-import {ballMovesReady,ballMovesWanted,installBallMoves} from './render/ball/ballMoves';
+import {ballMovesReady,ballMovesWanted,installBallMoves,noteBallStick} from './render/ball/ballMoves';
 import {BallCeremony} from './render/ball/BallCeremony';
 import {BallShow} from './ui/ball/BallShow';
 import {QuickChat} from './ui/ball/QuickChat';
@@ -1008,6 +1008,7 @@ function sendCommand(){
   if(pilot&&survival()){const auto=pilot.command(snapshot.players,snapshot.serverTime);command={...auto,seq:command.seq};if(auto.targetId)targetId=auto.targetId;}
   const sent=exercise.active?exercise.command(command,snapshot,network.id)
     :input.enabled?command:{...command,moveX:0,moveZ:0,attack:undefined,jump:false,dash:false,guard:false,awaken:false};
+  noteBallStick(network.id,sent.moveX,sent.moveZ); // The sport kit: the stick a spike's arm and a BACK SET are chosen by (ballMoves.ts)
   if(!network.send(sent))return;if(network===online)unacked.push(sent.seq);
   // (An online ball room's own touch of the ball, forecast around the prediction's step - BallTargets.)
   const forecasting=network===online&&prediction.enabled&&!!ballOf(snapshot);if(forecasting)ballTargets.beforeStep();

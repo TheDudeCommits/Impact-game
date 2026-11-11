@@ -13,6 +13,7 @@ import { RELEASED_FIGHTERS } from '../../game/rosterAvailability';
 import { NAME_EVERY_DAYS, NAME_MAX, nameFreeAt, nameProblem } from '../../game/economy/names';
 import { Refused, type AccountClient, type Redeemed, type Wallet } from './account';
 import { roadNext } from './goal';
+import { coverShelf } from '../ball/BallCover'; // the ball modes' cover shelf: nothing while none is kept
 
 /** What the panel asks of the shop it sits in. */
 export interface AccountPanelHost {
@@ -111,6 +112,7 @@ export class AccountPanel {
         ${this.missions(account, Date.now())}
         ${this.feats(account)}
         <section class="shop-stats"><h3><span>THE RECORD</span></h3><dl>${cells.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl></section>
+        ${coverShelf()}
       </div>
     </div>`;
   }

@@ -65,6 +65,13 @@ const ROOM = {near: 2.2, run: 5, line: 3.5, tap: SHOOT.contact + 1 / 60, air: .3
  *  (PASS_CALL), once a call's five seconds. And it locks on and tackles one of theirs carrying the ball anywhere, not only
  *  in its own half (the TACKLE pops it LOOSE toward it). */
 const SKILL_CARRY = {lead: .12, slow: 6, room: 5, close: 15, pressure: 4.2, open: 3} as const;
+/** The SKILLED player's fight for the ball (BallMatch TACKLE_WON, REVERSAL). A carrier of
+ *  theirs it hunts is closed on at the flank (`flank` m off the line of their run, not through the ball at their feet)
+ *  and struck with the light as soon as it is within `strike` m - any blow on a carrier wins the ball; anybody else on
+ *  the ball, the heavy, to knock them down. Carrying, with one of theirs locked on it (the red pulse under its feet says
+ *  so) and within `guard` m as seen, closing or swinging, it puts the guard up - a fresh press - and holds it `hold` s:
+ *  the REVERSAL, where the pass or the shot would not get away in time. */
+const SKILL_FIGHT = {flank: 1.2, strike: 3, guard: 2.9, hold: .3, again: .8} as const;
 type Command = Omit<PlayerInput, 'seq'>;
 type Body = {id: string; team?: string; x: number; y: number; z: number; vx: number; vz: number; grounded: boolean; alive: boolean; action: string};
 const gap = (a: {x: number; z: number}, b: {x: number; z: number}) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -317,7 +324,7 @@ export class HumanHands {
       this.calledAt = now; this.chat = quickChat('goal-rush').indexOf(PASS_CALL.line);
     }
     // A tackle under way (the FIGHT stance) goes on until it is done.
-    if (this.tackling(me, b, rivals, now, input)) { this.did = 'tackle'; return input; }
+    if (this.tackling(me, b, rivals, now, input, view.ball)) { this.did = 'tackle'; return input; }
     // (BallMatch CARRY) The ball at its feet - carried at the goal, shot close in (wound up with room), and
     // passed or shot once one of theirs closes in.
     if (view.ball.carry === this.id) return this.carrying(me, view, rivals, mates, aim, aimYaw, enemyZ, now, input);
@@ -327,7 +334,7 @@ export class HumanHands {
     const carrier = rivals.filter(q => gap(q, b) < 2.4 && b.y < 2.4).sort((x, y) => gap(x, b) - gap(y, b))[0];
     if (carrier && now >= this.nextTackle && !inReach && gap(me, carrier) < 6 && gap(carrier, b) + .4 < gap(me, b) && (Math.sign(b.z) === Math.sign(ownZ) || view.ball.carry === carrier.id)) {
       this.fight = {id: carrier.id, since: now};
-      if (this.tackling(me, b, rivals, now, input)) { this.did = 'lock'; return input; }
+      if (this.tackling(me, b, rivals, now, input, view.ball)) { this.did = 'lock'; return input; }
     }
     // A cross coming in at head height: up to meet it at the top of the jump, the stick at the goal (a header goes the
     // way the body faces) - a PERFECT HEADER.
@@ -409,6 +416,8 @@ export class HumanHands {
     this.did = 'carry';
     this.stick(me, {x: me.x + Math.sin(aim) * 5, z: me.z + Math.cos(aim) * 5}, input, 0);
     input.yaw = aimYaw;
+    // (A tackle coming - the guard for the REVERSAL, the stick still on so the ball stays at its feet.)
+    if (this.guarding(me, view, rivals, now, input)) { this.did = 'reverse'; return input; }
     if (now < this.nextPress || !(close || pressed)) return input;
     if (pressed && !close) {
       const mate = mates.filter(q => toward * (q.z - b.z) > 2 && gap(q, b) > 4 && gap(q, b) < 18 && rivals.every(r => gap(r, q) > 2.5)).sort((x, y) => Math.abs(enemyZ - x.z) - Math.abs(enemyZ - y.z))[0];
@@ -421,22 +430,45 @@ export class HumanHands {
   }
   /** A tackle held: the lock on them (Tab), run them down, a heavy in reach (a knockdown takes the ball off them). Let go
    *  once they are down, off the ball, out of reach, after two seconds, or when the ball comes loose here. */
-  private tackling(me: PlayerState, b: BallState, rivals: Body[], now: number, input: Command) {
+  private tackling(me: PlayerState, b: BallState, rivals: Body[], now: number, input: Command, room: BallState) {
     const f = this.fight;
     if (!f) return false;
     const q = rivals.find(r => r.id === f.id), held = now - f.since;
     const down = !q || ['knockdown', 'launched', 'splat', 'getup', 'defeated'].includes(q.action);
+    // (The ball popped loose its way - a TACKLE won it - is let go for, the stance the ball's again.)
     if (down || held > 2 || gap(me, q!) > 9 || (held > .4 && gap(q!, b) > 4) || (gap(me, b) < 2 && gap(me, b) < gap(q!, b))) {
       this.fight = null; this.nextTackle = now + (down ? .6 : 1.2);
       return false;
     }
     input.targetId = q!.id; input.lock = true;
-    const yaw = Math.atan2(q!.x - me.x, q!.z - me.z), d = this.stick(me, q!, input, 1.2);
+    const yaw = Math.atan2(q!.x - me.x, q!.z - me.z), carried = room.carry === q!.id;
+    // (SKILL_FIGHT: a carrier closed on at the flank and struck with the light from its reach.)
+    const theirs = Math.max(.1, gap(q!, b)), ux = (b.x - q!.x) / theirs, uz = (b.z - q!.z) / theirs, side = (me.x - q!.x) * uz - (me.z - q!.z) * ux >= 0 ? 1 : -1;
+    const at = carried && gap(me, q!) > 1.6 ? {x: q!.x + uz * side * SKILL_FIGHT.flank - ux * .4, z: q!.z - ux * side * SKILL_FIGHT.flank - uz * .4} : q!;
+    this.stick(me, at, input, carried ? .3 : 1.2);
+    const d = gap(me, q!);
     this.boost(me, d, input, now, 5);
     input.yaw = yaw;
-    if (d < 2.5 && now >= this.nextPress) this.press(input, 'heavy', yaw, now, [.45, .6]);
+    if (carried && d < SKILL_FIGHT.strike && now >= this.nextPress) this.press(input, 'light', yaw, now, [.15, .2]);
+    else if (!carried && d < 2.5 && now >= this.nextPress) this.press(input, 'heavy', yaw, now, [.45, .6]);
     return true;
   }
+  /** (SKILL_FIGHT) Carrying, one of theirs locked on it within reach as seen, closing or swinging: the
+   *  guard up (a fresh press, held SKILL_FIGHT.hold s) for the REVERSAL. True while it is up. */
+  private guarding(me: PlayerState, view: BallView, rivals: Body[], now: number, input: Command) {
+    if (now < this.guardHeld) { input.guard = true; return true; }
+    if (now < this.guardAgain || SWINGING.has(me.action)) return false;
+    for (const r of rivals) {
+      if (view.seats.find(s => s.id === r.id)?.lock !== this.id) continue;
+      const d = gap(r, me), closing = d > 1e-3 ? -((r.vx - this.moving.x) * (r.x - me.x) + (r.vz - this.moving.z) * (r.z - me.z)) / d : 0;
+      if (d < SKILL_FIGHT.guard + this.timeErr * 10 && (closing > 2 || SWINGING.has(r.action))) {
+        this.guardHeld = now + SKILL_FIGHT.hold; this.guardAgain = now + SKILL_FIGHT.again; input.guard = true;
+        return true;
+      }
+    }
+    return false;
+  }
+  private guardHeld = -Infinity; private guardAgain = -Infinity;
   /** Whether a ball in the air is crossing here at head height in about the jump's rise from now: the moment to leave
    *  the floor so the top of the jump meets it. (Read off its flight, as the ball and its landing sight show it.) */
   private header(me: PlayerState, b: BallState) {

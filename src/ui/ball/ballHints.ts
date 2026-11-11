@@ -1,4 +1,4 @@
-import { SPIKE_RULES, type BallEvent, type BallModeId, type BallSeat, type BallState, type BallTeam, type BallView } from '../../game/ball/model';
+import { SPIKE_RULES, inPlay, shortSide, type BallEvent, type BallModeId, type BallSeat, type BallState, type BallTeam, type BallView } from '../../game/ball/model';
 import { goalZ, landing, sideOf } from '../../game/ball/physics';
 import { hasStances } from '../../game/ball/stance';
 import type { PlayerState } from '../../game/types';
@@ -27,8 +27,12 @@ import { ballHintsShown, coachOn, markBallHint } from '../modes/prefs';
  *    you: the moment SHOOT's two ways matter - model.ts SHOOT); AS IT ARRIVES (a team-mate's pass rolling at you: the
  *    guard then TRAPs it - BallMatch TRAP; on touch the moment's button is TRAP then, sportTouch.ts); PASS · THE STICK AT A TEAM-MATE AIMS IT
  *    (the ball carried at your feet - BallMatch CARRY, strike.ts PASS_AIM).
+ *  - Goal Rush: POWER PLAY · 3 V 2 (a side with a body wiped out: the short side's goal glows - yours
+ *    to shoot at, or yours to hold - model.ts shortSide); AS THE TACKLE COMES (the ball at your feet and one of theirs
+ *    locked on you: the guard then is a REVERSAL - BallMatch REVERSAL; not on touch, whose button then is FIGHT). The
+ *    TACKLE's own hint says a blow on the carrier wins the ball (BallMatch TACKLE_WON).
  */
-export type BallHintId = 'gr-tackle' | 'gr-knock' | 'gr-boost' | 'gr-aerial' | 'gr-save' | 'gr-scuff' | 'gr-shoot' | 'gr-trap' | 'gr-carry' | 'ss-spike' | 'ss-dig' | 'ss-block' | 'ss-scuff';
+export type BallHintId = 'gr-tackle' | 'gr-knock' | 'gr-boost' | 'gr-aerial' | 'gr-save' | 'gr-scuff' | 'gr-shoot' | 'gr-trap' | 'gr-carry' | 'gr-power' | 'gr-reverse' | 'ss-spike' | 'ss-dig' | 'ss-block' | 'ss-scuff';
 /** How long a hint stays up (ms) unless it is done sooner; the breath after one before another may come; the most a
  *  match shows; the quiet start of a match (the coach's own opening line). */
 export const HINT_MS = 4500, HINT_GAP_MS = 12000, HINTS_A_MATCH = 3, HINT_QUIET_S = 6;
@@ -65,6 +69,8 @@ const flat = (a: { x: number; z: number }, b: { x: number; z: number }) => Math.
 const keys = (c: Ctx, more: Omit<PromptOptions, 'device' | 'family' | 'sport'> = {}): PromptOptions => ({ device: c.device, family: c.family, sport: { mode: c.view.mode, fight: c.fight }, ...more });
 const key = (c: Ctx, action: Parameters<typeof promptKey>[0]) => promptKey(action, keys(c));
 /** The opponent on the ball: the nearest of the other side to it, within a few metres of it and with it near the floor. */
+/** The ball carried by you or a team-mate (BallState.carry). */
+const ourCarry = (c: Ctx) => c.ball.carry !== undefined && c.view.seats.find(s => s.id === c.ball.carry)?.team === c.team;
 function carrier(c: Ctx): PlayerState | undefined {
   if (c.ball.y > 2.6) return undefined;
   let best: PlayerState | undefined, d = 3.2;
@@ -88,6 +94,19 @@ const scuffed = () => '<span class="ux-prompt"><b>SCUFFED</b><small>MASHING MIS-
 export const HINTS: readonly Hint[] = [
   // ─── Goal Rush ───
   { id: 'gr-scuff', mode: 'goal-rush', fire: c => !!c.scuffed && !c.fight, draw: scuffed },
+  // (The POWER PLAY, said once as it begins - a side with a body wiped out - and the REVERSAL, said once
+  // with the ball at your feet and one of theirs locked on you.)
+  { id: 'gr-power', mode: 'goal-rush',
+    fire: c => !!shortSide(c.view.seats),
+    done: c => !shortSide(c.view.seats),
+    draw: c => {
+      const short = shortSide(c.view.seats), n = inPlay(c.view.seats), up = short !== c.team;
+      return `<span class="ux-prompt"><b>POWER PLAY · ${n[c.team]} V ${n[c.team === 'red' ? 'blue' : 'red']}</b><small>${up ? 'THEIR GOAL GLOWS · A BODY UP, GO AT IT' : 'A BODY DOWN · YOUR GOAL GLOWS · HOLD ON'}</small></span>`;
+    } },
+  { id: 'gr-reverse', mode: 'goal-rush', touch: false,
+    fire: c => !c.fight && c.ball.carry === c.me.id && c.view.seats.some(s => s.lock === c.me.id && s.team !== c.team && (() => { const q = c.at(s.id); return !!q && flat(q, c.me) < 8; })()),
+    done: c => c.mine('reversal') || c.ball.carry !== c.me.id,
+    draw: c => prompt('guard', 'AS THE TACKLE COMES', keys(c, { detail: 'A REVERSAL PUTS THEM DOWN · THE BALL STAYS YOURS' })) },
   // (SHOOT's two ways, said once with the ball at your feet, the other side's goal ahead and room to wind up.)
   { id: 'gr-shoot', mode: 'goal-rush',
     fire: c => {
@@ -98,13 +117,16 @@ export const HINTS: readonly Hint[] = [
     done: c => c.mine('strike'),
     draw: c => prompt('heavy', 'TAP TO SHOOT', keys(c, { detail: 'HOLD TO CHARGE' })) },
   { id: 'gr-tackle', mode: 'goal-rush',
-    fire: c => { if (c.fight || !hasStances(c.view)) return false; const q = carrier(c); return !!q && flat(q, c.me) > 2.2 && flat(q, c.me) < 10; },
+    // (Never with the ball carried by your own side - seen on the page, its copy then told the carrier
+    // to hit the carrier, the one of theirs a REVERSAL had just put down beside them.)
+    fire: c => { if (c.fight || !hasStances(c.view) || ourCarry(c)) return false; const q = carrier(c); return !!q && flat(q, c.me) > 2.2 && flat(q, c.me) < 10; },
     done: c => c.fight,
-    draw: c => prompt('target', c.device === 'touch' ? 'TO TACKLE' : 'FIGHT TO TACKLE', keys(c, { detail: 'KNOCK THE ONE ON THE BALL DOWN' })) },
+    draw: c => prompt('target', c.device === 'touch' ? 'TO TACKLE' : 'FIGHT TO TACKLE', keys(c, { detail: c.ball.carry !== undefined ? 'ONE BLOW ON THE CARRIER WINS THE BALL' : 'KNOCK THE ONE ON THE BALL DOWN' })) },
   { id: 'gr-knock', mode: 'goal-rush',
     fire: c => c.fight && c.since >= 1,
     done: c => !c.fight || c.mine('tackle'),
-    draw: c => `<span class="ux-prompt"><b>KNOCK THEM DOWN</b><small>A TACKLE WINS THE BALL · THEN</small>${key(c, 'target')}<b>BALL</b></span>` },
+    // (Any blow on the one carrying it wins the ball, BallMatch TACKLE_WON; anyone else, knocked down.)
+    draw: c => `<span class="ux-prompt"><b>HIT THE CARRIER</b><small>ANY BLOW WINS THE BALL · ANYONE ELSE, KNOCK DOWN · THEN</small>${key(c, 'target')}<b>BALL</b></span>` },
   { id: 'gr-boost', mode: 'goal-rush',
     fire: c => !c.fight && !c.me.boost && c.me.grounded && (c.me.stamina ?? 0) >= .8 * (c.me.maxStamina ?? 100) && flat(c.me, c.ball) > 14,
     done: c => !!c.me.boost,

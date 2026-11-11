@@ -4,11 +4,13 @@
 // them against. The ball is drawn where the striking foot, head or hands are on the contact frame (framed in yellow).
 // Under each frame: the striking point ahead of the hips and over the floor (body heights). `window.sheetData` returns
 // the numbers, the contact against the frame the striking point moves fastest (`peakMs`, the hit-frame check) and the fits.
-//   /tools/ball_moves_sheet.html?id=kosho&frames=7&cell=170[&moves=GR.pass,SS.dig][&view=side][&own=0][&take=GR.power:cand K.simple][&compact=1]
+//   /tools/ball_moves_sheet.html?id=kosho&frames=7&cell=170[&moves=GR.pass,SS.dig][&view=side][&own=0][&take=GR.power:cand K.simple][&compact=1][&kit=0]
+// (The sport kit: every row draws its kit take, as `?ballmoves` does; `kit=0` the prototypes, as SHOOT's
+// quick strike ships.)
 import * as THREE from 'three';
 import { FighterLibrary, type Fighter } from '../src/render/Fighter';
 import { FIGHTERS } from '../src/config';
-import { BALL_MOVES, ballMoveReport, ballFitCost, ballMovesReady, forceBallMove, installBallMoves } from '../src/render/ball/ballMoves';
+import { BALL_MOVES, ballMoveReport, ballFitCost, ballMovesReady, forceBallMove, installBallMoves, takeOf } from '../src/render/ball/ballMoves';
 import type { BallMoveKey } from '../src/render/ball/ballMoveChoice';
 import type { FighterId, PlayerState } from '../src/game/types';
 
@@ -16,18 +18,33 @@ const params = new URLSearchParams(location.search);
 const id = (params.get('id') ?? 'kosho') as FighterId;
 const frames = params.get('compact') ? 3 : Number(params.get('frames') ?? 7), cell = Number(params.get('cell') ?? 170), label = 150;
 const status = (s: string) => { document.title = s; return s; };
-/** Each move: the action it is thrown as, in the air or not, the limb that meets the ball, and the ball's radius. */
-const ROWS: Record<BallMoveKey, { action: 'light' | 'heavy' | 'guard'; air?: boolean; limb: string[]; r: number }> = {
+/** Each move: the action it is thrown as, in the air or not, the limb that meets the ball, and the ball's radius.
+ *  (The sport kit: a take played through - a guard's, a celebration's on the victory pose, the carry's run,
+ *  the dive's dash and its get-up - is drawn across `span` seconds, with no hit-frame check: no rule's contact times it.) */
+const ROWS: Record<BallMoveKey, { action: 'light' | 'heavy' | 'guard' | 'dash' | 'run' | 'victory'; air?: boolean; limb: string[]; r: number; span?: number }> = {
   'GR.pass': { action: 'light', limb: ['RightFoot'], r: .8 }, 'GR.power': { action: 'heavy', limb: ['RightFoot'], r: .8 },
   'GR.volley': { action: 'light', air: true, limb: ['RightFoot'], r: .8 }, 'GR.head': { action: 'light', limb: ['Head'], r: .8 },
   'GR.headAir': { action: 'light', air: true, limb: ['Head'], r: .8 }, 'GR.keeper': { action: 'guard', limb: ['LeftHand', 'RightHand'], r: .8 },
   'SS.dig': { action: 'light', limb: ['LeftHand', 'RightHand'], r: .5 }, 'SS.set': { action: 'light', limb: ['LeftHand', 'RightHand'], r: .5 },
   'SS.setAir': { action: 'light', air: true, limb: ['LeftHand', 'RightHand'], r: .5 }, 'SS.spike': { action: 'heavy', air: true, limb: ['RightHand'], r: .5 },
   'SS.wall': { action: 'guard', air: true, limb: ['LeftHand', 'RightHand'], r: .5 },
+  'GR.drive': { action: 'heavy', limb: ['RightFoot'], r: .8 }, 'GR.bicycle': { action: 'light', air: true, limb: ['RightFoot'], r: .8 },
+  'GR.trap': { action: 'guard', limb: ['RightFoot'], r: .8, span: 1.1 }, 'GR.carry': { action: 'run', limb: ['RightFoot'], r: .8, span: .8 },
+  'GR.shoulder': { action: 'light', limb: ['RightShoulder'], r: .8 }, 'GR.slide': { action: 'light', limb: ['RightFoot'], r: .8 },
+  'GR.diveL': { action: 'guard', limb: ['LeftHand'], r: .8, span: 1.1 }, 'GR.diveR': { action: 'guard', limb: ['RightHand'], r: .8, span: 1.1 },
+  'GR.parry': { action: 'guard', limb: ['LeftHand', 'RightHand'], r: .8, span: 1.1 },
+  'SS.pancake': { action: 'dash', limb: ['RightHand'], r: .5, span: .22 }, 'SS.pancakeUp': { action: 'victory', limb: ['RightHand'], r: .5, span: .9 },
+  'SS.backSet': { action: 'light', limb: ['LeftHand', 'RightHand'], r: .5 }, 'SS.tip': { action: 'light', air: true, limb: ['RightHand'], r: .5 },
+  'SS.spikeCut': { action: 'heavy', air: true, limb: ['RightHand'], r: .5 }, 'SS.spikeRoll': { action: 'heavy', air: true, limb: ['RightHand'], r: .5 },
+  'SS.float': { action: 'light', limb: ['RightHand'], r: .5 }, 'SS.jumpServe': { action: 'heavy', air: true, limb: ['RightHand'], r: .5 },
+  'C.slide': { action: 'victory', limb: ['Hips'], r: .8, span: 2.4 }, 'C.pump': { action: 'victory', limb: ['RightHand'], r: .8, span: 2.9 },
+  'C.flex': { action: 'victory', limb: ['LeftHand', 'RightHand'], r: .8, span: 2.2 }, 'C.point': { action: 'victory', limb: ['LeftHand', 'RightHand'], r: .8, span: 2.2 },
+  'C.leap': { action: 'victory', limb: ['RightHand'], r: .8, span: 1.6 }, 'C.bow': { action: 'victory', limb: ['Head'], r: .8, span: 3.3 },
 };
-const moves = (params.get('moves')?.split(',').filter(Boolean) ?? Object.keys(ROWS)) as BallMoveKey[];
+const kit = params.get('kit') !== '0';
+const moves = (params.get('moves')?.split(',').filter(Boolean) ?? Object.keys(ROWS).filter(k => kit || !BALL_MOVES[k as BallMoveKey].take.startsWith('K.') && !k.startsWith('C.'))) as BallMoveKey[];
 // `take=GR.power:cand K.simple`: a row's take swapped for another of the file's (choosing the kicks' cuts).
-for (const spec of params.get('take')?.split(';').filter(Boolean) ?? []) { const [key, take] = spec.split(':'); (BALL_MOVES as Record<string, { take: string }>)[key].take = take; }
+for (const spec of params.get('take')?.split(';').filter(Boolean) ?? []) { const [key, take] = spec.split(':'); Object.assign((BALL_MOVES as Record<string, { take: string; kit?: string }>)[key], { take, kit: take }); }
 const own = params.get('own') !== '0';
 // `cands=K.front,K.high`: a row each for the file's whole candidate kicks (`cand <take>`), thrown as GR.power (or
 // GR.volley in the air, `cands=air:K.flying`): choosing the kicks' cuts, on a file packed with its candidates.
@@ -35,7 +52,7 @@ const cands = (params.get('cands')?.split(',').filter(Boolean) ?? []).map(c => c
 
 async function main() {
   if (!FIGHTERS[id]) { status('error: unknown fighter'); return; }
-  installBallMoves(() => undefined);
+  installBallMoves(() => undefined, kit);
   const rows: { key: string; move?: BallMoveKey; take?: string }[] = [...(own ? [{ key: 'own light' }, { key: 'own heavy' }] : []),
     ...(params.get('moves') === '' || cands.length && !params.get('moves') ? [] : moves.map(move => ({ key: move, move }))), ...cands.map(c => ({ key: c.take, move: c.key, take: c.take }))];
   const width = label + frames * cell, height = rows.length * cell;
@@ -95,29 +112,32 @@ async function main() {
     overlay.append(d);
   };
   const data: unknown[] = [];
-  const takes = Object.fromEntries(Object.entries(BALL_MOVES).map(([k, v]) => [k, v.take]));
+  const takes = Object.fromEntries(Object.entries(BALL_MOVES).map(([k, v]) => [k, { take: v.take, kit: v.kit }]));
   rows.forEach(({ key, move, take }, r) => {
-    if (move) (BALL_MOVES as Record<string, { take: string }>)[move].take = take ?? takes[move];
+    if (move) Object.assign((BALL_MOVES as Record<string, { take: string; kit?: string }>)[move], take ? { take, kit: take } : takes[move]);
     const spec = move ? ROWS[move] : { action: key === 'own light' ? 'light' as const : 'heavy' as const, limb: ['RightHand'], r: .8 };
     forceBallMove(move ?? null);
     const air = !!(move && ROWS[move].air), y = air ? tall * .7 : 0;
     const rest: PlayerState = { ...base, y, grounded: !air };
     const body = fresh(rest);
-    const held = spec.action === 'guard';
+    const through = move ? ROWS[move].span : undefined, held = spec.action === 'guard' || through !== undefined;
+    const span = through ?? 1.2;
     const m = held ? undefined : body.movePlayed({ ...rest, action: spec.action, actionDuration: 1, actionTime: 0, chain: 0 } as PlayerState);
-    const duration = held ? 1.2 : m!.duration, contact = held ? .5 : Math.min(.9, Math.max(.1, m!.contacts[0] / duration));
+    const duration = held ? span : m!.duration, contact = held ? .5 : Math.min(.9, Math.max(.1, m!.contacts[0] / duration));
     // (`compact=1`: three frames - the wind-up, the blow, the follow-through - for the many-body contact sheet.)
     const times = params.get('compact') ? (held ? [.25, .5, .75] : [contact * .55, contact, contact + (1 - contact) * .4])
       : held ? Array.from({ length: frames }, (_, i) => (i + .5) / frames) : [.04, contact * .45, contact * .8, contact, contact + (1 - contact) * .3, contact + (1 - contact) * .62, .97].slice(0, frames);
-    const state: PlayerState = { ...rest, action: spec.action, actionStarted: 10 + r, actionSeq: 2 + r, actionDuration: held ? 0 : duration, chain: 0, guarding: held } as PlayerState;
+    // (The dash runs on its own clock, across its 0.22 s; a guard, a run and the victory pose on the body's.)
+    const timed = spec.action === 'dash';
+    const state: PlayerState = { ...rest, action: spec.action, actionStarted: 10 + r, actionSeq: 2 + r, actionDuration: held && !timed ? 0 : duration, chain: 0, guarding: spec.action === 'guard' } as PlayerState;
     // The striking point through the whole move (every step), for the hit-frame check: where it moves fastest.
     const limb = () => spec.limb.map(n => at(body, n)).reduce((a, b) => a.add(b), new THREE.Vector3()).multiplyScalar(1 / spec.limb.length);
     const track: { t: number; p: THREE.Vector3 }[] = [];
-    const row = { key, take: move ? BALL_MOVES[move].take : '-', duration: +duration.toFixed(3), contact: +contact.toFixed(3), frames: [] as unknown[], peakMs: 0, atContact: [0, 0] as number[], clip: '' };
+    const row = { key, take: move ? takeOf(BALL_MOVES[move], kit) : '-', duration: +duration.toFixed(3), contact: +contact.toFixed(3), frames: [] as unknown[], peakMs: 0, atContact: [0, 0] as number[], clip: '' };
     let col = 0, s = 0;
     for (const share of times) {
-      for (; s < share * (held ? 1.2 : duration); s += STEP) {
-        body.update(STEP, { ...state, actionTime: held ? 0 : Math.min(.999, s / duration) }, true);
+      for (; s < share * duration; s += STEP) {
+        body.update(STEP, { ...state, actionTime: held && !timed ? 0 : Math.min(.999, s / duration) }, true);
         body.group.updateMatrixWorld(true);
         track.push({ t: s, p: limb() });
       }
