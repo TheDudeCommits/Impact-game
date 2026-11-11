@@ -360,8 +360,19 @@
    it, back as it clears. */
 #interface[data-hud="sky-spike"] .mode-hud .bh-board{transition:opacity .12s linear}
 #interface[data-hud="sky-spike"][data-ball-behind] .mode-hud .bh-board{opacity:.18}
-/* VOLLEYBALL (render/ball/touchWord.ts): a touch's tier, one small word over the fighter who made it. */
-#interface .vb-word{position:fixed;left:0;top:0;z-index:5;pointer-events:none;font:italic 900 clamp(12px,2.1vh,15px)/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.04em;
-  color:#f4f1ea;text-shadow:0 1px 0 #000,0 0 3px rgba(0,0,0,.8);opacity:0;white-space:nowrap}
+/* VOLLEYBALL (render/ball/touchWord.ts): a touch's tier, one word over the fighter who made it, on a small
+   dark plate so it reads on every court; your own in your side's colour (the element's own `color`). */
+#interface .vb-word{position:fixed;left:0;top:0;z-index:5;pointer-events:none;font:italic 900 clamp(14px,3vh,20px)/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.05em;
+  color:#f4f1ea;background:rgba(8,9,12,.78);padding:.16em .42em .12em;border-radius:.25em;box-shadow:0 0 0 1px rgba(255,255,255,.14);
+  text-shadow:0 1px 0 #000;opacity:0;white-space:nowrap}
+#interface .vb-word[data-own]{box-shadow:0 0 0 2px currentColor}
 #interface .vb-word.on{animation:vb-word .7s linear forwards}
 @keyframes vb-word{0%{opacity:0}10%{opacity:1}75%{opacity:1}100%{opacity:0}}
+/* VOLLEYBALL on a phone on its side: the score bug in one small row - the two scores and the rally - so the
+   high set and the far side's spike pass behind it less (render/ball/ghostBug.ts sets data-volley). */
+@media (orientation:landscape) and (max-height:520px){
+  #interface[data-hud="sky-spike"][data-volley] .bh-board{--bh-bug:46;grid-template-columns:auto minmax(calc(84 * var(--bh-u)),auto) auto;grid-template-areas:"redscore middle bluescore"}
+  #interface[data-hud="sky-spike"][data-volley] .bh-board :is(.bh-team,.bh-heat,.bh-power){display:none}
+  #interface[data-hud="sky-spike"][data-volley] .bh-board .bh-score{font-size:calc(34 * var(--bh-u));padding:0 calc(12 * var(--bh-u))}
+  #interface[data-hud="sky-spike"][data-volley] .bh-board .bh-middle strong{font-size:calc(22 * var(--bh-u))}
+}

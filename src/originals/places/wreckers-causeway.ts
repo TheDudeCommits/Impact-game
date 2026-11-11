@@ -22,7 +22,7 @@ const SEA = -7;
 export async function dress(c: DressContext) {
   const { kit } = c;
   const props = STAGE_PROPS['wreckers-causeway'] ?? [];
-  const hulk: Promise<THREE.Texture | null> = HULK_CARD ? new THREE.TextureLoader().loadAsync(HULK_CARD) : Promise.resolve(null);
+  const hulk = new THREE.TextureLoader().loadAsync('/assets/environment/br/causeway-hulk.webp');
   const [, , S] = await Promise.all([
     c.sky({ rotation: 0, drift: 0 }),
     kit.load(['harbor/crate', 'harbor/barrel', 'harbor/crate-bottles', 'br/kenney-pirate-cannon-mobile', 'harbor/boat-row-large', 'harbor/boat-row-small',
@@ -505,8 +505,6 @@ function reefs(f: Forge) {
   }
 }
 
-/** The picture of the wreck standing on her bow far out at sea, when this checkout carries one. */
-const HULK_CARD: string | null = null;
 /** A wreck's hull standing on her bow far out at sea, painted on a card and graded to the night; no picture, no card. */
 function hulkCard(c: DressContext, map: THREE.Texture | null) {
   if (!map) return;

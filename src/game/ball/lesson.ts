@@ -549,7 +549,9 @@ export class BallLesson {
       }
       case 'ss-block': {
         // Their set, up at the net on their side for the hitter (the glint the page draws on them at the top of their jump).
-        const top = {x: this.hitter.x + this.rand(-.4, .4), y: 5.1, z: -c * 1.5}, from = {x: top.x + this.rand(-1.5, 1.5), y: 1.6, z: -c * 5};
+        // (VOLLEYBALL: the block is the jump, met at its top - the set as high as a hitter's at the top of theirs,
+        // so the spike crosses the net where a blocker's hands are: volley.ts VOLLEY.block.)
+        const top = {x: this.hitter.x + this.rand(-.4, .4), y: this.view.volley ? 6.6 : 5.1, z: -c * 1.5}, from = {x: top.x + this.rand(-1.5, 1.5), y: 1.6, z: -c * 5};
         const t = 1.05, vel = arc(from, top.x, top.y, top.z, t, g, R.drag);
         host.feed({ball: {...from, ...vel, shot: 'set'}, team: machine, touchTeam: machine, touches: 2});
         this.plan(host, them);

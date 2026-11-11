@@ -9,7 +9,7 @@ import type {PlayerState} from '../../game/types';
  * banner for points): the ball spent two fifths of a phone's live play behind that line, and the score bug faded for it.
  * A few plain DOM words over #interface, placed by projecting the fighter's head each frame; nothing in the scene.
  */
-export const TOUCH_WORD = {seconds: .7, over: 2.35, most: 4} as const;
+export const TOUCH_WORD = {seconds: .7, over: 3.1, most: 4, top: .2} as const;
 const TIERS = new Set(['PERFECT', 'GOOD', 'EARLY', 'LATE', 'FLUBBED']);
 interface Word {node: HTMLElement; id: string; until: number}
 export class TouchWords {
@@ -35,6 +35,7 @@ export class TouchWords {
       w.id = e.actorId; w.until = now + TOUCH_WORD.seconds * 1000; w.node.textContent = tier;
       const mine = e.actorId === selfId || (!!team && e.team === team && e.actorId === selfId);
       w.node.style.color = mine && team ? `#${BALL_TEAM_COLOURS[team].toString(16).padStart(6, '0')}` : '';
+      if (mine) w.node.dataset.own = ''; else delete w.node.dataset.own;
       w.node.dataset.tier = tier;
       w.node.classList.remove('on'); void w.node.offsetWidth; w.node.classList.add('on');
       this.words.push(w);
@@ -45,7 +46,9 @@ export class TouchWords {
       if (!live) { w.node.hidden = true; continue; }
       const v = this.v.set(p!.x, p!.y + TOUCH_WORD.over * (p!.size ?? 1), p!.z).project(camera);
       w.node.hidden = v.z > 1;
-      w.node.style.transform = `translate(${((v.x + 1) / 2 * W).toFixed(1)}px, ${((1 - v.y) / 2 * H).toFixed(1)}px) translate(-50%, -100%)`;
+      // (Kept on the screen and clear of the score bug: a hitter up at the far net stands near the top of a phone's view.)
+      const x = Math.max(40, Math.min(W - 40, (v.x + 1) / 2 * W)), y = Math.max(H * TOUCH_WORD.top, (1 - v.y) / 2 * H);
+      w.node.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`;
     }
   }
   private clear() { for (const w of this.words) w.node.remove(); this.words.length = 0; }

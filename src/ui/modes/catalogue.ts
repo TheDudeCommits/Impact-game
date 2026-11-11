@@ -13,7 +13,7 @@ import { gateModes } from '../../originals/launch';
 export type ModeId = 'duel' | 'royale' | 'training' | 'arcade' | 'last-stand' | 'bad-blood' | 'rift-war' | 'goal-rush' | 'sky-spike';
 export type VariantId = 'offline' | 'couch' | 'online' | 'friends';
 export const VARIANT_ORDER: readonly VariantId[] = ['offline', 'couch', 'online', 'friends'];
-export const MODE_ORDER: readonly ModeId[] = ['duel', 'goal-rush', 'sky-spike', 'royale', 'training', 'arcade', 'last-stand', 'bad-blood', 'rift-war'];
+export const MODE_ORDER: readonly ModeId[] = ['duel', 'royale', 'training', 'arcade', 'last-stand', 'goal-rush', 'sky-spike', 'bad-blood', 'rift-war'];
 
 /** Round 5 corrections (the blind critic): one vocabulary for the ways to play, in every mode, on the cards, the
  *  sheets and PLAY's line - BOTS · ONLINE · FRIENDS - with each mode's own one-line subtitle under the word. A mode

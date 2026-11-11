@@ -21,6 +21,8 @@ export class GhostBug {
   update(view: BallView | undefined, ball: THREE.Vector3 | null, camera: THREE.Camera, now: number) {
     const root = typeof document === 'object' ? document.getElementById('interface') : null;
     if (!root) return;
+    // (The flag on #interface for the phone's one-row bug: ballHud.css.)
+    if (!!view?.volley !== (root.dataset.volley !== undefined)) { if (view?.volley) root.dataset.volley = ''; else delete root.dataset.volley; this.readAt = -Infinity; }
     const want = !!view?.volley && !!ball && view.phase !== 'over' && this.over(ball, camera, now);
     if (want === this.behind) return;
     this.behind = want;

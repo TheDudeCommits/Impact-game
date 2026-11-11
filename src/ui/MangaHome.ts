@@ -18,14 +18,15 @@ import { activePackRoster, packArt } from '../engine/packs/active';
 
 export type HomeMode = 'duel' | 'players' | 'bots' | 'private' | 'training' | 'arcade' | 'bad-blood' | 'last-stand' | 'rift-war' | 'goal-rush' | 'sky-spike';
 export const HOME_MODES: readonly { id: HomeMode; label: string }[] = [
-  {id:'duel',label:'Duel'}, {id:'goal-rush',label:'Goal Rush'}, {id:'sky-spike',label:'Sky Spike'}, {id:'players',label:'BR vs Players'}, {id:'bots',label:'Battle Royale'},
+  {id:'duel',label:'Duel'}, {id:'players',label:'BR vs Players'}, {id:'bots',label:'Battle Royale'},
   {id:'private',label:'Private Room'}, {id:'training',label:'Training Ground'},
-  {id:'arcade',label:'Arcade Survival'}, {id:'last-stand',label:'Last Stand'}, {id:'bad-blood',label:'Bad Blood'}, {id:'rift-war',label:'Rift War'},
+  {id:'arcade',label:'Arcade Survival'}, {id:'last-stand',label:'Last Stand'}, {id:'goal-rush',label:'Goal Rush'}, {id:'sky-spike',label:'Sky Spike'},
+  {id:'bad-blood',label:'Bad Blood'}, {id:'rift-war',label:'Rift War'},
 ];
 /** Round 5 (UX): the rail's six cards. BR vs Players and Private Room are ways to play Battle Royale (online, friends),
  *  chosen on the mode sheet (src/ui/modes/ModeSheet.ts); their ids stay in HOME_MODES for invites and parties. */
-// The ball modes stand after the duel: the two newest ways to play, where a returning player sees them.
-export const HOME_RAIL: readonly HomeMode[] = ['duel','goal-rush','sky-spike','bots','training','arcade','last-stand','bad-blood','rift-war'];
+// The ball modes stand after Last Stand. The rail is drawn in HOME_MODES' order; catalogue.ts MODE_ORDER says the same.
+export const HOME_RAIL: readonly HomeMode[] = ['duel','bots','training','arcade','last-stand','goal-rush','sky-spike','bad-blood','rift-war'];
 gateHomeRail(HOME_RAIL);
 /** A card's ways to play, one line in the same order everywhere (offline / online / friends). The legacy ids the home
  *  still binds (Hud.ts: #choose-host/#choose-join, #choose-solo/#choose-coop, [data-duel]) sit on their words. */
