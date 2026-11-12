@@ -14,7 +14,7 @@ const BASE: Partial<Record<FighterId, number>> = {
   'gohaku': 1.05527,  // Tongbi (Gohaku)
   kuon: 0.99997,           // Kuon
   'wuming': 1.06904,   // Wuming
-  'jinlin': 1.00227, // Emperor Jinlin
+  'jinlin': 1.00227, // Jinlin
   // fix-polish2 (5 November): measured off the stances the clean set replaced, on originals/next (2fbab2443).
   // (aaa-b, 6 November: Shakugo stands in Shakugo's own stance again, flat on his feet: measured off it, so he stands Shakugo's
   // 2.3 m as Impact's same slot does - 0.96236, held from the stance before, stood him 2.17 m.)
@@ -59,7 +59,7 @@ const BASE: Partial<Record<FighterId, number>> = {
   // (status/aaa-a.md) are fixes, and a fix keeps the size a fighter is drawn at. r1_probe's rest height (the body drawn in its
   // file's rest pose at the scale Fighter gives it) framed with no row, against the same before tonight's fixes (release 33,
   // 399a77978): under 1% apart, no row; further apart, the scale before (the rows below) - unless the framing stood the body
-  // flat on heels it had lifted and that size is closer to Impact's same slot (Gorai +10.5%, Jirenga +6.2%, Haldor +3.8%,
+  // flat on heels it had lifted and that size is closer to Impact's same slot (Gorai +10.5%, Banjaku +6.2%, Haldor +3.8%,
   // Bruin +1.6%, Hakushi +1.4%, Kosho +1.2%, Kuzu +1.1%, Gosu +1.0%: each change is the stance's heels coming down, by 1.5 to
   // 33 cm). Buna stands her own 2.0 m (no row).
   akayuri: 1.02934,          // Akayuri (framed +1.4%: her head)
@@ -105,14 +105,14 @@ const BASE: Partial<Record<FighterId, number>> = {
 /** The awakened bodies whose own stance was swapped. */
 const FORM: Partial<Record<FighterId, number>> = {
   shiun: 0.93778,          // Shiun's awakened body
-  'jinlin': 1.01172, // Emperor Jinlin's
+  'jinlin': 1.01172, // Jinlin's
   // fix-polish2 (5 November): as above.
   shanxiao: 1.05604,          // Shanxiao's awakened body
   ampere: 1.01302,           // Ampere's
   // aaa-a2 (6 November): awakened bodies whose head and feet were framed, held at the size before (the same rule as above).
   hikui: 1.0419,            // Hikui's (framed +2.3%: his heels, further from Impact's Hikui)
   gorai: 1.27096,          // Gorai's (framed +4.0%: neither near Impact's hybrid Gorai, 34% shorter)
-  kenzo: 1.0905,           // Kenzo's RAKSHASA (the oni form's stance drawn at the size its stance before gave it; the model unchanged)
+  kenzo: 1.0905,           // Kenzo's DUNE ONI (the oni form's stance drawn at the size its stance before gave it; the model unchanged)
 };
 
 /** The model scale Fighter gives the original's own body (not a worn outfit, not a companion), or undefined to measure it. */

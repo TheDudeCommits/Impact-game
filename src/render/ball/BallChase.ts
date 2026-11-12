@@ -86,6 +86,27 @@ const FIGHT = {boom: 5.1, boomNear: 4.3, height: 2.35, heightNear: 2.75, shoulde
  *  6.7 degrees a second to the classic's 4.6.
  *  The FIGHT stance's framing is not touched. */
 const CLOSE = {fov: -7, height: .5, pitch: -2, riseFrom: 9, riseTo: 16, goalEdge: 5, ballEdge: 5, back: 12, again: 3} as const;
+/** Goal Rush's SPORT stance (football, `ChaseFrame.football`): a chase camera that sat low and tilted up showed the pitch
+ *  in the bottom third, stands in half the frame, cage posts and goal frames across the view, and swung between pitch,
+ *  crowd and goal frame. Still behind the person's fighter (the chase camera, BALL LOCK / FREE LOOK on V), but stood higher
+ *  and further back, tilted down, so the pitch fills the frame and the play ahead is seen:
+ *  - the lens `boom` m back (`boomNear` with the ball at the feet, `boomLoft` more under a high ball) and `height` m up
+ *    (`heightNear`, `heightLoft`), `shoulder` m over the right shoulder; its lens `fov` degrees tall (`fovLoft` wider
+ *    under a high ball, `fovBoost` on a sprint);
+ *  - the tilt puts the body's feet `body` of the way down from the frame's middle (NDC: in the lower third, clear of the
+ *    control strip), but never so flat that the far boundary along the heading (the mean of `rays` rays `spread` rad
+ *    apart) stands more than `far` up from the middle - the stands above it about a fifth of the frame or less, so near an
+ *    end it tilts further down (the boundary `nearFrom` m off or less may stand up to `farNear`, by `nearTo` m `far` again:
+ *    a wall run at is the play's edge) - never steeper than `least` nor flatter than `most` degrees; the ball under `top`
+ *    (BALL LOCK keeps it in frame) and the head too, the feet never over `high` (unless backed into a corner) and over
+ *    `feet` whatever else;
+ *  - damped: the tilt is a spring (`pitchRate`) that never turns faster than `pitchSpeed` rad/s, the lens's place a
+ *    spring capped as the classic rig's is (RIG.glide), and the heading BallCam's calm one;
+ *  - the walls: no swing round you - the boom is shortened along its own line (to `boomLeast` at most) and the lens
+ *    lifted by `wallLift` of what the walls took (at most `wallLiftMost` m), so in a corner or against the glass it
+ *    pulls in and up and looks down on you; it never enters a goal's mouth (it stands over the bar's height). */
+const FOOT = {boom: 8.4, boomNear: 7.6, boomLoft: 2.2, height: 6.4, heightNear: 6, heightLoft: 1.4, shoulder: .3, fov: 50, fovLoft: 8, fovBoost: 3,
+  far: .58, farNear: .84, nearFrom: 12, nearTo: 26, rays: 3, spread: .28, least: -48, steep: -74, most: -17, body: -.4, high: -.1, feet: -.62, top: .78, pitchRate: 3.2, pitchSpeed: .55, boomLeast: 3.4, wallGap: 1.2, wallLift: .6, wallLiftMost: 3.4} as const;
 const D2R = Math.PI / 180;
 const wrapped = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 /** The swings tried, nearest first (radians either way from straight behind). */
@@ -115,6 +136,8 @@ export interface ChaseFrame {
   boosting: boolean;
   /** The player's SHAKE setting (0-1). */
   shake: number;
+  /** Goal Rush on the sport rules (BallView.football) - its SPORT stance filmed by the FOOT rig. */
+  football?: boolean;
 }
 
 export class BallChase {
@@ -222,6 +245,7 @@ export class BallChase {
   }
 
   private lay(camera: THREE.PerspectiveCamera, dt: number, f: ChaseFrame) {
+    if (f.football && !f.fight && f.mode === 'goal-rush') { this.layFoot(camera, dt, f); return; }
     const s = f.self, ball = f.ball, fresh = !this.ready;
     // The body the rig follows: stiff along the floor, soft in height.
     if (fresh) { this.body.set(s.x, s.y, s.z); this.bodyVel.set(0, 0, 0); }
@@ -337,6 +361,125 @@ export class BallChase {
     camera.fov = fovNow - RIG.punchMost * this.punch * this.punch;
     camera.updateProjectionMatrix(); camera.updateMatrixWorld();
     this.yaw = view; this.ready = true;
+  }
+
+  /** The SPORT stance's frame (FOOT): behind the body, high, tilted down by the pitch ahead, damped. */
+  private layFoot(camera: THREE.PerspectiveCamera, dt: number, f: ChaseFrame) {
+    const s = f.self, ball = f.ball, fresh = !this.ready, G = GOAL_RULES;
+    if (fresh) { this.body.set(s.x, s.y, s.z); this.bodyVel.set(0, 0, 0); }
+    else { this.followAxis('x', s.x, RIG.follow, dt); this.followAxis('z', s.z, RIG.follow, dt); this.followAxis('y', Math.max(0, s.y), RIG.rise, dt); }
+    const b = this.body;
+    const dx = ball ? ball.x - b.x : 0, dz = ball ? ball.z - b.z : 0, d = ball ? Math.hypot(dx, dz) : 20;
+    if (ball && this.ballSeen && dt > 0 && Math.abs(ball.y - this.ballPrev.y) < 3) this.ballVy += ((ball.y - this.ballPrev.y) / dt - this.ballVy) * Math.min(1, dt * 14);
+    else this.ballVy = 0;
+    if (ball) this.ballPrev.set(ball.x, ball.y, ball.z);
+    this.ballSeen = !!ball;
+    const g = G.gravity, rise = Math.max(0, Math.min(this.ballVy / g, RIG.loftLead)), peak = ball ? ball.y + Math.max(0, this.ballVy * rise - .5 * g * rise * rise) : 0;
+    const loft = ball && peak > 3.2 ? smooth(Math.atan2(peak - b.y - 1.2, Math.max(d, .5)), .25, .8) : 0;
+    const near = ball ? (1 - smooth(d, 2.5, 9)) * (1 - loft) : 0;
+    const narrow = clamp((1.5 - camera.aspect) / .7, 0, 1);
+    const boomWant = (FOOT.boom + (FOOT.boomNear - FOOT.boom) * near + FOOT.boomLoft * loft) * (1 + .25 * narrow);
+    const heightWant = FOOT.height + (FOOT.heightNear - FOOT.height) * near + FOOT.heightLoft * loft;
+    const shoulderWant = FOOT.shoulder * (1 - .6 * narrow);
+    const fovWant = FOOT.fov + FOOT.fovLoft * loft + (f.boosting ? FOOT.fovBoost : 0) + 6 * narrow;
+    if (fresh) { this.boom.snap(boomWant); this.height.snap(heightWant); this.shoulder.snap(shoulderWant); this.fov.snap(fovWant); this.swing.snap(0); this.held.set(0, 0, 0); this.heldVel.set(0, 0, 0); }
+    const boom = this.boom.to(boomWant, RIG.boomRate, dt), height = this.height.to(heightWant, RIG.boomRate, dt), shoulder = this.shoulder.to(shoulderWant, RIG.boomRate, dt);
+    // (No swing round the body: the walls shorten and lift the boom instead. A swing left by the classic rig eases out.)
+    const head = f.heading + this.swing.to(0, RIG.swingOut, dt), hx = Math.sin(head), hz = Math.cos(head), rx = -hz, rz = hx;
+    const free = this.free.set(b.x - hx * boom + rx * shoulder, b.y + height, b.z - hz * boom + rz * shoulder);
+    const ox = b.x + rx * shoulder, oz = b.z + rz * shoulder, room = this.roomFoot(ox, oz, -hx, -hz, boom);
+    const reach = Math.max(Math.min(boom, room), FOOT.boomLeast), want = this.want.set(ox - hx * reach, b.y + height, oz - hz * reach);
+    const slid = this.keepFoot(want), taken = boom - reach + slid;
+    want.y += Math.min(taken * FOOT.wallLift, FOOT.wallLiftMost);
+    const goal = this.goal.set(want.x - free.x, want.y - free.y, want.z - free.z);
+    if (fresh) this.held.copy(goal);
+    else {
+      const rate = goal.lengthSq() > this.held.lengthSq() ? RIG.wallIn : RIG.wallOut;
+      for (const axis of ['x', 'y', 'z'] as const) {
+        const decay = Math.exp(-rate * dt), off = this.held[axis] - goal[axis], drive = this.heldVel[axis] + rate * off;
+        this.held[axis] = goal[axis] + (off + drive * dt) * decay; this.heldVel[axis] = (this.heldVel[axis] - rate * drive * dt) * decay;
+      }
+    }
+    const at = this.want.copy(free).add(this.held);
+    this.keepFoot(at, RIG.wallLoose); at.sub(b);
+    if (fresh) { this.offset.copy(at); this.offsetVel.set(0, 0, 0); }
+    else {
+      this.lastOffset.copy(this.offset);
+      dampedVector(this.offset, this.offsetVel, at, RIG.settle, dt);
+      const step = this.offset.distanceTo(this.lastOffset), most = RIG.glide * dt;
+      if (step > most) { const k = most / step; this.offset.lerpVectors(this.lastOffset, this.offset, k); this.offsetVel.multiplyScalar(k); }
+    }
+    at.copy(b).add(this.offset);
+    at.x = clamp(at.x, -G.halfX + .2, G.halfX - .2); at.z = clamp(at.z, -G.halfZ + .2, G.halfZ - .2); at.y = clamp(at.y, 1.5, G.ceiling - 1);
+    // The heading on screen: along the heading, turned to the play ahead when the walls moved the lens off its line.
+    const lookX = b.x + hx * 9 - hz * shoulder, lookZ = b.z + hz * 9 + hx * shoulder, view = Math.atan2(lookX - at.x, lookZ - at.z);
+    const fovNow = this.fov.to(fovWant, RIG.fovRate, dt), half = fovNow * D2R / 2, t = Math.tan(half);
+    // The tilt: the far boundary along the view `far` up the frame (the mean of a few rays), then the feet over the foot
+    // of the frame, the ball and the head under its top.
+    let reachFar = 0;
+    for (let i = 0; i < FOOT.rays; i++) reachFar += this.boundary(at.x, at.z, view + (i - (FOOT.rays - 1) / 2) * FOOT.spread);
+    reachFar = clamp(reachFar / FOOT.rays, 6, 60);
+    // (The body's feet at FOOT.body up the frame; never so flat that the stands take more than the far rule leaves them.)
+    const elev = (x: number, y: number, z: number) => Math.atan2(y - at.y, Math.max(.5, Math.hypot(x - at.x, z - at.z))), feet = elev(b.x, b.y, b.z);
+    // (A boundary close ahead - a wall the body runs at - is the play's edge: more of it may stand in the frame, rather than
+    // the empty grass behind the body.)
+    const farUp = FOOT.far + (FOOT.farNear - FOOT.far) * (1 - smooth(reachFar, FOOT.nearFrom, FOOT.nearTo));
+    let pitchWant = Math.min(feet - Math.atan(FOOT.body * t), -Math.atan2(at.y, reachFar) - Math.atan(farUp * t));
+    pitchWant = clamp(pitchWant, FOOT.least * D2R, FOOT.most * D2R);
+    if (ball) pitchWant = Math.max(pitchWant, elev(ball.x, ball.y, ball.z) - Math.atan(FOOT.top * t));
+    pitchWant = Math.max(pitchWant, elev(s.x, s.y + 1.9, s.z) - Math.atan(FOOT.top * t));
+    pitchWant = Math.min(pitchWant, feet - Math.atan(FOOT.feet * t));
+    // (Backed into a corner the lens may stand little behind the body: it looks further down onto it, as steep as `steep`.)
+    const behind = (b.x - at.x) * hx + (b.z - at.z) * hz, cornered = smooth(2.5 - behind, 0, 2.5), least = THREE.MathUtils.lerp(FOOT.least, FOOT.steep, cornered) * D2R;
+    // (Never so steep that the body climbs over the frame's middle - `high`: near an end the wall and the goal take the
+    // top of the frame rather than the body going up into it - but when backed into a corner.)
+    if (cornered < 1) pitchWant = Math.max(pitchWant, feet - Math.atan(FOOT.high * t) - cornered * .6);
+    pitchWant = Math.min(pitchWant, feet - Math.atan(FOOT.feet * t));
+    pitchWant = clamp(pitchWant, least, (FOOT.most + 14) * D2R);
+    if (fresh) this.pitch.snap(pitchWant);
+    const was = this.pitch.x, next = this.pitch.to(pitchWant, FOOT.pitchRate, dt), cap = FOOT.pitchSpeed * dt;
+    if (!fresh && Math.abs(next - was) > cap) { this.pitch.x = was + Math.sign(next - was) * cap; this.pitch.v = Math.sign(next - was) * FOOT.pitchSpeed; }
+    const pitch = this.pitch.x;
+    this.punch = Math.max(0, this.punch - dt * 3.2);
+    this.trauma = Math.max(0, this.trauma - dt * 2.6);
+    const shake = this.trauma * this.trauma * clamp(f.shake, 0, 1) * .025;
+    camera.position.copy(at);
+    this.euler.set(pitch + Math.sin(this.age * 31) * shake, view + Math.PI + Math.sin(this.age * 23 + 1.7) * shake * .6, Math.sin(this.age * 27) * shake * .5);
+    camera.quaternion.setFromEuler(this.euler);
+    camera.fov = fovNow - RIG.punchMost * .5 * this.punch * this.punch;
+    camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+    this.yaw = view; this.ready = true; this.tight = 0;
+  }
+  /** How far from (x, z) along `yaw` the pitch's boundary is (its walls and chamfered corners; m). */
+  private boundary(x: number, z: number, yaw: number) {
+    const G = GOAL_RULES, ux = Math.sin(yaw), uz = Math.cos(yaw);
+    let best = Infinity;
+    if (Math.abs(ux) > 1e-4) best = Math.min(best, (Math.sign(ux) * G.halfX - x) / ux);
+    if (Math.abs(uz) > 1e-4) best = Math.min(best, (Math.sign(uz) * G.halfZ - z) / uz);
+    // (A corner's chamfer: |x| + |z| = halfX + halfZ - corner, on the side the ray runs to.)
+    const sx = ux >= 0 ? 1 : -1, sz = uz >= 0 ? 1 : -1, c = G.halfX + G.halfZ - G.corner, along = sx * ux + sz * uz;
+    if (along > 1e-4) best = Math.min(best, (c - (sx * x + sz * z)) / along);
+    return Math.max(0, best);
+  }
+  /** The SPORT frame's room behind: how far the boom may run from (x, z) along (ux, uz) inside the walls (FOOT.wallGap),
+   *  marched in quarter metres, at most `most`. */
+  private roomFoot(x: number, z: number, ux: number, uz: number, most: number) {
+    if (!this.insideFoot(x, z, FOOT.wallGap)) { const p = this.probe.set(x, 0, z); this.keepFoot(p); x = p.x; z = p.z; }
+    let t = 0;
+    while (t < most) { const next = Math.min(most, t + .25); if (!this.insideFoot(x + ux * next, z + uz * next, FOOT.wallGap)) return t; t = next; }
+    return most;
+  }
+  private insideFoot(x: number, z: number, gap: number) {
+    const G = GOAL_RULES;
+    return Math.abs(x) <= G.halfX - gap && Math.abs(z) <= G.halfZ - gap && Math.abs(x) + Math.abs(z) <= G.halfX + G.halfZ - G.corner - gap * Math.SQRT2;
+  }
+  /** The SPORT lens put back inside the walls by `gap` (never into a goal's mouth): how far it moved along the floor. */
+  private keepFoot(p: THREE.Vector3, gap: number = FOOT.wallGap) {
+    const G = GOAL_RULES, x0 = p.x, z0 = p.z;
+    p.x = clamp(p.x, -G.halfX + gap, G.halfX - gap); p.z = clamp(p.z, -G.halfZ + gap, G.halfZ - gap);
+    const c = G.halfX + G.halfZ - G.corner - gap * Math.SQRT2, over = Math.abs(p.x) + Math.abs(p.z) - c;
+    if (over > 0) { p.x -= Math.sign(p.x) * over / 2; p.z -= Math.sign(p.z) * over / 2; }
+    return Math.hypot(p.x - x0, p.z - z0);
   }
 
   /** The CLOSE lens: how far the ball has climbed toward the tighter frame's top, 0 (well inside it) to 1

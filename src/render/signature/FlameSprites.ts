@@ -11,7 +11,7 @@ import * as THREE from 'three';
  *
  *  instanceColor is not a colour here: r is heat (0..1, how young and hot
  *  the tongue is), g a seed, b the palette - FIRE, BLACK ('Black Pyre': black
- *  bodies with a violet rim), BLOOD (Gaunt's HOUND ARMOR aura, dark crimson) or ABYSS
+ *  bodies with a violet rim), BLOOD (Gaunt's GRAVE PLATE aura, dark crimson) or ABYSS
  *  (Nigo's pressure and the NIGHTFALL burn: black bodies licked crimson) or ANTI (Cardo's Lightless Magic: black bodies
  *  licked a thin dark crimson). Premultiplied alpha: the hot core adds light (alpha 0)
  *  while the smoke and the black flames occlude, all in one pass. */

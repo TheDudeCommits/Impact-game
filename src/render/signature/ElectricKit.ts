@@ -64,7 +64,7 @@ export class ElectricKit {
     const s = this.style; s.width = width; s.color = color; s.intensity = intensity; s.branches = branches; s.levels = levels; s.jag = jag; s.branchLength = .5; s.taper = .5; s.core = .18;
     this.painter.bolt(a, b, seed, s);
   }
-  /** The technique in the hand. `power` ~1 is a Shrike Bolt; `floor` is the
+  /** The technique in the hand. `power` ~1 is a Storm Talon; `floor` is the
    *  height of the ground under it, or NaN in the air. */
   ball(center: THREE.Vector3, power: number, salt: number, floor = NaN, color = LIGHTNING.glow, light = LIGHTNING.light, reach = .62) {
     if (power < .02) return;

@@ -34,7 +34,7 @@ export class SkyDome {
     /** A living stage's clouds (look/StageLife.ts): how far down toward the horizon they stay painted, and how fast their shapes change. */
     uCloudLow: { value: 0 }, uCloudBillow: { value: 0 },
     /** The sun eclipsed (a black disc in a ring of fire) and the sky bled
-     *  crimson: the offering stage's own look, and the Blood Eclipse event on
+     *  crimson: the Fallen Star stage's own look, and the Blood Eclipse event on
      *  any stage (see setRift). */
     uEclipse: { value: 0 }, uBlood: { value: 0 }, uBloodColor: { value: new THREE.Color(0x8a0610) },
     /** The power-up pass: a power-up's night, 0..1 - the sky drawn down toward deep blue-black (see GameRenderer.powerDim). */

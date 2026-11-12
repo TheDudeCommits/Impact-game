@@ -5,7 +5,7 @@ import type { AttackSlot, FighterId } from '../src/game/types';
 /**
  * Round 3e (ULTFIX): a technique is drawn no further than its blow reaches.
  *
- * The third blind critic: "Shiden's Shrike Bolt: the lightning visibly engulfs a
+ * The third blind critic: "Shiden's Storm Talon: the lightning visibly engulfs a
  * target at 2.6 m that takes nothing; it only hits at 2.2 m or closer." The
  * hand techniques' lightning burst a metre and more from the hand on every
  * swing. Now it stays about the hand - inside the blow's own reach - and

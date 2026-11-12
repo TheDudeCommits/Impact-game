@@ -39,7 +39,7 @@ export function charredPosts(c: DressContext) {
   addMesh(c, merged, nearMaterial(c, 'Near charred posts', { color: 0x3a2a20, roughness: .95 }), 'near charred posts', { shadow: true });
 }
 
-/** The Hidden Ash's banner, left standing in the Crater: a torn, dusty cloth with the village's mark in dark red. */
+/** Ashwood's banner, left standing in the Crater: a torn, dusty cloth with the village's mark in dark red. */
 export function ashBanner() {
   const canvas = document.createElement('canvas');
   canvas.width = 256; canvas.height = 384;

@@ -28,10 +28,10 @@
 .cos-sparkle i:nth-of-type(1){left:-26px;top:-18px}.cos-sparkle i:nth-of-type(2){right:-24px;top:-6px;animation-delay:.18s;scale:.7}.cos-sparkle i:nth-of-type(3){right:6px;bottom:-22px;animation-delay:.33s;scale:.85}
 @keyframes cos-twinkle{from{opacity:.25;rotate:0deg}to{opacity:1;rotate:45deg}}
 /* ゴゴゴ */
-.cos-menacing{width:0;height:0;animation:none!important}
-.cos-menacing i{position:absolute;color:#b98cff;font:italic 900 clamp(30px,3.2vw,50px)/1 var(--c-jp);-webkit-text-stroke:3px var(--c-ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--c-ink);opacity:0;animation:cos-rise 1.5s ease-out both;skew:-8deg 0}
-.cos-menacing i:nth-child(1){left:-110px;top:20px}.cos-menacing i:nth-child(2){left:70px;top:-10px;animation-delay:.18s}.cos-menacing i:nth-child(3){left:-90px;top:-60px;animation-delay:.36s}
-.cos-menacing i:nth-child(4){left:84px;top:-80px;animation-delay:.54s}.cos-menacing i:nth-child(5){left:-120px;top:-120px;animation-delay:.72s}.cos-menacing i:nth-child(6){left:64px;top:-150px;animation-delay:.9s}
+.cos-rumble{width:0;height:0;animation:none!important}
+.cos-rumble i{position:absolute;color:#b98cff;font:italic 900 clamp(30px,3.2vw,50px)/1 var(--c-jp);-webkit-text-stroke:3px var(--c-ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--c-ink);opacity:0;animation:cos-rise 1.5s ease-out both;skew:-8deg 0}
+.cos-rumble i:nth-child(1){left:-110px;top:20px}.cos-rumble i:nth-child(2){left:70px;top:-10px;animation-delay:.18s}.cos-rumble i:nth-child(3){left:-90px;top:-60px;animation-delay:.36s}
+.cos-rumble i:nth-child(4){left:84px;top:-80px;animation-delay:.54s}.cos-rumble i:nth-child(5){left:-120px;top:-120px;animation-delay:.72s}.cos-rumble i:nth-child(6){left:64px;top:-150px;animation-delay:.9s}
 @keyframes cos-rise{0%{opacity:0;translate:0 24px;scale:.6}25%{opacity:1;scale:1}75%{opacity:1}100%{opacity:0;translate:0 -30px}}
 /* ドン!! */
 .cos-don{color:var(--c-ink);font:900 clamp(60px,6.6vw,108px)/1 var(--c-jp);letter-spacing:-.06em;-webkit-text-stroke:5px var(--c-paper);paint-order:stroke fill;text-shadow:5px 5px 0 var(--c-red);white-space:nowrap;animation:cos-slam var(--ms) both!important}

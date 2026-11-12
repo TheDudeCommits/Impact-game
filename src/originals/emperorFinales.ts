@@ -49,7 +49,7 @@ const PETAL = stageLook(0xffe0f0, 0xff7ab0, 0x40081a);
 /** Rook's dead: his violet over black. */
 const GRAVE = stageLook(0xeee4ff, 0x7a4dff, 0x12062e);
 const ROOKERY: StageLook = { ...stageLook(0xd8c8ff, 0x140a24, 0x030106, { dark: true }), core: lin(2.2, 1.8, 3.3), main: lin(.07, .04, .12), rim: lin(.015, .01, .03) };
-/** Jirenga's vermilion seal and the temple's grey stone. */
+/** Banjaku's vermilion seal and the temple's grey stone. */
 const SEAL = stageLook(0xffe8d8, 0xd8262e, 0x3a0406);
 const STONE: StageLook = { ...stageLook(0xf0e8e0, 0x2a2624, 0x060505, { dark: true }), core: lin(2.2, 1.9, 1.7), main: lin(.2, .17, .15), rim: lin(.03, .025, .02) };
 /** Gaku's green, and the earth he throws. */
@@ -90,7 +90,7 @@ const ALL: Partial<Record<FighterId, Finale>> = {
   gorai: { look: THUNDER, dark: CLOUD, storm: 'thunder', size: 2.8, hands: false },
   'wuming': { look: HARVEST, dark: PETAL, storm: 'harvest', size: 2.5, hands: false, dome: .7, ahead: 1.6 },
   'rook': { look: GRAVE, dark: ROOKERY, storm: 'rookery', size: 2.5, hands: false, ahead: 1 },
-  jirenga: { look: SEAL, dark: STONE, storm: 'slabs', size: 2.7, hands: false },
+  banjaku: { look: SEAL, dark: STONE, storm: 'slabs', size: 2.7, hands: false },
   gaku: { look: WILD, dark: EARTH, storm: 'landslide', size: 2.4, hands: false, dome: .65, ahead: 1.8 },
   sorrel: { look: CRIMSON, dark: WAKE, storm: 'wake', size: 2.5, hands: false, dome: .8, ahead: 1 },
   haldor: { look: BONE, dark: SEABED, storm: 'seabed', size: 2.7, hands: false, dome: .85, ahead: 1 },

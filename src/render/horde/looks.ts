@@ -182,8 +182,8 @@ const LOOKS_LAST_SUN: Record<string, Builder> = {
   },
 };
 
-// ---- Hidden Ash -----------------------------------------------------------------------
-const LOOKS_HIDDEN_ASH: Record<string, Builder> = {
+// ---- Ashwood -----------------------------------------------------------------------
+const LOOKS_ASHWOOD: Record<string, Builder> = {
   'pale-sapling': k => {
     // Pale birch bark streaked black, a crown of bare twigs.
     body(k, { bulk: .9, limb: .9, belly: .85, skin: 0xcfc8b4, top: 0xcfc8b4, bottom: 0xbfb8a2, boots: 0xb0a892 });
@@ -230,7 +230,7 @@ const LOOKS_RIFT: Record<string, Builder> = {
   },
 };
 
-export const LOOKS: Record<string, Builder> = { ...LOOKS_DUST_SEA, ...LOOKS_CINDER_REQUIEM, ...LOOKS_LAST_SUN, ...LOOKS_HIDDEN_ASH, ...LOOKS_RIFT };
+export const LOOKS: Record<string, Builder> = { ...LOOKS_DUST_SEA, ...LOOKS_CINDER_REQUIEM, ...LOOKS_LAST_SUN, ...LOOKS_ASHWOOD, ...LOOKS_RIFT };
 
 /** Build a kind's geometry on the given rest pose. Unknown kinds get a husk. */
 export function buildLook(kind: string, rest: readonly THREE.Vector3[], height: number): Look {

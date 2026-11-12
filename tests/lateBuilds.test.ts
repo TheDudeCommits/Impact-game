@@ -75,20 +75,20 @@ describe('effects first made at their first use are made with the room', () => {
   it('a room with an Tobari has his crows and an illusion\'s shards in the scene before its compile, hidden; Shiun the shards, Levin a whirl', () => {
     const named = (scene: THREE.Scene, name: string) => { const found: THREE.Object3D[] = []; scene.traverse(o => { if (o.name === name) found.push(o); }); return found; };
     const scene = new THREE.Scene(), fx = new EmperorEffects(scene);
-    expect(named(scene, 'tobari-crows')).toEqual([]); expect(named(scene, 'false-encore-shards')).toEqual([]);
+    expect(named(scene, 'tobari-crows')).toEqual([]); expect(named(scene, 'understudy-shards')).toEqual([]);
     fx.load(['taisei', 'konta']);
-    expect(named(scene, 'tobari-crows')).toEqual([]); expect(named(scene, 'false-encore-shards')).toEqual([]);
+    expect(named(scene, 'tobari-crows')).toEqual([]); expect(named(scene, 'understudy-shards')).toEqual([]);
     fx.load(['shiun']);
-    expect(named(scene, 'tobari-crows')).toEqual([]); expect(named(scene, 'false-encore-shards').length).toBe(1);
+    expect(named(scene, 'tobari-crows')).toEqual([]); expect(named(scene, 'understudy-shards').length).toBe(1);
     fx.load(['tobari', 'shiun']); fx.load(['tobari']);
-    expect(named(scene, 'tobari-crows').length).toBe(1); expect(named(scene, 'false-encore-shards').length).toBe(1);
-    expect([...named(scene, 'tobari-crows'), ...named(scene, 'false-encore-shards')].every(o => !o.visible)).toBe(true);
+    expect(named(scene, 'tobari-crows').length).toBe(1); expect(named(scene, 'understudy-shards').length).toBe(1);
+    expect([...named(scene, 'tobari-crows'), ...named(scene, 'understudy-shards')].every(o => !o.visible)).toBe(true);
     fx.load(['levin']);
     // (His two blades' ribbons.)
     expect(named(scene, 'levin-blade-trail').length).toBe(2); expect(named(scene, 'levin-blade-trail').every(o => !o.visible)).toBe(true);
     fx.reset();
     expect(named(scene, 'tobari-crows').length).toBe(1);
     fx.dispose();
-    expect(named(scene, 'tobari-crows')).toEqual([]); expect(named(scene, 'false-encore-shards')).toEqual([]); expect(named(scene, 'levin-blade-trail')).toEqual([]);
+    expect(named(scene, 'tobari-crows')).toEqual([]); expect(named(scene, 'understudy-shards')).toEqual([]); expect(named(scene, 'levin-blade-trail')).toEqual([]);
   });
 });

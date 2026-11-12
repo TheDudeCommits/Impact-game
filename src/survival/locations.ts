@@ -32,7 +32,7 @@ export const LOCATIONS: readonly LocationDefinition[] = [
     line: 'A whole army drowned here in its armour. The rift is calling it back up.', again: 'The water has gone down. There are more helms showing than there were.' },
   { id: 'black-fortress', stage: 'rift-fortress', name: 'The Black Fortress', subtitle: 'The last wall between the dark and the living', kanji: '黒砦',
     line: 'The last wall between the dark and the living. It is already falling.', again: 'The wall fell. Whatever holds the gate now is not human.' },
-  { id: 'the-offering', stage: 'rift-eclipse', name: 'The Fallen Star', subtitle: 'Where the rift threw down a star', kanji: '堕星',
+  { id: 'fallen-star', stage: 'rift-eclipse', name: 'The Fallen Star', subtitle: 'Where the rift threw down a star', kanji: '堕星',
     line: 'The rift tore a star out of the sky and chained it here. It is not quite dead.', again: 'The chains have slipped. The star is burning hotter than you left it.' },
   { id: 'frozen-shrine', stage: 'rift-frost', name: 'The Frozen Shrine', subtitle: 'Where the last prayers froze', kanji: '凍社',
     line: 'The priests prayed for the rift to close. The cold answered instead.', again: 'The ice has grown. Some of the statues were not statues before.' },

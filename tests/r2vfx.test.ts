@@ -172,7 +172,7 @@ describe('round 2: beams', () => {
     try {
       fx.handle([event({ id: 20, kind: 'cast', fighter: 'shirokane', slot: 'ultimate', origin: { x: 0, y: 1, z: 0 }, endpoint: { x: 0, y: 1, z: 5 } })], new Map([['a', shirokane]]));
       expect(grades).toHaveLength(1);
-      expect(grades[0][0], 'VOID SICKLE is violet').toBe(gradeHue('shirokane', 'ultimate'));
+      expect(grades[0][0], 'SICKLE REAPER is violet').toBe(gradeHue('shirokane', 'ultimate'));
       const violet = new THREE.Color(grades[0][0]);
       expect(violet.b).toBeGreaterThan(violet.g); expect(violet.r).toBeGreaterThan(violet.g);
       expect(grades[0][1]).toBe(1);

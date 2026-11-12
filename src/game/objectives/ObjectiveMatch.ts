@@ -97,7 +97,7 @@ export class ObjectiveMatch {
     // Team wipes are checked before ANY revival. The return delay is a vulnerability window, never a spare team life.
     const alive=(team:ObjectiveTeam)=>[...this.seats.values()].some(s=>s.team===team&&this.sim.actors.get(s.id)!.state.alive);
     if(this.kind==='last-stand'){
-      if(this.siege!.view.hp<=0){this.finish('horde','The Hidden Ash Village has fallen.');return;}
+      if(this.siege!.view.hp<=0){this.finish('horde','Ashwood Village has fallen.');return;}
       if(!alive('defenders')){this.finish('horde','All defenders fell together.');return;}
     }else if(!alive('heroes')||!alive('villains')){this.finish(!alive('heroes')&&!alive('villains')?'draw':alive('heroes')?'heroes':'villains','No fighters remain standing on the opposing team.');return;}
     this.handleDeaths(dt);

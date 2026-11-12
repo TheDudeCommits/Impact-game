@@ -21,10 +21,24 @@ const rimOf = (team: BallTeam) => { const c = new THREE.Color(BALL_TEAM_COLOURS[
 const RIM: Record<BallTeam, THREE.Color> = {red: rimOf('red'), blue: rimOf('blue')};
 const INK: Record<BallTeam, THREE.Color> = {red: rimOf('red').multiplyScalar(TRIM.inkLight), blue: rimOf('blue').multiplyScalar(TRIM.inkLight)};
 const NONE = new THREE.Color(0, 0, 0);
+/** So team-mates and rivals are told apart at a glance: on a football match (BallView.football) every body wears its
+ *  side as a kit - the whole ink line in the side's own colour at full strength, widened `widen` ink widths into a bold
+ *  coloured edge that reads from the chase camera near and far, and the rim whole - and each side's keeper wears a
+ *  colour of its own (KEEPER_COLOURS: neither side's). */
+export const KIT = {ink: 1, rim: 1, inkLight: 1, widen: 1.3} as const;
+/** So the fighters are not dark on the red-orange court, nor the far team small and blue-translucent: a volleyball
+ *  match (BallView.volley) wears the same kits as football's, the line a little wider again (`widen` ink widths: its
+ *  camera stands further off). */
+export const VOLLEY_KIT = {widen: 1.6} as const;
+export const KEEPER_COLOURS: Record<BallTeam, number> = {red: 0x35e07c, blue: 0xffc531};
+const keeperOf = (team: BallTeam) => { const c = new THREE.Color(KEEPER_COLOURS[team]); return c.multiplyScalar(1 / Math.max(c.r, c.g, c.b, 1e-4)); };
+const KIT_INK: Record<BallTeam, THREE.Color> = {red: rimOf('red').multiplyScalar(KIT.inkLight), blue: rimOf('blue').multiplyScalar(KIT.inkLight)};
+const KEEPER_RIM: Record<BallTeam, THREE.Color> = {red: keeperOf('red'), blue: keeperOf('blue')};
+const KEEPER_INK: Record<BallTeam, THREE.Color> = {red: keeperOf('red').multiplyScalar(KIT.inkLight), blue: keeperOf('blue').multiplyScalar(KIT.inkLight)};
 
 /** A body the trim is put on (render/Fighter.ts): its ink's colour and its rim's, and how much of each; and where it is
  *  drawn (absent: taken as far off). */
-export interface TrimBody { setTeamTrim(ink: THREE.Color, rim: THREE.Color, inkAmount: number, rimAmount: number): void; readonly group?: {readonly position: Place} }
+export interface TrimBody { setTeamTrim(ink: THREE.Color, rim: THREE.Color, inkAmount: number, rimAmount: number, widen?: number): void; readonly group?: {readonly position: Place} }
 interface Place { readonly x: number; readonly y: number; readonly z: number }
 
 /**
@@ -44,18 +58,21 @@ export class TeamTrimmer {
    *  the frame is filmed from (a split screen's second half: `lens2`; a body is as near as its nearer lens). */
   update(view: BallView | undefined, body: (id: string) => TrimBody | undefined, lens?: Place | null, lens2?: Place | null, on = teamTrimOn()) {
     this.frame++;
+    const kit = !!view?.football || !!view?.volley, widen = view?.volley ? VOLLEY_KIT.widen : KIT.widen;
     if (view && on) for (let i = 0; i < view.seats.length; i++) {
       const seat = view.seats[i], b = body(seat.id);
       if (!b) continue;
+      // (A football match's kits - KIT, KEEPER_COLOURS.)
+      if (kit) { b.setTeamTrim(seat.keeper ? KEEPER_INK[seat.team] : KIT_INK[seat.team], seat.keeper ? KEEPER_RIM[seat.team] : RIM[seat.team], KIT.ink, KIT.rim, widen); this.worn.set(b, this.frame); continue; }
       const at = b.group?.position, d = at ? Math.min(lens ? Math.hypot(at.x - lens.x, at.y - lens.y, at.z - lens.z) : Infinity, lens2 ? Math.hypot(at.x - lens2.x, at.y - lens2.y, at.z - lens2.z) : Infinity) : Infinity;
       const t = Math.min(1, Math.max(0, (d - TRIM.near) / (TRIM.far - TRIM.near))), k = t * t * (3 - 2 * t);
       b.setTeamTrim(INK[seat.team], RIM[seat.team], TRIM.inkNear + (TRIM.ink - TRIM.inkNear) * k, TRIM.rimNear + (TRIM.rim - TRIM.rimNear) * k);
       this.worn.set(b, this.frame);
     }
-    for (const [b, seen] of this.worn) if (seen !== this.frame) { b.setTeamTrim(NONE, NONE, 0, 0); this.worn.delete(b); }
+    for (const [b, seen] of this.worn) if (seen !== this.frame) { b.setTeamTrim(NONE, NONE, 0, 0, 0); this.worn.delete(b); }
   }
   /** Every body let go at once. */
-  clear() { for (const b of this.worn.keys()) b.setTeamTrim(NONE, NONE, 0, 0); this.worn.clear(); }
+  clear() { for (const b of this.worn.keys()) b.setTeamTrim(NONE, NONE, 0, 0, 0); this.worn.clear(); }
   /** How many bodies wear a trim (for checks). */
   get count() { return this.worn.size; }
 }

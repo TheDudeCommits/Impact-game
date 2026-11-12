@@ -6,7 +6,7 @@ import {MathUtils,Vector3,type Object3D} from 'three';
  * runtime never clones/evaluates another rig to stage the body. */
 type ContactSample=readonly[seconds:number,x:number,y:number,z:number];
 const CONTACTS:Readonly<Record<string,readonly ContactSample[]>>={
-  'BUCHI BUCHI Barrage': [
+  'UNSPOOL Barrage': [
     [0.440990995716, -0.12971624739, 0.342292303336, 0.834862517354],
     [0.721621629354, 0.13073615382, 0.34066186931, 0.833895523736],
     [1.01227478562, -0.0895127091039, 0.315227435884, 0.882215658804],

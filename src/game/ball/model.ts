@@ -81,6 +81,11 @@ export interface BallState extends Vec3 {
   ahead?: number;
   /** SPORT mode: how far the carrier's held SHOOT is wound up (0-1), for the page's take of its wind-up. Absent: none. */
   wind?: number;
+  /** The wind-up is a tap's (FOOTBALL.fun2.kick) - a PASS's or a SHOOT's - not a held SHOOT's: the page plays
+   *  that take's short lead-in. */
+  windTap?: 'pass' | 'shot';
+  /** Sky Spike on the volleyball rules: the court it is played on (VOLLEY_COURT). Absent: SPIKE_RULES' own. */
+  court?: SpikeCourt;
 }
 
 export interface BallSeat {
@@ -188,6 +193,8 @@ export interface BallEvent {
   perfect?: boolean;
   /** Goal Rush: a TACKLE that knocked the ball off its carrier (BallMatch TACKLE_WON). */
   won?: boolean;
+  /** Goal Rush on the sport rules (football.ts FOOTBALL.fun.full): a SHOOT struck at full power. */
+  full?: boolean;
   /** Goal Rush (the POWER PLAY): a goal scored into a side's goal while that side was short - the bodies
    *  in play then, the scorers' first (3 v 2). */
   short?: [number, number];
@@ -510,6 +517,21 @@ export const SPIKE_RULES = {
   /** Where a serve's ball hangs: this far in front of the server, this high. */
   serveAhead: 1.1, serveHeight: 1.75,
 } as const;
+
+/** Sky Spike's court as the ball meets it - half its width (`x`) and length (`z`), and the free zone's walls (`wallX`,
+ *  `wallZ`). The classic's is SPIKE_RULES' own (15 x 21 m, bigger than an indoor court for six); volleyball's three a side
+ *  play on 9 x 16 m with 4 m round it. Carried on the ball (BallState.court) by a match on the volleyball rules, so the
+ *  room's flight, the forecasts and a page's drawing meet the same lines; never on the wire (those matches are this
+ *  device's), and absent everywhere else: SPIKE_RULES as it always was. */
+export interface SpikeCourt { x: number; z: number; wallX: number; wallZ: number }
+export const CLASSIC_COURT: SpikeCourt = {x: SPIKE_RULES.courtHalfX, z: SPIKE_RULES.courtHalfZ, wallX: SPIKE_RULES.halfX, wallZ: SPIKE_RULES.halfZ};
+export const VOLLEY_COURT: SpikeCourt = {x: 4.5, z: 8, wallX: 8.5, wallZ: 12};
+/** Whether two courts are the same (a page's copy of the view's is not the room's object). */
+export const sameCourt = (a: SpikeCourt | undefined, b: SpikeCourt | undefined) => (a ?? CLASSIC_COURT).x === (b ?? CLASSIC_COURT).x && (a ?? CLASSIC_COURT).z === (b ?? CLASSIC_COURT).z && (a ?? CLASSIC_COURT).wallX === (b ?? CLASSIC_COURT).wallX && (a ?? CLASSIC_COURT).wallZ === (b ?? CLASSIC_COURT).wallZ;
+/** The court a ball is played on (the classic's when it carries none). */
+export const spikeCourt = (b?: {court?: SpikeCourt} | null): SpikeCourt => b?.court ?? CLASSIC_COURT;
+/** A spot laid out on the classic court, carried onto `c` (each axis by the courts' ratio: the classic's exactly). */
+export const onCourt = (c: SpikeCourt, x: number, z: number) => ({x: c === CLASSIC_COURT ? x : x * c.x / SPIKE_RULES.courtHalfX, z: c === CLASSIC_COURT ? z : z * c.z / SPIKE_RULES.courtHalfZ});
 
 export const ballRadius = (mode: BallModeId) => mode === 'goal-rush' ? GOAL_RULES.ballRadius : SPIKE_RULES.ballRadius;
 export const heatTier = (heat: number) => Math.max(0, Math.min(4, Math.floor(heat + 1e-6)));

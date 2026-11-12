@@ -4,7 +4,7 @@ import { MOVES } from '../game/moves';
 
 // Original choreography on the existing rigs. No mesh, bind pose, material,
 // weapon attachment or source clip is mutated. These replace the documented
-// stand-ins: Kagari's airborne dodge-as-guard, LORD ORO's Needle Finger-as-clock-hand-knives,
+// stand-ins: Kagari's airborne dodge-as-guard, LORD ORO's Iron Nail-as-clock-hand-knives,
 // Kuon's repeated raised palm, and Setsu's one strike across seven contacts.
 const cache=new WeakMap<T.AnimationClip[],Map<string,T.AnimationClip[]>>();
 const authored=new WeakSet<T.AnimationClip>();

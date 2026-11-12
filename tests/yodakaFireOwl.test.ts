@@ -107,7 +107,7 @@ describe.skipIf(!!ORIGINALS.yodaka)('Yodaka manual Fire Owl area impact', () => 
   it('waits for the real manual G simulation impact: .72 release +1.85 telegraph, one204 damage', async () => {
     readyTexture(); const h = harness(); await h.fx.load(['yodaka']);
     const sim = new ArenaSimulation({ trainingBot: false, seed: 5 });
-    sim.addPlayer('r', 'yodaka', 'R', false, { x: 0, y: 0, z: 0 }); sim.addPlayer('v', 'jirenga', 'V', false, { x: 0, y: 0, z: 8 });
+    sim.addPlayer('r', 'yodaka', 'R', false, { x: 0, y: 0, z: 0 }); sim.addPlayer('v', 'banjaku', 'V', false, { x: 0, y: 0, z: 8 });
     const events: CombatEvent[] = []; let seenImpact = false, peakCount = 0;
     for (let i = 0; i < 240; i++) {
       sim.submitInput('r', { seq: i + 1, moveX: 0, moveZ: 0, yaw: 0, ...(i === 0 ? { attack: 'area' as const, aim: { x: 0, z: 8 } } : {}) });

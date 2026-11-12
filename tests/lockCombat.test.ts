@@ -80,7 +80,7 @@ describe('lock combat online', () => {
   });
 
   it('pays for seeing a string through: its second round and finisher deal more than the live blows they are made of', () => {
-    for (const fighter of ['taisei', 'konta', 'jirenga'] as FighterId[]) {
+    for (const fighter of ['taisei', 'konta', 'banjaku'] as FighterId[]) {
       expect(lockRoundMove(fighter, 0, false)!.damage, fighter).toBeCloseTo(rushMove(fighter, 1, false).damage * LOCK_ROUND_DAMAGE);
       expect(lockRoundMove(fighter, LOCK_ROUND, false)!.damage, fighter).toBeCloseTo(rushMove(fighter, LOCK_ROUND, false).damage * LOCK_FINISH_DAMAGE);
     }
@@ -223,7 +223,7 @@ describe('lock combat', () => {
     expect(casts(late).some(h => (h.round ?? 0) === 1)).toBe(true);
   });
 
-  it('lets the attacker counter-vanish an escape for half its price', () => {
+  it('lets the attacker vanish-read an escape for half its price', () => {
     const fight = bout('ouga', 'taisei');
     let escaped = -1;
     press(fight, 3, 13, () => {
@@ -269,7 +269,7 @@ describe('lock combat', () => {
   });
 
   it('knocks the body away low and long with the finisher: 2 m and more along the floor, under a metre up, before the chase', () => {
-    for (const fighter of ['taisei', 'ouga', 'jirenga', 'levin'] as FighterId[]) {
+    for (const fighter of ['taisei', 'ouga', 'banjaku', 'levin'] as FighterId[]) {
       const fight = bout(fighter, 'ouga', true, 1.4);
       let at: { x: number; z: number } | undefined, top = 0, off = 0;
       press(fight, 2.6, 6, () => {

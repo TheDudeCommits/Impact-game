@@ -14,7 +14,7 @@ import type { AttackSlot, FighterId, PlayerState } from '../src/game/types';
 /** Two drawn bodies are never drawn inside each other.
  *
  *  The blind critic found Shirokane drawn inside Nigo on his kunai rush, Taisei
- *  inside Ouga, Kuon and KoKo inside their opponents and the RAKSHASA inside
+ *  inside Ouga, Kuon and KoKo inside their opponents and the DUNE ONI inside
  *  Taisei: seven fighters had no root cap at all and the round-1 rush clips
  *  carry up to 1.9 m of hips travel. The root clamp now stops the middle of
  *  the attacker's drawn torso DRAWN_GAP from the middle of the opponent's as
@@ -90,7 +90,7 @@ describe('two drawn bodies stay apart', () => {
     }, 120_000);
 
   it('holds a transformation\'s body off the opponent too', () => {
-    // The RAKSHASA is a separate rig hanging under Kenzo; it had no target point
+    // The DUNE ONI is a separate rig hanging under Kenzo; it had no target point
     // of its own and swung straight through Taisei (0.23 m).
     const distances = [...exchange('kenzo', 'rush', true), ...exchange('kenzo', 'ultimate', true)];
     expect(Math.min(...distances)).toBeGreaterThan(.7);

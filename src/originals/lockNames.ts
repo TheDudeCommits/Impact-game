@@ -9,14 +9,14 @@ export const LOCK_NAMES: Partial<Record<FighterId, Record<string, string>>> = {
   ouga: { 'Elbow Palm': 'Crown Palm', 'Rising Kick': 'Royal Rising Kick', 'Ki Volley': 'Crown Volley' },
   shiden: { 'Slash Palm': 'Talon Palm', 'Rising Slash': 'Rising Habakiri', 'Plunging Cut': 'Stooping Cut' },
   // The nine with no take to spare: strikes borrowed from another fighter (LOCK_ROUND_BORROW).
-  jirenga: { 'Pride Elbow': 'Bedrock Elbow', 'Power Palm': 'Pillar Palm', 'Justice Backfist': 'Guardian Backfist' },
+  banjaku: { 'Pride Elbow': 'Bedrock Elbow', 'Power Palm': 'Pillar Palm', 'Justice Backfist': 'Guardian Backfist' },
   'gohaku': { 'Beast Straight': 'Long-Arm Straight', 'Beast Hook': 'Long-Arm Hook', 'Beast Rising Kick': 'White Ape Rising Kick' },
-  'jinlin': { 'Golden Elbow': "Emperor's Elbow", 'Golden Tail Sweep': 'Carp Tail Sweep', 'Golden Hammer': 'Dragon-Gate Hammer' },
-  'wuming': { 'Black Cross': 'Dusk Cross', 'Black Rising Kick': 'Dusk Rising Kick', 'Black Palm': 'Lotus Palm' },
+  'jinlin': { 'Golden Elbow': "Tyrant's Elbow", 'Golden Tail Sweep': 'Carp Tail Sweep', 'Golden Hammer': 'Dragon-Gate Hammer' },
+  'wuming': { 'Black Cross': 'Scything Cross', 'Black Rising Kick': 'Scything Rising Kick', 'Black Palm': 'Lotus Palm' },
   gaku: { 'Stray Cross': 'Scav Cross', 'Hunter Sweep': 'Scav Sweep' },
   tobari: { 'Crow Scrap Kunai': 'Crow Quill Strike', 'Crow Clan Rising Slash': 'Rookwing Rising Slash', 'Kunai Palm': 'Quill Palm' },
   akagane: { 'WAR FAN Rising Swing': 'War Fan Rising Swing', 'Crow Clan Elbow': 'Warlord Elbow', 'Crow Clan Sweep': 'Warlord Sweep' },
-  shiun: { 'Crossing Cadence': 'Crossing Cadence', 'ASHSTEP Rising Reap': 'Rising Crescendo', 'Hymn Palm Cut': 'Hymn Palm Cut' },
+  shiun: { 'Crossing Cadence': 'Crossing Cadence', 'ASHSTEP Rising Reap': 'Rising Crescendo', 'Downbeat Cut': 'Downbeat Cut' },
   'rook': { 'Shadow Slash': 'Raven Slash', 'Shadow Reverse Quill': 'Raven Reverse Quill' },
   // The eight with one or two to spare: the stages lockRoundFill.ts leaves empty.
   hawser: { 'Rising Billet': 'Rising Fray' },

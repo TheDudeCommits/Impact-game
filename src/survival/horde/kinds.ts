@@ -122,10 +122,10 @@ export const GRUNTS: readonly GruntKind[] = [
     moves: [ROAR_SHOT('Spirit Blast', 20, 'ki', { speed: 36, radius: .3 }), PUNCH(16, { maxRange: 2.2 })], xp: 2, score: 65, cost: 2, ichor: 'purple' },
   { id: 'brood-spawn', name: 'Brood Spawn', series: 'Last Sun', role: 'fodder', hp: 120, speed: 6.6, radius: .36, height: 1.4, mass: .8,
     moves: [PUNCH(18, { name: 'Rush' }), KICK(22, { name: 'Spin Kick' })], xp: 1, score: 55, cost: 1, ichor: 'purple' },
-  // ---- Hidden Ash ----------------------------------------------------------
-  { id: 'pale-sapling', name: 'Pale Sapling', series: 'Hidden Ash', role: 'fodder', hp: 115, speed: 5.4, radius: .42, height: 1.8, mass: 1,
+  // ---- Ashwood ----------------------------------------------------------
+  { id: 'pale-sapling', name: 'Pale Sapling', series: 'Ashwood', role: 'fodder', hp: 115, speed: 5.4, radius: .42, height: 1.8, mass: 1,
     moves: [PUNCH(18, { name: 'Grasping Strike' }), KICK(22, { name: 'Wood Kick' })], xp: 1, score: 45, cost: 1, ichor: 'white' },
-  { id: 'cutthroat', name: 'Cutthroat', series: 'Hidden Ash', role: 'gunner', hp: 95, speed: 6, radius: .42, height: 1.78, mass: .9,
+  { id: 'cutthroat', name: 'Cutthroat', series: 'Ashwood', role: 'gunner', hp: 95, speed: 6, radius: .42, height: 1.78, mass: .9,
     moves: [shot('Kunai Volley', 'claw', 1.2, .55, 16, { element: 'steel', speed: 38, radius: .2, cooldown: 1.9, minRange: 3.5 }), KICK(18, { maxRange: 2.2 })], xp: 2, score: 60, cost: 2, ichor: 'red' },
   // ---- The Rift's own: what Grave Hound would call the damned ----------------------
   { id: 'husk', name: 'Ash Husk', series: 'The Rift', role: 'fodder', hp: 100, speed: 6, radius: .42, height: 1.8, mass: .9,
@@ -174,10 +174,10 @@ const SHIELD_BASH = (damage: number, extra: Partial<GruntMove> = {}) => melee('S
     moves: [SNIPE('Visor Shot', 46, 'ki'), PUNCH(14, { maxRange: 2.2 })], xp: 3, score: 95, cost: 2, ichor: 'purple' });
   add({ id: 'cinder-imp-diver', name: 'Leaping Cinder Imp', series: 'Last Sun', role: 'diver', hp: 80, speed: 6.6, radius: .38, height: 1.35, mass: .8,
     moves: [DIVE(27, { name: 'Foxfire Pounce' }), CLAW(16, { name: 'Acid Claw' })], xp: 2, score: 75, cost: 2, ichor: 'green' });
-  // ---- Hidden Ash: a mender, and a caller of Pale Saplings ----------------------------
-  add({ id: 'cutthroat-mender', name: 'Cutthroat Mender', series: 'Hidden Ash', role: 'healer', hp: 100, speed: 5.6, radius: .42, height: 1.78, mass: .9,
+  // ---- Ashwood: a mender, and a caller of Pale Saplings ----------------------------
+  add({ id: 'cutthroat-mender', name: 'Cutthroat Mender', series: 'Ashwood', role: 'healer', hp: 100, speed: 5.6, radius: .42, height: 1.78, mass: .9,
     moves: [MEND(.3), KICK(16, { maxRange: 2.2 })], xp: 3, score: 110, cost: 2, ichor: 'red' });
-  add({ id: 'cutthroat-caller', name: 'Cutthroat Caller', series: 'Hidden Ash', role: 'summoner', hp: 110, speed: 5.2, radius: .42, height: 1.78, mass: .9,
+  add({ id: 'cutthroat-caller', name: 'Cutthroat Caller', series: 'Ashwood', role: 'summoner', hp: 110, speed: 5.2, radius: .42, height: 1.78, mass: .9,
     moves: [SUMMON(3), KICK(16, { maxRange: 2.2 })], xp: 4, score: 130, cost: 3, ichor: 'red' });
   // ---- The Rift's own: husks that fall on you, and a priest that calls them -----------
   add({ id: 'husk-diver', name: 'Falling Husk', series: 'The Rift', role: 'diver', hp: 95, speed: 6.2, radius: .42, height: 1.8, mass: .9,

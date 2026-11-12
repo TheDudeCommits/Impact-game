@@ -4,7 +4,7 @@ import { areaCardOf } from '../../engine/sim/areaMoves';
  *  its card in the row (halo.css) - then the part after its colon ("Steel Avenue"), or, with none to
  *  drop, the part players call it (SHORT). The full name stays the card's title and the move list's. */
 const SHORT: Readonly<Record<string, string>> = {
-  'WIND ART: SENPU SHIGURE': 'GIANT SENPUGAN',
+  'FOX WEDDING': 'GREAT KAZEYOSE',
 };
 
 /** The lines a name takes under a card in the row - its card's share of the row holds about 14 letters a line (halo.css

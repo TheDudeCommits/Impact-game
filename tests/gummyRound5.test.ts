@@ -7,7 +7,7 @@ import { MOVES } from '../src/game/moves';
 import { bindClips, Fighter } from '../src/render/Fighter';
 import { bindFormExtras, SUNRISE_FLOAT } from '../src/render/gummy/sunrise';
 import { closedFist, openHandName } from '../src/render/gummy/openHands';
-import { GRAND_TIDE_TAKE } from '../src/render/gummy/grand-tide';
+import { SPRING_TIDE_TAKE } from '../src/render/gummy/spring-tide';
 import { planVoice, resetVoiceMemory } from '../src/audio/voicePlan';
 import voiceDurations from '../src/audio/data/voiceDurations.json';
 import contactFrames from '../src/game/data/contactFrames.json';
@@ -126,7 +126,7 @@ describe.skipIf(!ORIGINALS.gummy)('SUNRISE stands', () => {
   });
 });
 
-describe('Grand Tide, one take from its first frame', () => {
+describe('Spring Tide, one take from its first frame', () => {
   const move = MOVES.gummy.ultimate;
   const at = (f: Fighter, t: number, over: Partial<PlayerState> = {}) =>
     f.update(1 / 60, state({ action: 'ultimate', actionStarted: 1, actionDuration: move.duration, actionTime: t / move.duration, ...over }), true);
@@ -138,16 +138,16 @@ describe('Grand Tide, one take from its first frame', () => {
       at(f, .02);
       expect(f.model.visible, 'Gummy on the press').toBe(true);
       let last = 0;
-      for (let t = GRAND_TIDE_TAKE.swap + .02; t < move.contacts[0] + .1; t += 1 / 60) {
+      for (let t = SPRING_TIDE_TAKE.swap + .02; t < move.contacts[0] + .1; t += 1 / 60) {
         at(f, t);
         expect(f.model.visible, `his body at ${t.toFixed(2)}`).toBe(false);
         const e = form.motionEvidence();
-        expect(e.clip, `the opener at ${t.toFixed(2)}`).toBe(GRAND_TIDE_TAKE.open.clip);
+        expect(e.clip, `the opener at ${t.toFixed(2)}`).toBe(SPRING_TIDE_TAKE.open.clip);
         expect(e.clipTime!).toBeGreaterThanOrEqual(last - 1e-6); last = e.clipTime!;
       }
       // Still in the crouch the take goes on from when the confirm comes...
-      const open = form.clips.find(c => c.name === GRAND_TIDE_TAKE.open.clip)!;
-      expect(last / open.duration).toBeGreaterThan(GRAND_TIDE_TAKE.open.at - .05);
+      const open = form.clips.find(c => c.name === SPRING_TIDE_TAKE.open.clip)!;
+      expect(last / open.duration).toBeGreaterThan(SPRING_TIDE_TAKE.open.at - .05);
       expect(last).toBeLessThan(.7);
       // ...and on the confirm the take itself from that crouch: no other clip, never back up out of it.
       const confirmedAt = 1 + move.contacts[0] + .1;
@@ -159,7 +159,7 @@ describe('Grand Tide, one take from its first frame', () => {
         if (first === undefined) first = e.clipTime!;
       }
       const take = form.clips.find(c => c.name === 'Sunrise Tide')!;
-      expect(first! / take.duration, 'from the crouch the opener held').toBeCloseTo(GRAND_TIDE_TAKE.cine.from, 1);
+      expect(first! / take.duration, 'from the crouch the opener held').toBeCloseTo(SPRING_TIDE_TAKE.cine.from, 1);
     } finally { f.dispose(); }
   });
 
@@ -168,7 +168,7 @@ describe('Grand Tide, one take from its first frame', () => {
     f.attachForm(assets.form);
     try {
       const form = (f as unknown as { awakenedForm: Fighter }).awakenedForm;
-      for (let t = 0; t < .6; t += 1 / 30) { at(f, t, { awakened: true }); expect(f.model.visible).toBe(false); expect(form.motionEvidence().clip).toBe(GRAND_TIDE_TAKE.open.clip); }
+      for (let t = 0; t < .6; t += 1 / 30) { at(f, t, { awakened: true }); expect(f.model.visible).toBe(false); expect(form.motionEvidence().clip).toBe(SPRING_TIDE_TAKE.open.clip); }
     } finally { f.dispose(); }
   });
 
@@ -195,19 +195,19 @@ describe('his lines', () => {
     expect(line.cue).toBe('vo-gummy-rogue-wave');
     expect((line.delay ?? 0) + .39).toBeCloseTo(MOVES.gummy.heavy.contacts[0], 2);
   });
-  it('calls the GRAND TIDE: "Rubber no!" on the press, "...GUN!" on the fist', () => {
+  it('calls the SPRING TIDE: "Rubber no!" on the press, "...GUN!" on the fist', () => {
     expect(planVoice(cast('ultimate'), false).map(l => l.cue)).toContain('vo-gummy-come-sea');
     const confirm = .6, [line] = planVoice(cast('ultimate', 'confirm', { castAge: confirm }), false);
-    expect(line.cue).toBe('vo-gummy-grand-tide');
+    expect(line.cue).toBe('vo-gummy-spring-tide');
     expect(confirm + (line.delay ?? 0) + .82).toBeCloseTo(move().contacts[move().contacts.length - 1], 2);
-    for (const cue of ['vo-gummy-sunset-barrage', 'vo-gummy-come-sea', 'vo-gummy-grand-tide'])
+    for (const cue of ['vo-gummy-sunset-barrage', 'vo-gummy-come-sea', 'vo-gummy-spring-tide'])
       expect((voiceDurations as Record<string, number>)[cue], cue).toBeGreaterThan(.5);
   });
   const move = () => MOVES.gummy.ultimate;
 });
 
 /** The feel pass's rule (tests/takeGuard.ts): the export leaves out a channel held at rest, and in the game a
- *  joint no playing clip keys keeps the last pose another clip gave it - SUNRISE floating on with a Grand Tide fist, or with
+ *  joint no playing clip keys keeps the last pose another clip gave it - SUNRISE floating on with a Spring Tide fist, or with
  *  the arms of the dawn barrage before it. So each round-5 take keys, at the rest it was posed at, every channel that
  *  some clip its body plays moves off that rest (scripts/gummy/hold_rest.py). Read from the files as the game lists them. */
 describe('his round-5 takes hold what they leave at rest', () => {

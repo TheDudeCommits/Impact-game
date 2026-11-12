@@ -43,7 +43,7 @@ describe('Barrow bounded manual darkness and quake presentation', () => {
     } finally { h.end(); }
   });
 
-  it('stages both fruits: darkness poured over the floor for Sinkhole, the quake\'s bubble for the Stolen Quake', () => {
+  it('stages both fruits: darkness poured over the floor for Tar Pit, the quake\'s bubble for the Wreck Quake', () => {
     const h = harness(); try {
       Object.assign(h.actor.state, { action: 'special', actionDuration: 1.42, actionTime: .5 / 1.42 }); h.fx.update(10.5, h.fighters, h.flights);
       expect(h.discs().length).toBe(1); expect(h.discs()[0][3]).toBeGreaterThan(2.4); expect(h.stage.counts.flames).toBeGreaterThan(3); expect(h.stage.counts.shells).toBe(0);
@@ -56,7 +56,7 @@ describe('Barrow bounded manual darkness and quake presentation', () => {
     } finally { h.end(); }
   });
 
-  it('draws only a released authoritative Sinkhole and removes it on expiry', () => {
+  it('draws only a released authoritative Tar Pit and removes it on expiry', () => {
     const h = harness(); try {
       const flight = { fighter: id, slot: 'special', actorId: 'barrow', released: false, since: 10, position: new THREE.Vector3(0, 1, 3), heading: new THREE.Vector3(0, 0, 1) } as Flight;
       h.flights.set('arrow', flight); h.fx.update(10, h.fighters, h.flights); expect(h.drawn()).toBe(0);

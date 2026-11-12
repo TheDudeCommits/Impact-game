@@ -22,7 +22,7 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
     // Two fingers raised and the target goes up in an explosion.
     llh: { name: 'Coronation', ...snare(6, 1.4), damage: 40, lift: 9.2 },
     // The punch across the face that puts the opponent on the floor.
-    lllh: { name: 'Shikou Impact', damage: 65, knock: 'splat', knockback: 10, down: .9 },
+    lllh: { name: 'Throne Impact', damage: 65, knock: 'splat', knockback: 10, down: .9 },
     // The barrage of ki blasts he empties into an opponent in a rage.
     llls: { name: 'Rage Volley', ...blast(10, 34), damage: 55, daze: 1.15 },
     // The stomp from above that drives them down.
@@ -37,14 +37,14 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
     lh: { name: 'Gale Palm', duration: .67, contacts: [.27], damage: 41, knockback: 8, lift: 3.4 },
     // The Gale Kata blow that sends the opponent up, and the spinning kick after it.
     llh: { name: 'Gale Kata: Updraft', duration: .69, contacts: [.26], damage: 36, lift: 9.4 },
-    lllh: { name: 'Giant Senpugan', duration: .83, contacts: [.35], damage: 58, knock: 'slide', knockback: 9, down: .85 },
+    lllh: { name: 'Great Kazeyose', duration: .83, contacts: [.35], damage: 58, knock: 'slide', knockback: 9, down: .85 },
     // A wind shuriken spun on a fingertip, thrown.
     llls: { name: 'Mini Galewheel', ...blast(9, 30), duration: .86, contacts: [.35], damage: 49, daze: 1.35 },
     // His clones somersault down and land their heels on the target's head and shoulders.
     airHeavy: { name: 'Pinwheel Drop', duration: .6, contacts: [.23], damage: 43, lift: 6 },
-    // A giant Senpugan circled by three more, driven into the floor.
-    airSpecial: { name: 'Senpugan Wreath', ...smash(4.4), duration: .77, contacts: [.21], damage: 63, knock: 'slide', knockback: 8, down: .9 },
-    // Kurobi fights with his own kit (awakening.ts AWAKENED_MOVES): a fox spirit throwing a Gale Kata or a Senpugan
+    // A giant Kazeyose circled by three more, driven into the floor.
+    airSpecial: { name: 'Kazeyose Wreath', ...smash(4.4), duration: .77, contacts: [.21], damage: 63, knock: 'slide', knockback: 8, down: .9 },
+    // Kurobi fights with his own kit (awakening.ts AWAKENED_MOVES): a fox spirit throwing a Gale Kata or a Kazeyose
     // would be a lie. Plain descriptions of what the fox does, his Great Roar, and a miniature Beast Spirit Ball.
     awakened: {
       lh: { name: 'Tail Sweep', knockback: 11 }, llh: { name: 'Foxtail Toss' }, lllh: { name: 'Azure Paw Slam', knock: 'spike' },
@@ -97,27 +97,27 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
   },
   shirokane: {
     // A water dragon crashing on the target.
-    lh: { name: 'Flood Art: Mud Dragon', ...blast(10, 26), damage: 43, knockback: 8.5 },
+    lh: { name: 'Mudslide', ...blast(10, 26), damage: 43, knockback: 8.5 },
     // A poke that sends them flying up.
     llh: { name: 'Rude Awakening', damage: 38, lift: 9.6 },
     // From under the ground he drags the target down to the neck.
-    lllh: { name: 'Dust Art: Burrow Grab', ...snare(4, 1.2), damage: 60, down: 1.1 },
+    lllh: { name: 'Burrow Grab', ...snare(4, 1.2), damage: 60, down: 1.1 },
     // His hounds burst out of the ground and pin the target.
-    llls: { name: 'Dust Art: Hound Pack', ...snare(5, 1.6), damage: 51, daze: 1.6 },
+    llls: { name: 'Stray Pack', ...snare(5, 1.6), damage: 51, daze: 1.6 },
     // His lightning bolt thrown as a hound: the Storm Hound.
     airHeavy: { name: 'Storm Hound', ...blast(9, 32), damage: 45 },
     // A bolt of his own make, in place of the old lightning bolt.
-    airSpecial: { name: 'Storm Art: Thistle Sparks', ...smash(3.8), damage: 66, down: .95 },
+    airSpecial: { name: 'Thistle Sparks', ...smash(3.8), damage: 66, down: .95 },
   },
   shiden: {
-    // The Shrike Bolt shaped into a blade that reaches.
-    lh: { name: 'Shrike Spear', range: 3.6, damage: 42, knockback: 8, lift: 3.6 },
-    // The Shrike Bolt run through his sword.
-    llh: { name: 'Habakiri: Shrike Blade', damage: 36, lift: 9 },
-    lllh: { name: 'Cinder Art: Shrike Flame', ...blast(9, 28), damage: 58, knock: 'splat', knockback: 9, down: .85 },
-    // The Shrike Bolt let out of his whole body: everyone round him numbed.
-    llls: { name: 'Shrike Current', ...snare(2.5, 2.2), damage: 49, daze: 1.5 },
-    airHeavy: { name: 'Shrike Needles', ...blast(9, 34), damage: 44, lift: 5.6 },
+    // The Storm Talon shaped into a blade that reaches.
+    lh: { name: 'Talon Lunge', range: 3.6, damage: 42, knockback: 8, lift: 3.6 },
+    // The Storm Talon run through his sword.
+    llh: { name: 'Habakiri: Charged Edge', damage: 36, lift: 9 },
+    lllh: { name: 'Hawk Flame', ...blast(9, 28), damage: 58, knock: 'splat', knockback: 9, down: .85 },
+    // The Storm Talon let out of his whole body: everyone round him numbed.
+    llls: { name: 'Static Shroud', ...snare(2.5, 2.2), damage: 49, daze: 1.5 },
+    airHeavy: { name: 'Spark Hail', ...blast(9, 34), damage: 44, lift: 5.6 },
     // Lightning drawn down from the clouds onto where he lands.
     airSpecial: { name: 'Thunder Hawk', ...smash(4.4), damage: 64, down: 1.1 },
   },
@@ -125,7 +125,7 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
     // A running attack with two swords held out like a bull's horns.
     lh: { name: 'Oryx Lance', lunge: 8, damage: 46, knockback: 8.5 },
     // A far stronger tornado.
-    llh: { name: 'Black Sirocco', radius: 1.3, damage: 42, lift: 9.2 },
+    llh: { name: 'Grit Sirocco', radius: 1.3, damage: 42, lift: 9.2 },
     // A run in with a sword held out and a two-handed overhead swing.
     lllh: { name: 'Keelbreaker', damage: 64, knock: 'slide', knockback: 9, down: .85, radius: 1.2 },
     // All three blades clamped shut on the target like a crab's claw.
@@ -134,8 +134,8 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
     airHeavy: { name: 'Sunstroke', damage: 48, radius: 1.2 },
     // A leap and a descending slash that throws all its will forward.
     airSpecial: { name: 'Wreckyard Plunge', ...smash(4.6), damage: 70, knock: 'slide', knockback: 9, down: .85 },
-    // RAKSHASA's nine swords.
-    awakened: { lh: { name: 'Rakshasa: Maneater' }, lllh: { name: 'Rakshasa: Blood Moon' } },
+    // DUNE ONI's nine swords.
+    awakened: { lh: { name: 'Dune Oni: Maneater' }, lllh: { name: 'Dune Oni: Blood Moon' } },
   },
   koko: {
     // Iron Spirit's dashing straight.
@@ -210,13 +210,13 @@ export const VOL1_COMBOS: Partial<Record<FighterId, ComboRow>> = {
   },
   oro: {
     // Fluid fired from his eyes under pressure.
-    lh: { name: 'Gilded Needle Gaze', ...blast(10, 36), damage: 40, knockback: 8 },
-    // HUSH's swinging uppercut.
+    lh: { name: 'Gilded Glare', ...blast(10, 36), damage: 40, knockback: 8 },
+    // SLUMBER's swinging uppercut.
     llh: { name: 'Hour Hand Uppercut', damage: 35, lift: 8.6, down: .5 },
-    // HUSH vanishes, floats behind the target and punches it down.
+    // SLUMBER vanishes, floats behind the target and punches it down.
     lllh: { name: 'Die!', damage: 57, knock: 'spike', down: 1 },
     // A touch that freezes the body.
-    llls: { name: 'Frostblood Grip', damage: 48, daze: 1.6 },
+    llls: { name: 'Grave-Cold Grip', damage: 48, daze: 1.6 },
     airHeavy: { name: 'Diving Kick', damage: 42, lift: 5.2 },
     // The knives thrown in stopped time closing in from every side, thrown from the air.
     airSpecial: { name: 'Checkmate', ...smash(4.2), damage: 62, knock: 'spike', down: 1 },

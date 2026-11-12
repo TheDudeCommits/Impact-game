@@ -1,4 +1,4 @@
-import { BALL_ID, GOAL_RULES, POINT_GIVEN, POINT_WON, SPIKE_RULES, ballOf, heatTier, servedPoint, type BallEvent, type BallState, type BallTeam, type BallView, type CharmKind, type ShotKind } from '../game/ball/model';
+import { BALL_ID, GOAL_RULES, POINT_GIVEN, POINT_WON, SPIKE_RULES, ballOf, heatTier, servedPoint, type BallEvent, type BallState, type BallTeam, type BallView, spikeCourt, type CharmKind, type ShotKind } from '../game/ball/model';
 import { stepBall, type BallContact } from '../game/ball/physics';
 import type { GameSnapshot, Vec3 } from '../game/types';
 import type { TouchForecast } from '../game/ball/touchForecast';
@@ -625,7 +625,8 @@ export class BallAudio {
     const mine = !home || e.team === home, side = this.side(e.team, home), worth = e.value ?? 1;
     // The ball coming down, which ends the rally (the room holds it the same tick, so the flight never sees this bounce):
     // the planks in a court, the stone of the free zone outside them.
-    const inCourt = Math.abs(e.x) <= SPIKE_RULES.courtHalfX + .3 && Math.abs(e.z) <= SPIKE_RULES.courtHalfZ + .3;
+    // (The court the ball is played on - volleyball's for three a side, else the classic's.)
+    const court = spikeCourt(view.ball), inCourt = Math.abs(e.x) <= court.x + .3 && Math.abs(e.z) <= court.z + .3;
     if (POINT_WON.has(e.kind) || e.kind === 'out') {
       const down = Math.abs(this.prev?.vy ?? 10);
       this.play(inCourt ? (down >= HARD['sky-spike'] ? 'bounce-wood-hard' : 'bounce-wood-soft') : 'bounce-dome', { x: e.x, y: 0, z: e.z }, Math.max(.5, Math.min(1.1, .3 + down / 16)), 1, 0, 4);

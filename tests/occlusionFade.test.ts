@@ -135,7 +135,7 @@ describe('occlusion fading',()=>{
   });
 });
 
-describe('Ward\'s operating theatre round the lens',()=>{
+describe('Ward\'s surgery round the lens',()=>{
   it('keeps the dome\'s faces toward the lens clear: part of the way from outside, most of it from inside',()=>{
     const group=new THREE.Group(),room=new THREE.Mesh(new THREE.SphereGeometry(1.2,16,12),new THREE.MeshToonMaterial({transparent:true,opacity:.4,side:THREE.DoubleSide}));
     room.name='awaken-on-0';room.position.y=1.2;group.add(room);

@@ -6,10 +6,10 @@ import {noiseGLSL} from './noise';
  *
  *  The ki/chi body: a saturated sphere with swirling surface lines and a
  *  white-hot centre that now sits well over the bloom threshold (1.1 linear),
- *  so a Senpugan or a Sunpalm Cannon charge glows instead of reading as a flat
+ *  so a Kazeyose or a Sunpalm Cannon charge glows instead of reading as a flat
  *  blue ball; the rim brightens with the tint so the silhouette blooms too.
  *
- *  `violet` is the 'Kitsunebi-Dama': a dark, dense core inside a churning
+ *  `violet` is the 'Azure Foxfire': a dark, dense core inside a churning
  *  purple-black shell with a burning violet rim. It is a uniform branch, not
  *  a second shader, so it shares the one program with every other orb and
  *  never links mid-fight. CombatEffects retints clones by replacing the two

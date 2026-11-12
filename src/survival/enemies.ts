@@ -291,7 +291,7 @@ ENEMIES.gantry = {
   moves: [
     melee('Gauntlet Cleave', 'light', ['_combo_a'], 1.3, .53, 56, { range: 2.7, radius: .9, lunge: 3.5, knockback: 5, maxRange: 3.3, rest: .4 }),
     melee('Millstone Palm', 'heavy', ['_combo_c'], 1.37, .6, 88, { range: 2.5, radius: 1, lunge: 4.5, knockback: 13, stun: .7, guardBreak: true, maxRange: 3.2, rest: 3, telegraph: 'cone', callout: true }),
-    melee('Bell-Tower Slam', 'special', ['_skill_a'], 2.4, 1.05, 104, { range: 1.6, radius: 2.8, lunge: 6, close: 7, knockback: 9, maxRange: 8, rest: 5, telegraph: 'ring' }),
+    melee('Cloister Slam', 'special', ['_skill_a'], 2.4, 1.05, 104, { range: 1.6, radius: 2.8, lunge: 6, close: 7, knockback: 9, maxRange: 8, rest: 5, telegraph: 'ring' }),
   ],
   hide: /\bweapon_pl|[lr]_weapon|hand_weapon|wood_pl|icosphere/i,
   clips: withClean(brClips({ intro: ['_opening'], death: ['_lose'], taunt: ['_victory'] })), xp: 18, score: 2400, cost: 6, color: 0xc0903a,
@@ -354,7 +354,7 @@ ENEMIES['hollow-great-wraith'] = {
   clips: hollowClips(), xp: 7, score: 280, cost: 4, color: 0x2a2a3a, tint: 0xb8b8c8,
 };
 ENEMIES.zarek = {
-  id: 'zarek', name: 'Zarek', title: 'The Obsidian Panther', series: 'Cinder Requiem', role: 'elite', brain: 'boss',
+  id: 'zarek', name: 'Zarek', title: 'The Obsidian Prowler', series: 'Cinder Requiem', role: 'elite', brain: 'boss',
   model: '/assets/survival/enemies/zarek.glb', height: 2.05, size: 1.1, hp: 2300, poise: 300, speed: .98, knockbackIn: .4, stunIn: .7, breaker: true,
   blink: { every: 6, beyond: 7 },
   moves: [
@@ -378,9 +378,9 @@ ENEMIES.nihil = {
   ],
   clips: withClean(cinderRequiemClips()), xp: 20, score: 2800, cost: 6, color: 0x8a6cff,
 };
-ENEMIES.rakshasa = {
-  id: 'rakshasa', name: 'Rakshasa', title: 'The Oni Unchained', series: 'Cinder Requiem', role: 'elite', brain: 'boss',
-  model: '/assets/survival/enemies/rakshasa.glb', height: 2.25, size: 1.2, hp: 2800, poise: 420, speed: .82, knockbackIn: .3, stunIn: .6, breaker: true,
+ENEMIES['dune-oni'] = {
+  id: 'dune-oni', name: 'Dune Oni', title: 'The Oni Unchained', series: 'Cinder Requiem', role: 'elite', brain: 'boss',
+  model: '/assets/survival/enemies/dune-oni.glb', height: 2.25, size: 1.2, hp: 2800, poise: 420, speed: .82, knockbackIn: .3, stunIn: .6, breaker: true,
   moves: [
     melee('Wild Slash', 'light', ['CommonAttack'], 1.15, .5, 58, { clipSeconds: 1, range: 2.9, radius: .9, lunge: 5, knockback: 5, maxRange: 3.4, rest: .2, element: 'light' }),
     multi(melee('Unchained Flurry', 'heavy', ['skill_1_6'], 2.2, .35, 30, { chain: ['skill_1_1', 'skill_1_2', 'skill_1_3', 'skill_1_4', 'skill_1_5', 'skill_1_6', 'skill_1_7'], range: 2.8, radius: 1, lunge: 6, close: 7, knockback: 3, maxRange: 6, rest: 3, element: 'light' }), [.35, .7, 1.05, 1.4, 1.75], 70),
@@ -395,7 +395,7 @@ ENEMIES['nightfall'] = {
   moves: [
     multi(melee('Nightfall Rush', 'light', ['CommonAttack'], 1.87, .6, 32, { range: 2.7, radius: .8, lunge: 5, knockback: 3, maxRange: 3.2, rest: .3, element: 'blood' }), [.6, 1.1], 46),
     melee('Blink Cleave', 'heavy', ['attack_3'], 1.7, .9, 80, { range: 2.8, radius: .9, lunge: 8, close: 9, knockback: 9, minRange: 2, maxRange: 9, rest: 2.4, telegraph: 'line', element: 'blood' }),
-    shot('Black Crescent', 'special', ['skill_3_3'], 2.2, 1.1, 115, { clipSeconds: 2.83, speed: 32, range: 26, radius: 1.3, knockback: 10, minRange: 3.5, maxRange: 22, rest: 5, telegraph: 'line', element: 'blood', callout: true }),
+    shot('Cinder Wave', 'special', ['skill_3_3'], 2.2, 1.1, 115, { clipSeconds: 2.83, speed: 32, range: 26, radius: 1.3, knockback: 10, minRange: 3.5, maxRange: 22, rest: 5, telegraph: 'line', element: 'blood', callout: true }),
     { ...shot('Dusk Ray', 'ultimate', ['skill_1_3'], 2.8, 1.45, 150, { clipSeconds: 4.47, range: 22, radius: 1.1, knockback: 12, guardBreak: true, minRange: 3, maxRange: 20, rest: 9, telegraph: 'line', element: 'void-ray', callout: true }), style: 'beam' },
   ],
   clips: withClean(cinderRequiemClips()), xp: 20, score: 2800, cost: 6, color: 0xe0142e,
@@ -409,7 +409,7 @@ ENEMIES.shiun = {
     melee('Mirage Cut', 'light', ['CommonAttack'], 1.67, .8, 72, { range: 2.7, radius: .8, lunge: 5, knockback: 6, maxRange: 3.3, rest: .2, element: 'dark' }),
     melee('Blink Cut', 'heavy', ['attack_1'], 1.67, .78, 96, { range: 2.8, radius: .9, lunge: 9, close: 10, knockback: 10, minRange: 2, maxRange: 10, rest: 2.6, telegraph: 'line', element: 'dark' }),
     multi(shot('Wing Blades', 'special', ['skill_1_3'], 3.4, 1.3, 34, { chain: ['skill_1_1', 'skill_1_2', 'skill_1_3'], speed: 36, radius: .6, knockback: 3, stun: .3, minRange: 3, maxRange: 22, rest: 5, element: 'dark', callout: true }), [1.3, 1.5, 1.7, 1.9, 2.1, 2.3], 60),
-    { ...melee('Sealed Night', 'ultimate', ['skill_3_3'], 3.4, 2.4, 190, { chain: ['skill_3_1', 'skill_3_2', 'skill_3_3'], range: 24, radius: 2.4, knockback: 12, stun: 1, guardBreak: true, minRange: 2, maxRange: 20, rest: 10, telegraph: 'target', element: 'dark', callout: true }), style: 'field' },
+    { ...melee('Fermata', 'ultimate', ['skill_3_3'], 3.4, 2.4, 190, { chain: ['skill_3_1', 'skill_3_2', 'skill_3_3'], range: 24, radius: 2.4, knockback: 12, stun: 1, guardBreak: true, minRange: 2, maxRange: 20, rest: 10, telegraph: 'target', element: 'dark', callout: true }), style: 'field' },
     melee('Thousand Lights', 'special', ['skill_1_2'], 2.4, .5, 40, { chain: ['skill_1_1', 'skill_1_2', 'stay_show'], range: .5, radius: 2.6, knockback: 8, maxRange: 18, rest: 10, telegraph: 'ring', element: 'light', callout: true, phase: 1,
       rain: { count: 16, every: .12, lead: .9, spread: 6, radius: 1.4, damage: 64, start: .4, knockback: 7 } }),
   ],
@@ -431,7 +431,7 @@ ENEMIES.oro = {
   blink: { every: 5, beyond: 7 },
   moves: [
     melee('Gilded Punch', 'light', ['Gilded Punch'], .83, .38, 64, { range: 2.7, radius: .8, lunge: 5, knockback: 6, maxRange: 3.3, rest: .25, element: 'light' }),
-    multi(melee('NOROMA NOROMA Barrage', 'heavy', ['Noroma! Barrage'], 3.08, .5, 24, { range: 2.9, radius: 1, lunge: 7, close: 8, knockback: 3, stun: .25, maxRange: 6, rest: 3.2, telegraph: 'cone', element: 'light', callout: true }), [.5, .78, 1.06, 1.34, 1.62, 1.9, 2.18], 92),
+    multi(melee('CLOCKWORK Barrage', 'heavy', ['Clockwork Barrage'], 3.08, .5, 24, { range: 2.9, radius: 1, lunge: 7, close: 8, knockback: 3, stun: .25, maxRange: 6, rest: 3.2, telegraph: 'cone', element: 'light', callout: true }), [.5, .78, 1.06, 1.34, 1.62, 1.9, 2.18], 92),
     multi(shot('Clock-Hand Knives', 'special', ['Clock-Hand Knives'], 1.33, .55, 34, { speed: 38, radius: .5, knockback: 3, stun: .3, minRange: 3, maxRange: 20, rest: 4, element: 'steel', callout: true }), [.55, .7, .85], 48),
     { ...melee('MIDNIGHT', 'ultimate', ['MIDNIGHT'], 4.79, 2.7, 190, { range: 5, radius: 4.4, knockback: 13, stun: 1, guardBreak: true, maxRange: 9, rest: 9, telegraph: 'ring', element: 'light', callout: true }), style: 'field' },
   ],
@@ -450,7 +450,7 @@ ENEMIES.magatsu = {
     melee('Hex Cut', 'light', ['hand-slash', 'jab'], 1, .4, 62, { clipSeconds: 1.58, range: 2.8, radius: .9, lunge: 5, knockback: 5, maxRange: 3.3, rest: .25, element: 'blood' }),
     multi(melee('Rending Hex', 'heavy', ['combo'], 1.7, .73, 58, { clipSeconds: 2.3, range: 3.2, radius: 1.2, lunge: 6, close: 7, knockback: 8, maxRange: 5, rest: 2.6, telegraph: 'cone', element: 'blood', callout: true }), [.73, .99], 70),
     multi(shot('Hex Slashes', 'special', ['sweep', 'claw'], 1.6, .78, 40, { clipSeconds: 1.54, speed: 44, radius: .8, knockback: 4, stun: .3, minRange: 3, maxRange: 20, rest: 4.5, element: 'blood', callout: true }), [.78, .95, 1.12], 56),
-    { ...shot('Pyre Arrow', 'ultimate', ['bow-shot', 'roar'], 2.6, 1.82, 200, { clipSeconds: 3, speed: 22, range: 26, radius: 1.6, knockback: 13, stun: .9, guardBreak: true, minRange: 4, maxRange: 22, rest: 9, telegraph: 'line', element: 'fire', callout: true }), style: 'bomb' },
+    { ...shot('Calamity Pyre', 'ultimate', ['bow-shot', 'roar'], 2.6, 1.82, 200, { clipSeconds: 3, speed: 22, range: 26, radius: 1.6, knockback: 13, stun: .9, guardBreak: true, minRange: 4, maxRange: 22, rest: 9, telegraph: 'line', element: 'fire', callout: true }), style: 'bomb' },
   ],
   clips: libraryClips(), xp: 80, score: 20000, cost: 0, color: 0xd81f3a,
 };
@@ -518,39 +518,39 @@ ENEMIES['elder-brood'] = {
   clips: hollowClips(), xp: 7, score: 300, cost: 4, color: 0x2e6a2a, tint: 0xa8c098,
 };
 ENEMIES['wuming'] = {
-  id: 'wuming', name: 'Wuming', title: 'The Lightless Sage', series: 'Last Sun', role: 'elite', brain: 'boss',
+  id: 'wuming', name: 'Wuming', title: 'The Withering Sage', series: 'Last Sun', role: 'elite', brain: 'boss',
   model: '/assets/survival/enemies/wuming.glb', height: 2.0, size: 1.1, hp: 2600, poise: 320, speed: .92, knockbackIn: .4, stunIn: .7, breaker: true,
   blink: { every: 5, beyond: 6.5 },
   moves: [
-    multi(melee('Dusk Rush', 'light', ['rush_1_hit'], 2, .12, 26, { chain: RUSH, range: 2.4, radius: .8, lunge: 4, knockback: 2, maxRange: 3, rest: .3, element: 'dark' }), [.12, .46, .8, 1.14, 1.5], 50),
-    melee('Violent Rush', 'heavy', ['violent_3_finish'], 1.2, .7, 92, { chain: ['violent_1_in', 'violent_2_charge', 'violent_3_finish', 'violent_4_out'], range: 2.6, radius: .9, lunge: 9, close: 10, knockback: 10, minRange: 2, maxRange: 10, rest: 2.6, telegraph: 'line', element: 'dark' }),
-    melee('Divine Blade', 'special', ['skill_2_hit'], 2.15, 1.12, 120, { chain: ['skill_2_in', 'skill_2_hit', 'skill_2_out'], range: 3.6, radius: 1.5, lunge: 5, knockback: 11, guardBreak: true, maxRange: 4.4, rest: 6, telegraph: 'cone', element: 'dark', callout: true }),
-    { ...shot('Black Sun Beam', 'ultimate', ['blast_3_hit'], 3.4, 1.7, 170, { chain: BLAST, range: 22, radius: 1.2, knockback: 13, guardBreak: true, minRange: 3, maxRange: 20, rest: 9, telegraph: 'line', element: 'dark', callout: true }), style: 'beam' },
+    multi(melee('Weeding Rush', 'light', ['rush_1_hit'], 2, .12, 26, { chain: RUSH, range: 2.4, radius: .8, lunge: 4, knockback: 2, maxRange: 3, rest: .3, element: 'dark' }), [.12, .46, .8, 1.14, 1.5], 50),
+    melee('Scything Rush', 'heavy', ['violent_3_finish'], 1.2, .7, 92, { chain: ['violent_1_in', 'violent_2_charge', 'violent_3_finish', 'violent_4_out'], range: 2.6, radius: .9, lunge: 9, close: 10, knockback: 10, minRange: 2, maxRange: 10, rest: 2.6, telegraph: 'line', element: 'dark' }),
+    melee('Lotus Edge', 'special', ['skill_2_hit'], 2.15, 1.12, 120, { chain: ['skill_2_in', 'skill_2_hit', 'skill_2_out'], range: 3.6, radius: 1.5, lunge: 5, knockback: 11, guardBreak: true, maxRange: 4.4, rest: 6, telegraph: 'cone', element: 'dark', callout: true }),
+    { ...shot('Withering Beam', 'ultimate', ['blast_3_hit'], 3.4, 1.7, 170, { chain: BLAST, range: 22, radius: 1.2, knockback: 13, guardBreak: true, minRange: 3, maxRange: 20, rest: 9, telegraph: 'line', element: 'dark', callout: true }), style: 'beam' },
   ],
   clips: withClean(szClips()), xp: 22, score: 3200, cost: 6, color: 0xe86ad8,
 };
 ENEMIES['jinlin'] = {
-  id: 'jinlin', name: 'Emperor Jinlin', title: 'The Dragon-Gate Tyrant', series: 'Last Sun', role: 'elite', brain: 'boss',
+  id: 'jinlin', name: 'Jinlin', title: 'The Dragon-Gate Tyrant', series: 'Last Sun', role: 'elite', brain: 'boss',
   model: '/assets/survival/enemies/jinlin.glb', height: 1.95, size: 1.05, hp: 2500, poise: 300, speed: .9, knockbackIn: .4, stunIn: .7, breaker: true,
   blink: { every: 5.5, beyond: 7 },
   moves: [
     multi(melee("Tyrant's Rush", 'light', ['rush_1_hit'], 1.6, .08, 26, { chain: RUSH, range: 2.3, radius: .8, lunge: 4, knockback: 2, maxRange: 3, rest: .3, element: 'fire' }), [.08, .34, .6, .96, 1.24], 48),
     melee('Tail Smash', 'heavy', ['smash_3_hit'], 1.2, .62, 84, { chain: smash('smash'), range: 2.6, radius: .9, lunge: 5, knockback: 11, guardBreak: true, maxRange: 3.2, rest: 2.2, telegraph: 'cone', element: 'fire' }),
-    multi(shot('Needle Ray', 'special', ['skill_2_hit'], 2.1, 1.1, 40, { chain: ['skill_2_in', 'skill_2_hit', 'skill_2_out'], speed: 64, radius: .35, knockback: 3, stun: .4, minRange: 3, maxRange: 22, rest: 4.5, element: 'dark', callout: true }), [1.1, 1.28, 1.46], 60),
-    { ...shot('Doom Sphere', 'ultimate', ['blast_3_hit'], 3.2, 1.9, 190, { chain: BLAST, speed: 13, range: 24, radius: 3.4, knockback: 14, guardBreak: true, minRange: 4, maxRange: 20, rest: 10, telegraph: 'target', element: 'fire', callout: true }), style: 'bomb' },
+    multi(shot('Pearl Lance', 'special', ['skill_2_hit'], 2.1, 1.1, 40, { chain: ['skill_2_in', 'skill_2_hit', 'skill_2_out'], speed: 64, radius: .35, knockback: 3, stun: .4, minRange: 3, maxRange: 22, rest: 4.5, element: 'dark', callout: true }), [1.1, 1.28, 1.46], 60),
+    { ...shot('Tidal Pearl', 'ultimate', ['blast_3_hit'], 3.2, 1.9, 190, { chain: BLAST, speed: 13, range: 24, radius: 3.4, knockback: 14, guardBreak: true, minRange: 4, maxRange: 20, rest: 10, telegraph: 'target', element: 'fire', callout: true }), style: 'bomb' },
   ],
   clips: withClean(szClips()), xp: 22, score: 3200, cost: 6, color: 0xffc21e,
 };
-ENEMIES.jirenga = {
-  id: 'jirenga', name: 'Jirenga', title: 'The Stone Guardian', series: 'Last Sun', role: 'boss', brain: 'boss',
+ENEMIES.banjaku = {
+  id: 'banjaku', name: 'Banjaku', title: 'The Stone Guardian', series: 'Last Sun', role: 'boss', brain: 'boss',
   model: '/assets/survival/enemies/gandang.glb', height: 2.35, size: 1.3, hp: 8600, poise: 700, speed: .8, knockbackIn: .2, stunIn: .5, breaker: true,
   blink: { every: 4, beyond: 6 },
   moves: [
     multi(melee('Colossus Rush', 'light', ['rush_1_hit'], 1.8, .1, 30, { chain: RUSH, range: 2.5, radius: .8, lunge: 4, knockback: 2, maxRange: 3.2, rest: .2, element: 'blood' }), [.1, .35, .6, 1.0, 1.35], 60),
     melee('Power Smash', 'heavy', ['smash_3_hit'], 1.2, .62, 110, { chain: smash('smash'), range: 2.8, radius: 1, lunge: 6, knockback: 12, guardBreak: true, maxRange: 3.6, rest: 2.4, telegraph: 'cone', element: 'blood' }),
     melee('Dash Smash', 'heavy', ['dash_strike_3_hit'], 1.55, .9, 120, { chain: smash('dash_strike'), range: 2.8, radius: 1, lunge: 10, close: 12, knockback: 13, minRange: 3, maxRange: 12, rest: 3, telegraph: 'line', element: 'blood' }),
-    melee('Glare', 'special', ['glare_3_hit'], 2.3, 1.25, 90, { chain: smash('glare'), range: .5, radius: 4, lunge: 0, knockback: 12, guardBreak: true, maxRange: 4.2, rest: 6, telegraph: 'ring', element: 'blood', callout: true }),
-    { ...shot('Colossus Impact', 'ultimate', ['blast_3_hit'], 3.4, 1.6, 200, { chain: BLAST, speed: 30, range: 26, radius: 2.6, knockback: 14, guardBreak: true, minRange: 3, maxRange: 22, rest: 9, telegraph: 'target', element: 'blood', callout: true }), style: 'bomb' },
+    melee('Stone Stare', 'special', ['glare_3_hit'], 2.3, 1.25, 90, { chain: smash('glare'), range: .5, radius: 4, lunge: 0, knockback: 12, guardBreak: true, maxRange: 4.2, rest: 6, telegraph: 'ring', element: 'blood', callout: true }),
+    { ...shot('Boulder Orb', 'ultimate', ['blast_3_hit'], 3.4, 1.6, 200, { chain: BLAST, speed: 30, range: 26, radius: 2.6, knockback: 14, guardBreak: true, minRange: 3, maxRange: 22, rest: 9, telegraph: 'target', element: 'blood', callout: true }), style: 'bomb' },
     melee('Endless Rush', 'special', ['rush_3_hit'], 2.4, .5, 40, { chain: [...RUSH], range: .5, radius: 2.4, knockback: 8, maxRange: 18, rest: 10, telegraph: 'ring', element: 'blood', callout: true, phase: 1,
       rain: { count: 14, every: .14, lead: .85, spread: 5.5, radius: 1.6, damage: 70, start: .3, knockback: 8 } }),
   ],
@@ -665,7 +665,7 @@ ENEMIES['gorai-wyrm'] = {
   clips: withClean(brClips({ intro: ['_opening'], death: ['_lose'], taunt: ['_victory'] })), xp: 100, score: 30000, cost: 0, color: 0x3a6aff,
 };
 
-// ---- Act II: the Hidden Ash ---------------------------------------------
+// ---- Act II: Ashwood ---------------------------------------------
 // The Fox Spirit loose in the village, the White Pale Sapling army pouring out of the
 // rift, and the village's own fighters turned against the player (shadow
 // rivals, below). Kurobi is a giant: drawn six metres tall, but with a hit
@@ -677,7 +677,7 @@ const paleSaplingClips = (extra: Partial<EnemyClips> = {}): EnemyClips => ({
   blown: ['knockdown'], land: ['knockdown'], death: ['die'], dash: ['run'], jump: ['run'], fall: ['knockdown'], taunt: ['roar'], ...extra,
 });
 ENEMIES['pale-sapling'] = {
-  id: 'pale-sapling', name: 'Pale Sapling', series: 'Hidden Ash', role: 'fodder', brain: 'swarm',
+  id: 'pale-sapling', name: 'Pale Sapling', series: 'Ashwood', role: 'fodder', brain: 'swarm',
   model: '/assets/survival/motion/grunt-husk.glb', motion: 'humanoid', height: 1.8, hp: 130, speed: .72,
   moves: [
     melee('Grasping Strike', 'light', ['punch'], 1.2, .59, 24, { clipSeconds: 2.2, range: 2, cooldown: 1.2, knockback: 3.8 }),
@@ -686,7 +686,7 @@ ENEMIES['pale-sapling'] = {
   clips: paleSaplingClips(), xp: 1, score: 45, cost: 1, color: 0xe8f0e0,
 };
 ENEMIES['spore-sapling'] = {
-  id: 'spore-sapling', name: 'Spore Sapling', series: 'Hidden Ash', role: 'gunner', brain: 'gunner',
+  id: 'spore-sapling', name: 'Spore Sapling', series: 'Ashwood', role: 'gunner', brain: 'gunner',
   model: '/assets/survival/motion/grunt-husk.glb', motion: 'humanoid', height: 1.8, hp: 105, speed: .64,
   moves: [
     shot('Ash Spore', 'special', ['roar'], 2.2, 1.54, 22, { clipSeconds: 2.4, speed: 24, radius: .6, cooldown: 4.2, element: 'jade' }),
@@ -695,7 +695,7 @@ ENEMIES['spore-sapling'] = {
   clips: paleSaplingClips(), xp: 2, score: 70, cost: 2, color: 0x7affb8, tint: 0xd8ffe0,
 };
 ENEMIES['giant-sapling'] = {
-  id: 'giant-sapling', name: 'Giant Sapling', series: 'Hidden Ash', role: 'brute', brain: 'brute',
+  id: 'giant-sapling', name: 'Giant Sapling', series: 'Ashwood', role: 'brute', brain: 'brute',
   model: '/assets/survival/motion/grunt-husk.glb', motion: 'humanoid', height: 3.1, size: 1.55, hp: 620, poise: 200, speed: .46,
   knockbackIn: .4, stunIn: .7, breaker: true,
   moves: [
@@ -722,13 +722,13 @@ ENEMIES.haldor = {
 };
 // Barrow: darkness that swallows, and the quake he stole.
 ENEMIES.barrow = {
-  id: 'barrow', name: 'Barrow', title: 'Tide King · The Swallowing Dark', series: 'Dust Sea', role: 'boss', brain: 'boss',
+  id: 'barrow', name: 'Barrow', title: 'The Wrecker · Tar of the Dunes', series: 'Dust Sea', role: 'boss', brain: 'boss',
   model: '/assets/survival/enemies/barrow.glb', height: 2.9, size: 1.36, hp: 6400, poise: 560, speed: .78, knockbackIn: .22, stunIn: .55, breaker: true,
   moves: [
-    melee('Darkness Grab', 'light', ['_combo_a'], 1, .35, 62, { range: 3, radius: 1, lunge: 6, knockback: 5, maxRange: 3.6, rest: .3, element: 'dark' }),
-    melee('Swallowing Rush', 'heavy', ['_combo_b'], 1.17, .5, 92, { range: 3.2, radius: 1.3, lunge: 8, close: 9, knockback: 11, guardBreak: true, minRange: 2, maxRange: 9, rest: 2.4, telegraph: 'line', element: 'dark' }),
-    melee('Stolen Quake', 'heavy', ['_combo_c'], 1.3, .6, 110, { range: 1.4, radius: 2.9, lunge: 3, knockback: 13, stun: .7, maxRange: 3.8, rest: 3.2, telegraph: 'ring', element: 'sound' }),
-    melee('Night Maw', 'special', ['_skill_a'], 2.57, 1.1, 130, { range: .5, radius: 4.4, lunge: 0, knockback: 6, stun: 1, maxRange: 4.4, rest: 6, telegraph: 'ring', element: 'dark', callout: true }),
+    melee('Tar Grab', 'light', ['_combo_a'], 1, .35, 62, { range: 3, radius: 1, lunge: 6, knockback: 5, maxRange: 3.6, rest: .3, element: 'dark' }),
+    melee('Gorging Rush', 'heavy', ['_combo_b'], 1.17, .5, 92, { range: 3.2, radius: 1.3, lunge: 8, close: 9, knockback: 11, guardBreak: true, minRange: 2, maxRange: 9, rest: 2.4, telegraph: 'line', element: 'dark' }),
+    melee('Wreck Quake', 'heavy', ['_combo_c'], 1.3, .6, 110, { range: 1.4, radius: 2.9, lunge: 3, knockback: 13, stun: .7, maxRange: 3.8, rest: 3.2, telegraph: 'ring', element: 'sound' }),
+    melee('Tar Tide', 'special', ['_skill_a'], 2.57, 1.1, 130, { range: .5, radius: 4.4, lunge: 0, knockback: 6, stun: 1, maxRange: 4.4, rest: 6, telegraph: 'ring', element: 'dark', callout: true }),
     melee('Disgorge', 'ultimate', ['_skill_b'], 2.8, 1.2, 60, { range: .5, radius: 2.8, lunge: 0, knockback: 9, maxRange: 18, rest: 9, telegraph: 'ring', element: 'dark', callout: true, phase: 1,
       rain: { count: 16, every: .14, lead: .95, spread: 7, radius: 2, damage: 70, start: .5, knockback: 8 } }),
   ],
@@ -736,7 +736,7 @@ ENEMIES.barrow = {
 };
 // Akagane: the war-fan, great fire, and a meteor out of a clear sky.
 ENEMIES.akagane = {
-  id: 'akagane', name: 'Akagane', title: 'The Copper Tyrant, Risen from the Ember Tomb', series: 'Hidden Ash', role: 'boss', brain: 'boss',
+  id: 'akagane', name: 'Akagane', title: 'The Copper Tyrant, Risen from the Ember Tomb', series: 'Ashwood', role: 'boss', brain: 'boss',
   model: '/assets/survival/enemies/akagane.glb', height: 2.3, size: 1.2, hp: 6800, poise: 560, speed: .86, knockbackIn: .25, stunIn: .55, breaker: true,
   blink: { every: 8, beyond: 11 },
   moves: [
@@ -750,7 +750,7 @@ ENEMIES.akagane = {
   xp: 64, score: 16000, cost: 0, color: 0xc01020,
 };
 ENEMIES.kurobi = {
-  id: 'kurobi', name: 'Kurobi', title: 'The Ember in the Ash', series: 'Hidden Ash', role: 'boss', brain: 'boss',
+  id: 'kurobi', name: 'Kurobi', title: 'The Ember in the Ash', series: 'Ashwood', role: 'boss', brain: 'boss',
   model: '/assets/fighters/kurobi-tr1.glb', height: 3.8, size: 1.85, girth: 2.4, hp: 9000, poise: 800, speed: .62, knockbackIn: .12, stunIn: .4, breaker: true, anchored: true,
   moves: [
     melee('Demon Claw', 'light', ['Kurobi light'], 1.8, .75, 90, { range: 4.5, radius: 2, lunge: 4, knockback: 10, maxRange: 5.5, rest: .4, element: 'fire' }),
@@ -767,8 +767,8 @@ ENEMIES.kurobi = {
 };
 
 const RIVALS: readonly (readonly [FighterId, string, string])[] = [
-  ['taisei', 'Taisei', 'Last Sun'], ['ouga', 'Ouga', 'Last Sun'], ['konta', 'Konta', 'Hidden Ash'],
-  ['shiden', 'Shiden', 'Hidden Ash'], ['shirokane', 'Shirokane', 'Hidden Ash'], ['gummy', 'Gummy', 'Dust Sea'],
+  ['taisei', 'Taisei', 'Last Sun'], ['ouga', 'Ouga', 'Last Sun'], ['konta', 'Konta', 'Ashwood'],
+  ['shiden', 'Shiden', 'Ashwood'], ['shirokane', 'Shirokane', 'Ashwood'], ['gummy', 'Gummy', 'Dust Sea'],
   ['kenzo', 'Kenzo', 'Dust Sea'], ['kosho', 'Kosho', 'Dust Sea'], ['kagari', 'Kagari', 'Dust Sea'], ['ward', 'Ward', 'Dust Sea'],
   ['nigo', 'Nigo', 'Cinder Requiem'], ['koko', 'KoKo', 'Gilded Ruin'], ['oro', 'Lord ORO', 'Gilded Ruin'], ['kuon', 'Kuon', 'Hex Fallout'],
   ['gaunt', 'Gaunt', 'Grave Hound'], ['setsu', 'Setsu', 'Salvage Wilds'],

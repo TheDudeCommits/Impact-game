@@ -38,7 +38,7 @@ const STEEL = E(0xf4f8ff, 0xb8c8d8, 0xdfe8f0, 0x10141a);
 const SPIRIT = E(0xe2fbff, 0x2d9bff, 0x6fd8ff, 0x06142a);
 const BEAST_VIOLET = E(0xefe2ff, 0x8d4dff, 0x9b64ff, 0x0e0620);
 const CURSED_RED = E(0xffe0d8, 0xff2a1e, 0xff4a36, 0x1c0404);
-const VOID_SICKLE_VIOLET = E(0xf0e0ff, 0x7a3cff, 0x9a6cff, 0x0c0420);
+const SICKLE_REAPER_VIOLET = E(0xf0e0ff, 0x7a3cff, 0x9a6cff, 0x0c0420);
 /** The shop's fighters: Gorai's lightning is the dragon's violet, Haldor's
  *  quake is white cracking into blue, and Sorrel' Crimson Command is black
  *  lightning edged in red; Dorado's is that lightning in gold. */
@@ -47,15 +47,15 @@ const QUAKE_WHITE = E(0xffffff, 0x9fd0ff, 0xe4f2ff, 0x0a1220);
 const COMMAND_RED = E(0xffe2e2, 0xd0102a, 0xff2a3a, 0x060002);
 /** Dorado's: the same black lightning, run through with gold. */
 const HORIZON_GOLD = E(0xfff4d6, 0xe0a020, 0xffcf4a, 0x080400);
-/** Shiun's pressure is pale seraph's violet; BLACK CONFESSIONAL is a coffin of black in it. */
+/** Shiun's pressure is pale seraph's violet; FERMATA is a coffin of black in it. */
 const PALE_GEM = E(0xf4ecff, 0x8a3cff, 0xb48cff, 0x0a0414);
-const BLACK_CONFESSIONAL = E(0xe8dcff, 0x3a0a6a, 0x7a3cff, 0x020006);
+const FERMATA = E(0xe8dcff, 0x3a0a6a, 0x7a3cff, 0x020006);
 /** Magatsu's cuts are crimson; Calamity Pyre is fire. */
 const CURSE = E(0xffd8dc, 0xd81f3a, 0xff4a5a, 0x120204);
 const CALAMITY_PYRE = E(0xfff0c0, 0xff5a1e, 0xff8a3a, 0x1c0604);
-/** Vesper's sabre is white steel with the hawk's silver-blue in it; the offering is a black sun ringed in
+/** Vesper's sabre is white steel with the hawk's silver-blue in it; the Evensong is a black sun ringed in
  *  violet, as Black Vespers's dark is. */
-const PALE_FALCON = E(0xffffff, 0xa9c4ff, 0xe4ecff, 0x0a0e18);
+const PALE_RAVEN = E(0xffffff, 0xa9c4ff, 0xe4ecff, 0x0a0e18);
 /** Round 4b (GUMMY): SUNRISE - white, a warm rim, a cartoon's ink. */
 const SUNRISE_WHITE = E(0xffffff, 0xffd98a, 0xfff2d6, 0x120a04);
 const ECLIPSE = E(0xeee2ff, 0x4a2a8a, 0x8a5cff, 0x020006);
@@ -64,9 +64,9 @@ const ROYAL_JADE = E(0xeafff2, 0x2fd07a, 0x8af0b8, 0x041a0e);
 const DECREE = E(0xf4fff8, 0x3ae88a, 0xb8ffd8, 0x02100a);
 /** Wuming's ki is rose over black. */
 const ROSE = E(0xffe2f6, 0xe83aa8, 0xff8ad8, 0x14020e);
-/** Jirenga's power is red. */
+/** Banjaku's power is red. */
 const PRIDE_RED = E(0xffe2dc, 0xe8202a, 0xff5a4a, 0x140204);
-/** 'Emperor Jinlin': the gold of him, his needle rays' magenta, and the Drowned Sun's red. */
+/** 'Jinlin': the gold of him, his pearl lances' magenta, and the Drowned Sun's red. */
 const GOLDEN = E(0xfff4cc, 0xffb21e, 0xffd86a, 0x140e02);
 const PEARL_NEEDLE = E(0xffe8fb, 0xd82ab0, 0xff6ad8, 0x12020e);
 const DROWNED_SUN = E(0xffe2cc, 0xff4a12, 0xff8a3a, 0x1a0602);
@@ -81,10 +81,10 @@ const CLEAN_SLATE = E(0xffffff, 0xff4a2a, 0xffb080, 0x140404);
 /** Sekka: Gravedigger's pink, and the frost stance's ice-blue. */
 const DESTRUCTIVE = E(0xfff0f4, 0xff4a8a, 0xff9ac0, 0x14040a);
 const COMPASS = E(0xeaf4ff, 0x4a7aff, 0x9ab8ff, 0x060a1a);
-/** Tobari: the Red Eye's red, Black Pyre's black flame (lit by its violet edge), and Red Moon Reverie's red moon. */
+/** Tobari: the Red Eye's red, Black Pyre's black flame (lit by its violet edge), and Crow's Nightmare's red moon. */
 const RED_EYE = E(0xffe6e6, 0xe8202e, 0xff6a6a, 0x140204);
 const BLACK_FLAME = E(0xe8d6ff, 0x3a0a4a, 0x7a3a9a, 0x020004);
-/** Akagane: the Crow Clan's red, the Cinder Art: Burning Sea's fire, the meteor's burning rock and the Guardian's blue. */
+/** Akagane: the Crow Clan's red, the Burning Sea's fire, the meteor's burning rock and the Guardian's blue. */
 const CROW_CLAN = E(0xffe2e2, 0xc8202e, 0xff5a5a, 0x120203);
 const MAJESTIC = E(0xfff2c8, 0xff6a1a, 0xffa040, 0x1a0602);
 const METEOR = E(0xffe8c0, 0xd2581c, 0xff9a40, 0x140602);
@@ -165,7 +165,7 @@ const TABLE: Record<FighterId, Record<Exclude<AttackSlot, 'area'>, Element>> = {
   kosho: { light: FIRE, heavy: FIRE, special: FIRE, ultimate: FIRE },
   kagari: { light: FIRE, heavy: FIRE, special: FIRE, ultimate: FIRE },
   kenzo: { light: SLASH_GREEN, heavy: SLASH_GREEN, special: SLASH_GREEN, ultimate: SLASH_GREEN },
-  shirokane: { light: STEEL, heavy: LIGHTNING, special: LIGHTNING, ultimate: VOID_SICKLE_VIOLET },
+  shirokane: { light: STEEL, heavy: LIGHTNING, special: LIGHTNING, ultimate: SICKLE_REAPER_VIOLET },
   shiden: { light: STEEL, heavy: LIGHTNING, special: E(0xe8d6ff, 0x5a1a9a, 0x8a4ad6, 0x040108), ultimate: E(0xf2e6ff, 0xb469ff, 0xc890ff, 0x10061c) },
   setsu: { light: LIGHTNING, heavy: LIGHTNING, special: LIGHTNING, ultimate: LIGHTNING },
   nigo: { light: BLACK_RED, heavy: BLACK_RED, special: BLACK_RED, ultimate: BLACK_RED },
@@ -187,12 +187,12 @@ const TABLE: Record<FighterId, Record<Exclude<AttackSlot, 'area'>, Element>> = {
   sorayomi: { light: STEEL, heavy: STEEL, special: WATER, ultimate: SHOCK_YELLOW },
   sorrel: { light: STEEL, heavy: COMMAND_RED, special: COMMAND_RED, ultimate: COMMAND_RED },
   dorado: { light: STEEL, heavy: HORIZON_GOLD, special: HORIZON_GOLD, ultimate: HORIZON_GOLD },
-  shiun: { light: PALE_GEM, heavy: PALE_GEM, special: PALE_GEM, ultimate: BLACK_CONFESSIONAL },
+  shiun: { light: PALE_GEM, heavy: PALE_GEM, special: PALE_GEM, ultimate: FERMATA },
   magatsu: { light: CURSE, heavy: CURSE, special: CURSE, ultimate: CALAMITY_PYRE },
-  vesper: { light: PALE_FALCON, heavy: PALE_FALCON, special: PALE_FALCON, ultimate: ECLIPSE },
+  vesper: { light: PALE_RAVEN, heavy: PALE_RAVEN, special: PALE_RAVEN, ultimate: ECLIPSE },
   imago: { light: ROYAL_JADE, heavy: ROYAL_JADE, special: ROYAL_JADE, ultimate: DECREE },
   'wuming': { light: ROSE, heavy: ROSE, special: ROSE, ultimate: ROSE },
-  jirenga: { light: PRIDE_RED, heavy: PRIDE_RED, special: PRIDE_RED, ultimate: PRIDE_RED },
+  banjaku: { light: PRIDE_RED, heavy: PRIDE_RED, special: PRIDE_RED, ultimate: PRIDE_RED },
   'jinlin': { light: PEARL_NEEDLE, heavy: GOLDEN, special: PEARL_NEEDLE, ultimate: DROWNED_SUN },
   'gohaku': { light: BEAST, heavy: BEAST, special: STAR_BEAM, ultimate: BEAM_CANNON },
   ippon: { light: PLAIN_PUNCH, heavy: PLAIN_PUNCH, special: PLAIN_PUNCH, ultimate: CLEAN_SLATE },
@@ -217,7 +217,7 @@ const AWAKENED_KOSHO = E(0xe6f6ff, 0x3f8cff, 0x7fc8ff);
 const AWAKENED: Partial<Record<FighterId, Element>> = {
   taisei: KI_GOLD, ouga: KI_GOLD, konta: CHI_ORANGE, gummy: SUNRISE_WHITE, kagari: FIRE, kosho: AWAKENED_KOSHO,
   strix: SLASH_GREEN, kenzo: SLASH_GREEN, nigo: BLACK_RED, gaunt: BLACK_RED, setsu: LIGHTNING, kuon: HEX_BLUE, ward: ROOM_BLUE,
-  gorai: DRAGON_VIOLET, haldor: QUAKE_WHITE, sorrel: COMMAND_RED, dorado: HORIZON_GOLD, shiun: PALE_GEM, magatsu: CURSE, vesper: ECLIPSE, imago: DECREE, 'wuming': ROSE, jirenga: PRIDE_RED, 'jinlin': GOLDEN,
+  gorai: DRAGON_VIOLET, haldor: QUAKE_WHITE, sorrel: COMMAND_RED, dorado: HORIZON_GOLD, shiun: PALE_GEM, magatsu: CURSE, vesper: ECLIPSE, imago: DECREE, 'wuming': ROSE, banjaku: PRIDE_RED, 'jinlin': GOLDEN,
   'gohaku': BEAST, ippon: CLEAN_SLATE, sekka: COMPASS, tobari: RED_EYE,
   akagane: GUARDIAN_BLUE, asahi: SUN_FIRE, levin: WINGS_STEEL, 'rook': SHADOW, gaku: AURA,
 };
@@ -231,7 +231,7 @@ const RUSH: Partial<Record<FighterId, Partial<Record<number, Element>>>> = {
 };
 
 /** The main game's sixteen's combo enders (game/combos.ts), each in its fighter's own element rather than its slot's:
- *  a Light, Heavy thrown from Konta's heavy is not the Senpugan, so it does not land in the Senpugan's blue, and Taisei's
+ *  a Light, Heavy thrown from Konta's heavy is not the Kazeyose, so it does not land in the Kazeyose's blue, and Taisei's
  *  enders are ki, not the plain fist of his Cloudstep. `base` is the fighter's, `keys` the enders made of
  *  something else of theirs (Kuon's blowback is a repulsion, his ground smash a void), `awakened` the form's.
  *  The shop's twenty keep their slot's: EmperorEffects draws their enders in their own colours, as it did. */
@@ -254,7 +254,7 @@ export const ENDER_ELEMENTS: Partial<Record<FighterId, { base: Element; keys?: P
   taisei: { base: KI_WHITE, keys: { lh: KI_GOLD, llh: RED_SURGE, llls: SOLAR, airSpecial: KI_BLUE }, awakened: KI_GOLD },
   // The Gale purple; Coronation, the energy volley and the Pride Burst in his gold.
   ouga: { base: KI_PURPLE, keys: { llh: KI_GOLD, llls: KI_GOLD, airSpecial: KI_GOLD }, awakened: KI_GOLD },
-  // The Gale Palm's orange; the Giant Senpugan's and the Senpugan Wreath's blue; the Mini Galewheel's wind. Kurobi's own in its
+  // The Gale Palm's orange; the Great Kazeyose's and the Kazeyose Wreath's blue; the Mini Galewheel's wind. Kurobi's own in its
   // red-orange, its Mini Foxfire Bomb in the bomb's violet.
   konta: { base: CHI_ORANGE, keys: { lllh: CHI_BLUE, llls: WIND, airSpecial: CHI_BLUE }, awakened: KUROBI, awakenedKeys: { airSpecial: BEAST_VIOLET } },
   // Will; the burning fist's fire. SUNRISE's own (round 4b): his white, and the lightning he catches.
@@ -268,7 +268,7 @@ export const ENDER_ELEMENTS: Partial<Record<FighterId, { base: Element; keys?: P
   // Blue; Dark Spark's black lightning; Event Horizon's stillness; the Supermassive.
   kuon: { base: HEX_BLUE, keys: { lh: DARK_SPARK, llls: HORIZON_PALE, airSpecial: HEX_PURPLE } },
   koko: { base: SPIRIT_PURPLE },
-  // HUSH's gold; the freezing touch.
+  // SLUMBER's gold; the freezing touch.
   oro: { base: SPIRIT_GOLD, keys: { llls: FROST } },
   nigo: { base: BLACK_RED },
   // Steel and blood; the bomb and the cannon's fire.
@@ -277,7 +277,7 @@ export const ENDER_ELEMENTS: Partial<Record<FighterId, { base: Element; keys?: P
   setsu: { base: LIGHTNING, keys: { lh: STEEL } },
   // Lightning; the Water Dragon, the earth arts, Purple Electricity.
   shirokane: { base: LIGHTNING, keys: { lh: WATER, lllh: EARTH, llls: EARTH, airSpecial: PURPLE_LIGHTNING } },
-  // Purple lightning (Shrike Bolt, Thunder Hawk); the Fireball Arts's fire.
+  // Purple lightning (Storm Talon, Thunder Hawk); the Fireball Arts's fire.
   shiden: { base: PURPLE_LIGHTNING, keys: { lllh: FIRE } },
 };
 /** An ender's element, or undefined for a fighter whose enders are drawn as their slot's (the shop's). */
@@ -301,7 +301,7 @@ export function elementFor(fighter: FighterId | undefined, slot?: AttackSlot, aw
   const form = awakened ? FORM_TABLE[fighter] : undefined;
   if (form) return form[slot === 'area' ? 'special' : slot ?? 'light'];
   // Melee normals follow the transformation; specials and ultimates keep
-  // the technique's own colour, since a Shikou-Ha is purple either way.
+  // the technique's own colour, since a Throne Wave is purple either way.
   if (awakened && (slot === undefined || slot === 'light' || slot === 'heavy')) return AWAKENED[fighter] ?? TABLE[fighter].light;
   return TABLE[fighter][slot === 'area' ? 'special' : slot ?? 'light'];
 }
@@ -309,7 +309,7 @@ export function elementFor(fighter: FighterId | undefined, slot?: AttackSlot, aw
 /** The colour a signature technique paints the room while it plays - what
  *  the dynamic light throws and what the frame is graded toward. Mostly the
  *  move's own element; a few techniques read as a different colour from the
- *  blow they land as: VOID SICKLE and PLANETARIUM are violet, not the blue of the
+ *  blow they land as: SICKLE REAPER and PLANETARIUM are violet, not the blue of the
  *  user's other moves, and Kurobi's techniques are its orange. */
 const TECHNIQUE: Partial<Record<FighterId, Partial<Record<AttackSlot, number>>>> = {
   taisei: { special: 0x46c3ff, ultimate: 0x5fd4ff }, shirokane: { heavy: 0x8fd0ff, special: 0x8fd0ff, ultimate: 0x9a6cff },
@@ -317,7 +317,7 @@ const TECHNIQUE: Partial<Record<FighterId, Partial<Record<AttackSlot, number>>>>
   nigo: { special: 0xff3048, ultimate: 0xd01830 }, gummy: { special: 0xff3a2a }, shiden: { ultimate: 0xb469ff },
 };
 export function techniqueColour(fighter: FighterId, slot: AttackSlot, awakened = false, branch?: ComboKey): number {
-  // A combo ender lights the room in its own element, not its slot's technique (a Light, Heavy is no Senpugan).
+  // A combo ender lights the room in its own element, not its slot's technique (a Light, Heavy is no Kazeyose).
   const ender = branch && (slot === 'heavy' || slot === 'special') ? enderElement(fighter, branch, awakened) : undefined;
   if (ender) return ender.light;
   if (awakened && fighter === 'konta') return 0xff8a2a;
@@ -328,7 +328,7 @@ export function techniqueColour(fighter: FighterId, slot: AttackSlot, awakened =
  *  or ultimate plays: deeper than the light the technique throws, since the
  *  grade tints a whole frame and the light only what it reaches. One blue
  *  for the Sunpalm Cannon, Sickle Bolt and Galewheel family, one violet for
- *  Singularity, PLANETARIUM and VOID SICKLE, one crimson for Nightfang, NIGHTFALL
+ *  Singularity, PLANETARIUM and SICKLE REAPER, one crimson for Nightfang, NIGHTFALL
  *  and the SUNSET BARRAGE's Will, one orange for Kurobi; the rest follow the
  *  palette. */
 const GRADE: Partial<Record<FighterId, Partial<Record<AttackSlot, number>>>> = {
@@ -340,7 +340,7 @@ const GRADE: Partial<Record<FighterId, Partial<Record<AttackSlot, number>>>> = {
   // nothing in a room gone violet); Bruin's darkness a muted violet (critic pass 3: "a frame washed entirely purple");
   // the wind white-cyan and only Sylph's (the ultimate) green; the sea blue. (Round 7.)
   cardo: { special: 0x9c9c9c, ultimate: 0x9c9c9c }, bruin: { special: 0x5a4a78, ultimate: 0x4e3e6e },
-  // (Round 19, run 38's film: Great Migration's room went a saturated green from edge to edge; the beam is white
+  // (Round 19, run 38's film: Great Northerly's room went a saturated green from edge to edge; the beam is white
   // at its core and mint at its edges. The room only leans mint.)
   aquilo: { special: 0x7ec4dc, ultimate: 0x86d4b4 }, svanhild: { special: 0x2a8ce0, ultimate: 0x2a7fd0 },
 };
@@ -352,7 +352,7 @@ export function gradeHue(fighter: FighterId, slot: AttackSlot, awakened = false,
 }
 const SHOP_GRADE = .25;
 const SHOP: ReadonlySet<FighterId> = new Set<FighterId>(['gorai', 'haldor', 'sorrel', 'dorado', 'shiun', 'magatsu', 'vesper', 'imago',
-  'wuming', 'jirenga', 'jinlin', 'gohaku', 'ippon', 'sekka', 'tobari', 'akagane', 'asahi', 'levin', 'rook', 'gaku']);
+  'wuming', 'banjaku', 'jinlin', 'gohaku', 'ippon', 'sekka', 'tobari', 'akagane', 'asahi', 'levin', 'rook', 'gaku']);
 export function gradeStrength(fighter: FighterId): number { return SHOP.has(fighter) ? SHOP_GRADE : 1; }
 
 /** What a fighter's own afterimage is tinted, off their energy rather than
@@ -373,7 +373,7 @@ const GHOSTS: Partial<Record<FighterId, number>> = { taisei: 0x7fd8ff, ouga: 0x8
   // against their clothes: in the colour of the clothes, a ghost reads as the body torn (Haldor's ivory as "the
   // coat stretched into huge flat cream sheets", Gorai's violet as "a flat lavender blob").
   gorai: 0xffa63a, haldor: 0x5ac8ff, sorrel: 0xff5a64, dorado: 0xff4040, shiun: 0xa060ff, magatsu: 0xff4a5e,
-  vesper: 0xf4f0ff, imago: 0x6af0a0, 'wuming': 0xff7ae0, jirenga: 0xff5a4a, 'jinlin': 0xffd04a,
+  vesper: 0xf4f0ff, imago: 0x6af0a0, 'wuming': 0xff7ae0, banjaku: 0xff5a4a, 'jinlin': 0xffd04a,
   'gohaku': 0xc49aff, ippon: 0xff5a3a, sekka: 0xff7ab0, tobari: 0xff4a5a, akagane: 0x9a8cff, asahi: 0x6ac8ff,
   levin: 0x7ae0a0, 'rook': 0x9a6aff, gaku: 0xffc840,
   // Torsion's dash is a burst of her force (19 October, signature/TorsionFlight.ts): its poses in her psychic green.

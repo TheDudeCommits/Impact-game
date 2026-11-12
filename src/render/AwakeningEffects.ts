@@ -10,9 +10,9 @@ import { SPRITE, ORIENT } from './vfx/SparkField';
 import { AuraShell } from './vfx/AuraShell';
 import { LacquerCoat } from './vfx/LacquerCoat';
 import { KuonVoid } from './signature/KuonVoid';
-import { FeuBleu, LimbFire, KAGUTSUCHI } from './signature/FeuBleu';
+import { FeuBleu, LimbFire, ALL_ABLAZE } from './signature/FeuBleu';
 import { Setsuna } from './signature/Setsuna';
-import { OperatingTheatre } from './signature/OperatingTheatre';
+import { ScrubbedIn } from './signature/ScrubbedIn';
 import { PowerUp, boltFor, willStyle, kiColours, powerTint, pressureColours, type Burning, type PowerKind, type PowerStyle } from './vfx/powerup/PowerUp';
 import { OWN_ENTRANCES } from '../game/powerUp';
 import { PHYSICAL_PRESENCE, standingAura, standingColours } from './standingAura';
@@ -116,7 +116,7 @@ export class AwakeningEffects {
   /** Setsu's SETSUNA as speed: a lightning trail, on standard joints only. */
   private setsuna: Setsuna;
   /** Round 3b: Ward's awakening on Ward - SHEATH DOME, the membrane, Crossmatch. */
-  private room: OperatingTheatre;
+  private room: ScrubbedIn;
   private nextSpark = new Map<Fighter, number>();
   private chest = new THREE.Vector3();
   /** Round 3e (MODELS2): each transformation's beat - the gather from the
@@ -137,7 +137,7 @@ export class AwakeningEffects {
     onLens(camera => { if (this.flames.count) faceUpright(this.flames, camera.getWorldPosition(this.lensEye)); });
     this.shell = new AuraShell(scene); this.coat = new LacquerCoat(scene);
     this.power = new PowerUp(scene, this.kit);
-    this.infinity = new KuonVoid(scene); this.ifrit = new FeuBleu(scene); this.emperor = new LimbFire(scene, KAGUTSUCHI); this.setsuna = new Setsuna(scene); this.room = new OperatingTheatre(scene);
+    this.infinity = new KuonVoid(scene); this.ifrit = new FeuBleu(scene); this.emperor = new LimbFire(scene, ALL_ABLAZE); this.setsuna = new Setsuna(scene); this.room = new ScrubbedIn(scene);
     this.flames.count = 0; this.flames.setColorAt(0, new THREE.Color(0xffffff));
     this.flames.frustumCulled = false; this.flames.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.flames.name = 'awakening-aura';

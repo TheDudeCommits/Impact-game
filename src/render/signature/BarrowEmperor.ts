@@ -19,7 +19,7 @@ const DARK = STAGE.dark, QUAKE = STAGE.quake;
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const B = BARROW_EMPEROR_BEATS;
 type Confirm = { actor: string; target: string; seq: number; final: boolean; floor: number; endpoint: THREE.Vector3 };
-/** 'Wrecker\'s Haul': the vortex a Sinkhole opens where it lands, for as long as it pulls (seconds). */
+/** 'Wrecker\'s Haul': the vortex a Tar Pit opens where it lands, for as long as it pulls (seconds). */
 type Vortex = { at: THREE.Vector3; born: number; size: number; live: boolean };
 const VORTEX_LIFE = 1.15;
 
@@ -64,7 +64,7 @@ export class BarrowEmperor {
     if (event.slot === 'heavy') { this.quake(point, ground, dir, floor, event.branch ? .8 : 1, t); return; }
     if (event.slot === 'special') {
       if (event.branch === 'airSpecial') { st.burst(point, DARK, 2, t, { floor }); st.shock(ground, QUAKE, 4.5, t, .45); st.scar(ground, DARK, 3.4, t, 1.8); return; }
-      // Sinkhole: where it lands the darkness opens over the floor, turning, a column of black flame over it.
+      // Tar Pit: where it lands the darkness opens over the floor, turning, a column of black flame over it.
       const big = event.branch ? .65 : 1;
       st.burst(point, DARK, 1.9 * big, t, { dir, floor });
       st.scar(ground, DARK, 4.2 * big, t, 1.6);
@@ -121,13 +121,13 @@ export class BarrowEmperor {
         st.tongue(this.p.copy(strike).addScaledVector(heading, -.3).setY(strike.y + .12), this.a.copy(heading).multiplyScalar(-1).setY(.6).normalize(), .34, .5 + .5 * k, DARK, k, seed);
         st.light(strike, 2.2, DARK, .2 * k);
       } else if (s.action === 'heavy') {
-        // The Stolen Quake: the quake's bubble shaking on the fist through the wind-up; at the blow the air cracks at the
+        // The Wreck Quake: the quake's bubble shaking on the fist through the wind-up; at the blow the air cracks at the
         // fist's own reach whether or not it lands (what it does to a body is the hit's: `handle`).
         const contact = s.branch ? s.actionDuration * .5 : .6;
         if (elapsed < contact) { const k = clamp(elapsed / contact); st.bubble(strike, (.26 + .3 * k) * boost, QUAKE, .45 + .55 * k); st.charge(strike, QUAKE, .2, k, seed); }
         else if (elapsed < contact + .22) st.cracks(strike, heading, 1.3 * boost, QUAKE, 1, seed, 1 - (elapsed - contact) / .22);
       } else if (s.action === 'special' && !s.branch && elapsed < B.release) {
-        // Sinkhole's wind-up: the darkness pours out over the floor round him and gathers in his hand; the room dims.
+        // Tar Pit's wind-up: the darkness pours out over the floor round him and gathers in his hand; the room dims.
         const k = clamp(elapsed / B.release);
         // (Never dimmed: darkness is read against a lit floor.)
         st.pool(this.p.copy(feet), 2.4 + 1.5 * k, DARK, k, seed);
@@ -136,7 +136,7 @@ export class BarrowEmperor {
         st.charge(strike, DARK, .32, clamp(elapsed / .52), seed);
       }
     }
-    // Sinkhole in flight: ONE authoritative projectile, a black ball dragging black flame, the floor swallowed under it.
+    // Tar Pit in flight: ONE authoritative projectile, a black ball dragging black flame, the floor swallowed under it.
     for (const flight of flights.values()) {
       if (!isBarrowEmperor(flight.fighter) || flight.slot !== 'special' || flight.branch || !flight.released) continue;
       const seed = (flight.since ?? 0) * 3.3, floor = (flight.actorId ? fighters.get(flight.actorId)?.group.position.y : undefined) ?? flight.position.y - 1.2;
@@ -150,7 +150,7 @@ export class BarrowEmperor {
         st.streak(this.b.copy(flight.position).addScaledVector(this.a, r), this.p.copy(flight.position).addScaledVector(this.a, Math.max(.9, r - .9 - phase)), .07, DARK.main, 1.3 * Math.sin(Math.PI * phase));
       }
     }
-    // Wrecker's Haul: where a Sinkhole landed, what is near is drawn in over the floor, turning, to the black ball over it.
+    // Wrecker's Haul: where a Tar Pit landed, what is near is drawn in over the floor, turning, to the black ball over it.
     for (const vortex of this.vortices) {
       if (!vortex.live) continue;
       const age = time - vortex.born;
@@ -190,7 +190,7 @@ export class BarrowEmperor {
     if (g > .8) st.speed(.5 * (g - .8) / .2, c.actor, c.target);
   }
 
-  /** BOTTOMLESS's entrance, as it was laid out (the darkness in his left hand, then the quake in his right, then
+  /** GORGED's entrance, as it was laid out (the darkness in his left hand, then the quake in his right, then
    *  a ring at his feet), in the stage's parts. */
   private awakening(f: Fighter, elapsed: number) {
     const st = this.stage, fade = clamp(elapsed / .36) * clamp((.9 - elapsed) / .10);

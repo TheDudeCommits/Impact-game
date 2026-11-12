@@ -5,12 +5,12 @@ export const FORM_BUSTS: ReadonlySet<FighterId> = new Set<FighterId>([
   'konta',          // Konta, HOMURA: a white flame-tailed fox
   'gummy',           // Gummy, SUNRISE: white-gold hair, gold and white clothes
   'nigo',          // Nigo, NIGHTFALL: a long black-and-ember mane, a bone mask
-  'kenzo',            // Kenzo, RAKSHASA: the ram skull, ash-dark skin, black rags
-  'gaunt',            // Gaunt, HOUND ARMOR: black wolf-helmed plate
+  'kenzo',            // Kenzo, DUNE ONI: the ram skull, ash-dark skin, black rags
+  'gaunt',            // Gaunt, GRAVE PLATE: black wolf-helmed plate
   'gorai',           // Gorai, STORM WYRM: a violet dragon
-  'jinlin',   // Emperor Jinlin, BLACK TIDE: gold armour gone black and silver
+  'jinlin',   // Jinlin, ABYSSAL TIDE: gold armour gone black and silver
   'shiun',           // Shiun, PALE SERAPH: moth wings, a long mane, cracked pale skin
-  'magatsu',          // Magatsu, CALAMITY KING: a red and white mane, a mask
+  'magatsu',          // Magatsu, CALAMITY RISEN: a red and white mane, a mask
   'vesper',        // Vesper, BLACK VESPERS: black hair, black wings and armour
   'gaku',             // Gaku, KOMAINU: a wild long mane, dark skin, a torn top
   'rook',     // Rook, HOLLOW CROWN: a crowned, beaked black helm and armour

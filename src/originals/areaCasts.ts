@@ -12,7 +12,7 @@ export const AREA_CASTS: Partial<Record<FighterId, { readonly base?: AreaCast; r
   oro: { base: { clip: 'Knife Rain Cast', seconds: 2.8 } },
   murex: { base: { clip: 'Core Flare Cast', seconds: 2.85 } },
   nigo: { base: { clip: 'Ash Brand Cast', seconds: 1.95 }, form: { clip: 'Ash Brand Cast', seconds: 1.95 } },
-  shirokane: { base: { clip: 'Great Dust Fall Cast', seconds: 1.85 } },
+  shirokane: { base: { clip: 'Dust Curtain Cast', seconds: 1.85 } },
   oyashio: { base: { clip: 'Riptide Overthrow Cast', seconds: 2.0 } },
   yodaka: { base: { clip: 'Fire Owl Cast', seconds: 3.0 } },
   mikage: { base: { clip: 'Catwalk Cast', seconds: 1.6 } },
@@ -22,7 +22,7 @@ export const AREA_CASTS: Partial<Record<FighterId, { readonly base?: AreaCast; r
   suzuran: { base: { clip: 'Bell Garden Cast', seconds: 1.7 } },
   tobari: { base: { clip: 'Great Ember Cast', seconds: 2.0 }, form: { clip: 'Great Ember Cast', seconds: 2.0 } },
   torsion: { base: { clip: 'Twist-Off Cast', seconds: 2.4 } },
-  wataame: { base: { clip: 'Lie In Cast', seconds: 1.75 } },
+  wataame: { base: { clip: 'Day Off Cast', seconds: 1.75 } },
   'wuming': { base: { clip: 'Lotus Verdict Cast', seconds: 1.85 } },
   'rook': { form: { clip: 'Grave Legion Cast', seconds: 1.85 } },
 };

@@ -240,8 +240,8 @@ const STAGES: Record<FighterId, readonly [Blow, Blow, Blow, Blow]> = {
   imago: ['beast', 'fist', 'kick', 'beast'],
   // Wuming's string is a punch, a spinning kick and the flying kick that throws them up.
   'wuming': ['fist', 'fist', 'kick', 'kick'],
-  // Jirenga's: the one-two, the hook, the flurry and the heel brought down. Jinlin's: the finger, then his tail and his hand.
-  jirenga: ['fist', 'fist', 'fist', 'kick'],
+  // Banjaku's: the one-two, the hook, the flurry and the heel brought down. Jinlin's: the finger, then his tail and his hand.
+  banjaku: ['fist', 'fist', 'fist', 'kick'],
   'jinlin': ['fist', 'beast', 'fist', 'beast'],
   // Gohaku's: the punch, the jab, the flying kick, and both fists brought down.
   'gohaku': ['fist', 'fist', 'kick', 'fist'],
@@ -274,10 +274,10 @@ export const AIR_BLOWS: Readonly<Record<string, string>> = {
   'Vigil Ascent': 'blade', 'Aerial Reverse Quill': 'blade', 'Descending Wing': 'blade',
   'Gust Strike': 'kick', 'Twin Knee': 'kick', 'Pack Flurry': 'kick',
   'Ghost Step Strike': 'fist', 'Wreckfall Crash': 'fist',
-  'Shikou Palm': 'fist', 'Iron Sledge': 'axe',
+  'Throne Palm': 'fist', 'Iron Sledge': 'axe',
   'Spindrift Jab': 'rubber', 'Whitecap Punch': 'rubber',
   'Fouette': 'kick', 'Mille-Feuille': 'kick',
-  'Rivet Breaker': 'spirit', 'Gan Gan! Rush': 'spirit',
+  'Rivet Breaker': 'spirit', 'Hammer! Rush': 'spirit',
   'Kneel! Kneel!': 'spirit', 'Clockwork Kick': 'kick',
   // Round 4b (COMBAT): every Vol.1 fighter's air string, stage 0 included (its own blow now, never the jab's).
   'Flying Kick': 'kick', 'Sky Elbow': 'fist', 'Breakwater Slam': 'rubber', 'Emince': 'kick',
@@ -585,7 +585,7 @@ const last = (c: Ctx) => c.move.contacts[c.move.contacts.length - 1];
  *
  *  The finisher lands on every victim the stop caught in the same tick (the
  *  resume blast), one hit event each. So a hit plans only that victim's body
- *  blow; anything that happens once - the steamroller crashing down, drawn
+ *  blow; anything that happens once - the hour of ruin crashing down, drawn
  *  whether or not anybody is under it - is scheduled here, from the cast. */
 function timeStop(c: Ctx, extra: CueLayer[] = []): CueLayer[] {
   const stop = c.move.timeStop!, at = c.move.contacts[stop.contact], resume = at + stop.duration;
@@ -663,7 +663,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   strappado:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-cut-2',.2,c0(c))],special:c=>[onBeat('fx-clock-hand-knives-2',.24,c0(c)),onBeat('fx-cut-2',.18,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-stretch-2',.12,c0(c))]},
   unari:{heavy:c=>[...meleeSwings(c),onBeat('fx-snap-1',.21,c0(c))],special:c=>[onBeat('fx-clock-hand-knives-2',.27,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-stretch-2',.12,c0(c))]},
   // Left-hand darkness draws inward; right-hand quake strikes with a dry fracture.
-  barrow:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-defib-shock',.22,c0(c))],special:c=>[bed('fx-gather',.12,.04,c0(c)),onBeat('fx-theatre-open',.25,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-theatre-open',.15,c0(c))]},
+  barrow:{light:c=>meleeSwings(c),heavy:c=>[...meleeSwings(c),onBeat('fx-defib-shock',.22,c0(c))],special:c=>[bed('fx-gather',.12,.04,c0(c)),onBeat('fx-surgery-open',.25,c0(c))],ultimate:c=>[...meleeSwings(c),onBeat('fx-surgery-open',.15,c0(c))]},
   kusushi:{heavy:c=>[...meleeSwings(c),onBeat('fx-hit-finisher-1',.22,c0(c))],special:c=>[...meleeSwings(c),onBeat('fx-energy-hit-1',.19,c0(c))]},
   hakushi:{heavy:c=>[bed('fx-gather',.12,.03,c0(c)),onBeat('fx-energy-hit-1',.22,c0(c))],special:c=>[bed('fx-fire-bed',.11,.16,c0(c)),onBeat('fx-fire-whoosh-2',.24,c0(c))]},
   suzuran:{heavy:c=>[...meleeSwings(c),onBeat('fx-energy-hit-1',.14,c0(c))],special:c=>[bed('fx-gather',.12,.03,c0(c)),onBeat('fx-wind-blast',.24,c0(c))]},
@@ -730,21 +730,21 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     ultimate: c => [bed('fx-ki-charge-big', .22, 0, c0(c))],
   },
   konta: {
-    // Senpugan: the sphere whirs in the palm from .06, then he drives it in.
+    // Kazeyose: the sphere whirs in the palm from .06, then he drives it in.
     heavy: c => c.awakened
       ? [onBeat(pick(FAMILY.beastSwipe, c.seed), .6, c0(c), 'cast', .86)]
-      : [bed('fx-whirlsphere', .3, .06, c0(c) + .06), onBeat(pick(FAMILY.heavy, c.seed), .36, c0(c))],
+      : [bed('fx-kazeyose', .3, .06, c0(c) + .06), onBeat(pick(FAMILY.heavy, c.seed), .36, c0(c))],
     // Galewheel: its recorded sound is kept byte for byte on the voice
     // bus; this only adds the wind blades whirring under it and the throw.
     special: c => c.awakened
       ? [bed('fx-ki-charge', .16, 0, c0(c)), onBeat('fx-ki-launch', .5, c0(c))]
-      : [bed('fx-whirlsphere', .14, .05, c0(c)), onBeat('fx-wind-blast', .3, c0(c) + .05)],
+      : [bed('fx-kazeyose', .14, .05, c0(c)), onBeat('fx-wind-blast', .3, c0(c) + .05)],
     ultimate: c => [bed('fx-ki-charge-big', .24, 0, c0(c)), onBeat('fx-ki-launch', .55, c0(c)), onBeat('fx-swing-huge', .34, c0(c) + .06),
       ...(c.awakened ? [{ cue: 'fx-beast-roar' as const, gain: .42, phase: 'cast' as const }] : [])],
   },
   shiden: {
-    // Shrike Bolt: a shrieking bolt in the left hand from the first frame.
-    heavy: c => [{ cue: pick(FAMILY.zap, c.seed), gain: .3, phase: 'cast' }, bed('fx-shrike-bolt', .26, .02, c0(c))],
+    // Storm Talon: a shrieking bolt in the left hand from the first frame.
+    heavy: c => [{ cue: pick(FAMILY.zap, c.seed), gain: .3, phase: 'cast' }, bed('fx-storm-talon', .26, .02, c0(c))],
     // Black Pyre: black flames catch on the target at .85 and burn until 3.0.
     special: c => [onBeat('fx-fire-ignite', .42, c0(c), 'cast', .7),
       { cue: 'fx-black-flame', gain: .34, delay: c0(c), duration: round(c.move.duration - c0(c)), loop: true, phase: 'cast' }],
@@ -755,13 +755,13 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
       bed('fx-electric-bed', .2, .1, c0(c)), onBeat('fx-lightning', .6, c0(c)), onBeat('fx-slash-wave', .35, c0(c) + .02)],
   },
   shirokane: {
-    heavy: c => [{ cue: pick(FAMILY.zap, c.seed), gain: .3, phase: 'cast' }, bed('fx-shrike-bolt', .26, .02, c0(c))],
-    // Static Scarecrow: the Sickle Bolt swells, then a clone bolts out.
-    special: c => [bed('fx-shrike-bolt', .28, 0, c0(c)), onBeat(pick(FAMILY.poof, c.seed), .34, c0(c)),
+    heavy: c => [{ cue: pick(FAMILY.zap, c.seed), gain: .3, phase: 'cast' }, bed('fx-storm-talon', .26, .02, c0(c))],
+    // Static Decoy: the Sickle Bolt swells, then a clone bolts out.
+    special: c => [bed('fx-storm-talon', .28, 0, c0(c)), onBeat(pick(FAMILY.poof, c.seed), .34, c0(c)),
       onBeat(pick(FAMILY.zip, c.seed), .38, c0(c) + .05), onBeat(pick(FAMILY.zap, c.seed), .3, c0(c) + .06)],
-    // VOID SICKLE: the spiral opens beside him; the blade crackles as he closes.
+    // SICKLE REAPER: the spiral opens beside him; the blade crackles as he closes.
     // Round 3d: the Sickle Bolt driven in is the opener, at .48.
-    ultimate: c => [{ cue: 'fx-void-sickle', gain: .45, delay: .05, phase: 'cast' }, bed('fx-shrike-bolt', .3, .02, c0(c)),
+    ultimate: c => [{ cue: 'fx-sickle-reaper', gain: .45, delay: .05, phase: 'cast' }, bed('fx-storm-talon', .3, .02, c0(c)),
       onBeat(pick(FAMILY.kunai, c.seed), .46, c0(c))],
   },
   gummy: {
@@ -773,7 +773,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
       onBeat(pick(FAMILY.stretch, c.seed), .32, c0(c) - .06, 'cast', 1.15),
       ...c.move.contacts.slice(0, -1).map((time, i) => onBeat(pick(FAMILY.snap, c.seed, i), .2, time, 'cast', 1.2)),
       onBeat(pick(FAMILY.heavy, c.seed), .46, last(c))],
-    // The GRAND TIDE. The opener is a Rogue Wave at .5; SUNRISE, the fist
+    // The SPRING TIDE. The opener is a Rogue Wave at .5; SUNRISE, the fist
     // blown up over the dazed victim and brought down are the cinematic
     // (confirmLayers).
     ultimate: c => [onBeat(pick(FAMILY.stretch, c.seed), .4, c0(c) - .1, 'cast', .7), onBeat('fx-swing-huge', .5, c0(c))],
@@ -786,10 +786,10 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     heavy: c => [{ cue: 'fx-draw', gain: .36, delay: round(Math.max(0, c0(c) - .42)), phase: 'cast' },
       onBeat(pick(FAMILY.zip, c.seed), .4, c0(c) - .08), onBeat(pick(FAMILY.katana, c.seed), .52, c0(c)),
       onBeat(pick(FAMILY.katana, c.seed, 1), .36, c0(c) + .02), { cue: 'fx-sheathe', gain: .5, delay: round(c0(c) + .38), phase: 'cast' }],
-    // thousand mile eagle: wind wound around him, then the flying slash.
+    // eagles reach: wind wound around him, then the flying slash.
     special: c => [bed('fx-wind-swirl', .24, .05, c0(c)), onBeat('fx-slash-wave', .55, c0(c)),
       onBeat(pick(FAMILY.katana, c.seed), .36, c0(c) - .02)],
-    // Dust Sea Sundered: nine blades sing, and cut. Round 3d: the RAKSHASA rising
+    // Dust Sea Sundered: nine blades sing, and cut. Round 3d: the DUNE ONI rising
     // behind him is the cinematic's (SIGNATURE_CONFIRMS), as it is drawn.
     ultimate: c => [{ cue: 'fx-sword-ring', gain: .3, delay: round(Math.max(0, c0(c) - .35)), phase: 'cast' },
       onBeat(pick(FAMILY.katana, c.seed), .46, c0(c)), onBeat(pick(FAMILY.katana, c.seed, 1), .4, c0(c) + .02),
@@ -825,19 +825,19 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   ward: {
     // Stat Shot: a dash and a thrust.
     heavy: c => [onBeat(pick(FAMILY.zip, c.seed), .38, c0(c) - .2), onBeat(pick(FAMILY.nodachi, c.seed), .5, c0(c))],
-    // Cautery Blade: a THEATRE, an energy blade held from .1, and a thrust.
-    special: c => [{ cue: 'fx-theatre-open', gain: .4, phase: 'cast' }, bed('fx-electric-bed', .14, .1, c0(c)),
+    // Cautery Blade: a SURGERY, an energy blade held from .1, and a thrust.
+    special: c => [{ cue: 'fx-surgery-open', gain: .4, phase: 'cast' }, bed('fx-electric-bed', .14, .1, c0(c)),
       onBeat(pick(FAMILY.zip, c.seed), .34, c0(c) - .06)],
-    // THEATRE: Flatline. The THEATRE opens and Crossmatch puts his palm on the
+    // Flatline. The SURGERY opens and Crossmatch puts his palm on the
     // target - the opener, at .45 (round 3d); the shock pulsing through them
     // and the full discharge are the cinematic.
-    ultimate: c => [{ cue: 'fx-theatre-open', gain: .5, phase: 'cast' }, onBeat('fx-crossmatch', .46, c0(c) - .08),
+    ultimate: c => [{ cue: 'fx-surgery-open', gain: .5, phase: 'cast' }, onBeat('fx-crossmatch', .46, c0(c) - .08),
       bed('fx-electric-bed', .2, .15, c0(c))],
   },
   koko: {
-    // Needle Finger: the spirit, and a finger shot across the room.
+    // Iron Nail: the spirit, and a finger shot across the room.
     heavy: c => [{ cue: 'fx-spirit', gain: .34, phase: 'cast' }, onBeat(pick(FAMILY.zip, c.seed), .44, c0(c) + .02)],
-    // Gan Gan!: the spirit's wall of fists from the first blow (or .8, where
+    // Hammer!: the spirit's wall of fists from the first blow (or .8, where
     // that is later) to past the last, under the voice.
     special: c => [{ cue: 'fx-spirit', gain: .34, phase: 'cast' }, ...barrageBed(Math.min(.8, c0(c)), last(c) + .3, .36)],
     // Round 3d: the stop is the opener; the rest is the cinematic.
@@ -927,8 +927,8 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   shiun: {
     // GLASS LANCES: the light gathers, and the wing blades go out.
     special: c => [{ cue: 'fx-gather', gain: .4, phase: 'cast' }, onBeat('fx-clock-hand-knives-1', .5, c0(c)), onBeat('fx-zap-2', .36, c0(c) + .02)],
-    // BLACK CONFESSIONAL: the reliquary closing round them is the opener; the spears are the cinematic.
-    ultimate: c => [{ cue: 'fx-domain', gain: .38, phase: 'cast' }, onBeat('fx-theatre-open', .5, c0(c))],
+    // FERMATA: the reliquary closing round them is the opener; the spears are the cinematic.
+    ultimate: c => [{ cue: 'fx-domain', gain: .38, phase: 'cast' }, onBeat('fx-surgery-open', .5, c0(c))],
   },
   magatsu: {
     // Rend: Thousand Cuts: the sweep, and the slashes it throws.
@@ -939,7 +939,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   vesper: {
     // Pale Lance (4 October): the arm drawn back and the spear hurled - the air torn as it leaves his hand.
     special: c => [onBeat(pick(FAMILY.heavy, c.seed), .44, c0(c) - .04, 'cast', .85), onBeat(pick(FAMILY.zip, c.seed), .38, c0(c))],
-    // The Offering: the thrust is the opener; the black sun and the sabre coming down out of it are the cinematic.
+    // Evensong: the thrust is the opener; the black sun and the sabre coming down out of it are the cinematic.
     ultimate: c => [{ cue: 'fx-domain', gain: .32, phase: 'cast' }, onBeat(pick(FAMILY.katana, c.seed), .46, c0(c))],
   },
   imago: {
@@ -949,7 +949,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     ultimate: c => [{ cue: 'fx-gather', gain: .3, phase: 'cast' }, onBeat(pick(FAMILY.heavy, c.seed), .46, c0(c))],
   },
   'wuming': {
-    // The Petalfall Blade: Cloudstep as Taisei's heavy has it - gone in a 'shun' at the sign, back
+    // The Lotus Edge: Cloudstep as Taisei's heavy has it - gone in a 'shun' at the sign, back
     // behind them in a zip and pop - then the ki drawn out into a blade, and the cut. Any other heavy is swung.
     heavy: c => {
       const blink = teleportOf(c.move);
@@ -961,7 +961,7 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     // Heaven's Harvest: the flying kick of his rush is the opener; the scythe drawn and brought down is the cinematic.
     ultimate: c => [onBeat(pick(FAMILY.kick, c.seed), .46, c0(c)), onBeat(pick(FAMILY.heavy, c.seed), .3, c0(c) - .02)],
   },
-  jirenga: {
+  banjaku: {
     // Mountain-Felling Fist: the hook out of his rush is the opener; the leap and the dive are the cinematic.
     ultimate: c => [onBeat(pick(FAMILY.heavy, c.seed), .46, c0(c) - .02), onBeat(pick(FAMILY.jab, c.seed), .36, c0(c) - .05)],
   },
@@ -980,10 +980,10 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
   sekka: {
     // Avalanche: the fists one after another, and the last one heavy.
     heavy: c => [...barrageBed(Math.max(0, c0(c) - .3), c0(c), .3), onBeat(pick(FAMILY.heavy, c.seed), .46, c0(c))],
-    // Shatter Art: Frost Gale (4 October): the straight thrown at the air, and the shock it sends on. (The Compass
+    // Frost Gale (4 October): the straight thrown at the air, and the shock it sends on. (The Compass
     // Needle's sound is his stun's now: ENDER_CASTS.)
     special: c => [onBeat('fx-swing-huge', .44, c0(c) - .04), onBeat(pick(FAMILY.jab, c.seed), .42, c0(c)), onBeat('fx-wind-blast', .3, c0(c) + .02)],
-    // Shatter Art: Black Blizzard: the one-two is the opener; the dash and the blow are the cinematic.
+    // Black Blizzard: the one-two is the opener; the dash and the blow are the cinematic.
     ultimate: c => [onBeat(pick(FAMILY.jab, c.seed), .46, c0(c))],
   },
   ippon: {
@@ -1006,19 +1006,19 @@ const SIGNATURE_CASTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Plan
     // Black Pyre: the black flames catch on the target as Shiden's do, and burn to the end of the move.
     special: c => [onBeat('fx-fire-ignite', .42, c0(c), 'cast', .7),
       { cue: 'fx-black-flame', gain: .34, delay: c0(c), duration: round(c.move.duration - c0(c)), loop: true, phase: 'cast' }],
-    // Red Moon Reverie: the flick of the kunai is the opener; the illusion and what it does to them are the cinematic.
+    // Crow's Nightmare: the flick of the kunai is the opener; the illusion and what it does to them are the cinematic.
     ultimate: c => [onBeat(pick(FAMILY.kunai, c.seed), .46, c0(c))],
   },
   akagane: {
-    // The Cinder Art: Burning Sea: the fire roaring out of him from the first burn to the last.
+    // The Burning Sea: the fire roaring out of him from the first burn to the last.
     special: c => [bed('fx-fire-bed', .22, Math.max(0, c0(c) - .15), last(c)), onBeat('fx-fire-roar', .5, c0(c))],
-    // Heaven's Anvil: the fan's slash is the opener; the meteor is the cinematic.
+    // Copper Star: the fan's slash is the opener; the meteor is the cinematic.
     ultimate: c => [onBeat(pick(FAMILY.heavy, c.seed), .46, c0(c))],
   },
   asahi: {
     // Comet Throw (4 October): the katana hurled, spinning.
     heavy: c => [onBeat(pick(FAMILY.katana, c.seed), .44, c0(c) - .02), onBeat(pick(FAMILY.zip, c.seed), .34, c0(c))],
-    // Lantern Rite: First Light: the thrust is the opener; the fire and the cut are the cinematic.
+    // First Light: the thrust is the opener; the fire and the cut are the cinematic.
     ultimate: c => [onBeat(pick(FAMILY.katana, c.seed), .46, c0(c))],
   },
   levin: {
@@ -1152,9 +1152,9 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
   // Held in the darkness; the NIGHTFALL cut is the finisher.
   nigo: c => [held('fx-ki-charge-big', .16, c0(c) + .1, last(c), .7), onBeat(pick(FAMILY.cleaver, c.seed), .5, last(c)),
     onBeat('fx-swing-huge', .46, last(c) + .02), onBeat('fx-nightfang', .4, last(c) + .03)],
-  // The lightning surges through them; VOID SICKLE tears them away.
-  shirokane: c => [held('fx-shrike-bolt', .24, c0(c) + .1, last(c)), ...middle(c).map((time, i) => onBeat(pick(FAMILY.zap, c.seed, i), .4, time)),
-    { cue: 'fx-void-sickle', gain: .5, delay: round(last(c) - .45), phase: 'cast' }, onBeat('fx-lightning', .5, last(c))],
+  // The lightning surges through them; SICKLE REAPER tears them away.
+  shirokane: c => [held('fx-storm-talon', .24, c0(c) + .1, last(c)), ...middle(c).map((time, i) => onBeat(pick(FAMILY.zap, c.seed, i), .4, time)),
+    { cue: 'fx-sickle-reaper', gain: .5, delay: round(last(c) - .45), phase: 'cast' }, onBeat('fx-lightning', .5, last(c))],
   // The arrow's lightning drives through them, and bursts.
   shiden: c => [held('fx-electric-bed', .2, c0(c) + .1, last(c)), ...middle(c).map((time, i) => onBeat(pick(FAMILY.zap, c.seed, i), .42, time)),
     onBeat('fx-lightning', .62, last(c) - .02)],
@@ -1162,15 +1162,15 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
   kosho: c => [held('fx-fire-bed', .24, c0(c) + .1, last(c)),
     ...middle(c).flatMap((time, i) => [onBeat(pick(FAMILY.kick, c.seed, i), .46, time), onBeat(pick(FAMILY.fireWhoosh, c.seed, i), .3, time)]),
     onBeat(pick(FAMILY.heavy, c.seed), .52, last(c)), onBeat('fx-fire-roar', .56, last(c) + .02)],
-  // Round 4b (GUMMY): the GRAND TIDE - a puff of cloud as he goes SUNRISE, the fist blown up over the dazed victim
+  // Round 4b (GUMMY): the SPRING TIDE - a puff of cloud as he goes SUNRISE, the fist blown up over the dazed victim
   // with Crimson Command crackling round it, brought down, and the floor going under it.
   gummy: c => [{ cue: 'fx-poof-1', gain: .4, delay: round(c0(c) + .05), phase: 'cast' },
     { cue: 'fx-rubber-swell', gain: .46, delay: round(Math.max(c0(c) + .3, last(c) - 1.5)), phase: 'cast' },
     held('fx-electric-bed', .16, c0(c) + .4, last(c) - .05),
     onBeat(pick(FAMILY.stretch, c.seed), .42, last(c) - .22, 'cast', .6), onBeat('fx-swing-huge', .62, last(c)),
     onBeat('fx-explosion-huge', .55, last(c) + .02), { cue: 'fx-poof-2', gain: .32, delay: round(last(c) + .35), phase: 'cast' }],
-  // The RAKSHASA rising behind him, two more cuts of the nine blades, and the pass-through.
-  kenzo: c => [{ cue: 'fx-rakshasa', gain: .45, delay: round(c0(c) + .05), phase: 'cast' }, ...middle(c).flatMap((time, i) => swing(c, 'blade', time, true, i + 1)),
+  // The DUNE ONI rising behind him, two more cuts of the nine blades, and the pass-through.
+  kenzo: c => [{ cue: 'fx-dune-oni', gain: .45, delay: round(c0(c) + .05), phase: 'cast' }, ...middle(c).flatMap((time, i) => swing(c, 'blade', time, true, i + 1)),
     onBeat('fx-swing-huge', .4, last(c)), onBeat(pick(FAMILY.katana, c.seed), .5, last(c)), onBeat(pick(FAMILY.katana, c.seed, 1), .42, last(c) + .02),
     onBeat(pick(FAMILY.katana, c.seed, 2), .38, last(c) + .04), { cue: 'fx-sheathe', gain: .46, delay: round(last(c) + .45), phase: 'cast' }],
   // The shock pulsing through them, and the full discharge.
@@ -1187,10 +1187,10 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
   koko: c => timeStopCinematic(c, [onBeat(pick(FAMILY.heavy, c.seed), .5, last(c)),
     // The overnight audio pass: Iron Spirit's last GAN breaks in the mids too, under the cry said on it.
     onBeat('fx-explosion-1', .46, last(c))]),
-  // ... and the steamroller dropped out of the sky as time resumes: it
+  // ... and the hour of ruin dropped out of the sky as time resumes: it
   // falls for the half second before the finisher and crashes on it.
   // (The overnight audio pass: the crash a little under the line said on it, which it covered.)
-  oro: c => timeStopCinematic(c, [onBeat('fx-sig-lord-oro-death-knell-fall', .55, last(c) - .02), onBeat('fx-steamroller', .58, last(c))]),
+  oro: c => timeStopCinematic(c, [onBeat('fx-sig-lord-oro-hour-of-ruin-fall', .55, last(c) - .02), onBeat('fx-hour-of-ruin', .58, last(c))]),
   kuon: c => {
     const stop = c.move.timeStop!, close = c.move.contacts[stop.contact] + stop.duration;
     const tour = c.move.contacts.slice(stop.contact + 1, -1);
@@ -1210,12 +1210,12 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
   // HORIZON SUNDER: one cut, and the sky splitting along it.
   dorado: c => [onBeat('fx-swing-huge', .5, last(c) - .05), onBeat('fx-slash-wave', .62, last(c)), onBeat('fx-lightning', .46, last(c) + .02),
     onBeat('fx-explosion-huge', .4, last(c) + .06)],
-  // BLACK CONFESSIONAL: the reliquary humming shut, then the spears.
+  // FERMATA: the reliquary humming shut, then the spears.
   shiun: c => [held('fx-electric-bed', .2, c0(c) + .1, last(c)), onBeat('fx-dark-spark', .55, last(c)), onBeat('fx-explosion-huge', .42, last(c) + .04)],
   // Open: Calamity Pyre: the fire drawn into a bow, and the arrow loosed.
   magatsu: c => [held('fx-fire-bed', .22, c0(c) + .1, last(c)), onBeat('fx-fire-roar', .5, last(c) - .08), onBeat('fx-fire-burst', .55, last(c)),
     onBeat('fx-explosion-huge', .45, last(c) + .05)],
-  // The Offering: the dark humming round them as the sun goes out, then the sabre down out of it.
+  // Evensong: the dark humming round them as the sun goes out, then the sabre down out of it.
   vesper: c => [held('fx-electric-bed', .2, c0(c) + .1, last(c)), onBeat('fx-swing-huge', .5, last(c) - .05), onBeat('fx-dark-spark', .56, last(c)),
     onBeat('fx-explosion-huge', .42, last(c) + .05)],
   // The Final Molt: a blow out of the combo, and both fists down into the floor through them.
@@ -1227,23 +1227,23 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
   'wuming': c => [held('fx-purple-charge', .24, c0(c) + .1, last(c)), onBeat('fx-swing-huge', .5, last(c) - .05), onBeat('fx-slash-wave', .6, last(c)),
     onBeat('fx-explosion-huge', .45, last(c) + .05)],
   // Mountain-Felling Fist: his power building in the raised fist through the leap, then the dive and the blow through them.
-  jirenga: c => [held('fx-ki-charge-big', .22, c0(c) + .1, last(c)), onBeat('fx-swing-huge', .5, last(c) - .06), onBeat(pick(FAMILY.finisher, c.seed), .55, last(c)),
+  banjaku: c => [held('fx-ki-charge-big', .22, c0(c) + .1, last(c)), onBeat('fx-swing-huge', .5, last(c) - .06), onBeat(pick(FAMILY.finisher, c.seed), .55, last(c)),
     onBeat('fx-explosion-huge', .5, last(c) + .04)],
   // The Sun-Seizing Spiral: the beam boring on through them, its spiral whistling round it, and the burst out behind.
   'gohaku': c => [held('fx-beam-big', .42, c0(c) + .3, last(c) + .1), held('fx-wind-swirl', .18, c0(c) + .3, last(c)),
     onBeat('fx-explosion-huge', .46, last(c) + .02)],
-  // Shatter Art: Black Blizzard: the dash through them, and everything he has in one blow.
+  // Black Blizzard: the dash through them, and everything he has in one blow.
   sekka: c => [onBeat('fx-swing-huge', .5, last(c) - .06), onBeat(pick(FAMILY.finisher, c.seed), .6, last(c)), onBeat('fx-explosion-huge', .55, last(c) + .03)],
   // The Clean Slate: the air drawn in as he settles, then one punch, and everything in front of him goes.
   ippon: c => [held('fx-wind-swirl', .2, c0(c) + .25, last(c)), onBeat('fx-swing-huge', .52, last(c) - .06), onBeat(pick(FAMILY.finisher, c.seed), .6, last(c)),
     onBeat('fx-explosion-huge', .58, last(c) + .03)],
-  // Heaven's Anvil: the meteor's rumble as it comes down, and the crater.
+  // Copper Star: the meteor's rumble as it comes down, and the crater.
   akagane: c => [held('fx-ki-charge-big', .2, c0(c) + .1, last(c), .5), onBeat('fx-swing-huge', .4, last(c) - .1), onBeat('fx-explosion-huge', .64, last(c)),
     onBeat('fx-land-heavy', .5, last(c) + .02),
     // The overnight audio pass: the meteor's crash in the mids, and its burning (both under 5% in the speech band, under
     // the "dō suru" said on it).
     onBeat('fx-explosion-2', .4, last(c)), onBeat('fx-fire-burst', .44, last(c) + .02)],
-  // Lantern Rite: First Light: the blade burning through the leap, and the cut of fire.
+  // First Light: the blade burning through the leap, and the cut of fire.
   asahi: c => [held('fx-fire-bed', .24, c0(c) + .1, last(c)), onBeat('fx-fire-roar', .5, last(c) - .05), onBeat(pick(FAMILY.katana, c.seed), .5, last(c)),
     onBeat('fx-explosion-huge', .42, last(c) + .04)],
   // The SOJI: Clean Sweep: both blades whirling through them, and the last pass.
@@ -1257,7 +1257,7 @@ const SIGNATURE_CONFIRMS: Partial<Record<FighterId, Plan>> = {
     onBeat('fx-explosion-huge', .58, last(c) + .03),
     // The overnight audio pass: the Rock's blast in the mids and the floor under it (under the "gū" said on it).
     onBeat('fx-explosion-2', .42, last(c) + .01), onBeat('fx-land-heavy', .5, last(c) + .02)],
-  // Red Moon Reverie: the illusion humming low round them under the red moon, then it breaks them.
+  // Crow's Nightmare: the illusion humming low round them under the red moon, then it breaks them.
   tobari: c => [held('fx-ki-charge-big', .16, c0(c) + .1, last(c), .6), onBeat('fx-swing-huge', .44, last(c) - .05), onBeat('fx-dark-spark', .54, last(c)),
     onBeat('fx-explosion-huge', .42, last(c) + .05)],
 };
@@ -1272,8 +1272,8 @@ if (LUCY_TIDE) SIGNATURE_CONFIRMS.gummy = c => [onBeat(pick(FAMILY.snap, c.seed)
 /** Release events: beams are drawn on them, so beams are heard on them. */
 /** Combo enders (game/combos.ts) with a sound of their own: Sekka's stun opens the Aurora Shards' snowflake.
  *  (5 October) The main game's sixteen (combosVol1.ts): every blast and snare is heard as what it is - a style's default
- *  is a ki charge, and a snare's a fire igniting, which neither a THEATRE nor a water dragon is - and the blows that carry
- *  their fighter's energy (a Shrike Bolt, a Senpugan, a Dark Spark, a THEATRE) carry its sound over the swing. Kurobi throws
+ *  is a ki charge, and a snare's a fire igniting, which neither a SURGERY nor a water dragon is - and the blows that carry
+ *  their fighter's energy (a Storm Talon, a Kazeyose, a Dark Spark, a SURGERY) carry its sound over the swing. Kurobi throws
  *  Konta's enders as the fox, and the NIGHTFALL's stun is a blow, not the mask's Void Ray. */
 const swung = (extra: (c: Ctx) => CueLayer[]) => (c: Ctx) => [...meleeSwings(c), ...extra(c)];
 // (15 October, the feel pass) Tsubute's enders are slingshot shots, Basilissa's stun a kiss shot: they were the default
@@ -1300,9 +1300,9 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
   },
   konta: {
     lh: c => c.awakened ? meleeSwings(c) : [...meleeSwings(c), onBeat('fx-wind-blast', .3, c0(c))],
-    lllh: c => c.awakened ? meleeSwings(c) : [bed('fx-whirlsphere', .3, 0, c0(c) + .1), ...meleeSwings(c)],
+    lllh: c => c.awakened ? meleeSwings(c) : [bed('fx-kazeyose', .3, 0, c0(c) + .1), ...meleeSwings(c)],
     // The Mini Galewheel's whine as it leaves the fingertip; the fox's Great Roar.
-    llls: c => c.awakened ? [onBeat('fx-beast-roar', .62, c0(c))] : [bed('fx-whirlsphere', .2, 0, c0(c)), onBeat('fx-wind-blast', .4, c0(c))],
+    llls: c => c.awakened ? [onBeat('fx-beast-roar', .62, c0(c))] : [bed('fx-kazeyose', .2, 0, c0(c)), onBeat('fx-wind-blast', .4, c0(c))],
     airHeavy: c => c.awakened ? meleeSwings(c) : [onBeat(pick(FAMILY.poof, c.seed), .26, .02), ...meleeSwings(c)],
   },
   gummy: {
@@ -1320,15 +1320,15 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
     lllh: c => [onBeat('fx-land-heavy', .5, c0(c)), onBeat('fx-ground-bounce', .34, c0(c) + .04)],
     llls: c => [onBeat(pick(FAMILY.poof, c.seed), .3, Math.max(.05, c0(c) - .1)), onBeat('fx-land-heavy', .34, c0(c)), onBeat('fx-beast-bite', .44, c0(c) + .03)],
     // His lightning bolt thrown as a hound.
-    airHeavy: c => [bed('fx-shrike-bolt', .24, 0, c0(c)), onBeat('fx-lightning', .42, c0(c))],
+    airHeavy: c => [bed('fx-storm-talon', .24, 0, c0(c)), onBeat('fx-lightning', .42, c0(c))],
   },
   shiden: {
-    lh: swung(c => [bed('fx-shrike-bolt', .3, 0, c0(c) + .08)]),
-    llh: swung(c => [bed('fx-shrike-bolt', .26, 0, c0(c) + .06)]),
+    lh: swung(c => [bed('fx-storm-talon', .3, 0, c0(c) + .08)]),
+    llh: swung(c => [bed('fx-storm-talon', .26, 0, c0(c) + .06)]),
     lllh: c => [onBeat('fx-fire-ignite', .32, Math.max(.05, c0(c) - .08)), onBeat('fx-fire-roar', .5, c0(c))],
-    // The Shrike Bolt let out through his whole body.
-    llls: c => [bed('fx-electric-bed', .28, 0, c0(c) + .1), onBeat('fx-shrike-bolt-hit', .46, c0(c)), onBeat(pick(FAMILY.zap, c.seed), .3, c0(c) + .03)],
-    airHeavy: c => [bed('fx-shrike-bolt', .22, 0, c0(c)), ...[-.04, 0, .04].map((dt, i) => onBeat(pick(FAMILY.zap, c.seed, i), .3, Math.max(.04, c0(c) + dt)))],
+    // The Storm Talon let out through his whole body.
+    llls: c => [bed('fx-electric-bed', .28, 0, c0(c) + .1), onBeat('fx-storm-talon-hit', .46, c0(c)), onBeat(pick(FAMILY.zap, c.seed), .3, c0(c) + .03)],
+    airHeavy: c => [bed('fx-storm-talon', .22, 0, c0(c)), ...[-.04, 0, .04].map((dt, i) => onBeat(pick(FAMILY.zap, c.seed, i), .3, Math.max(.04, c0(c) + dt)))],
   },
   kenzo: {
     // The great dragon twister, its wind round the blades.
@@ -1353,10 +1353,10 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
     airHeavy: c => [onBeat('fx-fire-roar', .5, c0(c))],
   },
   ward: {
-    // THEATRE opens, and the target is swapped away.
-    lh: c => [onBeat('fx-theatre-open', .4, .02), onBeat('fx-crossmatch', .48, c0(c))],
+    // SURGERY opens, and the target is swapped away.
+    lh: c => [onBeat('fx-surgery-open', .4, .02), onBeat('fx-crossmatch', .48, c0(c))],
     lllh: swung(c => [onBeat('fx-defib-shock', .42, c0(c) + .02)]),
-    llls: swung(c => [onBeat('fx-theatre-open', .3, .02), onBeat(pick(FAMILY.snap, c.seed), .3, c0(c) + .03)]),
+    llls: swung(c => [onBeat('fx-surgery-open', .3, .02), onBeat(pick(FAMILY.snap, c.seed), .3, c0(c) + .03)]),
   },
   kuon: {
     lh: swung(c => [onBeat('fx-dark-spark', .54, c0(c))]),
@@ -1366,7 +1366,7 @@ const ENDER_CASTS: Partial<Record<FighterId, Partial<Record<ComboKey, (c: Ctx) =
   },
   oro: {
     lh: c => [onBeat(pick(FAMILY.zip, c.seed), .4, c0(c)), onBeat(pick(FAMILY.snap, c.seed), .28, c0(c) + .02)],
-    // HUSH is gone and behind them.
+    // SLUMBER is gone and behind them.
     lllh: c => [onBeat('fx-vanish', .36, .04), onBeat('fx-spirit', .3, Math.max(.06, c0(c) - .1)), ...meleeSwings(c)],
     // The touch that freezes: a hiss of vapour.
     llls: swung(c => [onBeat('fx-steam', .4, c0(c) + .02)]),
@@ -1390,7 +1390,7 @@ const landed = (cue: AudioCue, gain: number, delay = 0): CueLayer => ({ cue, gai
 const ENDER_LANDS: Partial<Record<FighterId, (c: Ctx) => CueLayer[]>> = {
   taisei: () => [landed('fx-ki-launch', .5), landed('fx-explosion-huge', .42, .04)],
   ouga: () => [landed('fx-explosion-huge', .6)],
-  konta: c => c.awakened ? [landed('fx-explosion-huge', .54)] : [landed('fx-whirlsphere-hit', .6)],
+  konta: c => c.awakened ? [landed('fx-explosion-huge', .54)] : [landed('fx-kazeyose-hit', .6)],
   gummy: () => [landed('fx-fire-burst', .5), landed(FAMILY.hitHeavy[0], .4, .02)],
   kosho: () => [landed('fx-fire-burst', .46)],
   shirokane: c => [landed('fx-lightning', .54), landed(pick(FAMILY.zap, c.seed), .3, .03)],
@@ -1474,7 +1474,7 @@ function sentUp(event: CombatEvent, c: Ctx): CueLayer[] {
 
 /** The overnight audio pass (8 October 2026): the blow that catches them and opens a hit-confirm ultimate's cinematic.
  *  With no landing of its own it was a barrage tick (a melee move's first contact, weighed as one of many) or a full
- *  detonation (an energy move's: Horizon Sunder's and BLACK CONFESSIONAL's buried the call said over them). Now a heavy body
+ *  detonation (an energy move's: Horizon Sunder's and FERMATA's buried the call said over them). Now a heavy body
  *  blow with a burst of energy in the mids (fx-energy-hit, 55% of it at 200-1000 Hz): heard over the soundtrack on a
  *  laptop's speakers, and still under the finisher, which keeps the detonation. */
 function catchBlow(c: Ctx): CueLayer[] {
@@ -1524,7 +1524,7 @@ function meleeImpact(c: Ctx, index: number, final: boolean): CueLayer[] {
       if (weight === 'finisher') layers.push({ cue: pick(FAMILY.finisher, seed), gain: .45 });
       break;
     case 'spirit':
-      // Iron Spirit and HUSH hit harder than a man does.
+      // Iron Spirit and SLUMBER hit harder than a man does.
       layers.push({ cue: heavy ? pick(FAMILY.hitHeavy, seed) : pick(FAMILY.hitLight, seed, index), gain: heavy ? .72 : .64, rate });
       if (!heavy) layers.push({ cue: pick(FAMILY.hitHeavy, seed), gain: .3, rate: 1.08 });
       if (weight === 'finisher') layers.push({ cue: pick(FAMILY.finisher, seed), gain: .5 });
@@ -1645,24 +1645,24 @@ const SIGNATURE_IMPACTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Im
   },
   konta: {
     heavy: c => c.awakened ? [{ cue: 'fx-beast-bite', gain: .7 }, { cue: pick(FAMILY.hitHeavy, c.seed), gain: .5, rate: .9 }]
-      : [{ cue: 'fx-whirlsphere-hit', gain: .78 }],
+      : [{ cue: 'fx-kazeyose-hit', gain: .78 }],
     special: c => c.awakened ? [{ cue: pick(FAMILY.explosion, c.seed), gain: .62 }]
-      : [{ cue: 'fx-whirlsphere-hit', gain: .5, rate: 1.1 }, { cue: pick(FAMILY.explosion, c.seed), gain: .36 }],
+      : [{ cue: 'fx-kazeyose-hit', gain: .5, rate: 1.1 }, { cue: pick(FAMILY.explosion, c.seed), gain: .36 }],
     ultimate: c => detonation(c.seed),
   },
   shiden: {
-    heavy: () => [{ cue: 'fx-shrike-bolt-hit', gain: .8 }],
+    heavy: () => [{ cue: 'fx-storm-talon-hit', gain: .8 }],
     special: (c, index) => [{ cue: pick(FAMILY.burn, c.seed, index), gain: .42 }],
-    ultimate: confirmBlow(c => [{ cue: 'fx-shrike-bolt-hit', gain: .6 }, { cue: pick(FAMILY.explosion, c.seed), gain: .4 }],
+    ultimate: confirmBlow(c => [{ cue: 'fx-storm-talon-hit', gain: .6 }, { cue: pick(FAMILY.explosion, c.seed), gain: .4 }],
       (c, index) => [{ cue: pick(FAMILY.zap, c.seed, index), gain: .42 }, { cue: pick(FAMILY.energyHit, c.seed, index), gain: .32 }],
       () => [{ cue: 'fx-explosion-huge', gain: .68 }, { cue: 'fx-lightning', gain: .44 }]),
   },
   shirokane: {
-    heavy: () => [{ cue: 'fx-shrike-bolt-hit', gain: .8 }],
-    special: () => [{ cue: 'fx-shrike-bolt-hit', gain: .72 }],
-    ultimate: confirmBlow(() => [{ cue: 'fx-shrike-bolt-hit', gain: .74 }],
+    heavy: () => [{ cue: 'fx-storm-talon-hit', gain: .8 }],
+    special: () => [{ cue: 'fx-storm-talon-hit', gain: .72 }],
+    ultimate: confirmBlow(() => [{ cue: 'fx-storm-talon-hit', gain: .74 }],
       (c, index) => [{ cue: pick(FAMILY.zap, c.seed, index), gain: .44 }, { cue: pick(FAMILY.energyHit, c.seed, index), gain: .3 }],
-      () => [{ cue: 'fx-shrike-bolt-hit', gain: .82 }, { cue: 'fx-lightning', gain: .4 }]),
+      () => [{ cue: 'fx-storm-talon-hit', gain: .82 }, { cue: 'fx-lightning', gain: .4 }]),
   },
   gummy: {
     special: c => [{ cue: 'fx-fire-burst', gain: .7 }, { cue: pick(FAMILY.explosion, c.seed), gain: .34 }],
@@ -1727,8 +1727,8 @@ const SIGNATURE_IMPACTS: Partial<Record<FighterId, Partial<Record<AttackSlot, Im
       : [{ cue: pick(FAMILY.cutHeavy, c.seed, index), gain: .58, rate: wobble(c.seed + index, .05) }],
   },
   setsu: {
-    heavy: c => [{ cue: 'fx-shrike-bolt-hit', gain: .66 }, { cue: pick(FAMILY.zap, c.seed), gain: .3 }],
-    special: c => [{ cue: 'fx-shrike-bolt-hit', gain: .62 }, { cue: pick(FAMILY.zap, c.seed), gain: .34 }],
+    heavy: c => [{ cue: 'fx-storm-talon-hit', gain: .66 }, { cue: pick(FAMILY.zap, c.seed), gain: .3 }],
+    special: c => [{ cue: 'fx-storm-talon-hit', gain: .62 }, { cue: pick(FAMILY.zap, c.seed), gain: .34 }],
     ultimate: (c, index, final) => final ? [{ cue: 'fx-lightning', gain: .66 }, { cue: pick(FAMILY.finisher, c.seed), gain: .56 }, { cue: 'fx-explosion-huge', gain: .4 }]
       : [{ cue: pick(FAMILY.zap, c.seed, index), gain: .32 }, { cue: pick(FAMILY.barrage, c.seed, index), gain: .36 }],
   },
@@ -1838,7 +1838,7 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
     // stands up with a weight the ground feels.
     case 'shiden': case 'shirokane': case 'tobari': return [...base, add('fx-guardian', .52, .2), held('fx-purple-charge', .3, swap, swap + .9)];
     case 'akagane': return [...base, add('fx-guardian', .52, .2), on('fx-land-heavy', .5, swap + .3)];
-    // The RAKSHASA: nine swords drawn - the ring of the blades and the demon's pressure.
+    // The DUNE ONI: nine swords drawn - the ring of the blades and the demon's pressure.
     case 'shijima': return [held('fx-wind-swirl',.13,.08,swap),on('fx-guard-shatter',.2,swap)];
     case 'akaito': return [held('fx-gather',.12,.08,swap),on('fx-energy-hit-2',.19,swap)];
     case 'tancho': return [held('fx-wind-swirl',.13,.08,swap),on('fx-guard-shatter',.2,swap),on('fx-fire-ignite',.15,swap)];
@@ -1906,7 +1906,7 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
     case 'strix': return [...base,on('fx-sword-ring',.42,swap+.02),on('fx-slash-wave',.23,swap+.08)];
     case 'sorayomi': return [...base, held('fx-wind-swirl', .24, 0, .9), held('fx-electric-bed', .11, .15, swap), on('fx-wind-blast', .22, swap)];
     case 'basilissa': return [...base, held('fx-will', .18, .08, swap + .3), on('fx-guard-shatter', .17, swap, 1.3)];
-    case 'kenzo': return [...base, add('fx-rakshasa', .5, .1), on('fx-sword-ring', .34, swap + .04), on('fx-will', .4, swap + .08)];
+    case 'kenzo': return [...base, add('fx-dune-oni', .5, .1), on('fx-sword-ring', .34, swap + .04), on('fx-will', .4, swap + .08)];
     // Round 3d: the UNSEALED moment. Pressure winds up round him from the flash
     // through "Ban...", the draw-up and release are moved so the release
     // breaks on "KAI" (unsealedTiming.ts), and the pressure burst peaks on it in
@@ -1916,15 +1916,15 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
       // A little under the other fighters' release: the shout rides on top.
       { ...onBeat('fx-awaken', .38, UNSEALED.kai + UNSEALED.burstAfterKai, 'release'), phase: 'release' },
       { ...onBeat('fx-unsealed', .45, UNSEALED.kai + UNSEALED.burstAfterKai, 'release'), phase: 'release' }];
-    // FEU BLEU, the KAGUTSUCHI, DAYBREAK: the flames catch and roar up round them.
+    // FEU BLEU, the ALL ABLAZE, DAYBREAK: the flames catch and roar up round them.
     case 'kosho': return [...base, add('fx-fire-ignite', .5, .35), add('fx-fire-roar', .34, .45), on('fx-fire-whoosh-2', .44, swap + .04)];
     case 'kagari': return [...base, add('fx-fire-roar', .52, .4), on('fx-fire-whoosh-1', .44, swap + .02), on('fx-embers', .34, swap + .2)];
     case 'asahi': return [...base, on('fx-fire-ignite', .44, swap), add('fx-fire-roar', .44, .4), on('fx-fire-whoosh-1', .42, swap + .04)];
-    // The operating theatre opening wide, and a Crossmatch blip in it.
-    case 'ward': return [...base, add('fx-theatre-open', .54, .3), on('fx-crossmatch', .34, swap + .1)];
+    // The surgery opening wide, and a Crossmatch blip in it.
+    case 'ward': return [...base, add('fx-surgery-open', .54, .3), on('fx-crossmatch', .34, swap + .1)];
     // TENGAN: Blue drawn in, and the swirl of Infinity round him.
     case 'kuon': return [...base, add('fx-blue', .4), held('fx-purple-charge', .26, swap, swap + .8)];
-    // The HOUND ARMOR closing on him (its clanks, kept under his scream) and the beast in it.
+    // The GRAVE PLATE closing on him (its clanks, kept under his scream) and the beast in it.
     case 'gaunt': return [...base, add('fx-armour-1', .24, .5), add('fx-armour-2', .2, .72), on('fx-beast-roar', .46, swap + .2)];
     // SETSUNA: lightning through him, and the crackle it leaves.
     case 'setsu': return [...base, add('fx-lightning', .44, .42), add('fx-zap-2', .26, .6), held('fx-electric-bed', .16, swap, swap + .8)];
@@ -1937,19 +1937,19 @@ function ownAwakening(fighter: FighterId): CueLayer[] {
     case 'dorado': return [...base, on('fx-will', .56, swap + .02), on('fx-lightning', .34, swap + .04)];
     // PALE SERAPH's chrysalis: his pressure closing round him, ghostly.
     case 'shiun': return [...base, add('fx-domain', .44)];
-    // The CALAMITY KING: a curse breaking the air, and his fire.
+    // The CALAMITY RISEN: a curse breaking the air, and his fire.
     case 'magatsu': return [...base, on('fx-dark-spark', .36, swap + .12), on('fx-fire-ignite', .3, swap + .16)];
     // Black Vespers: the eclipse closing over, and the space it cracks.
     case 'vesper': return [...base, add('fx-domain', .42), on('fx-dark-spark', .46, swap + .04)];
     // The King reborn: a roar and a blow to the air.
     case 'imago': return [...base, on('fx-beast-roar', .44, swap + .1), on('fx-dark-spark', .34, swap + .04)];
-    // LOTUS IN FLAME: the aura's sparks (the burst carries its swirl).
+    // JADE PYRE: the aura's sparks (the burst carries its swirl).
     case 'wuming': return [...base, on('fx-zap-3', .22, swap + .4)];
     // Beast: a Golden's power-up with a roar in it.
     case 'gohaku': return [...base, on('fx-beast-roar', .44, swap + .1), held('fx-electric-bed', .18, swap, swap + 1), on('fx-zap-1', .24, swap + .06), on('fx-zap-3', .2, swap + .3)];
     // WRATHFUL GUARDIAN: his power welling up, and breaking out.
-    case 'jirenga': return [...base, add('fx-ki-charge-big', .34), on('fx-explosion-huge', .34, swap + .1)];
-    // BLACK TIDE: the space round him cracking, and a ghostly swell.
+    case 'banjaku': return [...base, add('fx-ki-charge-big', .34), on('fx-explosion-huge', .34, swap + .1)];
+    // ABYSSAL TIDE: the space round him cracking, and a ghostly swell.
     case 'jinlin': return [...base, on('fx-dark-spark', .44, swap + .04), on('fx-spirit', .36, swap + .1)];
     // ALL-NIGHTER: one stamp of a foot.
     case 'ippon': return [...base, on('fx-land-heavy', .5, swap + .06)];

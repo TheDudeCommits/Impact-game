@@ -65,10 +65,10 @@ describe('Gummy sourced rigs and four signature moves',()=>{
     expect(f.handR.z).toBeLessThanOrEqual(MOVES.gummy[slot].range+2);
    }
    const form=await asset(FIGHTERS.gummy.formModel!);f.attachForm(form);
-   // The form is the cinematic's: SUNRISE, playing its own GRAND TIDE take, on from the first frame
-   // (render/gummy/grand-tide.ts), and throwing the opener too.
+   // The form is the cinematic's: SUNRISE, playing its own SPRING TIDE take, on from the first frame
+   // (render/gummy/spring-tide.ts), and throwing the opener too.
    f.update(.2,{...state,action:'ultimate',actionStarted:2,actionDuration:MOVES.gummy.ultimate.duration,actionTime:.01},true);expect(f.model.visible,'Gummy himself, on the press').toBe(true);
-   if(LUCY_TIDE){ // Gummy throws Grand Tide in his own body, his own take through the confirm
+   if(LUCY_TIDE){ // Gummy throws Spring Tide in his own body, his own take through the confirm
     f.update(.2,{...state,action:'ultimate',actionStarted:2,actionDuration:MOVES.gummy.ultimate.duration,actionTime:.1},true);expect(f.model.visible,'Gummy himself, the opener his own').toBe(true);
     f.update(.2,{...state,action:'ultimate',actionStarted:2,actionDuration:MOVES.gummy.ultimate.duration,actionTime:.6,confirmedAt:2.55},true);expect(f.model.visible).toBe(true);expect((f as unknown as {awakenedForm:Fighter}).awakenedForm.group.visible,'no form for it').toBe(false); // (its take is lucy-pxtide1.glb's, an extra file this body is loaded without)
    }else{

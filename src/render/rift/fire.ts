@@ -162,6 +162,9 @@ export class FireField {
     fa.needsUpdate = sa.needsUpdate = ga.needsUpdate = true;
   }
   get count() { return this.spots.length; }
+  /** Fires whose light must not pool on the floor under them (a fire high on a post or a mast): their flames and
+   *  smoke only. */
+  withoutPools() { this.glow.visible = false; return this; }
 
   update(time: number) { this.time.value = time; }
 

@@ -6,7 +6,8 @@ import {factionOf,isBadBloodFighter,type RolePreference} from '../objectives/mod
  *  every choice against the tables below (strict allowlists), and the page draws the same tables. */
 export type PartyMode='duel'|'royale'|'bad-blood'|'last-stand'|'survival'|'rift-war'|'goal-rush'|'sky-spike';
 export const PARTY_MODES:Record<PartyMode,string>={'goal-rush':'GOAL RUSH','sky-spike':'SKY SPIKE','rift-war':'RIFT WAR',duel:'DUEL',royale:'BATTLE ROYALE','bad-blood':'BAD BLOOD','last-stand':'LAST STAND',survival:'CO-OP SURVIVAL'};
-export const PARTY_ORDER:readonly PartyMode[]=['duel','goal-rush','sky-spike','royale','bad-blood','last-stand','survival','rift-war'];
+/** The party page's cards, in the home's order (MangaHome HOME_RAIL, catalogue MODE_ORDER): the ball modes after Last Stand. */
+export const PARTY_ORDER:readonly PartyMode[]=['duel','royale','bad-blood','last-stand','goal-rush','sky-spike','survival','rift-war'];
 /** A party holds up to twelve friends, whatever the mode: a mode with fewer seats says so, it does not turn a friend away. */
 export const PARTY_MAX=12;
 /** Where each mode can be fought, as a party may choose: none for a mode whose place is fixed (Last Stand's village, the

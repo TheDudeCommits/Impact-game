@@ -78,26 +78,26 @@
    "voice": "konta",
    "text": "よっ!"
   },
-  "konta-whirlsphere": {
+  "konta-kazeyose": {
    "file": "voice/originals/px/konta/konta-89f402e4.wav",
    "seconds": 1.17,
-   "level": -9.1,
+   "level": -9.7,
    "voice": "konta",
-   "text": "旋風丸っ!"
+   "text": "うらっ!"
   },
   "konta-galewheel": {
    "file": "voice/originals/px/konta/konta-ff5f05fd.wav",
    "seconds": 2.46,
    "level": -16.4,
    "voice": "konta",
-   "text": "風術…ゲイルホイール!"
+   "text": "ゲイルホイール!"
   },
-  "vo-konta-fox-bomb": {
-   "file": "voice/originals/px/konta/vo-konta-fox-bomb.wav",
+  "vo-konta-azure-foxfire": {
+   "file": "voice/originals/px/konta/vo-konta-azure-foxfire.wav",
    "seconds": 0.928,
    "level": -16.5,
    "voice": "konta",
-   "text": "狐火玉!"
+   "text": "うらっ!"
   },
   "konta-bomb": {
    "file": "voice/originals/menma/konta-bomb.wav",
@@ -190,22 +190,22 @@
    "voice": "lucy",
    "text": "シグナル・ファイアッ！"
   },
-  "vo-gummy-grand-tide-shout": {
-   "file": "voice/originals/lucy/vo-gummy-grand-tide-shout.wav",
+  "vo-gummy-spring-tide-shout": {
+   "file": "voice/originals/lucy/vo-gummy-spring-tide-shout.wav",
    "seconds": 0.575,
    "level": -15.6,
    "voice": "lucy",
    "text": "タイドッ！"
   },
-  "vo-gummy-grand-tide-fist": {
-   "file": "voice/originals/lucy/vo-gummy-grand-tide-shout.wav",
+  "vo-gummy-spring-tide-fist": {
+   "file": "voice/originals/lucy/vo-gummy-spring-tide-shout.wav",
    "seconds": 0.575,
    "level": -15.6,
    "voice": "lucy",
    "text": "タイドッ！"
   },
-  "gummy-grand-tide-fist": {
-   "file": "voice/originals/lucy/gummy-grand-tide-fist.wav",
+  "gummy-spring-tide-fist": {
+   "file": "voice/originals/lucy/gummy-spring-tide-fist.wav",
    "seconds": 0.635,
    "level": -18.6,
    "voice": "lucy",
@@ -281,12 +281,12 @@
    "voice": "lucy",
    "text": "海よ…来い!"
   },
-  "vo-gummy-grand-tide": {
+  "vo-gummy-spring-tide": {
    "file": "voice/originals/lucy/gummy-a1f1e9c1.wav",
    "seconds": 1.685,
-   "level": -15.6,
+   "level": -16.1,
    "voice": "lucy",
-   "text": "グランド・タイドォ!"
+   "text": "にっひひ…"
   },
   "vo-ouga-ha": {
    "file": "voice/originals/px/ouga/vo-ouga-ha.wav",
@@ -309,47 +309,40 @@
    "voice": "ouga",
    "text": "ふんっ!"
   },
-  "vo-ouga-big-bang": {
-   "file": "voice/originals/px/ouga/vo-ouga-big-bang.wav",
+  "vo-ouga-crown-burst": {
+   "file": "voice/originals/px/ouga/vo-ouga-crown-burst.wav",
    "seconds": 1.458,
    "level": -16.3,
    "voice": "ouga",
-   "text": "覇王弾!"
+   "text": "だぁっ!"
   },
-  "vo-ouga-gale": {
+  "vo-ouga-throne-wave": {
    "file": "voice/originals/px/ouga/ouga-f471cb67.wav",
    "seconds": 2.828,
    "level": -16.5,
    "voice": "ouga",
-   "text": "紫光…波ぁぁっ!"
+   "text": "はっ!"
   },
-  "vo-ouga-kyokko-ho": {
+  "vo-ouga-royal-aurora": {
    "file": "voice/originals/px/ouga/ouga-832ec73e.wav",
    "seconds": 1.648,
    "level": -16.5,
    "voice": "ouga",
-   "text": "極光砲ぉぉっ!"
+   "text": "ぬおおおっ!"
   },
-  "ouga-big-bang": {
-   "file": "voice/originals/px/ouga/ouga-big-bang.wav",
+  "ouga-crown-burst": {
+   "file": "voice/originals/px/ouga/ouga-crown-burst.wav",
    "seconds": 4.449,
    "level": -16.3,
    "voice": "ouga",
-   "text": "覇王弾!"
+   "text": "だぁっ!"
   },
-  "ouga-gale": {
+  "ouga-throne-wave": {
    "file": "voice/originals/px/ouga/ouga-6ec23ee5.wav",
    "seconds": 4.62,
    "level": -16.5,
    "voice": "ouga",
-   "text": "紫光…波ぁぁっ!"
-  },
-  "ouga-final": {
-   "file": "voice/originals/mihou/ouga-final.wav",
-   "seconds": 2.91,
-   "level": -16.8,
-   "voice": "mihou",
-   "text": "これが王子の誇りだ！ファイナル・エクリプスッ！"
+   "text": "はっ!"
   },
   "vo-shirokane-seya": {
    "file": "voice/originals/shirokane/vo-shirokane-seya.wav",
@@ -379,19 +372,19 @@
    "voice": "shirokane",
    "text": "雷鎌！"
   },
-  "vo-shirokane-lightning-twin": {
-   "file": "voice/originals/shirokane/vo-shirokane-lightning-twin.wav",
+  "vo-shirokane-static-decoy": {
+   "file": "voice/originals/shirokane/vo-shirokane-static-decoy.wav",
    "seconds": 1.12,
    "level": -16.2,
    "voice": "shirokane",
-   "text": "雷藁人形！"
+   "text": "せいっ！"
   },
-  "vo-shirokane-void-sickle-bolt": {
+  "vo-shirokane-sickle-reaper": {
    "file": "voice/originals/shirokane/shirokane-46cbe3a5.wav",
    "seconds": 1.56,
    "level": -16.4,
    "voice": "shirokane",
-   "text": "虚眼・雷鎌！"
+   "text": "雷鎌！"
   },
   "shirokane-resolve": {
    "file": "voice/originals/shirokane/vo-shirokane-quip-resolve.wav",
@@ -421,19 +414,19 @@
    "voice": "shiden",
    "text": "ふっ。"
   },
-  "vo-shiden-shrike-bolt": {
+  "vo-shiden-storm-talon": {
    "file": "voice/originals/shiden/shiden-66e113b8.wav",
    "seconds": 0.75,
    "level": -16.5,
    "voice": "shiden",
-   "text": "百舌雷！"
+   "text": "せあっ！"
   },
   "vo-shiden-black-pyre": {
    "file": "voice/originals/shiden/shiden-44f803d3.wav",
    "seconds": 0.72,
    "level": -16.5,
    "voice": "shiden",
-   "text": "黒陽！"
+   "text": "はっ！"
   },
   "vo-kenzo-fu": {
    "file": "voice/originals/kenzo/vo-kenzo-fu.wav",
@@ -482,7 +475,7 @@
    "seconds": 1.495,
    "level": -16.7,
    "voice": "kenzo",
-   "text": "千里……鷲ィッ！"
+   "text": "鷲ィッ！"
   },
   "kenzo-dust-sea": {
    "file": "voice/originals/kenzo/kenzo-dust-sea.wav",
@@ -638,15 +631,15 @@
    "voice": "ward",
    "text": "ふん。"
   },
-  "vo-ward-theatre": {
-   "file": "voice/originals/ward/vo-ward-theatre.wav",
+  "vo-ward-surgery": {
+   "file": "voice/originals/ward/vo-ward-surgery.wav",
    "seconds": 1.24,
    "level": -16.5,
    "voice": "ward",
    "text": "術野、確保。"
   },
   "ward-crossmatch": {
-   "file": "voice/originals/ward/vo-ward-theatre.wav",
+   "file": "voice/originals/ward/vo-ward-surgery.wav",
    "seconds": 1.24,
    "level": -16.5,
    "voice": "ward",
@@ -701,33 +694,33 @@
    "voice": "koko",
    "text": "ガンッ！"
   },
-  "vo-koko-gan-barrage": {
-   "file": "voice/originals/koko/vo-koko-gan-barrage.wav",
+  "vo-koko-ironfall-barrage": {
+   "file": "voice/originals/koko/vo-koko-ironfall-barrage.wav",
    "seconds": 1.79,
    "level": -16.4,
    "voice": "koko",
-   "text": "ガンガンガンガンガンガンッ！"
+   "text": "ガァァァンッ！"
   },
-  "vo-koko-gaaan": {
-   "file": "voice/originals/koko/vo-koko-gaaan.wav",
+  "vo-koko-anvil": {
+   "file": "voice/originals/koko/vo-koko-anvil.wav",
    "seconds": 1.15,
    "level": -16.5,
    "voice": "koko",
    "text": "ガァァァンッ！"
   },
-  "vo-koko-needle-finger": {
-   "file": "voice/originals/koko/vo-koko-needle-finger.wav",
+  "vo-koko-iron-nail": {
+   "file": "voice/originals/koko/vo-koko-iron-nail.wav",
    "seconds": 0.94,
    "level": -16.3,
    "voice": "koko",
-   "text": "ニードル・フィンガー！"
+   "text": "ガァンッ！"
   },
   "vo-koko-the-hour": {
    "file": "voice/originals/koko/koko-a324364d.wav",
    "seconds": 0.67,
    "level": -16.4,
    "voice": "koko",
-   "text": "ハッシュ！"
+   "text": "ぬぅっ……！"
   },
   "koko-iron-lullaby": {
    "file": "voice/originals/koko/koko-iron-lullaby.wav",
@@ -736,12 +729,12 @@
    "voice": "koko",
    "text": "アイアン・ララバイ！"
   },
-  "koko-hush": {
+  "koko-slumber": {
    "file": "voice/originals/koko/koko-a324364d.wav",
    "seconds": 0.67,
    "level": -16.4,
    "voice": "koko",
-   "text": "ハッシュ！"
+   "text": "ぬぅっ……！"
   },
   "vo-oro-fun": {
    "file": "voice/originals/oro/vo-oro-fun.wav",
@@ -757,12 +750,12 @@
    "voice": "oro",
    "text": "ふん。"
   },
-  "vo-oro-noroma": {
-   "file": "voice/originals/oro/vo-oro-noroma.wav",
+  "vo-oro-tick": {
+   "file": "voice/originals/oro/vo-oro-tick.wav",
    "seconds": 0.61,
    "level": -17,
    "voice": "oro",
-   "text": "のろまッ！"
+   "text": "トロいッ！"
   },
   "vo-oro-sluggish": {
    "file": "voice/originals/oro/vo-oro-sluggish.wav",
@@ -771,12 +764,12 @@
    "voice": "oro",
    "text": "トロいッ！"
   },
-  "vo-oro-noroma-barrage": {
-   "file": "voice/originals/oro/vo-oro-noroma-barrage.wav",
+  "vo-oro-clockwork-barrage": {
+   "file": "voice/originals/oro/vo-oro-clockwork-barrage.wav",
    "seconds": 2.91,
    "level": -16.4,
    "voice": "oro",
-   "text": "のろまのろまのろまのろまのろまァッ！"
+   "text": "ぐおあぁぁっ！"
   },
   "vo-oro-the-hour": {
    "file": "voice/originals/oro/oro-d83e5788.wav",
@@ -792,19 +785,19 @@
    "voice": "oro",
    "text": "跪くがいい！"
   },
-  "oro-noroma": {
-   "file": "voice/originals/oro/vo-oro-noroma.wav",
+  "oro-tick": {
+   "file": "voice/originals/oro/vo-oro-tick.wav",
    "seconds": 0.61,
    "level": -17,
    "voice": "oro",
-   "text": "のろまッ！"
+   "text": "トロいッ！"
   },
-  "oro-noroma-noroma": {
-   "file": "voice/originals/oro/vo-oro-noroma-barrage.wav",
+  "oro-tick-tock": {
+   "file": "voice/originals/oro/vo-oro-clockwork-barrage.wav",
    "seconds": 2.91,
    "level": -16.4,
    "voice": "oro",
-   "text": "のろまのろまのろまのろまのろまァッ！"
+   "text": "ぐおあぁぁっ！"
   },
   "oro-the-hour": {
    "file": "voice/originals/oro/oro-d83e5788.wav",
@@ -813,12 +806,12 @@
    "voice": "oro",
    "text": "我が刻だッ！"
   },
-  "oro-steamroller": {
+  "oro-hour-of-ruin": {
    "file": "voice/originals/oro/oro-e90ade02.wav",
    "seconds": 1.69,
    "level": -18.7,
    "voice": "oro",
-   "text": "弔いの鐘だッ！"
+   "text": "オロ様の刻だ。"
   },
   "vo-kuon-ha": {
    "file": "voice/originals/px/kuon/vo-kuon-ha.wav",
@@ -1000,14 +993,14 @@
    "seconds": 2.48,
    "level": -16.4,
    "voice": "konta",
-   "text": "こんくらい…へっちゃらだってばさ!"
+   "text": "こんくらい…へっちゃらだ!"
   },
   "vo-konta-quip-advantage": {
    "file": "voice/originals/px/konta/vo-konta-quip-advantage.wav",
    "seconds": 2.91,
    "level": -16.4,
    "voice": "konta",
-   "text": "へへーん、まだまだいくってばさ!"
+   "text": "へへーん、まだまだいく!"
   },
   "vo-gummy-quip-resolve": {
    "file": "voice/originals/lucy/vo-gummy-quip-resolve.wav",
@@ -1212,19 +1205,19 @@
    "voice": "taisei",
    "text": "見せてやる…これが黄金の大聖…タイセイだっ!!"
   },
-  "vo-ouga-super-ouga": {
-   "file": "voice/originals/px/ouga/vo-ouga-super-ouga.wav",
+  "vo-ouga-crownfire": {
+   "file": "voice/originals/px/ouga/vo-ouga-crownfire.wav",
    "seconds": 2.385,
    "level": -16.5,
    "voice": "ouga",
-   "text": "ひれ伏せ…ゴールデン・プライド!"
+   "text": "ひれ伏せ…"
   },
-  "vo-kenzo-rakshasa": {
+  "vo-kenzo-dune-oni": {
    "file": "voice/originals/kenzo/kenzo-d9681fdd.wav",
    "seconds": 2.51,
    "level": -16.3,
    "voice": "kenzo",
-   "text": "鬼面……羅刹ッ！"
+   "text": "鬼面……"
   },
   "vo-gummy-saiko-chiten": {
    "file": "voice/originals/lucy/vo-gummy-saiko-chiten.wav",
@@ -1287,7 +1280,7 @@
    "seconds": 2.3,
    "level": -16.4,
    "voice": "kagari",
-   "text": "燃え上がれ…カグツチ!"
+   "text": "燃え上がれ…"
   },
   "vo-kuon-saikyo": {
    "file": "voice/originals/px/kuon/vo-kuon-saikyo.wav",
@@ -1443,19 +1436,19 @@
    "voice": "shiun",
    "text": "拍がずれたね。"
   },
-  "vo-shiun-hymn-twelve": {
-   "file": "voice/originals/shiun/vo-shiun-hymn-twelve.wav",
+  "vo-shiun-stained-glass": {
+   "file": "voice/originals/shiun/vo-shiun-stained-glass.wav",
    "seconds": 2.65,
    "level": -13.8,
    "voice": "shiun",
-   "text": "聖歌、十二番。……降り注げ。"
+   "text": "……降り注げ。"
   },
-  "vo-shiun-black-confessional": {
+  "vo-shiun-fermata": {
    "file": "voice/originals/shiun/shiun-ade91e27.wav",
    "seconds": 1.74,
-   "level": -13.5,
+   "level": -14.2,
    "voice": "shiun",
-   "text": "黒き告解室へ、どうぞ。"
+   "text": "どうぞ。"
   },
   "vo-shiun-pale-gem": {
    "file": "voice/originals/shiun/shiun-4eff4fb5.wav",
@@ -1511,7 +1504,7 @@
    "seconds": 2.31,
    "level": -14,
    "voice": "tobari",
-   "text": "眠れ……紅月夢想。"
+   "text": "眠れ……"
   },
   "vo-tobari-power": {
    "file": "voice/originals/tobari/tobari-2f63bbe9.wav",
@@ -1574,7 +1567,7 @@
    "seconds": 2.48,
    "level": -11.7,
    "voice": "akagane",
-   "text": "見上げよ…天の鉄床だ！"
+   "text": "見上げよ…"
   },
   "vo-akagane-end-this": {
    "file": "voice/originals/akagane/vo-akagane-end-this.wav",
@@ -1667,19 +1660,19 @@
    "voice": "magatsu",
    "text": "潰れろ！"
   },
-  "vo-magatsu-domain": {
-   "file": "voice/originals/magatsu/vo-magatsu-domain.wav",
+  "vo-magatsu-carrion-field": {
+   "file": "voice/originals/magatsu/vo-magatsu-carrion-field.wav",
    "seconds": 2.96,
    "level": -12.2,
    "voice": "magatsu",
-   "text": "さあ、宴だ……屍の祭壇！"
+   "text": "さあ、宴だ……"
   },
   "vo-magatsu-fun": {
    "file": "voice/originals/magatsu/vo-magatsu-fun.wav",
    "seconds": 2.87,
    "level": -16.4,
    "voice": "magatsu",
-   "text": "クハハ……災厄の王だ！"
+   "text": "クハハ……クハハ……"
   },
   "vo-magatsu-quip-resolve": {
    "file": "voice/originals/magatsu/vo-magatsu-quip-resolve.wav",
@@ -1784,14 +1777,14 @@
    "seconds": 1.24,
    "level": -13.3,
    "voice": "wuming",
-   "text": "舞え……落花剣。"
+   "text": "舞え……"
   },
-  "vo-taisei-lightless-cannon": {
+  "vo-taisei-withering-beam": {
    "file": "voice/originals/wuming/wuming-eeb1e238.wav",
    "seconds": 2.62,
    "level": -13.2,
    "voice": "wuming",
-   "text": "大…聖……いや。無明砲。"
+   "text": "そら。"
   },
   "vo-wuming-retribution": {
    "file": "voice/originals/wuming/vo-wuming-retribution.wav",
@@ -1812,7 +1805,7 @@
    "seconds": 2.91,
    "level": -13.1,
    "voice": "wuming",
-   "text": "見せてあげよう…咲き誇れ、炎の蓮よ。"
+   "text": "見せてあげよう…咲き誇れ。"
   },
   "vo-wuming-quip-resolve": {
    "file": "voice/originals/wuming/vo-wuming-quip-resolve.wav",
@@ -1875,7 +1868,7 @@
    "seconds": 1.945,
    "level": -14.3,
    "voice": "jinlin",
-   "text": "黒き潮が、満ちますよ。"
+   "text": "満ちますよ。"
   },
   "vo-jinlin-die": {
    "file": "voice/originals/jinlin/vo-jinlin-die.wav",
@@ -1945,7 +1938,7 @@
    "seconds": 0.94,
    "level": -12.9,
    "voice": "vesper",
-   "text": "供物となれ。"
+   "text": "ひゅっ。"
   },
   "vo-vesper-free": {
    "file": "voice/originals/vesper/vo-vesper-free.wav",
@@ -1975,74 +1968,74 @@
    "voice": "vesper",
    "text": "君の死は、忘れないよ。"
   },
-  "vo-jirenga-effort-a": {
-   "file": "voice/originals/jirenga/vo-jirenga-effort-a.wav",
+  "vo-banjaku-effort-a": {
+   "file": "voice/originals/banjaku/vo-banjaku-effort-a.wav",
    "seconds": 0.455,
    "level": -17,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "むんっ。"
   },
-  "vo-jirenga-effort-b": {
-   "file": "voice/originals/jirenga/vo-jirenga-effort-b.wav",
+  "vo-banjaku-effort-b": {
+   "file": "voice/originals/banjaku/vo-banjaku-effort-b.wav",
    "seconds": 0.475,
    "level": -17,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "ぬん。"
   },
-  "vo-jirenga-effort-c": {
-   "file": "voice/originals/jirenga/vo-jirenga-effort-c.wav",
+  "vo-banjaku-effort-c": {
+   "file": "voice/originals/banjaku/vo-banjaku-effort-c.wav",
    "seconds": 0.31,
    "level": -17.5,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "はっ。"
   },
-  "vo-jirenga-effort-d": {
-   "file": "voice/originals/jirenga/vo-jirenga-effort-d.wav",
+  "vo-banjaku-effort-d": {
+   "file": "voice/originals/banjaku/vo-banjaku-effort-d.wav",
    "seconds": 0.305,
    "level": -17.5,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "ふっ。"
   },
-  "vo-jirenga-vanish": {
-   "file": "voice/originals/jirenga/vo-jirenga-vanish.wav",
+  "vo-banjaku-vanish": {
+   "file": "voice/originals/banjaku/vo-banjaku-vanish.wav",
    "seconds": 1.24,
    "level": -16.3,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "朱の封印。"
   },
-  "vo-jirenga-finish": {
-   "file": "voice/originals/jirenga/vo-jirenga-finish.wav",
+  "vo-banjaku-finish": {
+   "file": "voice/originals/banjaku/vo-banjaku-finish.wav",
    "seconds": 0.955,
    "level": -16.2,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "山崩し。"
   },
-  "vo-jirenga-fall": {
-   "file": "voice/originals/jirenga/vo-jirenga-fall.wav",
+  "vo-banjaku-fall": {
+   "file": "voice/originals/banjaku/vo-banjaku-fall.wav",
    "seconds": 0.95,
    "level": -14.8,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "沈め。"
   },
-  "vo-jirenga-come-all": {
-   "file": "voice/originals/jirenga/vo-jirenga-come-all.wav",
+  "vo-banjaku-come-all": {
+   "file": "voice/originals/banjaku/vo-banjaku-come-all.wav",
    "seconds": 2.48,
    "level": -15.4,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "千年の…怒りだ。"
   },
-  "vo-jirenga-quip-resolve": {
-   "file": "voice/originals/jirenga/vo-jirenga-quip-resolve.wav",
+  "vo-banjaku-quip-resolve": {
+   "file": "voice/originals/banjaku/vo-banjaku-quip-resolve.wav",
    "seconds": 1.925,
    "level": -16.4,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "揺れたか。千年ぶりだ。"
   },
-  "vo-jirenga-quip-advantage": {
-   "file": "voice/originals/jirenga/vo-jirenga-quip-advantage.wav",
+  "vo-banjaku-quip-advantage": {
+   "file": "voice/originals/banjaku/vo-banjaku-quip-advantage.wav",
    "seconds": 1.71,
    "level": -16.4,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "門は、まだ立っている。"
   },
   "vo-sekka-effort-a": {
@@ -2129,12 +2122,12 @@
    "voice": "asahi",
    "text": "えいっ！"
   },
-  "vo-asahi-sun-dance": {
+  "vo-asahi-first-light": {
    "file": "voice/originals/asahi/asahi-69eb2e39.wav",
    "seconds": 1.665,
    "level": -16.1,
    "voice": "asahi",
-   "text": "灯の儀……初陽！"
+   "text": "初陽！"
   },
   "vo-asahi-full-focus": {
    "file": "voice/originals/asahi/vo-asahi-full-focus.wav",
@@ -2682,12 +2675,12 @@
    "voice": "shiun",
    "text": "聴き飽きた旋律だ。"
   },
-  "vo-shiun-thunder-hymn": {
-   "file": "voice/originals/shiun/vo-shiun-thunder-hymn.wav",
+  "vo-shiun-storm-psalm": {
+   "file": "voice/originals/shiun/vo-shiun-storm-psalm.wav",
    "seconds": 2.42,
    "level": -14.3,
    "voice": "shiun",
-   "text": "聖歌、七番。……嵐を、歌え。"
+   "text": "嵐を、歌え。"
   },
   "vo-shiun-taunt-a": {
    "file": "voice/originals/shiun/vo-shiun-taunt-a.wav",
@@ -3620,12 +3613,12 @@
    "voice": "tobari",
    "text": "…鴉が、お前を見ている。"
   },
-  "vo-tobari-great-blaze": {
-   "file": "voice/originals/tobari/vo-tobari-great-blaze.wav",
+  "vo-tobari-great-ember": {
+   "file": "voice/originals/tobari/vo-tobari-great-ember.wav",
    "seconds": 1.02,
    "level": -16.5,
    "voice": "tobari",
-   "text": "鴉遁・大燼。"
+   "text": "大燼。"
   },
   "vo-tobari-kill-a": {
    "file": "voice/originals/tobari/vo-tobari-kill-a.wav",
@@ -3669,67 +3662,67 @@
    "voice": "tobari",
    "text": "…これでいい。俺のことは、忘れろ。"
   },
-  "vo-jirenga-bell-a": {
-   "file": "voice/originals/jirenga/vo-jirenga-bell-a.wav",
+  "vo-banjaku-bell-a": {
+   "file": "voice/originals/banjaku/vo-banjaku-bell-a.wav",
    "seconds": 1.01,
    "level": -16.5,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "動かしてみろ。"
   },
-  "vo-jirenga-kill-a": {
-   "file": "voice/originals/jirenga/vo-jirenga-kill-a.wav",
+  "vo-banjaku-kill-a": {
+   "file": "voice/originals/banjaku/vo-banjaku-kill-a.wav",
    "seconds": 1.46,
    "level": -16.2,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "山は、揺らがぬ。"
   },
-  "vo-jirenga-kill-b": {
-   "file": "voice/originals/jirenga/vo-jirenga-kill-b.wav",
+  "vo-banjaku-kill-b": {
+   "file": "voice/originals/banjaku/vo-banjaku-kill-b.wav",
    "seconds": 1.695,
    "level": -16.5,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "石の下で、眠れ。"
   },
-  "vo-jirenga-low-a": {
-   "file": "voice/originals/jirenga/vo-jirenga-low-a.wav",
+  "vo-banjaku-low-a": {
+   "file": "voice/originals/banjaku/vo-banjaku-low-a.wav",
    "seconds": 2.73,
    "level": -16.5,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "……この俺に、膝をつかせるか。"
   },
-  "vo-jirenga-parry-a": {
-   "file": "voice/originals/jirenga/vo-jirenga-parry-a.wav",
+  "vo-banjaku-parry-a": {
+   "file": "voice/originals/banjaku/vo-banjaku-parry-a.wav",
    "seconds": 0.72,
    "level": -16.4,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "届かぬ。"
   },
-  "vo-jirenga-strength-absolute": {
-   "file": "voice/originals/jirenga/vo-jirenga-strength-absolute.wav",
+  "vo-banjaku-strength-absolute": {
+   "file": "voice/originals/banjaku/vo-banjaku-strength-absolute.wav",
    "seconds": 1.44,
    "level": -16.7,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "不動…連撃。"
   },
-  "vo-jirenga-taunt-a": {
-   "file": "voice/originals/jirenga/vo-jirenga-taunt-a.wav",
+  "vo-banjaku-taunt-a": {
+   "file": "voice/originals/banjaku/vo-banjaku-taunt-a.wav",
    "seconds": 0.83,
    "level": -16.7,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "軽い。"
   },
-  "vo-jirenga-taunt-b": {
-   "file": "voice/originals/jirenga/vo-jirenga-taunt-b.wav",
+  "vo-banjaku-taunt-b": {
+   "file": "voice/originals/banjaku/vo-banjaku-taunt-b.wav",
    "seconds": 2.37,
    "level": -16.5,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "千年、待った。退屈させるな。"
   },
-  "vo-jirenga-win-a": {
-   "file": "voice/originals/jirenga/vo-jirenga-win-a.wav",
+  "vo-banjaku-win-a": {
+   "file": "voice/originals/banjaku/vo-banjaku-win-a.wav",
    "seconds": 1.24,
    "level": -16.4,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "門は、閉じた。"
   },
   "vo-koko-bell-a": {
@@ -3928,12 +3921,12 @@
    "voice": "shirokane",
    "text": "ちょっと本を閉じるよ。…ちょっとだけね。"
   },
-  "vo-shirokane-dust-fall": {
-   "file": "voice/originals/shirokane/vo-shirokane-dust-fall.wav",
+  "vo-shirokane-dust-curtain": {
+   "file": "voice/originals/shirokane/vo-shirokane-dust-curtain.wav",
    "seconds": 1.31,
    "level": -17,
    "voice": "shirokane",
-   "text": "灰遁・大塵瀑！"
+   "text": "せいっ！"
   },
   "vo-shirokane-hurt-a": {
    "file": "voice/originals/shirokane/vo-shirokane-hurt-a.wav",
@@ -4647,14 +4640,14 @@
    "seconds": 2.618,
    "level": -16.4,
    "voice": "konta",
-   "text": "見てろよ、オレの番だってばさ!"
+   "text": "見てろよ、オレの番だ!"
   },
   "vo-konta-bell-b": {
    "file": "voice/originals/px/konta/vo-konta-bell-b.wav",
    "seconds": 1.725,
    "level": -16.4,
    "voice": "konta",
-   "text": "風が呼んでるってばさ!"
+   "text": "風が呼んでる!"
   },
   "vo-konta-hurt-a": {
    "file": "voice/originals/px/konta/vo-konta-hurt-a.wav",
@@ -4703,21 +4696,21 @@
    "seconds": 3.243,
    "level": -16.4,
    "voice": "konta",
-   "text": "いてて…ぜってえ倒れねえってばさ!"
+   "text": "いてて…ぜってえ倒れねえ!"
   },
-  "vo-konta-great-whirlsphere": {
+  "vo-konta-great-kazeyose": {
    "file": "voice/originals/px/konta/konta-1fec9c95.wav",
    "seconds": 1.92,
    "level": -16.4,
    "voice": "konta",
-   "text": "風術・旋風時雨!"
+   "text": "うらっ!"
   },
   "vo-konta-parry-a": {
    "file": "voice/originals/px/konta/vo-konta-parry-a.wav",
    "seconds": 1.555,
    "level": -16.4,
    "voice": "konta",
-   "text": "当たんねえってばさ!"
+   "text": "当たんねえ!"
   },
   "vo-konta-taunt-a": {
    "file": "voice/originals/px/konta/vo-konta-taunt-a.wav",
@@ -4864,7 +4857,7 @@
    "seconds": 1.9,
    "level": -15.1,
    "voice": "ippon",
-   "text": "…残業、ちゃぶ台返し。"
+   "text": "…残業。"
   },
   "vo-ippon-win-a": {
    "file": "voice/originals/ippon/vo-ippon-win-a.wav",
@@ -5006,12 +4999,12 @@
    "voice": "shiden",
    "text": "…手短に済ませる。"
   },
-  "vo-shiden-great-blaze": {
-   "file": "voice/originals/shiden/vo-shiden-great-blaze.wav",
+  "vo-shiden-hawkstorm": {
+   "file": "voice/originals/shiden/vo-shiden-hawkstorm.wav",
    "seconds": 1.375,
    "level": -14.4,
    "voice": "shiden",
-   "text": "霆遁・大雷球！"
+   "text": "せあっ！"
   },
   "vo-shiden-hurt-a": {
    "file": "voice/originals/shiden/vo-shiden-hurt-a.wav",
@@ -5431,7 +5424,7 @@
    "seconds": 1.55,
    "level": -16.5,
    "voice": "ouga",
-   "text": "覇王…流星っ!"
+   "text": "ふんっ!"
   },
   "vo-ouga-loss-a": {
    "file": "voice/originals/px/ouga/vo-ouga-loss-a.wav",
@@ -6336,8 +6329,8 @@
    "voice": "wataame",
    "text": "せいやぁっ!"
   },
-  "vo-wataame-lie-in": {
-   "file": "voice/originals/px/wataame/vo-wataame-lie-in.wav",
+  "vo-wataame-day-off": {
+   "file": "voice/originals/px/wataame/vo-wataame-day-off.wav",
    "seconds": 1.825,
    "level": -15.6,
    "voice": "wataame",
@@ -6903,12 +6896,12 @@
    "voice": "barrow",
    "text": "拾ったモンは、俺のモンだ！"
   },
-  "vo-barrow-sinkhole": {
-   "file": "voice/originals/barrow/vo-barrow-sinkhole.wav",
+  "vo-barrow-tar-pit": {
+   "file": "voice/originals/barrow/vo-barrow-tar-pit.wav",
    "seconds": 1.79,
    "level": -16.4,
    "voice": "barrow",
-   "text": "呑み込め、底無し穴ァ！"
+   "text": "呑み込め、"
   },
   "vo-barrow-liberation": {
    "file": "voice/originals/barrow/vo-barrow-liberation.wav",
@@ -8616,7 +8609,7 @@
    "seconds": 1.29,
    "level": -16.4,
    "voice": "shijima",
-   "text": "二の歌、霧氷！"
+   "text": "霧氷！"
   },
   "vo-shijima-unsealed": {
    "file": "voice/originals/shijima/shijima-32491410.wav",
@@ -8749,7 +8742,7 @@
    "seconds": 2.54,
    "level": -17,
    "voice": "shijima",
-   "text": "聖歌二十七番……青き弔火！"
+   "text": "青き弔火！"
   },
   "vo-onigawara-quip-challenge": {
    "file": "voice/originals/onigawara/vo-onigawara-quip-challenge.wav",
@@ -8884,8 +8877,8 @@
    "voice": "ume",
    "text": "どっせぇぇい……辛夷流星ッ！"
   },
-  "vo-ume-grand-champion": {
-   "file": "voice/originals/ume/vo-ume-grand-champion.wav",
+  "vo-ume-yokozuna": {
+   "file": "voice/originals/ume/vo-ume-yokozuna.wav",
    "seconds": 1.56,
    "level": -16.4,
    "voice": "ume",
@@ -9045,8 +9038,8 @@
    "voice": "kusushi",
    "text": "土俵の外だ！"
   },
-  "vo-kusushi-grand-champion": {
-   "file": "voice/originals/kusushi/vo-kusushi-grand-champion.wav",
+  "vo-kusushi-yokozuna": {
+   "file": "voice/originals/kusushi/vo-kusushi-yokozuna.wav",
    "seconds": 1.74,
    "level": -16.4,
    "voice": "kusushi",
@@ -9185,7 +9178,7 @@
    "voice": "hakushi",
    "text": "ぬおりゃっ！"
   },
-  "vo-hakushi-whirlsphere": {
+  "vo-hakushi-kazeyose": {
    "file": "voice/originals/hakushi/hakushi-5f25f879.wav",
    "seconds": 1.25,
    "level": -16.5,
@@ -9262,7 +9255,7 @@
    "voice": "kanata",
    "text": "届けるよ。"
   },
-  "vo-minase-whirlsphere": {
+  "vo-minase-kazeyose": {
    "file": "voice/originals/kanata/minase-14a64bb6.wav",
    "seconds": 0.63,
    "level": -16.4,
@@ -11817,26 +11810,26 @@
    "voice": "aquilo",
    "text": "負けるのは、風がやんだ時だけだ。"
   },
-  "vo-aquilo-forktail-gust": {
-   "file": "voice/originals/aquilo/vo-aquilo-forktail-gust.wav",
+  "vo-aquilo-shearwind-gust": {
+   "file": "voice/originals/aquilo/vo-aquilo-shearwind-gust.wav",
    "seconds": 2.55,
    "level": -16.4,
    "voice": "aquilo",
-   "text": "北風、来い…燕尾疾風！"
+   "text": "北風、来い…"
   },
-  "vo-aquilo-skimming-swallow": {
+  "vo-aquilo-skimming-gale": {
    "file": "voice/originals/aquilo/aquilo-555667a8.wav",
    "seconds": 1.1,
    "level": -16.3,
    "voice": "aquilo",
-   "text": "水切り燕！"
+   "text": "はぁっ！"
   },
-  "vo-aquilo-great-migration": {
-   "file": "voice/originals/aquilo/vo-aquilo-great-migration.wav",
+  "vo-aquilo-great-northerly": {
+   "file": "voice/originals/aquilo/vo-aquilo-great-northerly.wav",
    "seconds": 3.925,
    "level": -16.4,
    "voice": "aquilo",
-   "text": "北風よ…燕たちよ、群れを成せ…大渡りッ！"
+   "text": "北風よ…群れを成せ…"
   },
   "vo-aquilo-windborne": {
    "file": "voice/originals/aquilo/vo-aquilo-windborne.wav",
@@ -12377,12 +12370,12 @@
    "voice": "gosu",
    "text": "金で、継いでやらァ！"
   },
-  "vo-gosu-kin-barrage": {
-   "file": "voice/originals/gosu/vo-gosu-kin-barrage.wav",
+  "vo-gosu-gilt-barrage": {
+   "file": "voice/originals/gosu/vo-gosu-gilt-barrage.wav",
    "seconds": 1.68,
    "level": -16.4,
    "voice": "gosu",
-   "text": "キンキンキンキンキンキンッ！"
+   "text": "シャッ！"
   },
   "vo-gosu-in-range": {
    "file": "voice/originals/gosu/vo-gosu-in-range.wav",
@@ -12510,12 +12503,12 @@
    "voice": "sashigane",
    "text": "目盛り通りです。"
   },
-  "vo-sashigane-golden-ratio": {
-   "file": "voice/originals/sashigane/vo-sashigane-golden-ratio.wav",
+  "vo-sashigane-stress-test": {
+   "file": "voice/originals/sashigane/vo-sashigane-stress-test.wav",
    "seconds": 1.355,
    "level": -16.4,
    "voice": "sashigane",
-   "text": "黄金比…ここです。"
+   "text": "…ここです。"
   },
   "vo-sashigane-condemned": {
    "file": "voice/originals/sashigane/vo-sashigane-condemned.wav",
@@ -12648,21 +12641,21 @@
    "seconds": 1.56,
    "level": -16.4,
    "voice": "yodaka",
-   "text": "二番・焚火昇り！"
+   "text": "焚火昇り！"
   },
   "vo-yodaka-flaring-wings": {
    "file": "voice/originals/yodaka/vo-yodaka-flaring-wings.wav",
    "seconds": 1.81,
    "level": -16.5,
    "voice": "yodaka",
-   "text": "四番・燃える翼！"
+   "text": "燃える翼！"
   },
-  "vo-yodaka-ninth-watch": {
-   "file": "voice/originals/yodaka/vo-yodaka-ninth-watch.wav",
+  "vo-yodaka-nighthawk-star": {
+   "file": "voice/originals/yodaka/vo-yodaka-nighthawk-star.wav",
    "seconds": 2.75,
    "level": -16.3,
    "voice": "yodaka",
-   "text": "奥の手…九番…夜鷹の星ッ！"
+   "text": "奥の手…夜鷹の星ッ！"
   },
   "vo-yodaka-burn-out": {
    "file": "voice/originals/yodaka/vo-yodaka-burn-out.wav",
@@ -12676,14 +12669,14 @@
    "seconds": 1.355,
    "level": -16.4,
    "voice": "yodaka",
-   "text": "五番・火梟！"
+   "text": "火梟！"
   },
   "vo-yodaka-owls-swoop": {
    "file": "voice/originals/yodaka/vo-yodaka-owls-swoop.wav",
    "seconds": 1.81,
    "level": -16.4,
    "voice": "yodaka",
-   "text": "一番・梟の急襲！"
+   "text": "梟の急襲！"
   },
   "vo-yodaka-bell-a": {
    "file": "voice/originals/yodaka/vo-yodaka-bell-a.wav",
@@ -13770,12 +13763,12 @@
    "voice": "akaito",
    "text": "…一緒に、来てくれる？"
   },
-  "vo-akaito-pinky-promise": {
-   "file": "voice/originals/akaito/vo-akaito-pinky-promise.wav",
+  "vo-akaito-fated-knot": {
+   "file": "voice/originals/akaito/vo-akaito-fated-knot.wav",
    "seconds": 2.62,
    "level": -16.6,
    "voice": "akaito",
-   "text": "指切り、げんまん…嘘ついたら…！"
+   "text": "嘘ついたら…！"
   },
   "vo-akaito-bell-a": {
    "file": "voice/originals/akaito/vo-akaito-bell-a.wav",
@@ -13889,7 +13882,7 @@
    "voice": "akaito",
    "text": "…終わったよ。ほら、もう怒らないで。"
   },
-  "vo-akaito-ghost-bride-come": {
+  "vo-akaito-shade-come": {
    "file": "voice/originals/akaito/akaito-41eb46b4.wav",
    "seconds": 2.015,
    "level": -20,
@@ -13931,18 +13924,18 @@
    "voice": "vesper",
    "text": "……王冠は、まだ……遠い、か……"
   },
-  "vo-jirenga-thrown-a": {
-   "file": "voice/originals/jirenga/vo-jirenga-thrown-a.wav",
+  "vo-banjaku-thrown-a": {
+   "file": "voice/originals/banjaku/vo-banjaku-thrown-a.wav",
    "seconds": 1.21,
    "level": -16.9,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "ぬぅおっ……！"
   },
-  "vo-jirenga-ko-a": {
-   "file": "voice/originals/jirenga/vo-jirenga-ko-a.wav",
+  "vo-banjaku-ko-a": {
+   "file": "voice/originals/banjaku/vo-banjaku-ko-a.wav",
    "seconds": 2.24,
    "level": -16.5,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "……門が、崩れる、か……"
   },
   "vo-akagane-ko-a": {
@@ -14654,10 +14647,10 @@
   },
   "shirokane": {
    "file": "/assets/audio/home/shirokane.m4a",
-   "seconds": 3.96,
+   "seconds": 2.75,
    "voice": "shirokane",
-   "text": "灰隠れのシロカネ。ま、ほどほどにやろうか。",
-   "runtimeSha256": "9a239244a181cb3d20d269e965f363910c4c33a12fee8cbfde5382ee3f1a180c"
+   "text": "シロカネ。ま、ほどほどにやろうか。",
+   "runtimeSha256": "3313405c875d36b74e1b8557f06a54c889f1f4b237fd8b9531d0a5d089c91410"
   },
   "shiden": {
    "file": "/assets/audio/home/shiden.m4a",
@@ -14795,10 +14788,10 @@
    "text": "墓の道の果てまで、共に行こう。……そこに、私の王冠が待っている。",
    "runtimeSha256": "fdc424f6e036435ad762da8be95218a16d5516893271c2df9350b1e18f7a187a"
   },
-  "jirenga": {
-   "file": "/assets/audio/home/jirenga.m4a",
+  "banjaku": {
+   "file": "/assets/audio/home/banjaku.m4a",
    "seconds": 4,
-   "voice": "jirenga",
+   "voice": "banjaku",
    "text": "この門に立って、千年。……まだ、何も俺を動かせていない。",
    "runtimeSha256": "83173ef3350b3f50524dfbafdd4d80c76bcaa75c3bcd91e7a0383b16ceee1a05"
   },

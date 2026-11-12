@@ -72,7 +72,7 @@ describe('places that fight back', () => {
     for (const strike of strikes) { expect(strike.look).toBe('lance'); expect(Math.hypot(strike.at.x, strike.at.z)).toBeGreaterThanOrEqual(2.49); }
     const quiet = host([{ x: 0, y: 0, z: 0 }]);
     const none = new PlaceRules(quiet.h);
-    none.begin('the-offering');
+    none.begin('fallen-star');
     run(none, quiet.h, 20);
     expect(quiet.strikes.length).toBe(0);
     // Held while the fight is not on (a card, a boss's entrance, the seal).

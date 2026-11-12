@@ -2171,10 +2171,10 @@
   {
    "id": "voice-oro-attack-1",
    "file": "/assets/audio/survival/voice-oro-attack-1.m4a",
-   "source": "the fighter's own line vo-oro-noroma (oro): Eleven v4 stock preset via Higgsfield",
+   "source": "the fighter's own line vo-oro-tick (oro): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
-   "text": "のろまッ！",
-   "sourceSha256": "d88db55e9f75d04a741a72063f79babe9a43f2420a5c5c5255b22f66257b5efb",
+   "text": "トロいッ！",
+   "sourceSha256": "4a92a06a70354fc93d2192eb1d3ca94758fe222731378197f6b1ad208414c0c6",
    "duration": 0.61,
    "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
@@ -2201,10 +2201,10 @@
   {
    "id": "voice-oro-move-1",
    "file": "/assets/audio/survival/voice-oro-move-1.m4a",
-   "source": "the fighter's own line vo-oro-noroma-barrage (oro): Eleven v4 stock preset via Higgsfield",
+   "source": "the fighter's own line vo-oro-clockwork-barrage (oro): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
-   "text": "のろまのろまのろまのろまのろまァッ！",
-   "sourceSha256": "ab51639038f9a3bccd9678df08b673c182c8e88f9b4d0457b27c03b1d2b30f0b",
+   "text": "ぐおあぁぁっ！",
+   "sourceSha256": "4bb4dd2028a904e930c68cc1471d0f4e9eece726b7e68745150ddd99debcd395",
    "duration": 2.91,
    "note": "oro: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
@@ -2243,8 +2243,8 @@
    "file": "/assets/audio/survival/voice-wuming-rage-1.m4a",
    "source": "the fighter's own line vo-wuming-true-power (wuming): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
-   "text": "見せてあげよう…咲き誇れ、炎の蓮よ。",
-   "sourceSha256": "67ca0e19efcee17c4a14807d0c879ceb28fc88ac582f67998ea6a471a6749a8b",
+   "text": "見せてあげよう…咲き誇れ。",
+   "sourceSha256": "df39e782a2f38c6ea7e6b6a24048b8301b3fad2c4b63cfc5ed2040bfffe9b7d8",
    "duration": 2.91,
    "note": "wuming: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
@@ -2463,8 +2463,8 @@
    "file": "/assets/audio/survival/voice-vesper-attack-2.m4a",
    "source": "the fighter's own line vo-vesper-mine (vesper): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
-   "text": "供物となれ。",
-   "sourceSha256": "880a57655bb85dc5610a1fb5fe12c3539d9105a4c116af6fd5a02749528be58a",
+   "text": "ひゅっ。",
+   "sourceSha256": "ea10c9095aca6caeb6cfea9ba3726f878e4c60ad2d7d6eeba6f23dc057b6275c",
    "duration": 0.94,
    "note": "vesper: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
@@ -2479,94 +2479,94 @@
    "note": "vesper: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-jirenga-entrance-1",
-   "file": "/assets/audio/survival/voice-jirenga-entrance-1.m4a",
-   "source": "the fighter's own line vo-jirenga-bell-a (jirenga): Eleven v4 stock preset via Higgsfield",
+   "id": "voice-banjaku-entrance-1",
+   "file": "/assets/audio/survival/voice-banjaku-entrance-1.m4a",
+   "source": "the fighter's own line vo-banjaku-bell-a (banjaku): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "動かしてみろ。",
    "sourceSha256": "3b0822dfc7e61f0622503afb16f34edb977465044e1f42d09a8cfe317207ec37",
    "duration": 1.01,
-   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "banjaku: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-jirenga-entrance-2",
-   "file": "/assets/audio/survival/voice-jirenga-entrance-2.m4a",
-   "source": "the fighter's own line vo-jirenga-taunt-b (jirenga): Eleven v4 stock preset via Higgsfield",
+   "id": "voice-banjaku-entrance-2",
+   "file": "/assets/audio/survival/voice-banjaku-entrance-2.m4a",
+   "source": "the fighter's own line vo-banjaku-taunt-b (banjaku): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "千年、待った。退屈させるな。",
    "sourceSha256": "df62a64a4bdb12c8291efad7412296ba838901bf400932ee5843985cd3be0fc6",
    "duration": 2.37,
-   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "banjaku: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-jirenga-rage-1",
-   "file": "/assets/audio/survival/voice-jirenga-rage-1.m4a",
-   "source": "the fighter's own line vo-jirenga-low-a (jirenga): Eleven v4 stock preset via Higgsfield",
+   "id": "voice-banjaku-rage-1",
+   "file": "/assets/audio/survival/voice-banjaku-rage-1.m4a",
+   "source": "the fighter's own line vo-banjaku-low-a (banjaku): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "……この俺に、膝をつかせるか。",
    "sourceSha256": "0fd0a62b2c516a6fb08502d877848f687a794ae2c7b15974b3760bd243f450bb",
    "duration": 2.73,
-   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "banjaku: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-jirenga-rage-2",
-   "file": "/assets/audio/survival/voice-jirenga-rage-2.m4a",
-   "source": "the fighter's own line vo-jirenga-come-all (jirenga): Eleven v4 stock preset via Higgsfield",
+   "id": "voice-banjaku-rage-2",
+   "file": "/assets/audio/survival/voice-banjaku-rage-2.m4a",
+   "source": "the fighter's own line vo-banjaku-come-all (banjaku): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "千年の…怒りだ。",
    "sourceSha256": "896525bba9c516d44d88f772ea6d760916ac32d79c39fff0fc9706d6b2ce17cb",
    "duration": 2.48,
-   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "banjaku: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-jirenga-hurt-1",
-   "file": "/assets/audio/survival/voice-jirenga-hurt-1.m4a",
-   "source": "the fighter's own line vo-jirenga-thrown-a (jirenga): Eleven v4 stock preset via Higgsfield",
+   "id": "voice-banjaku-hurt-1",
+   "file": "/assets/audio/survival/voice-banjaku-hurt-1.m4a",
+   "source": "the fighter's own line vo-banjaku-thrown-a (banjaku): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "ぬぅおっ……！",
    "sourceSha256": "f3bdb11c106309270396e3e11e01e97c07f728384d2d6007fee1768ac920cc7b",
    "duration": 1.21,
-   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "banjaku: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-jirenga-defeat-1",
-   "file": "/assets/audio/survival/voice-jirenga-defeat-1.m4a",
-   "source": "the fighter's own line vo-jirenga-ko-a (jirenga): Eleven v4 stock preset via Higgsfield",
+   "id": "voice-banjaku-defeat-1",
+   "file": "/assets/audio/survival/voice-banjaku-defeat-1.m4a",
+   "source": "the fighter's own line vo-banjaku-ko-a (banjaku): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "……門が、崩れる、か……",
    "sourceSha256": "e92fad95dbf75f5cd88f04650fad089bdee36f51727d707a1c1632af556dbc5b",
    "duration": 2.24,
-   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "banjaku: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-jirenga-attack-1",
-   "file": "/assets/audio/survival/voice-jirenga-attack-1.m4a",
-   "source": "the fighter's own line vo-jirenga-fall (jirenga): Eleven v4 stock preset via Higgsfield",
+   "id": "voice-banjaku-attack-1",
+   "file": "/assets/audio/survival/voice-banjaku-attack-1.m4a",
+   "source": "the fighter's own line vo-banjaku-fall (banjaku): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "沈め。",
    "sourceSha256": "1d96eb337d2d73db413ac7fc24e30f428ff1eb4d8b1e0fd480b10fc4a59796b7",
    "duration": 0.95,
-   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "banjaku: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-jirenga-attack-2",
-   "file": "/assets/audio/survival/voice-jirenga-attack-2.m4a",
-   "source": "the fighter's own line vo-jirenga-finish (jirenga): Eleven v4 stock preset via Higgsfield",
+   "id": "voice-banjaku-attack-2",
+   "file": "/assets/audio/survival/voice-banjaku-attack-2.m4a",
+   "source": "the fighter's own line vo-banjaku-finish (banjaku): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "山崩し。",
    "sourceSha256": "93f22d92470d6a6b5541a3d02825dadf1525ff5d2f95a01105a9e24ca18ddeb1",
    "duration": 0.955,
-   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "banjaku: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-jirenga-attack-3",
-   "file": "/assets/audio/survival/voice-jirenga-attack-3.m4a",
-   "source": "the fighter's own line vo-jirenga-effort-a (jirenga): Eleven v4 stock preset via Higgsfield",
+   "id": "voice-banjaku-attack-3",
+   "file": "/assets/audio/survival/voice-banjaku-attack-3.m4a",
+   "source": "the fighter's own line vo-banjaku-effort-a (banjaku): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "むんっ。",
    "sourceSha256": "899f28c62195b96db45dbafa600a90a0b54866e0886546575e6c820cfb3376b5",
    "duration": 0.455,
-   "note": "jirenga: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "banjaku: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
    "id": "voice-gorai-entrance-1",
@@ -2883,8 +2883,8 @@
    "file": "/assets/audio/survival/voice-magatsu-rage-1.m4a",
    "source": "the fighter's own line vo-magatsu-fun (magatsu): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
-   "text": "クハハ……災厄の王だ！",
-   "sourceSha256": "7943e247b94fdc9bbd6e97c08ffb3fa562c5b383caa1e2547df5e502bff91daa",
+   "text": "クハハ……クハハ……",
+   "sourceSha256": "3be1b729c7f7f07223922a64720b8e91df3726b38874167ca1f87edbd7d20ff1",
    "duration": 2.87,
    "note": "magatsu: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
@@ -3129,104 +3129,104 @@
    "note": "nightfall: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-rakshasa-entrance-1",
-   "file": "/assets/audio/survival/voice-rakshasa-entrance-1.m4a",
+   "id": "voice-dune-oni-entrance-1",
+   "file": "/assets/audio/survival/voice-dune-oni-entrance-1.m4a",
    "source": "the fighter's own line vo-kenzo-bell-b (kenzo): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "どっちが前だ？……まあいい、斬る。",
    "sourceSha256": "a8eaf6c9cab385595870c86a2d8cb332c0ff58e34140e2332fbe94365c2e5eaf",
    "duration": 1.865,
-   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "dune oni: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-rakshasa-rage-1",
-   "file": "/assets/audio/survival/voice-rakshasa-rage-1.m4a",
-   "source": "the fighter's own line vo-kenzo-rakshasa (kenzo): Eleven v4 stock preset via Higgsfield",
+   "id": "voice-dune-oni-rage-1",
+   "file": "/assets/audio/survival/voice-dune-oni-rage-1.m4a",
+   "source": "the fighter's own line vo-kenzo-dune-oni (kenzo): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
-   "text": "鬼面……羅刹ッ！",
-   "sourceSha256": "50dd6813115a64a28b046e4d100f74626f63e21f458609135bf1c389e88973fc",
+   "text": "鬼面……",
+   "sourceSha256": "226e129a85bd8b70a4e9598da6a0d4a558e97dd34474b36d17aa101cc3da6ef0",
    "duration": 2.51,
-   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "dune oni: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-rakshasa-rage-2",
-   "file": "/assets/audio/survival/voice-rakshasa-rage-2.m4a",
+   "id": "voice-dune-oni-rage-2",
+   "file": "/assets/audio/survival/voice-dune-oni-rage-2.m4a",
    "source": "the fighter's own line vo-kenzo-low-a (kenzo): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "面白え……血が騒ぐ。",
    "sourceSha256": "0c4a702cb691633de1a69282969bf27e81043af8ae11bcf4b319af23b4f6c8e7",
    "duration": 2.065,
-   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "dune oni: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-rakshasa-hurt-1",
-   "file": "/assets/audio/survival/voice-rakshasa-hurt-1.m4a",
+   "id": "voice-dune-oni-hurt-1",
+   "file": "/assets/audio/survival/voice-dune-oni-hurt-1.m4a",
    "source": "the fighter's own line vo-kenzo-hurt-a (kenzo): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "ぬぐっ！",
    "sourceSha256": "931a6a0488f52a6b3d2eaa07ef85a9de0c5ace98cd9fa46eb989e9786f771d9b",
    "duration": 0.75,
-   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "dune oni: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-rakshasa-hurt-2",
-   "file": "/assets/audio/survival/voice-rakshasa-hurt-2.m4a",
+   "id": "voice-dune-oni-hurt-2",
+   "file": "/assets/audio/survival/voice-dune-oni-hurt-2.m4a",
    "source": "the fighter's own line vo-kenzo-hurt-b (kenzo): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "ちぃっ！",
    "sourceSha256": "ec0f5221c9bb9e04b66c6f1c6bd2cbd11f5436bfac596e9a9f7d9d386884812f",
    "duration": 0.81,
-   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "dune oni: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-rakshasa-hurt-3",
-   "file": "/assets/audio/survival/voice-rakshasa-hurt-3.m4a",
+   "id": "voice-dune-oni-hurt-3",
+   "file": "/assets/audio/survival/voice-dune-oni-hurt-3.m4a",
    "source": "the fighter's own line vo-kenzo-hurt-c (kenzo): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "がはっ！",
    "sourceSha256": "2982aa400884f6dc0555a2895072eb01bbb0e021e756faab3bb0114c9b30519b",
    "duration": 0.67,
-   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "dune oni: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-rakshasa-defeat-1",
-   "file": "/assets/audio/survival/voice-rakshasa-defeat-1.m4a",
+   "id": "voice-dune-oni-defeat-1",
+   "file": "/assets/audio/survival/voice-dune-oni-defeat-1.m4a",
    "source": "the fighter's own line vo-kenzo-ko-a (kenzo): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "ぐ……面が……割れ……",
    "sourceSha256": "bcbff86a7cf64823a3a4051e2671e6f3b9a06f8375654206b7129465183b97a7",
    "duration": 2.33,
-   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "dune oni: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-rakshasa-attack-1",
-   "file": "/assets/audio/survival/voice-rakshasa-attack-1.m4a",
+   "id": "voice-dune-oni-attack-1",
+   "file": "/assets/audio/survival/voice-dune-oni-attack-1.m4a",
    "source": "the fighter's own line vo-kenzo-ura (kenzo): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "うらぁっ！",
    "sourceSha256": "b60f431b1a72b007bc76b698e552103fdee0c3535afa9e39db09d0ca4a84c7ca",
    "duration": 0.61,
-   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "dune oni: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-rakshasa-attack-2",
-   "file": "/assets/audio/survival/voice-rakshasa-attack-2.m4a",
+   "id": "voice-dune-oni-attack-2",
+   "file": "/assets/audio/survival/voice-dune-oni-attack-2.m4a",
    "source": "the fighter's own line vo-kenzo-fun (kenzo): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "ふんっ！",
    "sourceSha256": "73b14b261488562cf7e6f2b57de0dafeb262a2934984974921541d55c6b8a798",
    "duration": 0.35,
-   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "dune oni: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
-   "id": "voice-rakshasa-attack-3",
-   "file": "/assets/audio/survival/voice-rakshasa-attack-3.m4a",
+   "id": "voice-dune-oni-attack-3",
+   "file": "/assets/audio/survival/voice-dune-oni-attack-3.m4a",
    "source": "the fighter's own line vo-kenzo-kill-a (kenzo): Eleven v4 stock preset via Higgsfield",
    "license": "Original (made for the game)",
    "text": "峰打ちじゃねえぞ。",
    "sourceSha256": "4f2b36459470b52857e68945435998b84bb1e98d6442de3fa654fc8fd0d36abe",
    "duration": 1.25,
-   "note": "rakshasa: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
+   "note": "dune oni: levelled to -11.5 LUFS (loudest 400 ms), AAC 96 kbps mono"
   },
   {
    "id": "voice-takane-entrance-1",

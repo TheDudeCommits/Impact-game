@@ -5,7 +5,7 @@ import { MOVES } from '../src/game/moves';
 import { CombatEffects, FOXFIRE_ORB } from '../src/render/CombatEffects';
 import { applyToonShading, toonKind } from '../src/render/look/toonShading';
 import { SIGNATURE, gradeLocal, gradeOnce, SPECIAL_GRADE, GRADE } from '../src/render/signature/context';
-import { STEAMROLLER_ASSETS, ROLLER_ASSET } from '../src/render/signature/Steamroller';
+import { HOUR_OF_RUIN_ASSETS, ROLLER_ASSET } from '../src/render/signature/HourOfRuin';
 import type { Fighter } from '../src/render/Fighter';
 import type { CombatEvent, FighterId, PlayerState } from '../src/game/types';
 
@@ -34,9 +34,9 @@ describe('Gaunt in steel: the toon model\'s metal mask', () => {
   it('draws Gaunt\'s kit and the GRAVEDIGGER as metal, and nothing else', () => {
     expect(toonKind('mdl_gaunt', 'mat_dvl_mdl_gaunt')).toBe('metal');
     expect(toonKind('weapon_gravedigger_hand', 'mat_dvl_mdl_sword')).toBe('metal');
-    // His skin (its own material over the same atlas) and the HOUND ARMOR's body are not.
+    // His skin (its own material over the same atlas) and the GRAVE PLATE's body are not.
     expect(toonKind('mdl_gaunt_skin', 'mat_dvl_mdl_gaunt_skin')).toBe('body');
-    expect(toonKind('hound_armor', 'mat_dvl_mdl_gaunt02')).toBe('body');
+    expect(toonKind('grave_plate', 'mat_dvl_mdl_gaunt02')).toBe('body');
     expect(toonKind('Object_7', 'MI_CP_051_00_Hair')).toBe('hair');
   });
   it('reads the mask from the map\'s alpha and shades steel neutral, in a program of its own', () => {
@@ -89,8 +89,8 @@ describe('ordinary specials grade a pool round their caster', () => {
   });
 });
 
-describe('the Kitsunebi-Dama and the steamroller', () => {
-  it('holds a Kitsunebi-Dama near the size of what it hits', () => {
+describe('the Azure Foxfire and the hour of ruin', () => {
+  it('holds an Azure Foxfire near the size of what it hits', () => {
     const move = MOVES.konta.ultimate;
     expect(FOXFIRE_ORB.held * 2, 'Konta\'s ball is taller than he is').toBeGreaterThan(3.5);
     expect(FOXFIRE_ORB.kurobi).toBeGreaterThan(FOXFIRE_ORB.held);

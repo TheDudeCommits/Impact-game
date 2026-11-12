@@ -132,7 +132,7 @@ describe('the ambience player (StageAmbience)', () => {
     player.set('hollowmere-quarry');
     await vi.advanceTimersByTimeAsync(1);
     const beds = ctx.sources.filter(source => source.loop), fader = ctx.gains[0];
-    player.set('hidden-ash');
+    player.set('ashwood');
     expect(fader.gain.events.some(e => e[0] === 'target' && e[1] === 0)).toBe(true);
     for (const source of beds) expect(source.stopped.length).toBe(1);
     await vi.advanceTimersByTimeAsync(5000);
@@ -161,7 +161,7 @@ describe('the ambience player (StageAmbience)', () => {
   it('plays its accents now and then, off centre, through the place\'s fader', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const { ctx, player } = make();
-    player.set('hidden-ash');
+    player.set('ashwood');
     await vi.advanceTimersByTimeAsync(1);
     const before = ctx.sources.length;
     await vi.advanceTimersByTimeAsync(30_000);

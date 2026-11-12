@@ -1,4 +1,4 @@
-import {GOAL_RULES, SPIKE_RULES, heatTier, type BallModeId, type BallState, type BallTeam} from './model';
+import {CLASSIC_COURT, GOAL_RULES, SPIKE_RULES, heatTier, spikeCourt, type BallModeId, type BallState, type BallTeam, type SpikeCourt} from './model';
 
 /** What the ball touched this step, for the rules to judge: a Goal Rush goal (the team that conceded it is `team`), a
  *  post, the crossbar or a wall; Sky Spike's floor (where: in which side's court, or out), the net, its cord, the dome's
@@ -150,20 +150,21 @@ function pitch(b: BallState, r: number, h: number, out: BallContact[]) {
 
 /** Which side's court a point on the floor is inside (with the ball's own radius of grace on the lines, as a line
  *  call gives the ball touching it), or undefined for out. */
-export function courtSide(x: number, z: number): BallTeam | undefined {
+export function courtSide(x: number, z: number, c: SpikeCourt = CLASSIC_COURT): BallTeam | undefined {
   const R = SPIKE_RULES, grace = R.ballRadius * .5;
-  if (Math.abs(x) > R.courtHalfX + grace || Math.abs(z) > R.courtHalfZ + grace) return undefined;
+  if (Math.abs(x) > c.x + grace || Math.abs(z) > c.z + grace) return undefined;
   return sideOf(z);
 }
 
 function court(b: BallState, r: number, out: BallContact[]) {
-  const R = SPIKE_RULES, e = R.wallBounce;
-  if (b.y < r) { const team = courtSide(b.x, b.z); bounceFloor(b, r, R.bounce, 4, 1 / 60, out, team); }
+  // (The court the ball carries - volleyball's for three a side - else SPIKE_RULES' own.)
+  const R = SPIKE_RULES, e = R.wallBounce, C = spikeCourt(b);
+  if (b.y < r) { const team = courtSide(b.x, b.z, C); bounceFloor(b, r, R.bounce, 4, 1 / 60, out, team); }
   if (b.y > R.ceiling - r) { b.y = R.ceiling - r; const s = reflect(b, 0, -1, 0, e); out.push({kind: 'ceiling', x: b.x, y: b.y, z: b.z, speed: s}); }
-  if (Math.abs(b.x) > R.halfX - r) { const sx = Math.sign(b.x); b.x = sx * (R.halfX - r); const s = reflect(b, -sx, 0, 0, e); out.push({kind: 'wall', x: b.x, y: b.y, z: b.z, speed: s}); }
-  if (Math.abs(b.z) > R.halfZ - r) { const sz = Math.sign(b.z); b.z = sz * (R.halfZ - r); const s = reflect(b, 0, 0, -sz, e); out.push({kind: 'wall', x: b.x, y: b.y, z: b.z, speed: s}); }
+  if (Math.abs(b.x) > C.wallX - r) { const sx = Math.sign(b.x); b.x = sx * (C.wallX - r); const s = reflect(b, -sx, 0, 0, e); out.push({kind: 'wall', x: b.x, y: b.y, z: b.z, speed: s}); }
+  if (Math.abs(b.z) > C.wallZ - r) { const sz = Math.sign(b.z); b.z = sz * (C.wallZ - r); const s = reflect(b, 0, 0, -sz, e); out.push({kind: 'wall', x: b.x, y: b.y, z: b.z, speed: s}); }
   // The net: a soft wall from the floor to its cord, across the court and a little past it.
-  const netHalf = R.courtHalfX + R.netPost;
+  const netHalf = C.x + R.netPost;
   if (Math.abs(b.x) < netHalf) {
     if (b.y < R.netHeight && Math.abs(b.z) < r) {
       const sz = b.vz > 0 ? -1 : b.vz < 0 ? 1 : Math.sign(b.z) || 1;

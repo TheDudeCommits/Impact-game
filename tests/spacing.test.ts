@@ -167,7 +167,7 @@ describe('charge-in moves are charged at a distance and land on arrival', () => 
     near.input({ attack: 'heavy' });
     const positions: number[] = [];
     // Through the slide and, for the two whose approach is a drive that
-    // takes over from it, the drive; Senpugan's own approach (from its
+    // takes over from it, the drive; Kazeyose's own approach (from its
     // `lungeDelay`, where the slide ends) is not a part of this.
     near.step(fighter === 'konta' ? move.lungeDelay! : move.contacts[0] - .05, () => positions.push(near.sim.getPlayer('a')!.z));
     // Eased, into the slide, out of it and into the drive: never a harder

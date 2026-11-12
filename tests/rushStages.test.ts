@@ -161,7 +161,7 @@ describe('rushClips and rushModel', () => {
   it.skipIf(!!ORIGINALS.koko)('binds an animation-only file by bone name and plays its clips as stages', () => {
     const id: FighterId = 'koko', saved = FIGHTERS[id].rushClips;
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const donor = rigs.get(id)!.animations.find(c => c.name === 'Needle Finger')!;
+    const donor = rigs.get(id)!.animations.find(c => c.name === 'Iron Nail')!;
     const renamed = new THREE.AnimationClip('Rush Hook', donor.duration, [
       ...donor.tracks.map(t => t.clone()),
       new THREE.QuaternionKeyframeTrack('NoSuchBone.quaternion', [0], [0, 0, 0, 1]),

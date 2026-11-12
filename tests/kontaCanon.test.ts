@@ -38,7 +38,7 @@ const FIXED: Record<string, { root?: true; limb?: RegExp; mm?: number }> = {
   'Konta light': { root: true },
   // The landings (scripts/konta/build_canon.py `fix_landing`): the hips lowered, the legs re-reached to their feet.
   'Jump Fall': { root: true, limb: LEGS },
-  'Whirlsphere Dive': { root: true, limb: LEGS },
+  'Kazeyose Dive': { root: true, limb: LEGS },
   // The turned limb is keyed at 60 fps across the turn: between those keys the foot or hand strays a few millimetres.
   'Rush 2': { limb: /^Right(Leg|LegBend0\d|UpLegBend0\d)$|^right_hem$/, mm: 5 },
   'air Attack 02': { limb: /^Left(ForeArm|ArmBend\d|ForeArmBend\d)$|^acce01$/, mm: 5 },
@@ -48,9 +48,9 @@ const FIXED: Record<string, { root?: true; limb?: RegExp; mm?: number }> = {
  *  rolled about their own line onto the hinge. No joint moves, but the sleeve's crest rides the upper arm's turned twist
  *  helper, and the repaired channels' keys interpolate a few millimetres differently at the fingers and shins. */
 const REPAIRED = new Set(['air Attack 01', 'air Attack 02', 'Die fall', 'Hit 01', 'jump', 'Jump Fall', 'Rush 1', 'Rush 2', 'Rush 3',
-  'Whirlsphere charge', 'slammed',
+  'Kazeyose charge', 'slammed',
   // The follow-up (the coordinator: "the milder sideways bends (dash, idle)"): folds 45-70 degrees round, eased in.
-  'Dash', '_Idle', 'Jump spin', 'Whirlsphere Ready', 'Whirlsphere charge Clone', 'down_end', 'down_lp', 'stun', 'Whirlsphere Dive']);
+  'Dash', '_Idle', 'Jump spin', 'Kazeyose Ready', 'Kazeyose charge Clone', 'down_end', 'down_lp', 'stun', 'Kazeyose Dive']);
 /** And hands wrung past what a forearm turns, turned back about the forearm's line (repair_limbs.py `clamp_twist`):
  *  Rush 2's right hand 215 -> 120 degrees. Every repaired clip goes through it (rolling an arm onto its hinge turns
  *  the hand on its forearm). The palm rolls, so the hand's own joints are left out of the equality; the arm up to the
@@ -301,7 +301,7 @@ describe.skipIf(!!ORIGINALS.konta)('Konta\'s canonical rig', () => {
     const fall = gltf.animations.find(c => c.name === 'Jump Fall')!, poseFall = poser(scene, fall);
     poseFall(fall.duration);
     expect(drawn(.06, .14), 'Jump Fall at the touchdown: the lowest sole as drawn, m').toBeGreaterThan(-.015);
-    const dive = (await rig(def.extraModels![0])).animations.find(c => c.name === 'Whirlsphere Dive')!, poseDive = poser(scene, dive);
+    const dive = (await rig(def.extraModels![0])).animations.find(c => c.name === 'Kazeyose Dive')!, poseDive = poser(scene, dive);
     let lowest = Infinity, highest = -Infinity;
     for (let t = 1.25; t <= 2.2 + 1e-9; t += 1 / 30) {
       poseDive(t);

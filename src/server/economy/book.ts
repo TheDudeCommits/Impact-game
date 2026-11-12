@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { newAccount, type Account } from '../../game/economy/account';
 import { nameKey } from '../../game/economy/names';
+import { currentAccount, currentId } from '../../game/savedIds';
 
 /** The ledger's size at which it is set aside at the next start. */
 const LEDGER_TURNS_AT = 16 * 1024 * 1024;
@@ -83,15 +84,16 @@ export class Book {
     catch (error) { console.error('[economy] deleted.json does not read: deletions before now are not checked again', error); }
     // What the book holds that is no longer kept - a login's label, a deleted account and all that was its, a legacy
     // order's paying wallet - is left out as it is read, and the book written again once it has loaded.
-    let scrubbed = false;
+    let scrubbed = false, renamed = 0;
     const keep = (pk: string) => this.deleted.has(pk) ? (scrubbed = true, false) : true;
     if (fs.existsSync(file)) {
       const snapshot = JSON.parse(fs.readFileSync(file, 'utf8')) as Snapshot;
       this.seq = snapshot.seq;
-      for (const account of snapshot.accounts) if (keep(account.pk)) { if ('label' in account) { delete account.label; scrubbed = true; } this.accounts.set(account.pk, account); }
+      // (Renamed ids are read as they are now: src/game/savedIds.ts.)
+      for (const account of snapshot.accounts) if (keep(account.pk)) { if ('label' in account) { delete account.label; scrubbed = true; } if (currentAccount(account)) renamed++; this.accounts.set(account.pk, account); }
       for (const [h, pk] of Object.entries(snapshot.tokens)) if (keep(pk)) this.tokens.set(h, pk);
       for (const [did, pk] of Object.entries(snapshot.dids)) if (keep(pk)) this.dids.set(did, pk);
-      for (const [id, n] of Object.entries(snapshot.sold)) this.sold.set(id, n);
+      for (const [id, n] of Object.entries(snapshot.sold)) this.sold.set(currentId(id), n);
       for (const c of snapshot.completions ?? []) if (keep(c.pk)) this.completions.set(`${c.matchId}:${c.pk}`, c);
       for (const order of snapshot.orders ?? []) {
         const pk = (order as { pk?: unknown } | null)?.pk, kept = keptLine({ seq: 0, at: 0, t: 'order', pk: typeof pk === 'string' ? pk : '', order }, this.deleted);
@@ -102,7 +104,7 @@ export class Book {
     // The ledgers set aside: rewritten without what is no longer kept (the server reads them for refunds, never replays them).
     for (const name of fs.readdirSync(this.dir!)) if (/^ledger-.*\.jsonl$/.test(name)) this.keepFile(name);
     const ledger = path.join(this.dir!, 'ledger.jsonl');
-    if (!fs.existsSync(ledger)) { if (scrubbed) { this.dirty = true; this.save(); } return; }
+    if (!fs.existsSync(ledger)) { if (renamed) this.dirty = true; if (scrubbed) { this.dirty = true; this.save(); } return; }
     // A process can die between partial writes. Repair only the unfinished
     // tail before appending again, or the next valid receipt would be joined
     // to that tail and lost on the following restart.
@@ -127,6 +129,8 @@ export class Book {
       try { line = JSON.parse(raw) as Line; } catch { throw new Error('The economy ledger contains a corrupt complete record. Repair storage before starting.'); }
       if (line.seq <= this.seq) continue;
       this.seq = line.seq; replayed++;
+      if (line.after && currentAccount(line.after)) renamed++;
+      if (line.item) line.item = currentId(line.item);
       if (line.t === 'revoke') { if (line.token) this.tokens.delete(line.token); continue; }
       // (A pack's order changes no account: its Sumi came in a `grant` line of its own.)
       if (line.t === 'order') { this.keepLegacyOrder(line.order); continue; }
@@ -140,6 +144,7 @@ export class Book {
       if (line.item && line.serial) this.sold.set(line.item, Math.max(this.sold.get(line.item) ?? 0, line.serial));
     }
     if (replayed) { this.dirty = true; console.log(`[economy] replayed ${replayed} ledger line(s) past the last book`); }
+    if (renamed) { this.dirty = true; console.log(`[economy] ${renamed} account(s) held ids renamed since: read as they are now`); }
     if (scrubbed) { this.dirty = true; this.save(); console.log('[economy] personal data no longer kept was taken out of the book and its ledgers'); }
     // A large ledger is set aside under its date (the book is written first, so nothing in it is still needed to start).
     if (fs.statSync(ledger).size > LEDGER_TURNS_AT) { this.dirty = true; this.save(); fs.renameSync(ledger, path.join(this.dir!, `ledger-${new Date().toISOString().replace(/[:.]/g, '-')}.jsonl`)); }

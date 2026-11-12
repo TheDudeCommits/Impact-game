@@ -130,7 +130,7 @@ type ModeKey = 'duel' | 'royale' | 'training' | 'arcade' | 'last-stand' | 'bad-b
 type WayKey = 'offline' | 'online' | 'friends';
 /** The place each objective mode is fought on (src/game/objectives: Last Stand's village, Bad Blood's citadel), and Rift
  *  War's map (src/game/moba/model.ts RIFT_STAGE: the Torn Plain). */
-const MODE_STAGE: Partial<Record<ModeKey, StageId>> = { 'last-stand': 'hidden-ash', 'bad-blood': 'blood-citadel', 'rift-war': 'rift-war', 'goal-rush': 'ball-pitch', 'sky-spike': 'ball-court' };
+const MODE_STAGE: Partial<Record<ModeKey, StageId>> = { 'last-stand': 'ashwood', 'bad-blood': 'blood-citadel', 'rift-war': 'rift-war', 'goal-rush': 'ball-pitch', 'sky-spike': 'ball-court' };
 
 export const stageSafe = (stage: StageId | string | undefined) => !!stage && (NEUTRAL_STAGES.includes(stage as StageId) || LAUNCH.stages.includes(stage as StageId));
 /** The stage a match is fought on: the one asked for if it is cleared, else `fallback` (the harbour unless a mode asks

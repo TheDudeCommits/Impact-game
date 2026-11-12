@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 /** A body drawn as a manifestation rather than a second person: a spirit, a
- *  Lightning Clone, the RAKSHASA behind Kenzo.
+ *  Lightning Clone, the DUNE ONI behind Kenzo.
  *
  *  Round 1 drew these with the fighter's own toon materials, so Iron Spirit
  *  read as a solid teal man standing between KoKo and his target and the

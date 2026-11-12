@@ -47,10 +47,10 @@ const TAKES: Take[] = [
   ['gaku', 'gaku-fanim3.glb', ['Lion Fist', 'Cub Jab', 'Rising Paw'], ['gaku-fanim2.glb']],
   ['akagane', 'akagane-fanim3.glb', ['Warlord Jab', 'Warlord Rise', 'War Fan Sweep']],
   ['tobari', 'tobari-fanim3.glb', ['Kunai Slash', 'Quill Slice', 'Rookwing Rise']],
-  ['shiun', 'shiun-fanim3.glb', ['Hymn Palm', 'Presence Turn', 'Flash Dash', 'Relic Rise'], ['shiun-fanim2.glb']],
+  ['shiun', 'shiun-fanim3.glb', ['Downbeat Palm', 'Presence Turn', 'Flash Dash', 'Rising Anthem'], ['shiun-fanim2.glb']],
   ['rook', 'rook-fanim2.glb', ['Talon Cut', 'Shadow Cut', 'Raven Rise']],
   ['gohaku', 'gohaku-fanim2.glb', ['Long-Arm Fist', 'Beast Rush 2']],
-  ['wuming', 'wuming-fanim2.glb', ['Lightless Strike', 'Dusk Rush 2']],
+  ['wuming', 'wuming-fanim2.glb', ['Weeding Fist', 'Weeding Rush 2']],
   // Iteration sixteen: the blades that landed a beat early or late - Asahi's light and Rising Slash (his Ember Chop is
   // pinned instead, below), Gorai's light (his Rush 2 plays it too), Levin's light, Nick and Lift Off - and
   // Akagane's War Fan Sweep (above), its spin taken out.
@@ -68,8 +68,8 @@ const TABLE = contactFrames as Partial<Record<FighterId, Record<string, number>>
 const PINNED: [FighterId, string][] = [
   ['magatsu', 'Hex Slash'], ['magatsu', 'Hex Rise'], ['imago', 'Chitin Jab'], ['imago', 'Mantis Hook'], ['imago', 'Rising Barb'],
   ['gaku', 'Cub Jab'], ['gaku', 'Rising Paw'], ['akagane', 'Warlord Jab'], ['akagane', 'Warlord Rise'], ['tobari', 'Quill Slice'],
-  ['shiun', 'Presence Turn'], ['shiun', 'Flash Dash'], ['shiun', 'Relic Rise'], ['rook', 'Shadow Cut'], ['rook', 'Raven Rise'],
-  ['gohaku', 'Beast Rush 2'], ['wuming', 'Dusk Rush 2'],
+  ['shiun', 'Presence Turn'], ['shiun', 'Flash Dash'], ['shiun', 'Rising Anthem'], ['rook', 'Shadow Cut'], ['rook', 'Raven Rise'],
+  ['gohaku', 'Beast Rush 2'], ['wuming', 'Weeding Rush 2'],
   ['asahi', 'Rising Slash'], ['levin', 'Nick'], ['levin', 'Lift Off'],
   ['tobari', 'Rookwing Rise'],
   ['vesper', 'Feather Slash'], ['vesper', 'Reverse Quill'], ['vesper', 'Updraft'],

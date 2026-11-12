@@ -3099,7 +3099,7 @@
    "file": "cc0/families/elements/lightning-hand.wav",
    "standsIn": "sfx/originals/families/elements/lightning-hand.wav",
    "cues": [
-    "fx-shrike-bolt"
+    "fx-storm-talon"
    ],
    "seconds": 1.56,
    "loop": true,
@@ -5447,7 +5447,7 @@
    "file": "cc0/px/ki-rise-rough.wav",
    "standsIn": "sfx/px/ki-rise-rough.wav",
    "cues": [
-    "fx-sig-ouga-gale"
+    "fx-sig-ouga-throne-wave"
    ],
    "seconds": 0.6831,
    "loop": false,
@@ -5479,7 +5479,7 @@
    "file": "cc0/px/wind-spin-held.wav",
    "standsIn": "sfx/px/wind-spin-held.wav",
    "cues": [
-    "fx-whirlsphere"
+    "fx-kazeyose"
    ],
    "seconds": 1.36,
    "loop": true,
@@ -5495,7 +5495,7 @@
    "file": "cc0/px/wind-spin-hit.wav",
    "standsIn": "sfx/px/wind-spin-hit.wav",
    "cues": [
-    "fx-whirlsphere-hit"
+    "fx-kazeyose-hit"
    ],
    "seconds": 1.1273,
    "loop": false,
@@ -5526,10 +5526,10 @@
    "sha256": "3a074f9e71b6c8c4e7ccb5d61ad81fb16333c7cf7afc83a334f786e6f6006aee"
   },
   {
-   "file": "cc0/signatures/akagane/heavens-anvil.wav",
-   "standsIn": "sfx/originals/signatures/akagane/heavens-anvil.wav",
+   "file": "cc0/signatures/akagane/copper-star.wav",
+   "standsIn": "sfx/originals/signatures/akagane/copper-star.wav",
    "cues": [
-    "fx-sig-akagane-heavens-anvil"
+    "fx-sig-akagane-copper-star"
    ],
    "seconds": 4.6,
    "loop": false,
@@ -5579,10 +5579,10 @@
    "sha256": "52df87dba4f885378e06f6770c40a53aa9ddc89fe9bc2d550c21b47678316eeb"
   },
   {
-   "file": "cc0/signatures/akaito/pinky-promise.wav",
-   "standsIn": "sfx/originals/signatures/akaito/pinky-promise.wav",
+   "file": "cc0/signatures/akaito/fated-knot.wav",
+   "standsIn": "sfx/originals/signatures/akaito/fated-knot.wav",
    "cues": [
-    "fx-sig-akaito-pinky-promise"
+    "fx-sig-akaito-fated-knot"
    ],
    "seconds": 2.9762,
    "loop": false,
@@ -6077,10 +6077,10 @@
    "sha256": "71a66f79b8f96511d73a661f1f1b3e9515425e8ceabd81436e860af2835d421d"
   },
   {
-   "file": "cc0/signatures/emperor-jinlin/dragon-gate-disc.wav",
-   "standsIn": "sfx/originals/signatures/emperor-jinlin/dragon-gate-disc.wav",
+   "file": "cc0/signatures/jinlin/dragon-gate-disc.wav",
+   "standsIn": "sfx/originals/signatures/jinlin/dragon-gate-disc.wav",
    "cues": [
-    "fx-sig-emperor-jinlin-dragon-gate-disc"
+    "fx-sig-jinlin-dragon-gate-disc"
    ],
    "seconds": 1.2556,
    "loop": false,
@@ -6095,10 +6095,10 @@
    "sha256": "2b3f841ad6134bfa82fce336973f539b7c4459689a9b8420047c6c8eedafe684"
   },
   {
-   "file": "cc0/signatures/emperor-jinlin/drowned-sun.wav",
-   "standsIn": "sfx/originals/signatures/emperor-jinlin/drowned-sun.wav",
+   "file": "cc0/signatures/jinlin/drowned-sun.wav",
+   "standsIn": "sfx/originals/signatures/jinlin/drowned-sun.wav",
    "cues": [
-    "fx-sig-emperor-jinlin-drowned-sun"
+    "fx-sig-jinlin-drowned-sun"
    ],
    "seconds": 3.6,
    "loop": false,
@@ -6113,10 +6113,10 @@
    "sha256": "fb653f51510e23e41c315cf7556c0e5b99a4cd66f60f716424692bf615f90820"
   },
   {
-   "file": "cc0/signatures/emperor-jinlin/pearl-needle.wav",
-   "standsIn": "sfx/originals/signatures/emperor-jinlin/pearl-needle.wav",
+   "file": "cc0/signatures/jinlin/pearl-needle.wav",
+   "standsIn": "sfx/originals/signatures/jinlin/pearl-needle.wav",
    "cues": [
-    "fx-sig-emperor-jinlin-pearl-needle"
+    "fx-sig-jinlin-pearl-needle"
    ],
    "seconds": 0.5,
    "loop": false,
@@ -6184,10 +6184,10 @@
    "sha256": "b9c2e78b4bf9e2bd060e1798c4db1c993325d8eb6c02d6395edf2dca1f8e9079"
   },
   {
-   "file": "cc0/signatures/gaunt/hound-armor.wav",
-   "standsIn": "sfx/originals/signatures/gaunt/hound-armor.wav",
+   "file": "cc0/signatures/gaunt/grave-plate.wav",
+   "standsIn": "sfx/originals/signatures/gaunt/grave-plate.wav",
    "cues": [
-    "fx-sig-gaunt-hound-armor"
+    "fx-sig-gaunt-grave-plate"
    ],
    "seconds": 1.8,
    "loop": false,
@@ -6388,10 +6388,10 @@
    "sha256": "6a932702f20b2ddb7f4b95a22950b4275d0fd4da79278ad3bb009241a618322f"
   },
   {
-   "file": "cc0/signatures/gosu/kin-kin.wav",
-   "standsIn": "sfx/originals/signatures/gosu/kin-kin.wav",
+   "file": "cc0/signatures/gosu/gilt.wav",
+   "standsIn": "sfx/originals/signatures/gosu/gilt.wav",
    "cues": [
-    "fx-sig-gosu-kin-kin"
+    "fx-sig-gosu-gilt"
    ],
    "seconds": 0.5485,
    "loop": false,
@@ -6772,10 +6772,10 @@
    "sha256": "ef69d6dbf2accd23fa0ee824c94e664de9dd0a3bb82ecbd840c861e6c3f6bbfd"
   },
   {
-   "file": "cc0/signatures/jirenga/mountain-felling.wav",
-   "standsIn": "sfx/originals/signatures/jirenga/mountain-felling.wav",
+   "file": "cc0/signatures/banjaku/mountain-felling.wav",
+   "standsIn": "sfx/originals/signatures/banjaku/mountain-felling.wav",
    "cues": [
-    "fx-sig-jirenga-mountain-felling"
+    "fx-sig-banjaku-mountain-felling"
    ],
    "seconds": 2.4704,
    "loop": false,
@@ -6791,10 +6791,10 @@
    "sha256": "a87867a43c51cb7fb7795c31970b802af341f96e46592e4f84122767dd44298f"
   },
   {
-   "file": "cc0/signatures/jirenga/vermilion-seal.wav",
-   "standsIn": "sfx/originals/signatures/jirenga/vermilion-seal.wav",
+   "file": "cc0/signatures/banjaku/vermilion-seal.wav",
+   "standsIn": "sfx/originals/signatures/banjaku/vermilion-seal.wav",
    "cues": [
-    "fx-sig-jirenga-vermilion-seal"
+    "fx-sig-banjaku-vermilion-seal"
    ],
    "seconds": 2.2,
    "loop": false,
@@ -6810,10 +6810,10 @@
    "sha256": "e9b22da5fffd50a749ac47f0c38976c002e36eb79cf3e636d472f023f4677bbb"
   },
   {
-   "file": "cc0/signatures/jirenga/wrathful-guardian.wav",
-   "standsIn": "sfx/originals/signatures/jirenga/wrathful-guardian.wav",
+   "file": "cc0/signatures/banjaku/wrathful-guardian.wav",
+   "standsIn": "sfx/originals/signatures/banjaku/wrathful-guardian.wav",
    "cues": [
-    "fx-sig-jirenga-wrathful-guardian"
+    "fx-sig-banjaku-wrathful-guardian"
    ],
    "seconds": 2.4,
    "loop": false,
@@ -7091,10 +7091,10 @@
    "sha256": "9200b094c12136ca5587324b45b1418ec658ec1cf0bddb41ea9be10b73a895e7"
   },
   {
-   "file": "cc0/signatures/kenzo/rakshasa.wav",
-   "standsIn": "sfx/originals/signatures/kenzo/rakshasa.wav",
+   "file": "cc0/signatures/kenzo/dune-oni.wav",
+   "standsIn": "sfx/originals/signatures/kenzo/dune-oni.wav",
    "cues": [
-    "fx-rakshasa"
+    "fx-dune-oni"
    ],
    "seconds": 1.2008,
    "loop": false,
@@ -7154,10 +7154,10 @@
    "sha256": "cc2523579572c954f8d7791a8b166d87fae37d3ef37f1508a91bbee7bdb789a4"
   },
   {
-   "file": "cc0/signatures/kinu/buchi-buchi.wav",
-   "standsIn": "sfx/originals/signatures/kinu/buchi-buchi.wav",
+   "file": "cc0/signatures/kinu/unspool.wav",
+   "standsIn": "sfx/originals/signatures/kinu/unspool.wav",
    "cues": [
-    "fx-sig-kinu-buchi-buchi"
+    "fx-sig-kinu-unspool"
    ],
    "seconds": 0.4571,
    "loop": false,
@@ -7192,8 +7192,8 @@
    "sha256": "cc4af17234fb7fb7d9f4869d5313c41c79b3fe2cd09fd7099e92922483cad23b"
   },
   {
-   "file": "cc0/signatures/koko/gan-gan-barrage.wav",
-   "standsIn": "sfx/originals/signatures/koko/gan-gan-barrage.wav",
+   "file": "cc0/signatures/koko/ironfall-barrage.wav",
+   "standsIn": "sfx/originals/signatures/koko/ironfall-barrage.wav",
    "cues": [
     "fx-barrage"
    ],
@@ -7237,8 +7237,8 @@
    "sha256": "3479f4d71452f963eb7d15850931db9f77be469784a8ec0c3705ae38d4e73d79"
   },
   {
-   "file": "cc0/signatures/koko/hush.wav",
-   "standsIn": "sfx/originals/signatures/koko/hush.wav",
+   "file": "cc0/signatures/koko/slumber.wav",
+   "standsIn": "sfx/originals/signatures/koko/slumber.wav",
    "cues": [
     "fx-timestop"
    ],
@@ -7281,10 +7281,10 @@
    "sha256": "3091690a004a8564fc6d1fec770547e771005b0f6f88b4a5afbde240506340ce"
   },
   {
-   "file": "cc0/signatures/kusushi/double-or-nothing.wav",
-   "standsIn": "sfx/originals/signatures/kusushi/double-or-nothing.wav",
+   "file": "cc0/signatures/kusushi/bet-the-purse.wav",
+   "standsIn": "sfx/originals/signatures/kusushi/bet-the-purse.wav",
    "cues": [
-    "fx-sig-kusushi-double-or-nothing"
+    "fx-sig-kusushi-bet-the-purse"
    ],
    "seconds": 1.2319,
    "loop": false,
@@ -7299,10 +7299,10 @@
    "sha256": "c69deb84c37fa7e76611f914cb11985d04d3771193bc4d8ce330c1af7f32d558"
   },
   {
-   "file": "cc0/signatures/kusushi/grand-champion.wav",
-   "standsIn": "sfx/originals/signatures/kusushi/grand-champion.wav",
+   "file": "cc0/signatures/kusushi/yokozuna.wav",
+   "standsIn": "sfx/originals/signatures/kusushi/yokozuna.wav",
    "cues": [
-    "fx-sig-kusushi-grand-champion"
+    "fx-sig-kusushi-yokozuna"
    ],
    "seconds": 1.7146,
    "loop": false,
@@ -7414,10 +7414,10 @@
    "sha256": "4235f18dbbd48fdc62693cef1d9df1a8a68de23d2d29d906998a1fc74c6354a1"
   },
   {
-   "file": "cc0/signatures/lord-oro/death-knell-fall.wav",
-   "standsIn": "sfx/originals/signatures/lord-oro/death-knell-fall.wav",
+   "file": "cc0/signatures/lord-oro/hour-of-ruin-fall.wav",
+   "standsIn": "sfx/originals/signatures/lord-oro/hour-of-ruin-fall.wav",
    "cues": [
-    "fx-sig-lord-oro-death-knell-fall"
+    "fx-sig-lord-oro-hour-of-ruin-fall"
    ],
    "seconds": 3.1634,
    "loop": false,
@@ -7430,10 +7430,10 @@
    "sha256": "3b488aa44760cbc9dfe03ff7e60de74b36720bfdbfc7dae615c8553dcaaeb288"
   },
   {
-   "file": "cc0/signatures/lord-oro/death-knell.wav",
-   "standsIn": "sfx/originals/signatures/lord-oro/death-knell.wav",
+   "file": "cc0/signatures/lord-oro/hour-of-ruin.wav",
+   "standsIn": "sfx/originals/signatures/lord-oro/hour-of-ruin.wav",
    "cues": [
-    "fx-steamroller"
+    "fx-hour-of-ruin"
    ],
    "seconds": 2.2377,
    "loop": false,
@@ -7493,10 +7493,10 @@
    "sha256": "65114c72bd2a21ad0fcd0b9a21c3e427b98cbda9d836e6cd531a6ba5370d2ece"
   },
   {
-   "file": "cc0/signatures/lord-oro/noroma-barrage.wav",
-   "standsIn": "sfx/originals/signatures/lord-oro/noroma-barrage.wav",
+   "file": "cc0/signatures/lord-oro/clockwork-barrage.wav",
+   "standsIn": "sfx/originals/signatures/lord-oro/clockwork-barrage.wav",
    "cues": [
-    "fx-sig-lord-oro-noroma-barrage"
+    "fx-sig-lord-oro-clockwork-barrage"
    ],
    "seconds": 3.4,
    "loop": false,
@@ -7607,10 +7607,10 @@
    "sha256": "581db7bb8f6513883b0f58c2ffb6dca4c55b45169ee17f079f50eee490a8f2b0"
   },
   {
-   "file": "cc0/signatures/magatsu/carrion-altar.wav",
-   "standsIn": "sfx/originals/signatures/magatsu/carrion-altar.wav",
+   "file": "cc0/signatures/magatsu/carrion-field.wav",
+   "standsIn": "sfx/originals/signatures/magatsu/carrion-field.wav",
    "cues": [
-    "fx-sig-magatsu-carrion-altar"
+    "fx-sig-magatsu-carrion-field"
    ],
    "seconds": 2.6,
    "loop": false,
@@ -8491,10 +8491,10 @@
    "sha256": "22334484acee74584f6944a6bde6e3e02b3e5363ee2d0609fe5bcc7fc461761e"
   },
   {
-   "file": "cc0/signatures/shiden/black-sun.wav",
-   "standsIn": "sfx/originals/signatures/shiden/black-sun.wav",
+   "file": "cc0/signatures/shiden/hawk-pyre.wav",
+   "standsIn": "sfx/originals/signatures/shiden/hawk-pyre.wav",
    "cues": [
-    "fx-sig-shiden-black-sun"
+    "fx-sig-shiden-hawk-pyre"
    ],
    "seconds": 2.4417,
    "loop": false,
@@ -8539,10 +8539,10 @@
    "sha256": "3e9913b5168d34ff4eea972eb1e3c12a36b6826d3a707a67c60eef5e45a15d03"
   },
   {
-   "file": "cc0/signatures/shiden/shrike-bolt.wav",
-   "standsIn": "sfx/originals/signatures/shiden/shrike-bolt.wav",
+   "file": "cc0/signatures/shiden/storm-talon.wav",
+   "standsIn": "sfx/originals/signatures/shiden/storm-talon.wav",
    "cues": [
-    "fx-sig-shiden-shrike-bolt"
+    "fx-sig-shiden-storm-talon"
    ],
    "seconds": 1.8,
    "loop": false,
@@ -8555,10 +8555,10 @@
    "sha256": "85bcebe17301f11d2b36ecd467ca6bee02e6c484024d4b15b3fdd456f3ec92bc"
   },
   {
-   "file": "cc0/signatures/shiden/thunderball.wav",
-   "standsIn": "sfx/originals/signatures/shiden/thunderball.wav",
+   "file": "cc0/signatures/shiden/hawkstorm.wav",
+   "standsIn": "sfx/originals/signatures/shiden/hawkstorm.wav",
    "cues": [
-    "fx-sig-shiden-thunderball"
+    "fx-sig-shiden-hawkstorm"
    ],
    "seconds": 1.8561,
    "loop": false,
@@ -8573,10 +8573,10 @@
    "sha256": "726dd9ecaffefa37846e83d4beafc8b8b7ddaa6cbd56119fa1f0a83223d41ea9"
   },
   {
-   "file": "cc0/signatures/shirokane/dust-fall.wav",
-   "standsIn": "sfx/originals/signatures/shirokane/dust-fall.wav",
+   "file": "cc0/signatures/shirokane/dust-curtain.wav",
+   "standsIn": "sfx/originals/signatures/shirokane/dust-curtain.wav",
    "cues": [
-    "fx-sig-shirokane-dust-fall"
+    "fx-sig-shirokane-dust-curtain"
    ],
    "seconds": 1.77,
    "loop": false,
@@ -8594,7 +8594,7 @@
    "file": "cc0/signatures/shirokane/storm-cutter-hit.wav",
    "standsIn": "sfx/originals/signatures/shirokane/storm-cutter-hit.wav",
    "cues": [
-    "fx-shrike-bolt-hit"
+    "fx-storm-talon-hit"
    ],
    "seconds": 1.0,
    "loop": false,
@@ -8609,10 +8609,10 @@
    "sha256": "d2a8d20e9c4604ddefab00ee71e40b8c70476bc7c01a75adcb85fd4e26860141"
   },
   {
-   "file": "cc0/signatures/shirokane/void-eye.wav",
-   "standsIn": "sfx/originals/signatures/shirokane/void-eye.wav",
+   "file": "cc0/signatures/shirokane/reaper.wav",
+   "standsIn": "sfx/originals/signatures/shirokane/reaper.wav",
    "cues": [
-    "fx-void-sickle"
+    "fx-sickle-reaper"
    ],
    "seconds": 0.7927,
    "loop": false,
@@ -8625,10 +8625,10 @@
    "sha256": "83ecd024cfc692b649cb90982708a919124fdca4362fc6587381f6be4da3b03b"
   },
   {
-   "file": "cc0/signatures/shiun/false-encore.wav",
-   "standsIn": "sfx/originals/signatures/shiun/false-encore.wav",
+   "file": "cc0/signatures/shiun/understudy.wav",
+   "standsIn": "sfx/originals/signatures/shiun/understudy.wav",
    "cues": [
-    "fx-sig-shiun-false-encore"
+    "fx-sig-shiun-understudy"
    ],
    "seconds": 1.2,
    "loop": false,
@@ -8648,10 +8648,10 @@
    "sha256": "c5621c4b583a67fa7b5a415250f05a82a3faeeaebf3c9193d1dc19e9e69884de"
   },
   {
-   "file": "cc0/signatures/shiun/black-confessional.wav",
-   "standsIn": "sfx/originals/signatures/shiun/black-confessional.wav",
+   "file": "cc0/signatures/shiun/fermata.wav",
+   "standsIn": "sfx/originals/signatures/shiun/fermata.wav",
    "cues": [
-    "fx-sig-shiun-black-confessional"
+    "fx-sig-shiun-fermata"
    ],
    "seconds": 4.0,
    "loop": false,
@@ -9406,10 +9406,10 @@
    "sha256": "181591d1681a0c65164ca4d8b2e0202c1cbf1e1a710f3a807cf2e811cd7ffd2c"
   },
   {
-   "file": "cc0/signatures/vesper/the-offering.wav",
-   "standsIn": "sfx/originals/signatures/vesper/the-offering.wav",
+   "file": "cc0/signatures/vesper/evensong.wav",
+   "standsIn": "sfx/originals/signatures/vesper/evensong.wav",
    "cues": [
-    "fx-sig-vesper-the-offering"
+    "fx-sig-vesper-evensong"
    ],
    "seconds": 4.0,
    "loop": false,
@@ -9492,10 +9492,10 @@
    "sha256": "ee27dc8f70a8d7f61b1f25d308994aa31b998f1706bd56741c31c857834d5683"
   },
   {
-   "file": "cc0/signatures/ward/theatre-open.wav",
-   "standsIn": "sfx/originals/signatures/ward/theatre-open.wav",
+   "file": "cc0/signatures/ward/surgery-open.wav",
+   "standsIn": "sfx/originals/signatures/ward/surgery-open.wav",
    "cues": [
-    "fx-theatre-open"
+    "fx-surgery-open"
    ],
    "seconds": 0.7063,
    "loop": false,
@@ -9547,10 +9547,10 @@
    "sha256": "186cb3e563220d47f799e17aad31b1705b3296e6f66685e26867c4d00860fe02"
   },
   {
-   "file": "cc0/signatures/wuming/petalfall-blade.wav",
-   "standsIn": "sfx/originals/signatures/wuming/petalfall-blade.wav",
+   "file": "cc0/signatures/wuming/lotus-edge.wav",
+   "standsIn": "sfx/originals/signatures/wuming/lotus-edge.wav",
    "cues": [
-    "fx-sig-wuming-petalfall-blade"
+    "fx-sig-wuming-lotus-edge"
    ],
    "seconds": 0.8,
    "loop": false,

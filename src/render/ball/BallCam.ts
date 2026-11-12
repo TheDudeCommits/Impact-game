@@ -188,7 +188,7 @@ export class BallCam {
  *    frame (CALM.out rad off) is fetched back at up to CALM.fetch rad/s;
  *  - every turn on a spring capped at CALM.most rad/s; a ball close by (CALM.near m) or overhead holds the view, as ever;
  *    the player's own turn is taken as it is, and for HOLD s after it the lens lets it be. */
-const CALM = {boom: 6.4, dead: .5, rate: 2.6, most: 1.1, out: .9, fetch: 1.6, near: 3.2, carryRate: 2, carryMost: .9, goalShare: .35, goalMost: .35, run: 2} as const;
+const CALM = {boom: 8.4, dead: .36, rate: 2.6, most: .95, out: .62, fetch: 1.4, near: 3.2, carryRate: 2, carryMost: .9, goalShare: .35, goalMost: .35, run: 2} as const;
 /** Where the sun's shadow box centres in a ball match (main.ts, GameRenderer.shadowCentred): between the player and the
  *  ball, never more than SHADOW_REACH metres from the player, so the box (18 m either way) always holds them and holds
  *  the ball whenever it is near. Written into `out`. */

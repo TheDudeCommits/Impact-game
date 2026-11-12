@@ -22,7 +22,7 @@ export const HOME_BASELINE_FIGHTERS = [
   'taisei','konta','gummy','kenzo','kosho','ouga','shirokane',
   'shiden','koko','nigo','kagari','ward','kuon','oro',
   'gaunt','setsu','gorai','haldor','sorrel','dorado','shiun',
-  'magatsu','vesper','imago','wuming','jirenga','jinlin','gohaku',
+  'magatsu','vesper','imago','wuming','banjaku','jinlin','gohaku',
   'ippon','sekka','tobari','akagane','asahi','levin','rook',
   'gaku',
 ] as const satisfies readonly FighterId[];
@@ -54,7 +54,7 @@ export const HOME_HERO_ORDER = [
 ] as const satisfies readonly FighterId[];
 export const HOME_RIVAL_ORDER = [
   'ouga','shiden','magatsu','chohan','jinlin','tobari','shiun','wuming',
-  'akagane','irbis','shanxiao','amagoi','oro','jirenga','hagure','unari',
+  'akagane','irbis','shanxiao','amagoi','oro','banjaku','hagure','unari',
   'vesper','gorai','barrow','strappado','aqrab','ward','strix','basilissa',
   'shakugo','tokan','senko','adad','kubiwa','hawser','imago',
   'setsu','gaunt','hikui','onigawara','shidare','rakucho','hisame',
@@ -86,7 +86,7 @@ export function homeSeries(id: FighterId): string {
 }
 /** Editorial tie-break only; counts always take precedence. No popularity metric is claimed. */
 const ANIME_FAMILIARITY = [
-  'Last Sun','Hidden Ash','Dust Sea','Cinder Requiem','Hex Fallout','Beacon Ward',
+  'Last Sun','Ashwood','Dust Sea','Cinder Requiem','Hex Fallout','Beacon Ward',
   'Ropewalk','Black Snow','Salvage Wilds','Gilded Ruin',
   'Scrap Pact','Blast Radius','Slag Hill','Red Cradle',
   'Carcass Coast','Quiet Hunger','Gatefall','Grave Hound','Penance Road','Ghost Wake','Crimson Ledger','Lantern Ward',

@@ -12,7 +12,7 @@ const DT = 1 / 60;
 const TOTALS: Record<FighterId, number> = { cardo:290,bruin:290,aquilo:290,svanhild:290,chohan:290,tsubute:290,aqrab:300,yodaka:290,'psyche':290,'ovid':300,hawser:259,rotfalke:290,bonsho:290,murex:290,kinu:290,'madake':300,akayuri:290,hagure:290,hisame:290,mizuhiki:290,'shibuichi':300,'rakucho':290,irbis:290,shidare:290,hinomoto:300,amagoi:290,'shakudo':300,minase:290,onigawara:290,kubiwa:290,torsion:300,highsun:300,lanthorn:290,ume:290,hikui:290,tokan:300,strappado:300,unari:290,barrow:300,sashigane:300,gosu:290,kusushi:290,hakushi:290,suzuran:290,wataame:290,senko:290,buna:300,oyashio:300,adad:290, 'full-beam':300,pyroclast:290,ampere:285,akaito:290, shijima:290, tempo:290, tancho:290,bellows:300,mikage:290, shanxiao: 290, kuzu: 290, shakugo: 299, 'basilissa': 282, sorayomi: 290, strix: 290, kenzo: 295, koko: 305, nigo: 295, shirokane: 285, shiden: 290, kosho: 290, ouga: 290, taisei: 285,
   gummy: 295, konta: 270, kagari: 290, ward: 290, kuon: 315, oro: 310, gaunt: 331, setsu: 225,
   // The shop's fighters: no more than the roster's (bought, not better).
-  gorai: 290, haldor: 290, sorrel: 290, dorado: 290, shiun: 290, magatsu: 290, vesper: 290, imago: 290, 'wuming': 290, jirenga: 290, 'jinlin': 290, 'gohaku': 290, ippon: 290, sekka: 290, tobari: 290, akagane: 290, asahi: 290, levin: 290, 'rook': 290, gaku: 290 };
+  gorai: 290, haldor: 290, sorrel: 290, dorado: 290, shiun: 290, magatsu: 290, vesper: 290, imago: 290, 'wuming': 290, banjaku: 290, 'jinlin': 290, 'gohaku': 290, ippon: 290, sekka: 290, tobari: 290, akagane: 290, asahi: 290, levin: 290, 'rook': 290, gaku: 290 };
 
 /** The ultimate thrown at a standing opponent 2 m off: every blow, when and
  *  for how much. */
@@ -71,7 +71,7 @@ describe('each ultimate lands its own schedule', () => {
     const PLAIN: Partial<Record<FighterId, number>> = { cardo:290,bruin:290,aquilo:290,svanhild:290,chohan:290,tsubute:290,aqrab:300,yodaka:290,'psyche':290,'ovid':300,hawser:331,rotfalke:290,bonsho:290,murex:290,kinu:290,'madake':300,akayuri:290,hagure:290,hisame:290,mizuhiki:290,'shibuichi':300,'rakucho':290,irbis:290,shidare:290,hinomoto:300,amagoi:290,'shakudo':300,minase:290,onigawara:290,kubiwa:290,torsion:300,highsun:300,lanthorn:290,ume:290,hikui:290,tokan:300,strappado:300,unari:290,barrow:300,sashigane:300,gosu:290,kusushi:290,hakushi:290,suzuran:290,wataame:290,senko:290,buna:300,oyashio:300,adad:290, 'full-beam':300,pyroclast:290,ampere:285,akaito:290, shijima:290, tempo:290, tancho:290,bellows:300,mikage:290, shanxiao: 290, kuzu: 290, shakugo: 299, 'basilissa': 282, sorayomi: 290, strix: 290, kenzo: 375, koko: 565, nigo: 375, shirokane: 361, shiden: 368, kosho: 368, ouga: 368, gummy: 320,
       ward: 368, kuon: 433, oro: 579, gaunt: 454, setsu: 348,
       // The shop's fighters, at Ward's: bought, not better.
-      gorai: 368, haldor: 368, sorrel: 368, dorado: 368, shiun: 368, magatsu: 368, vesper: 368, imago: 368, 'wuming': 368, jirenga: 368, 'gohaku': 368, ippon: 368, sekka: 368, tobari: 368, akagane: 368, asahi: 368, levin: 368, 'rook': 368, gaku: 368 };
+      gorai: 368, haldor: 368, sorrel: 368, dorado: 368, shiun: 368, magatsu: 368, vesper: 368, imago: 368, 'wuming': 368, banjaku: 368, 'gohaku': 368, ippon: 368, sekka: 368, tobari: 368, akagane: 368, asahi: 368, levin: 368, 'rook': 368, gaku: 368 };
     const move = MOVES[f].ultimate, first = move.timeStop ? move.timeStop.contact + 1 : 0, last = move.contacts.length - 1;
     let sum = 0;
     for (let i = first; i <= last; i++) sum += i === last ? move.finisherDamage ?? move.damage : move.damage;
@@ -90,27 +90,27 @@ describe('each ultimate lands its own schedule', () => {
 
 describe('each ultimate\'s damage shape', () => {
   const gaps = (f: FighterId) => { const c = MOVES[f].ultimate.contacts; return c.slice(1).map((t, i) => t - c[i]); };
-  it('Setsuna: Tsumuji is a barrage - many small blows, then the one that counts', () => {
+  it('Setsuna: Kazahana is a barrage - many small blows, then the one that counts', () => {
     const { damage } = ALL.setsu;
     expect(damage.length).toBeGreaterThanOrEqual(8);
     expect(Math.max(...gaps('setsu').slice(1, -1))).toBeLessThanOrEqual(.15);
     expect(Math.max(...damage.slice(1, -1)), 'small').toBeLessThanOrEqual(15);
     expect(damage.at(-1)!).toBeGreaterThan(damage.slice(1, -1).reduce((a, b) => a + b, 0) * 1.5);
   });
-  it('Kyokko-Ho pours through them: a stream of burns under the beam, and the blast', () => {
+  it('Royal Aurora pours through them: a stream of burns under the beam, and the blast', () => {
     const { damage } = ALL.ouga;
     expect(damage.length).toBeGreaterThanOrEqual(10);
     expect(Math.max(...gaps('ouga').slice(1, -1))).toBeLessThanOrEqual(.1);
     expect(damage.at(-1)!).toBeGreaterThan(150);
   });
-  it('NIGHTFALL is one cut; Grand Tide a wind-up and one colossal punch', () => {
+  it('NIGHTFALL is one cut; Spring Tide a wind-up and one colossal punch', () => {
     for (const f of ['nigo', 'gummy'] as FighterId[]) {
       expect(ALL[f].damage, f).toHaveLength(2);
       expect(ALL[f].damage[1] / ALL[f].total, `${f}: nearly all of it in the one blow`).toBeGreaterThan(.8);
     }
     expect(gaps('gummy')[0], 'the fist blown up first').toBeGreaterThanOrEqual(1.4);
   });
-  it('VOID SICKLE is a delayed rip: the blade\'s crackle, a long pull, the tear', () => {
+  it('SICKLE REAPER is a delayed rip: the blade\'s crackle, a long pull, the tear', () => {
     const { blows } = ALL.shirokane, last = blows.at(-1)!;
     expect(last.t - blows.at(-2)!.t, 'nothing lands for over a second before the rip').toBeGreaterThan(1);
     expect(last.damage).toBeGreaterThan(ALL.shirokane.total * .75);
@@ -129,10 +129,10 @@ describe('each ultimate\'s damage shape', () => {
     expect(ALL.ward.damage).toHaveLength(3);
     expect(ALL.ward.blows[2].t - ALL.ward.blows[1].t, 'two jolts, close together').toBeLessThan(.3);
   });
-  it('the RAKSHASA\'s nine blades cut at once: a silence, then three sweeps in a sixth of a second', () => {
+  it('the DUNE ONI\'s nine blades cut at once: a silence, then three sweeps in a sixth of a second', () => {
     const { blows } = ALL.kenzo;
     expect(blows).toHaveLength(4);
-    expect(blows[1].t - blows[0].t, 'the RAKSHASA rises').toBeGreaterThan(.8);
+    expect(blows[1].t - blows[0].t, 'the DUNE ONI rises').toBeGreaterThan(.8);
     expect(blows[3].t - blows[1].t).toBeLessThanOrEqual(.2);
   });
 });

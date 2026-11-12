@@ -23,7 +23,7 @@ type Slot = typeof SLOTS[number];
 /** The file prefix each original's own assets are named for. */
 const OWN: Record<Slot, RegExp> = { tobari: /\/tobari-/, akagane: /\/akagane-/, shiun: /\/shiun-/, magatsu: /\/magatsu-/ };
 const SHOWN: Record<Slot, [string, string]> = {
-  tobari: ['Tobari', 'Hidden Ash'], akagane: ['Akagane', 'Hidden Ash'], shiun: ['Shiun', 'Cinder Requiem'], magatsu: ['Magatsu', 'Hex Fallout'],
+  tobari: ['Tobari', 'Ashwood'], akagane: ['Akagane', 'Ashwood'], shiun: ['Shiun', 'Cinder Requiem'], magatsu: ['Magatsu', 'Hex Fallout'],
 };
 /** All four, each in SHOP_C since its body was built (the launch gate shows a shop fighter once ORIGINALS has it). */
 const MINE = SLOTS.filter(id => SHOP_C[id]);
@@ -88,7 +88,7 @@ describe('team C\'s shop originals', () => {
       for (const joint of ['WAIST_04', 'SPINE3_07', 'HEAD_09', 'SHOULDER_L_033', 'SHOULDER_R_055', 'ELBOW_L_034', 'ELBOW_R_056', 'WRIST_L_036', 'WRIST_R_058'])
         expect(json.nodes.some(n => n.name === joint), joint).toBe(true);
     }
-    // Shiun's PALE SERAPH and Magatsu's CALAMITY KING are bodies of their own, in the forms' places.
+    // Shiun's PALE SERAPH and Magatsu's CALAMITY RISEN are bodies of their own, in the forms' places.
     for (const id of ['shiun', 'magatsu'] as const) if (SHOP_C[id]) {
       expect(AWAKENINGS[id].kind, id).toBe('form');
       expect(FIGHTERS[id].formModel, id).toMatch(OWN[id]);

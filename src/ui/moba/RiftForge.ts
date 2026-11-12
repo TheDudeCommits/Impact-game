@@ -5,7 +5,7 @@ import {itemState} from './presentation';
 import {escapeRift as escape,riftIcon} from './icons';
 const ART:Record<RiftItemId,string>={
  'spirit-blade':'burning-blade','soul-fang':'dread-of-the-dead','void-edge':'rending-cut','blood-moon':'soul-harvest',sunbreaker:'limit-break','eclipse-fang':'executioner',
- 'vital-seal':'tough-body','iron-ward':'ki-armor','colossus-heart':'hound-armor','guardian-oath':'guardian','dawn-oath':'in-the-zone','aegis-of-dawn':'counter-art',worldheart:'undying-will',
+ 'vital-seal':'tough-body','iron-ward':'ki-armor','colossus-heart':'grave-plate','guardian-oath':'guardian','dawn-oath':'in-the-zone','aegis-of-dawn':'counter-art',worldheart:'undying-will',
  'swift-sandals':'fleet-foot','focus-charm':'focus','storm-step':'cinder-step','sage-scroll':'ki-surge','rift-compass':'ultimate-rush','shadow-tread':'afterimage','storm-crown':'god-speed','infinite-script':'limitless',
 };
 export const relicArt=(id:RiftItemId)=>`/assets/survival/cards/${ART[id]}.webp`;

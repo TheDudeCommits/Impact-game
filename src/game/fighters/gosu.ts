@@ -6,7 +6,7 @@ import type {ComboRow} from '../combos';
 export const GOSU_MOVES:Record<CoreSlot,MoveDefinition>={
  light:{name:'Porcelain Jab',duration:.44,contacts:[.152],damage:21,range:2.8,radius:.82,stamina:9,cooldown:.44,stun:.31,knockback:3.1,lunge:3.5,style:'melee'},
  heavy:{name:'Gold Seam Hammer',duration:.92,contacts:[.48],damage:65,range:3.1,radius:.95,stamina:26,cooldown:1.24,stun:.75,knockback:9,lunge:3.8,style:'melee',outcome:'knockdown'},
- special:{name:'KIN KIN Barrage',duration:1.5,contacts:[.43,.69,.93],damage:38,range:3.2,radius:1.0,stamina:32,cooldown:5.0,stun:.42,knockback:.5,finisherKnockback:1.5,lunge:4.2,style:'melee'},
+ special:{name:'GILT Barrage',duration:1.5,contacts:[.43,.69,.93],damage:38,range:3.2,radius:1.0,stamina:32,cooldown:5.0,stun:.42,knockback:.5,finisherKnockback:1.5,lunge:4.2,style:'melee'},
  ultimate:{name:'Gilded Scars',duration:3.5,contacts:[.52,.94,1.21,1.48,1.75,2.02,2.31,2.76],schedule:[18,18,18,18,18,18,18,535],damage:18,finisherDamage:164,range:3.2,radius:1.15,stamina:0,cooldown:23,stun:.5,finisherStun:2.3,knockback:0,finisherKnockback:16,lunge:4.2,style:'melee',guardBreak:true,confirm:{recovery:.65}},
 };
 export const GOSU_COMBOS:ComboRow={lh:{name:'Porcelain Hook',range:3.1,radius:.9},llh:{name:'Rising Seam',range:3.0,radius:.9},lllh:{name:'Ruin Breaker',range:3.2,radius:1},llls:{name:'Kin Drive',range:3.2,radius:.9},airHeavy:{name:'Descending Shard',range:3.1,radius:1},airSpecial:{name:'Mending Crash',radius:3.1}};

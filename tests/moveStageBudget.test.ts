@@ -34,7 +34,7 @@ import { OyashioCurrent } from '../src/render/signature/OyashioCurrent';
 import { VfxKit } from '../src/render/vfx/VfxKit';
 import { ChohanAllIn } from '../src/render/signature/ChohanAllIn';
 import { TempoDarkSpark } from '../src/render/signature/TempoDarkSpark';
-import { AkaitoGhostBride } from '../src/render/signature/AkaitoGhostBride';
+import { AkaitoShade } from '../src/render/signature/AkaitoShade';
 import { SashiganeRule } from '../src/render/signature/SashiganeRule';
 import { AmpereSurge } from '../src/render/signature/AmpereSurge';
 import { PyroclastExplosions } from '../src/render/signature/PyroclastExplosions';
@@ -50,7 +50,7 @@ import { RotfalkeField } from '../src/render/signature/RotfalkeField';
 import { MurexBarrier } from '../src/render/signature/MurexBarrier';
 import { ShakudoAlchemy } from '../src/render/signature/ShakudoAlchemy';
 import { MinaseRaijin } from '../src/render/signature/MinaseRaijin';
-import { MadakeGates } from '../src/render/signature/MadakeGates';
+import { MadakeSeasons } from '../src/render/signature/MadakeSeasons';
 import { AmagoiGravity } from '../src/render/signature/AmagoiGravity';
 import { HakushiOldLion } from '../src/render/signature/HakushiOldLion';
 import { KusushiStrength } from '../src/render/signature/KusushiStrength';
@@ -128,7 +128,7 @@ describe('what a pilot\'s ultimate asks of the shared stage at its busiest frame
     ['oyashio', (scene: THREE.Scene) => new OyashioCurrent(scene, { budget: 1 })],
     ['chohan', (scene: THREE.Scene) => new ChohanAllIn(scene, { budget: 1 })],
     ['tempo', (scene: THREE.Scene) => new TempoDarkSpark(scene, { budget: 1 })],
-    ['akaito', (scene: THREE.Scene) => new AkaitoGhostBride(scene, { budget: 1 })],
+    ['akaito', (scene: THREE.Scene) => new AkaitoShade(scene, { budget: 1 })],
     ['sashigane', (scene: THREE.Scene) => new SashiganeRule(scene, { budget: 1 })],
     ['ampere', (scene: THREE.Scene) => new AmpereSurge(scene, { budget: 1 })],
     ['pyroclast', (scene: THREE.Scene) => new PyroclastExplosions(scene, { budget: 1 })],
@@ -144,7 +144,7 @@ describe('what a pilot\'s ultimate asks of the shared stage at its busiest frame
     ['murex', (scene: THREE.Scene) => new MurexBarrier(scene, { budget: 1 })],
     ['shakudo', (scene: THREE.Scene) => new ShakudoAlchemy(scene, { budget: 1 })],
     ['minase', (scene: THREE.Scene) => new MinaseRaijin(scene, { budget: 1 })],
-    ['madake', (scene: THREE.Scene) => new MadakeGates(scene, { budget: 1 })],
+    ['madake', (scene: THREE.Scene) => new MadakeSeasons(scene, { budget: 1 })],
     ['amagoi', (scene: THREE.Scene) => new AmagoiGravity(scene, { budget: 1 })],
     ['hakushi', (scene: THREE.Scene) => new HakushiOldLion(scene, { budget: 1 })],
     ['kusushi', (scene: THREE.Scene) => new KusushiStrength(scene, { budget: 1 })],

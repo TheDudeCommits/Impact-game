@@ -140,7 +140,7 @@ function keeps(f: Forge) {
   for (let i = 0; i < 11; i++) {
     const a = i / 11 * Math.PI * 2 + rnd() * .3, d = 110 + rnd() * 120, x = Math.sin(a) * d, z = Math.cos(a) * d;
     const w = 14 + rnd() * 12, top = -6 - rnd() * 34, rot = rnd() * Math.PI;
-    if (Math.hypot(x - TOWER.x, z - TOWER.z) < 60) continue; // places-epic-a: the storm-bell tower stands there
+    if (Math.hypot(x - TOWER.x, z - TOWER.z) < 60) continue; // places-epic-a: the storm tower stands there
     f.box('masonry', x, FOOT, z, w, top - FOOT, w, i % 2 ? STONE : 0x4e4a56, { rot });
     f.box('masonry', x, top, z, w + 1.4, 1.4, w + 1.4, DARK, { rot });
     for (let k = -2; k <= 2; k++) for (const s of [-1, 1]) {
@@ -277,7 +277,9 @@ async function greatKeep(c: DressContext) {
     m.emissiveMap = glowMap; m.emissive.set(0xff9a4a); m.emissiveIntensity = 2.4; m.needsUpdate = true;
     c.ambient.onUpdate(t => { m.emissiveIntensity = 2.4 * (.85 + .1 * Math.sin(t * 4.3) * Math.sin(t * 1.9 + 1)); });
   }
-  // The storm's flash on the bell at its crown every few seconds, and the fire's glow on the cloud at its foot.
+  // The storm's flash on the cage at its crown every few seconds, and the fire's glow on the cloud at its foot. (A beacon
+  // burning in the empty cage was tried: its glow filled the cage, a lantern's again; the cage stands empty and dark, lit by
+  // the storm.)
   const glow = new Beacons(c.root, 3, c.ambient.time);
   glow.add(x, foot + h * .92, z, 60, 0xd0c8ff, .28, .1, .08);
   glow.add(x * .97, -40, z * .97, 140, 0xff6a20, -1, .6, 1);

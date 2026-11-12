@@ -130,7 +130,7 @@ describe('Kenzo\'s WILD RONIN beard (kenzo, base body)', () => {
     expect(tip.distanceTo(rest)).toBeLessThan(.002);             // settled again
   });
 
-  it('leaves his oni form as it was: no beard on RAKSHASA', () => {
+  it('leaves his oni form as it was: no beard on DUNE ONI', () => {
     const form = glb(FORM).json;
     expect(form.nodes.some(n => n.name === 'Beard' || LINK.test(n.name ?? ''))).toBe(false);
   });

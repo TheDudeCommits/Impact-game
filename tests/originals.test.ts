@@ -20,7 +20,7 @@ import { SHOP_R6P } from '../src/originals/shop/r6p';
 import { SHOP_R6B } from '../src/originals/shop/r6b';
 import { Fighter, bindClips } from '../src/render/Fighter';
 import { IDLE_PROFILES } from '../src/render/idle/profile';
-import { RAKSHASA_ASSET } from '../src/render/signature/ThreeBlade';
+import { DUNE_ONI_ASSET } from '../src/render/signature/ThreeBlade';
 import { GUARDIAN_ASSET } from '../src/render/signature/GuardianShell';
 import { KNIFE_ASSET, SPIRIT_CALLERS, SWORD_SPIRIT_ASSETS } from '../src/render/SwordSpiritEffects';
 import { commandList } from '../src/ui/commandList';

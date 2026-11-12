@@ -8,7 +8,7 @@ import { noiseGLSL } from '../vfx/noise';
 import { noiseTexture, NOISE_GLSL } from '../vfx/noiseTexture';
 
 /** Limbs on fire: Kosho's FEU BLEU (his legs burn blue) and, since round
- *  3b, Kagari's KAGUTSUCHI (his arms and shoulders become fire).
+ *  3b, Kagari's ALL ABLAZE (his arms and shoulders become fire).
  *
  *  Round 3 drew FEU BLEU as flame tongues standing up each shin (the
  *  analytic flame cards the golden awakened forms' crown flares are drawn with, in the
@@ -157,8 +157,8 @@ export const IFRIT: Blaze = {
   thick: .03, lick: .06, embers: ['LeftFoot', 'RightFoot'], emberEvery: .035, edge: [.4, .8],
 };
 /** Kagari's arms and shoulders: his body, turning to fire. */
-export const KAGUTSUCHI: Blaze = {
-  fighter: 'kagari', name: 'kagutsuchi',
+export const ALL_ABLAZE: Blaze = {
+  fighter: 'kagari', name: 'all-ablaze',
   weights: { LeftHand: 1, RightHand: 1, LeftForeArm: 1, RightForeArm: 1, LeftArm: .9, RightArm: .9, LeftShoulder: .6, RightShoulder: .6 },
   chains: [['LeftHand', 'LeftForeArm', 'LeftArm', 'LeftShoulder'], ['RightHand', 'RightForeArm', 'RightArm', 'RightShoulder']],
   stations: [0, .5, 1, 1.5, 2, 2.6], perStation: 2, size: .5, taper: .06, ahead: .06,

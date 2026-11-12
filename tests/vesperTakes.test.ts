@@ -349,11 +349,11 @@ describe('Vesper\'s moves', () => {
     } finally { fighter.dispose(); }
   });
 
-  it.skipIf(!!ORIGINALS.vesper)('opens The Offering with the thrust at their chest (the take thrust with his hand behind his hips)', () => {
+  it.skipIf(!!ORIGINALS.vesper)('opens Evensong with the thrust at their chest (the take thrust with his hand behind his hips)', () => {
     const fighter = body(), blade = sabre(fighter);
     try {
       fighter.dynamics = false;
-      drawn(fighter, 'The Offering', .157);
+      drawn(fighter, 'Evensong', .157);
       const { tip, hand, dir } = blade.blade(), hips = joint(fighter, 'Hips');
       expect(hand.z - hips.z, 'the hand before him').toBeGreaterThan(.35);
       expect(tip.z - hips.z, 'the point at them').toBeGreaterThan(1);
@@ -414,7 +414,7 @@ describe('Black Vespers\'s moves', () => {
 
   it('keeps each clip\'s length (the Pale Lance new, of the move\'s own)', () => {
     const before = durations(FIGHTERS[ID].formModel!), after = durations(BLACK_VESPERS_TAKES);
-    const takes = ['Reverse Quill', 'The Offering', 'Raven Dive', 'Feather Slash', 'Hawks Talon', 'Updraft', 'Quill Thrust', 'Pale Lance'];
+    const takes = ['Reverse Quill', 'Evensong', 'Raven Dive', 'Feather Slash', 'Hawks Talon', 'Updraft', 'Quill Thrust', 'Pale Lance'];
     // (An original's form file is the takes' own and carries his other clips besides: each take is in it.)
     if (ORIGINALS.vesper) for (const name of [...after.keys()]) if (!takes.includes(name)) after.delete(name);
     expect([...after.keys()].sort()).toEqual(takes.sort());

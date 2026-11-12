@@ -1,6 +1,6 @@
 import type {AttackSlot, Vec3} from '../types';
 import type {MoveDefinition} from '../moves';
-import {BALL_RULES, GOAL_RULES, SPIKE_RULES, heatTier, type BallModeId, type BallState, type BallTeam, type ShotKind} from './model';
+import {BALL_RULES, GOAL_RULES, SPIKE_RULES, heatTier, spikeCourt, type BallModeId, type BallState, type BallTeam, type ShotKind} from './model';
 import {goalZ, speedCap, stepBall, type BallContact} from './physics';
 
 /** Who struck the ball, as the strike needs them: where they stand, whether they are off the floor, where they aimed
@@ -416,8 +416,11 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
   // The serve's three (SERVE_STYLE): a light FLOAT SERVE, a heavy's DRIVE from the floor, a JUMP SERVE from the air.
   const jumpServe = kind === 'serve' && !s.grounded && c.slot !== 'light', floatServe = kind === 'serve' && c.slot === 'light';
   if (kind === 'tip') return tip(ball, c, g);
+  // (On volleyball's court for three a side every length and width below is the classic's carried onto it - kx and
+  // kz are its ratios to the classic court, exactly 1 there.)
+  const C = spikeCourt(ball), kx = C.x / R.courtHalfX, kz = C.z / R.courtHalfZ;
   // The other side's court: [how far past the net it lands, flight time per metre, landing height].
-  let deep = kind === 'spike' ? 4.8 : jumpServe ? SERVE_STYLE.jumpDeep : floatServe ? SERVE_STYLE.floatDeep : kind === 'serve' ? 7.4 : kind === 'volley' ? 7 : kind === 'super' ? 0 : 7.8;
+  let deep = (kind === 'spike' ? 4.8 : jumpServe ? SERVE_STYLE.jumpDeep : floatServe ? SERVE_STYLE.floatDeep : kind === 'serve' ? 7.4 : kind === 'volley' ? 7 : kind === 'super' ? 0 : 7.8) * kz;
   // How the swing met the ball (MEET): from under it the hit floats deeper, from over it it comes down shorter; a set
   // crossing the aim met late or early lands across. (Never a serve's hanging ball or a SUPER SHOT.)
   const met = kind === 'super' ? {lift: 0, bend: 0} : meeting(ball, c);
@@ -427,7 +430,7 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
   const deep0 = deep;
   // PLACE: the stick as pressed picks the zone (a SCUFF goes where it was mis-hit).
   const zone = kind !== 'super' && !c.scuff ? placement(s, own) : undefined, family = kind === 'spike' || kind === 'serve' ? kind : 'other';
-  if (zone?.f) deep = zone.f > 0 ? deep + (Math.max(deep, PLACE.deep[family]) - deep) * zone.f : deep + (deep - Math.min(deep, PLACE.short[family])) * zone.f;
+  if (zone?.f) deep = zone.f > 0 ? deep + (Math.max(deep, PLACE.deep[family] * kz) - deep) * zone.f : deep + (deep - Math.min(deep, PLACE.short[family] * kz)) * zone.f;
   const speedOf: Record<string, number> = {spike: 22, serve: jumpServe ? SERVE_STYLE.jump : floatServe ? SERVE_STYLE.float : SERVE_STYLE.drive, volley: 17, drive: 20, power: 21, curve: 19, sinker: 20, blast: 21, tap: 12, pop: 10, eruption: 11, super: 38};
   const intoFar = dz * -sign > .25;
   let tx: number, tz: number;
@@ -435,7 +438,7 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
     // The emptiest point of the other court.
     let best = {x: 0, z: -sign * 5, d: -1};
     for (let ix = -2; ix <= 2; ix++) for (let iz = 1; iz <= 4; iz++) {
-      const x = ix * (R.courtHalfX - 1) / 2, z = -sign * iz * (R.courtHalfZ - .8) / 4;
+      const x = ix * (C.x - 1) / 2, z = -sign * iz * (C.z - .8) / 4;
       const d = Math.min(...(c.rivals?.length ? c.rivals.map(r => Math.hypot(r.x - x, r.z - z)) : [9]));
       if (d > best.d) best = {x, z, d};
     }
@@ -444,8 +447,8 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
     const reach = (Math.abs(ball.z) + deep) / Math.max(.25, Math.abs(dz));
     // (A SCUFF goes where it was mis-hit, inside the lines or not.)
     // (MEET's BEND: across by a late or an early meeting, to the aim's right hand - the world's x by which way it faces.)
-    tx = c.scuff ? ball.x + dx * reach : Math.max(-R.courtHalfX + .7, Math.min(R.courtHalfX - .7, (zone?.a ? zone.a * PLACE.x[family] : ball.x + dx * reach) + met.bend * MEET.x * Math.cos(yaw)));
-    tz = -sign * (c.scuff ? Math.max(.3, deep) : Math.max(1.2, Math.min(R.courtHalfZ - .7, deep + (kind === 'spike' || jumpServe || zone?.f ? 0 : -Math.abs(dx) * 1.5))));
+    tx = c.scuff ? ball.x + dx * reach : Math.max(-C.x + .7, Math.min(C.x - .7, (zone?.a ? zone.a * PLACE.x[family] * kx : ball.x + dx * reach) + met.bend * MEET.x * Math.cos(yaw)));
+    tz = -sign * (c.scuff ? Math.max(.3, deep) : Math.max(1.2, Math.min(C.z - .7, deep + (kind === 'spike' || jumpServe || zone?.f ? 0 : -Math.abs(dx) * 1.5))));
   } else {
     // Aimed away from the other court: it flies the way it was aimed, and is probably out.
     tx = ball.x + dx * 9; tz = ball.z + dz * 9;
@@ -491,12 +494,15 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
  *  past the net, into the spot of that zone farthest from the other side (leaning the way it was aimed). */
 function tip(ball: BallState, c: StrikeContext, g: number): Flight {
   const R = SPIKE_RULES, s = c.striker, far = s.team === 'red' ? 1 : -1, lean = Math.sin(s.aimYaw) * far;
-  let best = {x: 0, z: far * SPIKE_TIP.near, d: -Infinity};
-  for (const x of [-5.6, -3.4, -1.2, 1.2, 3.4, 5.6]) for (const z of [SPIKE_TIP.near, (SPIKE_TIP.near + SPIKE_TIP.far) / 2, SPIKE_TIP.far]) {
+  // (Volleyball's court for three a side - the classic's spots carried onto it, exactly the classic's there.)
+  const C = spikeCourt(ball), kx = C.x / R.courtHalfX, kz = C.z / R.courtHalfZ;
+  let best = {x: 0, z: far * SPIKE_TIP.near * kz, d: -Infinity};
+  for (const x0 of [-5.6, -3.4, -1.2, 1.2, 3.4, 5.6]) for (const z0 of [SPIKE_TIP.near, (SPIKE_TIP.near + SPIKE_TIP.far) / 2, SPIKE_TIP.far]) {
+    const x = x0 * kx, z = z0 * kz;
     const d = Math.min(9, ...(c.rivals?.length ? c.rivals.map(r => Math.hypot(r.x - x, r.z - far * z)) : [9])) + (Math.sign(x) === Math.sign(lean * far) && Math.abs(lean) > .15 ? 1.2 : 0) - Math.abs(x - ball.x) * .08;
     if (d > best.d) best = {x, z: far * z, d};
   }
-  let t = SPIKE_TIP.seconds, v = arc(ball, Math.max(-R.courtHalfX + .8, Math.min(R.courtHalfX - .8, best.x)), SPIKE_TIP.height, best.z, t, g, R.drag);
+  let t = SPIKE_TIP.seconds, v = arc(ball, Math.max(-C.x + .8, Math.min(C.x - .8, best.x)), SPIKE_TIP.height, best.z, t, g, R.drag);
   for (let tries = 0; tries < 12 && !clears(ball, v, g, 1.2); tries++) { t *= 1.06; v = arc(ball, best.x, SPIKE_TIP.height, best.z, t, g, R.drag); }
   return {...v, sx: 0, sy: 0, sz: 0, shot: 'tip'};
 }

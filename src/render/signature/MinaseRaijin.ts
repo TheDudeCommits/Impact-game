@@ -173,7 +173,7 @@ export class MinaseRaijin {
 
   /** The palm sphere at `at`, `radius` across its sphere: the stage's solid blue ball turning, his arcs spiralling over
    *  it, its halo, and its light on the floor and on him. */
-  private whirlsphere(at: THREE.Vector3, radius: number, fade: number, time: number, seed: number, spin = 1) {
+  private kazeyose(at: THREE.Vector3, radius: number, fade: number, time: number, seed: number, spin = 1) {
     if (fade <= .02 || radius <= .02) return;
     const st = this.stage;
     st.ball(at, radius, PALM, seed, fade);
@@ -241,7 +241,7 @@ export class MinaseRaijin {
         const wind = s.action === 'heavy' && !s.branch ? clamp(elapsed / HEAVY.contacts[0]) : s.action === 'ultimate' ? clamp((elapsed - ULT.contacts[1]) / (ULT.contacts[2] - ULT.contacts[1])) : 1;
         const radius = (s.action === 'heavy' ? .1 + .14 * wind : s.action === 'ultimate' ? .16 + .22 * wind : s.action === 'special' ? .28 : .13) * boost;
         if (wind > 0 && wind < 1) this.wind(strike, radius, wind, time, seed);
-        this.whirlsphere(strike, radius, Math.min(1, swing * 4), time, seed);
+        this.kazeyose(strike, radius, Math.min(1, swing * 4), time, seed);
         continue;
       }
       // The marked knife: a glint of gold on the blade and the line of its cut.
@@ -268,7 +268,7 @@ export class MinaseRaijin {
       if (!g.live) continue;
       const age = time - g.born; if (age >= g.life) { g.live = false; continue; } if (age < 0) continue;
       const u = age / g.life;
-      this.whirlsphere(g.at, g.size * (.55 + .45 * Math.min(1, age / .07)) * (1 - .25 * u), 1 - u * u, time, g.born, 1.6);
+      this.kazeyose(g.at, g.size * (.55 + .45 * Math.min(1, age / .07)) * (1 - .25 * u), 1 - u * u, time, g.born, 1.6);
     }
     for (const c of this.confirms) {
       if (!c.actor) continue;

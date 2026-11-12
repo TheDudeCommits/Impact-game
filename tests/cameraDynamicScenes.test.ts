@@ -36,7 +36,7 @@ async function watch(s:KnockbackScene,cinematics:boolean){
 }
 
 describe('dynamic: the victim stays readable through the knockback',()=>{
-  it.each([['heavy launch',false],['dash-through',false],['rush into the wall',false],['melee ultimate',true],['last sun bomb',true]] as const)(
+  it.each([['heavy launch',false],['dash-through',false],['rush into the wall',false],['melee ultimate',true],['last sunfall',true]] as const)(
     '%s (cinematics %s): chest clear of the HUD, crown and soles in the frame, never a cut',async(name,cinematics)=>{
       const r=await watch(SCENES.find(s=>s.name===name)!,cinematics);
       expect(r.finite).toBe(true);

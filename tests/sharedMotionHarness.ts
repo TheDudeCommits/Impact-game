@@ -87,7 +87,7 @@ export function drive(victim: Fighter, striker: Fighter, presses: Press[], ticks
 
 const LIMBS = ['LeftFoot', 'RightFoot', 'LeftToeBase', 'RightToeBase', 'LeftLeg', 'RightLeg', 'LeftHand', 'RightHand', 'Head', 'Hips'];
 type Internal = { lowestSupport(): number; launchArc: number; launchTurns: number; groundY: number };
-/** The launches: Konta's heavy (the Senpugan, from the front), Taisei's (the Cloudstep Strike, from behind),
+/** The launches: Konta's heavy (the Kazeyose, from the front), Taisei's (the Cloudstep Strike, from behind),
  *  Ouga's (a projectile), Taisei's string's finisher and his ultimate (the LAST SUN). */
 export const LAUNCHES: Record<string, { by: FighterId; presses: Press[]; ticks: number }> = {
   heavy: { by: 'konta', presses: [{ tick: 30, attack: 'heavy' }], ticks: 30 + 150 },

@@ -11,12 +11,12 @@ import {LightVolumes} from './signature/LightVolumes';
 import {BoltBatch} from './signature/BoltBatch';
 import {GlowBatch,RING,STAR} from './signature/GlowBatch';
 import {UnsealedEffects} from './signature/Unsealed';
-import {ThreeBladeEffects,RAKSHASA_ASSET} from './signature/ThreeBlade';
+import {ThreeBladeEffects,DUNE_ONI_ASSET} from './signature/ThreeBlade';
 import {applyOriginalSpiritShells,applyOriginalSpirits} from '../originals/apply';
 import {ORIGINALS} from '../originals/roster';
 import {applyCompanionGlows,applyCompanionShells} from '../originals/companionLooks';
 import {GhostShell,warmGhosts,type GhostPrint} from './signature/GhostShell';
-import {Steamrollers,rollerAt,ROLLER_TIMING,type RollerPose} from './signature/Steamroller';
+import {HourOfRuins,rollerAt,ROLLER_TIMING,type RollerPose} from './signature/HourOfRuin';
 import {SIGNATURE} from './signature/context';
 import {whiffGone} from './signature/ultimateClock';
 import {setLoomTop,clearLoomTops} from './loomRegistry';
@@ -73,7 +73,7 @@ applyOriginalSpirits(SPIRIT_CALLERS);
 const STRING_SPOT={reach:.95,least:.3,most:1.25,side:.28};
 /** LORD ORO's thrown knife: the source's own 23 cm prop (scripts/build_oro.py). */
 export const KNIFE_ASSET=ORIGINALS.oro?.knife??'/assets/fighters/oro-knife1.glb';
-export const SWORD_SPIRIT_ASSETS=[SPIRIT_CALLERS.koko!.asset,SPIRIT_CALLERS.oro!.asset,SPIRIT_CALLERS.gosu!.asset,SPIRIT_CALLERS.kinu!.asset,KNIFE_ASSET,RAKSHASA_ASSET] as const;
+export const SWORD_SPIRIT_ASSETS=[SPIRIT_CALLERS.koko!.asset,SPIRIT_CALLERS.oro!.asset,SPIRIT_CALLERS.gosu!.asset,SPIRIT_CALLERS.kinu!.asset,KNIFE_ASSET,DUNE_ONI_ASSET] as const;
 type SlashMesh=THREE.Mesh<THREE.PlaneGeometry,THREE.ShaderMaterial>;
 /** `origin` is where the clock was stopped: the user crosses the field once it
  *  has, and the bubble stays where it was cast, not on him. */
@@ -136,11 +136,11 @@ applyCompanionShells(SPIRIT_SHELL);
 type Slash={event:CombatEvent;root:THREE.Group;meshes:SlashMesh[];hitAt?:number;hitPoint?:THREE.Vector3;light:THREE.Color};
 /** How many sword-wave planes can be live at once: Kenzo's ultimate uses five. */
 const SLASH_POOL=40;
-/** The spirits' own light: Iron Spirit's violet, HUSH's gold. */
+/** The spirits' own light: Iron Spirit's violet, SLUMBER's gold. */
 const SPIRIT_GLOW:Partial<Record<FighterId,THREE.Color>>={kinu:new THREE.Color(.45,1.1,.9),gosu:new THREE.Color(.65,1.1,1.4),koko:new THREE.Color(.8,.42,1.8),oro:new THREE.Color(1.7,1.2,.3)};
 applyCompanionGlows(SPIRIT_GLOW);
 const SLASH_LIGHT={strix:new THREE.Color(.3,1.0,.42),kenzo:new THREE.Color(.35,1.1,.45)};
-/** Needle Finger in the air: the spirit's finger, drawn from its hand to wherever
+/** Iron Nail in the air: the spirit's finger, drawn from its hand to wherever
  *  the tip has got to. `hitAt` and `hitPoint` are where the server said it
  *  landed, which is where the extension stops and the retract begins. */
 type Finger={event:CombatEvent;root:THREE.Group;shaft:THREE.Mesh;core:THREE.Mesh;tip:THREE.Mesh;hitAt?:number;hitPoint?:THREE.Vector3;};
@@ -178,7 +178,7 @@ function fistGeometry(gltf:GLTF,user:SpiritCaller):THREE.BufferGeometry|undefine
  *  the user's rush-stage clips - the animation-only file the library binds to
  *  the user's body - bound by bone name to the spirit's, as the library does
  *  (Fighter's bindClips). Both spirits are humanoid rigs on the canonical bone
- *  names, so Iron Spirit throws KoKo's rush and HUSH LORD ORO's rather
+ *  names, so Iron Spirit throws KoKo's rush and SLUMBER LORD ORO's rather
  *  than idling (KoKo's light) or reaching for its air normals (LORD ORO's rush). */
 export function spiritClips(fighter:FighterId,source:GLTF,rush?:THREE.AnimationClip[]){
   const user=SPIRIT_CALLERS[fighter];
@@ -190,7 +190,7 @@ export function spiritClips(fighter:FighterId,source:GLTF,rush?:THREE.AnimationC
   return rush?bindClips(source.scene,rush,user?.name??fighter):undefined;
 }
 /** Its user's combo enders' clips (comboClips.ts), bound by bone name to the spirit as the rush's are: the spirit summoned
- *  for an ender throws the ender's own blow with its user, not its Needle Finger or its barrage. Where the spirit has a clip
+ *  for an ender throws the ender's own blow with its user, not its Iron Nail or its barrage. Where the spirit has a clip
  *  of that name already, its own is kept (Fighter's constructor). */
 export function spiritEnderClips(fighter:FighterId,owner:Fighter,source:GLTF){
   const names=new Set(COMBO_KEYS.map(key=>comboClip(fighter,key)?.clip).filter((name):name is string=>!!name));
@@ -253,10 +253,10 @@ export class SwordSpiritEffects{
   private knifeSide=new THREE.Vector3();
   private knifeAim=new THREE.Vector3();
   private knifeGrip=new THREE.Vector3();
-  /** MIDNIGHT's steamroller, one per LORD ORO in the match (signature/Steamroller). */
-  private rollerSet?:Steamrollers;
+  /** MIDNIGHT's hour of ruin, one per LORD ORO in the match (signature/HourOfRuin). */
+  private rollerSet?:HourOfRuins;
   /** Built (and its model fetched) with the first LORD ORO a room has: see load. */
-  private get rollers(){return this.rollerSet??=new Steamrollers(this.scene);}
+  private get rollers(){return this.rollerSet??=new HourOfRuins(this.scene);}
   private kit?:VfxKit;
   private get vfx(){return this.kit??=VfxKit.for(this.scene);}
   private seen=new Set<number>();
@@ -286,7 +286,7 @@ export class SwordSpiritEffects{
   private glows=new GlowBatch(64,'spirit-barrage-flash',true);
   /** Nigo's Haizan and NIGHTFALL: see signature/Unsealed. */
   private unsealed:UnsealedEffects;
-  /** Kenzo's ultimate cut and the RAKSHASA's nine-sword cut: see signature/ThreeBlade. */
+  /** Kenzo's ultimate cut and the DUNE ONI's nine-sword cut: see signature/ThreeBlade. */
   private threeBlade:ThreeBladeEffects;
   private barrageTarget=new THREE.Vector3();private barrageFrom=new THREE.Vector3();private lift=new THREE.Vector3();private smearTail=new THREE.Vector3();
   /** The tour's streaks (see TRAIL_STEP): a fixed ring, and where each spirit
@@ -314,9 +314,9 @@ export class SwordSpiritEffects{
     for(const fighter of new Set(fighters)){
       const user=SPIRIT_CALLERS[fighter as FighterId];
       if(user)jobs.push(once(user.name,()=>this.loadSpirit(fighter as FighterId,user)));
-      // MIDNIGHT's roller is built with the first LORD ORO, so its programs link behind the loading screen (Steamrollers).
+      // MIDNIGHT's roller is built with the first LORD ORO, so its programs link behind the loading screen (Hour of Ruins).
       if(fighter==='oro'){void this.rollers;jobs.push(once('LORD ORO knife',()=>this.loadKnife()));}
-      if(fighter==='kenzo')jobs.push(once('RAKSHASA phantom',()=>this.threeBlade.load()));
+      if(fighter==='kenzo')jobs.push(once('DUNE ONI phantom',()=>this.threeBlade.load()));
     }
     return Promise.all(jobs).then(()=>{});
   }
@@ -357,7 +357,7 @@ export class SwordSpiritEffects{
   }
   handle(events:CombatEvent[]){this.unsealed.handle(events);this.threeBlade.handle(events);for(const e of events){if(this.seen.has(e.id))continue;this.seen.add(e.id);if(this.seen.size>2048)this.seen.delete(this.seen.values().next().value!);
     // Kenzo's light and Mirage Draw draw their cut on a wave plane; his ultimate's cut
-    // and the RAKSHASA's cut are signature/ThreeBlade's, Nigo's are Unsealed's.
+    // and the DUNE ONI's cut are signature/ThreeBlade's, Nigo's are Unsealed's.
     // (Not a combo ender thrown in the heavy's slot: it is its own move, drawn as its own - CombatEffects.)
     if(e.kind==='cast'&&e.origin&&e.endpoint&&e.fighter==='kenzo'&&(e.slot==='light'||e.slot==='heavy'&&!e.branch)){
       const root=new THREE.Group(),meshes:SlashMesh[]=[];root.name=e.fighter+'-sword-path';this.scene.add(root);
@@ -376,15 +376,15 @@ export class SwordSpiritEffects{
       this.slashes.push({event:e,root,meshes,light:SLASH_LIGHT.strix});
       if(this.slashes.length>32)this.remove(this.slashes.shift()!);
     }
-    // Needle Finger: the spirit's finger extends to the tip's live position and
+    // Iron Nail: the spirit's finger extends to the tip's live position and
     // comes back. CombatEffects draws no body for KoKo's casts - the spirit
     // is the body - so the projectile is drawn here, from the spirit's hand.
     // LORD ORO's heavy is a fan of knives instead, drawn in update() off the flight
     // CombatEffects keeps for it; there is nothing to make on the cast.
     if(e.kind==='cast'&&e.origin&&e.endpoint&&e.fighter&&SPIRIT_CALLERS[e.fighter]?.heavy==='finger'&&e.slot==='heavy'&&!e.branch){
-      const root=new THREE.Group();root.name='needle-finger';root.visible=false;
+      const root=new THREE.Group();root.name='iron-nail';root.visible=false;
       const shaft=new THREE.Mesh(this.fingerGeometry,this.fingerMaterial),core=new THREE.Mesh(this.fingerGeometry,this.fingerCoreMaterial),tip=new THREE.Mesh(this.fingerTipGeometry,this.fingerMaterial);
-      shaft.name='needle-finger-shaft';core.name='needle-finger-core';tip.name='needle-finger-tip';root.add(shaft,core,tip);this.scene.add(root);
+      shaft.name='iron-nail-shaft';core.name='iron-nail-core';tip.name='iron-nail-tip';root.add(shaft,core,tip);this.scene.add(root);
       this.fingers.push({event:e,root,shaft,core,tip});if(this.fingers.length>8)this.removeFinger(this.fingers.shift()!);
     }
     if(['hit','guard-break','blocked'].includes(e.kind)){
@@ -403,8 +403,8 @@ export class SwordSpiritEffects{
     if(age<reachedAt)return Math.min(out,stopAt);
     return Math.max(0,stopAt-Math.max(0,age-reachedAt-FINGER_HOLD)*FINGER_RETRACT);
   }
-  /** Where the steamroller is `elapsed` seconds into an ultimate whose
-   *  finisher lands at `finisher` (signature/Steamroller). Exposed for the tests. */
+  /** Where the hour of ruin is `elapsed` seconds into an ultimate whose
+   *  finisher lands at `finisher` (signature/HourOfRuin). Exposed for the tests. */
   static rollerAt(elapsed:number,finisher:number){return rollerAt(elapsed,finisher);}
   private removeFinger(f:Finger){f.root.removeFromParent();}
   /** The opponent a spirit's user is turned to, within SPIRIT_REACH: the one most
@@ -559,7 +559,7 @@ export class SwordSpiritEffects{
       this.spiritFades.set(id,0);
     }else{
       loom.placed=false;loom.surge=0;
-      // LORD ORO throws his ordinary knives himself. Summoning HUSH for that
+      // LORD ORO throws his ordinary knives himself. Summoning SLUMBER for that
       // pose hid his hands behind a second body and repeated the same throw.
       // A combo ender is the string's big blow, and the spirit comes for it - LORD ORO's too, whose heavy is otherwise his own
       // knives - throwing the ender's own clip with its user (mirror, spiritEnderClips).
@@ -650,7 +650,7 @@ export class SwordSpiritEffects{
     if(shell){
       // Round 3 (owner): the Iron Spirit of the awakening is the one that
       // appears for his normal attacks - the same printed shell, rim, ink and
-      // glow on the same body. HUSH likewise for LORD ORO.
+      // glow on the same body. SLUMBER likewise for LORD ORO.
       shell.enabled=true;shell.opacity=SPIRIT_OPACITY*(looming?1:this.spiritFades.get(id)!);shell.clock=time;
       shell.dissolve=looming?1-loom.presence:0;
       if(loom.anchor)loom.anchor.position.y=looming?.55:1.2;
@@ -807,7 +807,7 @@ export class SwordSpiritEffects{
         if(held&&typeof screen?.timeStop==='function'){if(field.graded===undefined)screen.impactFrame?.(1);screen.timeStop(hold);field.still.visible=false;field.graded=hold;}
         else{field.still.scale.setScalar(stop.radius);field.still.visible=hold>.01;(field.still.material.uniforms.tint.value as THREE.Color).setRGB(1,1,1).lerp(STILL,hold);}
       }else{field.anchored=false;if(field.graded!==undefined){SIGNATURE.screen?.timeStop?.(0);field.graded=undefined;}}
-      // MIDNIGHT's finisher is a steamroller (signature/Steamroller): it
+      // MIDNIGHT's finisher is the Hour of Ruin (signature/HourOfRuin): it
       // drops through the last 0.8 s of the stop, crushes on the finisher as
       // the clock restarts, holds there crushed and comes apart.
       if(fighter==='oro'){
@@ -904,7 +904,7 @@ export class SwordSpiritEffects{
     this.lights.end();this.bolts.end();this.glows.end();
     this.cost[this.costAt]=spent;this.costAt=(this.costAt+1)%this.cost.length;
   }
-  /** One frame of a LORD ORO's steamroller. Whom it falls on is latched as it
+  /** One frame of a LORD ORO's hour of ruin. Whom it falls on is latched as it
    *  appears - the primary target, whom the tour ends on, if the stop caught
    *  them; else whoever LORD ORO is turned to; else the spot in front of him -
    *  and where it lands is latched too, so it stays put when the finisher

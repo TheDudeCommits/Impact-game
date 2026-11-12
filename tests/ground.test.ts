@@ -25,7 +25,7 @@ import { underlay, type GroundContext } from '../src/render/ground/build';
 /** The ground under the fighters (src/render/ground). */
 describe('the ground registry', () => {
   it('has a decision, with its reason, for every place of the main game', () => {
-    const places = (Object.keys(STAGES) as StageId[]).filter(s => !s.startsWith('rift-') && !s.startsWith('ball-') && s !== 'hidden-ash' && s !== 'blood-citadel');
+    const places = (Object.keys(STAGES) as StageId[]).filter(s => !s.startsWith('rift-') && !s.startsWith('ball-') && s !== 'ashwood' && s !== 'blood-citadel');
     expect(Object.keys(GROUND_DECISIONS).sort()).toEqual(places.sort());
     for (const [stage, d] of Object.entries(GROUND_DECISIONS)) expect(d.why.length, stage).toBeGreaterThan(20);
     // A place with a plan has a decision that says what it lays, and the other way round.

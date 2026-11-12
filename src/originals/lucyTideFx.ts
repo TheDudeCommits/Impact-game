@@ -201,7 +201,7 @@ export class LucyTideFx {
     if (this.arms) { this.arms.body.count = this.arms.ink.count = this.arms.count; this.arms.body.instanceMatrix.needsUpdate = true; }
   }
 
-  // ------------------------------------------------------------------------------------------------- GRAND TIDE
+  // ------------------------------------------------------------------------------------------------- SPRING TIDE
   private ultimate(st: MoveStage, f: Fighter, t: number, time: number, fighters: ReadonlyMap<string, Fighter>) {
     const s = f.state, key = Math.round(s.actionStarted * 1000), local = involvesLocal(s.id, s.target ?? undefined);
     let cast = this.casts.get(s.id);

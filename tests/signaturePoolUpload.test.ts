@@ -3,11 +3,11 @@ import {describe,expect,it} from 'vitest';
 import type {CombatEvent,PlayerState} from '../src/game/types';
 import type {Fighter} from '../src/render/Fighter';
 import {SignaturePoolUpload} from '../src/render/signature/SignaturePoolUpload';
-import {MadakeGates} from '../src/render/signature/MadakeGates';
+import {MadakeSeasons} from '../src/render/signature/MadakeSeasons';
 import {PsycheFleur} from '../src/render/signature/PsycheFleur';
 import {HawserColossus} from '../src/render/signature/HawserColossus';
 
-const rows=[['madake',MadakeGates],['psyche',PsycheFleur],['hawser',HawserColossus]]as const;
+const rows=[['madake',MadakeSeasons],['psyche',PsycheFleur],['hawser',HawserColossus]]as const;
 function attributes(mesh:T.InstancedMesh){return[mesh.instanceMatrix,...Object.values(mesh.geometry.attributes).filter(a=>(a as T.InstancedBufferAttribute).isInstancedBufferAttribute)]as T.BufferAttribute[];}
 function rendered(mesh:T.InstancedMesh){(mesh.onAfterRender as()=>void)();for(const a of attributes(mesh))a.clearUpdateRanges();}
 describe('bounded signature pool upload lifecycle',()=>{

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CombatEffects, impactClass, screenWorth } from '../src/render/CombatEffects';
 import { ClashEffects } from '../src/render/ClashEffects';
 import { AwakeningEffects } from '../src/render/AwakeningEffects';
@@ -11,6 +11,7 @@ import { mangaImpactProfile } from '../src/ui/MangaImpact';
 import { MOVES } from '../src/game/moves';
 import type { Fighter } from '../src/render/Fighter';
 import type { CombatEvent, FighterId, PlayerState } from '../src/game/types';
+import { seeded } from './enderHarness';
 
 const player = (props: Partial<PlayerState> = {}): PlayerState => ({ id: 'a', name: 'X', fighter: 'taisei', x: 0, y: 0, z: 0, yaw: 0, hp: 1000, maxHp: 1000, stamina: 100, ultimate: 100, action: 'idle', actionStarted: .5, actionTime: 0, actionDuration: 1, target: null, alive: true, isBot: false, grounded: true, guarding: false, cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 }, ...props });
 const event = (props: Partial<CombatEvent>): CombatEvent => ({ id: 1, kind: 'hit', serverTime: 1, actorId: 'a', ...props });
@@ -45,6 +46,14 @@ function kinds(kit: VfxKit, kind: number, time: number) {
 }
 
 describe('the impact language', () => {
+  // Each test draws the sprite kit's randomness from a seeded Math.random, a fresh stream per
+  // test, as the ender looks do (enderHarness `seeded`). Sprites are born a random few ms after a blow, so how many were
+  // alight a moment later was a draw: over 600 unseeded runs the melee hit had 1 to 16 embers alight 20 ms in (three or
+  // fewer in four) and the guard break 2 to 17 shards (four or fewer in fourteen), and now and then a test failed on its
+  // floor. What the game draws is unchanged; the tests draw it the same way every run (9 embers, 10 shards).
+  beforeEach(() => { vi.spyOn(Math, 'random').mockImplementation(seeded(1)); });
+  afterEach(() => { vi.restoreAllMocks(); });
+
   it('sizes a blow by what it was worth and where it sits in its move', () => {
     expect(impactClass(event({ slot: 'light', damage: 30 }), MOVES.taisei.light)).toBe(0);
     expect(impactClass(event({ slot: 'heavy', damage: 90 }), MOVES.kenzo.heavy)).toBe(1);

@@ -91,7 +91,7 @@ describe('boss relics', () => {
   }, 60000);
 
   it('sets its powers off on what the fighter does, and never on its own blows', () => {
-    for (const name of ['Quake', 'Black Crescent', 'Long Winter', 'Molten Rake', 'Funeral Howl', 'Stilling Palm', 'Tar Thrust', 'Hex Slashes']) expect(isProc(name), name).toBe(true);
+    for (const name of ['Quake', 'Cinder Wave', 'Long Winter', 'Molten Rake', 'Funeral Howl', 'Stilling Palm', 'Tar Thrust', 'Hex Slashes']) expect(isProc(name), name).toBe(true);
     const game = fight('lumen', ['caldera', 'haldor', 'rime']);
     const hero = game.heroes.get(PLAYER_ID)!, boss = bossOf(game);
     const zones = () => (game as unknown as { zones: { magma?: boolean }[] }).zones;
@@ -114,7 +114,7 @@ describe('boss relics', () => {
     game.dispose();
   }, 60000);
 
-  it('stops time on the ultimate (HUSH)', () => {
+  it('stops time on the ultimate (SLUMBER)', () => {
     const game = fight('lumen', ['oro'], false);
     for (let t = 0; t < 60 * 4 && game.horde.alive < 5; t++) game.tick(idle());
     const hero = game.heroes.get(PLAYER_ID)!, boss = bossOf(game);

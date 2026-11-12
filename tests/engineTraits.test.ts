@@ -22,9 +22,9 @@ describe('body traits', () => {
     for (const traits of Object.values(BODY_TRAITS)) expect(Object.isFrozen(traits)).toBe(true);
   });
 
-  it("puts the move's own rules on the move: Ikazuchi Arrow from the bow, Senpugan's palm and aim, and not Kurobi's", () => {
+  it("puts the move's own rules on the move: Ikazuchi Arrow from the bow, Kazeyose's palm and aim, and not Kurobi's", () => {
     expect(MOVES.shiden.ultimate.origin).toEqual({ right: .54, forward: .09, up: 2.94 });
-    expect(MOVES.konta.heavy).toMatchObject({ name: 'Senpugan', palmHold: true, lockAim: true });
+    expect(MOVES.konta.heavy).toMatchObject({ name: 'Kazeyose', palmHold: true, lockAim: true });
     expect(AWAKENED_MOVES.konta?.heavy).toMatchObject({ palmHold: undefined, lockAim: undefined });
     expect(moveFor('konta', 'heavy', true)).toMatchObject({ name: 'Homura Fang', palmHold: undefined, lockAim: undefined });
     const named = FIGHTER_IDS.flatMap(id => (['light', 'heavy', 'special', 'ultimate'] as const).filter(slot => MOVES[id][slot].palmHold || MOVES[id][slot].lockAim || MOVES[id][slot].origin).map(slot => `${id}:${slot}`));
@@ -81,7 +81,7 @@ describe('borrowed moves keep what they are (the Forge)', () => {
     } finally { session.restore(); }
   });
 
-  it('keeps the palm out through a borrowed Senpugan', () => {
-    expect(forgeMoves(kit('shirokane', 'heavy', 'konta')).heavy).toMatchObject({ name: 'Senpugan', palmHold: true, lockAim: true });
+  it('keeps the palm out through a borrowed Kazeyose', () => {
+    expect(forgeMoves(kit('shirokane', 'heavy', 'konta')).heavy).toMatchObject({ name: 'Kazeyose', palmHold: true, lockAim: true });
   });
 });

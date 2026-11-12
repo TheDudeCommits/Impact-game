@@ -3,7 +3,7 @@
  *  fetched only with a room that has the fighter (RosterSignatureSet's lazy factories). KinuStoneThread.ts re-exports it. */
 
 export function kinuStrikeJoint(action: string, clip?: string, index = 0): 'RightHand' | 'LeftHand' {
-  if ((action === 'ultimate' && (!clip || clip === 'Broken Shackles')) || (action === 'special' && (!clip || clip === 'BUCHI BUCHI Barrage'))) return index % 2 ? 'LeftHand' : 'RightHand';
+  if ((action === 'ultimate' && (!clip || clip === 'Broken Shackles')) || (action === 'special' && (!clip || clip === 'UNSPOOL Barrage'))) return index % 2 ? 'LeftHand' : 'RightHand';
   if (['Reeling Hook', 'Rush 3', 'Whip Stitch', 'Jailbreak Slam', 'Descending Spool', 'Shackle Crash'].includes(clip ?? '')) return 'LeftHand';
   return action === 'heavy' && !clip ? 'LeftHand' : 'RightHand';
 }

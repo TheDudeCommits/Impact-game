@@ -10,8 +10,8 @@ import type { AttackSlot, FighterId, GameSnapshot, PlayerInput } from '../src/ga
  *
  * The second blind critic hard-locked a dummy 2.4-2.9 m ahead with the
  * sparring bot 1.1 m off the fighter's side and fired eleven heavies and
- * specials: five hit the bot instead (Taimatsu, thousand mile eagle, Scrap Cannon Arm,
- * Haou-Dan, Yuragi), three hit both (Sunpalm Cannon, Shikou-Ha, Mirage Draw) and
+ * specials: five hit the bot instead (Taimatsu, eagles reach, Scrap Cannon Arm,
+ * Crown Burst, Yuragi), three hit both (Sunpalm Cannon, Throne Wave, Mirage Draw) and
  * Gaunt' Cleave, which this simulation also lands on both, was drawn as a hit
  * that did nothing. The aim was never the fault - every one of them turned to
  * the lock - but a shot, a beam and an iai cut were volumes measured from the
@@ -28,12 +28,12 @@ type Where = [number, number, number];
  *  metres ahead of and right of the camera, for the bot, A and B. */
 const CASES: [string, FighterId, AttackSlot, Where, Where, Where][] = [
   ['Taimatsu', 'kagari', 'special', [1.11, -0.07, -1.11], [2.51, 2.34, 0.92], [7.29, -2.99, 6.65]],
-  ['thousand mile eagle', 'kenzo', 'special', [1.11, -0.05, -1.1], [2.37, 2.15, 1.01], [7.46, -3.17, 6.75]],
+  ['eagles reach', 'kenzo', 'special', [1.11, -0.05, -1.1], [2.37, 2.15, 1.01], [7.46, -3.17, 6.75]],
   ['Scrap Cannon Arm', 'gaunt', 'special', [1.08, 0.59, -0.9], [2.75, 2.42, 1.31], [6.95, -3.8, 5.81]],
-  ['Haou-Dan', 'ouga', 'heavy', [1.1, 0.62, -0.91], [2.75, 2.4, 1.34], [7.09, -3.99, 5.86]],
+  ['Crown Burst', 'ouga', 'heavy', [1.1, 0.62, -0.91], [2.75, 2.4, 1.34], [7.09, -3.99, 5.86]],
   ['Yuragi', 'kagari', 'heavy', [1.1, 0.55, -0.95], [2.92, 2.67, 1.18], [6.96, -3.52, 6.01]],
   ['Sunpalm Cannon', 'taisei', 'special', [1.08, 0.52, -0.95], [2.82, 2.59, 1.11], [7.15, -3.31, 6.33]],
-  ['Shikou-Ha', 'ouga', 'special', [1.1, 0.6, -0.92], [2.38, 1.7, 1.67], [7.39, -4.22, 6.07]],
+  ['Throne Wave', 'ouga', 'special', [1.1, 0.6, -0.92], [2.38, 1.7, 1.67], [7.39, -4.22, 6.07]],
   ['Mirage Draw', 'kenzo', 'heavy', [1.1, 0.61, -0.92], [2.72, 2.37, 1.33], [7.11, -3.95, 5.91]],
   ['Cloudstep Strike', 'taisei', 'heavy', [1.1, 0.59, -0.93], [3.44, 3.21, 1.24], [7, -3.75, 5.91]],
   ['Clock-Hand Knives', 'oro', 'heavy', [1.1, 0.63, -0.9], [2.66, 2.28, 1.38], [7.09, -4.05, 5.82]],
@@ -162,9 +162,9 @@ describe('hard-locked, every attack goes to the lock', () => {
     } finally { sim.dispose(); }
   });
 
-  it('a beam burns nobody behind or beside its caster (Kyokko-Ho in the critic\'s crowd)', () => {
+  it('a beam burns nobody behind or beside its caster (Royal Aurora in the critic\'s crowd)', () => {
     // The critic's ultimate crowd for Ouga: the bot 1.5 m ahead, A 1.78 m
-    // off to the left and a little in front, B 6 m off. Unlocked, Kyokko-Ho
+    // off to the left and a little in front, B 6 m off. Unlocked, Royal Aurora
     // goes to the bot - and used to burn A, whom the beam never touches.
     const sim = new ArenaSimulation({ trainingBot: false, seed: 9 });
     try {
@@ -187,7 +187,7 @@ describe('hard-locked, every attack goes to the lock', () => {
 describe('the whole roster, hard-locked in the critic\'s crowd', () => {
   const area = (m: (typeof MOVES)[FighterId][AttackSlot]) => !!m.timeStop || m.style === 'bomb' || m.style === 'field';
   it.each(Object.keys(MOVES) as FighterId[])('%s: nothing single-target lands on the fighter at the shoulder, and every heavy, special and ultimate lands on the lock', fighter => {
-    const [, , , bot, A, B] = CASES.find(c => c[0] === 'Haou-Dan')!;
+    const [, , , bot, A, B] = CASES.find(c => c[0] === 'Crown Burst')!;
     for (const slot of ['light', 'heavy', 'special', 'ultimate'] as AttackSlot[]) {
       const sim = crowd(fighter, bot, A, B), move = MOVES[fighter][slot];
       try {

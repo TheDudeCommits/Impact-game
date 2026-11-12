@@ -9,6 +9,7 @@ import { detail, Forge, fromTris, noise2 } from './forge';
 import { drawn, rand, tinted } from './remake';
 import { surfaces } from './cc0';
 import { forged, smooth, worldFloor } from './finish';
+import { basketPost, flames, ironBasket, type FireAt, type FireMats } from './standingFire';
 
 /** The play square's half (the camera's walls), the terrace's edge east, west and south, the lodge's front. */
 const HALF = 38, EDGE = 52, NORTH = -54;
@@ -16,8 +17,8 @@ const HALF = 38, EDGE = 52, NORTH = -54;
 const LOT = [-62, 58, -76, NORTH] as const;
 const SLATE = 0x646a74, SLATE_DARK = 0x3e434c, GRANITE = 0xb8bcc2, STONE = 0x6e7078, STONE_DARK = 0x4a4c54, TIMBER = 0x24201e,
   TIMBER_LIT = 0x3a332e, IRON = 0x2a2c30, RENDER = 0xd2d0c8, ROOF = 0x3a3e46, SNOW = 0xe8ecf2, OAK = 0x6a4a30,
-  /** places-epic-a: the fortress's red lacquer and gold, and its lanterns' warm light. */
-  LACQUER = 0x8a1c16, GOLD = 0xc8962e, LANTERN = 0xffb458;
+  /** places-epic-a: the fortress's red lacquer and gold, and its firelight's warm gold. */
+  LACQUER = 0x8a1c16, GOLD = 0xc8962e, FIRELIGHT = 0xffb458;
 const MASTS = CASTLE_PILLARS.map(([x, z]) => ({ x, z, a: Math.atan2(z, x) })).sort((p, q) => p.a - q.a);
 
 /** Metres outside the terrace and the lodge's ground (0 on them). */
@@ -57,7 +58,7 @@ export async function dress(c: DressContext) {
   const floorMat = f.mat('floor', { tile: 3.2, roughness: .9, lift: .25, wear: { key: 'kuroyuki-terrace', scale: 1.4, light: [.86, 1.08], patch: 0xdfe4ea, patchAmount: .42 } }) as THREE.MeshStandardMaterial;
   worldFloor(floorMat, cc0['slate-patterned'], 3.2, { normalScale: 1.3,
     over: { surface: cc0.snow, tile: 3, amount: .24, edge: [26, 46], edgeAmount: .7, cracks: .7, scale: 4, tint: 0xf4f6fa } });
-  floorMat.color.setScalar(1.08); // places-epic-a: darker by night (1.3 under the overcast), so the lanterns' gold reads on it
+  floorMat.color.setScalar(1.08); // places-epic-a: darker by night (1.3 under the overcast), so the firelight's gold reads on it
   // (One material a kind: the granite is the stone's, the windbreaks' slate the roofs', the snow and the ice the render's.)
   f.mat('stone', { ...cc0['slate-wall'], tile: 2.6, roughness: .9, shadow: true, lift: .4 });
   f.mat('roof', { ...cc0['slate-patterned'], tile: 1.8, roughness: .85, lift: .3 });
@@ -65,8 +66,9 @@ export async function dress(c: DressContext) {
   f.mat('timber', { ...cc0['planks-dark'], tile: 1.8, roughness: .85, shadow: true, lift: .3 });
   f.mat('render', { ...cc0.snow, tile: 4, roughness: .97, lift: .75 });
   f.mat('land', { map: detail.rock(40), tile: 40, roughness: 1, air: .6 });
-  // places-epic-a: the fortress's red lacquer and gold (the masts, the lantern posts), glossy, no grain.
+  // places-epic-a: the fortress's red lacquer and gold (the masts, the parapet's posts), glossy, no grain.
   f.mat('lacquer', { roughness: .42, metalness: .08 });
+  f.mat('glow', { basic: true }); // The embers in the parapet's fire baskets
 
   floor(f);
   const fires: { x: number; y: number; z: number; size: number }[] = [];
@@ -80,7 +82,7 @@ export async function dress(c: DressContext) {
   edges(f);
   // places-epic-a: the lodge is gone; the fortress's gate-tower and halls stand on its ground and up the massif (fortress()).
   const halls = hallLayout(), posts = parapetPosts();
-  forecourt(f, posts);
+  const postFires = forecourt(f, posts);
   outworks(f);
   f.terrain('land', -420, -420, 420, 420, 8, ground, (x, y, z) => {
     const s = slope(x, z) + (fine(x, z, 13) - .5) * .5, n = fine(x, z, 9);
@@ -91,18 +93,21 @@ export async function dress(c: DressContext) {
   for (const [key, crease] of [['render', 60], ['land', 60]] as const) { const m = forged(f.meshes, key); if (m) smooth(m.geometry, crease); }
   c.root.add(valley(c));
   streamers(c);
-  const lanterns = await fortress(c, halls, posts);
+  const lights = await fortress(c, halls, postFires);
 
   const glow = new Beacons(c.root, 24, c.ambient.time);
   for (const [i, s] of fires.entries()) glow.add(s.x, s.y + .6, s.z, s.size * 2.6, 0xff8a3a, -1, (i * .23) % 1, 1);
   glow.finish('kuroyuki fires', 1.9);
-  // places-epic-a: the fortress's lanterns, the parapet's and the valley town's, one draw.
-  const lamps = new Beacons(c.root, lanterns.length + 8, c.ambient.time);
-  for (const [i, l] of lanterns.entries()) lamps.add(l.x, l.y, l.z, l.size, l.colour ?? LANTERN, -1, (i * .137) % 1, 1);
-  lamps.finish('kuroyuki lanterns', 2.5);
-  // The flames: licking puffs, additive, over each fire (a fire field would pool its glow on the floor 16 m under a mast).
-  c.ambient.puffs({ spots: fires.flatMap(s => [0, 1, 2].map(k => ({ x: s.x, y: s.y - .15 + k * s.size * .32, z: s.z, size: s.size * (1.15 - k * .3) }))),
-    color: 0xffb050, shade: 0xff4a10, opacity: .7, life: 1.1, rise: 2.4, grow: .6, additive: true, seed: 61, order: 1 });
+  // places-epic-a: the fortress's lights, the parapet's and the valley town's, one draw (each a fire).
+  const lamps = new Beacons(c.root, lights.glows.length + 8, c.ambient.time);
+  for (const [i, l] of lights.glows.entries()) lamps.add(l.x, l.y, l.z, l.size, l.colour ?? FIRELIGHT, -1, (i * .137) % 1, 1);
+  lamps.finish('kuroyuki firelight', 2.5);
+  // Flames over the fires near enough to see them (the parapet's baskets, the gate's braziers and torches), licking puffs
+  // as over the masts (no fire field: it would pool its glow on the floor under a post).
+  flames(c, lights.near, 65);
+  // The flames (a fire field's, burning up out of the baskets, without its pool - it would lay one on the floor 16 m
+  // under a mast).
+  flames(c, fires, 61, { smoke: 0 });
   // The beacons' smoke leaning downwind and the lodge's chimneys, one draw.
   c.ambient.puffs({ spots: fires.filter(f2 => f2.size > 1).map(s2 => ({ x: s2.x, y: s2.y + 2, z: s2.z, size: s2.size * 1.6 })),
     color: 0x4a4a50, shade: 0x22222a, opacity: .3, life: 8, rise: 11, drift: [1.6, 0, .6], grow: 2, seed: 62 });
@@ -141,7 +146,7 @@ function floor(f: Forge) {
 }
 
 /** The beacon masts in the pillars' boxes: a granite plinth, black timber banded in iron, a cap, an iron basket of fire; iron
- *  chains with bells slung from each to the next, high over the fight. */
+ *  chains slung from each to the next, high over the fight. */
 function masts(f: Forge, fires: { x: number; y: number; z: number; size: number }[]) {
   for (const { x, z } of MASTS) {
     f.box('stone', x, 0, z, 1.9, .9, 1.9, STONE_DARK);
@@ -150,12 +155,14 @@ function masts(f: Forge, fires: { x: number; y: number; z: number; size: number 
     for (const y of [3.2, 6.4, 9.6, 12.8]) f.box('lacquer', x, y, z, 1.26, .24, 1.26, GOLD);
     f.box('timber', x, 15.06, z, 1.6, .5, 1.6, TIMBER_LIT);
     f.cyl('timber', x, 15.5, z, 1.15, .55, .55, IRON, { sides: 10 });
+    // The basket's bars are short and flared, open at the top (a closed cage of bars round the glow reads as a lantern's
+    // glass), the embers in the bowl and the fire burning up out of it (its glow and flames over the rim).
     for (let k = 0; k < 10; k++) {
       const a = k / 10 * Math.PI * 2;
-      f.pipe('timber', [x + Math.cos(a) * 1.1, 16, z + Math.sin(a) * 1.1], [x + Math.cos(a) * 1.35, 17.2, z + Math.sin(a) * 1.35], .05, IRON, { sides: 4 });
+      f.pipe('timber', [x + Math.cos(a) * 1.1, 16, z + Math.sin(a) * 1.1], [x + Math.cos(a) * 1.5, 16.75, z + Math.sin(a) * 1.5], .05, IRON, { sides: 4 });
     }
-    f.add('timber', new THREE.TorusGeometry(1.32, .06, 4, 20).rotateX(Math.PI / 2).translate(x, 17.1, z), IRON);
-    fires.push({ x, y: 16.1, z, size: 1.5 });
+    f.cyl('glow', x, 15.98, z, 1.08, 1.08, .06, 0xff6a20, { sides: 12 });
+    fires.push({ x, y: 16.85, z, size: 1.5 });
     // An iron arm for the streamer, on the outer side.
     const d = Math.hypot(x, z), ux = x / d, uz = z / d;
     f.beam('timber', [x + ux * .5, 14.3, z + uz * .5], [x + ux * 1.6, 14.3, z + uz * 1.6], .1, IRON);
@@ -165,11 +172,7 @@ function masts(f: Forge, fires: { x: number; y: number; z: number; size: number 
     const ux = dx / len, uz = dz / len, top = 14.7, sag = 3.2, steps = 9;
     const at = (t: number): [number, number, number] => [a.x + ux * .6 + (dx - ux * 1.2) * t, top - sag * 4 * t * (1 - t), a.z + uz * .6 + (dz - uz * 1.2) * t];
     for (let k = 0; k < steps; k++) f.pipe('timber', at(k / steps), at((k + 1) / steps), .07, IRON, { sides: 4 });
-    for (const t of [.25, .5, .75]) {
-      const [bx, by, bz] = at(t);
-      f.pipe('timber', [bx, by, bz], [bx, by - .5, bz], .015, IRON, { sides: 3 });
-      f.cyl('timber', bx, by - .85, bz, .07, .2, .34, 0x3a3226, { sides: 8 });
-    }
+    // (No bells hung off the chains.)
   }
 }
 
@@ -406,7 +409,7 @@ function valley(c: DressContext) {
 function blackSnow(c: DressContext) {
   c.ambient.motes({ min: [-90, -10, -90], max: [90, 40, 90], count: 2200, velocity: [.45, -1.2, .22], size: .2,
     color: 0x141418, color2: 0x6a4a40, opacity: .9, wobble: 1.4, seed: 63 });
-  // places-epic-a: the flakes that fall through the lanterns' light before the gate-tower, lit gold.
+  // places-epic-a: the flakes that fall through the firelight before the gate-tower, lit gold.
   c.ambient.motes({ min: [-60, -4, -110], max: [60, 60, -40], count: 700, velocity: [.4, -1.1, .2], size: .26,
     color: 0xffc888, color2: 0x8a5a40, opacity: .8, wobble: 1.4, additive: true, seed: 64 });
 }
@@ -434,10 +437,10 @@ function hallLayout() {
 }
 
 /** places-epic-a: the fortress's towers on the mountain's shoulders east and west, each a three-tier hall on a tall stone
- *  plinth rising out of the slope past the parapet, so the lanterns stand in every heading. */
+ *  plinth rising out of the slope past the parapet, so the fortress's lights stand in every heading. */
 const TOWERS = [{ x: -118, z: -24, h: 36, base: 6 }, { x: 122, z: -10, h: 38, base: 4 }, { x: -104, z: 64, h: 30, base: -2 }, { x: 110, z: 76, h: 32, base: -4 }];
 
-/** places-epic-a: the lantern posts round the parapet (not in the lookout's opening). */
+/** places-epic-a: the posts round the parapet (not in the lookout's opening), each with a fire basket. */
 function parapetPosts() {
   const P = EDGE - .6, out: [number, number][] = [];
   for (let t = -P + 4; t <= P - 4; t += 8.5) out.push([t, P], [P, t], [-P, t]);
@@ -445,71 +448,96 @@ function parapetPosts() {
 }
 
 /** places-epic-a: the lodge's ground cleared to a forecourt before the gate-tower (steps up to its stair), the towers'
- *  plinths on the shoulders, the parapet's red lantern posts. */
-function forecourt(f: Forge, posts: [number, number][]) {
+ *  plinths on the shoulders, the parapet's red posts, each with an iron fire basket on its top; their fires returned. */
+function forecourt(f: Forge, posts: [number, number][]): FireAt[] {
   for (let k = 0; k < 3; k++) f.box('stone', 0, k * .3, -57.2 - k * 1.1, 26 - k * 2, .3, 1.4, k % 2 ? STONE : STONE_DARK);
   for (const t of TOWERS) {
     const low = Math.min(ground(t.x - 14, t.z), ground(t.x + 14, t.z), ground(t.x, t.z - 14), ground(t.x, t.z + 14)) - 4;
     f.box('stone', t.x, low, t.z, t.h * 1.05, t.base - low, t.h * 1.05, STONE_DARK);
     f.box('stone', t.x, t.base - .6, t.z, t.h * 1.12, .6, t.h * 1.12, STONE);
   }
-  for (const [x, z] of posts) {
+  const iron: FireMats = { iron: 'timber', glow: 'glow' };
+  return posts.map(([x, z]) => {
     f.box('lacquer', x, 1.2, z, .2, 3.1, .2, LACQUER);
-    f.box('lacquer', x, 3.86, z, .8, .14, .8, 0x1a1414);
-  }
+    f.box('lacquer', x, 4.3, z, .26, .08, .26, GOLD);
+    return ironBasket(f, iron, x, 4.38, z, .3, { tint: IRON });
+  });
 }
 
-/** places-epic-a: the fortress: its gate-tower over the terrace's north end with the great bell in its middle, its halls up
- *  the massif, lanterns along their eaves, up the stairs between them and round the parapet, and a town of lanterns far down
- *  in the valley. Returns every lantern's light for one Beacons draw. */
-async function fortress(c: DressContext, halls: ReturnType<typeof hallLayout>, posts: [number, number][]) {
+/** places-epic-a: the fortress: its gate-tower over the terrace's north end, its halls up the massif, lights along their
+ *  fronts, up the stairs between them and round the parapet, and a town's lights far down in the valley. Returns every light
+ *  for one Beacons draw, and the fires near enough for flames.
+ *  Every one of them is fire, standing on something - the gate's braziers and torches on posts at its foot, the stairs'
+ *  torches on posts, the baskets on the parapet's posts (forecourt()), the halls' torches set in their walls, the valley's
+ *  hearths and watch fires; the gate-tower's middle bay is an open gateway. */
+async function fortress(c: DressContext, halls: ReturnType<typeof hallLayout>, postFires: FireAt[]) {
   const { kit } = c;
   await kit.load(['own/kuro-gate', 'own/kuro-tiers']);
-  const out: { x: number; y: number; z: number; size: number; colour?: number }[] = [];
+  const out: { x: number; y: number; z: number; size: number; colour?: number }[] = [], near: FireAt[] = [];
   const r = rand(809);
-  const GATE_H = 36, GATE_Z = -67, gw = GATE_H / .89, gd = gw * .5;
+  const GATE_H = 36, GATE_Z = -67;
   kit.place('own/kuro-gate', { x: 0, y: 0, z: GATE_Z, height: GATE_H, rot: 0 });
-  for (const [fx, fy] of [[-.42, .3], [-.24, .3], [.24, .3], [.42, .3], [-.36, .62], [-.18, .62], [.18, .62], [.36, .62], [-.3, .86], [.3, .86]] as const)
-    out.push({ x: fx * gw, y: fy * GATE_H, z: GATE_Z + gd * .55, size: 3.2 });
-  const tiers = [...halls, ...TOWERS.map(t => ({ x: t.x, y: t.base, z: t.z, h: t.h, rot: Math.atan2(-t.x, -t.z) }))];
+  // The ironwork of the gate's fires and the stairs' torches, in a Forge of its own (the terrace's is done).
+  const t = new Forge(c, 'kuroyuki standing fires');
+  t.mat('iron', { roughness: .55, metalness: .45 });
+  t.mat('stone', { roughness: .9 });
+  t.mat('wood', { roughness: .85 });
+  t.mat('glow', { basic: true });
+  const m: FireMats = { iron: 'iron', stone: 'stone', wood: 'wood', glow: 'glow' };
+  // The gate's fires at its foot: a great brazier on a granite plinth either side of the forecourt's steps, four torches
+  // on red posts before them, their glows small enough (2.6 m and 1.6 m) that the flames show.
+  for (const s of [-1, 1]) {
+    t.box('stone', s * 14.6, 0, -57.6, 1.6, 1.1, 1.6, STONE_DARK);
+    t.box('stone', s * 14.6, 1.1, -57.6, 1.76, .14, 1.76, GRANITE);
+    const big = ironBasket(t, m, s * 14.6, 1.24, -57.6, .62);
+    near.push(big); out.push({ x: big.x, y: big.y + .45, z: big.z, size: 2.6 });
+    for (const x of [6.4, 10.4]) {
+      const post = basketPost(t, m, s * x, -55.3, 3.2, .26, { post: 'wood', postTint: LACQUER, thick: .1 });
+      near.push(post); out.push({ x: post.x, y: post.y + .2, z: post.z, size: 1.6 });
+    }
+  }
+  const tiers = [...halls, ...TOWERS.map(t2 => ({ x: t2.x, y: t2.base, z: t2.z, h: t2.h, rot: Math.atan2(-t2.x, -t2.z) }))];
   for (const hall of tiers) {
     const { x, y, z, h, rot } = hall;
     kit.place('own/kuro-tiers', { x, y, z, height: h, rot });
-    // A lantern under each tier's eaves along its front (toward the terrace) and at its corners, a little uneven.
+    // A torch set in each tier's wall along its front (toward the terrace) and at its corners, a little uneven, under the
+    // eaves: far enough off that its fire is its glow.
     const fx = Math.sin(rot), fz = Math.cos(rot), sx = Math.cos(rot), sz = -Math.sin(rot);
     for (const [ty, tw] of [[.2, .46], [.47, .38], [.7, .3]] as const) {
       for (let k = 0; k < 5; k++) {
         const along = (k / 4 - .5) * 2 * tw * h, out_ = h * .5 * (1 - ty * .4);
-        out.push({ x: x + sx * along + fx * out_, y: y + ty * h - r() * .6, z: z + sz * along + fz * out_, size: (1.3 + h * .035) * (.8 + r() * .5), colour: r() < .3 ? 0xff8a3a : LANTERN });
+        out.push({ x: x + sx * along + fx * out_, y: y + ty * h - r() * .6, z: z + sz * along + fz * out_, size: (1.3 + h * .035) * (.8 + r() * .5), colour: r() < .3 ? 0xff8a3a : FIRELIGHT });
       }
     }
   }
+  // The stairs climbing between the halls, a torch on a post either side every 7 m, its glow over the post's basket
+  // (2.4 m over the step).
   for (const sx of [-30, 40, -95, 0]) {
     for (let z = -80; z > -300; z -= 7) {
       const x = sx + Math.sin(z * .045) * 12;
-      out.push({ x: x - 2, y: ground(x, z) + 2.4, z, size: 1.5 }, { x: x + 2, y: ground(x, z) + 2.4, z, size: 1.5 });
+      for (const e of [-1, 1]) {
+        const at = basketPost(t, m, x + e * 2, z, 2.15, .17, { y: ground(x + e * 2, z), post: 'wood', postTint: 0x2a1e18, thick: .07 });
+        out.push({ x: at.x, y: at.y + .1, z, size: 1.5 });
+      }
     }
   }
-  for (const [x, z] of posts) out.push({ x, y: 3.5, z, size: 2.2 });
+  // The parapet's posts: their baskets' fires (forecourt()).
+  for (const p of postFires) { near.push(p); out.push({ x: p.x, y: p.y + .2, z: p.z, size: 1.6 }); }
+  // Far down in the valley, the town's hearths and watch fires.
   for (let i = 0; i < 160; i++) {
     const a = (r() - .5) * Math.PI * 1.5 + Math.PI / 2, d = 180 + r() * 260, x = Math.cos(a) * d, z = Math.sin(a) * d;
     if (outside(x, z) < 40) continue;
-    out.push({ x, y: -128 + r() * 3, z, size: 2.4 + r() * 2.4, colour: r() < .2 ? 0xff8a40 : LANTERN });
+    out.push({ x, y: -128 + r() * 3, z, size: 2.4 + r() * 2.4, colour: r() < .2 ? 0xff8a40 : FIRELIGHT });
   }
+  t.done();
   kit.flush(c.stage);
-  // The halls and the gate-tower lit by their own lanterns: a share of their own picture given back as warm light, so the
-  // red lacquer, the gold and the bell read against the night (their roofs stay dark).
+  // The halls and the gate-tower lit by their own fires: a share of their own picture given back as warm light, so the
+  // red lacquer and the gold read against the night (their roofs stay dark).
   for (const [piece, share] of [['own/kuro-tiers', .75], ['own/kuro-gate', .62]] as const) {
-    for (const m of kit.pieceMaterials(piece) as THREE.MeshStandardMaterial[]) {
-      if (!m.map) continue;
-      m.emissiveMap = m.map; m.emissive.set(0xffc890); m.emissiveIntensity = share; m.needsUpdate = true;
+    for (const mat of kit.pieceMaterials(piece) as THREE.MeshStandardMaterial[]) {
+      if (!mat.map) continue;
+      mat.emissiveMap = mat.map; mat.emissive.set(0xffc890); mat.emissiveIntensity = share; mat.needsUpdate = true;
     }
   }
-  // The posts' paper lanterns, glowing (unlit), one draw; their light is the Beacons'.
-  const parts = posts.map(([x, z]) => new THREE.CylinderGeometry(.32, .3, .62, 8).translate(x, 3.5, z).toNonIndexed());
-  const paper = new THREE.Mesh(mergeGeometries(parts)!, new THREE.MeshBasicMaterial({ name: 'kuroyuki lantern paper', color: 0xffd6a0 }));
-  parts.forEach(g => g.dispose());
-  paper.name = 'kuroyuki lantern paper';
-  c.root.add(paper);
-  return out;
+  return { glows: out, near };
 }

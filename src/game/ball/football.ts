@@ -33,7 +33,7 @@ export const FOOTBALL = {
   /** Control (`controls`): a ball whose centre is at most `low` m over its rest height, coming at the body no faster than
    *  `slow` m/s against the body's own run, or one up to `chest` m high no faster than `chestSlow`, rising or falling no
    *  faster than `lift`. Faster or higher balls bounce off the body as they always have: a block. */
-  control: {low: .45, slow: 18, chest: 1.5, chestSlow: 10, lift: 5},
+  control: {low: .45, slow: 18, chest: 2.3, chestSlow: 10, lift: 5},
   /** A body controls (and an opponent takes) the ball this much further out than its bounds meet it: four bodies round a
    *  ball at rest stand off it by their own bounds, and none could reach it. */
   reach: .3,
@@ -61,7 +61,7 @@ export const FOOTBALL = {
   /** PASS: along the floor it arrives at `arrive` m/s plus `perM` a metre, never launched faster than `most`; lofted, it
    *  lands at the led spot after `loftT` s plus a metre's `loftPerM`. The team-mate nearest the stick's (or the view's)
    *  line within `cone` radians, `near`-`far` m off; nobody: a pass into space `space` m on. */
-  pass: {arrive: 10, perM: .15, most: 24, loftT: .55, loftPerM: 1 / 18, cone: 45 * Math.PI / 180, near: 2.5, far: 32, space: 12, rounds: 3, wall: 1.2},
+  pass: {arrive: 13, perM: .2, most: 26, loftT: .55, loftPerM: 1 / 18, cone: 45 * Math.PI / 180, near: 2.5, far: 32, space: 12, rounds: 3, wall: 1.2},
   /** SHOOT: a tap `tap` m/s; held, `tap` to `full` over `wind` s, the run at `slow` meanwhile. The stick across the view
    *  bends the aim up to `bend` rad. A line within `help` m of the frame and `reach` half-lengths of the goal is laid inside
    *  the post (`inset` m in from it), at `lowY` m (a tap) to `highY` (full), under the bar. The run adds `momentum` of
@@ -89,8 +89,68 @@ export const FOOTBALL = {
    *  in the sport's clothes). Again after `again` s. */
   trick: {window: .25, beaten: .4, again: 1.2, jink: 1.1},
   /** A person's PASS without the ball calls for it: their side's bots carrying it look for them first for `call` s. */
-  call: 1.5,
+  call: 2.5,
+  /** The person at the heart of it.
+   *  - `kickoff`: one side kicks off - the person's at the start, then the side that conceded - its taker stood `spot` m
+   *    behind the ball, the ball at its feet the moment play is live; on the person's side the person is the taker.
+   *  - `kind`: a team-mate's pass meant for a person (`for` s after it is struck) is taken cleanly: met `reach` m further
+   *    out, as fast as `slow` m/s against their run (up to `chest` m high at `chestSlow`, rising or falling at `lift`) -
+   *    unless one of the other side is within `rival` m of the person; a bot it is meant for takes it as cleanly from its
+   *    own reach.
+   *  - `tapAim`: a tapped PASS or SHOOT goes where the stick pointed as the key went down (a hold, where it points as the
+   *    key comes up) - what you pressed is what you get.
+   *  - `keeperOff`: a PASS picks the side's own keeper only when the stick is plainly on them (this many radians further
+   *    off than a field player counts).
+   *  - `corner`: a person's SHOOT whose line crosses the goal within `within` of its half-width from the middle goes for
+   *    the corner away from the keeper, `in` m inside the post's inset (shotAt `open`): the star's finish.
+   *  - `fresh`: a person's ball just won (received, tackled, picked up) is theirs `fresh` s by the bots' level - a POKE
+   *    in that time is shielded, as one into a bot's is for FOOTBALL.settle s - so it is never poked straight back.
+   *  - `full`: a SHOOT held to `charge` or more of its wind-up is a full-power shot - the ball hangs `stop` s at the boot
+   *    (the hit-stop), and the page kicks the camera of whoever is near (render/ball/BallMoments.ts). */
+  fun: {kickoff: {spot: 1}, kind: {reach: .55, slow: 32, chest: 2.4, chestSlow: 22, lift: 9, rival: 1.1, for: 3}, tapAim: true, keeperOff: .35, corner: {within: .5, in: .3}, full: {charge: .95, stop: .08}, fresh: {easy: 1, normal: .8, hard: .45}},
+  /** A match a person can win (keepers that conceded most close shots, passes that were cut out and a person's side that
+   *  lost its NORMAL matches before these):
+   *  - `keeper`: a keeper in its box (FOOTBALL.keeper) meets a shot on target as fast as `from` m/s or more that will pass
+   *    within its dive of its body - `dive` m (by its level) past its catching reach, no higher than `high` m - inside
+   *    the next `ahead` s: caught at its feet up to `catch` m/s with the line close to its body (`hands` m past its
+   *    bounds), else pushed out wide (`push` m/s across, `up` m/s up, `keep` of its pace back off the line). A shot placed
+   *    beyond that - the corner away from it - beats it; one at it, near its body, is saved. The dive comes `react` s after
+   *    the shot and is whole `full` s later (a shot from close in meets only the body), and a keeper stands set while a
+   *    shot is on its way (sportBrain.ts spKeep): it does not run across with the ball.
+   *  - `pass`: a person's PASS (football.ts personPass) goes to the best open team-mate within `cone` rad of the stick (with
+   *    nobody there, within `wide`)
+   *    (by how far off the stick they are, `blocked` worse with one of theirs in the lane, `marked` worse with one of theirs
+   *    within `tight` m of them); with the one in the lane within `chip` m of the ball, and the team-mate `chipFrom` m off
+   *    or more, it is chipped over them (lofted); further along, it is led round them - `round` m to one side of the
+   *    team-mate, the side the lane clears on, ahead along their run as it is led.
+   *  - `aim`: a person's SHOOT from within `range` m of the goal they attack, the view within `within` rad of it, goes on
+   *    frame - at the corner the stick is across to (`side` of the stick or more across the view), else the one away from
+   *    the keeper (the person aims the corner; the game puts it on target).
+   *  - `kick`: a tapped PASS or SHOOT with the ball at the feet leaves `pass` / `shot` s after its key (a first-time one at
+   *    once): the wind-up, drawn by the page from BallState.wind (and windTap), then the contact.
+   *  - `tackle`: a person's POKE wins from within `front` rad of the carrier's run (by level; a bot's, FOOTBALL.tackle.front):
+   *    from beside as well as in front, only from behind is it shielded; a person's missed poke slows them to `missPace`
+   *    for `miss` s and no tackle again for `missAgain` s; a person's poke is live `live` s and reaches `reach` m further.
+   *  - `shield`: a bot shielding the ball from one of theirs on it plays it on after `most` s whatever the options - the
+   *    best there is, else a ball lofted on into space up the pitch (one held it for 50 s against the scripted person).
+   *  - `support`: a side's support with the other side on the ball within `box` m of its goal holds the space at the edge
+   *    of its box (`edge` m out, `far` m across on the far side of the ball) and stands no nearer the ball than `off` m: at
+   *    most two (the one pressing and its cover) go to the ball near the box. */
+  fun2: {keeper: {from: 14, dive: {easy: .4, normal: 1.1, hard: 1.45}, react: .06, full: .25, high: 2.5, ahead: .06, catch: 30, hands: .35, push: 9, up: 4.5, keep: .35},
+    aim: {range: 20, within: 55 * Math.PI / 180, side: .5},
+    kick: {pass: .09, shot: .12},
+    tackle: {front: {easy: 125 * Math.PI / 180, normal: 108 * Math.PI / 180, hard: 90 * Math.PI / 180}, miss: .3, missPace: .8, missAgain: .45, live: .3, reach: .25},
+    shield: {most: 2.2},
+    pass: {cone: 62 * Math.PI / 180, wide: 100 * Math.PI / 180, blocked: .55, marked: .6, tight: 1.8, chip: 3.2, chipFrom: 7, round: [2, 3.2, -2, -3.2]}, support: {box: 15, edge: 7, far: 3.5, off: 6}},
 } as const;
+
+/** Whether a body takes a team-mate's pass meant for a person (FOOTBALL.fun.kind) - the person's first
+ *  touch, kind. `rel` the ball's speed against the body's run, `r` its radius, `over` its centre over the body's feet. */
+export function kindTouch(b: BallState, r: number, rel: number, body: {grounded: boolean; alive: boolean; reeling: boolean; locked: boolean; stunned: boolean; y: number}) {
+  const K = FOOTBALL.fun.kind, over = b.y - body.y - r;
+  if (b.held || b.super || !body.alive || body.reeling || body.locked || body.stunned || Math.abs(b.vy) > K.lift) return false;
+  return over <= FOOTBALL.control.low + .2 ? rel <= K.slow : b.y - body.y <= K.chest && rel <= K.chestSlow;
+}
 
 /** The classic ball's radius times this is SPORT's (BallState.size). */
 export const FOOTBALL_SIZE = FOOTBALL.radius / GOAL_RULES.ballRadius;
@@ -111,7 +171,7 @@ export function footSpot(p: {x: number; z: number; size?: number}, heading: numb
 /** The knock-on's reach out ahead `t` s into a sprint (FOOTBALL.knock): a half-sine every `every` s. */
 export const knockAhead = (t: number) => FOOTBALL.knock.out * Math.sin(Math.PI * ((t % FOOTBALL.knock.every) / FOOTBALL.knock.every));
 
-export interface Mate { id: string; x: number; z: number; vx: number; vz: number }
+export interface Mate { id: string; x: number; z: number; vx: number; vz: number; keeper?: boolean }
 /** The team-mate a PASS goes to from `from` along `yaw` (the stick's, else the view's): the one nearest that line within
  *  FOOTBALL.pass.cone, by angle first; undefined with nobody there. Shared by the match, the bots and the page's mark. */
 export function passPick(from: {x: number; z: number}, yaw: number, mates: readonly Mate[]): Mate | undefined {
@@ -122,10 +182,47 @@ export function passPick(from: {x: number; z: number}, yaw: number, mates: reado
     if (d < P.near || d > P.far) continue;
     const off = Math.acos(Math.max(-1, Math.min(1, (ex * ux + ez * uz) / d)));
     if (off > P.cone) continue;
-    const s = off + d * .004;
+    // (The side's keeper only when the stick is plainly on them - FOOTBALL.fun.keeperOff rad further off.)
+    const s = off + d * .004 + (m.keeper ? FOOTBALL.fun.keeperOff : 0);
     if (s < score) { score = s; best = m; }
   }
   return best;
+}
+
+/** FOOTBALL.fun2.pass: a person's PASS - the best open team-mate within the cone of the stick's `yaw` (or
+ *  none: a pass into space), whether it is chipped over one of theirs stood in the lane near the ball, and the team-mate
+ *  as the pass should be led to (moved to one side of them when one of theirs further along the lane is in the way). */
+export function personPass(from: {x: number; z: number}, yaw: number, mates: readonly Mate[], foes: readonly {x: number; z: number}[]): {mate?: Mate; lofted: boolean} {
+  const P = FOOTBALL.pass, Q = FOOTBALL.fun2.pass, ux = Math.sin(yaw), uz = Math.cos(yaw);
+  const blockers = (to: {x: number; z: number}) => {
+    const ex = to.x - from.x, ez = to.z - from.z, L2 = ex * ex + ez * ez || 1e-6, out: {x: number; z: number; t: number}[] = [];
+    for (const f of foes) { const t = ((f.x - from.x) * ex + (f.z - from.z) * ez) / L2; if (t > 0 && t < .95 && Math.hypot(from.x + ex * t - f.x, from.z + ez * t - f.z) < 1.25 + Math.sqrt(L2) * .03) out.push({x: f.x, z: f.z, t}); }
+    return out;
+  };
+  let best: Mate | undefined, score = Infinity;
+  // (Nobody within the cone: the nearest the stick within `wide`, so a PASS pressed finds somebody of the side.)
+  for (const cone of [Q.cone, Q.wide]) for (const m of best ? [] : mates) {
+    const ex = m.x - from.x, ez = m.z - from.z, d = Math.hypot(ex, ez);
+    if (d < P.near || d > P.far) continue;
+    const off = Math.acos(Math.max(-1, Math.min(1, (ex * ux + ez * uz) / d)));
+    if (off > cone) continue;
+    const marked = foes.some(f => Math.hypot(f.x - m.x, f.z - m.z) < Q.tight);
+    const s = off + d * .004 + (m.keeper ? FOOTBALL.fun.keeperOff : 0) + (blockers(m).length ? Q.blocked : 0) + (marked ? Q.marked : 0);
+    if (s < score) { score = s; best = m; }
+  }
+  if (!best) return {lofted: false};
+  const inWay = blockers(best);
+  if (!inWay.length) return {mate: best, lofted: false};
+  const d = Math.hypot(best.x - from.x, best.z - from.z);
+  // (One of theirs right on the ball, in the lane: chipped over them.)
+  if (inWay.some(f => Math.hypot(f.x - from.x, f.z - from.z) < Q.chip) && d >= Q.chipFrom) return {mate: best, lofted: true};
+  // (Further along: led round them - to one side of the team-mate, the first that clears the lane, inside the walls.)
+  const nx = (best.z - from.z) / (d || 1), nz = -(best.x - from.x) / (d || 1);
+  for (const k of Q.round) {
+    const to = {...best, x: Math.max(-GOAL_RULES.halfX + 1.5, Math.min(GOAL_RULES.halfX - 1.5, best.x + nx * k)), z: Math.max(-GOAL_RULES.halfZ + 1.5, Math.min(GOAL_RULES.halfZ - 1.5, best.z + nz * k))};
+    if (!blockers(to).length) return {mate: to, lofted: false};
+  }
+  return {mate: best, lofted: d >= Q.chipFrom};
 }
 
 /** The floor's slowing of a rolling ball (m/s a second) at a ground share (BallState.ground). */
@@ -159,7 +256,7 @@ export function passTo(ball: Vec3, yaw: number, mate: Mate | undefined, lofted: 
 
 /** A SHOT's flight (FOOTBALL.shot) at `charge` (0: a tap, 1: full), along `yaw` (the view, bent by the stick), with the
  *  striker's run (`run`) carried. Put inside the post when its line is near the frame. */
-export function shotAt(ball: Vec3, yaw: number, charge: number, team: BallTeam, run: {vx: number; vz: number}, g: number, r: number) {
+export function shotAt(ball: Vec3, yaw: number, charge: number, team: BallTeam, run: {vx: number; vz: number}, g: number, r: number, open?: number) {
   const S = FOOTBALL.shot, R = GOAL_RULES, gz = team === 'red' ? R.halfZ : -R.halfZ;
   let dx = Math.sin(yaw), dz = Math.cos(yaw);
   const speed = S.tap + (S.full - S.tap) * charge + Math.max(0, Math.min(S.runMost, (run.vx * dx + run.vz * dz) * S.momentum));
@@ -167,7 +264,9 @@ export function shotAt(ball: Vec3, yaw: number, charge: number, team: BallTeam, 
   if (dz * toward > .2) {
     const t = (gz - ball.z) / dz, hitX = ball.x + dx * t;
     if (Math.abs(t) < R.halfZ * S.reach && Math.abs(hitX) < R.goalHalfWidth + S.help) {
-      const inside = R.goalHalfWidth - r - S.inset, tx = Math.max(-inside, Math.min(inside, hitX)), flat = Math.hypot(tx - ball.x, gz - ball.z);
+      const inside = R.goalHalfWidth - r - S.inset, C = FOOTBALL.fun.corner;
+      // (A person's shot at the middle of the goal goes for the corner away from the keeper - `open`.)
+      const tx = open && Math.abs(hitX) < R.goalHalfWidth * C.within ? Math.sign(open) * (inside - C.in) : Math.max(-inside, Math.min(inside, hitX)), flat = Math.hypot(tx - ball.x, gz - ball.z);
       const y = Math.min(R.goalHeight - r - .15, S.lowY + (S.highY - S.lowY) * charge);
       dx = (tx - ball.x) / flat; dz = (gz - ball.z) / flat;
       return {...arcTo(ball, tx, y, gz, Math.max(.2, flat / speed), g), speed};

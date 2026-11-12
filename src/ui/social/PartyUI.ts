@@ -29,7 +29,7 @@ const CROWD=5;
 /** A mode whose place is not the party's to choose. */
 const FIXED:Partial<Record<PartyMode,{name:string;scene:string;tag:string}>>={
   'rift-war':{name:shownStage('rift-war')!.name,scene:shownStage('rift-war')!.scene,tag:'THREE LANES'},
-  'last-stand':{name:shownStage('hidden-ash')!.name,scene:shownStage('hidden-ash')!.scene,tag:'FIXED'},
+  'last-stand':{name:shownStage('ashwood')!.name,scene:shownStage('ashwood')!.scene,tag:'FIXED'},
   survival:{name:'The Rift',scene:'A new world every act, dealt by the run',tag:'SET BY THE RUN'},
   'goal-rush':{name:shownStage('ball-pitch')!.name,scene:shownStage('ball-pitch')!.scene,tag:'3 V 3 FOOTBALL'},
   'sky-spike':{name:shownStage('ball-court')!.name,scene:shownStage('ball-court')!.scene,tag:'3 V 3 TAKRAW'},

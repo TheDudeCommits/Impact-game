@@ -20,6 +20,10 @@ function match(football = true) {
   m.add('p', 'konta', 'P', false, 'red'); m.add('q', 'taisei', 'Q', false, 'red'); m.add('r', 'kenzo', 'R', false, 'blue');
   expect(m.start()).toBe(true);
   expect(until(m, () => m.view.phase === 'live')).toBe(true);
+  // (The kickoff's taker - 'p', the person on red, the side that kicks off first - has it at their feet as
+  // play goes live; these checks start from a loose ball.)
+  expect(m.ball.carry).toBe(football ? 'p' : undefined);
+  (m as unknown as { drop(pop?: unknown, why?: string): void }).drop(undefined, 'check');
   m.put('p', 0, -6, 0); m.put('q', 0, 8, 0); m.put('r', 9, -14, 0);
   const b = m.ball; Object.assign(b, { x: 0, y: GOAL_RULES.ballRadius * FOOTBALL_SIZE, z: -4.6, vx: 0, vy: 0, vz: 0 });
   return m;
@@ -75,18 +79,24 @@ describe("Goal Rush's SPORT mode", () => {
     expect(m.ball.carry).toBe('p');
     expect(pace).toBeGreaterThan(8);
   });
-  it('PASS: gone in the tick the press is heard, to the team-mate pointed at, and the run never slowed', () => {
+  it('PASS: gone after its short wind-up (FOOTBALL.fun2.kick.pass), to the team-mate pointed at, and the run never slowed', () => {
     const m = match(); take(m);
     for (let i = 0; i < 30; i++) tick(m, 'p', { moveZ: 1 });
     const before = m.sim.actors.get('p')!.state.z;
     tick(m, 'p', { moveZ: 1, attack: 'light' });
+    // (The foot drawn back and brought through first - the ball still at the feet, the page's take wound.)
+    expect(m.ball.carry).toBe('p');
+    expect(m.ball.windTap).toBe('pass');
+    let ticks = 1;
+    for (; ticks < 20 && m.ball.carry !== undefined; ticks++) tick(m, 'p', { moveZ: 1 });
+    expect(ticks / 60).toBeLessThanOrEqual(FOOTBALL.fun2.kick.pass + 2 / 60);
     expect(m.ball.carry).toBeUndefined();
     const pass = m.view.events.filter(e => e.kind === 'pass').at(-1);
     expect(pass?.targetId).toBe('q');
     const fly = Math.hypot(m.ball.vx, m.ball.vz);
-    for (let i = 0; i < 30; i++) tick(m, 'p', { moveZ: 1 });
+    for (let i = 0; i < 30 - ticks; i++) tick(m, 'p', { moveZ: 1 });
     const after = (m.sim.actors.get('p')!.state.z - before) / (31 / 60);
-    console.log(`[football] PASS left in the press's own tick at ${fly.toFixed(1)} m/s; the passer's run over the next half second ${after.toFixed(2)} m/s`);
+    console.log(`[football] PASS left ${ticks} ticks after the press at ${fly.toFixed(1)} m/s; the passer's run over the next half second ${after.toFixed(2)} m/s`);
     expect(fly).toBeGreaterThan(9);
     expect(after).toBeGreaterThan(8.5);
   });
@@ -101,13 +111,15 @@ describe("Goal Rush's SPORT mode", () => {
     expect(m.view.events.filter(e => e.kind === 'pass').at(-1)?.text).toBe('LOFTED');
     expect(m.ball.vy).toBeGreaterThan(2);
   });
-  it('SHOOT: a tap gone the tick its key comes up, a hold wound up harder, the run slowed but steered meanwhile', () => {
+  it('SHOOT: a tap gone its short wind-up after its key comes up, a hold wound up harder, the run slowed but steered meanwhile', () => {
     const m = match(); take(m);
     m.put('p', 0, 4, 0); Object.assign(m.ball, { x: 0, z: 4.8 }); take(m);
     tick(m, 'p', { moveZ: 1, attack: 'heavy', heavyHeld: true });
     tick(m, 'p', { moveZ: 1, heavyHeld: true });
     expect(m.ball.carry).toBe('p');
     tick(m, 'p', { moveZ: 1 });
+    // (FOOTBALL.fun2.kick.shot of wind-up, the take's lead-in, before the contact.)
+    for (let i = 0; i < 12 && m.ball.carry !== undefined; i++) { expect(m.ball.windTap).toBe('shot'); tick(m, 'p', { moveZ: 1 }); }
     expect(m.ball.carry).toBeUndefined();
     const tap = Math.hypot(m.ball.vx, m.ball.vy, m.ball.vz);
     const n = match(); take(n); n.put('p', 0, 4, 0); Object.assign(n.ball, { x: 0, z: 4.8 }); take(n);
@@ -118,7 +130,8 @@ describe("Goal Rush's SPORT mode", () => {
     tick(n, 'p', { moveZ: 1 });
     const held = Math.hypot(n.ball.vx, n.ball.vy, n.ball.vz);
     console.log(`[football] SHOOT tap ${tap.toFixed(1)} m/s (gone as its key came up, 2 ticks after the press); held 0.67 s ${held.toFixed(1)} m/s; steered ${steered.toFixed(2)} m across while winding`);
-    expect(held).toBeGreaterThan(tap + 5);
+    // (The tap's wind-up keeps the run's pace in it - FOOTBALL.shot.momentum - a little more than at once.)
+    expect(held).toBeGreaterThan(tap + 3.5);
     expect(steered).toBeGreaterThan(3);
   });
   it('turns 180 degrees with the ball inside 0.45 s', () => {
@@ -184,6 +197,8 @@ describe("Goal Rush's SPORT mode: the tackle, the trick and the keeper", () => {
     const r = m.sim.actors.get('r')!, seat = m.seats.get('r')!;
     Object.assign(m.ball, { x: 0, z: .9, vx: 0, vz: 0 });
     (m as unknown as { startCarry(s: unknown, a: unknown, h: number): void }).startCarry(seat, r, 0);
+    // (Had a while: past the fresh moment, FOOTBALL.fun.fresh, in which a ball just won is not poked back.)
+    (m as unknown as { carrier: { since: number } }).carrier.since -= FOOTBALL.fun.fresh.easy + .05;
     return m;
   }
   it('POKE: live in the press\'s own tick, wins it clean to the tackler\'s feet', () => {

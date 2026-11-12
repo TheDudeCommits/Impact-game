@@ -46,7 +46,7 @@ type Smear={mesh:THREE.Mesh<THREE.PlaneGeometry,THREE.ShaderMaterial>;actorId:st
  *  a heavy black-red crescent smear hangs where the sword went through - the
  *  weight of a slab of iron rather than the line of a katana.
  *
- *  The 'HOUND ARMOR': while awakened, dark crimson flame wisps rise off
+ *  The 'GRAVE PLATE': while awakened, dark crimson flame wisps rise off
  *  the body and the helmet's eyes burn red.
  *
  *  Nothing here allocates per frame; everything is a fixed buffer or pool. */
@@ -126,7 +126,7 @@ export class GauntEffects {
         }
       }
       if(s.awakened){
-        // The HOUND ARMOR burns dark: crimson wisps rising off the body,
+        // The GRAVE PLATE burns dark: crimson wisps rising off the body,
         // and the eyes of the helmet lit red.
         const count=Math.round(22*Math.max(.35,density));
         for(let i=0;i<count&&aura<160;i++){

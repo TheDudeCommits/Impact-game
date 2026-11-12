@@ -152,7 +152,7 @@ const additive = { blending: THREE.CustomBlending, blendEquation: THREE.AddEquat
   blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor } as const;
 const colour = new THREE.Color();
 
-/** The energy beams: Sunpalm Cannon, Shikou-Ha, Kyokko-Ho, Singularity.
+/** The energy beams: Sunpalm Cannon, Throne Wave, Royal Aurora, Singularity.
  *
  *  Two layers per beam, each one instanced draw for every beam in flight: a
  *  solid tube, nearly as wide as the move's hitbox - an inked rim, the deep

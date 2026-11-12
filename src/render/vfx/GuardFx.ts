@@ -6,6 +6,10 @@ import { ORIENT, SPRITE } from './SparkField';
 import { elementFor } from './palette';
 
 
+/** So the far team is never small and blue-translucent: a volleyball block is a jump at the net with the hands up (the
+ *  kit's take), and the rules hold the guard up in the air for it - the orb drew every blocker as a body inside a blue
+ *  bubble. main.ts sets `off` while the page plays the volleyball rules: no orb, whatever guards. */
+export const guardOrbs = { off: false };
 const SLOTS = 16;
 /** The orb's radius over a fighter of size 1, from the drawn pelvis. */
 const RADIUS = 1.05;
@@ -309,7 +313,7 @@ export class GuardFx {
     let count = 0;
     for (const fighter of fighters.values()) {
       const s = fighter.state;
-      const up = s.alive && (s.guarding || s.action === 'guard');
+      const up = !guardOrbs.off && s.alive && (s.guarding || s.action === 'guard');
       const known = this.byId.get(s.id);
       const busy = known !== undefined && (time - this.slots[known].shatterAt < SHATTER || time - this.slots[known].flareAt < FLARE_LIFE);
       if (!up && !busy && known === undefined) continue;

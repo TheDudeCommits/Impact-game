@@ -12,7 +12,7 @@ const clips = new Set(['Snap Bite','Mauling Palm','Howling Spin','Pack of One','
  */
 export function hagureStrikeSurface(
   fighter:string, action:string, clip:string|undefined, sourceSeconds:number,
-  cosmic:boolean, joints:ReadonlyMap<string,THREE.Object3D>,
+  moonless:boolean, joints:ReadonlyMap<string,THREE.Object3D>,
   submit:(point:THREE.Vector3)=>void,
 ):boolean {
   if(fighter!=='hagure'||!clip||!clips.has(clip)||!Number.isFinite(sourceSeconds)
@@ -24,7 +24,7 @@ export function hagureStrikeSurface(
   }
   const hand=joints.get(hagureStrikeJoint(action,clip,index));
   if(!hand)return false;
-  hagureSurfacePoint(hand,cosmic,action,clip,index,point);
+  hagureSurfacePoint(hand,moonless,action,clip,index,point);
   submit(point);
   return true;
 }

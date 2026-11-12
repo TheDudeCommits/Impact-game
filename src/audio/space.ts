@@ -43,7 +43,7 @@ export const STAGE_SPACES: Partial<Record<StageId, SpaceName>> = {
   'ashfall-weir': 'canyon',
   harbor: 'open',
   'wreckers-causeway': 'open',
-  'hidden-ash': 'open',
+  'ashwood': 'open',
   'sunward-summit': 'open',
   'cinder-flats': 'open',
   'warlords-roof': 'open',

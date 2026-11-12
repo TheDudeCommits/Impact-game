@@ -20,7 +20,7 @@ export interface Fit { w?: number; d?: number; h?: number }
 /** How a prop wears a model: which, fitted to what, sunk how far, leaning how. */
 export interface Dress extends Fit { id: string; sink?: number; tilt?: readonly [number, number] }
 
-const IDS = ['house-a', 'house-b', 'ruin', 'bell-tower', 'cart', 'sword', 'grave', 'giant-sword', 'dead-tree',
+const IDS = ['house-a', 'house-b', 'ruin', 'watch-tower', 'cart', 'sword', 'grave', 'giant-sword', 'dead-tree',
   'fortress-tower', 'knight-statue', 'brazier', 'cage', 'stake-body', 'altar', 'curtain-wall', 'fortress-keep', 'rock-spire', 'boulder',
   // The landmarks (scripts/survival/landmarks/build_landmarks.py: modelled in code for the page, painted in flat tones).
   'great-wave', 'wreck', 'lighthouse'] as const;
@@ -33,7 +33,8 @@ export function dressFor(stage: RiftStageId, p: RiftProp): Dress | undefined {
   switch (p.kind) {
     case 'house': return { id: r > .55 ? 'house-b' : 'house-a', ...footprint };
     case 'ruin': return { id: 'ruin', ...footprint };
-    case 'tower': return { id: stage === 'rift-village' ? 'bell-tower' : 'fortress-tower', ...footprint };
+    // (The village's is a watchtower, fitted by riftPlaceDress.)
+    case 'tower': return { id: stage === 'rift-village' ? 'watch-tower' : 'fortress-tower', ...footprint };
     case 'cart': return { id: 'cart', ...footprint };
     // Driven in point first, and leaning as the code-built ones did.
     case 'sword': return { id: 'sword', h: p.h + .3, sink: .3, tilt: [(r - .5) * .7, (r - .5) * .4] };

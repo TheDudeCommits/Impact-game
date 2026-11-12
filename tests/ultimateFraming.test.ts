@@ -5,16 +5,16 @@ import { sightClearance } from '../src/render/CameraDirector';
 import { ArenaSimulation } from '../src/game/simulation';
 import { MOVES } from '../src/game/moves';
 import { moveFor } from '../src/game/awakening';
-import { rollerAt, ROLLER_TIMING } from '../src/render/signature/Steamroller';
+import { rollerAt, ROLLER_TIMING } from '../src/render/signature/HourOfRuin';
 import type { Fighter } from '../src/render/Fighter';
 import type { CombatEvent, FighterId, PlayerState } from '../src/game/types';
 
 /**
  * Round 3b (CAMERA): the blind critic's ultimate framing - "cameras often sit
  * behind the victim or inside geometry", Ikazuchi Arrow "camera inside the
- * Guardian", Grand Tide "the giant fist hides the target for about 4 s",
- * Kyokko-Ho "a bot's torso fills about 40% of the frame", the main victim
- * leaving a multi-victim time stop's frame on the resume, the Steamroller
+ * Guardian", Spring Tide "the giant fist hides the target for about 4 s",
+ * Royal Aurora "a bot's torso fills about 40% of the frame", the main victim
+ * leaving a multi-victim time stop's frame on the resume, the Hour of Ruin
  * hanging above the top of LORD ORO's shot - played through the real simulation
  * and the camera, frame by frame, the way main.ts drives them.
  */
@@ -24,7 +24,7 @@ function body(state: PlayerState): Body {
   return { state: { ...state }, group, velocity: new THREE.Vector3(), model: { visible: true }, handR: new THREE.Vector3() } as unknown as Body;
 }
 /** What the client draws for a body this frame, as far as the camera cares:
- *  Grand Tide is thrown as Full Swell (Fighter shows the form for the
+ *  Spring Tide is thrown as Full Swell (Fighter shows the form for the
  *  middle of the ultimate, so drawnBulk sizes the shots for it), its fist
  *  raised off a hand 2.3 m up. Round 3d (ULTS): the form is the cinematic's,
  *  from the confirm - the opener is Gummy's own Bazooka. */
@@ -65,9 +65,9 @@ const chest = (p: THREE.Vector3) => new THREE.Vector3(p.x, p.y + 1.1, p.z);
 const onScreen = (camera: THREE.PerspectiveCamera, p: THREE.Vector3) => { const v = p.clone().project(camera); return v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1; };
 
 describe('ultimate shots keep what the move summons out of the way', () => {
-  it('Grand Tide: the release shot sees the victim past the inflating fist', () => {
+  it('Spring Tide: the release shot sees the victim past the inflating fist', () => {
     const { frames, cast } = film('gummy', [[.2, 2.4], [3.4, 3.4], [-2.4, 5.4]], 8);
-    // Round 3d (ULTS): Grand Tide is the finisher of a hit-confirm
+    // Round 3d (ULTS): Spring Tide is the finisher of a hit-confirm
     // ultimate: the fist is blown up over the held victim from just after the
     // opener and driven in over the last 0.3 s (GummyEffects).
     const kong = MOVES.gummy.ultimate, blow = kong.contacts[kong.contacts.length - 1], from = kong.contacts[0] + .12, full = blow - .35, drive = blow - .3;
@@ -105,7 +105,7 @@ describe('ultimate shots keep what the move summons out of the way', () => {
   });
 
   it('a bystander where the shot would stand: the lens keeps off them and sees the victim past them', () => {
-    // Kyokko-Ho on a victim 3 m ahead, a bystander standing right behind
+    // Royal Aurora on a victim 3 m ahead, a bystander standing right behind
     // the caster's shoulder - where the release shot stands by default.
     const { frames, cast } = film('ouga', [[.3, 3], [-1.3, -1.4]], 6);
     const release = frames.filter(f => f.phase === 'release' && f.weight > .99 && f.t - cast < 3.2);
@@ -149,7 +149,7 @@ describe('the time stops keep their people in the frame', () => {
     for (const f of resume) expect(onScreen(f.camera, chest(f.bodies.get('v0')!)), `v0 at ${(f.t - finish).toFixed(2)} after the finisher`).toBe(true);
   });
 
-  it('LORD ORO: the steamroller is in the field before it slams down', () => {
+  it('LORD ORO: the hour of ruin is in the field before it slams down', () => {
     const { frames, cast } = film('oro', [[.1, 2], [1.7 * Math.sin(1.7), 4 * Math.cos(1.7)], [-4.8 * Math.sin(2.3), 4.8 * Math.cos(2.3)]], 7);
     const finisher = MOVES.oro.ultimate.contacts[MOVES.oro.ultimate.contacts.length - 1];
     const hang = frames.filter(f => f.phase === 'field' && f.weight > .99 && f.t - cast > finisher - ROLLER_TIMING.hold + .1 && f.t - cast < finisher - ROLLER_TIMING.slam);

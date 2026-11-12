@@ -16,7 +16,7 @@ import { shrinkNearLens } from '../survival/lensNear';
 const DROPS = 700, STAINS = 520;
 /** What each kind bleeds, unlit on the floor - so the strange ones are kept
  *  dark: a sprout's bile a black olive and a trooper's a bruise-plum (lime
- *  and magenta puddles read as paint on the offering, not as Grave Hound). */
+ *  and magenta puddles read as paint on the Fallen Star, not as Grave Hound). */
 /** (Red is a dark arterial red: at .46 the spray and the pools read as red
  *  paint and paper confetti - "fake".) */
 export const ICHOR: Record<Ichor, THREE.Color> = {

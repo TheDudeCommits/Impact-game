@@ -47,7 +47,7 @@ const FLOORED_COATS = new Set<string>((Object.entries(ORIGINALS) as [FighterId, 
   .filter(([id, original]) => original.coat?.floored && !LAUNCHED_KEPT.has(id)).map(([id]) => id));
 export const coatFlownWhileDown = (fighter: string) => FLOORED_COATS.has(fighter);
 /** remake-misc (6 November 2026): Madake's coat takes its air settings (LAUNCHED_COAT: no hang toward the floor, no lift cap)
- *  through his two kick enders, Flying Greeting (J J K) and Green Hurricane (J J J K), read by Fighter.ts's launch hook. His
+ *  through his two kick enders, Flying Greeting (J J K) and Bamboo Cyclone (J J J K), read by Fighter.ts's launch hook. His
  *  skirt is slit up both sides (scripts/originals/shop/coat_slit_r6.py) and those clips carry the front panel up over the kicking
  *  knee (coat_kick_r6.py); on the ground settings the panel was held hanging (75% toward the floor, never past 62 degrees off
  *  straight down), a sheet in front of the leg from the fight camera. */
@@ -170,7 +170,7 @@ export function applyOriginalSpiritShells<T extends { print: { glow?: RegExp; gl
 }
 
 const SERIES_WORLD: Readonly<Record<string, readonly string[]>> = {
-  'Last Sun': ['Last Sun', 'Seven Star Saga'], 'Dust Sea': ['Dust Sea', 'Grand Tides', 'Old Growth', 'Stone Ford'], 'Hidden Ash': ['Hidden Ash', 'Shinobi Spiral', 'Hundred Bells'], 'Cinder Requiem': ['Cinder Requiem'],
+  'Last Sun': ['Last Sun', 'Seven Star Saga'], 'Dust Sea': ['Dust Sea', 'Spring Tides', 'Old Growth', 'Stone Ford'], 'Ashwood': ['Ashwood', 'Shinobi Spiral', 'Hundred Bells'], 'Cinder Requiem': ['Cinder Requiem'],
   'Gilded Ruin': ['Gilded Ruin'], 'Hex Fallout': ['Hex Fallout', 'Hexbound'], 'Grave Hound': ['Grave Hound'], 'Salvage Wilds': ['Salvage Wilds', 'Phantom Hunt', 'Paper Sky'],
   'Ropewalk': ['Ironwall', 'Ropewalk'], 'Blast Radius': ['Blast Radius'], 'Black Snow': ['Black Snow'], 'Gatefall': ['Gatefall'],
   'Slag Hill': ['Slag Hill'], 'Crimson Ledger': ['Crimson Ledger'],
@@ -212,7 +212,7 @@ export function applyOriginalSeries<T extends { id: string; url: string; title: 
 }
 
 const UNIVERSES: [RegExp, string][] = [
-  [/DUST SEA/, 'dust-sea'], [/LAST SUN/, 'last-sun'], [/HIDDEN ASH/, 'konta'], [/CINDER REQUIEM/, 'cinder-requiem'],
+  [/DUST SEA/, 'dust-sea'], [/LAST SUN/, 'last-sun'], [/ASHWOOD/, 'konta'], [/CINDER REQUIEM/, 'cinder-requiem'],
   [/GILDED RUIN/, 'gilded-ruin'], [/HEX FALLOUT/, 'hex-fallout'], [/GRAVE HOUND/, 'grave-hound'], [/SALVAGE WILDS/, 'salvage-wilds'],
   [/GRAND TIDES/, 'dust-sea'], [/SEVEN STAR SAGA/, 'last-sun'], [/SHINOBI SPIRAL/, 'konta'], [/HEXBOUND/, 'hex-fallout'],
   [/PHANTOM HUNT/, 'salvage-wilds'],

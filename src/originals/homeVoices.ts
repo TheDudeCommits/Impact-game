@@ -43,7 +43,7 @@ export const HOME_VOICE_OF: Readonly<Record<string, string>> = {
   tobari: 'tobari',
   oyashio: 'oyashio',
   hakushi: 'hakushi',
-  jirenga: 'jirenga',
+  banjaku: 'banjaku',
   kinu: 'kinu',
   gosu: 'gosu',
   koko: 'koko',

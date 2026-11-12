@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import {arenaMood,crowdHype,goalNetHit,goalNetPower} from './hype';
 import {netSheer} from './ballCamChoice';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {BALL_TEAM_COLOURS,GOAL_RULES,SPIKE_RULES} from '../../game/ball/model';
+import {BALL_TEAM_COLOURS,CLASSIC_COURT,GOAL_RULES,SPIKE_RULES,sameCourt,type SpikeCourt} from '../../game/ball/model';
+import {sportPage} from '../../game/ball/sportRules';
 import type {StageId} from '../../game/stages';
 import {stageMaterial} from '../stages/build';
 import {addShaderPatch} from '../look/shaderPatch';
@@ -122,19 +123,38 @@ function offsetRing(points:readonly V2[],d:number):V2[]{
   });
 }
 
+/** So cage posts and goal frames never cut across the view: on a football page the cage's frame and trim, the goals'
+ *  frames and bands and the glass thin out near the lens - all of it gone within `uLensNear` m of it, none of it past
+ *  `uLensFar` - dithered as the camera cutaway is, while `uLensFade` is up (main.ts: while the SPORT stance's chase rig
+ *  films; 0 everywhere else, so nothing changes there). */
+export const ARENA_LENS={uLensFade:{value:0},uLensNear:{value:2.4},uLensFar:{value:6}};
+function lensFade<M extends THREE.Material>(material:M):M{
+  addShaderPatch(material,'ball-lens-fade-v1',shader=>{
+    Object.assign(shader.uniforms,ARENA_LENS);
+    shader.vertexShader='varying vec3 vLensWorld;\n'+shader.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n\tvLensWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
+    shader.fragmentShader='varying vec3 vLensWorld;\nuniform float uLensFade,uLensNear,uLensFar;\n'+shader.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>
+\tif ( uLensFade > 0.0 ) {
+\t\tfloat lensDrop = uLensFade * ( 1.0 - smoothstep( uLensNear, uLensFar, distance( vLensWorld, cameraPosition ) ) );
+\t\tif ( lensDrop > 0.004 && fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) ) < lensDrop ) discard;
+\t}`);
+  });
+  material.needsUpdate=true;
+  return material;
+}
+
 /** A see-through wall: faint glass with a manga screentone thickening toward its foot, a fresnel edge, a slow sheen
  *  running along it, and each half's colour in its foot. Not a camera occluder: the lens sees through it. */
-function glassMaterial(time:{value:number},height:number){
+function glassMaterial(time:{value:number},height:number,strength=1){
   return new THREE.ShaderMaterial({
     name:'Ball arena glass',transparent:true,depthWrite:false,side:THREE.DoubleSide,forceSinglePass:true,fog:true,
-    uniforms:fogged({uTime:time,uRed:{value:RED.clone()},uBlue:{value:BLUE.clone()},uHeight:{value:height}}),
+    uniforms:fogged({uTime:time,uRed:{value:RED.clone()},uBlue:{value:BLUE.clone()},uHeight:{value:height},...ARENA_LENS}),
     vertexShader:`attribute float aTeam;varying vec2 vUv;varying float vTeam;varying vec3 vN;varying vec3 vView;
       #include <fog_pars_vertex>
       void main(){vUv=uv;vTeam=aTeam;vec4 world=modelMatrix*vec4(position,1.);vN=normalize(mat3(modelMatrix)*normal);vView=cameraPosition-world.xyz;
         vec4 mvPosition=viewMatrix*world;gl_Position=projectionMatrix*mvPosition;
         #include <fog_vertex>
       }`,
-    fragmentShader:`uniform float uTime,uHeight;uniform vec3 uRed,uBlue;varying vec2 vUv;varying float vTeam;varying vec3 vN;varying vec3 vView;
+    fragmentShader:`uniform float uTime,uHeight,uLensFade,uLensNear,uLensFar;uniform vec3 uRed,uBlue;varying vec2 vUv;varying float vTeam;varying vec3 vN;varying vec3 vView;
       #include <fog_pars_fragment>
       void main(){
         vec3 team=mix(uRed,uBlue,vTeam);
@@ -148,7 +168,8 @@ function glassMaterial(time:{value:number},height:number){
         float foot=1.-smoothstep(.0,.16,y);
         vec3 col=mix(vec3(.72,.82,1.),team,.45+foot*.4);
         float a=.035+tone*.12+fres*.22+sheen*.18+foot*.16;
-        gl_FragColor=vec4(col*(1.+sheen*.8+foot*.6),min(a,.6));
+        a*=1.-uLensFade*(1.-smoothstep(uLensNear,uLensFar,length(vView)));
+        gl_FragColor=vec4(col*(1.+sheen*.8+foot*.6),min(a,.6)*${num(strength)});
         #include <fog_fragment>
       }`,
   });
@@ -174,7 +195,24 @@ export class BallArena {
   private readonly fans={value:BallArena.clear()};
   private static clear(){const t=new THREE.DataTexture(new Uint8Array(4),1,1);t.needsUpdate=true;return t as THREE.Texture;}
   /** Which of the mode's arenas (game/ball/arenas.ts) this is; the rules' shapes are the same in all. */
-  constructor(readonly stage:BallStage,readonly arena:BallArenaId=stage==='ball-pitch'?'ink-bowl':'sky-court'){this.root.name=`${stage==='ball-pitch'?'Goal Rush':'Sky Spike'} · ${arena}`;}
+  /** Sky Spike's court as it is built - the classic's, or volleyball's for three a side (game/ball/model.ts
+   *  VOLLEY_COURT): the lines, the net, the barrier round its free zone and the dressing by it follow it; the platform,
+   *  the trees and the sky beyond are the arena's as ever. */
+  constructor(readonly stage:BallStage,readonly arena:BallArenaId=stage==='ball-pitch'?'ink-bowl':'sky-court',readonly court:SpikeCourt=CLASSIC_COURT){this.root.name=`${stage==='ball-pitch'?'Goal Rush':'Sky Spike'} · ${arena}`;}
+  /** Built for volleyball's court for three a side (the classic court's arena is as it was). */
+  private get volley(){return this.stage==='ball-court'&&!sameCourt(this.court,CLASSIC_COURT);}
+  /** So the crowd and its banners do not fill the top third and the net is not lost against the fence and railing
+   *  (volleyball's court only) - its camera (SpikeCam VOLLEY) looks over the far baseline at everything behind it:
+   *  - The stands behind each baseline sit `drop` metres lower (`tide` on the beach, sunk into the dunes): from the stand a
+   *    row or two of heads shows over the platform's edge - a twentieth of the frame, the Tide Court's a seventh - and the
+   *    sky beyond, where a set's ball is read.
+   *  - The side's banners stand by the sidelines instead of behind the baselines (`bannerX` m out past the barrier, at
+   *    `bannerZ` of the wall's z), on `pole`-metre poles, their flags `flag` the size.
+   *  - The net's top band is white and `tape` m deep and stays whole on the thinned net; the barrier round the free zone is
+   *    a warm grey (`frame`), not ink, its glass a `glass` share as strong and its trim unlit, so the net is the one line
+   *    across the frame.
+   *  - The ink circle painted on each half (the enso) is `enso` as dark. */
+  static readonly VOLLEY_STAGE={drop:9,tide:5.5,bannerX:2.6,bannerZ:.62,pole:6,flag:.72,tape:.2,frame:0x8a7a6e,glass:.45,enso:.4} as const;
 
   async load(){
     if(this.built)return;this.built=true;
@@ -259,12 +297,12 @@ export class BallArena {
       // Sky Spike: on the rim beyond the barrier (nothing a fighter can run into): the umpire's chair at the net, a bench
       // and a ball cart for each side, the supporters' drums behind each baseline.
       // (On the volcano the timber and canvas are smoke-dark.)
-      const {halfX:X,halfZ:Z}=SPIKE_RULES,tint=this.arena==='ember-rim'?0x8f6a5c:undefined;
+      const {wallX:X,wallZ:Z}=this.court,kx=X/SPIKE_RULES.halfX,kz=Z/SPIKE_RULES.halfZ,tint=this.arena==='ember-rim'?0x8f6a5c:undefined;
       place.push(['own/ball-umpire-chair',{x:X+1.9,z:0,y:0,height:4.3,rot:-Math.PI/2,shadow:true,tint}]);
       for(const sz of [-1,1]){
-        place.push(['own/ball-team-bench',{x:-(X+2.1),z:sz*7.6,y:0,width:5.4,rot:Math.PI/2,shadow:true,tint}]);
+        place.push(['own/ball-team-bench',{x:-(X+2.1),z:sz*7.6*kz,y:0,width:5.4,rot:Math.PI/2,shadow:true,tint}]);
         place.push(['own/ball-ball-cart',{x:-(X+1.6),z:sz*2.4,y:0,width:1.4,rot:Math.PI/2+sz*.5,shadow:true,tint}]);
-        for(const sx of [-1,1])place.push(['own/ball-festival-drums',{x:sx*10.4,z:sz*(Z+2.1),y:0,height:1.9,rot:(sz<0?0:Math.PI)-sx*sz*.3,shadow:true,tint}]);
+        for(const sx of [-1,1])place.push(['own/ball-festival-drums',{x:sx*10.4*kx,z:sz*(Z+2.1),y:0,height:1.9,rot:(sz<0?0:Math.PI)-sx*sz*.3,shadow:true,tint}]);
       }
       if(this.arena==='sky-court'){
         // The cherry trees at the rim's corners, in place of the ones drawn in code. Those on the sun's side do not cast:
@@ -330,8 +368,14 @@ export class BallArena {
     const outline:V2[]=[[X,-Z+C],[X,Z-C],[X-C,Z],[G,Z],[G,Z+D],[-G,Z+D],[-G,Z],[-X+C,Z],[-X,Z-C],[-X,-Z+C],[-X+C,-Z],[-G,-Z],[-G,-Z-D],[G,-Z-D],[G,-Z],[X-C,-Z]];
     const geometry=new THREE.ShapeGeometry(new THREE.Shape(outline.map(([x,z])=>new THREE.Vector2(x,-z)))).rotateX(-Math.PI/2);
     const material=stageMaterial('ball-pitch','Ink Bowl turf',{color:0xffffff,roughness:.95});
+    // On a page on the sport rules (game/ball/sportRules.ts) the pitch is a football pitch - mown grass in the Ink Bowl, clean
+    // white lines everywhere (touchlines, halfway, the centre circle and spot, each goal's boxes and spot), and no great
+    // ink circle under the play. `?classic` keeps the painted pitch.
+    const sport=sportPage();
     const ground={
-      'ink-bowl':`// The pitch is a sheet of paper. Warm cream, mown in broad bands a shade apart, the paper's grain
+      'ink-bowl':sport?`// Football: mown grass in broad bands a shade apart, the grain and the blades in it.
+        float bStripe=mod(floor(bp.y/${band}+100.),2.);
+        vec3 bTurf=mix(${lin(0x3f8538)},${lin(0x35742f)},bStripe)*(.88+bGrain*.18+bFibre*.07);float bPud=0.;`:`// The pitch is a sheet of paper. Warm cream, mown in broad bands a shade apart, the paper's grain
         // and fibre in it, and screentone dots in the darker bands (faded out where they would shimmer).
         float bStripe=mod(floor(bp.y/${band}+100.),2.);
         vec3 bTurf=mix(${lin(0xe8dcc0)},${lin(0xd9c9a6)},bStripe)*(.9+bGrain*.14+bFibre*.05);
@@ -348,8 +392,27 @@ export class BallArena {
         vec2 bCell=floor(bp*1.1),bF=fract(bp*1.1)-.5;float bT=fract(uBallTime*.8+fract(sin(dot(bCell,vec2(12.9898,78.233)))*43758.5453));
         bTurf+=vec3(.5,.55,.62)*(1.-smoothstep(0.,.03,abs(length(bF)-bT*.45)))*(1.-bT)*(.2+bPud*.8)*.3;`,
     } as Partial<Record<BallArenaId,string>>;
-    const ink=this.arena==='rain-roof'?lin(0xe9e6dc):lin(0x0b0b0e);
-    addShaderPatch(material,`ball-turf-v2-${this.arena}`,shader=>{
+    const ink=sport?lin(0xf6f3ea):this.arena==='rain-roof'?lin(0xe9e6dc):lin(0x0b0b0e);
+    // (Football's lines: chalk, crisp and even - `chalk` m across each way - with a soft dark edge on the pale sand so they
+    // read on it; the centre circle `circle` m round.)
+    const chalk=.09,circle=3.6,edge=this.arena==='dust-yard'?.3:this.arena==='ink-bowl'?.12:0;
+    const sportMarks=`
+        float bSd=max(max(abs(bp.x)-${num(X)},abs(bp.y)-${num(Z)}),(abs(bp.x)+abs(bp.y)-${num(X+Z-C)})*.70710678);
+        float bIn=step(bSd,-.8),bR=length(bp),bIntoPitch=${num(Z-.8)}-abs(bp.y);
+        float bD=abs(bSd+.8)*step(abs(bp.y),${num(Z)});
+        bD=min(bD,abs(bp.y)+(1.-bIn)*9.);
+        bD=min(bD,abs(bR-${num(circle)}));
+        bD=min(bD,abs(ballBox(vec2(bp.x,bIntoPitch-${num(box[1])}),vec2(${num(box[0])},${num(box[1])}))));
+        bD=min(bD,abs(ballBox(vec2(bp.x,bIntoPitch-${num(six[1])}),vec2(${num(six[0])},${num(six[1])}))));
+        bD=min(bD,abs(length(vec2(bp.x,bIntoPitch-${num(spot)}))-${num(arc)})+(1.-step(${num(box[1]*2)},bIntoPitch))*9.);
+        bD=min(bD,abs(abs(bp.y)-${num(Z)})+(1.-step(abs(bp.x),${num(G)}))*9.);
+        float bMarks=ballLine(bD,${num(chalk)});
+        bMarks=max(bMarks,1.-smoothstep(.2,.25,bR));
+        bMarks=max(bMarks,1.-smoothstep(.2,.25,length(vec2(bp.x,bIntoPitch-${num(spot)}))));
+        float bEdge=ballLine(bD,${num(chalk+.09)})*(1.-bMarks);
+        bTurf*=1.-bEdge*${num(edge)};
+        bTurf=mix(bTurf,${ink},bMarks*.93);`;
+    addShaderPatch(material,`ball-turf-v2-${this.arena}${sport?'-sport':''}`,shader=>{
       shader.uniforms.uBallNoise={value:noiseTexture()};shader.uniforms.uBallTime=this.time;
       shader.vertexShader='varying vec3 vBallWorld;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvBallWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
       shader.fragmentShader='varying vec3 vBallWorld;\nuniform sampler2D uBallNoise;\nuniform float uBallTime;\n'+FLOOR_GLSL+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
@@ -361,7 +424,8 @@ export class BallArena {
         vec3 bTeam=mix(${lin(BALL_TEAM_COLOURS.red)},${lin(BALL_TEAM_COLOURS.blue)},step(0.,bp.y));
         float bRag=(texture2D(uBallNoise,bp*.12).a-.5)*3.;
         float bWash=smoothstep(${num(Z-13*kz)},${num(Z-9*kz)},abs(bp.y)+bRag)*.2+step(${num(Z)},abs(bp.y))*.42;
-        bTurf=mix(bTurf,bTurf*(.35+bTeam*1.25),bWash);
+        bTurf=mix(bTurf,bTurf*(.35+bTeam*1.25),bWash*${sport?'.6':'1.'});
+        ${sport?sportMarks:`
         // The lines: ink brush strokes, wider and wobblier than chalk, dry at their edges where the brush ran out.
         float bW=.13+(texture2D(uBallNoise,bp*.21).a-.5)*.06;
         float bSd=max(max(abs(bp.x)-${num(X)},abs(bp.y)-${num(Z)}),(abs(bp.x)+abs(bp.y)-${num(X+Z-C)})*.70710678);
@@ -382,7 +446,7 @@ export class BallArena {
         float bEnso=ballEnso(bp,${num(enso)},.62+(texture2D(uBallNoise,bp*.25).g-.5)*.2);
         bEnso=max(bEnso,ballEnso(vec2(-bp.y,bp.x),${num(enso*.73)},.16)*.8);
         bMarks=max(bMarks,bEnso);
-        bTurf=mix(bTurf,${ink},bMarks*.94);
+        bTurf=mix(bTurf,${ink},bMarks*.94);`}
         diffuseColor.rgb*=bTurf;`).replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
         roughnessFactor=mix(roughnessFactor,.16,bPud);`);
     });
@@ -424,8 +488,9 @@ export class BallArena {
       }
     }
     // The cage's frame casts: its posts lie across the pitch's edge in the floodlights.
-    this.add(new THREE.Mesh(bake(frame),stageMaterial('ball-pitch','Ink Bowl frame',{color:0x111216,roughness:.6})),'Ink Bowl frame').castShadow=true;
-    this.add(new THREE.Mesh(bake(trim,true),new THREE.MeshBasicMaterial({vertexColors:true,name:'Ink Bowl trim'})),'Ink Bowl trim');
+    // (On a football page the frame casts no bars of shadow across the pitch - the bodies' own shadows stay.)
+    this.add(new THREE.Mesh(bake(frame),lensFade(stageMaterial('ball-pitch','Ink Bowl frame',{color:0x111216,roughness:.6}))),'Ink Bowl frame').castShadow=!sportPage();
+    this.add(new THREE.Mesh(bake(trim,true),lensFade(new THREE.MeshBasicMaterial({vertexColors:true,name:'Ink Bowl trim'}))),'Ink Bowl trim');
   }
 
   private goals(){
@@ -448,8 +513,8 @@ export class BallArena {
       for(const sx of [-1,1])nets.grid([sx*G,0,z],[sx*G,0,back],[sx*G,GH,back],[sx*G,GH,z],5,6,{uv:[0,0,D,GH],team});
       nets.grid([-G,GH,z],[G,GH,z],[G,GH,back],[-G,GH,back],12,5,{uv:[-G,0,G,D],team});
     }
-    const frame=this.add(new THREE.Mesh(bake(white),stageMaterial('ball-pitch','Goal frame',{color:0xf4f1ea,roughness:.5})),'Goal frames');frame.castShadow=true;
-    this.add(new THREE.Mesh(bake(bands,true),new THREE.MeshBasicMaterial({vertexColors:true,name:'Goal bands'})),'Goal bands');
+    const frame=this.add(new THREE.Mesh(bake(white),lensFade(stageMaterial('ball-pitch','Goal frame',{color:0xf4f1ea,roughness:.5}))),'Goal frames');frame.castShadow=true;
+    this.add(new THREE.Mesh(bake(bands,true),lensFade(new THREE.MeshBasicMaterial({vertexColors:true,name:'Goal bands'}))),'Goal bands');
     const net=new THREE.ShaderMaterial({
       name:'Goal nets',transparent:true,depthWrite:false,side:THREE.DoubleSide,forceSinglePass:true,fog:true,
       uniforms:fogged({uTime:this.time,uRed:{value:RED.clone()},uBlue:{value:BLUE.clone()},uHit:goalNetHit,uHitPower:goalNetPower}),
@@ -953,7 +1018,8 @@ export class BallArena {
   private static readonly TREES:V2[]=[[1,1],[1,-1],[-1,1],[-1,-1]].map(([sx,sz])=>[sx*(SPIKE_RULES.halfX+1.6),sz*(SPIKE_RULES.halfZ+1.7)] as V2);
 
   private platform(){
-    const R=SPIKE_RULES,{x:PX,z:PZ,round:r}=BallArena.PLATFORM,[TX,TZ]=BallArena.TREES[0];
+    // (The court's lines and its free zone are the court's being built, each mark carried onto it with it.)
+    const C=this.court,R={courtHalfX:C.x,courtHalfZ:C.z,halfX:C.wallX,halfZ:C.wallZ},kz=C.z/SPIKE_RULES.courtHalfZ,{x:PX,z:PZ,round:r}=BallArena.PLATFORM,[TX,TZ]=BallArena.TREES[0];
     const shape=new THREE.Shape();
     shape.moveTo(-PX+r,-PZ);shape.lineTo(PX-r,-PZ);shape.absarc(PX-r,-PZ+r,r,-Math.PI/2,0,false);shape.lineTo(PX,PZ-r);shape.absarc(PX-r,PZ-r,r,0,Math.PI/2,false);
     shape.lineTo(-PX+r,PZ);shape.absarc(-PX+r,PZ-r,r,Math.PI/2,Math.PI,false);shape.lineTo(-PX,-PZ+r);shape.absarc(-PX+r,-PZ+r,r,Math.PI,Math.PI*1.5,false);
@@ -970,7 +1036,7 @@ export class BallArena {
         bGlow=vec3(2.,.55,.1)*bCrack*(1.-bCourt)*(.25+.75*(1.-bZone))*(.6+.4*sin(uBallTime*1.7+bp.x*.3));`,
     } as Partial<Record<BallArenaId,string>>;
     const courtInk=this.arena==='ember-rim'?lin(0xece6da):lin(0x0b0b0e);
-    addShaderPatch(material,`ball-court-v2-${this.arena}`,shader=>{
+    addShaderPatch(material,`ball-court-v2-${this.arena}${C===CLASSIC_COURT?'':`-${C.x}x${C.z}`}`,shader=>{
       shader.uniforms.uBallNoise={value:noiseTexture()};shader.uniforms.uBallTime=this.time;
       shader.vertexShader='varying vec3 vBallWorld;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvBallWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
       shader.fragmentShader='varying vec3 vBallWorld;\nuniform sampler2D uBallNoise;\nuniform float uBallTime;\n'+FLOOR_GLSL+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
@@ -985,7 +1051,7 @@ export class BallArena {
         vec3 bWood=${lin(0xc8935a)}*(.8+bTone*.3)*(.88+bGrain*.24)*(1.-(bSeam+bJoint)*.35);
         vec3 bPaint=mix(${lin(BALL_TEAM_COLOURS.red)},${lin(BALL_TEAM_COLOURS.blue)},step(0.,bp.y));
         vec3 bCol=mix(bWood,bWood*bPaint*2.2,.22);
-        bCol=mix(bCol,${lin(0x0a0a0d)},ballEnso(vec2(bp.x,ba.y-6.6),1.9,.26)*.42);
+        bCol=mix(bCol,${lin(0x0a0a0d)},ballEnso(vec2(bp.x,ba.y-${num(6.6*kz)}),${num(1.9*Math.min(1,kz*1.15))},.26)*${num(.42*(this.volley?BallArena.VOLLEY_STAGE.enso:1))});
         // The free zone: pale stone raked round the court like a temple garden (paper-pale, so the ink
         // lines and the fighters' shadows read on it).
         float bRake=.5+.5*sin(ballBox(bp,vec2(${num(R.courtHalfX)},${num(R.courtHalfZ)}))*17.);
@@ -1001,9 +1067,9 @@ export class BallArena {
         // attack lines dashed, and a gold line round the free zone.
         float bL=ballLine(ballBox(bp,vec2(${num(R.courtHalfX)},${num(R.courtHalfZ)})),.055);
         bL=max(bL,ballLine(bp.y,.055)*step(ba.x,${num(R.courtHalfX)}));
-        bL=max(bL,ballLine(length(vec2(bp.x,ba.y-${num(R.courtHalfZ-2.45)}))-.45,.05));
+        bL=max(bL,ballLine(length(vec2(bp.x,ba.y-${num(R.courtHalfZ-2.45*kz)}))-.45,.05));
         bL=max(bL,ballLine(length(vec2(ba.x-${num(R.courtHalfX)},bp.y))-1.5,.05)*step(ba.x,${num(R.courtHalfX)}));
-        bL=max(bL,ballLine(ba.y-3.3,.045)*step(ba.x,${num(R.courtHalfX)})*step(.45,fract(bp.x*.9)));
+        bL=max(bL,ballLine(ba.y-${num(C===CLASSIC_COURT?3.3:3)},.045)*step(ba.x,${num(R.courtHalfX)})*step(.45,fract(bp.x*.9)));
         // The lines in ink, a brush's width, dry where the brush ran out.
         bL=max(bL,ballLine(ballBox(bp,vec2(${num(R.courtHalfX)},${num(R.courtHalfZ)})),.085));
         float bDry=step(.64,texture2D(uBallNoise,bp*vec2(2.3,2.9)).r)*.7;
@@ -1035,7 +1101,7 @@ export class BallArena {
   /** The net, where the sim has it (physics.ts court): across z = 0 and SPIKE_RULES.netPost past each sideline, its cord
    *  at netHeight, its posts the capsules the ball rings off. The fighters' wall over it is the server's (STAGE_LANDMARKS). */
   private net(){
-    const R=SPIKE_RULES,NX=R.courtHalfX+R.netPost,NH=R.netHeight,mesh=new Quads();
+    const R={...SPIKE_RULES,courtHalfX:this.court.x},NX=R.courtHalfX+R.netPost,NH=R.netHeight,mesh=new Quads(),V=this.volley?BallArena.VOLLEY_STAGE:null;
     mesh.add([-NX,0,0],[NX,0,0],[NX,NH,0],[-NX,NH,0],{uv:[-NX,0,NX,NH]});
     const material=new THREE.ShaderMaterial({
       name:'Sky Court net',transparent:true,depthWrite:false,side:THREE.DoubleSide,forceSinglePass:true,fog:true,
@@ -1055,14 +1121,16 @@ export class BallArena {
           float cord=max(smoothstep(.5-.09-fw.x,.5-.09,q.x),smoothstep(.5-.09-fw.y,.5-.09,q.y));
           float knot=(1.-smoothstep(.0,.12,abs(.5-q.x)))*(1.-smoothstep(.0,.12,abs(.5-q.y)));
           cord=mix(max(cord,knot),.34,clamp((max(fw.x,fw.y)-.22)*2.4,0.,1.));
-          float tape=step(${num(NH-.13)},vUv.y)+step(vUv.y,.07);
+          float top=step(${num(NH-(V?V.tape:.13))},vUv.y),tape=top+step(vUv.y,.07);
           float side=1.-smoothstep(.035,.06,abs(abs(vUv.x)-${num(R.courtHalfX)}));
           float white=clamp(tape+side,0.,1.);
           // (The COURT-SIDE camera looks at the far court through the net (SpikeCam, ballCamChoice.ts netSheer):
           // for it the weave is drawn at about a quarter of its opacity and the tapes at three quarters; at 0, the net as it was.)
           float a=max(cord*.92*(1.-.74*uSheer),white*(1.-.25*uSheer));
+          ${V?`// (Volleyball's court: the top band white and whole, the line the eye finds the net by.)
+          a=max(a,top);`:''}
           if(a<.02)discard;
-          gl_FragColor=vec4(mix(vec3(.62,.42,.2)*(.8+.2*sin(vUv.x*40.)),vec3(.02,.018,.02),white),a);
+          gl_FragColor=vec4(mix(vec3(.62,.42,.2)*(.8+.2*sin(vUv.x*40.)),${V?'mix(vec3(.02,.018,.02),vec3(1.,.98,.94),top)':'vec3(.02,.018,.02)'},white),a);
           #include <fog_fragment>
         }`,
     });
@@ -1084,19 +1152,21 @@ export class BallArena {
 
   /** Waist-high glass along the dome's walls (SPIKE_RULES.halfX/halfZ, where the ball rebounds), framed in ink. */
   private barrier(){
-    const {halfX:X,halfZ:Z}=SPIKE_RULES,H=1.15,ring:V2[]=[[X,-Z],[X,0],[X,Z],[0,Z],[-X,Z],[-X,0],[-X,-Z],[0,-Z]],glass=new Quads();
+    const {wallX:X,wallZ:Z}=this.court,H=1.15,ring:V2[]=[[X,-Z],[X,0],[X,Z],[0,Z],[-X,Z],[-X,0],[-X,-Z],[0,-Z]],glass=new Quads();
     const frame:{geometry:THREE.BufferGeometry}[]=[],trim:{geometry:THREE.BufferGeometry;color:THREE.Color}[]=[];let along=0;
     for(let i=0;i<ring.length;i++){
       const a=ring[i],b=ring[(i+1)%ring.length],len=Math.hypot(b[0]-a[0],b[1]-a[1]),team=(a[1]+b[1])/2<0?0:1;
       glass.add([a[0],0,a[1]],[b[0],0,b[1]],[b[0],H,b[1]],[a[0],H,a[1]],{uv:[along,0,along+len,H],team});along+=len;
       frame.push({geometry:beam(a,b,H-.05,H+.08,.16)},{geometry:beam(a,b,0,.18,.14)});
-      trim.push({geometry:beam(a,b,.18,.24,.05),color:(team?BLUE:RED).clone().multiplyScalar(1.8)});
+      trim.push({geometry:beam(a,b,.18,.24,.05),color:(team?BLUE:RED).clone().multiplyScalar(this.volley?.8:1.8)});
       const posts=Math.ceil(len/3);
       for(let k=0;k<posts;k++){const t=k/posts,x=a[0]+(b[0]-a[0])*t,z=a[1]+(b[1]-a[1])*t;frame.push({geometry:new THREE.BoxGeometry(.16,H+.2,.16).translate(x,(H+.2)/2,z)});}
     }
-    this.add(new THREE.Mesh(glass.geometry(),glassMaterial(this.time,H)),'Sky Court barrier').renderOrder=2;
-    this.add(new THREE.Mesh(bake(frame),stageMaterial('ball-court','Barrier frame',{color:0x121216,roughness:.6})),'Barrier frame');
-    this.add(new THREE.Mesh(bake(trim,true),new THREE.MeshBasicMaterial({vertexColors:true,name:'Barrier trim'})),'Barrier trim');
+    // (Volleyball's court: the barrier dimmed behind the net - VOLLEY_STAGE.)
+    const V=this.volley?BallArena.VOLLEY_STAGE:null;
+    this.add(new THREE.Mesh(glass.geometry(),glassMaterial(this.time,H,V?V.glass:1)),'Sky Court barrier').renderOrder=2;
+    this.add(new THREE.Mesh(bake(frame),stageMaterial('ball-court','Barrier frame',{color:V?V.frame:0x121216,roughness:.6})),'Barrier frame');
+    this.add(new THREE.Mesh(bake(trim,true),V?stageMaterial('ball-court','Barrier trim',{vertexColors:true,roughness:.8}):new THREE.MeshBasicMaterial({vertexColors:true,name:'Barrier trim'})),'Barrier trim');
   }
 
   /** A cherry tree on each corner of the rim, leaning out over the clouds: ink-dark limbs and clouds of blossom that
@@ -1281,14 +1351,16 @@ export class BallArena {
   /** Each side's colours on tall poles behind its baseline, waving. */
   private banners(){
     const {halfZ:Z}=SPIKE_RULES,poles:{geometry:THREE.BufferGeometry}[]=[],flags:THREE.BufferGeometry[]=[];
+    // (Volleyball's court: by the sidelines, lower and smaller - VOLLEY_STAGE.)
+    const V=this.volley?BallArena.VOLLEY_STAGE:null,pole=V?V.pole:7.6,k=V?V.flag:1;
     for(const sz of [-1,1])for(const sx of [-1,1]){
-      const x=sx*5,z=sz*(Z+2.6),team=sz<0?RED:BLUE;
-      poles.push({geometry:rod([x,0,z],[x,7.6,z],.09,8)},{geometry:new THREE.SphereGeometry(.16,10,6).translate(x,7.7,z)});
-      const flag=new THREE.PlaneGeometry(2.4,3.6,12,2).translate(sx*1.2,0,0);
+      const x=V?sx*(this.court.wallX+V.bannerX):sx*5,z=V?sz*this.court.wallZ*V.bannerZ:sz*(Z+2.6),team=sz<0?RED:BLUE;
+      poles.push({geometry:rod([x,0,z],[x,pole,z],.09,8)},{geometry:new THREE.SphereGeometry(.16,10,6).translate(x,pole+.1,z)});
+      const flag=new THREE.PlaneGeometry(2.4*k,3.6*k,12,2).translate(sx*1.2*k,0,0);
       const p=flag.getAttribute('position'),reach=new Float32Array(p.count),colors=new Float32Array(p.count*3),ink=new THREE.Color(0x0c0c10);
-      for(let i=0;i<p.count;i++){const t=Math.abs(p.getX(i))/2.4;reach[i]=t;const c=t>.18&&t<.3?ink:team;colors.set([c.r,c.g,c.b],i*3);}
+      for(let i=0;i<p.count;i++){const t=Math.abs(p.getX(i))/(2.4*k);reach[i]=t;const c=t>.18&&t<.3?ink:team;colors.set([c.r,c.g,c.b],i*3);}
       flag.setAttribute('aReach',new THREE.BufferAttribute(reach,1));flag.setAttribute('color',new THREE.BufferAttribute(colors,3));
-      flag.deleteAttribute('uv');flag.translate(x,5.7,z);flags.push(flag.toNonIndexed());flag.dispose();
+      flag.deleteAttribute('uv');flag.translate(x,pole-1.9*k,z);flags.push(flag.toNonIndexed());flag.dispose();
     }
     this.add(new THREE.Mesh(bake(poles),stageMaterial('ball-court','Banner poles',{color:0x15151a})),'Banner poles');
     const material=stageMaterial('ball-court','Banners',{vertexColors:true,side:THREE.DoubleSide});
@@ -1416,7 +1488,8 @@ export class BallArena {
     const stone=new THREE.Color(o.stone??0x9a907f),dark=new THREE.Color(o.dark??0x4a4440),rock=new THREE.Color(o.rock??0x6a585c);
     const TIERS=7,TREAD=1.5,RISE=1.1,HALF=17,white=new THREE.Color(0xe8e6e0),gold=new THREE.Color(0xffcf5a),c=new THREE.Color();
     for(const sz of [-1,1]){
-      const z0=sz*(PZ+11),y0=o.y0??-1.5,team=sz<0?RED:BLUE;
+      // (Volleyball's court: the stands sit low behind the baselines - VOLLEY_STAGE.)
+      const z0=sz*(PZ+11),y0=(o.y0??-1.5)-(this.volley?this.arena==='tide-court'?BallArena.VOLLEY_STAGE.tide:BallArena.VOLLEY_STAGE.drop:0),team=sz<0?RED:BLUE;
       for(let k=0;k<TIERS;k++){
         const z=z0+sz*k*TREAD,y=y0+k*RISE;
         parts.push({geometry:new THREE.BoxGeometry(HALF*2-k*.6,RISE,TREAD).translate(0,y+RISE/2,z+sz*TREAD/2),color:k%3===2?dark:stone});

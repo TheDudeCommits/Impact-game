@@ -67,7 +67,7 @@ export const SHOP_A: Partial<Record<FighterId, OriginalFighter>> = {
   dorado: {
     name: 'Dorado', series: 'Dust Sea',
     homeArt: true,
-    tagline: 'The Horizon King: the first captain ever to cross the whole Dust Sea to its far edge, and he came back laughing.',
+    tagline: 'The Far-Edge Captain: the first ever to cross the whole Dust Sea to its far edge, and he came back laughing.',
     color: '#d9a441',
     moves: ['Gilded Cut', 'Crown Lunge', 'Sovereign Shot', 'Last Light: Sunset Divide'],
     shortMoves: ['GILDED CUT', 'CROWN LUNGE', 'SOVEREIGN SHOT', 'SUNSET DIVIDE'],
@@ -76,7 +76,7 @@ export const SHOP_A: Partial<Record<FighterId, OriginalFighter>> = {
     portrait: F + 'dorado-portrait.png',
     names: {},
     shop: {
-      'fighter-dorado': { name: 'Dorado', glyph: '陽', blurb: 'The Horizon King: a gilded cutlass, a brass flintlock, and the one cut that split the clouds the day he reached the edge of the dead sea.' },
+      'fighter-dorado': { name: 'Dorado', glyph: '陽', blurb: 'The Far-Edge Captain: a gilded cutlass, a brass flintlock, and the one cut he saved for the far edge of the dead sea.' },
     },
   },
 };

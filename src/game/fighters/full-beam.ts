@@ -2,7 +2,7 @@ import type { CoreSlot } from '../types';
 import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 
-/** Inheritance pressure boxer. Every strike and shockwave requires deliberate
+/** Last Watch pressure boxer. Every strike and shockwave requires deliberate
  * player input. The sourced MHUR rig has no native animation: the signature
  * choreography is authored; only movement and reactions have a declared donor. */
 export const FULL_BEAM_MOVES: Record<CoreSlot, MoveDefinition> = {
@@ -36,7 +36,7 @@ export const FULL_BEAM_COMBOS: ComboRow = {
 /** Source clip1.5s is driven through the established0.9s entry. These are
  * runtime seconds, including release/swap=.54; none of these beats deal damage. */
 export const FULL_BEAM_AWAKENING = {
-  name: 'Inheritance', clip: 'Inheritance', sourceDuration: 1.5,
+  name: 'Last Watch', clip: 'Last Watch', sourceDuration: 1.5,
   runtimeDuration: .9, model: '/assets/fighters/full-beam-mhur1.glb', height: 2.2,
   beats: { gather: .162, brace: .333, release: .54, settle: .711 },
   manualOnly: true,

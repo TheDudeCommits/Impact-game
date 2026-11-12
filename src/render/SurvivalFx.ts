@@ -74,7 +74,7 @@ const PORTALS = 10, BLADES = 8;
 const RANK_MARK: Record<string, number> = { F: 0x9aa0a8, E: 0x6fc79a, D: 0x5a9cff, C: 0xff8a2a, B: 0xa060ff, A: 0xff2038, S: 0xffc03a };
 
 type RiftScreen = { impactFrame(strength: number, at?: THREE.Vector3): void; chromaticPulse(amount: number): void;
-  /** The renderer's stopped time (GameRenderer.timeStop): a boss relic's HUSH feeds it every frame it lasts. */
+  /** The renderer's stopped time (GameRenderer.timeStop): a boss relic's SLUMBER feeds it every frame it lasts. */
   timeStop?(amount: number): void; techniqueGrade(color: number, strength: number, seconds: number, at?: { x: number; y: number; z: number }, reach?: number): void; speedLines(amount: number): void;
   bloomPass?: { bloom: { strength: number; threshold: number } };
   finalPass?: { uniforms: { uBloom: { value: number } } };
@@ -420,7 +420,7 @@ export class SurvivalFx {
   }
 
   /** The places' light alive: firelight breathing in the village, lightning
-   *  over the keep (its thunder following), the offering's light beating with
+   *  over the keep (its thunder following), fallen-star's light beating with
    *  its heart. Relative to the stage's look, and put back on reset. */
   private mood(view: RunView | undefined, time: number) {
     const s = this.screen;
@@ -492,7 +492,7 @@ export class SurvivalFx {
     if (next !== view.location?.stage && next.startsWith('rift-')) prebuildRiftStage(next as RiftStageId);
   }
 
-  /** Kenzo's RAKSHASA (the roster's ThreeBlade effect) rises behind him - which in
+  /** Kenzo's DUNE ONI (the roster's ThreeBlade effect) rises behind him - which in
    *  the Rift's closer camera is between the lens and him, a giant covering
    *  half the frame. Here it is drawn thinner, and thinner still as it nears
    *  the lens. It is hooked at render time, since its own update sets its
@@ -500,7 +500,7 @@ export class SurvivalFx {
   private activeUntil = 0;
   private nextPhantomLook = 0;
   private hookPhantoms() {
-    for (const root of this.scene.getObjectsByProperty('name', 'rakshasa-phantom')) {
+    for (const root of this.scene.getObjectsByProperty('name', 'dune-oni-phantom')) {
       if (root.userData.riftThinned) continue;
       root.userData.riftThinned = true;
       root.traverse(node => {
@@ -932,7 +932,7 @@ export class SurvivalFx {
     const k = this.kit, sp = k.sparks.spec, x = item.x ?? this.subject.x, y = item.y ?? this.subject.y, z = item.z ?? this.subject.z;
     switch (item.sub) {
       case 'nightfang': {
-        // A black crescent flung on along the tear, red at its lip (Nightfall's Haizan): drawn
+        // A cinder wave flung on along the tear, red at its lip (Nightfall's Haizan): drawn
         // again a little further on each moment, each drawing gone as the next lands.
         const yaw = item.value ?? 0, dx = Math.sin(yaw), dz = Math.cos(yaw), reach = item.radius ?? 16;
         for (let d = 1.4; d < reach; d += 2.5) {
@@ -1034,7 +1034,7 @@ export class SurvivalFx {
         this.screen?.impactFrame(.7, _p.set(x, y + 1, z));
         break;
       case 'stop':
-        // HUSH: the flash, and a sphere of it sweeping out; the renderer's stopped time holds the frame after.
+        // SLUMBER: the flash, and a sphere of it sweeping out; the renderer's stopped time holds the frame after.
         k.ring(x, y + 1, z, .5, 60, time, .45, 0xffffff, GOLD.rim, .3, 'flat');
         k.ring(x, y + 1, z, .5, 24, time, .35, 0xffffff, GOLD.rim, .2);
         this.screen?.impactFrame(1, _p.set(x, y + 1, z));
@@ -1093,7 +1093,7 @@ export class SurvivalFx {
     k.smoke(vent.x + (Math.random() - .5) * .5, .3, vent.z + (Math.random() - .5) * .5, (Math.random() - .5) * .3, 1.5 + Math.random() * .6, (Math.random() - .5) * .3, .55 + Math.random() * .4, time, 1.7, 0x3a2a22, 0x0c0806);
     if (Math.random() < .3) k.pulse(vent.x, .35, vent.z, EMBER.light, 3, 3.5, time, .45, .6);
   }
-  /** HUSH's stopped time, as the renderer draws it (GameRenderer.timeStop): fed every frame it lasts, let go as it ends. */
+  /** SLUMBER's stopped time, as the renderer draws it (GameRenderer.timeStop): fed every frame it lasts, let go as it ends. */
   private stopSince = -1;
   private stoppedTime(left: number | undefined, time: number) {
     const screen = this.screen;
@@ -1127,7 +1127,7 @@ export class SurvivalFx {
     k.pulse(mx, my + .5, mz, el.light, 6 * lit, 7, time, .2);
   }
 
-  /** HOUND ARMOR has a fighter: dark red wisps rising off them. */
+  /** GRAVE PLATE has a fighter: dark red wisps rising off them. */
   rage(x: number, y: number, z: number, time: number) {
     const k = this.kit;
     if (Math.random() < .35) {

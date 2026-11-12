@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {BallGear,patchBallSkin,type Emit} from './ballCosmetics';
 import type {GameSnapshot} from '../../game/types';
-import {BALL_TEAM_COLOURS,CHARM_COLOURS,GOAL_RULES,SPIKE_RULES,ballOf,ballRadius,heatTier,type BallEvent,type BallModeId,type BallState,type BallTeam,type BallView} from '../../game/ball/model';
+import {BALL_TEAM_COLOURS,CHARM_COLOURS,GOAL_RULES,SHOOT,SPIKE_RULES,ballOf,ballRadius,heatTier,spikeCourt,type BallEvent,type BallModeId,type BallSeat,type BallState,type BallTeam,type BallView} from '../../game/ball/model';
 import {courtSide,landing,stepBall,type BallContact} from '../../game/ball/physics';
 import {CARRY,carrySpot} from '../../game/ball/BallMatch';
 import type {TouchForecast} from '../../game/ball/touchForecast';
@@ -23,6 +23,11 @@ import type {FighterId} from '../../game/types';
 /** Points in the trail, effects in the pool, and the instances drawn each frame beyond the pool (the shadow, the
  *  landing ring, the stopped clock). */
 const TRAIL=40,CAP=900,EXTRA=10;
+/** The landing ring closes on its spot from this many metres a second of flight left (less of it on the volleyball
+ *  rules' smaller court). */
+const LAND_CLOSE={classic:2.2,volley:1.1} as const;
+/** On the volleyball rules no body is named (less on screen): your own ring under your feet, doubled, marks you. */
+const noTag=(seat:BallSeat)=>!seat;
 /** One pooled effect's floats: where, its velocity, its age and life, its size from and to, colour and alpha, its
  *  kind, turn and spin, drag, gravity, a seed, how far it stretches and along what, and its flags. */
 const F=25,PX=0,PY=1,PZ=2,VX=3,VY=4,VZ=5,AGE=6,LIFE=7,S0=8,S1=9,CR=10,CG=11,CB=12,CA=13,KIND=14,ROT=15,SPIN=16,DRAG=17,GRAV=18,SEED=19,STRETCH=20,FLAGS=21,AX=22,AY=23,AZ=24;
@@ -102,7 +107,11 @@ const FOOT_RING=.5;
 /** SPORT mode: the drawn ball (only: the rules' ball is the room's) is never under FOOT_FLOOR px tall on the screen - 12 at
  *  720 px of height, 9 at 390, in between by the height - so a 0.6 m ball 35 m off still reads (it was 8.7 px at 1280 x
  *  720 and 4.7 at 844 x 390). The radius to draw `r` at, from `camera` (a perspective lens) to `at`. */
-const FOOT_FLOOR={high:720,highPx:12,low:390,lowPx:9} as const;
+const FOOT_FLOOR={high:720,highPx:17,low:390,lowPx:13} as const;
+/** A ball big enough to see (FOOT_FLOOR was 12 px and 9): on football the ball's ink line is at least `ink` px wide and
+ *  a paper halo `halo` px wide stands outside it (ink on the paper: it reads on grass, sand, a dark roof and a crowd
+ *  alike) - the hulls scaled by the drawn ball's size on screen. */
+const FOOT_RIM={ink:1.6,halo:1.9,alpha:.92} as const;
 function footDrawn(r:number,camera:THREE.Camera,at:{x:number;y:number;z:number}){
   const lens=camera as THREE.PerspectiveCamera,h=typeof innerHeight==='number'&&innerHeight>0?innerHeight:720;
   if(!lens.isPerspectiveCamera)return r;
@@ -110,6 +119,45 @@ function footDrawn(r:number,camera:THREE.Camera,at:{x:number;y:number;z:number})
   const d=Math.hypot(at.x-lens.position.x,at.y-lens.position.y,at.z-lens.position.z),least=px*d*Math.tan(lens.fov*Math.PI/360)/h;
   return Math.max(r,least);
 }
+/** So big ink and ghost effects never cover the action: on the sport rules' football a touch's mark, a save's, a post's
+ *  - every moment's but a goal's - is drawn at `size` of its size and `life` of its life: small and short, at the
+ *  touch. */
+const FOOT_QUIET={size:.6,life:.7} as const;
+/** So a body is seen touching the ball as it runs with it: the carried ball drawn as a dribble (BallField.dribble) -
+ *  from a run of `from` m/s, each second stride of a foot at the front of its stride (`front` m ahead of the body or
+ *  more) meets the ball `meet` ball radii in front of it and sends it `out` m on plus `outPer` a m/s of the run (at
+ *  most `outMost`) over a stride pair of `least`-`most` s (`pace` m of run a touch without feet to read). */
+const FOOT_DRIBBLE={from:2.2,front:.12,meet:1.1,out:.12,outPer:.035,outMost:.5,least:.38,most:.8,pace:2.6,period:.55,ease:30,kick:.7} as const;
+/** A ball easy to follow - not a small gold disc lost against the crowd and banners with no shadow - VOLLEYBALL only
+ *  (`view.volley`): the drawn ball (only: the rules' ball is the room's) `scale` times its size and never under
+ *  `highPx` px tall at 720 px of height (`lowPx` at 390, in between by the height), white with blue and yellow panels
+ *  and a thicker ink line (`outline`, of its size) so it reads on the court, the crowd and the sky alike; its shadow
+ *  always under it (at least `shadow` m across and `shadowAlpha` dark, with its finding ring from `ringFrom` m up); its
+ *  ribbon only off a ball struck at `trailFrom` m/s or more (a spike, a JUMP SERVE, a STUFF), `trailLife` s long - a
+ *  pass and a set leave none. */
+const VOLLEY_DRAW={scale:1.15,high:720,highPx:20,low:390,lowPx:14,outline:1.12,shadow:.62,shadowAlpha:.5,ringFrom:1.2,trailFrom:13,trailLife:.26} as const;
+function volleyDrawn(r:number,camera:THREE.Camera,at:{x:number;y:number;z:number}){
+  const lens=camera as THREE.PerspectiveCamera,h=typeof innerHeight==='number'&&innerHeight>0?innerHeight:720,V=VOLLEY_DRAW,big=r*V.scale;
+  if(!lens.isPerspectiveCamera)return big;
+  const px=V.lowPx+(V.highPx-V.lowPx)*THREE.MathUtils.clamp((h-V.low)/(V.high-V.low),0,1);
+  const d=Math.hypot(at.x-lens.position.x,at.y-lens.position.y,at.z-lens.position.z),least=px*d*Math.tan(lens.fov*Math.PI/360)/h;
+  return Math.max(big,least);
+}
+/** VOLLEYBALL only: the ball met by the body that plays it. The rules strike the ball from up to two metres off the
+ *  body (VOLLEY.reach and its step), so a receive left the ball beside a fighter and the touch read as a ring, not a
+ *  pair of forearms. The drawn ball (only) is drawn onto the toucher's hands for the touch: from the swing's start
+ *  (SHOOT's quick strike, its contact SHOOT.contact later) it comes onto them by the contact and leaves them over `after`
+ *  s, its true flight underneath. The hands, by the touch's take (`volley.takes`): `fwd` m in front of the body toward the
+ *  ball, `up` m over its feet - the forearms at the waist for a receive, over the head for a set, the hitting hand high
+ *  for a spike, a serve and a TIP; never pulled more than `most` m (a touch the rules cancelled). */
+const MEET={after:.13,most:2.2,hands:{
+  'SS.dig':{fwd:.55,up:.85},'SS.set':{fwd:.2,up:2.15},'SS.backSet':{fwd:.1,up:2.15},'SS.setAir':{fwd:.25,up:2.1},'SS.float':{fwd:.35,up:1.95},
+  'SS.jumpServe':{fwd:.35,up:2.05},'SS.spike':{fwd:.4,up:2.05},'SS.spikeCut':{fwd:.4,up:2.05},'SS.spikeRoll':{fwd:.4,up:2.05},'SS.tip':{fwd:.35,up:2.1}} as Record<string,{fwd:number;up:number}>} as const;
+/** So effects never drown the action (FEVER petals across the screen, speed lines, white flashes), VOLLEYBALL only:
+ *  each drawn impact `ink` its size and `life` its time, never hotter than `heat`; a hard strike leaves no
+ *  hanging stroke and throws no manga smoke or white streaks (the short ribbon is its path: VOLLEY_DRAW); FEVER throws no
+ *  petals, and the place's mood at its peak is held to `mood`. */
+const VOLLEY_FX={ink:.45,life:.7,heat:1.5,mood:.3} as const;
 const CARRY_DRAW={in:.12,inMost:.2,inPace:5,out:.16,settle:.025,near:.35,follow:18,run:1.2,ring:2,alpha:.9} as const;
 /** A TRAP's mark (BallMatch TRAP): how long its ring closing on the ball lasts (s), where it starts and ends
  *  (by the ball's radius: it ends on the carried ball's own ring, CARRY_DRAW.ring's band), its strength, and how hard the
@@ -480,6 +528,8 @@ class InkFx{
 export class BallField {
   readonly root=new THREE.Group();
   private readonly ball=new THREE.Group();private readonly spinner=new THREE.Group();
+  /** This moment's marks' share of their size (FOOT_QUIET; 1 off football). */
+  private quiet=1;
   private readonly bodyMaterial:THREE.ShaderMaterial;
   /** (A shader of its own where it was a basic material, so the hull can thin to a line with the ball -
    *  `uThin`, below.) */
@@ -489,6 +539,13 @@ export class BallField {
       void main(){float edge=1.-abs(dot(normalize(vN),normalize(vV)));gl_FragColor=vec4(uColor,mix(1.,smoothstep(.45,.75,edge),uThin));}`});
   private readonly sphere=new THREE.SphereGeometry(1,40,28);
   private readonly outline=new THREE.Mesh(this.sphere,this.outlineMaterial);
+  /** Football's paper halo outside the ink line (FOOT_RIM). */
+  private readonly haloMaterial=new THREE.MeshBasicMaterial({name:'Ball halo',color:0xfff7e6,side:THREE.BackSide,transparent:true,opacity:FOOT_RIM.alpha,depthWrite:false,toneMapped:false});
+  private readonly halo=new THREE.Mesh(this.sphere,this.haloMaterial);
+  private bodyMesh!:THREE.Mesh;
+  /** The ball drawn over the body meeting it (MEET: a body between the lens and the ball - your own side's, from
+   *  behind - would hide the touch it is making). */
+  private overBody=false;
   private readonly auraMaterial:THREE.ShaderMaterial;private readonly aura:THREE.Mesh;
   private readonly trail=new Trail();private readonly ribbon:Ribbon;private readonly superTrail:Ribbon;
   /** The effects' clock (s): it stands still while the ball's time is stopped. */
@@ -625,7 +682,22 @@ export class BallField {
         }
         void main(){
           vec3 n=normalize(vObj),base;float glow=0.;
-          if(uKind<.5){
+          if(uKind>1.5){
+            // VOLLEYBALL's ball: three strips on each of a cube's six faces (an eighteen-panel ball), the faces'
+            // strips square to their neighbours', white, blue and yellow, ink at the seams - it reads on the orange
+            // court, a blue crowd and a sunset sky alike.
+            vec3 a=abs(n);float t,hi,mid,k;
+            if(a.x>=a.y&&a.x>=a.z){t=n.y/a.x;hi=a.x;mid=max(a.y,a.z);k=0.;}
+            else if(a.y>=a.z){t=n.z/a.y;hi=a.y;mid=max(a.x,a.z);k=1.;}
+            else{t=n.x/a.z;hi=a.z;mid=max(a.x,a.y);k=2.;}
+            float s=clamp(t*1.5+1.5,0.,2.999),strip=floor(s),line=abs(fract(s)-.5)*2.;
+            vec3 W=vec3(.9,.89,.86),B=vec3(.08,.27,.78),Y=vec3(.98,.74,.1);
+            vec3 outer=k<.5?W:k<1.5?Y:B,inner=k<.5?B:k<1.5?W:W;
+            base=abs(strip-1.)<.5?inner:outer;
+            float seam=max((1.-smoothstep(.015,.04,hi-mid)),smoothstep(.9,.97,line)*step(.2,s)*step(s,2.8));
+            base=mix(base,vec3(.015),seam*.9);glow=seam;
+          }
+          else if(uKind<.5){
             // Each point takes the panel whose centre is nearest; where the nearest two tie runs an ink seam.
             float b1=-2.,b2=-2.,pent=-2.;
             for(int i=0;i<12;i++){float d=dot(n,uPent[i]);pent=max(pent,d);if(d>b1){b2=b1;b1=d;}else if(d>b2)b2=d;}
@@ -674,8 +746,9 @@ export class BallField {
         }`,
     });
     patchBallSkin(this.bodyMaterial);
-    const body=new THREE.Mesh(this.sphere,this.bodyMaterial),outline=this.outline;
+    const body=this.bodyMesh=new THREE.Mesh(this.sphere,this.bodyMaterial),outline=this.outline;
     body.name='Ball';outline.name='Ball ink outline';outline.scale.setScalar(1.075);outline.renderOrder=-1;this.spinner.add(body,outline);
+    this.halo.name='Ball halo (football)';this.halo.renderOrder=-2;this.halo.visible=false;this.spinner.add(this.halo);
     // The ball's shape is a stretch along one axis of the world, whatever way the ball has turned: the
     // shaper turns that axis onto its own up and scales, the unshaper turns back, the spinner spins inside them.
     this.unshaper.add(this.spinner);this.shaper.add(this.unshaper);
@@ -822,12 +895,13 @@ export class BallField {
     this.dress(view,selfId,camera,step,seconds,serverTime);
     this.aimLine.update(view,selfId,this.drawnState(),this.bodies.get(selfId),step,!replaying);
     // The name tags: in play, not over a replay (its tag names the goal) nor the results.
-    this.tags.update(view.seats,selfId,this.where,!replaying&&view.phase!=='lobby'&&view.phase!=='over');
+    // (On the volleyball rules no body is named - less on screen.)
+    this.tags.update(view.seats,selfId,this.where,!replaying&&view.phase!=='lobby'&&view.phase!=='over',view.volley?noTag:undefined);
     this.charms.update(view,snapshot.players,this.shown?this.drawn:null,step,serverTime);
     this.fight.update(view,replaying?0:step,seconds);
     // FEVER (Sky Spike) and OVERTIME (Goal Rush): the place at its peak while they last, the crowd on its feet.
     // (Goal Rush's FINAL PUSH too - its `fever`.)
-    const peak=(view.mode==='sky-spike'?view.fever:view.overtime||view.fever)&&view.phase!=='over'?1:0;
+    const peak=(view.mode==='sky-spike'?view.fever:view.overtime||view.fever)&&view.phase!=='over'?view.volley?VOLLEY_FX.mood:1:0;
     arenaMood.value+=(peak-arenaMood.value)*Math.min(1,step*2.5);
     crowdHype.value=Math.max(arenaMood.value*.45,crowdHype.value-step*.3);
   }
@@ -1096,7 +1170,7 @@ export class BallField {
   dispose(){
     this.clear();this.charms.dispose();this.tags.dispose();this.aimLine.dispose();this.root.removeFromParent();this.marks.dispose();
     this.sphere.dispose();this.aura.geometry.dispose();this.fx.mesh.geometry.dispose();this.ribbon.mesh.geometry.dispose();this.superTrail.mesh.geometry.dispose();this.stroke.mesh.geometry.dispose();
-    for(const m of [this.bodyMaterial,this.outlineMaterial,this.auraMaterial,this.fx.mesh.material,this.ribbon.mesh.material,this.superTrail.mesh.material,this.stroke.mesh.material,this.spinLines.material])m.dispose();
+    for(const m of [this.haloMaterial,this.bodyMaterial,this.outlineMaterial,this.auraMaterial,this.fx.mesh.material,this.ribbon.mesh.material,this.superTrail.mesh.material,this.stroke.mesh.material,this.spinLines.material])m.dispose();
   }
 
   /** A new match, or a new mode: the ball at its size and in its make, nothing carried over. */
@@ -1104,7 +1178,7 @@ export class BallField {
     // (A replay rewinds the room's clock in the same match: the floor keeps what the match has left on it.)
     const fresh=view.mode!==this.mode||view.startedAt!==this.startedAt;
     this.letGo();if(fresh)this.wipe();this.mode=view.mode;this.startedAt=view.startedAt;this.root.visible=true;
-    this.ball.scale.setScalar(ballRadius(view.mode));this.bodyMaterial.uniforms.uKind.value=view.mode==='goal-rush'?0:1;
+    this.ball.scale.setScalar(ballRadius(view.mode));this.bodyMaterial.uniforms.uKind.value=view.mode==='goal-rush'?0:view.volley?2:1;
   }
 
   /** A ball from the room, if it is a new one: kept with the one before it, the drawn ball's lead over it kept as a
@@ -1222,7 +1296,9 @@ export class BallField {
     // its own run - and held inside the boards as the room's flight holds the ball, a goal's mouth open to its net.)
     const old=this.bodyOf(id)?dt:0,size=this.players.find(p=>p.id===id)?.size??1,spot=carrySpot({x:body.x+c.vx*old,z:body.z+c.vz*old,size},c.heading,r);
     // (SPORT mode, game/ball/football.ts: a sprint's knock-on, out ahead of the spot along the run.)
-    {const ah=this.base.ahead??0;if(ah>0){spot.x+=Math.sin(c.heading)*ah;spot.z+=Math.cos(c.heading)*ah;}}
+    {const ah=this.base.ahead??0;if(ah>0){spot.x+=Math.sin(c.heading)*ah;spot.z+=Math.cos(c.heading)*ah;}
+      // (Football's dribble, drawn - FOOT_DRIBBLE.)
+      else if(view.football){const d=this.dribble(id,body,c.heading,Math.hypot(c.vx,c.vz),Math.hypot(spot.x-body.x,spot.z-body.z),r,seconds,(this.base.wind??0)>0);spot.x+=Math.sin(c.heading)*d;spot.z+=Math.cos(c.heading)*d;}}
     {const R=GOAL_RULES,ix=R.halfX-r,iz=Math.abs(spot.x)<R.goalHalfWidth-r?R.halfZ+R.goalDepth-r:R.halfZ-r;spot.x=Math.max(-ix,Math.min(ix,spot.x));spot.z=Math.max(-iz,Math.min(iz,spot.z));}
     // (What lay between the ball as drawn and the feet as the carry began, let out over CARRY_DRAW.in: the feet carry it on
     // from there whatever the room's flight does meanwhile.)
@@ -1234,6 +1310,41 @@ export class BallField {
     this.drawn.set(x,y,z);this.velocity.set(c.ux,0,c.uz);
     this.carryLook.id=id;this.carryLook.k=c.k;
   }
+
+  /** FOOT_DRIBBLE: how much further on (m, along the carry's heading; less than 0 nearer) the carried ball
+   *  is drawn than its spot `base` m out from the body, for the dribble's touches: each time the carrier's touching foot
+   *  reaches the front of its stride the ball is met there - just in front of that foot - and nudged on `out` m (by the
+   *  run's pace), rolling back to the foot by its next touch. Without the feet (a body not yet built) the touches keep
+   *  a cadence by the pace alone. None at a walk. */
+  private dribble(id:string,body:THREE.Vector3,heading:number,speed:number,base:number,r:number,seconds:number,kick=false){
+    const D=FOOT_DRIBBLE,ux=Math.sin(heading),uz=Math.cos(heading);
+    let t=this.dribbles.get(id);
+    if(!t){t={at:-Infinity,period:D.period,peak:NaN,rel:[NaN,NaN],rising:[false,false],steps:0,lastPeak:-Infinity,touch:base,out:0,shown:0,seen:seconds};this.dribbles.set(id,t);if(this.dribbles.size>12)for(const k of this.dribbles.keys()){if(k!==id){this.dribbles.delete(k);break;}}}
+    const running=speed>=D.from;
+    if(this.feetOf(id,this.footL,this.footR)){
+      for(let k=0;k<2;k++){
+        const f=k?this.footR:this.footL,rel=(f.x-body.x)*ux+(f.z-body.z)*uz,was=t.rel[k],rising=rel>was+1e-4;
+        // (A foot at the front of its stride: its along-the-run place stops rising.)
+        if(Number.isFinite(was)&&t.rising[k]&&!rising&&was>D.front&&running){
+          if(seconds-t.lastPeak>.12&&seconds-t.lastPeak<1.2)t.period=THREE.MathUtils.clamp(2*(seconds-t.lastPeak),D.least,D.most);
+          t.lastPeak=seconds;t.steps++;
+          if(t.steps%2===0&&seconds-t.at>=t.period*.8){t.at=seconds;t.touch=Math.min(base,was+r*D.meet);t.out=Math.min(D.outMost,D.out+D.outPer*speed);}
+        }
+        t.rel[k]=rel;t.rising[k]=rising;
+      }
+    }else if(running&&seconds-t.at>=THREE.MathUtils.clamp(D.pace/speed,D.least,D.most)){t.at=seconds;t.period=THREE.MathUtils.clamp(D.pace/speed,D.least,D.most);t.touch=base-r*.6;t.out=Math.min(D.outMost,D.out+D.outPer*speed);}
+    // (Met at the foot, out ahead mid-stride, back to the foot for the next one; with no next one, eased back to its spot.)
+    const u=(seconds-t.at)/t.period,back=t.touch-base;
+    // (A PASS or a SHOOT winding up: the ball set back by the foot that strikes it - FOOT_DRIBBLE.kick ball radii nearer.)
+    const want=kick?-r*D.kick:u>=0&&u<1?back+(t.out-back)*Math.sin(Math.PI*u):u>=1&&u<2?back*(2-u):0;
+    const dt=Math.min(.1,Math.max(0,seconds-t.seen));t.seen=seconds;
+    t.shown+=(want-t.shown)*Math.min(1,dt*D.ease);
+    return t.shown;
+  }
+  private readonly dribbles=new Map<string,{at:number;period:number;peak:number;rel:[number,number];rising:[boolean,boolean];steps:number;lastPeak:number;touch:number;out:number;shown:number;seen:number}>();
+  private readonly footL=new THREE.Vector3();private readonly footR=new THREE.Vector3();
+  /** The drawn feet of a body (main.ts: its LeftFoot and RightFoot), into `l` and `r`; false without them. */
+  feetOf:(id:string,l:THREE.Vector3,r:THREE.Vector3)=>boolean=()=>false;
 
   /** The base's own flight run on to `at` (server s) into this.sim: it stands still while stopped or clashing, then flies. */
   private flown(at:number){
@@ -1272,14 +1383,15 @@ export class BallField {
     land.show=false;this.landAt=at;
     if(b.held||b.y<(mode==='goal-rush'?2:r+.4))return;
     const l=landing(mode,b);
-    const R=mode==='goal-rush'?GOAL_RULES:SPIKE_RULES;
+    // (Sky Spike's on the court the ball carries - volleyball's for three a side, else the classic's.)
+    const C=spikeCourt(b),R=mode==='goal-rush'?GOAL_RULES:{halfX:C.wallX,halfZ:C.wallZ};
     if(l.t<.08||Math.abs(l.x)>R.halfX-r||Math.abs(l.z)>R.halfZ-r)return;
-    land.x=l.x;land.z=l.z;land.t=l.t;land.show=true;land.team=mode==='sky-spike'?courtSide(l.x,l.z)??null:null;
+    land.x=l.x;land.z=l.z;land.t=l.t;land.show=true;land.team=mode==='sky-spike'?courtSide(l.x,l.z,C)??null:null;
   }
 
   /** A wall, the dome or the floor the ball rebounded off since the last snapshot: its velocity turned round there. */
   private rebounds(){
-    const p=this.prev,b=this.base,mode=this.mode!,r=ballRadius(mode),R=mode==='goal-rush'?GOAL_RULES:SPIKE_RULES;
+    const p=this.prev,b=this.base,mode=this.mode!,r=ballRadius(mode),C=spikeCourt(b),R=mode==='goal-rush'?GOAL_RULES:{halfX:C.wallX,halfZ:C.wallZ};
     if(p.held||b.held||Math.hypot(p.vx,p.vy,p.vz)<7)return;
     const dome=mode==='sky-spike',inMouth=!dome&&Math.abs(b.x)<GOAL_RULES.goalHalfWidth&&b.y<GOAL_RULES.goalHeight;
     if(p.vx*b.vx<0&&Math.abs(b.x)>R.halfX-r-.6)this.wall(Math.sign(p.vx)*R.halfX,b.y,b.z,1,0,Math.abs(p.vx),dome);
@@ -1304,9 +1416,11 @@ export class BallField {
     // RUMBLE's GIANT BALL swells it (and lets it go) over a few frames.
     this.grown+=((this.base.size||1)-this.grown)*Math.min(1,dt*6);
     const b=this.lookBall(),r=ballRadius(view.mode)*this.grown,frozen=this.frozen,speed=this.velocity.length(),fx=this.fx;
-    this.ball.scale.setScalar(view.football?footDrawn(r,camera,b):r);
+    const volley=!!view.volley;
+    this.ball.scale.setScalar(view.football?footDrawn(r,camera,b):volley?volleyDrawn(r,camera,b):r);
     if(!frozen)this.time.value+=dt;
-    this.heat+=(b.heat-this.heat)*Math.min(1,dt*8);this.flash=Math.max(0,this.flash-dt*6);
+    // (Volleyball: the ball has no heat - no fire, no tier rings, no embers; HEAT is off its HUD too.)
+    this.heat+=((view.volley?0:b.heat)-this.heat)*Math.min(1,dt*8);this.flash=Math.max(0,this.flash-dt*6);
     const tier=heatTier(this.heat+.05),hot=!frozen&&!b.held;
     // A SUPER SHOT wears its striker's own ultimate colours (and a bespoke one its motif); a LINK SHOT both
     // fighters' colours. Otherwise the side's colour, as ever.
@@ -1315,6 +1429,9 @@ export class BallField {
     if(b.super&&striker){const look=superLook(striker);team=look.a;second=look.b;motif=look.motif;}
     else if(b.link&&striker){team=fighterColour(striker,this.linkA);second=fighterColour(this.fighterOf(view,b.link),this.linkB);}
     this.ball.position.copy(this.drawn);this.ball.visible=true;
+    // (Volleyball: the ball on the hands that play it - MEET.)
+    if(volley&&!b.held&&!frozen)this.ball.position.add(this.meet(view,serverTime,camera));else{this.onHands.set(0,0,0);this.overBody=false;}
+    {const over=this.overBody;if(this.bodyMaterial.depthTest===over){this.bodyMaterial.depthTest=this.outlineMaterial.depthTest=!over;this.bodyMesh.renderOrder=over?21:0;this.outline.renderOrder=over?20:-1;}}
     // The spin the room sent, and the roll: on the floor it rolls true (up x v / r), in the air a little topspin.
     if(!frozen){
       if(b.held)this.omega.set(0,1.2,0);
@@ -1361,7 +1478,14 @@ export class BallField {
     }
     (this.outlineMaterial.uniforms.uColor.value as THREE.Color).setHex(frozen?0xf2f2f4:0x050506);
     // The ink outline thickens a little as the ball heats, so its edge holds against the fire round it.
-    this.outline.scale.setScalar(1.075+Math.min(1,this.heat/4)*.05);
+    this.outline.scale.setScalar((volley?VOLLEY_DRAW.outline:1.075)+Math.min(1,this.heat/4)*.05);
+    // (Football's ink line and paper halo, a few pixels wide whatever the ball's size on screen - FOOT_RIM.)
+    if(view.football){
+      const lens=camera as THREE.PerspectiveCamera,h=typeof innerHeight==='number'&&innerHeight>0?innerHeight:720,drawnR=this.ball.scale.x;
+      const px=lens.isPerspectiveCamera?drawnR/Math.max(.2,lens.position.distanceTo(this.drawn))/Math.tan(lens.fov*Math.PI/360)*h/2:20;
+      const ink=1+Math.max(.075,FOOT_RIM.ink/Math.max(2,px));
+      this.outline.scale.setScalar(ink);this.halo.scale.setScalar(ink+FOOT_RIM.halo/Math.max(2,px));this.halo.visible=!frozen;
+    }else this.halo.visible=false;
     const a=this.auraMaterial.uniforms,size=r*(3.2+tier*.5)+(b.super?r*1.2:0);
     this.aura.visible=this.heat>=.9||b.super;
     a.uHeat.value=this.heat;a.uSuper.value=b.super?1:0;a.uFreeze.value=frozen?1:0;a.uGlow.value=FIRE_GLOW*(.55+.45*VFX.glow);a.uSize.value=size;a.uR.value=r/size;a.uLift.value=r*1.05;
@@ -1369,7 +1493,8 @@ export class BallField {
     // The trail: a point wherever the ball has gone a fifth of a metre, the newest following it every frame, the
     // oldest let go after its life; wider for a faster, hotter ball, nothing at a roll.
     // (None behind a carried ball - it runs at a body's pace at a body's feet, and the ring under it says whose.)
-    const life=.3+tier*.06+(b.super?.25:0),width=Math.min(1,Math.max(0,(speed-3)/14))*r*2*(1+tier*.22)*(b.super?1.35:1)*(this.carried?1-this.carried.k:1),stroke=this.gear.trailColour(view,b,team);
+    // (Volleyball: a short ribbon off a ball struck hard only - VOLLEY_DRAW.)
+    const life=volley&&!b.super?VOLLEY_DRAW.trailLife:.3+tier*.06+(b.super?.25:0),width=(volley&&!b.super?Math.min(1,Math.max(0,(speed-VOLLEY_DRAW.trailFrom)/6)):Math.min(1,Math.max(0,(speed-3)/14)))*r*2*(1+tier*.22)*(b.super?1.35:1)*(this.carried?1-this.carried.k:1),stroke=this.gear.trailColour(view,b,team);
     if(!frozen){
       this.trailClock+=dt;const trail=this.trail;
       // The ribbon's colours: a SUPER SHOT's or a LINK SHOT's own two, else the striker's ball gear trail.
@@ -1405,7 +1530,7 @@ export class BallField {
       const share=r/Math.max(.1,this.eye.distanceTo(this.drawn))*camera.projectionMatrix.elements[5];
       this.thin+=(smooth(share,SHAPE.thinFrom,SHAPE.thinFull)-this.thin)*Math.min(1,dt*12);
       const thin=this.thin>.02?this.thin:0,see=thin>0;
-      u.uThin.value=thin;this.outlineMaterial.uniforms.uThin.value=thin;a.uGlow.value*=1-thin*.85;
+      u.uThin.value=thin;this.outlineMaterial.uniforms.uThin.value=thin;a.uGlow.value*=1-thin*.85;this.haloMaterial.opacity=FOOT_RIM.alpha*(1-thin);
       this.bodyMaterial.transparent=this.outlineMaterial.transparent=see;this.bodyMaterial.depthWrite=this.outlineMaterial.depthWrite=thin<.5;
       this.look.share=share;this.look.thin=thin;
     }
@@ -1419,11 +1544,11 @@ export class BallField {
       // (While a power shot's stroke is being drawn the stroke is its path - no streaks and no smoke trail
       // over it, or the one shot would be drawn four ways at once.)
       const stroked=this.strokeLeft>0;
-      this.streaks+=(speed>16&&!stroked?Math.min(60,(speed-14)*2.2):0)*dt*VFX.speedLines;
+      this.streaks+=(speed>16&&!stroked&&!volley?Math.min(60,(speed-14)*2.2):0)*dt*VFX.speedLines;
       // The smoke trail (a big readable ball trailing smoke): manga clouds left behind a
       // fast ball - paper, warmer as it burns, ash at OVERDRIVE - born small a ball and a half behind it and swelling as
       // they wear away, so they never stand over its face.
-      this.smoke+=(speed>11&&!stroked?Math.min(42,(speed-11)*2.1):0)*dt*gain;
+      this.smoke+=(speed>11&&!stroked&&!volley?Math.min(42,(speed-11)*2.1):0)*dt*gain;
       for(;this.smoke>=1;this.smoke--){
         const s=Math.max(speed,1),back=r*(1.5+Math.random()*1.2),j=this.randomDirection(r*.35);
         const o=fx.spawn(K.cloud,x-vx/s*back+j.x,y-vy/s*back+j.y,z-vz/s*back+j.z,-vx*.05+j.x*2,.35+Math.random()*.4,-vz*.05+j.z*2,.34+Math.random()*.2+tier*.04,r*.5,r*(1.25+tier*.16+Math.min(.6,speed/60)),tier>=4?ASH:tier>=2?WARM:PAPER,.82);
@@ -1462,6 +1587,8 @@ export class BallField {
     const height=Math.max(0,y-r);
     // (SPORT mode: the small ball's ring is always lit and never smaller than a stride's half metre, to find it by.)
     if(view.football)fx.put(K.shadow,x,.035,z,Math.max(FOOT_RING,r*(1.15+height*.06)),INK,.55/(1+height*.22),Math.max(.6,Math.min(1,Math.max(0,(height-1.5)/4))*.6));
+    // (Volleyball: always there and always dark enough to find - a ball's shadow is where it is over the court.)
+    else if(volley)fx.put(K.shadow,this.ball.position.x,.035,this.ball.position.z,Math.max(VOLLEY_DRAW.shadow,r*(1.15+height*.05)),INK,Math.max(VOLLEY_DRAW.shadowAlpha,.7/(1+height*.12)),height>VOLLEY_DRAW.ringFrom?.75:0);
     else fx.put(K.shadow,x,.035,z,r*(1.15+height*.06),INK,.55/(1+height*.22),Math.min(1,Math.max(0,(height-1.5)/4))*.6);
     // A carried ball's one sign of whose it is - a ring in the carrier's side's colour on the floor round it, as
     // each fighter's own lies under them - so a team-mate knows to run and the other side whom to tackle.
@@ -1488,12 +1615,13 @@ export class BallField {
     if(vol&&yours&&!b.held&&!frozen&&until>-.15){
       let team:BallTeam|undefined;for(let i=0;i<view.seats.length;i++)if(view.seats[i].id===selfId){team=view.seats[i].team;break;}
       const pulse=.75+.25*Math.sin(seconds*22);
-      fx.put(K.landing,vol.x,.045,vol.z,(r*1.6+Math.min(Math.max(0,until),1.6)*2.2)*1.12,team?TEAM[team]:WHITE,.95*pulse,0,0,0,seconds*1.4,.5);
+      // (On the volleyball rules' smaller court the ring closes from half as far out.)
+      fx.put(K.landing,vol.x,.045,vol.z,(r*1.6+Math.min(Math.max(0,until),1.6)*LAND_CLOSE.volley)*1.12,team?TEAM[team]:WHITE,.95*pulse,0,0,0,seconds*1.4,.5);
     }
     else if(land.show&&!b.held&&!frozen&&left>0){
       let mine=false;for(let i=0;i<view.seats.length;i++)if(view.seats[i].id===selfId){mine=!vol&&!!land.team&&view.seats[i].team===land.team;break;}
       const spike=view.mode==='sky-spike',colour=spike?land.team?TEAM[land.team]:WHITE:PALE,pulse=mine?.75+.25*Math.sin(seconds*22):1;
-      fx.put(K.landing,land.x,.045,land.z,(r*1.6+Math.min(left,1.6)*2.2)*(mine?1.12:1),colour,(spike?.95:.5)*pulse,0,spike&&!land.team?1:0,0,seconds*1.4,.5);
+      fx.put(K.landing,land.x,.045,land.z,(r*1.6+Math.min(left,1.6)*(vol?LAND_CLOSE.volley:LAND_CLOSE.classic))*(mine?1.12:1),colour,(spike?.95:.5)*pulse,0,spike&&!land.team?1:0,0,seconds*1.4,.5);
     }
     fx.layer(0);fx.layer(1);
     // The stopped clock round a ball whose time has stopped, the time left running down its rim.
@@ -1504,6 +1632,8 @@ export class BallField {
   // ---------------------------------------------------------------- moments
 
   private moment(e:BallEvent,view:BallView){
+    // (On the sport rules' football every mark but a goal's is small and short at the touch - FOOT_QUIET.)
+    this.quiet=view.football&&e.kind!=='goal'&&e.kind!=='own-goal'?FOOT_QUIET.size:1;
     // (SPORT mode, `?football`: an ordinary save - the keeper's catch, a block - is the game's, not a moment: no burst, no
     // ring, no flash; only a great one (a shot of 31 m/s or more stopped, or off the line: BallHud's rule) is.)
     if(view.football&&e.kind==='save'&&!(e.text==='OFF THE LINE'||(e.value??0)>=31))return;
@@ -1549,6 +1679,15 @@ export class BallField {
         this.press(b.vx*k,b.vy*k,b.vz*k,s);this.flash=1;
         break;
       }
+      case 'touch':{
+        // The volleyball rules: a PERFECT receive, dig or set leaves a crisp mark where it was met - a thin gold ring
+        // snapping out from the ball and a white core gone in a tenth of a second (a spike's is its strike's, below).
+        if(!view.volley||!e.perfect||e.shot==='spike'||e.shot==='block')break;
+        this.ink('ring',e.x,e.y,e.z,mk*1.9,.24,GOLD,this.deep.copy(GOLD).multiplyScalar(.3));
+        this.ink('flash',e.x,e.y,e.z,mk*1.1,.12,WHITE,GOLD,0,0,0,2.4);
+        this.press(0,1,0,.45);
+        break;
+      }
       case 'save':case 'perfect':case 'block':{
         // Goal Rush's TRAP (BallMatch TRAP): the ball killed dead at the feet is a small moment of its own - a
         // thin ring on the turf in the trapper's side's colour closing in on the ball's foot, the ball pressed down onto the
@@ -1589,7 +1728,7 @@ export class BallField {
         const setter=e.text==='LINK SHOT'?this.fighterOf(view,e.assistId):undefined,flair=e.text==='BICYCLE KICK'||e.text==='AERIAL'||e.text==='ROLL SPIKE',colour=gold?GOLD:team;
         this.touch(e.x,e.y,e.z,d.x,d.y,d.z,setter||flair?Math.max(s,SOFT):s,colour,setter?fighterColour(setter,this.linkB):flair?GOLD:null,r);
         this.press(d.x,d.y,d.z,s);this.flash=Math.max(this.flash,.45+.45*Math.min(1,s));
-        if(s>=HARD)this.path(colour);
+        if(s>=HARD&&!view.volley)this.path(colour);
         break;
       }
       case 'super':{
@@ -1653,7 +1792,7 @@ export class BallField {
       case 'rally':this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.5,1,4.5,GOLD,1);break;
       case 'fever':{
         // (Goal Rush's FINAL PUSH has the place at its peak, not Sky Spike's petals.)
-        if(view.mode==='goal-rush')break;
+        if(view.mode==='goal-rush'||view.volley)break;
         // FEVER: petals burst from the ball and blow in off all four trees.
         this.fx.spawn(K.ring,e.x,e.y,e.z,0,0,0,.8,2,12,PINK,1);
         for(let i=0;i<n(70);i++){const v=this.randomDirection(4+Math.random()*7),o=this.fx.spawn(K.petal,e.x,e.y,e.z,v.x,v.y,v.z,3+Math.random()*1.5,.2,.18,PINK,1);const d=this.fx.data;d[o+DRAG]=1.8;d[o+GRAV]=1.2;d[o+FLAGS]=FLUTTER;d[o+SPIN]=(Math.random()-.5)*8;}
@@ -1704,7 +1843,10 @@ export class BallField {
    *  card: no draw of its own, no bloom needed, and drawn at every quality and VISUAL EFFECTS level (at the level's
    *  size). Until the flipbooks have loaded, the procedural shape each replaced. */
   private ink(seq:InkImpact,x:number,y:number,z:number,size:number,life:number,hot:THREE.Color,cool:THREE.Color,dx=0,dy=0,dz=0,heat=1.8){
+    // (Volleyball: every impact small and short, at the contact - VOLLEY_FX.)
+    if(this.lastView?.volley){size*=VOLLEY_FX.ink;life*=VOLLEY_FX.life;heat=Math.min(heat,VOLLEY_FX.heat);}
     const f=this.kit.sparks,sp=f.spec,book=INK_IMPACTS[seq],ready=inkImpactsReady();
+    if(this.quiet<1){size*=this.quiet;life*=FOOT_QUIET.life;}
     sp.reset(ready?SPRITE.ink:seq==='ring'?SPRITE.ring:seq==='flash'?SPRITE.star:SPRITE.burst,this.kit.now,life).pos(x,y,z).sized(size*.85,size,.12);
     sp.r=hot.r;sp.g=hot.g;sp.b=hot.b;sp.intensity=heat;sp.r2=cool.r;sp.g2=cool.g;sp.b2=cool.b;sp.cover=ready?.96:.4;
     sp.inkCell=book.start;sp.inkFrames=book.frames;
@@ -1720,7 +1862,7 @@ export class BallField {
     if(power<SOFT){
       // The puff: paper kicked back off the ball, shaded in the side's deep colour, so it reads on a pale floor and a
       // night sky alike (the kit's own dust puff is pale on pale).
-      const f=this.kit.dust,sp=f.spec,size=mk*(.55+.35*power/SOFT),shade=edge??this.deep.copy(colour).multiplyScalar(.45);
+      const f=this.kit.dust,sp=f.spec,size=mk*(.55+.35*power/SOFT)*this.quiet,shade=edge??this.deep.copy(colour).multiplyScalar(.45);
       sp.reset(SPRITE.puff,this.kit.now,.34).pos(x-dx*r*.5,y-dy*r*.5,z-dz*r*.5).velocity(-dx*1.4,.5-dy*1.2,-dz*1.4);sp.drag=3;sp.gravity=-.5;
       sp.sized(size*.5,size,.5);sp.r=PAPER.r;sp.g=PAPER.g;sp.b=PAPER.b;sp.intensity=1;sp.r2=shade.r;sp.g2=shade.g;sp.b2=shade.b;sp.cover=.85;sp.bias=size*.8;f.emit();
       return;
@@ -1875,6 +2017,31 @@ export class BallField {
 
   private readonly direction=new THREE.Vector3();
   private readonly spot=new THREE.Vector3();
+  private readonly onHands=new THREE.Vector3();private readonly hand=new THREE.Vector3();
+  /** How far the drawn ball is moved onto the hands of the body touching it now (MEET), at room time `now`. */
+  private meet(view:BallView,now:number,camera:THREE.Camera){
+    const out=this.onHands.set(0,0,0),takes=view.volley?.takes;
+    this.overBody=false;
+    if(!takes)return out;
+    for(let i=0;i<this.players.length;i++){
+      const p=this.players[i];
+      if(p.action!=='heavy'||p.strike!=='tap')continue;
+      const t=now-(p.actionStarted+SHOOT.contact);
+      if(t<-SHOOT.contact||t>MEET.after)continue;
+      const h=MEET.hands[takes[p.id]??''],at=h&&this.where(p.id,this.hand);
+      if(!h||!at)continue;
+      const dx=this.drawn.x-at.x,dz=this.drawn.z-at.z,d=Math.hypot(dx,dz)||1,size=p.size??1;
+      at.x+=dx/d*h.fwd*size;at.z+=dz/d*h.fwd*size;at.y+=h.up*size;
+      const ox=at.x-this.drawn.x,oy=at.y-this.drawn.y,oz=at.z-this.drawn.z;
+      if(Math.hypot(ox,oy,oz)>MEET.most)continue;
+      const w=t<0?smooth(t,-SHOOT.contact,0):1-smooth(t,0,MEET.after);
+      // (The hands further from the lens than the body: the body would hide them - the ball is drawn over it.)
+      const e=this.eye.setFromMatrixPosition(camera.matrixWorld);
+      this.overBody=w>.25&&Math.hypot(at.x-e.x,at.z-e.z)>Math.hypot(at.x-dx/d*h.fwd*size-e.x,at.z-dz/d*h.fwd*size-e.z)+.1;
+      return out.set(ox*w,oy*w,oz*w);
+    }
+    return out;
+  }
   /** Where a seat's fighter stands: its drawn body, else the snapshot's place for it; null if neither. */
   private readonly where=(id:string,out:THREE.Vector3):THREE.Vector3|null=>{
     const drawn=this.bodyOf(id);if(drawn)return out.copy(drawn);

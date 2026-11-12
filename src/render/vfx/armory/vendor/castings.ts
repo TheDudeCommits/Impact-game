@@ -1881,7 +1881,7 @@ export const ARMORY_CASTINGS: Readonly<Record<string, RuntimeCasting>> = {
    }
   }
  },
- "jirenga": {
+ "banjaku": {
   "palette": {
    "core": "#fff0e6",
    "main": "#ff4a2a",

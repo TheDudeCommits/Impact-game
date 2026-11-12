@@ -172,7 +172,7 @@ describe('Sorrel: one arm, and nothing where the other was', () => {
     const r = await rig('sorrel'), { p: idle } = stance(r);
     const still = ['LeftArm', 'LeftForeArm', 'LeftHand'].map(j => [j, idle.local(j)] as const);
     const played = new Set<string>(['Wake Cutter', 'Redline Thrust', 'Sovereign Will', 'Horizon Sunder', 'Punch 01', 'Run', 'Walk', 'Dash',
-      'jump', 'Jump Fall', 'Block', 'Hit 01', 'shake', 'stun', 'slammed', 'down_lp', 'down_end', 'awaken-will', 'victory_lp', 'idlehome_a', '_Idle']);
+      'jump', 'Jump Fall', 'Block', 'Hit 01', 'shake', 'stun', 'slammed', 'down_lp', 'down_end', 'awaken-will', 'victory_lp', 'idle_relaxed', '_Idle']);
     for (const seg of Object.values(COMBO_CLIPS.sorrel!)) played.add(seg!.clip);
     // Sorrel has both arms, his left hanging dead from the shoulder in every clip and swinging after his moves. It
     // turns as a dead arm turns, so what holds is that it never lifts or strikes: the hand at least

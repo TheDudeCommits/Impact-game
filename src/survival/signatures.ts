@@ -19,24 +19,24 @@ export const AWAKENINGS: Record<string, BossAwakening> = {
   kade: { name: 'THE SPOOL UNWINDS', aura: [0xffe490, 0xd07a10], scale: 1.1 },
   nihil: { name: 'SIX WINGS OPEN', aura: [0xe8e0ff, 0x1a1028], tint: 0x8a8a96, scale: 1.08 },
   ashwing: { name: 'THE PYRE ALIGHT', aura: [0xffc070, 0xff3a0a], scale: 1.06 },
-  rakshasa: { name: 'THE ONI UNBOUND', aura: [0xfff490, 0xd0a010], scale: 1.06 },
+  'dune-oni': { name: 'THE ONI UNBOUND', aura: [0xfff490, 0xd0a010], scale: 1.06 },
   kuromitsu: { name: 'THE TAR RISES', aura: [0xffd890, 0x1a1008], tint: 0xd8d2c8, scale: 1.08 },
   rime: { name: 'THE GLACIER WAKES', aura: [0xf0fcff, 0x3aa8ff], tint: 0xdcefff, scale: 1.06 },
   lumen: { name: 'EVERY MIRROR LIT', aura: [0xfffce8, 0xffd21e], tint: 0xfff4c8, scale: 1.05 },
   caldera: { name: 'THE CALDERA OPENS', aura: [0xffd090, 0xff3a0a], tint: 0xffc8b0, scale: 1.08 },
   mirabel: { name: 'THE STORM BREAKS', aura: [0xe0f0ff, 0x3a6aff], scale: 1.06 },
-  'wuming': { name: 'LOTUS IN FLAME', aura: [0xffc0ec, 0xd03aa0], scale: 1.06 },
+  'wuming': { name: 'JADE PYRE', aura: [0xffc0ec, 0xd03aa0], scale: 1.06 },
   // Jinlin's newest form over his golden one: black, not gold.
-  'jinlin': { name: 'BLACK TIDE', aura: [0xe8dcff, 0x2a1040], tint: 0x5a5068, scale: 1.04 },
+  'jinlin': { name: 'ABYSSAL TIDE', aura: [0xe8dcff, 0x2a1040], tint: 0x5a5068, scale: 1.04 },
   shiun: { name: 'PALE SERAPH', aura: [0xf4ecff, 0x7a3cff], tint: 0xf0ecff, scale: 1.12 },
   kurobi: { name: 'BLACK FLAME RAGE', aura: [0xffd890, 0xff5a0a], scale: 1.05 },
-  barrow: { name: 'THE DARK UNLEASHED', aura: [0xe0d0ff, 0x2a0a3a], scale: 1.06 },
+  barrow: { name: 'THE HOLD BURSTS', aura: [0xe0d0ff, 0x2a0a3a], scale: 1.06 },
   akagane: { name: 'WRATHFUL KING', aura: [0xffffff, 0x5a3cc0], tint: 0xeceaf4, scale: 1.08 },
   oro: { name: 'MIDNIGHT: OVER THE TOWER', aura: [0xfff6d0, 0xf2c94c], tint: 0xfff2d8, scale: 1.08 },
-  magatsu: { name: 'CALAMITY KING', aura: [0xffe0e4, 0xd81f3a], tint: 0xffe8ea, scale: 1.1 },
+  magatsu: { name: 'CALAMITY RISEN', aura: [0xffe0e4, 0xd81f3a], tint: 0xffe8ea, scale: 1.1 },
   vesper: { name: 'BLACK VESPERS', aura: [0xe8e0ff, 0x4a2a8a], tint: 0xb8b0d0, scale: 1.12 },
   imago: { name: 'SWARM ASCENDANT', aura: [0xe8ffe8, 0x3ae88a], tint: 0xf0fff0, scale: 1.08 },
-  jirenga: { name: 'WRATHFUL GUARDIAN', aura: [0xffc8c8, 0xe0142e], scale: 1.1 },
+  banjaku: { name: 'WRATHFUL GUARDIAN', aura: [0xffc8c8, 0xe0142e], scale: 1.1 },
   haldor: { name: 'GROUNDSWELL', aura: [0xfffcf0, 0xe8dcb0], scale: 1.05 },
   'gorai-wyrm': { name: 'STORM WYRM · FULL FURY', aura: [0xb8d0ff, 0x3a6aff], scale: 1.04 },
 };
@@ -59,7 +59,7 @@ interface Base {
   /** Only once it has awakened. */
   awakened?: boolean;
   /** The next signature in the list comes this many seconds after this one,
-   *  whatever the gap between set pieces: a combination (LORD ORO's MIDNIGHT, then HUSH). */
+   *  whatever the gap between set pieces: a combination (LORD ORO's MIDNIGHT, then SLUMBER). */
   then?: number;
 }
 export type Signature = Base & (
@@ -107,40 +107,40 @@ export const SIGNATURES: Record<string, readonly Signature[]> = {
     { kind: 'summon', name: 'THE IRON CHOIR', element: 'light', grunts: ['automaton'], count: 2, every: 22, first: 14 },
   ],
   zarek: [{ kind: 'fissure', name: 'MOLTEN RAKE', element: 'fire', pattern: 'claws', count: 5, length: 15, width: .75, lead: .95, damage: 44, every: 9 }],
-  'nightfall': [{ kind: 'fissure', name: 'BLACK CRESCENTS', element: 'blood', pattern: 'aimed', count: 3, gap: .5, length: 17, width: 1.2, lead: .8, damage: 56, every: 9 }],
+  'nightfall': [{ kind: 'fissure', name: 'CINDER WAVES', element: 'blood', pattern: 'aimed', count: 3, gap: .5, length: 17, width: 1.2, lead: .8, damage: 56, every: 9 }],
   kade: [{ kind: 'counter', name: 'SILK COCOON', element: 'sound', style: 'iron', hits: 0, window: 0, seconds: 2.4, damage: 44, every: 13, first: 8 }],
   nihil: [{ kind: 'meteor', name: 'THE BROKEN HALO', element: 'dark', count: 4, radius: 2.3, lead: 1.8, damage: 60, spread: 5, look: 'lance', every: 11 }],
   ashwing: [{ kind: 'blinks', name: 'THE FALLING PYRE', element: 'fire', count: 1, gap: 0, lead: 1.25, radius: 3.1, damage: 82, pool: 2.6, every: 12 }],
   // (Unleashed with his awakening - the eyepatch off - not from the first swing.)
-  rakshasa: [{ kind: 'aura', name: 'ONI PRESSURE', element: 'light', radius: 2.6, dps: 9, stack: .06, every: 10, first: 0, awakened: true }],
+  'dune-oni': [{ kind: 'aura', name: 'ONI PRESSURE', element: 'light', radius: 2.6, dps: 9, stack: .06, every: 10, first: 0, awakened: true }],
   kuromitsu: [{ kind: 'counter', name: 'THE TWELVE EYES SEE', element: 'steel', style: 'future', hits: 5, window: 1.6, damage: 0, every: 7, first: 5 }],
   rime: [{ kind: 'wave', name: 'THE LONG WINTER', element: 'ice', speed: 7, reach: 14, width: 1.4, damage: 46, lead: 1.1, freeze: 1.3, every: 11 }],
   lumen: [{ kind: 'blinks', name: "THE WIDOW'S MIRRORS", element: 'light', count: 3, gap: .55, lead: .62, radius: 2, damage: 54, every: 9 }],
   caldera: [{ kind: 'pool', name: 'THE WEEPING GROUND', element: 'magma', count: 3, radius: 2.5, lead: 1.1, life: 11, dps: 44, spread: 5.5, every: 8 }],
-  mirabel: [{ kind: 'orbiters', name: 'STORMCLOUD AND SOUL-FIRE', element: 'lightning', damage: 50, radius: 1.8, every: 4.6, first: 4 }],
-  'wuming': [{ kind: 'fissure', name: 'PETALFALL BLADES', element: 'dark', pattern: 'star', count: 4, length: 14, width: .85, lead: 1.05, damage: 56, every: 9 }],
+  mirabel: [{ kind: 'orbiters', name: 'SQUALL AND CINDER', element: 'lightning', damage: 50, radius: 1.8, every: 4.6, first: 4 }],
+  'wuming': [{ kind: 'fissure', name: 'LOTUS EDGES', element: 'dark', pattern: 'star', count: 4, length: 14, width: .85, lead: 1.05, damage: 56, every: 9 }],
   'jinlin': [{ kind: 'charge', name: 'DROWNED SUN', element: 'fire', seconds: 4, breakShare: .06, radius: 9, damage: 170, at: 'target', every: 22, first: 12 }],
-  shiun: [{ kind: 'clones', name: 'FALSE ENCORE', element: 'dark', count: 3, life: 14, every: 22, first: 10 }],
+  shiun: [{ kind: 'clones', name: 'UNDERSTUDIES', element: 'dark', count: 3, life: 14, every: 22, first: 10 }],
   kurobi: [{ kind: 'charge', name: 'BLACK FLAME ORB', element: 'dark', seconds: 3.4, breakShare: .05, radius: 10, damage: 190, at: 'target', every: 20, first: 10 }],
-  barrow: [{ kind: 'pull', name: 'NIGHT MAW', element: 'dark', radius: 13, seconds: 2.4, damage: 92, every: 14, first: 7 }],
+  barrow: [{ kind: 'pull', name: 'TAR TIDE', element: 'dark', radius: 13, seconds: 2.4, damage: 92, every: 14, first: 7 }],
   oro: [
     { kind: 'wave', name: 'MIDNIGHT', element: 'light', speed: 26, reach: 34, width: 1.6, damage: 14, lead: 1, freeze: 1.4, every: 15, first: 7, then: 1.3 },
     { kind: 'blinks', name: 'THE GILDED HOUR', element: 'light', count: 3, gap: .5, lead: .7, radius: 2, damage: 50, every: 999, first: 999 },
-    { kind: 'meteor', name: 'DEATH KNELL!', element: 'steel', count: 1, radius: 5.5, lead: 3, damage: 170, spread: 0, look: 'meteor', every: 20, first: 4, awakened: true },
+    { kind: 'meteor', name: 'HOUR OF RUIN!', element: 'steel', count: 1, radius: 5.5, lead: 3, damage: 170, spread: 0, look: 'meteor', every: 20, first: 4, awakened: true },
   ],
   // Magatsu: Flaying Cut's slashes, and awakened his ground - every direction cut at
   // once - and Calamity Pyre's arrow (break it, or run).
   magatsu: [
     { kind: 'fissure', name: 'REND: THOUSAND CUTS', element: 'blood', pattern: 'claws', count: 4, length: 16, width: .7, lead: .8, damage: 50, every: 11 },
-    { kind: 'fissure', name: 'DOMAIN: CARRION ALTAR', element: 'blood', pattern: 'radial', count: 10, length: 18, width: .8, lead: 1.2, damage: 72, every: 15, awakened: true },
-    { kind: 'charge', name: 'PYRE ARROW', element: 'fire', seconds: 3.2, breakShare: .06, radius: 7, damage: 230, at: 'target', every: 24, first: 9, awakened: true },
+    { kind: 'fissure', name: 'CARRION FIELD', element: 'blood', pattern: 'radial', count: 10, length: 18, width: .8, lead: 1.2, damage: 72, every: 15, awakened: true },
+    { kind: 'charge', name: 'CALAMITY PYRE', element: 'fire', seconds: 3.2, breakShare: .06, radius: 7, damage: 230, at: 'target', every: 24, first: 9, awakened: true },
   ],
-  // Vesper: the Pale Falcon strikes from where you are not; awakened as Black Vespers,
+  // Vesper: the Pale Raven strikes from where you are not; awakened as Black Vespers,
   // the Apostles come, and space itself pulls you in.
   vesper: [
-    { kind: 'blinks', name: 'THE PALE FALCON', element: 'light', count: 3, gap: .45, lead: .65, radius: 1.8, damage: 54, every: 10 },
+    { kind: 'blinks', name: 'THE PALE RAVEN', element: 'light', count: 3, gap: .45, lead: .65, radius: 1.8, damage: 54, every: 10 },
     { kind: 'summon', name: 'THE WINGED HOST', element: 'dark', grunts: ['rift-spawn'], count: 2, every: 20, first: 6, awakened: true },
-    { kind: 'pull', name: 'THE OFFERING', element: 'dark', radius: 13, seconds: 2.4, damage: 96, every: 17, first: 12, awakened: true, release: 'THE BLACK WINGS FALL' },
+    { kind: 'pull', name: 'EVENSONG', element: 'dark', radius: 13, seconds: 2.4, damage: 96, every: 17, first: 12, awakened: true, release: 'THE BLACK WINGS FALL' },
   ],
   // Imago: his tail, and speed; awakened, the King learns - a string of blows is
   // seen coming and answered from behind.
@@ -149,8 +149,8 @@ export const SIGNATURES: Record<string, readonly Signature[]> = {
     { kind: 'blinks', name: "THE SOVEREIGN'S SPEED", element: 'jade', count: 2, gap: .5, lead: .6, radius: 2, damage: 60, every: 12, first: 6 },
     { kind: 'counter', name: 'THE SOVEREIGN LEARNS', element: 'jade', style: 'future', hits: 4, window: 2.2, damage: 0, every: 8, first: 4, awakened: true },
   ],
-  akagane: [{ kind: 'meteor', name: "HEAVEN'S ANVIL", element: 'fire', count: 1, radius: 7, lead: 3.2, damage: 190, spread: 0, look: 'meteor', every: 18, first: 8 }],
-  jirenga: [{ kind: 'wave', name: 'MOUNTAIN-FELLING FIST', element: 'blood', speed: 16, reach: 16, width: 1.1, damage: 76, lead: .8, every: 10 }],
+  akagane: [{ kind: 'meteor', name: "COPPER STAR", element: 'fire', count: 1, radius: 7, lead: 3.2, damage: 190, spread: 0, look: 'meteor', every: 18, first: 8 }],
+  banjaku: [{ kind: 'wave', name: 'MOUNTAIN-FELLING FIST', element: 'blood', speed: 16, reach: 16, width: 1.1, damage: 76, lead: .8, every: 10 }],
   haldor: [
     { kind: 'fissure', name: 'FAULTLINE', element: 'sound', pattern: 'radial', count: 6, length: 16, width: 1.1, lead: 1.1, damage: 70, every: 10 },
     { kind: 'wave', name: 'WORLD TILT', element: 'sound', speed: 12, reach: 15, width: 1.3, damage: 64, lead: 1, every: 14, awakened: true },
@@ -566,7 +566,7 @@ export class Signatures {
     }
   }
 
-  /** The pressure round Rakshasa, and what each awakening makes of it. */
+  /** The pressure round Dune Oni, and what each awakening makes of it. */
   private startAura(boss: SigBoss, plan: Plan, sig: Extract<Signature, { kind: 'aura' }>, awakened: boolean) {
     plan.aura = { radius: sig.radius * (awakened ? 1.35 : 1), dps: sig.dps * (awakened ? 1.6 : 1), name: sig.name };
     this.host.push({ kind: 'aura', actor: boss.id, enemy: boss.enemy, radius: plan.aura.radius, value: awakened ? 2 : 1, element: sig.element, text: sig.name });

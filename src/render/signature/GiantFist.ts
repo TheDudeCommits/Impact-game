@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { taimatsuGeometry } from '../vfx/TaimatsuGeometry';
 
-/** Gummy's giant fist - the GRAND TIDE's (round 4b) and the Beacon
+/** Gummy's giant fist - the SPRING TIDE's (round 4b) and the Beacon
  *  Crash's: his arm blown up bigger than the man and driven
  *  into the target.
  *

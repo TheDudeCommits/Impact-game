@@ -20,14 +20,14 @@ import { ORIGINALS } from '../../originals/roster';
 
 /** Kenzo's two techniques.
  *
- *  thousand mile eagle   green wind winds up round him and his three blades
+ *  eagles reach   green wind winds up round him and his three blades
  *                       through the charge; on the release three crescents
  *                       with bodies (signature/Crescent) fly down the line
  *                       turning round each other. They are drawn at the
  *                       move's own speed and keep going through whatever
  *                       they hit - accent they still visibly travel -
  *                       and burn out over the next half second.
- *  Dust Sea Sundered    the RAKSHASA rises behind him for the whole charge: his
+ *  Dust Sea Sundered    the DUNE ONI rises behind him for the whole charge: his
  *                       own three-faced, six-armed form, twice his size, as a
  *                       translucent green phantom with a burning rim and an
  *                       ink line (signature/GhostShell), playing the same
@@ -37,14 +37,14 @@ import { ORIGINALS } from '../../originals/roster';
  *
  *  Pooled crescents and phantoms; no allocation per frame; the phantom's
  *  programs are linked at load with the first one built. */
-export const RAKSHASA_ASSET = ORIGINALS.kenzo?.formModel ?? '/assets/fighters/kenzo-rakshasa-br1.glb';
+export const DUNE_ONI_ASSET = ORIGINALS.kenzo?.formModel ?? '/assets/fighters/kenzo-rakshasa-br1.glb';
 const PHOENIX = MOVES.kenzo.special, WORLD = MOVES.kenzo.ultimate;
 const GREEN: Element = { spike: 0xe6ffe0, rim: 0x3fe070, light: 0x62ff8a, ink: 0x06200c };
 const WIND = new THREE.Color(.35, 1.6, .55), HALO = new THREE.Color(.08, .5, .16), LIGHT = new THREE.Color(.4, 1.3, .5);
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0);
-const RAKSHASA_BODY = new THREE.Color(.06, .8, .22);
-/** Round 3d (ULTS): where the RAKSHASA's clip draws the cut (contactFrames). */
-const RAKSHASA_CUT = .5085;
+const DUNE_ONI_BODY = new THREE.Color(.06, .8, .22);
+/** Round 3d (ULTS): where the DUNE ONI's clip draws the cut (contactFrames). */
+const DUNE_ONI_CUT = .5085;
 type Cast = { event: CombatEvent; floor: number; hitAt?: number; burst?: boolean; hold?: number; releasedAt?: number; drawn?: number; confirmed?: boolean };
 type Phantom = { root: THREE.Group; mixer: THREE.AnimationMixer; action?: THREE.AnimationAction; shell: GhostShell; busy: boolean; shown: boolean };
 
@@ -67,12 +67,12 @@ export class ThreeBladeEffects {
   private q = new THREE.Quaternion(); private roll = new THREE.Quaternion(); private basis = new THREE.Matrix4();
   constructor(private scene: THREE.Scene) {
     this.crescents = new Crescents(scene, crescentGeometry(1.05, .3, .34), 14, 'threeblade-crescent');
-    this.cuts = new Crescents(scene, crescentGeometry(.95, .08, .1), 9, 'rakshasa-nine-cuts');
+    this.cuts = new Crescents(scene, crescentGeometry(.95, .08, .1), 9, 'dune-oni-nine-cuts');
     scene.add(this.bolts.mesh, this.glows.mesh, this.lights.mesh);
     this.kit = VfxKit.for(scene);
   }
   async load() {
-    this.source = await new GLTFLoader().loadAsync(RAKSHASA_ASSET);
+    this.source = await new GLTFLoader().loadAsync(DUNE_ONI_ASSET);
     this.source.scene.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(this.source.scene), height = box.max.y - box.min.y;
     // Normalised to Kenzo's own 1.81 m, the way the runtime normalises every rig.
@@ -83,9 +83,9 @@ export class ThreeBladeEffects {
   }
   private make(): Phantom {
     const model = clone(this.source!.scene), root = new THREE.Group();
-    root.name = 'rakshasa-phantom'; root.add(model); model.scale.setScalar(this.unit); root.visible = false; this.scene.add(root);
+    root.name = 'dune-oni-phantom'; root.add(model); model.scale.setScalar(this.unit); root.visible = false; this.scene.add(root);
     model.traverse(o => { const m = o as THREE.Mesh; if (m.isMesh) { m.frustumCulled = false; m.castShadow = m.receiveShadow = false; } });
-    const shell = new GhostShell(model, RAKSHASA_BODY, 0x8dffae, .55, 0x02140a, 2.4); shell.enabled = true;
+    const shell = new GhostShell(model, DUNE_ONI_BODY, 0x8dffae, .55, 0x02140a, 2.4); shell.enabled = true;
     // Gone before the lens is inside it: the hero shot comes in close.
     const chest = new THREE.Object3D(); chest.position.set(0, 1.2, 0); root.add(chest); shell.fadeNear(chest, 2.6, 4.6);
     const mixer = new THREE.AnimationMixer(model), take = this.source!.animations.find(c => c.name === 'Dust Sea Sundered') ?? this.source!.animations.find(c => c.name === '_Idle');
@@ -97,7 +97,7 @@ export class ThreeBladeEffects {
   handle(events: readonly CombatEvent[]) {
     for (const e of events) {
       if (this.seen.has(e.id)) continue; this.seen.add(e.id); if (this.seen.size > 2048) this.seen.delete(this.seen.values().next().value!);
-      // (A combo ender thrown from the special is no thousand mile eagle: game/combos.ts.)
+      // (A combo ender thrown from the special is no eagles reach: game/combos.ts.)
       if (e.kind === 'cast' && e.fighter === 'kenzo' && e.origin && e.endpoint && (e.slot === 'special' && !e.branch || e.slot === 'ultimate')) { this.casts.push({ event: e, floor: e.origin.y - 1.05 }); if (this.casts.length > 12) this.casts.shift(); }
       if (e.kind === 'release' && e.fighter === 'kenzo') noteRelease(this.casts, e);// round 3c: castClock
       if ((e.kind === 'hit' || e.kind === 'blocked' || e.kind === 'guard-break') && e.fighter !== undefined)
@@ -121,7 +121,7 @@ export class ThreeBladeEffects {
     for (let i = this.casts.length - 1; i >= 0; i--) {
       const c = this.casts[i], e = c.event, actor = fighters.get(e.actorId), ultimate = e.slot === 'ultimate';
       // Round 3d (ULTS): the ultimate is a hit-confirm move - a lunging cut at
-      // contact 0, and the RAKSHASA and the nine cuts are its cinematic, on the
+      // contact 0, and the DUNE ONI and the nine cuts are its cinematic, on the
       // finisher, drawn only once it has landed (the thrower's confirm).
       const release = ultimate ? WORLD.contacts[0] : PHOENIX.contacts[0], finish = ultimate ? WORLD.contacts[WORLD.contacts.length - 1] : release;
       const life = ultimate ? (c.confirmed ? finish + .6 : release + 1) : release + PHOENIX.range / (PHOENIX.speed ?? 28) + .5;
@@ -168,7 +168,7 @@ export class ThreeBladeEffects {
       }
       // Dust Sea Sundered: from the confirm.
       if (!c.confirmed) continue;
-      if (actor && age < finish + .45) this.rakshasa(actor, age, release, finish, time);
+      if (actor && age < finish + .45) this.duneOni(actor, age, release, finish, time);
       const after = age - finish;
       if (after >= -.04 && after < .5) {
         const foe = actor?.state.target ? fighters.get(actor.state.target) : undefined;
@@ -194,8 +194,8 @@ export class ThreeBladeEffects {
     for (const [id, p] of this.live) if (!p.shown) { p.busy = false; p.root.visible = false; this.live.delete(id); }
     this.crescents.end(); this.cuts.end(); this.bolts.end(); this.glows.end(); this.lights.end();
   }
-  /** The RAKSHASA behind him: rising from the confirm, flaring on the cut. */
-  private rakshasa(f: Fighter, age: number, open: number, release: number, time: number) {
+  /** The DUNE ONI behind him: rising from the confirm, flaring on the cut. */
+  private duneOni(f: Fighter, age: number, open: number, release: number, time: number) {
     if (!this.source) return;
     let p = this.live.get(f.state.id);
     if (!p) { p = this.phantoms.find(q => !q.busy) ?? this.make(); p.busy = true; this.live.set(f.state.id, p); }
@@ -209,10 +209,10 @@ export class ThreeBladeEffects {
     p.root.rotation.set(0, s.yaw, 0); p.root.scale.setScalar(1.55 + .2 * flare);
     p.root.visible = rise * gone > .01;
     // Its clip gathers from the confirm into the cut on the finisher, as the
-    // RAKSHASA form's does (Fighter's ULTIMATE_CLIPS).
-    if (p.action) { const L = p.action.getClip().duration, u = Math.max(0, (age - open) / Math.max(.05, release - open)); p.action.time = Math.min(L - .001, u <= 1 ? u * RAKSHASA_CUT * L : RAKSHASA_CUT * L + (u - 1) * (release - open)); p.mixer.update(0); }
+    // DUNE ONI form's does (Fighter's ULTIMATE_CLIPS).
+    if (p.action) { const L = p.action.getClip().duration, u = Math.max(0, (age - open) / Math.max(.05, release - open)); p.action.time = Math.min(L - .001, u <= 1 ? u * DUNE_ONI_CUT * L : DUNE_ONI_CUT * L + (u - 1) * (release - open)); p.mixer.update(0); }
     p.shell.opacity = .55 * rise * gone * (1 + .4 * flare);
-    p.shell.setColors(RAKSHASA_BODY, flare > .5 ? 0xd8ffe0 : 0x8dffae);
+    p.shell.setColors(DUNE_ONI_BODY, flare > .5 ? 0xd8ffe0 : 0x8dffae);
     this.lights.add(this.a, 3.5, LIGHT, (.25 + .4 * flare) * rise * gone);
   }
   reset() { this.casts = []; this.seen.clear(); for (const p of this.live.values()) { p.busy = false; p.root.visible = false; } this.live.clear(); this.crescents.begin(); this.crescents.end(); this.cuts.begin(); this.cuts.end(); this.bolts.begin(); this.bolts.end(); this.glows.begin(0); this.glows.end(); this.lights.begin(); this.lights.end(); }

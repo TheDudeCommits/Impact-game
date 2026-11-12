@@ -467,7 +467,7 @@ interface Actor {
    *  a wall, or the page's floor (in the training hall a seam in it splatted Ouga mid-string, three metres from any
    *  wall). Public (REACTION_KEYS); left unset outside a lock string, so the live rules' snapshots are as they were. */
   lockSlide?: true;
-  /** Lock combat: whom this attacker may counter-vanish behind, until when (LOCK_COUNTER_WINDOW). */
+  /** Lock combat: whom this attacker may vanish-read behind, until when (LOCK_COUNTER_WINDOW). */
   lockCounterOn: string;
   lockCounterUntil: number;
   /** Round 3b (TARGET): the body a soft-target cast picked (chooseIntent) and
@@ -2148,7 +2148,7 @@ export class ArenaSimulation {
     const nextRound = !branch && slot === 'light' && stage === 0 && this.lockRoundsLeft(a)
       && (a.cast ? a.cast.slot === 'light' && a.cast.stage === LOCK_ROUND - 1 : a.rushStage === LOCK_ROUND - 1);
     const round = slot !== 'light' || !this.locking(a) ? 0 : branch === 'delay' ? a.lockRound : nextRound ? this.lockRoundOf(a) + 1 : stage > 0 ? this.lockRoundOf(a) : 0;
-    // Awakened, the move may be a different one: KoKo's HUSH becomes the
+    // Awakened, the move may be a different one: KoKo's SLUMBER becomes the
     // barrage. The cast keeps this definition for its whole duration.
     const own = branch ? comboMove(p.fighter, branch, !!p.awakened)! : (round ? lockRoundMove(p.fighter, stage, !!p.awakened) : undefined) ?? this.moveOf(a, slot, stage);
     const m = strike && !wound ? (p.grounded ? strike.move : strike.air ?? strike.move) : own;
@@ -2327,7 +2327,7 @@ export class ArenaSimulation {
    *  Taisei's Cloudstep read "Falling Kick" all round the arena:
    *  - awakened into a body of its own, which carries no air attacks: Kurobi
    *    and SUNRISE replace the fighter, and Iron Spirit takes over from
-   *    KoKo (HUSH, which takes over from LORD ORO, has them);
+   *    KoKo (SLUMBER, which takes over from LORD ORO, has them);
    *  - a move played whole wherever it starts: Taisei's Rock and Instant
    *    Transmission (Fighter.groundedMelee) and LORD ORO's authored knife throw.
    *  tests/airNormals.test.ts holds this to what the renderer draws. */
@@ -2473,7 +2473,7 @@ export class ArenaSimulation {
         // Round 3c (LOCK): nor throw away what the player has already done.
         // The move under way used to be cancelled here, its bar and stamina
         // spent: a page that hitched for 0.4 s after pressing its ultimate,
-        // or for 0.15 s four times through Grand Tide's five-second
+        // or for 0.15 s four times through Spring Tide's five-second
         // wind-up, lost it (the second critic's screenshots did exactly
         // that). Past the hold it plays out on the world's clock instead, and
         // a press already heard still goes off when cast() lets it.
@@ -2634,7 +2634,7 @@ export class ArenaSimulation {
       // there - so a whiff cost nothing at all. Measured, the frame of the
       // next cast after swinging at empty air, without a dash and with one:
       // Kenzo's heavy 73 -> 42, his Phoenix 164 -> 98, Nigo's NIGHTFALL
-      // 314 -> 191, Gummy's Grand Tide 470 -> 305. A twenty-second ultimate
+      // 314 -> 191, Gummy's Spring Tide 470 -> 305. A twenty-second ultimate
       // thrown at nothing had one frame of recovery, and 7.8 frames of
       // invulnerability attached to the escape. Spacing, baiting and whiff
       // punishing are the read layer that makes a fight a fight, and none of
@@ -3194,7 +3194,7 @@ export class ArenaSimulation {
     // An iai draw closes with its own dash (castMotion), and a charge-in does
     // not drive in while it is still sliding back out.
     if (cast.move.dashThrough || castAge < (cast.backstepPlanned ? cast.backstepUntil ?? 0 : 0)) return null;
-    // Senpugan holds the extended palm through its live contact frames. If
+    // Kazeyose holds the extended palm through its live contact frames. If
     // the first contact tick falls just short, finish that step instead of
     // freezing the sphere centimetres outside the target's hurt volume.
     // Keep the same measured reach, committed direction and input override.
@@ -4505,7 +4505,7 @@ export class ArenaSimulation {
     if (opening && !crowd) { target.chainHits++; opened?.set(p.id, target.chainHits); }
     // Hitstun scales on the breaker count. A multi-contact finisher reads the
     // count its cast opened on: the running count is what crushed GAN's
-    // authored 1.1 s finisher to a quarter of a second and HUSH's 2.3 s
+    // authored 1.1 s finisher to a quarter of a second and SLUMBER's 2.3 s
     // to a half, because their own ticks had been charging it.
     const chain = finisher ? opened?.get(p.id) ?? target.chainHits : target.chainHits;
     const stunScale = Math.max(0.2, 1 - Math.max(0, chain - 1) * 0.14);
@@ -5173,7 +5173,7 @@ export class ArenaSimulation {
     this.action(by, 'hurt', LOCK_LOST, true);
     // A bot sees its own escape and answers it.
     if (p.isBot) a.nextBotThink = Math.min(a.nextBotThink, this.serverTime + .12);
-    // The attacker may answer it in turn (the counter-vanish), a bot now and then.
+    // The attacker may answer it in turn (the vanish-read), a bot now and then.
     by.lockCounterOn = p.id; by.lockCounterUntil = this.serverTime + LOCK_COUNTER_WINDOW;
     if (q.isBot && !by.external && q.stamina >= LOCK_COUNTER_STAMINA
         && this.random() < LOCK_BOT_COUNTER[0] + (LOCK_BOT_COUNTER[1] - LOCK_BOT_COUNTER[0]) * by.botSkill) {
@@ -5184,7 +5184,7 @@ export class ArenaSimulation {
     this.emit({ kind: 'lock-escape', actorId: p.id, targetId: q.id, fighter: p.fighter, origin: moved.from, endpoint: moved.to });
   }
 
-  /** Lock combat: the counter-vanish. The attacker whose round was escaped presses guard inside LOCK_COUNTER_WINDOW and
+  /** Lock combat: the vanish-read. The attacker whose round was escaped presses guard inside LOCK_COUNTER_WINDOW and
    *  is behind the escaper in turn, out of their reel, facing that back; whatever the escaper threw at the space they
    *  left whiffs. Once: the escaper's own vanish is on its cooldown, so it is not a ping-pong. */
   private lockCounter(a: Actor) {
@@ -6495,7 +6495,7 @@ export class ArenaSimulation {
   /** One of a cinematic's blows on somebody it holds: through `hit` like any
    *  other blow, with the hold's shield lifted for it - the victim's evade is
    *  what keeps everybody else off them - and no quiet spell counted between
-   *  the blows of one hold, however long its thrower winds up (the Grand Tide
+   *  the blows of one hold, however long its thrower winds up (the Spring Tide
    *  Gun's fist takes most of two seconds to inflate). Without a cinematic
    *  (arcade survival's sides) it is the plain blow. */
   private holdHit(a: Actor, cast: Cast, victim: Actor, contact: number, finisher: boolean, origin: Vec3) {

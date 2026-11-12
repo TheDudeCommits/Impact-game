@@ -12,16 +12,16 @@ export interface OriginalArea {
 
 export const ORIGINAL_AREAS: Partial<Record<FighterId, OriginalArea>> = {
   taisei: { main: 'Great Sage Thunderclap', name: 'Great Sage Thunderclap', card: 'Thunderclap', ja: '大聖雷拳' },
-  konta: { main: 'Wind Art: Senpu Shigure', name: 'Wind Art: Senpu Shigure', card: 'Senpu Shigure', ja: '風術・旋風時雨' },
+  konta: { main: 'Fox Wedding', name: 'Fox Wedding', card: 'Fox Wedding', ja: '狐の嫁入り' },
   gummy: { main: 'Monsoon', name: 'Monsoon', ja: 'モンスーン' },
   nigo: { main: 'Ash Brand', name: 'Ash Brand', ja: '灰の烙印' },
-  ouga: { main: 'Haou Ryuusei', name: 'Haou Ryuusei', ja: '覇王流星' },
-  shirokane: { main: 'Ash Art: Great Dust Fall', name: 'Ash Art: Great Dust Fall', card: 'Dust Fall', ja: '灰遁・大塵瀑' },
-  shiden: { main: 'Cinder Art: Pyre Crow Technique', name: 'Storm Art: Great Thunderball', card: 'Thunderball', ja: '霆遁・大雷球' },
+  ouga: { main: 'Falling Crown', name: 'Falling Crown', ja: '墜ちる王冠' },
+  shirokane: { main: 'Dust Curtain', name: 'Dust Curtain', card: 'Dust Curtain', ja: '塵幕' },
+  shiden: { main: 'Pyre Crow Technique', name: 'Hawkstorm', card: 'Hawkstorm', ja: '鷹嵐' },
   kenzo: { main: 'Oni Wind: Great Sandspout', name: 'Oni Wind: Great Sandspout', card: 'Sandspout', ja: '鬼風・大砂柱' },
   kagari: { main: 'Kagaribi', name: 'Kagaribi', ja: '篝火' },
   kosho: { main: 'Brasier: Salamandre', name: 'Brasier: Salamandre', card: 'Salamandre', ja: 'ブラジエ・サラマンドル' },
-  ward: { main: 'THEATRE: Lift', name: 'THEATRE: Lift', ja: '手術室・浮揚' },
+  ward: { main: 'Crash Cart', name: 'Crash Cart', ja: 'クラッシュ・カート' },
   koko: { main: 'Iron Lullaby: Ground Smash', name: 'Iron Lullaby: Ground Smash', card: 'Iron Lullaby', ja: '鉄の子守唄' },
   oro: { main: 'Midnight: Knife Rain', name: 'Midnight: Knife Rain', card: 'Knife Rain', ja: '刻の刃雨' },
   kuon: { main: 'Hex: Collapse', name: 'Hex: Collapse', card: 'Condemned', ja: '呪・崩落' },
@@ -29,24 +29,24 @@ export const ORIGINAL_AREAS: Partial<Record<FighterId, OriginalArea>> = {
   haldor: { main: 'Groundswell Quake', name: 'Groundswell Quake', card: 'Groundswell', ja: '地鳴り' },
   sorrel: { main: 'Crimson Wake Strike', name: 'Crimson Wake Strike', card: 'Crimson Wake', ja: '紅の航跡' },
   'wuming': { main: 'Lotus Verdict', name: 'Lotus Verdict', card: 'Verdict', ja: '裁きの蓮' },
-  jirenga: { main: 'Immovable Barrage', name: 'Immovable Barrage', card: 'Immovable', ja: '不動連撃' },
+  banjaku: { main: 'Immovable Barrage', name: 'Immovable Barrage', card: 'Immovable', ja: '不動連撃' },
   'jinlin': { main: 'Dragon-Gate Disc', name: 'Dragon-Gate Disc', ja: '龍門円刃' },
   'gohaku': { main: 'White Ape Barrage', name: 'White Ape Barrage', card: 'White Ape', ja: '白猿連打' },
-  tobari: { main: 'Cinder Art: Pyre Crow Technique', name: 'Crow Art: Great Ember', card: 'Great Ember', ja: '鴉遁・大燼' },
+  tobari: { main: 'Pyre Crow Technique', name: 'Great Ember', card: 'Great Ember', ja: '大燼' },
   akagane: { main: 'Tomb Pyre', name: 'Tomb Pyre', card: 'Tomb Pyre', ja: '墓炎' }, // the redesign (3 November 2026): "Flame Hymn" answered "Release Song" word for word
   magatsu: { main: 'Calamity Pyre', name: 'Calamity Pyre', ja: '禍焔' },
   vesper: { main: 'Raven Host', name: 'Raven Host', ja: '鴉の軍' },
   imago: { main: 'Checkmate', name: 'Last Move', ja: '終局' },
   gaku: { main: 'Lion\'s Roar', name: "Lion's Roar", ja: '獅子吼' },
   levin: { main: "Spotless", name: 'Spotless', ja: '塵ひとつ無し' },
-  sekka: { main: 'Shatter Art: Snowcrush', name: 'Shatter Art: Snowcrush', card: 'Snowcrush', ja: '砕雪' },
+  sekka: { main: 'Snowcrush', name: 'Snowcrush', card: 'Snowcrush', ja: '砕雪' },
   asahi: { main: 'Daybreak Cycle', name: 'Daybreak Cycle', ja: '夜明けの巡り' },
   'rook': { main: 'Grave Legion', name: 'Grave Legion', ja: '墓の軍勢' },
-  shiun: { main: 'Hymn 7: Storm Psalm', name: 'Hymn 7: Storm Psalm', card: 'Storm Psalm', ja: '聖歌七番・嵐の詩篇' },
+  shiun: { main: 'Storm Psalm', name: 'Storm Psalm', card: 'Storm Psalm', ja: '嵐の詩篇' },
   gaunt: { main: 'Scrap Repeater', name: 'Scrap Repeater', ja: '鉄屑連射' },
   gorai: { main: 'Wyrm Breath', name: 'Wyrm Breath', ja: '嵐竜の息吹' },
   dorado: { main: "Crown Clash", name: 'Crown Clash', ja: '王冠の激突' },
-  ippon: { main: 'All-Nighter Desk Flip', name: 'All-Nighter Desk Flip', card: 'Desk Flip', ja: '残業ちゃぶ台返し' },
+  ippon: { main: 'Overtime Mop-Up', name: 'Overtime Mop-Up', card: 'Mop-Up', ja: '残業・後始末' },
   'full-beam': { main: 'Cape Hatteras Gale', name: 'Cape Hatteras Gale', card: 'Hatteras Gale', ja: '灯台旋風' }, // Full Beam's (round 6)
   bellows: { main: "Open Furnace", name: 'Open Furnace', ja: '炉門開放' }, // Bellows's (round 6)
   ampere: { main: 'Good Hope Drop', name: 'Good Hope Drop', card: 'Good Hope', ja: '希望岬' }, // Ampere's (round 6)
@@ -75,7 +75,7 @@ export const ORIGINAL_AREAS: Partial<Record<FighterId, OriginalArea>> = {
   buna: { main: 'Cold Snap', name: 'Cold Snap', ja: '寒波' },
   tsubute: { main: 'Spate', name: 'Spate', ja: '鉄砲水' },
   'shakudo': { main: 'Full Pour', name: 'Full Pour', ja: '総鋳込み' },
-  wataame: { main: 'Lie In', name: 'Lie In', ja: '朝寝坊' },
+  wataame: { main: 'Day Off', name: 'Day Off', ja: '定休日' },
   shakugo: { main: 'Sentence: Molten Prison', name: 'Sentence: Molten Prison', card: 'Molten Prison', ja: '刑・溶獄' }, // Shakugo's (round 6)
   tokan: { main: 'Icicle Pikes', name: 'Icicle Pikes', ja: '氷柱槍' }, // Tokan's (round 6)
   senko: { main: 'Black Pyre', name: 'Broad Daylight', card: 'Daylight', ja: '白昼光' }, // Senko's (round 6)
@@ -92,7 +92,7 @@ export const ORIGINAL_AREAS: Partial<Record<FighterId, OriginalArea>> = {
   mikage: { main: 'Catwalk', name: 'Catwalk', ja: '猫道' }, // Mikage's (round 6)
   shidare: { main: 'Steel Avenue', name: 'Steel Avenue', ja: '鋼並木' }, // Shidare's (round 6)
   irbis: { main: 'Hailstorm Talons', name: 'Hailstorm Talons', card: 'Hailstorm', ja: '雹爪' }, // Irbis's (round 6)
-  shijima: { main: 'Hymn 27: Blue Pyre', name: 'Hymn 27: Blue Pyre', card: 'Blue Pyre', ja: '聖歌二十七番・青き弔火' }, // Shijima's (round 6)
+  shijima: { main: 'Blue Pyre', name: 'Blue Pyre', card: 'Blue Pyre', ja: '青き弔火' }, // Shijima's
   onigawara: { main: 'Rampage Ground', name: 'Rampage Ground', card: 'Rampage', ja: '暴れ野' }, // Onigawara's (round 6)
   ume: { main: 'Earthbloom!!', name: 'Earthbloom', ja: '大地咲き' }, // Ume's (round 6)
   kusushi: { main: 'Purifying Salt', name: 'Purifying Salt', ja: '清め塩' }, // Kusushi's (round 6)
@@ -100,7 +100,7 @@ export const ORIGINAL_AREAS: Partial<Record<FighterId, OriginalArea>> = {
   minase: { main: 'Grand Circuit', name: 'Grand Circuit', ja: '疾風早馬・大周回・三番' }, // Minase's (round 6's Kanata, renamed by minase-build)
   'madake': { main: 'Autumn Stag', name: 'Autumn Stag', ja: '秋の鹿' }, // Madake's (round 6)
   bruin: { main: 'Bear\'s Den', name: "Bear's Den", ja: '熊の穴' }, // Bruin's (round 6)
-  akaito: { main: 'Ghost Bride', name: 'Ghost Bride', ja: '冥婚' }, // Akaito's (round 6)
+  akaito: { main: 'Red Thread Shade', name: 'Red Thread Shade', ja: '赤糸の影' }, // Akaito's
   tempo: { main: 'Dark Spark', name: 'Zero Gap', ja: '零距離' }, // Tempo's (round 6)
   sashigane: { main: 'Fault Line', name: 'Fault Line', ja: '断層線' }, // Sashigane's (round 6)
   chohan: { main: 'Loaded Dice', name: 'Loaded Dice', ja: 'イカサマ賽' }, // Chohan's (round 6)
@@ -108,7 +108,7 @@ export const ORIGINAL_AREAS: Partial<Record<FighterId, OriginalArea>> = {
   'rakucho': { main: 'Torn Binding', name: 'Torn Binding', ja: '綴じ破り' },
   kubiwa: { main: 'Grand Pause', name: 'Grand Pause', ja: '総休止' },
   hinomoto: { main: 'Old Fire', name: 'Ashen Decree', ja: '焼尽の令' }, // Hinomoto's (round 6)
-  yodaka: { main: 'Fifth Watch: Fire Owl', name: 'Fifth Watch: Fire Owl', card: 'Fire Owl', ja: '五番・火梟' }, // Yodaka's (round 6)
+  yodaka: { main: 'Fire Owl', name: 'Fire Owl', card: 'Fire Owl', ja: '火梟' }, // Yodaka's
   kinu: { main: 'Cat\'s Cradle', name: "Cat's Cradle", ja: 'あやとり' }, // Kinu's (round 6)
   gosu: { main: 'Shard Shot', name: 'Shard Shot', ja: '欠片弾' }, // Gosu's (round 6)
 };
@@ -143,7 +143,7 @@ export const ORIGINAL_TECHNIQUES: Partial<Record<FighterId, Record<string, strin
   koko: { 'Iron Rush': 'Iron Rush', 'Lullaby Counter': 'Lullaby Counter' },
   oro: { 'Gilded Rush': 'Gilded Rush', 'Midnight Counter': 'Midnight Counter' },
   kosho: { 'Service Rush': 'Service Rush', 'Kitchen Counter': 'Kitchen Counter' },
-  shirokane: { 'Scarecrow Dash': 'Scarecrow Dash', 'Mirror Counter': 'Mirror Counter' },
+  shirokane: { 'Decoy Dash': 'Decoy Dash', 'Mirror Counter': 'Mirror Counter' },
   kuon: { 'Gravity Blink': 'Gravity Blink', 'Null Counter': 'Null Counter' },
   gaunt: { 'Hound Lunge': 'Hound Lunge', 'Ash Hound Counter': 'Ash Hound Counter' },
   setsu: { 'Snowflash': 'Snowflash', 'Instant Counter': 'Instant Counter' },
@@ -172,7 +172,7 @@ export const ORIGINAL_TECHNIQUES: Partial<Record<FighterId, Record<string, strin
   mizuhiki: { 'Lunging Thrust': 'Reel-In Lunge', 'Rising Slash': 'Hoist Cut', 'Iai Counter': 'Slack Counter' }, // Mizuhiki's (round 6)
   rotfalke: { 'Charging Ram': 'Wingover Charge', 'Upheaval': 'Climbing Heel', 'Iron Counter': 'Mantle Counter' }, // Rotfalke's (round 6)
   bruin: { 'Lunging Thrust': 'Bear Charge Lunge', 'Rising Slash': 'Rearing Slash', 'Iai Counter': 'Swat Counter' }, // Bruin's (round 6)
-  akaito: { 'Lunging Thrust': 'Threadline Lunge', 'Rising Slash': 'Veil Lift', 'Iai Counter': "Bride's Guard Counter" }, // Akaito's (round 6)
+  akaito: { 'Lunging Thrust': 'Threadline Lunge', 'Rising Slash': 'Veil Lift', 'Iai Counter': "Shade's Guard Counter" }, // Akaito's (round 6)
   tempo: { 'Dashing Strike': 'Sprint Start', 'Rising Uppercut': 'Skyhook', 'Counter Stance': 'Reflex Counter' }, // Tempo's (round 6)
   sashigane: { 'Lunging Thrust': 'Straight Line Lunge', 'Rising Slash': 'Rising Measure', 'Iai Counter': 'Margin Counter' }, // Sashigane's (round 6)
   chohan: { 'Lunging Thrust': "Dealer's Lunge", 'Rising Slash': 'Raise', 'Iai Counter': 'Called Bluff Counter' }, // Chohan's (round 6)
@@ -185,7 +185,7 @@ export const ORIGINAL_TECHNIQUES: Partial<Record<FighterId, Record<string, strin
   dorado: { 'Lunging Thrust': 'Gold Rush', 'Iai Counter': 'Horizon Counter' },
   sorrel: { 'Lunging Thrust': 'Wake Lunge', 'Iai Counter': 'Dead Calm Counter' },
   magatsu: { 'Blink Strike': 'Omen Step', 'Reflect Stance': 'Calamity Counter' },
-  haldor: { 'Driving Thrust': 'Glaive Drive', 'Staff Counter': 'Old Stolen Tremor' },
+  haldor: { 'Driving Thrust': 'Glaive Drive', 'Staff Counter': 'Old Wreck Tremor' },
   shakugo: { 'Dashing Strike': 'No Refunds Rush', 'Counter Stance': 'Verdict Counter' },
   tokan: { 'Lunging Thrust': 'Sleepwalk Lunge', 'Iai Counter': 'Half-Awake Counter' },
   senko: { 'Lunging Kick': 'Glare Lunge', 'Counter Spin Kick': 'Prism Counter' },

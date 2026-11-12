@@ -385,7 +385,7 @@ function sunBrood(f: Flesh) {
   for (const s of [L, R]) { const j = side(s); k.on(j.fore, j.group).color(0x0a0808); for (let i = 0; i < 3; i++) { const a = k.between(j.fore, j.hand, .2 + i * .25, 0, .04); k.cone(a, [a[0], a[1] + .08, a[2] - .03], .014, 4); } }
 }
 
-// ---- Hidden Ash -----------------------------------------------------------------------------------
+// ---- Ashwood -----------------------------------------------------------------------------------
 function paleSapling(f: Flesh) {
   // Grown, not born: a revenant of pale birch bark, black streaks across it, a crown of bare twigs, moss on the shoulders.
   sculptBody(f, { bulk: .9, limb: .9, belly: .85, skin: 0xcfc8b4, top: 0xcfc8b4, bottom: 0xbfb8a2, boots: 0xb0a892, sleeves: 'none', legs: 'bare', barefoot: true, starved: true, hunch: .3 });

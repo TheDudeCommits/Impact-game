@@ -16,7 +16,7 @@ applyOriginalGrounds(GROUNDS);
 
 /** What each of the main game's places gets, and why (the brief's "decide,
  *  place by place"): every place has a line, so none is left by accident. */
-export const GROUND_DECISIONS: Record<Exclude<StageId, 'hidden-ash' | 'blood-citadel' | `rift-${string}` | `ball-${string}`>, { ground: readonly ('grass' | 'water' | 'sand' | 'reeds' | 'moss' | 'leaves')[]; why: string }> = {
+export const GROUND_DECISIONS: Record<Exclude<StageId, 'ashwood' | 'blood-citadel' | `rift-${string}` | `ball-${string}`>, { ground: readonly ('grass' | 'water' | 'sand' | 'reeds' | 'moss' | 'leaves')[]; why: string }> = {
   'ash-colosseum': { ground: ['grass', 'leaves'], why: 'A grass field inside the stadium wall, knee-high toward the edges and a true green rather than olive. Fallen leaves on its tracks and under its trees.' },
   'ashfall-weir': { ground: ['water', 'grass', 'moss'], why: 'The fight stands in the river: it takes the waves, on the river\'s own surface (src/originals/grounds.ts). Grass where the banks are dry, moss where the stone stays wet at the waterline; the reeds along the banks are the place\'s own dressing.' },
   'sunward-summit': { ground: ['grass'], why: 'The summit\'s gardens: lawns in the four corners round the rim and grass in the gardens\' stone beds. The paving the fight is held on stays bare.' },

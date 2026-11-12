@@ -14,7 +14,7 @@ import type { Fighter } from '../src/render/Fighter';
 import type { AttackSlot, CombatEvent, FighterId, PlayerState } from '../src/game/types';
 
 /**
- * Round 13: three specials became projectiles, HUSH got its GAN track,
+ * Round 13: three specials became projectiles, SLUMBER got its GAN track,
  * Kenzo's light stopped speaking in Gummy's voice, and Nigo was heard.
  */
 
@@ -31,7 +31,7 @@ async function audio() { vi.stubGlobal('AudioContext', Context); vi.stubGlobal('
 const cut = (s: Source) => s.stops.length > 1;
 afterEach(() => vi.unstubAllGlobals());
 
-describe('GAN GAN on HUSH', () => {
+describe('IRONFALL on SLUMBER', () => {
   // Round 3: the loop is scheduled over barrageWindow (src/game/timeStopBarrage.ts)
   // from its first blow through its last. The call is cut so it has ended by
   // then rather than pushing the barrage late: one man, one phrase at a time.
@@ -227,7 +227,7 @@ describe('the new specials', () => {
     effects.dispose(); fire.dispose();
   });
 
-  it('extends Needle Finger from the hand at the contact and retracts it, stopping on the body it struck', () => {
+  it('extends Iron Nail from the hand at the contact and retracts it, stopping on the body it struck', () => {
     const move = MOVES.koko.heavy, contact = move.contacts[0], flight = move.range / move.speed!;
     expect(SwordSpiritEffects.fingerReach(contact - .01)).toBe(0);
     expect(SwordSpiritEffects.fingerReach(contact + .1)).toBeCloseTo(4, 5);
@@ -243,19 +243,19 @@ describe('the new specials', () => {
     const scene = new THREE.Scene(), spirit = new SwordSpiritEffects(scene);
     const koko = body('j', 'koko', 'heavy', 1), fighters = new Map([['j', koko]]);
     spirit.handle([event({ actorId: 'j', fighter: 'koko', slot: 'heavy', serverTime: 1, origin: { x: 0, y: 1.05, z: 0 }, endpoint: { x: 0, y: 1.05, z: 9 } })]);
-    const finger = scene.getObjectByName('needle-finger')!;
+    const finger = scene.getObjectByName('iron-nail')!;
     spirit.update(1.2, 1 / 60, fighters); koko.state.actionTime = .2 / move.duration;
     expect(finger.visible, 'nothing before the contact').toBe(false);
     const t = 1 + contact + .1; koko.state.actionTime = (contact + .1) / move.duration;
     spirit.update(t, 1 / 60, fighters);
     expect(finger.visible).toBe(true);
     expect(finger.position.distanceTo(koko.handR), 'anchored to the hand').toBeLessThan(.01);
-    const tip = finger.getObjectByName('needle-finger-tip')!;
+    const tip = finger.getObjectByName('iron-nail-tip')!;
     expect(tip.getWorldPosition(new THREE.Vector3()).distanceTo(koko.handR)).toBeCloseTo(4, 1);
     spirit.dispose();
   });
 
-  it('lands Needle Finger in violet, and the rest of the roster as before', () => {
+  it('lands Iron Nail in violet, and the rest of the roster as before', () => {
     const scene = new THREE.Scene(), effects = new CombatEffects(scene);
     effects.handle([event({ id: 3, kind: 'hit', actorId: 'j', fighter: 'koko', slot: 'heavy', serverTime: 2, damage: 88, endpoint: { x: 0, y: 1, z: 4 }, origin: { x: 0, y: 1, z: 0 } })]);
     const burst = scene.getObjectByName('combat-energy-burst')!;

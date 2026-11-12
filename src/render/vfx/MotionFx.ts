@@ -38,6 +38,10 @@ const SLIDES = new Set(['hurt', 'flinch', 'launched', 'knockdown', 'splat', 'stu
  *  once a fighter has been seen.
  */
 export class MotionFx {
+  /** Whether a body's movement leaves no afterimages and no speed lines - main.ts says so
+   *  of a body in Goal Rush's SPORT stance on the sport rules (a sprint is a run there, not a dash out of a fight); its
+   *  dust is kept. Off for everyone else. */
+  static quiet: (body: Fighter) => boolean = () => false;
   private tracks = new Map<string, Track>();
   private frame = 0;
 
@@ -51,6 +55,7 @@ export class MotionFx {
         this.tracks.set(id, tr); kit.ghosts.prepare(f); continue;
       }
       tr.seen = this.frame;
+      const quiet = MotionFx.quiet(f);
       const began = s.action !== tr.action || Math.abs(s.actionStarted - tr.started) > 1e-4;
       // Test doubles and a body's first frame may not carry a velocity yet.
       const velocity = f.velocity as { x: number; z: number } | undefined, vx = velocity?.x ?? 0, vz = velocity?.z ?? 0, speed = Math.hypot(vx, vz), dx = speed > .1 ? vx / speed : Math.sin(s.yaw), dz = speed > .1 ? vz / speed : Math.cos(s.yaw);
@@ -79,6 +84,7 @@ export class MotionFx {
         // Spaced along the path rather than in time, so the poses string
         // out behind the body instead of piling up on it. A chase homes too
         // fast for them to pile up, and streams them on the clock.
+        if (quiet) tr.ghosts = 0;
         if (tr.ghosts > 0 && time >= tr.ghostNext && (s.action === 'dash' || s.action === 'light' || chasing) && (chasing || Math.hypot(pos.x - tr.gx, pos.z - tr.gz) > .35)) {
           kit.ghosts.spawn(f, tint, time, chasing ? .26 : .24, (chasing ? .7 : .6) * (DREAM_IMPACT ? GHOST_DIAL.fade : 1));
           tr.ghosts--; tr.ghostNext = time + (chasing ? .04 : .05); tr.gx = pos.x; tr.gz = pos.z;
@@ -107,7 +113,7 @@ export class MotionFx {
           if (wet) kit.splash(pos.x, pos.z, .3 + Math.min(.4, speed * .04), time, dx, dz, 1);
           else kit.puff(pos.x + (Math.random() - .5) * .3, pos.y + .1, pos.z + (Math.random() - .5) * .3, dx * speed * .25, .4 + Math.random() * .4, dz * speed * .25, .28 + Math.min(.24, speed * .03), time, .5, .7);
         }
-        if (id === localId && screen) {
+        if (id === localId && screen && !quiet) {
           const move = s.action === 'ultimate' ? MOVES[s.fighter].ultimate : undefined;
           const charging = !!move && s.actionTime * s.actionDuration < move.contacts[0];
           const amount = chasing ? (!DREAM_IMPACT || time - tr.chaseFrom < SPEED_BURST ? 1 : 0)

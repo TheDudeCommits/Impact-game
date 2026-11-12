@@ -99,7 +99,7 @@ const LINES: Partial<Record<FighterId, Lines>> = {
   hikui: { bell: ['vo-hikui-ready', 'vo-hikui-quip-ready'] },
   unari: { low: ['vo-unari-quip-interested'], win: ['vo-unari-quip-finish'] },
   hakushi: { bell: ['vo-hakushi-quip-ready'], win: ['vo-hakushi-quip-training'] },
-  jirenga: { bell: ['rift:jirenga-no-chance'], 'hurt-heavy': ['rift:jirenga-this-power'], ko: ['rift:jirenga-defeated'] },
+  banjaku: { bell: ['rift:banjaku-no-chance'], 'hurt-heavy': ['rift:banjaku-this-power'], ko: ['rift:banjaku-defeated'] },
   kinu: { parry: ['vo-kinu-quip-stay-away'] },
   gosu: { bell: ['vo-gosu-quip-rival'] },
   gorai: { bell: ['rift:gorai-who-am-i'], taunt: ['rift:gorai-kill'], ko: ['rift:gorai-no-choice'] },

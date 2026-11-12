@@ -21,7 +21,7 @@ import {struckBody,FIZZLE_REACH} from './signature/struck';
  *  - Ikazuchi: the hands crackle through the seal, then the projectile that
  *    CombatEffects throws is wrapped in lightning along its flight and trails
  *    a forked tail. Its position comes from FLIGHTS, as Signal Fire's fire does.
- *  - 'Setsuna: Tsumuji': both hands live through the blur, brightest as each
+ *  - 'Setsuna: Kazahana': both hands live through the blur, brightest as each
  *    blow lands, leaving streaks where they have been.
  *  - SETSUNA, awakened: arcs hop between the body's own joints on a walk that
  *    changes eight times a second, a rayed crown off the hair, and a faint
@@ -32,7 +32,7 @@ import {struckBody,FIZZLE_REACH} from './signature/struck';
 const clean=(n:string)=>n.toLowerCase().replace(/[^a-z0-9]/g,'');
 const noise=(n:number)=>{const x=Math.sin(n*12.9898+78.233)*43758.5453;return x-Math.floor(x);};
 const salt=(id:string)=>{let h=11;for(let i=0;i<id.length;i++)h=(h*31+id.charCodeAt(i))%9973;return h;};
-/** Setsu's electricity is paler than a Shrike Bolt: nearly white, blue at the edge. */
+/** Setsu's electricity is paler than a Storm Talon: nearly white, blue at the edge. */
 const SETSU={glow:new THREE.Color(.5,.85,2.5),deep:new THREE.Color(.22,.5,2.2),light:new THREE.Color(.55,.8,1.7),halo:new THREE.Color(.12,.3,1.0)};
 type Cast={event:CombatEvent;move:MoveDefinition;ended?:number;trail:string;flight:string;hold?:number;releasedAt?:number;drawn?:number};
 export class SetsuEffects{
@@ -88,7 +88,7 @@ export class SetsuEffects{
         if(seal>.02){kit.ball(f.handR,seal*.85,key,floor,SETSU.glow,SETSU.light,.5);kit.ball(f.handL,seal*.85,key+3,NaN,SETSU.glow,SETSU.light,.5);kit.arc(f.handL,f.handR,kit.tick*5+key,.03*seal,SETSU.deep,seal,2,3,.32);}
       }
       if(s.action==='ultimate'){
-        // Setsuna: Tsumuji. Both hands live through the blur, brightest as
+        // Setsuna: Kazahana. Both hands live through the blur, brightest as
         // each blow lands, and the finisher arrives on a full charge.
         // Round 3d (ULTS): the first SETSUNA strike is the opener; the blur
         // after it is the cinematic's (beats), and one that whiffed goes out

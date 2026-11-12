@@ -19,7 +19,7 @@ const EMOTES: Record<string, { ms: number; screen?: 'focus' | 'page'; html: (who
   'emote-sweat': { ms: 2000, html: () => '<b class="cos-sweat"><i></i></b>' },
   'emote-anger': { ms: 1800, html: () => `<b class="cos-anger">${ANGER}</b>` },
   'emote-sparkle': { ms: 1900, html: () => '<b class="cos-sparkle"><em>キラッ</em><i></i><i></i><i></i></b>' },
-  'emote-menacing': { ms: 2600, html: () => '<b class="cos-menacing"><i>ゴ</i><i>ゴ</i><i>ゴ</i><i>ゴ</i><i>ゴ</i><i>ゴ</i></b>' },
+  'emote-rumble': { ms: 2600, html: () => '<b class="cos-rumble"><i>ゴ</i><i>ゴ</i><i>ゴ</i><i>ゴ</i><i>ゴ</i><i>ゴ</i></b>' },
   'emote-don': { ms: 1700, html: () => '<b class="cos-don">ドン!!</b>' },
   'emote-speed-lines': { ms: 1500, screen: 'focus', html: () => '<b class="cos-focus"></b>' },
   'emote-cover-page': { ms: 2900, screen: 'page', html: who => `<b class="cos-cover">

@@ -1,4 +1,4 @@
-import {BALL_ID, GOAL_RULES, SHOOT, SPIKE_RULES, otherTeam, type BallEvent, type BallModeId, type BallState, type BallTeam} from './model';
+import {BALL_ID, GOAL_RULES, SHOOT, SPIKE_RULES, onCourt, otherTeam, spikeCourt, type BallEvent, type BallModeId, type BallState, type BallTeam} from './model';
 import {stepBall, type BallContact} from './physics';
 import {DRILL_RIVAL, DrillRunner, arc, clearsNet, type DrillHost, type DrillId} from './drills';
 import {MOVES, jumpArc} from '../moves';
@@ -500,16 +500,18 @@ export class BallLesson {
   }
 
   // ─── Sky Spike ────────────────────────────────────────────────────────────────────────────────────────────────────
-  private court(team: BallTeam) {
-    const R = SPIKE_RULES, c = team === 'red' ? -1 : 1;
-    return {R, c, face: c < 0 ? 0 : Math.PI, machine: otherTeam(team)};
+  /** Sky Spike's court for the steps: the ball's (LEARN TO PLAY on the volleyball rules is taught on volleyball's
+   *  court for three a side, BallMatch), its measures in R; `on` carries a spot laid out on the classic court onto it. */
+  private court(team: BallTeam, host?: {readonly ball: BallState}) {
+    const C = spikeCourt(host?.ball), R = {...SPIKE_RULES, courtHalfX: C.x, courtHalfZ: C.z}, c = team === 'red' ? -1 : 1;
+    return {R, c, face: c < 0 ? 0 : Math.PI, machine: otherTeam(team), on: (x: number, z: number) => onCourt(C, x, z)};
   }
   private spikeOpen(host: LessonHost, id: LessonStepId, me: {id: string; team: BallTeam}) {
-    const {R, c, face} = this.court(me.team);
+    const {R, c, face, on} = this.court(me.team, host);
     const far = (x: number, z: number) => host.put(DRILL_RIVAL, x, -c * z, face + Math.PI);
     switch (id) {
-      case 'ss-bump': host.put(me.id, 0, c * 6.5, face); far(0, R.courtHalfZ + .6); break;
-      case 'ss-set': host.put(me.id, 0, c * 4.4, face); far(-3, 5); break;
+      case 'ss-bump': host.put(me.id, 0, c * on(0, 6.5).z, face); far(0, R.courtHalfZ + .6); break;
+      case 'ss-set': host.put(me.id, 0, c * on(0, 4.4).z, face); far(on(-3, 5).x, on(-3, 5).z); break;
       case 'ss-block': {
         const x = this.rand(-2.2, 2.2);
         this.hitter.x = x; this.hitter.z = -c * 3.4;
@@ -520,16 +522,16 @@ export class BallLesson {
         this.dive = this.rng() < .5 ? -1 : 1;
         const x = -this.dive * this.rand(.5, 1.5);
         this.hitter.x = x; this.hitter.z = -c * 3.6;
-        host.put(me.id, 0, c * 6.5, face); far(x, 3.6); break;
+        host.put(me.id, 0, c * on(0, 6.5).z, face); far(x, 3.6); break;
       }
-      default: far(3, 6); break;
+      default: far(on(3, 6).x, on(3, 6).z); break;
     }
   }
   /** The machine's ball for the step, at its serve. */
   private machineBall(host: LessonHost) {
     const me = host.person(), def = this.def;
     if (!me || !def) return;
-    const {R, c, machine} = this.court(me.team), g = R.gravity * (host.ball.grav || 1), at = host.stateOf(me.id) ?? me, them = host.stateOf(DRILL_RIVAL);
+    const {R, c, machine, on} = this.court(me.team, host), g = R.gravity * (host.ball.grav || 1), at = host.stateOf(me.id) ?? me, them = host.stateOf(DRILL_RIVAL);
     this.fresh(); this.fedAt = host.now();
     switch (def.id) {
       case 'ss-bump': {
@@ -543,7 +545,7 @@ export class BallLesson {
       }
       case 'ss-set': {
         // A team-mate's bump from the back of the court up to the person: the first touch spent.
-        const from = {x: at.x + this.rand(-2, 2), y: 1.2, z: c * 9};
+        const from = {x: at.x + this.rand(-2, 2) * on(1, 1).x, y: 1.2, z: c * on(0, 9).z};
         host.feed({ball: {...from, ...arc(from, at.x, 1.7, at.z - c * .25, 1.3, g, R.drag), shot: 'bump'}, team: me.team, touchTeam: me.team, touches: 1});
         return;
       }
@@ -642,11 +644,11 @@ export class BallLesson {
   /** Their hitter's spike, as its swing comes through (`plan`): down from where the ball hangs into the person's court -
    *  through where they stand at the net (BLOCK), or hard and a dive's reach to one side of them (DIVE). */
   private machineSpike(host: LessonHost, team: BallTeam, wide = false) {
-    const R = SPIKE_RULES, b = host.ball, me = host.stateOf(host.person()!.id), c = team === 'red' ? -1 : 1, g = R.gravity * (b.grav || 1);
+    const {R, on} = this.court(team, host), b = host.ball, me = host.stateOf(host.person()!.id), c = team === 'red' ? -1 : 1, g = R.gravity * (b.grav || 1);
     this.hitter.spike = Infinity;
     if (b.held || !me) return;
     const tx = Math.max(-R.courtHalfX + 1, Math.min(R.courtHalfX - 1, me.x + (wide ? this.dive * this.rand(3, 3.5) : this.rand(-.4, .4))));
-    const tz = wide ? c * this.rand(5.8, 7.2) : c * this.rand(3.5, 4.5);
+    const tz = wide ? c * this.rand(on(0, 5.8).z, on(0, 7.2).z) : c * this.rand(3.5, 4.5);
     let t = flat(b, {x: tx, z: tz}) / (wide ? HITTER.drive : HITTER.speed), vel = arc(b, tx, R.ballRadius, tz, t, g, R.drag);
     for (let i = 0; i < 20 && !clearsNet(b, vel, g); i++) { t *= 1.07; vel = arc(b, tx, R.ballRadius, tz, t, g, R.drag); }
     Object.assign(b, vel, {shot: 'spike', heat: Math.max(b.heat, 1.5), lastId: DRILL_RIVAL, lastTeam: otherTeam(team)});

@@ -8,9 +8,9 @@ import { applyOriginalCues } from '../originals/apply';
 import { ORIGINAL_SFX_CUES, applyOriginalSfx } from '../originals/sfx';
 
 export const BASE_CUES = {
-  'koko-hush':'koko-hush.wav','kenzo-eagle':'kenzo-eagle.wav',
+  'koko-slumber':'koko-slumber.wav','kenzo-eagle':'kenzo-eagle.wav',
   'koko-iron-lullaby':'koko-iron-lullaby.wav',
-  'ouga-gale':'ouga-gale.wav',
+  'ouga-throne-wave':'ouga-throne-wave.wav',
   'shirokane-resolve':'shirokane-resolve.wav',
   'kenzo-crossing':'kenzo-crossing.wav','kenzo-dust-sea':'kenzo-dust-sea.wav',
   'nigo-nightfall':'nigo-nightfall.wav','nigo-haizan':'nigo-haizan.wav','nigo-unsealed':'nigo-unsealed.wav',
@@ -19,8 +19,8 @@ export const BASE_CUES = {
   'charge-chi': 'charge-chi.wav', 'release-ki': 'release-ki.wav',
   'energy-tail': 'energy-tail.wav', bomb: 'bomb.wav',
   'taisei-sunpalm-cannon-full': 'taisei-sunpalm-cannon-full.wav',
-  'gummy-snapback':'gummy-snapback.wav', 'gummy-rogue-wave':'gummy-rogue-wave.wav', 'gummy-grand-tide-fist':'gummy-grand-tide-fist.wav',
-  'taisei-spirit': 'taisei-spirit.wav', 'konta-whirlsphere': 'konta-whirlsphere.wav',
+  'gummy-snapback':'gummy-snapback.wav', 'gummy-rogue-wave':'gummy-rogue-wave.wav', 'gummy-spring-tide-fist':'gummy-spring-tide-fist.wav',
+  'taisei-spirit': 'taisei-spirit.wav', 'konta-kazeyose': 'konta-kazeyose.wav',
   'konta-galewheel': 'konta-galewheel.wav',
   'kurobi-link':'kurobi-link.wav','kurobi-taunt':'kurobi-taunt.wav',
   'kurobi-growl':'kurobi-growl.wav','kurobi-bite':'kurobi-bite.wav',
@@ -28,7 +28,7 @@ export const BASE_CUES = {
   'kagari-hinoko':'kagari-hinoko.wav','kagari-yuragi':'kagari-yuragi.wav',
   'ward-crossmatch':'ward-crossmatch.wav','ward-cautery-blade':'ward-cautery-blade.wav','ward-flatline':'ward-flatline.wav','ward-stat-shot':'ward-stat-shot.wav',
   'kuon-gravity':'kuon-gravity.wav','kuon-nova':'kuon-nova.wav','kuon-violet':'kuon-violet.wav','kuon-boundless':'kuon-boundless.wav',
-  'oro-noroma':'oro-noroma.wav','oro-noroma-noroma':'oro-noroma-noroma.wav','oro-the-hour':'oro-the-hour.wav','oro-steamroller':'oro-steamroller.wav',
+  'oro-tick':'oro-tick.wav','oro-tick-tock':'oro-tick-tock.wav','oro-the-hour':'oro-the-hour.wav','oro-hour-of-ruin':'oro-hour-of-ruin.wav',
   'gaunt-scream':'gaunt-scream.wav',
   'setsu-ikazuchi':'setsu-ikazuchi.wav','setsu-gale-step':'setsu-gale-step.wav',
 } as const;

@@ -7,7 +7,7 @@ export const RELEASED_FIGHTERS = [
   'taisei', 'konta', 'gummy', 'kenzo', 'kosho', 'ouga', 'shirokane', 'shiden',
   'koko', 'nigo', 'kagari', 'ward', 'kuon', 'oro', 'gaunt', 'setsu',
   'gorai', 'haldor', 'sorrel', 'dorado', 'shiun', 'magatsu', 'vesper', 'imago',
-  'wuming', 'jirenga', 'jinlin', 'gohaku', 'ippon', 'sekka', 'tobari', 'akagane',
+  'wuming', 'banjaku', 'jinlin', 'gohaku', 'ippon', 'sekka', 'tobari', 'akagane',
   'asahi', 'levin', 'rook', 'gaku', 'strix', 'sorayomi', 'basilissa', 'kuzu', 'shakugo',
   'shanxiao', 'ampere', 'pyroclast', 'full-beam', 'tancho', 'bellows', 'akaito', 'mikage', 'tempo', 'shijima', 'senko', 'adad', 'buna', 'oyashio', 'suzuran', 'wataame', 'kusushi', 'sashigane', 'gosu', 'hakushi', 'barrow', 'unari', 'strappado', 'tokan', 'hikui', 'ume', 'lanthorn', 'highsun',
   'torsion', 'kubiwa', 'onigawara',

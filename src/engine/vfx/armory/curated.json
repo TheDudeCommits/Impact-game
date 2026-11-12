@@ -54,7 +54,7 @@
   "note": "Clones."
  },
  "arts_domain": {
-  "note": "A sealed black dome with a staring eye: a closed field, or Red Moon Reverie. Open to any world."
+  "note": "A sealed black dome with a staring eye: a closed field, or Crow's Nightmare. Open to any world."
  },
  "arts_purple": {
   "worlds": [
@@ -75,13 +75,13 @@
   "worlds": [
    "konta"
   ],
-  "note": "The Shrike Bolt / Sickle Bolt: lightning chirping in one hand."
+  "note": "The Storm Talon / Sickle Bolt: lightning chirping in one hand."
  },
  "ki_spiral": {
   "worlds": [
    "konta"
   ],
-  "note": "The Senpugan: a spinning sphere driven from the palm."
+  "note": "The Kazeyose: a spinning sphere driven from the palm."
  },
  "saga_void_ray": {
   "worlds": [
@@ -409,7 +409,7 @@
   "look": "cel",
   "scale": "large",
   "worlds": [],
-  "note": "A flame-fringed demon mask rising behind the swing: Kenzo's RAKSHASA."
+  "note": "A flame-fringed demon mask rising behind the swing: Kenzo's DUNE ONI."
  },
  "edge_scythe": {
   "materials": [
@@ -508,7 +508,7 @@
   "worlds": [
    "cinder-requiem"
   ],
-  "note": "Shiun's BLACK CONFESSIONAL: a black casket of crawling script, spears driven through."
+  "note": "Shiun's FERMATA: a black casket of crawling script, spears driven through."
  },
  "seal_stringcage": {
   "materials": [
@@ -587,7 +587,7 @@
   "worlds": [
    "gilded"
   ],
-  "note": "MIDNIGHT / HUSH: a colour-inverted sphere and a grey, stopped world."
+  "note": "MIDNIGHT / SLUMBER: a colour-inverted sphere and a grey, stopped world."
  },
  "seal_elasticstrand": {
   "materials": [
@@ -721,7 +721,7 @@
   "worlds": [
    "cinder-requiem"
   ],
-  "note": "Shijima's First Carol: Snow Halo: a snowflake circle on the floor, ice erupting along it."
+  "note": "Shijima's Snow Halo: a snowflake circle on the floor, ice erupting along it."
  },
  "scifi_shieldbubble": {
   "materials": [

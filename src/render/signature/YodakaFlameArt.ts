@@ -14,7 +14,7 @@ import { blowFloor } from './blowFloor';
 
 /** His fire follows the real Sunsteel. Four pools plus two for Owl; no combat writes. */
 export const YODAKA_FLAME_LIMITS = Object.freeze({ tongues: 144, arcs: 72, sparks: 96, hearts: 16, impacts: 24, blooms: 6, confirms: 6, spine: 18 });
-/** Ninth Watch's beats (seconds into the move): the dragon gathers from the first blow and is loosed with the last. */
+/** Nighthawk Star's beats (seconds into the move): the dragon gathers from the first blow and is loosed with the last. */
 export const YODAKA_NINTH = Object.freeze({ confirm: YODAKA_MOVES.ultimate.contacts[0], last: YODAKA_MOVES.ultimate.contacts[3], lunge: .7 });
 const UP = new T.Vector3(0, 1, 0), Z = new T.Vector3(0, 0, 1);
 const SCARLET = new T.Color(0xe73616), GOLD = new T.Color(0xffad25), WHITE = new T.Color(0xfff1c5);
@@ -80,7 +80,7 @@ class FlameBatch {
 type Impact = { actor: string; target: string; born: number; seq: number; final: boolean; seed: number; yaw: number; point: T.Vector3 };
 /** A flower of painted flame opened where a blow landed: `petals` tongues `size` metres long, standing a moment. */
 type Bloom = { p: T.Vector3; yaw: number; born: number; life: number; size: number; petals: number; rise: number; live: boolean };
-/** A confirmed Ninth Watch, from its first blow to the dragon loosed. */
+/** A confirmed Nighthawk Star, from its first blow to the dragon loosed. */
 type Ninth = { actor: string; target: string; seq: number; final: boolean; loosed: number; from: T.Vector3; dir: T.Vector3; reach: number };
 export class YodakaFlameArt {
   private readonly stage: MoveStage;
@@ -119,7 +119,7 @@ export class YodakaFlameArt {
       return;
     }
     if (e.fighter === 'yodaka' && e.kind === 'confirm') {
-      // Ninth Watch has landed its first blow: the dragon gathers until the last (an event may come twice).
+      // Nighthawk Star has landed its first blow: the dragon gathers until the last (an event may come twice).
       const seq = e.actionSeq ?? fighters?.get(e.actorId)?.state.actionSeq ?? -1;
       if (e.slot === 'ultimate' && !e.branch && e.targetId && !armoryDraws(e.fighter, e.slot, e.branch, e.actorId) && !this.ninths.some(n => n.actor === e.actorId && n.seq === seq))
         Object.assign(this.ninths[this.ninthCursor++ % this.ninths.length], { actor: e.actorId, target: e.targetId, seq, final: false, loosed: -Infinity });
@@ -175,7 +175,7 @@ export class YodakaFlameArt {
       if (i) st.shock(ground, FLAME, 4 + i, t, .45);
       return;
     }
-    // NINTH WATCH: NIGHTHAWK STAR. The dragon is loosed along the thrust (drawn every frame it flies: `update`), with the blast
+    // NIGHTHAWK STAR. The dragon is loosed along the thrust (drawn every frame it flies: `update`), with the blast
     // through his victim, a pillar of fire where they stood, and the floor shaken and left burning down its line.
     for (const n of this.ninths) if (n.actor === e.actorId && n.seq === seq) { n.final = true; n.loosed = t; n.from.copy(actor.group.position); n.from.y += 1.3; n.dir.copy(dir); n.reach = n.from.distanceTo(point) + 5; }
     st.erupt(this.c.copy(actor.group.position).setY(actor.group.position.y + 1.2).addScaledVector(dir, .9), this.d.copy(dir).setY(.06).normalize(), FLAME, .75, 12, t, .5);
@@ -190,7 +190,7 @@ export class YodakaFlameArt {
     const b = this.blooms[this.bloomCursor++ % this.blooms.length];
     b.p.copy(p); b.yaw = yaw; b.born = born; b.life = life; b.size = size; b.petals = petals; b.rise = rise; b.live = true;
   }
-  /** The dragon of the Ninth Watch, painted along `spine` (its head first, `count` points of it): a body of flame tongues
+  /** The dragon of the Nighthawk Star, painted along `spine` (its head first, `count` points of it): a body of flame tongues
    *  laid nose to tail, widest behind the head and streaming back; a head of three (the jaws and the crest) with its
    *  eye; and the stage's heat and light on the room round it. */
   private dragon(count: number, girth: number, alpha: number, time: number) {
@@ -356,7 +356,7 @@ export class YodakaFlameArt {
         this.arcs.add(h.point, this.q, radius, radius, SCARLET, fade * .9);
         this.arcs.add(h.point, this.q, radius * .87, radius * .87, WHITE, fade * .7);
       }
-      // Ninth Watch: twin winding flame wakes meet at the confirmed thrust, not at cast start.
+      // Nighthawk Star: twin winding flame wakes meet at the confirmed thrust, not at cast start.
       if (h.final) for (let i = 0; i < (detail ? 16 : 8); i++) {
         const u = i / (detail ? 16 : 8), angle = u * Math.PI * 3 + age * 3;
         this.p.set(Math.sin(angle) * (.14 + u * .5), Math.cos(angle) * (.14 + u * .5), -u * 2.4 * clamp(age * 9));
@@ -396,7 +396,7 @@ export class YodakaFlameArt {
     if (s.action === 'special' && !s.branch) { if (elapsed < SPECIAL.contacts[0]) st.charge(tip, FLAME, .34, elapsed / SPECIAL.contacts[0], seed); return; }
     if (s.action === 'ultimate' && !s.branch && s.confirmedAt === undefined && elapsed < ULT.contacts[0] + .1) st.charge(tip, FLAME, .28, elapsed / ULT.contacts[0], seed);
   }
-  /** Ninth Watch from its first blow to its last: the dragon of painted flame winding up round him, head first and
+  /** Nighthawk Star from its first blow to its last: the dragon of painted flame winding up round him, head first and
    *  longer as it gathers, the floor burning under him, the room gone dark, fire drawn to the blade's point. Round him
    *  at two metres and over his head: the pair is read inside its coils. */
   private gather(actor: Fighter, n: Ninth, elapsed: number, time: number) {

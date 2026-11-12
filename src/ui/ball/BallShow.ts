@@ -30,7 +30,7 @@ export const EYES_AT: Readonly<Partial<Record<FighterId, number>>> = {
   adad: .34, akagane: .34, akaito: .35, akayuri: .38, amagoi: .36, ampere: .38, aqrab: .31, aquilo: .36, asahi: .38, barrow: .29,
   basilissa: .29, bellows: .32, bonsho: .31, bruin: .36, buria: .38, cardo: .36, chohan: .33, dorado: .29, 'full-beam': .28, gaku: .38,
   gaunt: .34, gohaku: .43, gosu: .36, gummy: .39, hagure: .4, hakushi: .29, haldor: .26, hawser: .36, highsun: .24, hikui: .36,
-  hinomoto: .29, hisame: .36, imago: .38, ippon: .29, irbis: .41, jinlin: .35, jirenga: .32, kagari: .38, kenzo: .33, kinu: .42,
+  hinomoto: .29, hisame: .36, imago: .38, ippon: .29, irbis: .41, jinlin: .35, banjaku: .32, kagari: .38, kenzo: .33, kinu: .42,
   koko: .35, konta: .36, kosho: .34, kubiwa: .36, kuon: .35, kusushi: .36, kuzu: .36, lanthorn: .36, levin: .38, madake: .33,
   magatsu: .35, mikage: .43, minase: .4, mizuhiki: .38, murex: .38, nigo: .46, onigawara: .34, oro: .36, ouga: .41, ovid: .42,
   oyashio: .33, psyche: .36, pyroclast: .38, rook: .36, rotfalke: .42, sashigane: .36, sekka: .43, senko: .33, setsu: .4,

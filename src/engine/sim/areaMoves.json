@@ -16,7 +16,7 @@
   },
   "konta": {
     "element": "windwater",
-    "name": "Wind Art: Senpu Shigure",
+    "name": "Fox Wedding",
     "damage": 224,
     "radius": 4,
     "outcome": "launch",
@@ -25,11 +25,11 @@
       "telegraph": 0.8,
       "look": "rain",
       "anim": {
-        "clip": "Whirlsphere charge Clone"
+        "clip": "Kazeyose charge Clone"
       },
-      "voice": "vo-konta-great-whirlsphere",
+      "voice": "vo-konta-great-kazeyose",
       "ja": "風術・旋風時雨",
-      "card": "Senpu Shigure"
+      "card": "Fox Wedding"
     }
   },
   "gummy": {
@@ -85,7 +85,7 @@
     }
   },
   "ouga": {
-    "name": "Haou Ryuusei",
+    "name": "Falling Crown",
     "damage": 40,
     "radius": 4,
     "outcome": "launch",
@@ -102,7 +102,7 @@
     "finisherDamage": 60
   },
   "shirokane": {
-    "name": "Ash Art: Great Dust Fall",
+    "name": "Dust Curtain",
     "damage": 208,
     "radius": 3.8,
     "outcome": "launch",
@@ -111,14 +111,14 @@
       "telegraph": 0.75,
       "look": "pillar",
       "anim": "special",
-      "voice": "vo-shirokane-dust-fall",
+      "voice": "vo-shirokane-dust-curtain",
       "ja": "灰遁・大塵瀑",
-      "card": "Dust Fall"
+      "card": "Dust Curtain"
     }
   },
   "shiden": {
     "element": "fire",
-    "name": "Cinder Art: Pyre Crow Technique",
+    "name": "Pyre Crow Technique",
     "damage": 196,
     "radius": 4,
     "outcome": "launch",
@@ -135,9 +135,9 @@
         "from": "akagane",
         "slot": "special"
       },
-      "voice": "vo-shiden-great-blaze",
+      "voice": "vo-shiden-hawkstorm",
       "ja": "霆遁・大雷球",
-      "card": "Thunderball"
+      "card": "Hawkstorm"
     }
   },
   "koko": {
@@ -228,7 +228,7 @@
   },
   "ward": {
     "element": "slash",
-    "name": "THEATRE: Lift",
+    "name": "Crash Cart",
     "damage": 180,
     "radius": 4,
     "outcome": "crumple",
@@ -274,7 +274,7 @@
   },
   "tobari": {
     "element": "fire",
-    "name": "Cinder Art: Pyre Crow Technique",
+    "name": "Pyre Crow Technique",
     "damage": 192,
     "radius": 4.4,
     "outcome": "launch",
@@ -291,7 +291,7 @@
         "from": "akagane",
         "slot": "special"
       },
-      "voice": "vo-tobari-great-blaze",
+      "voice": "vo-tobari-great-ember",
       "ja": "鴉遁・大燼",
       "card": "Great Ember"
     }
@@ -367,7 +367,7 @@
       "telegraph": 0.75,
       "look": "burst",
       "anim": {
-        "clip": "Shattering Blossom"
+        "clip": "Petal Quake"
       },
       "voice": "vo-ume-earthbloom",
       "ja": "大地咲き"
@@ -510,7 +510,7 @@
       "telegraph": 0.7,
       "look": "burst",
       "anim": {
-        "clip": "Darting Flock"
+        "clip": "Darting Gusts"
       },
       "voice": "vo-aquilo-tornado-tower",
       "ja": "疾風の眼"
@@ -906,7 +906,7 @@
       "telegraph": 0.8,
       "look": "zone",
       "anim": {
-        "clip": "Sinkhole Crash"
+        "clip": "Tar Pit Crash"
       },
       "voice": "vo-barrow-wrecker-s-haul",
       "ja": "引き揚げ",
@@ -915,7 +915,7 @@
   },
   "yodaka": {
     "element": "slash",
-    "name": "Fifth Watch: Fire Owl",
+    "name": "Fire Owl",
     "duration": 1.42,
     "contacts": [
       0.72
@@ -1090,7 +1090,7 @@
   },
   "wataame": {
     "element": "explosion",
-    "name": "Lie In",
+    "name": "Day Off",
     "damage": 216,
     "radius": 3.8,
     "outcome": "launch",
@@ -1101,7 +1101,7 @@
       "anim": {
         "clip": "Go Dutch"
       },
-      "voice": "vo-wataame-lie-in",
+      "voice": "vo-wataame-day-off",
       "ja": "朝寝坊"
     }
   },
@@ -1193,7 +1193,7 @@
   },
   "shijima": {
     "element": "fire",
-    "name": "Hymn 27: Blue Pyre",
+    "name": "Blue Pyre",
     "damage": 200,
     "radius": 3.6,
     "outcome": "launch",
@@ -1211,7 +1211,7 @@
   },
   "akaito": {
     "element": "summon",
-    "name": "Ghost Bride",
+    "name": "Red Thread Shade",
     "damage": 220,
     "radius": 4.0,
     "outcome": "launch",
@@ -1222,7 +1222,7 @@
       "anim": {
         "clip": "Echoed Vow"
       },
-      "voice": "vo-akaito-ghost-bride-come",
+      "voice": "vo-akaito-shade-come",
       "ja": "冥婚"
     }
   },
@@ -1495,7 +1495,7 @@
   },
   "shiun": {
     "element": "lightning",
-    "name": "Hymn 7: Storm Psalm",
+    "name": "Storm Psalm",
     "damage": 216,
     "radius": 3.8,
     "outcome": "stagger",
@@ -1506,7 +1506,7 @@
       "anim": {
         "clip": "Presence Turn"
       },
-      "voice": "vo-shiun-thunder-hymn",
+      "voice": "vo-shiun-storm-psalm",
       "ja": "聖歌七番・嵐の詩篇",
       "card": "Storm Psalm"
     }
@@ -1573,14 +1573,14 @@
       "telegraph": 0.8,
       "look": "pillar",
       "anim": {
-        "clip": "Dusk Rush 5"
+        "clip": "Weeding Rush 5"
       },
       "voice": "vo-wuming-gods-wrath",
       "ja": "裁きの蓮",
       "card": "Verdict"
     }
   },
-  "jirenga": {
+  "banjaku": {
     "element": "explosion",
     "name": "Immovable Barrage",
     "damage": 216,
@@ -1591,9 +1591,9 @@
       "telegraph": 0.65,
       "look": "burst",
       "anim": {
-        "clip": "Pride Rush 3"
+        "clip": "Bedrock Rush 3"
       },
-      "voice": "vo-jirenga-strength-absolute",
+      "voice": "vo-banjaku-strength-absolute",
       "ja": "不動連撃",
       "card": "Immovable"
     }
@@ -1635,7 +1635,7 @@
   },
   "ippon": {
     "element": "strength",
-    "name": "All-Nighter Desk Flip",
+    "name": "Overtime Mop-Up",
     "damage": 220,
     "radius": 4.2,
     "outcome": "launch",
@@ -1653,7 +1653,7 @@
   },
   "sekka": {
     "element": "strength",
-    "name": "Shatter Art: Snowcrush",
+    "name": "Snowcrush",
     "damage": 216,
     "radius": 4.0,
     "outcome": "knockdown",

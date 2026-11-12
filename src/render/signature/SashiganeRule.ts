@@ -81,7 +81,7 @@ export class SashiganeRule{
    return;
   }
   if(e.slot==='heavy'){
-   // GOLDEN SECTION: the body broken from the break point: cracks in the air across it, a ring over the floor.
+   // STRESS TEST: the body broken from the break point: cracks in the air across it, a ring over the floor.
    const big=e.branch?.8:1;
    // (Kept under a metre and under half a second: the body it throws is read again a quarter of a second after.)
    st.shatter(point,dir,CRITICAL,2.2*big,t,.38);

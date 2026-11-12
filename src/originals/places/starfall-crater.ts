@@ -235,7 +235,7 @@ function ruins(c: DressContext) {
   kit.shadows.add('own/ash-gatehouse').add('own/cinder-columns').add('own/ash-torchbearer').add('own/cinder-nave');
 }
 
-/** The Hidden Ash's banners on poles snapped and charred, round the floor past the fight. */
+/** Ashwood's banners on poles snapped and charred, round the floor past the fight. */
 function banners(c: DressContext) {
   const banner = ashBanner();
   for (const [x, z] of [[-44, 12], [41, -20], [12, 45], [-26, -40], [40, 30]] as const) c.ambient.cloth(banner, { x, y: 4.2, z, width: 1.3, height: 1.9, rot: Math.atan2(-x, -z), wind: .5, lit: .35 });

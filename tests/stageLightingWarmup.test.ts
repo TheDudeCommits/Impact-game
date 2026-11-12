@@ -10,15 +10,15 @@ it('compiles against the destination lights, restoring live visibility before an
   scene.add(harbor, village);
   const build = vi.spyOn(stages as unknown as { build: (id: string) => Promise<unknown> }, 'build');
   build.mockImplementation(async id => ({ root: id === 'harbor' ? harbor : village, occluders: [] }));
-  await stages.preload('harbor'); await stages.preload('hidden-ash');
+  await stages.preload('harbor'); await stages.preload('ashwood');
   const visibleLights = () => { const lights: THREE.Object3D[] = []; scene.traverseVisible(o => { if (o instanceof THREE.Light) lights.push(o); }); return lights; };
   expect(visibleLights()).toEqual([oldLight]);
-  const pending = stages.withStageLighting('hidden-ash', () => {
+  const pending = stages.withStageLighting('ashwood', () => {
     expect(visibleLights()).toEqual([streetA, streetB]);
     return Promise.resolve().then(() => expect(visibleLights()).toEqual([oldLight]));
   });
   expect(visibleLights()).toEqual([oldLight]); await pending;
-  expect(() => stages.withStageLighting('hidden-ash', () => { throw new Error('compiler failed'); })).toThrow('compiler failed');
+  expect(() => stages.withStageLighting('ashwood', () => { throw new Error('compiler failed'); })).toThrow('compiler failed');
   expect(visibleLights()).toEqual([oldLight]);
   expect(stages.current).toBeNull();
   build.mockRestore();

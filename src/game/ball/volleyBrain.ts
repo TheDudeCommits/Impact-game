@@ -1,7 +1,8 @@
 import {jumpArc} from '../moves';
 import type {PlayerInput, PlayerState} from '../types';
-import {BALL_ID, SPIKE_RULES, type BallSeat, type BallTeam, type BallView} from './model';
+import {BALL_ID, SPIKE_RULES, onCourt, spikeCourt, type BallSeat, type BallTeam, type BallView} from './model';
 import {sideOf} from './physics';
+import {SPIKE_DIG} from './strike';
 import {VOLLEY, type Volley} from './volley';
 
 /** VOLLEYBALL's bots (volley.ts; behind `?volleyball`): team-mates and rivals who play volleyball by the
@@ -18,7 +19,10 @@ import {VOLLEY, type Volley} from './volley';
 export const VOLLEY_BOT = {
   sigma: {easy: .14, normal: .08, hard: .045} as Record<string, number>,
   /** How long after the other side's touch a bot moves for the ball (s), by level. */
-  react: {easy: .3, normal: .2, hard: .14} as Record<string, number>, spikeRead: .35,
+  react: {easy: .3, normal: .2, hard: .14} as Record<string, number>, spikeRead: 1,
+  /** A PERFECT SPIKE is read this many times the bot's reaction (not `spikeRead` of it): too fast to read off the
+   *  swing, it is dug where it is hit at a defender, not chased down. */
+  perfectRead: 1.3,
   /** A hitter's jump against the set's best moment, by level: on time (within `onTime` s) for `perfect` of its spikes -
    *  about a third of EASY's, half of NORMAL's, two thirds of HARD's, from the top of the jump (PERFECT) - and otherwise
    *  `offFrom`-`offTo` s late: still a spike, GOOD, struck on the way up. (Early is no lever: the top of a jump is broad
@@ -33,12 +37,22 @@ export const VOLLEY_BOT = {
    *  face), of attacks TIPped when a block is up across, and of full meters spent on the SUPER SHOT. */
   place: {easy: 0, normal: .4, hard: .8} as Record<string, number>,
   tip: {easy: 0, normal: .12, hard: .25} as Record<string, number>,
+  /** The rivals attack in different ways by level (volleyball's court only): the share of attacks TIPped short
+   *  whatever is up across (`tipAny`), and of a setter's sets on a side with no person in it that are a QUICK SET - the
+   *  middle's quick attack, a step from the setter - instead of the high ball to a wing (`quick`). */
+  tipAny: {easy: 0, normal: .07, hard: .12} as Record<string, number>,
+  quick: {easy: 0, normal: .12, hard: .25} as Record<string, number>, quickNear: 2.6,
+  /** The share of spikes hit round a person's block up in front - a sharp cross, short, to the far side of the
+   *  court from the hitter - by level (a block that always meets the ball it can reach is beaten by aim). */
+  around: {easy: .25, normal: .5, hard: .75} as Record<string, number>,
   super: {easy: .5, normal: .7, hard: .9} as Record<string, number>,
   /** The block by level: the share of the other side's attacks a front-row bot goes up for, its spot `blockZ`
    *  off the net, and its jump's timing error (the timing's sigma times `blockSigma`). */
   block: {easy: .07, normal: .15, hard: .24} as Record<string, number>,
   /** A bot's DIVE (the dash) at a ball of its own just out of reach, by level: whether it dives at all. */
   dive: {easy: false, normal: true, hard: true} as Record<string, boolean>,
+  /** Whether it dives for a hard ball (a spike, a JUMP SERVE) on volleyball's court, by level. */
+  diveHard: {easy: false, normal: false, hard: true} as Record<string, boolean>,
   blockZ: .7, blockSigma: 1.2, blockFrom: 6.5,
   /** The share of a bot's blocks jumped on time (a STUFF BLOCK's), by level; the rest `blockLate` s late (a soft one's). */
   blockOnTime: {easy: .3, normal: .45, hard: .55} as Record<string, number>, blockLate: [.2, .3] as const,
@@ -66,13 +80,18 @@ export class VolleyBrain {
     // (The other side's touch read a moment late: until then the bot holds where it was going.)
     const touchKey = `${b.lastId}|${b.lastTeam}|${view.rally}|${view.touches}`;
     // (A spike is read off the hitter's swing, mostly before it is struck: `spikeRead` of the delay.)
-    if (touchKey !== this.readKey) { this.readKey = touchKey; this.readAt = b.lastTeam && b.lastTeam !== team ? now + (VOLLEY_BOT.react[level] ?? .2) * (.8 + V.draw() * .4) * (b.shot === 'spike' || b.super ? VOLLEY_BOT.spikeRead : 1) : now; }
+    // (And a person's BLOCK TOUCH off their own side's hands, as a spike.)
+    const deflected = b.shot === 'block' && now - V.deflectedAt < .1;
+    if (touchKey !== this.readKey) { this.readKey = touchKey; this.readAt = (b.lastTeam && b.lastTeam !== team) || deflected ? now + (VOLLEY_BOT.react[level] ?? .2) * (.8 + V.draw() * .4) * (b.shot === 'spike' || b.super || deflected ? V.hot ? VOLLEY_BOT.perfectRead : VOLLEY_BOT.spikeRead : 1) : now; }
     if (now < this.readAt) { input.moveX = this.held.x; input.moveZ = this.held.z; return {command: input}; }
     if (mine && plan) {
       if (plan.air) return this.attack(me, seat, view, now, input, sigma);
       const far = this.run(me, plan, input, .15);
       // (A ball of its own it cannot run to in time, low and a dive away: the DIVE - the dash, the same as a person's.)
-      if (VOLLEY_BOT.dive[level] && plan.touch === 1 && far >= VOLLEY.dive.from && far <= VOLLEY.dive.to && plan.at - now < .3 && me.grounded) input.dash = true;
+      // (On volleyball's court a spike or a JUMP SERVE a dive away is HARD's to dive for - NORMAL's lets it go: a
+      // spike that beats the defence is the point, and the rally is back to a volleyball rally's length.)
+      const hard = Math.hypot(b.vx, b.vy, b.vz) >= SPIKE_DIG.from && V.court !== spikeCourt() && !VOLLEY_BOT.diveHard[level];
+      if (VOLLEY_BOT.dive[level] && !hard && plan.touch === 1 && far >= VOLLEY.dive.from && far <= VOLLEY.dive.to && plan.at - now < .3 && me.grounded) input.dash = true;
       const key = `${plan.touch}|${b.lastId}|${view.rally}|${view.touches}`;
       if (key !== this.playKey) { this.playKey = key; this.err = gauss(() => V.draw()) * sigma; this.pressed = 0; }
       if (this.pressed < 1 && now >= plan.at - VOLLEY.contact + this.err - 1e-6) {
@@ -89,7 +108,14 @@ export class VolleyBrain {
   /** Where the stick points as the bot presses: a set by the setter's pick (at rest), the spike or OVER into the open
    *  zone (at rest too: its aim already faces it), a serve at a deep corner. */
   private aim(seat: BallSeat, touch: number, me: PlayerState, view: BallView): {x: number; z: number} | undefined {
-    void seat; void touch; void me; void view;
+    void me;
+    // (By level, a setter with no person on its side sets the QUICK now and then - the stick toward the net.)
+    const V = this.volley;
+    // (Only with a hitter a stride or two from the QUICK's spot: from further off the quick is never met.)
+    if (touch === 2 && V.court !== spikeCourt() && !view.seats.some(q => q.team === seat.team && !q.bot) && V.draw() < (VOLLEY_BOT.quick[V.levelOf(this.id)] ?? 0)) {
+      const q = V.spots(seat.team, view.ball.x).quick;
+      if (view.seats.some(o => o.team === seat.team && o.id !== this.id && (() => { const p = V.bodyOf(o.id); return !!p && Math.hypot(p.x - q.x, p.z - q.z) <= VOLLEY_BOT.quickNear; })())) return {x: 0, z: seat.team === 'red' ? 1 : -1};
+    }
     return {x: 0, z: 0};
   }
   /** The hitter a set is laid for: a stride behind its spot, the jump timed to meet it, PLAY in the air. */
@@ -123,7 +149,10 @@ export class VolleyBrain {
       const level = V.levelOf(this.id), r = V.draw();
       const blockUp = [...view.seats].some(q => { if (q.team === seat.team) return false; const p = V.bodyOf(q.id); return !!p && !p.grounded && Math.abs(p.z) < 1.6 && Math.abs(p.x - plan.x) < 2; });
       if (me.ultimate >= 100 && r < (VOLLEY_BOT.super[level] ?? .7)) { input.attack = 'ultimate'; return {command: input, aim: {x: 0, z: 0}}; }
-      input.attack = blockUp && r < (VOLLEY_BOT.tip[level] ?? 0) ? 'heavy' : 'light';
+      input.attack = (blockUp && r < (VOLLEY_BOT.tip[level] ?? 0)) || (V.court !== spikeCourt() && V.draw() < (VOLLEY_BOT.tipAny[level] ?? 0)) ? 'heavy' : 'light';
+      // (A person up at the net in front - round them, by level: the sharp cross.)
+      const person = view.seats.some(q => q.team !== seat.team && !q.bot && (() => { const p = V.bodyOf(q.id); return !!p && Math.abs(p.z) < 2 && Math.abs(p.x - plan.x) < 2.5; })());
+      if (input.attack === 'light' && person && V.court !== spikeCourt() && V.draw() < (VOLLEY_BOT.around[level] ?? 0)) return {command: input, aim: {x: plan.x > 0 ? -1 : 1, z: seat.team === 'red' ? -1 : 1}};
       return {command: input, aim: input.attack === 'light' && V.draw() < (VOLLEY_BOT.place[level] ?? 0) ? this.openZone(seat, view) : {x: 0, z: 0}};
     }
     return {command: input};
@@ -133,7 +162,8 @@ export class VolleyBrain {
     const far = -own(seat.team), V = this.volley;
     let best = {x: 0, z: 0}, bestD = -1;
     for (const a of [-1, 0, 1]) for (const f of [-1, 0, 1]) {
-      const x = a * 5.2, z = far * (f > 0 ? 8.6 : f < 0 ? 2.6 : 5);
+      // (The zones of the court in play - volleyball's for three a side carried from the classic's.)
+      const at = onCourt(V.court, a * 5.2, f > 0 ? 8.6 : f < 0 ? 2.6 : 5), x = at.x, z = far * at.z;
       let d = 9;
       for (const q of view.seats) { if (q.team === seat.team) continue; const p = V.bodyOf(q.id); if (p) d = Math.min(d, Math.hypot(p.x - x, p.z - z)); }
       // (The stick as PLACE reads it: across is the world's x, toward the far court is red's +z and blue's -z.)
@@ -177,15 +207,17 @@ export class VolleyBrain {
     const bots = view.seats.filter(q => q.team === team && q.bot && q.id !== V.owner).map(q => q.id).sort((x, y) => (V.bodyOf(x)?.x ?? 0) - (V.bodyOf(y)?.x ?? 0));
     // The block: the other side's set is up - a front-row bot goes up for it by its level (its read once a set).
     const theirSet = V.lastSet && V.lastSet.team !== team && plan?.team === V.lastSet.team && plan.touch === SPIKE_RULES.touches ? V.lastSet : null;
+    const C = V.court, at = (x: number, z: number) => onCourt(C, x, z), edge = C.x - 1.5;
     if (theirSet && `${theirSet.at}` !== this.blockKey) {
       this.blockKey = `${theirSet.at}`;
-      const spotB = {x: Math.max(-6, Math.min(6, theirSet.x)), z: s * B.blockZ};
-      this.blocking = Math.hypot(me.x - spotB.x, me.z - spotB.z) < B.blockFrom && V.draw() < (B.block[level] ?? .5);
+      const spotB = {x: Math.max(-edge, Math.min(edge, theirSet.x)), z: s * B.blockZ};
+      // (A side with a person in it leaves the block to them - the walk brings them to it: volley.ts personSpot.)
+      this.blocking = Math.hypot(me.x - spotB.x, me.z - spotB.z) < B.blockFrom && V.draw() < (B.block[level] ?? .5) && !(V.court !== spikeCourt() && view.seats.some(q => q.team === team && !q.bot));
       // (On time - a STUFF BLOCK's jump - for a level's share; otherwise a step late, a soft block's.)
       this.blockErr = V.draw() < (B.blockOnTime[level] ?? .45) ? gauss(() => V.draw()) * (B.sigma[level] ?? .08) * B.blockSigma : B.blockLate[0] + V.draw() * (B.blockLate[1] - B.blockLate[0]);
     }
     if (theirSet && this.blocking) {
-      const spotB = {x: Math.max(-6, Math.min(6, theirSet.x)), z: s * B.blockZ}, arc = jumpArc(me.fighter);
+      const spotB = {x: Math.max(-edge, Math.min(edge, theirSet.x)), z: s * B.blockZ}, arc = jumpArc(me.fighter);
       // (Up at the top of the jump as the spike crosses: a breath after the set's best moment.)
       const jumpAt = theirSet.best + .08 - arc.rise + this.blockErr;
       // (Only from the spot: a jump short of the net blocks nothing.)
@@ -198,18 +230,18 @@ export class VolleyBrain {
     // (Defence: the other side's attack coming - the line and the cross a little deep, the setter in for the TIP.)
     const defending = !!theirSet || (b.lastTeam !== team && (b.shot === 'spike' || b.super) && sideOf(b.z) !== team);
     if (defending && !personSets) {
-      const sx = theirSet ? Math.max(-5, Math.min(5, theirSet.x)) : b.x;
-      spot = setter ? {x: sx * .3, z: s * 3.2} : {x: side * 3.4 + sx * .25, z: s * (side * sx > 0 ? 4.6 : 6.4)};
+      const sx = theirSet ? Math.max(-at(5, 0).x, Math.min(at(5, 0).x, theirSet.x)) : b.x;
+      spot = setter ? {x: sx * .3, z: s * at(0, 3.2).z} : {x: at(side * 3.4, 0).x + sx * .25, z: s * at(0, side * sx > 0 ? 4.6 : 6.4).z};
       this.run(me, spot, input, .35); input.yaw = Math.atan2(b.x - me.x, b.z - me.z);
       return;
     }
-    if (personSets) spot = {x: (bots.indexOf(this.id) === 0 ? -1 : 1) * VOLLEY.set.wing, z: s * B.approachZ};
+    if (personSets) spot = {x: (bots.indexOf(this.id) === 0 ? -1 : 1) * V.wing, z: s * at(0, B.approachZ).z};
     else if (setter) spot = {x: VOLLEY.pass.x * -s, z: s * (touch >= 1 ? B.setZ : 1.5)};
-    else if (touch === 2) spot = {x: side * VOLLEY.set.wing, z: s * B.approachZ};
+    else if (touch === 2) spot = {x: side * V.wing, z: s * at(0, B.approachZ).z};
     // (Cover: round the hitter as the attack goes, for a ball the block sends back.)
-    else if (touch === 3 && V.lastSet) spot = {x: V.lastSet.x * .5 + side * 1.4, z: s * (setter ? B.coverZ : B.coverBack)};
-    else if (touch === 1) spot = {x: side * B.wide, z: s * B.deep};
-    else spot = {x: side * 3.5, z: s * (sideOf(b.z) === team ? B.deep : B.defZ)};
+    else if (touch === 3 && V.lastSet) spot = {x: V.lastSet.x * .5 + side * 1.4, z: s * at(0, setter ? B.coverZ : B.coverBack).z};
+    else if (touch === 1) spot = {x: at(side * B.wide, 0).x, z: s * at(0, B.deep).z};
+    else spot = {x: at(side * 3.5, 0).x, z: s * at(0, sideOf(b.z) === team ? B.deep : B.defZ).z};
     this.run(me, spot, input, .35);
     input.yaw = Math.atan2(b.x - me.x, b.z - me.z);
   }

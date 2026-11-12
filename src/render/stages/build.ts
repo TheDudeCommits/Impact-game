@@ -246,7 +246,7 @@ export class ModelProbe {
 }
 
 /** A blossom atlas turned to leaves: the colour remapped by its brightness
- *  between a shade and a lit green (how the Hidden Ash's garden trees are
+ *  between a shade and a lit green (how Ashwood's garden trees are
  *  graded, ObjectiveScenery). */
 export function leafGreen(material: THREE.MeshStandardMaterial, [dark, light]: [number, number]) {
   const a = new THREE.Color(dark), b = new THREE.Color(light);

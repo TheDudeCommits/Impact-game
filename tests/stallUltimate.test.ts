@@ -17,7 +17,7 @@ import type { FighterId, GameSnapshot, PlayerInput } from '../src/game/types';
  * running move's with it - so that one command stays one tick. That hold is
  * bounded (0.35 s, so withholding packets cannot freeze a wind-up), and past
  * the bound the move was THROWN AWAY: a 0.4 s hitch, or four 0.15 s ones
- * spread over Grand Tide's five-second wind-up, and the ultimate - its bar
+ * spread over Spring Tide's five-second wind-up, and the ultimate - its bar
  * already spent - was gone. Past the bound the move now plays out on the
  * world's clock instead, and a press waiting for the move to end waits with
  * it.
@@ -104,7 +104,7 @@ describe('an ultimate is never lost to a client stall', () => {
   });
 
   it('a stalled client and the server agree on the ultimate after the burst (rollback replay)', () => {
-    // The page stops for 0.4 s after pressing Grand Tide, sends a catch-up
+    // The page stops for 0.4 s after pressing Spring Tide, sends a catch-up
     // burst, and goes on. The server's queue, the local prediction and the
     // reconcile run as in the browser.
     for (const fighter of ['gummy', 'nigo'] as FighterId[]) {

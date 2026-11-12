@@ -107,18 +107,18 @@ describe('a launched coat (cloth2)', () => {
   });
 });
 
-describe('Jirenga\'s robe on the floor and in the stride (polish7)', () => {
+describe('Banjaku\'s robe on the floor and in the stride (polish7)', () => {
   it('clears his trousers, keeps off the floor, and keeps its air settings down; no other coat does', () => {
-    const coat = SPRING_PROFILES.jirenga?.chains?.find(c => String(c.match).includes('Detail_CLOTH_Coat_'))?.profile;
+    const coat = SPRING_PROFILES.banjaku?.chains?.find(c => String(c.match).includes('Detail_CLOTH_Coat_'))?.profile;
     expect(coat?.legs).toEqual({ thigh: .18, shin: .17, floor: .04 });
     expect(coat?.launched).toEqual(LAUNCHED_COAT);
-    expect(coatFlownWhileDown('jirenga')).toBe(true);
+    expect(coatFlownWhileDown('banjaku')).toBe(true);
     const floored = Object.entries(ORIGINALS).filter(([id]) => coatFlownWhileDown(id)).map(([id]) => id);
-    expect(floored).toEqual(['jirenga']);
+    expect(floored).toEqual(['banjaku']);
     // Kenzo (his oni form shares his springs) and Barrow are never touched.
     expect(coatFlownWhileDown('kenzo')).toBe(false);
     expect(coatFlownWhileDown('barrow')).toBe(false);
-    for (const [id, original] of Object.entries(ORIGINALS)) if (original?.coat && id !== 'jirenga')
+    for (const [id, original] of Object.entries(ORIGINALS)) if (original?.coat && id !== 'banjaku')
       expect(SPRING_PROFILES[id as FighterId]?.chains?.find(c => String(c.match).includes('Detail_CLOTH_Coat_'))?.profile.legs?.floor, id).toBe(.015);
   });
 });

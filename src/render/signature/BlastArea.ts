@@ -3,7 +3,7 @@ import type { Fighter } from '../Fighter';
 
 /** Round 3d (ULTS): the area ultimates' blast, marked on the floor.
  *
- *  The LAST SUN, the Kitsunebi-Dama and Kagari's Taiyou-Dama hit everyone
+ *  The LAST SUN, the Azure Foxfire and Kagari's Taiyou-Dama hit everyone
  *  inside their blast, and the simulation fixes where that is on the cast:
  *  the body it was thrown at, or its range ahead (`endpoint`), with the move's
  *  radius round it. From the cast to the blast the floor there carries a ring

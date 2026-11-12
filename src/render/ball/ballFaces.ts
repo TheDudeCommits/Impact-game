@@ -88,7 +88,7 @@ export const FACE_FIT: Readonly<Partial<Record<string, FaceFit>>> = {
   ippon: {eye: -.15, apart: .55, mouth: -1.2, wide: .3, chin: -1.85},
   irbis: {eye: -.75, apart: .5, mouth: -1.1, wide: .3, chin: -1.25, mouthless: true},
   jinlin: {eye: -.1, apart: .55, mouth: -1.03, wide: .4, chin: -1.45},
-  jirenga: {eye: -.1, apart: .45, mouth: -.95, wide: .4, chin: -1.5},
+  banjaku: {eye: -.1, apart: .45, mouth: -.95, wide: .4, chin: -1.5},
   kagari: {eye: -.15, apart: .55, mouth: -.85, wide: .3, chin: -1.35},
   kenzo: {eye: -.35, apart: .45, mouth: -1.25, wide: .25, chin: -1.55, mouthless: true},
   kinu: {eye: -.08, apart: .6, mouth: -1.02, wide: .3, chin: -1.35},

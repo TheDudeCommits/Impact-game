@@ -24,8 +24,8 @@ afterEach(() => { setActiveKit(undefined, 'taisei'); });
 describe('house kits in the simulation', () => {
   it('puts each pick into MOVES from the authored tables, so a swap both ways neither chains nor loops', () => {
     expect([...HOUSE_APPLIED].sort()).toEqual(['ouga.special', 'taisei.area', 'taisei.special']);
-    // Taisei throws Ouga's own special (Shikou-Ha, 128); Ouga throws Taisei's own (Sunpalm Cannon, 122), tuned up by its pick.
-    expect(MOVES.taisei.special).toMatchObject({ name: 'Shikou-Ha', damage: 128 });
+    // Taisei throws Ouga's own special (Throne Wave, 128); Ouga throws Taisei's own (Sunpalm Cannon, 122), tuned up by its pick.
+    expect(MOVES.taisei.special).toMatchObject({ name: 'Throne Wave', damage: 128 });
     expect(MOVES.ouga.special).toMatchObject({ name: 'Sunpalm Cannon', damage: Math.round(122 * 1.1) });
     // Magatsu's area move, timed to the look the pick gives it (round 3): an unmeasured look strikes once, with all of it.
     expect(MOVES.taisei.area).toEqual(tuneMove(areaMoveOf('magatsu'), { fx: { effect: 'test-burst' } }));
@@ -41,7 +41,7 @@ describe('house kits in the simulation', () => {
   it('throws the house move in a match', () => {
     const sim = new ArenaSimulation({ seed: 3, trainingBot: false });
     sim.addPlayer('g', 'taisei', 'Taisei', false, { x: 0, y: 0, z: 0 });
-    sim.addPlayer('d', 'jirenga', 'Dummy', false, { x: 0, y: 0, z: 8 });
+    sim.addPlayer('d', 'banjaku', 'Dummy', false, { x: 0, y: 0, z: 8 });
     sim.startMatch();
     const events: CombatEvent[] = [];
     let seq = 1;
@@ -60,9 +60,9 @@ describe('house kits in the simulation', () => {
     expect(budget(own)).toBeCloseTo(1, 10);
     const session = new ForgeSession();
     const before = MOVES.taisei.special;
-    const kit: ForgeKit = { ...own, slots: { ...own.slots, special: { from: 'jirenga', fromSlot: 'special' } } };
+    const kit: ForgeKit = { ...own, slots: { ...own.slots, special: { from: 'banjaku', fromSlot: 'special' } } };
     expect(session.apply(kit)).toEqual({ ok: true });
-    expect(MOVES.taisei.special.name).toBe(simSpec('jirenga')!.kit.slots.special.name);
+    expect(MOVES.taisei.special.name).toBe(simSpec('banjaku')!.kit.slots.special.name);
     expect(MOVES.taisei.area).toEqual(tuneMove(areaMoveOf('magatsu'), { fx: { effect: 'test-burst' } }));
     session.restore();
     expect(MOVES.taisei.special).toBe(before);

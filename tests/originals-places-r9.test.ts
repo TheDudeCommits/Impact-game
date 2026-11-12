@@ -27,7 +27,7 @@ describe('r9: the last places on the earlier model, and Last Stand\'s backdrop',
     expect(text).toMatch(/export async function lastStandBackdrop\(/);
     expect(text).toMatch(/new Forge\(/);
     expect(text).not.toMatch(/GLTFLoader|\.glb|fillText|strokeText/);
-    const host = fs.readFileSync('src/render/objectives/HiddenAshVillage.ts', 'utf8');
+    const host = fs.readFileSync('src/render/objectives/AshwoodVillage.ts', 'utf8');
     expect(host).toMatch(/if\(await lastStandBackdrop\(this\.root\)\)return;/);
   });
 

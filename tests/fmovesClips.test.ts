@@ -53,7 +53,7 @@ describe('the new takes', () => {
     for (const [id, clip, length] of KEPT) expect(rigs.get(id)!.animations.find(c => c.name === clip)?.duration, `${id} ${clip}`).toBeCloseTo(length, 2);
   });
 
-  it('Gaunt\' HOUND ARMOR, which has no new take, throws its own Scrap Cannon Arm', async () => {
+  it('Gaunt\' GRAVE PLATE, which has no new take, throws its own Scrap Cannon Arm', async () => {
     const form = await loadRig(FIGHTERS.gaunt.formModel!);
     const body = play('gaunt', 'special', MOVES.gaunt.special.contacts[0], { awakened: true }, form, true);
     try { expect(body.motionEvidence().clip).toBe('Scrap Cannon Arm'); } finally { body.dispose(); }

@@ -8,7 +8,7 @@ export const QUALITY_LINES: Readonly<Record<string, Readonly<Record<string, read
   shiun: { 'hurt-heavy': ['vo-shiun-thrown-a'], ko: ['vo-shiun-ko-a'] },          // Shiun: a cry; "...So this is the final barline."
   shakugo: { ko: ['vo-shakugo-ko-a'] },                                             // Shakugo: "I... am the one judged...?!"
   vesper: { bell: ['vo-vesper-bell-a'], taunt: ['vo-vesper-taunt-a'], loss: ['vo-vesper-loss-a'] },   // Vesper: the evening bell, the wings, the crown
-  jirenga: { 'hurt-heavy': ['vo-jirenga-thrown-a'], ko: ['vo-jirenga-ko-a'] },          // Jirenga: a cry; "...So the gate crumbles."
+  banjaku: { 'hurt-heavy': ['vo-banjaku-thrown-a'], ko: ['vo-banjaku-ko-a'] },          // Banjaku: a cry; "...So the gate crumbles."
   onigawara: { 'hurt-heavy': ['vo-onigawara-thrown-a'], ko: ['vo-onigawara-ko-a'] }, // Onigawara: a roar; "Heh... that was a good fight..."
   akagane: { ko: ['vo-akagane-ko-a'] },                                             // Akagane: "So it is I who returns to the earth..."
   imago: { loss: ['vo-imago-loss-a'] },                                         // Imago: "The board, overturned. I shall learn."

@@ -7,7 +7,7 @@ const ROWS = locomotion as unknown as Record<string, Partial<Record<'run' | 'wal
 /** Slot -> the run step that lands on Impact's cadence on the original's body; `shared`: its walk is on the run's clock. */
 const SPRINTS: Record<string, { run: number; shared: boolean }> = {
   tobari: { run: .2222, shared: true },   // Tobari: 4.00 steps a second against Impact's 4.25 (was 3.25)
-  jirenga: { run: .2222, shared: true },    // Jirenga: 3.50 against 3.50 (was 2.50)
+  banjaku: { run: .2222, shared: true },    // Banjaku: 3.50 against 3.50 (was 2.50)
   levin: { run: .2222, shared: true },     // Levin (was Kirigane): 4.75 against 5.00 (was 3.75)
   akagane: { run: .2222, shared: true },
   konta: { run: .2, shared: false },     // Konta: 5.00 against 5.00 (was 3.75)
@@ -24,7 +24,7 @@ const SPRINTS: Record<string, { run: number; shared: boolean }> = {
   // a cycle, each step carrying the body the renderer's stride (scripts/originals/clips/author_fox.py GAITS), so its legs
   // keep pace with its travel at any speed: 4.45 steps a second at the form's full 8.6 m/s.
   'konta-form': { run: .4167, shared: true },
-  // Kuzu's run is a clean sprint: three steps a cycle, as Kuon's and Jirenga's clean sprints, 4.0-4.3 steps a second at
+  // Kuzu's run is a clean sprint: three steps a cycle, as Kuon's and Banjaku's clean sprints, 4.0-4.3 steps a second at
   // 7.5 m/s; its planted foot slides 0.33-0.42 of travel there, 0.16-0.19 at 4.5 m/s and 0.07 at 2.4. With no row (two
   // steps a cycle) it slid 0.43 and, where the walk mixes in at 4.5 m/s, 0.50. His walk keeps no row (not on the run's clock).
   // At his own stride, 1.15 times the roster's (Fighter.ts STRIDE_SCALE), it slides 0.36-0.37 at 7.5 m/s on this row.

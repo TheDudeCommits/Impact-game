@@ -22,11 +22,11 @@ export type ObjectiveSnapshot=GameSnapshot&{objective:ObjectiveView};
 export const objectiveOf=(snapshot:GameSnapshot|null|undefined):ObjectiveView|undefined=>(snapshot as ObjectiveSnapshot|undefined)?.objective;
 export const OBJECTIVE_NAMES:Record<ObjectiveKind,string>={'bad-blood':'BAD BLOOD','last-stand':'LAST STAND'};
 export const TEAM_NAMES:Record<ObjectiveTeam|'horde'|'draw',string>={heroes:'HEROES',villains:'VILLAINS',defenders:'DEFENDERS',horde:'THE HORDE',draw:'DRAW'};
-export const OBJECTIVE_STAGE:Record<ObjectiveKind,StageId>={'bad-blood':'blood-citadel','last-stand':'hidden-ash'};
+export const OBJECTIVE_STAGE:Record<ObjectiveKind,StageId>={'bad-blood':'blood-citadel','last-stand':'ashwood'};
 export const CAPACITY:Record<ObjectiveKind,number>={'bad-blood':6,'last-stand':4};
 export const RULES={countdown:3,quickWait:12,soloWait:3,spawnShield:2,heroReviveSeconds:3,rescueSeconds:4,rescueRadius:3,villainMultiplier:1.3} as const;
 /** Owner-confirmed on 4 October 2026. Reformed allies are Heroes; these arc antagonists are Villains. */
-export const VILLAINS:readonly FighterId[]=['chohan','aqrab','hagure','hisame','irbis','amagoi','kubiwa','tokan','strappado','unari','barrow','senko','adad','shanxiao','shakugo','strix','oro','gorai','shiun','magatsu','vesper','imago','wuming','jirenga','jinlin','sekka','akagane'];
+export const VILLAINS:readonly FighterId[]=['chohan','aqrab','hagure','hisame','irbis','amagoi','kubiwa','tokan','strappado','unari','barrow','senko','adad','shanxiao','shakugo','strix','oro','gorai','shiun','magatsu','vesper','imago','wuming','banjaku','jinlin','sekka','akagane'];
 export const HEROES:readonly FighterId[]=['cardo','bruin','aquilo','svanhild','tsubute','yodaka','psyche','ovid','hawser','rotfalke','bonsho','murex','kinu','madake','akayuri','mizuhiki','shibuichi','rakucho','shidare','hinomoto','shakudo','minase','onigawara','torsion','highsun','ume','lanthorn','hikui','sashigane','gosu','kusushi','hakushi','suzuran','wataame','mikage','tempo','shijima','buna','tancho','bellows','akaito','oyashio','ampere','pyroclast','full-beam','basilissa','kuzu','sorayomi','taisei','konta','gummy','kenzo','kosho','ouga','shirokane','shiden','koko','nigo','kagari','ward','kuon','gaunt','setsu','haldor','sorrel','dorado','gohaku','ippon','tobari','asahi','levin','rook','gaku'];
 export const isBadBloodFighter=(fighter:FighterId)=>HEROES.includes(fighter)||VILLAINS.includes(fighter);
 export const factionOf=(fighter:FighterId):'heroes'|'villains'=>VILLAINS.includes(fighter)?'villains':'heroes';

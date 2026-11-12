@@ -59,7 +59,7 @@ export const AMBIENCES: Partial<Record<StageId, AmbienceRecipe>> = {
   harbor: { beds: [{ file: 'surf', gain: -1, wide: true }, { file: 'wind', gain: -7, highpass: 120 }], accents: [birds([12, 24], -15), flags([10, 20], -14)] },
   'wreckers-causeway': { beds: [{ file: 'surf', gain: -3, wide: true }, { file: 'wind', gain: -5, highpass: 120 }], accents: [flags([6, 12], -10), birds([10, 20], -15)] },
   // The village: a breeze in the trees and a lot of birds.
-  'hidden-ash': { beds: [{ file: 'wind', gain: -6, lowpass: 2400, wide: true }], accents: [birds([4, 11], -10)] },
+  'ashwood': { beds: [{ file: 'wind', gain: -6, lowpass: 2400, wide: true }], accents: [birds([4, 11], -10)] },
   'sunward-summit': { beds: [{ file: 'wind', gain: -1, highpass: 260, rate: 1.15, wide: true }], accents: [birds([16, 30], -16)] },
   // A cold desert night: a low wind and the dark under it.
   'cinder-flats': { beds: [{ file: 'wind', gain: -2, lowpass: 900, rate: .85, wide: true }, { file: 'drone', gain: -12 }] },

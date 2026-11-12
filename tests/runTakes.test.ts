@@ -45,9 +45,9 @@ const TAKES: Take[] = [
   // Wuming's (8 October): Sorrel' sprint with its arms flung out like wings, the arms drawn in and pumped, the hands
   // held flat, the trunk stood up a little.
   ['wuming', 'wuming-fanim3.glb', ['Run']],
-  // Jirenga's (8 October): the same sprint, his fists clenched and pumped short and heavy.
-  ['jirenga', 'jirenga-fanim2.glb', ['Run']],
-  // Emperor Jinlin's (8 October): upright in the shoulders, his hands clasped behind his back.
+  // Banjaku's (8 October): the same sprint, his fists clenched and pumped short and heavy.
+  ['banjaku', 'jirenga-fanim2.glb', ['Run']],
+  // Jinlin's (8 October): upright in the shoulders, his hands clasped behind his back.
   ['jinlin', 'jinlin-fanim2.glb', ['Run']],
   // Gohaku's (8 October): fists clenched and pumped, as his father runs.
   ['gohaku', 'gohaku-fanim3.glb', ['Run']],

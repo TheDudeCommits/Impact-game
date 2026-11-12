@@ -15,7 +15,7 @@ export interface ComboClip {
   from?: number; to?: number;
   /** How long the take these seconds and this contact were read off is. A body whose clip of that name is another length
    *  - a form's or an outfit's, another take under the same name - throws the slot's clip instead (Fighter's
-   *  `enderClip`): the RAKSHASA's, SUNRISE's and NIGHTFALL's takes share their names with the base body's. */
+   *  `enderClip`): the DUNE ONI's, SUNRISE's and NIGHTFALL's takes share their names with the base body's. */
   span?: number;
 }
 const seg = (clip: string, from: number, to: number, contact: number): ComboClip => ({ clip, from, to, contact });
@@ -27,7 +27,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   chohan:{lh:whole("Cheap Shot",0.5238095238095238),llh:whole("Upping the Ante",0.45),lllh:whole("No Refunds",0.5238095238095238),llls:whole("Debt Collector",0.5),airHeavy:whole("Dead Drop",0.5238095238095238),airSpecial:whole("Bust",0.5)},
   aqrab:{lh:whole("Golden Pincer",.34/.76),llh:whole("Antlion Pit",.38/.84),lllh:whole("Dune Shackle",.47),llls:whole("Thirst Burst",.55/1.1),airHeavy:whole("Dune Breaker",.47),airSpecial:whole("Stinger Drop",0.5)},
   tsubute:{lh:whole("Slate",0.4305555555555556),llh:whole("Leapfrog",0.45121951219512196),lllh:whole("Geode",0.49),llls:whole("Whirligig",0.5089285714285713),airHeavy:whole("Plunk",0.5),airSpecial:whole("Scree",0.5)},
-  ume:{lh:whole("Magnolia Backfist",0.46),llh:whole("Rising Magnolia",0.54),lllh:whole("Shattering Blossom",0.62),llls:whole("Budburst Drive",0.46),airHeavy:whole("Aerial Blossom",0.62),airSpecial:whole("Bloomfall",0.62)},
+  ume:{lh:whole("Magnolia Backfist",0.46),llh:whole("Rising Magnolia",0.54),lllh:whole("Petal Quake",0.62),llls:whole("Budburst Drive",0.46),airHeavy:whole("Aerial Blossom",0.62),airSpecial:whole("Bloomfall",0.62)},
   lanthorn:{lh:whole("Wick Turn",0.5816326530612245),llh:whole("Rising Lamplight",0.51),lllh:whole("Tavern Cleaver",0.6),llls:whole("Lampblack Drive",0.46666666666666673),airHeavy:whole("Falling Tankard",0.6),airSpecial:whole("Snuffer Landing",0.6)},
   highsun:{lh:whole("Lordly Turn",0.53),llh:whole("Morning Ascent",0.56),lllh:whole("Noonday Divide",0.56),llls:whole("Solar Reply",0.6),airHeavy:whole("Aerial Sunbeam",0.56),airSpecial:whole("Sunset Drop",0.6)},
   torsion:{lh:whole("About-Face",0.4305555555555556),llh:whole("Hoist Up",0.5),lllh:whole("Cave-In",0.5098039215686274),llls:whole("Corkscrew",0.5089285714285713),airHeavy:whole("Air Rebuff",0.5),airSpecial:whole("Rubble Rain",0.5294117647058824)},
@@ -35,7 +35,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   onigawara:{lh:whole("Shoulder Reversal",0.4),llh:whole("Rising Gore",0.4489),lllh:whole("Jagged Finish",0.4),llls:whole("Battle-Joy Drive",0.51),airHeavy:whole("Falling Reaver",0.4),airSpecial:whole("Boarfall Crash",0.4479)},
   cardo:{lh:whole("Headlong Thrust",0.4),llh:whole("Rising Unspell",0.4489),lllh:whole("Thistledown Storm",0.4),llls:whole("Overgrown Drive",0.51),airHeavy:whole("Falling Plowshare",0.4),airSpecial:whole("Thornfall Crash",0.4479)},
   minase:{lh:whole("Crossing Relay",0.44),llh:whole("Rising Gale",0.5),lllh:whole("Beacon Breaker",0.52),llls:whole("Relay Rush",0.52),airHeavy:whole("Falling Knife",0.44),airSpecial:whole("Gale Descent",0.56)},
-  aquilo:{lh:whole("Swallowtail Cross",0.44),llh:whole("Rising Swallow",0.5),lllh:whole("Squall Breaker",0.52),llls:whole("Darting Flock",0.52),airHeavy:whole("Falling Swallow",0.44),airSpecial:whole("Downdraft",0.56)},
+  aquilo:{lh:whole("Shearwind Cross",0.44),llh:whole("Rising Gust",0.5),lllh:whole("Squall Breaker",0.52),llls:whole("Darting Gusts",0.52),airHeavy:whole("Falling Gust",0.44),airSpecial:whole("Downdraft",0.56)},
   'psyche':{lh:whole("Wing Twist",0.56),llh:whole("Rising Swarm",0.52),lllh:whole("Grasping Swarm",0.56),llls:whole("Swarm Push",0.58),airHeavy:whole("Aerial Wing",0.44),airSpecial:whole("Moth Descent",0.56)},
   'ovid':{lh:whole("Glass Hook",0.5),llh:whole("Jackhammer Uppercut",0.54),lllh:whole("Sledgehammer",0.58),llls:whole("Demolition Drive",0.6),airHeavy:whole("Collapse",0.58),airSpecial:whole("Controlled Demolition",0.58)},
   // Scout Hawser's are Levin's (below), on the same takes fitted to him: the two-bladed cut, the rising blade (his `Rush 3`),
@@ -47,7 +47,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   yodaka:{lh:whole("Ember Turn",23/49),llh:whole("Rising Spark",28/56),lllh:whole("Watchfire Divide",34/67),llls:whole("Night Pursuit",36/71),airHeavy:whole("Air Watchfire",26/53),airSpecial:whole("Owl's Dive",31/62)},
   murex:{lh:whole("Twisting Claw",0.43),llh:whole("Spine Breaker",0.51),lllh:whole("Core Ram",0.43),llls:whole("Leave Me Alone",0.59),airHeavy:whole("Aerial Hammer",0.51),airSpecial:whole("Mantis Drop",0.51)},
   kinu:{lh:whole("Silk Uppercut",0.52),llh:whole("Whip Stitch",0.537037037037037),lllh:whole("Jailbreak Slam",0.537037037037037),llls:whole("Thread Pursuit",0.4655172413793104),airHeavy:whole("Descending Spool",0.537037037037037),airSpecial:whole("Shackle Crash",0.537037037037037)},
-  'madake':{lh:whole("Rising Shoot",0.4615384615384615),llh:whole("Flying Greeting",0.5),lllh:whole("Green Hurricane",0.5),llls:whole("Spring Crane",0.5084745762711864),airHeavy:whole("Descending Fang",0.4893617021276596),airSpecial:whole("Autumn Stag",0.5172413793103449)},
+  'madake':{lh:whole("Rising Shoot",0.4615384615384615),llh:whole("Flying Greeting",0.5),lllh:whole("Bamboo Cyclone",0.5),llls:whole("Spring Crane",0.5084745762711864),airHeavy:whole("Descending Fang",0.4893617021276596),airSpecial:whole("Autumn Stag",0.5172413793103449)},
   akayuri:{lh:whole("Crossing Lilies",0.56),llh:whole("Upturned Lily",0.46),lllh:whole("Line Through",0.56),llls:whole("Quiet Pursuit",0.6),airHeavy:whole("Falling Petal",0.46),airSpecial:whole("Red Rain Descent",0.56)},
   hagure:{lh:whole("Turnaside Hand",0.5377358490566037),llh:whole("Stray Cross",0.4464285714285714),lllh:whole("Howling Break",0.49107142857142855),llls:whole("Feral Lunge",0.49107142857142855),airHeavy:whole("Falling Maul",0.5377358490566037),airSpecial:whole("Moonfall Break",0.49107142857142855)},
   hisame:{lh:whole("Sleet Cut",0.44),llh:whole("Borealis",0.49),lllh:whole("Coup de Glace",0.44),llls:whole("Hoarfrost",0.61),airHeavy:whole("Crevasse",0.49),airSpecial:whole("Chandelier",0.53)},
@@ -64,7 +64,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   tokan:{lh:whole("Icicle Thrust",0.5116279069767442),llh:whole("Snowdrift Rise",0.3333333333333333),lllh:whole("Floe Cleave",0.25),llls:whole("Plume Follow-up",0.55),airHeavy:whole("Aerial Frostbite",0.25),airSpecial:whole("Floe Descent",0.43902439024390244)},
   strappado:{lh:whole("Marionette Reversal",0.4166666666666667),llh:whole("Wire Guillotine",0.4545454545454546),lllh:whole("Spool Burst",0.49107142857142855),llls:whole("Puppeteer's Snare",0.5),airHeavy:whole("Highwire Heel",0.4893617021276596),airSpecial:whole("Trapdoor Drop",0.5090909090909091)},
   unari:{lh:whole("Undercut",0.44),llh:whole("Liftoff",0.5),lllh:whole("Nosedive",0.5957446808510639),llls:whole("Tailspin",0.44),airHeavy:whole("Plummet",0.44),airSpecial:whole("Tripwire",0.5957446808510639)},
-  barrow:{lh:whole("Pitch Backfist",0.4166666666666667),llh:whole("Tremor Uppercut",0.4534883720930233),lllh:whole("Reef Breaker",0.49107142857142855),llls:whole("Sinkhole Crash",0.49166666666666664),airHeavy:whole("Glutton Heel",0.4893617021276596),airSpecial:whole("Tarfall",0.5090909090909091)},
+  barrow:{lh:whole("Pitch Backfist",0.4166666666666667),llh:whole("Tremor Uppercut",0.4534883720930233),lllh:whole("Reef Breaker",0.49107142857142855),llls:whole("Tar Pit Crash",0.49166666666666664),airHeavy:whole("Glutton Heel",0.4893617021276596),airSpecial:whole("Tarfall",0.5090909090909091)},
   sashigane:{lh:whole("Cross Section",0.53),llh:whole("Rising Section",0.55),lllh:whole("Critical Load",0.56),llls:whole("Load Failure",0.59),airHeavy:whole("Aerial Section",0.56),airSpecial:whole("Dead Load Drop",0.59)},
   gosu:{lh:whole("Porcelain Hook",0.5217391304347826),llh:whole("Rising Seam",0.52),lllh:whole("Ruin Breaker",0.5217391304347826),llls:whole("Kin Drive",0.42),airHeavy:whole("Descending Shard",0.5217391304347826),airSpecial:whole("Mending Crash",0.5217391304347826)},
   kusushi:{lh:whole("Rib Breaker",0.46),llh:whole("Rising Thrust",0.54),lllh:whole("Crushing Heel",0.6),llls:whole("Pressure-Point Rupture",0.55),airHeavy:whole("Falling Heel",0.6),airSpecial:whole("Ring Splitter",0.55)},
@@ -104,42 +104,42 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
     llls: seg('Dead Calm Glare', .98, 2.1, .4), airHeavy: seg('Falling Wake', .73, 1.5, .39), airSpecial: seg('Red Tide Ambush', .2, 1.5, .15) },
   dorado: { lh: seg('Squall Cut', .43, 1.35, .4), llh: seg('Sunburst Blow', .72, 1.66, .37), lllh: seg('Bonfire Crown', .85, 2.25, .54),
     llls: seg('Sovereign Clash', .06, 1.23, .4), airHeavy: seg('Diving Gilded Cut', .52, 1.33, .38), airSpecial: seg('Horizon Slam', .48, 1.53, .28) },
-  shiun: { lh: seg('Wing Blades', .4, 1, .45), llh: seg('BLACK CONFESSIONAL', .2, 1.2, .7), lllh: seg('False Encore', .2, 1.1, .55), llls: seg('awaken-pale-gem', .3, 1.38, .5),
-    airHeavy: whole('Hymn Palm', .3409), airSpecial: seg('BLACK CONFESSIONAL', 1.6, 2.5, .4) },
+  shiun: { lh: seg('Wing Blades', .4, 1, .45), llh: seg('FERMATA', .2, 1.2, .7), lllh: seg('Understudy', .2, 1.1, .55), llls: seg('awaken-pale-gem', .3, 1.38, .5),
+    airHeavy: whole('Downbeat Palm', .3409), airSpecial: seg('FERMATA', 1.6, 2.5, .4) },
   magatsu: { lh: seg('Calamity Pyre', .6, 1.4, .55), llh: seg('Calamity Maw', .6, 1.25, .45), lllh: seg('Thousand Cuts', .6, 1.4, .35), llls: seg('awaken-shrine', 1.6, 2.8, .5),
     airHeavy: seg('Hex Claw', .3, .9, .45), airSpecial: seg('Thousand Cuts', .7, 1.63, .2) },
   // Vesper's (7 October 2026, scripts/fanim/vesper.py): each ender on the blow his take lays - Reverse Quill's backhand
   // at its pinned 0.4625, Updraft's rising cut at 0.4833, Raven's Drop's chop at the heavy's 0.4479 (they were
   // drawn on the library's: Reverse Quill at 0.65, past its cut).
-  vesper: { lh: seg('Reverse Quill', .1, .6, .4167), llh: whole('Updraft', .4833), lllh: seg('The Offering', 1.9, 2.6, .55), llls: seg('Hawks Talon', .1, .6, .5092),
-    airHeavy: seg('The Offering', 1.2, 2.4, .75), airSpecial: whole('Raven Dive', .535) },
+  vesper: { lh: seg('Reverse Quill', .1, .6, .4167), llh: whole('Updraft', .4833), lllh: seg('Evensong', 1.9, 2.6, .55), llls: seg('Hawks Talon', .1, .6, .5092),
+    airHeavy: seg('Evensong', 1.2, 2.4, .75), airSpecial: whole('Raven Dive', .535) },
   imago: { lh: seg('Kings Decree', 0, .7, .4), llh: seg('Mantis Hook', .3, .9, .236), lllh: seg('Stinger Lash', .3, 1.17, .2), llls: whole('Rising Barb', .5263),
     airHeavy: seg('Kings Decree', 2, 2.9, .8), airSpecial: whole('Stinger Storm', .8) },
-  'wuming': { lh: seg('Lightless Cannon', 1, 1.75, .5), llh: whole('Dusk Rush 4', .5), lllh: seg('Petalfall Blade', .5, 1.13, .6), llls: seg('awaken-rose', 0, 1, .5),
+  'wuming': { lh: seg('Withering Beam', 1, 1.75, .5), llh: whole('Weeding Rush 4', .5), lllh: seg('Lotus Edge', .5, 1.13, .6), llls: seg('awaken-jade', 0, 1, .5),
     airHeavy: seg('Heaven\'s Harvest', 0, .5, .25), airSpecial: seg('Heaven\'s Harvest', .9, 1.38, .3) },
-  // Jirenga's lh is the hook that opens Mountain-Felling Fist: its window ends at .5 s (was .6), as
+  // Banjaku's lh is the hook that opens Mountain-Felling Fist: its window ends at .5 s (was .6), as
   // he stands up from the hook's recovery and before the leap that follows it (from .515 s), and its contact share is .39 (was
   // .7), so the hook (furthest at .19 s) lands on the contact, not 9 frames before it. The take plays at .70 of its pace up to the
   // contact and .73 after it - no faster can it: the hook comes .19 s into the take, the move's contact .28 s into the move.
-  jirenga: { lh: seg('Mountain-Felling Fist', 0, .5, .39), llh: whole('Uprooting Fist', .471), lllh: seg('Mountain-Felling Fist', .9, 1.6, .55), llls: seg('Vermilion Seal', .9, 1.8, .6),
+  banjaku: { lh: seg('Mountain-Felling Fist', 0, .5, .39), llh: whole('Uprooting Fist', .471), lllh: seg('Mountain-Felling Fist', .9, 1.6, .55), llls: seg('Vermilion Seal', .9, 1.8, .6),
     airHeavy: seg('Mountain-Felling Fist', .7, 1.4, .6), airSpecial: whole('awaken-wrathful-guardian', .3) },
   'jinlin': { lh: whole('Jinlin Rush 5', .5), llh: seg('Drowned Sun', .4, 1.2, .45), lllh: seg('Pearl Rain', .2, 1.2, .6), llls: seg('awaken-jinlin', .2, 1.5, .5),
     airHeavy: whole('Jinlin Rush 3', .5), airSpecial: seg('Pearl Rain', 1.2, 2.38, .2) },
   'gohaku': { lh: seg('Beast Rush 4', .3, .75, .4), llh: seg('Beast Rush 3', .05, .4, .5), lllh: seg('Rising Kick', .4, 1.08, .45), llls: whole('Beast Rush 2', .5333),
     airHeavy: seg('Star-Shifting Beam', .2, 1.2, .65), airSpecial: seg('awaken-beast', .9, 2, .4) },
-  // Ippon's All-Nighter Headbutt and All-Nighter Shuffle are takes of their own (9 October 2026, scripts/fanim/slj.py), not his
-  // Clock-In Punch and Clock-In Hook; his All-Nighter Desk Flip is Clock-Out Uppercut's take, laid again as the flip.
-  ippon: { lh: whole('All-Nighter Headbutt', .42), llh: whole('Clock-Out Uppercut', .5), lllh: seg('Double Shift', .2, 1, .5), llls: whole('All-Nighter Shuffle', .4),
+  // Ippon's Nod-Off Headbutt and Coffee-Run Shuffle are takes of their own (9 October 2026, scripts/fanim/slj.py), not his
+  // Clock-In Punch and Clock-In Hook; his Overtime Mop-Up is Clock-Out Uppercut's take, laid again as the flip.
+  ippon: { lh: whole('Nod-Off Headbutt', .42), llh: whole('Clock-Out Uppercut', .5), lllh: seg('Double Shift', .2, 1, .5), llls: whole('Coffee-Run Shuffle', .4),
     airHeavy: seg('Clean Slate', 1.5, 2.29, .3), airSpecial: seg('Clock-In Kick', .15, .58, .35) },
   sekka: { lh: whole('Sleet Kick', .5), llh: whole('Icefall Hammer', .3), lllh: seg('awaken-high-moon', .6, 1.71, .45), llls: whole('Aurora Shards', .89),
-    airHeavy: whole('Shatter Jab', .5), airSpecial: seg('Shatter Art: Black Blizzard', .4, 1.33, .35) },
+    airHeavy: whole('Shatter Jab', .5), airSpecial: seg('Black Blizzard', .4, 1.33, .35) },
   // Tobari's L-L-H plays Rookwing Rise's turn, the part of it the light string never shows: it ends (0.87 s, its blow where
   // it was, 0.55 s) before the take begins him from Shadow Kick's pose (0.88 s, scripts/fanim/lights.py ROOKWING_RISE).
   tobari: { lh: seg('awaken-guardian', .1, .9, .6), llh: seg('Rookwing Rise', .2, .87, .5224), lllh: seg('Murder of Crows', .4, 1.13, .5), llls: seg('Black Pyre', 0, 1, .6),
     airHeavy: whole('Kunai Slash', .25), airSpecial: seg('awaken-guardian', 1.2, 2.4, .6) },
   akagane: { lh: whole('War Fan Sweep', .715), llh: whole('Warlord Rise', .3043), lllh: whole('awaken-guardian', .5), llls: seg('Majestic Flame', .2, 1.4, .7),
     airHeavy: seg('War Fan Sweep', .5, 1.21, .513), airSpecial: seg('Majestic Flame', 1.4, 3.04, .3) },
-  asahi: { lh: seg('Lantern Rite: First Light', 2.3, 3.04, .4), llh: whole('Rising Slash', .3103), lllh: seg('Lantern Rite: First Light', .8, 2, .75), llls: seg('awaken-sun', 1.4, 2.3, .5),
+  asahi: { lh: seg('First Light', 2.3, 3.04, .4), llh: whole('Rising Slash', .3103), lllh: seg('First Light', .8, 2, .75), llls: seg('awaken-sun', 1.4, 2.3, .5),
     airHeavy: whole('Water Wheel', .554), airSpecial: seg('Ashfall Waltz', 1.6, 2.6, .3) },
   levin: { lh: whole('Crosshatch', .4), llh: whole('Lift Off', .2821), lllh: seg('SOJI: Clean Sweep', .9, 1.8, .5), llls: whole('Nick', .46),
     airHeavy: seg('Zipline', 1.2, 2, .5), airSpecial: seg('awaken-captain', .8, 1.8, .5) },
@@ -165,19 +165,19 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
   // Konta's lh, llh and lllh windows moved onto his new ender takes, the
   // same length and contact share: each blow's reach on its contact - the uppercut's and the straight's furthest (they reached
   // it 3 and 2 frames early), the palm at full extension (it got there 4 frames late). Seconds only; the moves are as they were.
-  konta: { lh: v('Whirlsphere Attack', 1.85, 2.85, 0.42, 3.333), llh: v('Punch 01', 0.08, 0.98, 0.4, 4.167), lllh: v('Punch 01', 1.91, 2.96, 0.38, 4.167), llls: v('Whirlsphere Attack', 0.35, 1.6, 0.55, 3.333), airHeavy: v('Kick 02', 0.55, 1.35, 0.54, 2.333), airSpecial: v('Whirlsphere Dive', 0.75, 2.2, 0.28, 3.542) },
+  konta: { lh: v('Kazeyose Attack', 1.85, 2.85, 0.42, 3.333), llh: v('Punch 01', 0.08, 0.98, 0.4, 4.167), lllh: v('Punch 01', 1.91, 2.96, 0.38, 4.167), llls: v('Kazeyose Attack', 0.35, 1.6, 0.55, 3.333), airHeavy: v('Kick 02', 0.55, 1.35, 0.54, 2.333), airSpecial: v('Kazeyose Dive', 0.75, 2.2, 0.28, 3.542) },
   // Round 4b (COMBAT): the Undertow Sweep is a take of its own (gummy-enders2.glb), the arm flung out wide and swept round
   // at neck height; the slam it used to borrow is his air string's.
-  gummy: { lh: v('Grand Tide Fist', 0.9, 1.6, 0.2, 1.875), llh: v('Rising Axe', 2, 2.95, 0.42, 6.042), lllh: v('Sickle Sweep', 0.6, 2.6, 0.67, 5.042), llls: v('Slam Stubborn Headbutt', 3.35, 4.35, 0.6, 6.042), airHeavy: v('Rising Axe', 2.95, 3.75, 0.46, 6.042), airSpecial: v('Signal Fire', 2.9, 3.46, 0.36, 3.458) },
+  gummy: { lh: v('Spring Tide Fist', 0.9, 1.6, 0.2, 1.875), llh: v('Rising Axe', 2, 2.95, 0.42, 6.042), lllh: v('Sickle Sweep', 0.6, 2.6, 0.67, 5.042), llls: v('Slam Stubborn Headbutt', 3.35, 4.35, 0.6, 6.042), airHeavy: v('Rising Axe', 2.95, 3.75, 0.46, 6.042), airSpecial: v('Signal Fire', 2.9, 3.46, 0.36, 3.458) },
   kosho: { lh: v('Back Flurry', 0.2, 1.25, 0.33, 6.042), llh: v('Rising Heel', 0.15, 1, 0.35, 6.042), lllh: v('Banquet Infernal', 0.55, 1.6, 0.71, 1.708), llls: v('Back Flurry', 3.2, 4.6, 0.36, 6.042), airHeavy: v('Rising Heel', 2.75, 3.6, 0.53, 6.042), airSpecial: v('Brasier: Coup de Feu', 2.15, 2.95, 0.375, 3.292) },
-  shirokane: { lh: v('Void Eye: Sickle Bolt', 1.55, 2.4, 0.47, 3.667), llh: v('Rising Slash', 0.15, 1.1, 0.37, 6.042), lllh: v('Heel Dive', 0.9, 2.1, 0.5, 6.542), llls: v('Static Scarecrow', 0, 1, 0.35, 2.292), airHeavy: v('Rising Slash', 2.3, 3.2, 0.56, 6.042), airSpecial: v('Heel Dive', 3.7, 4.9, 0.42, 6.542) },
+  shirokane: { lh: v('Sickle Bolt: Reaper', 1.55, 2.4, 0.47, 3.667), llh: v('Rising Slash', 0.15, 1.1, 0.37, 6.042), lllh: v('Heel Dive', 0.9, 2.1, 0.5, 6.542), llls: v('Static Decoy', 0, 1, 0.35, 2.292), airHeavy: v('Rising Slash', 2.3, 3.2, 0.56, 6.042), airSpecial: v('Heel Dive', 3.7, 4.9, 0.42, 6.542) },
   shiden: { lh: v('Slash Palm', 1.5, 2.6, 0.45, 5.542), llh: v('Rising Slash', 1, 2, 0.5, 6.042), lllh: v('Black Pyre', 0.4, 1.6, 0.55, 4.167), llls: v('Cut Plunge', 0.95, 2, 0.33, 6.542), airHeavy: v('Rising Slash', 2, 2.95, 0.53, 6.042), airSpecial: v('Cut Plunge', 2.5, 3.9, 0.46, 6.542) },
   // Round 4b (COMBAT): Keelbreaker is the overhead two-sword cut of his own air take (kenzo-enders2.glb), not the first half
   // of the ground smash's - that take's overhead cut is now his air string's.
-  kenzo: { lh: v('Dust Sea Sundered', 0.9, 2, 0.39, 2.458), llh: v('Rising Cross', 0.6, 1.7, 0.5, 6.042), lllh: v('Kenzo Air', 1, 2, 0.6, 5.042), llls: v('thousand mile eagle', 1.05, 1.95, 0.36, 2.625), airHeavy: v('Rising Cross', 1.75, 2.7, 0.47, 6.042), airSpecial: v('Cut Plunge', 2.75, 4, 0.44, 6.542) },
-  // Round 4b (COMBAT): Junkyard Assault is Iron Spirit's barrage (his special's Gan Gan Barrage) driven into the floor,
+  kenzo: { lh: v('Dust Sea Sundered', 0.9, 2, 0.39, 2.458), llh: v('Rising Cross', 0.6, 1.7, 0.5, 6.042), lllh: v('Kenzo Air', 1, 2, 0.6, 5.042), llls: v('eagles reach', 1.05, 1.95, 0.36, 2.625), airHeavy: v('Rising Cross', 1.75, 2.7, 0.47, 6.042), airSpecial: v('Cut Plunge', 2.75, 4, 0.44, 6.542) },
+  // Round 4b (COMBAT): Junkyard Assault is Iron Spirit's barrage (his special's IRONFALL Barrage) driven into the floor,
   // not the second half of the knockdown's take - its diving straight is his air string's.
-  koko: { lh: v('Straight Body', 0.7, 1.75, 0.48, 5.542), llh: v('Upper Dive', 0.9, 1.9, 0.45, 6.042), lllh: v('Hammer Dive', 0.55, 1.45, 0.5, 6.542), llls: v('Straight Body', 2.6, 3.8, 0.5, 5.542), airHeavy: v('Upper Dive', 2.2, 3.3, 0.55, 6.042), airSpecial: v('Gan Gan Barrage', 0.3, 1.8, 0.45, 3.083) },
+  koko: { lh: v('Straight Body', 0.7, 1.75, 0.48, 5.542), llh: v('Upper Dive', 0.9, 1.9, 0.45, 6.042), lllh: v('Hammer Dive', 0.55, 1.45, 0.5, 6.542), llls: v('Straight Body', 2.6, 3.8, 0.5, 5.542), airHeavy: v('Upper Dive', 2.2, 3.3, 0.55, 6.042), airSpecial: v('IRONFALL Barrage', 0.3, 1.8, 0.45, 3.083) },
   nigo: { lh: v('skill_3_4_1', 0, 1.04, 0.3, 1.042), llh: v('Punch 02', 0.1, 0.9, 0.34, 1.833), lllh: v('skill_1_3_1', 1.75, 2.4, 0.35, 4.458), llls: v('strike_1_1', 0, 0.66, 0.3, 0.667), airHeavy: v('Punch 01', 0.75, 1.6, 0.52, 1.667), airSpecial: v('Scorched Earth', 0.6, 1.9, 0.4, 2.833) },
   // Round 4b (COMBAT): Kagaribi is his TAIMATSU (Taimatsu) thrown into the floor, not the second half of the stun's take.
   kagari: { lh: v('skill_a', 1.8, 2.8, 0.46, 3.292), llh: v('Upper Dive', 1.15, 2.1, 0.53, 6.042), lllh: v('Taiyou-Dama', 1.2, 2.3, 0.46, 2.458), llls: v('Body Dive', 0.85, 1.75, 0.47, 6.542), airHeavy: v('Upper Dive', 2.2, 3.2, 0.5, 6.042), airSpecial: v('Taimatsu', 0.3, 1.25, 0.63, 1.25) },
@@ -200,7 +200,7 @@ export const COMBO_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, Com
 };
 
 /** A form's own clips for its enders, where its body has takes of its own that move like them (the base body's row
- *  stands for the rest, where the form's body has the same take: the Guardian, the HOUND ARMOR). */
+ *  stands for the rest, where the form's body has the same take: the Guardian, the GRAVE PLATE). */
 export const COMBO_FORM_CLIPS: Partial<Record<FighterId, Partial<Record<ComboKey, ComboClip>>>> = {
   // The YUGE's enders, each a take of its own body's (the fists that were adult Hawser's).
   hawser:{lh:whole("Defiant Hook",0.5),llh:whole("Rebel Uppercut",0.54),lllh:whole("Freedom Hammer",0.58),llls:whole("Unbroken Advance",0.58),airHeavy:whole("Aerial Rebellion",0.58),airSpecial:whole("Falling Veil",0.58)},

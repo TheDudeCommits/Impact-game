@@ -20,7 +20,7 @@ const corners=[
 
 describe('Last Stand gate-post navigation',()=>{
  it.each(corners)('rescues an ally across the gate from $name',async({x,z,targetZ})=>{
-  const match=new ObjectiveMatch('last-stand',await createRapierCollision('hidden-ash'),1,'host');clean.push(match);
+  const match=new ObjectiveMatch('last-stand',await createRapierCollision('ashwood'),1,'host');clean.push(match);
   match.add('helper','ouga','Helper','defenders');match.add('fallen','konta','Fallen','defenders');match.start();
   for(let tick=0;tick<192;tick++)match.step();
   match.siege!.view.nextWaveAt=match.sim.serverTime+60;
@@ -28,14 +28,14 @@ describe('Last Stand gate-post navigation',()=>{
   match.sim.damage('fallen',99999,'test','test');match.step();
   const brain=new ObjectiveBrain('helper'),fallen=match.sim.actors.get('fallen')!.state;
   for(let tick=0;tick<20*60&&!fallen.alive;tick++){
-   match.sim.command('helper',brain.command(match.sim.playerStates(),match.snapshot().objective,match.sim.serverTime,'hidden-ash',{role:'rescue',target:'fallen'}));
+   match.sim.command('helper',brain.command(match.sim.playerStates(),match.snapshot().objective,match.sim.serverTime,'ashwood',{role:'rescue',target:'fallen'}));
    match.step();
   }
   expect(fallen.alive).toBe(true);expect(match.seats.get('helper')!.revives).toBe(1);
  });
 
  it.each(corners)('intercepts an enemy across the gate from $name',async({x,z,targetZ})=>{
-  const match=new ObjectiveMatch('last-stand',await createRapierCollision('hidden-ash'),1,'host');clean.push(match);
+  const match=new ObjectiveMatch('last-stand',await createRapierCollision('ashwood'),1,'host');clean.push(match);
   match.add('helper','taisei','Helper','defenders');match.add('target','konta','Target','defenders');match.start();
   for(let tick=0;tick<192;tick++)match.step();
   match.siege!.view.nextWaveAt=match.sim.serverTime+60;
@@ -43,14 +43,14 @@ describe('Last Stand gate-post navigation',()=>{
   match.sim.setTeam('target','horde');
   const brain=new ObjectiveBrain('helper'),target=match.sim.actors.get('target')!.state,initialHp=target.hp;
   for(let tick=0;tick<12*60&&target.hp===initialHp;tick++){
-   match.sim.command('helper',brain.command(match.sim.playerStates(),match.snapshot().objective,match.sim.serverTime,'hidden-ash',{role:'intercept',target:'target',lane:1}));
+   match.sim.command('helper',brain.command(match.sim.playerStates(),match.snapshot().objective,match.sim.serverTime,'ashwood',{role:'intercept',target:'target',lane:1}));
    match.step();
   }
   expect(target.hp).toBeLessThan(initialHp);
  });
 
  it.each(corners.flatMap(corner=>[.1,.9].map(offset=>({...corner,offset}))))('lets a raider reach and hit a defender across the gate from $name (shoulder $offset)',async({x,z,targetZ,offset})=>{
-  const sim=new ArenaSimulation({roomMode:'training',trainingBot:false,respawn:false,stage:'hidden-ash',collision:await createRapierCollision('hidden-ash')});clean.push(sim);sim.status='active';
+  const sim=new ArenaSimulation({roomMode:'training',trainingBot:false,respawn:false,stage:'ashwood',collision:await createRapierCollision('ashwood')});clean.push(sim);sim.status='active';
   sim.addPlayer('defender','taisei','Defender',false,{x:Math.sign(x)*12,y:0,z:targetZ});sim.setTeam('defender','defenders');
   const def=ENEMIES['tribunal-guard'];
   sim.addCombatant('raider',{enemy:def.id,team:'horde',kit:kitOf(def),maxHp:500,spawn:{x,y:0,z}});

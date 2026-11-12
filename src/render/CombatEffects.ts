@@ -81,7 +81,7 @@ const rosterFlight = (id: string | undefined, slot?: string, branch?: string, pl
   hasRosterSignature(id, slot, branch, player) && !flightKept(id, slot, branch, player);
 const WHIFF_FADE = .25;
 /** Round 3d (ULTS): the blast rings' colours (signature/BlastArea): the Spirit
- *  Bomb's pale blue, the Kitsunebi-Dama's violet, the sun's orange; round
+ *  Bomb's pale blue, the Azure Foxfire's violet, the sun's orange; round
  *  3e (ULTFIX), the PLANETARIUM's lilac. */
 const BLAST_TINT: Partial<Record<FighterId, number>> = { taisei: 0x9fe0ff, konta: 0xb04bff, kagari: 0xff8a2a, kuon: 0x9d7bff, 'jinlin': 0xff4a12 };
 type BurstSlot = {
@@ -115,7 +115,7 @@ const KNIFE_THROWERS = new Set<FighterId>(['oro']);
 /** A cast that is that knife throw: never a combo ender, which is drawn as its own move (ENDER_THROWN for an ender
  *  that is steel thrown), not as LORD ORO's heavy - SwordSpiritEffects dresses only the heavy's flights. */
 const clockHandKnives = (event: CombatEvent) => !event.branch && !!event.fighter && KNIFE_THROWERS.has(event.fighter);
-/** Kagari's ultimate is a bomb drawn as a sun: the KAGUTSUCHI is a
+/** Kagari's ultimate is a bomb drawn as a sun: the ALL ABLAZE is a
  *  ball of fire the size of a house lifted over his head and thrown. Every
  *  other flame thrower's projectile is a fist or a foot with fire on it, so
  *  the ember-sized charge and the fist-sized flight are wrong for it. */
@@ -125,15 +125,15 @@ const SUN_HEIGHT = 3.6;
 const CRESCENT_ARC = Math.PI * 1.15;
 const flightKey = (cast: { event: CombatEvent; contactIndex?: number }) => `${cast.event.id}:${cast.contactIndex ?? 0}`;
 const SPIRIT_RADIUS = 2.3;
-/** The Giant Senpugan's radius at `age` into Konta's Light x3, Heavy, its blow at `release`: NinjaEffects draws its
+/** The Great Kazeyose's radius at `age` into Konta's Light x3, Heavy, its blow at `release`: NinjaEffects draws its
  *  currents on the same. */
 export function bigBall(age: number, release: number) {
   return (.05 + THREE.MathUtils.smoothstep(age, .04, release * .92) * .25) * (1 - THREE.MathUtils.smoothstep(age, release + .1, release + .36));
 }
 const SPIRIT_HEIGHT = 4.65;
-/** Round 3c: the Kitsunebi-Dama read small ("a small purple sphere") - a 2.9 m ball for a move that hits 6 m round it, and Kurobi's no bigger than its head. Radii (metres): Konta's held ball and Kurobi's (gathered in front of its jaws). Round 3e (ULTFIX): the burst's dome is the blast's own radius (ultimateBurst). */
+/** Round 3c: the Azure Foxfire read small ("a small purple sphere") - a 2.9 m ball for a move that hits 6 m round it, and Kurobi's no bigger than its head. Radii (metres): Konta's held ball and Kurobi's (gathered in front of its jaws). Round 3e (ULTFIX): the burst's dome is the blast's own radius (ultimateBurst). */
 export const FOXFIRE_ORB = { held: 2, kurobi: 3 } as const;
-/** Emperor Jinlin's Drowned Sun, held over the finger he raises and thrown: its radius (metres). Smaller than the
+/** Jinlin's Drowned Sun, held over the finger he raises and thrown: its radius (metres). Smaller than the
  *  LAST SUN's, which is lifted over its thrower; this one grows on his hand, and he is not tall. */
 const DROWNED_SUN = 1.5;
 const ORB_FORWARD = new THREE.Vector3();
@@ -144,7 +144,7 @@ const BEAM_LOOKS: Record<string, { shell: number; edge: number; light: number; s
   'wuming:special': { shell: 0xff56c5, edge: 0x53094f, light: 0xff80dc, spike: 0xffd5f5, scale: .88 },
   'ouga:special': { shell: 0xa650ff, edge: 0x3a0aa0, light: 0xa860ff, spike: 0xf0d6ff, scale: .9 },
   // Gold light on a sunlit gold room adds brightness and no colour: the
-  // Kyokko-Ho lights it at a little over half the strength of the others.
+  // Royal Aurora lights it at a little over half the strength of the others.
   'ouga:ultimate': { shell: 0xffb81c, edge: 0xff5a00, light: 0xffe07a, spike: 0xfff2b0, scale: .72, lit: .55 },
   'kuon:special': { shell: 0xc446ff, edge: 0xff28bc, light: 0xd050ff, spike: 0xffd8fb, scale: .88 },
 };
@@ -304,7 +304,7 @@ export const FINISHERS: Record<FighterId, { shape: Accent; screen: 'speed' | 'fr
   // ring, Sorrel's sabre's last cut is a crescent, and HORIZON SUNDER's splits the sky.
   gorai: { shape: 'crater', screen: 'fringe' }, haldor: { shape: 'shockwave', screen: 'grade' }, sorrel: { shape: 'crescent', screen: 'fringe' },
   dorado: { shape: 'crescent', screen: 'grade' },
-  // BLACK CONFESSIONAL's is the coffin itself.
+  // FERMATA's is the coffin itself.
   shiun: { shape: 'room', screen: 'grade' },
   // Calamity Pyre's arrow bursts as a cross of fire.
   magatsu: { shape: 'cross', screen: 'grade' },
@@ -312,10 +312,10 @@ export const FINISHERS: Record<FighterId, { shape: Accent; screen: 'speed' | 'fr
   vesper: { shape: 'crescent', screen: 'speed' },
   // The Rising Barb breaks the air round them.
   imago: { shape: 'shockwave', screen: 'fringe' },
-  // The Dusk Smash bursts in rose.
+  // The Root-Out Smash bursts in rose.
   'wuming': { shape: 'shockwave', screen: 'speed' },
-  // Jirenga's Crushing Heel drives them into the floor; Jinlin's tail sweeps them back.
-  jirenga: { shape: 'crater', screen: 'fringe' },
+  // Banjaku's Crushing Heel drives them into the floor; Jinlin's tail sweeps them back.
+  banjaku: { shape: 'crater', screen: 'fringe' },
   'jinlin': { shape: 'crescent', screen: 'speed' },
   // Gohaku's Mountain Hammer brings both fists down on them, into the floor.
   'gohaku': { shape: 'hammer', screen: 'fringe' },
@@ -356,11 +356,11 @@ type Thrown = 'spear' | 'katana' | 'thunder' | 'dagger' | 'jets' | 'quarrel' | '
 const THROWN: Partial<Record<FighterId, Partial<Record<AttackSlot, Thrown>>>> = { vesper: { special: 'spear' }, asahi: { heavy: 'katana' }, levin: { heavy: 'thunder' } };
 /** The combo enders (combos.ts) that are a weapon thrown: Rook's Talon Volley is his daggers. */
 const ENDER_THROWN: Partial<Record<FighterId, Partial<Record<ComboKey, Thrown>>>> = { 'rook': { airHeavy: 'dagger' },
-  // The main game's (COMBOS-DATA's rows): LORD ORO's Gilded Needle Gaze is two jets of fluid, Gaunt' Scrap Repeater
+  // The main game's (COMBOS-DATA's rows): LORD ORO's Gilded Glare is two jets of fluid, Gaunt' Scrap Repeater
   // its bolts, Setsu's yo-yo his steel yo-yo.
   oro: { lh: 'jets' }, gaunt: { lh: 'quarrel' }, setsu: { lh: 'yoyo' } };
 /** How big a main-game ender flies, where it is not a ki blast's 0.4 m: Shiden's Fireball Arts and the Void Ray are big,
- *  the Water Dragon's head bigger, Ouga's energy volley and the Shrike Needles small, Kagari's fire as his fire flies. */
+ *  the Water Dragon's head bigger, Ouga's energy volley and the Spark Hail small, Kagari's fire as his fire flies. */
 const ENDER_SIZE: Partial<Record<FighterId, Partial<Record<ComboKey, number>>>> = {
   shiden: { lllh: .55, airHeavy: .14 }, nigo: { llls: .45 }, shirokane: { lh: .5, airHeavy: .3 }, ouga: { llls: .2 },
 };
@@ -698,8 +698,8 @@ export class CombatEffects {
       const o = event.origin, closes = event.serverTime + (move.contacts[domain.contact] ?? 0);
       this.blast.mark(event.id, event.actorId, o.x, o.y - 1.05, o.z, domain.radius, event.serverTime, closes, closes, fighterId === 'magatsu' ? 0xff2a3a : BLAST_TINT.kuon ?? 0xffffff);
     }
-    // BLACK CONFESSIONAL's reliquary is Shiun's own (EmperorEffects): no orb of energy where it closes.
-    // Nor is an orb what Emperor Jinlin's barrage throws: its needle rays are his (EmperorEffects).
+    // FERMATA's reliquary is Shiun's own (EmperorEffects): no orb of energy where it closes.
+    // Nor is an orb what Jinlin's barrage throws: its pearl lances are his (EmperorEffects).
     // Nor Sorrel' Horizon Sunder, a cut (an orb of the default blue filled the screen at its opener), nor Gohaku's
     // Sun-Seizing Spiral, whose two fingers and spiral are his (a gold orb buried them): the blind critics, 3 October.
     // (Round 4b: Gummy's barrage is fists, GummyEffects' - a line of them, not a beam of light.)
@@ -713,10 +713,10 @@ export class CombatEffects {
     const group = new THREE.Group(); group.name = `cast-${event.id}`;
     const flame=FLAME_THROWERS.has(fighterId);
     const kuon=fighterId==='kuon';
-    // (A combo ender thrown from the slot is not its signature: no Taimatsu fist, no Senpugan in the palm - combos.ts.)
+    // (A combo ender thrown from the slot is not its signature: no Taimatsu fist, no Kazeyose in the palm - combos.ts.)
     const taimatsu=fighterId==='kagari'&&slot==='special'&&!event.branch;
-    // (His Light x3, Heavy is the Giant Senpugan: a Senpugan in the palm, bigger - combosVol1.ts.)
-    const palmWhirlsphere=fighterId==='konta'&&slot==='heavy'&&!kurobi&&(!event.branch||event.branch==='lllh');
+    // (His Light x3, Heavy is the Great Kazeyose: a Kazeyose in the palm, bigger - combosVol1.ts.)
+    const palmKazeyose=fighterId==='konta'&&slot==='heavy'&&!kurobi&&(!event.branch||event.branch==='lllh');
     // Ouga's ki is tinted per move; a thrown fist or kick is tinted to
     // its fire, and the flames themselves are GummyEffects', following
     // FLIGHTS. Kosho's carries the crescent in front of the body. Gaunt'
@@ -726,7 +726,7 @@ export class CombatEffects {
     // gold, and Shiun's light pale seraph's. Gaku's open palm is his aura, the Landslide's gold.
     // (4 October, combos.ts: Imago's Hive Burst is his jade, Sekka's Frost Gale the frost stance's ice-blue shock.
     // Ippon's sneeze is no ball of anything: a gust, EmperorEffects'.)
-    const SHOP_TINT:Partial<Record<FighterId,number>>={sorayomi:0x9adeef,gorai:0xd2c2ff,haldor:0xe2f2ff,dorado:0xffb21e,shiun:0xb48cff,magatsu:0xff4a5a,'wuming':0xff6ad8,jirenga:0xff3a2a,'jinlin':0xff5a1e,'gohaku':0xffe25a,gaku:0xffc23c,imago:0x3ae88a,sekka:0x9fdcff};
+    const SHOP_TINT:Partial<Record<FighterId,number>>={sorayomi:0x9adeef,gorai:0xd2c2ff,haldor:0xe2f2ff,dorado:0xffb21e,shiun:0xb48cff,magatsu:0xff4a5a,'wuming':0xff6ad8,banjaku:0xff3a2a,'jinlin':0xff5a1e,'gohaku':0xffe25a,gaku:0xffc23c,imago:0x3ae88a,sekka:0x9fdcff};
     // An ender is its own colour, never its slot's: the shop's where ENDER_TINT says, the main game's sixteen always in
     // their ender's element (palette ENDER_ELEMENTS) - Ouga's Light, Heavy is not his special's blue.
     const enderTint=event.branch?ENDER_TINT[fighterId]?.[event.branch]??enderElement(fighterId,event.branch,!!actor?.state.awakened)?.rim:undefined;
@@ -749,13 +749,13 @@ export class CombatEffects {
     const galewheel=fighterId==='konta'&&!kurobi&&(slot==='special'&&!event.branch||event.branch==='llls');
     if(galewheel){
       orb.scale.setScalar(.6);
-      const blades=new THREE.Group();blades.name='galewheel-swallow-darts';
+      const blades=new THREE.Group();blades.name='galewheel-gust-darts';
       for(let i=0;i<4;i++){const blade=new THREE.Mesh(this.windBlade,this.windMaterial);blade.rotation.z=i*Math.PI/2;blades.add(blade);}
       group.add(blades);
     }
     if(fighterId==='kosho'&&!event.branch){const crescent=new THREE.Mesh(this.crescentGeometry,this.crescentMaterial);crescent.name='ram-crescent';crescent.rotation.set(CRESCENT_ARC/2,-Math.PI/2,0);crescent.scale.setScalar(3.4);/* Round 4b (FMOVES): as wide as the shot (1.7) */crescent.visible=false;group.add(crescent);}
     // Taisei's energy gathers inward; orbital rings belong only to Konta's spinning techniques.
-    const rings = Array.from({ length: palmWhirlsphere ? 2 : 0 }, (_, i) => {
+    const rings = Array.from({ length: palmKazeyose ? 2 : 0 }, (_, i) => {
       const mesh = new THREE.Mesh(this.ring, this.cyan); mesh.rotation.set(i * 1.05, i * .7, 0); group.add(mesh); return mesh;
     });
     let streams: THREE.InstancedMesh | undefined;
@@ -763,7 +763,7 @@ export class CombatEffects {
       streams = new THREE.InstancedMesh(this.spark, this.cyan, 14);
       streams.instanceMatrix.setUsage(THREE.DynamicDrawUsage); streams.frustumCulled = false; group.add(streams);
     }
-    const halo = new THREE.Mesh(this.sphere, this.halo); halo.name='cast-energy-halo'; halo.scale.setScalar(isSpirit ? 1.1 : 1.2); if(!ownedMaterial&&!palmWhirlsphere)group.add(halo); this.scene.add(group);
+    const halo = new THREE.Mesh(this.sphere, this.halo); halo.name='cast-energy-halo'; halo.scale.setScalar(isSpirit ? 1.1 : 1.2); if(!ownedMaterial&&!palmKazeyose)group.add(halo); this.scene.add(group);
     // The group still travels - its position is the flight - it is only not drawn.
     if(clockHandKnives(event)||(isRoseEmpress(fighterId)||isKuzuChainsaw(fighterId)||isShakugoMagma(fighterId)||isShanxiaoRampage(fighterId)||rosterFlight(fighterId,slot,event.branch,event.actorId)||isAmpereSurge(fighterId)||isPyroclastExplosions(fighterId)||isFullBeamPressure(fighterId)))group.visible=false;
     const start = new THREE.Vector3(event.origin!.x, event.origin!.y, event.origin!.z), end = new THREE.Vector3(event.endpoint!.x, event.endpoint!.y, event.endpoint!.z);
@@ -831,7 +831,7 @@ export class CombatEffects {
     // Gaunt' enders are a man and a sword: steel, no light of their own.
     if (event.branch && PLAIN_ENDERS.has(fighter)) return;
     // A plain fist or a plain cut throws no light of its own; a Sickle Bolt, a
-    // Senpugan or Needle Finger does.
+    // Kazeyose or Iron Nail does.
     if (slot === 'light' || slot === 'heavy' && (el === PHYSICAL || el.rim === 0xb8c8d8)) return;
     if (this.glows.length >= 16) this.glows.shift();
     const ultimate = slot === 'ultimate';
@@ -906,15 +906,15 @@ export class CombatEffects {
       if (cls >= 3) this.chroma(1);
     }
     const melee = move ? move.style === 'melee' : slot !== 'special';
-    // (A combo ender is its own move: LORD ORO's knives only where the ender is thrown steel, Konta's Senpugan never.)
+    // (A combo ender is its own move: LORD ORO's knives only where the ender is thrown steel, Konta's Kazeyose never.)
     const thrownSteel = fighterId === 'oro' && slot === 'heavy' && (!event.branch || ENDER_THROWN.oro?.[event.branch] !== undefined);
-    const whirlsphere = fighterId === 'konta' && slot === 'heavy' && !source?.state.awakened && !event.branch;
+    const kazeyose = fighterId === 'konta' && slot === 'heavy' && !source?.state.awakened && !event.branch;
     const bomb = slot === 'ultimate' && move?.style === 'bomb';
     // Where it landed, on the body as it is drawn, and which way the blow was
     // going when it did: the spark sits on the fist, the foot, the blade or
     // the side the shot came in on, and fans out away from the attacker.
-    if (!bomb) this.contactPoint(event, source, victim, melee && !whirlsphere || thrownSteel, point);
-    if (whirlsphere) source?.chargePosition(point);
+    if (!bomb) this.contactPoint(event, source, victim, melee && !kazeyose || thrownSteel, point);
+    if (kazeyose) source?.chargePosition(point);
     const from = source && melee ? this.limb.copy(source.group.position).setY(point.y) : origin ? this.limb.set(origin.x, origin.y, origin.z) : undefined;
     const dir = from ? this.blow.subVectors(point, from) : undefined;
     if (dir) { if (dir.lengthSq() > 1e-6) dir.normalize(); else dir.set(0, 0, 1); }
@@ -938,7 +938,7 @@ export class CombatEffects {
     }
     // A rush finisher lands as its fighter's own, on top of its spark.
     if (finisher && fighterId && event.kind === 'hit') this.finisherAccent(fighterId, point, dir, victim, floor, time, local, el, !!source?.state.awakened);
-    if (DREAM_IMPACT && local && event.kind === 'hit' && cls === 2 && (melee && !whirlsphere || thrownSteel)) this.screen?.techniqueGrade?.(0xff4a22, .4, .1, point, 5);
+    if (DREAM_IMPACT && local && event.kind === 'hit' && cls === 2 && (melee && !kazeyose || thrownSteel)) this.screen?.techniqueGrade?.(0xff4a22, .4, .1, point, 5);
     // Round 25: every melee blow on a body on its feet kicks the dust at its feet - a low ring and a puff thrown back
     // along the blow.
     if (DREAM_IMPACT && event.kind === 'hit' && melee && victim && victim.state.grounded && Number.isFinite(floor)) {
@@ -949,18 +949,18 @@ export class CombatEffects {
       if (cls >= 1) this.kit.ring(at.x, floor + .04, at.z, .15, .55 + cls * .2, time, .22 + cls * .03, DUST_LIT, DUST_SHADE, .12, 'flat');
       if (h > 1e-3 && (dx || dz)) this.kit.dustSpray(at.x, floor, at.z, dx / h, dz / h, cls >= 2 ? 4 : 2, 2.2 + cls * .5, .28 + cls * .06, time, .38, 1.2);
     }
-    if (DREAM_IMPACT && local && event.kind === 'hit' && cls >= 3 && (melee && !whirlsphere || thrownSteel)) {
+    if (DREAM_IMPACT && local && event.kind === 'hit' && cls >= 3 && (melee && !kazeyose || thrownSteel)) {
       this.screen?.techniqueGrade?.(0xff4a22, .75, .16, point, 7);
       // (An inked impact frame on a launch and a slam was tried: it replaced the contact frame, the one pose the blow
       // has, and the calibration critic marked it down. The panel stays the ultimate's and the long string's.)
     }
-    if (melee && !whirlsphere || thrownSteel) {
+    if (melee && !kazeyose || thrownSteel) {
       // Drawn already, on the frame the blow reached the body, where it did.
-      if (!(melee && !whirlsphere && this.claimTouchSpark(event))) this.melee(point, el, thrownSteel ? Math.min(cls, 1) as ImpactClass : cls, time, dir, victim, floor, local, seed, anchor, !!source?.armed && !thrownSteel, hitTier(slot, event.branch, event.chain), MAGIC_MELEE.has(fighterId ?? ''), OWN_STEEL.has(fighterId ?? ''));
+      if (!(melee && !kazeyose && this.claimTouchSpark(event))) this.melee(point, el, thrownSteel ? Math.min(cls, 1) as ImpactClass : cls, time, dir, victim, floor, local, seed, anchor, !!source?.armed && !thrownSteel, hitTier(slot, event.branch, event.chain), MAGIC_MELEE.has(fighterId ?? ''), OWN_STEEL.has(fighterId ?? ''));
       return;
     }
     this.energy(point, time, seed, el, Math.max(cls, 1) as ImpactClass, local, victim, floor, anchor, dir);
-    // The Static Scarecrow's victim is electrified, and reads it: the
+    // The Static Decoy's victim is electrified, and reads it: the
     // current runs up and down the body a few times as it reels.
     if (fighterId === 'shirokane' && slot === 'special' && !event.branch && victim && event.kind === 'hit') this.shock(victim, time, el);
   }
@@ -1109,7 +1109,7 @@ export class CombatEffects {
    *  simulation hits with (MoveDefinition.radius) and the ring on the floor
    *  marked from the cast (signature/BlastArea) - so what goes off is what
    *  was shown, and a body whose feet are outside it is visibly outside it.
-   *  It was drawn at the bomb's size (2.3 m, the Kitsunebi-Dama's 4.6)
+   *  It was drawn at the bomb's size (2.3 m, the Azure Foxfire's 4.6)
    *  with a shock ring out to 7-9.5 m, over blasts of 6-6.5 m. */
   private ultimateBurst(center: THREE.Vector3, time: number, seed: number, el: Element, violet: boolean, will: boolean, local: boolean, blast: number) {
     let busy = 0; for (const i of this.impacts) if (i.ultimate) busy++;
@@ -1663,17 +1663,17 @@ export class CombatEffects {
     const kit = this.kit;
     if(c.ownedMaterial)c.ownedMaterial.uniforms.uTime.value=time;
     const actor = fighters.get(c.event.actorId),move = c.ender ?? thrown(c.event.fighter!,c.event.slot!,c.event.branch,!!c.kurobi,!!actor?.state.awakened);
-    const whirlsphere=c.event.fighter==='konta'&&c.event.slot==='heavy'&&!c.kurobi&&(!c.event.branch||c.event.branch==='lllh');
-    const poseAge=whirlsphere&&actor?.state.action==='heavy'?actor.state.actionTime*actor.state.actionDuration:time-c.event.serverTime;
+    const kazeyose=c.event.fighter==='konta'&&c.event.slot==='heavy'&&!c.kurobi&&(!c.event.branch||c.event.branch==='lllh');
+    const poseAge=kazeyose&&actor?.state.action==='heavy'?actor.state.actionTime*actor.state.actionDuration:time-c.event.serverTime;
     // The local pose runs ahead of the presentation timeline. Switching back
     // to that older clock on recovery must never make the spent sphere regrow.
-    const age=whirlsphere?Math.max(c.presentedAge??-Infinity,poseAge):poseAge;
-    if(whirlsphere)c.presentedAge=age;
+    const age=kazeyose?Math.max(c.presentedAge??-Infinity,poseAge):poseAge;
+    if(kazeyose)c.presentedAge=age;
     const fired = move.style === 'beam' ? c.beamReleasedAt !== undefined && time >= c.beamReleasedAt : age >= c.release;
     if (c.weapon) c.weapon.visible = age >= c.release - .12;
     const projectile = move.style === 'projectile' || move.style === 'bomb';
     const isSpirit = c.event.fighter === 'taisei' && c.event.slot === 'ultimate';
-    const life = whirlsphere ? Math.min(c.duration,c.release+.38) : projectile ? c.release + c.travel + .08 : c.duration;
+    const life = kazeyose ? Math.min(c.duration,c.release+.38) : projectile ? c.release + c.travel + .08 : c.duration;
     // A sustained beam is still attached to the caster's active action after
     // contact. Free projectiles become independent once they have released.
     const attached=move.style==='beam'||move.style==='melee';
@@ -1708,15 +1708,15 @@ export class CombatEffects {
     let radius = c.event.slot === 'ultimate' ? (isSpirit ? SPIRIT_RADIUS : 2) * (.14 + .86 * Math.pow(charge, .8)) : .1 + charge * .23;
     if(c.event.fighter==='konta'){
       if(c.event.slot==='heavy'&&!c.event.branch)radius=(.035+THREE.MathUtils.smoothstep(age,.06,.48)*.18)*(1-THREE.MathUtils.smoothstep(age,c.release+.10,c.release+.38));
-      // The Giant Senpugan: grown to twice the Senpugan's size by its own contact, gone as quick after it.
-      if(c.event.branch==='lllh'&&whirlsphere)radius=bigBall(age,c.release);
+      // The Great Kazeyose: grown to twice the Kazeyose's size by its own contact, gone as quick after it.
+      if(c.event.branch==='lllh'&&kazeyose)radius=bigBall(age,c.release);
       if(c.event.slot==='ultimate')radius=(c.kurobi?FOXFIRE_ORB.kurobi:FOXFIRE_ORB.held)*(.14+.86*Math.pow(charge,.8));
     }
     if(c.event.fighter==='ouga')radius=c.event.slot==='light'?.08+charge*.06:c.event.slot==='heavy'?.07+charge*.18:c.event.slot==='ultimate'?.05+charge*.11:.045+charge*.095;
     // Taisei's Sunpalm Cannon (8 October 2026): the ball is held in his cupped hands at the hip - at
     // the roster's default (a 0.66 m ball at full charge) it swallowed both hands and his side, and hung ahead of them.
     if(c.event.fighter==='taisei'&&c.event.slot==='special'&&(!c.event.branch||c.event.branch==='airSpecial'))radius=SUNPALM_BALL*(.3+.7*Math.pow(charge,.8));
-    // Wuming's Lightless Cannon is charged the same way now, both hands cupped at his hip.
+    // Wuming's Withering Beam is charged the same way now, both hands cupped at his hip.
     if(c.event.fighter==='wuming'&&c.event.slot==='special'&&!c.event.branch)radius=SUNPALM_BALL*(.3+.7*Math.pow(charge,.8));
     if(c.event.fighter==='jinlin'&&c.event.slot==='ultimate')radius=DROWNED_SUN*(.14+.86*Math.pow(charge,.8));
     // The Sun-Seizing Spiral is drawn to a point at two fingertips, not gathered into a ball.
@@ -1750,7 +1750,7 @@ export class CombatEffects {
       if(c.event.fighter==='konta'&&c.event.slot==='ultimate')radius=c.kurobi?FOXFIRE_ORB.kurobi*.9:FOXFIRE_ORB.held;
       if(c.event.fighter==='ouga')radius=c.event.slot==='light'?.15:.55;
       // Vermilion Seal is one big sphere of his ki; the Drowned Sun goes as it was held.
-      if(c.event.fighter==='jirenga'&&c.event.slot==='special')radius=.9;
+      if(c.event.fighter==='banjaku'&&c.event.slot==='special')radius=.9;
       if(c.event.fighter==='jinlin'&&c.event.slot==='ultimate')radius=DROWNED_SUN;
       if(sun)radius=SUN_RADIUS;
       else if(flame)radius=c.event.fighter==='gummy'?.34:.26;
@@ -1844,10 +1844,10 @@ export class CombatEffects {
       // the caster white and lights nothing else.
       const high = move.style === 'bomb', at = this.chargeLight(c, high);
       kit.lights.request(at.x, at.y, at.z, glow, (high ? 50 : c.event.slot === 'ultimate' ? 18 : c.event.slot === 'special' ? 13 : 7) * (.1 + .9 * strength), high ? 16 : c.event.slot === 'ultimate' ? 12 : 9, c.event.slot === 'ultimate' ? 2.5 : 2);
-    } else if (whirlsphere && age < c.release + .38) { const at = this.chargeLight(c, false); kit.lights.request(at.x, at.y, at.z, 0x5fd4ff, 8, 6, 2); }
+    } else if (kazeyose && age < c.release + .38) { const at = this.chargeLight(c, false); kit.lights.request(at.x, at.y, at.z, 0x5fd4ff, 8, 6, 2); }
     if (move.style === 'melee' && age > c.release) c.group.visible = radius>.005;
     c.group.scale.setScalar(radius * (1 + .012 * Math.sin(time * 43)));
-    const wind=c.group.getObjectByName('galewheel-swallow-darts');
+    const wind=c.group.getObjectByName('galewheel-gust-darts');
     if(wind){
       this.windMaterial.uniforms.uTime.value=time;
       // A shallow tilted disc rests above the palm. The core remains round;
@@ -1886,7 +1886,7 @@ export class CombatEffects {
    *  yet. The simulation holds a cast's clock while its thrower's commands
    *  are late (up to 0.35 s) and through an impact freeze, so a beam can come
    *  out well after its nominal contact - and matched on time alone it was
-   *  never drawn while its damage landed: a 0.25 s hitch in Kyokko-Ho's
+   *  never drawn while its damage landed: a 0.25 s hitch in Royal Aurora's
    *  charge, or Sunpalm Cannon's, burned its victims with no beam on screen. A
    *  late beam's clock moves with its release, so it burns as long as ever. */
   private releases(cast: CastView, event: CombatEvent) {

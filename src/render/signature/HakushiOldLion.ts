@@ -119,8 +119,8 @@ export class HakushiOldLion{
    if(s.action==='awaken'){this.awaken(f,age,detailed);continue;}
    if(s.action==='ultimate'&&s.confirmedAt!==undefined&&age>=.52&&age<.84)this.awaken(f,.576+age-.52,detailed);
    if(s.whiffedAt!==undefined)continue;
-   const whirlsphere=s.action==='heavy'||s.branch==='lllh'||s.branch==='airSpecial';
-   if(whirlsphere&&this.socket(f,'RightHand',this.a)){
+   const kazeyose=s.action==='heavy'||s.branch==='lllh'||s.branch==='airSpecial';
+   if(kazeyose&&this.socket(f,'RightHand',this.a)){
     // The Elder's palm sphere: a big one, wound up to the size of his chest (the stage's solid blue ball turning, his
     // own flames and rings over it, the air drawn in to it, its light on the floor).
     const phase=s.actionTime,charge=clamp(phase/.32),wound=s.action==='heavy'&&!s.branch?clamp(age/HEAVY.contacts[0]):1,fade=clamp((1-phase)/.22),r=.12+.2*Math.max(charge*.5,wound);

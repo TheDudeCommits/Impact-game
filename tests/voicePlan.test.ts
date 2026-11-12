@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AUDIO_CUES, cueDuration, planCombatAudio, type AudioCue, type CueLayer } from '../src/audio/cuePlan';
-import { AWAKENED_HEAVY_PRIORITY, BIG_BANG_PRIORITY, EFFORT_CHANCE, LIGHT_CALL_CHANCE, LIGHT_CALL_COOLDOWN, planVoice, resetVoiceMemory, SUPER_LINE_PRIORITY, voiceRoll } from '../src/audio/voicePlan';
+import { AWAKENED_HEAVY_PRIORITY, CROWN_BURST_PRIORITY, EFFORT_CHANCE, LIGHT_CALL_CHANCE, LIGHT_CALL_COOLDOWN, planVoice, resetVoiceMemory, SUPER_LINE_PRIORITY, voiceRoll } from '../src/audio/voicePlan';
 import { VOICE_CUES } from '../src/audio/voiceCues';
 import { AFTER_BURST, AWAKENING_LINES } from '../src/audio/awakeningLines';
-import { GOLDEN_SAGE, SUPER_OUGA } from '../src/audio/goldAwakeningTiming';
+import { GOLDEN_SAGE, CROWNFIRE } from '../src/audio/goldAwakeningTiming';
 import { AWAKENING_ENTRY, awakeningSwapAt, moveFor } from '../src/game/awakening';
 import { MOVES, RUSH_STAGES } from '../src/game/moves';
 import { barrageWindow } from '../src/game/timeStopBarrage';
@@ -187,7 +187,7 @@ describe('the time-stop barrages', () => {
       const layers = [...cast_, ...cinematic(fighter, awakened)];
       const loop = layers.find(l => l.loop)!;
       expect(loop, 'a looped GAN/GILDED_PUNCH').toBeDefined();
-      expect(loop.cue).toMatch(fighter === 'koko' ? /gan|barrage/ : /noroma/);
+      expect(loop.cue).toMatch(fighter === 'koko' ? /gan|barrage/ : /clockwork|tick/);
       expect(loop.delay!, 'starts right as the barrage does').toBeLessThanOrEqual(window.start);
       expect(loop.delay!).toBeGreaterThanOrEqual(window.start - .1);
       expect(loop.delay! + loop.duration!, 'and plays through it').toBeGreaterThanOrEqual(window.end);
@@ -198,7 +198,7 @@ describe('the time-stop barrages', () => {
       const spoken = [...layers].sort((a, b) => (a.delay ?? 0) - (b.delay ?? 0));
       for (let i = 1; i < spoken.length; i++)
         expect(spoken[i].delay ?? 0).toBeGreaterThanOrEqual((spoken[i - 1].delay ?? 0) + (spoken[i - 1].duration ?? cueDuration(spoken[i - 1].cue)) - 1e-9);
-      if (fighter === 'oro') expect(layers.some(l => l.cue.includes('steamroller')), 'Steamroller still follows').toBe(true);
+      if (fighter === 'oro') expect(layers.some(l => l.cue.includes('hour-of-ruin')), 'Hour of Ruin still follows').toBe(true);
     });
   }
   it('keeps the other chained lines - inside the cinematic, after the call', () => {
@@ -379,53 +379,54 @@ describe("Taisei's gold awakening", () => {
 });
 
 describe("Ouga's gold awakening", () => {
-  const awaken = (id = 1): CombatEvent => ({ id, kind: 'awaken', serverTime: 1, actorId: 'v', fighter: 'ouga', move: 'GOLDEN PRIDE' });
+  const awaken = (id = 1): CombatEvent => ({ id, kind: 'awaken', serverTime: 1, actorId: 'v', fighter: 'ouga', move: 'CROWNFIRE' });
 
   it('names his form in his own recorded voice, on the voice bus, once the burst has passed', () => {
     const layers = planCombatAudio(awaken()), voice = voices(layers);
-    expect(voice.map(l => l.cue)).toEqual(['vo-ouga-super-ouga']);
-    expect(layers.filter(l => l.cue === 'vo-ouga-super-ouga').every(l => l.bus === 'voice'), 'never on the effects bus').toBe(true);
+    expect(voice.map(l => l.cue)).toEqual(['vo-ouga-crownfire']);
+    expect(layers.filter(l => l.cue === 'vo-ouga-crownfire').every(l => l.bus === 'voice'), 'never on the effects bus').toBe(true);
     const line = voice[0];
     expect(line.phase, 'released: the first attack after the entry does not cut it').toBe('release');
     expect(line.gain).toBe(.95);
-    expect(SUPER_OUGA.burst).toBe(awakeningSwapAt('ouga'));
-    expect(line.delay).toBe(SUPER_OUGA.line);
-    expect(line.delay! - SUPER_OUGA.burst, 'after the blast\'s crest').toBeGreaterThan(.15);
+    expect(CROWNFIRE.burst).toBe(awakeningSwapAt('ouga'));
+    expect(line.delay).toBe(CROWNFIRE.line);
+    expect(line.delay! - CROWNFIRE.burst, 'after the blast\'s crest').toBeGreaterThan(.15);
     expect(line.delay!, 'while he is still powering up').toBeLessThan(AWAKENING_ENTRY);
     // On Taisei's beat: the two transform, then declare, alike.
-    expect(line.delay! - SUPER_OUGA.burst).toBeCloseTo(GOLDEN_SAGE.line - GOLDEN_SAGE.burst, 3);
+    expect(line.delay! - CROWNFIRE.burst).toBeCloseTo(GOLDEN_SAGE.line - GOLDEN_SAGE.burst, 3);
     expect(line.voicePriority).toBe(SUPER_LINE_PRIORITY);
-    expect(ORIGINAL_VOICES['vo-ouga-super-ouga']?.text, 'his own line, naming his form').toMatch(/ゴールデン・プライド/);
+    // (Its old form's name cut out of the take: "Bow down..." until the line is recorded again with CROWNFIRE.)
+    expect(ORIGINAL_VOICES['vo-ouga-crownfire']?.text, 'his own line, before his form').toMatch(/ひれ伏せ/);
   });
 
   it('is registered: its length is the WAV\'s that plays, a declaration and not a speech', () => {
-    expect(VOICE_CUES['vo-ouga-super-ouga']).toBe('voice/vo-ouga-super-ouga.wav');
-    const { seconds } = words(`public/assets/audio/v2/${AUDIO_CUES['vo-ouga-super-ouga']}`);
-    expect(cueDuration('vo-ouga-super-ouga')).toBeCloseTo(seconds, 2);
+    expect(VOICE_CUES['vo-ouga-crownfire']).toBe('voice/vo-ouga-crownfire.wav');
+    const { seconds } = words(`public/assets/audio/v2/${AUDIO_CUES['vo-ouga-crownfire']}`);
+    expect(cueDuration('vo-ouga-crownfire')).toBeCloseTo(seconds, 2);
     expect(seconds, 'a declaration, not a speech').toBeLessThan(3);
     // The beat after the opening word is kept, but short: the second phrase a third to half a second after it ends.
-    expect(SUPER_OUGA.super - .65).toBeGreaterThan(.3);
-    expect(SUPER_OUGA.super - .65).toBeLessThan(.5);
+    expect(CROWNFIRE.super - .65).toBeGreaterThan(.3);
+    expect(CROWNFIRE.super - .65).toBeLessThan(.5);
     // The form's name is said with the gold hair on: after the swap, and after the entry has ended.
-    expect(SUPER_OUGA.line + SUPER_OUGA.super).toBeGreaterThan(AWAKENING_ENTRY);
+    expect(CROWNFIRE.line + CROWNFIRE.super).toBeGreaterThan(AWAKENING_ENTRY);
   });
 
-  it('sits between his efforts and his calls: Haou-Dan, the Gale and Kyokko-Ho speak over it', () => {
+  it('sits between his efforts and his calls: Crown Burst, the Gale and Royal Aurora speak over it', () => {
     for (const slot of ['heavy', 'special', 'ultimate'] as const) {
       const base = voices(planVoice(cast({ fighter: 'ouga', slot, actionSeq: 7100 }))), awakened = voices(planVoice(cast({ fighter: 'ouga', slot, actionSeq: 7101 }), true));
       expect(awakened.map(l => l.cue), slot).toEqual(base.map(l => l.cue));
       expect(awakened.length, slot).toBeGreaterThan(0);
       for (const l of awakened) expect(l.voicePriority!, `${slot}: speaks over the line`).toBeGreaterThan(SUPER_LINE_PRIORITY);
     }
-    // Haou-Dan under the beams, as a heavy is under a special.
-    expect(voices(planVoice(cast({ fighter: 'ouga', slot: 'heavy', actionSeq: 7102 })))[0].voicePriority).toBe(BIG_BANG_PRIORITY);
-    expect(BIG_BANG_PRIORITY).toBeLessThan(voices(planVoice(cast({ fighter: 'ouga', slot: 'special', actionSeq: 7103 })))[0].voicePriority!);
+    // Crown Burst under the beams, as a heavy is under a special.
+    expect(voices(planVoice(cast({ fighter: 'ouga', slot: 'heavy', actionSeq: 7102 })))[0].voicePriority).toBe(CROWN_BURST_PRIORITY);
+    expect(CROWN_BURST_PRIORITY).toBeLessThan(voices(planVoice(cast({ fighter: 'ouga', slot: 'special', actionSeq: 7103 })))[0].voicePriority!);
     const efforts = mash('ouga', 30, 'efforts', 1, true).flatMap(s => s.voice);
     expect(efforts.length).toBeGreaterThan(0);
     for (const l of efforts) expect(l.voicePriority!, `${l.cue}: does not cut in on the line, or keep it out`).toBeLessThan(SUPER_LINE_PRIORITY);
   });
 
-  it('outlives his attacks after the entry, and his Haou-Dan and the Gale are still called over it', async () => {
+  it('outlives his attacks after the entry, and his Crown Burst and the Gale are still called over it', async () => {
     const fake = await fakeAudio();
     try {
       const { audio, said } = fake;
@@ -436,33 +437,35 @@ describe("Ouga's gold awakening", () => {
       audio.handle([cast({ id: 2_100_000_000 + seq, actionSeq: seq, actorId: 'v', fighter: 'ouga', serverTime: 50 })], 'v', [{ ...ouga, action: 'light', awakened: false }]);
       expect(fake.sources().filter(x => /vo-ouga-(ha|da|fun)\.wav$/.test(x.buffer?.url ?? '')).length, 'an effort is ringing').toBe(1);
       audio.handle([{ ...awaken(2_100_100_000), serverTime: 50.5 }], 'v', [ouga]);
-      const [line] = said(AUDIO_CUES['vo-ouga-super-ouga']);
+      const [line] = said(AUDIO_CUES['vo-ouga-crownfire']);
       expect(line?.starts, 'the line was scheduled').toBe(1);
       // A light after the entry does not cut it, nor an effort cut in on it.
       for (let n = 0; n < 4; n++)
         audio.handle([cast({ id: 2_100_200_000 + n, actionSeq: 9100 + n, actorId: 'v', fighter: 'ouga', chain: n, serverTime: 51.5 + n * .3 })], 'v', [{ ...ouga, action: 'light', actionStarted: 51.5 + n * .3 }]);
       expect(line.stops, 'a light does not cut the line').toHaveLength(1);
-      // Haou-Dan is called by name over it, the line ducked under the call rather than stopped...
+      // Crown Burst is called by name over it, the line ducked under the call rather than stopped...
       audio.handle([cast({ id: 2_100_300_000, actionSeq: 9200, actorId: 'v', fighter: 'ouga', slot: 'heavy', serverTime: 52.8 })], 'v', [{ ...ouga, action: 'heavy', actionStarted: 52.8 }]);
-      expect(said(AUDIO_CUES['vo-ouga-big-bang']).map(x => x.starts), 'the call speaks').toEqual([1]);
+      expect(said(AUDIO_CUES['vo-ouga-crown-burst']).map(x => x.starts), 'the call speaks').toEqual([1]);
       expect(line.stops, 'the line is not cut').toHaveLength(1);
       expect(line.out!.gain.holds, 'it is ducked under the call').toBeGreaterThan(0);
       // ... and so is the Gale.
       audio.handle([cast({ id: 2_100_400_000, actionSeq: 9201, actorId: 'v', fighter: 'ouga', slot: 'special', serverTime: 53.4 })], 'v', [{ ...ouga, action: 'special', actionStarted: 53.4 }]);
-      expect(said(AUDIO_CUES['vo-ouga-gale']).map(x => x.starts), 'the Gale is called').toEqual([1]);
+      expect(said(AUDIO_CUES['vo-ouga-throne-wave']).map(x => x.starts), 'the Gale is called').toEqual([1]);
     } finally { fake.restore(); }
   });
 });
 
 describe('the awakening lines (the overnight pass, 9 October)', () => {
-  const HEARD: Partial<Record<FighterId, RegExp>> = { kenzo: /羅刹/, gummy: /サンライズ/, shirokane: /番人/, oro: /我が刻/,
+  // (Kenzo's and Kagari's lines had their old forms' names cut out of the takes: they say the moment until they are recorded
+  // again with DUNE ONI and ALL ABLAZE.)
+  const HEARD: Partial<Record<FighterId, RegExp>> = { kenzo: /鬼面/, gummy: /サンライズ/, shirokane: /番人/, oro: /我が刻/,
     setsu: /刹那/, gaku: /狛犬/, ward: /手術室/, kosho: /フー・ブルー/, shiden: /雷/, tobari: /鴉天狗/,
-    asahi: /夜明け/, koko: /アイアン・ララバイ/, kagari: /カグツチ/, 'gohaku': /白猿/,
+    asahi: /夜明け/, koko: /アイアン・ララバイ/, kagari: /燃え上がれ/, 'gohaku': /白猿/,
     kuon: /天眼/, sorrel: /紅の意志/, dorado: /水平線/, 'rook': /ホロウ・クラウン/ };
   const SILENT: FighterId[] = [];
   const NAMED = Object.keys(AWAKENING_LINES) as FighterId[];
   const awaken = (fighter: FighterId, id = 1): CombatEvent => ({ id, kind: 'awaken', serverTime: 1, actorId: 'w', fighter, move: 'AWAKEN' });
-  const ORIGINAL_LINES: FighterId[] = ['taisei', 'ouga', 'nigo', 'konta', 'gaunt', 'gorai', 'haldor', 'shiun', 'magatsu', 'vesper', 'imago', 'wuming', 'jirenga', 'jinlin', 'ippon', 'sekka', 'levin', 'akagane'];
+  const ORIGINAL_LINES: FighterId[] = ['taisei', 'ouga', 'nigo', 'konta', 'gaunt', 'gorai', 'haldor', 'shiun', 'magatsu', 'vesper', 'imago', 'wuming', 'banjaku', 'jinlin', 'ippon', 'sekka', 'levin', 'akagane'];
 
   // Expansion entries use source-recorded resolve lines or native acting at entry,
   // not a fabricated spoken name for every focus/awakening.
@@ -473,8 +476,8 @@ describe('the awakening lines (the overnight pass, 9 October)', () => {
     shanxiao:'vo-shanxiao-unbound-fury', tancho:'vo-tancho-red-crown', bellows:'vo-bellows-stoked',
     mikage:'vo-mikage-hackles-up', akaito:'vo-akaito-ring-pact', shijima:'vo-shijima-unsealed', tempo:'vo-tempo-awakening',
     oyashio:'vo-oyashio-sea', adad:'vo-adad-awakening', senko:'vo-senko-speed', buna:'vo-buna-wake-the-winter',
-    ume:'vo-ume-grand-champion', lanthorn:'vo-lanthorn-awakening', highsun:'vo-highsun-noon', torsion:'vo-torsion-serious', kubiwa:'vo-kubiwa-awakening', onigawara:'vo-onigawara-awaken', minase:'vo-minase-sage', hinomoto:'vo-hinomoto-time-ripe',amagoi:'vo-amagoi-awakening','shakudo':'vo-shakudo-serious', hikui:'vo-hikui-awaken', tokan:'vo-tokan-justice', strappado:'vo-strappado-showstopper', unari:'vo-unari-awakening', barrow:'vo-barrow-strongest', sashigane:'vo-sashigane-no-margin', gosu:'vo-gosu-awakening',
-    kusushi:'vo-kusushi-grand-champion', hakushi:'vo-hakushi-awaken',
+    ume:'vo-ume-yokozuna', lanthorn:'vo-lanthorn-awakening', highsun:'vo-highsun-noon', torsion:'vo-torsion-serious', kubiwa:'vo-kubiwa-awakening', onigawara:'vo-onigawara-awaken', minase:'vo-minase-sage', hinomoto:'vo-hinomoto-time-ripe',amagoi:'vo-amagoi-awakening','shakudo':'vo-shakudo-serious', hikui:'vo-hikui-awaken', tokan:'vo-tokan-justice', strappado:'vo-strappado-showstopper', unari:'vo-unari-awakening', barrow:'vo-barrow-strongest', sashigane:'vo-sashigane-no-margin', gosu:'vo-gosu-awakening',
+    kusushi:'vo-kusushi-yokozuna', hakushi:'vo-hakushi-awaken',
     suzuran:'vo-suzuran-resolve', wataame:'vo-wataame-awakening',
   };
   for (const [fighter, cue] of Object.entries(ENTRY_CUES) as [FighterId, AudioCue][]) {

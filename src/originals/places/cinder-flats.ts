@@ -98,14 +98,12 @@ function flows(f: Forge) {
 }
 
 /** places-gen: the generated pieces (Tripo; own/cinder-*), each where r10 built its own: the nave north-west of the flat
- *  along r10's line, the spire's tip south-east, the bell north-east, the markers east, west and south, and basalt clusters
- *  round the flat's edge. */
+ *  along r10's line, the spire's tip south-east, the markers east, west and south, and basalt clusters round the flat's edge. */
 async function generated(c: DressContext) {
   const { kit } = c, r = rand(312);
-  await kit.load(['own/cinder-nave', 'own/cinder-spire', 'own/cinder-bell', 'own/cinder-markers', 'own/cinder-columns']);
+  await kit.load(['own/cinder-nave', 'own/cinder-spire', 'own/cinder-markers', 'own/cinder-columns']);
   kit.place('own/cinder-nave', { x: -34, y: height(-34, -60) - 2.5, z: -60, height: 26, rot: Math.PI / 2 + .35 });
   kit.place('own/cinder-spire', { x: 60, y: height(60, 26) - 2, z: 26, height: 14, rot: .7 });
-  kit.place('own/cinder-bell', { x: 30, y: height(30, -54) - 1, z: -54, height: 9, rot: Math.atan2(-30, -54) });
   for (const [cx, cz] of [[FLAT + 12, -10], [-FLAT - 14, 16], [-8, FLAT + 14], [10, FLAT + 12]] as const)
     kit.place('own/cinder-markers', { x: cx, y: height(cx, cz) - .3, z: cz, height: 2.8 + r() * .8, rot: Math.atan2(-cx, -cz) + (r() - .5) * .4 });
   for (let k = 0; k < 5; k++) {

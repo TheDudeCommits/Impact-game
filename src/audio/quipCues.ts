@@ -51,8 +51,8 @@ export const QUIP_CUES = {
   'vo-imago-quip-advantage': 'voice/vo-imago-quip-advantage.wav',
   'vo-wuming-quip-resolve': 'voice/vo-wuming-quip-resolve.wav',
   'vo-wuming-quip-advantage': 'voice/vo-wuming-quip-advantage.wav',
-  'vo-jirenga-quip-resolve': 'voice/vo-jirenga-quip-resolve.wav',
-  'vo-jirenga-quip-advantage': 'voice/vo-jirenga-quip-advantage.wav',
+  'vo-banjaku-quip-resolve': 'voice/vo-banjaku-quip-resolve.wav',
+  'vo-banjaku-quip-advantage': 'voice/vo-banjaku-quip-advantage.wav',
   'vo-jinlin-quip-resolve': 'voice/vo-jinlin-quip-resolve.wav',
   'vo-jinlin-quip-advantage': 'voice/vo-jinlin-quip-advantage.wav',
   'vo-gohaku-quip-resolve': 'voice/vo-gohaku-quip-resolve.wav',
@@ -175,9 +175,9 @@ export const FIGHTER_QUIPS = {
     "resolve": "vo-wuming-quip-resolve",
     "advantage": "vo-wuming-quip-advantage"
   },
-  "jirenga": {
-    "resolve": "vo-jirenga-quip-resolve",
-    "advantage": "vo-jirenga-quip-advantage"
+  "banjaku": {
+    "resolve": "vo-banjaku-quip-resolve",
+    "advantage": "vo-banjaku-quip-advantage"
   },
   "jinlin": {
     "resolve": "vo-jinlin-quip-resolve",

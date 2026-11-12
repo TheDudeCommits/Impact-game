@@ -14,7 +14,7 @@ export const THREAD: StageLook = { core: lin(3.3, 2.05, 2.15), main: lin(2.45, .
 export const VEIL: StageLook = { core: lin(3.1, 2.95, 3.3), main: lin(1.7, 1.42, 2.25), rim: lin(.48, .36, .78), light: lin(1.22, 1.08, 1.48),
   element: { spike: 0xffffff, rim: 0xd4c0ed, light: 0xe8dcff, ink: 0x2a2040 }, shell: 0xeee6ff, edge: 0x6a5a9a, flame: -1, dark: false, heart: 0 };
 /** The floor under the vow: the stone gone still and dark, her lilac at its creeping edge; nothing burns in it. */
-export const HUSH: StageLook = { ...VEIL, core: lin(1.9, 1.6, 2.6), main: lin(.95, .7, 1.6), rim: lin(.22, .14, .4), dark: true };
+export const SLUMBER: StageLook = { ...VEIL, core: lin(1.9, 1.6, 2.6), main: lin(.95, .7, 1.6), rim: lin(.22, .14, .4), dark: true };
 
 const TAU = Math.PI * 2, UP = new THREE.Vector3(0, 1, 0), ACROSS = new THREE.Vector3(1, 0, 0), DEEP = new THREE.Vector3(0, 0, 1);
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
@@ -24,7 +24,7 @@ const CONFIRM = .576, CHARGE = 1.44, BLAST = 2.592, BLAST_END = 3.06, END = 3.2;
 /** A knot of three loops (the trefoil's shadow: one cord, closed on itself), `t` 0..1 round it, in a unit's reach. */
 const knot = (t: number, out: THREE.Vector2) => { const a = t * TAU; return out.set((Math.sin(a) + 2 * Math.sin(2 * a)) / 3, (Math.cos(a) - 2 * Math.cos(2 * a)) / 3); };
 
-/** The ghost bride's surface (her skinned build, akaito-bride*.glb): a ghost drawn in light. Her edges burn lilac-white
+/** The red thread shade's surface (her skinned build, akaito-bride*.glb): a ghost drawn in light. Her edges burn lilac-white
  *  over the bloom threshold, her body is glass with bands of her veil's light running down it, and she breaks up out of
  *  nothing as `presence` rises (value noise on her bind-pose surface, so the grain stays on her as she moves) with a
  *  crimson edge burning just inside the break - the thread she is made of. Premultiplied, depth-tested, not written. */
@@ -70,7 +70,7 @@ void main(){
   gl_FragColor=vec4(col*a,a);
 }`;
 
-/** Her material, for each of her meshes: `presence` is AkaitoGhostBride's own uniform (0 gone, 1 whole). */
+/** Her material, for each of her meshes: `presence` is AkaitoShade's own uniform (0 gone, 1 whole). */
 export function brideMaterial(presence: { value: number }, clock: { value: number }): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
     name: 'AkaitoBride', vertexShader: brideVertex, fragmentShader: brideFragment, side: THREE.FrontSide,
@@ -102,7 +102,7 @@ export class AkaitoVow {
   /** The clock her material breathes by. */
   get clock() { return this.clockValue; }
 
-  /** The frame begins (AkaitoGhostBride.update's top). */
+  /** The frame begins (AkaitoShade.update's top). */
   begin(time: number, detail: boolean) { this.time = time; this.detail = detail; this.clockValue.value = time % 1000; this.threads.begin(); }
 
   // ------------------------------------------------------------------------------------------------- the strokes
@@ -167,19 +167,19 @@ export class AkaitoVow {
 
   // ------------------------------------------------------------------------------------------------- the move
 
-  /** His katana's edge through the wind-up of the move, in thread's colour (AkaitoGhostBride.windup's ultimate). */
+  /** His katana's edge through the wind-up of the move, in thread's colour (AkaitoShade.windup's ultimate). */
   windup(st: MoveStage, hand: THREE.Vector3, tip: THREE.Vector3, k: number, seed: number) {
     st.streak(hand, tip, .035 + .045 * k, THREAD.main, .55 + .6 * k); st.streak(hand, tip, .012, THREAD.core, k);
     st.charge(tip, THREAD, .22, k, seed);
   }
-  /** One of the two cuts that open it landed at `p` (AkaitoGhostBride.land's ultimate, contact 0 and 1). */
+  /** One of the two cuts that open it landed at `p` (AkaitoShade.land's ultimate, contact 0 and 1). */
   cut(st: MoveStage, p: THREE.Vector3, ground: THREE.Vector3, dir: THREE.Vector3, floor: number, yaw: number, second: boolean, t: number) {
     const cut = this.cuts[this.cutCursor++ % this.cuts.length];
     cut.p.copy(p); cut.yaw = yaw; cut.roll = second ? -.7 : .6; cut.born = t; cut.size = second ? 2.7 : 2.3; cut.live = true;
     st.burst(p, THREAD, second ? 1.4 : 1.1, t, { dir, floor, clean: true });
     if (second) { st.shock(ground, THREAD, 5.2, t, .45); st.shock(ground, VEIL, 3.4, t + .06, .4); }
   }
-  /** The promise kept: the blast where the last blow lands (AkaitoGhostBride.land's ultimate, contact 2). */
+  /** The promise kept: the blast where the last blow lands (AkaitoShade.land's ultimate, contact 2). */
   land(st: MoveStage, point: THREE.Vector3, ground: THREE.Vector3, dir: THREE.Vector3, floor: number, t: number, seed: number) {
     st.burst(point, THREAD, 3.2, t, { dir, floor });
     st.dome(point, VEIL, 5, t, .5);
@@ -207,7 +207,7 @@ export class AkaitoVow {
     const mid = this.a.addVectors(f.feet, f.targetFeet).multiplyScalar(.5);
     mid.y = floorUnder(mid.x, Math.min(f.feet.y, f.targetFeet.y), mid.z);
     const apart = Math.hypot(f.feet.x - f.targetFeet.x, f.feet.z - f.targetFeet.z);
-    st.pool(this.b.copy(mid), apart * .5 + 2.6 + 2 * g, HUSH, Math.min(1, .25 + g * 1.2) * fade, seed, .9);
+    st.pool(this.b.copy(mid), apart * .5 + 2.6 + 2 * g, SLUMBER, Math.min(1, .25 + g * 1.2) * fade, seed, .9);
     const ringR = apart * .5 + 2.2;
     this.floorRing(mid, ringR, smooth(0, .35, g), .07, 1.1 * fade, t * .35 + seed);
     this.floorRing(mid, ringR + .28, smooth(.1, .5, g), .04, .8 * fade, -t * .5 + seed);
@@ -248,7 +248,7 @@ export class AkaitoVow {
   }
 
   /** What outlives a frame of the move: the cuts' arcs, the knot flaring where the promise was kept, the cut threads
-   *  falling, petals of her veil. AkaitoGhostBride.update's end, every frame. */
+   *  falling, petals of her veil. AkaitoShade.update's end, every frame. */
   tick(st: MoveStage) {
     const t = this.time;
     for (const cut of this.cuts) {
@@ -315,7 +315,7 @@ export class AkaitoVow {
       this.stroke(this.a, this.b, .03, .9 * fade);
     }
   }
-  /** The frame ends (AkaitoGhostBride.update's end). */
+  /** The frame ends (AkaitoShade.update's end). */
   end() { this.threads.end(); }
   reset() { for (const c of this.cuts) c.live = false; for (const k of this.kept) k.live = false; this.threads.begin(); this.threads.end(); }
   dispose() { this.threads.mesh.removeFromParent(); this.threads.mesh.geometry.dispose(); this.threads.mesh.material.dispose(); }

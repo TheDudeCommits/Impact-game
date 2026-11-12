@@ -4,7 +4,7 @@ export const PIXEL_EMBLEMS: Partial<Record<FighterId, { glyph: string; why: stri
   konta: { glyph: '狐', why: "Konta's fox spirit, HOMURA" },
   gummy: { glyph: '潮', why: "Lucy's tides" },
   kosho: { glyph: '胡椒', why: "Kosho's name: pepper" },
-  ouga: { glyph: '覇', why: "Ouga's Haou: the sovereign" },
+  ouga: { glyph: '覇', why: "Ouga's crown: the sovereign" },
   kagari: { glyph: '篝', why: "Kagari's name: the watch-fire" },
   kuon: { glyph: '久遠', why: "Kuon's name: eternity" },
   setsu: { glyph: '雪', why: "Setsu's snow" },

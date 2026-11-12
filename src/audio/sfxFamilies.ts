@@ -81,7 +81,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   kenzo: [null, null, null, 'wind'],                          // his own blades; Oni Wind: Great Sandspout is a twister of cuts
   kosho: [null, 'fire', 'fire', 'fire'],                     // Ember Leg burns
   kagari: ['fire', 'fire', 'fire', 'fire'],
-  ward: [null, null, null, 'psychic'],                        // THEATRE is his own; Takt lifts the ground with it
+  ward: [null, null, null, 'psychic'],                        // SURGERY is his own; Takt lifts the ground with it
   sorayomi: [null, 'wind', 'lightning', 'lightning'],            // Gust Spinner, Storm Warning, Zeus
   strix: ['steel', 'steel', 'steel', 'steel'],
   'basilissa': ['stone', 'light', 'stone', 'light'],       // her kicks turn what they strike to stone; Sandrose Volley and Gaze of the Stone Rose are light
@@ -101,11 +101,11 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   adad: ['lightning', 'lightning', 'lightning', 'lightning'],
   shakugo: ['magma', 'magma', 'magma', 'magma'],
   // ----- Konta
-  konta: [null, null, null, 'wind'],                        // the Senpugan is his own; a barrage of them is wind
-  shiden: [null, null, 'lightning', 'fire'],                 // Shrike Bolt and Black Pyre are his own; Ikazuchi Arrow; the great ember
-  shirokane: [null, null, null, 'water'],                      // the Sickle Bolt is his own; the Great Dust Fall
-  tobari: ['psychic', null, 'psychic', 'fire'],              // a crow double and Red Moon Reverie are in the mind; Black Pyre is his own
-  akagane: [null, 'fire', 'stone', 'fire'],                   // Cinder Art: Burning Sea; Heaven's Anvil is a meteor
+  konta: [null, null, null, 'wind'],                        // the Kazeyose is his own; a barrage of them is wind
+  shiden: [null, null, 'lightning', 'fire'],                 // Storm Talon and Black Pyre are his own; Ikazuchi Arrow; the great ember
+  shirokane: [null, null, null, 'water'],                      // the Sickle Bolt is his own; the Dust Curtain
+  tobari: ['psychic', null, 'psychic', 'fire'],              // a crow double and Crow's Nightmare are in the mind; Black Pyre is his own
+  akagane: [null, 'fire', 'stone', 'fire'],                   // Burning Sea; Copper Star is a meteor
   minase: ['wind', 'light', 'light', 'wind'],                // the palm sphere; the Relay Leap is a flash
   ume: ['stone', null, 'stone', 'stone'],                 // what her fist does to the ground
   kusushi: ['stone', 'stone', 'stone', 'acid'],              // the same strength; the slug's acid
@@ -115,7 +115,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   'madake': ['wind', 'wind', 'blast', 'wind'],            // air struck so hard it is a weapon
   // ----- Cinder Requiem
   nigo: ['steel', null, null, 'steel'],                    // the Nightfang and NIGHTFALL are his own
-  shiun: ['psychic', 'ki', 'dark', 'lightning'],             // False Encore, a hymn volley, BLACK CONFESSIONAL, a thunder hymn
+  shiun: ['psychic', 'ki', 'dark', 'lightning'],             // Understudy, a hymn volley, FERMATA, a storm psalm
   shidare: ['petal', 'petal', 'petal', 'petal'],
   onigawara: ['steel', 'steel', 'steel', 'steel'],
   irbis: ['beast', 'ki', 'beast', 'knives'],              // claws; the Crown Blast; BARED FANGS's needles in a hail
@@ -126,7 +126,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   kuon: [null, null, null, 'void'],                          // Blue, Red and Purple are his own; Hex: Collapse
   magatsu: ['steel', 'steel', 'steel', 'fire'],               // Cleave and Flaying Cut; Calamity Pyre burns
   tempo: ['dark', 'blood', 'flash', 'flash'],                 // hex energy; the blood shot; the Dark Spark
-  akaito: ['steel', 'sonic', 'dark', 'dark'],                  // Whispered Vow; Ghost Bride
+  akaito: ['steel', 'sonic', 'dark', 'dark'],                  // Whispered Vow; Red Thread Shade
   sashigane: ['steel', 'stone', 'steel', 'steel'],              // Collapse breaks what is round him
   chohan: ['steel', 'steel', 'steel', 'steel'],
   // ----- Salvage Wilds
@@ -140,7 +140,7 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   ouga: [null, null, null, 'ki'],
   shanxiao: [null, 'ki', 'ki', 'ki'],
   'wuming': ['ki', 'ki', 'ki', 'light'],                 // Lotus Verdict: columns of divine light
-  jirenga: ['ki', 'ki', 'ki', 'ki'],
+  banjaku: ['ki', 'ki', 'ki', 'ki'],
   'jinlin': [null, 'ki', 'ki', 'ki'],
   'gohaku': [null, 'ki', 'ki', 'ki'],
   // ----- Beacon Ward
@@ -150,9 +150,9 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   bellows: ['fire', 'fire', 'fire', 'fire'],
   'full-beam': ['wind', 'wind', 'wind', 'wind'],
   // ----- Black Snow
-  asahi: ['steel', 'water', 'fire', 'water'],              // Tide Breath; Lantern Rite: First Light
+  asahi: ['steel', 'water', 'fire', 'water'],              // Tide Breath; First Light
   yodaka: ['fire', 'fire', 'fire', 'fire'],
-  sekka: [null, 'wind', 'blast', 'ice'],                     // Hailstone Fist; Shatter Art: Black Blizzard; his snowflake drawn on the floor, and everything on it shattering
+  sekka: [null, 'wind', 'blast', 'ice'],                     // Hailstone Fist; Black Blizzard; his snowflake drawn on the floor, and everything on it shattering
   // ----- Blast Radius
   ippon: [null, null, 'blast', 'stone'],                   // the Dust Allergy is his own; the Table Flip
   torsion: ['psychic', 'stone', 'wind', 'wind'],           // her mind's grip; rubble thrown; the Tornado of Terror
@@ -181,11 +181,11 @@ export const MOVE_FAMILY: Readonly<Record<FighterId, readonly [heavy: F, special
   'shibuichi': [null, 'stone', 'stone', 'light'],       // transmuted stone; a transmutation circle, and the reaction's light rising out of it
   // ----- the rest
   koko: [null, null, null, 'stone'],                       // Iron Spirit is his own; the Ground Smash
-  oro: [null, null, null, 'knives'],                         // HUSH is his own; a barrage of knives
+  oro: [null, null, null, 'knives'],                         // SLUMBER is his own; a barrage of knives
   kinu: ['string', null, 'string', 'string'],              // her puppet's thread
   gosu: [null, null, 'light', 'knives'],                   // things mending in light; a shard shot
   gaunt: [null, null, null, 'knives'],                        // the great sword and the cannon are his own; crossbow bolts
-  vesper: ['steel', 'steel', 'dark', 'wind'],              // the offering; a flock of white hawks streaming in on their own wind
+  vesper: ['steel', 'steel', 'dark', 'wind'],              // the Evensong; a flock of white hawks streaming in on their own wind
   'rook': ['steel', 'psychic', 'dark', 'dark'],       // daggers; Grave Grip; the shadows
   'rakucho': ['blood', 'blood', 'blood', 'blood'],        // the tendril
   hikui: ['fire', 'steel', 'fire', 'fire'],                   // the witchfire, and its dragon

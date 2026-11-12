@@ -22,8 +22,8 @@ export const SIGNATURES: Readonly<Partial<Record<FighterId, Partial<Record<Attac
     special: { what: SUNPALM_CANNON, cast: [['fx-sig-sunpalm-charge', .4, 'contact']] },
   },
   ouga: {
-    special: { what: 'the Shikou-Ha charging: rougher than a Golden\'s blue, a saw-edged growl that buzzes as it climbs', cast: [['fx-sig-ouga-gale', .44, 'contact']] },
-    ultimate: { what: 'Kyokko-Ho: electricity tearing wider and wider between his hands, then the flash - a crack and a wide roar', cast: [['fx-sig-ouga-flash', .46, 'contact']] },
+    special: { what: 'the Throne Wave charging: rougher than a Golden\'s blue, a saw-edged growl that buzzes as it climbs', cast: [['fx-sig-ouga-throne-wave', .44, 'contact']] },
+    ultimate: { what: 'Royal Aurora: electricity tearing wider and wider between his hands, then the flash - a crack and a wide roar', cast: [['fx-sig-ouga-flash', .46, 'contact']] },
   },
   kosho: {
     special: { what: BURNING_LEG, cast: [['fx-sig-kosho-flambe', .42, 'contact']], hit: [['fx-sig-kosho-sear', .4]] },

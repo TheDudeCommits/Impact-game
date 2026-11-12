@@ -986,26 +986,26 @@
    "vo-hakushi-bell-a"
   ]
  },
- "jirenga": {
+ "banjaku": {
   "bell": [
-   "vo-jirenga-bell-a"
+   "vo-banjaku-bell-a"
   ],
   "kill": [
-   "vo-jirenga-kill-a",
-   "vo-jirenga-kill-b"
+   "vo-banjaku-kill-a",
+   "vo-banjaku-kill-b"
   ],
   "low": [
-   "vo-jirenga-low-a"
+   "vo-banjaku-low-a"
   ],
   "parry": [
-   "vo-jirenga-parry-a"
+   "vo-banjaku-parry-a"
   ],
   "taunt": [
-   "vo-jirenga-taunt-a",
-   "vo-jirenga-taunt-b"
+   "vo-banjaku-taunt-a",
+   "vo-banjaku-taunt-b"
   ],
   "win": [
-   "vo-jirenga-win-a"
+   "vo-banjaku-win-a"
   ]
  },
  "kinu": {

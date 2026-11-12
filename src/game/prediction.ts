@@ -219,7 +219,7 @@ export class Prediction {
       }
       // Round 3e (REACT): previewed only on a body that cannot get out of its
       // way (`committed`). On one free to move or guard, the local copy - which
-      // stands it still where the last snapshot had it - lands a Senpugan the
+      // stands it still where the last snapshot had it - lands a Kazeyose the
       // server does not: the third blind critic drew a fleeing Gummy launched
       // in 7 of 12 trials and a guarding one for 180 ms. Such a blow is drawn
       // when the server lands it, as every other move's is.
@@ -252,7 +252,7 @@ export class Prediction {
     const seen=this.seen.get(id);
     if(!seen)return true;
     if(this.committed(id,at))return true;
-    // A charge-in (Senpugan, Shrike Bolt, the Sickle Bolt) is thrown over half
+    // A charge-in (Kazeyose, Storm Talon, the Sickle Bolt) is thrown over half
     // a second of telegraph at a body free to answer it inside the round trip:
     // one standing still at the last snapshot was running by the blow in the
     // critic's late trials. Only a committed body is answered ahead of the
@@ -276,8 +276,8 @@ export class Prediction {
       if(this.authoritativeImpacts.has(impactKey(event)))return false;
       const playback=this.playback;
       if(!playback||playback.seq!==event.actionSeq)return false;
-      if(event.branch)return false; // A combo ender is no Senpugan: never presented ahead of the server (game/combos.ts).
-      if(playback.age<MOVES.konta.heavy.contacts[0])return true; // Round 3d (PACE): the Senpugan's own contact (was .94).
+      if(event.branch)return false; // A combo ender is no Kazeyose: never presented ahead of the server (game/combos.ts).
+      if(playback.age<MOVES.konta.heavy.contacts[0])return true; // Round 3d (PACE): the Kazeyose's own contact (was .94).
       ready.push(event);
       const key=impactKey(event);this.presentedImpacts.add(key);
       if(this.presentedImpacts.size>128)this.presentedImpacts.delete(this.presentedImpacts.values().next().value!);
@@ -515,7 +515,7 @@ export class Prediction {
       velocity:actor?{x:actor.mx,z:actor.mz}:undefined,input:actor?{...actor.input}:undefined};
   }
 
-  /** Only a locally landed Senpugan previews the defender's public reaction.
+  /** Only a locally landed Kazeyose previews the defender's public reaction.
    * Health/resources remain from the authoritative snapshot. Its kinematics
    * roll back with the same command history, so impact and launch share a frame. */
   sampleRemote(dt:number,server:PlayerState,alpha=1):PlayerState {

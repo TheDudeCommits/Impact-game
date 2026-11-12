@@ -246,7 +246,7 @@ export const LOOK_CHANGES: Partial<Record<StageId, LookChange>> = {
     bloom: { strength: .7 },
     atmosphere: { kind: 'none', count: 0 },
   },
-  'hidden-ash': {
+  'ashwood': {
     finish: { haze: { color: 0x6a6466 } },
     rim: { color: 0xffa868, strength: 2.1 },
     fog: { color: 0x5a5658 },

@@ -18,9 +18,9 @@ type Signature = 'quake' | 'magma' | 'ice' | 'light' | 'void' | 'power' | 'beast
 /** What each boss sounds like arriving, by enemy id (src/survival/enemies.ts). */
 const SIGNATURE: Record<string, Signature> = {
   haldor: 'quake', barrow: 'void', caldera: 'magma', ashwing: 'magma', gorai: 'magma', 'gorai-wyrm': 'magma', rime: 'ice', lumen: 'light',
-  shiun: 'void', akagane: 'void', nihil: 'void', 'wuming': 'power', 'jinlin': 'power', jirenga: 'power',
+  shiun: 'void', akagane: 'void', nihil: 'void', 'wuming': 'power', 'jinlin': 'power', banjaku: 'power',
   kade: 'beast', harrow: 'beast', kurobi: 'beast', zarek: 'beast', 'nightfall': 'beast',
-  rakshasa: 'steel', kuromitsu: 'steel', takane: 'steel', mirabel: 'soul', kanuki: 'door', gantry: 'brute', oro: 'void',
+  'dune-oni': 'steel', kuromitsu: 'steel', takane: 'steel', mirabel: 'soul', kanuki: 'door', gantry: 'brute', oro: 'void',
   magatsu: 'steel', vesper: 'void', imago: 'beast',
 };
 interface Voice { stop(at: number): void }
@@ -74,7 +74,7 @@ export class RiftAudio {
   /** The horde snarling all round, as thick as the field is. */
   private hordeOut?: GainNode;
   /** The bosses' voice channel: one line at a time (35 of 132 lines began over
-   *  another), and no line again within twenty seconds (Jirenga said "this
+   *  another), and no line again within twenty seconds (Banjaku said "this
    *  power" eight times in 39 s). `voiceUntil` is on the audio clock. */
   private voiceUntil = 0;
   private readonly heard = new Map<string, number>();
@@ -684,7 +684,7 @@ export class RiftAudio {
       const low = this.filter('lowpass', 180, .5, this.gain(.14, synth));
       keep(this.loop(this.brown!, low, .5));
       bed.next = now + 6 + Math.random() * 8;
-      bed.tick = t => { if (t >= bed.next) { this.bell(t, out); bed.next = t + 22 + Math.random() * 20; } };
+      bed.tick = t => { if (t >= bed.next) { this.hornCall(t, out, .12, true); bed.next = t + 22 + Math.random() * 20; } }; // (a far war horn)
     } else if (sound === 'rift-fortress') {
       // Rain on stone, drips, and thunder rolling in now and then.
       const hiss = this.filter('highpass', 1300, .5, this.filter('lowpass', 7500, .5, this.gain(.14, synth)));
@@ -697,7 +697,7 @@ export class RiftAudio {
         while (drip < t + .25) { const at = Math.max(t, drip); this.tone('sine', 2200 + Math.random() * 1600, 900, at, .001, .06, .025, synth, .05); drip = at + .08 + Math.random() * .4; }
       };
     } else {
-      // The Offering: a drone of detuned saws under a slow sweep, and a heartbeat.
+      // Dusk: a drone of detuned saws under a slow sweep, and a heartbeat.
       const drone = this.filter('lowpass', 190, 1.4, this.gain(.1, synth));
       for (const f of [41.2, 41.5, 61.8, 82.1]) { const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; o.connect(drone); o.start(); keep(o); }
       keep(this.lfo(drone.frequency, .05, 90));
@@ -828,18 +828,35 @@ export class RiftAudio {
       o.connect(band); o.start(at + start); o.stop(at + 2.5); vib.stop(at + 2.5);
     }
   }
-  /** A new place: a deep bell struck once, and the wind drawing in. */
+  /** A new place: a great war drum struck once, and the wind drawing in. (The cue keeps its id.) */
   private toll() {
     this.cue('place-bell');
     const at = this.ctx!.currentTime + .05;
-    this.bell(at, this.hits!, .5);
+    this.greatDrum(at, this.hits!, .5);
     this.burst(this.brown!, this.hits!, at, 1.2, 2.2, .35, ['lowpass', 500, .7], .7);
   }
-  /** A struck bell: a fundamental and its inharmonic partials, long in the hall. */
-  private bell(at: number, out: AudioNode, level = .12) {
-    for (const [ratio, amp, decay] of [[1, 1, 5], [2.01, .5, 3.4], [2.76, .35, 2.4], [5.4, .18, 1.2]] as const) {
-      const o = this.tone('sine', 98 * ratio, 98 * ratio, at, .004, decay, level * amp, out);
-      this.send(o, .4);
+  /** A great war drum struck once, long in the hall: the head's deep boom falling away, the
+   *  skin's slap, the frame's thump - a round's taiko (drums()), bigger and lower, at `level`. */
+  private greatDrum(at: number, out: AudioNode, level = .12) {
+    const body = this.tone('sine', 96, 36, at, .004, 2.4, level * 1.9, out, .55);
+    this.send(body, .45);
+    const skin = this.burst(this.white!, out, at, .001, .08, level * .55, ['bandpass', 760, .8]);
+    this.send(skin, .3);
+    const thump = this.burst(this.brown!, out, at, .002, .45, level * .8, ['lowpass', 240, .7]);
+    this.send(thump, .35);
+  }
+  /** A war horn's long call: one note swelling and fading, a fifth over it with `fifth`, brassy
+   *  through a band; `far`, dulled and mostly hall, as heard over the graves. */
+  private hornCall(at: number, out: AudioNode, level: number, far = false, fifth = true) {
+    const ctx = this.ctx!, band = this.filter('bandpass', far ? 440 : 600, far ? 1.6 : 1.1), g = this.gain(0, out);
+    band.connect(g); this.send(g, far ? .85 : .55);
+    const peak = level * (far ? .55 : 1), length = far ? 4.4 : 3.2;
+    g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(peak, at + (far ? 1.2 : .5)); g.gain.setValueAtTime(peak, at + length * .5);
+    g.gain.exponentialRampToValueAtTime(.0001, at + length);
+    for (const [freq, start] of (fifth ? [[98, 0], [146.8, .6]] : [[98, 0]]) as readonly (readonly [number, number])[]) {
+      const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = freq;
+      const vib = this.lfo(o.frequency, 4.8, 1.3);
+      o.connect(band); o.start(at + start); o.stop(at + length + .1); vib.stop(at + length + .1);
     }
   }
   /** Thunder: a crack, then the roll. */
@@ -1077,17 +1094,17 @@ export class RiftAudio {
     air.frequency.setValueAtTime(1200, at); air.frequency.exponentialRampToValueAtTime(6000, at + .6);
   }
 
-  /** The ending: the rift sealed - a bell struck three times over a rising
-   *  chord that resolves, and the drums once more. */
+  /** The ending: the rift sealed - a great drum struck three times over a
+   *  rising chord that resolves, and the drums once more. */
   private triumph() {
     this.cue('finale-fanfare');
     const ctx = this.ctx!, at = ctx.currentTime + .05;
-    for (let i = 0; i < 3; i++) this.bell(at + i * 1.1, this.hits!, .22);
+    for (let i = 0; i < 3; i++) this.greatDrum(at + i * 1.1, this.hits!, .22);
     const f = this.filter('lowpass', 400, 1.2), g = this.gain(0, this.hits!);
     f.connect(g); this.send(g, .6);
     f.frequency.setValueAtTime(400, at); f.frequency.exponentialRampToValueAtTime(2600, at + 3); f.frequency.exponentialRampToValueAtTime(900, at + 6);
     g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(.16, at + 2.2); g.gain.setValueAtTime(.16, at + 4.2); g.gain.exponentialRampToValueAtTime(.0001, at + 6.5);
-    // A minor chord that lifts to its major on the last bell.
+    // A minor chord that lifts to its major on the last stroke.
     for (const [freq, lift] of [[110, 110], [130.8, 138.6], [164.8, 164.8], [220, 220]] as const) {
       const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(freq, at); o.frequency.setValueAtTime(lift, at + 2.2);
       o.detune.value = (Math.random() - .5) * 10; o.connect(f); o.start(at); o.stop(at + 6.6);
@@ -1110,30 +1127,29 @@ export class RiftAudio {
     });
   }
 
-  /** The run banked after the seal's fanfare: one bell and the chord resolving,
-   *  not the whole fanfare a second time. */
+  /** The run banked after the seal's fanfare: one horn call and the chord
+   *  resolving, not the whole fanfare a second time. */
   private banked() {
     if (!this.ctx) return;
     this.cue('victory-sting');
     const at = this.ctx.currentTime + .05;
-    this.bell(at, this.hits!, .2);
+    this.hornCall(at, this.hits!, .2, false, false);
     for (const freq of [110, 138.6, 164.8]) this.tone('triangle', freq, freq, at, .08, 3.2, .05, this.hits!, 1.2);
   }
 
   /** A boss falls: a sub drop and the hall ringing after it. */
-  /** The fighter falls and the run ends: the ground taking the body, a bell
-   *  tolled twice, low, and the dark closing over it. */
+  /** The fighter falls and the run ends: the ground taking the body, a great
+   *  drum struck twice, low and muffled, and the dark closing over it. */
   private defeat() {
     this.cue('defeat', 5);
     const at = this.ctx!.currentTime + .02, out = this.hits!;
     const drop = this.tone('sine', 70, 22, at, .01, 3.2, .9, out, 2.8); this.send(drop, .5);
     this.burst(this.brown!, out, at, .02, 2.6, .5, ['lowpass', 320, .7]);
     for (const [t, level] of [[.5, .5], [2.1, .36]] as const) {
-      // A bell's inharmonic partials over a low fundamental.
-      for (const [ratio, gain] of [[1, 1], [2.76, .45], [5.4, .22], [8.93, .1]] as const) {
-        const partial = this.tone('sine', 98 * ratio, 98 * ratio * .996, at + t, .004, 3.4 / Math.sqrt(ratio), level * gain * .35, out, 3.4 / Math.sqrt(ratio));
-        this.send(partial, .5);
-      }
+      // A great drum, muffled: its low boom under a cloth, the thump of its frame, no ring.
+      const boom = this.tone('sine', 80, 34, at + t, .006, 2.8, level * .8, out, .6);
+      this.send(boom, .5);
+      this.burst(this.brown!, out, at + t, .004, .6, level * .45, ['lowpass', 180, .7]);
     }
     const pad = this.tone('sawtooth', 49, 46, at + .3, 1.6, 4.2, .08, out, 3);
     this.send(pad, .7);

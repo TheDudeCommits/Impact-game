@@ -11,7 +11,7 @@ function setup(borrowed = false) {
   const sim = new ArenaSimulation({ trainingBot: false, seed: 5 });
   sim.addPlayer('a', borrowed ? 'taisei' : 'chohan', 'A', false, { x: 0, y: 0, z: 0 });
   sim.addPlayer('near', 'chohan', 'Near', false, { x: 0, y: 0, z: 1.6 });
-  sim.addPlayer('far', 'jirenga', 'Far', false, { x: 0, y: 0, z: 12 });
+  sim.addPlayer('far', 'banjaku', 'Far', false, { x: 0, y: 0, z: 12 });
   if (borrowed) { const kit = ownKit('taisei'); kit.slots.area = { from: 'chohan' }; expect(sim.forge('a', forgeMoves(kit), 'test-chohan-area')).toBe(true); }
   const events: CombatEvent[] = []; let seq = 0;
   const step = (n: number, command: Partial<PlayerInput> = {}, interrupt = false) => {

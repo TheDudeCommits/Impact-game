@@ -10,7 +10,7 @@ import { REHIT, allPops, buildBody, criticPops, victimRun, type Press, type Reac
 import { guardNewTakes, guardTakes, type Take } from './takeGuard';
 import { ORIGINALS } from '../src/originals/roster';
 
-const SHOP: FighterId[] = ['gaunt', 'gorai', 'haldor', 'sorrel', 'dorado', 'shiun', 'magatsu', 'vesper', 'imago', 'jirenga',
+const SHOP: FighterId[] = ['gaunt', 'gorai', 'haldor', 'sorrel', 'dorado', 'shiun', 'magatsu', 'vesper', 'imago', 'banjaku',
   'ippon', 'sekka', 'tobari', 'akagane', 'asahi', 'levin', 'gaku', 'gohaku', 'wuming', 'jinlin', 'rook'];
 /** The shop rigs whose hurt was the slow 1.3 s turn, or restarted its pose from the stance at each blow (Gorai's,
  *  Sorrel'). */
@@ -18,7 +18,7 @@ const TURNING = new Set<FighterId>(['vesper', 'imago', 'gaku', 'rook', 'gorai', 
 /** Iteration fifteen: the shop rigs whose hurt was the arms-flung twist eleven of them share, still swinging at the
  *  recoil's peak (the hand at 3-4 heights a second at 0.19 s, every other hurt in the game under 1.2 but Gaunt'), so the
  *  hold froze it mid-swing and the play-out set it going again: the recoil now. */
-const FLUNG = new Set<FighterId>(['magatsu', 'jirenga', 'ippon', 'sekka', 'tobari', 'akagane', 'asahi', 'levin', 'gohaku', 'wuming', 'jinlin']);
+const FLUNG = new Set<FighterId>(['magatsu', 'banjaku', 'ippon', 'sekka', 'tobari', 'akagane', 'asahi', 'levin', 'gohaku', 'wuming', 'jinlin']);
 /** And the hurts kept as drawn, begun part-way into the pose they strike (reactions.py `lead`). */
 const LED: FighterId[] = ['koko', 'oro', 'kuon', 'nigo', 'gummy', 'shiun', 'haldor'];
 const rekeyed = (id: FighterId) => TURNING.has(id) || FLUNG.has(id) || LED.includes(id);
@@ -104,8 +104,8 @@ const MAIN: FighterId[] = ['konta', 'taisei', 'gummy', 'kenzo', 'shiden', 'nigo'
  *  the arm fling's turn-over (Fighter.ts `hitReact`), late in a long hurt, on the bodies it stepped 7-10 cm, the
  *  server's restart after a touch, and a launch out of the recoil. */
 const WORST: [FighterId, FighterId, number][] = [
-  ['magatsu', 'kosho', 8], ['jirenga', 'kosho', 8], ['ippon', 'kosho', 8], ['sekka', 'nigo', 8], ['tobari', 'kosho', 8],
-  ['akagane', 'kosho', 8], ['asahi', 'jirenga', 8], ['levin', 'koko', 8], ['gohaku', 'jirenga', 8], ['wuming', 'imago', 7],
+  ['magatsu', 'kosho', 8], ['banjaku', 'kosho', 8], ['ippon', 'kosho', 8], ['sekka', 'nigo', 8], ['tobari', 'kosho', 8],
+  ['akagane', 'kosho', 8], ['asahi', 'banjaku', 8], ['levin', 'koko', 8], ['gohaku', 'banjaku', 8], ['wuming', 'imago', 7],
   ['jinlin', 'haldor', 8], ['koko', 'imago', 7], ['oro', 'kosho', 8], ['kuon', 'kosho', 8], ['nigo', 'gaunt', 8],
   ['gummy', 'shirokane', 8], ['shiun', 'kosho', 7], ['haldor', 'koko', 8],
   ['kagari', 'shirokane', 7], ['dorado', 'koko', 8], ['sorrel', 'koko', 8], ['gorai', 'shirokane', 7], ['kenzo', 'koko', 8],
@@ -139,7 +139,7 @@ const SCRIPTS: Script[] = [
 ];
 /** A pop the body had before the takes, in a clip they leave as it was. None now: the re-hit allowances iteration
  *  fourteen kept - a head 8-10 cm in the frame a second blow restarts 'Hit 01' on KoKo, LORD ORO, Sekka, Tobari, Akagane,
- *  Wuming and Emperor Jinlin - went with the re-hits (iteration fifteen), and Gaunt' own slam, a head 12-13.9 cm in the
+ *  Wuming and Jinlin - went with the re-hits (iteration fifteen), and Gaunt' own slam, a head 12-13.9 cm in the
  *  air under Taisei's and Konta's strings, with its motion rounded (iteration seventeen, reactions.py `smooth`). */
 const KNOWN: Partial<Record<FighterId, RegExp>> = {
   ...(ORIGINALS.imago ? { imago: /^head 6(\.\d)? cm knockdown->knockdown down_lp->down_lp$/ } : {}),
@@ -178,7 +178,7 @@ describe('a body taking blows in the new reactions never jumps a frame', () => {
 
 type Form = [FighterId, string, string | null, string | null, string | null, boolean, boolean];
 const FORMS: Form[] = [
-  // BLACK TIDE's hurt is the shop's arms-flung twist (iteration fifteen): the recoil.
+  // ABYSSAL TIDE's hurt is the shop's arms-flung twist (iteration fifteen): the recoil.
 ];
 /** The form body as FighterLibrary assembles it, with what its own file brings. */
 async function formOf(id: FighterId, take: string) {

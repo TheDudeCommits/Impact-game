@@ -98,10 +98,20 @@ export function applyKicks(drawn: number) {
  * (0-1), up to TAKE.wind s before the contact - until the shot's own event takes it on from there.
  */
 export const TAKE = {in: .08, out: .2, after: .3, wind: .45} as const;
-interface FullTrack { node: THREE.Object3D; sample: THREE.Interpolant }
+interface FullTrack { node: THREE.Object3D; sample: THREE.Interpolant; lower: boolean }
 interface Full {
   tracks: FullTrack[]; clip: THREE.AnimationClip; at: number; contact: number; rate: number; end: number;
   first: number; hold?: () => boolean; then?: {clip: THREE.AnimationClip; tracks: FullTrack[]}; wind?: () => number | undefined;
+  /** How much of the lead-in a wind-up runs (s; TAKE.wind unless set - a tap's is shorter). */
+  lead?: number;
+  /** Volleyball's ready pose (ballMoves.ts volleyPose): the take run up to here (s into the clip) and held there
+   *  until the swing that plays the ball begins (`releaseTake`). */
+  ready?: number;
+  /** Let go (`dropTake`) at this drawn time (NaN: the next frame's), blended out over TAKE.out where it stands. */
+  dropped?: number;
+  /** How much of the take the hips and legs take (0-1, every frame; absent: all of it) - a ready pose on a body
+   *  still running to the ball keeps its own stride under it, so its feet never slide. */
+  legs?: () => number;
 }
 const full = new Map<Fighter, Full>();
 const tracksFull = (body: Fighter, clip: THREE.AnimationClip): FullTrack[] => {
@@ -109,21 +119,38 @@ const tracksFull = (body: Fighter, clip: THREE.AnimationClip): FullTrack[] => {
   for (const t of clip.tracks) {
     if (!(t instanceof THREE.QuaternionKeyframeTrack) && t.ValueTypeName !== 'quaternion') continue;
     const node = body.model.getObjectByName(THREE.PropertyBinding.parseTrackName(t.name).nodeName);
-    if (node) out.push({node, sample: interp(t)});
+    if (node) { const name = node.name; out.push({node, sample: interp(t), lower: HIPS.test(name) || (LEG.test(name) && !/spine|chest|neck|head|arm|hand|shoulder/i.test(name))}); }
   }
   return out;
 };
 /** A football take on `body`, full body (see TAKE). `at`: the event's server time (NaN: now, entered just before the
  *  contact); `contact` s into the clip; `end` s into it where it blends back (default: its end). */
-export function startTake(body: Fighter, clip: THREE.AnimationClip, o: {at: number; contact: number; rate?: number; end?: number; hold?: () => boolean; then?: THREE.AnimationClip; wind?: () => number | undefined}) {
+export function startTake(body: Fighter, clip: THREE.AnimationClip, o: {at: number; contact: number; rate?: number; end?: number; hold?: () => boolean; then?: THREE.AnimationClip; wind?: () => number | undefined; lead?: number; ready?: number; legs?: () => number}) {
   const tracks = tracksFull(body, clip);
   if (!tracks.length) return 0;
   layers.delete(body);
   // (A shot's own event after its wind-up carries on from where the wind-up stands: no blend in again.)
   const was = full.get(body), carried = !!was?.wind && !o.wind && was.clip === clip;
-  full.set(body, {tracks, clip, at: o.at, contact: o.contact, rate: o.rate ?? 1, end: Math.min(clip.duration, o.end ?? clip.duration), first: carried ? -Infinity : NaN, hold: o.hold, wind: o.wind,
-    then: o.then ? {clip: o.then, tracks: tracksFull(body, o.then)} : undefined});
+  full.set(body, {tracks, clip, at: o.at, contact: o.contact, rate: o.rate ?? 1, end: Math.min(clip.duration, o.end ?? clip.duration), first: carried ? -Infinity : NaN, hold: o.hold, wind: o.wind, lead: o.lead,
+    then: o.then ? {clip: o.then, tracks: tracksFull(body, o.then)} : undefined, ready: o.ready, legs: o.legs});
   return tracks.length;
+}
+/** The ready pose's swing begun - the take runs on from where it stands to its contact at `at` (server s). */
+export function releaseTake(body: Fighter, at: number) {
+  const f = full.get(body);
+  if (!f) return false;
+  f.at = at; f.ready = undefined;
+  return true;
+}
+/** A ready pose's moment moved (the room's forecast refined it): its contact now at `at` (server s). */
+export function retakeAt(body: Fighter, at: number) {
+  const f = full.get(body);
+  if (f && f.ready !== undefined && f.dropped === undefined) f.at = at;
+}
+/** A take let go (blended out from now, over TAKE.out). */
+export function dropTake(body: Fighter) {
+  const f = full.get(body);
+  if (f && !f.wind && f.dropped === undefined) f.dropped = NaN;
 }
 export const takeOn = (body: Fighter) => full.get(body);
 function applyFull(drawn: number) { for (const [body, f] of full) stepFull(body, f, drawn); }
@@ -134,9 +161,16 @@ function stepFull(body: Fighter, f: Full, drawn: number) {
   if (f.wind) {
     const share = f.wind();
     if (share === undefined) { full.delete(body); return; }
-    time = Math.max(0, f.contact - TAKE.wind * (1 - share));
+    time = Math.max(0, f.contact - (f.lead ?? TAKE.wind) * (1 - share));
   } else {
     time = Math.max(0, Math.min(f.clip.duration, f.contact + (drawn - f.at) * f.rate));
+    if (f.ready !== undefined) time = Math.min(time, f.ready);
+    if (f.dropped !== undefined) {
+      if (Number.isNaN(f.dropped)) f.dropped = drawn;
+      const k = (drawn - f.dropped) / TAKE.out;
+      if (k >= 1) { full.delete(body); return; }
+      f.ready ??= time; w = Math.min(w, 1 - THREE.MathUtils.smoothstep(k, 0, 1));
+    }
     const holding = !!f.hold?.();
     if (!holding && time >= f.end) {
       const out = (time - f.end) / f.rate;
@@ -147,7 +181,8 @@ function stepFull(body: Fighter, f: Full, drawn: number) {
     }
     if (holding) time = Math.min(time, f.clip.duration - 1e-3);
   }
-  for (const tr of f.tracks) { _q.fromArray(tr.sample.evaluate(time) as unknown as number[]); tr.node.quaternion.slerp(_q, w); }
+  const lw = f.legs ? w * THREE.MathUtils.clamp(f.legs(), 0, 1) : w;
+  for (const tr of f.tracks) { _q.fromArray(tr.sample.evaluate(time) as unknown as number[]); tr.node.quaternion.slerp(_q, tr.lower ? lw : w); }
 }
 /** For the checks: how many bodies have a layer or a take on now. */
 export const kicksOn = () => layers.size + full.size;

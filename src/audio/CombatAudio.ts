@@ -891,8 +891,8 @@ export class CombatAudio {
     if (source.loop) { source.loopStart = Math.min(.08, buffer.duration * .1); source.loopEnd = Math.max(source.loopStart + .03, buffer.duration - .08); }
     // Skip whatever dead air the file opens with, so what lands on the beat
     // is the transient rather than the head of the wav. Measured per cue by
-    // scripts/measure_cue_onsets.mjs: koko-hush holds 250 ms of room tone
-    // before the line and ouga-big-bang 240, which is two thirds of a heavy
+    // scripts/measure_cue_onsets.mjs: koko-slumber holds 250 ms of room tone
+    // before the line and ouga-crown-burst 240, which is two thirds of a heavy
     // wind-up spent waiting for a sound that has already been triggered. A
     // little is left in front so a soft attack is not clipped off.
     const onset = override || layer.url ? 0 : Math.max(0, ((CUE_ONSETS as Record<string, number>)[layer.cue] ?? 0) - .015);

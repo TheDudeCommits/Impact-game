@@ -6,6 +6,7 @@ import { Forge } from './forge';
 import { keyLit, surfaces } from './cc0';
 import { rand } from './remake';
 import { ashMark } from './mark';
+import { fireBowl, flames, wallTorch, type FireAt, type FireMats } from './standingFire';
 
 /** Tints over the scanned surfaces (near white: the photograph gives the colour). places-gen: the walls and piers pale
  *  limestone, the beams red lacquer. */
@@ -22,7 +23,7 @@ const LANCET = { x: 6.1, y0: 3.1, y1: 7.5, w: 1.5 }, OCULUS = { y: 10.15, r: 1.0
 export async function dress(c: DressContext) {
   const [S] = await Promise.all([
     surfaces(c, ['flagstone', 'ashlar-grey', 'planks-dark', 'sandstone-pale'] as const),
-    c.kit.load(['cc0/lantern-wood', 'cc0/chandelier-lantern', 'cc0/barrels', 'cc0/crate', 'cc0/bucket',
+    c.kit.load(['cc0/barrels', 'cc0/crate', 'cc0/bucket',
       'own/proving-warden', 'own/proving-kneeler', 'own/proving-brazier', 'own/proving-rack', 'own/proving-post']),
   ]);
   const f = new Forge(c, 'proving hall');
@@ -36,6 +37,7 @@ export async function dress(c: DressContext) {
   f.mat('iron', { roughness: .45, metalness: .55 });
   f.mat('glow', { basic: true });
 
+  const hearths = standingFire(f);
   floor(f);
   piers(f);
   walls(f);
@@ -46,6 +48,8 @@ export async function dress(c: DressContext) {
   props(c);
   banners(c);
   lights(c);
+  // The niches' bowls and the piers' torches burn with licking flames (no fire field: it would pool light on the floor).
+  flames(c, hearths, 72);
   c.ambient.motes({ min: [-5, .5, -6], max: [5, 9, 6], count: 120, velocity: [.05, .12, .04], size: .03, color: 0xfff0d0, color2: 0xffe0a0, opacity: .7, additive: true, twinkle: .6, wobble: 1, seed: 71 });
   c.ambient.fire([...BRAZIERS.map(([x, z], i) => ({ x, y: BRAZIER_H - .12, z, size: .75, smoke: .2, seed: i * .17 + .1 })), { x: 0, y: .9, z: FAR + 4.1, size: 1.2, smoke: .35, seed: .5 }]);
 }
@@ -62,8 +66,6 @@ function props(c: DressContext) {
   for (const [x, z] of BRAZIERS) kit.place('own/proving-brazier', { x, z, height: BRAZIER_H, rot: x * .7 + z });
   for (const s of [-1, 1]) for (const z of [-8.75, 5.25]) kit.place('own/proving-rack', { x: s * (WALL - .42), z, height: 2.3, rot: -s * Math.PI / 2 });
   for (const [x, z, rot] of [[-9.1, 1.9, 1.2], [9.1, -5.2, -1.9], [-9.1, -5.3, 1.7], [9.2, 2, -1.4]] as const) kit.place('own/proving-post', { x, z, height: 1.95, rot });
-  for (const s of [-1, 1]) for (const z of BAYS.slice(0, -1)) kit.place('cc0/lantern-wood', { x: s * (WALL - .42), y: 1.62, z: z + 1.75, height: .62, rot: s * Math.PI / 2 });
-  for (const z of [-10.5, -7, 7, 10.5]) for (const x of [-3.4, 3.4]) kit.place('cc0/chandelier-lantern', { x, y: EAVES - 2.05, z, height: 1.3, rot: z * .3 });
   const r = rand(91);
   for (const [x, z, rot] of [[-9.2, -12.2, .4], [9.3, 10.6, 2.2], [9.4, -3.6, 1.1]] as const) kit.place('cc0/barrels', { x, z, rot, width: 2.2 });
   for (const [x, z, rot] of [[-9.6, 10.9, .1], [-9.5, 9.9, .3], [9.6, -12.3, 1.5], [-9.7, -3.2, 1.6]] as const) kit.place('cc0/crate', { x, z, rot, width: 1.1 + r() * .2 });
@@ -94,6 +96,21 @@ function wardenPlaque(c: DressContext) {
   plaque.name = 'proving hall warden plaque'; plaque.receiveShadow = true;
   c.root.add(plaque);
   keyLit([plaque.material], new THREE.Color(1, .92, .8).multiplyScalar(.3));
+}
+
+/** The piers that carry a torch (the four of each row without a banner: banners() hangs on -7, 0 and 7). */
+const TORCH_BAYS = [-10.5, -3.5, 3.5, 10.5];
+/** The torches' height on the piers (the bracket; its flame some 0.5 m over it). */
+const TORCH_Y = 3.4;
+
+/** The hall's fire: a bronze fire bowl on each niche's sill, a torch in an iron bracket on the nave face of each pier
+ *  without a banner. */
+function standingFire(f: Forge): FireAt[] {
+  const m: FireMats = { iron: 'iron', stone: 'plinth', wood: 'timber', glow: 'glow' }, bronze: FireMats = { iron: 'iron', glow: 'glow' };
+  const out: FireAt[] = [];
+  for (const s of [-1, 1]) for (const z of BAYS.slice(0, -1)) out.push(fireBowl(f, bronze, s * (WALL - .36), 1.62, z + 1.75, .19, .26, { tint: 0x6a4a2a }));
+  for (const s of [-1, 1]) for (const z of TORCH_BAYS) out.push(wallTorch(f, m, s * (PIERS - .5), TORCH_Y, z, -s, 0, { scale: 1.25 }));
+  return out;
 }
 
 /** The nave's slate floor to the walls, the ring of pale stone let into it round the fight, its kerb flush. */
@@ -133,7 +150,7 @@ function piers(f: Forge) {
   }
 }
 
-/** The outer walls round the aisles and the ends, coursed ash-stone; a niche in each bay with a lantern burning in it. */
+/** The outer walls round the aisles and the ends, coursed ash-stone; a niche in each bay with a fire burning in it. */
 function walls(f: Forge) {
   const h = EAVES + 1;
   for (const s of [-1, 1]) {
@@ -221,7 +238,7 @@ function doors(f: Forge) {
   for (const s of [-1, 1]) f.box('iron', s * 2, 2.05, z - .38, .12, .6, .12, IRON);
 }
 
-/** The Hidden Ash's banners (its own mark, mark.ts) down the piers' faces toward the nave. */
+/** Ashwood's banners (its own mark, mark.ts) down the piers' faces toward the nave. */
 function banners(c: DressContext) {
   const map = ashBanner();
   for (const s of [-1, 1]) for (const z of [-7, 0, 7]) c.ambient.cloth(map, { x: s * (PIERS - .55), y: AISLE - .7, z, width: .9, height: 2.7, rot: -s * Math.PI / 2, wind: .05, lit: .25 });
@@ -230,12 +247,12 @@ function banners(c: DressContext) {
   for (const s of [-1, 1]) c.ambient.cloth(map, { x: s * 4.6, y: EAVES - .2, z: NEAR - .12, width: 1.1, height: 3.6, rot: Math.PI, wind: .04, lit: .3 });
 }
 
-/** The lanterns' glow in the niches, the braziers' and the hearth's, the light-well's. */
+/** The glow of the niches' fires, the braziers' and the hearth's, the piers' torches', the light-well's. */
 function lights(c: DressContext) {
   const glow = new Beacons(c.root, 32, c.ambient.time);
   for (const s of [-1, 1]) for (const z of BAYS.slice(0, -1)) glow.add(s * (WALL - .4), 1.85, z + 1.75, .9, 0xffb060, -1, ((z + s) * .13 + 1) % 1, 1);
   for (const [x, z] of BRAZIERS) glow.add(x, BRAZIER_H + .25, z, 1.5, 0xff9a40, -1, ((x * .31 + z * .17) % 1 + 1) % 1, 1);
-  for (const z of [-10.5, -7, 7, 10.5]) for (const x of [-3.4, 3.4]) glow.add(x, EAVES - 1.5, z, 1.1, 0xffb868, -1, ((x + z) * .11 + 2) % 1, 1);
+  for (const z of TORCH_BAYS) for (const s of [-1, 1]) glow.add(s * (PIERS - .9), TORCH_Y + .7, z, 1.1, 0xffb868, -1, ((s * 3.4 + z) * .11 + 2) % 1, 1);
   glow.add(0, .5, FAR + 4, 1.4, 0xff7a2a, -1, .1, 1);
   glow.finish('proving hall lamps', 1.5);
 }

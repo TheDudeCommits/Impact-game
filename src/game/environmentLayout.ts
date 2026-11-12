@@ -233,7 +233,7 @@ export const STAGE_LANDMARKS: Record<StageId, readonly EnvironmentCollider[]> = 
   'ball-court': [{x:0,y:6,z:0,halfX:16,halfY:6,halfZ:.12}],
   'rift-war': RIFT_SOLIDS,
   'blood-citadel': [],
-  'hidden-ash': [
+  'ashwood': [
     {x:0,y:12.2,z:20,halfX:9.5,halfY:1,halfZ:1.7},
     {x:-8.7,y:6,z:20,halfX:.7,halfY:6,halfZ:1.5}, {x:8.7,y:6,z:20,halfX:.7,halfY:6,halfZ:1.5},
     {x:-24,y:4,z:20,halfX:16,halfY:4,halfZ:1}, {x:24,y:4,z:20,halfX:16,halfY:4,halfZ:1},

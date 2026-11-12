@@ -4,6 +4,7 @@ import type { FighterId } from '../../game/types';
 import { decodeForge, forgeProblems, type ForgeKit } from '../../engine/sim/forge';
 import { shortForgeHash } from '../../engine/sim/forgedKits';
 import { refusedName } from '../displayName';
+import { currentId } from '../../game/savedIds';
 
 /** Kits one account may keep, and save in a day. */
 export const FORGE_KEEP = 30, FORGE_SAVES_PER_DAY = 40;
@@ -31,7 +32,7 @@ export class ForgeStore {
     }
   }
   private apply(line: Line) {
-    if (line.t === 'save') this.kits.set(line.kit.hash, line.kit);
+    if (line.t === 'save') this.kits.set(line.kit.hash, { ...line.kit, body: currentId(line.kit.body) as FighterId }); // (ids renamed since read as they are now: src/game/savedIds.ts)
     else if (this.kits.get(line.hash)?.owner === line.owner) this.kits.delete(line.hash);
   }
   private write(line: Line) {

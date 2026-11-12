@@ -208,7 +208,7 @@ describe('party room', () => {
     try {
       const before = structuredClone(room.view);
       for (const mode of ['boss-hunt', 'DUEL', '', 42, null, ['duel'], { mode: 'duel' }, '__proto__']) send(leader, 'party-mode', mode);
-      for (const rules of [{ arena: 'harbor' }, { arena: 'hidden-ash' }, { arena: 'rift-village' }, { arena: '__proto__' }, { players: 2 }, { players: 6 }, { players: '8' }, { players: 1e9 }, { seconds: 999 }, { seconds: -180 }, { seconds: '300' }, { difficulty: 'god' }, { difficulty: ['hard'] }, ['arena', 'sunward-summit'], null, 'sunward-summit', 7])
+      for (const rules of [{ arena: 'harbor' }, { arena: 'ashwood' }, { arena: 'rift-village' }, { arena: '__proto__' }, { players: 2 }, { players: 6 }, { players: '8' }, { players: 1e9 }, { seconds: 999 }, { seconds: -180 }, { seconds: '300' }, { difficulty: 'god' }, { difficulty: ['hard'] }, ['arena', 'sunward-summit'], null, 'sunward-summit', 7])
         send(leader, 'party-rules', rules);
       expect(room.view.mode).toBe(before.mode);
       expect(room.view.rules).toEqual(before.rules);
@@ -217,7 +217,7 @@ describe('party room', () => {
       send(guest, 'party-vote', 'sunward-summit');
       expect(room.view.mode).toBe('royale'); expect(room.view.rules.arena).toBe('random'); expect(room.view.votes).toEqual({});
       send(leader, 'party-rules', { arena: 'vote' });
-      for (const vote of ['harbor', 'hidden-ash', 7, null, { stage: 'sunward-summit' }]) send(guest, 'party-vote', vote);
+      for (const vote of ['harbor', 'ashwood', 7, null, { stage: 'sunward-summit' }]) send(guest, 'party-vote', vote);
       expect(room.view.votes).toEqual({});
       send(leader, 'party-leader', 'leader'); send(leader, 'party-leader', 'nobody'); send(leader, 'party-leader', 7);
       expect(room.view.leader).toBe('leader');
@@ -305,7 +305,7 @@ describe('the rooms a party launches honour its place', () => {
     await room.onCreate({rosterProtocol:ROSTER_PROTOCOL,...options} as never); void step; return room;
   }
   it("puts a private Duel where its creator chose, from the Duel's list only", async () => {
-    for (const [stage, expected] of [['ashfall-weir', 'ashfall-weir'], ['zenith-coliseum', 'zenith-coliseum'], ['harbor', 'sunfall-arena'], ['hidden-ash', 'sunfall-arena'], [42, 'sunfall-arena'], [undefined, 'sunfall-arena']] as const) {
+    for (const [stage, expected] of [['ashfall-weir', 'ashfall-weir'], ['zenith-coliseum', 'zenith-coliseum'], ['harbor', 'sunfall-arena'], ['ashwood', 'sunfall-arena'], [42, 'sunfall-arena'], [undefined, 'sunfall-arena']] as const) {
       const room = await arena(new PrivateDuelRoom(), { creationToken: TOKEN, stage });
       try { expect(room.simulation.stage, String(stage)).toBe(expected); } finally { room.onDispose(); }
     }

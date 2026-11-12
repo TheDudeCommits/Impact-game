@@ -491,7 +491,7 @@ export class GameRenderer {
   //                            dimmed by up to a half and pushed toward
   //                            `color` (sRGB hex - 0x3a8cff Sunpalm Cannon,
   //                            Sickle Bolt and Galewheel; 0x8a4dff
-  //                            Singularity, PLANETARIUM and VOID SICKLE; 0xd0203a
+  //                            Singularity, PLANETARIUM and SICKLE REAPER; 0xd0203a
   //                            Haizan and NIGHTFALL; 0xff7a1a Signal Fire and
   //                            Kurobi), so the technique is the brightest
   //                            thing on screen; its hot core (the effects'
@@ -511,7 +511,7 @@ export class GameRenderer {
   //                            contrast pushed, the room a little drained, an
   //                            ink vignette from the corners. 0..1; feed it
   //                            every frame (main.ts does) - unfed, it is gone.
-  //   timeStop(amount)         MIDNIGHT / HUSH: the world as a two-tone
+  //   timeStop(amount)         MIDNIGHT / SLUMBER: the world as a two-tone
   //                            cyan print, the fighters as black ink with a
   //                            white edge and their outlines on top. `amount`
   //                            0..1, eased over a few frames. Call it every

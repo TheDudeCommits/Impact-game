@@ -11,11 +11,11 @@ export const EMBLEMS: Readonly<Record<FighterId, Emblem>> = {
   yodaka: { glyph: '番', why: "Yodaka's shop-card glyph (round 6)" },
   // Last Sun
   taisei: { glyph: '大聖', why: "the Great Sage's title, as his cannon's name has it" },
-  ouga: { glyph: '覇', why: "Ouga's Haou: the sovereign" },
+  ouga: { glyph: '覇', why: "Ouga's crown: the sovereign" },
   gohaku: { glyph: '猿', why: 'the white ape' },
   wuming: { glyph: '無', why: 'Wuming, the nameless' },
   jinlin: { glyph: '鱗', why: "the dragon's scale" },
-  jirenga: { glyph: '石', why: 'the stone guardian' },
+  banjaku: { glyph: '石', why: 'the stone guardian' },
   shanxiao: { glyph: '山', why: "Shanxiao's name, 山魈: the mountain spirit (its second character is not in the seal's brush font) (round 6)" },
   // Konta
   konta: { glyph: '狐', why: "Konta's fox spirit, HOMURA" },

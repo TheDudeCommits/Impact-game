@@ -19,6 +19,11 @@ export const INTRO = {
  *  people, a room's next match) or an arena this page has flown over already. No flyover: it is the full intro's tail -
  *  the splash page at once, the whistle, the kickoff - so it holds the countdown this long, and is skipped the same way. */
 export const SHORT_INTRO = {seconds: INTRO.seconds - INTRO.splash} as const;
+/** From KICK OFF to play in about 5 s on BOTS (the arena fly-over only on the first match of a visit, a shorter VS): on
+ *  a page on the sport rules (game/ball/sportRules.ts), every match on this device after the visit's first opens with
+ *  this - the splash page's last moment and the whistle, the full intro's tail as the short one is - for both modes
+ *  alike (LocalBall). Skipped the same way (any key). The online room and the classic rules keep SHORT_INTRO. */
+export const QUICK_INTRO = {seconds: 1.5} as const;
 
 /** The podium at the end (Goal Rush on the centre spot facing the broadcast side line, Sky Spike in the winners' court
  *  with its back to the net): the winners' best in the middle on the top step, the other two either side. The room

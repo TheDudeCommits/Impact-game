@@ -7,7 +7,7 @@ type Command = Partial<Omit<PlayerInput, 'seq'>>;
 function arena(fighter: FighterId = 'bellows', others: Record<string, Vec3> = {}, collision?: CollisionWorld) {
   const sim = new ArenaSimulation({ trainingBot: false, seed: 5, collision });
   sim.addPlayer('a', fighter, 'A', false, { x: 0, y: 0, z: 0 });
-  for (const [id, at] of Object.entries(others)) sim.addPlayer(id, 'jirenga', id, false, at);
+  for (const [id, at] of Object.entries(others)) sim.addPlayer(id, 'banjaku', id, false, at);
   const events: CombatEvent[] = [];
   let seq = 1;
   const step = (ticks: number, a: Command = {}, rest: Record<string, Command> = {}) => {

@@ -7,7 +7,7 @@ import { LightVolumes } from './LightVolumes';
 import { gradeOnce, GRADE } from './context';
 import { GoldenTechniques } from './GoldenTechniques';
 
-/** Taisei's Last Sun Bomb, gathering.
+/** Taisei's Last Sunfall, gathering.
  *
  *  The sphere itself is CombatEffects' orb in the LAST SUN's own dense
  *  blue-white shading (vfx/EnergyOrbMaterial, `spirit`). This is everything

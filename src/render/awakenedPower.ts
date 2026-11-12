@@ -79,7 +79,7 @@ const ELSEWHERE: AwakenedPower = { kind: 'plain' };
 /** Each world's power, by series (`homeSeries`). */
 export const WORLDS: Readonly<Record<string, AwakenedPower>> = {
   // The aura itself: the flame through the transformation, then the shell. As it was.
-  // (On a form's body as on a Golden's own: Shanxiao's gold awakening and BLACK TIDE stood nothing once the flame
+  // (On a form's body as on a Golden's own: Shanxiao's gold awakening and ABYSSAL TIDE stood nothing once the flame
   // had come down, and the aura is this world's whole look.)
   'Last Sun': { kind: 'ki', shell: 'flame', electric: true, onForm: true },
   // Will, for all twenty-three, on a form's body too: no shell, no flame. The elemental powers keep their own signature
@@ -89,7 +89,7 @@ export const WORLDS: Readonly<Record<string, AwakenedPower>> = {
   'Cinder Requiem': { kind: 'pressure', shell: 'smoke', onForm: true },
   // Chi: a cloak that clings and boils, not a flame. The fox and the Guardian are each the whole transformation and
   // wear nothing over them; the sage form and the IRON BLOSSOM are worn on their fighter's own form (`OWN`).
-  'Hidden Ash': { kind: 'chi', shell: 'cloak', motes: ['bubble', 0xbfe4ff, 0x3f8cff] },
+  'Ashwood': { kind: 'chi', shell: 'cloak', motes: ['bubble', 0xbfe4ff, 0x3f8cff] },
   // Hex Energy: a dark flame licking up the body, near black, its colour at the edge, and red-black sparks.
   'Hex Fallout': { kind: 'cursed', shell: 'curse', colours: [0x0a1030, 0x3f8cff] },
   // Aura: a smooth dense shroud.
@@ -157,7 +157,7 @@ const OWN: Readonly<Partial<Record<FighterId, Partial<AwakenedPower>>>> = {
   // EVERGREEN: not a cloak. The steam of a body burning itself, red at the EVERGREEN, streaming off him.
   'madake': { shell: 'smoke', onForm: true, colours: [0x7dffb0, 0x0f7a3c], motes: ['steam', 0xc8ffe0, 0x2fb86a] },
   akaito: { colours: [0x160c2c, 0xff9ee6] }, sashigane: { colours: [0x0a1030, 0x58b8ff] },
-  // The CALAMITY KING' is red, on the four-armed body as it would be on Tempo's.
+  // The CALAMITY RISEN' is red, on the four-armed body as it would be on Tempo's.
   magatsu: { onForm: true, colours: [0x16040a, 0xff2a3a] },
   // ----- Salvage Wilds. (Imago's and Bonsho's and Unari's shrouds are their auras' colours.)
   // ----- Beacon Ward: the power itself.
@@ -167,7 +167,7 @@ const OWN: Readonly<Partial<Record<FighterId, Partial<AwakenedPower>>>> = {
   bellows: { shell: 'flame', motes: ['ember', 0xffc060, 0xe8421a] },
   // Explosion: sparks popping at the palms. Fire and frost: frost off him (his fire is his body casting's).
   pyroclast: { motes: ['pop', 0xffd27a, 0xff791e] }, tancho: { motes: ['frost', 0xf4ffff, 0x8fe0f5] },
-  // Inheritance's embers: wind and steam off a body past its limit, and no aura.
+  // Last Watch's embers: wind and steam off a body past its limit, and no aura.
   'full-beam': { motes: ['steam', 0xfffbee, 0xd8c890] },
   // ----- Black Snow. (Yodaka's flame and Asahi's sun are the row's; Sekka is a demon, with no breath: the
   // snow of his Aurora Shards drifts round him.)
@@ -176,7 +176,7 @@ const OWN: Readonly<Partial<Record<FighterId, Partial<AwakenedPower>>>> = {
   // Levin's and Mizuhiki's awakening is drawn as lightning through them: thin, pale, over the gear's gas.
   levin: { arcs: 0xd8ffe8 }, mizuhiki: { arcs: 0xffe0e0 },
   // Blast Radius. An esper's power is a green glow on her and the rubble she lifts; Ippon, serious, has no aura at
-  // all - the air round him moves; Cosmic Hagure is a body of stars.
+  // all - the air round him moves; Moonless Hagure is a body of stars.
   torsion: { shell: 'shroud', motes: ['rubble', 0xbfffe0, 0x5dffac] }, ippon: { motes: ['steam', 0xfff6e0, 0xd8b890] },
   hagure: { motes: ['glint', 0xdfe6ff, 0x8e87ff] },
   // Penance Road. AFTER HOURS is darkness worn on the body; Highsun at noon is the sun's own radiance.
@@ -188,7 +188,7 @@ const OWN: Readonly<Partial<Record<FighterId, Partial<AwakenedPower>>>> = {
   // Crimson Ledger. SCARLET BLOOM: Nightblade's curse on her own body, its markings and a red-black dark off them -
   // the body she wakes into is drawn like her own, and this is what says it is not. Hisame's is her ice.
   akayuri: { shell: 'curse', onForm: true, colours: [0x14040c, 0xdd2949] }, hisame: { motes: ['frost', 0xffffff, 0x9fe5ff] },
-  // The HOUND ARMOR lets the Beast of Darkness out: a black dark off him, edged in the red of its eye.
+  // The GRAVE PLATE lets the Beast of Darkness out: a black dark off him, edged in the red of its eye.
   gaunt: { shell: 'curse', onForm: true, colours: [0x0a0508, 0xe0202a] },
   // The Unbound: Violet Balefire, absorbed: black fire on him, edged in the third eye's violet. (His form's body too
   // is drawn like his own.)

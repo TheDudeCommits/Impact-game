@@ -290,12 +290,12 @@ describe('arcade survival', () => {
     game.dispose();
   });
 
-  it('walks the road F to S through the four places, the climax at the offering, then loops the Rift', () => {
+  it('walks the road F to S through the four places, the climax at the Fallen Star, then loops the Rift', () => {
     const at = (round: number) => locationFor(round);
     expect([1, 4].map(r => at(r).location.id)).toEqual(['burning-village', 'burning-village']);
     expect([5, 8].map(r => at(r).location.id)).toEqual(['hill-of-swords', 'hill-of-swords']);
     expect([9, 12].map(r => at(r).location.id)).toEqual(['black-fortress', 'black-fortress']);
-    expect([13, FINAL_ROUND].map(r => at(r).location.id)).toEqual(['the-offering', 'the-offering']);
+    expect([13, FINAL_ROUND].map(r => at(r).location.id)).toEqual(['fallen-star', 'fallen-star']);
     expect(rankFor(13)).toBe('S'); expect(rankFor(FINAL_ROUND)).toBe('S');
     // Past S: two rounds a place, deeper each time round.
     expect(at(FINAL_ROUND + 1)).toMatchObject({ loop: 1, first: true }); expect(at(FINAL_ROUND + 1).location.id).toBe('burning-village');

@@ -29,7 +29,7 @@ describe('the move layout', () => {
   });
 
   it('call the longest area moves by their short name', () => {
-    expect(areaCardName('Wind Art: Senpu Shigure')).toBe('GIANT SENPUGAN');
+    expect(areaCardName('Fox Wedding')).toBe('GREAT KAZEYOSE');
     expect(areaCardName('Raisetsu')).toBe('RAISETSU');
     expect(areaCardName('Iron Lullaby: Ground Smash')).toBe('IRON LULLABY: GROUND SMASH');
     expect(areaCardName('Great Sage Thunderclap')).toBe('GREAT SAGE THUNDERCLAP');

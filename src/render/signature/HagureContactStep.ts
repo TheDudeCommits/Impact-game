@@ -7,7 +7,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 0.5666666666666667,
     "base": 0.15,
-    "cosmic": 0.24,
+    "moonless": 0.24,
     "contactPlateaus": [
       [
         0.2125,
@@ -19,7 +19,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 1.0666666666666667,
     "base": 0.29,
-    "cosmic": 0.385,
+    "moonless": 0.385,
     "contactPlateaus": [
       [
         0.5333333333333332,
@@ -31,7 +31,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 1.1166666666666667,
     "base": 0.08,
-    "cosmic": 0.225,
+    "moonless": 0.225,
     "contactPlateaus": [
       [
         0.5084821428571429,
@@ -43,7 +43,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 3.783333333333333,
     "base": 0.3,
-    "cosmic": 0.47,
+    "moonless": 0.47,
     "contactPlateaus": [
       [
         0.40035273368606705,
@@ -71,7 +71,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 0.5666666666666667,
     "base": 0.15,
-    "cosmic": 0.24,
+    "moonless": 0.24,
     "contactPlateaus": [
       [
         0.2125,
@@ -83,7 +83,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 0.6833333333333333,
     "base": 0.29,
-    "cosmic": 0.385,
+    "moonless": 0.385,
     "contactPlateaus": [
       [
         0.32783930361863084,
@@ -95,7 +95,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 0.8166666666666667,
     "base": 0.08,
-    "cosmic": 0.225,
+    "moonless": 0.225,
     "contactPlateaus": [
       [
         0.36120426829268293,
@@ -107,7 +107,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 0.7333333333333333,
     "base": 0.29,
-    "cosmic": 0.385,
+    "moonless": 0.385,
     "contactPlateaus": [
       [
         0.35469998300186967,
@@ -119,7 +119,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 0.85,
     "base": 0.15,
-    "cosmic": 0.24,
+    "moonless": 0.24,
     "contactPlateaus": [
       [
         0.33946428571428566,
@@ -131,7 +131,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 1,
     "base": 0.08,
-    "cosmic": 0.225,
+    "moonless": 0.225,
     "contactPlateaus": [
       [
         0.45107142857142857,
@@ -143,7 +143,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 1.1166666666666667,
     "base": 0.08,
-    "cosmic": 0.225,
+    "moonless": 0.225,
     "contactPlateaus": [
       [
         0.5084821428571429,
@@ -155,7 +155,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 0.9,
     "base": 0.29,
-    "cosmic": 0.385,
+    "moonless": 0.385,
     "contactPlateaus": [
       [
         0.4439622641509433,
@@ -167,7 +167,7 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     "start": 0,
     "end": 1.05,
     "base": 0.08,
-    "cosmic": 0.225,
+    "moonless": 0.225,
     "contactPlateaus": [
       [
         0.475625,
@@ -176,4 +176,4 @@ export const HAGURE_AUTHORED_STEP_WINDOWS = {
     ]
   }
 } as const;
-export function hagureAuthoredContactStep(clip:string|undefined,sourceSeconds:number,cosmic:boolean){if(!clip||!Number.isFinite(sourceSeconds)||sourceSeconds<0)return 0;const row=HAGURE_AUTHORED_STEP_WINDOWS[clip as keyof typeof HAGURE_AUTHORED_STEP_WINDOWS];return row&&sourceSeconds>row.start&&sourceSeconds<row.end?(cosmic?row.cosmic:row.base):0;}
+export function hagureAuthoredContactStep(clip:string|undefined,sourceSeconds:number,moonless:boolean){if(!clip||!Number.isFinite(sourceSeconds)||sourceSeconds<0)return 0;const row=HAGURE_AUTHORED_STEP_WINDOWS[clip as keyof typeof HAGURE_AUTHORED_STEP_WINDOWS];return row&&sourceSeconds>row.start&&sourceSeconds<row.end?(moonless?row.moonless:row.base):0;}

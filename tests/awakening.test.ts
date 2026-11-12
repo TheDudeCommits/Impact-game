@@ -191,7 +191,7 @@ describe('what a transformation is worth', () => {
   });
 });
 
-describe('HUSH', () => {
+describe('SLUMBER', () => {
   it('becomes a barrage inside stopped time when KoKo is awakened', () => {
     const plain = moveFor('koko', 'ultimate', false), awakened = moveFor('koko', 'ultimate', true);
     expect(plain).toEqual(MOVES.koko.ultimate);
@@ -247,7 +247,7 @@ describe('the transformation table', () => {
   it('names a form for every fighter', () => {
     expect(Object.keys(AWAKENINGS).sort()).toEqual(roster.sort());
     for (const id of roster) {
-      // (Capitals, as the HUD letters them; an apostrophe, straight or curly (BOTTOMLESS, MAGICIAN’S MALICE), and a decimal point (Ovid's CRACKED OPEN).)
+      // (Capitals, as the HUD letters them; an apostrophe, straight or curly (GORGED, MAGICIAN’S MALICE), and a decimal point (Ovid's CRACKED OPEN).)
       expect(AWAKENINGS[id].name).toMatch(/^[A-Z0-9 ·:.'’-]+$/);
       expect(AWAKENINGS[id].aura).toHaveLength(2);
     }
@@ -284,12 +284,12 @@ describe('the transformation table', () => {
     }
     if (!ORIGINALS.kosho) expect(meshNames(FIGHTERS.kosho.model).filter(n => n.startsWith('awaken-on')).length).toBe(2);
     if (!ORIGINALS.kosho) expect(meshNames(FIGHTERS.kosho.model).filter(n => n.startsWith('awaken-off')).length).toBe(2);
-    // Kenzo's RAKSHASA is a whole body, not arms hung on the one he fights in, so
+    // Kenzo's DUNE ONI is a whole body, not arms hung on the one he fights in, so
     // the extra limbs belong to the form and the base model carries none.
     expect(meshNames(FIGHTERS.kenzo.model).filter(n => n.startsWith('awaken-on')).length).toBe(0);
-    const rakshasa = meshNames(FIGHTERS.kenzo.formModel!);
-    for (const part of ORIGINALS.kenzo ? [] : ['rakshasa_arm', 'l_face_02', 'r_face_02']) {
-      expect(rakshasa.some(n => n.startsWith(part)), `RAKSHASA is missing ${part}`).toBe(true);
+    const duneOni = meshNames(FIGHTERS.kenzo.formModel!);
+    for (const part of ORIGINALS.kenzo ? [] : ['dune_oni_arm', 'l_face_02', 'r_face_02']) {
+      expect(duneOni.some(n => n.startsWith(part)), `DUNE ONI is missing ${part}`).toBe(true);
     }
   });
 
@@ -310,9 +310,9 @@ describe('the transformation table', () => {
   it('keeps flame auras to fire and Golden energy without recoloring unrelated hair', () => {
     for (const id of roster) {
       const look = AWAKENINGS[id];
-      // The shop's power-ups burn too (3 October): Rose, Jirenga's full power, the Beast, Imago reborn, the Sun
+      // The shop's power-ups burn too (3 October): Rose, Banjaku's full power, the Beast, Imago reborn, the Sun
       // breathing and KOMAINU's aura - each the same body (or a form) with the power pouring off it.
-      expect(!!look.flames, `${id} flames`).toBe(['taisei','ouga','kagari','wuming','jirenga','gohaku','imago','asahi','gaku','haldor','sorrel','dorado','ippon','sekka','levin'].includes(id));
+      expect(!!look.flames, `${id} flames`).toBe(['taisei','ouga','kagari','wuming','banjaku','gohaku','imago','asahi','gaku','haldor','sorrel','dorado','ippon','sekka','levin'].includes(id));
       if(['kagari','kuon','setsu'].includes(id))expect(look.hair).toBeUndefined();
     }
   });

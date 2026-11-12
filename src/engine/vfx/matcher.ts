@@ -21,7 +21,7 @@ export interface Match { effect: CatalogEffect; tags: EffectTags; score: number;
 
 // The clean (6 November 2026): each world by the fork's own series that stands for it (src/originals/apply.ts SERIES_WORLD).
 const SERIES_WORLDS: [RegExp, World][] = [
-  [/^last sun$/i, 'last-sun'], [/^dust sea$/i, 'dust-sea'], [/^hidden ash$/i, 'konta'], [/^cinder requiem$/i, 'cinder-requiem'],
+  [/^last sun$/i, 'last-sun'], [/^dust sea$/i, 'dust-sea'], [/^ashwood$/i, 'konta'], [/^cinder requiem$/i, 'cinder-requiem'],
   [/^hex fallout$/i, 'hex-fallout'], [/^beacon ward$/i, 'beacon-ward'], [/^black snow$/i, 'black-snow'], [/^blast radius$/i, 'blast-radius'],
   [/^salvage wilds$/i, 'salvage-wilds'], [/^scrap pact$/i, 'scrap-pact'],
   [/^gilded ruin$/i, 'gilded'], [/^ropewalk$/i, 'ropewalk'], [/^red cradle$/i, 'red-cradle'], [/^quiet hunger$/i, 'quiet-hunger'],
@@ -31,11 +31,11 @@ export const worldOf = (series?: string): World | undefined => series ? SERIES_W
 
 /** Words in a move's name that name an element (Tancho's Scarlet Wing is fire, his Frostbeak ice). */
 const NAME_MATERIALS: [RegExp, Material][] = [
-  [/\b(fire|flame|blaze|burn|hell ?fire|heat|ember|inferno|sun|solar|prominence|kagutsuchi|blaze|taimatsu)/i, 'fire'],
+  [/\b(fire|flame|blaze|burn|hell ?fire|heat|ember|inferno|sun|solar|prominence|blaze|taimatsu)/i, 'fire'],
   [/\b(magma|lava|volcan|eruption)/i, 'magma'],
   [/\b(blackPyre|lampblack|black flame)/i, 'blackfire'],
   [/\b(ice|frost|freez|glaci|snow|cold|frozen|pheasant)/i, 'ice'],
-  [/\b(lightning|thunder|shrikeBolt|thunderHawk|bolt|electr|volt|setsuna)/i, 'lightning'],
+  [/\b(lightning|thunder|stormTalon|thunderHawk|bolt|electr|volt|setsuna)/i, 'lightning'],
   [/\b(water|wave|tide|sea|torrent|aqua)/i, 'water'],
   [/\b(wind|gale|tornado|cyclone)/i, 'wind'],
   [/\b(explo|blast|bomb|howitzer|grenade)/i, 'explosion'],

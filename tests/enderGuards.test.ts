@@ -18,7 +18,7 @@ import type { AttackSlot, CombatEvent, FighterId, PlayerState } from '../src/gam
 
 /**
  * Vol.1's combo enders (game/combos.ts) are drawn as their own moves, never as the slot's signature: a Light, Heavy
- * thrown from Konta's heavy is no Senpugan, an ender off Taisei's heavy no Cloudstep, one off Kagari's special no
+ * thrown from Konta's heavy is no Kazeyose, an ender off Taisei's heavy no Cloudstep, one off Kagari's special no
  * Taimatsu. Every effect site that keyed on the heavy or the special alone (the research's list) checks the branch now.
  * These hold whatever the rows make the enders - a blow, a blast or a snare.
  */
@@ -45,7 +45,7 @@ describe('CombatEffects draws an ender as its own move', () => {
     fx.update(1.1, 1 / 60, fighters);
     return { scene, fx };
   };
-  const signature: [FighterId, AttackSlot, string][] = [['kagari', 'special', 'taimatsu-taimatsu'], ['konta', 'special', 'galewheel-swallow-darts'], ['kosho', 'special', 'ram-crescent']];
+  const signature: [FighterId, AttackSlot, string][] = [['kagari', 'special', 'taimatsu-taimatsu'], ['konta', 'special', 'galewheel-gust-darts'], ['kosho', 'special', 'ram-crescent']];
   for (const [fighter, slot, mark] of signature) it(`no ${mark} on ${fighter}'s enders off the ${slot}`, () => {
     const own = thrown(fighter, slot);
     try { expect(named(own.scene, mark), 'the slot\'s own move still has it').toBe(true); } finally { own.fx.dispose(); }
@@ -58,20 +58,20 @@ describe('CombatEffects draws an ender as its own move', () => {
   });
   it('throws Konta\'s Mini Galewheel as a Galewheel, at its own size and on its own clock', () => {
     const ender = thrown('konta', 'special', 'llls');
-    try { expect(named(ender.scene, 'galewheel-swallow-darts')).toBe(true); } finally { ender.fx.dispose(); }
+    try { expect(named(ender.scene, 'galewheel-gust-darts')).toBe(true); } finally { ender.fx.dispose(); }
   });
-  it('never puts the Senpugan in Konta\'s palm for an ender off the heavy but the Giant Senpugan', () => {
+  it('never puts the Kazeyose in Konta\'s palm for an ender off the heavy but the Great Kazeyose', () => {
     const own = thrown('konta', 'heavy');
-    // The Senpugan's cast: its two orbital rings in the palm.
+    // The Kazeyose's cast: its two orbital rings in the palm.
     const rings = (scene: THREE.Scene) => { let n = 0; scene.traverse(o => { if (o.name.startsWith('cast-')) o.traverse(m => { if ((m as THREE.Mesh).isMesh && (m as THREE.Mesh).geometry instanceof THREE.TorusGeometry) n++; }); }); return n; };
     try { expect(rings(own.scene)).toBe(2); } finally { own.fx.dispose(); }
     for (const key of ['lh', 'llh', 'airHeavy'] as const) {
       const ender = thrown('konta', 'heavy', key);
       try { expect(rings(ender.scene), key).toBe(0); } finally { ender.fx.dispose(); }
     }
-    // His Light x3, Heavy is the Giant Senpugan: a Senpugan in the palm, its own move (combosVol1.ts).
+    // His Light x3, Heavy is the Great Kazeyose: a Kazeyose in the palm, its own move (combosVol1.ts).
     const big = thrown('konta', 'heavy', 'lllh');
-    try { expect(rings(big.scene), 'the Giant Senpugan').toBe(2); } finally { big.fx.dispose(); }
+    try { expect(rings(big.scene), 'the Great Kazeyose').toBe(2); } finally { big.fx.dispose(); }
   });
   it('does not hide an ender of LORD ORO\'s as his knife throw, nor hand its flight to the knives', () => {
     const own = thrown('oro', 'heavy');
@@ -107,7 +107,7 @@ describe('the palette colours an ender by its own element', () => {
       expect(techniqueColour(f, 'special', false, 'llls')).toBe(techniqueColour(f, 'special'));
     }
   });
-  it('lands Konta\'s Light, Heavy in his chi, not the Senpugan\'s blue, and Taisei\'s enders in ki, not a plain fist', () => {
+  it('lands Konta\'s Light, Heavy in his chi, not the Kazeyose\'s blue, and Taisei\'s enders in ki, not a plain fist', () => {
     expect(elementFor('konta', 'heavy', false, 0, 'lh')).not.toBe(elementFor('konta', 'heavy'));
     expect(elementFor('taisei', 'heavy', false, 0, 'llh')).not.toBe(elementFor('taisei', 'heavy'));
     expect(techniqueColour('konta', 'heavy', false, 'lh')).not.toBe(techniqueColour('konta', 'heavy'));
@@ -126,7 +126,7 @@ describe('the signature layers leave an ender alone', () => {
     fx.update(1 + mid, new Map([['g', taisei]]), 1);
     expect(taisei.group.visible).toBe(true);
   });
-  it('tracks no Galewheel, Ikazuchi, Blue, THEATRE, Phoenix or Nightfang for an ender cast off the special', () => {
+  it('tracks no Galewheel, Ikazuchi, Blue, SURGERY, Phoenix or Nightfang for an ender cast off the special', () => {
     const scene = new THREE.Scene();
     const fighters = (f: FighterId, slot: AttackSlot, branch?: ComboKey) => new Map([['a', body('a', f, { action: slot, branch })]]);
     const ninja = new NinjaEffects(scene);

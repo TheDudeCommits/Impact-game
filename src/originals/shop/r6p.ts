@@ -23,7 +23,7 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
   // TOKAN 凍鷴 (tokan's slot, round 6's concept e; writer C):
   // Warden of Frost.
   tokan: {
-    name: 'Tokan', series: 'Dust Sea', tagline: 'The Tribunal\'s laziest Warden: a frost-pheasant of a man who would rather sleep through the war, until something makes him freeze the whole sea solid.',
+    name: 'Tokan', series: 'Dust Sea', tagline: 'The Tribunal\'s laziest Warden: a frost-heron of a man who would rather sleep through the war, until something makes him freeze the whole sea solid.',
     homeArt: true,
     color: '#83c7e7', height: 2.05,
     moves: ['Frostbite Cut', 'Sleet Heel', 'Frostplume Flight', 'Winter Sleep'],
@@ -32,7 +32,7 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
     model: F + 'tokan-tr1.glb', extraModels: [],
     portrait: F + 'tokan-portrait.png',
     names: {},
-    shop: { 'fighter-tokan': shopItem('Tokan', 'The Tribunal\'s laziest Warden: a frostbite cut, a heel of sleet, a pheasant of frost - and the Winter Sleep, when everything stops till spring.', '霜') },
+    shop: { 'fighter-tokan': shopItem('Tokan', 'The Tribunal\'s laziest Warden: a frostbite cut, a heel of sleet, a heron of frost - and the Winter Sleep, when everything stops till spring.', '霜') },
   },
   // SENKO 閃猴 (senko's slot, round 6's concept e; writer C):
   // Warden of Glare.
@@ -73,16 +73,16 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
   // BARROW バロウ (barrow's slot, round 6's concept b; writer C):
   // the Wrecker.
   barrow: {
-    name: 'Barrow', series: 'Dust Sea', tagline: 'The wrecker of the Dust Sea, who hangs a lantern of black glass on the dunes to lure the sand-fleets in, eats everything they carried, and means to swallow a Tide King\'s crown next.',
+    name: 'Barrow', series: 'Dust Sea', tagline: 'The wrecker of the Dust Sea, who hangs a lantern of black glass on the dunes to lure the sand-fleets in, eats everything they carried, and means to swallow the whole Dust Sea next.',
     homeArt: true,
     color: '#8a53b9', height: 2.3,
-    moves: ['Tar Jab', 'Stolen Quake', 'Sinkhole', 'Jettison: Full Hold'],
-    shortMoves: ['TAR JAB', 'STOLEN QUAKE', 'SINKHOLE', 'JETTISON'],
-    awakening: 'BOTTOMLESS',
+    moves: ['Tar Jab', 'Wreck Quake', 'Tar Pit', 'Jettison: Full Hold'],
+    shortMoves: ['TAR JAB', 'WRECK QUAKE', 'TAR PIT', 'JETTISON'],
+    awakening: 'GORGED',
     model: F + 'barrow-tr1.glb', extraModels: [],
     portrait: F + 'barrow-portrait.png',
     names: {},
-    shop: { 'fighter-barrow': shopItem('Barrow', 'The wrecker of the Dust Sea: a jab of tar, a quake he stole off a better man, a sinkhole that swallows the floor - and Jettison, every wreck he ever ate, coughed back up at you.', '泥'),
+    shop: { 'fighter-barrow': shopItem('Barrow', 'The wrecker of the Dust Sea: a jab of tar, a quake shaken out of the wrecks, a tar pit that swallows the floor - and Jettison, every wreck he ever ate, coughed back up at you.', '泥'),
       'outfit-barrow-classic': null },
   },
   // STRAPPADO ストラッパード (strappado's slot, round 6's concept b; writer C):
@@ -196,7 +196,7 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
   // AMAGOI 雨乞い (amagoi's slot, round 6's concept g; writer C):
   // the God of the Ash Rain.
   amagoi: {
-    name: 'Amagoi', series: 'Hidden Ash', tagline: 'The god of the ash rain, who stands over the Hidden Ash\'s drowned neighbour and lets the sky weep on whoever he chooses.',
+    name: 'Amagoi', series: 'Ashwood', tagline: 'The god of the ash rain, who stands over Ashwood\'s drowned neighbour and lets the sky weep on whoever he chooses.',
     homeArt: true,
     color: '#ab8fd4', height: 1.82,
     moves: ['Rainrod Thrust', 'Cloudburst', 'Calling Water', 'Ash Moon'],
@@ -213,13 +213,13 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
     name: 'Mikage', series: 'Cinder Requiem', tagline: 'The cat burglar of the Cinder Requiem\'s rooftops: a princess of an old house who ran off to steal back what the dead city buried, and is still too quick for anyone to catch.',
     homeArt: true,
     color: '#a663ee', height: 1.72,
-    moves: ['Velvet Palm', 'Pounce Heel', 'Static Claw', 'Ninth Life: Thunder Pounce'],
-    shortMoves: ['VELVET PALM', 'POUNCE HEEL', 'STATIC CLAW', 'NINTH LIFE'],
+    moves: ['Velvet Palm', 'Pounce Heel', 'Static Claw', 'Storm Pounce'],
+    shortMoves: ['VELVET PALM', 'POUNCE HEEL', 'STATIC CLAW', 'STORM POUNCE'],
     awakening: 'HACKLES UP',
     model: F + 'mikage-tr1.glb', extraModels: [F + 'mikage-tr1-area1.glb'], // remake-areas: her Catwalk cast (src/originals/areaCasts.ts)
     portrait: F + 'mikage-portrait.png',
     names: {},
-    shop: { 'fighter-mikage': shopItem('Mikage', 'The cat burglar of the Cinder Requiem\'s rooftops: a velvet palm, a pouncing heel, a claw of static - and her Ninth Life, spent on you.', '猫') },
+    shop: { 'fighter-mikage': shopItem('Mikage', 'The cat burglar of the Cinder Requiem\'s rooftops: a velvet palm, a pouncing heel, a claw of static - and her Storm Pounce, saved for you.', '猫') },
   },
   // SHIDARE シダレ (shidare's slot, round 6's concept d; writer C):
   // Head of the Oldest House.
@@ -256,14 +256,14 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
     name: 'Shijima', series: 'Cinder Requiem', tagline: 'The youngest chorister of the Cinder Requiem, adopted into its oldest house, who sings the dead city\'s snow down onto anything that will not stay buried.',
     homeArt: true,
     color: '#b9e6f5', height: 1.52,
-    moves: ['Frostnote Cut', 'First Carol: Snow Halo', 'Second Carol: Hoarfrost', 'Last Carol: Stillness'],
+    moves: ['Frostnote Cut', 'Snow Halo', 'Hoarfrost', 'Last Carol: Stillness'],
     shortMoves: ['FROSTNOTE CUT', 'SNOW HALO', 'HOARFROST', 'STILLNESS'],
     awakening: 'WHITE SILENCE',
     model: F + 'shijima-tr1.glb', extraModels: [F + 'shijima-tr1-area1.glb'], // remake-areas: her Blue Pyre cast, both bodies (src/originals/areaCasts.ts)
     formModel: F + 'shijima-form-tr1.glb', formExtraModels: [F + 'shijima-form-tr1-area1.glb'],
     portrait: F + 'shijima-portrait.png',
     names: {},
-    shop: { 'fighter-shijima': shopItem('Shijima', 'The youngest chorister of the Cinder Requiem: a frost-note cut, the First Carol\'s halo of snow, the Second\'s wave of hoarfrost - and the Last Carol, after which nothing moves.', '寂') },
+    shop: { 'fighter-shijima': shopItem('Shijima', 'The youngest chorister of the Cinder Requiem: a frost-note cut, the Snow Halo, a wave of Hoarfrost - and the Last Carol, after which nothing moves.', '寂') },
   },
   // ONIGAWARA オニガワラ (onigawara's slot, round 6's concept b; writer C):
   // the Boar of the Outskirts.
@@ -283,7 +283,7 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
   // UME ウメ (ume's slot, round 6's concept c; writer C):
   // the Ash Medic.
   ume: {
-    name: 'Ume', series: 'Hidden Ash', tagline: 'The Hidden Ash\'s field medic, who closes wounds with one hand and caves the ground in with the other, and will never again be the one left behind.',
+    name: 'Ume', series: 'Ashwood', tagline: 'Ashwood\'s field medic, who closes wounds with one hand and caves the ground in with the other, and will never again be the one left behind.',
     homeArt: true,
     color: '#f397c3', height: 1.65,
     moves: ['Budburst Straight', 'Magnolia Heel', 'Bloom Barrage', 'Magnolia Meteor'],
@@ -293,17 +293,17 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
     formModel: F + 'ume-form-tr1.glb',
     portrait: F + 'ume-portrait.png',
     names: {},
-    shop: { 'fighter-ume': shopItem('Ume', 'The Hidden Ash\'s field medic: a straight that bursts like a bud, a magnolia heel that splits the ground, a barrage in full flower - and the Magnolia Meteor, everything she\'s got from straight above.', '拳') },
+    shop: { 'fighter-ume': shopItem('Ume', 'Ashwood\'s field medic: a straight that bursts like a bud, a magnolia heel that splits the ground, a barrage in full flower - and the Magnolia Meteor, everything she\'s got from straight above.', '拳') },
   },
   // KUSUSHI 医 (kusushi's slot, round 6's concept f; writer C):
-  // the Grand Champion.
+  // the Yokozuna.
   kusushi: {
-    name: 'Kusushi', series: 'Hidden Ash', tagline: 'The grand champion of the Hidden Ash and its finest healer, who wears the sacred rope, bets on everything, and loses nearly all of it, except the fights.',
+    name: 'Kusushi', series: 'Ashwood', tagline: 'The yokozuna of Ashwood and its finest healer, who wears the sacred rope, bets on everything, and loses nearly all of it, except the fights.',
     homeArt: true,
     color: '#63cda0', height: 1.7,
-    moves: ['Wrapped Fist', 'Shiko Stomp', 'Ring-Out Palm', 'Double or Nothing'],
-    shortMoves: ['WRAPPED FIST', 'SHIKO STOMP', 'RING-OUT PALM', 'DOUBLE OR NOTHING'],
-    awakening: 'GRAND CHAMPION',
+    moves: ['Wrapped Fist', 'Shiko Stomp', 'Ring-Out Palm', 'Bet the Purse'],
+    shortMoves: ['WRAPPED FIST', 'SHIKO STOMP', 'RING-OUT PALM', 'BET THE PURSE'],
+    awakening: 'YOKOZUNA',
     // (The fighter quality round, fix-d2: her coat's skirt on chains, capsules the size of her trousers, Nigo's slim recipe.)
     coat: { thigh: .12, shin: .11 }, model: F + 'kusushi-tr1.glb', extraModels: [],
     formModel: F + 'kusushi-form-tr1.glb',
@@ -311,25 +311,25 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
     names: {
       'Crushing Heel': 'Stomping Heel',
     },
-    shop: { 'fighter-kusushi': shopItem('Kusushi', 'The grand champion of the Hidden Ash: a rope-wrapped fist, the champion\'s stomp, a palm that throws you out of the ring - and Double or Nothing, everything on one bet.', '賽') },
+    shop: { 'fighter-kusushi': shopItem('Kusushi', 'The yokozuna of Ashwood: a rope-wrapped fist, the champion\'s stomp, a palm that throws you out of the ring - and Bet the Purse, everything on one bout.', '賽') },
   },
   // HAKUSHI 白獅 (hakushi's slot, round 6's concept f; writer C):
   // the White Lion.
   hakushi: {
-    name: 'Hakushi', series: 'Hidden Ash', tagline: 'The white lion of the Hidden Ash: a wandering hermit, dancer and scribbler who throws his pupils off cliffs because he believes they\'ll climb back up.',
+    name: 'Hakushi', series: 'Ashwood', tagline: 'The white lion of Ashwood: a wandering hermit, dancer and scribbler who throws his pupils off cliffs because he believes they\'ll climb back up.',
     homeArt: true,
     color: '#ba4538', height: 1.91,
-    moves: ['Flourish Palm', 'Lion\'s Pearl', 'Cinder Art: Lion\'s Breath', 'Lion Dance: Over the Cliff'],
+    moves: ['Flourish Palm', 'Lion\'s Pearl', 'Lion\'s Breath', 'Lion Dance: Over the Cliff'],
     shortMoves: ['FLOURISH PALM', 'LION\'S PEARL', 'LION\'S BREATH', 'OVER THE CLIFF'],
     awakening: 'THE OLD LION',
     model: F + 'hakushi-tr1.glb', extraModels: [],
     formModel: F + 'hakushi-form-tr1.glb',
     portrait: F + 'hakushi-portrait.png',
     names: {},
-    shop: { 'fighter-hakushi': shopItem('Hakushi', 'The white lion of the Hidden Ash: a dancer\'s flourish, the lion\'s burning pearl, a breath of cinders - and Over the Cliff, the lesson he gives the pupils he loves.', '獅') },
+    shop: { 'fighter-hakushi': shopItem('Hakushi', 'The white lion of Ashwood: a dancer\'s flourish, the lion\'s burning pearl, a breath of cinders - and Over the Cliff, the lesson he gives the pupils he loves.', '獅') },
   },
   minase: {
-    name: 'Minase', series: 'Hidden Ash', tagline: 'The relay courier of the Hidden Ash, who carries word through the ash storms and is already there a moment after he is called.',
+    name: 'Minase', series: 'Ashwood', tagline: 'The relay courier of Ashwood, who carries word through the ash storms and is already there a moment after he is called.',
     homeArt: true,
     color: '#ffcf50', height: 1.82,
     moves: ['Relay Knife', 'Gale Palm', 'Relay Leap', 'Fifty-Three Stations'],
@@ -343,16 +343,16 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
     names: {
       'Rising Gale': 'Rising Swallow',
     },
-    shop: { 'fighter-minase': shopItem('Minase', 'The relay courier of the Hidden Ash: a relay knife, a palm of gale, a leap to wherever the knife lands - and the Fifty-Three Stations, run in one breath.', '駅') },
+    shop: { 'fighter-minase': shopItem('Minase', 'The relay courier of Ashwood: a relay knife, a palm of gale, a leap to wherever the knife lands - and the Fifty-Three Stations, run in one breath.', '駅') },
   },
   // MADAKE 真竹 (madake's slot, round 6's concept e; writer C):
   // the green brawler of the Ash.
   'madake': {
-    name: 'Madake', series: 'Hidden Ash', tagline: 'The Hidden Ash\'s bare-handed bamboo: a teacher who trains till his arms steam, grows back from every beating, and has never stopped calling the scarecrow his rival.',
+    name: 'Madake', series: 'Ashwood', tagline: 'Ashwood\'s bare-handed bamboo: a teacher who trains till his arms steam, grows back from every beating, and has never once turned a challenge down.',
     homeArt: true,
     color: '#c33e37', height: 1.82,
-    moves: ['Bamboo Straight', 'Green Gale Kick', 'Summer Wolf', 'Midwinter Bamboo'],
-    shortMoves: ['BAMBOO STRAIGHT', 'GREEN GALE', 'SUMMER WOLF', 'MIDWINTER BAMBOO'],
+    moves: ['Bamboo Straight', 'Bamboo Gale Kick', 'Summer Wolf', 'Midwinter Bamboo'],
+    shortMoves: ['BAMBOO STRAIGHT', 'BAMBOO GALE', 'SUMMER WOLF', 'MIDWINTER BAMBOO'],
     awakening: 'EVERGREEN',
     model: F + 'madake-tr1.glb', extraModels: [F + 'madake-tr1-area1.glb'],
     // (The fighter quality round, fix-d2: EVERGREEN, a body of its own; its tattered skirt on chains, Nigo's slim recipe.)
@@ -360,7 +360,7 @@ export const SHOP_R6P: Partial<Record<FighterId, OriginalFighter>> = {
     formModel: F + 'madake-form-tr1.glb', formExtraModels: [F + 'madake-form-tr1-area1.glb'], coat: { thigh: .12, shin: .11 },
     portrait: F + 'madake-portrait.png',
     names: {},
-    shop: { 'fighter-madake': shopItem('Madake', 'The Hidden Ash\'s green beast: a bamboo-straight fist, a green gale kick, a summer wolf of air - and the Midwinter Bamboo, springing back out of the snow.', '竹') },
+    shop: { 'fighter-madake': shopItem('Madake', 'Ashwood\'s bamboo brawler: a bamboo-straight fist, a bamboo gale kick, a summer wolf of air - and the Midwinter Bamboo, springing back out of the snow.', '竹') },
   },
   // HINOMOTO 火の元 (hinomoto's slot, round 6's concept ?; writer C):
   // the Oldest Fire.

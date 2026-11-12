@@ -3,7 +3,7 @@ import type { IdleProfile } from './profile';
 
 /** The shop's fighters' idles, authored on each one's own skeleton the way the original sixteen's were
  *  (scripts/economy/idle_shop.mts, after scripts/author_idle.mts) and shipped beside the body. Before them they stood
- *  in whatever idle their build borrowed - the Rift's library stance, Emperor Jinlin's upright stand - and only the
+ *  in whatever idle their build borrowed - the Rift's library stance, Jinlin's upright stand - and only the
  *  life layer's breath told them from the Rift's grunts. */
 export const PROFILES_SHOP: Partial<Record<FighterId, IdleProfile>> = {
   // The Landslide's ready stance, bouncing; the fist drawn to the hip as the fidget.
@@ -31,11 +31,11 @@ export const PROFILES_SHOP: Partial<Record<FighterId, IdleProfile>> = {
   vesper: { model: '/assets/fighters/vesper-idle1.glb', clip: 'Vesper idle', fidgets: ['Vesper idle fidget'], stance: 'weapon', breath: .8, sway: .4, gaze: .9, dip: 2, fidgetEvery: [9, 15] },
   gorai: { stance: 'weapon', breath: 1.1, sway: .5, gaze: .7, dip: 2.2 },
   haldor: { stance: 'weapon', breath: 1.1, sway: .5, gaze: .7, dip: 2.2, fidgets: ['Haldor Home Idle'], fidgetEvery: [9, 16] },
-  sorrel: { stance: 'weapon', breath: .9, sway: .5, gaze: .9, dip: 2.2, fidgets: ['idlehome_a'], fidgetEvery: [8, 14] },
+  sorrel: { stance: 'weapon', breath: .9, sway: .5, gaze: .9, dip: 2.2, fidgets: ['idle_relaxed'], fidgetEvery: [8, 14] },
   dorado: { stance: 'weapon', breath: 1, sway: .5, gaze: .8, dip: 2.2 },
   shiun: { stance: 'weapon', breath: .7, sway: .4, gaze: .7, dip: 1.8 },
   'wuming': { stance: 'guard', breath: 1, sway: .5, gaze: .9, dip: 2 },
-  jirenga: { stance: 'guard', breath: .8, sway: .3, gaze: .7, dip: 1.8 },
+  banjaku: { stance: 'guard', breath: .8, sway: .3, gaze: .7, dip: 1.8 },
   'jinlin': { stance: 'relaxed', breath: .8, sway: .5, gaze: .9, dip: 1.8 },
   asahi: { stance: 'weapon', breath: 1, sway: .5, gaze: .8, dip: 2.2 },
   levin: { stance: 'weapon', breath: 1, sway: .5, gaze: .8, dip: 2.2 },

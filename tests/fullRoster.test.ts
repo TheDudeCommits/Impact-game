@@ -30,7 +30,7 @@ describe('complete roster authority',()=>{
   const blows=world.contacts.length-1;
   expect(sim.getPlayer('b')!.hp,'and finishes').toBe(1000-realised(world,blows,blows));};
  it('freezes nearby opponents without early damage and restores movement after the finisher',()=>stopTest('koko'));
- it('stops time for LORD ORO the same way, and the steamroller finisher lands as it resumes',()=>stopTest('oro'));
+ it('stops time for LORD ORO the same way, and the hour of ruin finisher lands as it resumes',()=>stopTest('oro'));
  it('opens PLANETARIUM on contact 0: Kuon freezes a nearby opponent, the far one keeps moving, and the Dark Spark lands once time resumes',()=>{const{sim,input,step}=fixture('kuon');sim.actors.get('a')!.state.ultimate=100;const void_=MOVES.kuon.ultimate,stop=void_.timeStop!;expect(stop.contact).toBe(0);input('a',{attack:'ultimate',targetId:'b'});step(void_.contacts[0]+.1);const frozen=sim.getPlayer('b')!;expect(frozen.timeStopped).toBe(true);expect(frozen.hp,'the Void itself does no damage').toBe(1000);expect(sim.getPlayer('far')!.timeStopped).toBeFalsy();step(1,()=>{input('b',{moveX:1,attack:'light'});input('far',{moveX:1});});expect(sim.getPlayer('b')!.x).toBe(frozen.x);expect(sim.getPlayer('b')!.z).toBe(frozen.z);expect(sim.getPlayer('far')!.x).toBeGreaterThan(13);step(stop.duration);expect(sim.getPlayer('b')!.timeStopped).toBe(false);step(void_.duration);
   // Contact 0 is the Void; alone in it, one opponent takes every strike
   // of the tour and then the Dark Spark (round 3: it used to be the one blow).
@@ -80,11 +80,11 @@ describe('complete roster authority',()=>{
   // the barrage realised 99 against the 135 to 140 every single-contact
   // special in the roster lands cold. Round 3d (PACE): read off the roster's
   // single-contact specials, which are 0.9 of what they were.
-  const singles=(Object.keys(MOVES) as FighterId[]).map(f=>MOVES[f].special).filter(m=>m.contacts.length===1&&m.name!=='Wind Art: Galewheel').map(m=>m.damage);
+  const singles=(Object.keys(MOVES) as FighterId[]).map(f=>MOVES[f].special).filter(m=>m.contacts.length===1&&m.name!=='Galewheel').map(m=>m.damage);
   expect(realised(gan,8),`GAN realises ${realised(gan,8)} cold`).toBeGreaterThanOrEqual(Math.min(...singles)-3);
   expect(realised(gan,8)).toBeLessThanOrEqual(Math.max(...singles));expect(sim.getPlayer('b')!.z).toBeGreaterThan(before);expect(sim.snapshot().events.filter(e=>e.kind==='hit'&&e.actorId==='a')).toHaveLength(8);});
  it('spawns Ikazuchi Arrow at the summoned bow height',()=>{const{sim,input,step}=fixture('shiden');sim.actors.get('a')!.state.ultimate=100;input('a',{attack:'ultimate',targetId:'b'});step(.1);const cast=sim.snapshot().events.find(e=>e.kind==='cast'&&e.actorId==='a')!;expect(cast.origin!.y).toBeCloseTo(2.94,2);expect(cast.origin!.x).toBeCloseTo(.54,2);});
 
- it('drives the Sickle Bolt in as the opener, and VOID SICKLE finishes the victim it holds',()=>{const{sim,input,step}=fixture('shirokane');sim.actors.get('a')!.state.ultimate=100;Object.assign(sim.actors.get('b')!.state,{z:3.6});const voidSickle=MOVES.shirokane.ultimate;input('a',{attack:'ultimate',targetId:'b'});step(voidSickle.contacts[0]-.35);expect(sim.getPlayer('a')!.z,'charged where he stands').toBeCloseTo(0,1);expect(sim.getPlayer('b')!.hp).toBe(1000);step(.45);expect(sim.getPlayer('a')!.z,'and driven in').toBeGreaterThan(1.5);expect(sim.getPlayer('b')!.hp).toBeLessThan(1000);expect(sim.getPlayer('b')!.heldBy).toBe('a');step(voidSickle.duration);expect(sim.getPlayer('b')!.hp).toBe(1000-realised(voidSickle,voidSickle.contacts.length));});
+ it('drives the Sickle Bolt in as the opener, and SICKLE REAPER finishes the victim it holds',()=>{const{sim,input,step}=fixture('shirokane');sim.actors.get('a')!.state.ultimate=100;Object.assign(sim.actors.get('b')!.state,{z:3.6});const sickleReaper=MOVES.shirokane.ultimate;input('a',{attack:'ultimate',targetId:'b'});step(sickleReaper.contacts[0]-.35);expect(sim.getPlayer('a')!.z,'charged where he stands').toBeCloseTo(0,1);expect(sim.getPlayer('b')!.hp).toBe(1000);step(.45);expect(sim.getPlayer('a')!.z,'and driven in').toBeGreaterThan(1.5);expect(sim.getPlayer('b')!.hp).toBeLessThan(1000);expect(sim.getPlayer('b')!.heldBy).toBe('a');step(sickleReaper.duration);expect(sim.getPlayer('b')!.hp).toBe(1000-realised(sickleReaper,sickleReaper.contacts.length));});
 
 });

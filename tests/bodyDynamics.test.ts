@@ -51,7 +51,7 @@ describe('the clip lands its blow when the move does', () => {
   // rejected - so both played linearly and landed their visible cut half a
   // second away from the damage.
   // Signal Fire used to be the third case; it is a projectile now (round 13),
-  // and a throw keeps its own pacing. Grand Tide is the same rig's melee
+  // and a throw keeps its own pacing. Spring Tide is the same rig's melee
   // swing with a measured contact that disagrees with the move's. Kenzo's
   // light used to be the first case: measured honestly (round 13, the blade
   // tip at the frame it crosses the facing) its cut is at 0.795 of a clip
@@ -60,8 +60,8 @@ describe('the clip lands its blow when the move does', () => {
   // is the same disagreement the other way - 0.18 against a contact at
   // 0.46 - on a clip the pacing plays from its start.
   const cases: [FighterId, 'light' | 'heavy' | 'special' | 'ultimate', () => GLTF][] = [
-    // (Round 4b: Gummy's ultimate is no longer drawn by this body past its opener: the GRAND TIDE is SUNRISE's, the
-    // form shown from the confirm, on its own take - tests/grandTide.test.ts.)
+    // (Round 4b: Gummy's ultimate is no longer drawn by this body past its opener: the SPRING TIDE is SUNRISE's, the
+    // form shown from the confirm, on its own take - tests/springTide.test.ts.)
     // (Round 5: nor his heavy: the Bazooka is a take of its own, gummy-r5-moves1.glb, authored on the move's clock, so
     // its blow and the move's already agree - tests/gummyRound5.test.ts.)
     ['kenzo', 'heavy', () => kenzo]];
@@ -70,7 +70,7 @@ describe('the clip lands its blow when the move does', () => {
       const fighter = new Fighter(baseState(id), rig());
       try {
         const move = MOVES[id][slot], fraction = (contactFrames as Record<string, Record<string, number>>)[id][slot];
-        // Round 3d (ULTS): Grand Tide's blow is the cinematic's finisher.
+        // Round 3d (ULTS): Spring Tide's blow is the cinematic's finisher.
         const at = move.contacts[slot === 'ultimate' ? move.contacts.length - 1 : 0] / move.duration;
         const swing = swinger(fighter, id, slot);
         swing(0);
@@ -342,7 +342,7 @@ describe('a launched body keeps moving all the way down', () => {
 
 describe('a barrage reads as a barrage', () => {
   it('re-chambers between the blows of a string instead of sweeping through them', () => {
-    // KoKo's Gan Gan! is eight hits over three seconds and the clip used to
+    // KoKo's Hammer! is eight hits over three seconds and the clip used to
     // be swept evenly across all of them: the move that should be the most
     // exciting in the game was the one with no snap in it anywhere.
     const rig = koko, move = MOVES.koko.special;

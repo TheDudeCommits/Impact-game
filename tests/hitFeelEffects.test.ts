@@ -132,7 +132,7 @@ describe('counts across a crowd', () => {
 describe('a big blow that does not knock its victim down rocks them', () => {
   const rigs = new Map<FighterId, GLTF>();
   beforeAll(async () => { rigs.set('koko', await loadRig(FIGHTERS.koko.model)); }, 120_000);
-  it('reels, then doubles over, dazed, for the rest of the hold (Shirokane\'s Static Scarecrow)', () => {
+  it('reels, then doubles over, dazed, for the rest of the hold (Shirokane\'s Static Decoy)', () => {
     const victim = new Fighter(base('koko'), rigs.get('koko')!);
     try {
       const s0 = base('koko'), stun = MOVES.shirokane.special.stun, dt = 1 / 60;

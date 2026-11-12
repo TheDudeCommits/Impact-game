@@ -122,8 +122,8 @@ describe('the arena hits back', () => {
   });
 
   it('bounces a juggled fighter off the floor once', () => {
-    // Round 3e (VARIETY): Needle Finger pins them standing now (a stagger), so
-    // the Haou-Dan - one of the four heavies that still launch - puts
+    // Round 3e (VARIETY): Iron Nail pins them standing now (a stagger), so
+    // the Crown Burst - one of the four heavies that still launch - puts
     // them in the air.
     const { sim, input, step, drain } = bout('ouga', 'taisei', 1.4);
     // Put them in the air, then land a finisher on them there.
@@ -138,7 +138,7 @@ describe('the arena hits back', () => {
 });
 
 describe('two beams cancel each other out', () => {
-  it('annihilates a Sunpalm Cannon into a Shikou-Ha: neither one lands', () => {
+  it('annihilates a Sunpalm Cannon into a Throne Wave: neither one lands', () => {
     const { sim, input, step, saw } = bout('taisei', 'ouga', 6);
     input('a', { attack: 'special', targetId: 'b' });
     input('b', { attack: 'special', targetId: 'a' });

@@ -24,7 +24,7 @@ import { R6B_ART, R6B_HOLD, R6B_VOICES_PENDING, R6B_WAITING, SHOP_R6B } from '..
 import VOICES from '../src/originals/voices.json';
 import { commandList } from '../src/ui/commandList';
 import { BONSHO_GUARDIAN_ASSETS, BonshoGuardian } from '../src/render/signature/BonshoGuardian';
-import { AKAITO_GHOST_BRIDE_ASSETS, AkaitoGhostBride } from '../src/render/signature/AkaitoGhostBride';
+import { AKAITO_SHADE_ASSETS, AkaitoShade } from '../src/render/signature/AkaitoShade';
 import { SPIRIT_CALLERS, SWORD_SPIRIT_ASSETS } from '../src/render/SwordSpiritEffects';
 import { YODAKA_OWL_ASSET, YodakaFireOwl } from '../src/render/signature/YodakaFireOwl';
 import { companionPlacement } from '../src/originals/companionLooks';
@@ -141,17 +141,17 @@ describe("round 6's new fighters, the second batch", () => {
     expect(away.has(own.slice(1))).toBe(!fighterShown('bonsho'));
   });
 
-  it("manifest Akaito's own ghost bride in the spirit's place, on the earlier twelve joints and three takes, and never ship the earlier", async () => {
+  it("manifest Akaito's own red thread shade in the spirit's place, on the earlier twelve joints and three takes, and never ship the earlier", async () => {
     const own = '/assets/fighters/akaito-bride2.glb', main = '/assets/fighters/akaito-ghost-bride1.glb';
-    expect([...AKAITO_GHOST_BRIDE_ASSETS]).toEqual([own]);
+    expect([...AKAITO_SHADE_ASSETS]).toEqual([own]);
     expect(glbJson(own).images ?? []).toEqual([]);   // plain: the renderer tints her its own pale violet
     vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(url => loadRig(url) as never);
-    const scene = new THREE.Scene(), fx = new AkaitoGhostBride(scene, { budget: 1 } as never);
+    const scene = new THREE.Scene(), fx = new AkaitoShade(scene, { budget: 1 } as never);
     try {
       await fx.load(['akaito']);
       let skinned = 0; scene.traverse(o => { if (o instanceof THREE.SkinnedMesh) skinned++; });
       expect(skinned).toBeGreaterThan(0);
-      expect(scene.getObjectByName('GhostBrideJaw')).toBeTruthy();
+      expect(scene.getObjectByName('ShadeJaw')).toBeTruthy();
     } finally { fx.dispose(); vi.restoreAllMocks(); }
     const away = new Set(launchUnshipped([main.slice(1), own.slice(1)]));
     expect(away.has(own.slice(1))).toBe(!fighterShown('akaito'));

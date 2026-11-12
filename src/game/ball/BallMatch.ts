@@ -7,7 +7,7 @@ import {tidyName} from '../displayName';
 import type {CollisionWorld, CombatEvent, FighterId, PlayerState, Vec3} from '../types';
 import {BOT_LEVELS, BallBrain, PLAN_LINES, dealPlan, isBotLevel, type BotLevel} from './BallBrain';
 import {
-  BALL_ID, BALL_RULES, BALL_SPORT, BALL_STAGE, BALL_TEAMS, CHARM_KINDS, CLASH, GOAL_FIGHT, GOAL_STANCE, PASS_CALL, QUICK_CHAT_LIMIT, quickChat, GOAL_RULES, RUMBLE, SPIKE_RULES, ballAssist, charmName, heatTier, otherTeam,
+  BALL_ID, BALL_RULES, BALL_SPORT, BALL_STAGE, BALL_TEAMS, CHARM_KINDS, CLASH, GOAL_FIGHT, GOAL_STANCE, PASS_CALL, QUICK_CHAT_LIMIT, quickChat, GOAL_RULES, RUMBLE, SPIKE_RULES, VOLLEY_COURT, ballAssist, onCourt, spikeCourt, charmName, heatTier, otherTeam,
   inPlay, shortSide,
   type BallAccess, type BallCharm, type BallEffect, type CharmKind, type BallEvent, type BallModeId, type BallSeat, type BallSnapshot, type BallState,
   type BallTeam, type BallView, type ShotKind,
@@ -15,7 +15,7 @@ import {
 import {courtSide, freshBall, goalZ, headingInto, landing, sideOf, speedCap, stepBall, type BallContact} from './physics';
 import {SPIKE_DIG, strikeBall} from './strike';
 import {SportBrain} from './sportBrain';
-import {FOOTBALL, FOOTBALL_SIZE, controls, footSpot, knockAhead, passPick, passTo, shotAt, type Mate} from './football';
+import {FOOTBALL, FOOTBALL_SIZE, controls, footSpot, kindTouch, knockAhead, passPick, passTo, personPass, shotAt, type Mate} from './football';
 import {REPLAY, replayLength, type BallReplay} from './replay';
 import {MUTATOR_RULES, baseGravity, baseSize, isMutator, type BallMutator} from './mutators';
 import {TRAIT_RULES, traitOf, withTrait} from './traits';
@@ -23,7 +23,7 @@ import {DRILLS, DRILL_RIVAL, DrillRunner, isDrill, type DrillFeed, type DrillId}
 import {BallLesson, LESSON_CAST, type LessonHost} from './lesson';
 import {CELEBRATE, celebrationOf, cleanLook, type Celebration} from './look';
 import {DUEL, LINK, SIGNATURE_FIGHTERS, SIGNATURE_SHOTS, duelWinner, type DuelPresses} from './superShots';
-import {INTRO, SHORT_INTRO, podiumOf} from './ceremony';
+import {INTRO, QUICK_INTRO, SHORT_INTRO, podiumOf} from './ceremony';
 import {VOLLEY, Volley, type VolleyHost} from './volley';
 import {VolleyBrain} from './volleyBrain';
 
@@ -50,7 +50,7 @@ export interface BallOptions {
   /** The match opens with its intro (ceremony.ts INTRO: the flyover, the splash page, the whistle), held in a
    *  longer countdown. Never in FREE PLAY; the page's offline match and the online rooms ask for it, a couch one doesn't.
    *  'short' is the short intro (SHORT_INTRO: the splash page and the whistle), a rematch's. */
-  intro?: boolean | 'short';
+  intro?: boolean | 'short' | 'quick';
   /** The bots' level the player picked (BallBrain BOT_LEVELS: EASY, NORMAL, HARD), for the bots of a side with
    *  no person on it (levelBots); NORMAL unless a match on this device asks. */
   difficulty?: BotLevel;
@@ -189,6 +189,8 @@ const GOAL_SWING = {behind: 2, finalFrom: 30, close: 2, finalHeat: 1.5, finalMet
  *  NORMAL (29% before the quick strike), over the skilled player's 48%. */
 export const MASHED = {presses: 3, window: .45, yaw: .5, tap: .25} as const;
 /** A body reeling from a blow (or down) heads nothing: the ball only bounces off it. */
+/** 0 to 1, eased at both ends. */
+const smooth01 = (x: number) => { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); };
 const REELING: ReadonlySet<string> = new Set(['launched', 'knockdown', 'getup', 'stun', 'splat', 'defeated']);
 /** A HEADER's blow, as strike.ts reads one (no swing: the body's own). */
 const HEADED: MoveDefinition = {name: 'Header', duration: .3, contacts: [0], damage: 0, range: 1, radius: 1, stamina: 0, cooldown: 0, stun: 0, knockback: 0, style: 'melee'};
@@ -442,7 +444,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
   /** SPORT: each seat's PASS or SHOOT pressed and not yet played - which, when, when its key came up (undefined: still
    *  down), and the view and stick as last read (a hold is aimed as the key comes up); until when each seat lets the ball
    *  go (FOOTBALL.again, .lost); the last pass (for a completed one and the passing move). */
-  private readonly footPress = new Map<string, {kind: 'pass' | 'shoot'; at: number; up?: number; yaw: number; mx: number; mz: number}>();
+  private readonly footPress = new Map<string, {kind: 'pass' | 'shoot'; at: number; up?: number; yaw: number; mx: number; mz: number; aim?: {yaw: number; mx: number; mz: number}; call?: boolean; go?: number}>();
   private readonly footOff = new Map<string, number>();
   /** SPORT: each seat's TACKLE under way (when pressed, a SLIDE or a POKE, its run then), its next allowed, and
    *  when it is BEATEN until; each carrier's last TRICK and its next allowed; the guard last heard (a press is its edge). */
@@ -557,12 +559,15 @@ export class BallMatch implements ExternalTargets, LessonHost {
     // SUDDEN DEATH: Goal Rush's clock is a minute, then the next goal wins.
     if (mode === 'goal-rush' && this.view.mutator === 'sudden-death' && options.length === undefined) this.view.clock = MUTATOR_RULES.suddenSeconds;
     if (options.practice) { this.view.fillBots = false; if (mode === 'sky-spike') this.view.target = 999; }
-    else if (options.intro) this.view.intro = options.intro === 'short' ? {seconds: SHORT_INTRO.seconds, short: true} : {seconds: INTRO.seconds};
+    else if (options.intro) this.view.intro = options.intro === 'short' ? {seconds: SHORT_INTRO.seconds, short: true} : options.intro === 'quick' ? {seconds: QUICK_INTRO.seconds, short: true} : {seconds: INTRO.seconds};
     this.view.arena = isBallArena(options.arena) && BALL_ARENAS[options.arena].mode === mode ? options.arena : arenaFor(mode, this.seed);
     if (this.difficulty !== 'normal' && !options.practice) this.view.level = this.difficulty;
     if (this.football) this.view.football = true;
     // (FREE PLAY and its drills keep the classic rules; LEARN TO PLAY teaches the volleyball ones under the flag.)
     if (options.volleyball && mode === 'sky-spike' && (!options.practice || (options.lesson && !isDrill(options.drill)))) this.volley = new Volley(this.volleyHost(), options.seed ?? 1);
+    // (A volleyball match is played on a court for three a side, carried on the ball. LEARN TO PLAY on the
+    // volleyball rules is taught on it too, under the match's own camera - lesson.ts lays its steps out on the ball's court.)
+    if (this.volley && (!options.practice || options.lesson)) this.ball.court = VOLLEY_COURT;
     if (options.practice && isDrill(options.drill) && DRILLS[options.drill].mode === mode) { this.drill = new DrillRunner(options.drill, this.rng); this.view.drill = this.drill.view; }
     else if (options.practice && options.lesson) { this.lesson = new BallLesson(mode, this.rng, this.football); this.view.lesson = this.lesson.view; if (this.volley) this.lesson.view.volley = true; }
     this.placeBallAtRest();
@@ -970,15 +975,17 @@ export class BallMatch implements ExternalTargets, LessonHost {
     const i = Math.max(0, this.order(seat)), sign = seat.team === 'red' ? -1 : 1;
     // (SPORT mode's keeper: on its own line.)
     if (seat.keeper) return {x: 0, y: 0, z: sign * (GOAL_RULES.halfZ - FOOTBALL.keeper4.line)};
+    // (The kickoff's taker, just behind the ball - FOOTBALL.fun.kickoff.)
+    if (this.football && this.kickTaker === seat.id) return {x: 0, y: 0, z: sign * FOOTBALL.fun.kickoff.spot};
     if (this.mode === 'goal-rush') {
       const spots = this.kickSpots;
       const s = spots[i % spots.length];
       return {x: s.x, y: 0, z: sign * s.z};
     }
-    const R = SPIKE_RULES;
-    if (this.view.phase !== 'lobby' && this.view.serverId === seat.id) return {x: 0, y: 0, z: sign * (R.courtHalfZ + 1.4)};
+    const C = spikeCourt(this.ball);
+    if (this.view.phase !== 'lobby' && this.view.serverId === seat.id) return {x: 0, y: 0, z: sign * (C.z + 1.4)};
     const spots = [{x: -3.6, z: 3.2}, {x: 3.6, z: 3.2}, {x: 0, z: 7.6}];
-    const s = spots[i % 3];
+    const s = onCourt(C, spots[i % 3].x, spots[i % 3].z);
     return {x: s.x, y: 0, z: sign * s.z};
   }
   private placeAll() {
@@ -1108,6 +1115,11 @@ export class BallMatch implements ExternalTargets, LessonHost {
         if (seat.blocks === 3) this.accolade(seat, 'THE WALL');
         this.emit(stuff ? 'perfect' : 'block', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot: 'block', text: stuff ? 'STUFF BLOCK' : 'BLOCK'});
         this.touched(seat, null, 'block', true);
+      },
+      // (The hitter held in the air at the contact as the ball goes - PERFECT_SPIKE's freeze, every spike's.)
+      stop: (seat, seconds) => {
+        const a = this.sim.actors.get(seat.id), now = this.sim.serverTime;
+        if (a) { if (now >= a.hitstopUntil) a.hitstopFrom = now; a.hitstopUntil = Math.max(a.hitstopUntil, now + seconds); }
       },
       superShot: seat => {
         const a = this.sim.actors.get(seat.id), b = this.ball;
@@ -1264,6 +1276,8 @@ export class BallMatch implements ExternalTargets, LessonHost {
   private kickoff() {
     this.celebration = null;
     if (this.view.score.red + this.view.score.blue > 0) this.kickSpots = this.sim.shuffle([...KICKOFF_SPOTS]).slice(0, 3);
+    // (One side kicks off - the person's first, then the side that conceded - FOOTBALL.fun.kickoff.)
+    this.kickTaker = this.football && !this.view.practice ? this.footTaker(this.scoredBy ? otherTeam(this.scoredBy) : undefined) : null;
     this.view.phase = 'kickoff'; this.view.phaseUntil = this.sim.serverTime + (this.view.practice ? .6 : GOAL_RULES.kickoffSeconds);
     this.placeBallAtRest(); this.ball.held = true; this.touchesLog = []; this.endWait = false;
     // FREE PLAY: the ball back on the spot, the person left where they stand.
@@ -1273,7 +1287,13 @@ export class BallMatch implements ExternalTargets, LessonHost {
   }
   private release() {
     this.view.phase = 'live'; this.ball.held = false; this.ball.vy = 0;
+    // (The kickoff's taker has the ball at its feet as play goes live.)
+    const taker = this.football && this.kickTaker ? this.seats.get(this.kickTaker) : undefined, a = taker && this.sim.actors.get(taker.id);
+    this.kickTaker = null;
+    if (taker && a?.state.alive && !this.carrier) { this.ball.lastId = taker.id; this.ball.lastTeam = taker.team; this.startCarry(taker, a, this.facing(taker.team)); }
   }
+  /** This kickoff's taker (FOOTBALL.fun.kickoff), until play is live. */
+  private kickTaker: string | null = null;
   /** FREE PLAY in Sky Spike: the side nobody sits on, where the ball machine stands. */
   private machine(): BallTeam { return this.count('red') > 0 && this.count('blue') === 0 ? 'blue' : this.count('red') === 0 ? 'red' : 'blue'; }
   private serve() {
@@ -1293,7 +1313,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
     // A rally is short: the charms lying on the court and the ones at work carry over to the next serve.
     if (this.charmAt === 0) this.resetRumble(); else this.carryRumble();
     const b = this.ball;
-    b.x = 0; b.z = sign * (R.courtHalfZ + 1.4 - R.serveAhead); b.y = R.serveHeight; b.held = true; this.toss = null; this.floated = false;
+    b.x = 0; b.z = sign * (spikeCourt(b).z + 1.4 - R.serveAhead); b.y = R.serveHeight; b.held = true; this.toss = null; this.floated = false;
     this.emit('serve', {team, actorId: server?.id, x: b.x, y: b.y, z: b.z});
     this.volley?.served(this.sim.serverTime);
   }
@@ -1420,9 +1440,14 @@ export class BallMatch implements ExternalTargets, LessonHost {
       // SPORT mode (football.ts): a ball the body can control, within FOOTBALL.reach of it, is at its feet - the first
       // touch, no stick or run needed (bodies crowding a ball at rest stand off it by their own bounds).
       const keeps = this.football && seat.role === 'keeper' && this.brains.has(seat.id) && Math.abs(p.z - goalZ(seat.team)) < FOOTBALL.keeper.box && Math.abs(p.x) < FOOTBALL.keeper.wide;
-      if (this.football && d < reach + (keeps ? FOOTBALL.keeper.reach : FOOTBALL.reach) && !this.carrier && this.carryable() && now >= (this.footOff.get(seat.id) ?? -Infinity)) {
-        const mv = this.last.get(seat.id)!;
-        if (controls(b, r, Math.hypot(b.vx - mv.vx, b.vy - mv.vy, b.vz - mv.vz), {grounded: p.grounded, alive: p.alive, reeling: REELING.has(p.action), locked: !!seat.lock, stunned: now < a.stunUntil, y: p.y}, keeps)) {
+      // (A team-mate's pass meant for a person is theirs - FOOTBALL.fun.kind.)
+      const kind = this.football && this.footMeant(seat, p);
+      // (A keeper's save - a shot on target that will pass within its dive, caught or pushed wide whatever its
+      // pace: FOOTBALL.fun2.keeper.)
+      if (keeps && !this.carrier && this.footDive(seat, a, r, size)) continue;
+      if (this.football && d < reach + (keeps ? FOOTBALL.keeper.reach : kind === 'person' ? FOOTBALL.fun.kind.reach : FOOTBALL.reach) && !this.carrier && this.carryable() && now >= (this.footOff.get(seat.id) ?? -Infinity)) {
+        const mv = this.last.get(seat.id)!, rel = Math.hypot(b.vx - mv.vx, b.vy - mv.vy, b.vz - mv.vz), body = {grounded: p.grounded, alive: p.alive, reeling: REELING.has(p.action), locked: !!seat.lock, stunned: now < a.stunUntil, y: p.y};
+        if (kind ? kindTouch(b, r, rel, body) : controls(b, r, rel, body, keeps)) {
           // (The keeper's catch of a shot on target is a save.)
           if (keeps && this.onTarget(seat)) { seat.saves++; this.award(seat, 'save'); this.emit('save', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, value: Math.round(Math.hypot(b.vx, b.vy, b.vz)), text: 'SAVE', shot: 'save'}); this.saved(seat); }
           if ((this.bodyTouch.get(seat.id) ?? -Infinity) + .35 <= now) { this.bodyTouch.set(seat.id, now); this.bodyPlayed.set(seat.id, {at: now, three: false}); this.touched(seat, null, 'header'); }
@@ -1654,7 +1679,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
   private drop(pop?: BallSeat, why = 'gone') {
     const c = this.carrier, now = this.sim.serverTime;
     if (!c) return;
-    this.carrier = null; delete this.ball.carry; delete this.ball.ahead; delete this.ball.wind; this.carryEnds[why] = (this.carryEnds[why] ?? 0) + 1;
+    this.carrier = null; delete this.ball.carry; delete this.ball.ahead; delete this.ball.wind; delete this.ball.windTap; this.carryEnds[why] = (this.carryEnds[why] ?? 0) + 1;
     if (this.football) this.footCounts.held[c.id] = (this.footCounts.held[c.id] ?? 0) + now - c.since;
     // (Set back, never deleted: the carrier's own rollback checkpoint keeps a key it no longer hears of as it was.)
     this.sim.setMods(c.id, {speed: 1});
@@ -1751,7 +1776,14 @@ export class BallMatch implements ExternalTargets, LessonHost {
     const press = this.footPress.get(seat.id);
     if (slot === 'light' || slot === 'heavy') {
       const kind = slot === 'light' ? 'pass' : 'shoot', down = (kind === 'pass' ? keys.lightHeld : keys.heavyHeld) === true;
-      this.footPress.set(seat.id, {kind, at: now, up: down ? undefined : now, yaw: input.yaw, mx: input.moveX, mz: input.moveZ});
+      // (The stick as the key went down - a tap goes where it was pointed then, FOOTBALL.fun.tapAim.)
+      const aim = Math.hypot(input.moveX, input.moveZ) >= .5 ? {yaw: input.yaw, mx: input.moveX, mz: input.moveZ} : undefined;
+      // (A person's PASS while a team-mate has the ball at their feet is a call for it, never a first-time
+      // pass waiting for it: played as it arrived, the call sent the ball on to nobody the person had looked at.)
+      // (Or just after their pass to the person left: the call and the pass crossed.)
+      const lp = this.lastPass, crossed = !!lp && lp.to === seat.id && lp.team === seat.team && now - lp.at < .25;
+      const call = kind === 'pass' && !this.brains.has(seat.id) && (crossed || !!this.ball.carry && this.ball.carry !== seat.id && this.seats.get(this.ball.carry)?.team === seat.team);
+      this.footPress.set(seat.id, {kind, at: now, up: down ? undefined : now, yaw: input.yaw, mx: input.moveX, mz: input.moveZ, aim, ...(call ? {call: true} : {})});
       // (PASS without the ball is a call for it: the side's bots carrying it look for this person first.)
       if (kind === 'pass' && this.ball.carry !== seat.id && !this.brains.has(seat.id)) this.footCall(seat, now);
     } else if (press && press.up === undefined) {
@@ -1805,15 +1837,24 @@ export class BallMatch implements ExternalTargets, LessonHost {
     }
     for (const [id, t] of this.footTackle) {
       const seat = this.seats.get(id), a = this.sim.actors.get(id), p = a?.state;
-      const live = t.slide ? T.slide.live : T.live;
+      // (A person's poke stays live longer and reaches a little further - FOOTBALL.fun2.tackle - a press made a
+      // moment early, as the tackler closes, still lands.)
+      const person = !this.brains.has(id) && !t.slide, live = t.slide ? T.slide.live : person ? FOOTBALL.fun2.tackle.live : T.live;
       if (!seat || !a || !p || seat.lock) { this.footTackle.delete(id); continue; }
       const carrierSeat = c ? this.seats.get(c.id) : undefined;
       if (c && carrierSeat && carrierSeat.team !== seat.team) {
-        const dx = b.x - p.x, dz = b.z - p.z, d = Math.hypot(dx, dz), reach = PLAYER_RADIUS * (p.size ?? 1) + (t.slide ? T.slide.reach : T.reach);
+        const dx = b.x - p.x, dz = b.z - p.z, d = Math.hypot(dx, dz), reach = PLAYER_RADIUS * (p.size ?? 1) + (t.slide ? T.slide.reach : T.reach) + (person ? FOOTBALL.fun2.tackle.reach : 0);
         const ahead = !t.slide || Math.abs(wrapAngle(Math.atan2(dx, dz) - t.heading)) <= T.slide.cone;
         // (The contest: a poke from behind or beside a carrier who has turned the ball away is shielded - a miss.)
-        const from = this.sim.actors.get(c.id)?.state, front = !from || Math.abs(wrapAngle(Math.atan2(p.x - from.x, p.z - from.z) - c.heading)) <= T.front || (b.ahead ?? 0) >= FOOTBALL.knock.live;
-        if (d <= reach && ahead && !t.slide && !front) { this.footTackle.delete(id); this.footMiss(id, false); continue; }
+        // (And a ball just won is the carrier's a moment - FOOTBALL.fun.fresh, longer for a person: no
+        // poking it straight back.)
+        // (And a carrier striking it - a tap's wind-up, FOOTBALL.fun2.kick - strikes it: the press answers.)
+        const fresh = now - c.since < (this.brains.has(c.id) ? FOOTBALL.settle : FOOTBALL.fun.fresh[this.difficulty]) || this.footPress.get(c.id)?.go !== undefined;
+        // (A person's poke wins from beside the carrier too - FOOTBALL.fun2.tackle.front by level - only one
+        // from right behind is shielded: the scripted person's pokes won 3 in 110.)
+        const cone = this.brains.has(id) ? T.front : FOOTBALL.fun2.tackle.front[this.difficulty];
+        const from = this.sim.actors.get(c.id)?.state, front = !fresh && (!from || Math.abs(wrapAngle(Math.atan2(p.x - from.x, p.z - from.z) - c.heading)) <= cone || (b.ahead ?? 0) >= FOOTBALL.knock.live);
+        if (d <= reach && ahead && (!t.slide || this.footPress.get(c.id)?.go !== undefined) && !front) { this.footTackle.delete(id); this.footMiss(id, !!t.slide); continue; }
         if (d <= reach && ahead) {
           this.footTackle.delete(id);
           // (Into a fresh TRICK: missed, and BEATEN.)
@@ -1847,10 +1888,38 @@ export class BallMatch implements ExternalTargets, LessonHost {
   /** A TACKLE that won nothing (FOOTBALL.tackle): the tackler's run slowed a moment - a stumble on a slide, never a
    *  knockdown - and no tackle again for a while. */
   private footMiss(id: string, slide: boolean) {
-    const T = FOOTBALL.tackle, now = this.sim.serverTime;
-    this.slowed.set(id, slide ? {until: now + T.slideMiss, k: T.slideMissPace} : {until: now + T.miss, k: T.missPace});
-    this.tackleNext.set(id, Math.max(this.tackleNext.get(id) ?? -Infinity, now + T.missAgain));
+    const T = FOOTBALL.tackle, now = this.sim.serverTime, P = FOOTBALL.fun2.tackle, person = !this.brains.has(id) && !slide;
+    // (A person's missed poke costs them less - FOOTBALL.fun2.tackle - so a miss is not the play lost.)
+    this.slowed.set(id, slide ? {until: now + T.slideMiss, k: T.slideMissPace} : {until: now + (person ? P.miss : T.miss), k: person ? P.missPace : T.missPace});
+    this.tackleNext.set(id, Math.max(this.tackleNext.get(id) ?? -Infinity, now + (person ? P.missAgain : T.missAgain)));
     this.footCounts.pokesMissed += slide ? 0 : 1;
+  }
+  /** FOOTBALL.fun.kind: the ball is a team-mate's pass meant for this seat, struck a moment ago, and none of
+   *  the other side is right on them - the first touch is kind: 'person' (from further out) or 'mate' (a bot); false. */
+  private footMeant(seat: BallSeat, p: {x: number; z: number}) {
+    const pass = this.lastPass, K = FOOTBALL.fun.kind;
+    if (!pass || pass.to !== seat.id || pass.team !== seat.team || this.ball.lastId !== pass.by || this.sim.serverTime - pass.at > K.for) return false;
+    for (const s of this.seats.values()) {
+      if (s.team === seat.team || s.out !== undefined) continue;
+      const q = this.sim.actors.get(s.id)?.state;
+      if (q?.alive && Math.hypot(q.x - p.x, q.z - p.z) < K.rival) return false;
+    }
+    // (A bot the pass is meant for takes it as cleanly, from its own reach - 'mate'; a person, from further out.)
+    return this.brains.has(seat.id) ? 'mate' as const : 'person' as const;
+  }
+  /** FOOTBALL.fun.corner: the side of the goal away from the other side's keeper (+1 or -1 in x); with the
+   *  keeper on its middle, the far post from the shooter at `x`. */
+  private footOpen(seat: BallSeat, x: number) {
+    const keeper = [...this.seats.values()].find(s => s.keeper && s.team !== seat.team), k = keeper && this.sim.actors.get(keeper.id)?.state;
+    return k && Math.abs(k.x) > .3 ? -Math.sign(k.x) : x > 0 ? -1 : 1;
+  }
+  /** FOOTBALL.fun.kickoff: who kicks this kickoff off - `team`'s (the person's side at the start: the side
+   *  with a person on it, else red), the person when there is one on it, else its first field bot. */
+  private footTaker(team?: BallTeam): string | null {
+    const seats = [...this.seats.values()].filter(s => !s.keeper && s.out === undefined);
+    const side = team ?? seats.find(s => !this.brains.has(s.id))?.team ?? 'red';
+    const mine = seats.filter(s => s.team === side);
+    return (mine.find(s => !this.brains.has(s.id)) ?? mine[0])?.id ?? null;
   }
   /** A person's call for the ball (FOOTBALL.call): their side's bots look for them first while it lasts. */
   private footCall(seat: BallSeat, now: number) {
@@ -1916,11 +1985,22 @@ export class BallMatch implements ExternalTargets, LessonHost {
       if (!seat || !a || seat.lock) { this.footPress.delete(id); continue; }
       const held = (press.up ?? now) - press.at;
       if (b.carry !== id || this.carrier?.id !== id) {
-        if ((press.up !== undefined && now - press.up > P.buffer) || held > P.most) this.footPress.delete(id);
+        if ((press.up !== undefined && now - press.up > P.buffer) || held > P.most || press.go !== undefined) this.footPress.delete(id);
         continue;
       }
-      if (press.up === undefined && held < P.most) { if (press.kind === 'shoot' && held >= P.tap) { this.sim.setMods(id, {speed: FOOTBALL.pace * FOOTBALL.shot.slow}); b.wind = Math.min(1, held / FOOTBALL.shot.wind); } continue; }
+      if (press.call) { this.footPress.delete(id); continue; }
+      // (A tap at the feet is struck FOOTBALL.fun2.kick s after its key - the foot drawn back and brought
+      // through, the page's take of it run by BallState.wind - so a pass and a shot are seen to be struck. First time, at once.)
+      if (press.up !== undefined && held < P.tap && press.at >= this.carrier.since - 1e-6) {
+        const K = FOOTBALL.fun2.kick, lead = press.kind === 'pass' ? K.pass : K.shot;
+        press.go ??= now + lead;
+        if (now < press.go - 1e-6) { b.wind = Math.min(1, 1 - (press.go - now) / lead); b.windTap = press.kind === 'pass' ? 'pass' : 'shot'; continue; }
+      }
+      if (press.up === undefined && held < P.most) { if (press.kind === 'shoot' && held >= P.tap) { this.sim.setMods(id, {speed: FOOTBALL.pace * FOOTBALL.shot.slow}); b.wind = Math.min(1, held / FOOTBALL.shot.wind); delete b.windTap; } continue; }
       this.footPress.delete(id);
+      // (A tap goes where the stick pointed as its key went down - FOOTBALL.fun.tapAim; a hold, where it
+      // points as the key comes up.)
+      if (held < P.tap && press.aim && FOOTBALL.fun.tapAim) Object.assign(press, press.aim);
       // (First time: pressed before the ball was at the feet.)
       const first = press.at < this.carrier.since - 1e-6;
       void dt;
@@ -1928,13 +2008,60 @@ export class BallMatch implements ExternalTargets, LessonHost {
       else this.footShoot(seat, a, press, held < P.tap ? 0 : Math.min(1, held / FOOTBALL.shot.wind), first);
     }
   }
+  /** FOOTBALL.fun2.keeper: a keeper in its box (`seat`, a bot) meets a shot on target that will pass within
+   *  its dive in the next moment - caught at its feet when the line is near its body and the shot no faster than `catch`,
+   *  else pushed out wide - a save either way. Whether it did. */
+  private footDive(seat: BallSeat, a: Actor, r: number, size: number) {
+    const K = FOOTBALL.fun2.keeper, b = this.ball, p = a.state, now = this.sim.serverTime;
+    if (b.held || b.super || !p.alive || REELING.has(p.action) || now < a.stunUntil || !!seat.lock || now < (this.footOff.get(seat.id) ?? -Infinity)) return false;
+    const speed = Math.hypot(b.vx, b.vy, b.vz), vh2 = b.vx * b.vx + b.vz * b.vz;
+    if (speed < K.from || vh2 < 1 || !this.onTarget(seat)) return false;
+    const rx = b.x - p.x, rz = b.z - p.z, closing = -(rx * b.vx + rz * b.vz);
+    if (closing <= 0) return false;
+    const tc = closing / vh2;
+    if (tc > K.ahead) return false;
+    const g = GOAL_RULES.gravity * (b.grav ?? 1), cx = rx + b.vx * tc, cz = rz + b.vz * tc, cy = b.y + b.vy * tc - .5 * g * tc * tc;
+    const lateral = Math.hypot(cx, cz), body = PLAYER_RADIUS * size + r + FOOTBALL.keeper.reach;
+    // (The dive takes a moment to come: a shot from close in, at the keeper's body, is blocked by it; past it, it beats it.)
+    const set = smooth01((now - this.footShotAt - K.react) / K.full);
+    if (cy > p.y + K.high * size || cy < p.y - .1 || lateral > body + K.dive[this.levelOf(seat)] * set) return false;
+    // (The save, where the line passes it.)
+    b.x = p.x + cx; b.z = p.z + cz; b.y = Math.max(r, cy);
+    seat.saves++; this.award(seat, 'save');
+    this.emit('save', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, value: Math.round(speed), text: 'SAVE', shot: 'save'}); this.saved(seat);
+    if ((this.bodyTouch.get(seat.id) ?? -Infinity) + .35 <= now) { this.bodyTouch.set(seat.id, now); this.bodyPlayed.set(seat.id, {at: now, three: false}); this.touched(seat, null, 'header'); }
+    else { b.lastId = seat.id; b.lastTeam = seat.team; }
+    if (lateral <= body + K.hands && speed <= K.catch) { this.footTake(seat, a, Math.atan2(cx, cz)); return true; }
+    // (Pushed out wide: across, away from the middle of the goal, up, and back off the line.)
+    const side = Math.sign(cx || b.x || 1), out = -Math.sign(goalZ(seat.team));
+    b.vx = side * K.push + b.vx * .15; b.vy = K.up; b.vz = out * Math.abs(b.vz) * K.keep; b.sx = b.sy = b.sz = 0; b.shot = null;
+    this.shed.set(seat.id, now + .4);
+    return true;
+  }
+  /** When the last SHOOT left the boot (the keeper's dive comes FOOTBALL.fun2.keeper.react s after it). */
+  private footShotAt = -Infinity;
+  /** A bot's level as the match plays it (levelBots): a side with a person on it plays its team-mates' level. */
+  private levelOf(seat: BallSeat): BotLevel {
+    const mine = [...this.seats.values()].some(s => s.team === seat.team && !this.brains.has(s.id)), both = BALL_TEAMS.every(t => [...this.seats.values()].some(s => s.team === t && !this.brains.has(s.id)));
+    return both || !mine ? this.difficulty : BOT_LEVELS[this.mode][this.difficulty].mates;
+  }
+  /** The other side's bodies in play (where they stand), for a person's PASS (personPass). */
+  private foesOf(seat: BallSeat): {x: number; z: number}[] {
+    const out: {x: number; z: number}[] = [];
+    for (const s of this.seats.values()) {
+      if (s.team === seat.team || s.out !== undefined) continue;
+      const q = this.sim.actors.get(s.id)?.state;
+      if (q?.alive) out.push({x: q.x, z: q.z});
+    }
+    return out;
+  }
   /** Team-mates in play, with their runs (for the pass's lead). */
   private matesOf(seat: BallSeat): Mate[] {
     const out: Mate[] = [];
     for (const s of this.seats.values()) {
       if (s.team !== seat.team || s.id === seat.id || s.out !== undefined) continue;
       const q = this.sim.actors.get(s.id)?.state, v = this.last.get(s.id);
-      if (q?.alive) out.push({id: s.id, x: q.x, z: q.z, vx: v?.vx ?? 0, vz: v?.vz ?? 0});
+      if (q?.alive) out.push({id: s.id, x: q.x, z: q.z, vx: v?.vx ?? 0, vz: v?.vz ?? 0, ...(this.football && s.keeper ? {keeper: true} : {})});
     }
     return out;
   }
@@ -1943,7 +2070,11 @@ export class BallMatch implements ExternalTargets, LessonHost {
   private footPass(seat: BallSeat, press: {yaw: number; mx: number; mz: number}, lofted: boolean, first: boolean) {
     const b = this.ball, now = this.sim.serverTime, r = this.radius * b.size, g = GOAL_RULES.gravity * (b.grav ?? 1);
     const yaw = Math.hypot(press.mx, press.mz) >= .5 ? Math.atan2(press.mx, press.mz) : press.yaw;
-    const mate = passPick(b, yaw, this.matesOf(seat));
+    // (A person's PASS snaps to the best open team-mate the stick is toward, chipped over one of theirs on
+    // the ball or led round one further along the lane - football.ts personPass. A bot's is the stick's pick, as ever.)
+    const person = !this.brains.has(seat.id), aimed = person ? personPass(b, yaw, this.matesOf(seat), this.foesOf(seat)) : undefined;
+    const mate = aimed ? aimed.mate : passPick(b, yaw, this.matesOf(seat));
+    if (aimed?.lofted) lofted = true;
     this.drop(undefined, 'pass'); this.footOff.set(seat.id, now + FOOTBALL.again);
     const v = passTo(b, yaw, mate, lofted, g, r, b.ground ?? 1);
     b.vx = v.vx; b.vy = v.vy; b.vz = v.vz; b.sx = b.sy = b.sz = 0; b.shot = 'tap';
@@ -1960,14 +2091,29 @@ export class BallMatch implements ExternalTargets, LessonHost {
     const b = this.ball, now = this.sim.serverTime, r = this.radius * b.size, g = GOAL_RULES.gravity * (b.grav ?? 1), v = this.last.get(seat.id);
     // (The stick across the view, to its left: the heading turns that way as it grows.)
     const left = Math.max(-1, Math.min(1, press.mx * Math.cos(press.yaw) - press.mz * Math.sin(press.yaw)));
-    const yaw = press.yaw + left * FOOTBALL.shot.bend;
+    let yaw = press.yaw + left * FOOTBALL.shot.bend;
     this.drop(undefined, 'shot'); this.footOff.set(seat.id, now + FOOTBALL.again);
-    const f = shotAt(b, yaw, charge, seat.team, {vx: v?.vx ?? 0, vz: v?.vz ?? 0}, g, r), shot = charge >= .5 ? 'power' as const : 'drive' as const;
+    // (A person's shot at the middle of the goal goes for the corner away from their keeper - FOOTBALL.fun.corner.)
+    let open = this.brains.has(seat.id) ? undefined : this.footOpen(seat, a.state.x);
+    // (A person's SHOOT in range, the view on the goal, goes on frame - FOOTBALL.fun2.aim: the corner the stick
+    // is across to, else the one away from the keeper.)
+    if (open !== undefined) {
+      const A = FOOTBALL.fun2.aim, gz = seat.team === 'red' ? GOAL_RULES.halfZ : -GOAL_RULES.halfZ, toGoal = Math.atan2(-b.x, gz - b.z);
+      if (Math.hypot(b.x, gz - b.z) < A.range && (gz - b.z) * Math.sign(gz) > 1 && Math.abs(wrapAngle(press.yaw - toGoal)) < A.within) {
+        const side = Math.abs(left) >= A.side && Math.abs(Math.cos(press.yaw)) > .3 ? Math.sign(left * Math.cos(press.yaw)) : open;
+        const tx = side * (GOAL_RULES.goalHalfWidth - r - FOOTBALL.shot.inset - FOOTBALL.fun.corner.in);
+        yaw = Math.atan2(tx - b.x, gz - b.z); open = undefined;
+      }
+    }
+    const f = shotAt(b, yaw, charge, seat.team, {vx: v?.vx ?? 0, vz: v?.vz ?? 0}, g, r, open), shot = charge >= .5 ? 'power' as const : 'drive' as const;
     b.vx = f.vx; b.vy = f.vy; b.vz = f.vz; b.sx = b.sy = b.sz = 0; b.shot = shot;
+    // (A full-power shot hangs a beat at the boot before it flies - FOOTBALL.fun.full.)
+    const full = charge >= FOOTBALL.fun.full.charge;
+    if (full) b.frozenUntil = Math.max(b.frozenUntil, now + FOOTBALL.fun.full.stop);
     this.touched(seat, shot, shot);
     this.shed.set(seat.id, now + FOOTBALL.again);
-    this.lastPass = null; this.chain = 0; this.footCounts.shots++; if (first) this.footCounts.firstShots++;
-    this.emit('strike', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot, value: Math.round(f.speed), text: first ? 'FIRST TIME' : undefined});
+    this.lastPass = null; this.chain = 0; this.footCounts.shots++; if (first) this.footCounts.firstShots++; this.footShotAt = now;
+    this.emit('strike', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot, value: Math.round(f.speed), text: first ? 'FIRST TIME' : undefined, ...(full ? {full: true} : {})});
     void a;
   }
 
@@ -3165,7 +3311,7 @@ export class BallMatch implements ExternalTargets, LessonHost {
 
   /** Where the ball comes down next (for the pages' landing ring and the bots). */
   landing() { return landing(this.mode, this.ball); }
-  courtSide(x: number, z: number) { return courtSide(x, z); }
+  courtSide(x: number, z: number) { return courtSide(x, z, spikeCourt(this.ball)); }
 
   snapshot(consume = false): BallSnapshot {
     const base = this.sim.snapshot(), events = this.events.slice();

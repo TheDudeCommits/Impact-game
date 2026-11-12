@@ -1,4 +1,4 @@
-/** The Hidden Ash's mark, the game's own: a diamond frame round a mountain's peak, an ember over it and the ash line
+/** Ashwood's mark, the game's own: a diamond frame round a mountain's peak, an ember over it and the ash line
  *  under it, drawn in one ink on a 2D canvas, centred on (cx, cy), `r` px from the centre to the frame's corners. */
 export function ashMark(g: CanvasRenderingContext2D, cx: number, cy: number, r: number, ink: string) {
   const k = r / 70;

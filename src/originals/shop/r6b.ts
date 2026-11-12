@@ -254,13 +254,13 @@ export const SHOP_R6B: Partial<Record<FighterId, OriginalFighter>> = {
   aquilo: {
     name: 'Aquilo', series: 'Briar Crown', tagline: 'The orphan from the briar-choked border who woke to find the north wind answering him, and who means to take the thorn crown before his rival does.',
     color: '#4fd18b', height: 1.72,
-    moves: ['Swallow Darts', 'Forktail Gust', 'Skimming Swallow', 'Great Migration'],
-    shortMoves: ['SWALLOW DARTS', 'FORKTAIL', 'SKIMMING SWALLOW', 'GREAT MIGRATION'],
+    moves: ['Gust Darts', 'Shearwind Gust', 'Skimming Gale', 'Great Northerly'],
+    shortMoves: ['GUST DARTS', 'SHEARWIND', 'SKIMMING GALE', 'GREAT NORTHERLY'],
     awakening: 'WINDBORNE',
     coat: { thigh: .12, shin: .11 }, model: F + 'aquilo-tr1.glb', extraModels: [],
     portrait: F + 'aquilo-portrait.png',
     names: {},
-    shop: { 'fighter-aquilo': shopItem('Aquilo', 'The north wind of Briar Crown: darts of air that fly like swallows, a forktail gust, a blade that skims the ground - and the Great Migration.', '燕') },
+    shop: { 'fighter-aquilo': shopItem('Aquilo', 'The north wind of Briar Crown: darts of air, a shearing gust, a gale that skims the ground - and the Great Northerly.', '北') },
   },
   // SVANHILD - The youngest of a silver-haired noble house, written off as its ugly duckling, whose water magic found its wings the day she stopped trying to please them.
   svanhild: {
@@ -314,12 +314,12 @@ export const SHOP_R6B: Partial<Record<FighterId, OriginalFighter>> = {
     names: {},
     shop: { 'fighter-bruin': shopItem('Bruin', "Briar Crown's bear from the far islands: a bearpaw cut, a grizzly thrust, a prowl in the dark - and the starless cut.", '熊') },
   },
-  // AKAITO - A gentle, tired boy tied by a red thread to the ghost bride who loved him first, whose hand now reaches out of his sleeve for anyone who hurts him.
+  // AKAITO - A gentle, tired boy tied by a red thread to the shade who loved him first, whose hand now reaches out of his sleeve for anyone who hurts him.
   akaito: {
-    name: 'Akaito', series: 'Hex Fallout', tagline: 'A gentle, tired boy tied by a red thread to the ghost bride who loved him first, whose hand now reaches out of his sleeve for anyone who hurts him.',
+    name: 'Akaito', series: 'Hex Fallout', tagline: 'A gentle, tired boy tied by a red thread to the shade who loved him first, whose hand now reaches out of his sleeve for anyone who hurts him.',
     color: '#d4c0ed', height: 1.78,
-    moves: ['Thread Draw', 'Severed Knot', 'Whispered Vow', 'Pinky Promise'],
-    shortMoves: ['THREAD DRAW', 'SEVERED KNOT', 'WHISPERED VOW', 'PINKY PROMISE'],
+    moves: ['Thread Draw', 'Severed Knot', 'Whispered Vow', 'Fated Knot'],
+    shortMoves: ['THREAD DRAW', 'SEVERED KNOT', 'WHISPERED VOW', 'FATED KNOT'],
     awakening: 'TILL DEATH',
     // (The fighter quality round, fix-polish: his cape hangs from his right shoulder on chains of its own and swings.)
     cape: { cone: 18, hang: .75, droop: 45, stiffness: 18, thigh: 0 },
@@ -329,7 +329,7 @@ export const SHOP_R6B: Partial<Record<FighterId, OriginalFighter>> = {
     names: {
       'Return Cut': 'Rewound Cut',
     },
-    shop: { 'fighter-akaito': shopItem('Akaito', "Hex Fallout's betrothed: a draw cut on a red thread, a severed knot, a whispered vow - and the pinky promise she has never let him break.", '誓') },
+    shop: { 'fighter-akaito': shopItem('Akaito', "Hex Fallout's betrothed: a draw cut on a red thread, a severed knot, a whispered vow - and the fated knot she has never let him untie.", '誓') },
   },
   // TEMPO - A street kid with absurd legs and a good heart, carrying a calamity inside him, whose punches land a beat late and twice as hard.
   tempo: {
@@ -349,13 +349,13 @@ export const SHOP_R6B: Partial<Record<FighterId, OriginalFighter>> = {
   sashigane: {
     name: 'Sashigane', series: 'Hex Fallout', tagline: 'A tired, exact man in a good coat, who inspects the ruins for a living, finds the weak point of anything he measures, and means to retire somewhere warm.',
     color: '#78c6b0', height: 1.84,
-    moves: ['Measured Cut', 'Golden Section', 'Condemned', 'Final Inspection'],
-    shortMoves: ['MEASURED CUT', 'GOLDEN SECTION', 'CONDEMNED', 'FINAL INSPECTION'],
+    moves: ['Measured Cut', 'Stress Test', 'Condemned', 'Final Inspection'],
+    shortMoves: ['MEASURED CUT', 'STRESS TEST', 'CONDEMNED', 'FINAL INSPECTION'],
     awakening: 'ZERO TOLERANCE',
     coat: { thigh: .12, shin: .11 }, model: F + 'sashigane-tr1.glb', extraModels: [],
     portrait: F + 'sashigane-portrait.png',
     names: {},
-    shop: { 'fighter-sashigane': shopItem('Sashigane', "Hex Fallout's inspector: a measured cut, the golden section, a building condemned - and the final inspection.", '矩') },
+    shop: { 'fighter-sashigane': shopItem('Sashigane', "Hex Fallout's inspector: a measured cut, the stress test, a building condemned - and the final inspection.", '矩') },
   },
   // CHOHAN - A lean hunter with not a trace of magic in him, who hunts hex-users for money, loses the money on dice, and has never once lost a fight.
   chohan: {
@@ -373,20 +373,20 @@ export const SHOP_R6B: Partial<Record<FighterId, OriginalFighter>> = {
   yodaka: {
     name: 'Yodaka', series: 'Black Snow', tagline: 'The fire-watchman of the endless dusk, an eagle-owl of a swordsman with a voice like a temple drum, who keeps his lamp burning for everyone behind him.',
     color: '#f36c27', height: 1.8,
-    moves: ["First Watch: Owl's Swoop", 'Second Watch: Bonfire Rise', 'Fourth Watch: Flaring Wings', 'Ninth Watch: Nighthawk Star'],
+    moves: ["Owl's Swoop", 'Bonfire Rise', 'Flaring Wings', 'Nighthawk Star'],
     shortMoves: ["OWL'S SWOOP", 'BONFIRE RISE', 'FLARING WINGS', 'NIGHTHAWK STAR'],
     awakening: 'BURNING STAR',
     coat: { thigh: .12, shin: .11 }, model: F + 'yodaka-tr1.glb', extraModels: [F + 'yodaka-tr1-area1.glb'], // remake-areas: his Fire Owl cast (src/originals/areaCasts.ts)
     portrait: F + 'yodaka-portrait.png',
     names: {},
-    shop: { 'fighter-yodaka': shopItem('Yodaka', "Black Snow's fire-watchman: the First Watch's swoop, a bonfire rise, wings that flare - and the Ninth Watch, the Nighthawk Star.", '番') },
+    shop: { 'fighter-yodaka': shopItem('Yodaka', "Black Snow's fire-watchman: an owl's swoop, a bonfire rise, wings that flare - and the Nighthawk Star.", '番') },
   },
   // KINU - KoKo's daughter, a street fighter of the Gilded Ruin who broke out of her chains and unravels into green thread to stitch her enemies shut.
   kinu: {
     name: 'Kinu', series: 'Gilded Ruin', tagline: "KoKo's daughter, a street fighter of the Gilded Ruin who broke out of her chains and unravels into green thread to stitch her enemies shut.",
     color: '#6cca84', height: 1.74,
-    moves: ['Silk Knuckle', 'Reeling Hook', 'BUCHI BUCHI Barrage', 'Broken Shackles'],
-    shortMoves: ['SILK KNUCKLE', 'REELING HOOK', 'BUCHI BUCHI', 'BROKEN SHACKLES'],
+    moves: ['Silk Knuckle', 'Reeling Hook', 'UNSPOOL Barrage', 'Broken Shackles'],
+    shortMoves: ['SILK KNUCKLE', 'REELING HOOK', 'UNSPOOL', 'BROKEN SHACKLES'],
     awakening: 'CUT LOOSE',
     model: F + 'kinu-tr1.glb', extraModels: [],
     portrait: F + 'kinu-portrait.png',
@@ -394,20 +394,20 @@ export const SHOP_R6B: Partial<Record<FighterId, OriginalFighter>> = {
     names: {
       'Stone Breaker': 'Shackle Breaker',
     },
-    shop: { 'fighter-kinu': shopItem('Kinu', "KoKo's daughter, out of her chains: a silk knuckle, a reeling hook, the BUCHI BUCHI barrage - and Broken Shackles, swung on their threads.", '縫') },
+    shop: { 'fighter-kinu': shopItem('Kinu', "KoKo's daughter, out of her chains: a silk knuckle, a reeling hook, the UNSPOOL Barrage - and Broken Shackles, swung on their threads.", '縫') },
   },
   // GOSU - The kindest delinquent in the Gilded Ruin, whose spirit mends anything broken with seams of gold, and who will break you first if you laugh at his jacket.
   gosu: {
     name: 'Gosu', series: 'Gilded Ruin', tagline: 'The kindest delinquent in the Gilded Ruin, whose spirit mends anything broken with seams of gold, and who will break you first if you laugh at his jacket.',
     color: '#3d6ee0', height: 1.85,
-    moves: ['Porcelain Jab', 'Gold Seam Hammer', 'KIN KIN Barrage', 'Gilded Scars'],
-    shortMoves: ['PORCELAIN JAB', 'GOLD SEAM HAMMER', 'KIN KIN', 'GILDED SCARS'],
+    moves: ['Porcelain Jab', 'Gold Seam Hammer', 'GILT Barrage', 'Gilded Scars'],
+    shortMoves: ['PORCELAIN JAB', 'GOLD SEAM HAMMER', 'GILT', 'GILDED SCARS'],
     awakening: 'MENDED IN GOLD',
     model: F + 'gosu-tr1.glb', extraModels: [],
     portrait: F + 'gosu-portrait.png',
     companion: { model: F + 'gosu-mender1.glb' },
     names: {},
-    shop: { 'fighter-gosu': shopItem('Gosu', 'The kindest delinquent in the Gilded Ruin: a porcelain jab, a gold-seam hammer, the KIN KIN barrage - and Gilded Scars, broken and mended in gold.', '繕') },
+    shop: { 'fighter-gosu': shopItem('Gosu', 'The kindest delinquent in the Gilded Ruin: a porcelain jab, a gold-seam hammer, the GILT Barrage - and Gilded Scars, broken and mended in gold.', '繕') },
   },
 };
 

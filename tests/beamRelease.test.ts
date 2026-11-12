@@ -9,14 +9,14 @@ import type { AttackSlot, CombatEvent, FighterId, PlayerState } from '../src/gam
 /**
  * Round 3c, LOCK: a beam's damage and its drawn beam agree.
  *
- * The second critic saw Kyokko-Ho deal its damage with no beam on screen.
+ * The second critic saw Royal Aurora deal its damage with no beam on screen.
  * Two things did that. The beam's volume was measured from the caster's
  * centre, so bodies beside and behind Ouga took the blast without the beam
  * going near them (lockAim.test.ts). And the renderer matched a beam's
  * `release` to its cast on time alone - within 0.06 s of the move's nominal
  * contact - while the simulation holds a cast's clock whenever its thrower's
  * commands arrive late (up to 0.35 s) and through an impact freeze: a 0.25 s
- * hitch in the charge, measured in the browser, and Kyokko-Ho and
+ * hitch in the charge, measured in the browser, and Royal Aurora and
  * Sunpalm Cannon burned their victims with not one frame of beam drawn. A late
  * release is now the beam's release, and its burn moves with it.
  */
@@ -79,7 +79,7 @@ describe('a beam is drawn when its damage lands', () => {
   });
 
   it('the simulation releases a held beam late - which is what the renderer now accepts', () => {
-    // Kyokko-Ho with the caster's commands missing for 0.25 s of its charge:
+    // Royal Aurora with the caster's commands missing for 0.25 s of its charge:
     // the release comes about that much after the nominal contact. Round 3d:
     // the beam is let go at 0.52 now, so the stall sits inside that, and the
     // release read is the beam's own - the cinematic's beats release too.

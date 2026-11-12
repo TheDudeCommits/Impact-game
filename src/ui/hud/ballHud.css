@@ -169,6 +169,10 @@
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow[data-side="l"] i{transform:rotate(180deg)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow[data-team="red"] i{border-left-color:var(--bh-red)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-arrow[data-team="blue"] i{border-left-color:var(--bh-blue)}
+/* Football's ball off screen - a bigger chip with the ball drawn in it (BallHud edgeArrow, data-foot). */
+#interface[data-hud="goal-rush"] .bh-arrow[data-foot]{gap:10px;padding:7px 14px 8px;font-size:max(18px,calc(30 * var(--bh-u)));border:2px solid #fff9ef;box-shadow:0 3px 0 rgba(0,0,0,.5)}
+#interface[data-hud="goal-rush"] .bh-arrow[data-foot] i{border-width:12px;border-left-width:19px}
+#interface[data-hud="goal-rush"] .bh-arrow[data-foot] b::before{content:'';display:inline-block;width:.78em;height:.78em;margin-right:.3em;vertical-align:-.08em;border-radius:50%;background:radial-gradient(circle at 50% 50%,#0b0c0e 0 22%,#fff9ef 24%);box-shadow:0 0 0 2px #0b0c0e}
 
 /* ---- The replay (render/ball/BallReplay.ts): its tag over the letterbox, and the fight's plates and cards put away
    while it shows (the scoreboard stays). */
@@ -289,6 +293,10 @@
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b::before{content:'BALL'}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance.sport:not([data-stance="fight"])>b::before{content:'SPORT'}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>small.bh-legend{font-size:calc(18 * var(--bh-u));color:#cfc8ba;letter-spacing:.08em}
+/* BallHud footLegend: football's SPORT strip - the buttons that act now, always there, bigger and brighter. */
+#interface[data-hud="goal-rush"] .bh-stance.sport:not([data-stance="fight"]){gap:calc(14 * var(--bh-u));padding:calc(8 * var(--bh-u)) calc(22 * var(--bh-u)) calc(9 * var(--bh-u)) calc(14 * var(--bh-u))}
+#interface[data-hud="goal-rush"] .bh-stance.sport:not([data-stance="fight"])>small.bh-legend{font:800 calc(24 * var(--bh-u))/1 'Barlow Condensed',sans-serif;color:#fff9ef;letter-spacing:.06em}
+#interface[data-hud="goal-rush"] .bh-stance.sport:not([data-stance="fight"])>small.bh-legend kbd{font-size:.92em;margin:0 .25em 0 .75em}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b{display:flex;align-items:center;gap:calc(7 * var(--bh-u));color:var(--bh-gold,#ffcf5a)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b::after{content:'';order:-1;width:.62em;height:.62em;border-radius:50%;background:var(--bh-gold,#ffcf5a);box-shadow:0 0 6px var(--bh-gold,#ffcf5a)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>span:empty,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>small:empty{display:none}
@@ -362,7 +370,7 @@
 #interface[data-hud="sky-spike"][data-ball-behind] .mode-hud .bh-board{opacity:.18}
 /* VOLLEYBALL (render/ball/touchWord.ts): a touch's tier, one word over the fighter who made it, on a small
    dark plate so it reads on every court; your own in your side's colour (the element's own `color`). */
-#interface .vb-word{position:fixed;left:0;top:0;z-index:5;pointer-events:none;font:italic 900 clamp(14px,3vh,20px)/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.05em;
+#interface .vb-word{position:fixed;left:0;top:0;z-index:5;pointer-events:none;font:italic 900 clamp(11px,2.2vh,15px)/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.05em;
   color:#f4f1ea;background:rgba(8,9,12,.78);padding:.16em .42em .12em;border-radius:.25em;box-shadow:0 0 0 1px rgba(255,255,255,.14);
   text-shadow:0 1px 0 #000;opacity:0;white-space:nowrap}
 #interface .vb-word[data-own]{box-shadow:0 0 0 2px currentColor}
@@ -376,3 +384,8 @@
   #interface[data-hud="sky-spike"][data-volley] .bh-board .bh-score{font-size:calc(34 * var(--bh-u));padding:0 calc(12 * var(--bh-u))}
   #interface[data-hud="sky-spike"][data-volley] .bh-board .bh-middle strong{font-size:calc(22 * var(--bh-u))}
 }
+
+/* So prompts never float over the person's body: on the volleyball rules the prompt
+   lane is one fixed place, bottom centre just over the bars - the camera keeps the court's bodies above it. */
+#interface[data-ball-volley] .combat-hud .mode-hud{--mh-lane:calc(var(--mh-above-strip) - 4px)}
+#interface[data-ball-volley] .combat-hud .mode-hud>[data-zone="6"] .bh-prompt{font-size:.92em;opacity:.94}

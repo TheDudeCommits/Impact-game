@@ -10,16 +10,25 @@ import { crater } from './battleScars';
 import { PaintedSky } from '../../render/stages/PaintedSky';
 import { ashBanner as ashBannerCloth } from './craterWreck';
 import { ashMark } from './mark';
+import { basketPost, flames, ironBasket, type FireAt, type FireMats } from './standingFire';
+
+/** The village's lights (src/render/objectives/AshwoodVillage.ts) - along both street fronts, round the gate and the
+ *  quartermaster, and on its six timber posts (5 m high) - are fire: an iron basket on a post at each, a basket on each
+ *  timber post's top. */
+const ASH_LANTERNS: readonly (readonly [number, number])[] = [
+  ...[-1, 1].flatMap(s => [0, 1, 2, 3, 4].map(row => [s * 40.8, -37 + row * 19 + 6] as const)),
+  [-7, 22], [7, 22], [-18, 33], [14, 43], [-41, 13], [41, 13]];
+const ASH_LANTERN_POSTS: readonly (readonly [number, number])[] = [-1, 1].flatMap(s => [-24, -3, 16].map(z => [s * 41.5, z] as const));
 
 export async function ashVillage(root: THREE.Group, objective: { update(time: number): void }) {
-  const ambient = new StageAmbient('hidden-ash'), kit = new StageKit(root, 'hidden-ash');
-  const c = { stage: 'hidden-ash', root, ambient, kit } as unknown as DressContext;
+  const ambient = new StageAmbient('ashwood'), kit = new StageKit(root, 'ashwood');
+  const c = { stage: 'ashwood', root, ambient, kit } as unknown as DressContext;
   const tick = objective.update.bind(objective);
   objective.update = (time: number) => { tick(time); ambient.update(time); };
   await kit.load(['own/proving-kneeler', 'own/proving-brazier', 'own/proving-rack', 'own/proving-post', 'br/meshy-stall', 'br/cart', 'cc0/barrels', 'br/umbrella']);
   const r = rand(611);
   // On the inner gate wall's top (its boxes: x +/-8 to +/-40 at z 20): kneeling guardians and braziers either side
-  // of the gate, facing the approach (the wall's top is 8 m: HiddenAshVillage's wall-tall pieces, 8 m high).
+  // of the gate, facing the approach (the wall's top is 8 m: AshwoodVillage's wall-tall pieces, 8 m high).
   const braziers: { x: number; y: number; z: number; size: number }[] = [];
   for (const s of [-1, 1]) {
     kit.place('own/proving-kneeler', { x: s * 13.2, y: 8, z: 20, height: 3.4, rot: Math.PI });
@@ -33,9 +42,9 @@ export async function ashVillage(root: THREE.Group, objective: { update(time: nu
     kit.place('br/meshy-stall', { x: s * 46, z: 30, height: 3.2, rot: s > 0 ? -Math.PI / 2 : Math.PI / 2 });
     kit.place('br/umbrella', { x: s * 44, z: 38, height: 3.4, rot: r() * 6 });
   }
-  kit.flush('hidden-ash');
+  kit.flush('ashwood');
 
-  const f = new Forge(c, 'hidden ash defence');
+  const f = new Forge(c, 'ashwood defence');
   f.mat('dark', { roughness: 1 });
   f.mat('glow', { basic: true });
   const glow = new Beacons(root, 180, ambient.time), pools = new LightPools(root, 24);
@@ -53,9 +62,16 @@ export async function ashVillage(root: THREE.Group, objective: { update(time: nu
   for (const b of braziersStreet) { f.pipe('dark', [b.x, 0, b.z], [b.x, 1.1, b.z], .06, 0x2a2420); f.cyl('dark', b.x, 1.1, b.z, .4, .26, .36, 0x2a2420, { sides: 8 }); }
   fires(c, braziersStreet, { glow, smoke: .3, seed: 33 });
   fires(c, braziersSouth, { glow, smoke: .35, seed: 37 });
+  // The fires (ASH_LANTERNS, ASH_LANTERN_POSTS): baskets on iron posts, baskets on the timber posts' tops; their glow on
+  // the lens and licking flames, no pool on the paving.
+  const m: FireMats = { iron: 'dark', glow: 'glow' }, standing: FireAt[] = [];
+  for (const [x, z] of ASH_LANTERNS) standing.push(basketPost(f, m, x, z, 2.2, .3, { thick: .06 }));
+  for (const [x, z] of ASH_LANTERN_POSTS) standing.push(ironBasket(f, m, x, 5, z, .34, { tint: 0x2a2420 }));
+  for (const s of standing) glow.add(s.x, s.y + .2, s.z, 1.3, 0xff9a40, -1, ((s.x * .013 + s.z * .007) % 1 + 1) % 1, 1);
+  flames(c, standing, 39);
   f.done();
-  glow.finish('hidden ash fires', 2.1);
-  pools.finish('hidden ash fire pools');
+  glow.finish('ashwood fires', 2.1);
+  pools.finish('ashwood fire pools');
   // The village's banners down the south walls' inner faces, toward the plaza.
   const banner = ashBannerCloth();
   for (const s of [-1, 1]) for (const x of [11, 15, 19, 35, 39]) ambient.cloth(banner, { x: s * x, y: 8.4, z: -44.9, width: 1.8, height: 4.2, rot: 0, wind: .35, lit: .3 });
@@ -65,12 +81,12 @@ export async function ashVillage(root: THREE.Group, objective: { update(time: nu
       .filter(p => Math.abs(Math.abs(p.x) - 13.2) > 1.3 && Math.abs(Math.abs(p.x) - 17.5) > 1 && Math.abs(Math.abs(p.x) - 30) > 1),
     ...Array.from({ length: 30 }, (_, i) => { const s = i % 2 ? 1 : -1; return { x: s * (42 + r() * 4.5), y: 0, z: -42 + r() * 88, cell: [STANDING, STANDING, CHEERING][Math.floor(r() * 3)] + Math.floor(r() * 8), height: 1.7 + r() * .12, flip: r() < .5 }; }),
   ];
-  people(c, spots, { robes: ['#5a524a', '#8a6a3a', '#3a3a40', '#7a3a2a', '#6a6a5a', '#4a3a30', '#9a8a6a', '#2e2e34'], wraps: ['#8e2620', '#4a4440', '#c8b890', '#2a2624'] }, { name: 'hidden ash defenders', shade: .82, sway: .05 });
+  people(c, spots, { robes: ['#5a524a', '#8a6a3a', '#3a3a40', '#7a3a2a', '#6a6a5a', '#4a3a30', '#9a8a6a', '#2e2e34'], wraps: ['#8e2620', '#4a4440', '#c8b890', '#2a2624'] }, { name: 'ashwood defenders', shade: .82, sway: .05 });
   // The village's mark (mark.ts) laid in the approach's paving, scorch marks and petals of the last raid on it.
   inlay(c, (g, n) => {
     const u = n / 24;
     ashMark(g, n / 2, n / 2, 10.4 * u, 'rgba(120,40,30,.36)');
-  }, { x: 0, z: -14, size: 24, px: 1024, y: .012, roughness: .9, name: 'hidden ash mark' });
+  }, { x: 0, z: -14, size: 24, px: 1024, y: .012, roughness: .9, name: 'ashwood mark' });
   inlay(c, (g, n) => {
     const u = n / 80, q = rand(613);
     g.translate(n / 2, n / 2);
@@ -87,7 +103,7 @@ export async function ashVillage(root: THREE.Group, objective: { update(time: nu
       g.fillStyle = `rgba(${214 + q() * 24},${150 + q() * 30},${164 + q() * 26},${.3 + q() * .35})`;
       g.beginPath(); g.ellipse(x, z, .1 * u, .055 * u, q() * 3, 0, Math.PI * 2); g.fill();
     }
-  }, { x: 0, z: -2, size: 80, px: 2048, y: .011, roughness: .9, name: 'hidden ash scorch and petals' });
+  }, { x: 0, z: -2, size: 80, px: 2048, y: .011, roughness: .9, name: 'ashwood scorch and petals' });
   // Smoke from the chimneys of the street fronts and the town behind; crows at dusk; petals on the wind; fireflies.
   const chimneys: { x: number; y: number; z: number; size: number }[] = [];
   for (const s of [-1, 1]) for (let k = 0; k < 6; k++) chimneys.push({ x: s * (56 + r() * 14), y: 16 + r() * 8, z: -60 + k * 26 + r() * 6, size: 2.6 });
@@ -132,12 +148,12 @@ function siege(c: DressContext) {
   const columns = [[-58, -62], [8, -96], [62, -88], [-70, -104], [24, -122]].flatMap(([x, z], i) =>
     Array.from({ length: 8 }, (_, k) => ({ x: x + k * 2.2, y: 10 + k * 8, z: z - k * .8, size: 6 + k * 2.2 + (i % 2) * 1.5 })));
   ambient.puffs({ spots: columns, color: 0x5a403c, shade: 0x18100e, opacity: .7, life: 12, rise: 6, grow: 1.8, drift: [2, 0, .6], cel: true, seed: 645, order: 0 });
-  glow.finish('hidden ash siege fires', 1.1);
+  glow.finish('ashwood siege fires', 1.1);
   arrows(c);
   // The last raid's worst blow in the approach; barricades broken along the street fronts past the bounds.
   crater(c, { size: 30, cx: -4, cz: -24, x: -4, z: -24, radius: 3.8, reach: 12, seed: 646, strokes: [[[-16, -12], [6, -36]]], lit: -Math.PI / 2,
-    ember: 0xff7028, strength: 1.1, litStone: 'rgba(196,170,150,.8)', darkStone: 'rgba(40,34,36,.85)', name: 'hidden ash crater' });
-  const f = new Forge(c, 'hidden ash barricades');
+    ember: 0xff7028, strength: 1.1, litStone: 'rgba(196,170,150,.8)', darkStone: 'rgba(40,34,36,.85)', name: 'ashwood crater' });
+  const f = new Forge(c, 'ashwood barricades');
   f.mat('timber', { roughness: .95 });
   for (const s of [-1, 1]) for (let k = 0; k < 5; k++) {
     const z = -40 + k * 13 + r() * 4, x = s * (41.2 + r() * 1.2);
@@ -168,7 +184,7 @@ function arrows(c: DressContext) {
   geometry.setAttribute('aFlight', new THREE.InterleavedBufferAttribute(buffer, 4, 4));
   geometry.instanceCount = n;
   const material = new THREE.ShaderMaterial({
-    name: 'hidden ash fire arrows', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+    name: 'ashwood fire arrows', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
     uniforms: { uTime: c.ambient.time },
     vertexShader: /* glsl */`
       attribute vec4 aPath; attribute vec4 aFlight; uniform float uTime; varying float vAlong; varying float vFade;
@@ -190,7 +206,7 @@ function arrows(c: DressContext) {
       void main() { gl_FragColor = vec4( vec3( 1.0, .62, .22 ) * ( .3 + 1.9 * vAlong * vAlong ) * vFade, 1.0 ); }`,
   });
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.name = 'hidden ash fire arrows'; mesh.frustumCulled = false; mesh.renderOrder = 3;
+  mesh.name = 'ashwood fire arrows'; mesh.frustumCulled = false; mesh.renderOrder = 3;
   c.root.add(mesh);
 }
 
@@ -198,7 +214,7 @@ function arrows(c: DressContext) {
  *  axis, its tongues climbing it (one additive draw over the stack of glows, so it reads as one fire and not as beads). */
 function flameSheet(x: number, y: number, z: number, time: { value: number }) {
   const material = new THREE.ShaderMaterial({
-    name: 'hidden ash pillar flame', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+    name: 'ashwood pillar flame', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
     uniforms: { uTime: time },
     vertexShader: /* glsl */`
       varying vec2 vUv;
@@ -224,6 +240,6 @@ function flameSheet(x: number, y: number, z: number, time: { value: number }) {
       }`,
   });
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(26, 130).translate(0, 65, 0), material);
-  mesh.position.set(x, y, z); mesh.name = 'hidden ash pillar flame'; mesh.frustumCulled = false; mesh.renderOrder = 2;
+  mesh.position.set(x, y, z); mesh.name = 'ashwood pillar flame'; mesh.frustumCulled = false; mesh.renderOrder = 2;
   return mesh;
 }

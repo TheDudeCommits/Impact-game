@@ -46,7 +46,7 @@ export const LOCK_ESCAPE_REWIND = .35;
  *  this gap's escape: the window opens shut. */
 export const LOCK_ESCAPE_EARLY = .3;
 export const LOCK_VANISH_STAMINA = 75;
-/** The attacker's answer to an escape, a counter-vanish: guard pressed within LOCK_COUNTER_WINDOW of the
+/** The attacker's answer to an escape, a vanish-read: guard pressed within LOCK_COUNTER_WINDOW of the
  *  defender vanishing puts the attacker behind them in turn, for half the escape's price (one bar of six). */
 export const LOCK_COUNTER_WINDOW = .35;
 export const LOCK_COUNTER_STAMINA = 37;

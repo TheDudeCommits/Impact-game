@@ -179,7 +179,7 @@ export class StageKit {
     if (looked instanceof THREE.MeshStandardMaterial) {
       looked.roughness = Math.max(.82, looked.roughness); looked.metalness = 0;
       looked.normalScale.multiplyScalar(.45);
-      // Cutout foliage at the Hidden Ash's cut (ObjectiveScenery): the RG
+      // Cutout foliage at Ashwood's cut (ObjectiveScenery): the RG
       // pack's Unity cutoffs (.7) leave a canopy half bare.
       if (looked.alphaTest > 0) looked.alphaTest = .45;
       this.grade?.(looked, piece);

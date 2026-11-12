@@ -92,7 +92,7 @@ export const SKILL_TREE: readonly SkillNode[] = [
   { id: 'iron-reprisal', branch: 'body', tier: 2, line: 'Just guards blast nearby enemies', requires: 'guardian', art: 'counter-art', fork: 'guard-shape', path: 'REPRISAL', technique: true },
   { id: 'anchored-soul', branch: 'body', tier: 2, line: 'Less damage, more stamina', requires: 'guardian', art: 'guardian', fork: 'guard-shape', path: 'ANCHOR' },
   { id: 'undying-will', branch: 'body', tier: 3, line: 'Rise again once when you fall', keystone: true },
-  { id: 'hound-armor', branch: 'body', tier: 3, line: 'Rage below half health', keystone: true },
+  { id: 'grave-plate', branch: 'body', tier: 3, line: 'Rage below half health', keystone: true },
 ];
 
 export const TREE_NODE = new Map(SKILL_TREE.map(node => [node.id, node]));
@@ -145,7 +145,7 @@ const BOT_SHARE: Record<Branch, number> = { ki: .36, blade: .34, body: .3 };
 const BOT_ORDER: Record<Branch, readonly string[]> = {
   ki: ['ki-surge', 'burst-point', 'storm-ki', 'cinder-step', 'ki-vortex', 'shockwave', 'ultimate-echo', 'awakening-nova', 'limitless', 'blazing-ki', 'chain-reaction', 'ultimate-rush', 'ki-armor', 'killing-intent'],
   blade: ['iron-fist', 'thunder-chain', 'keen-eye', 'executioner', 'flying-slash', 'focus', 'afterimage', 'limit-break', 'burning-blade', 'rending-cut', 'counter-art', 'god-speed'],
-  body: ['tough-body', 'guardian', 'second-breath', 'soul-harvest', 'fleet-foot', 'in-the-zone', 'undying-will', 'gravity', 'training', 'dread-of-the-dead', 'fighting-spirit', 'overdrive', 'hound-armor'],
+  body: ['tough-body', 'guardian', 'second-breath', 'soul-harvest', 'fleet-foot', 'in-the-zone', 'undying-will', 'gravity', 'training', 'dread-of-the-dead', 'fighting-spirit', 'overdrive', 'grave-plate'],
 };
 export function botPick(picks: readonly string[]): string | undefined {
   const total = picks.filter(pick => TREE_NODE.has(pick)).length + 1;

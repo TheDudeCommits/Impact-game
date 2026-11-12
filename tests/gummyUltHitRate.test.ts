@@ -12,7 +12,7 @@ const rate = (spec: { distance: number; behaviour: Behaviour; awakened?: boolean
   return landed / TRIALS;
 };
 
-describe('Grand Tide: the grab lands whenever it fairly should', () => {
+describe('Spring Tide: the grab lands whenever it fairly should', () => {
   it('reaches 11 m with his stretched arm, not the crouch\'s 2.9', () => {
     expect(meleeReach('gummy', 'ultimate', MOVES.gummy.ultimate)).toBeGreaterThanOrEqual(10.9);
     expect(MOVES.gummy.ultimate.close, 'no slide across the floor to reach them').toBe(0);

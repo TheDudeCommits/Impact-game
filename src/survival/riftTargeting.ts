@@ -27,7 +27,7 @@ const INTRODUCTION = 3.2;
 /** The boss the mark keeps framed (TargetRing reads it): the one the next
  *  blow is for, else the nearest in range. The next blow is often a grunt's
  *  with the boss three metres off, and then nothing on screen said where it
- *  stood ("Emperor Jinlin stands in the middle of the frame with no bracket"). */
+ *  stood ("Jinlin stands in the middle of the frame with no bracket"). */
 export const riftBoss: { current: RiftCandidate | undefined } = { current: undefined };
 
 export class RiftTargeting {

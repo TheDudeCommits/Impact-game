@@ -6,18 +6,18 @@ const shopItem = (name: string, blurb: string, glyph: string) => ({ name, blurb,
 
 export const SHOP_D: Partial<Record<FighterId, OriginalFighter>> = {
   vesper: {
-    name: 'Vesper', series: 'Grave Hound', tagline: 'The uncrowned of the grave roads, who led his company toward a crown and paid for it with every one of them.',
+    name: 'Vesper', series: 'Grave Hound', tagline: 'The uncrowned of the grave roads, a pale fencer who rides at the head of a company of ravens.',
     homeArt: true,
     color: '#dfe8ff',
-    moves: ['Quill Thrust', "Raven's Drop", 'Pale Lance', 'The Offering'],
-    shortMoves: ['QUILL THRUST', "RAVEN'S DROP", 'PALE LANCE', 'THE OFFERING'],
+    moves: ['Quill Thrust', "Raven's Drop", 'Pale Lance', 'Evensong'],
+    shortMoves: ['QUILL THRUST', "RAVEN'S DROP", 'PALE LANCE', 'EVENSONG'],
     awakening: 'BLACK VESPERS',
     coat: { thigh: .13, shin: .14 }, model: F + 'vesper-tr1.glb',
     formModel: F + 'vesper-awakened-tr1.glb',
     portrait: F + 'vesper-portrait.png', idleModel: F + 'vesper-idle1.glb',
     names: {},
     shop: {
-      'fighter-vesper': shopItem('Vesper', "The Uncrowned of the grave roads: a fencer's sabre, a dive through them before they see him move - and the Offering, when the sun goes black over them.", '鴉'),
+      'fighter-vesper': shopItem('Vesper', "The Uncrowned of the grave roads: a fencer's sabre, a dive through them before they see him move - and the Evensong, sung over them as the light goes.", '鴉'),
     },
   },
   // IMAGO - the Swarm King (Salvage Wilds, Thunder Hawk's world). The perfect king the insect swarm that ate the old world was born
@@ -25,7 +25,7 @@ export const SHOP_D: Partial<Record<FighterId, OriginalFighter>> = {
   // wing-cases (on chains below the waist), and the ringed tail with its hooked stinger, built onto his body as main built
   // the King's, on the joints the slot's springs swing. His awakening, SWARM ASCENDANT, burns jade round his own body.
   imago: {
-    name: 'Imago', series: 'Salvage Wilds', tagline: 'The perfect king the swarm was born to make, who has never met anything in the wastes worth bowing to.',
+    name: 'Imago', series: 'Salvage Wilds', tagline: 'The sovereign the swarm was born to make, who has never met anything in the wastes worth bowing to.',
     homeArt: true,
     color: '#3ae88a',
     moves: ['Swarm Claw', 'Stinger Lash', 'Hive Burst', 'The Final Molt'],
@@ -35,7 +35,7 @@ export const SHOP_D: Partial<Record<FighterId, OriginalFighter>> = {
     portrait: F + 'imago-portrait.png', idleModel: F + 'imago-idle1.glb',
     names: {},
     shop: {
-      'fighter-imago': shopItem('Imago', 'The Swarm King: a claw quicker than the eye, a stinger that whips and storms round him - and the Final Molt, both fists brought down.', '蟲'),
+      'fighter-imago': shopItem('Imago', 'The Swarm Sovereign: a claw quicker than the eye, a stinger that whips and storms round him - and the Final Molt, both fists brought down.', '蟲'),
     },
   },
   // GAKU - the Stone Lion (Salvage Wilds, Thunder Hawk's best friend there). A feral boy of the drowned isles who grew up among a

@@ -19,7 +19,7 @@ export const SHOP_PX: Partial<Record<FighterId, OriginalFighter>> = {
     shop: { 'fighter-hisame': shopItem('Hisame', "The Frostmarch's youngest general: a sabre that never hurries, ice that does - and the Glass Coffin, winter closed round you.", '霜') },
   },
   suzuran: {
-    name: 'Suzuran', series: 'Hidden Ash', tagline: 'Keeper of the Still Bell - she apologises before every bout, then strikes once, softly, and you ring.',
+    name: 'Suzuran', series: 'Ashwood', tagline: 'Keeper of the Still Bell - she apologises before every bout, then strikes once, softly, and you ring.',
     homeArt: true,
     color: '#dca4f4', height: 1.6,
     moves: ['Chime Strike', 'Shumoku', 'Kyoumei-Ha', 'Great Bell: Last Toll'],
@@ -87,13 +87,13 @@ export const SHOP_PX: Partial<Record<FighterId, OriginalFighter>> = {
     moves: ['Yawn', 'Snooze Button', 'Sugar Rush', 'SHIMEKIRI: Past Due'],
     shortMoves: ['YAWN', 'SNOOZE BUTTON', 'SUGAR RUSH', 'PAST DUE'],
     awakening: 'MEZAMASHI',
-    model: F + 'wataame-tr1.glb', extraModels: [F + 'wataame-tr1-area1.glb'], // remake-areas: his Lie In cast (src/originals/areaCasts.ts)
+    model: F + 'wataame-tr1.glb', extraModels: [F + 'wataame-tr1-area1.glb'], // remake-areas: his Day Off cast (src/originals/areaCasts.ts)
     portrait: F + 'wataame-portrait.png',
     names: {},
     shop: { 'fighter-wataame': shopItem('Wataame', 'A lazy swordsman with a wooden sword: a yawn, a snooze button - and Past Due, when the rent finally catches up with you.', '綿') },
   },
   hawser: {
-    name: 'Hawser', series: 'Ropewalk', tagline: 'The Ropewalk\'s angriest boy, who wants to see what is at the far end of every line, and who, when he can\'t break the rope, becomes a giant of bark and steam.',
+    name: 'Hawser', series: 'Ropewalk', tagline: 'The Ropewalk\'s angriest boy, who never lets go of a line, and who, when he can\'t break the rope, becomes a giant of bark and steam.',
     homeArt: true,
     color: '#45896e', height: 1.7,
     moves: ['Fray', 'Squib', 'Snap Line', 'Slipped Moorings'],

@@ -3,7 +3,7 @@
   "license": "CC0-1.0",
   "author": "RG Poly (models); Kenney (pirate kit)",
   "source": "https://rg-poly.itch.io/stylized-asia-enviroment-megapack-unity-urp",
-  "conversion": "converted to GLB, with a triangle budget per model and textures shared by URI (the Hidden Ash kit's asian/textures where identical).",
+  "conversion": "converted to GLB, with a triangle budget per model and textures shared by URI (the Ashwood kit's asian/textures where identical).",
   "assets": [
     {
       "id": "board",

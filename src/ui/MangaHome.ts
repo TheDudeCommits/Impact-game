@@ -41,7 +41,7 @@ export const HOME_FIGHTERS: readonly FighterId[] = [
   'koko','nigo','kagari','ward','kuon','oro','gaunt','setsu',
 ];
 /** Historical expansion roster, kept for asset manifests; independent of display order. */
-export const HOME_FIGHTERS_2: readonly FighterId[] = ['gorai','haldor','sorrel','dorado','shiun','magatsu','vesper','imago','wuming','jirenga','jinlin','gohaku','ippon','sekka','tobari','akagane','asahi','levin','rook','gaku'];
+export const HOME_FIGHTERS_2: readonly FighterId[] = ['gorai','haldor','sorrel','dorado','shiun','magatsu','vesper','imago','wuming','banjaku','jinlin','gohaku','ippon','sekka','tobari','akagane','asahi','levin','rook','gaku'];
 /** A content pack on the page offers its slots and nobody else (src/engine/packs, default-deny). */
 export const HOME_ROSTER: readonly FighterId[] = activePackRoster()?.filter(id => isReleasedFighter(id) || isLaboratoryPreviewFighter(id)) ?? [...RELEASED_FIGHTERS,
   ...(import.meta.env?.MODE === 'fighter-lab' ? LABORATORY_FIGHTERS : [])];

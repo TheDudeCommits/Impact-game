@@ -100,11 +100,11 @@ export interface MoveDefinition {
   /** Where a shot is let go from, from the thrower's feet: metres to its right, ahead of it and up (Ikazuchi Arrow
    *  from the Guardian's bow). Unset, the body's centre. A move property, so a borrowed move keeps it (VOL.3). */
   origin?: {right:number;forward:number;up:number};
-  /** Senpugan (VOL.3; once Konta's by name): through its live contact frames the palm is held out and the approach
+  /** Kazeyose (VOL.3; once Konta's by name): through its live contact frames the palm is held out and the approach
    *  carries on, so a first contact tick that falls just short finishes that step instead of freezing the sphere
    *  centimetres outside the target. */
   palmHold?: boolean;
-  /** Senpugan (VOL.3; once Konta's by name): the lunge locks onto the melee target the cast was aimed at. Only the
+  /** Kazeyose (VOL.3; once Konta's by name): the lunge locks onto the melee target the cast was aimed at. Only the
    *  slot's own move, unawakened and not a combo branch, as before. */
   lockAim?: boolean;
   status?: { kind: StatusKind; seconds: number; dps?: number; factor?: number };
@@ -135,7 +135,7 @@ export interface MoveDefinition {
    *  the body up, m/s, where it should differ from the outcome's own
    *  (OUTCOME_LIFT): a rush stage's hop is a pop, a heavy's a juggle. */
   lift?: number;
-  /** A charge-in move - Senpugan, Shrike Bolt, the Sickle Bolt, an iai draw -
+  /** A charge-in move - Kazeyose, Storm Talon, the Sickle Bolt, an iai draw -
    *  is charged at a distance and driven in so the blow lands on arrival. An
    *  opponent closer than this many metres, centre to centre, when the cast
    *  starts is backed away from during the early charge (see
@@ -223,7 +223,7 @@ export interface AreaSpec {
   /** The move's name in Japanese, for the stamp's ring (presentation only). Unset: its element's kanji. */
   ja?: string;
   /** The move's name on its G card (src/ui/hud/cardNames.ts; presentation only): 16 characters or fewer, the name
-   *  players know where its own is longer ("Dust Fall"). Unset: its name. The cast banner and the seal's ring
+   *  players know where its own is longer ("Dust Curtain"). Unset: its name. The cast banner and the seal's ring
    *  keep the full name. */
   card?: string;
   /** What the impact looks like, for the effect the page picks for it (src/engine/vfx/matcher.ts): one blast
@@ -367,7 +367,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     heavy:{name:'Mirage Draw',duration:.88,contacts:[.42],damage:58,range:2.8,radius:.7,stamina:24,cooldown:1.15,active:HEAVY_ACTIVE,stun:.7,knockback:8,lunge:7,style:'melee',chargeIn:2.4,dashThrough:true,outcome:'launch'},
     // Round 3e: the flying slash carries them off along the floor and throws
     // them back off a wall.
-    special:{name:'thousand mile eagle',duration:1.5,contacts:[.72],damage:126,range:35,radius:1.35,stamina:30,cooldown:4.5,stun:1.1,knockback:11,speed:28,style:'projectile',outcome:'wallBounce'},
+    special:{name:'eagles reach',duration:1.5,contacts:[.72],damage:126,range:35,radius:1.35,stamina:30,cooldown:4.5,stun:1.1,knockback:11,speed:28,style:'projectile',outcome:'wallBounce'},
   },
   koko:{
     // Round 3e (VARIETY): heavy and punishing. Iron Spirit's fist lands a
@@ -378,7 +378,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     // reaches across the room. Every fighter carries one long-range move now.
     // Round 3e: it pins them where they stand, reeling - the GAN or a string
     // is on them before they recover.
-    heavy:{name:'Needle Finger',duration:.8,contacts:[.34],damage:62,range:9,radius:.5,stamina:23,cooldown:1.1,stun:.85,knockback:2.5,speed:40,style:'projectile',outcome:'stagger'},
+    heavy:{name:'Iron Nail',duration:.8,contacts:[.34],damage:62,range:9,radius:.5,stamina:23,cooldown:1.1,stun:.85,knockback:2.5,speed:40,style:'projectile',outcome:'stagger'},
     // Round 3d (PACE): twenty-two, at 0.9 with every special.
     // Twenty-five a tick, not eighteen. Every contact of a string is scaled
     // by damageScale below, so a barrage that is authored as eight times its
@@ -388,7 +388,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     // the eight ticks now realise 138.
     // Round 3e (VARIETY): twenty-four a tick, the heavy hitter's barrage, and
     // the last GAN blows them back along the floor into a wall bounce.
-    special:{name:'GAN GAN Barrage',duration:2.34,contacts:[.6,.77,.94,1.11,1.28,1.45,1.62,1.79],damage:24,range:3,radius:.7,stamina:32,cooldown:4.5,stun:.2,finisherStun:1.1,knockback:0,finisherKnockback:12,lunge:3,style:'melee',outcome:'wallBounce'},
+    special:{name:'IRONFALL Barrage',duration:2.34,contacts:[.6,.77,.94,1.11,1.28,1.45,1.62,1.79],damage:24,range:3,radius:.7,stamina:32,cooldown:4.5,stun:.2,finisherStun:1.1,knockback:0,finisherKnockback:12,lunge:3,style:'melee',outcome:'wallBounce'},
   },
   nigo:{
     // Round 3e (VARIETY): a big blade with a big swing - a beat slower and
@@ -407,14 +407,14 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     // stood - up again in a beat, with him still on top of them.
     heavy:{name:'Sickle Bolt',duration:.92,contacts:[.44],damage:55,range:1.8,radius:.6,stamina:23,cooldown:1.1,active:HEAVY_ACTIVE,stun:.5,knockback:1.5,lunge:6,style:'melee',chargeIn:2,outcome:'crumple'},
     // Held by the current: a stagger that lasts (the round-3b rocked victim).
-    special:{name:'Static Scarecrow',duration:1.45,contacts:[.62],damage:122,range:26,radius:.8,stamina:30,cooldown:4.5,stun:1.4,knockback:5,speed:12,style:'projectile',outcome:'stagger'},
+    special:{name:'Static Decoy',duration:1.45,contacts:[.62],damage:122,range:26,radius:.8,stamina:30,cooldown:4.5,stun:1.4,knockback:5,speed:12,style:'projectile',outcome:'stagger'},
   },
   shiden:{
     // Round 3e (VARIETY): quick and exact - the sword a hair ahead of the
     // roster; a string that ends in a heel drop into the floor.
     light:{name:'Habakiri Cut',duration:.42,contacts:[.15],damage:18,range:2.2,radius:.42,stamina:9,cooldown:.41,stun:.23,knockback:3,lunge:2.5,style:'melee'},
     // Round 3e: the lightning locks them up where they stand.
-    heavy:{name:'Shrike Bolt',duration:.92,contacts:[.44],damage:56,range:1.9,radius:.6,stamina:23,cooldown:1.15,active:HEAVY_ACTIVE,stun:.8,knockback:3,lunge:6,style:'melee',chargeIn:2,outcome:'stagger'},
+    heavy:{name:'Storm Talon',duration:.92,contacts:[.44],damage:56,range:1.9,radius:.6,stamina:23,cooldown:1.15,active:HEAVY_ACTIVE,stun:.8,knockback:3,lunge:6,style:'melee',chargeIn:2,outcome:'stagger'},
     // Round 3e: the last burn drops them where they stand.
     special:{name:'Black Pyre',duration:2.3,contacts:[.5,.85,1.2,1.55,1.9],damage:27,range:22,radius:2.4,stamina:30,cooldown:4.7,stun:.15,knockback:0,style:'field',outcome:'crumple'},
   },
@@ -430,10 +430,10 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
   ouga:{
     light:{name:'Crown Straight',duration:.45,contacts:[.16],damage:20,range:2.3,radius:.5,stamina:9,cooldown:.43,stun:.24,knockback:3,lunge:3,style:'melee'},
     // Round 3e: one of the four heavies that still launch - an explosion.
-    heavy:{name:'Haou-Dan',duration:.84,contacts:[.37],damage:56,range:24,radius:.8,stamina:24,cooldown:1.25,stun:.5,knockback:8,speed:24,style:'projectile',outcome:'launch'},
+    heavy:{name:'Crown Burst',duration:.84,contacts:[.37],damage:56,range:24,radius:.8,stamina:24,cooldown:1.25,stun:.5,knockback:8,speed:24,style:'projectile',outcome:'launch'},
     // Round 3e: the beam drives them back along the floor, off a wall if one
     // is behind them.
-    special:{name:'Shikou-Ha',duration:2,contacts:[.8],damage:128,range:35,radius:.8,stamina:30,cooldown:4.5,stun:1.2,knockback:10,style:'beam',outcome:'wallBounce'},
+    special:{name:'Throne Wave',duration:2,contacts:[.8],damage:128,range:35,radius:.8,stamina:30,cooldown:4.5,stun:1.2,knockback:10,style:'beam',outcome:'wallBounce'},
   },
   taisei: {
     // Was 0.48 long, landing at 0.14, for 36, off a 0.48 cooldown - the
@@ -475,8 +475,8 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     // Round 3e (VARIETY): one of the four heavies that still launch - the
     // sphere sends them spinning up and away, and the Galewheel, out
     // quickly enough, catches them there.
-    heavy: { name: 'Senpugan', duration: .88, contacts: [.5], damage: 58, range: 3.3, radius: 1, stamina: 24, cooldown: 1.2, stun: 0.38, knockback: 10, lunge: 6, lungeDelay: .245, style: 'melee', chargeIn: 2, active: HEAVY_ACTIVE, outcome: 'launch', palmHold: true, lockAim: true },
-    special: { name: 'Wind Art: Galewheel', duration: 1.35, contacts: [0.5], damage: 125, range: 34, radius: 1.5, stamina: 28, cooldown: 5.5, stun: 0.42, knockback: 9, speed: 24, style: 'projectile' },
+    heavy: { name: 'Kazeyose', duration: .88, contacts: [.5], damage: 58, range: 3.3, radius: 1, stamina: 24, cooldown: 1.2, stun: 0.38, knockback: 10, lunge: 6, lungeDelay: .245, style: 'melee', chargeIn: 2, active: HEAVY_ACTIVE, outcome: 'launch', palmHold: true, lockAim: true },
+    special: { name: 'Galewheel', duration: 1.35, contacts: [0.5], damage: 125, range: 34, radius: 1.5, stamina: 28, cooldown: 5.5, stun: 0.42, knockback: 9, speed: 24, style: 'projectile' },
   },
   // Round 16. Timings copy the roster's cadence (lights ~0.55 s with the blow
   // at ~40%, heavies ~1.2 s, specials ~2.6 s, ultimates ~4.5-5 s); the
@@ -515,15 +515,15 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     special:{name:'Singularity',duration:1.7,contacts:[.8],damage:126,range:38,radius:1.1,stamina:30,cooldown:4.5,stun:1.15,knockback:10,guardBreak:true,style:'beam',outcome:'launch'},
   },
   oro:{
-    // Round 3e (VARIETY): HUSH is the quicker spirit - LORD ORO's fist a hair
+    // Round 3e (VARIETY): SLUMBER is the quicker spirit - LORD ORO's fist a hair
     // ahead of KoKo's and lighter, and a string that spins them round.
     light:{name:'Gilded Punch',duration:.42,contacts:[.15],damage:18,range:2.2,radius:.5,stamina:9,cooldown:.41,stun:.23,knockback:3,lunge:2,style:'melee'},
     // A fan of knives, thrown. Round 3e: they pin the body where it stands,
     // reeling - LORD ORO is on them before it can move.
     heavy:{name:'Clock-Hand Knives',duration:.72,contacts:[.28],damage:52,range:12,radius:.5,stamina:22,cooldown:1,stun:.8,knockback:2,speed:32,style:'projectile',outcome:'stagger'},
-    // HUSH's barrage, mirrored on KoKo's GAN - a tick lighter, as
+    // SLUMBER's barrage, mirrored on KoKo's GAN - a tick lighter, as
     // LORD ORO's fists are - and blown back off a wall at the end the same way.
-    special:{name:'NOROMA NOROMA Barrage',duration:2.34,contacts:[.6,.77,.94,1.11,1.28,1.45,1.62,1.79],damage:22,range:3,radius:.7,stamina:32,cooldown:4.5,stun:.2,finisherStun:1.1,knockback:0,finisherKnockback:12,lunge:3,style:'melee',outcome:'wallBounce'},
+    special:{name:'CLOCKWORK Barrage',duration:2.34,contacts:[.6,.77,.94,1.11,1.28,1.45,1.62,1.79],damage:22,range:3,radius:.7,stamina:32,cooldown:4.5,stun:.2,finisherStun:1.1,knockback:0,finisherKnockback:12,lunge:3,style:'melee',outcome:'wallBounce'},
   },
   gaunt:{
     // A sword taller than he is: slower than the roster's lights, and it hits harder.
@@ -589,11 +589,11 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
   },
   shiun:{
     light:{name:'Measured Cut',duration:.44,contacts:[.15],damage:18,range:2.3,radius:.7,stamina:8,cooldown:.42,stun:.24,knockback:4.5,lunge:4,style:'melee'},
-    heavy:{name:'False Encore',duration:.9,contacts:[.5],damage:58,range:3,radius:.8,stamina:24,cooldown:1.2,active:HEAVY_ACTIVE,stun:.75,knockback:3,lunge:12,lungeDelay:.3,style:'melee',
+    heavy:{name:'Understudy',duration:.9,contacts:[.5],damage:58,range:3,radius:.8,stamina:24,cooldown:1.2,active:HEAVY_ACTIVE,stun:.75,knockback:3,lunge:12,lungeDelay:.3,style:'melee',
       teleport:{vanish:.1,appear:.3,reach:8,behind:1.15,miss:2.5},outcome:'crumple'},
-    // Hymn 12: Stained-Glass Lances: the wings leave his back as a volley of
+    // Stained-Glass Lances: the wings leave his back as a volley of
     // light, through a guard, and turn them round where it lands.
-    special:{name:'Hymn 12: Stained-Glass Lances',duration:1.7,contacts:[.7],damage:126,range:24,radius:1,stamina:30,cooldown:4.6,stun:1.1,knockback:8,speed:38,guardBreak:true,style:'projectile',outcome:'spin'},
+    special:{name:'Stained-Glass Lances',duration:1.7,contacts:[.7],damage:126,range:24,radius:1,stamina:30,cooldown:4.6,stun:1.1,knockback:8,speed:38,guardBreak:true,style:'projectile',outcome:'spin'},
   },
   magatsu:{
     // Flaying Cut: the hand that slashes, and the cut goes on past it.
@@ -621,23 +621,23 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     special:{name:'Hive Burst',duration:1.3,contacts:[.56],damage:120,range:22,radius:1.2,stamina:30,cooldown:4.6,stun:1.1,knockback:10,speed:30,style:'projectile',outcome:'wallBounce'},
   },
   'wuming':{
-    // Lightless Strike: the rush's first blow, Taisei's speed in another's hands.
-    light:{name:'Lightless Strike',duration:.44,contacts:[.16],damage:18,range:2.2,radius:.55,stamina:8,cooldown:.42,stun:.24,knockback:3,lunge:5,style:'melee'},
+    // Weeding Fist: the rush's first blow, Taisei's speed in another's hands.
+    light:{name:'Weeding Fist',duration:.44,contacts:[.16],damage:18,range:2.2,radius:.55,stamina:8,cooldown:.42,stun:.24,knockback:3,lunge:5,style:'melee'},
     // He is laid out as Taisei is (and as the home-screen agent's move cards draw him): the fist, Instant
     // Transmission for the heavy, the Sunpalm Cannon for the special.
-    // The Petalfall Blade: two fingers to his forehead and he is gone - Taisei's Cloudstep, which
+    // The Lotus Edge: two fingers to his forehead and he is gone - Taisei's Cloudstep, which
     // he took with the body - and back behind them in the air, the blade of ki out of his hand and down through
     // them, and they fold. A guard held turns to meet him and keeps it out, as it does Taisei's. Nobody in reach, he
     // blinks ahead and cuts the air there. The vanish and the return are where the clip, paced, has the sign
     // made and the leap's arm up; the seam between the two clips it is joined from falls while he is gone.
-    heavy:{name:'Petalfall Blade',duration:.9,contacts:[.5],damage:56,range:2.2,radius:.7,stamina:23,cooldown:1.2,active:HEAVY_ACTIVE,stun:.7,knockback:6,lunge:12,lungeDelay:.3,style:'melee',
+    heavy:{name:'Lotus Edge',duration:.9,contacts:[.5],damage:56,range:2.2,radius:.7,stamina:23,cooldown:1.2,active:HEAVY_ACTIVE,stun:.7,knockback:6,lunge:12,lungeDelay:.3,style:'melee',
       teleport:{vanish:.1,appear:.3,reach:8,behind:1.15,miss:2.5},outcome:'crumple'},
-    // The Lightless Cannon: the hand drawn back to his hip, the ki gathered there, and thrust out as the beam -
+    // The Withering Beam: the hand drawn back to his hip, the ki gathered there, and thrust out as the beam -
     // back along the floor and off a wall.
-    special:{name:'Lightless Cannon',duration:1.7,contacts:[.78],damage:120,range:34,radius:1,stamina:30,cooldown:4.4,stun:1.1,knockback:9,style:'beam',outcome:'wallBounce'},
+    special:{name:'Withering Beam',duration:1.7,contacts:[.78],damage:120,range:34,radius:1,stamina:30,cooldown:4.4,stun:1.1,knockback:9,style:'beam',outcome:'wallBounce'},
   },
-  // Jirenga, laid out as the home-screen agent's move cards draw him.
-  jirenga:{
+  // Banjaku, laid out as the home-screen agent's move cards draw him.
+  banjaku:{
     // Bedrock Jab: the rush's first blow, a one-two - short and straight, and heavier than it looks.
     light:{name:'Bedrock Jab',duration:.46,contacts:[.17],damage:19,range:2.3,radius:.55,stamina:9,cooldown:.44,stun:.25,knockback:3.5,lunge:4.5,style:'melee'},
     heavy:{name:'Uprooting Fist',duration:.9,contacts:[.44],damage:58,range:2.4,radius:.75,stamina:24,cooldown:1.2,active:HEAVY_ACTIVE,stun:.7,knockback:3,lunge:7,style:'melee',outcome:'hop',lift:7},
@@ -645,7 +645,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     // his ki off it, into the wall.
     special:{name:'Vermilion Seal',duration:1.6,contacts:[.74],damage:126,range:26,radius:1.15,stamina:30,cooldown:4.6,stun:1.15,knockback:11,speed:26,style:'projectile',outcome:'wallBounce'},
   },
-  // Emperor Jinlin, the same.
+  // Jinlin, the same.
   'jinlin':{
     // Pearl Needle: his right hand jabbed out finger first and the beam off the fingertip, accent - a melee
     // blow, as every light is, drawn as the beam (EmperorEffects).
@@ -684,11 +684,11 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     // every light is, drawn as the shock ahead of the fist (EmperorEffects).
     light:{name:'Straight Punch',duration:.44,contacts:[.16],damage:18,range:2.4,radius:.55,stamina:8,cooldown:.42,stun:.24,knockback:3.5,lunge:5,style:'melee'},
     heavy:{name:'Avalanche',duration:1,contacts:[.3,.48,.7],damage:19,finisherDamage:20,range:2.5,radius:.8,stamina:24,cooldown:1.2,active:HEAVY_ACTIVE,stun:.4,finisherStun:.7,knockback:.6,finisherKnockback:7,lunge:6,style:'melee',outcome:'wallBounce'},
-    // Shatter Art: Frost Gale (4 October, combos.ts: every fighter at least one attack at range): a straight
+    // Frost Gale (4 October, combos.ts: every fighter at least one attack at range): a straight
     // thrown at the empty air, and the shock flies on into them - his one true projectile (Black Snow; the wiki). The
     // light that wore the name is a plain straight now. The Aurora Shards' snowflake opens under his stun (Final
     // Form: Blue Silver Chaotic Afterglow, combosShop.ts).
-    special:{name:'Shatter Art: Frost Gale',duration:1.25,contacts:[.52],damage:112,range:18,radius:.9,stamina:30,cooldown:4.4,stun:1.1,knockback:9,speed:44,style:'projectile',outcome:'wallBounce'},
+    special:{name:'Frost Gale',duration:1.25,contacts:[.52],damage:112,range:18,radius:.9,stamina:30,cooldown:4.4,stun:1.1,knockback:9,speed:44,style:'projectile',outcome:'wallBounce'},
   },
   // Tobari, laid out as the home-screen agent's move cards draw him.
   tobari:{
@@ -709,7 +709,7 @@ export const MOVES: Record<FighterId, Record<AttackSlot, MoveDefinition>> = ({
     light:{name:'War Fan Sweep',duration:.46,contacts:[.17],damage:19,range:2.5,radius:.65,stamina:8,cooldown:.42,stun:.24,knockback:3.5,lunge:5,style:'melee'},
     // Rising Kick: taijutsu - the turning kick up through them, off their feet.
     heavy:{name:'Rising Kick',duration:.92,contacts:[.46],damage:57,range:2.5,radius:.8,stamina:24,cooldown:1.2,active:HEAVY_ACTIVE,stun:.7,knockback:4,lunge:7,style:'melee',outcome:'hop',lift:5.2},
-    special:{name:'Cinder Art: Burning Sea',duration:2,contacts:[.64,.92,1.2,1.48],damage:30,range:16,radius:3.6,stamina:30,cooldown:4.7,stun:.18,knockback:1,style:'field',outcome:'crumple'},
+    special:{name:'Burning Sea',duration:2,contacts:[.64,.92,1.2,1.48],damage:30,range:16,radius:3.6,stamina:30,cooldown:4.7,stun:.18,knockback:1,style:'field',outcome:'crumple'},
   },
   asahi:{
     // Ripple Cut: one level cut, quick and clean.
@@ -788,10 +788,10 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   'basilissa': BASILISSA_MOVES.ultimate,
   sorayomi: SORAYOMI_MOVES.ultimate,
   // Nine blades fanned round him: whoever is inside their length is eased
-  // back out to it, and the approach stops there. The RAKSHASA's lunging cut at
+  // back out to it, and the approach stops there. The DUNE ONI's lunging cut at
   // 0.45 is the opener; landed, two more cuts of the nine blades and the
   // pass-through cut as the finisher at 1.85 (it was one blow at 3.1).
-  // Round 3e (ULTFIX): the RAKSHASA rises over the held victim in silence, and
+  // Round 3e (ULTFIX): the DUNE ONI rises over the held victim in silence, and
   // then the nine blades cut at once - three sweeps of three swords in a
   // sixth of a second, the last the pass-through (1.42, 1.5, 1.58): 40, then
   // 56 / 51 / 148 realised. (A cinematic runs a second at least from the
@@ -808,15 +808,15 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // eight GAN a sixth of a second apart from 1.0 (eleven at a fifth from
   // 1.1), the finisher at 2.5 (3.62). One opponent takes all eight and
   // realises what the eleven did.
-  koko:{name:'Iron Lullaby: Hush',duration:3.3,contacts:[.58,1,1.16,1.32,1.48,1.64,1.8,1.96,2.12,2.5],damage:40,finisherDamage:245,range:3.6,radius:1.4,stamina:0,cooldown:22,stun:2.3,knockback:16,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.9,radius:6},confirm:WHIFF},
+  koko:{name:'Iron Lullaby: Slumber',duration:3.3,contacts:[.58,1,1.16,1.32,1.48,1.64,1.8,1.96,2.12,2.5],damage:40,finisherDamage:245,range:3.6,radius:1.4,stamina:0,cooldown:22,stun:2.3,knockback:16,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.9,radius:6},confirm:WHIFF},
   // The black wave let go at 0.5 is the opener (it went at 3.1); landed, it
   // holds them inside the darkness and burns twice, and the NIGHTFALL cut is
   // the finisher at 1.9.
   // Round 3e (ULTFIX): NIGHTFALL is one cut. The wave swallows them (55), the
   // darkness holds over a second without a sound of a blow, and the one
   // moonless cut lands everything else at 1.85 (240 realised).
-  nigo:{name:'Final Haizan: Nightfall',duration:2.6,contacts:[.5,1.85],schedule:[55,264],damage:55,finisherDamage:320,range:38,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,guardBreak:true,style:'beam',confirm:WHIFF},
-  shirokane:{name:'Void Eye: Sickle Bolt',duration:2.85,contacts:[.48,.62,.76,2.1],schedule:[40,9,9,315],damage:40,finisherDamage:241,range:2.5,radius:1,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:14,lunge:10,guardBreak:true,style:'melee',confirm:WHIFF},
+  nigo:{name:'Haizan: Nightfall',duration:2.6,contacts:[.5,1.85],schedule:[55,264],damage:55,finisherDamage:320,range:38,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,guardBreak:true,style:'beam',confirm:WHIFF},
+  shirokane:{name:'Sickle Bolt: Reaper',duration:2.85,contacts:[.48,.62,.76,2.1],schedule:[40,9,9,315],damage:40,finisherDamage:241,range:2.5,radius:1,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:14,lunge:10,guardBreak:true,style:'melee',confirm:WHIFF},
   // The arrow let go at 0.5 is the opener (2.85), and it flies at 110 m/s
   // rather than 36, so it has crossed its whole forty metres by 0.86 -
   // before the cinematic's first beat at 1.05. Landed, its lightning drives
@@ -828,13 +828,13 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   kosho:{name:'Banquet Infernal',duration:2.95,contacts:[.45,.85,1.15,1.42,2.2],schedule:KOSHO_HELL,damage:40,finisherDamage:208,range:2.4,radius:1.2,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,lunge:5.5,guardBreak:true,style:'melee',confirm:WHIFF},
   // The beam let go at 0.52 is the opener (2.6); landed, it holds them in
   // the light and burns twice, and the blast is the finisher at 1.95.
-  // Round 3e (ULTFIX): Kyokko-Ho pours through them. The beam hits (20),
+  // Round 3e (ULTFIX): Royal Aurora pours through them. The beam hits (20),
   // then burns without a break - nine small blows a tenth of a second apart
   // (10 down to 4) while it pours on - and the whole of it detonates at 1.7
   // (213).
-  ouga:{name:'Kyokko-Ho',duration:2.45,contacts:[.52,.65,.74,.83,.92,1.01,1.1,1.19,1.28,1.37,1.7],schedule:[20,11,11,11,11,11,11,11,11,11,609],damage:20,finisherDamage:168,range:42,radius:1.6,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,guardBreak:true,style:'beam',confirm:WHIFF},
-  taisei:{name:'Last Sun Bomb',duration:2.6,contacts:[1.5],damage:285,range:34,radius:3,stamina:0,cooldown:20,stun:2.3,knockback:16,speed:22,style:'bomb',aimOnRelease:true},
-  gummy:{name:'Grand Tide',duration:3.05,contacts:[.5,2.3],damage:40,finisherDamage:280,range:10.5,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,guardBreak:true,lunge:1.5,close:0,style:'melee',confirm:WHIFF},
+  ouga:{name:'Royal Aurora',duration:2.45,contacts:[.52,.65,.74,.83,.92,1.01,1.1,1.19,1.28,1.37,1.7],schedule:[20,11,11,11,11,11,11,11,11,11,609],damage:20,finisherDamage:168,range:42,radius:1.6,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,guardBreak:true,style:'beam',confirm:WHIFF},
+  taisei:{name:'Last Sunfall',duration:2.6,contacts:[1.5],damage:285,range:34,radius:3,stamina:0,cooldown:20,stun:2.3,knockback:16,speed:22,style:'bomb',aimOnRelease:true},
+  gummy:{name:'Spring Tide',duration:3.05,contacts:[.5,2.3],damage:40,finisherDamage:280,range:10.5,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,guardBreak:true,lunge:1.5,close:0,style:'melee',confirm:WHIFF},
   // An area ultimate, with no confirm: thrown at 1.0 (1.7).
   // Round 3e (ULTFIX): its blast is 3 m round, as drawn (it was 6, and the
   // burst was drawn at 4.6): a body whose feet are outside the ring on the
@@ -842,8 +842,8 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // Round 8 (ULT AIM): aimed as it leaves his hands (Kurobi's jaws), at where the body it is thrown at will be when it
   // comes down, and following them in flight - as the LAST SUN is, and for the same reason (see there). It was aimed
   // at the press, a second before it was let go.
-  konta:{name:'Kitsunebi-Dama',duration:2,contacts:[1],damage:270,range:34,radius:3,stamina:0,cooldown:20,stun:2.3,knockback:16,speed:24,style:'bomb',aimOnRelease:true},
-  // KAGUTSUCHI: a sun, thrown. Round 3b: the
+  konta:{name:'Azure Foxfire',duration:2,contacts:[1],damage:270,range:34,radius:3,stamina:0,cooldown:20,stun:2.3,knockback:16,speed:24,style:'bomb',aimOnRelease:true},
+  // ALL ABLAZE: a sun, thrown. Round 3b: the
   // blast is the sun as drawn - 2.2 m round with a corona of flame out to
   // about 3.1 m, set down on the floor over whoever it lands on. An area
   // ultimate, with no confirm: thrown at 1.35 rather than 3.0, at 16 m/s
@@ -854,7 +854,7 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // following them in flight - as the LAST SUN is, and for the same reason (see there) - still a sun thrown down on
   // them from over his head, and still inside its 16 m. It was aimed at the press, 1.35 s before it was let go.
   kagari:{name:'Taiyou-Dama',duration:2.4,contacts:[1.35],damage:290,range:16,radius:3,stamina:0,cooldown:20,stun:2.3,knockback:16,speed:16,guardBreak:true,style:'bomb',aimOnRelease:true},
-  ward:{name:'THEATRE: Flatline',duration:2.44,contacts:[.45,1.52,1.74],schedule:[40,92,202],damage:40,finisherDamage:288,range:2.6,radius:1.6,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,lunge:12,lungeDelay:.45,guardBreak:true,style:'melee',confirm:WHIFF,
+  ward:{name:'Flatline',duration:2.44,contacts:[.45,1.52,1.74],schedule:[40,92,202],damage:40,finisherDamage:288,range:2.6,radius:1.6,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,lunge:12,lungeDelay:.45,guardBreak:true,style:'melee',confirm:WHIFF,
     teleport:{vanish:.45,appear:.45,reach:10.5,behind:1.15,miss:0,near:true}},
   // PLANETARIUM: everyone inside it is held, frozen under its stars,
   // and he is at each of them in turn, one strike a visit from another side
@@ -870,12 +870,12 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // (the third critic). The dome it raises is drawn at the same radius. The
   // strikes and the Dark Spark keep their beat after it, 0.15 s later.
   kuon:{name:'Planetarium',duration:3.15,contacts:[.65,.95,1.25,1.55,1.85,2.3],damage:42,finisherDamage:265,range:3.4,radius:1.4,stamina:0,cooldown:22,stun:2.3,knockback:16,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.63,radius:3.5},confirm:WHIFF},
-  // MIDNIGHT: time stops, LORD ORO and HUSH GILDED PUNCH every opponent it caught,
-  // and the steamroller is the finisher as the clock starts again - KoKo's
+  // MIDNIGHT: time stops, LORD ORO and SLUMBER GILDED PUNCH every opponent it caught,
+  // and the hour of ruin is the finisher as the clock starts again - KoKo's
   // shape exactly, round 3d's timings included; the move runs a quarter of a
   // second past his, so the roller is seen crushed and coming apart before
-  // LORD ORO is his own again (signature/Steamroller's ROLLER_TIMING).
-  oro:{name:'MIDNIGHT: Death Knell',duration:3.55,contacts:[.58,1,1.16,1.32,1.48,1.64,1.8,1.96,2.12,2.5],damage:40,finisherDamage:259,range:3.6,radius:1.6,stamina:0,cooldown:22,stun:2.3,knockback:16,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.9,radius:6},confirm:WHIFF},
+  // LORD ORO is his own again (signature/HourOfRuin's ROLLER_TIMING).
+  oro:{name:'MIDNIGHT: Hour of Ruin',duration:3.55,contacts:[.58,1,1.16,1.32,1.48,1.64,1.8,1.96,2.12,2.5],damage:40,finisherDamage:259,range:3.6,radius:1.6,stamina:0,cooldown:22,stun:2.3,knockback:16,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.9,radius:6},confirm:WHIFF},
   // The overhead chop at 0.48 is the opener (1.0); landed, three more
   // swings and the two-handed slam as the finisher at 2.2 (3.3). The slam
   // lands scaled for the fifth blow of the string, where the old one landed
@@ -885,14 +885,14 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // (41, 46, 53 realised, 0.47 s apart down to 0.23), and the slam at 1.95
   // ends it (146).
   gaunt:{name:'Hound Rampage',duration:2.65,contacts:[.48,.95,1.25,1.48,1.95],schedule:[45,45,56,72,228],damage:45,finisherDamage:274,range:3.2,radius:1.3,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:17,close:5,guardBreak:true,style:'melee',confirm:WHIFF},
-  // Setsuna: Tsumuji. A blur of blows, then the one that counts. The
+  // Setsuna: Kazahana. A blur of blows, then the one that counts. The
   // first SETSUNA strike at 0.42 is the opener (0.9); landed, the blur of
   // five more and the finisher at 1.8 (3.0) - 225 in all, as it was.
   // Round 3e (ULTFIX): a barrage is many small blows. After the opener (22)
   // seven lightning-quick strikes 0.13 s apart, hand after hand (12 down to
   // 5), a beat, and the one that counts at 1.63 (145). Any closer and the
   // strikes blur into each other on the rig (tests/fluidity.test.ts).
-  setsu:{name:'Setsuna: Tsumuji',duration:2.28,contacts:[.42,.6,.73,.86,.99,1.12,1.25,1.38,1.63],schedule:[22,13,13,13,13,13,13,13,414],damage:22,finisherDamage:172,range:3,radius:1.1,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1,finisherKnockback:16,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
+  setsu:{name:'Setsuna: Kazahana',duration:2.28,contacts:[.42,.6,.73,.86,.99,1.12,1.25,1.38,1.63],schedule:[22,13,13,13,13,13,13,13,414],damage:22,finisherDamage:172,range:3,radius:1.1,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1,finisherKnockback:16,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
   // The shop's fighters. TIMBER: The Forest Falls is one iconic blow: the charge's first
   // impact is the opener, and the mast-breaker, lightning down its length, the one
   // that counts at 1.6 - Gorai's whole weight in it.
@@ -908,7 +908,7 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // one cut that counts comes down through whoever it caught. Sorrel throws
   // his down the line; Dorado's is at arm's length.
   dorado:{name:'Last Light: Sunset Divide',duration:2.36,contacts:[.55,1.62],schedule:[50,264],damage:50,finisherDamage:318,range:3.2,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:17,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
-  // Hymn 40: Black Confessional, cast where he points: the coffin of black pressure
+  // Fermata, cast where he points: the coffin of black pressure
   // closes round them - the opener, at range, as Black Pyre is - three spears
   // come through it, and it bursts. (Each shop ultimate was the same two blows
   // on the same beats, the blind critics, 3 October; the whole lands as before.
@@ -916,11 +916,11 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // reach of the last and filled the echoes' cap: those blows barely push now and
   // the opener carries more, and the six fell and progressed as they did over
   // 36 runs each - scripts/survival/rift_run.ts.)
-  shiun:{name:'Hymn 40: Black Confessional',duration:2.5,contacts:[.52,1.3,1.45,1.6,1.84],schedule:[52,22,24,26,280],damage:52,finisherDamage:160,range:18,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:0,finisherKnockback:14,guardBreak:true,style:'field',confirm:WHIFF},
-  magatsu:{name:'Sanctum: Carrion Altar',duration:3.15,contacts:[.65,.9,1.1,1.3,1.5,2.3],damage:60,finisherDamage:128,range:3.4,radius:2.4,stamina:0,cooldown:22,stun:2.3,knockback:.4,finisherKnockback:12,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.63,radius:3.5},confirm:WHIFF},
-  // The Offering - the sabre's thrust is the opener; then the sun goes black over whoever it held, the brand
+  shiun:{name:'Fermata',duration:2.5,contacts:[.52,1.3,1.45,1.6,1.84],schedule:[52,22,24,26,280],damage:52,finisherDamage:160,range:18,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:0,finisherKnockback:14,guardBreak:true,style:'field',confirm:WHIFF},
+  magatsu:{name:'Carrion Field',duration:3.15,contacts:[.65,.9,1.1,1.3,1.5,2.3],damage:60,finisherDamage:128,range:3.4,radius:2.4,stamina:0,cooldown:22,stun:2.3,knockback:.4,finisherKnockback:12,guardBreak:true,style:'melee',lunge:0,timeStop:{contact:0,duration:1.63,radius:3.5},confirm:WHIFF},
+  // Evensong - the sabre's thrust is the opener; then the sun goes black over whoever it held, the brand
   // burns on them, and he comes down out of the dark with the sabre: the Dark Choir's judgement.
-  vesper:{name:'The Offering',duration:2.4,contacts:[.4,1.78],schedule:[44,270],damage:44,finisherDamage:324,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:17,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
+  vesper:{name:'Evensong',duration:2.4,contacts:[.4,1.78],schedule:[44,270],damage:44,finisherDamage:324,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:17,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
   // The Final Molt - a punch is the opener; then a blow out of his combo, and both fists brought down onto
   // whoever it held.
   imago:{name:"The Final Molt",duration:2.3,contacts:[.42,.98,1.62],schedule:[40,60,238],damage:40,finisherDamage:288,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:17,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
@@ -929,7 +929,7 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   'wuming':{name:'Heaven\'s Harvest',duration:2.5,contacts:[.4,1.15,1.8],schedule:[60,40,237],damage:60,finisherDamage:248,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:.4,finisherKnockback:17,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
   // Mountain-Felling Fist: the hook out of his rush is the opener; landed, he leaps with the right fist raised over his
   // head and dives through them behind it - the card's colossal punch - a wind-up and one blow.
-  jirenga:{name:'Mountain-Felling Fist',duration:2.55,contacts:[.45,1.85],schedule:[52,261],damage:52,finisherDamage:316,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:18,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
+  banjaku:{name:'Mountain-Felling Fist',duration:2.55,contacts:[.45,1.85],schedule:[52,261],damage:52,finisherDamage:316,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:18,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
   // The Drowned Sun: one hand raised, the ball grown on it until it dwarfs him, and flung - an area ultimate, as
   // the LAST SUN is: everyone in the blast.
   // Round 8 (ULT AIM): aimed as it leaves his finger, at where the body it is thrown at will be when it comes down, and
@@ -939,16 +939,16 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // The Sun-Seizing Spiral: two fingers to his forehead, the ki drawn to a point there, and the arm thrown out - the
   // beam let go is the opener; landed, its spiral bores on through whoever it held, and the beam bursts out behind
   // them as the finisher.
-  // Red Moon Reverie - the flick of the kunai is the opener; landed, the moon goes red over whoever it caught and they are
+  // Crow's Nightmare - the flick of the kunai is the opener; landed, the moon goes red over whoever it caught and they are
   // held in his illusion while he makes the sign - stabbed in it again and again, seventy-two hours in an instant -
   // and it breaks them.
-  tobari:{name:'Red Moon Reverie',duration:2.5,contacts:[.42,1,1.12,1.24,1.36,1.48,1.8],schedule:[46,12,13,14,15,16,420],damage:46,finisherDamage:92,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:.4,finisherKnockback:10,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
-  // Heaven's Anvil - the war fan's slash is the opener; landed, his arms go up and a meteor comes down out of the
+  tobari:{name:'Crow\'s Nightmare',duration:2.5,contacts:[.42,1,1.12,1.24,1.36,1.48,1.8],schedule:[46,12,13,14,15,16,420],damage:46,finisherDamage:92,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:.4,finisherKnockback:10,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
+  // Copper Star - the war fan's slash is the opener; landed, his arms go up and a meteor comes down out of the
   // sky onto whoever it caught.
-  akagane:{name:'Heaven\'s Anvil',duration:2.5,contacts:[.42,1.8],schedule:[60,253],damage:60,finisherDamage:308,range:3,radius:2.6,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:12,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
-  // Lantern Rite: First Light - a thrust is the opener; landed, the turning cut of the Fire God's dance, then the leap and its
+  akagane:{name:'Copper Star',duration:2.5,contacts:[.42,1.8],schedule:[60,253],damage:60,finisherDamage:308,range:3,radius:2.6,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:12,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
+  // First Light - a thrust is the opener; landed, the turning cut of the Fire God's dance, then the leap and its
   // cut, burning, brought down through them.
-  asahi:{name:'Lantern Rite: First Light',duration:2.4,contacts:[.4,1.1,1.78],schedule:[62,44,229],damage:62,finisherDamage:244,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:.4,finisherKnockback:16,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
+  asahi:{name:'First Light',duration:2.4,contacts:[.4,1.1,1.78],schedule:[62,44,229],damage:62,finisherDamage:244,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:.4,finisherKnockback:16,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
   // SOJI: Clean Sweep - a slash is the opener; landed, he goes up off the floor turning, both blades, cut on cut, and
   // the last throws them. (The cuts came after 0.6 s of him standing in the slash's follow-through, and the last pass
   // a second after the first cut - "dead air", the blind critics, after release 34: they follow the slash at once.)
@@ -959,9 +959,9 @@ const ULTIMATES: Record<FighterId, MoveDefinition> = {
   // Landslide - "Saisho wa gū": his straight is the opener; landed, the fist raised over his head while the aura
   // floods into it, and the Landslide's fist brought down through them with everything he has.
   gaku:{name:'Landslide',duration:2.5,contacts:[.42,1.8],schedule:[68,244],damage:68,finisherDamage:300,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
-  // Gravedigger: Shatter Art: Black Blizzard - the one-two out of his rush is the opener; landed, he goes through them in a
+  // Gravedigger: Black Blizzard - the one-two out of his rush is the opener; landed, he goes through them in a
   // dash and drives everything he has into one blow.
-  sekka:{name:'Shatter Art: Black Blizzard',duration:2.5,contacts:[.42,1.75],schedule:[56,257],damage:56,finisherDamage:312,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:19,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
+  sekka:{name:'Black Blizzard',duration:2.5,contacts:[.42,1.75],schedule:[56,257],damage:56,finisherDamage:312,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:19,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
   ippon:{name:'Clean Slate',duration:2.2,contacts:[.5,1.55],schedule:[54,259],damage:54,finisherDamage:314,range:3,radius:2.4,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:24,close:7,guardBreak:true,style:'melee',confirm:WHIFF},
   'gohaku':{name:'Sun-Seizing Spiral',duration:2.5,contacts:[.55,1.8],schedule:[48,266],damage:48,finisherDamage:320,range:42,radius:1.1,stamina:0,cooldown:20,stun:.35,finisherStun:2.3,knockback:1.5,finisherKnockback:16,guardBreak:true,style:'beam',confirm:WHIFF},
 };
@@ -1100,7 +1100,7 @@ export const BLOCK_RECOIL = .4;
  *  Only Taisei had one of these, and he is the only fighter whose punches read
  *  as landing on somebody. Measured on everyone else, a melee hit fired with
  *  between 1.2 and 4.4 metres of clear air between the two models: KoKo's
- *  Needle Finger connected across four and a half metres of nothing. The reach
+ *  Iron Nail connected across four and a half metres of nothing. The reach
  *  each fighter actually has is in src/game/data/contactReach.json, measured
  *  off the animation by scripts/measure_contact_reach.mjs; these are that,
  *  less enough that the striking surface passes through the target rather than
@@ -1143,7 +1143,7 @@ export const CONTACT_GAP: Record<FighterId, number> = {
   taisei: 1.1, kosho: 1.3, kenzo: 1.3, nigo: 1.3, gummy: 1.3,
   koko: 1.25, shirokane: 1.1, shiden: 1.1, ouga: 1.2, konta: 1.15,
   kagari: 1.3, ward: 1.35, kuon: 1.2, oro: 1.25, gaunt: 1.4, setsu: 1.1,
-  gorai: 1.45, haldor: 1.45, sorrel: 1.3, dorado: 1.3, shiun: 1.3, magatsu: 1.2, vesper: 1.3, imago: 1.15, 'wuming': 1.15, jirenga: 1.4, 'jinlin': 1.15, 'gohaku': 1.15, ippon: 1.2, sekka: 1.2, tobari: 1.2, akagane: 1.2, asahi: 1.25, levin: 1.25, 'rook': 1.2, gaku: 1.15,
+  gorai: 1.45, haldor: 1.45, sorrel: 1.3, dorado: 1.3, shiun: 1.3, magatsu: 1.2, vesper: 1.3, imago: 1.15, 'wuming': 1.15, banjaku: 1.4, 'jinlin': 1.15, 'gohaku': 1.15, ippon: 1.2, sekka: 1.2, tobari: 1.2, akagane: 1.2, asahi: 1.25, levin: 1.25, 'rook': 1.2, gaku: 1.15,
 };
 /** The fastest a lunge may close, in metres a second, and the furthest gap it
  *  will try to close at all. A step into range is a step; crossing eight
@@ -1175,20 +1175,20 @@ const REACH = contactReach as Partial<Record<FighterId, Partial<Record<AttackSlo
 const REACH_OVERRIDE: Partial<Record<FighterId, Partial<Record<AttackSlot, number>>>> = {
   // Iron Spirit throws these from in front of KoKo, so the measurement -
   // which watches KoKo's own body - is not what does the hitting. His heavy
-  // used to be here as well; Needle Finger is a projectile now and needs no
+  // used to be here as well; Iron Nail is a projectile now and needs no
   // reach. Gummy used to be here too, on the grounds that his arm stretches;
   // it does, but only where the clip scales the forearm, which his
   // ultimate's opener did not. It carried a `close` instead, so he travelled
   // rather than reaching (his special is a line of fists: Fighter.ts RUBBER).
   koko: { special: 2.1, ultimate: 2.4 },
   // Round 6 (GUMMY ULT): and he is back, for the ultimate alone. Its opener is SUNRISE's grab now - the hand shot out on
-  // the stretched arm to the body it is thrown at, the whole way (Fighter.ts GRAND_TIDE_GRAB) - so its reach is the arm's:
+  // the stretched arm to the body it is thrown at, the whole way (Fighter.ts SPRING_TIDE_GRAB) - so its reach is the arm's:
   // 11 m centre to centre with the slack (ULTIMATES.gummy).
   gummy: { ultimate: 10.3 },
   // Crimson Command is not the blade: it goes out round Sorrel to its radius,
   // wherever the sabre is at the time.
   sorrel: { special: 4.2 },
-  // Nor are Shiun's blows his hand: False Encore's blade runs 0.79 m on past
+  // Nor are Shiun's blows his hand: Understudy's blade runs 0.79 m on past
   // his fist, and lands where the illusion breaks - measured, the hand itself
   // gets 0.29 and 0.43 m ahead of him.
   shiun: { light: 1.6, heavy: 2.2 },
@@ -1197,29 +1197,29 @@ const REACH_OVERRIDE: Partial<Record<FighterId, Partial<Record<AttackSlot, numbe
   // Whip, and Stinger Storm sweeps it round him to its radius, as Crimson Command goes out round Sorrel. His claw
   // sweeps wider than the point of the fist (0.79 m measured), as Shiun's palm throws its force on.
   imago: { light: 1.6, heavy: 2.2, special: 3.6 },
-  // Wuming's Petalfall Blade is a blade of ki out of his hand, not the hand; the Heaven's Harvest's opener is
+  // Wuming's Lotus Edge is a blade of ki out of his hand, not the hand; the Heaven's Harvest's opener is
   // a kick, which the measurement (off the fist) does not watch.
   'wuming': { heavy: 2, ultimate: 2 },
-  // Jirenga's Uprooting Fist goes up, not out: an uppercut stepped into, the fist up past his own chin 0.64 m ahead of
+  // Banjaku's Uprooting Fist goes up, not out: an uppercut stepped into, the fist up past his own chin 0.64 m ahead of
   // where he stood (scripts/economy/uprooting_fist.py, after release 34) - the lunge takes him to the pushbox first, so a
   // duel's blow lands as drawn. It keeps the reach his leap had: at 1 m it went into a crowd for a third
-  // less, and he fell in three of the Rift's twelve seeds (scripts/survival/rift_run.ts). Emperor Jinlin's Pearl Needle
+  // less, and he fell in three of the Rift's twelve seeds (scripts/survival/rift_run.ts). Jinlin's Pearl Needle
   // lands where the beam off his fingertip does, past the hand; his Whirlpool Tail with the tail, which the fist the
   // measurement watches never reaches.
-  jirenga: { heavy: 1.5 },
+  banjaku: { heavy: 1.5 },
   'jinlin': { light: 2.2, heavy: 2.4 },
   // Gohaku's Rising Kick lands with the right foot, a metre ahead of his hips at chest height - not the fist
   // the measurement watches.
   'gohaku': { heavy: 1.6 },
   // Three clips whose blow never clears the pushbox. Measured honestly -
   // the striking limb, projected onto the facing, at the contact frame -
-  // Senpugan reaches 0.28 m ahead of Konta's origin (the clip steps back
+  // Kazeyose reaches 0.28 m ahead of Konta's origin (the clip steps back
   // 0.6 m before the slam and the fist never passes 0.25 m in the whole
   // move), the Barrage's punches 0.48 m (an overhead whose fist ends 1.9 m
   // up), and Habakiri Cut's tip peaks at 0.39 m (its horizontal sweep is
   // held 0.7 m to Shiden's right at 0.3 m out). The bodies are held
   // PUSH_RADIUS * 2 = 1.1 m apart, and 0.28 + PLAYER_RADIUS + MELEE_SLACK
-  // is 0.93: Senpugan could never land, and the Barrage's 1.13 left it to
+  // is 0.93: Kazeyose could never land, and the Barrage's 1.13 left it to
   // the separation jitter. These are the pushbox floor, not measurements:
   // 0.65 puts the hit range at 1.3 m, the pushbox plus the same frame of
   // movement every other blow is given, so the blow lands only when the
@@ -1233,7 +1233,7 @@ const REACH_OVERRIDE: Partial<Record<FighterId, Partial<Record<AttackSlot, numbe
   // (scripts/probe_kuon_fist.mts, 0.80 rig units at 0.74 of the clip), which
   // with the radius and the slack is 1.09 m against a 1.11 m pushbox.
   kuon: { light: .65 },
-  // HUSH throws Lord ORO's barrage and his finisher from in front of him,
+  // SLUMBER throws Lord ORO's barrage and his finisher from in front of him,
   // exactly as Iron Spirit does for KoKo.
   oro: { special: 2.1, ultimate: 2.4 },
   // The sixth wave's measured reach is the fist's (the measurement watches the hands): Akagane's Rising Kick lands with
@@ -1246,7 +1246,7 @@ const REACH_OVERRIDE: Partial<Record<FighterId, Partial<Record<AttackSlot, numbe
   // Gaku's Chain Jab is the aura drawn out of his two fingers into a blade: the cut lands where the blade does, about a
   // blade's length past the hand the measurement watches (0.44 m). His guard's straight (his own, 3 October) is a
   // small boy's: the fist out at its furthest 0.44 m ahead of him, a centimetre inside the pushbox, so his string
-  // whiffed at touching distance (seen in Chrome). It takes the pushbox floor, as Konta's Senpugan does. First Comes
+  // whiffed at touching distance (seen in Chrome). It takes the pushbox floor, as Konta's Kazeyose does. First Comes
   // Rock's opener measures 0.60 m on his new jab, but is held at the 0.52 m his old punch had: at 0.60 he fell in five
   // of the twelve Rift seeds and dealt a fifth less (at 0.52, two, and 1.48 M a run).
   gaku: { light: .65, heavy: 1.25, ultimate: .52 },
@@ -1268,9 +1268,9 @@ export function contactGap(fighter: FighterId, slot: AttackSlot, move: MoveDefin
 export function meleeReach(fighter: FighterId, slot: AttackSlot, move: MoveDefinition, grounded=true) {
   if (move.style !== 'melee') return Infinity;
   if (move.ender) return move.range + PLAYER_RADIUS;
-  // The rebuilt grounded Senpugan's palm center reaches .637m; its
+  // The rebuilt grounded Kazeyose's palm center reaches .637m; its
   // .215m sphere adds a real striking surface. Kurobi retains the old reach.
-  const measured = move.reach ?? (grounded&&fighter==='konta'&&slot==='heavy'&&move.name==='Senpugan'?.85
+  const measured = move.reach ?? (grounded&&fighter==='konta'&&slot==='heavy'&&move.name==='Kazeyose'?.85
     :REACH_OVERRIDE[fighter]?.[slot] ?? REACH[fighter]?.[slot]);
   if (measured === undefined) return move.range + PLAYER_RADIUS;
   return Math.min(move.range + PLAYER_RADIUS, measured + PLAYER_RADIUS + MELEE_SLACK);
@@ -1378,7 +1378,7 @@ export const AIR_RUSH: Partial<Record<FighterId, readonly [string | undefined, s
   chohan:["Upping the Ante","Cheap Shot","No Refunds"],
   aqrab:["Antlion Pit","Golden Pincer","Dune Shackle"],
   tsubute:["Leapfrog","Plunk","Geode"],
-  ume:["Rising Magnolia","Magnolia Backfist","Shattering Blossom"],
+  ume:["Rising Magnolia","Magnolia Backfist","Petal Quake"],
   lanthorn:["Rising Lamplight","Wick Turn","Tavern Cleaver"],
   highsun:["Morning Ascent","Lordly Turn","Noonday Divide"],
   torsion:["Snap Twist","About-Face","Air Rebuff"],
@@ -1386,7 +1386,7 @@ export const AIR_RUSH: Partial<Record<FighterId, readonly [string | undefined, s
   onigawara:["Rising Gore","Shoulder Reversal","Jagged Finish"],
   cardo:["Rising Unspell","Headlong Thrust","Thistledown Storm"],
   minase:["Rising Gale","Crossing Relay","Gale Descent"],
-  aquilo:["Rising Swallow","Swallowtail Cross","Downdraft"],
+  aquilo:["Rising Gust","Shearwind Cross","Downdraft"],
   'psyche':['Rising Swarm','Wing Twist','Grasping Swarm'],
   'ovid':['Jackhammer Uppercut','Glass Hook','Sledgehammer'],
   rotfalke:['Rush 1','Rush 2','Rush 3'],
@@ -1439,7 +1439,7 @@ export const AIR_RUSH: Partial<Record<FighterId, readonly [string | undefined, s
   'basilissa': ['Thornrise Heel', 'Petal Air Kick', 'Crown Heel Drop'],
   sorayomi: ['Rising Vane', 'Aerial Staff Reverse Quill', 'Descending Vane'],
   taisei: ['Flying Kick', 'Ghost Step Strike', 'Wreckfall Crash'],
-  ouga: ['Sky Elbow', 'Shikou Palm', 'Iron Sledge'],
+  ouga: ['Sky Elbow', 'Throne Palm', 'Iron Sledge'],
   // Konta's own rig is where the air attacks came from, and his string
   // keeps its first.
   konta: ['Gust Strike', 'Twin Knee', 'Pack Flurry'],
@@ -1539,7 +1539,7 @@ const RUSH_SPECS: Record<FighterId, RushSpec> = {
   onigawara:{names:['Notched Cleave','Brute Reversal','Gore Execution'],damage:[25,29,50],tempo:1,shape:'carry'},
   cardo:{names:['Hack','Hack Back','Unspell Crash'],damage:[25,29,50],tempo:1,shape:'carry'},
   minase:{names:['Relay Knife','Rising Gale','Gale Palm'],damage:[22,27,47],tempo:1,shape:'carry'},
-  aquilo:{names:['Swallow Darts','Rising Swallow','Forktail Gust'],damage:[22,27,47],tempo:1,shape:'carry'},
+  aquilo:{names:['Gust Darts','Rising Gust','Shearwind Gust'],damage:[22,27,47],tempo:1,shape:'carry'},
   'psyche':{names:['Moth Palm','Wingbeat','Dusting Wings'],damage:[24,33,48],tempo:1,shape:'carry'},
   'ovid':{names:['Cracked Knuckle','Glass Hook','Jackhammer Uppercut'],damage:[27,36,49],tempo:1,shape:'carry'},
   hawser:HAWSER_RUSH,
@@ -1548,7 +1548,7 @@ const RUSH_SPECS: Record<FighterId, RushSpec> = {
   yodaka:{names:['Ember Turn','Rising Spark','Watchfire Divide'],damage:[26,33,47],tempo:1,shape:'carry'},
   murex:{names:['Hooked Claw','Hooked Cross','Armored Hammer'],damage:[24,34,48],tempo:1,shape:'carry'},
   kinu:{names:['Silk Knuckle','Stitch Cross','Stone Breaker'],damage:[24,30,48],tempo:1,shape:'carry'},
-  'madake':{names:['Bamboo Straight','Sprouting Backfist','Green Gale Kick'],damage:[24,34,48],tempo:1,shape:'carry'},
+  'madake':{names:['Bamboo Straight','Sprouting Backfist','Bamboo Gale Kick'],damage:[24,34,48],tempo:1,shape:'carry'},
   akayuri:{names:['Lily Cut','Farewell Turn','Far Shore Thrust'],damage:[24,34,48],tempo:1,shape:'carry'},
   hagure:{names:['Snap Bite','Mauling Palm','Howling Spin'],damage:[25,33,47],tempo:1,shape:'carry'},
   hisame:{names:['Sleet Cut','False Edge','Coup de Glace'],damage:[25,32,46],tempo:1,shape:'carry'},
@@ -1565,9 +1565,9 @@ const RUSH_SPECS: Record<FighterId, RushSpec> = {
   tokan:{names:['Frost Cut','Sleet Heel','Floe Cleave'],damage:[24,26,48],tempo:1,shape:'carry'},
   strappado:{names:['String Rake','Marionette Cut','Spotlight Slash'],damage:[24,26,48],tempo:1,shape:'carry'},
   unari:{names:['Tug','Loop','Payout'],damage:[24,26,48],tempo:1,shape:'carry'},
-  barrow:{names:['Pitch Jab','Stolen Tremor','Glutton Hammer'],damage:[24,26,48],tempo:1,shape:'carry'},
+  barrow:{names:['Pitch Jab','Wreck Tremor','Glutton Hammer'],damage:[24,26,48],tempo:1,shape:'carry'},
   sashigane:{names:['Cross Section','Rising Section','Critical Load'],damage:[24,26,48],tempo:1,shape:'carry'},
-  gosu:{names:['Kin!','Kin Kin!','Porcelain Hammer'],damage:[24,26,48],tempo:1,shape:'carry'},
+  gosu:{names:['Gild!','Gild and Mend!','Porcelain Hammer'],damage:[24,26,48],tempo:1,shape:'carry'},
   kusushi:{names:['Rib Breaker','Rising Thrust','Crushing Heel'],damage:[23,25,48],tempo:1,shape:'carry'},
   hakushi:{names:['Lion Backhand','Mountain Palm','Pearl Drive'],damage:[23,25,48],tempo:1,shape:'carry'},
   suzuran:{names:['Handstroke','Backswing','Full Peal'],damage:[21,23,44],tempo:.94,shape:'carry'},
@@ -1613,17 +1613,17 @@ const RUSH_SPECS: Record<FighterId, RushSpec> = {
   // Round 3e: the Brunoise pops them up and the Flambe Kick keeps them
   // there - the quickest string after Setsu's, and the lightest.
   kosho: { names: ['Julienne', 'Brunoise', 'Flambe Kick'], damage: [16, 17, 38], tempo: .84, shape: 'juggle' },
-  // Round 3e: the GAAAN!! leaves them reeling in front of Iron Spirit - a
+  // Round 3e: the ANVIL!! leaves them reeling in front of Iron Spirit - a
   // slower, harder string for the GAN to follow.
-  koko: { names: ['Gan!', 'Gan Gan!!', 'GAAAN!!'], damage: [23, 25, 44], tempo: 1.12, shape: 'stagger' },
+  koko: { names: ['Rivet!', 'Hammer!!', 'ANVIL!!'], damage: [23, 25, 44], tempo: 1.12, shape: 'stagger' },
   nigo: { names: ['Haizan Slash', 'Haizan Sweep', 'Point-Blank Scorch'], damage: [20, 22, 44], tempo: 1.05, shape: 'carry' },
   kagari: { names: ['Ember Jab', 'Cinder Kick', 'Rekka'], damage: [19, 20, 43], shape: 'launch' },
   // Round 3e: Tact lifts them off their feet and keeps them up.
   ward: { names: ['Triage Cut', 'Cold Scalpel', 'Gurney Lift'], damage: [19, 21, 43], shape: 'juggle' },
   // Round 3e: Nova is a repulsion - blown back into the wall.
   kuon: { names: ['Hex Jab', 'Hex Kick', 'Nova'], damage: [19, 20, 41], shape: 'carry' },
-  // Round 3e: KYAHAAA!! spins them round.
-  oro: { names: ['Noroma!!', 'Noroma Noroma!!', 'KYAHAAA!!'], damage: [18, 20, 37], tempo: .92, shape: 'spin' },
+  // Round 3e: HOUR'S UP!! spins them round.
+  oro: { names: ['Tick!!', 'Tick Tock!!', 'HOUR\'S UP!!'], damage: [18, 20, 37], tempo: .92, shape: 'spin' },
   // A sword taller than he is: the slowest string, as his light is the slowest jab.
   // Round 3e: and the Slab Smash drives them into the floor.
   gaunt: { names: ['Backhand Hack', 'Rising Hack', 'Slab Smash'], damage: [27, 30, 52], tempo: 1.25, shape: 'spike' },
@@ -1639,7 +1639,7 @@ const RUSH_SPECS: Record<FighterId, RushSpec> = {
   dorado: { names: ['Gold Cleave', 'Backhand Return', 'Corsair Gale'], damage: [20, 22, 44], shape: 'launch' },
   // Shiun's: a turn of the palm, the flash step through them, and the wings
   // spreading as he rises - up off the floor, and kept there.
-  shiun: { names: ['Presence Turn', 'Cinder Step', 'Relic Rise'], damage: [18, 20, 41], shape: 'juggle' },
+  shiun: { names: ['Presence Turn', 'Cinder Step', 'Rising Anthem'], damage: [18, 20, 41], shape: 'juggle' },
   // Magatsu's: a slash, a claw, and the uppercut that throws them up.
   magatsu: { names: ['Hex Slash', 'Hex Claw', 'Hex Rise'], damage: [19, 21, 42], shape: 'launch' },
   // Vesper's: a slash, the reverse-quill, and the rising cut that pops them up - a fencer's, a touch quicker than the
@@ -1649,10 +1649,10 @@ const RUSH_SPECS: Record<FighterId, RushSpec> = {
   // King is.
   imago: { names: ['Chitin Jab', 'Mantis Hook', 'Rising Barb'], damage: [18, 20, 42], tempo: .9, shape: 'stagger' },
   // Wuming's: the rush's second, third and fifth blows - the last throws them up.
-  'wuming': { names: ['Dusk Rush', 'Dusk Spin Kick', 'Dusk Smash'], damage: [18, 20, 42], tempo: .9, shape: 'launch' },
-  // Jirenga's: the hook, the flurry, and the spinning heel brought down into the floor - heavier and a touch slower.
-  jirenga: { names: ['Bedrock Hook', 'Guardian Flurry', 'Crushing Heel'], damage: [20, 22, 44], tempo: 1.05, shape: 'spike' },
-  // Emperor Jinlin's: his tail across them, the finger driven in, and the tail swept round that drives them back.
+  'wuming': { names: ['Weeding Rush', 'Scything Kick', 'Root-Out Smash'], damage: [18, 20, 42], tempo: .9, shape: 'launch' },
+  // Banjaku's: the hook, the flurry, and the spinning heel brought down into the floor - heavier and a touch slower.
+  banjaku: { names: ['Bedrock Hook', 'Guardian Flurry', 'Crushing Heel'], damage: [20, 22, 44], tempo: 1.05, shape: 'spike' },
+  // Jinlin's: his tail across them, the finger driven in, and the tail swept round that drives them back.
   'jinlin': { names: ['Scale Swipe', 'Pearl Thrust', 'Tail Sweep'], damage: [17, 19, 40], tempo: .9, shape: 'carry' },
   // Gohaku: a jab, the flying kick, and both fists brought down over his head into the floor.
   'gohaku': { names: ['Long-Arm Jab', 'Flying Kick', 'Mountain Hammer'], damage: [18, 20, 42], tempo: .95, shape: 'spike' },
@@ -1866,11 +1866,11 @@ export const JUMP_HANG_SPEED = 1.8, JUMP_HANG_GRAVITY = 1;
  *  - 3.3x, the light swordsmen and speedsters: Shirokane, Sekka, Asahi (Water
  *    Breathing's leaps), Rook;
  *  - 3.0-3.1x, the bulk of the roster: Taisei and Ouga, Nigo (ASHSTEP), Vesper,
- *    Tobari a touch over; Kenzo, Kagari, Sorrel, Kuon, LORD ORO, Wuming, Emperor Jinlin,
+ *    Tobari a touch over; Kenzo, Kagari, Sorrel, Kuon, LORD ORO, Wuming, Jinlin,
  *    Gohaku, Ippon at three; Ward, Dorado a touch under;
  *  - 2.8x, the stocky: KoKo, who stands and lets the spirit move;
  *  - toward 2.5x, the big and the heavy, who do not leap about: Gorai (a giant)
- *    and Haldor 2.5, Gaunt (armour and a slab of iron) and Jirenga 2.6, Imago
+ *    and Haldor 2.5, Gaunt (armour and a slab of iron) and Banjaku 2.6, Imago
  *    and Akagane 2.7, Magatsu and Shiun 2.75 - the imposing ones walk. */
 export const JUMP_SCALE: Record<FighterId, number> = {
   chohan:3.4,
@@ -1899,7 +1899,7 @@ export const JUMP_SCALE: Record<FighterId, number> = {
   ouga: 3, kenzo: 3, kagari: 3, sorrel: 3, kuon: 3, oro: 3, 'wuming': 3, 'jinlin': 3, 'gohaku': 3, ippon: 3,
   ward: 2.9, dorado: 2.9,
   koko: 2.8,
-  magatsu: 2.75, shiun: 2.75, imago: 2.7, akagane: 2.7, gaunt: 2.6, jirenga: 2.6, gorai: 2.5, haldor: 2.5,
+  magatsu: 2.75, shiun: 2.75, imago: 2.7, akagane: 2.7, gaunt: 2.6, banjaku: 2.6, gorai: 2.5, haldor: 2.5,
 };
 /** The gravity a body off the floor by its own jump falls under, as a multiple of
  *  the simulation's 23 m/s^2 (`cut`: the short hop's rise, button up). The

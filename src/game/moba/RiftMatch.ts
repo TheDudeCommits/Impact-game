@@ -276,7 +276,7 @@ export class RiftMatch implements ExternalTargets {
    const killer=this.seats.get(attackerId);if(killer)killer.structures++;
    for(const seat of this.seats.values())if(seat.team===team)this.credit(seat,structure.kind==='tower'?180:250,100);
    this.emit(structure.kind==='core'?'core':structure.kind==='barracks'?'barracks':'tower',{team,actorId:attackerId,targetId:structure.id,lane:structure.lane==='base'?undefined:structure.lane,x:structure.x,z:structure.z});this.gates();
-   if(structure.kind==='core')this.finish(team,`${team==='heroes'?'The Offering Keep':'The Dawn Shrine'} has fallen.`);
+   if(structure.kind==='core')this.finish(team,`${team==='heroes'?'The Dusk Keep':'The Dawn Shrine'} has fallen.`);
   }return before-structure.hp;
  }
  private gates(){for(const s of this.structures){if(s.hp<=0){s.vulnerable=false;continue;}if(s.kind==='tower')s.vulnerable=s.tier===1||!this.structures.some(q=>q.team===s.team&&q.lane===s.lane&&q.kind==='tower'&&q.tier<s.tier&&q.hp>0);else if(s.kind==='barracks')s.vulnerable=!this.structures.some(q=>q.team===s.team&&q.lane===s.lane&&q.kind==='tower'&&q.hp>0);else if(s.kind==='guardian')s.vulnerable=this.structures.some(q=>q.team===s.team&&q.kind==='barracks'&&q.hp<=0);else s.vulnerable=this.structures.some(q=>q.team===s.team&&q.kind==='barracks'&&q.hp<=0)&&!this.structures.some(q=>q.team===s.team&&q.kind==='guardian'&&q.hp>0);}}

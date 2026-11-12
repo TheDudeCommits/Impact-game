@@ -16,7 +16,7 @@ import {DIZZY_SECONDS} from '../game/moves';
 import {GhostShell} from './signature/GhostShell';
 import {whiffGone} from './signature/ultimateClock';
 import {MirrorMereDomain} from './shop/MirrorMere';
-import {EncoreDecoy} from './shop/FalseEncore';
+import {EncoreDecoy} from './shop/Understudy';
 import {BladeWhirl} from './shop/BladeWhirl';
 import {CrowFlock} from './shop/CrowFlock';
 import {VfxKit, DUST_LIT, DUST_SHADE, DREAM_IMPACT } from './vfx/VfxKit';
@@ -54,10 +54,10 @@ applyOriginalGuardianTint(GUARDIAN_TINT);
  *  before Sovereign Shot and goes out with the ball; HORIZON SUNDER climbs Kagari and
  *  comes down as one cut so wide it splits the air behind it, the gold
  *  running out over the floor. He wakes under a dome of it.
- *  Shiun: pale seraph's violet over black. False Encore cuts where his
+ *  Shiun: pale seraph's violet over black. Understudy cuts where his
  *  blade goes, and its heavy breaks the air like glass - the illusion
  *  shattering - as the winged form's palm blows do; GLASS LANCES
- *  gathers light at his back and goes out as a volley of arrows; BLACK CONFESSIONAL's
+ *  gathers light at his back and goes out as a volley of arrows; FERMATA's
  *  coffin closes round them and holds until the spears break it open. He
  *  wakes under a dome of it.
  *  Magatsu: crimson cuts in the air - Flaying Cut leaves several where one hand
@@ -67,25 +67,25 @@ applyOriginalGuardianTint(GUARDIAN_TINT);
  *  until Calamity Pyre, the fire gathered between his hands, bursts on the one it held.
  *  He wakes into his true form under a dome of crimson.
  *  Vesper: the sabre cuts white. Raven Dive leaves its cut where he went
- *  through them; the offering closes the dark round whoever the thrust held,
- *  a black sun over them, and the last cut burns the Offering Mark into
+ *  through them; the Evensong closes the dark round whoever the thrust held,
+ *  a black sun over them, and the last cut burns the Evensong Mark into
  *  them in crimson. He wakes as Black Vespers under a dome of the dark.
  *  Imago: jade. His claw leaves three marks where one hand went; Stinger Storm
  *  rings out round him at each sweep of the tail; the final molt cracks the
  *  air at each blow, and the slam rocks the floor. He wakes under a jade dome.
- *  Wuming: rose over black. The Petalfall Blade is a
+ *  Wuming: rose over black. The Lotus Edge is a
  *  vanishing step: a glint at the two fingers on his forehead, gone in a flash -
  *  the body hidden, as Taisei's is (GoldenTechniques) - and back in another
  *  behind them, a blade of ki out of his hand until the cut. The Black
  *  Sunpalm Cannon gathers in the hand drawn back to his hip (the beam is the
  *  shared one, in rose). Rose's scythe is drawn up out of his raised hands and
  *  brought down through whoever the kick held. He goes Rose under a dome of it.
- *  Jirenga: red. His fists break the air where they land; the Uprooting Fist cuts
+ *  Banjaku: red. His fists break the air where they land; the Uprooting Fist cuts
  *  up through it. Vermilion Seal gathers in the palm drawn back to his shoulder
  *  (the sphere it throws is the shared one, in red). The Mountain-Felling Fist
  *  burns in the fist he raises through the leap, and the dive through them
  *  splits the air and rocks the floor. He goes to full power under a red dome.
- *  'Emperor Jinlin': gold, and his needle rays magenta. The Pearl Needle goes off
+ *  'Jinlin': gold, and his pearl lances magenta. The Pearl Needle goes off
  *  his fingertip accent; the Whirlpool Tail rings round him; the barrage is
  *  a volley of beams out of both hands, one after another; the Drowned Sun
  *  (the shared bomb, held over his raised hand) gathers at the fingertip under
@@ -107,17 +107,17 @@ applyOriginalGuardianTint(GUARDIAN_TINT);
  *  Gale's shock goes on ahead of the fist; Avalanche lands more fists than one;
  *  the Icefall Hammer rocks the floor. The frost stance's snowflake opens on
  *  the floor round him as he settles, and the strike goes out to its edge.
- *  Shatter Art: Black Blizzard splits the air and rings out over the floor. He wakes
+ *  Black Blizzard splits the air and rings out over the floor. He wakes
  *  under an ice-blue dome.
  *  Tobari: the Red Eye's red over black. The kunai cuts black, edged in crimson. The Murder of Crows is a
  *  vanishing step as Wuming's is - the body hidden - gone in a burst of crows where he stood and back in another
  *  behind them. 'Black Pyre': his red eye's glow at his eye, and the black flames catch where he is looking and burn
- *  there, as Shiden's do (FlameSprites). Red Moon Reverie turns the world red round whoever the kunai caught, a red moon over
+ *  there, as Shiden's do (FlameSprites). Crow's Nightmare turns the world red round whoever the kunai caught, a red moon over
  *  them, until it breaks them. He wakes under a dome of the Guardian's red-orange.
- *  Akagane: the Crow Clan's red. The war fan's swing cuts black edged in red. The Cinder Art: Burning Sea pours out of
- *  him in a stream of fire and burns over the ground it lands on. 'Heaven\'s Anvil': a meteor comes down out of the
+ *  Akagane: the Crow Clan's red. The war fan's swing cuts black edged in red. The Burning Sea pours out of
+ *  him in a stream of fire and burns over the ground it lands on. 'Copper Star': a meteor comes down out of the
  *  sky onto whoever the fan caught, and craters the floor. He wakes under the WRATHFUL KING's blue.
- *  Asahi: Tide Breath's blue cuts; the Ashfall Waltz's water ribbon round him at each cut; Lantern Rite: First Light's
+ *  Asahi: Tide Breath's blue cuts; the Ashfall Waltz's water ribbon round him at each cut; First Light's
  *  blade burns through the leap and comes down in a crescent of fire. He wakes under the Sun's fire.
  *  Levin: steel, both blades - every cut is two. The Grapple Rig's lines fire out ahead as he crouches, and the cut is
  *  left where he went through them; the SOJI: Clean Sweep whirls cuts round whoever the slash caught. He wakes under
@@ -133,9 +133,9 @@ applyOriginalGuardianTint(GUARDIAN_TINT);
  *  flashes, the shared electric kit, nothing allocated per frame. The kit is
  *  drawn afresh each frame, so what a blow starts goes in a pool and is drawn
  *  from there for as long as it lasts. */
-type Emperor = 'gorai' | 'haldor' | 'sorrel' | 'dorado' | 'shiun' | 'magatsu' | 'vesper' | 'imago' | 'wuming' | 'jirenga' | 'jinlin'
+type Emperor = 'gorai' | 'haldor' | 'sorrel' | 'dorado' | 'shiun' | 'magatsu' | 'vesper' | 'imago' | 'wuming' | 'banjaku' | 'jinlin'
   | 'gohaku' | 'ippon' | 'sekka' | 'tobari' | 'akagane' | 'asahi' | 'levin' | 'rook' | 'gaku';
-const EMPERORS: ReadonlySet<FighterId> = new Set<FighterId>(['gorai', 'haldor', 'sorrel', 'dorado', 'shiun', 'magatsu', 'vesper', 'imago', 'wuming', 'jirenga', 'jinlin',
+const EMPERORS: ReadonlySet<FighterId> = new Set<FighterId>(['gorai', 'haldor', 'sorrel', 'dorado', 'shiun', 'magatsu', 'vesper', 'imago', 'wuming', 'banjaku', 'jinlin',
   'gohaku', 'ippon', 'sekka', 'tobari', 'akagane', 'asahi', 'levin', 'rook', 'gaku']);
 const COLOR: Record<Emperor, {glow: THREE.Color; light: THREE.Color}> = {
   gorai: {glow: new THREE.Color(1.35, .42, 2.7), light: new THREE.Color(.9, .4, 1.6)},
@@ -147,7 +147,7 @@ const COLOR: Record<Emperor, {glow: THREE.Color; light: THREE.Color}> = {
   vesper: {glow: new THREE.Color(2.5, 2.8, 3.4), light: new THREE.Color(1.3, 1.45, 1.9)},
   imago: {glow: new THREE.Color(.55, 3.2, 1.5), light: new THREE.Color(.3, 1.7, .8)},
   'wuming': {glow: new THREE.Color(3.2, .9, 2.4), light: new THREE.Color(1.7, .5, 1.3)},
-  jirenga: {glow: new THREE.Color(3.3, .45, .38), light: new THREE.Color(1.8, .25, .2)},
+  banjaku: {glow: new THREE.Color(3.3, .45, .38), light: new THREE.Color(1.8, .25, .2)},
   'jinlin': {glow: new THREE.Color(3.3, 2.3, .55), light: new THREE.Color(1.8, 1.2, .3)},
   'gohaku': {glow: new THREE.Color(2.9, 2.3, 3.3), light: new THREE.Color(1.5, 1.15, 1.8)},
   ippon: {glow: new THREE.Color(3.3, 3.0, 2.0), light: new THREE.Color(1.8, 1.6, 1.0)},
@@ -159,7 +159,7 @@ const COLOR: Record<Emperor, {glow: THREE.Color; light: THREE.Color}> = {
   'rook': {glow: new THREE.Color(1.9, .9, 3.4), light: new THREE.Color(1.0, .45, 1.9)},
   gaku: {glow: new THREE.Color(3.4, 2.3, .55), light: new THREE.Color(1.9, 1.25, .3)},
 };
-/** Emperor Jinlin's needle rays, and the Drowned Sun's red. */
+/** Jinlin's pearl lances, and the Drowned Sun's red. */
 const RAY = new THREE.Color(3.2, .7, 2.8), RAY_LIGHT = new THREE.Color(1.7, .35, 1.5), DROWNED_SUN_RED = new THREE.Color(3.4, .9, .3);
 /** Gohaku: the Beast's red-violet; the Star-Shifting Beam's yellow (and the Sun-Seizing Spiral's point), and its spiral. */
 const BEAST_RIM = new THREE.Color(2.9, .55, 1.7), STAR_BEAM_GOLD = new THREE.Color(3.4, 2.8, .7), STAR_BEAM_LIGHT = new THREE.Color(1.9, 1.5, .35);
@@ -168,7 +168,7 @@ const SPIRAL = new THREE.Color(2.1, .7, 3.3);
 const SERIOUS = new THREE.Color(3.4, .7, .35);
 /** The frost stance's ice-blue. */
 const COMPASS = new THREE.Color(1.6, 2.4, 3.4);
-/** Tobari: his red eye's glow; Red Moon Reverie's world, a darker red; Black Pyre's violet edge; the Guardian's red-orange. */
+/** Tobari: his red eye's glow; Crow's Nightmare's world, a darker red; Black Pyre's violet edge; the Guardian's red-orange. */
 const RED_EYE = new THREE.Color(3.3, .2, .26), RED_MOON = new THREE.Color(2.4, .1, .14), BLACK_PYRE = new THREE.Color(1.1, .3, 1.6);
 const GUARDIAN = new THREE.Color(3.3, 1.1, .45);
 /** Akagane's WRATHFUL KING, blue; Asahi's water and the Sun's fire; Levin's green; Rook's shadows. */
@@ -193,7 +193,7 @@ const CUT: Record<Emperor, SlashStyle> = {
   vesper: {mode: ENERGY, edge: new THREE.Color(3.1, 3.2, 3.5), body: new THREE.Color(.75, .82, 1.3), glow: new THREE.Color(.3, .38, .95)},
   imago: {mode: ENERGY, edge: new THREE.Color(2.4, 3.4, 2.8), body: new THREE.Color(.2, 1.1, .55), glow: new THREE.Color(.08, .85, .35)},
   'wuming': {mode: ENERGY, edge: new THREE.Color(3.4, 1.8, 3.0), body: new THREE.Color(1.2, .25, .9), glow: new THREE.Color(.9, .1, .6)},
-  jirenga: {mode: ENERGY, edge: new THREE.Color(3.4, 1.1, .9), body: new THREE.Color(1.2, .12, .1), glow: new THREE.Color(.95, .05, .04)},
+  banjaku: {mode: ENERGY, edge: new THREE.Color(3.4, 1.1, .9), body: new THREE.Color(1.2, .12, .1), glow: new THREE.Color(.95, .05, .04)},
   'jinlin': {mode: ENERGY, edge: new THREE.Color(3.4, 2.8, 1.4), body: new THREE.Color(1.3, .8, .12), glow: new THREE.Color(.9, .5, .05)},
   'gohaku': {mode: ENERGY, edge: new THREE.Color(3.3, 3.0, 3.4), body: new THREE.Color(1.0, .45, 1.1), glow: new THREE.Color(.7, .15, .6)},
   ippon: {mode: ENERGY, edge: new THREE.Color(3.4, 3.2, 2.6), body: new THREE.Color(1.2, .9, .4), glow: new THREE.Color(.8, .5, .1)},
@@ -205,9 +205,9 @@ const CUT: Record<Emperor, SlashStyle> = {
   'rook': {mode: DARK, edge: new THREE.Color(2.4, 1.6, 3.4), body: new THREE.Color(.03, .01, .06), glow: new THREE.Color(.6, .25, 1.2)},
   gaku: {mode: ENERGY, edge: new THREE.Color(3.4, 3.1, 1.8), body: new THREE.Color(1.5, .95, .25), glow: new THREE.Color(.95, .55, .08)},
 };
-/** Lantern Rite: First Light's crescent of fire. */
+/** First Light's crescent of fire. */
 const SUN_CUT: SlashStyle = {mode: ENERGY, edge: new THREE.Color(3.4, 2.6, 1.2), body: new THREE.Color(1.6, .5, .1), glow: new THREE.Color(1.1, .25, .04)};
-/** 'The Offering': the dark round them and the black sun over them, rimmed in Black Vespers's violet; the Offering Mark
+/** 'Evensong': the dark round them and the black sun over them, rimmed in Black Vespers's violet; the Evensong Mark
  *  is crimson. */
 const ECLIPSE = new THREE.Color(.95, .32, 1.7), BRAND = new THREE.Color(3.2, .2, .3);
 /** Grog Gale's wind: white over violet. */
@@ -229,7 +229,7 @@ interface Dome {mesh: THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial>; ac
 interface Strike {center: THREE.Vector3; targetId: string; since: number; seed: number; kind: 'sky' | 'floor'; active: boolean; color: THREE.Color}
 /** A discharge where a finisher lands, fading. */
 interface Flash {center: THREE.Vector3; since: number; seed: number; strength: number; reach: number; active: boolean; color: THREE.Color; soft?: boolean}
-/** A thin beam of ki between two points, fading: Emperor Jinlin's needle rays. One may be set to start later. */
+/** A thin beam of ki between two points, fading: Jinlin's pearl lances. One may be set to start later. */
 interface Beam {from: THREE.Vector3; to: THREE.Vector3; since: number; seconds: number; seed: number; width: number; active: boolean; color: THREE.Color}
 /** Cloudstep's hold: the body stays hidden this long past the return, while a remote copy's timeline may
  *  still be interpolating across the jump (GoldenTechniques' APPEAR_HOLD). */
@@ -249,12 +249,12 @@ const CLONE_JOINTS = ['Head', 'Neck', 'Spine2', 'Spine1', 'Spine', 'Hips', 'Left
  *  formed mid-kick", the kick's light drawn along the floor before him with no body to it; grown a joint at a time,
  *  he was "an unreadable tangle": the blind critics.) */
 const FORMED = .11;
-/** Cloudstep's timings, by whose heavy it is: Wuming's Petalfall Blade, Tobari's Murder of Crows, Shiun's
- *  False Encore. */
+/** Cloudstep's timings, by whose heavy it is: Wuming's Lotus Edge, Tobari's Murder of Crows, Shiun's
+ *  Understudy. */
 const BLINKS: Partial<Record<FighterId, {vanish: number; appear: number}>> = {'wuming': MOVES['wuming'].heavy.teleport!, tobari: MOVES.tobari.heavy.teleport!,
   shiun: MOVES.shiun.heavy.teleport!};
 const BLINK = BLINKS['wuming']!;
-/** False Encore's copy breaks this far into the heavy: before he is back (BLINKS.shiun.appear), while it is still the
+/** Understudy's copy breaks this far into the heavy: before he is back (BLINKS.shiun.appear), while it is still the
  *  thing the lens looks at. */
 const ILLUSION_BREAKS = .27;
 /** Black Pyre's black flames at most, as Shiden's are drawn (NinjaEffects). */
@@ -270,7 +270,7 @@ const SERIOUS_WIND = new THREE.Color(2.6, 2.6, 2.4);
  *  themselves are as bright as before. */
 const LIGHT_SCALE = .35;
 
-/** Heaven's Anvil's rock: an icosphere pushed in and out by a few fixed waves into crags, and a `heat` at each
+/** Copper Star's rock: an icosphere pushed in and out by a few fixed waves into crags, and a `heat` at each
  *  corner - burning along the cracks where the waves cross, dark stone elsewhere - for its material to glow by. The
  *  blind critic, 3 October, saw the old one (a plain icosphere lit evenly orange) as "a flat salmon disc". */
 function meteorRock(): THREE.BufferGeometry {
@@ -337,14 +337,14 @@ class InkStrokes {
   dispose() { this.mesh.removeFromParent(); this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
 }
 
-/** BLACK CONFESSIONAL's coffin: a slab of black, its edges lit violet (`uRim`), fading with `uOpacity`. */
-/** BLACK CONFESSIONAL's slabs: black lacquer, a sheen toward their edges as they turn from the lens and slow violet streaks of
+/** FERMATA's coffin: a slab of black, its edges lit violet (`uRim`), fading with `uOpacity`. */
+/** FERMATA's slabs: black lacquer, a sheen toward their edges as they turn from the lens and slow violet streaks of
  *  pressure running up them, edged in a thin violet line. As a near-black face and a broad glowing edge, under the
  *  ultimate's violet grade, the faces vanished into the room: "a purple neon frame, not a black coffin" (the blind
  *  critic, 3 October). Shut, it is solid and hides who is inside, as the spell does. */
 function coffinMaterial(): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
-    name: 'BLACK CONFESSIONAL', transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false,
+    name: 'FERMATA', transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false,
     uniforms: {uOpacity: {value: 0}, uTime: {value: 0}, uRim: {value: new THREE.Color(1.6, .55, 3.0)}},
     vertexShader: `varying vec2 vUv;varying vec3 vN;varying vec3 vV;
       void main(){vUv=uv;vN=normalMatrix*normal;vec4 mv=modelViewMatrix*vec4(position,1.0);vV=-mv.xyz;gl_Position=projectionMatrix*mv;}`,
@@ -429,10 +429,10 @@ type Accent = 'bolt' | 'fire' | 'black' | 'abyss' | 'blood';
 const FLAME_OF: Record<Exclude<Accent, 'bolt'>, number> = {fire: FLAME_FIRE, black: BLACK, abyss: ABYSS, blood: BLOOD};
 const ENDER_ACCENTS: Partial<Record<FighterId, Partial<Record<ComboKey, Accent>>>> = {
   gorai: { lllh: 'bolt', airHeavy: 'bolt' }, sorrel: { lllh: 'bolt', llls: 'bolt' }, dorado: { lllh: 'bolt', llls: 'bolt' },
-  magatsu: { llls: 'bolt' }, 'wuming': { llls: 'bolt' }, jirenga: { llls: 'bolt' }, 'jinlin': { llls: 'bolt' },
+  magatsu: { llls: 'bolt' }, 'wuming': { llls: 'bolt' }, banjaku: { llls: 'bolt' }, 'jinlin': { llls: 'bolt' },
   tobari: { airHeavy: 'fire', airSpecial: 'fire' }, akagane: { airSpecial: 'fire' }, asahi: { lllh: 'fire' }, 'gohaku': { lh: 'bolt' },
   // The main game's sixteen (COMBOS-DATA's rows): lightning down out of the sky - Purple Electricity, Speed of
-  // Lightning and the Icefall, Shrike Current, Thunder Hawk - and the floor burning under Noboribi, Kagaribi's pillar,
+  // Lightning and the Icefall, Static Shroud, Thunder Hawk - and the floor burning under Noboribi, Kagaribi's pillar,
   // Kosho's Reception and Salamandre, Sunstroke's cut, Gummy's burning fist and the cannon; Nigo's pressure; Gaunt' blood.
   shirokane: { airSpecial: 'bolt' }, setsu: { llh: 'bolt', airSpecial: 'bolt' }, shiden: { llls: 'bolt', airSpecial: 'bolt' },
   kagari: { llh: 'fire', airSpecial: 'fire' }, kosho: { lllh: 'fire', airSpecial: 'fire' }, kenzo: { airHeavy: 'fire' }, gummy: { airSpecial: 'fire' },
@@ -476,7 +476,7 @@ const MAIN_KEYS: Partial<Record<FighterId, Partial<Record<ComboKey, Flavour>>>> 
   shiden: { lllh: 'fire' }, kuon: { lh: 'darkSpark', llls: 'infinity' }, oro: { llls: 'frost', airSpecial: 'knives' },
   gaunt: { llls: 'explosion', airSpecial: 'explosion' }, setsu: { lh: 'spark', lllh: 'claw' }, koko: { llls: 'inhale' },
   kagari: { llls: 'fireflies' }, gummy: { llh: 'flurry', airSpecial: 'fire' }, kosho: { llls: 'flurry' },
-  // Cardiac Palm and Biopsy Strike release a shock inside the THEATRE: they land as his Flatline Shock sounds (sfxPlan ENDER_LANDS).
+  // Cardiac Palm and Biopsy Strike release a shock inside the SURGERY: they land as his Flatline Shock sounds (sfxPlan ENDER_LANDS).
   ward: { lllh: 'bolt', airSpecial: 'bolt' },
 };
 const SOFT: ReadonlySet<Flavour> = new Set<Flavour>(['chi', 'slash', 'fire', 'room', 'spirit', 'pressure', 'steel', 'flash', 'explosion', 'water', 'earth',
@@ -547,7 +547,7 @@ export class EmperorEffects {
   }
   /** Where each Tobari's Black Pyre was cast at (its cast's endpoint), and when. */
   private fields = new Map<string, {at: THREE.Vector3; since: number}>();
-  /** Heaven's Anvil's meteors: a craggy rock, burning along its cracks and on the face it falls on, one a Akagane;
+  /** Copper Star's meteors: a craggy rock, burning along its cracks and on the face it falls on, one a Akagane;
    *  `fall` is the way it is going. */
   private meteors: {mesh: THREE.Mesh; owner: string; fall: THREE.Vector3}[] = [];
   /** When each Guardian's wearer last woke into it: it is seen rising for two seconds after. */
@@ -560,12 +560,12 @@ export class EmperorEffects {
   private lens = new THREE.Vector3();
   private seeing = false;
   private domainAt = new Map<string, {key: number; at: THREE.Vector3; flashed: boolean}>();
-  /** False Encore's illusion, one a fighter (src/render/shop/FalseEncore.ts), and the heavy it was left by. */
+  /** Understudy's illusion, one a fighter (src/render/shop/Understudy.ts), and the heavy it was left by. */
   private decoys = new Map<string, {decoy: EncoreDecoy; key: number}>();
   /** SOJI: Clean Sweep's whirl of blade-light round Levin as he turns (src/render/shop/BladeWhirl.ts), one a Levin. */
   private whirls = new Map<string, BladeWhirl>();
   /** The Murder of Crows's crows (src/render/shop/CrowFlock.ts), every Tobari's, and the frame time they are stepped by; and
-   *  the clone each Tobari leaves (a still copy of him, as False Encore's illusion is). The flock is built with a room
+   *  the clone each Tobari leaves (a still copy of him, as Understudy's illusion is). The flock is built with a room
    *  that has an Tobari (`load`), not at the first 'Murder of Crows': built there, its program was linked by the draw of a
    *  fight's first clone, 37 to 110 ms of a royale's frame (launch day 15, scripts/night/late_sweep.mjs). */
   private crows?: CrowFlock;
@@ -585,7 +585,7 @@ export class EmperorEffects {
   /** Akagane's war-fan, one a Akagane, through his War Fan Sweep. */
   private gunbais: {fan: THREE.Group; owner: string}[] = [];
   private elbow = new THREE.Vector3();
-  /** BLACK CONFESSIONAL's coffins, one an Shiun: five slabs each, sharing a material. */
+  /** FERMATA's coffins, one an Shiun: five slabs each, sharing a material. */
   private coffins: {slabs: THREE.Mesh[]; material: THREE.ShaderMaterial; owner: string}[] = [];
   /** Where each Magatsu's Calamity Pyre landed: the fire burns there while they are thrown. */
   private 'calamity-pyre' = new Map<string, THREE.Vector3>();
@@ -682,7 +682,7 @@ export class EmperorEffects {
       const material = coffinMaterial();
       const slabs = COFFIN_SLABS.map(([w, h, d]) => {
         const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
-        mesh.name = 'shiun-black-confessional'; mesh.visible = false; mesh.frustumCulled = false; mesh.renderOrder = 3; scene.add(mesh);
+        mesh.name = 'shiun-fermata'; mesh.visible = false; mesh.frustumCulled = false; mesh.renderOrder = 3; scene.add(mesh);
         return mesh;
       });
       this.coffins.push({slabs, material, owner: ''});
@@ -771,11 +771,11 @@ export class EmperorEffects {
       if (who === 'vesper') {
         const held = MOVES.vesper.ultimate.contacts[1] - MOVES.vesper.ultimate.contacts[0] + .15;
         if (!last) {
-          // The Offering: the dark closes round whoever the thrust held, and the sun goes black over them.
+          // Evensong: the dark closes round whoever the thrust held, and the sun goes black over them.
           this.dome(event.targetId ?? '', event.serverTime, 1.35, ECLIPSE, held);
           this.dome(event.targetId ?? '', event.serverTime, .85, BRAND, held, 4.6);
         } else if (actor) {
-          // The sabre down out of the dark, and the Offering Mark burnt into them.
+          // The sabre down out of the dark, and the Evensong Mark burnt into them.
           this.facing(actor);
           this.cut('vesper', this.a, actor.state.yaw, 5.6, .62, event.serverTime, .45, seed);
           this.crack(this.b.copy(this.a).setY(this.a.y + .25), this.forward, event.serverTime, seed, 2.8, 14, BRAND);
@@ -798,19 +798,19 @@ export class EmperorEffects {
           this.flash(this.a, .9, seed, 1.4, COLOR['wuming'].glow, event.serverTime);
         } else this.flash(this.a, .8, seed, 1.3, COLOR['wuming'].glow, event.serverTime);
       }
-      if (who === 'jirenga' && actor) {
+      if (who === 'banjaku' && actor) {
         // The Mountain-Felling Fist: the hook's blow, and then the dive through them - the air split behind the fist, and
         // the floor rocked under them.
         this.facing(actor);
         if (last) {
-          this.cut('jirenga', this.a, actor.state.yaw, 6.4, .2, event.serverTime, .5, seed);
-          this.crack(this.a, this.forward, event.serverTime, seed, 3.8, 18, COLOR.jirenga.glow);
-          this.strike(this.b.copy(this.a).setY(this.a.y - 1.05), event.targetId ?? '', event.serverTime, seed, 'floor', COLOR.jirenga.glow);
+          this.cut('banjaku', this.a, actor.state.yaw, 6.4, .2, event.serverTime, .5, seed);
+          this.crack(this.a, this.forward, event.serverTime, seed, 3.8, 18, COLOR.banjaku.glow);
+          this.strike(this.b.copy(this.a).setY(this.a.y - 1.05), event.targetId ?? '', event.serverTime, seed, 'floor', COLOR.banjaku.glow);
           this.ring(this.c.copy(this.a).setY(this.a.y - 1.05), event.serverTime, 5);
-          this.flash(this.a, 1.7, seed, 2.8, COLOR.jirenga.glow, event.serverTime);
+          this.flash(this.a, 1.7, seed, 2.8, COLOR.banjaku.glow, event.serverTime);
         } else {
-          this.crack(this.a, this.forward, event.serverTime, seed, 1.8, 10, COLOR.jirenga.glow);
-          this.flash(this.a, .8, seed, 1.3, COLOR.jirenga.glow, event.serverTime);
+          this.crack(this.a, this.forward, event.serverTime, seed, 1.8, 10, COLOR.banjaku.glow);
+          this.flash(this.a, .8, seed, 1.3, COLOR.banjaku.glow, event.serverTime);
         }
       }
       if (who === 'gohaku' && actor) {
@@ -824,7 +824,7 @@ export class EmperorEffects {
         } else this.flash(this.a, .9, seed, 1.4, STAR_BEAM_GOLD, event.serverTime);
       }
       if (who === 'sekka' && actor) {
-        // Shatter Art: Black Blizzard: the one-two's blow, and then the dash and the blow at its end - the air split, rings out over
+        // Black Blizzard: the one-two's blow, and then the dash and the blow at its end - the air split, rings out over
         // the floor, the ice-blue of the needle under it.
         this.facing(actor);
         if (last) {
@@ -851,7 +851,7 @@ export class EmperorEffects {
         this.flash(this.a, 1, seed, 1.6, SUN, event.serverTime);
       }
       if (who === 'asahi' && actor && last) {
-        // Lantern Rite: First Light comes down through them in a crescent of fire.
+        // First Light comes down through them in a crescent of fire.
         this.facing(actor);
         this.cut('sun', this.a, actor.state.yaw, 5.8, 1.1, event.serverTime, .5, seed);
         this.cut('sun', this.b.copy(this.a).setY(this.a.y + .2), actor.state.yaw, 4.2, .9, event.serverTime + .04, .45, seed + 3);
@@ -886,7 +886,7 @@ export class EmperorEffects {
       if (who === 'tobari') {
         const contacts = MOVES.tobari.ultimate.contacts, held = contacts[contacts.length - 1] - contacts[0] + .15;
         if (opener) {
-          // Red Moon Reverie: the world goes red round whoever the kunai caught, and the moon over them red, until it breaks.
+          // Crow's Nightmare: the world goes red round whoever the kunai caught, and the moon over them red, until it breaks.
           this.dome(event.targetId ?? '', event.serverTime, 1.5, RED_MOON, held);
           this.dome(event.targetId ?? '', event.serverTime, .9, RED_EYE, held, 4.4);
         } else if (between && actor) {
@@ -1023,15 +1023,15 @@ export class EmperorEffects {
       this.crack(head.setY(head.y + .9), this.up, time, seed, 2.8, 12, COLOR.vesper.glow);
     }
     if (who === 'wuming') {
-      // LOTUS IN FLAME: the aura out round him in rose, and over the floor.
+      // JADE PYRE: the aura out round him in rose, and over the floor.
       this.dome(actor.state.id, time, 4, COLOR['wuming'].glow, 1.1);
       this.strike(this.b.copy(actor.group.position).setY(actor.group.position.y + .05), '', time, seed, 'floor', COLOR['wuming'].glow);
     }
-    if (who === 'jirenga') {
+    if (who === 'banjaku') {
       // WRATHFUL GUARDIAN: red out round him and over the floor, and the air over him breaking.
-      this.dome(actor.state.id, time, 4.2, COLOR.jirenga.glow, 1.1);
-      this.strike(this.b.copy(actor.group.position).setY(actor.group.position.y + .05), '', time, seed, 'floor', COLOR.jirenga.glow);
-      this.crack(head.setY(head.y + .3), this.up, time, seed, 3, 14, COLOR.jirenga.glow);
+      this.dome(actor.state.id, time, 4.2, COLOR.banjaku.glow, 1.1);
+      this.strike(this.b.copy(actor.group.position).setY(actor.group.position.y + .05), '', time, seed, 'floor', COLOR.banjaku.glow);
+      this.crack(head.setY(head.y + .3), this.up, time, seed, 3, 14, COLOR.banjaku.glow);
     }
     if (who === 'jinlin') {
       // The gold flares round him and over the floor.
@@ -1129,7 +1129,7 @@ export class EmperorEffects {
     ring.mesh.position.copy(center); ring.since = time; ring.radius = radius; ring.active = true; ring.mesh.visible = true;
     ring.mesh.material.color.copy(color);
   }
-  /** `lift`: how far above the body's feet the dome's centre sits - round the body, or (the offering's sun) over it. */
+  /** `lift`: how far above the body's feet the dome's centre sits - round the body, or (fallen-star's sun) over it. */
   private dome(actorId: string, time: number, radius: number, rim: THREE.Color, seconds = DOME_SECONDS, lift = .9) {
     const dome = this.domes.find(d => !d.active) ?? this.domes.reduce((x, y) => x.since <= y.since ? x : y);
     dome.actorId = actorId; dome.since = time; dome.radius = radius; dome.seconds = seconds; dome.lift = lift; dome.active = true; dome.mesh.visible = true;
@@ -1224,15 +1224,15 @@ export class EmperorEffects {
             this.ring(this.c.copy(actor.group.position).setY(actor.group.position.y + .05), time, 1.6);
           }
           if (who === 'shiun' && s.awakened && !big && !(s.action === 'light' && s.chain === 2)) {
-            // The winged form's open palm: the air breaks like glass where the blow lands. (False Encore's breaking is
+            // The winged form's open palm: the air breaks like glass where the blow lands. (Understudy's breaking is
             // the copy's now, before the blow: `illusion`.)
             this.crack(this.a, this.forward, time, key, big ? 2.2 : 1.1, big ? 12 : 7, colour.glow);
             this.flash(this.a, big ? .9 : .5, key, big ? 1.4 : .9, colour.glow, time);
           }
-          // (Wuming's heavy is the Petalfall Blade, its cut his own: `transmission`. Jirenga's fists, Golden
+          // (Wuming's heavy is the Lotus Edge, its cut his own: `transmission`. Banjaku's fists, Golden
           // Jinlin's beams and tail, Gohaku's fists and feet, Ippon's, Sekka's and Gaku's are theirs: `prideBlow`,
           // `emperorBlow`, `beastBlow`, `heroBlow`, `demonBlow`, `hunterBlow`.)
-          if (who === 'jirenga') this.prideBlow(actor, big, s.chain ?? 0, key, time);
+          if (who === 'banjaku') this.prideBlow(actor, big, s.chain ?? 0, key, time);
           else if (who === 'jinlin') this.emperorBlow(actor, big, s.chain ?? 0, key, time);
           else if (who === 'gohaku') this.beastBlow(actor, big, s.chain ?? 0, key, time);
           else if (who === 'ippon') this.heroBlow(actor, big, s.chain ?? 0, key, time);
@@ -1255,16 +1255,16 @@ export class EmperorEffects {
               this.b.copy(this.a).addScaledVector(this.forward, .3 + r.next() * .5).setY(this.a.y + r.signed() * .35);
               this.cut('magatsu', this.b, s.yaw + r.signed() * .3, 1.6 + r.next() * .6, r.signed() * 1.3, time + .03 * (i + 1), CUT_SECONDS, key + 17 * (i + 1));
             }
-          // (Not under Jirenga's uppercut, which goes up, nor Tobari's kick out of his crows: the same white ring under every
+          // (Not under Banjaku's uppercut, which goes up, nor Tobari's kick out of his crows: the same white ring under every
           // heavy, the blind critics.)
-          if (big && who !== 'sorrel' && who !== 'dorado' && who !== 'shiun' && who !== 'magatsu' && who !== 'jinlin' && who !== 'jirenga' && who !== 'tobari') this.ring(this.b.copy(actor.group.position).addScaledVector(this.forward, 1.6).setY(actor.group.position.y + .05), time, 2.2);
+          if (big && who !== 'sorrel' && who !== 'dorado' && who !== 'shiun' && who !== 'magatsu' && who !== 'jinlin' && who !== 'banjaku' && who !== 'tobari') this.ring(this.b.copy(actor.group.position).addScaledVector(this.forward, 1.6).setY(actor.group.position.y + .05), time, 2.2);
         }
       }
       if (who === 'wuming' && s.action === 'heavy' && !ender) this.transmission(id, actor, elapsed, key, time);
       if (who === 'tobari' && s.action === 'heavy' && !ender) this.murderOfCrows(id, actor, elapsed, key, time, fighters);
       if (who === 'tobari' && !(s.action === 'heavy' && !ender && s.alive)) this.clones.get(id)?.release();
       if (who === 'sekka' && s.action === 'heavy' && !ender) this.avalanche(id, actor, elapsed, key, time, fighters);
-      if (who === 'jirenga' && s.action === 'heavy' && !ender) this.uprootingFist(id, actor, elapsed, key, time);
+      if (who === 'banjaku' && s.action === 'heavy' && !ender) this.uprootingFist(id, actor, elapsed, key, time);
       if (who === 'ippon' && s.action === 'heavy' && !ender) this.sneeze(id, actor, elapsed, key, time);
       if (who === 'shiun') this.illusion(id, actor, elapsed, key, time);
       if (who === 'magatsu' && s.action === 'ultimate') this.fourHandedSign(actor, elapsed);
@@ -1331,10 +1331,10 @@ export class EmperorEffects {
     if (this.flames.instanceColor) this.flames.instanceColor.needsUpdate = true;
   }
 
-  /** Jirenga's fists, at the blow (`a`): the air breaks where they land; the Uprooting Fist, an uppercut, cuts up through
+  /** Banjaku's fists, at the blow (`a`): the air breaks where they land; the Uprooting Fist, an uppercut, cuts up through
    *  it and breaks the air over them, and the Crushing Heel rocks the floor. */
   private prideBlow(actor: Fighter, heavy: boolean, chain: number, key: number, time: number) {
-    const colour = COLOR.jirenga;
+    const colour = COLOR.banjaku;
     if (heavy) {
       // The uppercut goes on up: streaks of its light off the fist, rising with it (drawn at the one it hit, under the
       // burst, they read as "thin red sticks", the blind critics). (Its crescent, laid as a swing's is, was a bowl on
@@ -1414,13 +1414,13 @@ export class EmperorEffects {
     if (chain === 3) this.ring(this.b.copy(actor.group.position).addScaledVector(this.forward, 1.4).setY(actor.group.position.y + .05), time, 2.6);
   }
 
-  /** Jirenga's Uprooting Fist, his heavy: his power gathers in the right fist as he sinks; the floor cracks under him as he
+  /** Banjaku's Uprooting Fist, his heavy: his power gathers in the right fist as he sinks; the floor cracks under him as he
    *  drives up out of the crouch; and as the fist goes through them and he leaves the floor, the floor he drove off
    *  erupts - rock thrown up from under his feet along the line of the punch, as his card draws it (the streaks of
    *  light rising off the fist are `prideBlow`'s). (Thrown up from under the one he hit, the rock "rose with them,
-   *  not the ground erupting under Jirenga": the blind critics.) */
+   *  not the ground erupting under Banjaku": the blind critics.) */
   private uprootingFist(id: string, actor: Fighter, elapsed: number, key: number, time: number) {
-    const move = MOVES.jirenga.heavy, contact = move.contacts[0], colour = COLOR.jirenga, vfx = VfxKit.for(this.scene);
+    const move = MOVES.banjaku.heavy, contact = move.contacts[0], colour = COLOR.banjaku, vfx = VfxKit.for(this.scene);
     const gather = THREE.MathUtils.smoothstep(elapsed, .04, contact - .08) * (1 - THREE.MathUtils.smoothstep(elapsed, contact, contact + .08));
     if (gather > .03) this.kit.ball(actor.handR, gather * .5, 71, NaN, colour.glow, colour.light, .38);
     const floor = actor.group.position.y;
@@ -1491,7 +1491,7 @@ export class EmperorEffects {
     });
   }
 
-  /** Emperor Jinlin's light, its string and the Whirlpool Tail, at the blow (`a`): the doom ray off his fingertip
+  /** Jinlin's light, its string and the Whirlpool Tail, at the blow (`a`): the doom ray off his fingertip
    *  (and the finger driven in), the tail's gold cuts, and the ring round him where the tail went. */
   private emperorBlow(actor: Fighter, heavy: boolean, chain: number, key: number, time: number) {
     const colour = COLOR['jinlin'];
@@ -1834,7 +1834,7 @@ export class EmperorEffects {
         v.ring(p.x, low, p.z, .25, 2 * Math.min(size, 2), time, .3, 0xffffff, el.rim, .08);
         break;
       case 'spirit': case 'flurry':
-        // Iron Spirit's and HUSH's fists - and Waterspout's, and Mirepoix' kicks: more blows than the eye can
+        // Iron Spirit's and SLUMBER's fists - and Waterspout's, and Mirepoix' kicks: more blows than the eye can
         // follow, all landing round the one that lands.
         for (let i = 0, n = v.n(7, 3); i < n; i++) {
           const r = this.kit.painter.rng.seed(key * 13 + i);
@@ -1842,7 +1842,7 @@ export class EmperorEffects {
         }
         break;
       case 'pressure':
-        // Nigo's: a black crescent edged in crimson, and the pressure's dark smoke off it.
+        // Nigo's: a cinder wave edged in crimson, and the pressure's dark smoke off it.
         this.cutWith(look.cut, .22, this.m3.copy(p).setY(shape === 2 ? floor + .9 : p.y), this.facingYaw(), shape === 2 ? 4 : 3, shape === 1 ? -1.3 : .4, time, .3, key + 5);
         for (let i = 0; i < 3; i++) v.smoke(p.x - f.x * .3 * i, low, p.z - f.z * .3 * i, f.x * 2, .5, f.z * 2, .65, time + i * .03, .42, 0x3a0b12, 0x120306);
         break;
@@ -2004,9 +2004,9 @@ export class EmperorEffects {
       return;
     }
     if (who === 'sekka') {
-      // Shatter Art: Frost Gale - a straight thrown at the empty air, and the air carries it on: the shock breaks
+      // Frost Gale - a straight thrown at the empty air, and the air carries it on: the shock breaks
       // ahead of his fist as it goes (the shot itself is CombatEffects'). The frost stance's snowflake is his stun's
-      // now (`ender`, Last Art: Aurora Shards).
+      // now (`ender`, Aurora Shards).
       if (elapsed >= contact && this.drawn.get(id) !== key) {
         this.drawn.set(id, key);
         this.a.copy(actor.group.position).addScaledVector(this.forward, 1.2).setY(actor.group.position.y + 1.25);
@@ -2047,11 +2047,11 @@ export class EmperorEffects {
       }
     }
     if (who === 'wuming') {
-      // The Lightless Cannon: the ki gathers in the hand drawn back to his hip, and goes out with the beam.
+      // The Withering Beam: the ki gathers in the hand drawn back to his hip, and goes out with the beam.
       const gather = THREE.MathUtils.smoothstep(elapsed, .15, contact) * (1 - THREE.MathUtils.smoothstep(elapsed, contact, contact + .12));
       if (gather > .02) kit.ball(actor.handR, gather * 1.1, 59, NaN, colour.glow, colour.light, .5);
     }
-    if (who === 'jirenga') {
+    if (who === 'banjaku') {
       // Vermilion Seal: his ki gathers in the palm drawn back to his shoulder, and goes with the thrust.
       const gather = THREE.MathUtils.smoothstep(elapsed, .2, contact) * (1 - THREE.MathUtils.smoothstep(elapsed, contact, contact + .1));
       if (gather > .02) kit.ball(actor.handR, gather * 1.2, 67, NaN, colour.glow, colour.light, .5);
@@ -2136,7 +2136,7 @@ export class EmperorEffects {
       // The beam let go: the flash between his hands.
       this.flash(this.a.copy(actor.handL).add(actor.handR).multiplyScalar(.5), 1.2, key, 1.7, STAR_BEAM_GOLD, time);
     }
-    if (who === 'jirenga') {
+    if (who === 'banjaku') {
       // The sphere let go: the flash at his palm, and the air ahead of it breaking.
       this.flash(this.a.copy(actor.handR), 1.2, key, 1.7, colour.glow, time);
       this.crack(this.b.copy(actor.handR).addScaledVector(this.forward, .5), this.forward, time, key, 1.8, 10, colour.glow);
@@ -2191,7 +2191,7 @@ export class EmperorEffects {
     }
   }
 
-  /** Shiun's False Encore, his heavy: as he goes, the copy of him they were watching is left standing; fine cracks
+  /** Shiun's Understudy, his heavy: as he goes, the copy of him they were watching is left standing; fine cracks
    *  run out over it from his chest, and it breaks like a mirror - before he is back behind them, while the lens still
    *  has it before it: once he is back, the lens looks at the one he went for from behind him, and where he stood is
    *  behind them (the blind critics, after release 33: the copy "never on screen", the cracking "a purple flash over
@@ -2226,7 +2226,7 @@ export class EmperorEffects {
     }
   }
 
-  /** Wuming's Petalfall Blade, his heavy: the sign, gone and back behind them, the blade, the cut. */
+  /** Wuming's Lotus Edge, his heavy: the sign, gone and back behind them, the blade, the cut. */
   private transmission(id: string, actor: Fighter, elapsed: number, key: number, time: number) {
     const kit = this.kit, colour = COLOR['wuming'], contact = MOVES['wuming'].heavy.contacts[0];
     // The sign: a glint at the two fingers on his forehead, sharpening until he is gone.
@@ -2328,7 +2328,7 @@ export class EmperorEffects {
     }
     const fade = 1 - THREE.MathUtils.smoothstep(elapsed, move.duration - .6, move.duration), ignite = THREE.MathUtils.smoothstep(elapsed, contact, contact + .25);
     // On the one it caught, as Black Pyre burns: black flames clinging to their body and going with them, and a little
-    // black fire at their feet. As a fence of flames over the floor it was "the Cinder Art: Burning Sea in purple"
+    // black fire at their feet. As a fence of flames over the floor it was "the Burning Sea in purple"
     // (the blind critics, 3 October), and Akagane's is a wall of fire now.
     const victim = actor.state.target ? fighters.get(actor.state.target) : undefined;
     if (victim && victim.state.alive && Math.hypot(victim.group.position.x - center.x, victim.group.position.z - center.z) < move.radius + 1.5) {
@@ -2343,7 +2343,7 @@ export class EmperorEffects {
   }
 
   /** A field of flames rooted on the floor round `center`, out to `radius`: the cards licking upward on their own clocks,
-   *  in a flame palette - Black Pyre's black, the Cinder Art: Burning Sea's fire. */
+   *  in a flame palette - Black Pyre's black, the Burning Sea's fire. */
   private flameField(center: THREE.Vector3, radius: number, ignite: number, fade: number, time: number, palette: number, count: number, tallness = 1) {
     for (let j = 0; j < count && this.flameCount < FLAMES; j++) {
       const a = j * 2.4, r = Math.sqrt((j + .5) / count) * radius * (.35 + .65 * ignite), phase = (time * (1.1 + (j % 3) * .25) + j * .618) % 1;
@@ -2369,7 +2369,7 @@ export class EmperorEffects {
     return field && Math.abs(field.since - actor.state.actionStarted) < .25 ? out.copy(field.at) : this.aimOf(actor, fighters, out, range);
   }
 
-  /** Akagane's Cinder Art: Burning Sea: the fire pours out of him in a stream at each burn, and burns over the ground
+  /** Akagane's Burning Sea: the fire pours out of him in a stream at each burn, and burns over the ground
    *  where it lands (the cast's endpoint), out to the move's reach. */
   private majesticFlame(id: string, actor: Fighter, elapsed: number, key: number, time: number, fighters: ReadonlyMap<string, Fighter>) {
     const move = MOVES.akagane.special, contact = move.contacts[0], last = move.contacts[move.contacts.length - 1];
@@ -2380,7 +2380,7 @@ export class EmperorEffects {
     // The stream: from his mouth out to the field, while he breathes.
     const breath = THREE.MathUtils.smoothstep(elapsed, contact - .1, contact) * (1 - THREE.MathUtils.smoothstep(elapsed, last, last + .25));
     if (breath > .03) {
-      // A torrent, widening from his mouth until it is wider than a man is tall: the Cinder Art: Burning Sea is a sea
+      // A torrent, widening from his mouth until it is wider than a man is tall: the Burning Sea is a sea
       // of fire, and drawn as a stream into a fence over the floor it was "Tobari's Black Pyre in orange" (the blind
       // critics, 3 October).
       const mouth = this.eye(actor, this.axis), landing = this.tip.set(center.x, floor + 1.1, center.z);
@@ -2425,7 +2425,7 @@ export class EmperorEffects {
     });
   }
 
-  /** Heaven's Anvil's meteor: once the fan's slash has held them, the rock comes down out of the sky onto them,
+  /** Copper Star's meteor: once the fan's slash has held them, the rock comes down out of the sky onto them,
    *  faster as it falls, burning behind; gone when it lands (the crater is `handle`'s). It streaks in low from far
    *  beyond them, so the cinematic's camera sees it come; near the lens it dissolves (`meteorMaterial`): from Akagane's
    *  side it crossed the camera and filled the frame (the blind critic, 3 October: "a flat salmon disc"), and dropped
@@ -2642,7 +2642,7 @@ export class EmperorEffects {
     }
     if (who === 'akagane') this.meteor(id, actor, elapsed, time, fighters);
     if (who === 'asahi') {
-      // Lantern Rite: First Light: once it has held them, the blade burns through the leap until it comes down.
+      // First Light: once it has held them, the blade burns through the leap until it comes down.
       const burn = THREE.MathUtils.smoothstep(elapsed, move.contacts[0] + .1, move.contacts[0] + .4) * (1 - THREE.MathUtils.smoothstep(elapsed, finish, finish + .2));
       if (burn > .03 && actor.state.confirmedAt !== undefined) {
         actor.strikePoint(this.tip);
@@ -2701,7 +2701,7 @@ export class EmperorEffects {
       if (charge > .03) kit.ball(actor.handR, .2 + charge * .65, 137, NaN, colour.glow, colour.light, .6);
     }
     if (who === 'tobari') {
-      // Red Moon Reverie: his red eye's glow at his eye from the cast, held through the illusion until it breaks them.
+      // Crow's Nightmare: his red eye's glow at his eye from the cast, held through the illusion until it breaks them.
       const look = THREE.MathUtils.smoothstep(elapsed, .05, move.contacts[0]) * (1 - THREE.MathUtils.smoothstep(elapsed, finish, finish + .2));
       if (look > .03) kit.ball(this.eye(actor, this.a), .24 * look, 113, NaN, RED_EYE, colour.light, .2);
     }
@@ -2739,7 +2739,7 @@ export class EmperorEffects {
         }
       }
     }
-    if (who === 'jirenga') {
+    if (who === 'banjaku') {
       // The Mountain-Felling Fist: his power burns in the fist he raises through the leap, until it comes down through them.
       // (At 1.3 its light, a hand's breadth from his chest, lit the whole of him white: "the ultimate erases his
       // model", the blind critic, 3 October.)
@@ -2871,11 +2871,11 @@ export class EmperorEffects {
       }
     }
     if (who === 'shiun') {
-      // BLACK CONFESSIONAL: the pressure gathers in the hand he points with until the coffin closes.
+      // FERMATA: the pressure gathers in the hand he points with until the coffin closes.
       const cast = THREE.MathUtils.smoothstep(elapsed, .05, move.contacts[0]) * (1 - THREE.MathUtils.smoothstep(elapsed, move.contacts[0], move.contacts[0] + .25));
       if (cast > .03) kit.ball(actor.handR, cast * .7, 37, NaN, colour.glow, colour.light, .5);
       // The coffin: once the opener holds them, its black walls come in round them and the lid down on them, shut
-      // until the blow, which bursts it outward. (A see-through dome before - "BLACK CONFESSIONAL's black coffin is a faint
+      // until the blow, which bursts it outward. (A see-through dome before - "FERMATA's black coffin is a faint
       // see-through bubble", the blind critic, 3 October.)
       const victim = actor.state.target ? fighters.get(actor.state.target) : undefined;
       const shut = THREE.MathUtils.smoothstep(elapsed, move.contacts[0], move.contacts[0] + .45), burst = THREE.MathUtils.clamp((elapsed - finish) / .3, 0, 1);

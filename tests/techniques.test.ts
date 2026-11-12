@@ -138,7 +138,7 @@ describe('techniques: the heavy string and the delay', () => {
     expect(comboMove('taisei', 'hhh')!.guardBreak).toBe(true);
   });
   it('every released fighter reaches the heavy string\'s third blow, a heavy that launches too', async () => {
-    // Fourteen fighters' heavies launch (Konta's Senpugan, Taisei's Cloudstep, Ouga's Haou-Dan...):
+    // Fourteen fighters' heavies launch (Konta's Kazeyose, Taisei's Cloudstep, Ouga's Crown Burst...):
     // the second blow rises to meet the body thrown, and until 2 November the third press up there was the air heavy -
     // their Crushing Blow could not be thrown. Each press made as a player makes it: once the blow before has landed.
     const missed: string[] = [];

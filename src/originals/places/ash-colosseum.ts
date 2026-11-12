@@ -316,7 +316,7 @@ function beyond(f: Forge) {
   f.add('glow', new THREE.CircleGeometry(rim * .85, 24).rotateX(-Math.PI / 2).translate(x, H - 12.5, z), 0xff7a2a);
 }
 
-/** The Hidden Ash on the benches: grey and ochre coats, ash-dusted hoods, painted in code, a few with an arm up. */
+/** Ashwood on the benches: grey and ochre coats, ash-dusted hoods, painted in code, a few with an arm up. */
 function crowd(c: DressContext, benches: { side: number; tier: number }[]) {
   const r = rand(100);
   const coats = ['#5a524a', '#8a6a3a', '#3a3a40', '#7a3a2a', '#6a6a5a', '#4a3a30', '#9a8a6a', '#2e2e34'];
@@ -346,7 +346,7 @@ function crowd(c: DressContext, benches: { side: number; tier: number }[]) {
   crowdCards(c, atlas, 8, 2, spots, { name: 'ash colosseum crowd', aspect: .5, shade: .85, sway: .05 });
 }
 
-/** The Hidden Ash's banners down the podium's face between the buttresses. */
+/** Ashwood's banners down the podium's face between the buttresses. */
 function banners(c: DressContext) {
   const banner = ashBanner();
   for (let side = 0; side < 4; side++) {

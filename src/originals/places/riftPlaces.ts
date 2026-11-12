@@ -8,6 +8,8 @@ import { lookStageMaterial } from '../../render/look/stageMaterials';
 import { addShaderPatch, replaceOnce } from '../../render/look/shaderPatch';
 import { ARMOURY_WATER, STILL_WATER, armouryBeyond, armouryGround, armouryProp, type Beyond } from './drownedArmoury';
 import { STAR_TEAR, starBeyond, starGround, starProp } from './fallenStar';
+import { WATCH_SHAFT, villageProp, villageStanding } from './burningVillage';
+import { fireBowl } from './riftFireBowls';
 
 export function riftPlaceGround(stage: RiftStageId, x: number, z: number, halfX: number, halfZ: number): number | undefined {
   if (stage === 'rift-swords') return armouryGround(x, z, halfX, halfZ);
@@ -19,7 +21,14 @@ export function riftPlaceGround(stage: RiftStageId, x: number, z: number, halfX:
 export function riftPlaceProp(k: Sculpt, p: RiftProp, stage: RiftStageId, fires: FireSpot[]): boolean {
   if (stage === 'rift-swords') return armouryProp(k, p, fires);
   if (stage === 'rift-eclipse') return starProp(k, p, fires);
+  if (stage === 'rift-village') return villageProp(k, p, fires);
+  if (fireBowl(k, p, stage, fires)) return true; // The Shrine's and the Grove's stone lanterns, fire bowls (riftFireBowls.ts)
   return false;
+}
+
+/** What stands with a place's props whether or not they wear their models, drawn into the place's own merge after them. */
+export function riftPlaceStanding(k: Sculpt, stage: RiftStageId, props: readonly RiftProp[], fires: FireSpot[]) {
+  if (stage === 'rift-village') villageStanding(k, props, fires);
 }
 
 const ARMOURY_OWN = new Set<RiftProp['kind']>(['statue', 'rock', 'sword', 'grave', 'stake']);
@@ -27,6 +36,8 @@ const STAR_OWN = new Set<RiftProp['kind']>(['stone', 'altar', 'stake', 'rock', '
 export function riftPlaceDress(stage: RiftStageId, p: RiftProp): Dress | undefined | 'main' {
   if (stage === 'rift-swords' && ARMOURY_OWN.has(p.kind)) return undefined;
   if (stage === 'rift-eclipse' && STAR_OWN.has(p.kind)) return undefined;
+  // The village's watchtower: the bell tower's model cut below its belfry, fitted to the shaft's height (burningVillage.ts).
+  if (stage === 'rift-village' && p.kind === 'tower') return { id: 'watch-tower', h: WATCH_SHAFT };
   return 'main';
 }
 

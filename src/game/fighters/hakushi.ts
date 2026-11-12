@@ -9,7 +9,7 @@ export const HAKUSHI_MOVES: Record<CoreSlot, MoveDefinition> = {
     stamina:10, cooldown:.44, stun:.32, knockback:3.8, lunge:3.3, style:'melee' },
   heavy: { name:'Lion\'s Pearl', duration:1, contacts:[.58], damage:65, range:2.65, radius:.85,
     stamina:26, cooldown:1.53, stun:.8, knockback:8.4, lunge:4.8, style:'melee', outcome:'launch', lift:5.6 },
-  special: { name:'Cinder Art: Lion\'s Breath', duration:1.15, contacts:[.69], damage:116, range:26, radius:1.05,
+  special: { name:'Lion\'s Breath', duration:1.15, contacts:[.69], damage:116, range:26, radius:1.05,
     stamina:34, cooldown:4.8, stun:.8, knockback:8.5, speed:27, style:'projectile', aimOnRelease:true },
   ultimate: { name:'Lion Dance: Over the Cliff', duration:3.25, contacts:[.52,1.82,2.6], schedule:[53,55,228],
     damage:53, finisherDamage:184, range:2.85, radius:.95, stamina:0, cooldown:24,

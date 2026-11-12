@@ -26,7 +26,7 @@ describe('Last Stand real siege contacts',()=>{
   try{for(let seq=1;seq<=100;seq++){const input={seq,moveX:0,moveZ:1,yaw:0};prediction.submit(input);g.submit('me',input);g.step();const own=g.sim.actors.get('me')!.state;expect(prediction.sample(1/60,own)!.z).toBeCloseTo(own.z,5);}}finally{prediction.stop();}
  });
  it('lands repeated authored melee contacts on a physical barricade, with no proximity damage',()=>{
-  const sim=new ArenaSimulation({roomMode:'training',trainingBot:false,respawn:false,stage:'hidden-ash',collision:villageCollision()});clean.push(sim);sim.status='active';
+  const sim=new ArenaSimulation({roomMode:'training',trainingBot:false,respawn:false,stage:'ashwood',collision:villageCollision()});clean.push(sim);sim.status='active';
   const structures=new VillageStructures(sim),target=sim.actors.get('village-west')!.state,def=ENEMIES['tribunal-guard'];
   sim.addCombatant('raider',{enemy:def.id,team:'horde',kit:kitOf(def),maxHp:500,spawn:{x:target.x,y:0,z:target.z-2.8},armour:false});
   const body=sim.actors.get('raider')!.state,brain=new SiegeBrain('raider',def,0,.2);let casts=0,hits=0;
@@ -35,7 +35,7 @@ describe('Last Stand real siege contacts',()=>{
   const hp=structures.hp;for(let i=0;i<3*60;i++){sim.command('raider',{moveX:0,moveZ:0,yaw:0});sim.step(1/60);}structures.sync();expect(structures.hp).toBe(hp);
  });
  it('unopposed raiders navigate to village constructs and damage them with actual hit events',async()=>{
-  const g=new ObjectiveMatch('last-stand',await createRapierCollision('hidden-ash'),9,'solo');clean.push(g);g.add('me','konta','Me');g.start();step(g,3.1);g.sim.place('me',{x:38,y:0,z:40});
+  const g=new ObjectiveMatch('last-stand',await createRapierCollision('ashwood'),9,'solo');clean.push(g);g.add('me','konta','Me');g.start();step(g,3.1);g.sim.place('me',{x:38,y:0,z:40});
   let landed=0;for(let i=0;i<90*60&&g.view.phase!=='over';i++){g.step();landed+=g.snapshot(true).events.filter(e=>e.kind==='hit'&&e.targetId?.startsWith('village-')).length;}
   expect(landed).toBeGreaterThan(5);expect(g.siege!.view.hp).toBeLessThan(12000);expect(g.siege!.view.structures.some(s=>s.hitAt>0)).toBe(true);
  },30_000);   // a whole siege simulated: about 4.3 s alone, over the default 5 s on a busy machine

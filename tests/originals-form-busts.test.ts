@@ -19,7 +19,7 @@ const SAME_LOOK: Partial<Record<FighterId, string>> = {
   highsun: 'Highsun, NO SHADOW: his awakened body is his base body (the owner\'s report)',
   onigawara: 'Onigawara, UNMUZZLED: the same body',
   ume: 'Ume, IRON BLOSSOM: the same body',
-  kusushi: 'Kusushi, GRAND CHAMPION: the same body and head; a rope belt at her waist, under the bust',
+  kusushi: 'Kusushi, YOKOZUNA: the same body and head; a rope belt at her waist, under the bust',
   hikui: 'Hikui, FIRE-EATER: the same body',
   akayuri: 'Akayuri, SCARLET BLOOM: the same body',
   rotfalke: 'Rotfalke, MOTHER\'S WINGS: the same body',

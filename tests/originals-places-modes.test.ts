@@ -64,7 +64,7 @@ describe('the Fallen Star (rift-eclipse)', () => {
   });
 
   it('is named for its concept, here and in Last Stand\'s chapter', () => {
-    const star = LOCATIONS.find(l => l.id === 'the-offering')!;
+    const star = LOCATIONS.find(l => l.id === 'fallen-star')!;
     expect(star.name).toBe('The Fallen Star');
     expect(ORIGINAL_STAGES['rift-eclipse'].name).toBe('The Fallen Star');
     expect(SIEGE_CHAPTERS.find(c => c.id === 'eclipse')!.title).toBe('UNDER THE FALLEN STAR');
@@ -97,9 +97,9 @@ describe('the Torn Plain (rift-war, the mode open since rift-war)', () => {
   });
 });
 
-describe('Last Stand\'s village (hidden-ash): back on the earlier CC0 kit (stages-old, 4 November 2026)', () => {
+describe('Last Stand\'s village (ashwood): back on the earlier CC0 kit (stages-old, 4 November 2026)', () => {
   it('builds no Basalt Hive: the earlier kit village loads as main loads it, the backdrop built in code', () => {
-    const village = fs.readFileSync('src/render/objectives/HiddenAshVillage.ts', 'utf8');
+    const village = fs.readFileSync('src/render/objectives/AshwoodVillage.ts', 'utf8');
     expect(village).not.toMatch(/basaltHive/);
     expect(fs.readFileSync('src/render/objectives/ObjectiveScenery.ts', 'utf8')).not.toMatch(/basaltHive/);
     expect(fs.existsSync('src/originals/places/basaltHive.ts')).toBe(false);
@@ -108,7 +108,7 @@ describe('Last Stand\'s village (hidden-ash): back on the earlier CC0 kit (stage
 
   it('keeps the gate\'s passage and every defence box the earlier', async () => {
     const { STAGE_LANDMARKS } = await import('../src/game/environmentLayout');
-    expect(STAGE_LANDMARKS['hidden-ash']).toEqual([
+    expect(STAGE_LANDMARKS['ashwood']).toEqual([
       { x: 0, y: 12.2, z: 20, halfX: 9.5, halfY: 1, halfZ: 1.7 },
       { x: -8.7, y: 6, z: 20, halfX: .7, halfY: 6, halfZ: 1.5 }, { x: 8.7, y: 6, z: 20, halfX: .7, halfY: 6, halfZ: 1.5 },
       { x: -24, y: 4, z: 20, halfX: 16, halfY: 4, halfZ: 1 }, { x: 24, y: 4, z: 20, halfX: 16, halfY: 4, halfZ: 1 },

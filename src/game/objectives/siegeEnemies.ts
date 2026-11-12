@@ -6,7 +6,7 @@ const attack=(name:string,heavy=false):EnemyMove=>({name,slot:heavy?'heavy':'lig
 const projectile=(name:string,element:EnemyMove['element']):EnemyMove=>({name,slot:'special',clip:['cast'],clipSeconds:2.5,duration:2.2,contacts:[1.42],damage:24,range:18,radius:.45,stamina:0,cooldown:8,stun:.3,knockback:3,style:'projectile',speed:27,minRange:4,maxRange:16,element});
 interface Family {id:string;name:string;series:string;model:string;motion?:'humanoid';gunner?:string;heavy?:string;heavyNative?:boolean;native?:'cipher';element?:EnemyMove['element'];height?:number;}
 const families:Family[]=[
- {id:'raider',name:'Ash raider',series:'Hidden Ash',model:own('ash-raider'),motion:'humanoid',element:'steel',height:1.9},
+ {id:'raider',name:'Ash raider',series:'Ashwood',model:own('ash-raider'),motion:'humanoid',element:'steel',height:1.9},
  {id:'wraith',name:'Cinder wraith',series:'Cinder Requiem',model:own('ash-wraith-stalker'),motion:'humanoid',heavy:own('ash-wraith-golem'),heavyNative:true,element:'void-ray'},
  {id:'imp',name:'Glare imp',series:'Last Sun',model:own('cell-scout'),element:'ki',height:1.45},
  {id:'corsair',name:'Dune corsair',series:'Dust Sea',model:own('beast-raider'),element:'sound'},

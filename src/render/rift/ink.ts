@@ -20,7 +20,7 @@ export interface InkSky {
   stars: number;
   /** The sun or moon: its angular radius (radians), its colour (sRGB, drawn
    *  brighter than paper), the halo it clears in the sky's tone round it, and
-   *  whether it is a black disc in a corona (the offering's). */
+   *  whether it is a black disc in a corona (fallen-star's). */
   disc?: { size: number; color: number; glow: number; eclipse?: boolean };
 }
 export interface InkPage {
@@ -32,10 +32,10 @@ export interface InkPage {
   tone: number;
   sky: InkSky;
   /** The Rift's own marks: what a danger is drawn in (warnings, a spawning rift's edge), what it flashes to
-   *  as it lands, and the target's mark. Red, but on the offering's red page, ink and paper. */
+   *  as it lands, and the target's mark. Red, but on fallen-star's red page, ink and paper. */
   danger?: number; hot?: number; accent?: number;
   /** The lightest tone the horde may take (0 ink - 1 paper): lower where the page is pale (snow) or
-   *  coloured (the offering's red), so a crowd reads as figures, not as the ground they stand on. */
+   *  coloured (fallen-star's red), so a crowd reads as figures, not as the ground they stand on. */
   crowd?: number;
   /** How far the haze takes to close (200 m where it is not given): further where a landmark
    *  stands far out and must still read (the Harbour's wave). */

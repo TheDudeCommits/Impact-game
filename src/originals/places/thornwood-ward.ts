@@ -7,6 +7,7 @@ import { Forge, detail } from './forge';
 import { heroAir } from '../../render/stages/hero';
 import { Beacons } from '../../render/stages/glow';
 import { drawn, rand, repaint, tinted, type Recolor } from './remake';
+import { fireBowl } from './standingFire';
 import { surfaces, type Surface } from './cc0';
 import { worldFloor } from './finish';
 import { STAGE_LANDMARKS } from '../../game/environmentLayout';
@@ -29,7 +30,7 @@ export async function dress(c: DressContext) {
   };
   await Promise.all([
     c.sky({ url: '/assets/environment/br/sky-thornwood-night.webp', rotation: 0, drift: .00005 }),
-    kit.load(['cc0/covered-car', 'cc0/utility-box', 'br/stone-lamp', 'br/meshy-rubble', 'asian/ume', 'asian/bush', 'own/thorn-tree', 'own/thorn-tower', 'own/thorn-kiosk', 'own/thorn-stair']),
+    kit.load(['cc0/covered-car', 'cc0/utility-box', 'br/meshy-rubble', 'asian/ume', 'asian/bush', 'own/thorn-tree', 'own/thorn-tower', 'own/thorn-kiosk', 'own/thorn-stair']), // No stone lamp
     surfaces(c, ['asphalt-cracked', 'grass-leafy'] as const).then(s => { roadSurfaces = s; }),
   ]);
   ground(c, roadSurfaces);
@@ -49,7 +50,7 @@ export async function dress(c: DressContext) {
     }
   }
   for (const p of props) {
-    if (p.draw === 'monument') kit.place('br/stone-lamp', { x: p.x, z: p.z, rot: -2.2, scale: 2.2, tint: 0x7a8070 });
+    // (The square's monument is a cold stone fire bowl on its plinth: monument().)
     if (p.draw === 'tree') kit.place('asian/ume', { x: p.x, z: p.z, y: .25, rot: p.x * 1.7, scale: .8 + (Math.abs(p.z * 7.3) % 1) * .2 });
   }
   const train = props.find(p => p.draw === 'train-car');
@@ -311,6 +312,15 @@ function street(c: DressContext) {
       f.cyl('steel', b.x, 0, b.z, .14, .16, 2.6, 0x4a504a, { sides: 8 });
       f.beam('steel', [b.x, 2.5, b.z], [b.x + 4.5, 5.2, b.z - 2.5], .14, 0x4a504a);
     }
+  }
+  // The square's monument in its box (1.9 m square, 2.3 m high): a cold stone fire bowl on a stepped plinth, nothing lit
+  // in it.
+  const monument = (STAGE_PROPS['thornwood-ward'] ?? []).find(p => p.draw === 'monument');
+  if (monument) {
+    const { x, z } = monument;
+    f.box('concrete', x, 0, z, 1.8, .34, 1.8, 0x7a8070, { rot: -2.2 });
+    f.box('concrete', x, .34, z, 1.36, .26, 1.36, 0x7a8070, { rot: -2.2 });
+    fireBowl(f, { iron: 'concrete', stone: 'concrete', glow: 'dark' }, x, .6, z, .62, 1.55, { tint: 0x7a8070, cold: true });
   }
   f.done();
 }

@@ -62,7 +62,7 @@ import { FIGHTER_SERIES as CARD_SERIES } from '../game/fighterSeries';
 /** The soundtrack's series for each series a card names: a fighter's music is its card's series (src/config.ts, read
  *  here as the server's copy, src/game/fighterSeries.ts), so it is written in one place. */
 const SOUNDTRACK:Readonly<Record<string,AnimeSeries>>={
-  'Last Sun':'last-sun',Konta:'konta','Hidden Ash':'konta','Dust Sea':'dust-sea','Gilded Ruin':'gilded-ruin',
+  'Last Sun':'last-sun',Konta:'konta','Ashwood':'konta','Dust Sea':'dust-sea','Gilded Ruin':'gilded-ruin',
   'Cinder Requiem':'cinder-requiem','Hex Fallout':'hex-fallout','Grave Hound':'grave-hound','Salvage Wilds':'salvage-wilds',
 };
 export const FIGHTER_SERIES:Record<string,AnimeSeries>=Object.fromEntries(Object.entries(CARD_SERIES).flatMap(([id,series])=>SOUNDTRACK[series]?[[id,SOUNDTRACK[series]]]:[]));

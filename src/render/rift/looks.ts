@@ -87,7 +87,7 @@ export const RIFT_LOOKS: Record<RiftStageId, LookPreset> = {
     room: { albedo: 1.1, key: 1 },
   },
   'rift-eclipse': {
-    // The Offering: a black sun in a ring of fire over a field of the dead.
+    // Dusk: a black sun in a ring of fire over a field of the dead.
     // Crimson light from the corona, violet fill, and the fighters rimmed red.
     key: { color: 0xff5a3a, intensity: 4, dir: dir(0, .36, 1) },
     hemi: { sky: 0x5a0a16, ground: 0x1a0406, intensity: 1.35 },

@@ -32,7 +32,7 @@ export const HELD_SOUNDTRACK: ReadonlySet<string> = HELD;
  *  | training 2        | set-sail                 105.9 s | the bouncing fiddle tune: light enough to practise under
  *  | arcade 1          | rift-unbound             120.0 s | written as the Rift run's battle march
  *  | arcade 2          | embers-in-the-black-snow 113.7 s | "a hundred years of ash and no dawn", a riff that drives on: the endless horde
- *  | last-stand 1      | gale-runner              102.9 s | the Hidden Ash's own theme, for the gate the mode defends
+ *  | last-stand 1      | gale-runner              102.9 s | Ashwood's own theme, for the gate the mode defends
  *  | last-stand 2      | gilded-hour              114.0 s | the hour struck on a bell while the wood blocks tick, brass and choir: wave after wave against the clock
  *  | bad-blood 1       | cinder-requiem           111.2 s | the reaper's requiem, a tolling bell and a driving low riff: team elimination
  *  | bad-blood 2       | grave-road               110.0 s | grim and heavy, a funeral bell over a choir: the fallen citadel

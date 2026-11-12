@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { PROGRESS_LIMITS, anything, applyReport, cleanCareer, cleanRift, emptyState, fold, forward, plausibleFacts, plausibleMatch, readReport, type ProgressState, type SyncAnswer, type SyncBody } from '../../game/progress/rules';
+import { currentSaved } from '../../game/savedIds';
 
 export const PROGRESS_CLOCK = {
   /** Seconds of play taken for each second of the wall clock since the last. */
@@ -51,6 +52,8 @@ export class ProgressStore {
       return undefined;
     }
     if (kept?.v !== 1 || kept.pk !== pk || !kept.state || !kept.base) return undefined;
+    // (Renamed ids - a fighter's, a boss's, a place's - are read as they are now: src/game/savedIds.ts.)
+    kept.state = currentSaved(kept.state); kept.base = currentSaved(kept.base);
     this.remember(kept);
     return kept;
   }

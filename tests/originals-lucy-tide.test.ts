@@ -28,7 +28,7 @@ beforeAll(async () => {
   assets = { body, form, taisei: await loadRig(FIGHTERS.taisei.model) };
 }, 120_000);
 
-/** Lucy at the origin facing +z, a Taisei `gap` metres ahead, Grand Tide thrown at him from 1 s. */
+/** Lucy at the origin facing +z, a Taisei `gap` metres ahead, Spring Tide thrown at him from 1 s. */
 function scene(gap: number, verdict: { confirmed?: boolean; whiffed?: boolean; awakened?: boolean } = {}) {
   const f = new Fighter({ ...base('gummy'), id: 'gummy', ultimate: 100, awakened: !!verdict.awakened }, assets.body);
   f.attachForm(assets.form);
@@ -47,7 +47,7 @@ function scene(gap: number, verdict: { confirmed?: boolean; whiffed?: boolean; a
   return { f, at, dispose: () => { f.dispose(); victim.dispose(); } };
 }
 
-describe('Lucy\'s Grand Tide', () => {
+describe('Lucy\'s Spring Tide', () => {
   it('is the game\'s, on the move\'s own clock, in his own body', () => {
     expect(LUCY_TIDE).toBe(!!ORIGINALS.gummy);
     expect(LUCY_TIDE).toBe(true);

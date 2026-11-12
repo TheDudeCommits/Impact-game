@@ -19,7 +19,7 @@ export const ORIGINAL_EMBLEMS: Partial<Record<FighterId, Emblem>> = {
   sorrel: mark('紅', 'the crimson wake'),
   dorado: mark('陽', 'the sun on the far horizon'),
   'wuming': mark('無', 'Wuming, the nameless'),
-  jirenga: mark('石', 'the stone guardian'),
+  banjaku: mark('石', 'the stone guardian'),
   'jinlin': mark('鱗', "the dragon's scale"),
   'gohaku': mark('猿', 'the white ape'),
   tobari: mark('鴉', 'the ash crow'),

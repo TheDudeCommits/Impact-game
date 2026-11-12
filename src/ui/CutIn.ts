@@ -85,7 +85,7 @@ export class CutIn {
     card.querySelector('small')!.textContent = def.name;
     name.textContent = move;
     this.element.hidden = false;
-    // A long name ("Sanctum: Carrion Altar") is set smaller until it fits the card's widest.
+    // A long name ("Carrion Field") is set smaller until it fits the card's widest.
     const room = card.clientWidth, need = name.scrollWidth;
     if (room > 0 && need > room) name.style.fontSize = `${Math.max(.6, room / need).toFixed(3)}em`;
     this.place(card, side, avoid);

@@ -524,7 +524,8 @@ export class Hud {
     // Their camera proxy is not a roster fighter and must never show Taisei's portrait.
     if(target?.enemy==='rift-unit')target=undefined;
     // The ball modes' target key is the ball cam (render/ball/BallCam.ts), not a lock: the strip under the arena says so.
-    {const ball=ballOf(snapshot),label=ball?.football?'SPORT':ball?'BALL CAM':'LOCK ON';if(label!==this.targetLabel){this.targetLabel=label;this.refreshBindingHints();}}
+    // (The volleyball rules' own keys - glyphs.ts VOLLEY.)
+    {const ball=ballOf(snapshot),label=ball?.football?'SPORT':ball?.volley?'VOLLEY':ball?'BALL CAM':'LOCK ON';if(label!==this.targetLabel){this.targetLabel=label;this.refreshBindingHints();}}
     if(this.lastOwnHp!==null&&self.hp<this.lastOwnHp-1)this.pulseHit('own');
     this.lastOwnHp=self.hp;
     if(target?.id!==this.lastFoeId){this.lastFoeId=target?.id??null;this.lastFoeHp=null;}

@@ -84,7 +84,7 @@ describe('RANDOM', () => {
     expect([...seen].sort()).toEqual([...pool].sort());
   });
   it('answers a lone place with it, even when it was the last', () => {
-    expect(dealPlace(['hidden-ash'], 'hidden-ash', () => 0.99)).toBe('hidden-ash');
+    expect(dealPlace(['ashwood'], 'ashwood', () => 0.99)).toBe('ashwood');
     expect(dealPlace(pool, undefined, () => 1)).toBe(pool.at(-1));
   });
   it('is dealt at the start for Training, the bot Duel and Bad Blood; and by their own deck for the royale', () => {

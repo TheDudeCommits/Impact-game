@@ -34,10 +34,10 @@ describe('the G card names its area move in 16 characters or fewer', () => {
   });
 
   it('by the name players know, where its own runs longer; the banner and the seal keep the full name', () => {
-    expect(areaMoveCard(MOVES.shirokane.area)).toBe('DUST FALL');
+    expect(areaMoveCard(MOVES.shirokane.area)).toBe('DUST CURTAIN');
     expect(areaMoveCard(MOVES.gummy.area)).toBe('MONSOON');
     expect(areaMoveCard(MOVES.shidare.area)).toBe(SHIDARE_CARD);
-    expect(MOVES.shirokane.area.name).toBe('Ash Art: Great Dust Fall');
+    expect(MOVES.shirokane.area.name).toBe('Dust Curtain');
     // A short name is its own card.
     expect(areaMoveCard(MOVES.nigo.area)).toBe(MOVES.nigo.area.name.toUpperCase());
     for (const id of Object.keys(FIGHTERS) as FighterId[]) {
@@ -59,7 +59,7 @@ describe('the G card names its area move in 16 characters or fewer', () => {
 
   it('a borrowed area move carries its card too', () => {
     setActiveKit(kit('bellows', { area: { from: 'shirokane' } }));
-    expect(slotNames(player('bellows'), 'area')).toMatchObject({ from: 'shirokane', short: 'DUST FALL', name: MOVES.shirokane.area.name });
+    expect(slotNames(player('bellows'), 'area')).toMatchObject({ from: 'shirokane', short: 'DUST CURTAIN', name: MOVES.shirokane.area.name });
   });
 
   it('turns away a card over 16 characters', () => {

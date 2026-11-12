@@ -183,7 +183,7 @@ describe('aimed as it leaves the hand, and following in flight', () => {
 
   it('keeps every field the pixel fork draws a shot by, `end` moving under them tick by tick', () => {
     const { shot, ends } = throwAt('konta', 9, () => ({ moveX: 1 }));
-    expect(shot).toMatchObject({ actorId: 'a', fighter: 'konta', slot: 'ultimate', move: { name: 'Kitsunebi-Dama', radius: 3, style: 'bomb' } });
+    expect(shot).toMatchObject({ actorId: 'a', fighter: 'konta', slot: 'ultimate', move: { name: 'Azure Foxfire', radius: 3, style: 'bomb' } });
     expect(typeof shot!.castId).toBe('number');
     for (const key of ['start', 'end'] as const) for (const axis of ['x', 'y', 'z'] as const) expect(typeof shot![key][axis]).toBe('number');
     expect(shot!.duration).toBeGreaterThan(0);

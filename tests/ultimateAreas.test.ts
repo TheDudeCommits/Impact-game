@@ -62,7 +62,7 @@ describe('stepping out of the ring gets you out of the blast', () => {
     expect(run.taken('a'), 'caught at the wall').toBeGreaterThan(0);
     expect(run.taken('bot'), 'and the bystander 6.8 m off was never in it').toBe(0);
     // The same run, and a sidestep back off the wall into the hall a fifth of a second before it lands (from 3.8 m the
-    // Kitsunebi-Dama is in the air for 0.18 s: a sidestep timed onto it, not one in answer to it).
+    // Azure Foxfire is in the air for 0.18 s: a sidestep timed onto it, not one in answer to it).
     const out = scene(fighter, { x: -.8, z: 3.4 }, t => Math.abs(t - (run.land - .2)) < DT / 2 ? { moveZ: -1, dash: true } : t < 1.5 ? { moveZ: 1 } : {});
     expect(out.taken('a'), 'A got out').toBe(0);
     expect(out.taken('bot')).toBe(0);

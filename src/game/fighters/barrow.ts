@@ -2,16 +2,16 @@ import type { CoreSlot } from '../types';
 import type { MoveDefinition } from '../moves';
 import type { ComboRow } from '../combos';
 
-/** Darkness and quakes belong to committed manual inputs. Sinkhole is one
+/** Darkness and quakes belong to committed manual inputs. Tar Pit is one
  * released projectile with a pull; the emperor state never deals passive damage. */
 export const BARROW_MOVES: Record<CoreSlot, MoveDefinition> = {
   light: { name: 'Tar Jab', duration: .47, contacts: [.168], damage: 22,
     range: 2.25, radius: .7, stamina: 11, cooldown: .47, stun: .31,
     knockback: 3.1, lunge: 3.6, style: 'melee' },
-  heavy: { name: 'Stolen Quake', duration: 1, contacts: [.60], damage: 65,
+  heavy: { name: 'Wreck Quake', duration: 1, contacts: [.60], damage: 65,
     range: 2.7, radius: 1.05, stamina: 28, cooldown: 1.23, stun: .8,
     knockback: 10, lunge: 4.0, style: 'melee', outcome: 'groundBounce' },
-  special: { name: 'Sinkhole', duration: 1.42, contacts: [.72], damage: 116,
+  special: { name: 'Tar Pit', duration: 1.42, contacts: [.72], damage: 116,
     range: 23, radius: 1.1, stamina: 35, cooldown: 5.6, stun: .95,
     knockback: -11, speed: 18, style: 'projectile', aimOnRelease: true },
   ultimate: { name: 'Jettison: Full Hold', duration: 3.92,
@@ -25,7 +25,7 @@ export const BARROW_COMBOS: ComboRow = {
   lh: { name: 'Pitch Backfist', range: 2.5, radius: .8 },
   llh: { name: 'Tremor Uppercut', range: 2.6, radius: .85 },
   lllh: { name: 'Reef Breaker', range: 2.9, radius: 1.1 },
-  llls: { name: 'Sinkhole Crash', range: 2.9, radius: 1.1 },
+  llls: { name: 'Tar Pit Crash', range: 2.9, radius: 1.1 },
   airHeavy: { name: 'Glutton Heel', range: 2.55, radius: 1 },
   airSpecial: { name: 'Tarfall', radius: 3.5 },
 };
@@ -37,7 +37,7 @@ export const BARROW_CONTACTS = {
     llls: .59 / 1.20, airHeavy: .46 / .94, airSpecial: .56 / 1.1 },
 } as const;
 export const BARROW_AWAKENING = {
-  name: "BOTTOMLESS", clip: 'Emperor Ambition', duration: 1.8,
+  name: "GORGED", clip: 'Gorged', duration: 1.8,
   entryDuration: .9, beats: { coil: .18, darkness: .36, quake: .55, dominion: .76 },
   manualOnly: true,
 } as const;

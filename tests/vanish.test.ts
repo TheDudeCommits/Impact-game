@@ -142,7 +142,7 @@ describe('vanish', () => {
   });
 
   it('parries a projectile the way it always did', () => {
-    // Round 3: every light is melee, so the shot parried is Ouga's Haou-Dan
+    // Round 3: every light is melee, so the shot parried is Ouga's Crown Burst
     // Attack rather than his old volley.
     const fight = bout('ouga');
     fight.parry('heavy');

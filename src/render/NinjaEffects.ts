@@ -36,15 +36,15 @@ type Cast={event:CombatEvent;echo?:Echo;vortex?:Vortex;ended?:number;strikeAt?:n
  *  (contactFrames.json, shiden's ultimate). */
 const THUNDER_LORD_RELEASE=.6667;
 const clean=(n:string)=>n.toLowerCase().replace(/[^a-z0-9]/g,'');
-/** Round 3e (ULTFIX): how far the Shrike Bolt's and the Sickle Bolt's ball throws its
+/** Round 3e (ULTFIX): how far the Storm Talon's and the Sickle Bolt's ball throws its
  *  crackle, per unit of its power (ElectricKit.ball's `reach`, 0.62 by
  *  default): about the ball, inside the blow's own reach past the hand. */
 const BALL_REACH=.3;
-/** Stable per-fighter salt, so two Shrike Bolt in one arena never crackle in step. */
+/** Stable per-fighter salt, so two Storm Talon in one arena never crackle in step. */
 const salt=(id:string)=>{let h=7;for(let i=0;i<id.length;i++)h=(h*31+id.charCodeAt(i))%9973;return h;};
-/** Ikazuchi Arrow and the VOID SICKLE warp are violet; Shrike Bolt and Sickle Bolt are the kit's blue-white. */
+/** Ikazuchi Arrow and the SICKLE REAPER warp are violet; Storm Talon and Sickle Bolt are the kit's blue-white. */
 const THUNDER_LORD={glow:new THREE.Color(.62,.2,2.1),light:new THREE.Color(.8,.38,1.6)};
-/** Senpugan: pale cyan chi, a white core, and the light it throws. */
+/** Kazeyose: pale cyan chi, a white core, and the light it throws. */
 const SPIRAL_LOOK={shell:new THREE.Color(.34,.86,2.3),ring:new THREE.Color(.55,1.05,2.2),halo:new THREE.Color(.05,.32,1.0),light:new THREE.Color(.45,.85,1.7)};
 /** Konta's ground smash's move (combosVol1.ts), looked up once: its contact is the landing. */
 const PLANETARY=comboMove('konta','airSpecial'),BIG_BALL=comboMove('konta','lllh');
@@ -57,12 +57,12 @@ const CLONE_STAGES:Record<number,number>={1:1,2:2};
 const SMOKE=0xf4f6fa,SMOKE_SHADE=0xbfc6d4;
 /** Kurobi's chi, licking off his tails. */
 const KUROBI_FLAME=.85;
-/** 'Kitsunebi-Dama': black and white chi drawn into a violet-rimmed sphere. */
+/** 'Azure Foxfire': black and white chi drawn into a violet-rimmed sphere. */
 const SPIRIT_ORB={rim:new THREE.Color(.75,.4,2.2),dark:new THREE.Color(.18,.05,.34),white:new THREE.Color(1.6,1.5,2.2),light:new THREE.Color(.7,.4,1.4)};
-/** The VOID SICKLE warp: space wound into a spiral round a black eye, a billboard so it
+/** The SICKLE REAPER warp: space wound into a spiral round a black eye, a billboard so it
  *  reads as a hole in the frame from any side. Premultiplied: the eye occludes,
  *  the arms and the horizon glow. */
-const vortexMaterial=()=>new THREE.ShaderMaterial({name:'VoidSickleVortex',transparent:true,depthWrite:false,toneMapped:false,
+const vortexMaterial=()=>new THREE.ShaderMaterial({name:'SickleReaperVortex',transparent:true,depthWrite:false,toneMapped:false,
   blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor,blendSrcAlpha:THREE.OneFactor,blendDstAlpha:THREE.OneMinusSrcAlphaFactor,
   uniforms:{age:{value:0},opacity:{value:0}},
   vertexShader:'varying vec2 p;void main(){p=position.xy/1.35;vec4 mv=modelViewMatrix*vec4(0.,0.,0.,1.);float s=length(modelMatrix[0].xyz);mv.xy+=position.xy*s;gl_Position=projectionMatrix*mv;}',
@@ -84,7 +84,7 @@ export class NinjaEffects{
   private vortices:Vortex[]=[];
   private transform=new THREE.Object3D();
   private a=new THREE.Vector3();private b=new THREE.Vector3();private center=new THREE.Vector3();private tail=new THREE.Vector3();
-  /** Where each Konta's Senpugan Wreath came down, and when (his ground smash: combosVol1.ts), by the cast. */
+  /** Where each Konta's Kazeyose Wreath came down, and when (his ground smash: combosVol1.ts), by the cast. */
   private planets=new Map<string,{cast:number;at:THREE.Vector3;since:number}>();
   private p1=new THREE.Vector3();private p2=new THREE.Vector3();private p3=new THREE.Vector3();private axis=new THREE.Vector3();private u=new THREE.Vector3();private v=new THREE.Vector3();
   private tint=new THREE.Color();private flameCount=0;
@@ -108,8 +108,8 @@ export class NinjaEffects{
     this.warm=signatureWarmup(scene);
     this.flames.count=0;this.flames.setColorAt(0,new THREE.Color(0,0,flamePalette(BLACK)));this.flames.frustumCulled=false;this.flames.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.flames.name='black-pyre-black-flames';scene.add(this.flames);
     // Two warps at once is already a crowded arena; both exist from the start so
-    // their shader is linked at load, not on the first VOID SICKLE of the match.
-    for(let i=0;i<2;i++){const mesh=new THREE.Mesh(this.vortexGeometry,vortexMaterial());mesh.name='void-sickle-spatial-vortex';mesh.frustumCulled=false;mesh.renderOrder=3;mesh.scale.setScalar(.001);scene.add(mesh);this.vortices.push({mesh,busy:false});}
+    // their shader is linked at load, not on the first SICKLE REAPER of the match.
+    for(let i=0;i<2;i++){const mesh=new THREE.Mesh(this.vortexGeometry,vortexMaterial());mesh.name='sickle-reaper-spatial-vortex';mesh.frustumCulled=false;mesh.renderOrder=3;mesh.scale.setScalar(.001);scene.add(mesh);this.vortices.push({mesh,busy:false});}
   }
   load(fighters:Iterable<string>){return this.susanoos.load(fighters);}
   warmup(actor:Fighter){this.warmEchoes.push(this.lightningClone(actor));for(const e of this.warmEchoes)e.root.visible=false;}
@@ -135,7 +135,7 @@ export class NinjaEffects{
     if(event.kind==='hit'&&event.fighter==='konta'&&event.slot==='special'&&!event.branch)for(const r of this.spirals)if(r.event.actorId===event.actorId&&r.hitAt===undefined&&event.serverTime>r.event.serverTime)r.hitAt=event.serverTime;
     if(event.kind==='cast'&&event.origin&&event.endpoint&&event.slot&&(event.fighter==='shirokane'||event.fighter==='shiden')){
       const cast:Cast={event,trail:'cast:'+event.id};const actor=fighters.get(event.actorId);
-      // Round 3d (ULTS): VOID SICKLE's grade holds through its opener until it lands;
+      // Round 3d (ULTS): SICKLE REAPER's grade holds through its opener until it lands;
       // the confirm holds it on through the cinematic (below). Round 3e: past
       // the opener CombatEffects holds it while the verdict is out, so a whiff
       // lets go of it at once (OPENER_FEED). Graded here,
@@ -152,7 +152,7 @@ export class NinjaEffects{
     }
     if(['hit','blocked','guard-break'].includes(event.kind))for(const c of this.casts)if(c.event.actorId===event.actorId&&c.event.slot===event.slot&&event.serverTime>c.event.serverTime&&((event.slot==='special'&&event.fighter==='shirokane'&&!c.event.branch)||(event.slot==='ultimate'&&event.fighter==='shiden')))c.ended=event.serverTime;
   }}
-  /** Konta's ground smash, the Senpugan Wreath (combosVol1.ts): where his feet come down, a Senpugan as big as a man
+  /** Konta's ground smash, the Kazeyose Wreath (combosVol1.ts): where his feet come down, a Kazeyose as big as a man
    *  is driven into the floor, three more circling it, for half a second - grinding, then gone. */
   private planetary(id:string,f:Fighter,t:number,time:number){
     const s=f.state,kit=this.kit;
@@ -177,7 +177,7 @@ export class NinjaEffects{
   }
   /** Is any other living fighter within `reach` of `at`? A loop, not an array per frame. */
   private near(fighters:ReadonlyMap<string,Fighter>,actorId:string,at:THREE.Vector3,reach:number){for(const f of fighters.values())if(f.state.id!==actorId&&f.state.alive&&f.group.position.distanceTo(at)<reach)return true;return false;}
-  /** Konta's Senpugan palm, as CombatEffects places the sphere: off the palm
+  /** Konta's Kazeyose palm, as CombatEffects places the sphere: off the palm
    *  along the fingers and out of the hand's face. Scratch vectors only. */
   private palm(f:Fighter,out:THREE.Vector3){
     const hand=f.joints.get('RightHand'),index=f.bones.get('righthandindex1'),pinky=f.bones.get('righthandpinky1'),middle=f.bones.get('righthandmiddle1');
@@ -186,7 +186,7 @@ export class NinjaEffects{
     index.getWorldPosition(this.p2).sub(pinky.getWorldPosition(this.p3));this.p2.cross(this.p1).normalize();
     return out.addScaledVector(this.p1,.07).addScaledVector(this.p2,.14);
   }
-  /** A ring of wind round the Senpugan: an open arc on a tilted plane, spinning. */
+  /** A ring of wind round the Kazeyose: an open arc on a tilted plane, spinning. */
   private windRing(center:THREE.Vector3,radius:number,tilt:number,spin:number,width:number,intensity:number){
     this.axis.set(Math.sin(tilt)*Math.cos(tilt*1.7),Math.cos(tilt),Math.sin(tilt)*Math.sin(tilt*1.7)).normalize();
     this.u.set(0,1,0).cross(this.axis);if(this.u.lengthSq()<1e-4)this.u.set(1,0,0);this.u.normalize();this.v.crossVectors(this.axis,this.u);
@@ -309,10 +309,10 @@ export class NinjaEffects{
         kit.trail(id,f.handR,strength*.8,key);
         if(Math.abs(t-release)<.08)kit.flash(f.handR,1-Math.abs(t-release)/.08,key+3);
       }else kit.forget(id);
-      // (His Light x3, Heavy is the Giant Senpugan: the same currents on CombatEffects' bigger sphere - bigBall.)
+      // (His Light x3, Heavy is the Great Kazeyose: the same currents on CombatEffects' bigger sphere - bigBall.)
       const bigBallMove=s.branch==='lllh'?BIG_BALL:undefined;
       if(s.fighter==='konta'&&!s.awakened&&s.action==='heavy'&&(!s.branch||bigBallMove)){
-        // Senpugan: the size and timing are CombatEffects' (its sphere is the
+        // Kazeyose: the size and timing are CombatEffects' (its sphere is the
         // body); this adds the surface currents, the wind rings, the core
         // and the light. Same formula, same palm, so the two never part.
         const release=bigBallMove?bigBallMove.contacts[0]:MOVES.konta.heavy.contacts[0];
@@ -330,7 +330,7 @@ export class NinjaEffects{
       }
       if(s.fighter==='konta'&&!s.awakened)this.planetary(id,f,t,time);
       if(s.fighter==='konta'&&!s.awakened&&s.action==='ultimate'){
-        // Kitsunebi-Dama, gathering: black and white chi streams into the
+        // Azure Foxfire, gathering: black and white chi streams into the
         // sphere over both hands while its rim burns violet. The sphere is
         // CombatEffects' violet orb, placed the same way.
         const release=MOVES.konta.ultimate.contacts[0];
@@ -361,7 +361,7 @@ export class NinjaEffects{
       if(ult&&!c.confirmed&&age>move.contacts[0]&&(actor?.state.action!=='ultimate'||actor.state.whiffedAt!==undefined))c.whiffed??=age;// round 3e: at the whiff, not the move's end
       const gone=c.whiffed===undefined?1:1-THREE.MathUtils.smoothstep(age-c.whiffed,0,.25);
       if(c.vortex){const mesh=c.vortex.mesh;
-        // The VOID SICKLE spiral opens beside him through the opener, holds through
+        // The SICKLE REAPER spiral opens beside him through the opener, holds through
         // the cinematic and takes them on the finisher.
         if(actor){const strength=gone*THREE.MathUtils.smoothstep(age,.05,move.contacts[0])*(1-THREE.MathUtils.smoothstep(age,finish+.1,finish+.6));mesh.visible=strength>.01;const yaw=actor.state.yaw;
           // Beside him and a little ahead, where the blade goes in - never

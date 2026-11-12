@@ -28,7 +28,7 @@ export const SCENES: KnockbackScene[] = [
   { name: 'rush into the wall', me: 'kenzo', foe: 'koko', at: [.4, -2.9], foeAt: [.2, -4.9], ticks: 330,
     drive: (i, me, foe, sent) => i < START || sent >= 0 ? {} : { move: Math.hypot(foe.x - me.x, foe.z - me.z) > 1.8 ? toward(me, foe) : undefined, attack: i % 9 === 0 ? 'light' : undefined } },
   { name: 'melee ultimate', me: 'kosho', foe: 'ward', at: [3.5, 4.2], foeAt: [2.6, 2.8], ticks: 420, ultimate: true, drive: i => i === START ? { attack: 'ultimate' } : {} },
-  { name: 'last sun bomb', me: 'taisei', foe: 'koko', at: [-1.6, .1], foeAt: [0, -2.75], ticks: 480, ultimate: true, drive: i => i === START ? { attack: 'ultimate' } : {} },
+  { name: 'last sunfall', me: 'taisei', foe: 'koko', at: [-1.6, .1], foeAt: [0, -2.75], ticks: 480, ultimate: true, drive: i => i === START ? { attack: 'ultimate' } : {} },
 ];
 
 /** The camera's occluders as StageEnvironment builds them for the hall. */

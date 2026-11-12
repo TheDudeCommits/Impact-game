@@ -16,29 +16,29 @@ import {BLACK,FIRE,flamePalette,flameSpriteGeometry,flameSpriteMaterial} from '.
 import {GlowBatch,GLOW,STAR,RING} from './signature/GlowBatch';
 import {LightVolumes} from './signature/LightVolumes';
 import {beats} from './signature/ultimateClock';
-import {GRAND_TIDE_TAKE,grandTideOut} from './gummy/grand-tide';
+import {SPRING_TIDE_TAKE,springTideOut} from './gummy/spring-tide';
 import {armoryDraws} from './vfx/armory/drawn';
 import {LucyTideFx} from '../originals/lucyTideFx';
 import {LUCY_TIDE} from '../originals/lucyTide';
 
-/** Round 4b (GUMMY): the SUNSET BARRAGE (and SUNRISE's dawn barrage, on the same clock) and the GRAND TIDE, the
+/** Round 4b (GUMMY): the SUNSET BARRAGE (and SUNRISE's dawn barrage, on the same clock) and the SPRING TIDE, the
  *  ultimate's finisher: the fist is blown up over the held victim from the confirm and brought down on them. */
 const GATLING_MOVE=MOVES.gummy.special;
-const GRAND_TIDE_MOVE=MOVES.gummy.ultimate,GRAND_TIDE=GRAND_TIDE_MOVE.contacts[GRAND_TIDE_MOVE.contacts.length-1],GRAND_TIDE_OPEN=GRAND_TIDE_MOVE.contacts[0];
+const SPRING_TIDE_MOVE=MOVES.gummy.ultimate,SPRING_TIDE=SPRING_TIDE_MOVE.contacts[SPRING_TIDE_MOVE.contacts.length-1],SPRING_TIDE_OPEN=SPRING_TIDE_MOVE.contacts[0];
 /** The barrage's fists beyond his own two (signature/GatlingFists): how long before the first contact they start, how
  *  many a second leave his shoulders, how long each is out (seconds), how big (times the Taimatsu fist) and how thick its
  *  arm (metres) - the Hawk's, and the Dawn's blown up - how wide over the body they land, and how far ahead with
  *  nobody to land on. */
 const GATLING_PHANTOM={lead:.07,rate:72,life:.12,hawk:.2,dawn:.38,hawkArm:.055,dawnArm:.09,spread:.55,dawnSpread:.8,ahead:7};
-/** The GRAND TIDE's fist (signature/GiantFist): from how long after the opener it shows, how long before the finisher
+/** The SPRING TIDE's fist (signature/GiantFist): from how long after the opener it shows, how long before the finisher
  *  it is driven down, its size cocked and full (times the Taimatsu fist: 2.3 m from wrist to knuckles at one), how far its
  *  knuckles hang over the victim's head, how far toward him from over them, and how long after the blow it is gone. */
-const GRAND_TIDE_FIST={from:.3,drive:.24,small:.35,big:2,over:.08,toward:.6,gone:.6,rise:.32};
+const SPRING_TIDE_FIST={from:.3,drive:.24,small:.35,big:2,over:.08,toward:.6,gone:.6,rise:.32};
 /** Round 6 (GUMMY ULT): how long after the opener he springs off the floor, held (0.7-0.9 s of the move, the take's
  *  spring on the cinematic's clock): when the floor's blast goes out round him. And the fist (Round 6) is not hung
- *  over them out of nothing: it rises off the hand that has them - the grab lets go as it is blown up (gummy/grand-tide.ts
- *  GRAND_TIDE_GRAB.release, GRAND_TIDE_FIST.from) - to over their head in GRAND_TIDE_FIST.rise. */
-const GRAND_TIDE_SPRING=.22;
+ *  over them out of nothing: it rises off the hand that has them - the grab lets go as it is blown up (gummy/spring-tide.ts
+ *  SPRING_TIDE_GRAB.release, SPRING_TIDE_FIST.from) - to over their head in SPRING_TIDE_FIST.rise. */
+const SPRING_TIDE_SPRING=.22;
 const BLAZE:Element={spike:0xffe2a0,rim:0xff5a12,light:0xff7a2a,ink:0x1a0602};
 /** His enders that are his own fists (combosVol1.ts): Maelstrom Fist (Light, Heavy) and the ground smash,
  *  Beacon Crash; in SUNRISE his five sunrise enders. Looked up once. */
@@ -46,7 +46,7 @@ const MAELSTROM=comboMove('gummy','lh'),BEACON_CRASH=comboMove('gummy','airSpeci
 const SUNRISE_ENDER={lh:comboMove('gummy','lh',true),llh:comboMove('gummy','llh',true),lllh:comboMove('gummy','lllh',true),llls:comboMove('gummy','llls',true),airHeavy:comboMove('gummy','airHeavy',true)};
 /** Will's black on the giant fist (BUSO: the fist's own colours). */
 const WILL_FIST:Element={spike:0xffd8c8,rim:0xc01a12,light:0xff5a3a,ink:0x0a0204};
-/** Crimson Command coating the GRAND TIDE: black lightning edged in red. */
+/** Crimson Command coating the SPRING TIDE: black lightning edged in red. */
 const COMMAND_CRIMSON:Element={spike:0xffe2e2,rim:0xd0102a,light:0xff2a3a,ink:0x060002};
 /** SUNRISE: his white, a warm rim, and the ink of a cartoon; and the lightning he catches. */
 const SUNRISE_WHITE:Element={spike:0xffffff,rim:0xffd98a,light:0xfff2d6,ink:0x120a04};
@@ -78,7 +78,7 @@ const FLAME={glare:new THREE.Color(1.6,.62,.12),halo:new THREE.Color(.9,.3,.05),
  *  the instanced cones used. Around the fire: a glow over the bloom
  *  threshold, embers, and a light volume, so the burning fist, Taimatsu, Ember Leg
  *  and Kagari's sun light the floor and the fighters near them. Gummy's
- *  (round 4b): the barrage's fists, SUNRISE's clouds, the GRAND TIDE and the
+ *  (round 4b): the barrage's fists, SUNRISE's clouds, the SPRING TIDE and the
  *  SUNRISE's enders. The NIGHTFALL mist is as it was; the NIGHTFALL burn is
  *  signature/Unsealed's. Bounded buffers; no allocation per frame. */
 export class GummyEffects {
@@ -130,8 +130,8 @@ export class GummyEffects {
    *  cast and contact last drawn. */
   private kicked=new Map<string,number>();private flared=new Map<string,number>();
   private burstNext=0;
-  /** Round 4b (GUMMY): the GRAND TIDE's fist, and the casts whose blow has landed (once each). */
-  private grandTideFists:GiantFists;
+  /** Round 4b (GUMMY): the SPRING TIDE's fist, and the casts whose blow has landed (once each). */
+  private springTideFists:GiantFists;
   private landed=new Set<number>();
   /** Round 4b (GUMMY): the barrage's fists beyond his own two, for every Gummy at once; the last of each barrage's
    *  contacts drawn landing, by fighter; and each SUNRISE ender's blow drawn landing (once a cast). */
@@ -151,7 +151,7 @@ export class GummyEffects {
   /** Where each Gummy's burning fist came down, and when; and the giant fists that have landed (once a swing). */
   private crashes=new Map<string,{cast:number;at:THREE.Vector3;since:number}>();
   private maelstroms=new Map<string,number>();
-  /** Round 5 (GUMMY): the GRAND TIDE casts whose spring off the floor has been drawn (once a cast). */
+  /** Round 5 (GUMMY): the SPRING TIDE casts whose spring off the floor has been drawn (once a cast). */
   private sprung=new Set<number>();
   /** Round 6 (GUMMY ULT): and those whose grab has shut on them - or on the air - drawn (once a cast). */
   private gripped=new Set<number>();
@@ -159,7 +159,7 @@ export class GummyEffects {
   private nextPuff=0;
   constructor(scene:THREE.Scene){for(const mesh of [this.flames,this.steam,this.mist,this.wake]){mesh.count=0;mesh.setColorAt(0,new THREE.Color(0xffffff));mesh.frustumCulled=false;mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(mesh);}this.flames.name='signal-fire-fire';this.steam.name='gummy-cloud';this.steamInk.instanceMatrix=this.steam.instanceMatrix;this.steamInk.count=0;this.steamInk.frustumCulled=false;this.steamInk.name='gummy-cloud-ink';scene.add(this.steamInk);this.wake.name='taimatsu-fire-wake';scene.add(this.glows.mesh,this.lights.mesh);
     for(let i=0;i<4;i++){const fist=new THREE.Mesh(this.fistGeometry,this.taimatsu);fist.name='signal-flare-orb';fist.frustumCulled=false;fist.renderOrder=3;fist.visible=i===0;if(i===0){fist.position.set(0,-50,0);fist.scale.setScalar(.001);}scene.add(fist);this.hawkFists.push(fist);}
-    this.grandTideFists=new GiantFists(scene,2,this.fistGeometry);this.gatlingFists=new GatlingFists(scene,this.fistGeometry,48);this.kit=VfxKit.for(scene);
+    this.springTideFists=new GiantFists(scene,2,this.fistGeometry);this.gatlingFists=new GatlingFists(scene,this.fistGeometry,48);this.kit=VfxKit.for(scene);
     if(LUCY_TIDE)this.tide=new LucyTideFx(scene,this.kit);}
   private tide?:LucyTideFx;
   /** A burning fist this frame: palm at `at`, knuckles along `aim`. */
@@ -170,7 +170,7 @@ export class GummyEffects {
   private flame(index:number,heat:number,seed:number,palette=FIRE){this.transform.updateMatrix();this.flames.setMatrixAt(index,this.transform.matrix);this.flames.setColorAt(index,this.color.setRGB(heat,seed%1,flamePalette(palette)));}
   update(time:number,fighters:ReadonlyMap<string,Fighter>,density:number){
     let flame=0,steam=0,mist=0,wake=0;this.mistMaterial.uniforms.clock.value=time;this.wakeMaterial.uniforms.uTime.value=time;this.flameMaterial.uniforms.uTime.value=time;
-    this.glows.begin(time);this.lights.begin();this.grandTideFists.begin(time);this.gatlingFists.begin(time);this.hawkCount=0;this.taimatsu.uniforms.uTime.value=time;
+    this.glows.begin(time);this.lights.begin();this.springTideFists.begin(time);this.gatlingFists.begin(time);this.hawkCount=0;this.taimatsu.uniforms.uTime.value=time;
     const flicker=.85+.15*Math.sin(time*23)*Math.sin(time*9.7);
     for(const fighter of fighters.values()){
       const s=fighter.state;if(!s.alive)continue;
@@ -279,7 +279,7 @@ export class GummyEffects {
             this.kit.ring(this.at.x,this.at.y,this.at.z,.2,2,time,.24,0xfff0c8,BLAZE.rim,.12,'plane',this.forward.x,0,this.forward.z);
             this.kit.streaks(this.at.x,this.at.y,this.at.z,BLAZE,this.kit.n(14,5),12,.03,time,this.forward,.9);}}
         }
-        // The KAGUTSUCHI: fire climbs the raised arm while the sun is
+        // The ALL ABLAZE: fire climbs the raised arm while the sun is
         // gathered over his head, and the whole body smoulders on the throw.
         if(s.action==='ultimate'&&t>.3&&t<s.actionDuration-.4){
           const gather=THREE.MathUtils.smoothstep(t,.3,1.2)*(1-THREE.MathUtils.smoothstep(t,MOVES.kagari.ultimate.contacts[0],MOVES.kagari.ultimate.contacts[0]+.4));
@@ -307,11 +307,11 @@ export class GummyEffects {
         gradeLocal(s.id,s.actionStarted,GRADE.nightfang,.35,GATLING_MOVE.contacts[GATLING_MOVE.contacts.length-1]+.4,fighter.group.position,s.id,s.target??undefined);// round 3c: local
         this.gatling(fighter,t,time,fighters);
       }
-      if(s.action==='ultimate'&&s.confirmedAt!==undefined)gradeOnce(s.id,s.actionStarted,GRADE.nightfang,.5,Math.max(.3,GRAND_TIDE+.6-t),s.id,s.target??undefined);
+      if(s.action==='ultimate'&&s.confirmedAt!==undefined)gradeOnce(s.id,s.actionStarted,GRADE.nightfang,.5,Math.max(.3,SPRING_TIDE+.6-t),s.id,s.target??undefined);
       // SUNRISE arriving: the transformation's burst of cloud, and - unawakened - the ultimate's, as he goes into the
-      // form for the GRAND TIDE on the confirm (the base body throws the opener) and as he comes out of it.
+      // form for the SPRING TIDE on the confirm (the base body throws the opener) and as he comes out of it.
       steam=this.sunGodClouds(fighter,t,time,steam);
-      if(s.action==='ultimate'&&!this.tide)this.grandTide(fighter,t,time,fighters);
+      if(s.action==='ultimate'&&!this.tide)this.springTide(fighter,t,time,fighters);
     }
     // The thrown fire. CombatEffects moves the body of a projectile and
     // records where it is; the flames that make Signal Fire a burning fist and
@@ -424,7 +424,7 @@ export class GummyEffects {
       const glare=Math.min(1,1.25/b.size);
       this.glows.add(b.position,2.2*Math.min(b.size,1.3)*(1+grow*2),FLAME.glare,k*glare,STAR,.2,7);this.glows.add(b.position,(1.5+grow*9)*Math.min(b.size,1.3),FLAME.halo,.8*k*glare,RING,.05,3,.5);this.lights.add(b.position,7*Math.sqrt(b.size),FLAME.light,1.4*k*glare);}
     for(let i=this.hawkCount;i<this.hawkFists.length;i++)if(i||this.hawkFists[0].position.y>-40)this.hawkFists[i].visible=false;
-    this.grandTideFists.end();this.gatlingFists.end();
+    this.springTideFists.end();this.gatlingFists.end();
     this.tide?.update(time,fighters);
     this.mist.count=mist;this.mist.instanceMatrix.needsUpdate=true;this.flames.count=flame;this.steam.count=steam;this.steamInk.count=steam;this.flames.instanceMatrix.needsUpdate=true;this.steam.instanceMatrix.needsUpdate=true;if(this.steam.instanceColor)this.steam.instanceColor.needsUpdate=true;if(this.flames.instanceColor)this.flames.instanceColor.needsUpdate=true;
     this.wake.count=wake;this.wake.instanceMatrix.needsUpdate=true;if(this.wake.instanceColor)this.wake.instanceColor.needsUpdate=true;
@@ -466,7 +466,7 @@ export class GummyEffects {
     this.aim.copy(this.goal).sub(f.handR);if(this.aim.lengthSq()<1e-4)this.aim.copy(this.forward);this.aim.normalize();
     this.at.copy(f.handR).lerp(this.offset.copy(this.goal).addScaledVector(this.aim,-size*.7),drive*(1-back*.85));
     bodyCenter(f,this.shoulder);this.shoulder.y+=.45;
-    this.grandTideFists.show(s.id,this.at,this.aim,size,this.shoulder,t>=c?1-THREE.MathUtils.smoothstep(t,c+.02,c+.22):0);
+    this.springTideFists.show(s.id,this.at,this.aim,size,this.shoulder,t>=c?1-THREE.MathUtils.smoothstep(t,c+.02,c+.22):0);
     this.lights.add(this.at,2+size*2,FLAME.light,.35+.4*drive);
     const key=Math.round(s.actionStarted*1000);
     if(t>=c&&this.maelstroms.get(s.id)!==key){this.maelstroms.set(s.id,key);this.kit.ring(this.goal.x,this.goal.y,this.goal.z,.4,3.4,time,.3,0xffffff,WILL_FIST.rim,.12,'plane',this.aim.x,0,this.aim.z);this.kit.streaks(this.goal.x,this.goal.y,this.goal.z,WILL_FIST,this.kit.n(14,5),13,.035,time,this.aim,.9);}
@@ -493,20 +493,20 @@ export class GummyEffects {
     for(let i=0,n=Math.round(24*density);i<n&&flame<768;i++){const phase=(time*3.4+i*.618)%1,a=i*2.4+time*9;this.transform.position.copy(this.at).add(this.offset.set(Math.cos(a)*.45,.4+phase*.9,Math.sin(a)*.45));this.transform.quaternion.identity();this.transform.scale.setScalar((1-phase*.7)*fade*2);this.flame(flame++,1-phase*.75,i*.618);}
     return flame;
   }
-  /** Round 4b (GUMMY): Grand Tide, from the confirm. SUNRISE springs into the sky (his own take: Fighter.ts
+  /** Round 4b (GUMMY): Spring Tide, from the confirm. SUNRISE springs into the sky (his own take: Fighter.ts
    *  ULTIMATE_CLIPS) and the fist he hangs from it is blown up over the held victim - knuckles down, Crimson Command's black
    *  lightning cracking off it, bigger than the room - then brought straight down on them at the finisher, squashing
    *  on the blow with a burst the whole floor feels, a cartoon's impact frame and a ring of cloud, and let go. */
-  private grandTide(f:Fighter,t:number,time:number,fighters:ReadonlyMap<string,Fighter>){
+  private springTide(f:Fighter,t:number,time:number,fighters:ReadonlyMap<string,Fighter>){
     const s=f.state;
-    // Round 6 (GUMMY ULT): the opener is SUNRISE's grab (gummy/grand-tide.ts; Fighter.ts stretches the arm). Where it has
+    // Round 6 (GUMMY ULT): the opener is SUNRISE's grab (gummy/spring-tide.ts; Fighter.ts stretches the arm). Where it has
     // them, a snap of white round the hand shut on them - the arm's line through it - and ink thrown off it; where it
     // closed on the air, a puff there as it lets go. Then, held, the blast off the floor as he springs from the crouch
     // (Round 5 had it on the opener, the crouch's own blow): a flat ring of white, a ring of cloud and dust thrown out
     // round him and a burst of SUNRISE's cloud.
     const cast=Math.round(s.actionStarted*1000)+7,local=involvesLocal(s.id,s.target??undefined);
     const victim=s.target?fighters.get(s.target):undefined;
-    if(t>=GRAND_TIDE_OPEN&&t<GRAND_TIDE_OPEN+.5&&(s.confirmedAt!==undefined||s.whiffedAt!==undefined)&&!this.gripped.has(cast)){
+    if(t>=SPRING_TIDE_OPEN&&t<SPRING_TIDE_OPEN+.5&&(s.confirmedAt!==undefined||s.whiffedAt!==undefined)&&!this.gripped.has(cast)){
       this.gripped.add(cast);if(this.gripped.size>32)this.gripped.delete(this.gripped.values().next().value!);
       const hand=f.handR;
       bodyCenter(f,this.shoulder);this.aim.subVectors(hand,this.shoulder);if(this.aim.lengthSq()<1e-6)this.aim.copy(this.forward);this.aim.normalize();
@@ -518,39 +518,39 @@ export class GummyEffects {
       }else this.kit.puff(hand.x,hand.y,hand.z,-this.aim.x*1.2,.4,-this.aim.z*1.2,.5,time,.25,.45);
     }
     if(s.confirmedAt===undefined)return;
-    if(t>=GRAND_TIDE_OPEN+GRAND_TIDE_SPRING&&t<GRAND_TIDE_OPEN+GRAND_TIDE_SPRING+.5&&!this.sprung.has(cast)){
+    if(t>=SPRING_TIDE_OPEN+SPRING_TIDE_SPRING&&t<SPRING_TIDE_OPEN+SPRING_TIDE_SPRING+.5&&!this.sprung.has(cast)){
       this.sprung.add(cast);if(this.sprung.size>32)this.sprung.delete(this.sprung.values().next().value!);
-      const p=f.group.position,born=time-(t-GRAND_TIDE_OPEN-GRAND_TIDE_SPRING);
+      const p=f.group.position,born=time-(t-SPRING_TIDE_OPEN-SPRING_TIDE_SPRING);
       this.kit.ring(p.x,p.y+.05,p.z,.5,3,born,.42,0xffffff,SUNRISE_WHITE.rim,.16,'flat');
       this.kit.ring(p.x,p.y+.9,p.z,.4,2.2,born,.3,0xffffff,SUNRISE_WHITE.rim,.1);
       this.kit.dustRing(p.x,p.y,p.z,22,1.4,7,1.2,born,.9);
-      this.goal.copy(p);this.burst(s.id+':grand-tide',born,1.2,cast,this.goal);
+      this.goal.copy(p);this.burst(s.id+':spring-tide',born,1.2,cast,this.goal);
       if(local)SIGNATURE.screen?.speedLines?.(.6);
     }
-    const from=GRAND_TIDE_OPEN+GRAND_TIDE_FIST.from,drive=GRAND_TIDE-GRAND_TIDE_FIST.drive,after=t-GRAND_TIDE;
-    if(t<from||after>GRAND_TIDE_FIST.gone)return;
+    const from=SPRING_TIDE_OPEN+SPRING_TIDE_FIST.from,drive=SPRING_TIDE-SPRING_TIDE_FIST.drive,after=t-SPRING_TIDE;
+    if(t<from||after>SPRING_TIDE_FIST.gone)return;
     const foe=victim;
     if(foe)this.goal.copy(foe.group.position);else this.goal.copy(f.group.position).addScaledVector(this.forward,2.6);
     // A little toward him: the fist looms between the two of them, in the shot that frames them both.
     this.tip.subVectors(f.group.position,this.goal);this.tip.y=0;const apart=this.tip.length();
-    if(apart>.05)this.goal.addScaledVector(this.tip,Math.min(GRAND_TIDE_FIST.toward,apart*.4)/apart);
-    const floor=this.goal.y,push=Math.pow(THREE.MathUtils.clamp((t-drive)/GRAND_TIDE_FIST.drive,0,1),2);
+    if(apart>.05)this.goal.addScaledVector(this.tip,Math.min(SPRING_TIDE_FIST.toward,apart*.4)/apart);
+    const floor=this.goal.y,push=Math.pow(THREE.MathUtils.clamp((t-drive)/SPRING_TIDE_FIST.drive,0,1),2);
     const inflate=THREE.MathUtils.smoothstep(t,from,drive-.05),throb=1+.04*Math.sin(t*9.5)*(1-push);
-    const size=(GRAND_TIDE_FIST.small+(GRAND_TIDE_FIST.big-GRAND_TIDE_FIST.small)*inflate)*throb*(after>.12?1-THREE.MathUtils.smoothstep(after,.12,GRAND_TIDE_FIST.gone)*.85:1);
+    const size=(SPRING_TIDE_FIST.small+(SPRING_TIDE_FIST.big-SPRING_TIDE_FIST.small)*inflate)*throb*(after>.12?1-THREE.MathUtils.smoothstep(after,.12,SPRING_TIDE_FIST.gone)*.85:1);
     // Knuckles down over the victim, leaning away from him while it is blown up - its bulk over the shot that frames
     // them past him, at the top of it - hung just over their head; straightened as it is driven down through them to
     // the floor, so it falls on them rather than sweeping across the lens.
     this.aim.set(-this.tip.x,0,-this.tip.z);if(this.aim.lengthSq()<1e-6)this.aim.copy(this.forward);this.aim.normalize().multiplyScalar(.5*(1-(after>=0?1:push))).add(this.side.set(0,-.86,0)).normalize();
-    const crown=floor+1.9*(foe?.state.size??1),knuckles=.82*size,hung=crown+GRAND_TIDE_FIST.over,struck=floor+.45;
+    const crown=floor+1.9*(foe?.state.size??1),knuckles=.82*size,hung=crown+SPRING_TIDE_FIST.over,struck=floor+.45;
     // Round 6 (GUMMY ULT): risen off the grip, at their middle, to over their head.
-    const risen=THREE.MathUtils.smoothstep(t,from,from+GRAND_TIDE_FIST.rise),gripAt=floor+1.1*(foe?.state.size??1);
+    const risen=THREE.MathUtils.smoothstep(t,from,from+SPRING_TIDE_FIST.rise),gripAt=floor+1.1*(foe?.state.size??1);
     this.offset.set(this.goal.x,gripAt+(hung-gripAt)*risen+(struck-hung)*(after>=0?1:push),this.goal.z);
     // Lifted off again as it lets go.
-    if(after>.12)this.offset.y+=THREE.MathUtils.smoothstep(after,.12,GRAND_TIDE_FIST.gone)*2.5;
+    if(after>.12)this.offset.y+=THREE.MathUtils.smoothstep(after,.12,SPRING_TIDE_FIST.gone)*2.5;
     this.at.copy(this.offset).addScaledVector(this.aim,-knuckles);
     bodyCenter(f,this.shoulder);this.shoulder.y+=.45;
     const squash=after>=0?1-THREE.MathUtils.smoothstep(after,.06,.32):0;
-    this.grandTideFists.show(s.id,this.at,this.aim,size,this.shoulder,squash);
+    this.springTideFists.show(s.id,this.at,this.aim,size,this.shoulder,squash);
     this.lights.add(this.at,4+size*2,FLAME.light,.4+.6*push);
     const mine=involvesLocal(s.id,s.target??undefined);
     // Crimson Command coating it: black lightning edged in red, off its knuckles and its back.
@@ -568,7 +568,7 @@ export class GummyEffects {
       this.kit.dustRing(this.goal.x,floor,this.goal.z,30,2.2,8,1.5,time,1.1);
       this.kit.streaks(this.goal.x,floor+.6,this.goal.z,COMMAND_CRIMSON,this.kit.n(26,8),16,.05,time,this.up,.9);
       // SUNRISE's cartoon: a ring of cloud thrown out round the blow.
-      this.burst(s.id+':grand-tide',time,2.4,key,this.goal);
+      this.burst(s.id+':spring-tide',time,2.4,key,this.goal);
       if(mine){SIGNATURE.screen?.impactFrame?.(1);SIGNATURE.screen?.chromaticPulse?.(1);}}
     if(after>=0&&after<.32){const k=1-after/.32;this.tip.set(this.goal.x,floor+1,this.goal.z);this.glows.add(this.tip,3*(1+after*3),FLAME.glare,k,STAR,.22,11);this.glows.add(this.tip,2.4+after*16,FLAME.halo,.8*k,RING,.05,5,.55);this.lights.add(this.tip,9,FLAME.light,1.6*k);}
   }
@@ -617,21 +617,21 @@ export class GummyEffects {
     if(t>=first-P.lead&&t<last&&mine)SIGNATURE.screen?.speedLines?.(.55);
   }
   /** Round 4b (GUMMY): SUNRISE arriving in a burst of cartoon cloud - the transformation's on its swap, and, unawakened,
-   *  the ultimate's going into the form on the confirm and coming out of it - and the ring of cloud the GRAND TIDE
+   *  the ultimate's going into the form on the confirm and coming out of it - and the ring of cloud the SPRING TIDE
    *  throws out where it lands. A ring of puffs bursting out round his middle, a second higher and slower, and a
    *  column going up; white in three flat tones with an ink line (the steam material). Returns the puffs drawn. */
   private sunGodClouds(f:Fighter,t:number,time:number,steam:number){
     const s=f.state;
     let key=-1,size=0,at=0;
     if(s.action==='awaken'){key=Math.round(s.actionStarted*1000);size=1;at=awakeningSwapAt('gummy');}
-    // Round 5 (GUMMY): unawakened, he goes into the form on the GRAND TIDE's first frame (gummy/grand-tide.ts) - the burst
+    // Round 5 (GUMMY): unawakened, he goes into the form on the SPRING TIDE's first frame (gummy/spring-tide.ts) - the burst
     // covers the swap - and comes out of it at the end, a whiff's too.
     else if(s.action==='ultimate'&&!s.awakened&&!this.tide){
-      const out=grandTideOut(s,WHIFF_RECOVERY);
-      if(t<out-.06){key=Math.round(s.actionStarted*1000)+1;size=.85;at=Math.max(0,GRAND_TIDE_TAKE.swap-.04);}else{key=Math.round(s.actionStarted*1000)+2;size=.6;at=out-.06;}
+      const out=springTideOut(s,WHIFF_RECOVERY);
+      if(t<out-.06){key=Math.round(s.actionStarted*1000)+1;size=.85;at=Math.max(0,SPRING_TIDE_TAKE.swap-.04);}else{key=Math.round(s.actionStarted*1000)+2;size=.6;at=out-.06;}
     }
     if(key>=0&&t>=at)this.burst(s.id,time-(t-at),size,key);
-    for(const id of [s.id,s.id+':grand-tide']){
+    for(const id of [s.id,s.id+':spring-tide']){
       const cloud=this.clouds.get(id);if(!cloud)continue;
       const own=id===s.id,age=time-cloud.born,life=own?1.1:1;if(age<0)continue;if(age>life){this.clouds.delete(id);continue;}
       const envelope=THREE.MathUtils.smoothstep(age,0,.08)*(1-THREE.MathUtils.smoothstep(age,life*.4,life)),k=cloud.size;
@@ -678,7 +678,7 @@ export class GummyEffects {
     if(key==='lh'){
       this.kit.ring(this.goal.x,this.goal.y,this.goal.z,.3,3,time,.3,0xffffff,SUNRISE_WHITE.rim,.12,'plane',this.forward.x,0,this.forward.z);
       this.kit.streaks(this.goal.x,this.goal.y,this.goal.z,SUNRISE_WHITE,this.kit.n(12,4),12,.03,time,this.forward,.9);
-      this.burst(s.id+':grand-tide',time,.7,cast,this.goal);
+      this.burst(s.id+':spring-tide',time,.7,cast,this.goal);
     }else if(key==='llh'){
       this.kit.ring(this.goal.x,this.goal.y,this.goal.z,.3,2.6,time,.28,0xffffff,SUNRISE_WHITE.rim,.12);
       this.kit.streaks(this.goal.x,this.goal.y,this.goal.z,SUNRISE_WHITE,this.kit.n(12,4),11,.03,time,this.up,.7);
@@ -698,6 +698,6 @@ export class GummyEffects {
     if(Math.floor(time*60)%2===0)this.kit.crackle(this.tip,at,.09,BOLT,this.kit.n(4,2),time);
     this.glows.add(at,1,BOLT_GLOW,.7*flicker,GLOW,0);this.lights.add(at,4,BOLT_GLOW,.8*flicker);
   }
-  reset(){this.crashes.clear();this.maelstroms.clear();this.fires.clear();this.kicked.clear();this.flared.clear();this.flames.count=0;this.steam.count=0;this.steamInk.count=0;this.mist.count=0;this.wake.count=0;this.grandTideFists.reset();this.gatlingFists.reset();this.gatlingShown.clear();this.sunriseLanded.clear();this.clouds.clear();this.landed.clear();this.sprung.clear();this.gripped.clear();for(const b of this.bursts)b.born=-9;for(let i=1;i<this.hawkFists.length;i++)this.hawkFists[i].visible=false;this.glows.begin(0);this.glows.end();this.lights.begin();this.lights.end();this.tide?.reset();}
-  dispose(){for(const m of [this.flames,this.steam,this.mist,this.wake]){m.removeFromParent();m.dispose();}this.mistGeometry.dispose();this.mistMaterial.dispose();this.flameGeometry.dispose();this.steamGeometry.dispose();this.flameMaterial.dispose();this.steamMaterial.dispose();this.steamInkMaterial.dispose();this.steamInk.removeFromParent();this.steamInk.dispose();this.wakeGeometry.dispose();this.wakeMaterial.dispose();this.glows.dispose();this.lights.dispose();this.grandTideFists.dispose();this.gatlingFists.dispose();for(const f of this.hawkFists)f.removeFromParent();this.fistGeometry.dispose();this.taimatsu.dispose();this.tide?.dispose();}
+  reset(){this.crashes.clear();this.maelstroms.clear();this.fires.clear();this.kicked.clear();this.flared.clear();this.flames.count=0;this.steam.count=0;this.steamInk.count=0;this.mist.count=0;this.wake.count=0;this.springTideFists.reset();this.gatlingFists.reset();this.gatlingShown.clear();this.sunriseLanded.clear();this.clouds.clear();this.landed.clear();this.sprung.clear();this.gripped.clear();for(const b of this.bursts)b.born=-9;for(let i=1;i<this.hawkFists.length;i++)this.hawkFists[i].visible=false;this.glows.begin(0);this.glows.end();this.lights.begin();this.lights.end();this.tide?.reset();}
+  dispose(){for(const m of [this.flames,this.steam,this.mist,this.wake]){m.removeFromParent();m.dispose();}this.mistGeometry.dispose();this.mistMaterial.dispose();this.flameGeometry.dispose();this.steamGeometry.dispose();this.flameMaterial.dispose();this.steamMaterial.dispose();this.steamInkMaterial.dispose();this.steamInk.removeFromParent();this.steamInk.dispose();this.wakeGeometry.dispose();this.wakeMaterial.dispose();this.glows.dispose();this.lights.dispose();this.springTideFists.dispose();this.gatlingFists.dispose();for(const f of this.hawkFists)f.removeFromParent();this.fistGeometry.dispose();this.taimatsu.dispose();this.tide?.dispose();}
 }

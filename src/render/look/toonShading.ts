@@ -756,13 +756,28 @@ export function applyInkShell(material: THREE.MeshToonMaterial, relativeWidth: n
  *    no new light. A technique's grade still takes the rim over. A translucent shell, which has no hull, carries its
  *    side on this rim alone.
  *  All zero, which is every body outside a ball match (render/ball/TeamTrim.ts sets them, and clears them), the
- *  shader takes neither branch: the ink and the rims exactly as they were. */
-export interface TeamTrim { inkColor: { value: THREE.Color }; rimColor: { value: THREE.Color }; amount: { value: THREE.Vector2 } }
-export const teamTrim = (): TeamTrim => ({ inkColor: { value: new THREE.Color(0, 0, 0) }, rimColor: { value: new THREE.Color(0, 0, 0) }, amount: { value: new THREE.Vector2(0, 0) } });
+ *  shader takes neither branch: the ink and the rims exactly as they were.
+ *  `widen` - an ink hull pushed out that many more ink widths (a football match's kits,
+ *  render/ball/TeamTrim.ts KIT: a bold coloured edge); a body's own flat outline mesh has no hull to push and ignores it. */
+export interface TeamTrim { inkColor: { value: THREE.Color }; rimColor: { value: THREE.Color }; amount: { value: THREE.Vector2 }; widen: { value: number } }
+export const teamTrim = (): TeamTrim => ({ inkColor: { value: new THREE.Color(0, 0, 0) }, rimColor: { value: new THREE.Color(0, 0, 0) }, amount: { value: new THREE.Vector2(0, 0) }, widen: { value: 0 } });
+const TRIM_WIDEN = `if ( uTrimWiden > 0.0 ) {
+		float trimDepth = max( - mvPosition.z, .05 );
+		float trimPixel = 2.0 * trimDepth / projectionMatrix[ 1 ][ 1 ];
+		float trimFar = mix( 1.0, .6, smoothstep( 12.0, 45.0, trimDepth ) );
+		mvPosition.xyz -= normalize( transformedNormal ) * uInkWidth * uInkScale * trimPixel * trimFar * uTrimWiden;
+		gl_Position = projectionMatrix * mvPosition;
+	}
+	#include <logdepthbuf_vertex>`;
 export function applyTeamTrim(material: THREE.Material, trim: TeamTrim, part: 'ink' | 'body') {
-  addShaderPatch(material, `look-team-trim-${part}-v1`, shader => {
+  addShaderPatch(material, `look-team-trim-${part}-${part === 'ink' ? 'v2' : 'v1'}`, shader => {
     shader.uniforms.uTrimInk = trim.inkColor; shader.uniforms.uTrimRim = trim.rimColor; shader.uniforms.uTrim = trim.amount;
     shader.fragmentShader = 'uniform vec3 uTrimInk;\nuniform vec3 uTrimRim;\nuniform vec2 uTrim;\n' + shader.fragmentShader;
+    // (An ink hull - its own patch, applyInkShell, came first - widens by `widen`.)
+    if (part === 'ink' && shader.uniforms.uInkScale) {
+      shader.uniforms.uTrimWiden = trim.widen;
+      shader.vertexShader = replaceOnce('uniform float uTrimWiden;\n' + shader.vertexShader, '#include <logdepthbuf_vertex>', TRIM_WIDEN, 'team trim widen');
+    }
     if (part === 'ink') {
       shader.fragmentShader = replaceOnce(shader.fragmentShader, '#include <opaque_fragment>', 'if ( uTrim.x > 0.0 ) outgoingLight = mix( outgoingLight, uTrimInk, uTrim.x );\n#include <opaque_fragment>', 'team trim ink');
       return;

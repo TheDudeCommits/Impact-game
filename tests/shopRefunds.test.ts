@@ -60,12 +60,12 @@ describe('the price drop\'s refunds', () => {
     // A purchase folded in before its refund: owed to the account it went into.
     expect(refundsDue([buy('g2', 'fighter-dorado', 18000), { seq: ++seq, t: 'merge', pk: 'g2', into: 'l2' }])).toEqual([{ pk: 'l2', item: 'fighter-dorado', amount: 16800, before: 0 }]);
     // A refund line with no amount (none is written so) counts as everything paid back: never paid again.
-    expect(refundsDue([buy('h', 'fighter-jirenga', 14000), { seq: ++seq, t: 'grant', pk: 'h', why: refundWhy('fighter-jirenga') }])).toEqual([]);
+    expect(refundsDue([buy('h', 'fighter-banjaku', 14000), { seq: ++seq, t: 'grant', pk: 'h', why: refundWhy('fighter-banjaku') }])).toEqual([]);
   });
 
   it('reads the ledger in its own order, whatever order the files are read in', () => {
-    const lines = [buy('d', 'fighter-jirenga', 14000), { seq: ++seq, t: 'grant', pk: 'd', amount: 12400, why: refundWhy('fighter-jirenga') }];
-    const owed = [{ pk: 'd', item: 'fighter-jirenga', amount: 800, before: 12400 }];
+    const lines = [buy('d', 'fighter-banjaku', 14000), { seq: ++seq, t: 'grant', pk: 'd', amount: 12400, why: refundWhy('fighter-banjaku') }];
+    const owed = [{ pk: 'd', item: 'fighter-banjaku', amount: 800, before: 12400 }];
     expect(refundsDue(lines)).toEqual(owed);
     expect(refundsDue([...lines].reverse())).toEqual(owed);
   });

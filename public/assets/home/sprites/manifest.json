@@ -2339,7 +2339,7 @@
       "sourceSha256": "c672a6c8355857dd6ee82022a672ffa80c8e8265fecce32c968ea6e97a276601",
       "sha256": "94faddb2c4c95a8b095e8bebaec98e7b714156c56565538d40b04b3ab06a02d5",
       "posterSha256": "1ef6cc3bcbfd3fabf49b1a558e5559f3365667611dcf432ddf5ae8157232b357",
-      "pose": "His Shrike Bolt draw",
+      "pose": "His Storm Talon draw",
       "registration": "white keyed from the border, free-floating ink dropped, one scale per sheet, one sole anchor.",
       "promptFile": "made for the game",
       "runtimePagesSourceSha256": "94faddb2c4c95a8b095e8bebaec98e7b714156c56565538d40b04b3ab06a02d5",
@@ -7363,8 +7363,8 @@
       ]
     },
     {
-      "id": "jirenga",
-      "file": "jirenga.webp",
+      "id": "banjaku",
+      "file": "banjaku.webp",
       "sourceFile": "gandang-restyle-ra.png",
       "scale": 1.3043478260869565,
       "bytes": 679482,
@@ -7626,7 +7626,7 @@
           ]
         }
       ],
-      "poster": "jirenga-poster.webp",
+      "poster": "banjaku-poster.webp",
       "posterBytes": 46970,
       "sourceSha256": "04c3ba1b5daa986656c99a311d98cffec2578ddeedb9d06dedb9f0250296a90b",
       "sha256": "58d1685dfd0ebbf6f4cc32a507a033dacc75f46eb0ca2a25d615201c20503ec4",
@@ -7636,7 +7636,7 @@
       "runtimePagesSourceSha256": "58d1685dfd0ebbf6f4cc32a507a033dacc75f46eb0ca2a25d615201c20503ec4",
       "runtimePages": [
         {
-          "file": "jirenga-p1.webp",
+          "file": "banjaku-p1.webp",
           "sha256": "5e64b20d8aff6e0cdb77747712e52182c5b9421f9a93531196c700c038447c29",
           "firstFrame": 0,
           "frameCount": 8,
@@ -7645,7 +7645,7 @@
           "bytes": 352700
         },
         {
-          "file": "jirenga-p2.webp",
+          "file": "banjaku-p2.webp",
           "sha256": "32909523cce3d8b686dcd0037f3b42f815bc80eefa171d4c51d9789ca608e0eb",
           "firstFrame": 8,
           "frameCount": 8,
@@ -8217,7 +8217,7 @@
       "sourceSha256": "c3ed11dab3dff042395524e16142e52d71c03a818a94ed293d901df5f4a78187",
       "sha256": "bdb92fce1bf2d33118c4bac126932073c2b05387a10120bdb1281f2634cbc93f",
       "posterSha256": "1ce8324111f4cc5e281996010915a514a96ee3d821766c6e7ad2a3c75acf6dc7",
-      "pose": "His Heaven's Anvil",
+      "pose": "His Copper Star",
       "registration": "white keyed from the border, free-floating ink dropped, one scale per sheet, one sole anchor.",
       "promptFile": "made for the game",
       "runtimePagesSourceSha256": "bdb92fce1bf2d33118c4bac126932073c2b05387a10120bdb1281f2634cbc93f",
@@ -8805,7 +8805,7 @@
       "sourceSha256": "da5c1dd39268e9b94d2883f2fbef3a64e3b32eec5e31152a44f0b7d0b6d31e46",
       "sha256": "be5f71039bbeec40ee3cd41c2bdd0821d0633a6d5c1a7baff9ce97aa6fea7437",
       "posterSha256": "48a44dae5cd4b24127402b863a448c261583dca746c9972074539401abd5506a",
-      "pose": "His Lantern Rite: First Light",
+      "pose": "His First Light",
       "registration": "white keyed from the border, free-floating ink dropped, one scale per sheet, one sole anchor.",
       "promptFile": "made for the game",
       "runtimePagesSourceSha256": "be5f71039bbeec40ee3cd41c2bdd0821d0633a6d5c1a7baff9ce97aa6fea7437",
@@ -9392,7 +9392,7 @@
       "sourceSha256": "d645cfed69125e1f8e4e0be2f6106a29152c014c7150db86098deae7c44d9d16",
       "sha256": "b58af19d6885c53288b018a90e9689ce265920978355c52a41487fd76583bcfa",
       "posterSha256": "91ec19286cd14b049dc4bbf3b324b7fa2065fb0fe1d87c45a995035e864cdcf3",
-      "pose": "His Shatter Art stance",
+      "pose": "His fighting stance",
       "registration": "white keyed from the border, free-floating ink dropped, one scale per sheet, one sole anchor.",
       "promptFile": "made for the game",
       "runtimePagesSourceSha256": "b58af19d6885c53288b018a90e9689ce265920978355c52a41487fd76583bcfa",

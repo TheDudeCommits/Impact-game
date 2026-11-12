@@ -62,7 +62,7 @@ export const HAND_ROWS: Partial<Record<FighterId, HandRow>> = {
   // The blood shot is thrown from pressed palms.
   tempo: { both: { special: 'palm' } },
   sashigane: { R: HELD },
-  // The left hand is raised open for Ghost Bride and Pinky Promise.
+  // The left hand is raised open for Red Thread Shade and Fated Knot.
   akaito: { L: { special: 'relaxed', ultimate: 'palm', area: 'palm' }, R: HELD },
   chohan: { R: HELD },
   // ---- Cinder Requiem

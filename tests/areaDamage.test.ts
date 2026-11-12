@@ -27,7 +27,7 @@ type Command = Partial<Omit<PlayerInput, 'seq'>>;
 function cast(fighter: FighterId, off = 0, seconds = 6) {
   const sim = new ArenaSimulation({ trainingBot: false, seed: 5 });
   sim.addPlayer('a', fighter, 'A', false, { x: 0, y: 0, z: 0 });
-  sim.addPlayer('b', 'jirenga', 'B', false, { x: 0, y: 0, z: 8 + off });
+  sim.addPlayer('b', 'banjaku', 'B', false, { x: 0, y: 0, z: 8 + off });
   const events: CombatEvent[] = [];
   for (let i = 0, seq = 1; i < seconds * 60; i++, seq++) {
     const a: Command = i === 0 ? { attack: 'area', aim: { x: 0, z: 8 } } : {};

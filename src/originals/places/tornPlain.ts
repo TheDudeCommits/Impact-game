@@ -216,7 +216,7 @@ function citadel(f: Forge, cx: number, cz: number) {
   for (const [dx, dz] of [[-10.2, 0], [10.2, 0], [0, -10.2], [0, 10.2]]) f.box('gold', cx + dx, g + 10, cz + dz, Math.abs(dx) ? .3 : 7, 22, Math.abs(dz) ? .3 : 7, 0xb89040);
 }
 
-/** The Offering's fortress past theirs: black spires raking up from a jagged keep, thorns on every edge, a violet light in
+/** Dusk's fortress past theirs: black spires raking up from a jagged keep, thorns on every edge, a violet light in
  *  its windows. */
 function spires(f: Forge, cx: number, cz: number) {
   const r = rand(361), g = 4;

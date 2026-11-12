@@ -49,7 +49,7 @@ describe('native Ratio blade and manually commanded the mender',()=>{
    const p=new THREE.Vector3();expect(f.owner.meleeContactPoint(index,p)).toBe(true);const joint=spirit.joints.get(index%2?'LeftHand':'RightHand')!;expect(p.distanceTo(joint.getWorldPosition(new THREE.Vector3()))).toBeLessThan(1e-6);expect(f.inner.timeFields.size).toBe(0);expect(f.owner.motionEvidence().formVisible).toBe(false);
   }}finally{f.dispose();}
  });
- it.each([false,true])('native airborne string and KIN KIN contacts remain manual (awakened=%s)',awakened=>{
+ it.each([false,true])('native airborne string and GILT contacts remain manual (awakened=%s)',awakened=>{
   const f=fixture();try{
    for(let stage=0;stage<3;stage++){
     const m=rushMove('gosu',stage,awakened);
@@ -58,7 +58,7 @@ describe('native Ratio blade and manually commanded the mender',()=>{
    }
    const m=MOVES.gosu.special;
    for(let index=0;index<3;index++){
-    const spirit=sequence(f,'special',m.contacts[index],{awakened,awakenedUntil:20,actionSeq:9});expect(spirit.motionEvidence().clip).toBe('KIN KIN Barrage');const p=new THREE.Vector3();f.owner.meleeContactPoint(index,p);expect(p.distanceTo(spirit.joints.get(index%2?'LeftHand':'RightHand')!.getWorldPosition(new THREE.Vector3()))).toBeLessThan(1e-6);
+    const spirit=sequence(f,'special',m.contacts[index],{awakened,awakenedUntil:20,actionSeq:9});expect(spirit.motionEvidence().clip).toBe('GILT Barrage');const p=new THREE.Vector3();f.owner.meleeContactPoint(index,p);expect(p.distanceTo(spirit.joints.get(index%2?'LeftHand':'RightHand')!.getWorldPosition(new THREE.Vector3()))).toBeLessThan(1e-6);
    }
   }finally{f.dispose();}
  });

@@ -43,7 +43,7 @@ async function standing(id: FighterId) {
 
 describe('a relaxed idle is not how a fighter faces an opponent', () => {
   // Taisei (8 October 2026): his relaxed idle, open hands and feet together, gives way to his fighting stance (taisei-ready).
-  it.each([['ward', 'Ward Victory Loop'], ['kagari', 'idlehome_a'], ['taisei', 'Taisei idle']] as const)('%s stands in his battle idle when it is a fight', async (id, relaxed) => {
+  it.each([['ward', 'Ward Victory Loop'], ['kagari', 'idle_relaxed'], ['taisei', 'Taisei idle']] as const)('%s stands in his battle idle when it is a fight', async (id, relaxed) => {
     expect(IDLE_PROFILES[id]?.clip).toBe(relaxed);
     const { body, stand } = await standing(id);
     try {

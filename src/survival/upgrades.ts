@@ -56,7 +56,7 @@ export interface RunStats {
   waveMeter: number;
   /** Getting up again, once per stack. */
   revives: number;
-  /** 'HOUND ARMOR': below half health, the fighter rages (see SurvivalGame). */
+  /** 'GRAVE PLATE': below half health, the fighter rages (see SurvivalGame). */
   'grave-hound': number;
   // ---- KI: what the fighter's own specials, ultimate, dash and awakening do (SurvivalGame.kiHit and friends).
   /** Specials and ultimates hit harder by this share. */
@@ -199,7 +199,7 @@ export const UPGRADES: readonly UpgradeDefinition[] = [
   { id: 'god-speed', name: 'Storm Stride', kanji: '疾風', rarity: 'legendary', max: 1, icon: 'wind',
     describe: () => '+20% speed, moves recharge 25% faster and cost no more stamina than a breath.',
     apply: s => { s.speed *= 1.2; s.cooldown *= .75; s.stamina *= .5; } },
-  { id: 'hound-armor', name: 'Wrath Mantle', kanji: '憤鎧', rarity: 'legendary', max: 1, icon: 'armor',
+  { id: 'grave-plate', name: 'Wrath Mantle', kanji: '憤鎧', rarity: 'legendary', max: 1, icon: 'armor',
     describe: () => 'Below half health the mantle takes over: +50% damage, +20% speed and 8% lifesteal.',
     apply: s => { s['grave-hound'] = 1; } },
   { id: 'ki-surge', name: 'Inner Surge', kanji: '内功', rarity: 'common', max: 5, icon: 'ki-surge',

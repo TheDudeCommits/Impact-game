@@ -43,8 +43,8 @@ export const AWAKENING_LINES: Partial<Record<FighterId, AwakeningLine>> = {
   sorayomi: after('sorayomi','vo-sorayomi-storm-eye','EYE OF THE STORM',[.01],0),
   // Recorded challenge: 'Surpass me.' Unblinking Focus is a gameplay focus state.
   strix: after('strix','vo-strix-surpass-me','Unblinking Focus',[0,.85],1),
-  // Kenzo: "鬼面……羅刹ッ！" - "Oni mask... RAKSHASA!", his form by name.
-  kenzo: after('kenzo', 'vo-kenzo-rakshasa', 'RAKSHASA', [0, .38, 1.22], 2),
+  // Kenzo: "鬼面……羅刹ッ！" - "Oni mask... DUNE ONI!", his form by name.
+  kenzo: after('kenzo', 'vo-kenzo-dune-oni', 'DUNE ONI', [0, .38, 1.22], 2),
   // Gummy: "にっひひ…サンライズ!" - a laugh, then "SUNRISE!", his form by name.
   gummy: after('gummy', 'vo-gummy-saiko-chiten', 'SUNRISE', [.02, 1.47, 1.96, 2.28], 2),
   // Shirokane: "出番だ、番人さん。" - "You're up, Warden", as his Guardian rises.
@@ -58,8 +58,8 @@ export const AWAKENING_LINES: Partial<Record<FighterId, AwakeningLine>> = {
   // Gaku: "もう…笑えない。全部、石にしてやる…これが、狛犬だ。" - "No more laughing. I'll turn it all to stone... this is
   // KOMAINU."
   gaku: after('gaku', 'vo-gaku-arittake', 'KOMAINU', [.01, .58, 1.4, 1.88, 2.25, 2.82, 3.05, 3.82, 4.35], 7),
-  // Ward: "手術室は、もう閉じた。" - "The operating theatre is closed now", as it closes round them both.
-  ward: after('ward', 'vo-ward-nigerarenee', 'OPERATING THEATRE', [.02], 0),
+  // Ward: "手術室は、もう閉じた。" - "The surgery is closed now", as it closes round them both.
+  ward: after('ward', 'vo-ward-nigerarenee', 'SCRUBBED IN', [.02], 0),
   // Kosho: "燃えろ…フー・ブルー!" - "Burn... FEU BLEU!", his form by name.
   kosho: after('kosho', 'vo-kosho-feu-bleu', 'FEU BLEU', [.01], 0),
   // Shiden: "来い…雷！" - "Come... thunder!", as his Guardian rises.
@@ -70,9 +70,9 @@ export const AWAKENING_LINES: Partial<Record<FighterId, AwakeningLine>> = {
   // Asahi: "燃えろ…夜明けだ！" - "Burn... it's daybreak!", DAYBREAK by name.
   asahi: after('asahi', 'vo-asahi-full-focus', 'DAYBREAK', [.03], 0),
   // KoKo: "お前の番だ……アイアン・ララバイ。" - "Your turn... Iron Lullaby", as his Iron Spirit rises over him.
-  koko: after('koko', 'vo-koko-your-turn', 'HUSH', [.05, 1.31, 1.93], 2),
-  // Kagari: "燃え上がれ…カグツチ!" - "Blaze up... KAGUTSUCHI!", his form by name.
-  kagari: after('kagari', 'vo-kagari-taimatsu-no-kagari', 'KAGUTSUCHI', [.01], 0),
+  koko: after('koko', 'vo-koko-your-turn', 'SLUMBER', [.05, 1.31, 1.93], 2),
+  // Kagari: "燃え上がれ…カグツチ!" - "Blaze up... ALL ABLAZE!", his form by name.
+  kagari: after('kagari', 'vo-kagari-taimatsu-no-kagari', 'ALL ABLAZE', [.01], 0),
   // Gohaku: "もう…止められません。白猿が、目を覚ます！" - "There's no stopping it now. The white ape wakes!"
   'gohaku': after('gohaku', 'vo-gohaku-kono-chikara', 'Beast', [.01, .1, .49, .66, 1.35, 1.52], 2),
   // Kuon: "天眼…開眼。" - "Heaven's Eye... open", as the TENGAN wake.

@@ -63,8 +63,8 @@ describe('the originals\' floor seals', () => {
   it('read the writers\' lines: the five that showed the earlier card and seal have entries of their own', () => {
     const lines: Partial<Record<FighterId, [string, string, string]>> = {
       gorai: ['Wyrm Breath', 'Wyrm Breath', '嵐竜の息吹'], dorado: ['Crown Clash', 'Crown Clash', '王冠の激突'],
-      shiun: ['Hymn 7: Storm Psalm', 'Storm Psalm', '聖歌七番・嵐の詩篇'], gaunt: ['Scrap Repeater', 'Scrap Repeater', '鉄屑連射'],
-      ippon: ['All-Nighter Desk Flip', 'Desk Flip', '残業ちゃぶ台返し'], shiden: ['Storm Art: Great Thunderball', 'Thunderball', '霆遁・大雷球'],
+      shiun: ['Storm Psalm', 'Storm Psalm', '嵐の詩篇'], gaunt: ['Scrap Repeater', 'Scrap Repeater', '鉄屑連射'],
+      ippon: ['Overtime Mop-Up', 'Mop-Up', '残業・後始末'], shiden: ['Hawkstorm', 'Hawkstorm', '鷹嵐'],
       asahi: ['Daybreak Cycle', 'Daybreak Cycle', '夜明けの巡り'],
     };
     for (const [id, [name, card, ja]] of Object.entries(lines) as [FighterId, [string, string, string]][]) {

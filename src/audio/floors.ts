@@ -26,7 +26,7 @@ export const FLOORS: Readonly<Record<StageId, Surface>> = {
   'drifting-isle': 'metal',                // the isle's metal arena
   'thornwood-ward': 'stone',
   'kuroyuki-hall': 'stone',
-  'rift-war': 'grass', 'blood-citadel': 'stone', 'hidden-ash': 'stone',
+  'rift-war': 'grass', 'blood-citadel': 'stone', 'ashwood': 'stone',
   'rift-village': 'stone', 'rift-swords': 'water', 'rift-fortress': 'stone', 'rift-eclipse': 'stone', 'rift-frost': 'snow',
   'rift-grove': 'grass', 'rift-wastes': 'sand', 'rift-harbor': 'wood',
   'dry-harbour': 'stone',
@@ -64,7 +64,7 @@ export function weightOf(fighter: FighterId, awakened = false): number {
  *  says otherwise, added to its weight. A suit of armour, a mountain of a man, a fish-man; and the other way an Empress
  *  on long legs, a god of the sky islands, a string-man who walks on air. */
 const BUILD: Readonly<Partial<Record<FighterId, number>>> = {
-  barrow: .3, haldor: .3, shakugo: .15, oyashio: .2, 'full-beam': .15, shanxiao: .2, 'shibuichi': .3, gaunt: .15, 'ovid': .15, onigawara: .1, highsun: .1, jirenga: .15,
+  barrow: .3, haldor: .3, shakugo: .15, oyashio: .2, 'full-beam': .15, shanxiao: .2, 'shibuichi': .3, gaunt: .15, 'ovid': .15, onigawara: .1, highsun: .1, banjaku: .15,
   'basilissa': -.3, adad: -.25, strappado: -.2, tokan: -.1, senko: -.1, sorayomi: -.05, 'psyche': -.05,
 };
 /** A player's weight now. */

@@ -29,7 +29,7 @@ export const KINU_SPIRIT_SURFACES = {
  * The final cross has a different leading knuckle, without changing the rig. */
 export function kinuSpiritSurfacePoint(hand:Object3D,clip:string|undefined,index:number,out:Vector3):Vector3 {
   const left=hand.name==='LeftHand';
-  const finish=(clip==='Broken Shackles'&&index===7)||(clip==='BUCHI BUCHI Barrage'&&index===2);
+  const finish=(clip==='Broken Shackles'&&index===7)||(clip==='UNSPOOL Barrage'&&index===2);
   const p=left?(finish?KINU_SPIRIT_SURFACES.leftFinish:KINU_SPIRIT_SURFACES.left):(finish?KINU_SPIRIT_SURFACES.rightFinish:KINU_SPIRIT_SURFACES.right);
   return hand.localToWorld(out.set(p[0],p[1],p[2]));
 }

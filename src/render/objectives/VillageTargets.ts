@@ -27,7 +27,7 @@ export class VillageTargets {
       if(core){const awning=new THREE.Mesh(new THREE.ConeGeometry(2.45,1.1,4),roof);awning.rotation.y=Math.PI/4;awning.scale.z=.8;awning.position.y=3.45;intact.add(awning);for(const x of [-1.3,1.3])for(const z of [-1,1])timber.push(beam(x,1.9,z,.2,3.8,.2));}
       for(const [geos,material] of [[timber,wood],[metal,iron]] as const){const mesh=new THREE.Mesh(mergeGeometries(geos)!,material);mesh.castShadow=true;mesh.receiveShadow=true;intact.add(mesh);geos.forEach(g=>g.dispose());}
       const flag=new THREE.Mesh(new THREE.PlaneGeometry(.8,1.25),paper);flag.position.set(0,2.12,-.39);flag.rotation.y=Math.PI;intact.add(flag);
-      // The Hidden Ash's mark (src/originals/places/mark.ts): a diamond frame, a peak, the ash line and an ember.
+      // Ashwood's mark (src/originals/places/mark.ts): a diamond frame, a peak, the ash line and an ember.
       const poly=(points:readonly (readonly [number,number])[])=>new THREE.Shape(points.map(([x,y])=>new THREE.Vector2(x,y)));
       const frame=poly([[0,.27],[.27,0],[0,-.27],[-.27,0]]);frame.holes.push(new THREE.Path([[0,.215],[-.215,0],[0,-.215],[.215,0]].map(([x,y])=>new THREE.Vector2(x,y))));
       const peak=poly([[-.135,-.05],[0,.095],[.135,-.05],[.105,-.075],[0,.04],[-.105,-.075]]),ash=poly([[-.075,-.13],[.075,-.13],[.075,-.105],[-.075,-.105]]),ember=new THREE.Shape().absarc(0,.16,.025,0,Math.PI*2,false);

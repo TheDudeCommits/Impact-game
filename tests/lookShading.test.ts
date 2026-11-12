@@ -99,8 +99,9 @@ describe('fighters wear the look', () => {
         // The feel pass: the smear frame rides the hull as it rides the body (look/toonShading.ts applyLimbSmear),
         // on the striking limb alone since the roster-wide motion pass (v2: the vertices' smearLimb).
         // The side's trim rides between the two (look/toonShading.ts applyTeamTrim): after the ink's own
-        // colour, before the lock's glow, and nothing at all outside a ball match.
-        expect(shaderPatchKeys(m)).toEqual(['look-ink-v2', 'look-team-trim-ink-v1', 'threat-ink-v1', 'look-limb-smear-v2']);
+        // colour, before the lock's glow, and nothing at all outside a ball match. (v2: the hull widens by the
+        // trim's `widen`, football's bold kits.)
+        expect(shaderPatchKeys(m)).toEqual(['look-ink-v2', 'look-team-trim-ink-v2', 'threat-ink-v1', 'look-limb-smear-v2']);
         const hull = compile(m, T.ShaderLib.toon);
         expect(hull.vertexShader).toContain('uThreatWiden');
         expect(hull.fragmentShader).toContain('mix( outgoingLight, uThreatColor, uThreatMix )');

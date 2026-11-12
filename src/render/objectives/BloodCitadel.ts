@@ -13,7 +13,7 @@ export class BloodCitadel {
   constructor(){this.root.name='Bad Blood · The Fallen Citadel';}
   async load(){
     const kit=new ObjectiveScenery(this.root,'blood-citadel');
-    await Promise.all([kit.load(['citadel-keep','pagoda','wall-tall','torii','building-courtyard','lantern','ume','harbor/rocks-a','ivy']),this.ground(),this.sky(),this.ambience.load()]);
+    await Promise.all([kit.load(['citadel-keep','pagoda','wall-tall','torii','building-courtyard','ume','harbor/rocks-a','ivy'])/* fire baskets on posts by the wall: citadelNight.ts */,this.ground(),this.sky(),this.ambience.load()]);
     kit.place('citadel-keep',97,0,72,-Math.PI/2,-17,62);
     kit.place('citadel-keep',-113,8,68,Math.PI/2,-10,64);
     for(const side of [-1,1]){
@@ -26,7 +26,7 @@ export class BloodCitadel {
       for(let i=0;i<5;i++){
         kit.place('building-courtyard',side*(-55+i*25),side*64,24,side<0?0:Math.PI,0,16+i%2*4);
       }
-      for(const z of [-19,19])kit.place('lantern',side*32,z,1.3,0,.8,3);
+      // (An iron fire basket on a post stands at (side*32, +/-19): citadelNight.ts.)
       kit.place('ume',side*44,side*-43,22,side*.4,0,21);
     }
     kit.place('torii',0,-45,23,0,-1,19,4);

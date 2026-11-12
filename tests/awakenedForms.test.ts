@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { LimbFire, KAGUTSUCHI, FeuBleu } from '../src/render/signature/FeuBleu';
+import { LimbFire, ALL_ABLAZE, FeuBleu } from '../src/render/signature/FeuBleu';
 import { Setsuna } from '../src/render/signature/Setsuna';
-import { OperatingTheatre } from '../src/render/signature/OperatingTheatre';
+import { ScrubbedIn } from '../src/render/signature/ScrubbedIn';
 import { GhostShell } from '../src/render/signature/GhostShell';
 import { AwakeningEffects } from '../src/render/AwakeningEffects';
 import type { Fighter } from '../src/render/Fighter';
@@ -65,9 +65,9 @@ function biped(id: string, fighter: FighterId, props: Partial<PlayerState> = {},
 const flameCards = () => { const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial(), 256); mesh.count = 0; return mesh; };
 const visible = (scene: THREE.Scene, name: string) => scene.children.filter(o => o.name === name && o.visible);
 
-describe('Kagari awakened: the KAGUTSUCHI burns in his arms', () => {
+describe('Kagari awakened: the ALL ABLAZE burns in his arms', () => {
   it('stands fire up his arms and over his shoulders, the arms themselves alight, only while awakened', () => {
-    const scene = new THREE.Scene(), fx = new LimbFire(scene, KAGUTSUCHI), kagari = biped('a', 'kagari', { awakened: true, awakenedUntil: 20 });
+    const scene = new THREE.Scene(), fx = new LimbFire(scene, ALL_ABLAZE), kagari = biped('a', 'kagari', { awakened: true, awakenedUntil: 20 });
     const cards = flameCards(), eye = new THREE.Vector3(0, 1.6, 4);
     try {
       scene.add(kagari.group); scene.updateMatrixWorld(true);
@@ -83,12 +83,12 @@ describe('Kagari awakened: the KAGUTSUCHI burns in his arms', () => {
         expect(Math.abs(q.x) + Math.abs(q.z), 'upright').toBeLessThan(1e-6);
       }
       expect(wide, 'out to the hands').toBeGreaterThan(.55);
-      expect(visible(scene, 'kagutsuchi').length, 'the burn round the arms').toBe(1);
-      expect(visible(scene, 'kagutsuchi-heat').length, 'the arms alight').toBe(1);
+      expect(visible(scene, 'all-ablaze').length, 'the burn round the arms').toBe(1);
+      expect(visible(scene, 'all-ablaze-heat').length, 'the arms alight').toBe(1);
       kagari.state.awakened = false;
       for (let i = 0; i < 60; i++) n = fx.update(3 + i / 60, 1 / 60, new Map([['a', kagari]]), 1, cards, 0, 256, eye);
       expect(n).toBe(0);
-      expect(visible(scene, 'kagutsuchi-heat').length).toBe(0);
+      expect(visible(scene, 'all-ablaze-heat').length).toBe(0);
     } finally { fx.dispose(); }
   });
 
@@ -106,7 +106,7 @@ describe('Kagari awakened: the KAGUTSUCHI burns in his arms', () => {
     const scene2 = new THREE.Scene(), effects = new AwakeningEffects(scene2);
     try {
       effects.warmup();
-      for (const name of ['feu-bleu-warmup', 'feu-bleu-heat-warmup', 'kagutsuchi-warmup', 'kagutsuchi-heat-warmup', 'setsuna-shell-warmup', 'k-room-warmup', 'room-membrane-warmup', 'room-scan-warmup', 'crossmatch-cubes'])
+      for (const name of ['feu-bleu-warmup', 'feu-bleu-heat-warmup', 'all-ablaze-warmup', 'all-ablaze-heat-warmup', 'setsuna-shell-warmup', 'k-room-warmup', 'room-membrane-warmup', 'room-scan-warmup', 'crossmatch-cubes'])
         expect(scene2.getObjectByName(name), name).toBeDefined();
     } finally { effects.dispose(); }
   });
@@ -135,7 +135,7 @@ describe('Setsu awakened: SETSUNA is a body of lightning', () => {
 
 describe('Ward awakened: the ROOM on Ward', () => {
   it('sheathes LANCET in a SHEATH DOME, films his outline and turns Crossmatch cubes round him - under the dome, off the floor', () => {
-    const scene = new THREE.Scene(), fx = new OperatingTheatre(scene), ward = biped('l', 'ward', { awakened: true, awakenedUntil: 30 }, true);
+    const scene = new THREE.Scene(), fx = new ScrubbedIn(scene), ward = biped('l', 'ward', { awakened: true, awakenedUntil: 30 }, true);
     const fighters = new Map([['l', ward]]);
     try {
       scene.add(ward.group); scene.updateMatrixWorld(true);

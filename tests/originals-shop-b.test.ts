@@ -25,11 +25,11 @@ import { loadRig } from './rigHarness';
 
 /** The file each original's own assets are named for. */
 const OWN: Partial<Record<FighterId, RegExp>> = {
-  'wuming': /\/wuming-/, jirenga: /\/gandang-/, 'jinlin': /\/jinlin-/, 'gohaku': /\/tongbi-/,
+  'wuming': /\/wuming-/, banjaku: /\/gandang-/, 'jinlin': /\/jinlin-/, 'gohaku': /\/tongbi-/,
 };
 const CARRIED: Partial<Record<FighterId, [string[], string[]][]>> = {
   'wuming': [[['wuming-tr1'], ['wuming-sz1', 'wuming-fanim1', 'wuming-fanim2', 'wuming-fanim3', 'wuming-fanim4']]],
-  jirenga: [[['gandang-tr1'], ['jirenga-sz1', 'jirenga-fanim1', 'jirenga-fanim2', 'jirenga-fanim3']]],
+  banjaku: [[['gandang-tr1'], ['jirenga-sz1', 'jirenga-fanim1', 'jirenga-fanim2', 'jirenga-fanim3']]],
   'jinlin': [
     [['jinlin-tr1'], ['jinlin-sz1', 'jinlin-fanim1', 'jinlin-fanim2', 'jinlin-fanim3']],
     [['jinlin-awakened-tr1'], ['jinlin-black1', 'jinlin-black-react1', 'jinlin-fanim2', 'jinlin-fanim3']]],
@@ -121,7 +121,7 @@ describe("team B's originals (the Last Sun)", () => {
   });
 
   it('wear the crown tint on dark hair over the head, where the slot awakens by it', async () => {
-    // Fighter.ts crownWeight: the hair above the head joint, skinned to it, is what Wuming's LOTUS IN FLAME turns pink.
+    // Fighter.ts crownWeight: the hair above the head joint, skinned to it, is what Wuming's JADE PYRE turns pink.
     for (const id of IDS.filter(i => AWAKENINGS[i].hair !== undefined)) {
       const rig = await loadRig(FIGHTERS[id].model);
       let head = 0, crown = 0;
@@ -144,7 +144,7 @@ describe("team B's originals (the Last Sun)", () => {
     }
   });
 
-  it('wake Emperor Jinlin as BLACK TIDE, a body of his own carrying the form\'s reactions, under his own tail', async () => {
+  it('wake Jinlin as ABYSSAL TIDE, a body of his own carrying the form\'s reactions, under his own tail', async () => {
     // His form is his own file, and it carries the takes the slot's formExtraModels held (the flinch and the downed pose
     // among them, reactionTakes.test.ts).
     const form = await loadRig(FIGHTERS['jinlin'].formModel!);

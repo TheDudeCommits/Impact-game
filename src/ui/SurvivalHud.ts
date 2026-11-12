@@ -90,12 +90,12 @@ const fullScreenWanted = () => { try { return localStorage.getItem(FULLSCREEN_KE
  *  top (the splash page cuts a strip across them; .44 where one is not listed). */
 const EYES: Record<string, number> = {
   shiun: .28, caldera: .26, rime: .21, mirabel: .33, barrow: .20, kanuki: .32, oro: .25, 'wuming': .40, 'jinlin': .40, vesper: .33,
-  zarek: .29, 'nightfall': .34, gorm: .26, harrow: .34, jirenga: .29, gorai: .26, 'gorai-wyrm': .29, takane: .29, kuromitsu: .55, rakshasa: .26,
+  zarek: .29, 'nightfall': .34, gorm: .26, harrow: .34, banjaku: .29, gorai: .26, 'gorai-wyrm': .29, takane: .29, kuromitsu: .55, 'dune-oni': .26,
   ashwing: .40, lumen: .27, kurobi: .57, kade: .34, akagane: .27, imago: .38, gantry: .28, magatsu: .28, nihil: .35, haldor: .22,
 };
 Object.assign(EYES, { caldera: .34, rime: .38, mirabel: .40, kanuki: .35, zarek: .34, 'nightfall': .37, harrow: .38, takane: .39, kuromitsu: .22,
-  rakshasa: .23, ashwing: .24, lumen: .35, kade: .35, gantry: .37, nihil: .39, oro: .36, shiun: .42, 'wuming': .42, 'jinlin': .40,
-  vesper: .42, jirenga: .35, 'gorai-wyrm': .31, gorai: .44, kurobi: .42, akagane: .42, imago: .37, magatsu: .40, haldor: .33, barrow: .28 });
+  'dune-oni': .23, ashwing: .24, lumen: .35, kade: .35, gantry: .37, nihil: .39, oro: .36, shiun: .42, 'wuming': .42, 'jinlin': .40,
+  vesper: .42, banjaku: .35, 'gorai-wyrm': .31, gorai: .44, kurobi: .42, akagane: .42, imago: .37, magatsu: .40, haldor: .33, barrow: .28 });
 
 export class SurvivalHud {
   private root: HTMLElement;
@@ -903,7 +903,7 @@ export class SurvivalHud {
 
   /** Who is playing, for the ending's inset. */
   private hero?: FighterId;
-  /** The ending: rank S has fallen over the offering and the rift closes -
+  /** The ending: rank S has fallen over the Fallen Star and the rift closes -
    *  for now. A panel of its own (the one it had was the intro's), gold on
    *  black, with the fighter who won inset in it. */
   private finale(item: FeedItem) {

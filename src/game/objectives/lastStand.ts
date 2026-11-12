@@ -16,7 +16,7 @@ import {BossRain,type SiegeWarning} from './bossRain';
 import {VillageStructures,type VillageStructure} from './villageStructures';
 import {SiegeBrain} from './SiegeBrain';
 
-export const VILLAGE={name:'Hidden Ash Village',x:0,z:24,radius:6,maxHp:12000,shop:{x:-11,z:24,radius:3.5}} as const;
+export const VILLAGE={name:'Ashwood Village',x:0,z:24,radius:6,maxHp:12000,shop:{x:-11,z:24,radius:3.5}} as const;
 export const LANES=[{name:'WEST ROAD',x:-27,z:-40},{name:'FOREST ROAD',x:0,z:-40},{name:'EAST ROAD',x:27,z:-40}] as const;
 export const DEFENCES={
   repair:{name:'Repair crew',description:'Restore 20% of village health.',cost:300,max:0},

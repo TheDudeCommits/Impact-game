@@ -64,7 +64,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     name: 'Taisei', series: 'Last Sun', tagline: 'The monkey-tailed brawler of the last sun, who will fight anyone strong enough to make the end of the world interesting.',
     homeArt: true,
     color: '#1f9a7e', // jade, his vest's
-    moves: ['Stoneborn Fist', 'Cloudstep Strike', 'Sunpalm Cannon', 'Last Sun Bomb'],
+    moves: ['Stoneborn Fist', 'Cloudstep Strike', 'Sunpalm Cannon', 'Last Sunfall'],
     shortMoves: ['STONEBORN', 'CLOUDSTEP', 'SUNPALM', 'LAST SUN'],
     awakening: 'GOLDEN SAGE',
     model: F + 'wukong-tr1.glb', rushModel: F + 'wukong-rush1.glb',
@@ -79,15 +79,15 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
       'outfit-taisei-golden-sage': { name: 'Taisei · Golden Sage', blurb: 'The mane burning gold from the first bell to the last: the Great Sage, awake all match.' },
       'outfit-taisei-ember-mane': { name: 'Taisei · Ember Mane', blurb: 'A crown of hair burnt red and a red aura for the awakening: the monkey king at his hottest.' },
       'outfit-taisei-azure-sage': { name: 'Taisei · Azure Sage', blurb: 'The golden mane gone sky blue, under an aura that crackles like a downed power line.' },
-      'outfit-taisei-silver-mane': { name: 'Taisei · Silver Mane', blurb: 'A silver crown of hair and a silver-blue aura: the body moving before the thought.' },
+      'outfit-taisei-silver-mane': { name: 'Taisei · Silver Mane', blurb: 'A silver crown of hair and a silver-blue aura, cold and quiet as the moon.' },
     },
   },
   konta: {
-    name: 'Konta', series: 'Hidden Ash', tagline: 'The loudest ninja of his village - and the fox spirit of azure flame sealed inside him.',
+    name: 'Konta', series: 'Ashwood', tagline: 'The loudest ninja of his village - and the fox spirit of azure flame sealed inside him.',
     homeArt: true,
     color: '#ff9a1f', height: 1.66,
-    moves: ['Foxpack Barrage', 'Senpugan', 'Wind Art: Galewheel', 'Kitsunebi-Dama'],
-    shortMoves: ['FOXPACK BARRAGE', 'SENPUGAN', 'GALEWHEEL', 'KITSUNEBI-DAMA'],
+    moves: ['Foxpack Barrage', 'Kazeyose', 'Galewheel', 'Azure Foxfire'],
+    shortMoves: ['FOXPACK BARRAGE', 'KAZEYOSE', 'GALEWHEEL', 'AZURE FOXFIRE'],
     awakening: 'HOMURA',
     coat: { thigh: .12, shin: .11 }, model: F + 'konta-px1.glb', rushModel: F + 'konta-pxrush1.glb', extraModels: [F + 'konta-pxenders1.glb'],
     formModel: F + 'homura-px1.glb', formForward: -1.5, formScale: 2.8,
@@ -100,12 +100,12 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     name: 'Gummy', series: 'Dust Sea', tagline: 'A rubber-limbed captain sailing the Dust Sea past every horizon.',
     homeArt: true,
     color: '#e8403a', height: 1.74,
-    moves: ['Snapback Jab', 'Rogue Wave', 'Sunset Barrage', 'Grand Tide'],
-    shortMoves: ['SNAPBACK', 'ROGUE WAVE', 'SUNSET BARRAGE', 'GRAND TIDE'],
+    moves: ['Snapback Jab', 'Rogue Wave', 'Sunset Barrage', 'Spring Tide'],
+    shortMoves: ['SNAPBACK', 'ROGUE WAVE', 'SUNSET BARRAGE', 'SPRING TIDE'],
     awakening: 'SUNRISE',
     model: F + 'lucy-px1.glb', rushModel: F + 'lucy-pxrush1.glb', extraModels: [F + 'lucy-pxenders1.glb', F + 'lucy-pxenders2.glb', F + 'lucy-pxtide1.glb'],
     formModel: F + 'sunrise-px1.glb', formExtraModels: [F + 'sunrise-pxmoves1.glb', F + 'sunrise-pxreact1.glb', F + 'sunrise-pxtide1.glb'],
-    // (lucy-moves, 5 November: `*-pxtide1.glb` hold his own Grand Tide and Monsoon takes, scripts/originals/clips/author_lucy_tide.py.)
+    // (lucy-moves, 5 November: `*-pxtide1.glb` hold his own Spring Tide and Monsoon takes, scripts/originals/clips/author_lucy_tide.py.)
     portrait: F + 'lucy-px-portrait.png', idleModel: F + 'lucy-pxidleb1.glb',
     names: {
       'High Noon Barrage': 'NO SHADOW Barrage',
@@ -125,7 +125,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     name: 'Nigo', series: 'Cinder Requiem', tagline: 'The reaper of the cinder wastes, who cuts the dead city\'s ghosts down with a girder for a sword.',
     homeArt: true,
     color: '#e2702a',
-    moves: ['Haizan Cut', 'Ashstep Strike', 'Scorched Earth', 'Final Haizan: Nightfall'],
+    moves: ['Haizan Cut', 'Ashstep Strike', 'Scorched Earth', 'Haizan: Nightfall'],
     shortMoves: ['HAIZAN', 'ASHSTEP', 'SCORCHED EARTH', 'NIGHTFALL'],
     awakening: 'NIGHTFALL',
     coat: { thigh: .12, shin: .11 }, model: F + 'nigo-tr1.glb', rushModel: F + 'nigo-rush1.glb', extraModels: [F + 'nigo-tr1-area1.glb'],
@@ -138,12 +138,12 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
   },
 
   ouga: {
-    name: 'Ouga', series: 'Last Sun', tagline: 'The proud prince of a warrior race from the stars - and he will never let a rival get ahead of him.',
+    name: 'Ouga', series: 'Last Sun', tagline: 'The proud prince of a fallen kingdom - and he will never let a rival get ahead of him.',
     homeArt: true,
     color: '#d8344a', height: 1.72,
-    moves: ['Crown Straight', 'Haou-Dan', 'Shikou-Ha', 'Kyokko-Ho'],
-    shortMoves: ['CROWN STRAIGHT', 'HAOU-DAN', 'SHIKOU-HA', 'KYOKKO-HO'],
-    awakening: 'GOLDEN PRIDE',
+    moves: ['Crown Straight', 'Crown Burst', 'Throne Wave', 'Royal Aurora'],
+    shortMoves: ['CROWN STRAIGHT', 'CROWN BURST', 'THRONE WAVE', 'ROYAL AURORA'],
+    awakening: 'CROWNFIRE',
     // QA round (fix-cloth, 3 November 2026): his cape hangs from his shoulders on chains of its own (shop/cape_chains_r6.py),
     // not welded to his chest, so his guard and his run no longer stand it out behind him as a board.
     cape: { hang: .8, cone: 20, droop: 45, stiffness: 16, thigh: .11, shin: .1 },
@@ -154,57 +154,57 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
       'Double Axe Handle': 'Throne Breaker',
     },
     shop: {
-      'outfit-ouga-golden-pride': { name: 'Ouga · Golden Pride', blurb: 'His crest burning gold from the first bell to the last: the prince\'s pride, awake all match.' },
+      'outfit-ouga-crownfire': { name: 'Ouga · Crownfire', blurb: 'His crest burning gold from the first bell to the last: the crown on fire, awake all match.' },
       'outfit-ouga-crimson-crown': { name: 'Ouga · Crimson Crown', blurb: 'A crest burnt red and a red aura for the awakening: a prince at his hottest.' },
-      'outfit-ouga-azure-pride': { name: 'Ouga · Azure Pride', blurb: 'A sky-blue crest under an aura that crackles like a storm front.' },
-      'outfit-ouga-violet-wrath': { name: 'Ouga · Violet Wrath', blurb: 'Crest and aura in deep violet: a prince who grows stronger with every blow he takes.' },
+      'outfit-ouga-azure-crown': { name: 'Ouga · Azure Crown', blurb: 'A sky-blue crest under an aura that crackles like a storm front.' },
+      'outfit-ouga-violet-wrath': { name: 'Ouga · Violet Wrath', blurb: 'Crest and aura in deep violet: a prince in his blackest mood.' },
     },
   },
-  // SHIROKANE - the Scarecrow. The Hidden Ash's laziest teacher and its deadliest ninja, dressed as the scarecrow that
+  // SHIROKANE - the Scarecrow. Ashwood's laziest teacher and its deadliest ninja, dressed as the scarecrow that
   // guards what is left of its fields: long silver hair in a low tail, a woven conical hat, a stitched patchwork mask, a red
   // glass lens over the eye that copies every technique it sees, a patched field coat and a paperback in his belt.
   shirokane: {
-    name: 'Shirokane', series: 'Hidden Ash', tagline: 'The scarecrow of the Hidden Ash: half asleep, a book in his belt, and a red lens that copies every art it sees.',
+    name: 'Shirokane', series: 'Ashwood', tagline: 'The harvest warden of Ashwood: half asleep, a book in his belt, and a red lens that misses nothing.',
     homeArt: true,
     color: '#88b9ca', height: 1.78,
-    moves: ['Scrap Kunai', 'Sickle Bolt', 'Static Scarecrow', 'Void Eye: Sickle Bolt'],
-    shortMoves: ['SCRAP KUNAI', 'SICKLE BOLT', 'STATIC DECOY', 'VOID SICKLE'],
+    moves: ['Scrap Kunai', 'Sickle Bolt', 'Static Decoy', 'Sickle Bolt: Reaper'],
+    shortMoves: ['SCRAP KUNAI', 'SICKLE BOLT', 'STATIC DECOY', 'SICKLE REAPER'],
     awakening: 'HARVEST WARDEN',
     guardian: F + 'guardian-loom1.glb',
-    coat: { thigh: .12, shin: .11 }, model: F + 'shirokane-tr1.glb', rushModel: F + 'shirokane-rush1.glb', extraModels: [F + 'shirokane-enders1.glb', F + 'shirokane-tr1-area1.glb'], // remake-areas: his Great Dust Fall cast (src/originals/areaCasts.ts)
+    coat: { thigh: .12, shin: .11 }, model: F + 'shirokane-tr1.glb', rushModel: F + 'shirokane-rush1.glb', extraModels: [F + 'shirokane-enders1.glb', F + 'shirokane-tr1-area1.glb'], // remake-areas: his Dust Curtain cast (src/originals/areaCasts.ts)
     portrait: F + 'shirokane-portrait.png', idleModel: F + 'shirokane-idle1.glb',
     names: {
       'Kunai Slash': 'Kunai Slice',
     },
   },
-  // SHIDEN - the Storm Hawk. Konta's rival, who left the Hidden Ash to hunt the man who burned it: long black hair in a
+  // SHIDEN - the Storm Hawk. Konta's rival, who left Ashwood to hunt the man who burned it: long black hair in a
   // high tail, a left eye that glows violet, a sleeveless black high-collared coat, a hawk-feather pauldron, a katana.
   shiden: {
-    name: 'Shiden', series: 'Hidden Ash', tagline: 'The storm hawk who left the Hidden Ash to hunt the man who burned it.',
+    name: 'Shiden', series: 'Ashwood', tagline: 'The storm hawk who left Ashwood to hunt the man who burned it.',
     homeArt: true,
     color: '#9271d6',
-    moves: ['Habakiri Cut', 'Shrike Bolt', 'Black Sun', 'Ikazuchi Arrow'],
-    shortMoves: ['HABAKIRI', 'SHRIKE BOLT', 'BLACK SUN', 'IKAZUCHI ARROW'],
+    moves: ['Habakiri Cut', 'Storm Talon', 'Hawk Pyre', 'Ikazuchi Arrow'],
+    shortMoves: ['HABAKIRI', 'STORM TALON', 'HAWK PYRE', 'IKAZUCHI ARROW'],
     awakening: 'IKAZUCHI',
     guardian: F + 'guardian-loom1.glb',
     coat: { thigh: .12, shin: .11 }, model: F + 'shiden-tr1.glb', rushModel: F + 'shiden-rush1.glb', extraModels: [F + 'shiden-enders1.glb'],
     portrait: F + 'shiden-portrait.png', idleModel: F + 'shiden-idle1.glb',
     names: {
-      'Black Pyre': 'Black Sun',
+      'Black Pyre': 'Hawk Pyre',
     },
   },
   kenzo: {
     name: 'Kenzo', series: 'Dust Sea', tagline: 'The two-blade ronin of the Dust Sea, who gets lost on the way to every fight and wins it anyway.',
     homeArt: true,
     color: '#7fc45b',
-    moves: ['Fang Crossing', 'Mirage Draw', 'Thousand-Mile Eagle', 'Dust Sea Sundered'],
-    shortMoves: ['FANG CROSSING', 'MIRAGE DRAW', 'THOUSAND-MILE EAGLE', 'DUST SEA SUNDERED'],
-    awakening: 'RAKSHASA',
+    moves: ['Fang Crossing', 'Mirage Draw', 'Eagle\'s Reach', 'Dust Sea Sundered'],
+    shortMoves: ['FANG CROSSING', 'MIRAGE DRAW', 'EAGLE\'S REACH', 'DUST SEA SUNDERED'],
+    awakening: 'DUNE ONI',
     coat: { thigh: .13, shin: .14 }, model: F + 'kenzo-tr1.glb', rushModel: F + 'kenzo-rush1.glb', extraModels: [F + 'kenzo-enders1.glb', F + 'kenzo-enders2.glb'],
     formModel: F + 'kenzo-awakened-tr1.glb',
     portrait: F + 'kenzo-portrait.png', idleModel: F + 'kenzo-idleb1.glb',
     names: {
-      'thousand mile eagle': 'Thousand-Mile Eagle',
+      'eagles reach': 'Eagle\'s Reach',
     },
     shop: {
       'outfit-kenzo-night-raider': { name: 'Kenzo · Night Raider', blurb: 'His vest dyed midnight indigo for a raid by moonlight. He still found the wrong gate first.', glyph: '夜' },
@@ -236,7 +236,7 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     color: '#ff6f3c', height: 1.72,
     moves: ['Hinoko', 'Yuragi', 'Taimatsu', 'Taiyou-Dama'],
     shortMoves: ['HINOKO', 'YURAGI', 'TAIMATSU', 'TAIYOU-DAMA'],
-    awakening: 'KAGUTSUCHI',
+    awakening: 'ALL ABLAZE',
     model: F + 'kagari-px1.glb', rushModel: F + 'kagari-pxrush1.glb', extraModels: [F + 'kagari-pxenders1.glb', F + 'kagari-pxfmoves1.glb'],
     portrait: F + 'kagari-px-portrait.png',
     names: {
@@ -254,9 +254,9 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     name: 'Ward', series: 'Dust Sea', tagline: 'The coldest surgeon on the Dust Sea: inside his ward, everything is on the operating table.',
     homeArt: true,
     color: '#4d9cff',
-    moves: ['Lancet Slash', 'Stat Shot', 'Cautery Blade', 'THEATRE: Flatline'],
+    moves: ['Lancet Slash', 'Stat Shot', 'Cautery Blade', 'Flatline'],
     shortMoves: ['LANCET', 'STAT SHOT', 'CAUTERY', 'FLATLINE'],
-    awakening: 'OPERATING THEATRE',
+    awakening: 'SCRUBBED IN',
     coat: { thigh: .12, shin: .11 }, model: F + 'ward-tr1.glb', rushModel: F + 'ward-rush1.glb', extraModels: [F + 'ward-enders1.glb', F + 'ward-ult1.glb'],
     portrait: F + 'ward-portrait.png',
     names: {},
@@ -267,17 +267,17 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     },
   },
   koko: {
-    name: 'KoKo', series: 'Gilded Ruin', tagline: 'The silent brawler of the gilded ruins, and the iron spirit that throws his punches for him.',
+    name: 'KoKo', series: 'Gilded Ruin', tagline: 'The silent brawler of the gilded ruins, and the iron guardian that throws his punches for him.',
     homeArt: true,
     color: '#cf83d6', height: 1.92,
-    moves: ['Iron Straight', 'Needle Finger', 'GAN GAN Barrage', 'Iron Lullaby: Hush'],
-    shortMoves: ['IRON STRAIGHT', 'NEEDLE FINGER', 'GAN GAN', 'HUSH'],
-    awakening: 'HUSH',
+    moves: ['Iron Straight', 'Iron Nail', 'IRONFALL Barrage', 'Iron Lullaby: Slumber'],
+    shortMoves: ['IRON STRAIGHT', 'IRON NAIL', 'IRONFALL', 'SLUMBER'],
+    awakening: 'SLUMBER',
     impactWord: 'ガァンッ', companion: { model: F + 'koko-spirit-tr1.glb', punches: F + 'koko-spirit-fanim1.glb' },
     coat: { thigh: .13, shin: .14, cone: 20 }, model: F + 'koko-tr1.glb', rushModel: F + 'koko-rush1.glb', extraModels: [F + 'koko-enders1.glb'],
     portrait: F + 'koko-portrait.png', idleModel: F + 'koko-idle1.glb',
     names: {
-      'Straight Punch': 'Iron Straight', 'Gan Gan!!': 'Gan Gan!', 'GAAAN!!': 'GAAAN!', 'Diving Punch': 'Anvil Drop',
+      'Straight Punch': 'Iron Straight', 'Hammer!!': 'Hammer!', 'ANVIL!!': 'ANVIL!', 'Diving Punch': 'Anvil Drop',
     },
   },
   // LORD ORO - the Gilded Hour. A vampire lord who rules the ruins from a clock tower: swept-back gold hair, golden
@@ -287,14 +287,14 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     name: 'Lord ORO', series: 'Gilded Ruin', tagline: 'The vampire lord of the clock tower, whose gilded spirit can stop the hour itself.',
     homeArt: true,
     color: '#f2c94c',
-    moves: ['Gilded Punch', 'Clock-Hand Knives', 'NOROMA NOROMA Barrage', 'MIDNIGHT: Death Knell'],
-    shortMoves: ['GILDED PUNCH', 'CLOCK-HAND KNIVES', 'NOROMA NOROMA', 'MIDNIGHT'],
+    moves: ['Gilded Punch', 'Clock-Hand Knives', 'CLOCKWORK Barrage', 'MIDNIGHT: Hour of Ruin'],
+    shortMoves: ['GILDED PUNCH', 'CLOCK-HAND KNIVES', 'CLOCKWORK', 'MIDNIGHT'],
     awakening: 'MIDNIGHT',
     impactWord: 'のろまッ', knife: F + 'oro-knife1.glb', companion: { model: F + 'oro-spirit-tr1.glb', punches: F + 'oro-spirit-fanim1.glb' },
     model: F + 'oro-tr1.glb', rushModel: F + 'oro-rush1.glb', extraModels: [F + 'oro-enders1.glb', F + 'oro-enders2.glb', F + 'oro-tr1-area1.glb'], // remake-areas: his Knife Rain cast (src/originals/areaCasts.ts)
     portrait: F + 'oro-portrait.png', idleModel: F + 'oro-idleb1.glb',
     names: {
-      'Noroma!!': 'Noroma!', 'Noroma Noroma!!': 'Noroma Noroma!', 'KYAHAAA!!': 'KYAHAAA!', 'Die!': 'Perish!', 'Diving Kick': 'Steeple Drop', 'Checkmate': 'Last Chime',
+      'Tick!!': 'Tick!', 'Tick Tock!!': 'Tick Tock!', 'HOUR\'S UP!!': 'HOUR\'S UP!', 'Die!': 'Perish!', 'Diving Kick': 'Steeple Drop', 'Checkmate': 'Last Tick',
     },
     // His outfit, under the name his writer gave it: his own body in ivory and lit gold (parity2, 5 November 2026).
     shop: { 'outfit-oro-ascendant': { name: 'Lord ORO · Ascendant', blurb: 'Ivory where the black was and every gear of gold lit from within: the lord of the clock tower at his zenith, above the hour itself.', glyph: '昇' } },
@@ -314,14 +314,14 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
   },
   // GAUNT - the Ash Hound. A scarred veteran who has walked the grave roads longer than anyone: long ash-grey hair, an
   // iron eyepatch, a hooded dark-red cloak, scrap-iron plate, a sword cut from a slab of rail steel and a cannon for a
-  // left arm. Awakened, he is sealed in the HOUND ARMOR.
+  // left arm. Awakened, he is sealed in the GRAVE PLATE.
   gaunt: {
     name: 'Gaunt', series: 'Grave Hound', tagline: 'The ash hound of the grave roads, with a slab of rail steel for a sword and a cannon for an arm.',
     homeArt: true,
     color: '#8b1a1a',
     moves: ['Gravedigger Slash', 'Butcher Cleave', 'Scrap Cannon Arm', 'Hound Rampage'],
     shortMoves: ['GRAVEDIGGER', 'BUTCHER CLEAVE', 'SCRAP CANNON', 'HOUND RAMPAGE'],
-    awakening: 'HOUND ARMOR',
+    awakening: 'GRAVE PLATE',
     coat: { thigh: .13, shin: .14 }, model: F + 'gaunt-tr1.glb', rushModel: F + 'gaunt-rush1.glb', extraModels: [F + 'gaunt-enders2.glb'],
     formModel: F + 'gaunt-awakened-tr1.glb',
     portrait: F + 'gaunt-portrait.png', idleModel: F + 'gaunt-idleb1.glb',
@@ -333,8 +333,8 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
     name: 'Setsu', series: 'Salvage Wilds', tagline: 'A sharp-tongued boy from a family of assassins - quick as lightning, loyal to his one friend.',
     homeArt: true,
     color: '#9fd8ff', height: 1.5,
-    moves: ['Snow Claw', 'Sekkou', 'Ikazuchi', 'Setsuna: Tsumuji'],
-    shortMoves: ['SNOW CLAW', 'SEKKOU', 'IKAZUCHI', 'TSUMUJI'],
+    moves: ['Snow Claw', 'Sekkou', 'Ikazuchi', 'Setsuna: Kazahana'],
+    shortMoves: ['SNOW CLAW', 'SEKKOU', 'IKAZUCHI', 'KAZAHANA'],
     awakening: 'SETSUNA',
     // Round 5 (3 November 2026): the new, cooler Setsu's body (scripts/originals/build_fighter.sh setsu), Pixel's kit on it.
     model: F + 'setsu-tr1.glb', rushModel: F + 'setsu-rush1.glb', extraModels: [F + 'setsu-enders1.glb'],
@@ -355,6 +355,8 @@ export const ORIGINALS: Partial<Record<FighterId, OriginalFighter>> = {
 
 for (const [id, area] of Object.entries(ORIGINAL_AREAS)) { const original = ORIGINALS[id as FighterId]; if (original && area) original.names[area.main] = area.name; }
 for (const [id, names] of Object.entries(ORIGINAL_TECHNIQUES)) { const original = ORIGINALS[id as FighterId]; if (original && names) Object.assign(original.names, names); }
+
+// (The internal names - moves, clips, cues, keys - are the shown ones, so no map from one to the other is needed.)
 
 /** The ids an original stands in for, in roster order. */
 export const ORIGINAL_IDS = Object.keys(ORIGINALS) as FighterId[];

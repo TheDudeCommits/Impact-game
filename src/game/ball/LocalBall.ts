@@ -1,3 +1,4 @@
+import {sportPage} from './sportRules';
 import {arenaFor, type BallArenaId} from './arenas';
 import {keptSkill} from '../../boot/skill';
 import {requireReleasedFighter} from '../rosterAvailability';
@@ -21,6 +22,8 @@ export interface BallExtras { mutator?: BallMutator; drill?: DrillId; /** FREE P
 /** The arenas whose intro this page has flown over: a match there again opens with the
  *  short intro (ceremony.ts SHORT_INTRO), as a rematch does. For the page's session. */
 const flown = new Set<BallArenaId>();
+/** Whether this page has opened a ball match already this visit (the sport rules' QUICK_INTRO from then on). */
+let visited = false;
 /** A rematch's line-up (LocalBall.rematch): its round, and the last match's bots, seat for seat. */
 interface Again { round: number; bots: readonly {id: string; fighter: FighterId; name: string; team: BallTeam}[] }
 
@@ -66,8 +69,10 @@ export class LocalBall {
     // The arena (the one picked, else one in turn), and how the match opens: the full intro the first time this page
     // shows the arena, the short one for a rematch or an arena it has flown over; none in FREE PLAY or a couch's.
     const seed = Math.random() * 0x7fffffff | 0 || 1, arena = extras.arena ?? arenaFor(mode, seed), opens = !partner && !practice;
-    const intro = opens ? typeof again === 'object' || flown.has(arena) ? 'short' as const : true : false;
-    if (opens) flown.add(arena);
+    // (On the sport rules, the fly-over only on the visit's first match - every other opens with the quick
+    // intro, ceremony.ts QUICK_INTRO - in both modes.)
+    const intro = !opens ? false : sportPage() ? visited ? 'quick' as const : true : typeof again === 'object' || flown.has(arena) ? 'short' as const : true;
+    if (opens) { flown.add(arena); visited = true; }
     // `?balllength=` on this machine: a shorter match (seconds of Goal Rush, Sky Spike's target), for checks of its end.
     const here = typeof location === 'object' && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) ? new URLSearchParams(location.search) : undefined;
     const length = Number(here?.get('balllength')) || undefined;

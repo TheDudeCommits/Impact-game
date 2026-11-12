@@ -170,7 +170,7 @@ const ALPHA_MOST=1.4;
 /** Where a spirit's user's spirit is drawn while it fights, as SwordSpiritEffects
  *  places it: in front of the user by the separation less 1.35 m, between
  *  SPIRIT_NEAR and SPIRIT_FAR, and SPIRIT_SIDE to their right; KoKo's heavy
- *  (Needle Finger) summons it, LORD ORO's (the knives) does not. Those constants are
+ *  (Iron Nail) summons it, LORD ORO's (the knives) does not. Those constants are
  *  private to SwordSpiritEffects, so they are repeated here; keep the two in
  *  step. The spirit is broader and taller than its user - SPIRIT_RADIUS round,
  *  SPIRIT_HEIGHT tall: taken at a body's size, Iron Spirit's barrage hid

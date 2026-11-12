@@ -33,9 +33,17 @@ const base = { ambient: 0, rimWidth: 0, floor: new THREE.Color() };
 const wrote = { ambient: NaN, rimWidth: NaN, floor: new THREE.Color(-1, -1, -1) };
 let lifted = false;
 
+/** So the fighters are not small dark silhouettes against a dark crowd and a flat pitch: on the sport rules' football
+ *  (main.ts, setSportLift) the fighters are lifted as under a grade at SPORT_LIFT of its strength - their ambient up,
+ *  near-black cloth to a navy grey, the rim's wash further round - with no grade at all. The room is not touched. */
+const SPORT_LIFT = .85;
+let sport = 0;
+/** Whether a football match on the sport rules is being drawn (the lift above), each frame. */
+export function setSportLift(on: boolean) { sport = on ? SPORT_LIFT : 0; }
 /** Called by the renderer every frame after it has written the grade's level
  *  (0..1) and hue (unit luminance) into the fighters' frame uniforms. */
 export function liftFightersUnderGrade(level: number, hue: THREE.Color) {
+  level = Math.max(level, sport);
   const t = toonUniforms;
   // Whatever the stage wrote since the last frame is the new base.
   if (t.uToonAmbient.value !== wrote.ambient) base.ambient = t.uToonAmbient.value;

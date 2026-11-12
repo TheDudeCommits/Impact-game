@@ -16,7 +16,7 @@ import type {Fighter} from './Fighter';
  *          target, nor anybody an authored shot is about) that stands nearer
  *          the lens than one of them and hides COVER_FROM..COVER_FULL of them
  *          on screen, or that fills CROWD_FROM..CROWD_FULL of the frame from
- *          nearer than all of them - the Konta torso over Kyokko-Ho, the
+ *          nearer than all of them - the Konta torso over Royal Aurora, the
  *          hair over half the screen after Kenzo's ultimate. Up to FADE_MOST: a
  *          trace is left, so nobody vanishes from a fight;
  *  window  the player's own body where it passes in front of the target on
@@ -42,15 +42,20 @@ import type {Fighter} from './Fighter';
  *  The shadow pass keeps its own materials, so a faded body still casts its
  *  shadow.
  *
- *  And one thing more on its own: Ward's operating theatre (the model's own
+ *  And one thing more on its own: Ward's surgery (the model's own
  *  translucent sphere, `awaken-on`, 2.4 m across round him). From inside it
  *  every pixel looks through its far wall, and the whole view was tinted
  *  blue for its 18 s; from the lock-on lens just outside it, Ward himself was
  *  only ever seen through its near wall. So its faces toward the lens keep
- *  THEATRE_CLEAR of their tint with the lens inside and THEATRE_OUTSIDE of the way
+ *  SURGERY_CLEAR of their tint with the lens inside and SURGERY_OUTSIDE of the way
  *  there from outside, and only its grazing edges keep all of it: the dome
  *  reads as a dome round the fight - a bright rim - rather than a filter. */
 const NEAR_GONE=.3,NEAR_CLEAR=.75;
+/** Goal Rush's SPORT camera stands about ten metres off the body it follows, high and
+ *  behind (render/ball/BallChase.ts FOOT), so a body between it and the play - a team-mate's cape or wings, a big body run
+ *  past the lens - is within a few metres of it, not inside it: with `OcclusionFader.wideNear` the near band is
+ *  WIDE_GONE..WIDE_CLEAR m (all of it gone, none of it). */
+const WIDE_GONE=2.2,WIDE_CLEAR=4.4;
 const FADE_MOST=.82,WINDOW_MOST=.55,WINDOW_FROM=.35;
 /** Round 3c: through an authored shot about the victim (see shotVictim) the
  *  player's own body opens its window over the victim once it hides
@@ -75,10 +80,10 @@ const AHEAD=.35;
  *  with its twins, so the band can clear what reaches into it. */
 const PAD=.32,CROWN=1.9,NEAR_REACH=.45;
 const JOINTS=['Head','Hips','LeftFoot','RightFoot','LeftHand','RightHand','LeftShoulder','RightShoulder'] as const;
-/** Ward's THEATRE: its faces toward a lens inside it keep THEATRE_CLEAR of their
- *  tint (eased in over the last THEATRE_EDGE of the radius), toward a lens
- *  outside it THEATRE_OUTSIDE of the way to that; its grazing edges all of it. */
-const THEATRE_CLEAR=.12,THEATRE_EDGE=.25,THEATRE_OUTSIDE=.6;
+/** Ward's SURGERY: its faces toward a lens inside it keep SURGERY_CLEAR of their
+ *  tint (eased in over the last SURGERY_EDGE of the radius), toward a lens
+ *  outside it SURGERY_OUTSIDE of the way to that; its grazing edges all of it. */
+const SURGERY_CLEAR=.12,SURGERY_EDGE=.25,SURGERY_OUTSIDE=.6;
 
 /** The uniforms every twin shares: the lens, the near band, the target's box
  *  on screen (normalised device coordinates) and its depth from the lens. */
@@ -144,7 +149,7 @@ interface FadeState{
    *  nearest padded joint comes, and whether it is in front of the lens. */
   x0:number;y0:number;x1:number;y1:number;near:number;mid:number;lens:number;seen:boolean;
   twins:Twin[];swapped:boolean;
-  /** Ward's THEATRE, if the fighter has one: its mesh and how far inside it the
+  /** Ward's SURGERY, if the fighter has one: its mesh and how far inside it the
    *  lens is. */
   room?:THREE.Mesh;inside:{value:number};
 }
@@ -167,7 +172,7 @@ export function installOcclusionFade(fighter:Fighter){
     // The contact shadow keeps its own material: Fighter writes its opacity
     // through the mesh every frame, and a shadow stays with a faded body.
     if(mesh.name==='contact-shadow')continue;
-    // A translucent shell (the worn Guardian, Ward's THEATRE) fades on its own.
+    // A translucent shell (the worn Guardian, Ward's SURGERY) fades on its own.
     const translucent=list.some(m=>m&&m.transparent&&m.opacity<1);
     if(translucent){if(mesh.name.startsWith('awaken-on')&&fighter.state.fighter==='ward'){record.room=mesh;for(const m of list)if(m)roomShader(m,record.inside);}continue;}
     const made:THREE.Material[]=[];
@@ -188,7 +193,7 @@ export function installOcclusionFade(fighter:Fighter){
 /** Whether a material is a fade twin, and a fighter's twins (for the tests). */
 export function isOcclusionTwin(material:THREE.Material){return twins.has(material);}
 export function occlusionTwins(fighter:Fighter):readonly {original:THREE.Material;twin:THREE.Material}[]{return records.get(fighter)?.twins??[];}
-/** Ward's THEATRE: clear toward the lens while the lens is inside (see THEATRE_CLEAR). */
+/** Ward's SURGERY: clear toward the lens while the lens is inside (see SURGERY_CLEAR). */
 function roomShader(material:THREE.Material,inside:{value:number}){
   const previous=material.onBeforeCompile,inherited=material.customProgramCacheKey===THREE.Material.prototype.customProgramCacheKey?previous.toString():undefined;
   const key=inherited!==undefined?()=>inherited:material.customProgramCacheKey.bind(material);
@@ -198,7 +203,7 @@ function roomShader(material:THREE.Material,inside:{value:number}){
     shader.fragmentShader='uniform float uOccInside;\n'+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`if ( uOccInside > 0.0 ) {
 		float occFacing = abs( dot( normalize( normal ), normalize( vViewPosition ) ) );
-		diffuseColor.a *= mix( 1.0, mix( ${THEATRE_CLEAR.toFixed(3)}, 1.0, smoothstep( .45, .92, 1.0 - occFacing ) ), uOccInside );
+		diffuseColor.a *= mix( 1.0, mix( ${SURGERY_CLEAR.toFixed(3)}, 1.0, smoothstep( .45, .92, 1.0 - occFacing ) ), uOccInside );
 	}
 	#include <opaque_fragment>`);
   };
@@ -213,7 +218,7 @@ function roomShader(material:THREE.Material,inside:{value:number}){
 export class OcclusionFader{
   /** Read-only, for the evidence captures: how many bodies are fading this
    *  frame, the most faded one's amount, the player's own window, how many
-   *  fighters are drawn with their twins, and how far inside a THEATRE the lens
+   *  fighters are drawn with their twins, and how far inside a SURGERY the lens
    *  is. */
   readonly state={faded:0,most:0,window:0,twinned:0,room:0};
   /** Round 3c: who an authored shot on screen is about besides the player -
@@ -238,6 +243,9 @@ export class OcclusionFader{
   /** Round 3e (CAM4): the static stage in front of the fight, faded in its own
    *  programs from the boxes measured here (see StageFade). */
   readonly stage=new StageFade();
+  /** The wide near band (WIDE_GONE, WIDE_CLEAR) for this frame - main.ts sets it while Goal Rush's SPORT
+   *  camera films; off, the band is NEAR_GONE..NEAR_CLEAR as ever. */
+  wideNear=false;
   private camera?:THREE.PerspectiveCamera;
   private self?:Fighter;
   private target?:Fighter;
@@ -257,6 +265,7 @@ export class OcclusionFader{
    *  ultimate). With no crowd there is nothing to fade. */
   update(dt:number,camera:THREE.PerspectiveCamera,crowd:ReadonlyMap<string,Fighter>|undefined,self:Fighter,target:Fighter|undefined,focus:readonly (Fighter|undefined)[]){
     shared.uOccEye.value.copy(camera.position);
+    shared.uOccNear.value.set(this.wideNear?WIDE_GONE:NEAR_GONE,this.wideNear?WIDE_CLEAR:NEAR_CLEAR);
     this.dt=Math.min(Math.max(Number.isFinite(dt)?dt:0,0),.1);this.camera=camera;this.self=self;this.target=target;this.focus=focus;
     const st=this.state;st.faded=0;st.most=0;st.window=0;st.twinned=0;st.room=0;
     camera.updateMatrixWorld();
@@ -340,7 +349,7 @@ export class OcclusionFader{
   private ease(r:FadeState,body:number,window:number,out=FADE_OUT,into=FADE_IN){
     r.body=this.toward(r.body,body,out);r.window=this.toward(r.window,window,out,into);
     r.fade.value.set(r.body,r.window);
-    this.swap(r,r.body>.004||r.window>.004||r.lens<NEAR_CLEAR+NEAR_REACH);
+    this.swap(r,r.body>.004||r.window>.004||r.lens<(this.wideNear?WIDE_CLEAR:NEAR_CLEAR)+NEAR_REACH);
     if(r.body>.01){this.state.faded++;this.state.most=Math.max(this.state.most,r.body);}
     if(r.swapped)this.state.twinned++;
   }
@@ -362,7 +371,7 @@ export class OcclusionFader{
     }
     r.swapped=on;
   }
-  /** Ward's THEATRE round the lens (see THEATRE_CLEAR). */
+  /** Ward's SURGERY round the lens (see SURGERY_CLEAR). */
   private room(body:Fighter,r:FadeState){
     const mesh=r.room;if(!mesh)return;
     let inside=0;
@@ -371,9 +380,9 @@ export class OcclusionFader{
       if(!geometry.boundingSphere)geometry.computeBoundingSphere();
       this.sphere.copy(geometry.boundingSphere!).applyMatrix4(mesh.matrixWorld);
       const d=this.sphere.center.distanceTo(this.camera!.position),radius=this.sphere.radius;
-      inside=1-THREE.MathUtils.smoothstep(d,radius*(1-THEATRE_EDGE),radius);
+      inside=1-THREE.MathUtils.smoothstep(d,radius*(1-SURGERY_EDGE),radius);
     }
-    const goal=mesh.visible?Math.max(THEATRE_OUTSIDE,inside):0;
+    const goal=mesh.visible?Math.max(SURGERY_OUTSIDE,inside):0;
     r.inside.value+=(goal-r.inside.value)*(1-Math.exp(-6*this.dt));
     if(r.inside.value<1e-3&&goal===0)r.inside.value=0;
     this.state.room=Math.max(this.state.room,inside);

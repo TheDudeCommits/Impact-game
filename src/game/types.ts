@@ -4,7 +4,7 @@ export type { StageId };
 export type FighterId = 'taisei' | 'konta' | 'gummy' | 'kosho' | 'ouga' | 'shirokane' | 'shiden' | 'kenzo' | 'koko' | 'nigo'
   | 'kagari' | 'ward' | 'kuon' | 'oro' | 'gaunt' | 'setsu'
   // The shop's fighters (economy/fighters.ts): locked until bought.
-  | 'gorai' | 'haldor' | 'sorrel' | 'dorado' | 'shiun' | 'magatsu' | 'vesper' | 'imago' | 'wuming' | 'jirenga' | 'jinlin'
+  | 'gorai' | 'haldor' | 'sorrel' | 'dorado' | 'shiun' | 'magatsu' | 'vesper' | 'imago' | 'wuming' | 'banjaku' | 'jinlin'
   | 'gohaku' | 'ippon' | 'sekka' | 'tobari' | 'akagane' | 'asahi' | 'levin' | 'rook' | 'gaku'
   // Integrated for the isolated fighter laboratory; availability is independently gated.
   | 'strix' | 'basilissa' | 'sorayomi' | 'kuzu' | 'shakugo' | 'shanxiao' | 'ampere' | 'pyroclast' | 'full-beam'
@@ -199,7 +199,7 @@ export type CombatEventKind = 'cast' | 'release' | 'hit' | 'land' | 'blocked' | 
   | 'lock-gap'
   /** Lock combat: `actorId` pressed guard in the gap after `targetId`'s round. With no `reason` it vanished out
    *  (`origin` to `endpoint`, alongside a 'vanish'); 'early', 'late' or 'stamina' say why it did not; 'counter' is the
-   *  attacker vanishing behind the escaper in turn (the counter-vanish). */
+   *  attacker vanishing behind the escaper in turn (the vanish-read). */
   | 'lock-escape'
   /** A dash that homes on a launched or knocked-away target: `actorId` chases
    *  `targetId` from `origin` toward `endpoint`. */

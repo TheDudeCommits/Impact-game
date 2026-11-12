@@ -10,11 +10,11 @@ const ULT = MOVES.gummy.ultimate;
 /** The ultimate's clock (moves.ts): the grab's contact, the finisher, the whole move. */
 export const TIDE = { grab: ULT.contacts[0], blow: ULT.contacts[ULT.contacts.length - 1], length: ULT.duration } as const;
 
-/** The takes (author_lucy_tide.py): `Grand Tide` is the whole move on the move's own clock (the grab at TIDE.grab, the
- *  blow at TIDE.blow, TIDE.length long); `Grand Tide Open` is its first TIDE.grab seconds and then a whiff's recovery
+/** The takes (author_lucy_tide.py): `Spring Tide` is the whole move on the move's own clock (the grab at TIDE.grab, the
+ *  blow at TIDE.blow, TIDE.length long); `Spring Tide Open` is its first TIDE.grab seconds and then a whiff's recovery
  *  (the line closing on the air and snapping home), OPEN_LENGTH long. The cinematic window is laid linearly, so the
  *  take plays on the move's clock exactly (Fighter.ultimateCurve, `windows`). */
-export const TIDE_CLIP = 'Grand Tide', TIDE_OPEN_CLIP = 'Grand Tide Open', MONSOON_CLIP = 'Monsoon Cast';
+export const TIDE_CLIP = 'Spring Tide', TIDE_OPEN_CLIP = 'Spring Tide Open', MONSOON_CLIP = 'Monsoon Cast';
 export const OPEN_LENGTH = 1.15;
 export const TIDE_PLAN = {
   opener: { clip: TIDE_OPEN_CLIP, at: TIDE.grab / OPEN_LENGTH },
@@ -38,7 +38,7 @@ const _target = new THREE.Vector3(), _turn = new THREE.Quaternion(), _part = new
 const smooth = (a: number, b: number, x: number) => { const u = Math.min(1, Math.max(0, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
 const recoil = (w: number) => Math.exp(-w / HAMMER.settle) * (Math.cos(HAMMER.ring * w) + Math.sin(HAMMER.ring * w) / (HAMMER.ring * HAMMER.settle));
 
-/** Where the hammer is `t` seconds into a confirmed Grand Tide: 0..1 up into the sky, 0..1 over onto the victim, and
+/** Where the hammer is `t` seconds into a confirmed Spring Tide: 0..1 up into the sky, 0..1 over onto the victim, and
  *  how much of the stretch is still out (1 until the hold ends, then the recoil). Undefined outside it. */
 export function hammerPhase(t: number): { up: number; over: number; out: number } | undefined {
   if (t < HAMMER.up0 || t > TIDE.blow + HAMMER.hold + .45) return undefined;
@@ -48,7 +48,7 @@ export function hammerPhase(t: number): { up: number; over: number; out: number 
   return { up, over, out: after <= 0 ? 1 : recoil(after) };
 }
 
-/** GRAND TIDE's hammer (Fighter.ts rubberLimbs, on whichever of his bodies is drawn): both hands shot from where the take
+/** SPRING TIDE's hammer (Fighter.ts rubberLimbs, on whichever of his bodies is drawn): both hands shot from where the take
  *  holds them over his head up into the sky, then carried over in one arc - about his shoulders, from straight up to
  *  the victim's middle - and laid on them, the forearms stretched behind them as the Gatling's and the grab's are (the
  *  hand bone moved down the line; the sleeve's weights stretch the arm); held, and let go on the rubber's recoil.

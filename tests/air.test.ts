@@ -52,7 +52,7 @@ describe('the air', () => {
 
   it('is off on every place without it - the rifts, Last Stand\'s places, the harbour - so none inherits the last one\'s', () => {
     // The Proving Hall's own linear fog (10-80 m) is already the air of a room 25 m long.
-    for (const place of ['rift-village', 'hidden-ash', 'blood-citadel', 'harbor', 'zenith-coliseum', 'proving-hall'] as StageId[]) {
+    for (const place of ['rift-village', 'ashwood', 'blood-citadel', 'harbor', 'zenith-coliseum', 'proving-hall'] as StageId[]) {
       setAirLook(lookFor('hollowmere-quarry'));
       setAirLook(lookFor(place));
       expect(Array.from(airUniforms.uAirFog.value), place).toEqual([0, 0, 0, 0]);

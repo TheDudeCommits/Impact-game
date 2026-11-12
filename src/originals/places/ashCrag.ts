@@ -7,7 +7,7 @@ const BASALT = 0x2e2a2a, BASALT_LIT = 0x4a423c, ASH = 0x5a524a, PINE = 0x2a3a2a,
 
 /** Build the backdrop into Last Stand's root. True when it is built (the village then loads nothing of the colosseum's). */
 export async function lastStandBackdrop(root: THREE.Group) {
-  const f = new Forge({ stage: 'hidden-ash', root } as unknown as DressContext, 'hidden ash backdrop');
+  const f = new Forge({ stage: 'ashwood', root } as unknown as DressContext, 'ashwood backdrop');
   f.mat('basalt', { map: detail.rock(71), tile: 10, flat: true, roughness: .95, air: .4 });
   f.mat('scree', { map: detail.gravel(72), tile: 14, roughness: 1, air: .45 });
   f.mat('stone', { map: detail.ashlar(74, 60), tile: 3.4, roughness: .9, air: .35 });

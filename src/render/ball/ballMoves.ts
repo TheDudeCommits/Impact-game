@@ -1,4 +1,4 @@
-import {TAKE, startKick, startTake, takeOn} from './kickLayer';
+import {TAKE, dropTake, releaseTake, retakeAt, startKick, startTake, takeOn} from './kickLayer';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {Fighter} from '../Fighter';
@@ -11,7 +11,7 @@ import type {BodyType} from '../../engine/sim/archetypes';
 import type {Canonical} from '../skeleton';
 import {styleOf} from '../../game/techniques';
 import {FIGHTERS} from '../../config';
-import {BALL_SPORT, GOAL_RULES, GOAL_STANCE, SPIKE_RULES, ballRadius, otherTeam, type BallView} from '../../game/ball/model';
+import {BALL_SPORT, GOAL_RULES, GOAL_STANCE, SHOOT, SPIKE_RULES, ballRadius, otherTeam, type BallView, type VolleyView} from '../../game/ball/model';
 import {goalZ} from '../../game/ball/physics';
 import {SPIKE_QUICK, placement} from '../../game/ball/strike';
 import {TRAP} from '../../game/ball/BallMatch';
@@ -129,8 +129,9 @@ export function ballMovesWanted(location?: {hostname: string; search: string}): 
   return new URLSearchParams(location.search).has('ballmoves');
 }
 
-/** What the hook reads of the match on the page: the room's ball view and where the ball is drawn now. */
-export interface BallMoveContext {view: BallView; ball?: THREE.Vector3 | null}
+/** What the hook reads of the match on the page: the room's ball view and where the ball is drawn now; and the
+ *  drawn clock (server s: main.ts timeline.drawnAt), which volleyball's ready poses are timed on. */
+export interface BallMoveContext {view: BallView; ball?: THREE.Vector3 | null; now?: number | null}
 
 /** A take as the file has it: its contact, thrown in the air (`level`), held through a guard (`held`); the sport
  *  kit adds a take played through once and held on its last frame (`once`) and a run's cycle (`loop`). */
@@ -295,6 +296,8 @@ export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | u
   // (Goal Rush's SPORT mode, `?football`: the kit always on, and the match's own touches drawn - sportKick.)
   const sporting = !!context?.()?.view.football;
   if (sporting) { const kick = sportKick(body, state); if (kick) return kick; }
+  // (The volleyball rules: every touch drawn from its ready pose - volleyPose.)
+  { const ctx = context?.(); if (ctx?.view.volley) volleyPose(body, state, ctx); }
   const kit = everything || sporting;
   const sport = state.action === 'light' || state.action === 'heavy' || state.action === 'special' || state.action === 'guard';
   // (The kit's other actions only with the kit on, and nothing read for them otherwise.)
@@ -345,6 +348,85 @@ export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | u
   swap.slot = state.action as AttackSlot;
   return swap;
 }
+/** So a contact is shown by arms meeting the ball, not by rings and bubbles - the volleyball rules
+ *  (game/ball/volley.ts): a touch's swing is SHOOT's quick strike, its contact 0.115 s after the press is answered, so
+ *  the kit's take ran its whole lead-in in three frames and the body seemed to stand there as the ball left it. But the
+ *  rules know the touch before it comes - whose ball it is and its best moment (`volley.owner`, `volley.at`) - so its
+ *  body takes the touch's ready pose ahead of it: the take (kickLayer.ts startTake, full body, on the drawn clock) runs
+ *  in from `lead` s before that moment (`air` for a hitter in the air, the serve's `serve` s from the ball held for it)
+ *  up to where the swing starts and holds there - the forearms together for a receive, the hands up for a set, the arm
+ *  drawn back for a spike or a serve - and the swing the rules start plays it on from that frame to its contact as the
+ *  ball is struck (`releaseTake`), into its follow-through for `after` s, then back to the body's own. A swing with no
+ *  ready pose before it (a bot's touch from further off) is drawn the same from its press. A ready pose whose ball goes
+ *  elsewhere is let go (`dropTake`). Presentation only: the touch and its timing are the rules'. */
+export const VPOSE = {lead: .42, air: .4, serve: .55, after: .38, still: 1.2, run: 3.5} as const;
+const vposed = new WeakMap<Fighter, {key: string; take: BallMoveKey; released: boolean; swing: string}>();
+/** For the checks (window.volleyPoses): ready poses taken, swings played on from one, swings drawn from their press
+ *  (none before them), ready poses let go. */
+export const volleyPoses = {ready: 0, released: 0, fresh: 0, dropped: 0};
+function volleyPose(body: Fighter, state: PlayerState, ctx: BallMoveContext) {
+  const view = ctx.view, vol = view.volley, now = ctx.now;
+  strideOf(body, state);
+  if (!vol || now === undefined || now === null || !Number.isFinite(now) || view.replay) return;
+  const p = vposed.get(body);
+  const strike = ownStrike(state.id, state.actionSeq) ?? state.strike;
+  if (state.action === 'heavy' && strike === 'tap') {
+    const swing = `${state.actionSeq ?? state.actionStarted.toFixed(3)}`;
+    if (p?.swing === swing) return;
+    const named = vol.takes[state.id], take = named && named in BALL_MOVES ? named as BallMoveKey : p?.take;
+    if (!take) return;
+    const at = state.actionStarted + SHOOT.contact;
+    if (p && !p.released && p.take === take && takeOn(body) && releaseTake(body, at)) volleyPoses.released++;
+    else if (volleyTake(body, state, take, at)) volleyPoses.fresh++;
+    vposed.set(body, {key: p?.key ?? '', take, released: true, swing});
+    return;
+  }
+  // (A DIVE is its own take, the dash's: the ready pose gives way to it.)
+  const want = state.action === 'dash' ? null : readyFor(view, vol, state, now);
+  if (want) {
+    if (!p || p.key !== want.key) { if (volleyTake(body, state, want.take, want.at, true)) { volleyPoses.ready++; vposed.set(body, {key: want.key, take: want.take, released: false, swing: p?.swing ?? ''}); } }
+    else if (!p.released && want.follow) retakeAt(body, want.at);
+    return;
+  }
+  if (p && !p.released) { dropTake(body); volleyPoses.dropped++; vposed.set(body, {...p, released: true}); }
+}
+/** The ready pose this body should hold now, if any: its key (one a ball), the take and the moment its swing is aimed at
+ *  (`follow`: the room's moment for it, which the forecast keeps refining). */
+function readyFor(view: BallView, vol: VolleyView, state: PlayerState, now: number): {key: string; take: BallMoveKey; at: number; follow: boolean} | null {
+  const b = view.ball;
+  if (view.phase === 'kickoff') {
+    if (view.serverId !== state.id || !b.held) return null;
+    return {key: `serve|${view.startedAt}|${view.rally}|${state.grounded ? 'float' : 'jump'}`, take: state.grounded ? 'SS.float' : 'SS.jumpServe', at: now + VPOSE.serve, follow: false};
+  }
+  if (view.phase !== 'live' || b.held || vol.owner !== state.id || vol.touch < 1) return null;
+  const left = vol.at - now, air = vol.touch === SPIKE_RULES.touches && !state.grounded;
+  // (The spike's from the air only - its lead-in is the arm drawn back as the hitter rises; a third ball on the floor is
+  // put OVER.)
+  const take: BallMoveKey = vol.touch === 1 ? 'SS.dig' : vol.touch === 2 ? 'SS.set' : air ? 'SS.spike' : 'SS.float';
+  if (vol.touch === SPIKE_RULES.touches && state.grounded && b.shot === 'set') return null;
+  if (left > (air ? VPOSE.air : VPOSE.lead) || left < -.25) return null;
+  return {key: `${vol.touch}|${view.touchTeam}|${view.touches}|${b.lastId}|${take}`, take, at: vol.at, follow: true};
+}
+/** A volleyball take on `body` (kickLayer startTake): fitted to its rig, its contact at `at` (server s), held short of
+ *  its swing while `ready`. */
+function volleyTake(body: Fighter, state: PlayerState, key: BallMoveKey, at: number, ready = false) {
+  const row = BALL_MOVES[key];
+  if (!row?.on) return 0;
+  const fit = fitTo(body, state, key);
+  if (!fit) return 0;
+  const contact = fit.take.contact * fit.clip.duration, rate = row.pace ?? 1;
+  return startTake(body, fit.clip, {at, contact, rate, end: Math.min(fit.clip.duration, contact + VPOSE.after * rate), ready: ready ? Math.max(0, contact - SHOOT.contact * rate) : undefined,
+    legs: () => { const g = stride.get(body); return g ? 1 - THREE.MathUtils.smoothstep(g.speed, VPOSE.still, VPOSE.run) : 1; }});
+}
+/** Each body's pace along the floor (m/s, smoothed), for the ready pose's legs (volleyTake): under VPOSE.still the
+ *  take's own, over VPOSE.run the body's stride. */
+const stride = new WeakMap<Fighter, {x: number; z: number; t: number; speed: number}>();
+function strideOf(body: Fighter, state: PlayerState) {
+  const now = performance.now(), was = stride.get(body), dt = was ? (now - was.t) / 1000 : 0;
+  const speed = was && dt > 1e-3 && dt < .25 ? Math.hypot(state.x - was.x, state.z - was.z) / dt : was?.speed ?? 0;
+  stride.set(body, {x: state.x, z: state.z, t: now, speed: was ? was.speed + (speed - was.speed) * Math.min(1, dt * 12) : speed});
+}
+
 /** Goal Rush's SPORT mode (game/ball/football.ts): the match plays the ball itself, so no swing of the body's says a
  *  touch - its PASS and SHOOT events do (BallEvent 'pass', 'strike'). Each is drawn with the kit's take (the side-foot
  *  pass; SHOOT's snap on a tap, the DRIVE wound up; the header) played once from a beat before its contact - the ball
@@ -365,8 +447,17 @@ function sportKick(body: Fighter, state: PlayerState): Transplanted | undefined 
   const seen = k?.seen ?? 0;
   let newest = seen;
   for (const e of ctx.view.events) {
-    if (e.id <= seen || e.actorId !== state.id || (e.kind !== 'pass' && e.kind !== 'strike' && e.kind !== 'steal')) continue;
+    if (e.id <= seen || e.actorId !== state.id || (e.kind !== 'pass' && e.kind !== 'strike' && e.kind !== 'steal' && e.kind !== 'save')) continue;
     newest = Math.max(newest, e.id);
+    // (A keeper's save - FOOTBALL.fun2.keeper - is seen: a dive to the side the ball was met on, or the parry
+    // with the ball at its body; a dive that caught it is not then also played as the standing catch.)
+    if (e.kind === 'save') {
+      if (!ctx.view.football || !ctx.view.seats.find(s => s.id === state.id)?.keeper) continue;
+      const across = (e.x - state.x) * Math.cos(state.yaw) - (e.z - state.z) * Math.sin(state.yaw);
+      const dive = Math.abs(across) >= DIVE_FROM;
+      if (footTake(body, state, !dive ? 'GR.parry' : across > 0 ? 'GR.diveL' : 'GR.diveR', e.at) && dive) caught.add(body);
+      continue;
+    }
     if (e.kind === 'steal' && (e.text === 'BEATEN')) continue;
     // (The football takes - kickLayer.ts startTake, full body, entered at the contact: a POKE with the poke's lunge, won
     // or not; a SLIDE, won or missed, with the slide and its get-up straight after; on the run a PASS or a SHOOT with
@@ -383,7 +474,9 @@ function sportKick(body: Fighter, state: PlayerState): Transplanted | undefined 
   }
   // (A held SHOOT winding up at this body's feet: the shot in stride's lead-in, run by how far it is wound.)
   const b = ctx.view.ball;
-  if (b.carry === state.id && (b.wind ?? 0) > 0 && !takeOn(body)?.wind && state.grounded) footTake(body, state, 'GR.strideShot', NaN, {wind: () => { const v = context?.()?.view.ball; return v && v.carry === state.id && (v.wind ?? 0) > 0 ? v.wind : undefined; }});
+  // (A tapped PASS or SHOOT's own short wind-up - FOOTBALL.fun2.kick - the pass's take for a pass, over a
+  // shorter lead-in: the foot drawn back and brought through to the contact as the ball goes.)
+  if (b.carry === state.id && (b.wind ?? 0) > 0 && !takeOn(body)?.wind && state.grounded) footTake(body, state, b.windTap === 'pass' ? 'GR.stridePass' : 'GR.strideShot', NaN, {lead: b.windTap ? TAP_LEAD : undefined, wind: () => { const v = context?.()?.view.ball; return v && v.carry === state.id && (v.wind ?? 0) > 0 ? v.wind : undefined; }});
   // (SPORT's keeper with the ball at its feet - a catch, a gather - the keeper's catch, held while it keeps it.)
   const keeper = ctx.view.seats.find(s => s.id === state.id)?.keeper;
   if (keeper) {
@@ -403,6 +496,11 @@ function sportKick(body: Fighter, state: PlayerState): Transplanted | undefined 
   swap.phase = `-ball-kick-${k.id}`; swap.slot = state.action as AttackSlot;
   return swap;
 }
+/** A tap's wind-up (FOOTBALL.fun2.kick, BallState.windTap) plays this much of its take's lead-in (s); a held
+ *  SHOOT's, TAKE.wind. */
+const TAP_LEAD = .26;
+/** A keeper's save met this far across its body (m) or more is a dive; nearer, the parry. */
+const DIVE_FROM = 1.1;
 /** The keepers whose catch is drawn now (one take a catch). */
 const caught = new WeakSet<Fighter>();
 /** The football takes' extras: `at` the contact in seconds; a stride take's run. */
@@ -411,7 +509,7 @@ type FootExtras = {at?: number; stride?: {cycle: number; speed: number}};
  *  here, under the flag), entered at its contact; a stride take at the rate that matches the body's own run (its run's
  *  hip heights a second against the take's, the body's size its hip height in metres, near enough) and blended back
  *  TAKE.after past the contact; `then` played straight after; `hold` and `wind` as startTake says. */
-function footTake(body: Fighter, state: PlayerState, key: BallMoveKey, at: number, o: {stride?: boolean; then?: BallMoveKey; hold?: () => boolean; wind?: () => number | undefined; start?: boolean} = {}) {
+function footTake(body: Fighter, state: PlayerState, key: BallMoveKey, at: number, o: {stride?: boolean; then?: BallMoveKey; hold?: () => boolean; wind?: () => number | undefined; start?: boolean; lead?: number} = {}) {
   const fit = fitTo(body, state, key);
   if (!fit) return 0;
   // (`start`: a take pressed now and played from its first frame - a slide's run in to the ball.)
@@ -419,7 +517,7 @@ function footTake(body: Fighter, state: PlayerState, key: BallMoveKey, at: numbe
   const speed = pace.get(body)?.speed ?? 0, hip = HIP * (state.size ?? 1);
   const rate = o.stride && x.stride ? THREE.MathUtils.clamp(speed / hip / x.stride.speed, .7, 1.8) : 1;
   const then = o.then ? fitTo(body, state, o.then)?.clip : undefined;
-  return startTake(body, fit.clip, {at, contact, rate, end: o.stride ? contact + TAKE.after * rate : undefined, hold: o.hold, wind: o.wind, then});
+  return startTake(body, fit.clip, {at, contact, rate, end: o.stride ? contact + TAKE.after * rate : undefined, hold: o.hold, wind: o.wind, lead: o.lead, then});
 }
 /** A body's hip height at size 1 (m), for a stride take's rate. */
 const HIP = 1;
@@ -604,7 +702,7 @@ export function installBallMoves(read: () => BallMoveContext | undefined, all = 
     return swap ?? before?.(body, state);
   };
   if (typeof window === 'object') (window as unknown as {ballMoveFits?: unknown; ballMoveReport?: unknown}).ballMoveFits = ballFitCost;
-  if (typeof window === 'object') Object.assign(window, {ballMoveReport, ballMoveLog: chosen});
+  if (typeof window === 'object') Object.assign(window, {ballMoveReport, ballMoveLog: chosen, volleyPoses});
 }
 /** For tests and tools: the takes read another way (the tests read the file off the disk); resolves once they are in. */
 export function loadBallMovesFrom(from: () => Promise<Pack>) { load = from; pack = undefined; fetching = undefined; return fetchPack(); }

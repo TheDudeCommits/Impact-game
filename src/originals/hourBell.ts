@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import type { PartSpec } from '../render/signature/Steamroller';
+import type { PartSpec } from '../render/signature/HourOfRuin';
 
 
 export const HOUR_BELL_PAINTS: Record<string, [THREE.Color, THREE.Color]> = {

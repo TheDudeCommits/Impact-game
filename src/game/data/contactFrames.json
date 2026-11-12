@@ -8,7 +8,7 @@
   },
   "shiun": {
     "Flash Dash": 0.5,
-    "Relic Rise": 0.1818,
+    "Rising Anthem": 0.1818,
     "Presence Turn": 0.8182,
     "heavy": 0.4148,
     "special": 0.78
@@ -47,7 +47,7 @@
     "rush3": 0.625
   },
   "wuming": {
-    "Dusk Rush 2": 0.5333,
+    "Weeding Rush 2": 0.5333,
     "heavy": 0.6648,
     "light": 0.6783,
     "special": 0.715
@@ -96,7 +96,7 @@
     "light": 0.25,
     "special": 0.3
   },
-  "jirenga": {
+  "banjaku": {
     "heavy": 0.471,
     "light": 0.5615,
     "special": 0.6
@@ -834,7 +834,7 @@
   },
   "madake": {
     "Bamboo Straight": 0.48,
-    "Green Gale Kick": 0.5212765957446809,
+    "Bamboo Gale Kick": 0.5212765957446809,
     "Summer Wolf": 0.5441176470588235,
     "Midwinter Bamboo": 0.7839195979899498,
     "Rush 1": 0.48,
@@ -842,7 +842,7 @@
     "Rush 3": 0.47058823529411764,
     "Rising Shoot": 0.4615384615384615,
     "Flying Greeting": 0.5,
-    "Green Hurricane": 0.5,
+    "Bamboo Cyclone": 0.5,
     "Spring Crane": 0.5084745762711864,
     "Descending Fang": 0.4893617021276596,
     "Autumn Stag": 0.5172413793103449,
@@ -857,7 +857,7 @@
   "kinu": {
     "Silk Knuckle": 0.4655172413793104,
     "Reeling Hook": 0.537037037037037,
-    "BUCHI BUCHI Barrage": 0.2972972972972973,
+    "UNSPOOL Barrage": 0.2972972972972973,
     "Broken Shackles": 0.795,
     "Rush 1": 0.4655172413793104,
     "Rush 2": 0.52,

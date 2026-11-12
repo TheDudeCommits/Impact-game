@@ -7,7 +7,7 @@ import { Fighter, OWN_BODY_ULTIMATE, clipMotionTable } from '../../render/Fighte
 import { isCharacterMotion } from '../../render/characterMotion';
 import { findClipIn } from '../../render/clipMatch';
 import { TAISEI_MELEE_CONTACTS, TAISEI_TRANSMISSION } from '../../render/taiseiMeleeContact';
-import { GRAND_TIDE_TAKE } from '../../render/gummy/grand-tide';
+import { SPRING_TIDE_TAKE } from '../../render/gummy/spring-tide';
 import { forgedMoveFor } from '../sim/forgedKits';
 import { CORE_SLOTS } from '../sim/spec';
 import { retarget, rigOf, type Fitted, type Rig } from './retarget';
@@ -126,7 +126,7 @@ export function fit(take: Take, rig: Rig, label: string): Fitted {
 function takeNow(slot: SlotTakes, from: FighterId, fromSlot: AttackSlot, state: PlayerState, move: MoveDefinition): { take: Take; phase: string } {
   if (fromSlot !== 'ultimate') return { take: slot.open, phase: '' };
   const confirmed = state.confirmedAt !== undefined, elapsed = state.actionTime * state.actionDuration;
-  if (slot.form && (move.confirm ? confirmed : elapsed >= (from === 'gummy' ? GRAND_TIDE_TAKE.swap : .48))) return { take: slot.form, phase: '-form' };
+  if (slot.form && (move.confirm ? confirmed : elapsed >= (from === 'gummy' ? SPRING_TIDE_TAKE.swap : .48))) return { take: slot.form, phase: '-form' };
   if (confirmed && slot.cine) return { take: slot.cine, phase: '-cine' };
   return { take: slot.open, phase: '' };
 }

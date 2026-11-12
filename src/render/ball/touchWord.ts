@@ -30,6 +30,8 @@ export class TouchWords {
       if (e.kind !== 'touch' || !e.actorId) continue;
       const tier = (e.text ?? '').split(' · ').pop() ?? '';
       if (!TIERS.has(tier)) continue;
+      // (Less on screen - the words are yours, and only a PERFECT touch of anyone else's.)
+      if (e.actorId !== selfId && tier !== 'PERFECT') continue;
       const w = this.words.length >= TOUCH_WORD.most ? this.words.shift()! : {node: Object.assign(document.createElement('div'), {className: 'vb-word'}), id: '', until: 0};
       if (!w.node.isConnected) root.appendChild(w.node);
       w.id = e.actorId; w.until = now + TOUCH_WORD.seconds * 1000; w.node.textContent = tier;

@@ -19,7 +19,7 @@ const UP = new THREE.Vector3(0, 1, 0), FRONT = new THREE.Vector3(0, 0, 1);
 const GREEN = new THREE.Color(0x28d99c), WHITE = new THREE.Color(0xe9fff7), INK = new THREE.Color(0x08795c);
 const clamp = (x: number) => Math.max(0, Math.min(1, x));
 const hash = (x: number) => { const v = Math.sin(x * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); };
-/** Inheritance in linear light: green lightning with a white heart to every stroke, and the pale air a blow drives
+/** Last Watch in linear light: green lightning with a white heart to every stroke, and the pale air a blow drives
  *  ahead of it (wind pressure: white with a breath of his green). */
 const OFA = stageLook(0xf0fff2, 0x3cf07a, 0x0c7a3d, { heart: .5 }), WIND = stageLook(0xffffff, 0xd4ffe4, 0x6fae8c);
 const HEAVY = AMPERE_MOVES.heavy, SPECIAL = AMPERE_MOVES.special, ULT = AMPERE_MOVES.ultimate, TAU = Math.PI * 2;

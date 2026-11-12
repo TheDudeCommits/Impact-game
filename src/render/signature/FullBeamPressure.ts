@@ -13,7 +13,7 @@ import { blowFloor } from './blowFloor';
 
 import { isFullBeamPressure } from './FullBeamPressureContact';
 export { isFullBeamPressure, fullBeamContact } from './FullBeamPressureContact';
-/** Pressure and steam are pictures of manual Inheritance actions. This module
+/** Pressure and steam are pictures of manual Last Watch actions. This module
  * never searches for a victim, spawns a damaging cast, or changes simulation. */
 export const FULL_BEAM_PRESSURE_ASSETS: readonly string[] = Object.freeze([]);
 export const FULL_BEAM_PRESSURE_LIMITS = Object.freeze({ rings: 128, gusts: 96, debris: 128, impacts: 24, finishers: 8 });

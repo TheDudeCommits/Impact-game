@@ -5,7 +5,7 @@ import {BossRain} from './bossRain';
 const worlds:ArenaSimulation[]=[];
 afterEach(()=>worlds.splice(0).forEach(sim=>sim.dispose()));
 function setup(){
-  const sim=new ArenaSimulation({roomMode:'training',trainingBot:false,respawn:false,stage:'hidden-ash'});worlds.push(sim);
+  const sim=new ArenaSimulation({roomMode:'training',trainingBot:false,respawn:false,stage:'ashwood'});worlds.push(sim);
   sim.addPlayer('hero','taisei','Hero',false,{x:0,y:0,z:0});sim.setTeam('hero','defenders');
   const def=ENEMIES.lumen,move=def.moves.find(m=>m.rain)!;
   sim.addCombatant('boss',{enemy:def.id,name:def.name,team:'horde',kit:kitOf(def),maxHp:def.hp,spawn:{x:20,y:0,z:0}});

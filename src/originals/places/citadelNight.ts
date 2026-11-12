@@ -7,6 +7,7 @@ import { Forge } from './forge';
 import { fires, inlay } from './richness';
 import { rand } from './remake';
 import { crater } from './battleScars';
+import { basketPost, fireBowl, flames, type FireAt, type FireMats } from './standingFire';
 
 /** The courtyard wall's piers (BloodCitadel.boundary: x +/-31, every 7.6 m from z -23), its top 1.7 m. */
 const PIERS = Array.from({ length: 7 }, (_, i) => -23 + i * 7.6);
@@ -17,15 +18,16 @@ export async function citadelNight(root: THREE.Group, objective: { update(time: 
   // The citadel's own clock drives these too (its ambience is what BloodCitadel.update ticks).
   const tick = objective.update.bind(objective);
   objective.update = (time: number) => { tick(time); ambient.update(time); };
-  await kit.load(['cc0/boulder-a', 'cc0/boulder-b', 'br/stone-lamp', 'br/meshy-rubble', 'harbor/rocks-b']);
+  await kit.load(['cc0/boulder-a', 'cc0/boulder-b', 'br/meshy-rubble', 'harbor/rocks-b']); // No stone lamps
   kit.grade = material => material.color.multiply(new THREE.Color(0x8a96a8));
   const r = rand(901);
-  // Rubble past the walls: boulders, fallen blocks, a broken stone lantern at each corner of the court.
+  // Rubble past the walls: boulders, fallen blocks, a broken stone fire bowl at each corner of the court (the
+  // bowls are drawn below, in the Forge).
   for (const s of [-1, 1]) {
     for (let k = 0; k < 6; k++) kit.place(k % 2 ? 'cc0/boulder-a' : 'cc0/boulder-b', { x: s * (34 + r() * 5), z: -20 + k * 8 + r() * 3, height: .9 + r() * 1.6, rot: r() * 6 });
     for (let k = 0; k < 2; k++) kit.place('br/meshy-rubble', { x: -16 + k * 30 + r() * 3, z: s * (28 + r() * 3), scale: .5 + r() * .3, rot: r() * 6, tint: 0xb8c0cc });
     for (let k = 0; k < 4; k++) kit.place(k % 2 ? 'cc0/boulder-b' : 'cc0/boulder-a', { x: -24 + k * 15 + r() * 3, z: s * (29 + r() * 3), height: .7 + r() * 1.2, rot: r() * 6 });
-    for (const e of [-1, 1]) kit.place('br/stone-lamp', { x: s * 34.5, z: e * 27.5, height: 2.6, rot: r() * .4, roll: e * s * .12 });
+    r(); r(); // (Two turns of the random kept, so the rubble after them lies as it did)
     kit.place('harbor/rocks-b', { x: s * 37, z: s * 12, height: 1.4, rot: r() * 6 });
   }
   kit.flush('blood-citadel');
@@ -43,6 +45,13 @@ export async function citadelNight(root: THREE.Group, objective: { update(time: 
     torches.push({ x: s * 31, y: 3.35, z, size: .55 });
   }
   fires(c, torches, { glow, pools, floor: -.025, pool: 7, smoke: .3, seed: 41 });
+  // An iron fire basket on a post by the wall at each of (x +/-32, z +/-19) - no light pooled on the court: their glow on
+  // the lens, licking flames; a broken stone fire bowl, cold, at each of the court's corners.
+  const m: FireMats = { iron: 'iron', stone: 'dark', glow: 'glow' }, baskets: FireAt[] = [];
+  for (const s of [-1, 1]) for (const z of [-19, 19]) baskets.push(basketPost(f, m, s * 32, z, 2.2, .3, { thick: .06 }));
+  for (const b of baskets) glow.add(b.x, b.y + .2, b.z, 1.3, 0xff9a40, -1, ((b.x * .013 + b.z * .007) % 1 + 1) % 1, 1);
+  flames(c, baskets, 43);
+  for (const s of [-1, 1]) for (const e of [-1, 1]) fireBowl(f, m, s * 34.5, -.1, e * 27.5, .42, .95, { tint: 0x5a5c64, cold: true, square: true, rot: s * e * .3 });
   f.done();
   glow.finish('citadel torches', 2.2);
   pools.finish('citadel torch pools');

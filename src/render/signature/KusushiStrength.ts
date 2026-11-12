@@ -95,7 +95,7 @@ export class KusushiStrength{
   }
   if(e.slot!=='ultimate'||e.branch)return;
   if(!final){st.burst(point,CHI,e.contactIndex?1.6:1.2,t,{dir,floor});if(e.contactIndex){st.shatter(broken,UP,CHI,2.6,t,.7);st.shock(ground,CHI,5,t,.5);}return;}
-  // DOUBLE OR NOTHING's heel: the floor broken to seven metres, a dome of force thrown out, geysers of chi
+  // BET THE PURSE's heel: the floor broken to seven metres, a dome of force thrown out, geysers of chi
   // through the breaks, and what is left of the floor glowing in its cracks.
   st.burst(point,CHI,2.3,t,{dir,floor});
   st.shatter(broken,UP,CHI,6.5,t,1.4);
@@ -149,7 +149,7 @@ export class KusushiStrength{
   }
   for(const batch of this.batches)batch.end();st.close();
  }
- /** Double or Nothing from the confirm to the heel: the seal on her brow let go. The room to night, its violet marks
+ /** Bet the Purse from the confirm to the heel: the seal on her brow let go. The room to night, its violet marks
   *  running out over the floor from her feet, chi rising round her in streaks, and the strength of it gathered on
   *  the limb that will strike. Round her and on the floor, never over the pair. */
  private gather(actor:Fighter,c:Confirm,age:number,time:number){

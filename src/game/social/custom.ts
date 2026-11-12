@@ -9,7 +9,7 @@ export const ARENAS:Record<CustomMode,readonly StageId[]>={
   // and a blind critic asked for it out of the battle royale altogether.
   royale:['sunward-summit','ashfall-weir','mirror-mere','hollowmere-quarry','ash-colosseum','wreckers-causeway','sunfall-arena','zenith-coliseum','warlords-roof','drifting-isle','cinder-flats','dry-harbour','thornwood-ward','kuroyuki-hall','starfall-crater','scrap-pit'],
   'bad-blood':['blood-citadel','warlords-roof','drifting-isle','ash-colosseum','cinder-flats'],
-  'last-stand':['hidden-ash'],
+  'last-stand':['ashwood'],
 };
 /** Where a private Duel can be fought (a party's DUEL chooses one; PrivateDuelRoom refuses anything else): the
  *  tournament ring first, as every Duel was until the party could choose, then the other rings and the royale's

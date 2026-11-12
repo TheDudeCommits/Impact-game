@@ -11,10 +11,10 @@ export interface SiegeChapter {
  * Every previously scheduled boss remains reachable; no unrelated navy escort. */
 export const SIEGE_CHAPTERS:readonly SiegeChapter[]=[
   {id:'naval-blockade',title:'THE DUNE BLOCKADE',army:0,commanders:['caldera'],low:['gantry'],mid:['rime','lumen'],trap:'harpoon'},
-  {id:'hollow-moon',title:'THE CINDER MOON',army:2,commanders:['shiun'],low:['zarek','nightfall'],mid:['nihil','rakshasa'],trap:'purify'},
+  {id:'hollow-moon',title:'THE CINDER MOON',army:2,commanders:['shiun'],low:['zarek','nightfall'],mid:['nihil','dune-oni'],trap:'purify'},
   {id:'ash-siege',title:'SHADOWS OF THE ASH',army:1,commanders:['akagane'],low:['siege-raider-captain'],mid:['siege-raider-brute'],trap:'wire'},
   {id:'emperor-raid',title:'THE WARLORDS’ RAID',army:4,commanders:['gorai','barrow','haldor'],low:['ashwing'],mid:['ashwing'],trap:'harpoon'},
-  {id:'zero-mortals',title:'THE BURNING SKY',army:3,commanders:['jirenga','wuming','jinlin'],low:['siege-imp-captain'],mid:['wuming','jinlin'],trap:'discharge'},
+  {id:'zero-mortals',title:'THE BURNING SKY',army:3,commanders:['banjaku','wuming','jinlin'],low:['siege-imp-captain'],mid:['wuming','jinlin'],trap:'discharge'},
   {id:'government-agents',title:'ORDERS TO ERASE',army:5,commanders:['kade'],low:['takane','harrow','kanuki'],mid:['takane','harrow'],trap:'wire'},
   {id:'sugar-isle',title:'THE MOTHER’S COURT',army:6,commanders:['mirabel'],low:['siege-sentinel-captain'],mid:['kuromitsu'],trap:'harpoon'},
   {id:'cursed-night',title:'NIGHT OF HEXES',army:7,commanders:['magatsu'],low:['siege-puppet-captain'],mid:['siege-puppet-brute'],trap:'purify'},

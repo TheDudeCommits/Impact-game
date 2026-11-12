@@ -7,11 +7,11 @@ import type { FighterId } from '../game/types';
 import { errorCounts } from './ops/errorCounts';
 
 /** v21 (7 October 2026): the combo-era stamina bar - Duel, Training, the royale and Bad Blood at 150 (COMBO_STAMINA). */
-/** v22 (8 October 2026): Gummy's GRAND TIDE opens with SUNRISE's stretched grab and lands to 10.5 m (PR #101). */
+/** v22 (8 October 2026): Gummy's SPRING TIDE opens with SUNRISE's stretched grab and lands to 10.5 m (PR #101). */
 /** v23 (8 October 2026): ground hits - a fighter down on the floor is hit (a normal for GROUND_HIT_SCALE, an ultimate whole), getting up dodges normals only, `floorUntil` rides the reaction keys. */
 /** v24 (8 October 2026): ground hits 2 - each ground hit of one stay on the floor worth less, the stay a budget of 5.5% of health (`floorHits`, `floorTaken` ride the reaction keys); Kuon's Flying Kick thrown inside his dome. */
-/** v25 (8 October 2026): Ward's THEATRE: Flatline opens with Crossmatch, a swap into touch range inside an 11 m ROOM (PR #112). */
-/** v26 (8 October 2026): Taisei's, Konta's, Kagari's and Emperor Jinlin's bombs aimed as they leave the hand and following in flight (PR #117). */
+/** v25 (8 October 2026): Ward's Flatline opens with Crossmatch, a swap into touch range inside an 11 m ROOM (PR #112). */
+/** v26 (8 October 2026): Taisei's, Konta's, Kagari's and Jinlin's bombs aimed as they leave the hand and following in flight (PR #117). */
 /** v28: Rift authority and shared external-target allegiance/prediction (PR #129). */
 /** v29: authored Rift terrain, shifted lane defenses and shared landscape collision. */
 /** v31: reconciled Rift evolution, lane barriers, army progression and relic mastery. Client/server pair. */
@@ -63,7 +63,7 @@ import { errorCounts } from './ops/errorCounts';
 /** v56 (11 October 2026): Hagure, monster Ovid and Yodaka manual kits, authored areas and native contact timing; all fighter-review batch15 changes retained. */
 /** v57 (11 October 2026): the fighter review's sixteenth batch (Sorrel, Dorado, Shiun, Magatsu, Vesper) - their own area
  *  moves and looks. */
-/** v58 (11 October 2026): the fighter review's seventeenth batch (Imago, Wuming, Jirenga, Emperor Jinlin, Gohaku) -
+/** v58 (11 October 2026): the fighter review's seventeenth batch (Imago, Wuming, Banjaku, Jinlin, Gohaku) -
  *  their own area moves and looks. */
 /** v59 (11 October 2026): the fighter review's eighteenth batch (Ippon, Sekka, Akagane, Asahi, Levin) - their own area
  *  moves and looks. */

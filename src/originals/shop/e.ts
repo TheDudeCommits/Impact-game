@@ -28,7 +28,7 @@ export const SHOP_E: Partial<Record<FighterId, OriginalFighter>> = {
     tagline: 'A hundred years of falling ash and no dawn: demons walk the endless dusk, and the last swordsmen breathe through the ash to cut them down.',
     homeArt: true,
     color: '#ff6fa0',
-    moves: ['Hailstone Fist', 'Avalanche', 'Shatter Art: Frost Gale', 'Shatter Art: Black Blizzard'],
+    moves: ['Hailstone Fist', 'Avalanche', 'Frost Gale', 'Black Blizzard'],
     shortMoves: ['HAILSTONE', 'AVALANCHE', 'FROST GALE', 'BLACK BLIZZARD'],
     awakening: 'WHITEOUT',
     model: F + 'sekka-tr1.glb', extraModels: [],
@@ -49,7 +49,7 @@ export const SHOP_E: Partial<Record<FighterId, OriginalFighter>> = {
     tagline: 'A hundred years of falling ash and no dawn: demons walk the endless dusk, and the last swordsmen breathe through the ash to cut them down.',
     homeArt: true,
     color: '#2e9e6a',
-    moves: ['Ripple Cut', 'Comet Throw', 'Ashfall Waltz', 'Lantern Rite: First Light'],
+    moves: ['Ripple Cut', 'Comet Throw', 'Ashfall Waltz', 'First Light'],
     shortMoves: ['RIPPLE CUT', 'COMET THROW', 'ASHFALL WALTZ', 'FIRST LIGHT'],
     awakening: 'DAYBREAK',
     coat: { thigh: .13, shin: .14 }, model: F + 'asahi-tr1.glb', extraModels: [],
@@ -67,7 +67,7 @@ export const SHOP_E: Partial<Record<FighterId, OriginalFighter>> = {
   // bone armour seamed in violet, a raven-skull helm and a cloak of black feathers, a body of its own.
   'rook': {
     name: 'Rook', series: 'Gatefall',
-    tagline: 'The gates tore open over the ruined cities, and the weakest hunter who ever came back out of one came back with the dead at his heel.',
+    tagline: 'The gates tore open over the ruined cities, and the hunter nobody rated came back out of one with the dead at his heel.',
     homeArt: true,
     color: '#7a4dff',
     moves: ['Talon Cut', 'Crossed Talons', 'Grave Grip', 'Black Rookery'],
@@ -80,7 +80,7 @@ export const SHOP_E: Partial<Record<FighterId, OriginalFighter>> = {
       'Shadow Cut': 'Raven Cut', 'Shadow Kick': 'Raven Kick',
     },
     shop: {
-      'fighter-rook': { name: 'Rook', glyph: '墓', blurb: 'The weakest hunter who died in a gate and came back: two raven talons, the Grave Grip - and the Black Rookery, an army of the dead risen behind him.' },
+      'fighter-rook': { name: 'Rook', glyph: '墓', blurb: 'The hunter nobody rated, who died in a gate and came back: two raven talons, the Grave Grip - and the Black Rookery, an army of the dead risen behind him.' },
     },
   },
 };

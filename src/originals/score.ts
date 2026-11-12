@@ -4,7 +4,7 @@ const M = '/assets/music/originals/';
  *  of the table's entry that plays it. */
 export const ORIGINAL_SCORE = [
   { url: M + 'skyborn-ascent.m4a', title: 'Skyborn Ascent', artist: 'Last Sun OST', replaces: ['originals-skyborn-ascent'] },
-  { url: M + 'gale-runner.m4a', title: 'Gale Runner', artist: 'Hidden Ash OST', replaces: ['originals-gale-runner'] },
+  { url: M + 'gale-runner.m4a', title: 'Gale Runner', artist: 'Ashwood OST', replaces: ['originals-gale-runner'] },
   { url: M + 'set-sail.m4a', title: 'Set Sail on the Dust Sea', artist: 'Dust Sea OST', replaces: ['originals-set-sail'] },
   { url: M + 'cinder-requiem.m4a', title: 'Cinder Requiem', artist: 'Cinder Requiem OST', replaces: ['originals-cinder-requiem'] },
   { url: M + 'gilded-hour.m4a', title: 'Gilded Hour', artist: 'Gilded Ruin OST', replaces: ['originals-gilded-hour'] },
@@ -31,7 +31,7 @@ export const ORIGINAL_WORLDS = [
     artist: 'Blast Radius OST', fighters: ['ippon'] },
   { id: 'originals-gatefall', series: 'gatefall', url: M + 'the-dead-follow.m4a', title: 'The Dead Follow',
     artist: 'Gatefall OST', fighters: ['rook'] },
-  { id: 'originals-pixel-konta', series: 'pixel-konta', url: M + 'pixel-konta.m4a', title: 'Spiral Wind', artist: 'Hidden Ash OST', fighters: ['konta'] },
+  { id: 'originals-pixel-konta', series: 'pixel-konta', url: M + 'pixel-konta.m4a', title: 'Spiral Wind', artist: 'Ashwood OST', fighters: ['konta'] },
   { id: 'originals-pixel-lucy', series: 'pixel-lucy', url: M + 'pixel-lucy.m4a', title: 'Past Every Horizon', artist: 'Dust Sea OST', fighters: ['gummy'] },
   { id: 'originals-pixel-kosho', series: 'pixel-kosho', url: M + 'pixel-kosho.m4a', title: 'Service at Sea', artist: 'Dust Sea OST', fighters: ['kosho'] },
   { id: 'originals-pixel-ouga', series: 'pixel-ouga', url: M + 'pixel-ouga.m4a', title: "The Prince's March", artist: 'Last Sun OST', fighters: ['ouga'] },

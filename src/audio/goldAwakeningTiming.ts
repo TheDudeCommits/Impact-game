@@ -14,7 +14,7 @@ export const GOLDEN_SAGE = {
 };
 
 const ougaBurst = awakeningSwapAt('ouga');
-export const SUPER_OUGA = {
+export const CROWNFIRE = {
   /** Seconds from the awaken event to the burst and the swap. */
   burst: ougaBurst,
   /** Seconds from the awaken event to the line: 0.26 s after the burst, as Taisei's, so the line's calm opening is not

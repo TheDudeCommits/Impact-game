@@ -82,7 +82,7 @@ const WORDS: [RegExp, Material][] = [
   [/\b(light(?!ning|s\b)|holy|radian|halo|prism|dawn|lumen|benediction|godspear)/i, 'light'],
   [/\b(ki\b|beam|laser|ray\b|energy|energy wave)/i, 'energy'],
   [/\b(void|shadow|dark|umbral|night|eclipse|abyss|entropy)/i, 'dark'],
-  [/\b(gravit|singularity|black hole|implod|collapse|sinkhole)/i, 'gravity'],
+  [/\b(gravit|singularity|black hole|implod|collapse|sinkhole|tar pit)/i, 'gravity'],
   [/\b(portal|rift|domain|realm|dimension|space|stasis|barrier|seal|cage|warp)/i, 'space'],
   [/\b(stone|rock|earth|boulder|quake|tecton|sand|spine|monolith|crag|fault)/i, 'earth'],
   [/\b(blade|sword|steel|chain|anvil|gear|saw|metal|iron|forge|arsenal)/i, 'metal'],

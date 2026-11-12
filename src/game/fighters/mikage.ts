@@ -15,7 +15,7 @@ export const MIKAGE_MOVES: Record<CoreSlot, MoveDefinition> = {
   special: { name: 'Static Claw', duration: 1.08, contacts: [.594], damage: 118,
     range: 2.25, radius: .85, stamina: 31, cooldown: 4.4, stun: .7,
     knockback: 9, lunge: 12, close: 6, style: 'melee' },
-  ultimate: { name: 'Ninth Life: Thunder Pounce', duration: 3, contacts: [.42, 1.05, 1.62, 2.34],
+  ultimate: { name: 'Storm Pounce', duration: 3, contacts: [.42, 1.05, 1.62, 2.34],
     schedule: [32, 55, 56, 222], damage: 32, finisherDamage: 194,
     range: 2.25, radius: .85, stamina: 0, cooldown: 23, stun: 1.05,
     finisherStun: 2.3, knockback: 0, finisherKnockback: 16,

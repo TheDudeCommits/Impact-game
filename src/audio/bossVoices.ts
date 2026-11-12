@@ -9,15 +9,15 @@ interface BossVoice { timbre: Timbre; pitch: number; own?: Partial<Record<BossMo
   signatures?: Record<string, readonly string[]> }
 
 /** By enemy id (src/survival/enemies.ts). Pitch follows the body: Gorai and
- *  Jirenga low, Jinlin high. */
+ *  Banjaku low, Jinlin high. */
 export const BOSS_VOICES: Record<string, BossVoice> = {
   takane: { timbre: 'man', pitch: 1.05 }, harrow: { timbre: 'beast', pitch: 1 }, kanuki: { timbre: 'man', pitch: .8 },
   gantry: { timbre: 'man', pitch: .8 }, zarek: { timbre: 'beast', pitch: 1.05 }, 'nightfall': { timbre: 'beast', pitch: 1.18 },
   kade: { timbre: 'beast', pitch: .86 }, nihil: { timbre: 'man', pitch: .95 }, ashwing: { timbre: 'brute', pitch: .92 },
-  rakshasa: { timbre: 'man', pitch: .84 }, kuromitsu: { timbre: 'man', pitch: .78 }, rime: { timbre: 'man', pitch: .82 },
+  'dune-oni': { timbre: 'man', pitch: .84 }, kuromitsu: { timbre: 'man', pitch: .78 }, rime: { timbre: 'man', pitch: .82 },
   lumen: { timbre: 'man', pitch: .9 }, caldera: { timbre: 'man', pitch: .74 }, mirabel: { timbre: 'brute', pitch: 1.22 },
   'wuming': { timbre: 'man', pitch: 1.02 }, 'jinlin': { timbre: 'man', pitch: 1.2 }, shiun: { timbre: 'man', pitch: .88 },
-  kurobi: { timbre: 'fox', pitch: 1 }, jirenga: { timbre: 'man', pitch: .72 }, gorai: { timbre: 'brute', pitch: .78 }, 'gorai-wyrm': { timbre: 'brute', pitch: .62 },
+  kurobi: { timbre: 'fox', pitch: 1 }, banjaku: { timbre: 'man', pitch: .72 }, gorai: { timbre: 'brute', pitch: .78 }, 'gorai-wyrm': { timbre: 'brute', pitch: .62 },
   haldor: { timbre: 'man', pitch: .68 }, barrow: { timbre: 'man', pitch: .82 }, akagane: { timbre: 'man', pitch: .9 },
   oro: { timbre: 'man', pitch: 1 }, magatsu: { timbre: 'man', pitch: .86 }, vesper: { timbre: 'man', pitch: 1.08 },
   imago: { timbre: 'beast', pitch: .9 },

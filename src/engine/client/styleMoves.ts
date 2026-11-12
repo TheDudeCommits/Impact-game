@@ -66,9 +66,9 @@ export function variantOf(fighter: FighterId, takes: readonly StyleTake[]): Styl
 }
 /** A fighter's own take for a technique, where its style's tips its body over (off the roster sheets). */
 export const FIGHTER_TAKES: Readonly<Partial<Record<FighterId, Partial<Record<TechniqueKey, StyleTake>>>>> = {
-  // Bellows's and Jirenga's bulk leans into the double-fisted punch until they tip 40 degrees off their feet.
+  // Bellows's and Banjaku's bulk leans into the double-fisted punch until they tip 40 degrees off their feet.
   bellows: { hhh: t('F.combo1', 0.41) },
-  jirenga: { hhh: t('F.combo1', 0.41) },
+  banjaku: { hhh: t('F.combo1', 0.41) },
 };
 export function styleTake(fighter: FighterId, key: TechniqueKey): StyleTake { return FIGHTER_TAKES[fighter]?.[key] ?? variantOf(fighter, STYLE_TAKES[styleOf(fighter)][key]); }
 

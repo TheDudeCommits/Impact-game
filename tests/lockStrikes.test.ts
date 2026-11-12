@@ -26,7 +26,7 @@ afterAll(() => resetBorrowedStrikes());
 
 describe('the borrowed strikes', () => {
   it('are for the nine with none to spare (all three stages) and the eight with one or two (the rest), named as moves of theirs', () => {
-    const nine = ['shiun', 'gohaku', 'wuming', 'jinlin', 'gaku', 'tobari', 'jirenga', 'akagane', 'rook'];
+    const nine = ['shiun', 'gohaku', 'wuming', 'jinlin', 'gaku', 'tobari', 'banjaku', 'akagane', 'rook'];
     expect(NINE.slice().sort()).toEqual([...nine, 'sekka', 'hawser', 'vesper', 'shirokane', 'levin', 'imago', 'magatsu', 'asahi'].sort());
     for (const id of NINE) {
       const first = [0, 1, 2, 3].map(s => rushMove(id, s, false).name), names = [0, 1, 2].map(s => lockRoundName(id, s));

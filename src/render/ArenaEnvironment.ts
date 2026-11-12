@@ -1,6 +1,7 @@
 import {installCameraCutaway} from './CameraCutaway';
 import * as THREE from 'three';
 import { siteUrl } from '../loading/siteBase';
+import { harbourFires } from '../originals/places/harbourFires';
 import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js';
 
 import { AUTHORED_BUILDINGS, BACKDROP_CASTLE, CITY_TERRACES, PODIUM_DIMENSIONS, STONE_ARCH, HARBOR_BRIDGES, TORII, UME_TREES, GARDEN_TREES, PROP_CLUSTERS,
@@ -15,7 +16,7 @@ interface Batch { template: Template; matrices: THREE.Matrix4[]; shadow: boolean
 const BASE = '/assets/environment/';
 export const ENVIRONMENT_ASSET_URLS: Readonly<Record<string, string>> = Object.freeze({
   ...Object.fromEntries(['building-grand', 'building-shop', 'building-courtyard', 'dojo', 'pagoda', 'torii',
-    'river-bridge', 'ume', 'bush', 'ivy', 'poster', 'lantern', 'wall-tall', 'stone-podium'].map(name => [`asian-${name}`, `${BASE}asian/${name}.glb`])),
+    'river-bridge', 'ume', 'bush', 'ivy', 'poster', 'wall-tall', 'stone-podium'].map(name => [`asian-${name}`, `${BASE}asian/${name}.glb`])),
   ...Object.fromEntries(['castle-wall', 'structure-platform-dock', 'structure-fence', 'barrel', 'crate', 'crate-bottles',
     'chest', 'boat-row-small', 'boat-row-large', 'rocks-a', 'rocks-b'].map(name => [name, `${BASE}harbor/${name}.glb`])),
   'stone-arch': `${BASE}stone-arch/bridge.glb`,
@@ -341,13 +342,18 @@ diffuseColor.rgb=mix(vec3(.13,.17,.19),vec3(.94,.90,.78),smoothstep(.045,.50,pav
       this.add(`asian-${building.asset}`, building.x, building.y, building.z, building.scale,
         building.rotation, building.shadow ?? false, true);
     }
-    // The authored hanging lanterns and illustrated wall posters supply street detail.
+    // The authored illustrated wall posters supply street detail (an unlit torch on the wall beside each poster:
+    // src/originals/places/harbourFires.ts).
+    const posters: [number, number][] = [];
     for (const [x, z, rotation] of [[-9.04, -4, Math.PI / 2], [9.04, -4, -Math.PI / 2],
       [-9.04, -12, Math.PI / 2], [9.04, -12, -Math.PI / 2],
       [-7.15, -19.8, Math.PI / 2], [7.15, -19.8, -Math.PI / 2]] as const) {
-      this.add('asian-lantern', x, 3.15, z, 1.75, rotation, true);
       this.add('asian-poster', Math.sign(x) * 8.13, 1.2, z, 3.5, rotation, true);
+      posters.push([Math.sign(x) * 8.13, z]);
     }
+    const fires = harbourFires(this.root, posters, TORII);
+    for (const g of fires.geometries) this.geometries.add(g);
+    for (const m of fires.materials) this.materials.add(m);
   }
 
   private buildQuays(): void {
@@ -401,7 +407,7 @@ diffuseColor.rgb=mix(vec3(.13,.17,.19),vec3(.94,.90,.78),smoothstep(.045,.50,pav
       keep.height / this.templates.get('kokura-castle')!.size.y, keep.rotation, false, false);
     this.add('stone-arch', STONE_ARCH.x, STONE_ARCH.y, STONE_ARCH.z, STONE_ARCH.scale, STONE_ARCH.rotation, true, true);
     this.add('asian-torii', TORII.x, TORII.y, TORII.z, TORII.scale, TORII.rotation, false, true);
-    for (const dx of [-4.8, 4.8]) this.add('asian-lantern', TORII.x + dx, TORII.y + 4.9, TORII.z, 1.9, 0, false);
+    // (Cold fire bowls stand at the torii's feet: harbourFires().)
     for (const tree of UME_TREES) {
       this.add('asian-ume', tree.x, 0, tree.z, tree.scale, tree.rotation, tree.z > -30);
     }

@@ -93,7 +93,7 @@ export class KinuStoneThread {
     }
     if (e.slot === 'special') {
       if (e.branch === 'airSpecial') { st.burst(point, THREAD, 2, t, { floor }); st.shock(ground, THREAD, 4.5, t, .45); st.scar(ground, THREAD, 3, t, 1.8); return; }
-      // BUCHI BUCHI Barrage: a burst for each blow; the last is the big one, thread flung out of it and the floor shaken.
+      // UNSPOOL Barrage: a burst for each blow; the last is the big one, thread flung out of it and the floor shaken.
       const big = e.branch ? .7 : 1;
       if (!last && !e.branch) { st.burst(point, THREAD, .9 + .25 * (e.contactIndex ?? 0), t, { dir, floor }); return; }
       // (A step past the body it lands on: the rush is thrown from arm's length, and a blast on the body is on her too.)
@@ -148,7 +148,7 @@ export class KinuStoneThread {
           st.light(this.b.copy(reach).setY(reach.y - .3), 4, THREAD, (.2 + .3 * taut) * fade);
         }
       } else if (s.action === 'special' && !s.branch) {
-        // BUCHI BUCHI Barrage: the thread gathers in her hand; then the rush, from the spirit's fist into whatever is in front of it.
+        // UNSPOOL Barrage: the thread gathers in her hand; then the rush, from the spirit's fist into whatever is in front of it.
         if (elapsed < RUSH - .1) { const k = clamp(elapsed / (RUSH - .1)); for (let i = -1; i <= 1; i++) this.strand(hand, strike, .2 + .08 * i, .035, k, i); st.glow(strike, .3 * k, THREAD.core, .8 * k); st.light(strike, 3.5, THREAD, .35 * k); }
         else if (elapsed < RUSH_END + .12) this.rush(f, strike, clamp((elapsed - RUSH + .1) / .1) * clamp((RUSH_END + .12 - elapsed) / .1), time, seed, 10);
       } else if (s.action === 'ultimate' && !s.branch && s.confirmedAt === undefined && elapsed < FIRST + .12) {

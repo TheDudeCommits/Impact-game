@@ -46,7 +46,7 @@ export function rankText(id: string, n: number, level = 1): string {
     case 'in-the-zone': return `Awakening lasts ${5 * n} seconds longer and charges ${25 * n}% faster.`;
     case 'overdrive': return `Start every wave with ${Math.min(100, 50 * n)}% of your ultimate.`;
     case 'undying-will': return `When you fall, rise again with half your health${n > 1 ? ` - ${n} times a run` : ' - once a run'}.`;
-    case 'hound-armor': return 'Below half health the mantle takes over: +50% damage, +20% speed and 8% lifesteal.';
+    case 'grave-plate': return 'Below half health the mantle takes over: +50% damage, +20% speed and 8% lifesteal.';
     case 'momentum': return `An unbroken combo hits harder: +${Math.round((.02 + .02 * n) * 100)}% damage every 10 hits, up to +${Math.round((.02 + .02 * n) * 500)}%.`;
     case 'overflow': return `A special that lands pours ${8 * n}% into your ultimate (once a cast).`;
     case 'second-wind': return 'Once a round, falling under 25% health brings 35% of it back.';

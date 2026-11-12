@@ -4,7 +4,7 @@ import { SUZURAN_RESONANCE_ASSETS } from '../src/render/signature/SuzuranResonan
 import { TSUBUTE_SEED_SHOT_TEXTURES } from '../src/render/signature/TsubuteSeedShot';
 import { DRAGON_EYES, JAW_OPEN, SEA_DRAGON_ASSET } from '../src/render/signature/BriarShapes';
 import { MAIN_EFFECT_FILES, OWN_EFFECT_FILES, SWAN_HEAD } from '../src/originals/effects';
-import { MADAKE_GATES_ASSETS } from '../src/render/signature/MadakeGates';
+import { MADAKE_SEASONS_ASSETS } from '../src/render/signature/MadakeSeasons';
 import { launchUnshipped } from '../src/originals/launchShip';
 
 const glb = (file: string) => { const b = fs.readFileSync(file), n = b.readUInt32LE(12); return JSON.parse(b.subarray(20, 20 + n).toString()); };

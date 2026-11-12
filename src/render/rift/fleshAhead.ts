@@ -1,6 +1,6 @@
-/** The rift's sculpted scenery - its dead in their poses and the offering's
+/** The rift's sculpted scenery - its dead in their poses and fallen-star's
  *  stone hand - meshed in a worker while a run goes on. Meshing them is most
- *  of what building a place costs: the offering's build froze a frame for
+ *  of what building a place costs: fallen-star's build froze a frame for
  *  half a second in the draft before it. Made ahead, a place only merges
  *  them. Whatever a stage needs before the worker has it, the stage meshes
  *  itself, as it always did; where there is no worker, nothing changes. */

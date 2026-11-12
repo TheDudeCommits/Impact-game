@@ -15,7 +15,7 @@ export const HIKUI_BALEFIRE = OWN + 'balefire.webp';
 export const HAKUSHI_LICK = OWN + 'cinder-lick.webp';
 export const ONIGAWARA_BOAR = OWN + 'boar-mask.webp';
 export const MADAKE_BEASTS = OWN + 'green-beasts.webp';
-/** Yodaka (yodaka): Fifth Watch: Fire Owl, the eagle-owl of flame stooping onto the circle, in the old area drawing's place
+/** Yodaka (yodaka): Fire Owl, the eagle-owl of flame stooping onto the circle, in the old area drawing's place
  *  (YodakaFireOwl.ts: 3:2, stood on the floor at the impact, as wide as the circle; held with its slot). */
 export const YODAKA_FIRE_OWL = OWN + 'fire-owl.webp';
 export const YODAKA_FIRE_OWL_SCALE = 1.5;

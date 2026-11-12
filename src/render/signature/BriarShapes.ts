@@ -7,11 +7,11 @@ import { SWAN_HEAD } from '../../originals/effects';
 export const WIND = 0, WATER = 1;
 export interface FunnelStyle { mode: number; core: THREE.Color; main: THREE.Color; deep: THREE.Color }
 export const FUNNEL = {
-  // Round 7: Aquilo's wind - Forktail Gust's drill, Eye of the Gale's bands - is white
+  // Round 7: Aquilo's wind - Shearwind Gust's drill, Eye of the Gale's bands - is white
   // to pale cyan, never green. Its heart kept near the bloom threshold, and the cyan in its body and shade, because in the
   // stage's bloom a white wind came out "a shapeless white bloom over half the frame" (critic pass 5).
   wind: { mode: WIND, core: new THREE.Color(1.15, 1.42, 1.6), main: new THREE.Color(.42, .78, 1.0), deep: new THREE.Color(.04, .13, .22) },
-  // Sylph's: Great Migration's beam, white at the core and mint at its edges.
+  // Sylph's: Great Northerly's beam, white at the core and mint at its edges.
   sylph: { mode: WIND, core: new THREE.Color(1.2, 1.75, 1.3), main: new THREE.Color(.22, 1.0, .42), deep: new THREE.Color(.03, .2, .1) },
   water: { mode: WATER, core: new THREE.Color(2.1, 2.6, 3.1), main: new THREE.Color(.22, .78, 1.75), deep: new THREE.Color(.015, .1, .32) },
 } satisfies Record<string, FunnelStyle>;

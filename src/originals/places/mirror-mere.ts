@@ -7,8 +7,11 @@ import { Forge } from './forge';
 import { keyLit, surfaces } from './cc0';
 import { forged, smooth } from './finish';
 import { drawn, rand } from './remake';
+import { fireBowl, flames, type FireAt, type FireMats } from './standingFire';
 
 const TORII_POSTS = [-2.7, -1.48, 1.48, 2.7];
+/** The obelisks' height (own/mere-lamp.glb, the obelisk cut level at 0.6 of 2.8 m). */
+const OBELISK_H = 2.8 * .6;
 const BASALT = 0x2e2c32;
 /** places-epic-a: the hex's light (violet-white), its deeper violet, the obsidian. */
 const HEX = 0xd8c8ff, VIOLET = 0x8a60ff, OBSIDIAN = 0x24222c, IRON = 0x3a3840;
@@ -34,6 +37,7 @@ export async function dress(c: DressContext) {
   // fog's indigo, where the haze's wine browned them).
   f.mat('iron', { roughness: .45, metalness: .55 });
   f.mat('karst', { ...stone['limestone-rock'], tile: 9, roughness: .95, lift: .1, air: .12 });
+  f.mat('glow', { basic: true }); // The embers in the obelisks' fire bowls
   // The lake's bed under its surface (the ground's water, src/originals/grounds.ts), black under the black water.
   f.add('basalt', new THREE.PlaneGeometry(420, 420, 1, 1).rotateX(-Math.PI / 2).translate(0, -.5, 0), 0x0c0e14);
   sealStone(f);
@@ -42,6 +46,7 @@ export async function dress(c: DressContext) {
   const crack = hex(f);
   const runes = runeStones(f);
   sealRopes(f, runes);
+  const bowls = obeliskFires(f);
   f.done();
   for (const [key, crease] of [['lime', 64], ['basalt', 40]] as const) { const m = forged(f.meshes, key); if (m) smooth(m.geometry, crease); }
   await generated(c);
@@ -54,10 +59,13 @@ export async function dress(c: DressContext) {
   runeLight(c, runes, pulse);
   hangingSeals(c, runes);
   driftingSeals(c);
+  // The obelisks' fire, pale as the hex's light, licking up out of the bowls.
+  flames(c, bowls, 36, { colour: 0xe8dcff, shade: 0x8a60ff });
 
   const glow = new Beacons(c.root, 64, ambient.time);
   for (const p of STAGE_PROPS['mirror-mere'] ?? []) {
-    if (p.piece === 'br/stone-lamp') glow.add(p.x, 2.35, p.z, 1.4, HEX, -1, (p.x * .17 + p.z * .07 + 2) % 1, 1);
+    // (The fire bowl's glow, its centre down in the bowl at 2.3 m.)
+    if (p.piece === 'br/stone-lamp') glow.add(p.x, 2.3, p.z, 1.4, HEX, -1, (p.x * .17 + p.z * .07 + 2) % 1, 1);
     if (p.piece === 'br/pot') glow.add(p.x, 1.8, p.z, 2.2, VIOLET, -1, .5, 1);
   }
   // The seal-stone's split, lit by the hex behind it.
@@ -114,8 +122,8 @@ function limestone(f: Forge) {
 }
 
 /** places-gen: the generated pieces (own/mere-*): the seal-stone across the two tall boxes, a trilithon on each pair of the
- *  gates' posts, the obelisk lamps in the lamps' boxes. (places-epic-a: the ring of trilithons out on the water is a ring of
- *  rune-stones now, runeStones().) */
+ *  gates' posts, the obelisks in the lamps' boxes (each carries a fire bowl,
+ *  obeliskFires()). (places-epic-a: the ring of trilithons out on the water is a ring of rune-stones now, runeStones().) */
 async function generated(c: DressContext) {
   const { kit } = c;
   await kit.load(['own/mere-seal', 'own/mere-trilithon', 'own/mere-lamp']);
@@ -124,10 +132,25 @@ async function generated(c: DressContext) {
     const h = (s === 2.4 ? 6.7 : 3.6) + .4, wide = (TORII_POSTS[3] - TORII_POSTS[2] + .45) * s;
     for (const e of [-1, 1]) kit.place('own/mere-trilithon', { x: e * (TORII_POSTS[2] + TORII_POSTS[3]) / 2 * s, y: -.3, z, height: h, sx: wide / h, sz: .9 * s / h * 1.6, rot: e * .04 });
   }
-  for (const p of STAGE_PROPS['mirror-mere'] ?? []) if (p.piece === 'br/stone-lamp') kit.place('own/mere-lamp', { x: p.x, y: -.1, z: p.z, height: 2.8, rot: p.x + p.z });
+  // (The model is the obelisk cut level at 0.6 of its height, so 0.6 of the 2.8 m it stood: the same obelisk, its head off.)
+  for (const p of STAGE_PROPS['mirror-mere'] ?? []) if (p.piece === 'br/stone-lamp') kit.place('own/mere-lamp', { x: p.x, y: -.1, z: p.z, height: OBELISK_H, rot: p.x + p.z });
   kit.flush(c.stage);
   // The seal-stone lit from the hex behind it and the cameras' side: a cold violet key.
   keyLit(kit.pieceMaterials('own/mere-seal'), new THREE.Color(.62, .55, 1).multiplyScalar(.5));
+}
+
+/** A stone fire bowl on each obelisk's cut top (the obelisk 1.24 m across there): a collar, a wide shallow bowl of the
+ *  limestone, its embers the hex's violet; their fires returned. */
+function obeliskFires(f: Forge): FireAt[] {
+  const m: FireMats = { iron: 'lime', stone: 'lime', glow: 'glow' }, out: FireAt[] = [];
+  for (const p of STAGE_PROPS['mirror-mere'] ?? []) {
+    if (p.piece !== 'br/stone-lamp') continue;
+    const top = -.1 + OBELISK_H;
+    f.cyl('lime', p.x, top - .04, p.z, .58, .66, .14, 0x9c98ae, { sides: 10 });
+    const fire = fireBowl(f, m, p.x, top + .1, p.z, .72, .44, { tint: 0x9c98ae, ember: VIOLET });
+    out.push({ ...fire, size: .55 });
+  }
+  return out;
 }
 
 /** A rough slab: a box tapering to `top` of its width, its faces pushed by a seeded noise, its crown broken jagged. */
@@ -371,15 +394,16 @@ function sealPaper(burning: boolean) {
   }, { repeat: false });
 }
 
-/** Paper seals hung off the ropes between the rune-stones, swaying (cloth: one draw), some burning at their ends. */
+/** Paper seals hung off the ropes between the rune-stones, swaying (cloth: one draw), every one unlit paper. */
 function hangingSeals(c: DressContext, stones: { x: number; z: number; h: number }[]) {
-  const maps = [sealPaper(false), sealPaper(true)], r = rand(5511);
+  const maps = [sealPaper(false), sealPaper(false)], r = rand(5511);
   for (let i = 0; i < stones.length; i++) {
     const a = stones[i], b = stones[(i + 1) % stones.length];
     if (Math.hypot(a.x - b.x, a.z - b.z) > 45) continue;
     for (let k = 1; k < 6; k++) {
       const t = k / 6, x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t, y = a.h * .82 + (b.h - a.h) * .82 * t - Math.sin(t * Math.PI) * 4.5;
-      c.ambient.cloth(maps[r() < .3 ? 1 : 0], { x, y: y - .1, z, width: .9, height: 2.6 + r() * .8, rot: Math.atan2(b.x - a.x, b.z - a.z) + Math.PI / 2, color: 0xd0c8e4, wind: .9, lit: .5 });
+      // (Lit .5 they shone pale in the night along the ropes; .25 as the places' banners are lit, paper in the hex's light.)
+      c.ambient.cloth(maps[r() < .3 ? 1 : 0], { x, y: y - .1, z, width: .9, height: 2.6 + r() * .8, rot: Math.atan2(b.x - a.x, b.z - a.z) + Math.PI / 2, color: 0xd0c8e4, wind: .9, lit: .25 });
     }
   }
 }

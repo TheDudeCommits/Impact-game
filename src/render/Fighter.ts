@@ -9,7 +9,7 @@ import { mizuhikiAuthoredContactCarry } from '../game/fighters/mizuhiki';
 import { shibuichiAuthoredKick,shibuichiAuthoredGround,shibuichiAuthoredShoulderStep } from '../game/fighters/shibuichi';
 import { hagureAuthoredContactStep } from './signature/HagureContactStep';
 import { hagureStrikeSurface } from './signature/HagureStrikeSurface';
-import { applyHagureCosmicLook } from './signature/HagureCosmicLook';
+import { applyHagureMoonlessLook } from './signature/HagureMoonlessLook';
 import { rakuchoAuthoredJabStep } from './signature/RakuchoTendrilsContact';
 import { preserveMinasePaintedFolds } from './look/minaseCreases';
 import { shakudoBladeVisible } from '../game/fighters/shakudo';
@@ -86,7 +86,7 @@ import { SecondaryMotion } from './SecondaryMotion';
 import { SUNRISE_FLOAT, bindFormExtras, floatBob, floatLanding, floatTarget } from './gummy/sunrise';
 import { aheadLoader } from '../loading/modelFiles';
 import { closedFist, openHandName } from './gummy/openHands';
-import { GRAND_TIDE_GRAB, GRAND_TIDE_TAKE, grandTideGrab, grandTideOut } from './gummy/grand-tide';
+import { SPRING_TIDE_GRAB, SPRING_TIDE_TAKE, springTideGrab, springTideOut } from './gummy/spring-tide';
 import { CROSSMATCH_TAKE } from './ward/crossmatch';
 import type { Transplanted } from '../engine/client/transplantTakes';
 import type { AttackSlot, FighterId, PlayerState, ReactionKind } from '../game/types';
@@ -144,7 +144,7 @@ const DRAWN_GAP=.85;
 const GARMENT:Partial<Record<FighterId,FighterId>>={};
 const DRAWN_GAP_ARMED:Partial<Record<FighterId,number>>={chohan:1.17,yodaka:1.2,akayuri:1.1,hisame:1.2,svanhild:1.2,mizuhiki:1.15,shidare:1.3,hinomoto:1.35,onigawara:1.35,cardo:1.35,highsun:2,sashigane:1.15,wataame:1.1,bruin:1.1,buna:1.3,kuzu:1.05,sorayomi:1.05,strix:1.25,gaunt:1.25,kenzo:1.15,nigo:1.15,ward:1.2,shiden:.95,shirokane:.95,gorai:1.3,haldor:1.35,sorrel:1.15,dorado:1.15,
   // The shop's swordsmen, a hand's breadth inside the distance each strikes from (CONTACT_GAP): Vesper's sabre, Asahi's
-  // Sunsteel katana, Levin's blades, and False Encore in base Shiun's hand (3 October). Without them a lunge drew their
+  // Sunsteel katana, Levin's blades, and Understudy in base Shiun's hand (3 October). Without them a lunge drew their
   // torsos to the unarmed 0.85 m and the blade through the body.
   vesper:1.15,asahi:1.1,levin:1.1,shiun:1.15,
   // Scout Hawser's, Levin's kit in his hands (13 October).
@@ -175,8 +175,8 @@ const ROOM_KNEE=.08;
 const softCap=(travel:number,cap:number)=>travel<=cap-ROOM_KNEE?travel:cap-ROOM_KNEE+ROOM_KNEE*Math.tanh((travel-cap+ROOM_KNEE)/ROOM_KNEE);
 /** How a move closes the distance, where the simulation does it for the clip
  *  (MoveDefinition in the merged combat contract; read defensively so this
- *  holds on either side of that merge). A charge-in move - Senpugan,
- *  Shrike Bolt, the Sickle Bolt - slides the body back off a target it
+ *  holds on either side of that merge). A charge-in move - Kazeyose,
+ *  Storm Talon, the Sickle Bolt - slides the body back off a target it
  *  started inside and then drives it in over the last third of a second, so
  *  the clip's own lunge is drawn in place rather than fighting the slide
  *  (CHARGE_ROOM). An iai draw dashes three to five metres straight through
@@ -220,7 +220,7 @@ const _holdForward=new THREE.Vector3(),_holdPoint=new THREE.Vector3(),_holdSide=
 const _rubberTarget=new THREE.Vector3(),_rubberElbow=new THREE.Vector3(),_rubberWrist=new THREE.Vector3(),_rubberAlong=new THREE.Vector3(),_rubberToward=new THREE.Vector3(),_rubberDir=new THREE.Vector3(),_rubberAxis=new THREE.Vector3(),_rubberPelvis=new THREE.Vector3(),_rubberBack=new THREE.Vector3();
 const _rubberTurn=new THREE.Quaternion(),_rubberLocal=new THREE.Vector3();
 const _tideVictim=new THREE.Vector3();
-/** Round 6 (GUMMY ULT): the grab's world forward (Fighter.grandTideGrabStretch). */
+/** Round 6 (GUMMY ULT): the grab's world forward (Fighter.springTideGrabStretch). */
 const _grabForward=new THREE.Vector3();
 const _hitShove=new THREE.Vector3(),_hitLean=new THREE.Vector3(),_hitWhip=new THREE.Vector3(),_hitFling=new THREE.Vector3(),_hitAxisD=new THREE.Vector3(),_hitAxis=new THREE.Vector3(),_hitAxisB=new THREE.Vector3(),_hitAxisC=new THREE.Vector3(),_hitFrom=new THREE.Vector3(),_hitTo=new THREE.Vector3();
 const _torsoA=new THREE.Vector3(),_torsoB=new THREE.Vector3(),_torsoH=new THREE.Vector3(),_strikeP=new THREE.Vector3(),_strikeQ=new THREE.Vector3(),_strikeTip=new THREE.Vector3();
@@ -507,7 +507,7 @@ export const AIR_STRING_CLIPS:Partial<Record<FighterId,readonly [AirStage,AirSta
   chohan:[air("Upping the Ante",false,0,0.82,0.45,0.82),air("Cheap Shot",false,0,0.7,0.5238095238095238,0.7),air("No Refunds",false,0,0.95,0.5238095238095238,0.95)],
   aqrab:[air("Antlion Pit",false,0,0.9333333333333333,0.5,0.9333333333333333),air("Golden Pincer",false,0,1.0,0.5,1.0),air("Dune Shackle",false,0,1.3,0.5,1.3)],
   tsubute:[air("Leapfrog",true,0,0.82,0.45121951219512196,0.82),air("Plunk",true,0,0.92,0.5,0.92),air("Geode",false,0,1,0.49,1)],
-  ume:[air("Rising Magnolia",true,0,0.72,0.54,0.72),air("Magnolia Backfist",true,0,0.65,0.46,0.65),air("Shattering Blossom",true,0,0.98,0.62,0.98)],
+  ume:[air("Rising Magnolia",true,0,0.72,0.54,0.72),air("Magnolia Backfist",true,0,0.65,0.46,0.65),air("Petal Quake",true,0,0.98,0.62,0.98)],
   lanthorn:[air("Rising Lamplight",true,0,0.716667,0.51,0.716667),air("Wick Turn",true,0,0.633333,0.5816326530612245,0.633333),air("Tavern Cleaver",true,0,0.916667,0.6,0.916667)],
   highsun:[air("Morning Ascent",true,0,0.800000011920929,0.56,0.800000011920929),air("Lordly Turn",true,0,0.699999988079071,0.53,0.699999988079071),air("Noonday Divide",true,0,1,0.56,1)],
   torsion:[air("Snap Twist",false,0,0.52,0.4807692307692307,0.52),air("About-Face",false,0,0.72,0.4305555555555556,0.72),air("Air Rebuff",false,0,0.86,0.5,0.86)],
@@ -515,7 +515,7 @@ export const AIR_STRING_CLIPS:Partial<Record<FighterId,readonly [AirStage,AirSta
   onigawara:[air("Rising Gore",false,0,0.83,0.4489,0.83),air("Shoulder Reversal",true,0,0.68,0.4,0.68),air("Jagged Finish",false,0,1.03,0.4,1.03)],
   cardo:[air("Rising Unspell",false,0,0.83,0.4489,0.83),air("Headlong Thrust",true,0,0.68,0.4,0.68),air("Thistledown Storm",false,0,1.03,0.4,1.03)],
   minase:[air("Rising Gale",true,0,0.75,0.5,0.75),air("Crossing Relay",true,0,0.6,0.44,0.6),air("Gale Descent",true,0,1.0,0.56,1.0)],
-  aquilo:[air("Rising Swallow",true,0,0.75,0.5,0.75),air("Swallowtail Cross",true,0,0.6,0.44,0.6),air("Downdraft",true,0,1.0,0.56,1.0)],
+  aquilo:[air("Rising Gust",true,0,0.75,0.5,0.75),air("Shearwind Cross",true,0,0.6,0.44,0.6),air("Downdraft",true,0,1.0,0.56,1.0)],
   'psyche':[air("Rising Swarm",false,0,0.8166666666666667,0.52,0.8166666666666667),air("Wing Twist",true,0,0.6833333333333333,0.56,0.6833333333333333),air("Grasping Swarm",false,0,0.9333333333333333,0.56,0.9333333333333333)],
   'ovid':[air("Jackhammer Uppercut",false,0,0.8666666746139526,0.54,0.8666666746139526),air("Glass Hook",true,0,0.7333333492279053,0.5,0.7333333492279053),air("Sledgehammer",false,0,1.05,0.58,1.05)],
   rotfalke:[air("Rush 1",false,0,0.6000000238418579,0.46,0.6000000238418579),air("Rush 2",true,0,0.7833333611488342,0.56,0.7833333611488342),air("Rush 3",false,0,0.8666666746139526,0.58,0.8666666746139526)],
@@ -847,7 +847,7 @@ const PACE_CREEP=.14;
  *           guard), its blow at `at` of it landed on contact 0 and shaped as
  *           a single swing (`pace`); a whiff plays its follow-through and goes
  *           to the stance. The form a fighter turns into for the cinematic -
- *           the RAKSHASA, SUNRISE, the NIGHTFALL, the HOUND ARMOR - is
+ *           the DUNE ONI, SUNRISE, the NIGHTFALL, the GRAVE PLATE - is
  *           not drawn for it; a form already worn for the window throws it
  *           with `formOpener`, a clip of its own body, where it has one.
  *  cine     the cinematic, from the confirm: the ultimate's own clip (the
@@ -871,7 +871,7 @@ type UltimateClips={opener?:{clip:string;at:number};formOpener?:{clip:string;at:
    *  its string windows (Hawser: the Scout's Slipped Moorings; the plan is the YUGE's rampage). */
   formOnly?:true};
 /** Round 4b (FMOVES): the clips these slots played before their new takes (`<id>-fmoves1.glb`), and where each lands its
- *  blow, for a body that has not got the new one - Gaunt' HOUND ARMOR throws its own Scrap Cannon Arm, and a costume on a
+ *  blow, for a body that has not got the new one - Gaunt' GRAVE PLATE throws its own Scrap Cannon Arm, and a costume on a
  *  rig of its own (outfits.ts) its own clips - so it plays what it always did, landing where it always did. */
 const SLOT_CLIP_BEFORE:Partial<Record<FighterId,Record<string,{clip:string;contact?:number}>>>={
   kosho:{'COUP DE FEU Spin':{clip:'Brasier: Coup de Feu',contact:.4557},'Banquet Infernal Blaze':{clip:'Banquet Infernal'}},
@@ -891,13 +891,13 @@ const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   onigawara:{"opener":{"clip":"Earthsplitter","at":0.235},"cine":{"from":0.235,"at":0.775,"windows":[[0.235,1,0.775]]}},
   cardo:{"opener":{"clip":"Last Weed Standing","at":0.235},"cine":{"from":0.235,"at":0.8433,"windows":[[0.235,0.3739,0.3267],[0.3739,0.4728,0.4211],[0.4728,0.5906,0.5239],[0.5906,0.7503,0.6572],[0.7503,1,0.8433]]}},
   minase:{"opener":{"clip":"Fifty-Three Stations","at":0.21},"cine":{"from":0.21,"at":0.8,"windows":[[0.21,0.63,0.47],[0.63,1,0.8]]}},
-  aquilo:{"opener":{"clip":"Great Migration","at":0.21},"cine":{"from":0.21,"at":0.8,"windows":[[0.21,0.63,0.47],[0.63,1,0.8]]}},
+  aquilo:{"opener":{"clip":"Great Northerly","at":0.21},"cine":{"from":0.21,"at":0.8,"windows":[[0.21,0.63,0.47],[0.63,1,0.8]]}},
   'psyche':{"opener":{"clip":"Silk Cocoon","at":0.14},"cine":{"from":0.14,"at":0.82,"windows":[[0.14,0.625,0.43],[0.625,1,0.82]]}},
   'ovid':{"opener":{"clip":"Full Demolition","at":0.18},"cine":{"from":0.18,"at":0.81,"windows":[[0.18,0.56,0.415],[0.56,1,0.81]]}},
   hawser:{"formOnly":true,"formOpener":{"clip":"Advancing Rage","at":0.13333333333333333},"cine":{"from":0.13333333333333333,"at":0.8238095238095238,"windows":[[0.13333333333333333,0.43,0.3285714285714285],[0.43,0.69,0.5523809523809523],[0.69,1,0.8238095238095238]]}},
   rotfalke:{opener:{clip:"Ten-Count Talons",at:.14},cine:{from:.14,at:.83,windows:[[.14,.44,.34],[.44,.70,.56],[.70,1,.83]]}},
   bonsho:{"opener":{"clip":"Hundred and Eight Tolls","at":0.13},"cine":{"from":0.13,"at":0.84,"windows":[[0.13,0.4,0.34],[0.4,0.53,0.46],[0.53,0.72,0.6],[0.72,1,0.84]]}},
-  yodaka:{opener:{clip:"Ninth Watch: Nighthawk Star",at:.55/4.2},cine:{from:.55/4.2,at:3.5/4.2,windows:[[.55/4.2,.47,89/252],[.47,.71,149/252],[.71,1,3.5/4.2]]}},
+  yodaka:{opener:{clip:"Nighthawk Star",at:.55/4.2},cine:{from:.55/4.2,at:3.5/4.2,windows:[[.55/4.2,.47,89/252],[.47,.71,149/252],[.71,1,3.5/4.2]]}},
   murex:{"opener":{"clip":"Spinestorm","at":0.17},"cine":{"from":0.17,"at":0.81,"windows":[[0.17,1,0.81]]}},
   kinu:{"opener":{"clip":"Broken Shackles","at":0.125},"cine":{"from":0.125,"at":0.795,"windows":[[0.125,0.27875,0.2375],[0.27875,0.36125,0.32],[0.36125,0.44375,0.4025],[0.44375,0.52625,0.485],[0.52625,0.6125,0.5675],[0.6125,0.7262500000000001,0.6575],[0.7262500000000001,1,0.795]]}},
   'madake':{"opener":{"clip":"Midwinter Bamboo","at":0.12562814070351758},"cine":{"from":0.12562814070351758,"at":0.7839195979899498,"windows":[[0.12562814070351758,0.49748743718592964,0.37185929648241206],[0.49748743718592964,1,0.7839195979899498]]},"formOpener":{"clip":"Midwinter Bamboo","at":0.12562814070351758}},
@@ -920,7 +920,7 @@ const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   barrow:{"opener":{"clip":"Jettison: Full Hold","at":0.1326530612244898},"cine":{"from":0.1326530612244898,"at":0.8290816326530612,"windows":[[0.1326530612244898,0.58,0.3903061224489796],[0.58,1,0.8290816326530612]]}},
   sashigane:{opener:{clip:"Final Inspection",at:.45/3.8},cine:{from:.45/3.8,at:3.1/3.8,windows:[[.45/3.8,.43,1.2/3.8],[.43,.67,2.05/3.8],[.67,1,3.1/3.8]]}},
   gosu:{"opener":{"clip":"Gilded Scars","at":0.14857142857142858},"cine":{"from":0.14857142857142858,"at":0.7885714285714285,"windows":[[0.14857142857142858,0.30714285714285716,0.26857142857142857],[0.30714285714285716,0.3842857142857143,0.3457142857142857],[0.3842857142857143,0.4614285714285714,0.4228571428571429],[0.4614285714285714,0.5385714285714286,0.5],[0.5385714285714286,0.6185714285714285,0.5771428571428572],[0.6185714285714285,0.7242857142857142,0.66],[0.7242857142857142,1,0.7885714285714285]]}},
-  kusushi:{"opener":{"clip":"Double or Nothing","at":0.17},"cine":{"from":0.17,"at":0.8,"windows":[[0.17,0.55,0.39],[0.55,1,0.8]]}},
+  kusushi:{"opener":{"clip":"Bet the Purse","at":0.17},"cine":{"from":0.17,"at":0.8,"windows":[[0.17,0.55,0.39],[0.55,1,0.8]]}},
   hakushi:{"opener":{"clip":"Lion Dance: Over the Cliff","at":0.16},"cine":{"from":0.16,"at":0.8,"windows":[[0.16,0.66,0.56],[0.66,1,0.8]]}},
   suzuran:{...SUZURAN_CINEMATIC,cine:{...SUZURAN_CINEMATIC.cine,windows:SUZURAN_CINEMATIC.cine.windows.map(w=>[...w] as [number,number,number])}},
   wataame:{"opener":{"clip":"SHIMEKIRI: Past Due","at":0.14857142857142858},"cine":{"from":0.14857142857142858,"at":0.7942857142857143,"windows":[[0.14857142857142858,0.4514285714285714,0.3485714285714286],[0.4514285714285714,0.6742857142857143,0.5542857142857143],[0.6742857142857143,1,0.7942857142857143]]}},
@@ -930,11 +930,11 @@ const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   oyashio:{opener:{clip:'Grand Gyre',at:(.8*21/26)/3.9},cine:{from:(.8*21/26)/3.9,at:(2.6+1.3*26/55)/3.9,windows:[[(.8*21/26)/3.9,2.6/3.9,(1+1.4*41/58)/3.9],[2.6/3.9,1,(2.6+1.3*26/55)/3.9]]}},
   adad:{opener:{clip:'Firmament Fall',at:.55/3.75},cine:{from:.55/3.75,at:.84,windows:[[.55/3.75,2.5/3.75,1.85/3.75],[2.5/3.75,1,.84]]}},
   shijima: {"opener":{"clip":"White Haze","at":0.17142857142857146},"cine":{"from":0.17142857142857146,"at":0.8063492063492064,"windows":[[0.17142857142857146,0.6095238095238095,0.5015873015873016],[0.6095238095238095,1,0.8063492063492064]]}},
-  akaito: {"opener":{"clip":"Pinky Promise","at":0.18},"cine":{"from":0.18,"at":0.81,"windows":[[0.18,0.61,0.45],[0.61,1,0.81]]}},
+  akaito: {"opener":{"clip":"Fated Knot","at":0.18},"cine":{"from":0.18,"at":0.81,"windows":[[0.18,0.61,0.45],[0.61,1,0.81]]}},
   tempo:{"opener": {"clip": "Perfect Timing", "at": 0.1264705882352941}, "cine": {"from": 0.1264705882352941, "at": 0.8058823529411766, "windows": [[0.1264705882352941, 0.275, 0.22941176470588237], [0.275, 0.3661764705882353, 0.3205882352941177], [0.3661764705882353, 0.4573529411764706, 0.4117647058823529], [0.4573529411764706, 0.5485294117647059, 0.5029411764705882], [0.5485294117647059, 0.6426470588235295, 0.5941176470588235], [0.6426470588235295, 0.748529411764706, 0.6911764705882354], [0.748529411764706, 1, 0.8058823529411766]]}},
   tancho:{opener:{clip:'Thousand Cranes',at:.155},cine:{from:.155,at:.81,windows:[[.155,.58,.46],[.58,1,.81]]}},
   bellows:{opener:{clip:'Meltdown',at:.13},cine:{from:.13,at:.78,windows:[[.13,.58,.43],[.58,1,.78]]}},
-  mikage:{opener:{clip:'Raijin Opener',at:.5},cine:{from:0,at:.78,windows:[[0,.445,.35],[.445,.66,.54],[.66,1,.78]]}},
+  mikage:{opener:{clip:'Storm Opener',at:.5},cine:{from:0,at:.78,windows:[[0,.445,.35],[.445,.66,.54],[.66,1,.78]]}},
   // One native take: the opening sweep continues into its leap and landing after confirmation.
   'full-beam':{opener:{clip:'Seven Seas Haymaker',at:.15},cine:{from:.15,at:.8,windows:[[.15,.51,.39],[.51,1,.8]]}},
   pyroclast:{opener:{clip:'Supervolcano',at:.16},cine:{from:.16,at:.78,windows:[[.16,.60,.48],[.60,1,.78]]}},
@@ -949,7 +949,7 @@ const ULTIMATE_CLIPS:Partial<Record<FighterId,UltimateClips>>={
   nigo:{opener:{clip:'Scorched Earth',at:.3824},cine:{from:0,at:.596}},
   shirokane:{opener:{clip:'Sickle Bolt',at:.6143},cine:{from:.25,at:.6291}},
   kosho:{opener:{clip:'Banquet Infernal Open',at:0.6452},cine:{from:0.1271,at:0.7398,windows:[[0.1271,0.2739,0.2259],[0.2739,0.3671,0.3106],[0.3671,0.5506,0.4235],[0.5506,1,0.7398]]}},
-  gummy:{opener:GRAND_TIDE_TAKE.open,formOpener:GRAND_TIDE_TAKE.open,cine:GRAND_TIDE_TAKE.cine},
+  gummy:{opener:SPRING_TIDE_TAKE.open,formOpener:SPRING_TIDE_TAKE.open,cine:SPRING_TIDE_TAKE.cine},
   // Round 7 (WARD ULT): ROOM and Crossmatch are the opener now (ward/crossmatch.ts): his own take (ward-ult1.glb), the left hand
   // up open over the floor as the dome opens off it, turned up for the swap, and out on them on the blow - where his own
   // 'Flatline Shock' holds it through the cinematic, which goes on as it was. (It was the Cautery Blade's thrust.)
@@ -1089,7 +1089,7 @@ const STRING_WINDOWS:Partial<Record<FighterId,Partial<Record<AttackSlot,[number,
   // sweeping it at the twelve times the move leaves for it moved the hand
   // 0.88 m in one frame.
   konta:{light:[[.095,.155,.133],[.30,.53,.40],[.535,.66,.56]]},
-  // Setsuna: Tsumuji is Shirokane's Void Eye: Sickle Bolt carried onto
+  // Setsuna: Kazahana is Shirokane's Sickle Bolt: Reaper carried onto
   // Setsu: a crouched charge (0-0.52), one strike (the hand shoots from
   // 0.11 m behind the hips to 0.57 m ahead between 0.52 and 0.58), a driven
   // hold to 0.80 and the recovery, measured on the exported GLB (the same
@@ -1115,20 +1115,20 @@ const STRING_WINDOWS:Partial<Record<FighterId,Partial<Record<AttackSlot,[number,
   // drawn up overhead and brought down, the scythe's swing (the hands through at 1.07): scripts/economy/build_fighter.py.
   // The scythe sweeps them once as it forms, a window of its own between (moves.ts: three blows).
   'wuming':{ultimate:[[0,.29,.26],[.29,.55,.45],[.55,1,.776]]},
-  // Jirenga's Mountain-Felling Fist is his rush's hook (the fist through at 0.167 s of the 1.75) joined to the whole heavy -
+  // Banjaku's Mountain-Felling Fist is his rush's hook (the fist through at 0.167 s of the 1.75) joined to the whole heavy -
   // the leap, the fist raised, and the diving punch (through at 1.17): hand speed, scripts/economy/build_fighter.py.
-  jirenga:{ultimate:[[0,.286,.095],[.286,1,.667]]},
+  banjaku:{ultimate:[[0,.286,.095],[.286,1,.667]]},
   // Ippon's Clean Slate is one punch (scripts/economy/retime_clip.py, build_ippon.sh): he plants into the end of
   // his draw-back (0.45 s of the 2.29, the opener), holds it, and throws the straight right out of it (through at 1.59).
   ippon:{ultimate:[[0,.218,.196],[.218,1,.694]]},
   sekka:{heavy:[[0,.27,.166],[.27,.46,.372],[.46,.97,.772]],ultimate:[[0,.375,.15],[.375,1,.563]]},
-  // Tobari's Red Moon Reverie is the kunai's cut (through at 0.18 s of the 3.73) joined to the one hand raised before his face
+  // Tobari's Crow's Nightmare is the kunai's cut (through at 0.18 s of the 3.73) joined to the one hand raised before his face
   // as the eyes take them (0.96).
   // The five stabs in the illusion are a window each, a sliver of the held hand apiece, so it holds while they land
   // (moves.ts: seven blows; Fighter plays an ultimate's windows only with one a contact).
   tobari:{ultimate:[[0,.188,.047],[.188,.206,.197],[.206,.225,.216],[.225,.243,.234],[.243,.262,.252],[.262,.28,.271],[.28,1,.301]]},
-  // Akagane's Heaven's Anvil is his jab (0.43 s of 3.83) joined to the arm thrown up to the sky (1.64); Asahi's
-  // Lantern Rite: First Light the turning cut (0.94 s of 3.03) and the overhead blow he lands with (2.41); Levin's Spinning
+  // Akagane's Copper Star is his jab (0.43 s of 3.83) joined to the arm thrown up to the sky (1.64); Asahi's
+  // First Light the turning cut (0.94 s of 3.03) and the overhead blow he lands with (2.41); Levin's Spinning
   // Assault his reverse-quill (0.41 s of 2.25) and the spin's last pass (2.06); Rook's Black Rookery the dagger's cut (0.38 s
   // of 3.58) and the hand thrown up to the sky as the shadows rise (1.55).
   akagane:{ultimate:[[0,.209,.133],[.209,1,.428]]},
@@ -1153,10 +1153,10 @@ const STRING_WINDOWS:Partial<Record<FighterId,Partial<Record<AttackSlot,[number,
 const CHARGE_TREMOR=.022,CHARGE_BREATH=.016;
 /** A cast that holds one pose keeps moving.
  *
- *  A blind critic read Gummy's Grand Tide, Kenzo's, Kuon's and Taisei's
- *  ultimates, Shirokane's seal and Konta's Senpugan as statues: eight to
+ *  A blind critic read Gummy's Spring Tide, Kenzo's, Kuon's and Taisei's
+ *  ultimates, Shirokane's seal and Konta's Kazeyose as statues: eight to
  *  fourteen captured frames of one pose. Measured (scripts/probe_hold_length),
- *  Grand Tide held 4.2 s with no body joint turning 1.5 degrees in a
+ *  Spring Tide held 4.2 s with no body joint turning 1.5 degrees in a
  *  frame, Kenzo's Dust Sea Sundered 2.3 s, Kuon's PLANETARIUM 2.2 s. A held
  *  chamber is what those moves are - the clip has 1.9 s of footage for a
  *  7.8 s move - so the hold is kept and given life on top: a breath through
@@ -1194,7 +1194,7 @@ const HOLD_SHAKE={rates:[7.1,11.3] as [number,number],arm:.036,chest:.02,head:.0
 const HOLD_AFTER={breath:1.4,sway:.8};
 /** The tail of a move, once its clip is spent and its blow long gone: the
  *  fighter settles back into their own stance while the move still owns the
- *  body. Signal Fire's clip is over 1.4 s before the special is; Grand Tide's
+ *  body. Signal Fire's clip is over 1.4 s before the special is; Spring Tide's
  *  1.6 s before the ultimate. Holding the last frame for that long is a
  *  statue; the stance breathes (and Full Swell bounces). How long after the
  *  clip is spent the stance takes over, and over how long. */
@@ -1263,10 +1263,10 @@ const _palmsSide=new THREE.Vector3(),_palmsFacing=new THREE.Vector3(),_palmsTarg
  *  hand's next one. With nobody to aim at they go straight ahead, `ahead` metres. Seconds, radians, metres. The many
  *  fists round them are GummyEffects'. */
 const GATLING={out:.045,hold:.02,back:.065,aim:THREE.MathUtils.degToRad(80),ahead:6,min:.35};
-/** Round 4b (GUMMY): the GRAND TIDE's leap. SUNRISE's own take of it (ULTIMATE_CLIPS) springs him two body heights
+/** Round 4b (GUMMY): the SPRING TIDE's leap. SUNRISE's own take of it (ULTIMATE_CLIPS) springs him two body heights
  *  into the sky, hangs him there while the fist is blown up and drops him fist-first onto the floor: his attacks' 0.9 m
  *  rise kept him under the fist he was meant to be over. The rest as his. */
-const GRAND_TIDE_LEAP={rise:2.6,drop:.3,travel:2.4};
+const SPRING_TIDE_LEAP={rise:2.6,drop:.3,travel:2.4};
 const HIT_REACT={headYaw:.42,headWhip:.37,twist:.4,lean:.3,arms:.35,dip:.052};
 const HIT_LIMIT={headYaw:.65,headWhip:.55,twist:.6,lean:.45,arms:.6,dip:.09};
 /** The weight of a blow, 0 for a jab to 1 for the biggest, off the scale it
@@ -1404,7 +1404,7 @@ const HIT_SCALE={finisher:1.8,heavy:1.4,big:1.5,guarded:.35};
 const TORSO_RADIUS:Record<FighterId,number>={chohan:.18,aqrab:.24,tsubute:.15,yodaka:.17,'psyche':.16,'ovid':.22,hawser:.15,rotfalke:.25,bonsho:.15,murex:.22,kinu:.16,'madake':.17,akayuri:.14,hagure:.18,hisame:.15,svanhild:.15,mizuhiki:.15,'shibuichi':.22,'rakucho':.16,irbis:.16,shidare:.16,hinomoto:.17,amagoi:.17,'shakudo':.15,minase:.16,aquilo:.16,onigawara:.21,cardo:.21,kubiwa:.15,torsion:.12,highsun:.22,lanthorn:.15,ume:.15,hikui:.15,tokan:.18,strappado:.20,unari:.17,barrow:.32,sashigane:.17,gosu:.17,kusushi:.16,hakushi:.18,suzuran:.14,wataame:.17,bruin:.17,senko:.17,buna:.2,oyashio:.32,adad:.17,'full-beam':.23,pyroclast:.16,ampere:.15,akaito:0.16,shijima:0.13,tempo:.17,tancho:.17,bellows:.25,mikage:.155,shanxiao:.24,kuzu:.16,shakugo:.25,'basilissa':.16,sorayomi:.155,strix:.19,kenzo:.178,koko:.159,nigo:.136,shirokane:.17,shiden:.154,kosho:.135,ouga:.152,taisei:.142,
   gummy:.133,konta:.173,kagari:.136,ward:.164,kuon:.146,oro:.159,gaunt:.188,setsu:.136,
   // The shop's fighters, by eye against Gaunt' .188 at their heights (Gorai's .215 at 2.08 m, scaled to his 3.2).
-  gorai:.33,haldor:.205,sorrel:.145,dorado:.175,shiun:.15,magatsu:.15,vesper:.145,imago:.15,'wuming':.142,jirenga:.205,'jinlin':.13,'gohaku':.15,ippon:.145,sekka:.14,tobari:.14,akagane:.15,asahi:.13,levin:.13,'rook':.14,gaku:.12};
+  gorai:.33,haldor:.205,sorrel:.145,dorado:.175,shiun:.15,magatsu:.15,vesper:.145,imago:.15,'wuming':.142,banjaku:.205,'jinlin':.13,'gohaku':.15,ippon:.145,sekka:.14,tobari:.14,akagane:.15,asahi:.13,levin:.13,'rook':.14,gaku:.12};
 const HEAD_RADIUS=.12,HEAD_LIFT=.08,CONTACT_REACH=3.6,CONTACT_MARGIN=.015;
 const PUSH_RISE=16,PUSH_FALL=.45,PUSH_MOST=.3,PUSH_MOST_ARMED=.5,PUSH_MOST_HOLD=1,PUSH_AFTER=.3;
 const TOUCH_BEFORE=.12,TOUCH_AFTER=.2,TOUCH_MERGE=.4,TOUCH_REACH=.04;
@@ -1485,7 +1485,7 @@ const clean=clipKey;
 export { VICTORY, VICTORY_ENTRY, FORM_NAMED_RUSH, SPIRIT_COMMAND, SLOT_CLIP_BEFORE, ULTIMATE_CLIPS, OWN_BODY_ULTIMATE, AWAKEN_TAKE, AWAKEN_FORM_TAKE };
 /** Geometry a fighter is carrying rather than standing in. Height normalisation
  *  asks how tall the fighter is; a katana worn over the shoulder and a fanned
- *  RAKSHASA blade both reach well above the head, and counting them shrinks the
+ *  DUNE ONI blade both reach well above the head, and counting them shrinks the
  *  whole body to fit. Kenzo measured 2.35 m that way and shipped two thirds the
  *  height of everyone else. These still render - they are only not him. Nor
  *  are Shiun's wings, which rise a third of a metre over his head. */
@@ -1567,10 +1567,10 @@ const STANDING_RISE=new Set<FighterId>(Object.keys(FIGHTERS) as FighterId[]);
 const AWAKEN_TAKE:Partial<Record<FighterId,string>>={shiden:'Shiden awaken',shirokane:'Shirokane awaken',setsu:'Setsu awaken',gaunt:'Gaunt awaken',
   koko:'KoKo awaken',
   nigo:'Nigo awaken',
-  // LORD ORO's names MIDNIGHT, swept as KoKo's was; his own is KYAHAAA! on the burst as HUSH rises (oro-fanim5.glb).
+  // LORD ORO's names MIDNIGHT, swept as KoKo's was; his own is HOUR'S UP! on the burst as SLUMBER rises (oro-fanim5.glb).
   oro:'LORD ORO awaken',
   ippon:'Ippon awaken'};
-/** The same for a form body that takes over on the swap and plays on to the entry's end (Gaunt' 'HOUND ARMOR': his own
+/** The same for a form body that takes over on the swap and plays on to the entry's end (Gaunt' 'GRAVE PLATE': his own
  *  skeleton, so it plays his take - gaunt-fanim3.glb is in both lists). Its row was the ultimate too: Hound Rampage's
  *  6.75 s of swings at seven times their pace. */
 const AWAKEN_FORM_TAKE:Partial<Record<FighterId,string>>={hawser:'YUGE Emergence',ampere:'Vigilante Resolve',shanxiao:'Unbound Fury',gaunt:'Gaunt awaken'};
@@ -1861,7 +1861,7 @@ export function bindClips(scene:THREE.Object3D,clips:THREE.AnimationClip[],label
  *  translations of those joints are held at this rig's own - the motion is in
  *  the rotations, which are untouched. The rigs that stretch
  *  themselves as they move (Gummy, Kenzo, Kagari) are left as drawn. */
-const REACTION_CLIP=/hit 01|adapted_hit|slammed|shake|stun|electric_shock|down_end|down_lp|blownback|knockback-air|ground-impact|abdomen-fold|beam-pressure|die fall|jump spin|jump_spin/i;
+const REACTION_CLIP=/hit 01|adapted_hit|slammed|shake|stun|shocked|down_end|down_lp|blownback|knockback-air|ground-impact|abdomen-fold|beam-pressure|die fall|jump spin|jump_spin/i;
 const OWN_MOTION=/^(_idle|idle|00-idle|taisei-ready|02-stance|stance|run|adapted_run|dash|adapted_dash)$/i;
 /** How far a joint's length may move before a clip counts as changing it. */
 const RIGID_STRETCH=.03;
@@ -2251,7 +2251,7 @@ export class Fighter {
   /** Round 5 (GUMMY): SUNRISE floating (gummy/sunrise.ts SUNRISE_FLOAT): the form is placed so its lowest sole hangs the
    *  float's height - eased, bobbing slowly, a little lower through a swing, down into a knockdown, rising into it as
    *  the form arrives, giving under a landing - over the fighter's floor: the body as it would be drawn standing,
-   *  lifted, so a take that leaves the floor (the GRAND TIDE's spring into the sky) keeps its height; and higher where
+   *  lifted, so a take that leaves the floor (the SPRING TIDE's spring into the sky) keeps its height; and higher where
    *  a take hangs a foot lower than standing, so no sole comes within the float of the tile. In the air and being
    *  thrown about, the lifted rest alone. */
   private floatForm(dt:number,real:number,state:PlayerState,elapsed:number){
@@ -2495,7 +2495,7 @@ export class Fighter {
     // A form standing in for the body is told by the fighter it replaces,
     // which has paired it.
     const blow=!recipient||detail?.reaction===undefined?undefined:paired===undefined?LANDED.pair(this.state.id,slot,contactIndex):paired??undefined;
-    // Round 3e (REACT): a blow presented ahead of the server (the Senpugan's
+    // Round 3e (REACT): a blow presented ahead of the server (the Kazeyose's
     // preview, Prediction's `takeImpacts`) is the local copy's prediction of
     // it: it answers that prediction - topping up the touch that answered it
     // already, or standing as its touch - and is let go of with it if the
@@ -2528,7 +2528,7 @@ export class Fighter {
       this.drove=drive;this.driving=drive?DRIVE.hold:0;
     }
     // A transformation's body IS the fighter while it shows: Full Swell,
-    // Kurobi, the NIGHTFALL, the RAKSHASA and the HOUND ARMOR flinch,
+    // Kurobi, the NIGHTFALL, the DUNE ONI and the GRAVE PLATE flinch,
     // flash and hold on the blow like the body they replace. They used to
     // take every hit without a twitch, because only the fighter they hang
     // under was ever told about one. A worn Guardian is a shell the fighter
@@ -2617,7 +2617,7 @@ export class Fighter {
         if(DREAM_IMPACT&&!confirms)this.hurtTake=Fighter.dreamTakes&&!this.hitBehind?dreamHurt(stage,side,Fighter.lockHurts):undefined;
         const guarded=this.state.action==='guard'&&!detail?.reaction;
         // And by what it was worth, as the lean is: a barrage tick is not a
-        // Senpugan.
+        // Kazeyose.
         const worth=THREE.MathUtils.clamp(.6+(damage??40)/160,.7,1.8);
         const scale=worth*(guarded?HIT_SCALE.guarded:finisher?HIT_SCALE.finisher:slot==='heavy'?HIT_SCALE.heavy:slot==='special'||slot==='ultimate'?HIT_SCALE.big:1)
           *(detail?.downed?FLOOR_FLINCH:1) // Ground hits: lying flat, it flinches less (FLOOR_FLINCH).
@@ -2769,9 +2769,9 @@ export class Fighter {
   readonly teamTrim=teamTrim();
   /** The side's trim on this body and on its transformation's (a form is a body of its own): the ink's colour and the
    *  rim's (linear), and how much of each (0-1). */
-  setTeamTrim(ink:THREE.Color,rim:THREE.Color,inkAmount:number,rimAmount:number){
-    this.teamTrim.inkColor.value.copy(ink);this.teamTrim.rimColor.value.copy(rim);this.teamTrim.amount.value.set(inkAmount,rimAmount);
-    this.awakenedForm?.setTeamTrim(ink,rim,inkAmount,rimAmount);
+  setTeamTrim(ink:THREE.Color,rim:THREE.Color,inkAmount:number,rimAmount:number,widen=0){
+    this.teamTrim.inkColor.value.copy(ink);this.teamTrim.rimColor.value.copy(rim);this.teamTrim.amount.value.set(inkAmount,rimAmount);this.teamTrim.widen.value=widen;
+    this.awakenedForm?.setTeamTrim(ink,rim,inkAmount,rimAmount,widen);
   }
   private rightBone?:THREE.Bone;
   private leftBone?:THREE.Bone;
@@ -3371,7 +3371,7 @@ export class Fighter {
         if(lensFacingNormals(state.fighter))addShaderPatch(mat,'lens-normal-v1',lensNormalPatch);
         applyTeamTrim(mat,this.teamTrim,'body'); // The side's colour on the rim in a ball match (nothing outside one).
         applyHitFlash(mat,this.flash,this.flashFlat);
-        applyHagureCosmicLook(mat,state.fighter,this.isForm);
+        applyHagureMoonlessLook(mat,state.fighter,this.isForm);
         applyLimbSmear(mat,this.smear);
         this.outlineMaterials.push(mat);return mat;
       });
@@ -3390,7 +3390,7 @@ export class Fighter {
       // depthWrite off and the toon rebuild turned it back on, so the ROOM's
       // near side hid every transparent thing drawn after it inside the dome -
       // hit sparks included. It stays at renderOrder 0, so the layers drawn
-      // under it on purpose (OperatingTheatre, -1 and -2) still are. Nor does a
+      // under it on purpose (ScrubbedIn, -1 and -2) still are. Nor does a
       // glass sphere cast a solid shadow on the floor round him.
       if(translucentShell){for(const m of materials)m.depthWrite=false;mesh.castShadow=false;}
       if(!authoredOutline&&inkWidth>0&&!translucentShell){
@@ -3562,7 +3562,7 @@ export class Fighter {
   /** The body being drawn for this fighter: a replacement form's while one
    *  stands in, else its own. A worn shell leaves the fighter drawn. */
   private drawnBody():Fighter{return this.awakenedForm&&this.awakenedForm.group.visible&&!this.model.visible?this.awakenedForm:this;}
-  /** The body drawn now: the form's, while it shows (EmperorEffects copies it for False Encore's illusion). */
+  /** The body drawn now: the form's, while it shows (EmperorEffects copies it for Understudy's illusion). */
   get shownBody():Fighter{return this.drawnBody();}
   /** The displayed source clock, shared with native command-driven limbs. */
   get displayedClipName():string|undefined{return this.shownBody.active?.getClip().name;}
@@ -3590,7 +3590,7 @@ export class Fighter {
     return best;
   }
   static readonly REACTIONS:Record<string,string[]>={
-    flinch:['shake','electric_shock','Hit 01','Hit','Hurt'],
+    flinch:['shake','shocked','Hit 01','Hit','Hurt'],
     // Nothing in the roster ships a wall splat, so it borrows the slam, which
     // is a body stopping against something and reads correctly for it.
     splat:['slammed','ultimate-ground-impact','Hit 01','Hit','Hurt'],
@@ -3676,7 +3676,7 @@ export class Fighter {
       this.oyashioHands=[];
       this.model.traverse(object=>{if(/^Oyashio_(Closed|Open)_(Left|Right)$/.test(object.name))this.oyashioHands!.push(object);});
     }
-    // 15 October 2026 ("rxc"): Tide Palm is a baked right jab now (Jirenga's Bedrock Jab), its left the hand held back: both fists.
+    // 15 October 2026 ("rxc"): Tide Palm is a baked right jab now (Banjaku's Bedrock Jab), its left the hand held back: both fists.
     const clip=this.active?.getClip().name,[left,right]=state.action==='light'&&clip==='Tide Palm'?['Closed','Closed']:oyashioHandVariants(state.action,state.actionTime*state.actionDuration,clip);
     for(const mesh of this.oyashioHands)mesh.visible=mesh.name===`Oyashio_${left}_Left`||mesh.name===`Oyashio_${right}_Right`;
   }
@@ -4204,7 +4204,7 @@ export class Fighter {
   /** Whether a heavy, special or ultimate is drawn with one of the slot's own clips (`names`, the fighter's slot clips by
    *  default) - as an ender is where its body has no clip of its own for it, or where its own is a part of a slot's -
    *  rather than with an ender's own take. The props and hands a slot's clip is built around (Mirage Draw's put-away
-   *  swords, the Shrike Bolt hand that holds no kunai, Cautery Blade's left hand, Needle Finger's pointing hand, Signal Fire's will)
+   *  swords, the Storm Talon hand that holds no kunai, Cautery Blade's left hand, Iron Nail's pointing hand, Signal Fire's will)
    *  belong to that clip, not to the button. */
   slotClip(state:PlayerState,names:readonly string[]=this.slotClips(state.fighter)?.slice(1)??[]){
     if(this.swap)return false;
@@ -4292,7 +4292,7 @@ export class Fighter {
     const isTaisei=state.fighter==='taisei';
     const authored=this.slotClips(state.fighter);
     if(authored){const slot=['light','heavy','special','ultimate'].indexOf(state.action);const name=slot>=0?authored[slot]:(state.action==='victory'?this.findClip(state.fighter==='full-beam'?['Lighthouse Salute',...VICTORY]:VICTORY)?.name:undefined)??({idle:'_Idle',run:'Run',dash:'Dash',jump:'jump',guard:'Block',hurt:'Hit 01',defeated:'Die fall'}as Record<string,string>)[state.action];const before=name?SLOT_CLIP_BEFORE[state.fighter]?.[name]:undefined;return this.findClip(before?[name!,before.clip]:[name??'_Idle'])??this.clips[0];}
-    // (Round 5: his body throws no part of the GRAND TIDE - SUNRISE's does all of it - and stands in his stance for the
+    // (Round 5: his body throws no part of the SPRING TIDE - SUNRISE's does all of it - and stands in his stance for the
     // beats either side of it the form is not drawn for.)
     if(state.fighter==='gummy'){const names:Record<string,string[]>={idle:['_Idle'],victory:VICTORY,run:['Run'],dash:['Dash'],jump:['jump'],guard:['Block'],light:['Snapback Jab'],heavy:['Rogue Wave'],special:['SUNSET BARRAGE','Punch 01'],ultimate:[...(LUCY_TIDE?[TIDE_CLIP]:[]),'Sunrise Tide','_Idle'],hurt:['Hit 01'],defeated:['Die fall']};return this.findClip(names[state.action]??['_Idle'])??this.clips[0];}
     // Taisei's rebuild names its clips `adapted_*`, and nothing else on him
@@ -4304,7 +4304,7 @@ export class Fighter {
     // computed for a 3.0 m/s one, which is a gait and a stride describing two
     // different animations. Where a properly named clip exists it wins.
     if(isTaisei&&['dash','jump','guard','light','heavy','hurt'].includes(state.action)){const adapted=this.findClip(['adapted_'+(state.action==='hurt'?'hit':state.action)]);if(adapted)return adapted;}
-    const table:Record<string,string[]>={idle:isTaisei?['taisei-ready','02-STANCE','stance','idle']:['_Idle','Idle'],victory:VICTORY,run:['Run','Walk'],dash:['Dash','Run'],jump:['jump','Jump Fall'],guard:['Block','Guard','02-STANCE'],light:['Punch 01','Punch','Light'],heavy:isTaisei?['Meteor','Kick 01','Punch 03']:['Whirlsphere Attack'],special:isTaisei?['03-SUNPALM-CANNON','Sunpalm Cannon']:['Whirlsphere Ready','Whirlsphere charge'],ultimate:isTaisei?['LAST SUN','Ultimate','01-OSSU']:['Whirlsphere charge Clone','Whirlsphere charge'],hurt:['Hit 01','Hit','Hurt'],defeated:['Die fall','Fall','Defeated']};
+    const table:Record<string,string[]>={idle:isTaisei?['taisei-ready','02-STANCE','stance','idle']:['_Idle','Idle'],victory:VICTORY,run:['Run','Walk'],dash:['Dash','Run'],jump:['jump','Jump Fall'],guard:['Block','Guard','02-STANCE'],light:['Punch 01','Punch','Light'],heavy:isTaisei?['Meteor','Kick 01','Punch 03']:['Kazeyose Attack'],special:isTaisei?['03-SUNPALM-CANNON','Sunpalm Cannon']:['Kazeyose Ready','Kazeyose charge'],ultimate:isTaisei?['LAST SUN','Ultimate','01-OSSU']:['Kazeyose charge Clone','Kazeyose charge'],hurt:['Hit 01','Hit','Hurt'],defeated:['Die fall','Fall','Defeated']};
     return this.findClip(table[state.action]??table.idle)??this.findClip(table.idle)??this.clips[0];
   }
   /** Map elapsed move time onto clip time so the clip's own contact frame lands
@@ -4558,7 +4558,7 @@ export class Fighter {
    *  `strike` shapes a swing in fractions of the wind-up, which is right when
    *  the clip and the move roughly agree how long the blow takes. They often
    *  do not: the same 0.88 s of Mirage Draw is asked to fill a 1.19 s move
-   *  and Gummy's 1.88 s Grand Tide a 7.8 s one, and a shape in fractions
+   *  and Gummy's 1.88 s Spring Tide a 7.8 s one, and a shape in fractions
    *  simply slows the whole clip down - a fighter wading through the air, or
    *  holding one pose for two and a half seconds. The other way round, a
    *  4.17 s Punch 01 on a 0.82 s barrage blurs.
@@ -5416,7 +5416,7 @@ export class Fighter {
    *  it for a beat, then played out at the rate it was drawn.
    *
    *  Weighted by what the blow was worth. A seventeen-damage barrage tick and
-   *  a ninety-five-damage Senpugan used to drive this clip identically: the
+   *  a ninety-five-damage Kazeyose used to drive this clip identically: the
    *  same snap, the same hold, the same rate out. A heavier blow now holds its
    *  peak longer and recovers slower, which is most of the difference between
    *  a tap and a hit that hurt. The peak pose itself is the same whatever
@@ -5738,14 +5738,14 @@ export class Fighter {
     // Round 7 (WARD ULT): nor through his ultimate, whose left hand opens ROOM, makes the sign and goes on them (it held
     // the sheath out through the victim in the cinematic).
     if(this.wardSheath.length){const gamma=state.action==='special'&&this.slotClip(state,['Cautery Blade'])||state.action==='ultimate';for(const sheath of this.wardSheath)sheath.visible=!gamma;}
-    // Round 5 (GUMMY): and as the GRAND TIDE takes him into the form, unawakened (gummy/grand-tide.ts).
-    if(this.laughFace){const laugh=state.action==='awaken'||(state.action==='ultimate'&&!state.awakened&&state.actionTime*state.actionDuration<GRAND_TIDE_TAKE.laugh);this.laughFace.visible=laugh;if(this.plainFace)this.plainFace.visible=!laugh;}
+    // Round 5 (GUMMY): and as the SPRING TIDE takes him into the form, unawakened (gummy/spring-tide.ts).
+    if(this.laughFace){const laugh=state.action==='awaken'||(state.action==='ultimate'&&!state.awakened&&state.actionTime*state.actionDuration<SPRING_TIDE_TAKE.laugh);this.laughFace.visible=laugh;if(this.plainFace)this.plainFace.visible=!laugh;}
     // Round 5 (GUMMY): Rogue Wave is thrown with the palms: the open hands are on through the heavy - not an
     // ender thrown in its slot, nor a heavy off the floor - and the fists off.
-    // Round 6 (GUMMY ULT): and SUNRISE's grab flies open and shuts on them (gummy/grand-tide.ts grandTideGrab): the right alone.
+    // Round 6 (GUMMY ULT): and SUNRISE's grab flies open and shuts on them (gummy/spring-tide.ts springTideGrab): the right alone.
     if(this.openHands.length){
       const palms=state.action==='heavy'&&!Fighter.ender(state)&&state.grounded&&!this.swap;
-      const grab=state.action==='ultimate'&&!this.swap&&grandTideGrab(state,this.moveFor(state).contacts[0]).open;
+      const grab=state.action==='ultimate'&&!this.swap&&springTideGrab(state,this.moveFor(state).contacts[0]).open;
       for(let i=0;i<this.openHands.length;i++){const open=palms||grab&&this.openSides[i]==='R';this.openHands[i].visible=open;this.fists[i].visible=!open;}
     }
     this.state=state;const actionSeconds=state.actionTime*state.actionDuration;this.will.value=state.fighter==='gummy'&&state.action==='special'&&!Fighter.ender(state)&&!this.swap?THREE.MathUtils.smoothstep(actionSeconds,.1,.25)*(1-THREE.MathUtils.smoothstep(actionSeconds,state.actionDuration-.3,state.actionDuration)):0;/* Round 3d (PACE): gone by the move's end, whatever its length (it faded over 2.5-2.9 s of a 2.6 s move). */const target=new THREE.Vector3(state.x,state.y,state.z);
@@ -6201,7 +6201,7 @@ export class Fighter {
     {
       // The transformation's colour, on the body, for the two fighters whose
       // transformation is only an aura. Emissive is added flat, so on anything
-      // dark it is not a tint but a repaint: the RAKSHASA's black coat came out
+      // dark it is not a tint but a repaint: the DUNE ONI's black coat came out
       // solid green, and so did his skin. A fighter who grew a body of their
       // own does not need to be coloured in as well.
       // (Launch night: whoever stands the aura, not only a definition that burns - standingAura.ts.)
@@ -6316,7 +6316,7 @@ export class Fighter {
     this.turnWheel(state.timeStopped||state.hitstop?0:real,state);
     this.limitRootMotion(drawn,dt);
     this.driveRagdoll(state,real);
-    const finger=this.spiritHands.length>0&&state.action==='heavy'&&this.slotClip(state,['Needle Finger']);for(const hand of this.spiritHands){const pointing=hand.name==='iron-pointing-hand';hand.visible=pointing?finger:!finger;if(pointing&&hand.morphTargetInfluences){const t=state.actionTime*state.actionDuration,c=MOVES.koko.heavy.contacts[0],d=state.actionDuration;/* Round 3d (PACE): out from the shot, back by the move's end (it was .35-.65 and .8-1.3 s of a .92 s move). */hand.morphTargetInfluences[0]=THREE.MathUtils.smoothstep(t,c-.01,c+.5*(d-c))*(1-THREE.MathUtils.smoothstep(t,c+.75*(d-c),d));}}
+    const finger=this.spiritHands.length>0&&state.action==='heavy'&&this.slotClip(state,['Iron Nail']);for(const hand of this.spiritHands){const pointing=hand.name==='iron-pointing-hand';hand.visible=pointing?finger:!finger;if(pointing&&hand.morphTargetInfluences){const t=state.actionTime*state.actionDuration,c=MOVES.koko.heavy.contacts[0],d=state.actionDuration;/* Round 3d (PACE): out from the shot, back by the move's end (it was .35-.65 and .8-1.3 s of a .92 s move). */hand.morphTargetInfluences[0]=THREE.MathUtils.smoothstep(t,c-.01,c+.5*(d-c))*(1-THREE.MathUtils.smoothstep(t,c+.75*(d-c),d));}}
     this.previousAction=state.action;
     for(const expression of this.faceExpressions)expression.weights[expression.index]=expression.value;
     for(const hand of this.scaledHands)hand.scale.setScalar(this.handScale);
@@ -6399,15 +6399,15 @@ export class Fighter {
       // A worn form leaves its fighter visible; a replacement body does not.
       const worn=AWAKENINGS[state.fighter].formTint!==undefined;
       // A replacement body is also shown for the middle of the ultimate when
-      // the fighter is not awakened - Full Swell for Grand Tide. A worn
+      // the fighter is not awakened - Full Swell for Spring Tide. A worn
       // shell is not: Ikazuchi Arrow already summons its own full-size
       // Guardian, and drawing the worn one under it put two Guardian in the
       // frame, the smaller inside the larger.
       // Round 3d (ULTS): a hit-confirm ultimate's form is its cinematic's -
       // the base body throws the opener, and the form comes on the confirm.
       const hitConfirm=!!MOVES[state.fighter].ultimate.confirm;
-      const fromStart=state.fighter==='gummy'?elapsed>=GRAND_TIDE_TAKE.swap:hitConfirm?state.confirmedAt!==undefined:elapsed>=.48;
-      const until=state.fighter==='gummy'?grandTideOut(state,WHIFF_RECOVERY):state.actionDuration-.23;
+      const fromStart=state.fighter==='gummy'?elapsed>=SPRING_TIDE_TAKE.swap:hitConfirm?state.confirmedAt!==undefined:elapsed>=.48;
+      const until=state.fighter==='gummy'?springTideOut(state,WHIFF_RECOVERY):state.actionDuration-.23;
       let show=transformed||(state.fighter!=='konta'&&!OWN_BODY_ULTIMATE.has(state.fighter)&&!worn&&!state.awakened&&state.action==='ultimate'&&!this.swap
         &&fromStart&&elapsed<until);
       this.model.visible=!show||worn;this.awakenedForm.group.visible=show;
@@ -6470,7 +6470,7 @@ export class Fighter {
           }
         }
         // A replacement body owns the hands effects are placed from; a worn one
-        // does not, or every Shrike Bolt would light up inside a giant's fist.
+        // does not, or every Storm Talon would light up inside a giant's fist.
         if(!worn&&(FIGHTER_SOCKETS[state.fighter]?.formHands!=='awakened'||state.awakened)){this.handR.copy(this.awakenedForm.handR);this.handL.copy(this.awakenedForm.handL);}
         // Fade the shell out as the eye approaches rather than filling the
         // frame with purple: against a wall the camera has nowhere else to go.
@@ -6564,7 +6564,7 @@ export class Fighter {
     // Every fighter, capped or not: the seven rigs without an authored cap
     // still stop at the opponent's body.
     this.rootClamped=false;
-    const caps=guarding?GUARD_ROOT:airborne?JUMP_ROOT:reacting?REACTION_ROOT:this.isForm&&state.fighter==='gummy'&&state.action==='ultimate'?GRAND_TIDE_LEAP:this.isForm&&state.fighter==='konta'?{rise:.6,drop:.35,travel:.65}:(this.isForm?FIGHTERS[state.fighter].formRootMotion:undefined)??FIGHTERS[state.fighter].rootMotion??UNCAPPED;
+    const caps=guarding?GUARD_ROOT:airborne?JUMP_ROOT:reacting?REACTION_ROOT:this.isForm&&state.fighter==='gummy'&&state.action==='ultimate'?SPRING_TIDE_LEAP:this.isForm&&state.fighter==='konta'?{rise:.6,drop:.35,travel:.65}:(this.isForm?FIGHTERS[state.fighter].formRootMotion:undefined)??FIGHTERS[state.fighter].rootMotion??UNCAPPED;
     // Nothing to clamp: the drawn room is let go, so the next swing measures
     // its own rather than slewing from the last one's.
     // (The drawn root is only recorded on a frame the clamp moved it: a
@@ -8129,16 +8129,16 @@ export class Fighter {
   /** Round 6 (GUMMY ULT): where the grab is held - the middle of the body it closed on, and that body's skin (its
    *  torso's radius) - kept from the frame it last followed them: a whiff closes on where they stood on the contact. */
   private grabAt=new THREE.Vector3();private grabSurface=0;private grabCast=-1;private grabHeld=false;
-  /** Round 6 (GUMMY ULT): SUNRISE's grab, the GRAND TIDE's opener (gummy/grand-tide.ts GRAND_TIDE_GRAB, grandTideGrab). The
-   *  take whips his right arm straight out of the crouch onto the blow (gummy-r5-g5moves1.glb 'Grand Tide Open'); from
+  /** Round 6 (GUMMY ULT): SUNRISE's grab, the SPRING TIDE's opener (gummy/spring-tide.ts SPRING_TIDE_GRAB, springTideGrab). The
+   *  take whips his right arm straight out of the crouch onto the blow (gummy-r5-g5moves1.glb 'Spring Tide Open'); from
    *  its forearm the hand shoots out to the body it is thrown at - the forearm stretched behind it, as the Gatling's
-   *  are - turned off the forearm's line by no more than GRAND_TIDE_GRAB.aim, to that body's skin and GRAND_TIDE_GRAB.grip
+   *  are - turned off the forearm's line by no more than SPRING_TIDE_GRAB.aim, to that body's skin and SPRING_TIDE_GRAB.grip
    *  into it, as far as the move reaches (moves.ts ULTIMATES.gummy). Only once the arm has come through: a forearm
    *  still drawn back stretches nothing (as the Rogue Wave's palms wait for theirs). Held on them - the cinematic holds
    *  them where it caught them - and let go on RUBBER's recoil; for a whiff, closed on the air where they stood. Gummy
    *  alone (rubberLimbs), on whichever of his bodies is drawn. */
-  private grandTideGrabStretch(state:PlayerState){
-    const move=this.moveFor(state),phase=grandTideGrab(state,move.contacts[0]),G=GRAND_TIDE_GRAB;
+  private springTideGrabStretch(state:PlayerState){
+    const move=this.moveFor(state),phase=springTideGrab(state,move.contacts[0]),G=SPRING_TIDE_GRAB;
     if(this.grabCast!==state.actionStarted){this.grabCast=state.actionStarted;this.grabHeld=false;}
     if(phase.reach===undefined&&(phase.back===undefined||phase.back>.4))return;
     this.group.updateMatrixWorld(true);
@@ -8192,8 +8192,8 @@ export class Fighter {
     if(this.rubberEpoch>=0&&(!stretching||this.rubberEpoch!==this.actionEpoch)){this.rubberEpoch=-1;this.rubberRelease=0;}
     if(!stretching){this.releaseRubber(real);}
     if(gatling){this.gatlingStretch(state);return;}
-    // Round 6 (GUMMY ULT): the GRAND TIDE's opener is SUNRISE's grab (gummy/grand-tide.ts), its own stretch.
-    if(state.action==='ultimate'){this.grandTideGrabStretch(state);if(LUCY_TIDE){const other=this.opponentBody();this.rubberSpan=Math.max(this.rubberSpan,tideHammer(state,this.joints,this.group,other?other.restCenter(_tideVictim):undefined));}return;}
+    // Round 6 (GUMMY ULT): the SPRING TIDE's opener is SUNRISE's grab (gummy/spring-tide.ts), its own stretch.
+    if(state.action==='ultimate'){this.springTideGrabStretch(state);if(LUCY_TIDE){const other=this.opponentBody();this.rubberSpan=Math.max(this.rubberSpan,tideHammer(state,this.joints,this.group,other?other.restCenter(_tideVictim):undefined));}return;}
     const elapsed=state.actionTime*state.actionDuration;
     const plan=ATTACK_SLOTS.has(state.action)?RUBBER_HANDS[this.rubberKey(state)]:undefined;
     if(!plan||!state.actionDuration)return;
@@ -8452,7 +8452,7 @@ export class Fighter {
     if(state.fighter==='shakudo')return shakudoAuthoredGround(this.active?.getClip().name);
     if(state.fighter!=='ume')return false;
     const clip=this.active?.getClip().name;
-    return clip==='Magnolia Heel'||clip==='Shattering Blossom'||clip==='Aerial Blossom'||clip==='Bloomfall'||clip==='Magnolia Meteor';
+    return clip==='Magnolia Heel'||clip==='Petal Quake'||clip==='Aerial Blossom'||clip==='Bloomfall'||clip==='Magnolia Meteor';
   }
   /** Native contact steps own their foot support; a stride overlay would erase their plant. */
   private authoredStep(state:PlayerState):boolean {

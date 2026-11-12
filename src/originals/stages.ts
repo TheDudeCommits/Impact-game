@@ -11,13 +11,13 @@ export interface OriginalStage {
 
 export const ORIGINAL_STAGES: Record<StageId, OriginalStage> = {
   'proving-hall': {
-    name: 'The Proving Hall', scene: 'Where the Hidden Ash tests its own', world: 'Hidden Ash', safe: true,
+    name: 'The Proving Hall', scene: 'Where Ashwood tests its own', world: 'Ashwood', safe: true,
   },
   'sunfall-arena': {
     name: 'The Sunfall Arena', scene: 'A desert arena under the swollen sun', world: 'Last Sun', safe: true,
   },
-  'hidden-ash': {
-    name: 'The Hidden Ash', scene: 'Last stand at the village gates', world: 'Hidden Ash', safe: true,
+  'ashwood': {
+    name: 'Ashwood', scene: 'Last stand at the village gates', world: 'Ashwood', safe: true,
   },
   'blood-citadel': {
     name: 'The Fallen Citadel', scene: 'Bad Blood beneath the broken moon', world: '', safe: true,
@@ -35,7 +35,7 @@ export const ORIGINAL_STAGES: Record<StageId, OriginalStage> = {
   'rift-wastes': { name: 'The Ashen Wastes', scene: 'Where the old gods fell', world: '', safe: true },
   'rift-harbor': { name: 'The Drowned Harbor', scene: 'The tide brought the dead back in', world: '', safe: true },
   'ash-colosseum': {
-    name: 'The Ash Colosseum', scene: 'A walled court of raked ash under the smoking mountain', world: 'Hidden Ash', safe: true,
+    name: 'The Ash Colosseum', scene: 'A walled court of raked ash under the smoking mountain', world: 'Ashwood', safe: true,
   },
   'wreckers-causeway': {
     name: 'The Wreckers\' Causeway', scene: 'A fire-lit bridge over the black sea', world: 'Dust Sea', safe: true,
@@ -44,7 +44,7 @@ export const ORIGINAL_STAGES: Record<StageId, OriginalStage> = {
     name: 'The Sunward Summit', scene: 'A temple on the last peak, over a sea of cloud at sundown', world: 'Last Sun', safe: true,
   },
   'ashfall-weir': {
-    name: 'The Ashfall Weir', scene: 'The river below the old weir, at first light', world: 'Hidden Ash', safe: true,
+    name: 'The Ashfall Weir', scene: 'The river below the old weir, at first light', world: 'Ashwood', safe: true,
   },
   'mirror-mere': {
     name: 'The Mirror Mere', scene: 'A still lake where the hex lies sealed', world: 'Hex Fallout', safe: true,
@@ -70,7 +70,7 @@ export const ORIGINAL_STAGES: Record<StageId, OriginalStage> = {
   'dry-harbour': { name: 'The Dry Harbour', scene: 'Where the Dust Sea went out and never came back', world: 'Dust Sea', safe: true },
   'thornwood-ward': { name: 'Thornwood Ward', scene: 'A city block the hex gave back to the forest', world: 'Hex Fallout', safe: true },
   'kuroyuki-hall': { name: 'Kuroyuki Hall', scene: 'A mountain hall in the falling black snow', world: 'Black Snow', safe: true },
-  'starfall-crater': { name: 'The Starfall Crater', scene: 'Where a falling star struck the Hidden Ash hills', world: 'Hidden Ash', safe: true },
+  'starfall-crater': { name: 'The Starfall Crater', scene: 'Where a falling star struck Ashwood\'s hills', world: 'Ashwood', safe: true },
   'scrap-pit': { name: 'The Scrap Pit', scene: 'A bounty fight under the scrapyard floodlights', world: 'Salvage Wilds', safe: true },
 };
 
@@ -129,25 +129,25 @@ export function applyOriginalDressers<T>(dressers: Partial<Record<StageId, T>>) 
   return dressers;
 }
 
-/** The Last Stand mode's words for the village it defends (the Hidden Ash, Konta's and Shirokane's home). */
+/** The Last Stand mode's words for the village it defends (Ashwood, Konta's and Shirokane's home). */
 export const LAST_STAND = {
   /** The mode sheet's and the mission cover's kicker. */
-  kicker: 'THE HIDDEN ASH · ENDLESS DEFENCE',
+  kicker: 'THE ASHWOOD · ENDLESS DEFENCE',
   /** The mode sheet's goal line. */
-  goal: 'Defend the Hidden Ash gate, wave after wave.',
+  goal: 'Defend Ashwood gate, wave after wave.',
   /** The loading screen's line under LAST STAND. */
-  loading: 'DEFEND THE HIDDEN ASH',
+  loading: 'DEFEND THE ASHWOOD',
   /** The party's custom-rules note. */
-  custom: 'Defend the Hidden Ash. Automatic personal fighter levels. Shared village defences.',
+  custom: 'Defend Ashwood. Automatic personal fighter levels. Shared village defences.',
   /** The results header's place. */
-  where: 'THE HIDDEN ASH',
+  where: 'THE ASHWOOD',
   /** The mission result's headline. */
   remembers: 'THE ASH<br>REMEMBERS.',
   /** The squad lobby's line. */
   lobby: 'HOLD THE GATE. SPEND TOGETHER. FALL TOGETHER.',
   /** The Quartermaster's header. */
-  shop: 'HIDDEN ASH · VILLAGE DEFENCES',
-  /** The sign over the gate (src/render/objectives/HiddenAshVillage.ts): "the village of ash". */
+  shop: 'ASHWOOD · VILLAGE DEFENCES',
+  /** The sign over the gate (src/render/objectives/AshwoodVillage.ts): "the village of ash". */
   sign: '灰ノ里',
 } as const;
 

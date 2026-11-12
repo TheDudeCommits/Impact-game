@@ -3,6 +3,7 @@ import { BURN_TICK, FREEZE_IMMUNITY, type MoveDefinition } from '../../game/move
 import { TIME_STOP_TOURS } from '../../game/timeStopBarrage';
 import type { AttackSlot, CoreSlot, FighterId } from '../../game/types';
 import { canonicalJson, sha256 } from './hash';
+import { currentId } from '../../game/savedIds';
 import { FIGHTER_IDS, simSpec } from './registry';
 import { ATTACK_SLOTS, CORE_SLOTS } from './spec';
 import { FORGE_STATUSES, pickSource, TUNE_LIMITS, tuneMove, type ForgeFx, type SlotPick, type TuneKey } from './tune';
@@ -179,6 +180,9 @@ export function decodeForge(code: string): ForgeKit {
   if (sha256(json).slice(0, 8) !== check) throw new Error('That Forge code is incomplete or mistyped.');
   const kit = JSON.parse(json) as ForgeKit;
   if (canonicalJson(kit) !== json) throw new Error('That Forge code was not made by the Forge.');
+  // (A code made before some ids were renamed names its fighters as they were: read as they are now.)
+  kit.body = currentId(kit.body) as FighterId;
+  for (const pick of Object.values(kit.slots ?? {})) if (pick) pick.from = currentId(pick.from) as FighterId;
   return kit;
 }
 /** A kit's content hash: what a room will ask for by name in VOL.5-6. */

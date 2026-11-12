@@ -13,7 +13,7 @@ const rate = (spec: { distance: number; behaviour: Behaviour; awakened?: boolean
   return landed / TRIALS;
 };
 
-describe('THEATRE: Flatline: Crossmatch lands whenever it fairly should', () => {
+describe('Flatline: Crossmatch lands whenever it fairly should', () => {
   it('reaches as far as his ROOM: the swap and the palm on the opener\'s one tick, on the near side of them', () => {
     expect(swap.reach + PLAYER_RADIUS, '11 m centre to centre, as Gummy\'s grab').toBeGreaterThanOrEqual(10.9);
     expect(swap.appear, 'the palm lands where he arrives').toBe(move.contacts[0]);

@@ -6,7 +6,7 @@ import type {ComboRow} from '../combos';
 export const KINU_MOVES: Record<CoreSlot, MoveDefinition> = {
  light: {name:'Silk Knuckle',duration:.47,contacts:[.168],damage:20,range:2.85,radius:.82,stamina:9,cooldown:.42,stun:.32,knockback:3.2,lunge:3.8,style:'melee'},
  heavy: {name:'Reeling Hook',duration:1.01,contacts:[.58],damage:65,range:3.35,radius:.92,stamina:25,cooldown:1.26,stun:.74,knockback:-4.5,lunge:3.6,style:'melee'},
- special: {name:'BUCHI BUCHI Barrage',duration:1.48,contacts:[.44,.72,1.01],damage:39,range:3.15,radius:.98,stamina:32,cooldown:5.2,stun:.42,knockback:.7,finisherKnockback:1.5,lunge:4.0,style:'melee'},
+ special: {name:'UNSPOOL Barrage',duration:1.48,contacts:[.44,.72,1.01],damage:39,range:3.15,radius:.98,stamina:32,cooldown:5.2,stun:.42,knockback:.7,finisherKnockback:1.5,lunge:4.0,style:'melee'},
  ultimate: {name:'Broken Shackles',duration:4,contacts:[.5,.95,1.28,1.61,1.94,2.27,2.63,3.18],schedule:[20,24,28,35,43,56,70,292],damage:20,finisherDamage:150,range:3.2,radius:1.1,stamina:0,cooldown:24,stun:.51,finisherStun:2.3,knockback:0,finisherKnockback:16,lunge:4.1,style:'melee',guardBreak:true,confirm:{recovery:.68}},
 };
 export const KINU_COMBOS: ComboRow = {

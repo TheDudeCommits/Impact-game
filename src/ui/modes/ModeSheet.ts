@@ -65,7 +65,7 @@ const escape = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '
 const FIGHTER_COUNTS = [4, 6, 8, 10, 12], ROOM_SIZES = [2, 4, 8, 12];
 const MOVE_X: Record<'special' | 'ultimate' | 'awakening', string> = { special: '50%', ultimate: '75%', awakening: '100%' };
 /** The place a mode with no choice of place stands on in the sheet (its own, authored): the rest show their art. */
-const HOME_PLACE: Partial<Record<ModeId, string>> = { 'last-stand': 'hidden-ash', 'rift-war': 'rift-war' };
+const HOME_PLACE: Partial<Record<ModeId, string>> = { 'last-stand': 'ashwood', 'rift-war': 'rift-war' };
 /** The way to play after `current` going `step` (+1 → right, -1 ← left), round the mode's own ways: the arrows on the
  *  keyboard, and since the overnight UX pass (8 October 2026) the pad's D-pad on the tab row too. */
 export function nextWay(ways: readonly VariantId[], current: VariantId, step: 1 | -1): VariantId {

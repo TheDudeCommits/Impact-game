@@ -36,7 +36,7 @@ describe('the game\'s situation lines', () => {
     const impact: Record<string, VoiceSituation[]> = {
       shiun: ['bell', 'taunt', 'kill', 'hurt-heavy', 'ko'], shakugo: ['bell', 'low', 'ko'], barrow: ['bell', 'taunt', 'parry', 'low', 'hurt-heavy', 'ko'],
       oro: ['taunt', 'hurt'], 'wuming': ['low', 'ko'], 'jinlin': ['bell', 'hurt-heavy', 'ko'], vesper: ['bell', 'taunt', 'hurt-heavy', 'loss'],
-      irbis: ['bell', 'taunt'], jirenga: ['bell', 'hurt-heavy', 'ko'], gorai: ['bell', 'taunt', 'ko'], onigawara: ['bell', 'taunt', 'hurt-heavy', 'ko'],
+      irbis: ['bell', 'taunt'], banjaku: ['bell', 'hurt-heavy', 'ko'], gorai: ['bell', 'taunt', 'ko'], onigawara: ['bell', 'taunt', 'hurt-heavy', 'ko'],
       akagane: ['bell', 'taunt', 'low', 'ko'], imago: ['bell', 'hurt-heavy', 'loss'], magatsu: ['bell', 'taunt', 'kill', 'low'], haldor: ['bell', 'hurt', 'ko'],
       tokan: ['bell', 'taunt', 'low', 'hurt', 'ko'], senko: ['bell', 'taunt', 'parry', 'low', 'loss'],
     };

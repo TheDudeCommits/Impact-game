@@ -106,7 +106,7 @@ describe('the game\'s sound effects: the wiring', () => {
   });
 
   it('re-points the nine area moves to their own element, and plays the family of it', () => {
-    const area: Record<string, string> = { taisei: 'lightning', haldor: 'quake', shirokane: 'sand', shiden: 'lightning', nigo: 'fire', jirenga: 'stone', 'jinlin': 'water', gaku: 'sonic', asahi: 'fire' };
+    const area: Record<string, string> = { taisei: 'lightning', haldor: 'quake', shirokane: 'sand', shiden: 'lightning', nigo: 'fire', banjaku: 'stone', 'jinlin': 'water', gaku: 'sonic', asahi: 'fire' };
     for (const [fighter, family] of Object.entries(area)) {
       expect(MOVE_FAMILY[fighter as FighterId][3], fighter).toBe(family);
       expect(FAMILIES[family as keyof typeof FAMILIES]).toBeDefined();
@@ -168,7 +168,7 @@ describe('the game\'s sound effects: the wiring', () => {
         expect(layer!.phase, `${fighter}: ${cue}`).toBe('release');
         const crest = (layer!.delay ?? 0) + (SFX_PEAKS[cue] ?? 0) / (layer!.rate ?? 1);
         // On the swap, as near as it can: a file whose own beat is later than the swap by more than the quickest the plan plays it
-        // (onBeat's 1.2x) starts with the event and crests when it must - gorai's and jirenga's in the first set.
+        // (onBeat's 1.2x) starts with the event and crests when it must - gorai's and banjaku's in the first set.
         const earliest = (SFX_PEAKS[cue] ?? 0) / 1.2 + .02;
         expect(crest, `${fighter}: ${cue} crests ${crest.toFixed(3)} s in, the swap is at ${swap}`).toBeLessThanOrEqual(Math.max(swap + .12, earliest));
         expect(crest, `${fighter}: ${cue} crests ${crest.toFixed(3)} s in, the swap is at ${swap}`).toBeGreaterThanOrEqual(Math.min(swap, earliest) - .12);
@@ -193,14 +193,14 @@ describe('the game\'s sound effects: the wiring', () => {
     for (const slot of ['heavy', 'special', 'ultimate'] as const) expect(cues('koko', slot, 'cast'), `koko ${slot}`).not.toContain('fx-spirit');
     expect(cues('koko', 'special', 'cast')).toContain('fx-sig-koko-iron-lullaby');
     expect(cues('oro', 'special', 'cast')).toContain('fx-sig-lord-oro-gilded-spirit');
-    expect(cues('oro', 'special', 'cast')).toContain('fx-sig-lord-oro-noroma-barrage');
+    expect(cues('oro', 'special', 'cast')).toContain('fx-sig-lord-oro-clockwork-barrage');
     expect(cues('oro', 'special', 'cast')).not.toContain('fx-barrage');
     expect(cues('oro', 'ultimate', 'cast')).toContain('fx-sig-lord-oro-the-hour');
     expect(cues('oro', 'ultimate', 'cast')).not.toContain('fx-timestop');
     expect(cues('koko', 'ultimate', 'cast')).toContain('fx-timestop');
     const finisher = cues('oro', 'ultimate', 'confirm');
-    expect(finisher).toContain('fx-sig-lord-oro-death-knell-fall');
-    expect(finisher).toContain('fx-steamroller');
+    expect(finisher).toContain('fx-sig-lord-oro-hour-of-ruin-fall');
+    expect(finisher).toContain('fx-hour-of-ruin');
   });
 
   it('plays Kagari\'s light string as fist and flame, one sound a blow, and only his light string', () => {
@@ -238,8 +238,8 @@ describe('the game\'s sound effects: the wiring', () => {
   it('plays no other original\'s signature under a shared cue: Shiden\'s hits are not Shirokane\'s, nor their awakenings Shiden\'s (the quality round)', () => {
     const cues = (fighter: string, slot: AttackSlot, kind: CombatEvent['kind']) => [1, 2, 3].flatMap(id => plan(fighter, slot, kind, { id }).map(l => l.cue as string));
     for (const fighter of ['shiden', 'setsu']) for (const slot of ['heavy', 'special', 'ultimate'] as AttackSlot[])
-      expect(cues(fighter, slot, 'hit'), `${fighter} ${slot}`).not.toContain('fx-shrike-bolt-hit');
-    expect(cues('shirokane', 'heavy', 'hit')).toContain('fx-shrike-bolt-hit');   // (his own Storm Cutter)
+      expect(cues(fighter, slot, 'hit'), `${fighter} ${slot}`).not.toContain('fx-storm-talon-hit');
+    expect(cues('shirokane', 'heavy', 'hit')).toContain('fx-storm-talon-hit');   // (his own Storm Cutter)
     for (const fighter of ['shirokane', 'tobari', 'akagane']) expect(cues(fighter, 'light', 'awaken'), fighter).not.toContain('fx-guardian');
     expect(cues('shiden', 'light', 'awaken')).toContain('fx-guardian');     // (his own RAIJIN)
   });

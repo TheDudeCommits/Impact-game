@@ -43,7 +43,7 @@ describe('forged fighters in private rooms', () => {
     const late = join('friend', { fighter: 'shiden' });                                   // a friend without one
     expect(late.send).toHaveBeenCalledWith('forge-kits', { [hash]: code });               // still gets every kit, once
     expect(r.simulation.getPlayer('friend')!.forge).toBeUndefined();
-    expect(MOVES.shirokane.special.name).toBe('Static Scarecrow');                          // nothing global changed
+    expect(MOVES.shirokane.special.name).toBe('Static Decoy');                          // nothing global changed
   });
 
   it("refuses a kit anywhere but a private room, in another body, past the budget or damaged", async () => {

@@ -23,7 +23,7 @@ import {padName} from '../../input/glyphs';
 import {ACTIONS,boundTo} from '../../input/bindings';
 
 const pct=(n:number,d:number)=>Math.max(0,Math.min(100,n/Math.max(1,d)*100));
-const teamName=(v:string)=>v==='heroes'?'DAWN':'THE OFFERING';
+const teamName=(v:string)=>v==='heroes'?'DAWN':'DUSK';
 /** Rift-specific chrome stays outside the established fighter/move HUD.
  * The world keeps simulating while an online player browses the forge. */
 export class RiftWarUI {

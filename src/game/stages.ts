@@ -15,7 +15,7 @@ import { FIGHTER_SERIES } from './fighterSeries';
 export { FIGHTER_SERIES };
 
 export type StageId = 'harbor' | 'wreckers-causeway' | 'ash-colosseum' | 'sunfall-arena'
-  | 'hidden-ash' | 'blood-citadel' | 'zenith-coliseum' | 'proving-hall' | 'cinder-flats' | 'warlords-roof' | 'drifting-isle'
+  | 'ashwood' | 'blood-citadel' | 'zenith-coliseum' | 'proving-hall' | 'cinder-flats' | 'warlords-roof' | 'drifting-isle'
   | 'sunward-summit' | 'ashfall-weir' | 'mirror-mere' | 'hollowmere-quarry'
   | 'rift-village' | 'rift-swords' | 'rift-fortress' | 'rift-eclipse'
   | 'rift-frost' | 'rift-grove' | 'rift-wastes' | 'rift-harbor' | 'rift-war'
@@ -62,7 +62,7 @@ export const STAGES: Record<StageId, StageDefinition> = {
   'ball-court': define({id:'ball-court',name:'The Sky Court',scene:'Sky Spike above the clouds',model:null,halfX:14.6,halfZ:18.1,spawnRadius:8,cameraFar:420,fog:[120,380]}),
   'rift-war': define({id:'rift-war',name:'The Torn Plain',scene:'Three causeways across the rift',model:null,halfX:84,halfZ:84,spawnRadius:12,cameraFar:650,fog:[145,560],background:0xc9d8d1}),
   'blood-citadel': define({id:'blood-citadel',name:'The Fallen Citadel',scene:'Bad Blood beneath the broken moon',model:null,halfX:30,halfZ:24,spawnRadius:13,cameraFar:480,fog:[90,350]}),
-  'hidden-ash': define({id:'hidden-ash',name:'The Hidden Ash',scene:'Last stand at the village gates',model:null,halfX:40,halfZ:44,spawnRadius:15,cameraFar:500,fog:[110,430]}),
+  'ashwood': define({id:'ashwood',name:'Ashwood',scene:'Last stand at the village gates',model:null,halfX:40,halfZ:44,spawnRadius:15,cameraFar:500,fog:[110,430]}),
   harbor: define({
     id: 'harbor', name: 'Manga Harbour', scene: 'Neutral ground',
     model: null, halfX: 80, halfZ: 80, spawnRadius: 36,
@@ -92,7 +92,7 @@ export const STAGES: Record<StageId, StageDefinition> = {
     duelAxis: 0,
   }),
   'proving-hall': define({
-    id: 'proving-hall', name: 'The Proving Hall', scene: 'Where the Hidden Ash tests its own',
+    id: 'proving-hall', name: 'The Proving Hall', scene: 'Where Ashwood tests its own',
     model: null, halfX: 6.5, halfZ: 7, spawnRadius: 4.5,
     cameraFar: 340, fog: [60, 300], doubleSided: true,
   }),
@@ -180,7 +180,7 @@ export const STAGES: Record<StageId, StageDefinition> = {
     cameraFar: 900, fog: [26, 400],
   }),
   'starfall-crater': define({
-    id: 'starfall-crater', name: 'The Starfall Crater', scene: 'Where a falling star struck the Hidden Ash hills',
+    id: 'starfall-crater', name: 'The Starfall Crater', scene: 'Where a falling star struck Ashwood\'s hills',
     model: null, halfX: 38, halfZ: 38, spawnRadius: 26,
     cameraFar: 1400, fog: [260, 1350],
     duelAxis: 0,
@@ -204,8 +204,8 @@ export const ROYALE_STAGES: readonly StageId[] = [
 /** Where a series fights when it brings the crowd. */
 const SERIES_ARENA: Record<string, StageId> = {};
 /** Series that are one series for a crowd: Tobari and Akagane are filed as
- *  'Konta', the rest of the village as 'Hidden Ash'. */
-const SERIES_FAMILY: Record<string, string> = { Konta: 'Hidden Ash' };
+ *  'Konta', the rest of the village as 'Ashwood'. */
+const SERIES_FAMILY: Record<string, string> = { Konta: 'Ashwood' };
 /** Where two fighters of one series settle it. Konta's own duel venue is the
  *  Proving Hall, which is also everyone else's, so it is not listed here. */
 const SERIES_DUEL: Record<string, StageId> = {

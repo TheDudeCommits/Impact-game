@@ -65,7 +65,7 @@ describe('Arcade Survival in the the game', () => {
         const urls = voice.own?.[moment] ?? [];
         expect(urls.length, `${id} ${moment}`).toBeGreaterThan(0);
         for (const url of urls) {
-          expect(url, url).toMatch(/^\/assets\/audio\/survival\/voice-[a-z]+-[a-z]+-\d\.m4a$/);
+          expect(url, url).toMatch(/^\/assets\/audio\/survival\/voice-[a-z]+(-[a-z]+)*-[a-z]+-\d\.m4a$/);
           expect(statSync(`public${url}`).size, url).toBeGreaterThan(2000);
           const row = rows.get(url);
           expect(row, `${url} has a provenance row`).toBeDefined();

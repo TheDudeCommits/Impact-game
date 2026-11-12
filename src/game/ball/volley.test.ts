@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { BallMatch, TOUCH_RULES } from './BallMatch';
-import { BALL_ID, SPIKE_RULES, type BallState, type BallTeam } from './model';
+import { BALL_ID, SPIKE_RULES, VOLLEY_COURT, type BallState, type BallTeam } from './model';
 import { VOLLEY, tierOf, volleyballWanted, walked } from './volley';
 import { jumpArc } from '../moves';
 import { jumpIn } from '../../render/ball/SpikeCues';
@@ -165,10 +165,12 @@ describe('volleyball: the sets a person is laid', () => {
       m.add('red-1', 'taisei', 'Setter', false, 'red'); m.add('red-2', 'konta', 'Hitter', false, 'red'); m.add('blue-1', 'konta', 'Blue', false, 'blue');
       m.start(); steps(m, 3.1);
       m.sim.place('red-1', { x: 1.2, y: 0, z: -1.8 }, 0);
-      const spot = kind === 'quick' ? { x: 0, z: -1.3 } : kind === 'back' ? { x: 4.6, z: -1.6 } : { x: -4.6, z: -1.6 };
+      const wing = Math.min(VOLLEY.set.wing, VOLLEY_COURT.x - 1), spot = kind === 'quick' ? { x: 0, z: -1.3 } : kind === 'back' ? { x: wing, z: -1.6 } : { x: -wing, z: -1.6 };
       m.sim.place('red-2', { x: spot.x, y: 0, z: spot.z - 1 }, 0);
       rally(m, 'red', 1, { x: 1.2, y: VOLLEY.ideal.set + .3, z: -1.8, vy: -2, lastId: 'red-2', lastTeam: 'red' });
-      for (let i = 0; i < 60 && !touches(m, 'red-1').length; i++) { send(m, 'red-1', stick, i === 0); send(m, 'red-2'); m.step(1 / 60); }
+      // (The stick flicked with the press, as a setter aims: held on, it ran the setter off the spot on volleyball's
+      // court for three a side, where the wings are nearer the middle.)
+      for (let i = 0; i < 60 && !touches(m, 'red-1').length; i++) { send(m, 'red-1', i === 0 ? stick : { x: 0, z: 0 }, i === 0); send(m, 'red-2'); m.step(1 / 60); }
       const set = m.view.volley && m.volley!.lastSet;
       expect(set?.kind, kind).toBe(kind);
       expect(set?.hitter).toBe('red-2');
@@ -226,9 +228,9 @@ describe('volleyball: the block is the jump', () => {
     expect(blockTry(.2)).toBe('BLOCK');
     expect(blockTry(null)).toBe('none');
   });
-  it('lets a PERFECT SPIKE through all but a STUFF BLOCK, and never blocks a TIP', () => {
+  it('meets a PERFECT SPIKE with a person\'s block too (a block press always answers), and never blocks a TIP', () => {
     expect(blockTry(.45, true)).toBe('STUFF BLOCK');
-    expect(blockTry(.2, true)).toBe('none');
+    expect(blockTry(.2, true)).not.toBe('none');
     expect(blockTry(.45, false, 'tip')).toBe('none');
   });
 });

@@ -274,7 +274,7 @@ describe('the user crosses the stop legally', () => {
 describe('prediction replays the tour the server plays', () => {
   it.each(USERS)('%s: the predicting client and the server put the user in the same places and land the same blows', user => {
     const local = (prediction: Prediction) => (prediction as unknown as { sim: ArenaSimulation }).sim;
-    // Inside the stop: HUSH's reaches 6 m, the dome 3.5 (round 3e).
+    // Inside the stop: SLUMBER's reaches 6 m, the dome 3.5 (round 3e).
     const reach = MOVES[user].ultimate.timeStop!.radius / 6;
     const server = arena(user, [
       { id: 'a', distance: 2, angle: .1 },

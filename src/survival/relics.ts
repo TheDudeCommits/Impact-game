@@ -44,8 +44,8 @@ export const RELICS: readonly RelicDefinition[] = [
   { id: 'zarek', name: 'MOLTEN RAKE', kanji: '熔爪', element: 'fire',
     trigger: 'combo', gap: 2,
     text: 'Every 8th hit of a combo rakes five molten claws across the ground ahead of you.' },
-  { id: 'nightfall', name: 'BLACK CRESCENT', kanji: '黒月', element: 'blood', trigger: 'special', gap: 4,
-    text: 'Your specials loose a black crescent: it tears 16 metres on toward what they struck.' },
+  { id: 'nightfall', name: 'CINDER WAVE', kanji: '燼波', element: 'blood', trigger: 'special', gap: 4,
+    text: 'Your specials loose a cinder wave: it tears 16 metres on toward what they struck.' },
   { id: 'kade', name: 'STILLING PALM', kanji: '静掌',
     element: 'sound', trigger: 'dash', gap: 3.5,
     text: 'Your dash ends in a stilling palm: the shock goes on through everything 7 metres ahead.' },
@@ -62,8 +62,8 @@ export const RELICS: readonly RelicDefinition[] = [
     text: 'Your ultimate stops time: for 2 seconds nothing moves but you.' },
   { id: 'haldor', name: 'QUAKE', kanji: '地割', element: 'sound', trigger: 'heavy', gap: 5,
     text: 'A heavy blow cracks the air: the ground splits six ways from where it landed.' },
-  { id: 'magatsu', name: 'CARRION ALTAR', kanji: '呪域', element: 'blood', trigger: 'awakening', gap: 0,
-    text: 'Awakened, you open your domain: everything within 7 metres is cut, again and again, until it closes.' },
+  { id: 'magatsu', name: 'CARRION FIELD', kanji: '屍原', element: 'blood', trigger: 'awakening', gap: 0,
+    text: 'Awakened, you lay out the carrion field: everything within 7 metres is cut, again and again, until it fades.' },
 ];
 
 export const relicOf = (id: string | undefined) => RELICS.find(relic => relic.id === id);

@@ -163,7 +163,7 @@ export const SPRING_PROFILES:Partial<Record<FighterId|'nightfall',Partial<Spring
   // instead of the thighs. The panels sit a few centimetres off the trousers,
   // so the cone is tighter than the default to keep them out of the legs.
   koko:{stiffness:40,drag:.85,gravity:3,maxAngle:22,trail:.3},
-  // LORD ORO's chain is one hair controller; HUSH, drawn off the same id,
+  // LORD ORO's chain is one hair controller; SLUMBER, drawn off the same id,
   // adds a back skirt and a mantle. Single-link controllers, so stiff and
   // tight: they bob with the body rather than swing.
   oro:{stiffness:40,drag:.65,gravity:2,maxAngle:12,trail:.02},
@@ -228,7 +228,7 @@ export const SPRING_PROFILES:Partial<Record<FighterId|'nightfall',Partial<Spring
   // the cape's hem chains swing on look/hemDrape.ts's vesper spec. His long hair hangs on chains of its own off the
   // head - five down his back, one in each lock over his chest - light: it lags a dash and a turn, trails a run and
   // settles in a few tenths of a second, never lifting past level. His cape and Black Vespers's hang from the pelvis, so a
-  // crouch (the offering's landing on one knee) would sink their hems into it: their links are kept off the floor and out
+  // crouch (fallen-star's landing on one knee) would sink their hems into it: their links are kept off the floor and out
   // of the legs as Nigo's coat's are (look/garmentCollide.ts), under look/hemDrape.ts's own push.
   vesper:{chains:[
     // vesper-mx3's cape hangs on chains 6-18; mx2's six (0-5) are kept in the skeleton carrying nothing.

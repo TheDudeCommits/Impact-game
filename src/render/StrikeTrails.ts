@@ -168,7 +168,7 @@ function smearMaterial(seedValue: number) {
 
 /** One smear per fighter, in the colour of what they are throwing: gold for
  *  a plain fist, red for Will, green for Kenzo's cuts, lightning white-blue for
- *  Shrike Bolt. */
+ *  Storm Talon. */
 export class StrikeTrails {
   /** Lock combat's preview (main.ts sets these on that build): how wide and how long a smear is drawn. A blind critic on
    *  our footage: "the swing trails draw as flat, hard-edged blue planks", where a strike should leave a short streak

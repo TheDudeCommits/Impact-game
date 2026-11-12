@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { noiseGLSL } from '../vfx/noise';
 
-/** Sword energy: the flying crescent (Scorched Earth, thousand mile eagle),
+/** Sword energy: the flying crescent (Scorched Earth, eagles reach),
  *  the sweep of a cut, and the NIGHTFALL cleave, on a unit plane (uv -1..1).
  *
  *  A crescent here is a band behind a leading edge of radius .9: thickest in

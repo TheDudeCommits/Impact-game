@@ -34,8 +34,8 @@ const ANTI_SPHERE = { body: new THREE.Color(.006, .004, .004), core: new THREE.C
 const ANTI: StageLook = { ...stageLook(0xc0261a, 0x3a0807, 0x020202, { flame: ANTI_FLAME, dark: true, sphere: ANTI_SPHERE }), core: new THREE.Color(1.05, .075, .05), main: new THREE.Color(.36, .03, .025), light: new THREE.Color(.06, .008, .006) };
 /** Bruin's darkness: the roster's, its violet kept to the edge. */
 const DARK: StageLook = { ...STAGE.dark, light: new THREE.Color(.08, .03, .12) };
-/** Round 7: Aquilo's wind is white to pale cyan - his blades, Forktail Gust's drill,
- *  SKIMMING SWALLOW's sickle and Eye of the Gale's bands - never green. Only Sylph's (Great Migration's beam, WINDBORNE) has
+/** Round 7: Aquilo's wind is white to pale cyan - his blades, Shearwind Gust's drill,
+ *  SKIMMING GALE's sickle and Eye of the Gale's bands - never green. Only Sylph's (Great Northerly's beam, WINDBORNE) has
  *  the mint edge: SYLPH. Not a pure white either: in the stage's bloom white wind came out "a shapeless white bloom"
  *  (critic pass 3), so the cyan is kept in it and its heart under the bloom threshold's double. */
 const WIND = cooled(stageLook(0xf2f9ff, 0xa8d8ee, 0x24506a), 1.5);
@@ -68,9 +68,9 @@ const GASH: Record<BriarId, THREE.Color> = { cardo: new THREE.Color(.22, .02, .0
 /** A thrown special's crescent: its size, how far it leans from upright (radians: Unspell stands on the floor, the
  *  Night Prowl lies wide), how high its middle flies (null: on the floor, its lower horn dragging), metres a second and
  *  how far it goes. Drawn at its own speed from the release, as the Nightfang is: a blade thrown accent still has to
- *  be seen to fly (critic pass 2: "no black crescent appears in any frame"). */
+ *  be seen to fly (critic pass 2: "no cinder wave appears in any frame"). */
 const THROWN: Partial<Record<BriarId, { size: number; lean: number; height: number | null; speed: number; range: number }>> = {
-  // (Round 12, blind critic 4: "a blurred maroon slab clipping the frame edge ... target: several thin, crisp black crescents,
+  // (Round 12, blind critic 4: "a blurred maroon slab clipping the frame edge ... target: several thin, crisp cinder waves,
   // each several body-heights long": larger and slower, so they are seen crossing the floor.)
   cardo: { size: 2.4, lean: .32, height: null, speed: 10, range: 11 },
   bruin: { size: 2.6, lean: .75, height: 1.15, speed: 15, range: 15 },
@@ -83,14 +83,14 @@ const THROWN: Partial<Record<BriarId, { size: number; lean: number; height: numb
 };
 /** Round 7 (the blind critics): Unspell is thrown as crossed crescents ("uncrossing
  *  fires 2-4 thin, pure-black crescents that skim the floor and cross in an X"), so Cardo's leaves as two, leaning
- *  either way; SKIMMING SWALLOW is one paper-thin sickle about three times Aquilo's height and the Night Prowl a band many
+ *  either way; SKIMMING GALE is one paper-thin sickle about three times Aquilo's height and the Night Prowl a band many
  *  body-lengths long (both were "too small to read": the sizes above, from 1.45 and 2.1). */
 const CROSSED: Partial<Record<BriarId, boolean>> = { cardo: true };
-/** Round 8 (blind critic 2: SKIMMING SWALLOW "a soft cloudy curtain ... target: a razor-thin white sickle about 3x his height,
+/** Round 8 (blind critic 2: SKIMMING GALE "a soft cloudy curtain ... target: a razor-thin white sickle about 3x his height,
  *  pointed at both ends with a bright rim"): how much of a thrown crescent's depth (along its flight) and breadth (across
  *  its face) it keeps - the Nightfang's own section is a third of its radius thick. */
 const FLAT: Partial<Record<BriarId, readonly [number, number]>> = { aquilo: [.42, .6] };
-/** Round 12 (blind critic 4: SKIMMING SWALLOW "never appears"): a white sickle is light added to a pale hall, so it takes a dark
+/** Round 12 (blind critic 4: SKIMMING GALE "never appears"): a white sickle is light added to a pale hall, so it takes a dark
  *  ink edge to be seen at all (the dark ones keep theirs). */
 const INK: Partial<Record<BriarId, number>> = { aquilo: .07 };
 const SLASH_ARC = 1.1;
@@ -257,7 +257,7 @@ export class BriarMagic {
       } else if (this.dark) { this.spray(point, dir, .5, t); this.mark(point, side, tilt * .95, .8, t, .2); }
       else {
         st.burst(point, L, .32, t, { dir, floor, clean: true });
-        // Aquilo's Swallow Darts: a green crescent across each cut. Svanhild's Swan Quill: a blue arc of water thrown off each
+        // Aquilo's Gust Darts: a green crescent across each cut. Svanhild's Swan Quill: a blue arc of water thrown off each
         // thrust and a splash where it lands (critic pass 4: "no water anywhere and no lance ever appears" - the lance is
         // end-on to the lens behind her).
         if (id === 'aquilo') this.mark(point, side, tilt * .8, .75, t, .18);
@@ -335,7 +335,7 @@ export class BriarMagic {
       // cut line held half as long again.)
       this.spray(point, dir, 1.8, t);
     } else if (id === 'aquilo') {
-      // GREAT MIGRATION lands: the storm stands round its victim, a tower of turning wind, and lets go.
+      // GREAT NORTHERLY lands: the storm stands round its victim, a tower of turning wind, and lets go.
       this.shot(PILLAR, ground, UP, UP, 1, t, .95);
       st.burst(point, L, .9, t, { dir, floor, clean }); st.shock(ground, L, 5, t, .5);
       for (let i = 0; i < 2; i++) st.ring(ground, 1.6 + i * .7, 2 + i * 1.4, L, 1 - i * .2, e.id + i, 9);
@@ -421,7 +421,7 @@ export class BriarMagic {
           break;
         }
         case CLEAVE: {
-          // Last Weed Standing's cut: a black crescent across the frame, corner to corner, its rim pale; it hangs and burns away.
+          // Last Weed Standing's cut: a cinder wave across the frame, corner to corner, its rim pale; it hangs and burns away.
           const grow = smooth(age, 0, .08), k = 1 - smooth(u, .45, 1), size = s.size * (.5 + .5 * grow);
           const lead = this.back.copy(s.lead).multiplyScalar(.7).addScaledVector(DOWN, .7).normalize();
           const tips = this.tilt.copy(UP).multiplyScalar(.7).addScaledVector(s.lead, .7).normalize();
@@ -602,7 +602,7 @@ export class BriarMagic {
             st.column(this.b, heading, .07, 1.3 * fade + .3, L, fade, seed);
             st.streak(this.b, this.c.copy(this.b).addScaledVector(heading, 1.3 * fade + .3), .01, this.edge, 1.2 * fade);
           }
-          // FORKTAIL GUST: a drill of wind out of his palm, boring through. (Round 8, blind critic 2: "a spray cone with no
+          // SHEARWIND GUST: a drill of wind out of his palm, boring through. (Round 8, blind critic 2: "a spray cone with no
           // spiral ... target: a sideways drill of white swirl strokes, tapering toward the target": broad at his palm and
           // drawn to a point at them, its strokes turned twice as tight.)
           else if (id === 'aquilo') { this.funnels?.add(this.p.copy(hand).addScaledVector(heading, .12), heading, 3.8, .62, .08, FUNNEL.wind, fade, time, seed, 9, 10, .8); st.streak(hand, this.d.copy(hand).addScaledVector(heading, 3.9), .03, L.core, .45 * fade); }

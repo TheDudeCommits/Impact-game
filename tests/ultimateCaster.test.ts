@@ -53,7 +53,7 @@ function film(user: FighterId, at: [number, number], seconds = 7, cape = true) {
     sim.step();
     const events: CombatEvent[] = sim.drainEvents();
     for (const p of sim.playerStates()) { const b = bodies.get(p.id)!; Object.assign(b.state, p); b.group.position.set(p.x, p.y, p.z); b.group.rotation.y = p.yaw; b.group.updateMatrixWorld(true); }
-    // Grand Tide is thrown as Full Swell: the client hides Gummy's own
+    // Spring Tide is thrown as Full Swell: the client hides Gummy's own
     // model for it, and the shots are sized for the form (drawnBulk 1.67).
     const caster = bodies.get('me')!; caster.model.visible = !(user === 'gummy' && caster.state.action === 'ultimate');
     follow.director.handle(events, 'me', id => bodies.get(id));
@@ -118,7 +118,7 @@ describe('the ultimate ends on the victim, on the floor', () => {
       // with them to 4.4-5.6 m (measured on all sixteen). Round a caster in
       // Full Swell the lens is lifted over their head where it passes them.
       expect(f.eye.y, `lens height at ${(f.t - cast).toFixed(2)}`).toBeLessThan(user === 'gummy' ? 3.4 : 2.8 + .35);
-      // The shot is the victim's, sized for them: Grand Tide's stood 5.7 m
+      // The shot is the victim's, sized for them: Spring Tide's stood 5.7 m
       // off a normal body, sized for the Full Swell that threw it (once the
       // carry from the release shot has been shed).
       if (user === 'gummy' && f.t - impact[0].t > 1) expect(Math.hypot(f.eye.x - f.victim.x, f.eye.z - f.victim.z), 'the lens off the victim').toBeLessThan(5);

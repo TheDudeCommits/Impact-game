@@ -1,8 +1,8 @@
 import {RiftWarWorld} from './moba/RiftWarWorld';
 import {BallArena} from './ball/BallArena';
-import {ballArenaFor} from './ball/arenaChoice';
+import {ballArenaFor,ballCourtFor} from './ball/arenaChoice';
 import {BloodCitadel} from './objectives/BloodCitadel';
-import {HiddenAshVillage} from './objectives/HiddenAshVillage';
+import {AshwoodVillage} from './objectives/AshwoodVillage';
 import {coverStage,installCameraCutaway} from './CameraCutaway';
 import {ArenaEnvironment} from './ArenaEnvironment';
 import * as THREE from 'three';
@@ -19,7 +19,7 @@ import { dressStage, type StageDressing } from './stages/dressing';
 import { dressGround } from './ground';
 import { passWhileHidden } from './hiddenMatrices'; import { ownStageModel } from '../originals/ownModels';
 
-interface Loaded { root: THREE.Group; occluders: THREE.Object3D[]; rift?: RiftStage; objective?: HiddenAshVillage | BloodCitadel | RiftWarWorld | BallArena; harbour?: ArenaEnvironment; dressing?: StageDressing }
+interface Loaded { root: THREE.Group; occluders: THREE.Object3D[]; rift?: RiftStage; objective?: AshwoodVillage | BloodCitadel | RiftWarWorld | BallArena; harbour?: ArenaEnvironment; dressing?: StageDressing }
 
 /** Draws whichever themed stage the server has put the match in.
  *
@@ -67,7 +67,7 @@ export class StageEnvironment {
     // A ball stage dressed as another arena than the match's is built again.
     if (stage === 'ball-pitch' || stage === 'ball-court') {
       const kept = this.loaded.get(stage);
-      if (kept && (kept.objective as BallArena | undefined)?.arena !== ballArenaFor(stage)) this.release(stage, kept);
+      if (kept && ((kept.objective as BallArena | undefined)?.arena !== ballArenaFor(stage) || (stage === 'ball-court' && (kept.objective as BallArena | undefined)?.court !== ballCourtFor()))) this.release(stage, kept);
     }
     if (this.current === stage) return;
     const model = STAGES[stage].model;
@@ -140,9 +140,9 @@ export class StageEnvironment {
       return { root: harbour.root, occluders: harbour.occluders, harbour };
     }
     // The ball modes' arenas (render/ball/BallArena.ts): built in code, nothing to download.
-    if(stage==='ball-pitch'||stage==='ball-court'){const arena=new BallArena(stage,ballArenaFor(stage));arena.root.visible=false;await arena.load();this.scene.add(arena.root);return {root:arena.root,occluders:arena.occluders,objective:arena};}
+    if(stage==='ball-pitch'||stage==='ball-court'){const arena=new BallArena(stage,ballArenaFor(stage),stage==='ball-court'?ballCourtFor():undefined);arena.root.visible=false;await arena.load();this.scene.add(arena.root);return {root:arena.root,occluders:arena.occluders,objective:arena};}
     if(stage==='rift-war'){const war=new RiftWarWorld();war.root.visible=false;try{await war.load();}catch(error){war.dispose();throw error;}this.scene.add(war.root);return {root:war.root,occluders:war.occluders,objective:war};}
-    if(stage==='hidden-ash'||stage==='blood-citadel'){const village=stage==='hidden-ash'?new HiddenAshVillage():new BloodCitadel();village.root.visible=false;await village.load();this.scene.add(village.root);return {root:village.root,occluders:village.occluders,objective:village};}
+    if(stage==='ashwood'||stage==='blood-citadel'){const village=stage==='ashwood'?new AshwoodVillage():new BloodCitadel();village.root.visible=false;await village.load();this.scene.add(village.root);return {root:village.root,occluders:village.occluders,objective:village};}
     if (isRiftStage(stage)) {
       // Built in code: nothing to download.
       const rift = new RiftStage(stage);

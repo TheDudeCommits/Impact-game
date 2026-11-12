@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type {GameSnapshot} from '../../game/types';
-import {ballOf, GOAL_RULES, SPIKE_RULES} from '../../game/ball/model';
+import {ballOf, GOAL_RULES, SPIKE_RULES, spikeCourt} from '../../game/ball/model';
 import {replayClock, REPLAY, type BallReplay} from '../../game/ball/replay';
 import {CombatTimeline} from '../CombatTimeline';
 
@@ -85,7 +85,7 @@ export class BallReplayer {
       const struck = window.reduce((best, f) => Math.abs(f.serverTime - r.key) < Math.abs(best.serverTime - r.key) ? f : best, window[0]), k = ballOf(struck)!.ball;
       let shot: Playing['shot'];
       if (view.mode === 'goal-rush') shot = Math.hypot(k.x, k.z - (r.team === 'red' ? GOAL_RULES.halfZ : -GOAL_RULES.halfZ)) < POST_WITHIN ? 'close' : 'chase';
-      else shot = Math.abs(b.x) <= SPIKE_RULES.courtHalfX + .3 && Math.abs(b.z) <= SPIKE_RULES.courtHalfZ + .3 ? 'close' : 'chase';
+      else { const c = spikeCourt(b); shot = Math.abs(b.x) <= c.x + .3 && Math.abs(b.z) <= c.z + .3 ? 'close' : 'chase'; }
       this.playing = {key, mode: view.mode, replay: r, timeline, land: new THREE.Vector3(b.x, b.y, b.z), shot, fresh: true, side: k.x >= 0 ? 1 : -1,
         solo: view.seats.filter(s => !s.bot).length <= 1};
     }

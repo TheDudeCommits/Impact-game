@@ -58,6 +58,19 @@ const PEAKS = {
   bump: {frame: 0, lines: .35, linesFor: .16, chroma: 0, ink: 0, zoom: .5, shake: 0, punch: 0, near: 22},
   // A LINK SHOT.
   link: {frame: 0, lines: .5, linesFor: .25, chroma: 0, ink: 0, zoom: .45, shake: 0, punch: 0},
+  // Football's full-power shot (FOOTBALL.fun.full, the strike's `full`): the camera kicked and punched in
+  // for whoever is near it, short lines - while the ball hangs its beat at the boot.
+  fullPower: {frame: 0, lines: .45, linesFor: .16, chroma: 0, ink: 0, zoom: .55, shake: .35, punch: 1, near: 24},
+} satisfies Record<string, Peak>;
+/** So effects never drown the action (FEVER petals across the screen, speed lines, white flashes, a big sound-word
+ *  pop), on the volleyball rules no moment prints the whole screen or runs speed lines but a SUPER SHOT, whose paper
+ *  frame is a short flash, no INK FLASH; the point that decides the match, a kill and a spike struck are a small screen
+ *  punch, nothing else. */
+const VOLLEY_PEAKS = {
+  super: {frame: .6, lines: .45, linesFor: .25, chroma: 0, ink: 0, zoom: .5, shake: 0, punch: 0},
+  decider: {frame: 0, lines: 0, linesFor: 0, chroma: 0, ink: 0, zoom: .45, shake: 0, punch: 0},
+  kill: {frame: 0, lines: 0, linesFor: 0, chroma: 0, ink: 0, zoom: .3, shake: 0, punch: 0},
+  spike: {frame: 0, lines: 0, linesFor: 0, chroma: 0, ink: 0, zoom: .22, shake: 0, punch: 0},
 } satisfies Record<string, Peak>;
 /** The shake falls off with the viewer's distance from the moment: whole within NEAR metres, a floor of FAR_SHARE of it
  *  at FAR and beyond, so everyone on the pitch feels a goal. */
@@ -191,8 +204,11 @@ export class BallMoments {
   }
 
   private moment(e: BallEvent, now: number) {
+    // (Football's full-power shot is felt - FOOTBALL.fun.full.)
+    if (this.view?.football && e.kind === 'strike' && e.full) { this.peak(PEAKS.fullPower, this.at.set(e.x, e.y, e.z)); return; }
     if (this.view?.football && sportQuiet && !SPORT_MOMENTS.has(e.kind)) return;
     const at = this.at.set(e.x, e.y, e.z);
+    if (this.view?.volley) { this.volley(e, at, now); return; }
     switch (e.kind) {
       case 'super': this.print(PEAKS.super, at, now, false); break;
       case 'goal': case 'own-goal': this.print(e.text === 'SUPER GOAL' || (e.value ?? 0) >= SCREAMER ? PEAKS.screamer : PEAKS.goal, at, now, !this.view?.practice); break;
@@ -217,6 +233,16 @@ export class BallMoments {
       case 'demo': this.peak(PEAKS.bump, at); break;
       case 'duel': this.shake(.45, at, 1); this.frame.screenPunch?.(.6, at); break;
       case 'duel-won': this.print(e.text === 'SHOT STOPPED' ? PEAKS.duelStopped : PEAKS.duelThrough, at, now, false); break;
+      default: break;
+    }
+  }
+
+  /** A moment on the volleyball rules (VOLLEY_PEAKS). */
+  private volley(e: BallEvent, at: THREE.Vector3, now: number) {
+    switch (e.kind) {
+      case 'super': this.print(VOLLEY_PEAKS.super, at, now, false); break;
+      case 'strike': if (e.text === 'SKY SPIKE' || e.text === 'ROLL SPIKE') this.peak(VOLLEY_PEAKS.spike, at); break;
+      case 'kill': case 'ace': case 'point': { const d = this.view ? spikeDecides(e, this.view) : null; this.peak(d ? VOLLEY_PEAKS.decider : VOLLEY_PEAKS.kill, at.setY(.4)); break; }
       default: break;
     }
   }

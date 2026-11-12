@@ -34,7 +34,7 @@ export const HAGURE_CONTACT_SURFACES = {
       -0.005434400769657178
     ]
   },
-  "cosmic": {
+  "moonless": {
     "light": [
       0.02586354473560709,
       0.05192509177487792,
@@ -77,7 +77,7 @@ export function hagureSurfaceKind(action:string,clip?:string,index=0):HagureSurf
  return 'light';
 }
 /** Caller passes the actual shown body's native hand and form identity. */
-export function hagureSurfacePoint(hand:THREE.Object3D,cosmic:boolean,action:string,clip:string|undefined,index:number,out:THREE.Vector3){
- const p=HAGURE_CONTACT_SURFACES[cosmic?'cosmic':'base'][hagureSurfaceKind(action,clip,index)];
+export function hagureSurfacePoint(hand:THREE.Object3D,moonless:boolean,action:string,clip:string|undefined,index:number,out:THREE.Vector3){
+ const p=HAGURE_CONTACT_SURFACES[moonless?'moonless':'base'][hagureSurfaceKind(action,clip,index)];
  return hand.localToWorld(out.set(p[0],p[1],p[2]));
 }

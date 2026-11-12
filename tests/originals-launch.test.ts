@@ -25,7 +25,7 @@ import { SHOP_PX } from '../src/originals/shop/px';
 import { R6P_DRAWN, SHOP_R6P } from '../src/originals/shop/r6p';
 import { R6B_ART, SHOP_R6B } from '../src/originals/shop/r6b';
 
-const SHOP: FighterId[] = ['gorai', 'haldor', 'sorrel', 'dorado', 'shiun', 'magatsu', 'vesper', 'imago', 'wuming', 'jirenga',
+const SHOP: FighterId[] = ['gorai', 'haldor', 'sorrel', 'dorado', 'shiun', 'magatsu', 'vesper', 'imago', 'wuming', 'banjaku',
   'jinlin', 'gohaku', 'ippon', 'sekka', 'tobari', 'akagane', 'asahi', 'levin', 'rook', 'gaku'];
 
 describe('the launch gate: fighters', () => {
@@ -84,7 +84,7 @@ describe('the launch gate: modes and stages', () => {
   it('hides Arcade Survival while team R gates it, and Last Stand and Bad Blood while team O does', () => {
     expect(modeOpen('arcade')).toBe(LAUNCH.survival === 'open');
     expect(modeOpen('bad-blood')).toBe(LAUNCH.objectives === 'open');
-    expect(modeOpen('last-stand')).toBe(LAUNCH.objectives === 'open' && stageSafe('hidden-ash'));
+    expect(modeOpen('last-stand')).toBe(LAUNCH.objectives === 'open' && stageSafe('ashwood'));
     for (const card of ['arcade', 'last-stand', 'bad-blood', 'rift-war']) expect(HOME_RAIL.includes(card as 'arcade'), card).toBe(modeOpen(card)); // (Rift War: LAUNCH.riftWar, open since rift-war)
     expect(HOME_RAIL).toEqual(expect.arrayContaining(['duel', 'bots', 'training']));
   });
@@ -159,7 +159,7 @@ describe('the launch gate: modes and stages', () => {
     for (const stage of Object.keys(SMALL_ROYALE_STAGES)) expect(stageSafe(stage), stage).toBe(true);
     expect(duelStage('sunfall-arena')).toBe(stageSafe('sunfall-arena') ? 'sunfall-arena' : 'blood-citadel');
     expect(MODES.duel.kicker).not.toMatch(/MARTIAL ARTS/);
-    for (const stage of ['proving-hall', 'zenith-coliseum', 'wreckers-causeway', 'ashfall-weir', 'hidden-ash'] as const) {
+    for (const stage of ['proving-hall', 'zenith-coliseum', 'wreckers-causeway', 'ashfall-weir', 'ashwood'] as const) {
       expect(stageSafe(stage), stage).toBe(LAUNCH.stages.includes(stage));
       if (!LAUNCH.stages.includes(stage)) expect(launchStage(stage)).toBe('harbor');
     }

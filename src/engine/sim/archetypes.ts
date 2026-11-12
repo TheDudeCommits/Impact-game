@@ -37,7 +37,7 @@ const list = (ids: string) => ids.split(/\s+/).filter(Boolean) as FighterId[];
 const BODY_LISTS: Readonly<Record<BodyType, readonly FighterId[]>> = {
   blade: list(`chohan yodaka nigo strix dorado sorrel wataame onigawara shidare hinomoto shiun shijima akayuri asahi akaito vesper hisame
     wuming hikui ward kenzo mizuhiki levin hawser rook shakudo sashigane lanthorn highsun gaunt kuzu tokan cardo bruin`),
-  fists: list(`kagari irbis taisei ouga gohaku shanxiao jirenga ippon hagure gummy koko oro gosu kinu full-beam ampere
+  fists: list(`kagari irbis taisei ouga gohaku shanxiao banjaku ippon hagure gummy koko oro gosu kinu full-beam ampere
     pyroclast bellows sekka tempo gaku setsu bonsho madake kusushi ume oyashio rakucho imago shakugo
     jinlin minase konta shirokane shiden tobari barrow`),
   kicks: list('kosho senko basilissa suzuran mikage'),
@@ -52,7 +52,7 @@ const ELEMENT_LISTS: Readonly<Record<ElementKitId, readonly FighterId[]>> = {
   explosion: list('tsubute pyroclast levin jinlin'),
   ice: list('tokan hisame shijima tancho'),
   lightning: list('shirokane shiden setsu adad sorayomi mikage ampere minase gorai buna'),
-  beam: list('taisei ouga gohaku wuming jinlin shanxiao jirenga irbis shiun nigo ippon senko'),
+  beam: list('taisei ouga gohaku wuming jinlin shanxiao banjaku irbis shiun nigo ippon senko'),
   will: list('gummy sorrel dorado haldor gorai strix buna kenzo basilissa barrow oyashio'),
   slash: list(`chohan yodaka kenzo strix nigo shidare onigawara wataame akayuri mizuhiki levin hawser magatsu akaito asahi vesper gaunt rook
     kuzu dorado sorrel hisame wuming shakudo sashigane cardo bruin`),
@@ -63,7 +63,7 @@ const ELEMENT_LISTS: Readonly<Record<ElementKitId, readonly FighterId[]>> = {
   earth: list('aqrab shakudo shibuichi haldor kusushi ume ovid'),
   strings: list('tsubute strappado kinu unari shidare psyche ume basilissa'),
   mecha: list('murex rotfalke hawser ovid shibuichi'),
-  strength: list('cardo chohan ippon hagure madake kusushi jirenga sekka bonsho gaku full-beam gummy koko tempo rakucho imago shanxiao gaunt kosho'),
+  strength: list('cardo chohan ippon hagure madake kusushi banjaku sekka bonsho gaku full-beam gummy koko tempo rakucho imago shanxiao gaunt kosho'),
 };
 
 const BODY_OF = new Map<FighterId, BodyType>();

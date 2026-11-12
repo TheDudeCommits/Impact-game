@@ -14,7 +14,7 @@ function blood(){const g=new ObjectiveMatch('bad-blood');all.push(g);for(let i=0
 function stand(count=2){const g=new ObjectiveMatch('last-stand',undefined,3,'host');all.push(g);for(let i=0;i<count;i++)g.add('h'+i,'taisei','Defender');g.start();advance(g,3.1);return g;}
 const kill=(g:ObjectiveMatch,id:string)=>g.sim.damage(id,999999,'test','test');
 describe('Bad Blood',()=>{
- it('enforces the design-approved factions and 3v3 capacity',()=>{const g=new ObjectiveMatch('bad-blood');all.push(g);expect(VILLAINS).toContain('jirenga');expect(factionOf('tobari')).toBe('heroes');expect(()=>g.add('bad','taisei','Bad','villains')).toThrow('belongs');for(let i=0;i<3;i++)g.add('h'+i,'taisei','Hero');expect(()=>g.add('h3','konta','Fourth')).toThrow('full');g.start();expect([...g.seats.values()].filter(s=>s.team==='villains')).toHaveLength(3);expect([...g.seats.values()].every(s=>factionOf(s.fighter)===s.team)).toBe(true);});
+ it('enforces the design-approved factions and 3v3 capacity',()=>{const g=new ObjectiveMatch('bad-blood');all.push(g);expect(VILLAINS).toContain('banjaku');expect(factionOf('tobari')).toBe('heroes');expect(()=>g.add('bad','taisei','Bad','villains')).toThrow('belongs');for(let i=0;i<3;i++)g.add('h'+i,'taisei','Hero');expect(()=>g.add('h3','konta','Fourth')).toThrow('full');g.start();expect([...g.seats.values()].filter(s=>s.team==='villains')).toHaveLength(3);expect([...g.seats.values()].every(s=>factionOf(s.fighter)===s.team)).toBe(true);});
  it('scales villain health, real stamina capacity, movement and recovery only in this mode',()=>{const g=blood();expect(p(g,'v0').maxHp).toBe(1950);expect(p(g,'v0').maxStamina).toBe(292.5);expect(p(g,'v0').stamina).toBe(292.5);expect(p(g,'h0').maxStamina).toBe(225);expect(g.sim.mods('v0')).toMatchObject({damageOut:1.3,speed:1.3,cooldown:1/1.3,staminaRecovery:1.3,meterGain:1.3,awakenGain:1.3});expect(p(g).maxHp).toBe(1500);expect(p(g).maxStamina).toBe(225);p(g,'v0').stamina=285;advance(g,1);expect(p(g,'v0').stamina).toBe(292.5);});
  it('automatically revives a Hero once at three seconds, never earlier or a second time',()=>{const g=blood();kill(g,'h0');g.step();const at=g.seats.get('h0')!.reviveAt!;expect(at-g.sim.serverTime).toBeCloseTo(3);advance(g,2.8);expect(p(g).alive).toBe(false);while(g.sim.serverTime<at+.01)g.step();expect(p(g).alive).toBe(true);expect(p(g).hp).toBe(1500);advance(g,2.1);kill(g,'h0');advance(g,6);expect(p(g).alive).toBe(false);expect(g.seats.get('h0')!.reviveAt).toBeUndefined();});
  it('ends on a simultaneous Hero wipe before pending revivals can fire',()=>{const g=blood();kill(g,'h0');g.step();advance(g,1);kill(g,'h1');kill(g,'h2');g.step();expect(g.view.winner).toBe('villains');advance(g,10);expect(p(g).alive).toBe(false);});
@@ -28,7 +28,7 @@ describe('Last Stand',()=>{
  it('validates shop distance, living players, shared balance and upgrade caps',()=>{const g=stand();g.siege!.view.points=1000;expect(g.buy('h0','walls')).toContain('Visit');g.sim.place('h0',{...VILLAGE.shop,y:0});g.sim.place('h1',{...VILLAGE.shop,y:0});expect(g.buy('h0','walls')).toBeUndefined();expect(g.siege!.view.points).toBe(350);expect(g.siege!.view.maxHp).toBe(15000);expect(g.buy('h1','walls')).toContain('points');expect(g.buy('h0','godmode')).toContain('Choose');kill(g,'h0');g.step();expect(g.buy('h0','repair')).toContain('standing');expect(g.snapshot().objective.seats.find(s=>s.id==='h0')?.spent).toBe(650);});
  it('spawns Survival enemy kits, gives shared kill points once and advances waves',()=>{const g=stand();advance(g,13);const enemies=g.sim.playerStates().filter(p=>p.team==='horde');expect(enemies.length).toBeGreaterThan(0);for(const e of enemies)g.sim.damage(e.id,99999,'h0','test');g.step();expect(g.siege!.view.points).toBeGreaterThan(0);const points=g.siege!.view.points;g.step();expect(g.siege!.view.points).toBe(points);expect(g.snapshot().objective.seats.find(s=>s.id==='h0')!.points).toBe(points);});
  it('keeps a departed player body and transfers host without a free heal',()=>{const g=stand();p(g).hp=123;g.remove('h0');expect(p(g).hp).toBe(123);expect(g.seats.get('h0')!.bot).toBe(true);expect(g.view.hostId).toBe('h1');});
- it('uses traversable village spawn and shop geometry',async()=>{const collision=await createRapierCollision('hidden-ash');try{for(const at of [{x:0,y:0,z:16},{x:0,y:0,z:20},{x:-11,y:0,z:24}])expect(collision.penetration(at)).toBeLessThan(.03);}finally{collision.dispose?.();}});
+ it('uses traversable village spawn and shop geometry',async()=>{const collision=await createRapierCollision('ashwood');try{for(const at of [{x:0,y:0,z:16},{x:0,y:0,z:20},{x:-11,y:0,z:24}])expect(collision.penetration(at)).toBeLessThan(.03);}finally{collision.dispose?.();}});
 });
 
 describe('mode integration invariants',()=>{
@@ -130,7 +130,7 @@ describe('mode integration invariants',()=>{
   [-11,18.54,11,18.54], [11,18.54,-11,18.54],
   [0,21.5,10,21.5], [-11,21.5,11,21.5],
  ])('completes a diagonal gate rescue with real collision (%s, %s to %s, %s)',async(x,z,targetX,targetZ)=>{
-  const g=new ObjectiveMatch('last-stand',await createRapierCollision('hidden-ash'),1,'host');all.push(g);
+  const g=new ObjectiveMatch('last-stand',await createRapierCollision('ashwood'),1,'host');all.push(g);
   g.add('helper','taisei','Helper','defenders');g.add('fallen','konta','Fallen','defenders');g.start();advance(g,3.2);
   g.siege!.view.nextWaveAt=g.sim.serverTime+60;
   g.sim.place('helper',{x,y:0,z});g.sim.place('fallen',{x:targetX,y:0,z:targetZ});kill(g,'fallen');g.step();
@@ -141,7 +141,7 @@ describe('mode integration invariants',()=>{
   expect(p(g,'fallen').alive).toBe(true);expect(g.seats.get('helper')!.revives).toBe(1);
  });
  it.each([-1,1])('reaches an opponent beside the gate instead of circling through it (%s)',async(side)=>{
-  const g=new ObjectiveMatch('last-stand',await createRapierCollision('hidden-ash'),1,'host');all.push(g);
+  const g=new ObjectiveMatch('last-stand',await createRapierCollision('ashwood'),1,'host');all.push(g);
   g.add('helper','taisei','Helper','defenders');g.add('target','konta','Target','defenders');g.start();advance(g,3.2);
   g.siege!.view.nextWaveAt=g.sim.serverTime+60;
   g.sim.place('helper',{x:0,y:0,z:18.5});g.sim.place('target',{x:side*9.86,y:0,z:18.54});p(g,'target').team='horde';

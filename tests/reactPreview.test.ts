@@ -14,7 +14,7 @@ import type { AttackSlot, CombatEvent, FighterId, GameSnapshot, PlayerInput } fr
  *  server said 'blocked' (5 chip damage), but the target was drawn launched
  *  for about 180 ms (2 of 2)."
  *
- *  The Senpugan's preview drew its victim from the local copy of the
+ *  The Kazeyose's preview drew its victim from the local copy of the
  *  simulation, which stands every remote body still where the last snapshot
  *  had it and gave it no guard: a body running off or guarding was launched
  *  there a round trip before the server said otherwise. Now the preview is
@@ -24,7 +24,7 @@ import type { AttackSlot, CombatEvent, FighterId, GameSnapshot, PlayerInput } fr
  *  server lands it; and a preview the server turns away is let go of over a
  *  quarter of a second. Each case is a real ArenaSimulation for the server
  *  and the client's Prediction, LAG ticks apart each way, as in
- *  whirlsphereContact.test.ts. */
+ *  kazeyoseContact.test.ts. */
 const LAG = 6;
 type Foe = (tick: number, server: ArenaSimulation) => Partial<PlayerInput> | undefined;
 type Frame = { tick: number; action: string; x: number; y: number; z: number };
@@ -68,7 +68,7 @@ function bout(fighter: FighterId, slot: AttackSlot, foe: Foe, setup?: (server: A
 const staggered = (seconds: number) => (server: ArenaSimulation) => { const a = server.actors.get('foe')!; a.reaction = 'stun'; a.stunUntil = server.serverTime + seconds; };
 const CONTACT_TICK = 30 + Math.round(MOVES.konta.heavy.contacts[0] * 60);
 
-describe('the Senpugan preview', () => {
+describe('the Kazeyose preview', () => {
   it.each([8, 14, 20, 24])('never draws a body that ran off %i ticks after the press launched when the server did not hit it', lead => {
     const run = bout('konta', 'heavy', tick => tick >= 30 + lead ? { moveZ: 1, yaw: 0 } : undefined);
     expect(run.impacts, 'nothing presented ahead of the server').toHaveLength(0);
@@ -128,7 +128,7 @@ describe('the Senpugan preview', () => {
 
 describe('a charge-in is answered when the server lands it', () => {
   // The critic's late flee trials: a body standing still at the last snapshot
-  // started running inside the round trip, and the Shrike Bolt's local copy had
+  // started running inside the round trip, and the Storm Talon's local copy had
   // already touched it (4 of 12 in the browser). A charge-in's half second of
   // telegraph is time enough to answer it, so a free body's blow waits.
   it.each(['shiden', 'shirokane', 'kenzo', 'konta'] as FighterId[])('%s\'s, on a body standing still: landed by the local copy, held for the server', fighter => {

@@ -41,7 +41,7 @@ describe('the economy in a co-op run', () => {
       expect(guest.frames[guest.frames.length - 1].survival.party.find(member => member.id === 'guest')?.look).toBeUndefined();
       // An emote on the wheel reaches the party's feed; one that is not, and one too soon, do not.
       room.start(host); advance(3);
-      emote(host, ITEMS.findIndex(item => item.id === 'emote-menacing'));
+      emote(host, ITEMS.findIndex(item => item.id === 'emote-rumble'));
       emote(host, ITEMS.findIndex(item => item.id === 'emote-don'));
       emote(host, ITEMS.findIndex(item => item.id === 'emote-don'));
       emote(guest, ITEMS.findIndex(item => item.id === 'emote-don'));

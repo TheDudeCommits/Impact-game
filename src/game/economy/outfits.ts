@@ -37,9 +37,9 @@ export const OUTFITS: Readonly<Record<string, OutfitDef>> = {
   'outfit-taisei-ember-mane': { fighter: 'taisei', variant: { hair: 0xff2852, always: true, aura: [0xffb08a, 0xff1f3a] } },
   'outfit-taisei-azure-sage': { fighter: 'taisei', variant: { hair: 0x22c4ff, always: true, goldHair: true, aura: [0x9ff2ff, 0x1d63ff] } },
   'outfit-taisei-silver-mane': { fighter: 'taisei', variant: { hair: 0xdfe7f4, always: true, aura: [0xf4f8ff, 0x7f9cff] } },
-  'outfit-ouga-golden-pride': { fighter: 'ouga', variant: { hair: 0xffcf3a, always: true, goldHair: true } },
+  'outfit-ouga-crownfire': { fighter: 'ouga', variant: { hair: 0xffcf3a, always: true, goldHair: true } },
   'outfit-ouga-crimson-crown': { fighter: 'ouga', variant: { hair: 0xff2852, always: true, aura: [0xffb08a, 0xff1f3a] } },
-  'outfit-ouga-azure-pride': { fighter: 'ouga', variant: { hair: 0x22c4ff, always: true, goldHair: true, aura: [0x9ff2ff, 0x1d63ff] } },
+  'outfit-ouga-azure-crown': { fighter: 'ouga', variant: { hair: 0x22c4ff, always: true, goldHair: true, aura: [0x9ff2ff, 0x1d63ff] } },
   'outfit-ouga-violet-wrath': { fighter: 'ouga', variant: { hair: 0x9a4bff, always: true, aura: [0xdcb0ff, 0x6a14d8] } },
   // ---- Dust Sea costumes: bodies with their own authored fight sets (scripts/economy/build_outfit.py) ----
   'outfit-gummy-daybreak': { fighter: 'gummy', model: '/assets/economy/outfits/gummy-daybreak.glb' },

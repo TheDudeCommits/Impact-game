@@ -5,7 +5,7 @@ import type { ComboRow } from '../combos';
 /** Last Sun Super Shanxiao: deliberate, committed close-range pressure. All
  * damage requires a player attack; transformation and its aura deal none.
  * The source models have no animation. Signature clips are explicitly authored
- * for this kit, while locomotion/reactions use the existing Jirenga donor rig. */
+ * for this kit, while locomotion/reactions use the existing Banjaku donor rig. */
 export const SHANXIAO_MOVES: Record<CoreSlot, MoveDefinition> = {
   light: { name: 'Wild Hook', duration: .44, contacts: [.168], damage: 24,
     range: 2.15, radius: .8, stamina: 10, cooldown: .44, stun: .34,

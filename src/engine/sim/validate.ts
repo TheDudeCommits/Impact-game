@@ -19,8 +19,8 @@ export const MOVE_LIMITS = {
   duration: [0.1, 6], // 0.34 (Setsu's Snow Claw) .. 4.4 (Shibuichi's KINTSUGI: Golden Seam)
   damage: [0, 400], // 10 .. 290
   finisherDamage: [0, 400], // 20 .. 328
-  scheduleEntry: [0, 700], // 9 .. 609 (Kyokko-Ho's last)
-  range: [0, 50], // 0 (a plunge) .. 42 (Kyokko-Ho)
+  scheduleEntry: [0, 700], // 9 .. 609 (Royal Aurora's last)
+  range: [0, 50], // 0 (a plunge) .. 42 (Royal Aurora)
   radius: [0.1, 8], // 0.3 .. 4.8
   stamina: [0, 100], // 0 .. 36
   cooldown: [0, 40], // 0.34 .. 26
@@ -30,7 +30,7 @@ export const MOVE_LIMITS = {
   lunge: [0, 20], lungeDelay: [0, 2], close: [0, 15], // lunge 0 .. 13, close 0 .. 7
   chargeIn: [0, 6], spacing: [0, 5], track: [0, Math.PI], active: [0, 1], hitstop: [0, 1], lift: [0, 20],
   plunge: [0, 60], down: [0, 4], daze: [0, 4],
-  contacts: [1, 24], // 1 .. 16 (awakened Iron Lullaby: Hush)
+  contacts: [1, 24], // 1 .. 16 (awakened Iron Lullaby: Slumber)
   teleportReach: [0, 20], timeStopDuration: [0, 5], timeStopRadius: [0, 12], confirmRecovery: [0, 3],
   areaTelegraph: [0.3, 3], areaHits: [1, 8], areaInterval: [0.05, 1.5], areaHeight: [1, 12], areaRange: [3, 30], areaRadius: [1.5, 8],
 } as const satisfies Record<string, readonly [number, number]>;

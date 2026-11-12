@@ -3,7 +3,7 @@ export interface Unlock { price?: number; level?: number }
 
 export const BANDS = {
   fighterCrown: 1200, fighterFirst: 1000,
-  /** The second ("Also strong": Wuming, Vesper, Imago, Jirenga, Emperor Jinlin). */
+  /** The second ("Also strong": Wuming, Vesper, Imago, Banjaku, Jinlin). */
   fighterSecond: 800,
   /** The third (the rest of VOL.2, and since 28 October 2026 every fighter past VOL.1's sixteen and the ranks). */
   fighterThird: 600,
@@ -13,7 +13,7 @@ export const UNLOCKS: Readonly<Record<string, Unlock>> = {
   'fighter-dorado': { price: BANDS.fighterCrown },
   'fighter-magatsu': { price: BANDS.fighterFirst }, 'fighter-akagane': { price: BANDS.fighterFirst }, 'fighter-shiun': { price: BANDS.fighterFirst },
   'fighter-gorai': { price: BANDS.fighterFirst }, 'fighter-haldor': { price: BANDS.fighterFirst },
-  'fighter-wuming': { price: BANDS.fighterSecond }, 'fighter-imago': { price: BANDS.fighterSecond }, 'fighter-jirenga': { price: BANDS.fighterSecond },
+  'fighter-wuming': { price: BANDS.fighterSecond }, 'fighter-imago': { price: BANDS.fighterSecond }, 'fighter-banjaku': { price: BANDS.fighterSecond },
   'fighter-jinlin': { price: BANDS.fighterSecond }, 'fighter-vesper': { price: BANDS.fighterSecond, level: 40 },
   'fighter-tobari': { price: BANDS.fighterThird }, 'fighter-sorrel': { price: BANDS.fighterThird }, 'fighter-gohaku': { price: BANDS.fighterThird },
   'fighter-asahi': { price: BANDS.fighterThird, level: 5 }, 'fighter-levin': { price: BANDS.fighterThird, level: 10 },
@@ -43,9 +43,9 @@ export const UNLOCKS: Readonly<Record<string, Unlock>> = {
   'fighter-svanhild': { price: BANDS.fighterThird },
   // ---- Outfits: the fighters' forms and costumes, seen by everyone in every mode (an outfit is the body). A hair
   // and aura on the fighter's own body 300-900, a costume of its own 500-1,000.
-  'outfit-taisei-golden-sage': { price: 300, level: 3 }, 'outfit-ouga-golden-pride': { price: 300, level: 7 },
+  'outfit-taisei-golden-sage': { price: 300, level: 3 }, 'outfit-ouga-crownfire': { price: 300, level: 7 },
   'outfit-taisei-ember-mane': { price: 400 }, 'outfit-ouga-crimson-crown': { price: 400 },
-  'outfit-taisei-azure-sage': { price: 600, level: 18 }, 'outfit-ouga-azure-pride': { price: 600 },
+  'outfit-taisei-azure-sage': { price: 600, level: 18 }, 'outfit-ouga-azure-crown': { price: 600 },
   'outfit-taisei-silver-mane': { price: 900 }, 'outfit-ouga-violet-wrath': { price: 900, level: 32 },
   'outfit-gummy-daybreak': { price: 1000 }, 'outfit-gummy-mirage': { price: 800, level: 52 },
   'outfit-gummy-black-flag': { price: 600 }, 'outfit-gummy-deckhand': { price: 600, level: 12 },
@@ -59,7 +59,7 @@ export const UNLOCKS: Readonly<Record<string, Unlock>> = {
   'trail-afterimage': { level: 8 },
   'kill-cranes': { level: 14 }, 'kill-screentone': { level: 28 }, 'kill-seal': { level: 44 }, 'kill-kintsugi': { level: 55 },
   'banner-taiko': { level: 34 },
-  'emote-don': { level: 4 }, 'emote-menacing': { level: 24 }, 'emote-speed-lines': { level: 46 },
+  'emote-don': { level: 4 }, 'emote-rumble': { level: 24 }, 'emote-speed-lines': { level: 46 },
   // ---- The ball modes' gear: Goal Rush and Sky Spike only, by Sumi alone - a ball skin a
   // few matches, a goal burst about a week of a regular's play. Hidden on Player Two while the modes are (LAUNCH.ballModes).
   'ball-vermilion': { price: 300 }, 'ball-night-ink': { price: 300 }, 'ball-indigo': { price: 300 }, 'ball-jade': { price: 500 }, 'ball-gold-leaf': { price: 600 },

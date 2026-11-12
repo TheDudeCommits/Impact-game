@@ -19,6 +19,7 @@ import { DeviceReports } from './deviceReports';
 import { ForgeRefusal, ForgeStore } from '../forge/ForgeStore';
 import { remoteEconomy, type RoomEconomy } from '../cluster/economyLink';
 import { ProgressStore } from '../progress/ProgressStore';
+import { currentId, currentSaved } from '../../game/savedIds';
 
 const PAY_OFF = 'off' as const;
 
@@ -423,14 +424,15 @@ export function mountEconomy(app: App, options: EconomyOptions = {}): Economy {
       });
   });
   route('hello', (body, _req, address) => economy.hello(body.token, address));
-  route('report', body => economy.report(body.token, body.report as Report));
-  route('buy', body => economy.buy(body.token, body.item));
-  route('wear', body => economy.wear(body.token, body.kind, body.item));
+  // (A page from before some ids were renamed still sends them: read as they are now, src/game/savedIds.ts.)
+  route('report', body => economy.report(body.token, currentSaved(body.report) as Report));
+  route('buy', body => economy.buy(body.token, currentId(body.item)));
+  route('wear', body => economy.wear(body.token, body.kind, currentId(body.item)));
   route('signin', body => economy.signIn(body.token, body.access));
   route('p2-signin', body => economy.signInPlayerTwo(body.token, body.identity));
   route('signout', (body, _req, address) => economy.signOut(body.token, address));
   route('delete', (body, _req, address) => economy.deleteAccount(body.token, body.confirm, address));
-  route('grant', (body, req) => economy.grant(req.headers.authorization, body.pk, body.amount, body.item));
+  route('grant', (body, req) => economy.grant(req.headers.authorization, body.pk, body.amount, currentId(body.item)));
   route('redeem', (body, _req, address) => economy.redeem(body.token, body.code, body.identity, address));
   route('name', body => economy.claimName(body.token, body.name));
   // Forged fighters kept on the account (VOL.6): signed-in to keep, anyone to open a share link.
@@ -439,7 +441,7 @@ export function mountEconomy(app: App, options: EconomyOptions = {}): Economy {
   route('forge-get', body => economy.forgeGet(body.hash));
   route('forge-remove', body => economy.forgeRemove(body.token, body.hash));
   // Arcade progress and the career, kept with the account (src/server/progress/ProgressStore.ts).
-  route('progress', body => economy.progressSync(body.token, body), 64 * 1024);
+  route('progress', body => economy.progressSync(body.token, { ...body, ...(body.import ? { import: currentSaved(body.import) } : {}), ...(body.reports ? { reports: currentSaved(body.reports) } : {}) }), 64 * 1024);
   // The book is written as the server goes down: on the way out (the match server's own shutdown
   // ends the process), and at the signal itself in case nothing else answers it.
   for (const signal of ['SIGTERM', 'SIGINT'] as const) process.once(signal, () => { economy.save(); });

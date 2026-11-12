@@ -143,6 +143,8 @@ export class SoundWords {
   }
 
   private event(e: BallEvent, view: BallView, page: number) {
+    // (The volleyball rules: no word but a SUPER SHOT's - BallMoments VOLLEY_PEAKS.)
+    if (view.volley && e.kind !== 'super') return;
     const at = scratch.set(e.x, e.y, e.z);
     switch (e.kind) {
       case 'super': if (e.team) this.stamp('super', e.team, at.setY(e.y + .6), e.id, page); break;

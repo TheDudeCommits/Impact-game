@@ -133,10 +133,10 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   tokan:define({name:'DEAD OF WINTER',kind:'aura',aura:[0x83c7e7,0xe9faff],auraGlow:.06,clips:['DEAD OF WINTER'],swapAt:.58}),
   strappado:define({name:'SHOWSTOPPER',kind:'aura',aura:[0xfffaf1,0xf074ad],auraGlow:.07,clips:['SHOWSTOPPER'],swapAt:.55}),
   unari:define({"name":"OPEN SEASON","kind":"aura","aura":[15692487,16767474],"auraGlow":0.08,"clips":["Magicians Malice"],"swapAt":0.62}),
-  barrow:define({name:"BOTTOMLESS",kind:'aura',aura:[0xb074e5,0x89c9e0],auraGlow:.09,clips:['Emperor Ambition'],swapAt:.55}),
+  barrow:define({name:"GORGED",kind:'aura',aura:[0xb074e5,0x89c9e0],auraGlow:.09,clips:['Gorged'],swapAt:.55}),
   sashigane:define({name:'ZERO TOLERANCE',kind:'aura',aura:[0xc8e998,0x78c6b0],auraGlow:.08,clips:['ZERO TOLERANCE Release'],swapAt:.378}),
   gosu:define({"name":"MENDED IN GOLD","kind":"spirit","aura":[15763125,8445170],"auraGlow":0.1,"formScale":1.15,"clips":["MENDED IN GOLD"],"swapAt":0.62}),
-  kusushi:define({"name":"GRAND CHAMPION","kind":"form","aura":[15466487,6549427],"auraGlow":0.1,"clips":["GRAND CHAMPION"],"swapAt":0.504}),
+  kusushi:define({"name":"YOKOZUNA","kind":"form","aura":[15466487,6549427],"auraGlow":0.1,"clips":["YOKOZUNA"],"swapAt":0.504}),
   hakushi:define({"name":"THE OLD LION","kind":"form","aura":[10075800,16301691],"auraGlow":0.08,"clips":["THE OLD LION"],"swapAt":0.576}),
   suzuran:define({name:'YOIN',kind:'aura',aura:[0xdbeeff,0xbaa9f0],auraGlow:.12,clips:['YOIN Release'],swapAt:.63}),
   wataame:define({"name":"MEZAMASHI","kind":"aura","aura":[10340333,15988991],"auraGlow":0.1,"clips":["MEZAMASHI"],"swapAt":0.62}),
@@ -152,7 +152,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   bellows: define({name:'STOKED',kind:'aura',aura:[0xfff1b5,0xff6b22],auraGlow:.18,clips:['STOKED Ignition'],swapAt:.522}),
   mikage: define({name:'HACKLES UP',kind:'aura',aura:[0xf4eaff,0xa663ee],auraGlow:.18,clips:['HACKLES UP Release'],swapAt:.486}),
   // A game-adapted focus stance, not a transformation.
-  'full-beam': define({ name: 'LAST WATCH', kind: 'aura', aura: [0xfffbee, 0xf6c65a], auraGlow: .1, clips: ['Inheritance'], swapAt: .54 }),
+  'full-beam': define({ name: 'LAST WATCH', kind: 'aura', aura: [0xfffbee, 0xf6c65a], auraGlow: .1, clips: ['Last Watch'], swapAt: .54 }),
   pyroclast: define({ name: 'BOILING POINT', kind: 'aura', aura: [0xfff6d8, 0xff791e], auraGlow: .1, clips: ['Cluster Ignition'], swapAt: .549 }),
   ampere: define({ name: 'LIGHTS ON', kind: 'form', aura: [0xe7fff3, 0x32db99], auraGlow: .14, formScale: 1.84/1.78, clips: ['Vigilante Resolve'], swapAt: .504 }),
   shanxiao: define({ name: 'JADE STORM', kind: 'form', aura: [0xe4ff8b, 0x67d92d], auraGlow: .2, formScale: 2.26/2.1, clips: ['Unbound Fury'], swapAt: .477 }),
@@ -170,8 +170,8 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   // the eyes; the irises ride in the face texture's alpha.
   taisei: define({ name: 'GOLDEN SAGE', kind: 'aura', aura: [0xffe37a, 0xffa227], hair: 0xffd23d,
     flames: true, clips: ['awaken-powerup', 'last-sun', 'taisei-ready', '02-STANCE'] }),
-  ouga: define({ name: 'GOLDEN PRIDE', kind: 'aura', aura: [0xffe37a, 0xff8c1f], hair: 0xffcf3a,
-    flames: true, clips: ['awaken-powerup', 'Shikou-Ha', '_Idle'] }),
+  ouga: define({ name: 'CROWNFIRE', kind: 'aura', aura: [0xffe37a, 0xff8c1f], hair: 0xffcf3a,
+    flames: true, clips: ['awaken-powerup', 'Throne Wave', '_Idle'] }),
   // The fox-spirit itself, not a cloak of its chi: Konta Online's Kurobi
   // ships a whole fighting set, so the fox is the fighter for the window.
   // Kurobi is a quadruped, so normalising its height already makes it five
@@ -183,15 +183,16 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   // Align the front paws/muzzle with combat range. The source origin is behind
   // the hips; leaving it there puts a nearby opponent inside the fox's torso.
   konta: define({ name: 'HOMURA', kind: 'form', aura: [0xffd873, 0xff7d1c], formScale: 2.8, formForward: -1.5,
-    clips: ['Whirlsphere charge', 'Konta pose', '_Idle'] }),
+    clips: ['Kazeyose charge', 'Konta pose', '_Idle'] }),
+  // (Both his bodies name that loop `awaken_lp` and its entry `awaken_in`.)
   gummy: define({ name: 'SUNRISE', kind: 'form', aura: [0xffffff, 0xcfd6ff], formScale: 1.08,
-    clips: ['flagget_lp', 'flagget', '_Idle'] }),
+    clips: ['awaken_lp', 'awaken_in', '_Idle'] }),
   nigo: define({ name: 'NIGHTFALL', kind: 'form', aura: [0x9b6ad6, 0x1a1026], formScale: 1.06,
     clips: ['stay_show', 'Block', '_Idle'], swapAt: AWAKENING_ENTRY * .82 }),
-  kenzo: define({ name: 'RAKSHASA', kind: 'form', aura: [0x9cf07c, 0x11361a], formScale: 1.06,
-    clips: ['opening', 'flagget', '_Idle'] }),
+  kenzo: define({ name: 'DUNE ONI', kind: 'form', aura: [0x9cf07c, 0x11361a], formScale: 1.06,
+    clips: ['intro', 'awaken_in', '_Idle'] }),
   kosho: define({ name: 'FEU BLEU', kind: 'aura', aura: [0x7fc8ff, 0x1b4fd0],
-    clips: ['opening', 'flagget', '_Idle'] }),
+    clips: ['intro', 'awaken_in', '_Idle'] }),
   // A WRATHFUL KING bound to each of their own skeletons, so it fights their
   // moves rather than standing beside them: see scripts/rig_guardian.py. They
   // stay visible inside it, which is what being in a Guardian looks like.
@@ -200,24 +201,24 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
     clips: ['Ikazuchi Arrow', 'Black Pyre', '_Idle'] }),
   shirokane: define({ name: 'HARVEST WARDEN', kind: 'summon', aura: [0x6ad4ff, 0x123f7a],
     formScale: 4.2, formTint: 0x2f8ae0, formOpacity: .42,
-    clips: ['Sickle Bolt', 'Void Eye: Sickle Bolt', '_Idle'] }),
-  koko: define({ name: 'HUSH', kind: 'spirit', aura: [0xd0a6ff, 0x2a1440], formScale: 1.5,
-    clips: ['HUSH', '_Idle'] }),
-  // Round 16. Kagari burns: the KAGUTSUCHI is fire over his own body, so the
+    clips: ['Sickle Bolt', 'Sickle Bolt: Reaper', '_Idle'] }),
+  koko: define({ name: 'SLUMBER', kind: 'spirit', aura: [0xd0a6ff, 0x2a1440], formScale: 1.5,
+    clips: ['SLUMBER', '_Idle'] }),
+  // Round 16. Kagari burns: the ALL ABLAZE is fire over his own body, so the
   // aura carries the flame while his hair retains its natural color.
-  kagari: define({ name: 'KAGUTSUCHI', kind: 'aura', aura: [0xffb347, 0xff3d00],
-    flames: true, clips: ['opening', 'flagget', '_Idle'] }),
-  ward: define({ name: 'OPERATING THEATRE', kind: 'aura', aura: [0x7fe0ff, 0x1a3fa0],
-    clips: ['opening', 'flagget', '_Idle'] }),
+  kagari: define({ name: 'ALL ABLAZE', kind: 'aura', aura: [0xffb347, 0xff3d00],
+    flames: true, clips: ['intro', 'awaken_in', '_Idle'] }),
+  ward: define({ name: 'SCRUBBED IN', kind: 'aura', aura: [0x7fe0ff, 0x1a3fa0],
+    clips: ['intro', 'awaken_in', '_Idle'] }),
   kuon: define({ name: 'TENGAN', kind: 'aura', aura: [0x9fe8ff, 0x2a5fd0],
     clips: ['_Idle'] }),
-  // LORD ORO the same: he fights on, and HUSH looms over him in gold - the
+  // LORD ORO the same: he fights on, and SLUMBER looms over him in gold - the
   // same shape as KoKo's spirit, drawn by the same effects class.
   oro: define({ name: 'MIDNIGHT', kind: 'spirit', aura: [0xffe27a, 0x8a5a10], formScale: 1.5,
     clips: ['MIDNIGHT', '_Idle'] }),
-  // The HOUND ARMOR: a body of its own, bound to his skeleton so it
+  // The GRAVE PLATE: a body of its own, bound to his skeleton so it
   // fights his clips (scripts/build_gaunt.py).
-  gaunt: define({ name: 'HOUND ARMOR', kind: 'form', aura: [0xff2a2a, 0x2b0000], formScale: 1.02,
+  gaunt: define({ name: 'GRAVE PLATE', kind: 'form', aura: [0xff2a2a, 0x2b0000], formScale: 1.02,
     clips: ['Hound Rampage', '_Idle'] }),
   setsu: define({ name: 'SETSUNA', kind: 'aura', aura: [0xbfe6ff, 0x3a6fff],
     clips: ['_Idle'] }),
@@ -233,7 +234,7 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
     flames: true, auraGlow: .3, clips: ['awaken-dorado', '_Idle'] }),
   shiun: define({ name: 'PALE SERAPH', kind: 'form', aura: [0xb070ff, 0x24083f], formScale: 1.08,
     clips: ['awaken-pale-gem', '_Idle'] }),
-  magatsu: define({ name: 'CALAMITY KING', kind: 'form', aura: [0xff2a3a, 0x1c0204], formScale: 1.24,
+  magatsu: define({ name: 'CALAMITY RISEN', kind: 'form', aura: [0xff2a3a, 0x1c0204], formScale: 1.24,
     clips: ['awaken-shrine', '_Idle'] }),
   vesper: define({ name: 'BLACK VESPERS', kind: 'form', aura: [0xe8e0ff, 0x4a2a8a], formScale: 1.1,
     clips: ['awaken-black-vespers', '_Idle'] }),
@@ -242,20 +243,20 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
   imago: define({ name: 'SWARM ASCENDANT', kind: 'aura', aura: [0x7affa8, 0x1ab866],
     flames: true, auraGlow: .3, clips: ['awaken-swarm', '_Idle'] }),
   // The shop's power-ups burn as Taisei's and Ouga's do (3 October): Wuming's Rose,
-  // Jirenga at full power, Gohaku's Beast, Imago reborn and Asahi breathing
+  // Banjaku at full power, Gohaku's Beast, Imago reborn and Asahi breathing
   // the Sun are each the same body with the power pouring off it, so their aura
   // burns as flames over the colour (`flames`), where before it was a glow.
-  // Wuming goes LOTUS IN FLAME: the smug turn of his hand, his black
+  // Wuming goes JADE PYRE: the smug turn of his hand, his black
   // hair pink (the crown tint, as Taisei's gold), and a rose aura round him.
-  'wuming': define({ name: 'LOTUS IN FLAME', kind: 'aura', aura: [0xff6ad8, 0xc8208c], hair: 0xff6ad8,
-    flames: true, auraGlow: .3, clips: ['awaken-rose', '_Idle'] }),
-  // Jirenga at full power: the crossed-arm stare, and red blazing up round him (the move card's).
-  jirenga: define({ name: 'WRATHFUL GUARDIAN', kind: 'aura', aura: [0xff5a3a, 0xc8101e],
+  'wuming': define({ name: 'JADE PYRE', kind: 'aura', aura: [0xff6ad8, 0xc8208c], hair: 0xff6ad8,
+    flames: true, auraGlow: .3, clips: ['awaken-jade', '_Idle'] }),
+  // Banjaku at full power: the crossed-arm stare, and red blazing up round him (the move card's).
+  banjaku: define({ name: 'WRATHFUL GUARDIAN', kind: 'aura', aura: [0xff5a3a, 0xc8101e],
     flames: true, auraGlow: .3, clips: ['awaken-wrathful-guardian', '_Idle'] }),
-  // Emperor Jinlin goes further (3 October): his arms spread wide and he wakes as BLACK TIDE - his own body with
+  // Jinlin goes further (3 October): his arms spread wide and he wakes as ABYSSAL TIDE - his own body with
   // the gold of his plates gone glossy black and his gems magenta (jinlin-black1.glb,
   // scripts/economy/recolor_form.py), under a violet aura.
-  'jinlin': define({ name: 'BLACK TIDE', kind: 'form', aura: [0xf0d4ff, 0x7a2bd8], formScale: 1,
+  'jinlin': define({ name: 'ABYSSAL TIDE', kind: 'form', aura: [0xf0d4ff, 0x7a2bd8], formScale: 1,
     clips: ['awaken-jinlin', '_Idle'] }),
   // Gohaku: the roar he wakes it with, and white light round him with red-violet in it.
   // His body is the Beast's, silver hair and all: before, he woke from Beast into Beast ("the hair gets bigger and
@@ -295,11 +296,11 @@ export const AWAKENINGS: Record<FighterId, AwakeningDefinition> = {
 /** What the transformation changes about a move.
  *
  *  The spirit fighters replace their ultimates; Kurobi has his own move names
- *  and keeps his native attack timing. HUSH *is* the awakening,
+ *  and keeps his native attack timing. SLUMBER *is* the awakening,
  *  so awakened it stops being two hits with a pause in the middle and becomes
  *  what the scene is - time stops, the spirit empties a barrage into someone
  *  who cannot move, and the damage lands when the clock starts again. LORD ORO's
- *  is the mirror of KoKo's, with the steamroller as the finisher. Hawser's
+ *  is the mirror of KoKo's, with the hour of ruin as the finisher. Hawser's
  *  YUGE throws a kit that is all its own (COLOSSUS, below). Everyone
  *  else's awakened ultimate is the same move thrown by a stronger fighter,
  *  which the damage multiplier already covers. */
@@ -321,7 +322,7 @@ export const AWAKENED_MOVES: Partial<Record<FighterId, Partial<Record<AttackSlot
     // bite at the same share of it.
     heavy:{name:'Homura Fang',duration:.78,contacts:[.37],cooldown:1.1,lunge:8,lungeDelay:0,chargeIn:undefined,palmHold:undefined,lockAim:undefined},
     special:{name:'Foxfire Blast'},
-    ultimate:{name:'Kitsunebi-Dama'},
+    ultimate:{name:'Azure Foxfire'},
   },
   // Round 4b (GUMMY): in SUNRISE the barrage is a dawn barrage - his fists
   // blown up and hardened in Will, the barrage that put Saturn through the
@@ -349,7 +350,7 @@ export const AWAKENED_MOVES: Partial<Record<FighterId, Partial<Record<AttackSlot
   },
   oro: {
     ultimate: {
-      // A quarter of a second past KoKo's, for the steamroller (moves.ts).
+      // A quarter of a second past KoKo's, for the hour of ruin (moves.ts).
       duration: 4.35, contacts: [.58, 1, 1.15, 1.3, 1.45, 1.6, 1.75, 1.9, 2.05, 2.2, 2.35, 2.5, 2.65, 2.8, 2.95, 3.3],
       damage: 34, finisherDamage: 242, stun: .2, finisherStun: 2.3,
       knockback: 2, finisherKnockback: 18,

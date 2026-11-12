@@ -6,7 +6,7 @@ import {loomTop} from './loomRegistry';
 import {MOVES,RUSH_STAGES} from '../game/moves';
 import {HIT_FOR,type PlayKind} from './CameraBrain';
 import {TIME_STOP_TOURS} from '../game/timeStopBarrage';
-import {rollerAt,ROLLER_TIMING} from './signature/Steamroller';
+import {rollerAt,ROLLER_TIMING} from './signature/HourOfRuin';
 import type {Fighter} from './Fighter';
 import type {CombatEvent,FighterId} from '../game/types';
 import {LUCY_TIDE,tideColumn} from '../originals/lucyTide';
@@ -106,7 +106,7 @@ const SWING_CLEAR=1.1;
  *  swings in over at least IMPACT_IN, timed the same way. Only within
  *  IMPACT_RANGE. */
 const IMPACT_ANGLE=1.15,IMPACT_WIDE=1.6,IMPACT_R=3.4,IMPACT_EYE=.3,IMPACT_FOV=48,IMPACT_HOLD=.45,IMPACT_OUT=.6,IMPACT_IN=.3,IMPACT_CARRY=.9,IMPACT_RANGE=24;
-/** Round 3 (TIMESTOP): HUSH, MIDNIGHT and PLANETARIUM are a tour of a
+/** Round 3 (TIMESTOP): SLUMBER, MIDNIGHT and PLANETARIUM are a tour of a
  *  stopped field - the user crosses it to each opponent the stop caught
  *  (src/game/timeStopBarrage.ts) - so after the close-up their second shot is
  *  not the release over the shoulder but the field itself: the lens craned
@@ -125,8 +125,8 @@ const IMPACT_ANGLE=1.15,IMPACT_WIDE=1.6,IMPACT_R=3.4,IMPACT_EYE=.3,IMPACT_FOV=48
  *  one alone gets the impact shot, as any ultimate's victim does. */
 const WORLD_UP=new THREE.Vector3(0,1,0);
 const FIELD_R=3.6,FIELD_SPREAD=.85,FIELD_NEAREST=4.4,FIELD_EYE=.52,FIELD_TOWARD=.4,FIELD_EASE=5,FIELD_DRIFT=.1,FIELD_PUSH=.14,FIELD_FOV=48,FIELD_FOV_MOST=68,FIELD_REACH=13,FIELD_MARGIN=.84,TOUR_LINGER=.85,TOUR_SWING=.75,TOUR_HOLD_LEAST=.2;
-/** The steamroller's top over its own base (its roof, 2.15 m of its model
- *  drawn 1.5x: signature/Steamroller), and how long the field takes to open
+/** The hour of ruin's top over its own base (its roof, 2.15 m of its model
+ *  drawn 1.5x: signature/HourOfRuin), and how long the field takes to open
  *  for it once it comes into the stop. */
 const ROLLER_TOP=3.25,ROLLER_EASE=.45;
 /** An ultimate whose charge gathers over the caster (the move data's
@@ -424,21 +424,21 @@ const BYSTANDER_CLEAR=1.25;
  *  Ikazuchi Arrow's Guardian (NinjaEffects): GUARDIAN_BACK behind the unawakened
  *  caster along his facing, GUARDIAN_HEIGHT tall and GUARDIAN_RADIUS round its
  *  body (measured in the client: 4.2 m tall, 2.8 m across the shoulders), up
- *  for GUARDIAN_FOR seconds. The GRAND TIDE's fist (GummyEffects, GiantFist; round
- *  4b): hung knuckles down GRAND_TIDE_OVER over the held victim's head from
- *  GRAND_TIDE_FROM, blown up to GRAND_TIDE_BIG times the Taimatsu fist (GRAND_TIDE_SMALL
- *  first), a capsule GRAND_TIDE_BODY of that round and GRAND_TIDE_TALL of it tall; it
- *  is driven down onto them from GRAND_TIDE_DRIVE, when it stops being anything
+ *  for GUARDIAN_FOR seconds. The SPRING TIDE's fist (GummyEffects, GiantFist; round
+ *  4b): hung knuckles down SPRING_TIDE_OVER over the held victim's head from
+ *  SPRING_TIDE_FROM, blown up to SPRING_TIDE_BIG times the Taimatsu fist (SPRING_TIDE_SMALL
+ *  first), a capsule SPRING_TIDE_BODY of that round and SPRING_TIDE_TALL of it tall; it
+ *  is driven down onto them from SPRING_TIDE_DRIVE, when it stops being anything
  *  but the blow. Banquet Infernal (GummyEffects): Kosho burning,
  *  HELL_RADIUS round and HELL_HEIGHT tall. And Kurobi's own body (FOX_BODY)
- *  for the Kitsunebi-Dama it throws. */
+ *  for the Azure Foxfire it throws. */
 // Round 3d (ULTS): read off the moves rather than repeated - the Guardian is
-// up for Ikazuchi Arrow's length, and the GRAND TIDE is the finisher of a
+// up for Ikazuchi Arrow's length, and the SPRING TIDE is the finisher of a
 // hit-confirm ultimate: its fist inflates over the held victim from just
 // after the opener and is driven down over the last 0.24 s (GummyEffects).
-const GRAND_TIDE_AT=MOVES.gummy.ultimate.contacts[MOVES.gummy.ultimate.contacts.length-1];
+const SPRING_TIDE_AT=MOVES.gummy.ultimate.contacts[MOVES.gummy.ultimate.contacts.length-1];
 const GUARDIAN_BACK=.35,GUARDIAN_HEIGHT=4.3,GUARDIAN_RADIUS=1.35,GUARDIAN_FOR=MOVES.shiden.ultimate.duration;
-const GRAND_TIDE_FROM=MOVES.gummy.ultimate.contacts[0]+.3,GRAND_TIDE_DRIVE=GRAND_TIDE_AT-.24,GRAND_TIDE_SMALL=.35,GRAND_TIDE_BIG=2,GRAND_TIDE_OVER=.08,GRAND_TIDE_BODY=.75,GRAND_TIDE_TALL=1.8;
+const SPRING_TIDE_FROM=MOVES.gummy.ultimate.contacts[0]+.3,SPRING_TIDE_DRIVE=SPRING_TIDE_AT-.24,SPRING_TIDE_SMALL=.35,SPRING_TIDE_BIG=2,SPRING_TIDE_OVER=.08,SPRING_TIDE_BODY=.75,SPRING_TIDE_TALL=1.8;
 const HELL_RADIUS=.8,HELL_HEIGHT=2.3;
 /** Kurobi (awakened Konta's form, formForward -3.2 and 1.8x): 3 m tall, its
  *  body reaching some 4.5 m behind the root before the tails (measured in the
@@ -493,7 +493,7 @@ export function bodyBulk(state:{fighter:FighterId;awakened?:boolean}){
   return state.fighter==='konta'?8/4.5:state.fighter==='shiden'||state.fighter==='shirokane'?7.5/4.5:1;
 }
 /** How big a body is as drawn: its own size, or - while its own model is
- *  hidden behind a form it shows outside the awakening (Gummy's GRAND TIDE
+ *  hidden behind a form it shows outside the awakening (Gummy's SPRING TIDE
  *  is thrown as SUNRISE) - the form's, as though awakened. (Framed at its own
  *  size, Full Swell's arm once filled the whole release shot.) */
 export function drawnBulk(body:{state:{fighter:FighterId;awakened?:boolean;alive?:boolean};model?:{visible:boolean}}){
@@ -1259,7 +1259,7 @@ export class CameraDirector {
     // The tangent of the half-height that holds them all, with FIELD_MARGIN of it to spare.
     return THREE.MathUtils.radToDeg(2*Math.atan(this.holdNeed/FIELD_MARGIN));
   }
-  /** Round 3b: MIDNIGHT's steamroller (signature/Steamroller), held over the
+  /** Round 3b: MIDNIGHT's hour of ruin (signature/HourOfRuin), held over the
    *  victim for the last second of the stop and crushing them on the
    *  finisher, is framed too - it hung above the top of the field shot until
    *  the slam. Taken in over ROLLER_EASE as it comes into the stop, so the
@@ -1859,8 +1859,8 @@ export class CameraDirector {
     const p=subject.group.position,own=subject.joints?.get('Head'),point=this.awakenPoint;
     if(own)own.getWorldPosition(this.awakenOwn);else this.awakenOwn.set(p.x,p.y+1.62,p.z);
     point.copy(this.awakenOwn);
-    // A form standing in for the body (Full Swell, NIGHTFALL, RAKSHASA, the
-    // HOUND ARMOR, Kurobi), gone over to round the swap (see
+    // A form standing in for the body (Full Swell, NIGHTFALL, DUNE ONI, the
+    // GRAVE PLATE, Kurobi), gone over to round the swap (see
     // AWAKEN_FORM_LEAD): its head bone, found under the fighter but not under
     // the fighter's own model - there while the form is hidden, in its rest
     // pose - raised to the fighter's own height if it is lower (the fox prowls).
@@ -2057,18 +2057,18 @@ export class CameraDirector {
       // Kurobi: the fox's body, carried behind Konta's root (formForward),
       // as two lengths of it; its tails beyond fade near the lens on their own.
       if(s.fighter==='konta')for(const back of FOX_BODY){const v=this.nextSummon();v.x=p.x-fx*back;v.z=p.z-fz*back;v.y0=p.y+FOX_RADIUS;v.y1=p.y+FOX_TOP-FOX_RADIUS;v.radius=FOX_RADIUS;}
-      if(s.fighter==='gummy')this.grandTideFist(s,age,p);
+      if(s.fighter==='gummy')this.springTideFist(s,age,p);
       return;
     }
     if(s.fighter==='shiden'&&age<GUARDIAN_FOR){
       const v=this.nextSummon();v.x=p.x-fx*GUARDIAN_BACK;v.z=p.z-fz*GUARDIAN_BACK;v.y0=p.y+GUARDIAN_RADIUS;v.y1=p.y+GUARDIAN_HEIGHT-GUARDIAN_RADIUS;v.radius=GUARDIAN_RADIUS;
     }else if(s.fighter==='kosho'){
       const v=this.nextSummon();v.x=p.x;v.z=p.z;v.y0=p.y+HELL_RADIUS;v.y1=p.y+HELL_HEIGHT-HELL_RADIUS;v.radius=HELL_RADIUS;
-    }else if(s.fighter==='gummy')this.grandTideFist(s,age,p);
+    }else if(s.fighter==='gummy')this.springTideFist(s,age,p);
   }
-  /** Round 4b (GUMMY): the GRAND TIDE's fist over the held victim, knuckles down and its bulk toward the caster
+  /** Round 4b (GUMMY): the SPRING TIDE's fist over the held victim, knuckles down and its bulk toward the caster
    *  (at `from`), until it is driven down through them. */
-  private grandTideFist(s:{confirmedAt?:number},age:number,from:THREE.Vector3){
+  private springTideFist(s:{confirmedAt?:number},age:number,from:THREE.Vector3){
     const t=this.releaseVictim?.state.alive?this.releaseVictim.group.position:undefined;
     if(LUCY_TIDE){
       const column=tideColumn(age);if(s.confirmedAt===undefined||!t||!column)return;
@@ -2077,11 +2077,11 @@ export class CameraDirector {
       const wave=this.nextSummon();wave.radius=1.3;wave.x=t.x+ax*column.back;wave.z=t.z+az*column.back;wave.y0=t.y+1.4;wave.y1=t.y+column.height;
       return;
     }
-    if(s.confirmedAt===undefined||!t||age<GRAND_TIDE_FROM||age>=GRAND_TIDE_AT)return;
-    const size=GRAND_TIDE_SMALL+(GRAND_TIDE_BIG-GRAND_TIDE_SMALL)*THREE.MathUtils.smoothstep(age,GRAND_TIDE_FROM,GRAND_TIDE_DRIVE-.05);
+    if(s.confirmedAt===undefined||!t||age<SPRING_TIDE_FROM||age>=SPRING_TIDE_AT)return;
+    const size=SPRING_TIDE_SMALL+(SPRING_TIDE_BIG-SPRING_TIDE_SMALL)*THREE.MathUtils.smoothstep(age,SPRING_TIDE_FROM,SPRING_TIDE_DRIVE-.05);
     let ax=from.x-t.x,az=from.z-t.z;const l=Math.hypot(ax,az)||1;ax/=l;az/=l;
-    const v=this.nextSummon();v.radius=size*GRAND_TIDE_BODY;v.x=t.x+ax*v.radius*.6;v.z=t.z+az*v.radius*.6;
-    v.y0=t.y+1.9+GRAND_TIDE_OVER+v.radius;v.y1=v.y0+size*GRAND_TIDE_TALL;
+    const v=this.nextSummon();v.radius=size*SPRING_TIDE_BODY;v.x=t.x+ax*v.radius*.6;v.z=t.z+az*v.radius*.6;
+    v.y0=t.y+1.9+SPRING_TIDE_OVER+v.radius;v.y1=v.y0+size*SPRING_TIDE_TALL;
   }
   private nextSummon(){return this.summons[Math.min(this.summonCount++,this.summons.length-1)];}
   /** Round 3c: sample the caster as drawn (see CASTER_POINTS), at most every

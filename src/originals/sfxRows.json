@@ -15,7 +15,7 @@
     "what": "A star pulled out of the sky: a roar coming down for two seconds and the impact of a falling world.",
     "cast": [
      [
-      "fx-sig-akagane-heavens-anvil",
+      "fx-sig-akagane-copper-star",
       0.6,
       "contact"
      ]
@@ -86,7 +86,7 @@
     "what": "The drowned sun: water swelling, then plunged down in a detonation of sea.",
     "cast": [
      [
-      "fx-sig-emperor-jinlin-drowned-sun",
+      "fx-sig-jinlin-drowned-sun",
       0.55,
       "contact"
      ]
@@ -96,7 +96,7 @@
     "what": "A needle of light off one finger: a blaster's shot with a glint in it.",
     "cast": [
      [
-      "fx-sig-emperor-jinlin-pearl-needle",
+      "fx-sig-jinlin-pearl-needle",
       0.45,
       "contact"
      ]
@@ -259,12 +259,12 @@
     ]
    }
   },
-  "jirenga": {
+  "banjaku": {
    "ultimate": {
     "what": "A punch with a thousand years of stillness behind it: one stone's click in the quiet, then a mountain split.",
     "cast": [
      [
-      "fx-sig-jirenga-mountain-felling",
+      "fx-sig-banjaku-mountain-felling",
       0.6,
       "contact"
      ]
@@ -274,7 +274,7 @@
     "what": "A temple seal stamped: a taiko's double strike, a stone's knock and a temple bell.",
     "hit": [
      [
-      "fx-sig-jirenga-vermilion-seal",
+      "fx-sig-banjaku-vermilion-seal",
       0.5
      ]
     ]
@@ -307,7 +307,7 @@
     "what": "The gilded spirit's barrage: fists in a blur over a clockwork tick, the last one hardest.",
     "cast": [
      [
-      "fx-sig-lord-oro-noroma-barrage",
+      "fx-sig-lord-oro-clockwork-barrage",
       0.36,
       "contact"
      ]
@@ -326,10 +326,10 @@
   },
   "magatsu": {
    "ultimate": {
-    "what": "The carrion altar raised: a vast low boom, a temple bell tolling and bones. / A thousand cuts: blades slicing in a blur.",
+    "what": "The carrion field raised: a vast low boom, a temple bell tolling and bones. / A thousand cuts: blades slicing in a blur.",
     "cast": [
      [
-      "fx-sig-magatsu-carrion-altar",
+      "fx-sig-magatsu-carrion-field",
       0.4,
       0
      ],
@@ -390,7 +390,7 @@
     "what": "A black sun catching on its target: a heavy dark ignition and a burning that does not go out.",
     "hit": [
      [
-      "fx-sig-shiden-black-sun",
+      "fx-sig-shiden-hawk-pyre",
       0.5
      ]
     ]
@@ -409,7 +409,7 @@
     "what": "Lightning in the hand with a real hawk's shriek riding the crackle, building to its burst.",
     "cast": [
      [
-      "fx-sig-shiden-shrike-bolt",
+      "fx-sig-shiden-storm-talon",
       0.45,
       "contact"
      ]
@@ -421,24 +421,24 @@
     "what": "The copy shattering like a mirror: a pane breaking and a ghostly breath.",
     "cast": [
      [
-      "fx-sig-shiun-false-encore",
+      "fx-sig-shiun-understudy",
       0.45,
       "contact"
      ]
     ]
    },
    "ultimate": {
-    "what": "Hymn 40: an organ's chord as the reliquary closes round them, its lid slamming down.",
+    "what": "Fermata: an organ's chord as the reliquary closes round them, its lid slamming down.",
     "cast": [
      [
-      "fx-sig-shiun-black-confessional",
+      "fx-sig-shiun-fermata",
       0.55,
       "contact"
      ]
     ]
    },
    "special": {
-    "what": "Hymn 12: an organ's chord and a volley of lances of light loosed one after another.",
+    "what": "Stained-Glass Lances: an organ's chord and a volley of lances of light loosed one after another.",
     "cast": [
      [
       "fx-sig-shiun-glass-lances",
@@ -557,10 +557,10 @@
     ]
    },
    "ultimate": {
-    "what": "The offering: two slow heartbeats, a church bell tolling and everything falling away.",
+    "what": "Evensong: two slow heartbeats, a church bell tolling and everything falling away.",
     "cast": [
      [
-      "fx-sig-vesper-the-offering",
+      "fx-sig-vesper-evensong",
       0.5,
       "contact"
      ]
@@ -582,7 +582,7 @@
     "what": "A blade of light: a slash, an energy weapon's edge in it and cloth flicking after.",
     "cast": [
      [
-      "fx-sig-wuming-petalfall-blade",
+      "fx-sig-wuming-lotus-edge",
       0.45,
       "contact"
      ]
@@ -594,7 +594,7 @@
   "jinlin": {
    "cast": [
     [
-     "fx-sig-emperor-jinlin-dragon-gate-disc",
+     "fx-sig-jinlin-dragon-gate-disc",
      0.45,
      "contact"
     ]
@@ -696,7 +696,7 @@
   "shiden": {
    "cast": [
     [
-     "fx-sig-shiden-thunderball",
+     "fx-sig-shiden-hawkstorm",
      0.5,
      "contact"
     ]
@@ -706,7 +706,7 @@
   "shirokane": {
    "cast": [
     [
-     "fx-sig-shirokane-dust-fall",
+     "fx-sig-shirokane-dust-curtain",
      0.5,
      "contact"
     ]
@@ -789,7 +789,7 @@
   ],
   "gaunt": [
    [
-    "fx-sig-gaunt-hound-armor",
+    "fx-sig-gaunt-grave-plate",
     0.5
    ]
   ],
@@ -805,9 +805,9 @@
     0.5
    ]
   ],
-  "jirenga": [
+  "banjaku": [
    [
-    "fx-sig-jirenga-wrathful-guardian",
+    "fx-sig-banjaku-wrathful-guardian",
     0.5
    ]
   ],
@@ -857,11 +857,11 @@
  "special": [
   {
    "slot": "akaito",
-   "cue": "fx-sig-akaito-pinky-promise",
-   "move": "swap (ultimate): Pinky Promise",
+   "cue": "fx-sig-akaito-fated-knot",
+   "move": "swap (ultimate): Fated Knot",
    "when": "contact",
    "gain": 0.45,
-   "what": "The pinky promise: the ghost bride's cry, a dark blast and a bell tree's shimmer.",
+   "what": "The fated knot: the red thread shade's cry, a dark blast and a bell tree's shimmer.",
    "swap": "fx-beam-big",
    "in": "ultimate"
   },
@@ -871,7 +871,7 @@
    "move": "swap: TILL DEATH",
    "when": "contact",
    "gain": 0.45,
-   "what": "TILL DEATH: a wedding bell struck once, the ghost bride rising and a bowl humming.",
+   "what": "TILL DEATH: a wedding bell struck once, the red thread shade rising and a bowl humming.",
    "swap": "fx-enter-cursed"
   },
   {
@@ -1081,11 +1081,11 @@
   },
   {
    "slot": "gosu",
-   "cue": "fx-sig-gosu-kin-kin",
-   "move": "swap (special): KIN KIN Barrage",
+   "cue": "fx-sig-gosu-gilt",
+   "move": "swap (special): GILT Barrage",
    "when": "contact",
    "gain": 0.45,
-   "what": "A blow in the KIN KIN barrage: a fist's swish with a golden glint and a chip of porcelain on it.",
+   "what": "A blow in the GILT Barrage: a fist's swish with a golden glint and a chip of porcelain on it.",
    "swap": "fx-swing-heavy-1|fx-swing-heavy-2",
    "in": "special"
   },
@@ -1102,7 +1102,7 @@
   {
    "slot": "hakushi",
    "cue": "fx-sig-hakushi-lions-breath",
-   "move": "swap (special): Cinder Art: Lion's Breath",
+   "move": "swap (special): Lion's Breath",
    "when": "contact",
    "gain": 0.45,
    "what": "The lion's breath: fire roared out, a lion's roar in it and a hot wind.",
@@ -1307,11 +1307,11 @@
   },
   {
    "slot": "kinu",
-   "cue": "fx-sig-kinu-buchi-buchi",
-   "move": "swap (special): BUCHI BUCHI Barrage",
+   "cue": "fx-sig-kinu-unspool",
+   "move": "swap (special): UNSPOOL Barrage",
    "when": "contact",
    "gain": 0.45,
-   "what": "A blow in the BUCHI BUCHI barrage: a fist's swish, a thread snapping off it.",
+   "what": "A blow in the UNSPOOL Barrage: a fist's swish, a thread snapping off it.",
    "swap": "fx-swing-jab-3|fx-swing-jab-1|fx-swing-jab-2|fx-swing-jab-4",
    "in": "special"
   },
@@ -1335,21 +1335,21 @@
   },
   {
    "slot": "kusushi",
-   "cue": "fx-sig-kusushi-double-or-nothing",
-   "move": "swap (ultimate): Double or Nothing",
+   "cue": "fx-sig-kusushi-bet-the-purse",
+   "move": "swap (ultimate): Bet the Purse",
    "when": "contact",
    "gain": 0.45,
-   "what": "Double or nothing: a slam with all she has, the chips scattering and a boom.",
+   "what": "Bet the Purse: a slam with all she has, the chips scattering and a boom.",
    "swap": "fx-hit-finisher-1|fx-hit-finisher-2",
    "in": "ultimate"
   },
   {
    "slot": "kusushi",
-   "cue": "fx-sig-kusushi-grand-champion",
-   "move": "swap: GRAND CHAMPION",
+   "cue": "fx-sig-kusushi-yokozuna",
+   "move": "swap: YOKOZUNA",
    "when": "contact",
    "gain": 0.45,
-   "what": "GRAND CHAMPION: the ring's taiko, a fistful of salt thrown and a gust.",
+   "what": "YOKOZUNA: the ring's taiko, a fistful of salt thrown and a gust.",
    "swap": "fx-enter-chi"
   },
   {
@@ -1393,8 +1393,8 @@
   },
   {
    "slot": "oro",
-   "cue": "fx-sig-lord-oro-death-knell-fall",
-   "move": "ultimate finisher: MIDNIGHT: Death Knell (the fall)",
+   "cue": "fx-sig-lord-oro-hour-of-ruin-fall",
+   "move": "ultimate finisher: MIDNIGHT: Hour of Ruin (the fall)",
    "when": "before the last blow",
    "gain": 0.55,
    "what": "The tower's great bell coming down: a long falling whistle and the air rushing ahead of it."
@@ -1950,7 +1950,7 @@
   {
    "slot": "yodaka",
    "cue": "fx-sig-yodaka-flaring-wings",
-   "move": "swap (special): Fourth Watch: Flaring Wings",
+   "move": "swap (special): Flaring Wings",
    "when": "contact",
    "gain": 0.45,
    "what": "Flaring wings: great wings beating, a torch swung and fire on the wind.",
@@ -1960,7 +1960,7 @@
   {
    "slot": "yodaka",
    "cue": "fx-sig-yodaka-nighthawk-star",
-   "move": "swap (ultimate): Ninth Watch: Nighthawk Star",
+   "move": "swap (ultimate): Nighthawk Star",
    "when": "contact",
    "gain": 0.45,
    "what": "The nighthawk star: a temple drum struck, fire bursting and a flame roaring.",

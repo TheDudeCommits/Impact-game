@@ -67,7 +67,7 @@ const FACE_AT: Partial<Record<FighterId, number>> = {
   taisei: .11, konta: .1, gummy: .11, kenzo: .075, kosho: .08, ouga: .24, shirokane: .11, shiden: .11,
   koko: .12, nigo: .1, kagari: .125, ward: .125, kuon: .115, oro: .1, gaunt: .18, setsu: .18,
   gorai: .17, haldor: .17, sorrel: .11, dorado: .11, shiun: .11, magatsu: .12,
-  vesper: .125, imago: .145, 'wuming': .17, jirenga: .13, 'jinlin': .15,
+  vesper: .125, imago: .145, 'wuming': .17, banjaku: .13, 'jinlin': .15,
   'gohaku': .24, ippon: .13, sekka: .12, tobari: .12, akagane: .155,
   asahi: .13, levin: .12, 'rook': .13, gaku: .2,
   // The mana four are drawn with room over their heads (their eyes a fifth to a quarter of the way down).
@@ -77,7 +77,7 @@ const FACE_AT: Partial<Record<FighterId, number>> = {
  * face, rather than the canvas, so narrow crowd cells never cut it in half. */
 const FACE_X: Partial<Record<FighterId,number>> = {
   gorai:48, haldor:44, sorrel:50, dorado:54, shiun:59, magatsu:48,
-  vesper:43, imago:41, 'wuming':49, jirenga:54, 'jinlin':51,
+  vesper:43, imago:41, 'wuming':49, banjaku:54, 'jinlin':51,
   'gohaku':48, ippon:38, sekka:53, tobari:45, akagane:55,
   asahi:53, levin:49, 'rook':50, gaku:50,
   cardo:45, bruin:48, aquilo:44, svanhild:49,

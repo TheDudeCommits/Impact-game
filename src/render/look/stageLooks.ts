@@ -1,5 +1,6 @@
 import type {BallArenaId} from '../../game/ball/arenas';
-import {ballArenaFor} from '../ball/arenaChoice';
+import {ballArenaFor,ballCourtFor} from '../ball/arenaChoice';
+import {CLASSIC_COURT,sameCourt} from '../../game/ball/model';
 import { roanLook } from './roanPass';
 import { powerupLook } from './powerupLook';
 import type { StageId } from '../../game/stages';
@@ -249,7 +250,7 @@ const dir = (x: number, y: number, z: number): Vec3 => {
  *  first; it lit the fighters more evenly but put the rays out of frame. */
 const HALL_KEY = dir(.3, .5, -.81);
 
-export const STAGE_LOOKS: Record<Exclude<StageId, `rift-${string}`|`ball-${string}`|'hidden-ash'|'blood-citadel'>, LookPreset> & Partial<Record<StageId, LookPreset>> = {
+export const STAGE_LOOKS: Record<Exclude<StageId, `rift-${string}`|`ball-${string}`|'ashwood'|'blood-citadel'>, LookPreset> & Partial<Record<StageId, LookPreset>> = {
   'proving-hall': {
     // Warmth only where the sun lands; the shade is a desaturated violet-grey,
     // and the key is strong enough that sunlit surfaces reach near-white gold
@@ -855,7 +856,7 @@ const RIFT_LOOKS: Record<'rift-village' | 'rift-swords' | 'rift-fortress' | 'rif
     room: { albedo: 1, key: .95 },
   },
   'rift-eclipse': {
-    // The Offering: a black sun in a ring of fire over a field of the dead.
+    // Dusk: a black sun in a ring of fire over a field of the dead.
     // Crimson light from the corona, violet fill, and the fighters rimmed red.
     key: { color: 0xff5a3a, intensity: 4, dir: dir(0, .36, 1) },
     hemi: { sky: 0x5a0a16, ground: 0x1a0406, intensity: 1 },
@@ -882,7 +883,7 @@ const RIFT_LOOKS: Record<'rift-village' | 'rift-swords' | 'rift-fortress' | 'rif
   },
 };
 Object.assign(STAGE_LOOKS, RIFT_LOOKS);
-STAGE_LOOKS['hidden-ash']={
+STAGE_LOOKS['ashwood']={
   ...STAGE_LOOKS.harbor,
   key:{color:0xffd4a3,intensity:2.8,dir:dir(-.65,.42,.6)},
   hemi:{sky:0xa9b7db,ground:0x716258,intensity:.6},
@@ -914,7 +915,7 @@ STAGE_LOOKS['blood-citadel']={
 // Open daylight keeps the three routes readable. Jade shade and ivory stone
 // distinguish the new valley from the village's warm, enclosed streets.
 STAGE_LOOKS['rift-war']={
-  ...STAGE_LOOKS['hidden-ash'],
+  ...STAGE_LOOKS['ashwood'],
   key:{color:0xffd9a3,intensity:3.1,dir:dir(-.55,.7,.42)},
   hemi:{sky:0xb8cbe7,ground:0x454c37,intensity:.6},
   fill:{color:0x90b8e1,intensity:.65,dir:dir(.7,.4,-.6)},
@@ -1008,5 +1009,18 @@ export function lookFor(stage: StageId): LookPreset {
   // ?look= over that (powerupLook.ts).
   // A ball stage is lit as the arena the match plays in.
   const arena = stage === 'ball-pitch' || stage === 'ball-court' ? BALL_ARENA_LOOKS[ballArenaFor(stage)] : undefined;
-  return originalLook(stage, powerupLook(stage, roanLook(stage, arena ?? STAGE_LOOKS[stage] ?? STAGE_LOOKS.harbor)));
+  const look = originalLook(stage, powerupLook(stage, roanLook(stage, arena ?? STAGE_LOOKS[stage] ?? STAGE_LOOKS.harbor)));
+  return stage === 'ball-court' && !sameCourt(ballCourtFor(), CLASSIC_COURT) ? volleyLook(look) : look;
+}
+
+/** So the fighters are not dark on the red-orange court - the volleyball rules' court only (its own court: arenaChoice
+ *  ballCourtFor): its camera films your side from behind (SpikeCam VOLLEY) and every arena's sun stands beyond the far
+ *  baseline, so your own fighters were seen from their unlit backs - dark shapes on the bright court - and the far side
+ *  from the front against the light. A fill from over the camera's shoulder lights both: VOLLEY_FILL's strength, the
+ *  key's colour taken `white` of the way to white, from `dir`; the sky's light under it `hemi` times as strong. The
+ *  sun, its shadows and the rims are the arena's. */
+export const VOLLEY_FILL = { intensity: 3.2, white: .55, dir: [.35, .6, -.72] as Vec3, hemi: 1.3 } as const;
+function volleyLook(look: LookPreset): LookPreset {
+  const k = look.key.color, w = VOLLEY_FILL.white, ch = (shift: number) => Math.round(((k >> shift) & 255) * (1 - w) + 255 * w) << shift;
+  return { ...look, fill: { color: ch(16) | ch(8) | ch(0), intensity: VOLLEY_FILL.intensity, dir: dir(...VOLLEY_FILL.dir) }, hemi: { ...look.hemi, intensity: look.hemi.intensity * VOLLEY_FILL.hemi } };
 }

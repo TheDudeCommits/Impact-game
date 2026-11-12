@@ -186,7 +186,7 @@ function siegeWreck(): RiftProp[] {
 function eclipse(): RiftProp[] {
   const r = rng(0x5eed4), props: RiftProp[] = [];
   // A ring round the altar where the sacrifice was made: stakes, each with
-  // its body (RiftStage draws the offering's 'stone' so), as wide as they stand.
+  // its body (RiftStage draws fallen-star's 'stone' so), as wide as they stand.
   for (let i = 0; i < 12; i++) {
     const a = i / 12 * Math.PI * 2, x = Math.sin(a) * 21, z = Math.cos(a) * 21;
     if (!clearOf(x, z, 4)) continue;

@@ -16,7 +16,7 @@
     "when": "never",
     "scale": "small",
     "anchor": "body",
-    "why": "No second aura: his awakening, the KAGUTSUCHI, already burns on him (its own aura and his arms and shoulders turned to fire)."
+    "why": "No second aura: his awakening, the ALL ABLAZE, already burns on him (its own aura and his arms and shoulders turned to fire)."
    },
    "light": {
     "pick": "emberflock",
@@ -99,7 +99,7 @@
     "on": "hit",
     "scale": "small",
     "anchor": "target",
-    "why": "A star-white flash, then a full-moon sword ring sweeps round the target: an effortless cut from False Encore, the water moon."
+    "why": "A star-white flash, then a full-moon sword ring sweeps round the target: an effortless cut from Understudy, the water moon."
    },
    "heavy": {
     "pick": "mirage",
@@ -109,7 +109,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "line",
-    "why": "Mirror-images of him flicker apart and the real one is somewhere else: False Encore, the perfect hypnosis."
+    "why": "Mirror-images of him flicker apart and the real one is somewhere else: Understudy, the perfect hypnosis."
    },
    "special": {
     "pick": "arcanevolley",
@@ -120,7 +120,7 @@
     "on": "cast",
     "scale": "large",
     "anchor": "line",
-    "why": "Seven bolts weave apart down the line and land on one point together: the converging light spears of Hymn 12, the Stained-Glass Lances."
+    "why": "Seven bolts weave apart down the line and land on one point together: the converging light spears of the Stained-Glass Lances."
    },
    "ultimate": {
     "pick": "seal_eboncoffin",
@@ -132,12 +132,12 @@
     "on": "release",
     "scale": "huge",
     "anchor": "target",
-    "why": "A black casket closes over the target in crawling script and spears of black energy drive through it: BLACK CONFESSIONAL, word for word."
+    "why": "A black casket closes over the target in crawling script and spears of black energy drive through it: FERMATA, word for word."
    }
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "No Armory effect builds BLACK CONFESSIONAL's black box with spears driven through it: nightfall is the closing dark, umbralspears (violet-rimmed, which suits him) are the spears, and a combined effect is missing. The nightfall still is mostly black on black, and the efk_moonedge still caught its ring off frame. sam_shadows already ships violet. 11 Oct: ultimate now seal_eboncoffin (the Armory's seals and strings, made for this). 11 Oct: heavy was sam_shadows, which the Armory's licence map (LICENSES.json) keeps out of Jump.",
+  "notes": "No Armory effect builds FERMATA's black box with spears driven through it: nightfall is the closing dark, umbralspears (violet-rimmed, which suits him) are the spears, and a combined effect is missing. The nightfall still is mostly black on black, and the efk_moonedge still caught its ring off frame. sam_shadows already ships violet. 11 Oct: ultimate now seal_eboncoffin (the Armory's seals and strings, made for this). 11 Oct: heavy was sam_shadows, which the Armory's licence map (LICENSES.json) keeps out of Jump.",
   "by": "casting agent batch 3",
   "at": "2026-10-11"
  },
@@ -352,7 +352,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "line",
-    "why": "Blasts walk down the line one after another, each bigger than the last, the long-range air punches of Shatter Art: Frost Gale."
+    "why": "Blasts walk down the line one after another, each bigger than the last, the long-range air punches of Frost Gale."
    },
    "ultimate": {
     "pick": "thunderclap",
@@ -363,7 +363,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "target",
-    "why": "Shatter Art: Black Blizzard: a white flash and a dome, a beat of nothing, then the pressure front of one killing punch."
+    "why": "Black Blizzard: a white flash and a dome, a beat of nothing, then the pressure front of one killing punch."
    }
   },
   "moveIdeas": [],
@@ -800,7 +800,7 @@
     "on": "hit",
     "scale": "medium",
     "anchor": "target",
-    "why": "Left to the game: the Stolen Quake is staged by his module (MoveStage: the quake's bubble shaking on the limb through the wind-up, then the air broken like glass across the victim and a ring over the floor). The Armory's picks came late or in the wrong colour: efk_goldencrash is a gold flash (an Effekseer effect takes no palette), blade_quake burst 0.9-1.4 s after the blow and pink (fx_presence, 12 October 2026). They stay as alternates."
+    "why": "Left to the game: the Wreck Quake is staged by his module (MoveStage: the quake's bubble shaking on the limb through the wind-up, then the air broken like glass across the victim and a ring over the floor). The Armory's picks came late or in the wrong colour: efk_goldencrash is a gold flash (an Effekseer effect takes no palette), blade_quake burst 0.9-1.4 s after the blow and pink (fx_presence, 12 October 2026). They stay as alternates."
    },
    "special": {
     "pick": null,
@@ -812,7 +812,7 @@
     "on": "hit",
     "scale": "large",
     "anchor": "target",
-    "why": "Left to the game: Sinkhole is staged by his module (MoveStage: the darkness poured over the floor round him through the wind-up, a black ball dragging black flame with the floor swallowed under it, and where it lands a four-metre pool turning under a column of black flame, with Wrecker's Haul's vortex drawing in). p27_gravity never became visible in the game (launch night); singularity added a few orbiting rocks 0.4 s after the blow and nothing of its black disc read beside the stage's (fx_presence, 12 October 2026). They stay as alternates."
+    "why": "Left to the game: Tar Pit is staged by his module (MoveStage: the darkness poured over the floor round him through the wind-up, a black ball dragging black flame with the floor swallowed under it, and where it lands a four-metre pool turning under a column of black flame, with Wrecker's Haul's vortex drawing in). p27_gravity never became visible in the game (launch night); singularity added a few orbiting rocks 0.4 s after the blow and nothing of its black disc read beside the stage's (fx_presence, 12 October 2026). They stay as alternates."
    },
    "ultimate": {
     "pick": null,
@@ -830,7 +830,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "extd_astralvoid (Astral Void Blast) would be the closest Sinkhole, but its licence is not cleared, so it is not picked. The singularity and efk_azureblow stills are blank, so both are judged from blurbs. The BarrowEmperor signature already draws the voids, fractures and quake rings; these picks layer under it. ext_aura_magic's skin veins and scan band are off and its glow kept low, so the darkness doesn't wash him white. Launch day (12 October 2026): on the live list; the four moves are staged by BarrowEmperor with the shared MoveStage (docs/engine/VFX_BAR.md), which draws both fruits at the originals' size from the gameplay camera, so every move slot is left to it and the Armory picks stay as alternates.",
+  "notes": "extd_astralvoid (Astral Void Blast) would be the closest Tar Pit, but its licence is not cleared, so it is not picked. The singularity and efk_azureblow stills are blank, so both are judged from blurbs. The BarrowEmperor signature already draws the voids, fractures and quake rings; these picks layer under it. ext_aura_magic's skin veins and scan band are off and its glow kept low, so the darkness doesn't wash him white. Launch day (12 October 2026): on the live list; the four moves are staged by BarrowEmperor with the shared MoveStage (docs/engine/VFX_BAR.md), which draws both fruits at the originals' size from the gameplay camera, so every move slot is left to it and the Armory picks stay as alternates.",
   "by": "casting agent batch 3",
   "at": "2026-10-11"
  },
@@ -1164,7 +1164,7 @@
    "core": "#f0fff2",
    "main": "#3cf07a",
    "rim": "#0c7a3d",
-   "note": "Inheritance green sparks."
+   "note": "Last Watch green sparks."
   },
   "slots": {
    "body": {
@@ -1318,7 +1318,7 @@
    "core": "#fff4cc",
    "main": "#f0bd24",
    "rim": "#3b2604",
-   "note": "HUSH's gold, matching the spirit's #d9b53c fist and gold glow; the time stop stays the engine's two-tone"
+   "note": "SLUMBER's gold, matching the spirit's #d9b53c fist and gold glow; the time stop stays the engine's two-tone"
   },
   "slots": {
    "body": {
@@ -1329,7 +1329,7 @@
     "when": "never",
     "scale": "small",
     "anchor": "body",
-    "why": "None: awakened, HUSH already looms over him, and an Armory aura would fight the spirit's silhouette."
+    "why": "None: awakened, SLUMBER already looms over him, and an Armory aura would fight the spirit's silhouette."
    },
    "light": {
     "pick": "efk_goldencrash",
@@ -1340,7 +1340,7 @@
     "on": "hit",
     "scale": "small",
     "anchor": "target",
-    "why": "A golden shock dome cracks open on the hit, rayed with light: one HUSH punch landing."
+    "why": "A golden shock dome cracks open on the hit, rayed with light: one SLUMBER punch landing."
    },
    "heavy": {
     "pick": "sam_flightblades",
@@ -1365,7 +1365,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Alternating afterimage fists hammer the target, then a straight blasts a shock cone: NOROMA NOROMA GILDED PUNCH."
+    "why": "Alternating afterimage fists hammer the target, then a straight blasts a shock cone: TICK TOCK GILDED PUNCH."
    },
    "ultimate": {
     "pick": "seal_timestop",
@@ -1380,12 +1380,12 @@
     "on": "cast",
     "scale": "huge",
     "anchor": "body",
-    "why": "A colour-inverted sphere bursts out of him and the world freezes grey: MIDNIGHT, before the steamroller falls."
+    "why": "A colour-inverted sphere bursts out of him and the world freezes grey: MIDNIGHT, before the hour of ruin falls."
    }
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "Steamroller.ts already drops the real steamroller and GameRenderer already renders the two-tone time stop, so the ultimate gets the frozen-panes beat instead of a second falling object. chronofracture's rune seal on the floor is off: MIDNIGHT has no runes. anvilfall (a machined slab dropped from the sky that dents the floor and stays) is the Armory's steamroller stand-in if wanted; its engine still caught only dust. efk_goldencrash's engine still is off-frame; the top-level capture shows the rayed dome. SwordSpiritEffects already throws the knife mesh, and sam_flightblades adds the halo-then-volley read. extra_rush is shared by all three spirit users on purpose: the spirit's rush is their shared look, and the palettes split them. Its fire element is switched to plain so the finisher is a punch, not a fireball. 11 Oct: ultimate now seal_timestop (the Armory's seals and strings, made for this).",
+  "notes": "HourOfRuin.ts already drops the real hour of ruin and GameRenderer already renders the two-tone time stop, so the ultimate gets the frozen-panes beat instead of a second falling object. chronofracture's rune seal on the floor is off: MIDNIGHT has no runes. anvilfall (a machined slab dropped from the sky that dents the floor and stays) is the Armory's hour of ruin stand-in if wanted; its engine still caught only dust. efk_goldencrash's engine still is off-frame; the top-level capture shows the rayed dome. SwordSpiritEffects already throws the knife mesh, and sam_flightblades adds the halo-then-volley read. extra_rush is shared by all three spirit users on purpose: the spirit's rush is their shared look, and the palettes split them. Its fire element is switched to plain so the finisher is a punch, not a fireball. 11 Oct: ultimate now seal_timestop (the Armory's seals and strings, made for this).",
   "by": "casting agent batch 5",
   "at": "2026-10-11"
  },
@@ -1936,7 +1936,7 @@
    "core": "#ffffff",
    "main": "#74c8ff",
    "rim": "#1b2433",
-   "note": "Snap Bite blue-white; Cosmic Hagure flips to black with white star specks."
+   "note": "Snap Bite blue-white; Moonless Hagure flips to black with white star specks."
   },
   "slots": {
    "body": {
@@ -1947,7 +1947,7 @@
     "when": "never",
     "scale": "medium",
     "anchor": "body",
-    "why": "Left to the game: Cosmic Hagure is a different body, and efk_cosmic drew a bright sphere three metres wide beside him, not an aura."
+    "why": "Left to the game: Moonless Hagure is a different body, and efk_cosmic drew a bright sphere three metres wide beside him, not an aura."
    },
    "light": {
     "pick": null,
@@ -2002,7 +2002,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "saga_blitz has no engine still yet; its pre-release capture (armory-shots/saga_blitz.jpg) shows rim-lit afterimages around a ringed impact, which suits Hagure's monster speed, and extra_rush is the stilled fallback. efk_cosmic's engine still is caught at its edge, so the body is judged from the blurb; if the game's awakened Hagure is the earlier Monster form rather than Cosmic Hagure, set the body to never. extra_palm is set to the plain element (its default is arcane).",
+  "notes": "saga_blitz has no engine still yet; its pre-release capture (armory-shots/saga_blitz.jpg) shows rim-lit afterimages around a ringed impact, which suits Hagure's monster speed, and extra_rush is the stilled fallback. efk_cosmic's engine still is caught at its edge, so the body is judged from the blurb; if the game's awakened Hagure is the earlier Monster form rather than Moonless Hagure, set the body to never. extra_palm is set to the plain element (its default is arcane).",
   "by": "casting agent batch 4",
   "at": "2026-10-11"
  },
@@ -2295,12 +2295,12 @@
     "on": "cast",
     "scale": "huge",
     "anchor": "line",
-    "why": "Light rises off the whole floor into a huge orb overhead that comes down as a ballooning dome: the Last Sun Bomb."
+    "why": "Light rises off the whole floor into a huge orb overhead that comes down as a ballooning dome: the Last Sunfall."
    }
   },
   "moveIdeas": [],
   "confidence": "high",
-  "notes": "The efk_toonhit still caught the burst off the right edge, and the ki_wave still caught the end dome rather than the beam, so both are partly judged from blurbs. saga_blitz has only a preview capture (vfx-hub/armory-shots/saga_blitz.jpg); trim it to one flicker and the slam for a one-contact heavy. Silver Mind (saga_silveraura) and Red Surge (saga_redaura) are alts only, because awakening.ts makes his awakening gold form. Beam clash: saga_beamclash (Twin Tide Collision, preview in vfx-hub/armory-shots/) is a ready SunpalmCannon-versus-Shikou-Ha struggle for when two beam specials meet; it is an event, not a slot.",
+  "notes": "The efk_toonhit still caught the burst off the right edge, and the ki_wave still caught the end dome rather than the beam, so both are partly judged from blurbs. saga_blitz has only a preview capture (vfx-hub/armory-shots/saga_blitz.jpg); trim it to one flicker and the slam for a one-contact heavy. Silver Mind (saga_silveraura) and Red Surge (saga_redaura) are alts only, because awakening.ts makes his awakening gold form. Beam clash: saga_beamclash (Twin Tide Collision, preview in vfx-hub/armory-shots/) is a ready SunpalmCannon-versus-Throne Wave struggle for when two beam specials meet; it is an event, not a slot.",
   "by": "casting agent batch 3",
   "at": "2026-10-11"
  },
@@ -2309,7 +2309,7 @@
    "core": "#ffe8f8",
    "main": "#ff5fcf",
    "rim": "#4a0a3a",
-   "note": "LOTUS IN FLAME; the Lightless Cannon keeps the rosé core inside this near-black rim."
+   "note": "JADE PYRE; the Withering Beam keeps the rosé core inside this near-black rim."
   },
   "slots": {
    "body": {
@@ -2321,7 +2321,7 @@
     "when": "awakened",
     "scale": "medium",
     "anchor": "body",
-    "why": "A rosé flame shell erupts in hard cel bands with a shock ring at ignition: Wuming going LOTUS IN FLAME."
+    "why": "A rosé flame shell erupts in hard cel bands with a shock ring at ignition: Wuming going JADE PYRE."
    },
    "light": {
     "pick": "extra_dash",
@@ -2343,7 +2343,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "target",
-    "why": "Light gathers along the blade, one instant cut, a delayed slash mark and a heavy impact: the ki blade of the Petalfall Blade.",
+    "why": "Light gathers along the blade, one instant cut, a delayed slash mark and a heavy impact: the ki blade of the Lotus Edge.",
     "settings": {
      "element": 0
     }
@@ -2357,7 +2357,7 @@
     "on": "cast",
     "scale": "large",
     "anchor": "line",
-    "why": "The Sunpalm Cannon's hip-gathered orb and floor-trenching wave in rosé and black: the Lightless Cannon."
+    "why": "The Sunpalm Cannon's hip-gathered orb and floor-trenching wave in rosé and black: the Withering Beam."
    },
    "ultimate": {
     "pick": "extra_spin",
@@ -2378,7 +2378,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "The Armory has no scythe. extra_spin's single ring is the clearest scythe silhouette, and blade_iaido's web of cuts is the more spectacular alt. ki_wave is shared with Taisei's Sunpalm Cannon on purpose, because the Lightless Cannon is the same technique. Settings: extra_iaido's thunder element and extra_spin's water element are switched to plain, since Rosé has neither; extra_dash keeps its dark element.",
+  "notes": "The Armory has no scythe. extra_spin's single ring is the clearest scythe silhouette, and blade_iaido's web of cuts is the more spectacular alt. ki_wave is shared with Taisei's Sunpalm Cannon on purpose, because the Withering Beam is the same technique. Settings: extra_iaido's thunder element and extra_spin's water element are switched to plain, since Rosé has neither; extra_dash keeps its dark element.",
   "by": "casting agent batch 3",
   "at": "2026-10-11"
  },
@@ -2387,7 +2387,7 @@
    "core": "#fff7e6",
    "main": "#f4c21f",
    "rim": "#7c2fc0",
-   "note": "needle rays pink-violet (#e05cff); the Drowned Sun orange-red (#ff5a2a) around a white core."
+   "note": "pearl lances pink-violet (#e05cff); the Drowned Sun orange-red (#ff5a2a) around a white core."
   },
   "slots": {
    "body": {
@@ -2398,7 +2398,7 @@
     "when": "awakened",
     "scale": "small",
     "anchor": "body",
-    "why": "A layered golden flame aura climbs his body as rocks lift and the floor cracks: the Emperor Jinlin transformation."
+    "why": "A layered golden flame aura climbs his body as rocks lift and the floor cracks: the Jinlin transformation."
    },
    "light": {
     "pick": "edge_fingerbeam",
@@ -2432,7 +2432,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Thin violet bolts fly down the line and converge on one point: a barrage of needle rays."
+    "why": "Thin violet bolts fly down the line and converge on one point: a barrage of pearl lances."
    },
    "ultimate": {
     "pick": "ki_sunbomb",
@@ -2539,7 +2539,7 @@
    "core": "#ffffff",
    "main": "#d6dde9",
    "rim": "#23142d",
-   "note": "Pale Falcon silver; the offering drains to Black Vespers black under a blood-red sky (#7a0c18)."
+   "note": "Pale Raven silver; the Evensong drains to Black Vespers black under a blood-red sky (#7a0c18)."
   },
   "slots": {
    "body": {
@@ -2550,7 +2550,7 @@
     "when": "awakened",
     "scale": "small",
     "anchor": "body",
-    "why": "Pale Falcon: pale feathers drift and glide down around him, his hawk motif rather than a power aura."
+    "why": "Pale Raven: pale feathers drift and glide down around him, his hawk motif rather than a power aura."
    },
    "light": {
     "pick": "efk_smashstar",
@@ -2597,7 +2597,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "ground",
-    "why": "The Offering: colour drains, the light goes wrong and a black disc opens over the foe."
+    "why": "Evensong: colour drains, the light goes wrong and a black disc opens over the foe."
    }
   },
   "moveIdeas": [
@@ -2742,7 +2742,7 @@
    "core": "#fff0d6",
    "main": "#a31d1d",
    "rim": "#121010",
-   "note": "Black iron and blood; HOUND ARMOR eyes #ff2a2a; the cannon's fire stays orange (#ff7a1e)."
+   "note": "Black iron and blood; GRAVE PLATE eyes #ff2a2a; the cannon's fire stays orange (#ff7a1e)."
   },
   "slots": {
    "body": {
@@ -2756,7 +2756,7 @@
     "settings": {
      "orbs": 0
     },
-    "why": "HOUND ARMOR: black flames with red rims lick off every limb and char the floor around him."
+    "why": "GRAVE PLATE: black flames with red rims lick off every limb and char the floor around him."
    },
    "light": {
     "pick": "sam_slashhit",
@@ -3143,7 +3143,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "A sword swing throws a black crescent with a crimson edge that carves a burning gash and detonates: Scorched Earth."
+    "why": "A sword swing throws a cinder wave with a crimson edge that carves a burning gash and detonates: Scorched Earth."
    },
    "ultimate": {
     "pick": "edge_blackcrescent",
@@ -3172,7 +3172,7 @@
    "core": "#ffe2dc",
    "main": "#120b0f",
    "rim": "#d01f34",
-   "note": "Black Pyre black with a RedEye-red rim; Guardian ribbons and Red Moon Reverie's void in crimson and black."
+   "note": "Black Pyre black with a RedEye-red rim; Guardian ribbons and Crow's Nightmare's void in crimson and black."
   },
   "slots": {
    "body": {
@@ -3236,12 +3236,12 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "target",
-    "why": "The game's own: Red Moon Reverie's red world with its silhouettes is already the anime's."
+    "why": "The game's own: Crow's Nightmare's red world with its silhouettes is already the anime's."
    }
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "arts_blackflame and arts_domain have no engine stills yet; their pack stills (armory-shots/arts_blackflame.jpg, armory-shots/arts_domain.jpg) show black cel flames (drawn here with a red rim) and a red-black void under a giant slit-pupil eye. Dim arts_domain's seal so Red Moon Reverie reads as cast by the eye. Draw emberflock's birds dark with normal blending so they read as crows. Turn ext_aura_magic's body glow down so his own colours read. nb_bladearc's still is caught empty; judged from the blurb. Fighter review (11 October 2026): live with only Black Pyre.",
+  "notes": "arts_blackflame and arts_domain have no engine stills yet; their pack stills (armory-shots/arts_blackflame.jpg, armory-shots/arts_domain.jpg) show black cel flames (drawn here with a red rim) and a red-black void under a giant slit-pupil eye. Dim arts_domain's seal so Crow's Nightmare reads as cast by the eye. Draw emberflock's birds dark with normal blending so they read as crows. Turn ext_aura_magic's body glow down so his own colours read. nb_bladearc's still is caught empty; judged from the blurb. Fighter review (11 October 2026): live with only Black Pyre.",
   "by": "casting agent batch 1",
   "at": "2026-10-11"
  },
@@ -3380,7 +3380,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Left to the game: Cinder Art: Lion's Breath is staged by his module (MoveStage: the oil in his mouth catching, the bomb in flight a white-hot heart in fire with burning oil streaming behind it, then a blast, a pillar of fire and a ring of burning oil over the floor). The Armory's fireball (arts_fireball, now the first alternate) was 4 % of the frame as the bomb landed and peaked 0.6 s after it at 12 % (an original's special: 34-73 %) (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Lion's Breath is staged by his module (MoveStage: the oil in his mouth catching, the bomb in flight a white-hot heart in fire with burning oil streaming behind it, then a blast, a pillar of fire and a ring of burning oil over the floor). The Armory's fireball (arts_fireball, now the first alternate) was 4 % of the frame as the bomb landed and peaked 0.6 s after it at 12 % (an original's special: 34-73 %) (fx_presence, 12 October 2026)."
    },
    "ultimate": {
     "pick": null,
@@ -3402,7 +3402,7 @@
   "by": "casting agent batch 1",
   "at": "2026-10-11"
  },
- "jirenga": {
+ "banjaku": {
   "palette": {
    "core": "#fff0e6",
    "main": "#ff4a2a",
@@ -3419,7 +3419,7 @@
     "when": "awakened",
     "scale": "medium",
     "anchor": "body",
-    "why": "(still pending) A red aura that beats like a heart, swelling its flame and slamming rings across the floor under a heat shimmer: Jirenga at full strength."
+    "why": "(still pending) A red aura that beats like a heart, swelling its flame and slamming rings across the floor under a heat shimmer: Banjaku at full strength."
    },
    "light": {
     "pick": "efk_sonicboom",
@@ -3471,7 +3471,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "The coordinator suggested saga_redaura for Taisei's Red Surge, but Taisei awakens as gold form. Its red flame, floor-slamming rings and heat shimmer fit Jirenga's red WRATHFUL GUARDIAN, and its preview capture reads strongly. The efk_goldencrash still is rainbow rays at the edge and the efk_sonicboom still is soft smoke, so both are judged from blurbs. extra_uppercut's thunder element is switched to plain, because Jirenga's power doesn't crackle.",
+  "notes": "The coordinator suggested saga_redaura for Taisei's Red Surge, but Taisei awakens as gold form. Its red flame, floor-slamming rings and heat shimmer fit Banjaku's red WRATHFUL GUARDIAN, and its preview capture reads strongly. The efk_goldencrash still is rainbow rays at the edge and the efk_sonicboom still is soft smoke, so both are judged from blurbs. extra_uppercut's thunder element is switched to plain, because Banjaku's power doesn't crackle.",
   "by": "casting agent batch 3",
   "at": "2026-10-11"
  },
@@ -3533,7 +3533,7 @@
     "on": "hit",
     "scale": "medium",
     "anchor": "target",
-    "why": "Left to the game: BUCHI BUCHI Barrage is staged by her module (MoveStage: the thread gathered in her hand, then the rush from the spirit's fists, a dozen at once as lines of speed with a flash on each knuckle, a burst for each of its three blows and thread flung out of the last). The Armory's burst of strikes (blade_barrage, now the first alternate) started on the first blow and was at its most 0.9 s later, after the last had landed: 9 % of the frame, 2 % as the blows landed (fx_presence, 12 October 2026)."
+    "why": "Left to the game: UNSPOOL Barrage is staged by her module (MoveStage: the thread gathered in her hand, then the rush from the spirit's fists, a dozen at once as lines of speed with a flash on each knuckle, a burst for each of its three blows and thread flung out of the last). The Armory's burst of strikes (blade_barrage, now the first alternate) started on the first blow and was at its most 0.9 s later, after the last had landed: 9 % of the frame, 2 % as the blows landed (fx_presence, 12 October 2026)."
    },
    "ultimate": {
     "pick": null,
@@ -3606,7 +3606,7 @@
     "on": "hit",
     "scale": "medium",
     "anchor": "target",
-    "why": "Left to the game: KIN KIN Barrage is staged by his module (MoveStage: the rush from the spirit's fists, a dozen at once as lines of speed with a flash on each knuckle, a burst for each of its three blows, the floor broken under the last and put back). The Armory's burst of strikes (blade_barrage, now the first alternate) was at its most 0.3 s after the last blow: 10 % of the frame, 2 % as the blows landed (fx_presence, 12 October 2026)."
+    "why": "Left to the game: GILT Barrage is staged by his module (MoveStage: the rush from the spirit's fists, a dozen at once as lines of speed with a flash on each knuckle, a burst for each of its three blows, the floor broken under the last and put back). The Armory's burst of strikes (blade_barrage, now the first alternate) was at its most 0.3 s after the last blow: 10 % of the frame, 2 % as the blows landed (fx_presence, 12 October 2026)."
    },
    "ultimate": {
     "pick": null,
@@ -3662,7 +3662,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "line",
-    "why": "A hair-thin streak is simply already at the foe, Iron Spirit's fingers shooting out as Needle Finger."
+    "why": "A hair-thin streak is simply already at the foe, Iron Spirit's fingers shooting out as Iron Nail."
    },
    "special": {
     "pick": "extra_rush",
@@ -3676,7 +3676,7 @@
     "settings": {
      "element": 0
     },
-    "why": "GAN GAN: alternating fists with afterimages hammer the foe, then a straight blasts a shock cone."
+    "why": "IRONFALL: alternating fists with afterimages hammer the foe, then a straight blasts a shock cone."
    },
    "ultimate": {
     "pick": "seal_timestop",
@@ -3688,7 +3688,7 @@
     "on": "cast",
     "scale": "huge",
     "anchor": "body",
-    "why": "A colour-inverted sphere bursts out and the world stops grey: Iron Spirit, HUSH."
+    "why": "A colour-inverted sphere bursts out and the world stops grey: Iron Spirit, SLUMBER."
    }
   },
   "moveIdeas": [],
@@ -3854,7 +3854,7 @@
    "core": "#ffffff",
    "main": "#5aa8ff",
    "rim": "#7a3cff",
-   "note": "Sickle Bolt blue (the game's lightning blue), with VOID SICKLE's violet as the rim for the ultimate."
+   "note": "Sickle Bolt blue (the game's lightning blue), with SICKLE REAPER's violet as the rim for the ultimate."
   },
   "slots": {
    "body": {
@@ -3897,7 +3897,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Smoke poofs spawn copies of him that dash in and land one combined strike: his Static Scarecrow, tinted blue so the clones read as lightning."
+    "why": "Smoke poofs spawn copies of him that dash in and land one combined strike: his Static Decoy, tinted blue so the clones read as lightning."
    },
    "ultimate": {
     "pick": "p27_worldrend",
@@ -3908,7 +3908,7 @@
     "on": "confirm",
     "scale": "large",
     "anchor": "target",
-    "why": "Space tears open in a jagged violet rift with black shards orbiting its throat, then slams shut: Sickle Bolt driven through VOID SICKLE's dimension."
+    "why": "Space tears open in a jagged violet rift with black shards orbiting its throat, then slams shut: Sickle Bolt driven through SICKLE REAPER's dimension."
    }
   },
   "moveIdeas": [],
@@ -4236,7 +4236,7 @@
    "core": "#f4fcff",
    "main": "#8fd6ff",
    "rim": "#1f3f6b",
-   "note": "THEATRE pale blue, matching OperatingTheatre; Flatline Shock's jolt in #ffe45c, Cautery Blade's blade pale green #b8ffd9"
+   "note": "SURGERY pale blue, matching ScrubbedIn; Flatline Shock's jolt in #ffe45c, Cautery Blade's blade pale green #b8ffd9"
   },
   "slots": {
    "body": {
@@ -4248,7 +4248,7 @@
     "when": "never",
     "scale": "small",
     "anchor": "body",
-    "why": "None: the model's own THEATRE dome plus OperatingTheatre's SHEATH DOME blade and membrane already are his awakening, and a second dome would double it."
+    "why": "None: the model's own SURGERY dome plus ScrubbedIn's SHEATH DOME blade and membrane already are his awakening, and a second dome would double it."
    },
    "light": {
     "pick": "nb_bladearc",
@@ -4281,7 +4281,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "hand",
-    "why": "A hard-edged cel beam lances out of his palm at point-blank range: Cautery Blade's blade of THEATRE driven straight through the body."
+    "why": "A hard-edged cel beam lances out of his palm at point-blank range: Cautery Blade's blade of SURGERY driven straight through the body."
    },
    "ultimate": {
     "pick": "spellbreak",
@@ -4292,12 +4292,12 @@
     "on": "cast",
     "scale": "large",
     "anchor": "ground",
-    "why": "A bell of pale-blue glass closes over the zone, holds, and breaks along with everything inside it: the THEATRE, with the Flatline Shock that ends it."
+    "why": "A bell of pale-blue glass closes over the zone, holds, and breaks along with everything inside it: the SURGERY, with the Flatline Shock that ends it."
    }
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "spellbreak's engine still is buried under a lingering Arcane Vortex swirl from the capture session; its config confirms a glass dome with a #9fd8ff fresnel rim, already Ward's THEATRE colour. To show Flatline Shock's defibrillator jolt itself, layer snare (a pillar of current) on the confirm. Ward is not a sovereign will, so he gets no Will aura. efk_bluelaser's engine still is partial; the top-level capture shows the cel beam.",
+  "notes": "spellbreak's engine still is buried under a lingering Arcane Vortex swirl from the capture session; its config confirms a glass dome with a #9fd8ff fresnel rim, already Ward's SURGERY colour. To show Flatline Shock's defibrillator jolt itself, layer snare (a pillar of current) on the confirm. Ward is not a sovereign will, so he gets no Will aura. efk_bluelaser's engine still is partial; the top-level capture shows the cel beam.",
   "by": "casting agent batch 5",
   "at": "2026-10-11"
  },
@@ -4433,7 +4433,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "target",
-    "why": "A ring opens over the zone and a giant fist comes down through it: the GRAND TIDE's island-sized Will fist.",
+    "why": "A ring opens over the zone and a giant fist comes down through it: the SPRING TIDE's island-sized Will fist.",
     "settings": {
      "seal_runes": 0,
      "seal_spokes": 0,
@@ -4444,7 +4444,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "sam_judgement is the Armory's only giant fist from above. Its runes, spokes and ticks are zeroed so the green magic seal in its still becomes a plain ring, and the fist is scaled up for the GRAND TIDE. blade_darkspark is the alt for the sovereign's crackle as it lands. extra_palm's arcane element and extra_rush's fire element are switched to plain. Missing: a SUNRISE effect, meaning toon rubber and cloud physics on the Drums of Liberation beat. 11 Oct: body now will_toonrubber (the Armory's will pack, made for this).",
+  "notes": "sam_judgement is the Armory's only giant fist from above. Its runes, spokes and ticks are zeroed so the green magic seal in its still becomes a plain ring, and the fist is scaled up for the SPRING TIDE. blade_darkspark is the alt for the sovereign's crackle as it lands. extra_palm's arcane element and extra_rush's fire element are switched to plain. Missing: a SUNRISE effect, meaning toon rubber and cloud physics on the Drums of Liberation beat. 11 Oct: body now will_toonrubber (the Armory's will pack, made for this).",
   "by": "casting agent batch 3",
   "at": "2026-10-11"
  },
@@ -4498,7 +4498,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Hand signs, then a torrent of toon fire that swells into a fireball big enough to swallow the zone: Cinder Art: Burning Sea (still pending)."
+    "why": "Hand signs, then a torrent of toon fire that swells into a fireball big enough to swallow the zone: Burning Sea (still pending)."
    },
    "ultimate": {
     "pick": "p27_moonfall",
@@ -4781,7 +4781,7 @@
     "on": "hit",
     "scale": "medium",
     "anchor": "target",
-    "why": "Left to the game: Green Gale Kick is staged by his module (MoveStage: the spin drawn as a ring of green wind round him, then a blast, a ring over the floor and a gust out of the victim's back). The Armory's kick (sam_kick, now the first alternate) peaked 0.8 s after the kick landed at 5 % of the frame (an original's heavy: 14 % and more) (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Bamboo Gale Kick is staged by his module (MoveStage: the spin drawn as a ring of green wind round him, then a blast, a ring over the floor and a gust out of the victim's back). The Armory's kick (sam_kick, now the first alternate) peaked 0.8 s after the kick landed at 5 % of the frame (an original's heavy: 14 % and more) (fx_presence, 12 October 2026)."
    },
    "special": {
     "pick": null,
@@ -4809,7 +4809,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "The steam is not covered by a single pick: quench is the only steam effect and it is soft, realistic vapour, so a cel red-steam aura is missing. saga_release (still pending) is the better one-shot for opening the EVERGREEN, a pillar erupting to the sky. p27_worldrend is violet by default; the palette turns it blood-red with black shards. 11 Oct: body now will_steamaura (the Armory's will pack, made for this). 12 Oct (fx-a): body none: in the AWAKEN row will_steamaura's green steam puffs covered his torso, and his own inner-gates module keeps rings, heads and ribbons standing. Launch day (12 October 2026): the four moves are staged by MadakeGates with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
+  "notes": "The steam is not covered by a single pick: quench is the only steam effect and it is soft, realistic vapour, so a cel red-steam aura is missing. saga_release (still pending) is the better one-shot for opening the EVERGREEN, a pillar erupting to the sky. p27_worldrend is violet by default; the palette turns it blood-red with black shards. 11 Oct: body now will_steamaura (the Armory's will pack, made for this). 12 Oct (fx-a): body none: in the AWAKEN row will_steamaura's green steam puffs covered his torso, and his own inner-gates module keeps rings, heads and ribbons standing. Launch day (12 October 2026): the four moves are staged by MadakeSeasons with the shared MoveStage (docs/engine/VFX_BAR.md); the authored picks stay as first alternates.",
   "by": "casting agent batch 4",
   "at": "2026-10-11"
  },
@@ -5211,7 +5211,7 @@
    "core": "#f2fbff",
    "main": "#6cc4ff",
    "rim": "#1f5fbf",
-   "note": "chi blue-white for the Senpugan family; the Kurobi cloak and the Kitsunebi-Dama switch to Kurobi orange #ff8a1f with a black-violet #20102e bomb core"
+   "note": "chi blue-white for the Kazeyose family; the Kurobi cloak and the Azure Foxfire switch to Kurobi orange #ff8a1f with a black-violet #20102e bomb core"
   },
   "slots": {
    "body": {
@@ -5248,7 +5248,7 @@
     "on": "cast",
     "scale": "medium",
     "anchor": "hand",
-    "why": "The game's own: its Senpugan, the spinning sphere held in the palm and driven into the body, is already the reference's (approved); ki_spiral only draws it again."
+    "why": "The game's own: its Kazeyose, the spinning sphere held in the palm and driven into the body, is already the reference's (approved); ki_spiral only draws it again."
    },
    "special": {
     "pick": "arts_windshuriken",
@@ -5276,12 +5276,12 @@
     "on": "hit",
     "scale": "huge",
     "anchor": "target",
-    "why": "The game's own: the black-violet Kitsunebi-Dama raised overhead and its white-violet blast already read as the anime's; pyroclasm's ash dome reads orange-brown, not chi."
+    "why": "The game's own: the black-violet Azure Foxfire raised overhead and its white-violet blast already read as the anime's; pyroclasm's ash dome reads orange-brown, not chi."
    }
   },
   "moveIdeas": [],
   "confidence": "high",
-  "notes": "Per the coordinator's update, ki_spiral (the Churning Orb) is now tagged Konta, so the Senpugan is the real thing; its still shows a white-blue spinning sphere with segmented wind rings. arts_clones and arts_windshuriken have no engine still; their captures at armory-shots/<id>.jpg show six clones of the caster and a giant blue-white shuriken sphere. Clones are set to four for UP YOU GO!, and their floor seal is off because his clones have no glyph. Keep the clone smoke poofs white rather than palette blue. pyroclasm's stills catch it close-up in toon orange ash; recolour it black-violet with an orange rim. Awakened Konta is the 3 m Kurobi fox (NinjaEffects draws its tails), so the aura wraps the fox. NinjaEffects also already draws clones and a Senpugan, so these are the Armory versions to compare. Fighter review (11 October 2026): live with only the Galewheel's landing (arts_windshuriken on the hit); the rest stays the game's own, which the review found already the anime's.",
+  "notes": "Per the coordinator's update, ki_spiral (the Churning Orb) is now tagged Konta, so the Kazeyose is the real thing; its still shows a white-blue spinning sphere with segmented wind rings. arts_clones and arts_windshuriken have no engine still; their captures at armory-shots/<id>.jpg show six clones of the caster and a giant blue-white shuriken sphere. Clones are set to four for UP YOU GO!, and their floor seal is off because his clones have no glyph. Keep the clone smoke poofs white rather than palette blue. pyroclasm's stills catch it close-up in toon orange ash; recolour it black-violet with an orange rim. Awakened Konta is the 3 m Kurobi fox (NinjaEffects draws its tails), so the aura wraps the fox. NinjaEffects also already draws clones and a Kazeyose, so these are the Armory versions to compare. Fighter review (11 October 2026): live with only the Galewheel's landing (arts_windshuriken on the hit); the rest stays the game's own, which the review found already the anime's.",
   "by": "casting agent batch 5",
   "at": "2026-10-11"
  },
@@ -5713,7 +5713,7 @@
     "on": "hit",
     "scale": "large",
     "anchor": "target",
-    "why": "Left to the game: First Carol: Snow Halo is staged by her module (MoveStage: the white circle drawn on the floor at her blade's reach through the wind-up, then a pillar of white out of it and ice risen round its rim as the blow lands). The Armory's snow compass (seal_snowcompass, now the first alternate) raised its ice a second after the cut, peaked 1.7 s after it and hid its victim for 0.9 s (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Snow Halo is staged by her module (MoveStage: the white circle drawn on the floor at her blade's reach through the wind-up, then a pillar of white out of it and ice risen round its rim as the blow lands). The Armory's snow compass (seal_snowcompass, now the first alternate) raised its ice a second after the cut, peaked 1.7 s after it and hid its victim for 0.9 s (fx_presence, 12 October 2026)."
    },
    "special": {
     "pick": null,
@@ -5725,7 +5725,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Left to the game: Second Carol: Hoarfrost is staged by her module (MoveStage: four points of light on the floor and the cold gathered at the blade's tip, a wave of white down the line of the shot that leaves ice standing along the floor, a blast and the air cracked like ice where it lands). The Armory's crystal field (ice/crystal-field, now the first alternate) stood in front of her own body from the gameplay camera: she was unreadable for 0.43 s, and it was 5 %s of presence (an original's special: 22 to 76) (fx_presence, 12 October 2026)."
+    "why": "Left to the game: Hoarfrost is staged by her module (MoveStage: four points of light on the floor and the cold gathered at the blade's tip, a wave of white down the line of the shot that leaves ice standing along the floor, a blast and the air cracked like ice where it lands). The Armory's crystal field (ice/crystal-field, now the first alternate) stood in front of her own body from the gameplay camera: she was unreadable for 0.43 s, and it was 5 %s of presence (an original's special: 22 to 76) (fx_presence, 12 October 2026)."
    },
    "ultimate": {
     "pick": null,
@@ -5967,7 +5967,7 @@
    "core": "#ece4ff",
    "main": "#140d1d",
    "rim": "#8b4dff",
-   "note": "Black Pyre black with a violet rim; Shrike Bolt's core white-violet, Ikazuchi Arrow violet."
+   "note": "Black Pyre black with a violet rim; Storm Talon's core white-violet, Ikazuchi Arrow violet."
   },
   "slots": {
    "body": {
@@ -6003,7 +6003,7 @@
     "on": "release",
     "scale": "medium",
     "anchor": "hand",
-    "why": "The game's own: the Shrike Bolt, crackling in his hand and driven into the body, is already the anime's."
+    "why": "The game's own: the Storm Talon, crackling in his hand and driven into the body, is already the anime's."
    },
    "special": {
     "pick": "arts_blackflame",
@@ -6038,7 +6038,7 @@
   },
   "moveIdeas": [],
   "confidence": "high",
-  "notes": "arts_blackflame has no engine still yet; its pack still (armory-shots/arts_blackflame.jpg) shows ink-black cel flames with violet rims, lit by a glint at the eye: Black Pyre exactly. ki_lightning_hand (Thousand Wren Edge) is a Shrike Bolt by design but the ki_* rule locks it to Last Sun. arts_dragonflame is not used: none of his moves is a fire dragon. 11 Oct: ultimate now colossus_spiritarmor (the Armory's colossus pack, made for this). Fighter review (11 October 2026): live with only Black Pyre (arts_blackflame); the rest stays the game's own.",
+  "notes": "arts_blackflame has no engine still yet; its pack still (armory-shots/arts_blackflame.jpg) shows ink-black cel flames with violet rims, lit by a glint at the eye: Black Pyre exactly. ki_lightning_hand (Thousand Wren Edge) is a Storm Talon by design but the ki_* rule locks it to Last Sun. arts_dragonflame is not used: none of his moves is a fire dragon. 11 Oct: ultimate now colossus_spiritarmor (the Armory's colossus pack, made for this). Fighter review (11 October 2026): live with only Black Pyre (arts_blackflame); the rest stays the game's own.",
   "by": "casting agent batch 1",
   "at": "2026-10-11"
  },
@@ -6346,7 +6346,7 @@
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "umbralspears's and sam_shadows's engine stills carry the leftover swirl; the black spears and the violet shadows show under it. p27_colossus (shadow arms) would be the stronger Black Rookery, but it is cast as Akaito's Ghost Bride; recoloured violet, it is the alt. 11 Oct: body now will_blackflameaura (the Armory's will pack, made for this). 11 Oct: heavy was sam_shadows, which the Armory's licence map (LICENSES.json) keeps out of Jump.",
+  "notes": "umbralspears's and sam_shadows's engine stills carry the leftover swirl; the black spears and the violet shadows show under it. p27_colossus (shadow arms) would be the stronger Black Rookery, but it is cast as Akaito's Red Thread Shade; recoloured violet, it is the alt. 11 Oct: body now will_blackflameaura (the Armory's will pack, made for this). 11 Oct: heavy was sam_shadows, which the Armory's licence map (LICENSES.json) keeps out of Jump.",
   "by": "casting agent batch 4",
   "at": "2026-10-11"
  },
@@ -6355,7 +6355,7 @@
    "core": "#fff5e2",
    "main": "#e8451e",
    "rim": "#2c6fd6",
-   "note": "Water forms draw blue with white foam; Lantern Rite: First Light draws vermilion with an ink outline."
+   "note": "Water forms draw blue with white foam; First Light draws vermilion with an ink outline."
   },
   "slots": {
    "body": {
@@ -6409,7 +6409,7 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "line",
-    "why": "A woodblock sun rises behind him as he dances two rings of brush fire and flings the halo into a corona of rays: Lantern Rite: First Light (still pending)."
+    "why": "A woodblock sun rises behind him as he dances two rings of brush fire and flings the halo into a corona of rays: First Light (still pending)."
    }
   },
   "moveIdeas": [],
@@ -6720,17 +6720,17 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "ground",
-    "why": "Left to the game: Double or Nothing is staged by her module (MoveStage: the seal let go from the confirm, its violet marks running out over the floor and chi rising round her, then the heel: the floor broken to seven metres under a dome of force). Before, it changed 8 % of the frame and lit nothing (fx_presence, 12 October 2026). The Armory pick (tectonic) was not verified in Training on 12 Oct (fx-a)."
+    "why": "Left to the game: Bet the Purse is staged by her module (MoveStage: the seal let go from the confirm, its violet marks running out over the floor and chi rising round her, then the heel: the floor broken to seven metres under a dome of force). Before, it changed 8 % of the frame and lit nothing (fx_presence, 12 October 2026). The Armory pick (tectonic) was not verified in Training on 12 Oct (fx-a)."
    }
   },
   "moveIdeas": [
    {
     "slot": "ultimate",
-    "now": "Double or Nothing",
+    "now": "Bet the Purse",
     "idea": "the blossom blow",
     "effect": "tectonic",
     "style": "melee",
-    "why": "Double or Nothing is not a Kusushi technique; her real finisher is the seal-charged punch that splits the battlefield, which tectonic already shows (blade_quake if it should start with a leap)."
+    "why": "Bet the Purse is not a Kusushi technique; her real finisher is the seal-charged punch that splits the battlefield, which tectonic already shows (blade_quake if it should start with a leap)."
    }
   ],
   "confidence": "high",
@@ -6852,7 +6852,7 @@
    "core": "#fffbe0",
    "main": "#ffcf3a",
    "rim": "#7a2fe0",
-   "note": "gold form gold for the aura, Haou-Dan and Kyokko-Ho; the Shikou-Ha turns violet, #c48aff over this rim."
+   "note": "gold form gold for the aura, Crown Burst and Royal Aurora; the Throne Wave turns violet, #c48aff over this rim."
   },
   "slots": {
    "body": {
@@ -6886,7 +6886,7 @@
     "on": "cast",
     "scale": "medium",
     "anchor": "line",
-    "why": "A flaring orb charges at the outstretched palm with sparks pouring in, then is hurled and bursts: the Haou-Dan."
+    "why": "A flaring orb charges at the outstretched palm with sparks pouring in, then is hurled and bursts: the Crown Burst."
    },
    "special": {
     "pick": "extra_fbmbeam",
@@ -6897,7 +6897,7 @@
     "on": "cast",
     "scale": "large",
     "anchor": "line",
-    "why": "A charged orb fires a hard-banded energy beam that holds with ticking shock rings: the violet Shikou-Ha."
+    "why": "A charged orb fires a hard-banded energy beam that holds with ticking shock rings: the violet Throne Wave."
    },
    "ultimate": {
     "pick": "ki_flash",
@@ -6908,12 +6908,12 @@
     "on": "cast",
     "scale": "huge",
     "anchor": "line",
-    "why": "Orbs in both outstretched palms are clapped together and let out as a blinding yellow-white column: the Kyokko-Ho."
+    "why": "Orbs in both outstretched palms are clapped together and let out as a blinding yellow-white column: the Royal Aurora."
    }
   },
   "moveIdeas": [],
   "confidence": "high",
-  "notes": "The ki_flash still is the Kyokko-Ho pose exactly: arms spread, an orb in each palm. fx_magmaorb is shared with Shanxiao's Jade Comet and Jirenga's Vermilion Seal, and extra_fbmbeam with Gohaku's Star-Shifting Beam and Shanxiao's mouth beam: one Last Sun energy family told apart by colour. The efk_smashstar still caught the hit off frame. Beam clash: see Taisei's note on saga_beamclash.",
+  "notes": "The ki_flash still is the Royal Aurora pose exactly: arms spread, an orb in each palm. fx_magmaorb is shared with Shanxiao's Jade Comet and Banjaku's Vermilion Seal, and extra_fbmbeam with Gohaku's Star-Shifting Beam and Shanxiao's mouth beam: one Last Sun energy family told apart by colour. The efk_smashstar still caught the hit off frame. Beam clash: see Taisei's note on saga_beamclash.",
   "by": "casting agent batch 3",
   "at": "2026-10-11"
  },
@@ -7307,7 +7307,7 @@
    "core": "#f5f4ff",
    "main": "#5446c8",
    "rim": "#0e0b22",
-   "note": "Hex Energy indigo-black; Ghost Bride's arms in bone-white (#e8e3ef)."
+   "note": "Hex Energy indigo-black; Red Thread Shade's arms in bone-white (#e8e3ef)."
   },
   "slots": {
    "body": {
@@ -7338,7 +7338,7 @@
     "settings": {
      "element": 8
     },
-    "why": "Left to his module (AkaitoGhostBride, staged with MoveStage on launch day, 12 Oct 2026: the katana's edge lit with his hex energy, a short arc and a pop where it cuts). extra_bladewave, measured from the gameplay camera: 3 % of the frame at 0.47 s on a cut that lands at 0.17 s (1 % on screen at the hit). It stays the first alternate."
+    "why": "Left to his module (AkaitoShade, staged with MoveStage on launch day, 12 Oct 2026: the katana's edge lit with his hex energy, a short arc and a pop where it cuts). extra_bladewave, measured from the gameplay camera: 3 % of the frame at 0.47 s on a cut that lands at 0.17 s (1 % on screen at the hit). It stays the first alternate."
    },
    "heavy": {
     "pick": null,
@@ -7353,7 +7353,7 @@
     "settings": {
      "katanaShow": 0
     },
-    "why": "Left to his module (AkaitoGhostBride: hex energy along the blade, the cut's arc at its reach, two crossing arcs and a ring where it lands, staged with MoveStage on launch day, 12 Oct 2026). sam_burningslash, measured from the gameplay camera: 2 % of the frame as the blow landed at 0.49 s and 10 % at 0.98 s, half a second after it. It stays the first alternate."
+    "why": "Left to his module (AkaitoShade: hex energy along the blade, the cut's arc at its reach, two crossing arcs and a ring where it lands, staged with MoveStage on launch day, 12 Oct 2026). sam_burningslash, measured from the gameplay camera: 2 % of the frame as the blow landed at 0.49 s and 10 % at 0.98 s, half a second after it. It stays the first alternate."
    },
    "special": {
     "pick": null,
@@ -7365,7 +7365,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "Left to his module (AkaitoGhostBride: the word gathering at his hand, flying as rings of sound and holding its victim in a shell of force, staged with MoveStage on launch day, 12 Oct 2026). resonance, measured from the gameplay camera: 5 % of the frame at its peak, 4 %s of presence, under 1 % of the room lit. It stays the first alternate."
+    "why": "Left to his module (AkaitoShade: the word gathering at his hand, flying as rings of sound and holding its victim in a shell of force, staged with MoveStage on launch day, 12 Oct 2026). resonance, measured from the gameplay camera: 5 % of the frame at its peak, 4 %s of presence, under 1 % of the room lit. It stays the first alternate."
    },
    "ultimate": {
     "pick": null,
@@ -7377,12 +7377,12 @@
     "on": "confirm",
     "scale": "huge",
     "anchor": "ground",
-    "why": "Left to his module (AkaitoGhostBride: Ghost Bride's darkness and black flame round him, the pink-white charge and the Pinky Promise beam from his hand and from her, staged with MoveStage on launch day, 12 Oct 2026). The authored pick (p27_colossus, huge) was never verified in the game; it stays the first alternate."
+    "why": "Left to his module (AkaitoShade: Red Thread Shade's darkness and black flame round him, the pink-white charge and the Fated Knot beam from his hand and from her, staged with MoveStage on launch day, 12 Oct 2026). The authored pick (p27_colossus, huge) was never verified in the game; it stays the first alternate."
    }
   },
   "moveIdeas": [],
   "confidence": "medium",
-  "notes": "p27_colossus's engine still shows only its violet floor veins; the older capture (armory-shots/p27_colossus.jpg) shows the giant arms, which the palette turns Ghost Bride's bone-white with indigo veins. The canon Pinky Promise is also a huge hex-energy blast, so p27_spectral is the alt if the ultimate should fire rather than crush. sam_burningslash's prop katana is hidden so the cursed fire runs along Akaito's own blade; extra_bladewave is set to the dark element.",
+  "notes": "p27_colossus's engine still shows only its violet floor veins; the older capture (armory-shots/p27_colossus.jpg) shows the giant arms, which the palette turns Red Thread Shade's bone-white with indigo veins. The canon Fated Knot is also a huge hex-energy blast, so p27_spectral is the alt if the ultimate should fire rather than crush. sam_burningslash's prop katana is hidden so the cursed fire runs along Akaito's own blade; extra_bladewave is set to the dark element.",
   "by": "casting agent batch 4",
   "at": "2026-10-11"
  },
@@ -7391,7 +7391,7 @@
    "core": "#eaffdf",
    "main": "#9cf07c",
    "rim": "#11361a",
-   "note": "RAKSHASA green; the oni cuts can tip the rim to the blade's crimson-black."
+   "note": "DUNE ONI green; the oni cuts can tip the rim to the blade's crimson-black."
   },
   "slots": {
    "body": {
@@ -7403,7 +7403,7 @@
     "when": "never",
     "scale": "medium",
     "anchor": "body",
-    "why": "RAKSHASA is a whole new body with six arms and nine swords, and rule is that a form does not burn a second aura, so there is no body effect."
+    "why": "DUNE ONI is a whole new body with six arms and nine swords, and rule is that a form does not burn a second aura, so there is no body effect."
    },
    "light": {
     "pick": "extra_cross",
@@ -7442,7 +7442,7 @@
     "on": "release",
     "scale": "large",
     "anchor": "line",
-    "why": "A swing throws crescent shock fronts that plough down the line: the flying air blades of the thousand mile eagle.",
+    "why": "A swing throws crescent shock fronts that plough down the line: the flying air blades of the eagles reach.",
     "settings": {
      "element": 4,
      "circleFeet": 0,
@@ -7459,7 +7459,7 @@
     "on": "release",
     "scale": "huge",
     "anchor": "line",
-    "why": "A horned demon mask fringed with flame rises behind him and the swing lunges it forward, the cut carved in its shape: the nine-sword demon of his RAKSHASA."
+    "why": "A horned demon mask fringed with flame rises behind him and the swing lunges it forward, the cut carved in its shape: the nine-sword demon of his DUNE ONI."
    }
   },
   "moveIdeas": [],

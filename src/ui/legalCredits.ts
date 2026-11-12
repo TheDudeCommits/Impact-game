@@ -33,8 +33,8 @@ const UAL_CUTS = [
   'rotfalke-tr1', 'sashigane-tr1', 'senko-tr1', 'setsu-tr1', 'shakudo-px1', 'shidare-tr1', 'shijima-form-tr1',
   'shijima-tr1', 'shirokane-tr1', 'strix-tr1', 'suzuran-px1', 'svanhild-tr1', 'tancho-tr1', 'tempo-tr1', 'tokan-tr1',
   'ume-form-tr1', 'ume-tr1', 'unari-px1', 'wataame-tr1', 'wukong-tr1', 'yodaka-tr1'
-].map(name => `assets/fighters/${name}.glb`).concat(['akagane', 'ashwing', 'barrow', 'caldera', 'gandang', 'gantry', 'gorai', 'gorai-wyrm', 'haldor', 'harrow', 'jinlin', 'kade',
-  'kanuki', 'kuromitsu', 'lumen', 'mirabel', 'nightfall', 'nihil', 'rakshasa', 'rime', 'shiun', 'takane', 'wuming', 'zarek']
+].map(name => `assets/fighters/${name}.glb`).concat(['akagane', 'ashwing', 'barrow', 'caldera', 'dune-oni', 'gandang', 'gantry', 'gorai', 'gorai-wyrm', 'haldor', 'harrow', 'jinlin', 'kade',
+  'kanuki', 'kuromitsu', 'lumen', 'mirabel', 'nightfall', 'nihil', 'rime', 'shiun', 'takane', 'wuming', 'zarek']
   .map(name => `assets/survival/enemies/${name}.glb`));
 
 /** The works whose licences ask for a credit (the LICENSE files beside each kit under public/assets/environment,

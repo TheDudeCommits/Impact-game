@@ -85,7 +85,7 @@ export class GosuRestoration {
     }
     if (e.slot === 'special') {
       if (e.branch === 'airSpecial') { st.burst(point, DIAMOND, 2, t, { floor }); st.shock(ground, DIAMOND, 4.5, t, .45); this.mend(ground, t + .3, 1, 3); return; }
-      // KIN KIN Barrage: a burst for each blow; under the last the floor breaks for three metres and is put back.
+      // GILT Barrage: a burst for each blow; under the last the floor breaks for three metres and is put back.
       const big = e.branch ? .7 : 1;
       if (!last && !e.branch) { st.burst(point, DIAMOND, .9 + .25 * (e.contactIndex ?? 0), t, { dir, floor }); return; }
       // (The blast a step past the body and the floor broken two steps past it: the barrage barely moves its victim,
@@ -131,7 +131,7 @@ export class GosuRestoration {
           st.light(this.a, 3.6, DIAMOND, .4 * flare);
         }
       } else if (s.action === 'special' && !s.branch) {
-        // KIN KIN Barrage: the fist lights; then the rush, from the spirit's fist into whatever is in front of it.
+        // GILT Barrage: the fist lights; then the rush, from the spirit's fist into whatever is in front of it.
         if (elapsed < RUSH - .1) { const k = clamp(elapsed / (RUSH - .1)); st.glow(strike, .3 * k, DIAMOND.core, .8 * k); st.glow(strike, .5 * k, DIAMOND.main, .5 * k); st.light(strike, 3.5, DIAMOND, .35 * k); }
         else if (elapsed < RUSH_END + .12) this.rush(f, strike, clamp((elapsed - RUSH + .1) / .1) * clamp((RUSH_END + .12 - elapsed) / .1), time, seed, 10);
       } else if (s.action === 'ultimate' && !s.branch && s.confirmedAt === undefined && elapsed < FIRST + .12) {

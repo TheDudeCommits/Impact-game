@@ -161,7 +161,7 @@ export type FeedKind = 'location' | 'round' | 'rift' | 'boss' | 'enraged' | 'dow
   /** The KI techniques' strikes, drawn as the arts once were: bolts from the
    *  sky (Storm Ki), a vortex (Ki Vortex), fire from the ground (Blazing Ki), a
    *  cut through space (Cinder Step); `meteor` and `frost` are no longer thrown;
-   *  and the HOUND ARMOR taking over (`value` 1) or letting go (0). */
+   *  and the GRAVE PLATE taking over (`value` 1) or letting go (0). */
   | 'smite' | 'whirl' | 'pillar' | 'meteor' | 'frost' | 'slash' | 'rage'
   /** The last S-rank boss has fallen: the rift is sealed - for now. */
   | 'finale'
@@ -236,7 +236,7 @@ export interface DealtBy { blows: number; specials: number; ultimates: number; t
 export interface PartyMember { id: string; name: string; fighter: FighterId; hp: number; maxHp: number; down: boolean; rescue: number; picks: number;
   /** What they wear on the body (economy/catalog.ts wornOf reads it). */
   look?: readonly number[];
-  /** HOUND ARMOR has them. */
+  /** GRAVE PLATE has them. */
   rage?: boolean;
   /** Awakened: on the inked page the Rift's colour comes back while they are (render/rift/ink.ts). */
   awake?: boolean;
@@ -288,7 +288,7 @@ export interface SurvivalView {
   draft?: { cards: string[]; legendary: boolean; finale?: boolean; relic?: string };
   /** Boss relics this fighter holds (relics.ts), and how ready each is to go off again (0-1). */
   relics?: string[]; relicCharge?: number[];
-  /** Stopped time (HUSH): seconds of it left. */
+  /** Stopped time (SLUMBER): seconds of it left. */
   stopped?: number;
   /** The horde and the champions cut down in the last half-second, and by whom, for the kill
    *  effects the party wears (economy/catalog.ts, render/cosmetics/kills.ts): four numbers each -
@@ -442,7 +442,7 @@ export class Hero {
   private modsKey = '';
   /** True when the mods the moment wants differ from what the arena holds. */
   modsChanged(key: string) { if (key === this.modsKey) return false; this.modsKey = key; return true; }
-  /** HOUND ARMOR has them. */
+  /** GRAVE PLATE has them. */
   raging = false;
   /** Draws of a new hand of cards left: one to start, one more per boss. */
   rerolls = 1;
@@ -491,7 +491,7 @@ export interface SurvivalOptions { fighter?: FighterId; name?: string; seed?: nu
 
 const PROC = new Set(['Shockwave', 'Flying Slash', 'Rending Cut', 'Afterimage', 'Thunder Chain', 'Chain Reaction', 'Counter Blast', 'Burn', 'Rout', 'Rising Will', 'Rift Bomb', 'Rift Strike',
   'Burning Ground', 'Shatter', 'Cinder Step', 'Burst Point', 'Storm Ki', 'Ultimate Echo', 'Awakening Nova', 'Team Ultimate', 'Finisher', 'Condemned',
-  'Quake', 'Black Crescent', 'Long Winter', 'Molten Rake', 'Funeral Howl', 'Stilling Palm', 'Tar Thrust', 'Hex Slashes']);
+  'Quake', 'Cinder Wave', 'Long Winter', 'Molten Rake', 'Funeral Howl', 'Stilling Palm', 'Tar Thrust', 'Hex Slashes']);
 export const isProc = (move?: string) => move !== undefined && PROC.has(move);
 /** Blows whose victims make no sound or number of their own: a burn, a rout,
  *  and every art - an art is heard once, as itself, when it is thrown
@@ -510,7 +510,7 @@ const RELIC_SHOWN = 2.1;
 const RELIC_GAP: Record<string, number> = Object.fromEntries(RELICS.map(relic => [relic.id, relic.gap]));
 /** WOLF HOWL: how many close in (within 3.5 m) before it howls, and how fast its ring rolls out. */
 const HOWL_CROWD = 7, HOWL_SPEED = 18;
-/** 'MIRROR MERE': seconds between its cuts. 'HUSH': seconds time stands still. */
+/** 'MIRROR MERE': seconds between its cuts. 'SLUMBER': seconds time stands still. */
 const SHRINE_EVERY = .4, WORLD_SECONDS = 2;
 
 /** Experience to the next level from `level`, for a party of one: the first
@@ -616,7 +616,7 @@ export class SurvivalGame {
   private heroList: HordeHero[] = [];
   /** Something that happens a moment later: a card's second beat, a strike landing. */
   private later: { at: number; run: () => void }[] = [];
-  /** HUSH (relics.ts): time stands still for everything but the fighters until then. */
+  /** SLUMBER (relics.ts): time stands still for everything but the fighters until then. */
   private stoppedUntil = 0;
   /** The run began with relics or on a door of its own (a probe's ?relics=, ?path=). */
   private probeStart = false;
@@ -863,7 +863,7 @@ export class SurvivalGame {
   private applyStats(hero: Hero, initial = false) {
     hero.stats = runStats(hero.picks);
     const s = hero.stats;
-    // HOUND ARMOR, while it has them: harder, faster, and it drinks.
+    // GRAVE PLATE, while it has them: harder, faster, and it drinks.
     const rage = hero.raging && s['grave-hound'] ? 1 : 0;
     const mods: Partial<CombatMods> = { damageOut: s.damage * (1 + rage * .5), damageIn: s.damageIn, speed: s.speed * (1 + rage * .2), cooldown: s.cooldown, stamina: s.stamina, staminaRegen: s.staminaRegen,
       // Lifesteal is the run's to pay out (see `leech`), not the arena's.
@@ -1214,7 +1214,7 @@ export class SurvivalGame {
     return true;
   }
 
-  /** One of a boss's copies (Shiun's False Encore): its body, its moves,
+  /** One of a boss's copies (Shiun's Understudy): its body, its moves,
    *  a sliver of its health and less than half its weight - drawn and
    *  marked as the boss, with no bar of its own. */
   private spawnIllusion(ofId: string, at: Vec3, life: number) {
@@ -2702,7 +2702,7 @@ export class SurvivalGame {
     for (const orb of this.orbs) if (orb.kind === 'xp') orb.pulled = true;
   }
 
-  /** Rank S is beaten: the rift closes over the offering - the run's ending -
+  /** Rank S is beaten: the rift closes over the Fallen Star - the run's ending -
    *  and every fighter stands up whole. It does not stay closed: after a
    *  longer breath the Rift drags them in, and the run goes on as deep as
    *  they can go. */
@@ -2930,7 +2930,7 @@ export class SurvivalGame {
 
   // ---- upkeep ---------------------------------------------------------------------------------
   /** What each fighter carries tick to tick: the lifesteal owed paid out, the
-   *  HOUND ARMOR taking hold, the mods of the moment (a special's KI, an
+   *  GRAVE PLATE taking hold, the mods of the moment (a special's KI, an
    *  awakening's), a Cinder Step's cut; and the strikes due later, and the
    *  burning ground. */
   private upkeep() {
@@ -3238,7 +3238,7 @@ export class SurvivalGame {
     const d = Math.hypot(dx, dz);
     if (d < .5) { dx = Math.sin(player.yaw); dz = Math.cos(player.yaw); } else { dx /= d; dz /= d; }
     const from = { x: player.x + dx * .8, y: 0, z: player.z + dz * .8 }, to = this.inBounds({ x: player.x + dx * 16, y: 0, z: player.z + dz * 16 });
-    const move = procMove('Black Crescent', Math.round(damage * 1.2), { knockback: 5, stun: .45, style: 'beam' });
+    const move = procMove('Cinder Wave', Math.round(damage * 1.2), { knockback: 5, stun: .45, style: 'beam' });
     this.alongLine(from, to, 1.5, foe => this.smack(hero, foe, move, 'special', { x: player.x, y: player.y + 1, z: player.z }));
     this.push({ kind: 'fissure', element: 'blood', points: [from, to], radius: 1.5, value: this.now, hero: hero.id, text: 'nightfall' });
     this.push({ kind: 'relic', sub: 'nightfang', text: 'nightfall', hero: hero.id, x: player.x, y: player.y + 1.1, z: player.z, value: Math.atan2(dx, dz), radius: 16 });
@@ -3322,7 +3322,7 @@ export class SurvivalGame {
     }
     if (points.length) this.push({ kind: 'relic', sub: 'cut', text: 'magatsu', hero: hero.id, points });
   }
-  /** 'HUSH': time stops for everything but the fighters - the horde where it
+  /** 'SLUMBER': time stops for everything but the fighters - the horde where it
    *  stands, every boss and champion held in the arena's own time stop, the
    *  strikes hanging over the field gone and the rains held back. */
   private stopTime(hero: Hero, seconds: number) {

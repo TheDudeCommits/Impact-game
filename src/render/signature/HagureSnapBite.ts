@@ -22,8 +22,8 @@ class Batch{
  dispose(){this.mesh.removeFromParent();this.mesh.dispose();this.mesh.geometry.dispose();this.mesh.material.dispose();}
 }
 const clamp=(v:number)=>Math.max(0,Math.min(1,v));
-const UP=new THREE.Vector3(0,1,0),X=new THREE.Vector3(1,0,0),Z=new THREE.Vector3(0,0,1),INK=new THREE.Color(0x140d18),BLUE=new THREE.Color(0x2696ec),HOT=new THREE.Color(0xc4f3ff),COSMIC=new THREE.Color(0x9b8cff);
-type Impact={actor:string;target:string;born:number;grade:number;seed:number;yaw:number;cosmic:boolean;point:THREE.Vector3};
+const UP=new THREE.Vector3(0,1,0),X=new THREE.Vector3(1,0,0),Z=new THREE.Vector3(0,0,1),INK=new THREE.Color(0x140d18),BLUE=new THREE.Color(0x2696ec),HOT=new THREE.Color(0xc4f3ff),MOONLESS=new THREE.Color(0x9b8cff);
+type Impact={actor:string;target:string;born:number;grade:number;seed:number;yaw:number;moonless:boolean;point:THREE.Vector3};
 /** Snap Bite Rock Smashing Fist in linear light (his casting's blue over a white heart), and MOONLESS's: the
  *  same strokes in a starlit violet, with stars in them. */
 const WATER=stageLook(0xffffff,0x74c8ff,0x1b2433),COSMOS=stageLook(0xffffff,0x9b8cff,0x1a1030);
@@ -34,18 +34,18 @@ export const HAGURE_STREAM_BEATS=Object.freeze({opener:ULT.contacts[0],final:ULT
 type Whirl={at:THREE.Vector3;born:number;life:number;radius:number;height:number;look:StageLook;live:boolean};
 export class HagureSnapBite{
  private rings:Batch;private slashes:Batch;private shards:Batch;private disposed=false;
- private impacts:Impact[]=Array.from({length:24},()=>({actor:'',target:'',born:-1e9,grade:0,seed:0,yaw:0,cosmic:false,point:new THREE.Vector3()}));private cursor=0;private seen=new Float64Array(128).fill(-1);private seenTime=new Float64Array(128).fill(-1);private eventCursor=0;
+ private impacts:Impact[]=Array.from({length:24},()=>({actor:'',target:'',born:-1e9,grade:0,seed:0,yaw:0,moonless:false,point:new THREE.Vector3()}));private cursor=0;private seen=new Float64Array(128).fill(-1);private seenTime=new Float64Array(128).fill(-1);private eventCursor=0;
  private p=new THREE.Vector3();private q=new THREE.Quaternion();private spin=new THREE.Quaternion();private flat=new THREE.Quaternion().setFromAxisAngle(X,-Math.PI/2);
  private readonly stage:MoveStage;private readonly book=new CastBook('hagure',ULT.contacts.length);private readonly cuts=new Cuts(12,WATER);
  private whirls:Whirl[]=Array.from({length:4},()=>({at:new THREE.Vector3(),born:0,life:0,radius:1,height:1,look:WATER,live:false}));private whirlCursor=0;
  private a=new THREE.Vector3();private b=new THREE.Vector3();private c=new THREE.Vector3();private u=new THREE.Vector3();private v=new THREE.Vector3();private heading=new THREE.Vector3();private axis=new THREE.Vector3();
  constructor(scene:THREE.Scene,private kit:Pick<VfxKit,'budget'>&Partial<VfxKit>){this.stage=MoveStage.for(scene,kit);this.rings=new Batch(scene,'rings',new THREE.RingGeometry(.94,1,32),64);this.slashes=new Batch(scene,'ink-slashes',hagureFlowGeometry(),128);this.shards=new Batch(scene,'shards',new THREE.OctahedronGeometry(1,0),96);}
  load(_ids:readonly string[]){return Promise.resolve();}
- handle(e:CombatEvent,fighters?:ReadonlyMap<string,Fighter>){if(this.disposed)return;this.staged(e,fighters);if(['eliminated','respawn','whiff','rejected'].includes(e.kind)){for(const h of this.impacts)if(h.actor===e.actorId||h.target===e.actorId)h.actor='';return;}if(!isHagureSnapBite(e.fighter)||e.kind!=='hit'||!e.endpoint)return;for(let i=0;i<128;i++)if(this.seen[i]===e.id&&this.seenTime[i]===e.serverTime)return;const f=fighters?.get(e.actorId);if(!f)return;const key=this.eventCursor++%128;this.seen[key]=e.id;this.seenTime[key]=e.serverTime;const h=this.impacts[this.cursor++%24];h.actor=e.actorId;h.target=e.targetId??'';h.born=e.serverTime;h.grade=e.slot==='ultimate'&&!e.branch?(e.contactIndex===4?3:1.4):e.slot==='light'?1:1.8;h.point.set(e.endpoint.x,e.endpoint.y,e.endpoint.z);h.yaw=f.state.yaw;h.cosmic=!!f.state.awakened;h.seed=e.id;if(h.grade===3&&involvesLocal(e.actorId,e.targetId))SIGNATURE.screen?.impactFrame?.(.42,h.point);}
+ handle(e:CombatEvent,fighters?:ReadonlyMap<string,Fighter>){if(this.disposed)return;this.staged(e,fighters);if(['eliminated','respawn','whiff','rejected'].includes(e.kind)){for(const h of this.impacts)if(h.actor===e.actorId||h.target===e.actorId)h.actor='';return;}if(!isHagureSnapBite(e.fighter)||e.kind!=='hit'||!e.endpoint)return;for(let i=0;i<128;i++)if(this.seen[i]===e.id&&this.seenTime[i]===e.serverTime)return;const f=fighters?.get(e.actorId);if(!f)return;const key=this.eventCursor++%128;this.seen[key]=e.id;this.seenTime[key]=e.serverTime;const h=this.impacts[this.cursor++%24];h.actor=e.actorId;h.target=e.targetId??'';h.born=e.serverTime;h.grade=e.slot==='ultimate'&&!e.branch?(e.contactIndex===4?3:1.4):e.slot==='light'?1:1.8;h.point.set(e.endpoint.x,e.endpoint.y,e.endpoint.z);h.yaw=f.state.yaw;h.moonless=!!f.state.awakened;h.seed=e.id;if(h.grade===3&&involvesLocal(e.actorId,e.targetId))SIGNATURE.screen?.impactFrame?.(.42,h.point);}
  /** What a blow that landed leaves, once, as it lands: the blast, the cuts, the whirlwind. In water, or awakened in stars. */
  private staged(e:CombatEvent,fighters?:ReadonlyMap<string,Fighter>){
   const blow=this.book.take(e,fighters);if(!blow)return;
-  const st=this.stage,{point,ground,dir,side,floor,t}=blow,cosmic=!!blow.actor?.state.awakened,look=cosmic?COSMOS:WATER,tilt=e.id%2?1:-1;
+  const st=this.stage,{point,ground,dir,side,floor,t}=blow,moonless=!!blow.actor?.state.awakened,look=moonless?COSMOS:WATER,tilt=e.id%2?1:-1;
   const slash=(lean:number,size:number,width:number,at:number,life:number)=>this.cuts.add(point,this.axis.copy(side).multiplyScalar(Math.cos(lean)).addScaledVector(UP,Math.sin(lean)).normalize(),this.c.copy(dir).multiplyScalar(-size*.22),size,width,look,at,life);
   if(e.slot==='light'){st.burst(point,look,.4,t,{dir,floor,clean:true});slash(.5*tilt,.8,.06,t,.22);return;}
   if(e.slot==='heavy'){
@@ -100,20 +100,20 @@ export class HagureSnapBite{
  }
  update(time:number,fighters:ReadonlyMap<string,Fighter>,_flights?:ReadonlyMap<string,Flight>){if(this.disposed)return;this.rings.begin();this.slashes.begin();this.shards.begin();const detail=this.kit.budget>=.65,st=this.stage.open(time);
   for(const f of fighters.values()){const s=f.state;if(!isHagureSnapBite(s.fighter)||!s.alive||s.whiffedAt!==undefined)continue;
-   if(s.action==='awaken'&&s.actionTime>.39&&s.actionTime<.96){const u=(s.actionTime-.39)/.57,alpha=Math.sin(u*Math.PI);this.p.copy(f.group.position);this.p.y+=.04;const r=.25+u*.8;this.rings.add(this.p,this.flat,r,r,1,INK,alpha*.7);this.rings.add(this.p,this.flat,r*.94,r*.94,1,COSMIC,alpha*.55);
-    for(const side of['LeftHand','RightHand']){const hand=f.drawnJoint(side);if(!hand)continue;hand.getWorldPosition(this.p);this.q.setFromAxisAngle(UP,s.yaw);this.spin.setFromAxisAngle(Z,u*2.8+(side==='LeftHand'?1.4:0));this.q.multiply(this.spin);this.slashes.add(this.p,this.q,.31,.24,1,COSMIC,alpha*.7);this.slashes.add(this.p,this.q,.26,.19,1,HOT,alpha*.8);}
+   if(s.action==='awaken'&&s.actionTime>.39&&s.actionTime<.96){const u=(s.actionTime-.39)/.57,alpha=Math.sin(u*Math.PI);this.p.copy(f.group.position);this.p.y+=.04;const r=.25+u*.8;this.rings.add(this.p,this.flat,r,r,1,INK,alpha*.7);this.rings.add(this.p,this.flat,r*.94,r*.94,1,MOONLESS,alpha*.55);
+    for(const side of['LeftHand','RightHand']){const hand=f.drawnJoint(side);if(!hand)continue;hand.getWorldPosition(this.p);this.q.setFromAxisAngle(UP,s.yaw);this.spin.setFromAxisAngle(Z,u*2.8+(side==='LeftHand'?1.4:0));this.q.multiply(this.spin);this.slashes.add(this.p,this.q,.31,.24,1,MOONLESS,alpha*.7);this.slashes.add(this.p,this.q,.26,.19,1,HOT,alpha*.8);}
    }
    if(['light','heavy','special','ultimate'].includes(s.action))this.pose(f,time,s.actionTime*s.actionDuration);
    if(!['light','heavy','special','ultimate'].includes(s.action)||s.actionTime<.12||s.actionTime>.85)continue;
    const elapsed=s.actionTime*s.actionDuration;if(s.action==='ultimate'&&s.confirmedAt===undefined&&elapsed>.48)continue;
    f.strikePoint(this.p);const alpha=Math.sin(s.actionTime*Math.PI)*.72,size=s.action==='special'?.43:s.action==='ultimate'?.32:.23;
-   this.q.setFromAxisAngle(UP,s.yaw);this.spin.setFromAxisAngle(Z,(s.actionTime-.2)*3.4+Math.sin(elapsed*5)*.8);this.q.multiply(this.spin);this.slashes.add(this.p,this.q,size,size*.76,1,INK,alpha*.9);this.slashes.add(this.p,this.q,size*.90,size*.64,1,s.awakened?COSMIC:BLUE,alpha);this.slashes.add(this.p,this.q,size*.77,size*.49,1,HOT,alpha*.75);
+   this.q.setFromAxisAngle(UP,s.yaw);this.spin.setFromAxisAngle(Z,(s.actionTime-.2)*3.4+Math.sin(elapsed*5)*.8);this.q.multiply(this.spin);this.slashes.add(this.p,this.q,size,size*.76,1,INK,alpha*.9);this.slashes.add(this.p,this.q,size*.90,size*.64,1,s.awakened?MOONLESS:BLUE,alpha);this.slashes.add(this.p,this.q,size*.77,size*.49,1,HOT,alpha*.75);
   }
 
-  for(const h of this.impacts){if(!h.actor)continue;const age=time-h.born;if(age<0)continue;if(age>.38){h.actor='';continue;}const fade=1-age/.38,r=.24+age*(1.7+h.grade*.45);this.q.setFromAxisAngle(UP,h.yaw);this.rings.add(h.point,this.q,r,r,1,INK,fade*.92);if(h.grade>1)this.rings.add(h.point,this.q,r*.91,r*.91,1,h.cosmic?COSMIC:BLUE,fade*.8);
-   const n=h.grade===3?(detail?4:2):h.grade>1?2:1;for(let i=0;i<n;i++){this.q.setFromAxisAngle(UP,h.yaw);this.spin.setFromAxisAngle(Z,(i/n*Math.PI)+.45+h.seed*.19);this.q.multiply(this.spin);this.slashes.add(h.point,this.q,r*1.45,r,1,INK,fade);this.slashes.add(h.point,this.q,r*1.34,r*.84,1,i%2?HOT:h.cosmic?COSMIC:BLUE,fade*.85);}
-   for(let i=0;i<(detail?6:3);i++){const angle=i*2.399+h.seed*.17;this.p.copy(h.point);this.p.x+=Math.cos(angle)*r*.78;this.p.y+=Math.sin(angle)*r*.78;this.q.setFromAxisAngle(Z,angle);this.shards.add(this.p,this.q,.018,.05+.035*h.grade,.014,i%2?INK:h.cosmic?COSMIC:BLUE,fade*.78);}
-   if(h.grade===3){this.p.copy(h.point);this.p.y=Math.max(.035,this.p.y-.8);this.rings.add(this.p,this.flat,r*1.2,r*1.2,1,h.cosmic?COSMIC:BLUE,fade*.55);}
+  for(const h of this.impacts){if(!h.actor)continue;const age=time-h.born;if(age<0)continue;if(age>.38){h.actor='';continue;}const fade=1-age/.38,r=.24+age*(1.7+h.grade*.45);this.q.setFromAxisAngle(UP,h.yaw);this.rings.add(h.point,this.q,r,r,1,INK,fade*.92);if(h.grade>1)this.rings.add(h.point,this.q,r*.91,r*.91,1,h.moonless?MOONLESS:BLUE,fade*.8);
+   const n=h.grade===3?(detail?4:2):h.grade>1?2:1;for(let i=0;i<n;i++){this.q.setFromAxisAngle(UP,h.yaw);this.spin.setFromAxisAngle(Z,(i/n*Math.PI)+.45+h.seed*.19);this.q.multiply(this.spin);this.slashes.add(h.point,this.q,r*1.45,r,1,INK,fade);this.slashes.add(h.point,this.q,r*1.34,r*.84,1,i%2?HOT:h.moonless?MOONLESS:BLUE,fade*.85);}
+   for(let i=0;i<(detail?6:3);i++){const angle=i*2.399+h.seed*.17;this.p.copy(h.point);this.p.x+=Math.cos(angle)*r*.78;this.p.y+=Math.sin(angle)*r*.78;this.q.setFromAxisAngle(Z,angle);this.shards.add(this.p,this.q,.018,.05+.035*h.grade,.014,i%2?INK:h.moonless?MOONLESS:BLUE,fade*.78);}
+   if(h.grade===3){this.p.copy(h.point);this.p.y=Math.max(.035,this.p.y-.8);this.rings.add(this.p,this.flat,r*1.2,r*1.2,1,h.moonless?MOONLESS:BLUE,fade*.55);}
   }
   this.book.each(fighters,HAGURE_STREAM_BEATS.end,this.gather);
   for(const w of this.whirls){

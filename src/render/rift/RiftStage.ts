@@ -25,7 +25,8 @@ import { dressFor, fitOf, loadPropModels, propModel, propModelsSettled, type Fit
 import './looks';
 import { RIFT_LOOKS } from './looks';
 import { INK_ON, inkMaterial, inkSkyMesh, inkStageMaterial, setInkPage, setInkResolution, updateInkSky } from './ink';
-import { riftPlaceBeyond, riftPlaceGround, riftPlaceProp, riftPlaceTear, riftPlaceWater } from '../../originals/places/riftPlaces';
+import { riftPlaceBeyond, riftPlaceGround, riftPlaceProp, riftPlaceStanding, riftPlaceTear, riftPlaceWater } from '../../originals/places/riftPlaces';
+import { BEACON_DECK, BEACON_TOWER_H, harborBeacon } from '../../originals/places/drownedHarbor';
 
 /** Fires one stage can light. */
 const FIRES = 128;
@@ -104,7 +105,7 @@ vec3 groundColor( vec3 w, out float glow ) {
 	if ( uGroundPainted > .5 ) {
 		// The paint, a little lighter and darker in broad drifts (one tile's light, repeated, was flat).
 		c = paint * uGroundGain * ( .82 + .36 * mid );
-		// (The Offering goes on to its own splits: its painted ones, fine as they
+		// (Dusk goes on to its own splits: its painted ones, fine as they
 		// are, averaged away past a few metres - the field read as dark red noise.)
 		if ( uGroundKind > .5 && uGroundKind < 2.5 ) return c;
 	}
@@ -144,7 +145,7 @@ vec3 groundColor( vec3 w, out float glow ) {
 		c = mix( mix( flag, c, .35 ), uGroundMud * .45, seam );
 		c *= 1.0 - .35 * smoothstep( .02, 0.0, gCells( p * .4, 1.0 ) );
 	} else {
-		// The Offering's ground: black rock, split, with the rift's red in the splits.
+		// Dusk's ground: black rock, split, with the rift's red in the splits.
 		float crack = gCells( p * .22 + gFbm( p * .1 ) * 2.0, 1.0 );
 		c = mix( c, uGroundMud * .4, smoothstep( .1, .02, crack ) );
 		float vein = smoothstep( .035, .0, crack ) * ( .6 + .4 * sin( uGroundTime * 1.7 + p.x * .3 + p.y * .2 ) );
@@ -320,6 +321,7 @@ function sculptStage(stage: RiftStageId): Prebuilt {
     if (tag) for (let f = lit; f < fires.length; f++) fires[f].tag = tag;
   });
   sculpt.tag(0);
+  riftPlaceStanding(sculpt, stage, layout.props, fires); // what stands with a rebuilt place's props, models or not
   const pieces: SetPiece[] = [];
   buildSurroundings(sculpt, stage, palette, fires, pieces, dressed);
   sculpt.tag(0);
@@ -928,9 +930,8 @@ function house(k: Sculpt, p: RiftProp, fires: FireSpot[], ruined: boolean) {
     k.use('glow', glow).box(x, wallH * .62, z, .7, .8, .04, rot);
     // Soot licked up the wall from it to the eaves.
     if (burning) { const [sx, sz] = local(p, t * w, side * (d / 2 + .07)); k.use('wood', CHAR, .05).box(sx, wallH * .62 + .45, sz, .62, wallH * .38 - .45, .03, rot, 0, (r - .5) * .12); }
-    // Flames out of the windows, and smoke off them: the roofs burned above
-    // the fight's frame, and from where it is watched the village looked lit, not burning.
-    if (burning) fires.push({ x, y: wallH * .45, z, size: 1.25, smoke: .3, seed: r * 20 + t * 3 + side });
+    // (The flames out of the windows burn in fire baskets on posts in the street before them:
+    // src/originals/places/burningVillage.ts.)
   }
   // And at its foot, what fell from it burning in the street.
   if (burning) { const [gx, gz] = local(p, (r - .5) * w * .6, (r > .5 ? 1 : -1) * (d / 2 + .9)); fires.push({ x: gx, y: .1, z: gz, size: 1.5 + r, smoke: .6, seed: r * 47 + 9 }); }
@@ -968,12 +969,7 @@ function tower(k: Sculpt, p: RiftProp, stage: RiftStageId, fires: FireSpot[]) {
     const a = (i / 3 - .5) * (w - .7);
     k.box(p.x + a, h, p.z + side * (w / 2 - .3), .7, .8, .6, p.rot).box(p.x + side * (w / 2 - .3), h, p.z + a, .6, .8, .7, p.rot);
   }
-  if (stage === 'rift-village') {
-    // The bell tower: a peaked roof and the bell in its arch.
-    k.use('stone', 0x2a2628).cone(p.x, h + .8, p.z, w * .75, 4.5, 4, Math.PI / 4);
-    k.use('metal', 0x6a5a3a).cylinder(p.x, h - 2.6, p.z, .7, 1.4, 12, 0, 0, 0, .55);
-    fires.push({ x: p.x, y: h + 1, z: p.z, size: 2.8, smoke: 1, seed: 7 });
-  }
+  // (The village's tower is a watchtower: src/originals/places/burningVillage.ts.)
   for (const side of [-1, 1]) k.use('glow', 0xff8a3a).box(p.x + side * (w / 2 + .01), h * .7, p.z, .04, 1.2, .3, 0);
   if (stage === 'rift-fortress') {
     // The fortress's towers burn: from the top from the start, and out of the
@@ -1177,16 +1173,21 @@ function buildSurroundings(k: Sculpt, stage: RiftStageId, palette: Palette, fire
       const a = i / 26 * Math.PI * 2 + rnd() * .2, r = edge + 22 + rnd() * 30, x = Math.cos(a) * r, z = Math.sin(a) * r;
       k.rock(x, at(x, z) - 2, z, 10 + rnd() * 14, 8 + rnd() * 16, 9 + rnd() * 10, rnd() * 6);
     }
-    // The wall: a low stone ring with a lantern at every pier of it.
+    // The wall: a low stone ring, a stone fire bowl with its cold embers on every fourth pier (drawn on the wall's cap,
+    // below).
     k.use('stone', 0x6a707a, .05);
     const ring = edge + 4.5;
     for (let i = 0; i < 44; i++) {
       const a = i / 44 * Math.PI * 2, x = Math.cos(a) * ring, z = Math.sin(a) * ring;
       k.box(x, at(x, z) - .2, z, 4.4, 1.6, .9, Math.PI / 2 - a);
-      if (i % 4 === 0) { k.use('glow', 0x5aa8ff).box(x, at(x, z) + 1.5, z, .4, .4, .4, -a); k.use('stone', 0x6a707a, .05); }
     }
     k.use('plaster', 0xe6ecf4, .04);
     for (let i = 0; i < 44; i++) { const a = i / 44 * Math.PI * 2, x = Math.cos(a) * ring, z = Math.sin(a) * ring; k.box(x, at(x, z) + 1.4, z, 4.5, .14, 1, Math.PI / 2 - a); }
+    for (let i = 0; i < 44; i += 4) {
+      const a = i / 44 * Math.PI * 2, x = Math.cos(a) * ring, z = Math.sin(a) * ring, top = at(x, z) + 1.54;
+      k.use('stone', 0x6a707a, .05).cylinder(x, top, z, .16, .1, 8).cylinder(x, top + .1, z, .2, .16, 10, 0, 0, 0, 1.5);
+      k.use('glow', 0x5aa8ff).cylinder(x, top + .24, z, .27, .04, 10);
+    }
     // Pagodas beyond it: storeys of dark timber under snowed roofs.
     for (let i = 0; i < 7; i++) {
       const a = (i + .5) / 7 * Math.PI * 2 + rnd() * .3, r = edge + 16 + rnd() * 26, x = Math.cos(a) * r, z = Math.sin(a) * r;
@@ -1208,8 +1209,13 @@ function buildSurroundings(k: Sculpt, stage: RiftStageId, palette: Palette, fire
       k.cylinder(x, g, z, .3, tall, 6, rnd() * 6, (rnd() - .5) * .12, (rnd() - .5) * .12, .25);
       for (let b = 0; b < 3; b++) k.box(x, g + tall * (.45 + b * .15), z, 2.4 - b * .6, .12, .12, rnd() * 6, 0, (rnd() - .5) * .6);
     }
-    // Braziers at the shrine's steps: the only warm light up here.
-    for (const x of [-7, 7]) fires.push({ x, y: 1.6, z: 17, size: 1.4, smoke: .6, seed: x + 50 });
+    // Braziers at the shrine's steps: the only warm light up here, each fire in a brazier of its own (the Rift's
+    // code-built one).
+    for (const x of [-7, 7]) {
+      k.use('metal', 0x2a2622).cylinder(x, 0, 17, .12, 1.2, 6).cylinder(x, 1.15, 17, .55, .35, 10, 0, 0, 0, 1.3);
+      k.use('glow', 0xff8a3a).cylinder(x, 1.35, 17, .5, .08, 10);
+      fires.push({ x, y: 1.6, z: 17, size: 1.4, smoke: .6, seed: x + 50 });
+    }
   } else if (stage === 'rift-grove') {
     // Bamboo walls the forest in, thick past the clearing and taller the
     // further in, paper lanterns hung in it, and great stands that fall.
@@ -1225,11 +1231,14 @@ function buildSurroundings(k: Sculpt, stage: RiftStageId, palette: Palette, fire
       const a = rnd() * Math.PI * 2, r = edge + 3 + rnd() * 30, x = Math.cos(a) * r, z = Math.sin(a) * r;
       k.rock(x, at(x, z) + 10 + rnd() * 9, z, 1.4 + rnd() * 1.8, .7 + rnd() * .9, 1.4 + rnd() * 1.8, rnd() * 6);
     }
-    // Lanterns hung in the stalks, some still lit.
+    // Fire baskets on posts standing in the bamboo, their embers red and some still burning (the same draws of the
+    // place's random, so nothing after them moves).
     for (let i = 0; i < 26; i++) {
-      const a = rnd() * Math.PI * 2, r = edge + 2 + rnd() * 16, x = Math.cos(a) * r, z = Math.sin(a) * r, y = at(x, z) + 3 + rnd() * 3;
-      k.use('glow', 0xff3a1a).cylinder(x, y, z, .32, .6, 8, 0, 0, 0, .8);
-      if (rnd() < .4) fires.push({ x, y: y + .3, z, size: .5, smoke: .2, seed: rnd() * 90 });
+      const a = rnd() * Math.PI * 2, r = edge + 2 + rnd() * 16, x = Math.cos(a) * r, z = Math.sin(a) * r, g = at(x, z), post = 1.5 + rnd() * .8;
+      k.use('wood', 0x2a1a12, .1).cylinder(x, g - .1, z, .07, post + .1, 6, 0, 0, 0, .85);
+      k.use('metal', 0x2a2622, .1).cylinder(x, g + post, z, .2, .14, 8, 0, 0, 0, 1.6).cylinder(x, g + post + .14, z, .32, .2, 10, 0, 0, 0, 1.3);
+      k.use('glow', 0xff3a1a).cylinder(x, g + post + .3, z, .36, .05, 10);
+      if (rnd() < .4) fires.push({ x, y: g + post + .32, z, size: .6, smoke: .2, seed: rnd() * 90 });
     }
     // Giant stands beyond: they come down as the grove is fought through.
     for (let i = 0; i < 10; i++) {
@@ -1283,12 +1292,11 @@ function buildSurroundings(k: Sculpt, stage: RiftStageId, palette: Palette, fire
     }
     // The harbour's light on its rock, off to one side: a tower in bands of ink and
     // paper (scripts/survival/landmarks: a stone cylinder, if its model never comes),
-    // its lamp lit.
+    // its beacon burning in a basket on its gallery (src/originals/places/drownedHarbor.ts).
     const light = { x: 56, z: halfZ + 30 };
-    dressed.push({ id: 'lighthouse', tag: 0, far: true, x: light.x, y: -2.4, z: light.z, yaw: -.6, h: 50,
-      code: s => s.use('stone', 0x5a5850).cylinder(light.x, -1, light.z, 3.2, 40, 10, 0, 0, 0, .7) });
-    k.use('glow', 0xfff2c8).cylinder(light.x, 39.6, light.z, 1.55, 3.3, 8);
-    fires.push({ x: light.x, y: 41, z: light.z, size: 3.4, smoke: .3, seed: 4 });
+    dressed.push({ id: 'lighthouse', tag: 0, far: true, x: light.x, y: -2.4, z: light.z, yaw: -.6, h: BEACON_TOWER_H,
+      code: s => s.use('stone', 0x5a5850).cylinder(light.x, -1, light.z, 3.2, BEACON_DECK + 1, 10, 0, 0, 0, .7) });
+    harborBeacon(k, fires, light.x, light.z);
     // What the wave did to the ships in port: their fore halves, thrown up on the
     // shallows and burning, a mast and its rags standing over each.
     const wrecks: readonly [x: number, z: number, yaw: number, pitch: number, roll: number, tall: number][] = [

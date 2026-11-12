@@ -20,7 +20,7 @@ describe('Elder visible-body native strikes and transformations',()=>{
   try{
    const entry={...state,awakened:true,action:'awaken' as const,actionDuration:AWAKENING_ENTRY,actionStarted:1,actionSeq:1};
    advance(f,entry,awakeningSwapAt(id)-.01);expect(f.motionEvidence().formVisible).toBe(false);
-   advance(f,entry,.85);expect(f.motionEvidence().formVisible).toBe(true);expect(f.motionEvidence().formClip).toBe(id==='kusushi'?'GRAND CHAMPION':'THE OLD LION');
+   advance(f,entry,.85);expect(f.motionEvidence().formVisible).toBe(true);expect(f.motionEvidence().formClip).toBe(id==='kusushi'?'YOKOZUNA':'THE OLD LION');
    for(let stage=1;stage<=3;stage++){
     const m=rushMove(id,stage,true);advance(f,{...state,awakened:true,action:'light',chain:stage,actionDuration:m.duration,actionStarted:2+stage,actionSeq:2+stage},m.contacts[0]);
     expect(f.motionEvidence().formVisible).toBe(true);expect(f.motionEvidence().formClip).toBe(`Rush ${stage}`);

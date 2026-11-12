@@ -16,7 +16,7 @@ import { bonshoStrikePoint } from '../../originals/bonshoStrike';
 import { HIGHSUN_BLADE } from '../../originals/highsunBlade';
 import { kinuStrikeJoint } from '../../render/signature/KinuStoneThreadContact';
 import { kinuSpiritSurfacePoint } from '../../render/signature/KinuSpiritSurface';
-import { madakeStrikePoint } from '../../render/signature/MadakeGatesContact';
+import { madakeStrikePoint } from '../../render/signature/MadakeSeasonsContact';
 import { AKAYURI_BLADE } from '../../render/signature/AkayuriNightbladeContact';
 import { hagureStrikeJoint } from '../../render/signature/HagureSnapBiteContact';
 import { hagureSurfacePoint } from '../../render/signature/HagureContactSurface';
@@ -324,7 +324,7 @@ export const FIGHTER_SOCKETS: Readonly<Partial<Record<FighterId, FighterSockets>
     socket: ctx => { const socket = hakushiStrikeSocket(ctx.shown.state.action, ctx.shownTime, ctx.shownClip, ctx.index); return socket === 'Mouth' ? 'Mouth' : { joint: socket, of: 'shown' }; },
   },
   suzuran: { points: { Both: 'handLR', Left: 'handL', Right: 'handR' }, socket: ctx => suzuranStrikeSide(ctx.state.action, ctx.elapsed, ctx.clip, ctx.index) },
-  // 15 October 2026 ("rxc"): his first and fourth lights are baked takes thrown with the RIGHT hand (Jirenga's Bedrock Jab under
+  // 15 October 2026 ("rxc"): his first and fourth lights are baked takes thrown with the RIGHT hand (Banjaku's Bedrock Jab under
   // Tide Palm, Sekka's Hailstone Fist under Rush 3: scripts/night/anim/picks.json), where the native clips struck with the left:
   // the blow's effect leaves the hand that throws it. The rest strike with the hand oyashioStrikeSide names.
   oyashio: { points: { Both: 'handLR', Left: 'handL', Right: 'handR' }, socket: ctx => ctx.state.action === 'light' && (ctx.clip === 'Tide Palm' || ctx.clip === 'Rush 3') ? 'Right' : oyashioStrikeSide(ctx.state.action, ctx.elapsed, ctx.clip) },
@@ -418,7 +418,7 @@ export const FIGHTER_SOCKETS: Readonly<Partial<Record<FighterId, FighterSockets>
   ward: { contact: ctx => (ctx.state.action === 'special' || ctx.state.action === 'ultimate') && ctx.body.slotClip(ctx.state, ['Cautery Blade', 'Flatline Shock', CROSSMATCH_TAKE.open.clip]) ? 'handL' : undefined },
   // Yuragi's fire leaves both palms; Gaunt' Cleave wave his GRAVEDIGGER's edge and his cannon his iron left arm; Dorado's
   // Sovereign Shot his flintlock; Shiun's GLASS LANCES gathers between his wings; Taisei's ki in both hands, and
-  // Ouga's for his Shikou-Ha and Kyokko-Ho - drawn toward his knuckles, where his fists are.
+  // Ouga's for his Throne Wave and Royal Aurora - drawn toward his knuckles, where his fists are.
   kagari: { charge: ctx => ctx.state.action === 'heavy' && !ctx.state.branch ? 'handRL' : undefined },
   gaunt: { charge: ctx => ctx.state.action === 'heavy' && !ctx.state.branch ? 'strike' : 'handL' },
   dorado: { charge: ctx => ctx.state.action === 'special' ? 'handL' : undefined },
@@ -429,7 +429,7 @@ export const FIGHTER_SOCKETS: Readonly<Partial<Record<FighterId, FighterSockets>
   }) : undefined },
   taisei: { charge: 'handRL' },
   ouga: { charge: ctx => ctx.state.action === 'special' || ctx.state.action === 'ultimate' ? 'handRL' : undefined, hands: { toward: 'handmiddle1', by: .65 } },
-  // Konta: Kurobi's beast bomb at his jaws; the Senpugan in his palm, the Galewheel held up over it, the clone's
+  // Konta: Kurobi's beast bomb at his jaws; the Kazeyose in his palm, the Galewheel held up over it, the clone's
   // between both hands - a combo ender from his hand wherever its own take holds it.
   konta: {
     formHands: 'awakened',

@@ -50,11 +50,29 @@ export const VFX_PROFILES: Readonly<Record<VfxLevel, Readonly<VfxProfile>>> = {
   minimal: { impactFrame: 0, chroma: 0, speedLines: 0, grade: .2, cinema: .3, blur: 0, powerDim: .3, bloom: .6, spriteGain: .6, spriteSize: .65, shells: .45, lights: .3, bodyFlash: .5, aura: .65, glow: .45, armoryOpacity: .7, lettering: 'tags' },
 };
 
+/** So big ink and ghost effects - afterimages, halftone smears, a white spiky mass - never cover the action: while the
+ *  person's fighter is in Goal Rush's SPORT stance on the sport rules (main.ts, setVfxSport) every factor is at most
+ *  this - no speed lines, impact frames, fringes or blur, the sprites and shells small and faint, the auras and glows
+ *  down, only the lettering that tells. The FIGHT stance (Tab) gives the player's own level back at once. */
+export const SPORT_VFX: Readonly<VfxProfile> = { impactFrame: 0, chroma: 0, speedLines: 0, grade: .3, cinema: .4, blur: 0, powerDim: .3, bloom: .7, spriteGain: .65, spriteSize: .65, shells: .35, lights: .4, bodyFlash: .6, aura: .5, glow: .5, armoryOpacity: .6, lettering: 'tags' };
+
 /** The level in force and its factors, read live by the systems above. */
 export const VFX: { level: VfxLevel } & VfxProfile = { level: 'full', ...VFX_PROFILES.full };
+let chosen: VfxLevel = 'full', sporting = false;
+const LETTERING = ['tags', 'big', 'all'] as const;
+function apply() {
+  Object.assign(VFX, VFX_PROFILES[chosen], { level: chosen });
+  if (!sporting) return;
+  for (const key of Object.keys(SPORT_VFX) as (keyof VfxProfile)[]) {
+    if (key === 'lettering') VFX.lettering = LETTERING[Math.min(LETTERING.indexOf(VFX.lettering), LETTERING.indexOf(SPORT_VFX.lettering))];
+    else (VFX as unknown as Record<string, unknown>)[key] = Math.min(VFX[key] as number, SPORT_VFX[key] as number);
+  }
+}
 
 /** Puts `level` in force (an unknown one is Full). */
 export function setVfxLevel(level: VfxLevel | undefined) {
-  const next: VfxLevel = level && level in VFX_PROFILES ? level : 'full';
-  Object.assign(VFX, VFX_PROFILES[next], { level: next });
+  chosen = level && level in VFX_PROFILES ? level : 'full';
+  apply();
 }
+/** Whether the person's fighter is in football's SPORT stance this frame (SPORT_VFX over the level). */
+export function setVfxSport(on: boolean) { if (on !== sporting) { sporting = on; apply(); } }

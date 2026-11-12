@@ -6,11 +6,11 @@ import type { Fighter } from '../Fighter';
  *  stands on them (LANDED: the prediction's for your own swing, the server's
  *  for everyone else's, a guard that took it included) - or undefined.
  *
- *  A technique's discharge on its contact frame - Shrike Bolt's and Sickle Bolt's
+ *  A technique's discharge on its contact frame - Storm Talon's and Sickle Bolt's
  *  burst of lightning, Setsu's - used to go off from the hand a metre and
  *  more in every direction whether the blow had landed or not, so a body
  *  standing just out of the blow's reach was drawn engulfed in it and took
- *  nothing (the third critic: "Shiden's Shrike Bolt: the lightning visibly
+ *  nothing (the third critic: "Shiden's Storm Talon: the lightning visibly
  *  engulfs a target at 2.6 m that takes nothing; it only hits at 2.2 m or
  *  closer"). The discharge goes into the body this names; with nobody named,
  *  it fizzles at the hand, inside the blow's own reach. */

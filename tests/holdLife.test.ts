@@ -10,11 +10,11 @@ import type { AttackSlot, FighterId } from '../src/game/types';
 
 /** A cast that holds a pose keeps moving.
  *
- *  The blind critic read Grand Tide, Kenzo's and Kuon's ultimates and
+ *  The blind critic read Spring Tide, Kenzo's and Kuon's ultimates and
  *  Shirokane's seal as statues. The measure (scripts/probe_hold_length.mts): on
  *  every 60 Hz frame of a cast, the largest local turn of any body joint, and
  *  the longest unbroken run of frames under 1.5 degrees before the move's last
- *  blow. Before the held-pose layer: Grand Tide 4.2 s, Kenzo 2.3 s, Kuon
+ *  blow. Before the held-pose layer: Spring Tide 4.2 s, Kenzo 2.3 s, Kuon
  *  2.2 s, Kosho 1.8 s. The bar: under 0.4 s for a special, 0.8 s for an
  *  ultimate. Whichever body is drawn is measured - Full Swell's for the
  *  giant fist. */

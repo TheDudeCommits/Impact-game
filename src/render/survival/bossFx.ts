@@ -14,7 +14,7 @@ import { INK_ON, inkFlood } from '../rift/ink';
  *  as its own decal; a line torn open along the floor; a ring rolling out you
  *  can see coming and jump; the thing a boss gathers above itself, and what
  *  happens when it is let go or broken; Mirabel's two familiars circling her;
- *  the pressure round Rakshasa; Barrow's dark vortex; copies breaking like
+ *  the pressure round Dune Oni; Barrow's dark vortex; copies breaking like
  *  glass. And the fight's own beats: the awakening's gather and burst and the
  *  aura it burns with after, FINISH IT, the finisher, a team ultimate. */
 
