@@ -108,7 +108,14 @@ const SIDE = {back: 14, up: 7, lookZ: 8, lookY: .3, fov: 33, most: 0, dead: DRIF
  *  0); only a ball over `liftFrom` tilts the look a little after it - over the far court that is sky (the stands behind
  *  each baseline sit low on volleyball's court: BallArena). A body is a fifth smaller than the closer stand had it (112
  *  px at your mid-court at 720p, their hitter at the net 89) and still 1.6 times the classic's. */
-const VOLLEY = {back: 18, up: 9.5, lookZ: 1, lookY: 2.4, fov: 27, most: .8, dead: DRIFT.dead, liftFrom: 8.5, liftShare: .3, liftMost: 1, servePush: .5, serveDown: .2, serveBack: 2.4, serveFov: 3,
+/** So the bodies are big and less of the frame is backdrop: with volleyball's own jump (game/ball/model.ts VOLLEY_JUMP)
+ *  a spike is struck about four metres up, not seven, so the frame needs no room over the net for it: the stand comes in
+ *  to fourteen metres behind your baseline and seven and a half up on a longer lens, looking lower. A 1.8 m body at your
+ *  mid-court is 157 px at 720p (the stand above's 112) and 176 at 1440 x 900 (126); their hitter at the net 120 (89).
+ *  Your court's near corners stay in the frame's foot, the far baseline 41% down, the far wall - and the low crowd strip
+ *  over it - 27% down (42% from the stand above), a spike over either side of the net a fifth of the way down. A set's
+ *  top (5.8 m) tilts the look up a little after it (`liftFrom`). */
+const VOLLEY = {back: 14, up: 7.5, lookZ: 1, lookY: .8, fov: 24, most: .8, dead: DRIFT.dead, liftFrom: 5, liftShare: .35, liftMost: 1, servePush: .5, serveDown: .2, serveBack: 2.4, serveFov: 3,
   blockLift: .5, blockPhoneLift: 2.2, blockToward: 1.5, blockFov: 3, move: .8, lens: .7, wide: 1, wideFov: 0, narrowFov: 0, across: 16 / 9, narrowMost: 52, setLift: 0, theirLift: 0};
 const STANDS: Record<SpikeCamStyle, Record<keyof typeof CLASSIC, number>> = {classic: CLASSIC, side: SIDE};
 const clamp = THREE.MathUtils.clamp;

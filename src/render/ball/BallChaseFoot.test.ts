@@ -68,7 +68,8 @@ describe("Goal Rush's SPORT camera", () => {
       expect(Math.abs(p.x)).toBeLessThanOrEqual(R.halfX - .2);
       expect(Math.abs(p.z)).toBeLessThanOrEqual(R.halfZ - .2);
       expect(Math.abs(p.x) + Math.abs(p.z)).toBeLessThanOrEqual(R.halfX + R.halfZ - R.corner + .1);
-      expect(p.y).toBeGreaterThan(6);
+      // (Up, but no higher over a body it stands close to than BallChase FOOT.liftPer allows - 6 m at least.)
+      expect(p.y).toBeGreaterThan(5.9);
       // (Still looking along the heading, give or take the turn to the play ahead a moved lens makes.)
       const d = new THREE.Vector3(); cam.getWorldDirection(d);
       expect(Math.abs(Math.atan2(Math.sin(Math.atan2(d.x, d.z) - heading), Math.cos(Math.atan2(d.x, d.z) - heading)))).toBeLessThan(.6);

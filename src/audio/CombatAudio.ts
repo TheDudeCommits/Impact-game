@@ -466,7 +466,11 @@ export class CombatAudio {
         targetHealth: target && target.maxHp > 0 ? target.hp / target.maxHp : undefined };
       // (A blow on a body `soften` names - the ball modes' ball - keeps its effects at that share, under the body's own sound.)
       const soft = event.kind === 'hit' && event.targetId ? this.softBodies.get(event.targetId) : undefined;
-      if (at) for (const layer of planCombatAudio(resolved, !!actor?.awakened, scene))
+      // (While `quietSwings` says so - Sky Spike on the volleyball rules, where every swing is a touch of the ball and
+      // the ball's own sound is BallAudio's - a swing plays nothing of the fighter's move: no whoosh, no element, no
+      // move's name called. Its jump, its landing and its dive are still the body's.)
+      const quiet = (event.kind === 'cast' || event.kind === 'release' || event.kind === 'impact' || event.kind === 'confirm' || (event.kind === 'hit' && soft !== undefined)) && !!this.quietSwings?.();
+      if (at && !quiet) for (const layer of planCombatAudio(resolved, !!actor?.awakened, scene))
         this.play(soft !== undefined && (layer.bus ?? 'sfx') === 'sfx' ? { ...layer, gain: layer.gain * soft } : layer,
           (layer.speaker ? players.find(p => p.id === layer.speaker) : undefined) ?? at, local ? 4 : 1, layer.speaker ?? event.actorId, event.id);
       if (self) {
@@ -664,6 +668,9 @@ export class CombatAudio {
   // ---- The ball modes (src/audio/ballAudio.ts): a few general hooks ---------------------------------------------------
   /** Blows on the external body `id` (the ball) keep their effects at `share` of their gain (none: as they are), so the
    *  body's own sound leads and the fighter's blow is its colour underneath. */
+  /** Whether the fighters' swings are quiet now (main.ts: a volleyball match's - each swing is a touch of the ball,
+   *  heard as the ball's: BallAudio). */
+  quietSwings?: () => boolean;
   soften(id: string, share?: number) { if (share === undefined) this.softBodies.delete(id); else this.softBodies.set(id, Math.max(0, share)); }
   private softBodies = new Map<string, number>();
   /** A one-shot by url heard centred on the listener, at a presentation sound's priority (a whistle, a horn, a riser: the

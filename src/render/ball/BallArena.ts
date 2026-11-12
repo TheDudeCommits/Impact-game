@@ -211,8 +211,13 @@ export class BallArena {
    *  - The net's top band is white and `tape` m deep and stays whole on the thinned net; the barrier round the free zone is
    *    a warm grey (`frame`), not ink, its glass a `glass` share as strong and its trim unlit, so the net is the one line
    *    across the frame.
-   *  - The ink circle painted on each half (the enso) is `enso` as dark. */
-  static readonly VOLLEY_STAGE={drop:9,tide:5.5,bannerX:2.6,bannerZ:.62,pole:6,flag:.72,tape:.2,frame:0x8a7a6e,glass:.45,enso:.4} as const;
+   *  - The ink circle painted on each half (the enso) is `enso` as dark.
+   *  - The net's mesh lighter, so the far team is not hidden behind it: the weave's cords thinner and
+   *    `weave` as strong again (about a tenth of the classic net's), the white band whole over it.
+   *  - Every arena Sky Spike plays in as readable as Tide Court, Ember Rim's dark night too: Ember Rim's court
+   *    slabs a pale ash basalt (`emberSlab`) with the sides' colours stronger in them, its free zone a lighter rock
+   *    (`emberFree`), so the court reads under the night as the beach's sand does at dusk (stageLooks.ts lights it too). */
+  static readonly VOLLEY_STAGE={drop:9,tide:5.5,bannerX:2.6,bannerZ:.62,pole:6,flag:.72,tape:.2,frame:0x8a7a6e,glass:.45,enso:.4,weave:.42,emberSlab:0x9a8e88,emberFree:0x4a3e3c} as const;
 
   async load(){
     if(this.built)return;this.built=true;
@@ -1030,9 +1035,9 @@ export class BallArena {
         bCol=mix(bSand,bSand*bPaint*2.,.12);bFree=bSand*.93;bRim=bSand*.84;`,
       // Ember Rim: basalt slabs for the court, black glassy rock round it split by cracks of molten light.
       'ember-rim':`vec2 bSlab=abs(fract(bp/2.1+.5)-.5)*2.1;float bJ=1.-smoothstep(.03,.06,min(bSlab.x,bSlab.y));
-        vec3 bBasalt=${lin(0x4a4446)}*(.82+bGrain*.3)*(1.-bJ*.5);bCol=mix(bBasalt,bBasalt*bPaint*2.4,.2);
+        vec3 bBasalt=${lin(this.volley?BallArena.VOLLEY_STAGE.emberSlab:0x4a4446)}*(.82+bGrain*.3)*(1.-bJ*.5);bCol=mix(bBasalt,bBasalt*bPaint*2.4,${this.volley?'.3':'.2'});
         float bCrack=1.-smoothstep(.0,.016,abs(texture2D(uBallNoise,bp*.07).r-.5));
-        bFree=${lin(0x1f1a1b)}*(.85+bGrain*.2);bRim=${lin(0x262021)}*(.85+bGrain*.25);
+        bFree=${lin(this.volley?BallArena.VOLLEY_STAGE.emberFree:0x1f1a1b)}*(.85+bGrain*.2);bRim=${lin(0x262021)}*(.85+bGrain*.25);
         bGlow=vec3(2.,.55,.1)*bCrack*(1.-bCourt)*(.25+.75*(1.-bZone))*(.6+.4*sin(uBallTime*1.7+bp.x*.3));`,
     } as Partial<Record<BallArenaId,string>>;
     const courtInk=this.arena==='ember-rim'?lin(0xece6da):lin(0x0b0b0e);
@@ -1118,7 +1123,7 @@ export class BallArena {
           // A woven rattan net, square, honey-coloured, black tape top and bottom.
           vec2 d=vUv/.15;
           vec2 q=abs(fract(d)-.5),fw=fwidth(d);
-          float cord=max(smoothstep(.5-.09-fw.x,.5-.09,q.x),smoothstep(.5-.09-fw.y,.5-.09,q.y));
+          float cord=max(smoothstep(.5-${V?'.06':'.09'}-fw.x,.5-${V?'.06':'.09'},q.x),smoothstep(.5-${V?'.06':'.09'}-fw.y,.5-${V?'.06':'.09'},q.y));
           float knot=(1.-smoothstep(.0,.12,abs(.5-q.x)))*(1.-smoothstep(.0,.12,abs(.5-q.y)));
           cord=mix(max(cord,knot),.34,clamp((max(fw.x,fw.y)-.22)*2.4,0.,1.));
           float top=step(${num(NH-(V?V.tape:.13))},vUv.y),tape=top+step(vUv.y,.07);
@@ -1126,7 +1131,9 @@ export class BallArena {
           float white=clamp(tape+side,0.,1.);
           // (The COURT-SIDE camera looks at the far court through the net (SpikeCam, ballCamChoice.ts netSheer):
           // for it the weave is drawn at about a quarter of its opacity and the tapes at three quarters; at 0, the net as it was.)
-          float a=max(cord*.92*(1.-.74*uSheer),white*(1.-.25*uSheer));
+          // (Volleyball's court: the weave thinner and fainter - VOLLEY_STAGE.weave - so the far side reads through
+          // it; the white band and the tapes untouched.)
+          float a=max(cord*.92*(1.-.74*uSheer)${V?`*${num(V.weave)}`:''},white*(1.-.25*uSheer));
           ${V?`// (Volleyball's court: the top band white and whole, the line the eye finds the net by.)
           a=max(a,top);`:''}
           if(a<.02)discard;

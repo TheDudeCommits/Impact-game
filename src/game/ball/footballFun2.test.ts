@@ -74,13 +74,15 @@ describe("Goal Rush football: a person's PASS", () => {
     const pick = personPass({ x: 0, z: 0 }, 0, [mate('a', 1, 12), mate('b', -6, 10)], [{ x: 1.3, z: 12.5 }]);
     expect(pick.mate?.id).toBe('b');
   });
-  it('chips over one of theirs stood on the ball in the lane, to a team-mate far enough off', () => {
-    const pick = personPass({ x: 0, z: 0 }, 0, [mate('a', 0, 12)], [{ x: 0, z: 2 }]);
+  // (One stood a couple of metres up the lane is chipped over; the one pressing right at the ball lets a
+  // pass by - footballFun3.test.ts.)
+  it('chips over one of theirs stood in the lane near the ball, to a team-mate far enough off', () => {
+    const pick = personPass({ x: 0, z: 0 }, 0, [mate('a', 0, 12)], [{ x: 0, z: 2.5 }]);
     expect(pick.mate?.id).toBe('a');
     expect(pick.lofted).toBe(true);
   });
-  it('leads round one of theirs further along the lane: to one side of the team-mate, along the floor', () => {
-    const pick = personPass({ x: 0, z: 0 }, 0, [mate('a', 0, 14)], [{ x: 0, z: 9 }]);
+  it('leads round one of theirs off the lane further along: to one side of the team-mate, along the floor', () => {
+    const pick = personPass({ x: 0, z: 0 }, 0, [mate('a', 0, 14)], [{ x: -1.8, z: 9 }]);
     expect(pick.lofted).toBe(false);
     expect(pick.mate?.id).toBe('a');
     expect(Math.abs((pick.mate?.x ?? 0))).toBeGreaterThan(1);

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {BALL_TEAM_COLOURS, SPIKE_RULES, otherTeam, type BallTeam, type BallView} from '../../game/ball/model';
 import {jumpArc} from '../../game/moves';
+import {VOLLEY, volleyArc} from '../../game/ball/volley';
 import type {FighterId, PlayerState} from '../../game/types';
 
 /** The timing the cues teach, as the room judges it (game/ball/BallMatch.ts PERFECT_SPIKE and SERVE_RULES): a spike or a
@@ -20,6 +21,12 @@ export const SPIKE_TIMING = {apex: .92, net: 3.6, ball: 3.6, reach: .9, swing: .
  *  DIVE chevron shows for a hard ball (`hard` m/s and over) whose line passes `diveFrom`-`diveTo` metres from the body -
  *  beyond its own reach, inside the dive's (BallMatch DIG_DIVE) - in the next `diveWithin` seconds. */
 const CUE = {jumpLead: .55, flare: .32, hard: 17, diveFrom: .9, diveTo: 1.75, diveWithin: .55, hand: 1.55} as const;
+/** The volleyball rules (game/ball/volley.ts): the timing the cues teach is volleyball's jump (volleyArc: the set met by the raised hand,
+ *  VOLLEY.air.hand, at the jump's top; a QUICK on the way up at its own height), an attack's ball over `ball` m; and each
+ *  cue drawn `size` its size and `alpha` its strength - the JUMP ring closing on the ball a thin, faint circle about a
+ *  metre across at its widest, not a big white one three across. */
+export const VOLLEY_TIMING = {...SPIKE_TIMING, reach: VOLLEY.set.reach, low: VOLLEY.set.quickMeet, ball: 3, hand: VOLLEY.air.hand} as const;
+const VOLLEY_CUE = {jump: .45, jumpAlpha: .55, hand: .6, handAlpha: .6, glint: .65} as const;
 /** Instances a frame: your glint and its ring, your jump ring, your dive chevron, the other side's glints. */
 const CAP = 12;
 const KIND = {glint: 0, ring: 1, chevron: 2} as const;
@@ -38,14 +45,14 @@ export function untilDown(y: number, vy: number, h: number, g: number) {
   return (vy + Math.sqrt(disc)) / g;
 }
 /** Whether a set climbs high enough to be met at the top of a jump of `arc` (the floating set), read off its flight. */
-export function highSet(ball: {y: number; vy: number; grav?: number}, arc: {apex: number}) {
+export function highSet(ball: {y: number; vy: number; grav?: number}, arc: {apex: number}, T: {reach: number} = SPIKE_TIMING) {
   const g = SPIKE_RULES.gravity * (ball.grav || 1);
-  return ball.y + Math.max(0, ball.vy) ** 2 / (2 * g) >= arc.apex + SPIKE_TIMING.reach + .2;
+  return ball.y + Math.max(0, ball.vy) ** 2 / (2 * g) >= arc.apex + T.reach + .2;
 }
 /** Seconds until the jump should leave the floor to meet a set at the top of the jump (`high`), or on the way up under a
  *  low one, for a fighter of jump `arc`; NaN when there is no such moment ahead. */
-export function jumpIn(ball: {y: number; vy: number; grav?: number}, arc: {apex: number; rise: number}, high = highSet(ball, arc)) {
-  const g = SPIKE_RULES.gravity * (ball.grav || 1), T = SPIKE_TIMING;
+export function jumpIn(ball: {y: number; vy: number; grav?: number}, arc: {apex: number; rise: number}, high = highSet(ball, arc), T: {readonly reach: number; readonly low: number; readonly swing: number; readonly contact: number; readonly lowLead: number} = SPIKE_TIMING) {
+  const g = SPIKE_RULES.gravity * (ball.grav || 1);
   const t = untilDown(ball.y, ball.vy, high ? arc.apex + T.reach : T.low, g);
   return t - (high ? arc.rise - T.swing + T.contact : T.lowLead);
 }
@@ -173,7 +180,8 @@ export class SpikeCues {
 
   /** Your own cues: the jump's beat, the window at the top, the dive. */
   private mine(view: BallView, team: BallTeam, fighter: FighterId, me: THREE.Vector3, state: PlayerState, ball: THREE.Vector3) {
-    const b = view.ball, arc = jumpArc(fighter), T = SPIKE_TIMING, sign = team === 'red' ? -1 : 1;
+    const volley = !!view.volley, b = view.ball, arc = volley ? volleyArc(fighter) : jumpArc(fighter), T = volley ? VOLLEY_TIMING : SPIKE_TIMING, sign = team === 'red' ? -1 : 1;
+    const Z = volley ? VOLLEY_CUE : null;
     const touches = view.touchTeam === team ? view.touches : 0, mySide = Math.sign(ball.z || sign) === sign || Math.abs(ball.z) < .9;
     const serving = view.phase === 'kickoff' && view.serverId === state.id;
     // (Read off the drawn body, so the cue keeps the frame's own time: the page's prediction of its own fighter.)
@@ -182,11 +190,11 @@ export class SpikeCues {
     // JUMP: your side's set up (two touches in), coming down near you; the ring closes on the ball to the moment.
     if (!air && view.phase === 'live' && touches === 2 && b.shot === 'set' && b.lastTeam === team && mySide) {
       const key = `${view.rally}:${b.lastId}:${view.score.red + view.score.blue}`;
-      if (key !== this.setKey) { this.setKey = key; this.setHigh = highSet(b, arc); this.setArmed = false; }
+      if (key !== this.setKey) { this.setKey = key; this.setHigh = highSet(b, arc, T); this.setArmed = false; }
       // (The frame's ball is the room's last sample of it, carried on to the moment drawn - `since` s on, read off how far
       // along its flight the drawn ball is: online up to a snapshot's gap, which would make the beat that much late.)
       const flat = b.vx * b.vx + b.vz * b.vz, since = flat > 1 ? Math.min(.1, Math.max(0, ((ball.x - b.x) * b.vx + (ball.z - b.z) * b.vz) / flat)) : 0;
-      const t = jumpIn(b, arc, this.setHigh) - since, g = SPIKE_RULES.gravity * (b.grav || 1);
+      const t = jumpIn(b, arc, this.setHigh, T) - since, g = SPIKE_RULES.gravity * (b.grav || 1);
       if (t > .04) this.setArmed = true;
       // (Where it comes through hitting height: near enough to you to be yours.)
       const when = untilDown(b.y, b.vy, this.setHigh ? arc.apex + T.reach : T.low, g);
@@ -194,13 +202,13 @@ export class SpikeCues {
       if (near && this.setArmed && t > -.08 && t < CUE.jumpLead) {
         this.state.jump = t;
         const k = Math.max(0, t / CUE.jumpLead);
-        this.put(KIND.ring, ball.x, ball.y, ball.z, 1.1 + 2.2 * k, Math.max(.3, 1 - k * .4), .55 + .45 * (1 - k), t <= .02 ? GOLD : WHITE);
+        this.put(KIND.ring, ball.x, ball.y, ball.z, (1.1 + 2.2 * k) * (Z?.jump ?? 1), Math.max(.3, 1 - k * .4), (.55 + .45 * (1 - k)) * (Z?.jumpAlpha ?? 1), t <= .02 ? GOLD : WHITE);
         if (t <= .02 && this.jumpTold !== key) { this.jumpTold = key; this.onTick('jump'); }
       }
     }
     // APEX: in the air near a ball you could spike (or your JUMP SERVE's toss): the ring closing on your hands as you
     // climb, the glint when the window opens.
-    const hand = this.at.set(me.x, me.y + CUE.hand, me.z), dBall = hand.distanceTo(ball);
+    const hand = this.at.set(me.x, me.y + (volley ? VOLLEY_TIMING.hand : CUE.hand), me.z), dBall = hand.distanceTo(ball);
     // (The attacking touch still to make: two touches in, the ball not yet struck over - not your own serve going by.)
     const attack = view.phase === 'live' && touches === 2 && b.shot !== 'serve' && mySide && ball.y > T.ball && Math.abs(ball.z) < T.net;
     const share = air ? me.y / Math.max(.1, arc.apex) : 0;
@@ -208,20 +216,20 @@ export class SpikeCues {
     const open = air && share >= T.apex && dBall < 3.6 && (attack || serving);
     if (air && (attack || serving) && dBall < 4.4 && !open && share > .45 && share < T.apex && !this.wasWindow) {
       const k = (share - .45) / (T.apex - .45);
-      this.put(KIND.ring, hand.x, hand.y, hand.z, 1.6 + 2.6 * (1 - k), .9, .3 + .55 * k, WHITE);
+      this.put(KIND.ring, hand.x, hand.y, hand.z, (1.6 + 2.6 * (1 - k)) * (Z?.hand ?? 1), .9, (.3 + .55 * k) * (Z?.handAlpha ?? 1), WHITE);
     }
     if (open) {
       this.state.window = true;
       if (!this.wasWindow) { this.flareAge = 0; this.onTick('apex'); }
-      this.put(KIND.ring, hand.x, hand.y, hand.z, 1.6, 1, .95, GOLD);
+      this.put(KIND.ring, hand.x, hand.y, hand.z, 1.6 * (Z?.hand ?? 1), 1, .95 * (Z?.handAlpha ?? 1), GOLD);
     }
     this.wasWindow = open;
     if (this.flareAge < CUE.flare) {
       const k = this.flareAge / CUE.flare;
-      this.put(KIND.glint, hand.x, hand.y, hand.z, 3.3 * (1.25 - .45 * k), k, 1 - k * k, GOLD);
+      this.put(KIND.glint, hand.x, hand.y, hand.z, 3.3 * (1.25 - .45 * k) * (Z?.glint ?? 1), k, 1 - k * k, GOLD);
     }
     // (The glint stays lit, settled, as long as the window is open: a swing now is still PERFECT.)
-    if (open) this.put(KIND.glint, hand.x, hand.y, hand.z, 2.2, 1, .85, GOLD);
+    if (open) this.put(KIND.glint, hand.x, hand.y, hand.z, 2.2 * (Z?.glint ?? 1), 1, .85, GOLD);
     // DIVE: a hard ball of theirs whose line passes beyond your reach but inside a dive's, soon. (Not in LEARN TO
     // PLAY's BLOCK step - the spike past your block is the step's miss, and a DIVE tick and chevron on it, right after
     // the block's own tick, taught the next step's move in this one's place.)
@@ -248,12 +256,12 @@ export class SpikeCues {
   /** The other side's hitter at the top of the jump: their glint, in their colour, and a tick when you are at the net. */
   private theirs(view: BallView, team: BallTeam, players: readonly PlayerState[], at: (id: string) => THREE.Vector3 | undefined, ball: THREE.Vector3, me: THREE.Vector3 | undefined) {
     const T = SPIKE_TIMING, foe = otherTeam(team), foeSign = foe === 'red' ? -1 : 1;
-    const attack = view.phase === 'live' && view.touchTeam === foe && view.touches === 2 && view.ball.shot !== 'serve' && Math.sign(ball.z || foeSign) === foeSign && ball.y > T.ball && Math.abs(ball.z) < T.net;
+    const attack = view.phase === 'live' && view.touchTeam === foe && view.touches === 2 && view.ball.shot !== 'serve' && Math.sign(ball.z || foeSign) === foeSign && ball.y > (view.volley ? VOLLEY_TIMING.ball : T.ball) && Math.abs(ball.z) < T.net;
     for (const s of view.seats) {
       if (s.team !== foe) continue;
       const p = attack ? players.find(q => q.id === s.id) : undefined, body = p ? at(s.id) : undefined;
       if (!p || !body || body.y < .15) { this.theirsTold.set(s.id, false); continue; }
-      const hand = this.at.set(body.x, body.y + CUE.hand, body.z);
+      const hand = this.at.set(body.x, body.y + (view.volley ? VOLLEY_TIMING.hand : CUE.hand), body.z);
       // (VOLLEYBALL - game/ball/volley.ts: the block is your jump, so its beat is their hitter leaving the
       // floor - jump with them - not the top of their jump, by which time a jump is too late.)
       const open = view.volley ? body.y > .15 && body.y < 1.6 && Math.abs(body.z) < T.net && hand.distanceTo(ball) < 8 : body.y / Math.max(.1, jumpArc(s.fighter).apex) >= T.apex && hand.distanceTo(ball) < 3.6;
@@ -263,7 +271,7 @@ export class SpikeCues {
       }
       this.theirsTold.set(s.id, open);
       const age = this.theirsFlare.get(s.id) ?? Infinity;
-      if (age < CUE.flare) { const k = age / CUE.flare; this.put(KIND.glint, hand.x, hand.y, hand.z, 2.6 * (1.2 - .4 * k), k, (1 - k * k) * .85, TEAM[foe]); }
+      if (age < CUE.flare) { const k = age / CUE.flare; this.put(KIND.glint, hand.x, hand.y, hand.z, 2.6 * (1.2 - .4 * k) * (view.volley ? VOLLEY_CUE.glint : 1), k, (1 - k * k) * .85, TEAM[foe]); }
     }
   }
 

@@ -61,6 +61,11 @@ const STRIKE: Partial<Record<ShotKind, BallSfx[]>> = {
   curve: ['strike-curve'], sinker: ['strike-curve'], blast: ['strike-blast'], eruption: ['strike-eruption'], super: ['strike-super'],
   serve: ['strike-tap-1'], dig: ['strike-dig'], save: ['strike-power-2'], block: ['block'],
 };
+/** The volleyball rules: a TIP's take (fingertips) and a JUMP SERVE's (the hard palm); each other touch's gain and
+ *  rate against its take (volleyTouch): the dig's forearms, the set's fingers higher and lighter, an OVER's open hand, a
+ *  FLUBBED touch quieter and lower; a DIVING DIG's body on the planks after it. */
+const VOLLEY_TIP: BallSfx[] = ['strike-tap-1'], VOLLEY_JUMP_SERVE: BallSfx[] = ['strike-volley'];
+const VOLLEY_TOUCH = { dig: 1, set: .8, setRate: 1.12, over: .85, flub: .75, flubRate: .84, diveFloor: .75, diveDelay: .06 } as const;
 /** Each charm by its family. */
 const CHARM: Record<CharmKind, BallSfx> = { charge: 'charm-power', surge: 'charm-power', feather: 'charm-feather', giant: 'charm-giant', ice: 'charm-ice', wall: 'charm-guard', magnet: 'charm-hook' };
 /** The other side's moments in the stands, against the home side's (the local player's). */
@@ -427,7 +432,8 @@ export class BallAudio {
     switch (e.kind) {
       case 'strike': {
         this.lastStrike = e;
-        const sfx = STRIKE[e.shot ?? 'power'] ?? ['strike-power-1'];
+        // (The volleyball rules: a TIP is fingertips, not a power shot; a JUMP SERVE the hard palm a spike is.)
+        const sfx = view.volley && e.shot === 'tip' ? VOLLEY_TIP : view.volley && e.shot === 'serve' && e.text !== 'FLOAT SERVE' ? VOLLEY_JUMP_SERVE : STRIKE[e.shot ?? 'power'] ?? ['strike-power-1'];
         this.play(this.take(sfx, e.shot ?? 'power'), at, hard, .97 + ((e.id * 7) % 7) * .01);
         // The boom under a power shot, by how hard it was struck (and under a SKY SPIKE's crack).
         if (speed >= BOOM_FROM && e.text !== 'SKY SPIKE') this.play('impact-boom', at, Math.min(1, .45 + (speed - BOOM_FROM) / 30), .96 + ((e.id * 5) % 5) * .02, 0, 3);
@@ -568,8 +574,25 @@ export class BallAudio {
         break;
       }
       case 'win': this.end(e, view, home); break;
+      case 'touch': if (view.volley) this.volleyTouch(e, at); else if (e.text && CALLED_TEXT[e.text]) this.named(CALLED_TEXT[e.text], at, side); break;
       default: if (e.text && CALLED_TEXT[e.text]) this.named(CALLED_TEXT[e.text], at, side); break;
     }
+  }
+
+  /** The volleyball rules (game/ball/volley.ts emits one 'touch' event a touch, "LABEL · TIER"): each touch heard
+   *  as what it is, from its own event - the flight's tap is not heard under these rules (`flight`), so none is silent
+   *  or doubled. The receive and the dig: the forearms' thump (a DIVING DIG's body on the planks under it); a set: the
+   *  fingers' light pat; an OVER: the open hand; a FLUBBED touch a duller, lower take of its own. The serves, the spike,
+   *  the TIP and the SUPER SHOT are heard with their strike events, a block with its block event. */
+  private volleyTouch(e: BallEvent, at: Vec3) {
+    const [label = '', tier = ''] = (e.text ?? '').split(' · '), flub = tier === 'FLUBBED', speed = e.value ?? 0, V = VOLLEY_TOUCH;
+    if (/SERVE|SPIKE|TIP|SUPER|BLOCK/.test(label)) return;
+    const loud = Math.max(.7, Math.min(1.1, .6 + speed / 30)) * (flub ? V.flub : 1), rate = flub ? V.flubRate : 1;
+    if (/RECEIVE|DIG/.test(label)) {
+      this.play('strike-dig', at, loud * V.dig, rate * (.98 + (e.id % 3) * .02));
+      if (label === 'DIVING DIG') this.play('bounce-wood-soft', { x: e.x, y: 0, z: e.z }, V.diveFloor, .82, V.diveDelay);
+    } else if (/SET/.test(label)) this.play(this.take(['strike-tap-2', 'strike-tap-1'], 'set'), at, loud * V.set, rate * V.setRate);
+    else this.play('strike-volley', at, loud * V.over, rate * 1.04);
   }
 
   /** An "ooh" at a common moment, unless the stands made one at another lately (OOH_REST). */
@@ -691,7 +714,8 @@ export class BallAudio {
     if (prev.carry !== undefined && b.carry === undefined && now < this.popUntil) { this.popUntil = 0; return; }
     const touched = b.lastId !== prev.lastId || b.shot !== prev.shot || (off > 4 && !contacts.length && !carried);
     if (touched) {
-      if (!struck) {
+      // (The volleyball rules hear every touch from its own event - volleyTouch.)
+      if (!struck && !view.volley) {
         // (The page's own touch, heard when it was forecast, is not heard again.)
         const mine = !!b.lastId && b.lastId === this.self, own = mine ? this.toldFlight(this.prevTime, now) : null;
         if (own) { own.flown = true; return; }

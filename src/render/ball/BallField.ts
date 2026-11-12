@@ -28,6 +28,8 @@ const TRAIL=40,CAP=900,EXTRA=10;
 const LAND_CLOSE={classic:2.2,volley:1.1} as const;
 /** On the volleyball rules no body is named (less on screen): your own ring under your feet, doubled, marks you. */
 const noTag=(seat:BallSeat)=>!seat;
+/** Football: a team-mate's name tag (only the one a PASS would go to now) at this share of its size. */
+const FOOT_TAG=.72;
 /** One pooled effect's floats: where, its velocity, its age and life, its size from and to, colour and alpha, its
  *  kind, turn and spin, drag, gravity, a seed, how far it stretches and along what, and its flags. */
 const F=25,PX=0,PY=1,PZ=2,VX=3,VY=4,VZ=5,AGE=6,LIFE=7,S0=8,S1=9,CR=10,CG=11,CB=12,CA=13,KIND=14,ROT=15,SPIN=16,DRAG=17,GRAV=18,SEED=19,STRETCH=20,FLAGS=21,AX=22,AY=23,AZ=24;
@@ -127,7 +129,14 @@ const FOOT_QUIET={size:.6,life:.7} as const;
  *  from a run of `from` m/s, each second stride of a foot at the front of its stride (`front` m ahead of the body or
  *  more) meets the ball `meet` ball radii in front of it and sends it `out` m on plus `outPer` a m/s of the run (at
  *  most `outMost`) over a stride pair of `least`-`most` s (`pace` m of run a touch without feet to read). */
-const FOOT_DRIBBLE={from:2.2,front:.12,meet:1.1,out:.12,outPer:.035,outMost:.5,least:.38,most:.8,pace:2.6,period:.55,ease:30,kick:.7} as const;
+const FOOT_DRIBBLE={from:2.2,front:.12,meet:1.1,out:.22,outPer:.06,outMost:.8,least:.38,most:.8,pace:2.6,period:.55,ease:30,kick:.7} as const;
+/** So the kick and the dribble's touches read at play distance, not only in close crops: on football each PASS and SHOOT is swept by one crescent - the engine's drawn blade arc, white with the
+ *  side's colour at its edge - through where the ball was struck, along the kick, `y` m up and `back` m behind the
+ *  ball: `size` m (a pass) to `size + power` (a full shot), up `life` to `life + lifePower` s, never quieted
+ *  (FOOT_QUIET) nor shrunk or dimmed by the SPORT stance's caps (vfxLevel.ts SPORT_VFX spriteSize, spriteGain: at 0.65
+ *  each a crescent does not show at play distance). The dribble's touches go further out (FOOT_DRIBBLE `out`, `outPer`, `outMost`: about 0.7 m at a run,
+ *  not 0.4), so the ball is seen to leave the foot and come back to it. */
+const KICK_ARC={size:.8,power:.6,y:.45,back:.3,life:.17,lifePower:.08,heat:2.4} as const;
 /** A ball easy to follow - not a small gold disc lost against the crowd and banners with no shadow - VOLLEYBALL only
  *  (`view.volley`): the drawn ball (only: the rules' ball is the room's) `scale` times its size and never under
  *  `highPx` px tall at 720 px of height (`lowPx` at 390, in between by the height), white with blue and yellow panels
@@ -149,15 +158,17 @@ function volleyDrawn(r:number,camera:THREE.Camera,at:{x:number;y:number;z:number
  *  (SHOOT's quick strike, its contact SHOOT.contact later) it comes onto them by the contact and leaves them over `after`
  *  s, its true flight underneath. The hands, by the touch's take (`volley.takes`): `fwd` m in front of the body toward the
  *  ball, `up` m over its feet - the forearms at the waist for a receive, over the head for a set, the hitting hand high
- *  for a spike, a serve and a TIP; never pulled more than `most` m (a touch the rules cancelled). */
+ *  for a spike, a serve and a TIP; never pulled more than `most` m (a touch the rules cancelled). The dig's on its
+ *  platform of straight arms (the dig take's), a little further out in front of the hips. */
 const MEET={after:.13,most:2.2,hands:{
-  'SS.dig':{fwd:.55,up:.85},'SS.set':{fwd:.2,up:2.15},'SS.backSet':{fwd:.1,up:2.15},'SS.setAir':{fwd:.25,up:2.1},'SS.float':{fwd:.35,up:1.95},
+  'SS.dig':{fwd:.65,up:.9},'SS.set':{fwd:.2,up:2.15},'SS.backSet':{fwd:.1,up:2.15},'SS.setAir':{fwd:.25,up:2.1},'SS.float':{fwd:.35,up:1.95},
   'SS.jumpServe':{fwd:.35,up:2.05},'SS.spike':{fwd:.4,up:2.05},'SS.spikeCut':{fwd:.4,up:2.05},'SS.spikeRoll':{fwd:.4,up:2.05},'SS.tip':{fwd:.35,up:2.1}} as Record<string,{fwd:number;up:number}>} as const;
 /** So effects never drown the action (FEVER petals across the screen, speed lines, white flashes), VOLLEYBALL only:
  *  each drawn impact `ink` its size and `life` its time, never hotter than `heat`; a hard strike leaves no
  *  hanging stroke and throws no manga smoke or white streaks (the short ribbon is its path: VOLLEY_DRAW); FEVER throws no
- *  petals, and the place's mood at its peak is held to `mood`. */
-const VOLLEY_FX={ink:.45,life:.7,heat:1.5,mood:.3} as const;
+ *  petals, and the place's mood at its peak is held to `mood`. The burst a third smaller and shorter again - at the
+ *  closer stand a bigger one covers the hitter, the ball and the net. */
+const VOLLEY_FX={ink:.32,life:.6,heat:1.5,mood:.3} as const;
 const CARRY_DRAW={in:.12,inMost:.2,inPace:5,out:.16,settle:.025,near:.35,follow:18,run:1.2,ring:2,alpha:.9} as const;
 /** A TRAP's mark (BallMatch TRAP): how long its ring closing on the ball lasts (s), where it starts and ends
  *  (by the ball's radius: it ends on the carried ball's own ring, CARRY_DRAW.ring's band), its strength, and how hard the
@@ -623,6 +634,10 @@ export class BallField {
    *  it, where the snapshot puts them. */
   bodyOf:(id:string)=>THREE.Vector3|undefined=()=>undefined;
   private readonly tags=new BallTags();
+  /** Football: the team-mate a PASS from your feet would go to now (main.ts, from footballPage.ts
+   *  PassMark.pick; '' none) - the one body named on the football rules. */
+  namedMate='';
+  private readonly footTag=(seat:BallSeat)=>!!this.namedMate&&seat.id===this.namedMate&&seat.id!==this.self;
   /** The POWER PLAY's glowing goal and the marks of a TACKLE that won the ball and a REVERSAL. */
   private readonly fight:FightMarks;
   /** The page's own charged shot's aim line on the pitch (aimLine.ts); `aim` is what it
@@ -896,7 +911,10 @@ export class BallField {
     this.aimLine.update(view,selfId,this.drawnState(),this.bodies.get(selfId),step,!replaying);
     // The name tags: in play, not over a replay (its tag names the goal) nor the results.
     // (On the volleyball rules no body is named - less on screen.)
-    this.tags.update(view.seats,selfId,this.where,!replaying&&view.phase!=='lobby'&&view.phase!=='over',view.volley?noTag:undefined);
+    // (Football: no rival is named and neither are you - your own mark is the arrow over you - and a
+    // team-mate only while the ball is at your feet and a PASS would go to them (main.ts: footballPage.ts PassMark.pick),
+    // small.)
+    this.tags.update(view.seats,selfId,this.where,!replaying&&view.phase!=='lobby'&&view.phase!=='over',view.volley?noTag:view.football?this.footTag:undefined,view.football?FOOT_TAG:1);
     this.charms.update(view,snapshot.players,this.shown?this.drawn:null,step,serverTime);
     this.fight.update(view,replaying?0:step,seconds);
     // FEVER (Sky Spike) and OVERTIME (Goal Rush): the place at its peak while they last, the crowd on its feet.
@@ -1717,7 +1735,14 @@ export class BallField {
         else{this.fx.spawn(K.shield,e.x,Math.max(1,e.y),e.z,0,0,0,.5,3,5.2,team,1);this.fx.spawn(K.ring,e.x,Math.max(1,e.y),e.z,0,0,0,.45,.8,5,WHITE,1);this.sparkle(e.x,Math.max(1,e.y),e.z,n(20),team,13);this.flash=1;}
         break;
       }
+      case 'pass':{
+        // (Football: the pass's kick seen - KICK_ARC.)
+        if(view.football)this.kickArc(view,e,0,team);
+        break;
+      }
       case 'strike':{
+        // (Football: the shot's kick seen - KICK_ARC - but a header's.)
+        if(view.football&&e.shot!=='header')this.kickArc(view,e,Math.min(1,Math.max(0,((e.value??26)-24)/12)),team);
         // A blow on the ball. One mark, by how hard it was struck (`touch`) - a puff for a soft touch, the
         // engine's drawn burst turned along the shot from there, a real one for a power shot - where it once threw a
         // hit star, focus lines, a shock, sparks, clouds and a glint at every one. A spike struck high over the net is
@@ -1901,6 +1926,11 @@ export class BallField {
   private mark(kind:number,x:number,z:number,size:number,tint:THREE.Color,amount:number,rotation?:number){
     const R=this.mode==='sky-spike'?SPIKE_RULES:GOAL_RULES;
     if(this.replaying||Math.abs(x)>R.halfX+1||Math.abs(z)>R.halfZ+1)return;
+    // (Neither sport's floor keeps marks. Football: no stamp where a goal was struck from, no ink skid of a dive or a
+    // tackle, no burn - no green-black splash left in the box for a minute after a goal. Volleyball: no crack under
+    // every kill, no skid under every dive, to build up into black scars across the planks; the slam's own burst still
+    // answers the kill.)
+    if(this.lastView?.football||this.lastView?.volley)return;
     // (Goal Rush's floor stops at its boards, past them is the concourse a hand lower: a mark laid by one is kept inside,
     // and in a goal's mouth inside its net.)
     if(this.mode==='goal-rush'){
@@ -1935,6 +1965,18 @@ export class BallField {
   }
   private readonly shot=new THREE.Vector3();
   /** Which way a strike sent the ball (a unit vector; zero when the ball has since been touched by somebody else). */
+  /** KICK_ARC: one kick's crescent, `power` 0 (a pass) to 1 (a full shot), along the ball's flight (else the
+   *  kicker's facing to the ball). */
+  private kickArc(view:BallView,e:BallEvent,power:number,team:THREE.Color){
+    const d=this.shotDirection(view,e),K=KICK_ARC;
+    let ux=d.x,uz=d.z;
+    if(ux*ux+uz*uz<.01){const p=this.players.find(q=>q.id===e.actorId);if(!p)return;ux=e.x-p.x;uz=e.z-p.z;}
+    const k=Math.hypot(ux,uz)||1;ux/=k;uz/=k;
+    const quiet=this.quiet;this.quiet=1;
+    const big=1/Math.max(.3,VFX.spriteSize),hot=K.heat/Math.max(.3,VFX.spriteGain);
+    this.ink('slash',e.x-ux*K.back,K.y,e.z-uz*K.back,(K.size+K.power*power)*big,K.life+K.lifePower*power,WHITE,team,ux,.12,uz,hot);
+    this.quiet=quiet;
+  }
   private shotDirection(view:BallView,e:BallEvent){
     const b=view.ball,v=Math.hypot(b.vx,b.vy,b.vz);
     if(b.lastId!==e.actorId||v<1)return this.shot.set(0,0,0);

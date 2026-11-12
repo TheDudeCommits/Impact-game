@@ -2,7 +2,7 @@ import type { FighterId, GameSnapshot, PlayerState } from '../../game/types';
 import { objectiveOf } from '../../game/objectives/model';
 import { riftOf } from '../../game/moba/model';
 import { ballOf } from '../../game/ball/model';
-import { PODIUM } from '../../game/ball/ceremony';
+import { FOOT_PODIUM, PODIUM } from '../../game/ball/ceremony';
 import { prompt } from '../prompts';
 import './finale.css';
 
@@ -74,7 +74,8 @@ export function finaleStateOf(snapshot: GameSnapshot | undefined, drawn: (id: st
   if (!key) return { running };
   const winner = finaleWinner(snapshot), shown = !!winner && drawn(winner.id);
   // A ball match's end is its podium (render/ball/BallCeremony.ts): held for it, whoever won.
-  const hold = ballOf(snapshot)?.winner ? PODIUM.seconds : undefined;
+  // (The sport rules' football holds it FOOT_PODIUM.seconds - PLAY AGAIN sooner.)
+  const ball = ballOf(snapshot), hold = ball?.winner ? ball.football ? FOOT_PODIUM.seconds : PODIUM.seconds : undefined;
   return { end: { key, winner: shown, line: shown ? line(winner!.fighter) : undefined, ...(hold ? { hold } : {}) }, running: false };
 }
 

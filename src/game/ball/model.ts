@@ -491,8 +491,21 @@ const ASSIST: Record<BallModeId, AimAssist> = {
   'goal-rush': {magnet: .9, airExternal: true, sport: BALL_SPORT['goal-rush']},
   'sky-spike': {magnet: .9, airExternal: true, sport: BALL_SPORT['sky-spike']},
 };
-/** The combat kernel's aim and movement in a ball room: the room's and the page's prediction of it (main.ts) alike. */
-export const ballAssist = (mode: BallModeId): AimAssist => ASSIST[mode];
+/** So a spike is not struck seven metres up against the crowd, as a fighting game's would be: Sky Spike's jump on the
+ *  volleyball rules is volleyball's, with a little anime lift - its top `apex` m up for the roster's middle (by build
+ *  `spread`: 1.40 m for the heaviest, 1.58 for the lightest), its arc the fighters' own shape under `float` of its gravity
+ *  (0.43 s to the top, 0.85 s off the floor: the classic's 0.48 and 0.93), so a spiker's raised hand meets a set about a
+ *  metre and a quarter over the net's 2.7 m band (volley.ts VOLLEY.air.hand), in the middle of the frame. A jump taken
+ *  within `hop.within` m of the net is the block's hop, `hop.apex` up (0.33 s to its top): the hands just over the band.
+ *  The rules, the bots, the JUMP cue and the toss all read this arc (volley.ts volleyArc). */
+export const VOLLEY_JUMP = {apex: 1.6, float: .45, spread: .12, hop: {within: .95, apex: .85}} as const;
+/** The volleyball rules' movement - Sky Spike's, with the jump above, and a running jump that carries no more than
+ *  the run (`leap`: a hitter's approach is a step into the jump, not a flight across the court). */
+const VOLLEY_SPORT: SportFeel = {...BALL_SPORT['sky-spike'], leap: BALL_SPORT['sky-spike'].run, jumpTo: VOLLEY_JUMP};
+const VOLLEY_ASSIST: AimAssist = {magnet: .9, airExternal: true, sport: VOLLEY_SPORT};
+/** The combat kernel's aim and movement in a ball room: the room's and the page's prediction of it (main.ts) alike.
+ *  Sky Spike on the volleyball rules (`volley`) moves as VOLLEY_SPORT. */
+export const ballAssist = (mode: BallModeId, volley = false): AimAssist => volley && mode === 'sky-spike' ? VOLLEY_ASSIST : ASSIST[mode];
 
 /** Sky Spike. A court split by a net, a free zone round it and a dome over it: a ball that lands in a side's court is
  *  the other side's point, a ball that lands anywhere else is out off whoever touched it last. Three touches a side

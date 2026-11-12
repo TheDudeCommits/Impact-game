@@ -14,8 +14,23 @@ describe('the volleyball rules\' screen', () => {
     const dive = hud.indexOf("if (v.volley) this.boostName.set('DIVE');"), out = hud.indexOf("if (!stances) {");
     expect(dive).toBeGreaterThan(0); expect(dive).toBeLessThan(out);
   });
-  it('names no body, and words only your touches and a PERFECT one', () => {
-    expect(read('../../render/ball/BallField.ts')).toMatch(/view\.volley\?noTag:undefined/);
-    expect(read('../../render/ball/touchWord.ts')).toMatch(/if \(e\.actorId !== selfId && tier !== 'PERFECT'\) continue;/);
+  it('names no body, and words only your touches - small, beside the contact, gone in half a second', async () => {
+    expect(read('../../render/ball/BallField.ts')).toMatch(/view\.volley\?noTag:/);
+    expect(read('../../render/ball/touchWord.ts')).toMatch(/if \(e\.actorId !== selfId\) continue;/);
+    const {TOUCH_WORD} = await import('../../render/ball/touchWord');
+    expect(TOUCH_WORD.seconds).toBeLessThanOrEqual(.5);
+    expect(read('./ballHud.css')).toMatch(/\.vb-word\.on\{animation:vb-word \.5s/);
+  });
+  // The court keeps no floor marks under the volleyball rules (a kill's crack or a dive's skid would build up into
+  // black scars), and the phone's dash says DIVE there.
+  it('draws a block in the air at the net as the block take on these rules, kit or not - not the fighter\'s own guard', () => {
+    const moves = read('../../render/ball/ballMoves.ts');
+    expect(moves).toMatch(/const block = !!vol && !state\.grounded && !swinging && \(state\.action === 'guard' \|\| vol\.prompt\?\.\[state\.id\] === 'BLOCK'\);/);
+    expect(moves).toMatch(/key: forced \?\? \(block \? 'SS\.wall' :/);
+    expect(moves).toMatch(/!\(kit \|\| tap \|\| forced \|\| block\)/);
+  });
+  it('lays no marks on volleyball\'s court and names the phone\'s dash DIVE', () => {
+    expect(read('../../render/ball/BallField.ts')).toMatch(/this\.lastView\?\.volley\)return;/);
+    expect(read('../../input/sportTouch.ts')).toMatch(/run: \{ action: 'dash', label: 'DIVE', glyph: 'dive'/);
   });
 });

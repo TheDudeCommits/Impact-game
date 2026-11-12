@@ -145,7 +145,7 @@ export class BallCam {
     me.away = 0;
     const dx = ball.x - self.x, dz = ball.z - self.z, d = Math.hypot(dx, dz), bearing = d > 1e-3 ? Math.atan2(dx, dz) : Number.isFinite(me.yaw) ? me.yaw : yaw;
     const now = Number.isFinite(me.yaw) ? me.yaw : bearing, carrying = !!me.selfId && view.ball.carry === me.selfId;
-    let goal = now, k: number = CALM.rate, most: number = CALM.most, pull = 1;
+    let goal = now, k: number = CALM.rate, most: number = CALM.most, pull = 1, fetching = false;
     if (carrying) {
       // Held toward the run, and a share of the way to the goal attacked.
       const speed = Math.hypot(me.runX, me.runZ), run = speed > CALM.run ? Math.atan2(me.runX, me.runZ) : now;
@@ -158,11 +158,17 @@ export class BallCam {
       const lx = self.x - Math.sin(now) * CALM.boom, lz = self.z - Math.cos(now) * CALM.boom, gap = wrapped(Math.atan2(ball.x - lx, ball.z - lz) - now);
       if (Math.abs(gap) > CALM.dead) goal = now + gap - Math.sign(gap) * CALM.dead;
       // (A ball gone out of the frame - a long ball behind you - is fetched back quicker, so it is lost only briefly.)
-      if (Math.abs(gap) > CALM.out) { most = CALM.fetch; k = CALM.rate * 1.3; }
+      if (Math.abs(gap) > CALM.out) { most = CALM.fetch; k = CALM.rate * 1.3; fetching = true; }
       const rise = Math.atan2(ball.y - self.y - 1.2, Math.max(d, .01));
       pull = smooth(d, CALM.near - 1, CALM.near + 2) * (1 - smooth(rise, .85, 1.2));
     }
     pull *= reset ? 1 : smooth(me.still, HOLD, HOLD + .5);
+    // (By a wall - CALM.wallFrom..wallTo m off the nearest - the heading turns slower and further behind
+    // (CALM.wallRate, wallMost of itself), so a corner scramble's turns and the run's swerves along the glass do not
+    // swing it. A ball gone out of the frame is fetched as fast as ever.)
+    const G = GOAL_RULES, gap = Math.min(G.halfX - Math.abs(self.x), G.halfZ - Math.abs(self.z), (G.halfX + G.halfZ - G.corner - Math.abs(self.x) - Math.abs(self.z)) / Math.SQRT2);
+    const walled = fetching ? 0 : 1 - smooth(gap, CALM.wallFrom, CALM.wallTo);
+    k *= 1 - (1 - CALM.wallRate) * walled; most *= 1 - (1 - CALM.wallMost) * walled;
     if (!Number.isFinite(me.yaw) || reset) { me.yaw = me.resume && !reset ? yaw : bearing; me.rate = 0; me.resume = false; }
     else {
       me.yaw += turn;
@@ -188,7 +194,9 @@ export class BallCam {
  *    frame (CALM.out rad off) is fetched back at up to CALM.fetch rad/s;
  *  - every turn on a spring capped at CALM.most rad/s; a ball close by (CALM.near m) or overhead holds the view, as ever;
  *    the player's own turn is taken as it is, and for HOLD s after it the lens lets it be. */
-const CALM = {boom: 8.4, dead: .36, rate: 2.6, most: .95, out: .62, fetch: 1.4, near: 3.2, carryRate: 2, carryMost: .9, goalShare: .35, goalMost: .35, run: 2} as const;
+const CALM = {boom: 8.4, dead: .36, rate: 2.6, most: .95, out: .62, fetch: 1.4, near: 3.2, carryRate: 2, carryMost: .9, goalShare: .35, goalMost: .35, run: 2,
+  /** By a wall (the nearest `wallFrom`-`wallTo` m off) the spring's rate and its cap at these shares. */
+  wallFrom: 2.5, wallTo: 6, wallRate: .6, wallMost: .6} as const;
 /** Where the sun's shadow box centres in a ball match (main.ts, GameRenderer.shadowCentred): between the player and the
  *  ball, never more than SHADOW_REACH metres from the player, so the box (18 m either way) always holds them and holds
  *  the ball whenever it is near. Written into `out`. */

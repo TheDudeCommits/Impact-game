@@ -370,12 +370,13 @@
 #interface[data-hud="sky-spike"][data-ball-behind] .mode-hud .bh-board{opacity:.18}
 /* VOLLEYBALL (render/ball/touchWord.ts): a touch's tier, one word over the fighter who made it, on a small
    dark plate so it reads on every court; your own in your side's colour (the element's own `color`). */
-#interface .vb-word{position:fixed;left:0;top:0;z-index:5;pointer-events:none;font:italic 900 clamp(11px,2.2vh,15px)/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.05em;
-  color:#f4f1ea;background:rgba(8,9,12,.78);padding:.16em .42em .12em;border-radius:.25em;box-shadow:0 0 0 1px rgba(255,255,255,.14);
+/* The person's own touches only, small, beside the contact, gone in half a second (render/ball/touchWord.ts). */
+#interface .vb-word{position:fixed;left:0;top:0;z-index:5;pointer-events:none;font:italic 900 clamp(9px,1.6vh,12px)/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.05em;
+  color:#f4f1ea;background:rgba(8,9,12,.62);padding:.14em .36em .1em;border-radius:.25em;box-shadow:0 0 0 1px rgba(255,255,255,.12);
   text-shadow:0 1px 0 #000;opacity:0;white-space:nowrap}
-#interface .vb-word[data-own]{box-shadow:0 0 0 2px currentColor}
-#interface .vb-word.on{animation:vb-word .7s linear forwards}
-@keyframes vb-word{0%{opacity:0}10%{opacity:1}75%{opacity:1}100%{opacity:0}}
+#interface .vb-word[data-own]{box-shadow:0 0 0 1.5px currentColor}
+#interface .vb-word.on{animation:vb-word .5s linear forwards}
+@keyframes vb-word{0%{opacity:0}8%{opacity:1}70%{opacity:1}100%{opacity:0}}
 /* VOLLEYBALL on a phone on its side: the score bug in one small row - the two scores and the rally - so the
    high set and the far side's spike pass behind it less (render/ball/ghostBug.ts sets data-volley). */
 @media (orientation:landscape) and (max-height:520px){

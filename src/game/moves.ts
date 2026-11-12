@@ -1945,6 +1945,24 @@ export function jumpArc(fighter: FighterId) {
   }
   return arc;
 }
+/** A sport's own jump (game/ball/model.ts VOLLEY_JUMP; simulation.ts SportFeel.jumpTo): the takeoff solved so the held
+ *  jump's top is `apex` metres for the roster's middle - a little more for a light build, less for a heavy one (`spread`
+ *  of the apex for each unit of JUMP_SCALE off 3.05) - its arc the anime one (jumpGravity) under `float` of its gravity:
+ *  a short jump with a hang. `leap` 1: it carries the run it left with, no more. `apex`, `air`, `rise` as jumpArc's. */
+export function jumpArcTo(fighter: FighterId, to: { readonly apex: number; readonly float: number; readonly spread: number }) {
+  const key = `${fighter}|${to.apex}|${to.float}|${to.spread}`;
+  let arc = arcsTo.get(key);
+  if (!arc) {
+    const apex = to.apex * (1 + ((JUMP_SCALE[fighter] ?? 3) - 3.05) * to.spread), gravity = (vy: number) => jumpGravity(vy, false) * to.float;
+    let lo = .5, hi = 40;
+    for (let i = 0; i < 48; i++) { const mid = (lo + hi) / 2; if (flight(mid, gravity).apex < apex) lo = mid; else hi = mid; }
+    const own = flight(hi, gravity);
+    arc = { speed: hi, leap: 1, apex: own.apex, air: own.ticks / 60, rise: own.top / 60 };
+    arcsTo.set(key, arc);
+  }
+  return arc;
+}
+const arcsTo = new Map<string, { speed: number; leap: number; apex: number; air: number; rise: number }>();
 /** Round 4b (JUMP): bunny-hopping. The leap multiplied whatever the fighter left
  *  the floor with, so a jump taken again on the landing multiplied the last leap:
  *  six mashed jumps left the floor at 17, 39, 91, 208, 479 and 1100 m/s, and

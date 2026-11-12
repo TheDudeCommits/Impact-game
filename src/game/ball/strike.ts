@@ -1,6 +1,6 @@
 import type {AttackSlot, Vec3} from '../types';
 import type {MoveDefinition} from '../moves';
-import {BALL_RULES, GOAL_RULES, SPIKE_RULES, heatTier, spikeCourt, type BallModeId, type BallState, type BallTeam, type ShotKind} from './model';
+import {BALL_RULES, CLASSIC_COURT, GOAL_RULES, SPIKE_RULES, heatTier, spikeCourt, type BallModeId, type BallState, type BallTeam, type ShotKind} from './model';
 import {goalZ, speedCap, stepBall, type BallContact} from './physics';
 
 /** Who struck the ball, as the strike needs them: where they stand, whether they are off the floor, where they aimed
@@ -89,6 +89,8 @@ export const PERFECT_SHOT = {speed: 1.15, reach: 1.45, wide: 5, inset: .3, heade
  *    down short behind it, into the emptiest part of that zone - against a side braced for the spike. The defender who
  *    reads it and comes up short plays it; it never beats a back row that stayed home short. */
 export const SERVE_STYLE = {float: 14, floatTime: 1.25, drift: 3.2, drive: 19, jump: 27, jumpDeep: 10.2, floatDeep: 7.8, heat: 1.05, topspin: .12} as const;
+/** How far a JUMP SERVE on volleyball's court clears the net's band by (m; the classic's .7). */
+const VOLLEY_JUMP_SERVE_CLEAR = .3;
 export const SPIKE_QUICK = {height: 4.5, z: 1.3, seconds: .62, wing: 4.6, back: 4, backSeconds: 1.05} as const;
 export const SPIKE_TIP = {near: 1.9, far: 3.7, seconds: .8, height: .5} as const;
 /** Sky Spike's PLACEMENT. The stick as the attack was pressed (BallMatch reads it at the press, as the aim) says where in the
@@ -474,8 +476,23 @@ function spikeShot(ball: BallState, c: StrikeContext, kind: ShotKind, power: num
   if (cut) for (let d = Math.abs(tz) + .25; d <= Math.max(Math.abs(tz), deep0) + 1e-6 && !clears(ball, v, g, .5); d += .25) {
     tz = -sign * d; t = Math.max(.28, Math.hypot(tx - ball.x, tz - ball.z) / speed); v = arc(ball, tx, R.ballRadius, tz, t, g, R.drag);
   }
+  // (On volleyball's court a spike is struck about four metres up - volleyball's jump, model.ts VOLLEY_JUMP - not
+  // seven: laid where the classic's lands it, it clears the net only slowed into a lob. It is laid deeper instead, at its
+  // own pace, as far as the court's back line - a real spike from a metre over the net lands deep - and it clears the
+  // band by the volleyball's own size, not the classic ball's.)
+  const volleyCourt = C !== CLASSIC_COURT, size = volleyCourt ? ball.size || 1 : 1;
+  if (volleyCourt && kind === 'spike' && intoFar && !c.scuff && !cut) for (let d = Math.abs(tz) + .25; d <= C.z - .7 + 1e-6 && !clears(ball, v, g, .15, size); d += .25) {
+    tz = -sign * d; t = Math.max(.28, Math.hypot(tx - ball.x, tz - ball.z) / speed); v = arc(ball, tx, R.ballRadius, tz, t, g, R.drag);
+  }
+  // (Struck too low to clear at pace even to the back line - a late jump's, met on the way up - it is ROLLED: a soft
+  // shot over the hands short into the emptiest spot in front of the deep diggers (the TIP's flight), not a slow lob
+  // into their arms, dug every time.)
+  if (volleyCourt && kind === 'spike' && intoFar && !c.scuff && !cut && !clears(ball, v, g, .15, size)) return {...tip(ball, c, g), shot: undefined, style: undefined};
   if ((intoFar && !c.scuff) || kind === 'super') {
-    for (let tries = 0; tries < 24 && !clears(ball, v, g, jumpServe ? .7 : .15); tries++) { t *= 1.08; v = arc(ball, tx, R.ballRadius, tz, t, g, R.drag); }
+    // (A JUMP SERVE on volleyball's court is struck from volleyball's jump, a metre over the band, not from five
+    // metres: cleared by its own topspin's dip, `VOLLEY_JUMP_SERVE_CLEAR`, it keeps its pace - by the classic's 0.7 it
+    // would be slowed to a float serve's.)
+    for (let tries = 0; tries < 24 && !clears(ball, v, g, jumpServe ? volleyCourt ? VOLLEY_JUMP_SERVE_CLEAR : .7 : .15, size); tries++) { t *= 1.08; v = arc(ball, tx, R.ballRadius, tz, t, g, R.drag); }
   }
   let sx = 0, sy = 0, sz = 0;
   if (kind === 'curve') sy = (s.lateral < -.2 ? -1 : 1) * 6;
@@ -508,10 +525,10 @@ function tip(ball: BallState, c: StrikeContext, g: number): Flight {
 }
 
 /** Whether a ball leaving `b` at `v` is over the net (with its radius and a hand's breadth) when it crosses it. */
-function clears(b: Vec3, v: {vx: number; vy: number; vz: number}, g: number, over = .15) {
+function clears(b: Vec3, v: {vx: number; vy: number; vz: number}, g: number, over = .15, size = 1) {
   if (Math.abs(v.vz) < 1e-3 || Math.sign(-b.z) !== Math.sign(v.vz)) return true;
   const t = -b.z / v.vz, y = b.y + v.vy * t - .5 * g * t * t;
-  return y > SPIKE_RULES.netHeight + SPIKE_RULES.ballRadius + over;
+  return y > SPIKE_RULES.netHeight + SPIKE_RULES.ballRadius * size + over;
 }
 
 /** What chargedPath reads of a seat: who would strike (where they stand, off the floor or on it, the aim and the stick

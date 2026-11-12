@@ -299,7 +299,13 @@ export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | u
   // (The volleyball rules: every touch drawn from its ready pose - volleyPose.)
   { const ctx = context?.(); if (ctx?.view.volley) volleyPose(body, state, ctx); }
   const kit = everything || sporting;
-  const sport = state.action === 'light' || state.action === 'heavy' || state.action === 'special' || state.action === 'guard';
+  // (On the volleyball rules a body up in the air at the net as the other side attacks is the block - drawn as the
+  // block take, both arms straight up over the head, kit or not: the room's body is guarding then, and the page's own -
+  // its prediction, which plays no rules - is told so by its BLOCK prompt. Never a person's own jump, nor a bot's
+  // fighter's own guard: a forearm out in front.)
+  const vol = context?.()?.view.volley, swinging = state.action === 'light' || state.action === 'heavy' || state.action === 'special';
+  const block = !!vol && !state.grounded && !swinging && (state.action === 'guard' || vol.prompt?.[state.id] === 'BLOCK');
+  const sport = swinging || state.action === 'guard' || block;
   // (The kit's other actions only with the kit on, and nothing read for them otherwise.)
   if (!sport && !((kit || forced) && KIT_ACTIONS.has(state.action))) { latches.delete(body); return undefined; }
   if (state.action === 'idle') { latches.delete(body); return getUp(body, state); }
@@ -310,7 +316,10 @@ export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | u
   // as the fighter's own heavy until the room's 'tap' came, after its blow.)
   const strike = ownStrike(state.id, state.actionSeq) ?? state.strike;
   const tap = state.action === 'heavy' && strike === 'tap';
-  if ((!ctx && !forced) || !(kit || tap || forced)) { latches.delete(body); return undefined; }
+  // (On the volleyball rules a guard in the air at the net is the block, drawn as the block whether the kit is on or
+  // not - both arms straight up over the head - never the fighter's own guard, which puts a forearm out in front like a
+  // fighting game's.)
+  if ((!ctx && !forced) || !(kit || tap || forced || block)) { latches.delete(body); return undefined; }
   // (A run is chosen again whenever the body takes the ball on or loses it: the carry.)
   const carrying = state.action === 'run' && ctx?.view.ball.carry === state.id;
   const swing = `${state.action}|${state.actionSeq ?? state.actionStarted.toFixed(2)}|${state.chain ?? 0}|${state.branch ?? ''}|${strike ?? ''}${carrying ? '|carry' : ''}`;
@@ -318,7 +327,7 @@ export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | u
   if (!latch || latch.swing !== swing) {
     lastAsk = undefined;
     const strike = tap && ctx ? BALL_SPORT[ctx.view.mode].strike : undefined, quick = strike ? (state.grounded ? strike.move : strike.air ?? strike.move) : undefined;
-    latch = {swing, key: forced ?? (ctx ? choose(body, state, ctx, quick) : null), quick};
+    latch = {swing, key: forced ?? (block ? 'SS.wall' : ctx ? choose(body, state, ctx, quick) : null), quick};
     latches.set(body, latch);
     // (The probes' log: every swing and guard, and the kit's other actions only when a take is chosen - every body's
     // runs filled it.)
@@ -328,7 +337,7 @@ export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | u
   const fit = latch.key && BALL_MOVES[latch.key].on ? fitTo(body, state, latch.key) : undefined;
   if (!fit) return latch.quick ? ownQuick(body, state, latch, latch.quick) : undefined;
   const swap = latch.swap ??= new BallSwap(), take = fit.take, row = BALL_MOVES[latch.key!];
-  if (state.action === 'guard' || state.action === 'victory' || state.action === 'run' || take.held || take.once || take.loop) {
+  if (state.action === 'guard' || block || state.action === 'victory' || state.action === 'run' || take.held || take.once || take.loop) {
     // Played through on the body's own clock (Fighter loops a guard, a run and the victory pose): once and held on its
     // last frame, looped, or the run's cycle laid on the body's own run.
     swap.clip = take.loop ? cycled(fit.clip, ownRun(body, state, fit.clip)) : take.once ? heldOn(fit.clip, row.pace ?? 1) : paced(fit.clip, row.pace ?? 1);
@@ -517,8 +526,12 @@ function footTake(body: Fighter, state: PlayerState, key: BallMoveKey, at: numbe
   const speed = pace.get(body)?.speed ?? 0, hip = HIP * (state.size ?? 1);
   const rate = o.stride && x.stride ? THREE.MathUtils.clamp(speed / hip / x.stride.speed, .7, 1.8) : 1;
   const then = o.then ? fitTo(body, state, o.then)?.clip : undefined;
-  return startTake(body, fit.clip, {at, contact, rate, end: o.stride ? contact + TAKE.after * rate : undefined, hold: o.hold, wind: o.wind, lead: o.lead, then});
+  // (A pass or a shot in stride holds its follow-through a beat - KICK_PEAK.)
+  const peak = o.stride ? KICK_PEAK : undefined;
+  return startTake(body, fit.clip, {at, contact, rate, end: o.stride ? contact + TAKE.after * rate : undefined, hold: o.hold, wind: o.wind, lead: o.lead, then, peak});
 }
+/** So the kick reads at play distance, not only in close crops: a pass or a shot in stride stands still at its follow-through's top, `after` s past the contact, for `hold` s - the leg up, held a beat. */
+const KICK_PEAK = {after: .1, hold: .1} as const;
 /** A body's hip height at size 1 (m), for a stride take's rate. */
 const HIP = 1;
 /** `clip` from KICK.lead s before its contact (a share of it) on: the touch has already happened when it starts. */

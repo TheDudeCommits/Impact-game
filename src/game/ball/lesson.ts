@@ -2,6 +2,7 @@ import {BALL_ID, GOAL_RULES, SHOOT, SPIKE_RULES, onCourt, otherTeam, spikeCourt,
 import {stepBall, type BallContact} from './physics';
 import {DRILL_RIVAL, DrillRunner, arc, clearsNet, type DrillHost, type DrillId} from './drills';
 import {MOVES, jumpArc} from '../moves';
+import {VOLLEY, volleyArc} from './volley';
 import type {PlayerInput, PlayerState} from '../types';
 
 /**
@@ -145,6 +146,9 @@ export const LESSON_TIMES = {intro: 1.4, beat: 1.3, retry: 1, ball: 8, score: 20
  *  m/s, a plain spike's, down through the person's block; the DIVE's at `drive`, past them (a DIG's from: SPIKE_DIG). It
  *  stands `back` m behind where the set peaks: nearer, its body climbing past the ball plays it (CLIMB, the takraw rule). */
 const HITTER = {swing: .1, spike: .05, speed: 16, drive: 20, back: 2.1} as const;
+/** The lesson's set for their hitter on the volleyball rules peaks this high (m): over a raised hand at the top of
+ *  volleyball's jump (volley.ts volleyArc, VOLLEY.air.hand), as a match's set comes down to it. */
+const VOLLEY_SET_TOP = 4.2;
 /** A press of the person's counts toward a touch of theirs (BUMP, SET) this soon before it, s. */
 const PRESSED = .5;
 /** A step run by a drill keeps to the drill's first `stage` balls (its easiest), a fresh drill after them. */
@@ -553,7 +557,8 @@ export class BallLesson {
         // Their set, up at the net on their side for the hitter (the glint the page draws on them at the top of their jump).
         // (VOLLEYBALL: the block is the jump, met at its top - the set as high as a hitter's at the top of theirs,
         // so the spike crosses the net where a blocker's hands are: volley.ts VOLLEY.block.)
-        const top = {x: this.hitter.x + this.rand(-.4, .4), y: this.view.volley ? 6.6 : 5.1, z: -c * 1.5}, from = {x: top.x + this.rand(-1.5, 1.5), y: 1.6, z: -c * 5};
+        // (On volleyball's jump, model.ts VOLLEY_JUMP, the hitter's raised hand at the top is about 3.5 m up.)
+        const top = {x: this.hitter.x + this.rand(-.4, .4), y: this.view.volley ? VOLLEY_SET_TOP : 5.1, z: -c * 1.5}, from = {x: top.x + this.rand(-1.5, 1.5), y: 1.6, z: -c * 5};
         const t = 1.05, vel = arc(from, top.x, top.y, top.z, t, g, R.drag);
         host.feed({ball: {...from, ...vel, shot: 'set'}, team: machine, touchTeam: machine, touches: 2});
         this.plan(host, them);
@@ -561,7 +566,7 @@ export class BallLesson {
       }
       case 'ss-dive': {
         // Their set, a little off the net, for the hitter's hard spike to one side of the person (machineSpike).
-        const top = {x: this.hitter.x + this.rand(-.3, .3), y: 5.2, z: -c * 2.3}, from = {x: top.x + this.rand(-1.5, 1.5), y: 1.6, z: -c * 5.6};
+        const top = {x: this.hitter.x + this.rand(-.3, .3), y: this.view.volley ? VOLLEY_SET_TOP : 5.2, z: -c * 2.3}, from = {x: top.x + this.rand(-1.5, 1.5), y: 1.6, z: -c * 5.6};
         host.feed({ball: {...from, ...arc(from, top.x, top.y, top.z, 1.05, g, R.drag), shot: 'set'}, team: machine, touchTeam: machine, touches: 2});
         this.plan(host, them);
         return;
@@ -575,11 +580,11 @@ export class BallLesson {
    *  SPIKE, which goes through every block but a STUFF BLOCK - not the first block anyone should have to make. The swing's
    *  own contact finds the ball already sent (BallMatch.sentBy). */
   private plan(host: LessonHost, them: PlayerState | undefined) {
-    const now = host.now(), b = host.ball, arcOf = jumpArc(them?.fighter ?? 'konta');
+    const now = host.now(), b = host.ball, arcOf = this.view.volley ? volleyArc(them?.fighter ?? 'konta') : jumpArc(them?.fighter ?? 'konta');
     probe.ground = probe.spring = probe.windX = probe.windZ = undefined;
     Object.assign(probe, b); probe.held = false;
     // The moment the set comes down to the hitter's reach at the top of the jump (its feet at the apex, the hand over it).
-    const reach = arcOf.apex + 1.9;
+    const reach = arcOf.apex + (this.view.volley ? VOLLEY.air.hand : 1.9);
     let t = 0, peak = {x: b.x, z: b.z, t: 0};
     for (; t < 2.5; t += 1 / 60) {
       stepBall('sky-spike', probe, 1 / 60, contacts);

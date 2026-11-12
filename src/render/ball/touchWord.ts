@@ -9,9 +9,13 @@ import type {PlayerState} from '../../game/types';
  * banner for points): the ball spent two fifths of a phone's live play behind that line, and the score bug faded for it.
  * A few plain DOM words over #interface, placed by projecting the fighter's head each frame; nothing in the scene.
  */
-export const TOUCH_WORD = {seconds: .7, over: 3.1, most: 4, top: .2} as const;
+/** A touch's tier word, small, beside the contact, gone in about half a second, and none over bots: the word is the
+ *  page's own fighter's alone, shown `seconds` (ballHud.css's vb-word runs as long), pinned beside where the ball was met
+ *  (the touch's own point, `side` px to its right on the screen), never higher than `top` of the screen. (`over` is not
+ *  read: the word stands beside the contact, not over the head.) */
+export const TOUCH_WORD = {seconds: .5, over: 3.1, most: 3, top: .2, side: 22} as const;
 const TIERS = new Set(['PERFECT', 'GOOD', 'EARLY', 'LATE', 'FLUBBED']);
-interface Word {node: HTMLElement; id: string; until: number}
+interface Word {node: HTMLElement; id: string; until: number; x: number; y: number; z: number}
 export class TouchWords {
   private readonly words: Word[] = [];
   private last = -1; private started = NaN;
@@ -30,11 +34,11 @@ export class TouchWords {
       if (e.kind !== 'touch' || !e.actorId) continue;
       const tier = (e.text ?? '').split(' · ').pop() ?? '';
       if (!TIERS.has(tier)) continue;
-      // (Less on screen - the words are yours, and only a PERFECT touch of anyone else's.)
-      if (e.actorId !== selfId && tier !== 'PERFECT') continue;
-      const w = this.words.length >= TOUCH_WORD.most ? this.words.shift()! : {node: Object.assign(document.createElement('div'), {className: 'vb-word'}), id: '', until: 0};
+      // (Less on screen - the words are yours alone.)
+      if (e.actorId !== selfId) continue;
+      const w = this.words.length >= TOUCH_WORD.most ? this.words.shift()! : {node: Object.assign(document.createElement('div'), {className: 'vb-word'}), id: '', until: 0, x: 0, y: 0, z: 0};
       if (!w.node.isConnected) root.appendChild(w.node);
-      w.id = e.actorId; w.until = now + TOUCH_WORD.seconds * 1000; w.node.textContent = tier;
+      w.id = e.actorId; w.until = now + TOUCH_WORD.seconds * 1000; w.node.textContent = tier; w.x = e.x; w.y = e.y; w.z = e.z;
       const mine = e.actorId === selfId || (!!team && e.team === team && e.actorId === selfId);
       w.node.style.color = mine && team ? `#${BALL_TEAM_COLOURS[team].toString(16).padStart(6, '0')}` : '';
       if (mine) w.node.dataset.own = ''; else delete w.node.dataset.own;
@@ -46,11 +50,12 @@ export class TouchWords {
     for (const w of this.words) {
       const p = players?.find(q => q.id === w.id), live = w.until > now && !!p;
       if (!live) { w.node.hidden = true; continue; }
-      const v = this.v.set(p!.x, p!.y + TOUCH_WORD.over * (p!.size ?? 1), p!.z).project(camera);
+      // (Beside the contact - the ball's point as it was met - not over the head.)
+      const v = this.v.set(w.x, w.y, w.z).project(camera);
       w.node.hidden = v.z > 1;
-      // (Kept on the screen and clear of the score bug: a hitter up at the far net stands near the top of a phone's view.)
-      const x = Math.max(40, Math.min(W - 40, (v.x + 1) / 2 * W)), y = Math.max(H * TOUCH_WORD.top, (1 - v.y) / 2 * H);
-      w.node.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`;
+      // (Kept on the screen and clear of the score bug.)
+      const x = Math.max(40, Math.min(W - 80, (v.x + 1) / 2 * W + TOUCH_WORD.side)), y = Math.max(H * TOUCH_WORD.top, (1 - v.y) / 2 * H);
+      w.node.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(0, -50%)`;
     }
   }
   private clear() { for (const w of this.words) w.node.remove(); this.words.length = 0; }

@@ -151,6 +151,9 @@ export class PassMark {
     const key = team + (inside ? 'i' : 'o');
     if (this.goalShown !== key) { this.goal.style.color = `#${BALL_TEAM_COLOURS[team].toString(16).padStart(6, '0')}`; this.goal.style.display = 'block'; this.goal.style.opacity = inside ? '.92' : '1'; this.goalShown = key; }
   }
+  /** The team-mate the PASS chevron is over now ('' none, or the chevron over a ball coming in): the one
+   *  body named on football (BallField.namedMate). */
+  get pick() { return this.shown && this.shown !== 'ball' ? this.shown : ''; }
   private hideSelf() { if (this.selfShown) { this.self.style.display = 'none'; this.selfShown = ''; } }
   /** The PASS chevron hidden; and the page's own mark too, unless `keepSelf`. */
   hide(keepSelf = false) { if (this.shown) { this.el.style.display = 'none'; this.shown = ''; } if (!keepSelf) { this.hideSelf(); if (this.goalShown) { this.goal.style.display = 'none'; this.goalShown = ''; } } }

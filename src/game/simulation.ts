@@ -39,7 +39,7 @@ import { NavGrid } from './botNav';
 import { LOCK_BOT_COUNTER, LOCK_COUNTER_STAMINA, LOCK_COUNTER_WINDOW, LOCK_BOT_ESCAPE, LOCK_BOT_REACT, LOCK_BOT_SPREAD, LOCK_BREAK_CASTS, LOCK_COUNTER_STUN, LOCK_ESCAPE_EARLY, LOCK_ESCAPE_WINDOW,
   LOCK_CHASE_HOLD, LOCK_DASH_FROM, LOCK_DASH_IN, LOCK_LOST, LOCK_ROUND, LOCK_ROUNDS, LOCK_STUN_MOST, LOCK_BOT_CROWD, LOCK_ESCAPE_REWIND, LOCK_THROW_FAR, LOCK_THROW_RISE, LOCK_THROW_ROOM, LOCK_THROW_TURN, LOCK_VANISH_STAMINA, LOCK_WALL_MARGIN, lockRoundMove, locks } from './lockCombat';
 // Round 4b (JUMP): each fighter's own jump, 2.5-3.5x the old one.
-import { AIR_CAST_BRAKE, AIR_CAST_RISE, AIR_HOME_DROP, AIR_STRIKE_BLIND, AIR_STRIKE_REACH, AIR_STRIKE_SPEED, jumpArc, jumpGravity,
+import { AIR_CAST_BRAKE, AIR_CAST_RISE, AIR_HOME_DROP, AIR_STRIKE_BLIND, AIR_STRIKE_REACH, AIR_STRIKE_SPEED, jumpArc, jumpArcTo, jumpGravity,
   JUMP_LAND_HARD, JUMP_LAND_RECOVERY, LEAP_GROUNDED, PLUNGE_BRAKE, PLUNGE_IMPACT_DROP, PLUNGE_SNAP } from './moves';
 import { AWAKENED_DAMAGE, AWAKENED_RESIST, AWAKENED_SPEED, AWAKENING_COST, AWAKENING_ENTRY,
   AWAKENING_SECONDS, AWAKENINGS, AWAKENED_MOVES, moveFor, rushMove } from './awakening';
@@ -706,6 +706,10 @@ export interface SportFeel {
   /** The jump's take-off speed times `jump`; `airJumps` more jumps off the floor before the feet are back on it, each
    *  leaving at `airJump` times the take-off speed; a running jump carried at no more than `leap` along the floor. */
   jump: number; airJumps: number; airJump: number; leap: number;
+  /** Volleyball's (game/ball/model.ts VOLLEY_JUMP): a jump of the sport's own size in place of the fighter's -
+   *  `apex` metres up (moves.ts jumpArcTo, by build `spread`), its arc under `float` of the jump's gravity - and a jump
+   *  taken within `hop.within` m of the net's plane (z = 0) the block's, `hop.apex` up. `jump` is not read with it. */
+  jumpTo?: {readonly apex: number; readonly float: number; readonly spread: number; readonly hop?: {readonly within: number; readonly apex: number}};
   /** A dash in the air goes at the chosen body (the ball) when it is within `airDash` metres and on the way the stick
    *  says: the aerial. 0: a flat air dash as elsewhere. */
   airDash: number;
@@ -721,6 +725,11 @@ export interface SportFeel {
   airTail?: boolean;
   /** SHOOT: instant on a tap, and held it charges the fighter's own move. Absent: the heavy is the fighter's own, as everywhere else. */
   strike?: SportStrike;
+}
+/** The jump a sport's own size gives a body where it stands (SportFeel.jumpTo): the block's hop at the net, else
+ *  the sport's jump (moves.ts jumpArcTo). The rules and the bots read the same arc (game/ball/volley.ts volleyArc). */
+export function sportJump(p: {z: number; fighter: PlayerState['fighter']}, to: NonNullable<SportFeel['jumpTo']>) {
+  return jumpArcTo(p.fighter, to.hop && Math.abs(p.z) <= to.hop.within ? {apex: to.hop.apex, float: to.float, spread: to.spread} : to);
 }
 /** The ball rooms' SHOOT (SportFeel.strike). A heavy pressed with the fighter's swings on the ball (not locked on a
  *  fighter: Goal Rush's FIGHT stance keeps its heavy) starts `move`, one quick strike every fighter shares - off the
@@ -2619,7 +2628,7 @@ export class ArenaSimulation {
       }
       // Round 4b (JUMP): not inside a full jump's landing (JUMP_LAND_RECOVERY): the press waits for it.
       const sport = this.assist?.sport;
-      if (controllable && !p.guarding && held(a.jumpAt) && p.grounded && this.serverTime >= a.landedUntil) { a.vy = jumpArc(p.fighter).speed * (sport?.jump ?? 1); a.leapt = this.leap(a, input, stale); p.grounded = false; a.jumping = true; a.motionNetworkHold=0;a.jumpStartedAt = this.serverTime; a.jumpAt = -Infinity; }
+      if (controllable && !p.guarding && held(a.jumpAt) && p.grounded && this.serverTime >= a.landedUntil) { a.vy = sport?.jumpTo ? sportJump(p, sport.jumpTo).speed : jumpArc(p.fighter).speed * (sport?.jump ?? 1); a.leapt = this.leap(a, input, stale); p.grounded = false; a.jumping = true; a.motionNetworkHold=0;a.jumpStartedAt = this.serverTime; a.jumpAt = -Infinity; }
       // The ball rooms (SportFeel.airJumps): a jump pressed off the floor goes up again - the double jump an aerial is
       // made of - a beat after the last one left (a held press is not two), never out of a reaction's hands.
       else if (sport && controllable && !p.guarding && held(a.jumpAt) && !p.grounded && !a.reaction && a.airJumps < sport.airJumps
@@ -2997,15 +3006,17 @@ export class ArenaSimulation {
       // Round 4b (JUMP): an attack thrown on the way up a jump stops the climb,
       // over a few ticks, at AIR_CAST_RISE; a juggle it rides (it is not a jump
       // any more once it rides one: see hit) keeps what the ride gave it.
-      else if (!plunge && a.jumping && a.cast?.airborne && !p.grounded && a.vy > AIR_CAST_RISE)
+      // (Not a sport's own jump - SportFeel.jumpTo, volleyball's: a touch's swing keeps the jump's arc.)
+      else if (!plunge && a.jumping && a.cast?.airborne && !p.grounded && a.vy > AIR_CAST_RISE && !this.assist?.sport?.jumpTo)
         a.vy = Math.max(AIR_CAST_RISE, a.vy * Math.exp(-AIR_CAST_BRAKE * dt));
       // Round 4b (JUMP): and a body a reaction owns - a jab, a parry - is not
       // climbing on what is left of its jump: only a launch sends anybody up.
       if (a.reaction && a.reaction !== 'launched' && !p.grounded && a.vy > AIR_CAST_RISE) a.vy = AIR_CAST_RISE;
+      const ownArc = a.jumping && !a.reaction && !!this.assist?.sport?.jumpTo;
       const fall = plunge || dive ? 0 : !p.grounded && a.reaction === 'launched' ? LAUNCH_GRAVITY
-        : a.cast?.airborne && !p.grounded ? AIR_CAST_GRAVITY
+        : a.cast?.airborne && !p.grounded && !ownArc ? AIR_CAST_GRAVITY
         // Round 4b (JUMP): the jump's own arc - a fast rise, a hang, a hard fall.
-        : a.jumping && !p.grounded && !a.reaction ? jumpGravity(a.vy, cut) : 1;
+        : a.jumping && !p.grounded && !a.reaction ? jumpGravity(a.vy, cut) * (this.assist?.sport?.jumpTo?.float ?? 1) : 1;
       // A launch chase flies its line: it is aimed at where the target will
       // be, and gravity taken off it tick by tick would land it short.
       // Round 4b (JUMP): a cut rise ends on the top of its arc, not through it,
@@ -3671,7 +3682,7 @@ export class ArenaSimulation {
     const q = target.state;
     let y = q.y, vy = target.vy;
     if (q.grounded && vy <= 0) return y;
-    const jumping = target.jumping && !target.reaction, g = 23 * (target.reaction === 'launched' ? LAUNCH_GRAVITY : 1), dt = 1 / 60;
+    const jumping = target.jumping && !target.reaction, g = 23 * (target.reaction === 'launched' ? LAUNCH_GRAVITY : 1) * (jumping ? this.assist?.sport?.jumpTo?.float ?? 1 : 1), dt = 1 / 60;
     let run = 0;
     for (let t = 0; t < seconds && y >= 0; t += dt) {
       vy -= g * dt * (jumping ? jumpGravity(vy, false) : 1);
@@ -3691,7 +3702,9 @@ export class ArenaSimulation {
     const p = a.state;
     const run = 7.5 * (p.awakened ? AWAKENED_SPEED : 1) * (a.mods?.speed ?? 1), carried = Math.hypot(a.mx, a.mz);
     if (carried > run) { a.mx *= run / carried; a.mz *= run / carried; }
-    if (a.kit) return;
+    // (A sport's own jump - SportFeel.jumpTo, volleyball's - is never flown at the ball by the swing: the rules
+    // meet the ball at the hand, and the jump keeps its arc.)
+    if (a.kit || this.assist?.sport?.jumpTo) return;
     // (A wound-up SHOOT - SportFeel.strike - is on the press's clock: what is left of its wind-up.)
     const lead = Math.max(1 / 60, cast.sport === 'charge' ? cast.start + (cast.move.contacts[0] ?? .2) - this.serverTime : cast.move.contacts[0] ?? .2);
     if (cast.branch === 'airHeavy') {

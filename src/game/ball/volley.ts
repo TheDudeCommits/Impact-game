@@ -1,11 +1,13 @@
 import type {ArenaSimulation} from '../simulation';
-import {jumpArc, PLAYER_RADIUS} from '../moves';
-import type {PlayerState, Vec3} from '../types';
-import {SHOOT, SPIKE_RULES, BALL_RULES, onCourt, otherTeam, spikeCourt, type BallEvent, type BallSeat, type BallState, type BallTeam, type BallView, type ShotKind, type VolleyView} from './model';
+import {jumpArcTo, PLAYER_RADIUS} from '../moves';
+import type {FighterId, PlayerState, Vec3} from '../types';
+import {SHOOT, SPIKE_RULES, BALL_RULES, VOLLEY_JUMP, onCourt, otherTeam, spikeCourt, type BallEvent, type BallSeat, type BallState, type BallTeam, type BallView, type ShotKind, type VolleyView} from './model';
 import {courtSide, sideOf, stepBall, type BallContact} from './physics';
 import {PLACE, SPIKE_DIG, placement, strikeBall, type Striker} from './strike';
 import {ballRulesOf} from './sportRules';
 
+/** The raised hand's height over the feet (VOLLEY.air.hand), which a set is laid to at the top of the jump. */
+const VOLLEY_JUMP_HAND = 2.1;
 /** VOLLEYBALL: Sky Spike played as volleyball. One button a touch, chosen by the moment; the game walks you the last
  *  step to the landing mark; timing decides how good the touch is, not whether it happens; you aim the set and the
  *  spike with the stick.
@@ -52,8 +54,10 @@ export const VOLLEY = {
   /** The walk: from `within` s before the touch, a stick within `cone` (rad) of the spot, eased over `ease` m. */
   walk: {within: 1.2, cone: 70 * Math.PI / 180, dead: .3, ease: .6, close: .2},
   /** The air touch: the hand `hand` m over the body's feet, reaching `reach` m; swung for a ball that will be within
-   *  `meet` of it, or at its nearest. */
-  air: {hand: 1, reach: 1.5, meet: .45},
+   *  `meet` of it, or at its nearest. The hand is the raised one (2 m over the feet: the drawn hitting hand,
+   *  BallField MEET), so on volleyball's jump (model.ts VOLLEY_JUMP) a set is met about 3.9 m up - a metre and a quarter
+   *  over the net's band. */
+  air: {hand: VOLLEY_JUMP_HAND, reach: 1.5, meet: .45},
   /** Whose ball: a person's lead (s), the setter's on the second touch, the ball's owner keeping it unless beaten by `keep`, and
    *  the one who touched last held back by `again`. */
   own: {person: .25, setter: .4, keep: .2, again: .6, run: 9},
@@ -65,7 +69,7 @@ export const VOLLEY = {
   /** The set's spots (wing `wing` m across and `z` off the net; QUICK `quickZ` off it a step from the setter; the back
    *  row `backZ` off it), its flight (`seconds`, a BACK SET's `back`, a QUICK's `quick` to `quickHeight`), the hitter's
    *  hand over the top of their jump (`reach`), and how far off the tier lays it (`miss`, and `high` up or down). */
-  set: {wing: 4.6, z: 1.6, quickZ: 1.3, quickStep: 1.3, backZ: 4.6, seconds: 1.42, back: 1.2, quick: .7, quickHeight: 4.6, quickMeet: 4, reach: .9,
+  set: {wing: 4.6, z: 1.2, quickZ: 1.3, quickStep: 1.3, backZ: 4.6, seconds: 1.42, back: 1.2, quick: .7, quickHeight: 3.8, quickMeet: 3.25, reach: VOLLEY_JUMP_HAND,
     miss: {PERFECT: 0, GOOD: .6, EARLY: 1.5, LATE: 1.5}, high: .8,
     /** A person is ready to be set (the setter's pick) on their own side's front `front` metres, within `near` of a spot.
      *  The pick is a high set or a BACK SET, never a QUICK SET: a person at a run makes one (scripts: from 4 m), but the
@@ -79,7 +83,7 @@ export const VOLLEY = {
   /** The spike: PERFECT from `perfect` of the jump's top or more (with the ball over the net's zone, as PERFECT_SPIKE),
    *  GOOD from `good` (a QUICK SET's, met rising, from `quick`), slower (`offPace`) and unplaced below; a ball under the
    *  net by `under` goes OVER instead. */
-  spike: {perfect: .92, clean: .7, good: .75, quick: .3, offPace: .88, net: 3.6, ball: 3.6, under: .3, heat: .7},
+  spike: {perfect: .92, clean: .7, good: .75, quick: .3, offPace: .88, net: 3.6, ball: 3.4, under: .3, heat: .7},
   /** The BLOCK: a body in the air within `net` m of the net, `wide` m across from the ball's line, as the other
    *  side's spike crosses `plane` m of the net plane at a height between `low` under its feet and `top` over them, blocks
    *  it with no press - the jump is the block. From `stuff` of its jump's top, the ball within `square` across of the
@@ -87,7 +91,7 @@ export const VOLLEY = {
    *  hitters' court at `stuffSpeed`; from `soft` a soft block, up on its own side (`softHeight` after `softSeconds`, its
    *  three touches whole). A PERFECT SPIKE goes through anything short of a STUFF BLOCK, a SUPER SHOT through every block;
    *  a TIP and a shot OVER are never blocked. */
-  block: {net: 1.4, wide: 1.2, square: .45, plane: .6, top: 2.3, low: .5, stuff: .92, soft: .6, stuffSpeed: 15, softHeight: 3.6, softSeconds: .95},
+  block: {net: 1.4, wide: 1.2, square: .45, plane: .6, top: 2.85, low: .5, stuff: .96, soft: .6, stuffSpeed: 15, softHeight: 3.6, softSeconds: .95},
   /** The DIVE: BOOST (the dash) at a low ball of yours (under `height`, `from`-`to` m off) is a press, with the
    *  reach `reach` m longer; a dive's touch is at best GOOD. */
   dive: {reach: 1.4, from: 1.6, to: 3.4, height: 2.5},
@@ -117,9 +121,20 @@ export const VOLLEY = {
    *    their own side, as likely as the jump was high - none from `soft[0]` of the top, every one from `soft[1]` - or a
    *    BLOCK TOUCH, off the hands into their own court, down after `touch` s - theirs to dig if they get there (a PERFECT
    *    SPIKE short of a STUFF BLOCK is only touched). PLAY's jump is held `hold` s.
-   *  - A third touch that is no set (a ball to put OVER) is a person's ahead of a bot by `third` s. */
-  person: {reach: 9, second: .6, ease: .8, behind: 1.2, blockZ: .7, wide: 1.8, low: .45, top: 2.8, under: 1, stuff: .8, square: 1, soft: [.45, .95] as readonly [number, number], touch: .45, hold: .6, third: .6},
+   *  - A third touch that is no set (a ball to put OVER) is a person's ahead of a bot by `third` s.
+   *  - `slip` of a person's BLOCK TOUCHes the spike beats instead (a block that met three spikes in four would win their
+   *    side nearly every point); where the rest go is `touchOff`'s. (`touch` is not read.) */
+  /** Where a person's BLOCK TOUCH goes (`blocks`): off the hands and OUT past the blockers' own side or back line
+   *  (`out` of them, landing `outBy` m or so past it after `outSeconds`), back over the net high onto the attackers' side
+   *  (`back`, down through `backHeight` after `backSeconds`), or down fast into the blockers' own court where it is
+   *  emptiest (the rest, `digSeconds`): a hard dig. */
+  touchOff: {out: .25, outBy: 1.4, outSeconds: .55, back: .3, backHeight: 1.2, backSeconds: 1.05, digSeconds: .4},
+  person: {reach: 9, second: .6, ease: .8, behind: 1.2, blockZ: .7, wide: 1.3, low: .6, top: 2.75, under: 1, stuff: .95, square: 1, soft: [.6, 1.1] as readonly [number, number], touch: .45, hold: .6, third: .6, slip: .65},
 } as const;
+/** A fighter's jump on the volleyball rules (model.ts VOLLEY_JUMP; the kernel's own, simulation.ts sportJump), and
+ *  the block's hop at the net - what the rules, the bots, the JUMP cue and the toss time against. */
+export const volleyArc = (fighter: FighterId) => jumpArcTo(fighter, VOLLEY_JUMP);
+export const hopArc = (fighter: FighterId) => jumpArcTo(fighter, {apex: VOLLEY_JUMP.hop.apex, float: VOLLEY_JUMP.float, spread: VOLLEY_JUMP.spread});
 /** Whether a page plays Sky Spike as volleyball (main.ts): on the sport rules (sportRules.ts - the default on any host,
  *  `?classic` for the classic rules; `?volleyball` is still accepted and changes nothing). */
 export function volleyballWanted(location?: {search: string}): boolean {
@@ -356,6 +371,8 @@ export class Volley {
     for (const seat of this.host.seats.values()) {
       const a = this.host.sim.actors.get(seat.id);
       if (!a) continue;
+      // (Where each body last stood on the floor - its jump's takeoff, a hop at the net or the full jump: arcOf.)
+      if (a.state.grounded) this.stood.set(seat.id, a.state.z);
       const raw = this.raw.get(seat.id) ?? {x: a.input.moveX, z: a.input.moveZ};
       const commit = this.commits.get(seat.id);
       let mx = raw.x, mz = raw.z, to: {x: number; z: number} | null = null;
@@ -460,6 +477,14 @@ export class Volley {
     return null;
   }
   private readonly blockHold = new Map<string, number>();
+  /** Each body's z where it last stood on the floor (the takeoff of the jump it is in). */
+  private readonly stood = new Map<string, number>();
+  /** The arc of the jump `id` is in, or would take from where it stands: the block's hop from the net, else the
+   *  volleyball jump (the kernel's choice: simulation.ts sportJump). */
+  arcOf(id: string, p: {z: number; grounded?: boolean; fighter: FighterId}) {
+    const z = p.grounded === false ? this.stood.get(id) ?? p.z : p.z;
+    return Math.abs(z) <= VOLLEY_JUMP.hop.within ? hopArc(p.fighter) : volleyArc(p.fighter);
+  }
   /** Where the ball is at room time `t` (the flight ahead; now, or the last forecast point past it). */
   ballAt(t: number): {x: number; y: number; z: number} {
     const b = this.host.ball;
@@ -650,7 +675,7 @@ export class Volley {
     let tier: VolleyTier = tierOf(c.delta), label = '';
     let shot: ShotKind = 'bump';
     if (c.kind === 'float' || c.kind === 'jumpServe') {
-      const jump = c.kind === 'jumpServe', J = VOLLEY.jumpServe, share = jump ? Math.max(p.y, c.fromY) / Math.max(.1, jumpArc(p.fighter).apex) : 0, perfect = jump && share >= J.apex;
+      const jump = c.kind === 'jumpServe', J = VOLLEY.jumpServe, share = jump ? Math.max(p.y, c.fromY) / Math.max(.1, volleyArc(p.fighter).apex) : 0, perfect = jump && share >= J.apex;
       let spray: {x: number; z: number} | undefined;
       if (jump && !perfect) { const k = clamp((J.apex - share) / (J.apex - J.low), 0, 1), on = onCourt(this.court, 1, 1); spray = {x: (this.rng() * 2 - 1) * (J.spray * .5 + J.wide * k) * on.x, z: (J.spray + J.wild * k * (.6 + this.rng() * .4)) * on.z}; }
       const r = strikeBall(b, {mode: 'sky-spike', slot: jump ? 'heavy' : 'light', move: TOUCH, knockback: 1, launch: false, finisher: false, pushX: 0, pushZ: 0, serve: true, touches: SPIKE_RULES.touches,
@@ -689,7 +714,7 @@ export class Volley {
     if (shot === 'spike' || shot === 'tip' || shot === 'serve') this.host.emit('strike', {team: seat.team, actorId: seat.id, x: b.x, y: b.y, z: b.z, shot, value: Math.round(Math.hypot(b.vx, b.vy, b.vz)),
       text: shot === 'tip' ? 'TIP' : shot === 'serve' ? (tier === 'PERFECT' ? 'PERFECT SERVE' : label) : tier === 'PERFECT' ? 'SKY SPIKE' : undefined, perfect: (shot !== 'tip' && tier === 'PERFECT') || undefined});
     if (shot === 'spike' || shot === 'super' || (shot === 'serve' && c.kind === 'jumpServe')) this.attackAt = {team: seat.team, at: now};
-    this.log?.(`touch ${seat.id} ${label} ${tier} delta=${c.delta.toFixed(3)} y=${b.y.toFixed(2)} grounded=${p.grounded} share=${(Math.max(p.y, c.fromY) / jumpArc(p.fighter).apex).toFixed(2)}`);
+    this.log?.(`touch ${seat.id} ${label} ${tier} delta=${c.delta.toFixed(3)} y=${b.y.toFixed(2)} grounded=${p.grounded} share=${(Math.max(p.y, c.fromY) / this.arcOf(c.id, p).apex).toFixed(2)}`);
     this.played(seat, shot, tier, label, serve, incoming, now);
   }
   /** The velocity that brings the ball to (`x`, `y`, `z`) in `t` s as the court's own flight carries it - its drag, an
@@ -816,7 +841,7 @@ export class Volley {
     const b = this.host.ball, S = VOLLEY.set, g = SPIKE_RULES.gravity * (b.grav || 1);
     if (tier === 'FLUBBED') { this.flub(seat); this.lastSet = null; return 'SET'; }
     const k = this.setKind(seat, press), hitter = k.hitter ? this.host.sim.actors.get(k.hitter)?.state : undefined;
-    const apex = hitter ? jumpArc(hitter.fighter).apex : 5;
+    const apex = hitter ? volleyArc(hitter.fighter).apex : VOLLEY_JUMP.apex;
     const miss = S.miss[tier as keyof typeof S.miss] ?? 0, ang = this.rng() * Math.PI * 2, high = tier === 'EARLY' || tier === 'LATE' ? (this.rng() < .5 ? -1 : 1) * S.high : 0;
     const tx = clamp(k.x + Math.sin(ang) * miss, -this.court.x + .6, this.court.x - .6), tz = k.z + Math.cos(ang) * miss * .5;
     const H = (k.kind === 'quick' ? S.quickHeight : apex + S.reach) + high, t = k.kind === 'quick' ? S.quick : k.kind === 'back' ? S.back : S.seconds;
@@ -838,7 +863,7 @@ export class Volley {
   /** The spike (strike.ts's, PLACE by the stick as pressed): PERFECT from the top of the jump off a set of GOOD or
    *  better, GOOD from `good` of it, and below that slower and unplaced; a ball under the net goes OVER. */
   private spike(seat: BallSeat, p: PlayerState, press: Press, fromY: number, hand = 0): {tier: VolleyTier; label: string; shot: ShotKind} {
-    const b = this.host.ball, K = VOLLEY.spike, share = Math.max(p.y, fromY) / Math.max(.1, jumpArc(p.fighter).apex);
+    const b = this.host.ball, K = VOLLEY.spike, share = Math.max(p.y, fromY) / Math.max(.1, this.arcOf(seat.id, p).apex);
     const rising = (this.host.motion(seat.id)?.vy ?? 0) > 0;
     const rivals = [...this.host.seats.values()].filter(s => s.team !== seat.team).map(s => this.host.sim.actors.get(s.id)!.state);
     const tierAt = share >= K.good ? 'GOOD' as const : rising ? 'EARLY' as const : 'LATE' as const;
@@ -922,9 +947,11 @@ export class Volley {
       if (seat.team !== D) continue;
       const p = this.host.sim.actors.get(seat.id)?.state, person = !seat.bot;
       if (!p || p.grounded || Math.abs(p.z) > B.net || Math.abs(b.x - p.x) > (person ? P.wide : B.wide) || b.y > p.y + (person ? P.top : B.top) || b.y < p.y - (person ? P.under : B.low)) continue;
-      const share = p.y / Math.max(.1, jumpArc(p.fighter).apex), across = Math.abs(b.x - p.x);
+      const share = p.y / Math.max(.1, this.arcOf(seat.id, p).apex), across = Math.abs(b.x - p.x);
       // (Grades: 3 a STUFF BLOCK, 2 a soft block, 1 a person's BLOCK TOUCH.)
-      const g = person ? share < P.low ? 0 : share >= P.stuff && across <= P.square ? 3 : this.rng() < clamp((share - P.soft[0]) / (P.soft[1] - P.soft[0]), 0, 1) ? 2 : 1 : share >= B.stuff && across <= B.square ? 3 : share >= B.soft ? 2 : 0;
+      let g = person ? share < P.low ? 0 : share >= P.stuff && across <= P.square ? 3 : this.rng() < clamp((share - P.soft[0]) / (P.soft[1] - P.soft[0]), 0, 1) ? 2 : 1 : share >= B.stuff && across <= B.square ? 3 : share >= B.soft ? 2 : 0;
+      // (A person's BLOCK TOUCH is no sure thing - `P.slip` of them the spike beats, over or through the hands.)
+      if (person && g === 1 && this.rng() < P.slip) g = 0;
       if (g > grade || (g === grade && g > 0 && share > best)) { best = share; who = seat; grade = g; }
     }
     if (!who || grade === 0) return;
@@ -941,17 +968,30 @@ export class Volley {
       this.fly(b, {...this.aimed(b, tx, SPIKE_RULES.ballRadius * (b.size || 1), tz, t), sx: 0, sy: 0, sz: 0});
     } else if (touch) {
       // (A BLOCK TOUCH: off the hands and on into their own court where it is emptiest, `touch` s to come down - theirs to
-      // dig, if they get there.)
-      let tx = 0, tz = s * 4, far = -1;
-      for (const x of [-.7, -.35, 0, .35, .7]) for (const z of [.3, .5, .7, .85]) {
-        const px = x * C.x, pz = s * z * C.z;
-        let d = 9;
-        for (const q of this.host.seats.values()) { if (q.team !== D) continue; const st = this.host.sim.actors.get(q.id)?.state; if (st && st.grounded) d = Math.min(d, Math.hypot(st.x - px, st.z - pz)); }
-        d -= Math.abs(px - b.x) * .15;
-        if (d > far) { far = d; tx = px; tz = pz; }
+      // dig, if they get there. VOLLEY.touchOff: so it is not nearly always dug and their own counterattack, a share of
+      // them go off the hands and OUT past the blockers' own lines (the attackers' point), a share drop back over the net
+      // onto the attackers' side for them to play again, and the rest come down fast into the blockers' court, a hard
+      // dig.)
+      const T = VOLLEY.touchOff, roll = this.rng(), r = SPIKE_RULES.ballRadius * (b.size || 1);
+      if (roll < T.out) {
+        const side = Math.sign(b.x || (this.rng() - .5)) || 1, wide = this.rng() < .6;
+        const tx = wide ? side * (C.x + T.outBy * (.6 + this.rng() * .8)) : clamp(b.x * 1.3, -C.x + .5, C.x - .5), tz = wide ? s * C.z * (.25 + this.rng() * .6) : s * (C.z + T.outBy * (.5 + this.rng() * .8));
+        this.fly(b, {...this.aimed(b, tx, r, tz, T.outSeconds), sx: 0, sy: 0, sz: 0});
+      } else if (roll < T.out + T.back) {
+        const k = onCourt(C, 4, 0), tx = clamp(b.x * .7 + (this.rng() - .5) * 3, -k.x, k.x), tz = own(A) * C.z * (.3 + this.rng() * .35);
+        this.fly(b, {...this.aimed(b, tx, T.backHeight, tz, T.backSeconds), sx: 0, sy: 0, sz: 0});
+      } else {
+        let tx = 0, tz = s * 4, far = -1;
+        for (const x of [-.7, -.35, 0, .35, .7]) for (const z of [.3, .5, .7, .85]) {
+          const px = x * C.x, pz = s * z * C.z;
+          let d = 9;
+          for (const q of this.host.seats.values()) { if (q.team !== D) continue; const st = this.host.sim.actors.get(q.id)?.state; if (st && st.grounded) d = Math.min(d, Math.hypot(st.x - px, st.z - pz)); }
+          d -= Math.abs(px - b.x) * .15;
+          if (d > far) { far = d; tx = px; tz = pz; }
+        }
+        this.fly(b, {...this.aimed(b, tx, r, tz, T.digSeconds), sx: 0, sy: 0, sz: 0});
+        this.deflectedAt = this.host.sim.serverTime;
       }
-      this.fly(b, {...this.aimed(b, tx, SPIKE_RULES.ballRadius * (b.size || 1), tz, P.touch), sx: 0, sy: 0, sz: 0});
-      this.deflectedAt = this.host.sim.serverTime;
     }
     else { const k = onCourt(C, 5, 3); this.fly(b, {...this.aimed(b, clamp(b.x * .6, -k.x, k.x), B.softHeight, s * k.z, B.softSeconds), sx: 0, sy: 0, sz: 0}); }
     b.shot = 'block'; this.hotSpike = false;

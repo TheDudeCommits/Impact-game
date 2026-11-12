@@ -40,6 +40,11 @@ export const PODIUM = {
   courtZ: 6,
 } as const;
 
+/** So PLAY AGAIN comes soon after the whistle: on the sport rules' football (BallView.football) the finale holds the
+ *  results for this long (s) - the whistle, the winners stood up, the score - rather than PODIUM.seconds (7.4, which
+ *  put the card 7.5 s after the whistle). Enter or a tap still skips it from FINALE.guard. */
+export const FOOT_PODIUM = {seconds: 3} as const;
+
 export interface PodiumLayout {
   /** Its centre on the floor, and the way it faces (the kernel's yaw: forward is (sin, cos)). */
   x: number; z: number; yaw: number;

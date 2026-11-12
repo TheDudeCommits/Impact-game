@@ -1,9 +1,8 @@
-import {jumpArc} from '../moves';
 import type {PlayerInput, PlayerState} from '../types';
 import {BALL_ID, SPIKE_RULES, onCourt, spikeCourt, type BallSeat, type BallTeam, type BallView} from './model';
 import {sideOf} from './physics';
 import {SPIKE_DIG} from './strike';
-import {VOLLEY, type Volley} from './volley';
+import {VOLLEY, hopArc, volleyArc, type Volley} from './volley';
 
 /** VOLLEYBALL's bots (volley.ts; behind `?volleyball`): team-mates and rivals who play volleyball by the
  *  rules a person plays by - the same PLAY, the same walk, the same tiers, through the same Volley.input - with their
@@ -19,15 +18,20 @@ import {VOLLEY, type Volley} from './volley';
 export const VOLLEY_BOT = {
   sigma: {easy: .14, normal: .08, hard: .045} as Record<string, number>,
   /** How long after the other side's touch a bot moves for the ball (s), by level. */
-  react: {easy: .3, normal: .2, hard: .14} as Record<string, number>, spikeRead: 1,
+  /** A spike is read `spikeRead` times the reaction: a volleyball spike from a metre over the band is slower than one
+   *  from six metres, and read at the reaction itself it is dug nine times in ten. */
+  react: {easy: .3, normal: .2, hard: .14} as Record<string, number>, spikeRead: 1.4,
   /** A PERFECT SPIKE is read this many times the bot's reaction (not `spikeRead` of it): too fast to read off the
    *  swing, it is dug where it is hit at a defender, not chased down. */
-  perfectRead: 1.3,
+  /** As an ordinary spike (`spikeRead`): at 1.0 the person's PERFECT spikes are dug and rallies run to ten seconds, at 1.7 nearly every spike scores and rallies are seven. */
+  perfectRead: 1.4,
   /** A hitter's jump against the set's best moment, by level: on time (within `onTime` s) for `perfect` of its spikes -
-   *  about a third of EASY's, half of NORMAL's, two thirds of HARD's, from the top of the jump (PERFECT) - and otherwise
+   *  nearly half of EASY's, three in five of NORMAL's, seven in ten of HARD's, from the top of the jump (PERFECT) - and otherwise
    *  `offFrom`-`offTo` s late: still a spike, GOOD, struck on the way up. (Early is no lever: the top of a jump is broad
-   *  - its 0.92 lasts a quarter of a second - and the swing's own lift meets the ball there; much earlier misses it.) */
-  jump: {perfect: {easy: .2, normal: .36, hard: .56} as Record<string, number>, onTime: .04, offFrom: .15, offTo: .24},
+   *  - its 0.92 lasts a quarter of a second - and the swing's own lift meets the ball there; much earlier misses it.)
+   *  So many on time, and a late one no later: volleyball's jump rises in 0.43 s, so a jump a fifth of a second late
+   *  meets the set a metre low, and from there a spike clears the net only lobbed. */
+  jump: {perfect: {easy: .45, normal: .6, hard: .7} as Record<string, number>, onTime: .04, offFrom: .12, offTo: .2},
   /** The share of a bot's serves that are JUMP SERVEs, by level. */
   jumpServe: {easy: .1, normal: .25, hard: .45} as Record<string, number>,
   /** Spots (m): the setter's (x across as the pass's, `setZ` off the net), the hitters' receive (`wide` across, `deep`)
@@ -48,14 +52,19 @@ export const VOLLEY_BOT = {
   super: {easy: .5, normal: .7, hard: .9} as Record<string, number>,
   /** The block by level: the share of the other side's attacks a front-row bot goes up for, its spot `blockZ`
    *  off the net, and its jump's timing error (the timing's sigma times `blockSigma`). */
-  block: {easy: .07, normal: .15, hard: .24} as Record<string, number>,
+  block: {easy: .18, normal: .4, hard: .5} as Record<string, number>,
   /** A bot's DIVE (the dash) at a ball of its own just out of reach, by level: whether it dives at all. */
-  dive: {easy: false, normal: true, hard: true} as Record<string, boolean>,
+  dive: {easy: true, normal: true, hard: true} as Record<string, boolean>,
   /** Whether it dives for a hard ball (a spike, a JUMP SERVE) on volleyball's court, by level. */
   diveHard: {easy: false, normal: false, hard: true} as Record<string, boolean>,
   blockZ: .7, blockSigma: 1.2, blockFrom: 6.5,
   /** The share of a bot's blocks jumped on time (a STUFF BLOCK's), by level; the rest `blockLate` s late (a soft one's). */
   blockOnTime: {easy: .3, normal: .45, hard: .55} as Record<string, number>, blockLate: [.2, .3] as const,
+  /** Defence: where the line and the cross diggers stand as the other side attacks (m off the net, laid out on the
+   *  classic court: VolleyBrain carries them onto the court in play). On volleyball's court a spike struck about a metre
+   *  over the band lands deep (strike.ts), five to seven metres past the net - behind diggers at 3.5 and 4.9 m it is
+   *  never dug - so there they stand at 5.6 and 6.6 m (`defDeep`). */
+  defClassic: [4.6, 6.4] as const, defDeep: [7.3, 8.7] as const,
   /** Cover: where the hitter's team-mates stand as the attack goes (off the hitter, metres back from the net). */
   coverZ: 3.2, coverBack: 5.5,
 } as const;
@@ -121,7 +130,7 @@ export class VolleyBrain {
   /** The hitter a set is laid for: a stride behind its spot, the jump timed to meet it, PLAY in the air. */
   private attack(me: PlayerState, seat: BallSeat, view: BallView, now: number, input: Command, sigma: number) {
     const V = this.volley, set = V.lastSet, s = own(seat.team), plan = V.plan!;
-    const arc = jumpArc(me.fighter), quick = set?.kind === 'quick';
+    const arc = volleyArc(me.fighter), quick = set?.kind === 'quick';
     const key = `${set?.at ?? 0}`;
     if (key !== this.jumpKey) {
       const J = VOLLEY_BOT.jump, on = V.draw() < (J.perfect[V.levelOf(this.id)] ?? .5);
@@ -188,7 +197,7 @@ export class VolleyBrain {
     if (!this.serveJump) { if (this.pressed++ < 1) { input.moveX = input.moveZ = 0; input.attack = 'light'; return {command: input, aim: deep}; } return {command: input}; }
     if (me.grounded && this.pressed === 0) { input.jump = true; input.jumpHeld = true; this.pressed = 1; this.serveAt = now; return {command: input}; }
     input.jumpHeld = true;
-    const arc = jumpArc(me.fighter), sigma = VOLLEY_BOT.sigma[level] ?? .08;
+    const arc = volleyArc(me.fighter), sigma = VOLLEY_BOT.sigma[level] ?? .08;
     if (!me.grounded && this.pressed === 1 && now >= this.serveAt + arc.rise * .97 + gauss(() => V.draw()) * sigma * .3) { this.pressed = 2; input.attack = 'light'; return {command: input, aim: deep}; }
     return {command: input};
   }
@@ -217,7 +226,7 @@ export class VolleyBrain {
       this.blockErr = V.draw() < (B.blockOnTime[level] ?? .45) ? gauss(() => V.draw()) * (B.sigma[level] ?? .08) * B.blockSigma : B.blockLate[0] + V.draw() * (B.blockLate[1] - B.blockLate[0]);
     }
     if (theirSet && this.blocking) {
-      const spotB = {x: Math.max(-edge, Math.min(edge, theirSet.x)), z: s * B.blockZ}, arc = jumpArc(me.fighter);
+      const spotB = {x: Math.max(-edge, Math.min(edge, theirSet.x)), z: s * B.blockZ}, arc = hopArc(me.fighter);
       // (Up at the top of the jump as the spike crosses: a breath after the set's best moment.)
       const jumpAt = theirSet.best + .08 - arc.rise + this.blockErr;
       // (Only from the spot: a jump short of the net blocks nothing.)
@@ -231,7 +240,9 @@ export class VolleyBrain {
     const defending = !!theirSet || (b.lastTeam !== team && (b.shot === 'spike' || b.super) && sideOf(b.z) !== team);
     if (defending && !personSets) {
       const sx = theirSet ? Math.max(-at(5, 0).x, Math.min(at(5, 0).x, theirSet.x)) : b.x;
-      spot = setter ? {x: sx * .3, z: s * at(0, 3.2).z} : {x: at(side * 3.4, 0).x + sx * .25, z: s * at(0, side * sx > 0 ? 4.6 : 6.4).z};
+      // (On volleyball's court a spike from volleyball's jump lands deeper - strike.ts - so its diggers stand deeper.)
+      const deep = V.court !== spikeCourt() ? VOLLEY_BOT.defDeep : VOLLEY_BOT.defClassic;
+      spot = setter ? {x: sx * .3, z: s * at(0, 3.2).z} : {x: at(side * 3.4, 0).x + sx * .25, z: s * at(0, side * sx > 0 ? deep[0] : deep[1]).z};
       this.run(me, spot, input, .35); input.yaw = Math.atan2(b.x - me.x, b.z - me.z);
       return;
     }

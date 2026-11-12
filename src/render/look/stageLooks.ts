@@ -1010,7 +1010,7 @@ export function lookFor(stage: StageId): LookPreset {
   // A ball stage is lit as the arena the match plays in.
   const arena = stage === 'ball-pitch' || stage === 'ball-court' ? BALL_ARENA_LOOKS[ballArenaFor(stage)] : undefined;
   const look = originalLook(stage, powerupLook(stage, roanLook(stage, arena ?? STAGE_LOOKS[stage] ?? STAGE_LOOKS.harbor)));
-  return stage === 'ball-court' && !sameCourt(ballCourtFor(), CLASSIC_COURT) ? volleyLook(look) : look;
+  return stage === 'ball-court' && !sameCourt(ballCourtFor(), CLASSIC_COURT) ? volleyLook(look, ballArenaFor(stage)) : look;
 }
 
 /** So the fighters are not dark on the red-orange court - the volleyball rules' court only (its own court: arenaChoice
@@ -1020,7 +1020,17 @@ export function lookFor(stage: StageId): LookPreset {
  *  key's colour taken `white` of the way to white, from `dir`; the sky's light under it `hemi` times as strong. The
  *  sun, its shadows and the rims are the arena's. */
 export const VOLLEY_FILL = { intensity: 3.2, white: .55, dir: [.35, .6, -.72] as Vec3, hemi: 1.3 } as const;
-function volleyLook(look: LookPreset): LookPreset {
+/** So every arena Sky Spike plays in reads as well as Tide Court, Ember Rim's dark night too: an arena's own lift on
+ *  the volleyball rules - its key `key` times as strong, the fill `fill` times, the sky's light `hemi` times
+ *  and the sky's colour taken `warm` of the way to the lava's glow (BallArena paints its court paler too). Ember Rim is
+ *  night on the volcano: unlifted, its fighters and court are lit at about half the beach's dusk. */
+export const VOLLEY_ARENA_LIFT: Partial<Record<BallArenaId, { key: number; fill: number; hemi: number; warm: number }>> = {
+  'ember-rim': { key: 1.35, fill: 1.35, hemi: 1.7, warm: .45 },
+};
+function volleyLook(look: LookPreset, arena?: BallArenaId): LookPreset {
   const k = look.key.color, w = VOLLEY_FILL.white, ch = (shift: number) => Math.round(((k >> shift) & 255) * (1 - w) + 255 * w) << shift;
-  return { ...look, fill: { color: ch(16) | ch(8) | ch(0), intensity: VOLLEY_FILL.intensity, dir: dir(...VOLLEY_FILL.dir) }, hemi: { ...look.hemi, intensity: look.hemi.intensity * VOLLEY_FILL.hemi } };
+  const lift = arena ? VOLLEY_ARENA_LIFT[arena] : undefined, mixed = (a: number, b: number, t: number) => [16, 8, 0].reduce((c, sh) => c | Math.round(((a >> sh) & 255) * (1 - t) + ((b >> sh) & 255) * t) << sh, 0);
+  return { ...look, key: lift ? { ...look.key, intensity: look.key.intensity * lift.key } : look.key,
+    fill: { color: ch(16) | ch(8) | ch(0), intensity: VOLLEY_FILL.intensity * (lift?.fill ?? 1), dir: dir(...VOLLEY_FILL.dir) },
+    hemi: { ...look.hemi, sky: lift ? mixed(look.hemi.sky, look.hemi.ground, lift.warm) : look.hemi.sky, intensity: look.hemi.intensity * VOLLEY_FILL.hemi * (lift?.hemi ?? 1) } };
 }

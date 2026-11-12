@@ -198,8 +198,9 @@ describe('volleyball: scoring', () => {
 
 // ─── The block, the TIP, the SUPER SHOT, the DIVE, a held dig, the phone's set ───────────────────────────
 /** Blue's spike struck now from 1 m off the net at 6.4 m, at a red body 0.7 m off it. */
+// (A spike as volleyball's jump strikes it - a raised hand a metre over the band, a stride off the net.)
 function spikeAt(m: BallMatch, perfect = false) {
-  Object.assign(m.ball, { held: false, x: 0, y: 6.4, z: 1, vx: 0, vy: -10.5, vz: -19, sx: 0, sy: 0, sz: 0, lastId: 'blue-1', lastTeam: 'blue', shot: 'spike' });
+  Object.assign(m.ball, { held: false, x: 0, y: 3.7, z: 1.2, vx: 0, vy: -5, vz: -22, sx: 0, sy: 0, sz: 0, lastId: 'blue-1', lastTeam: 'blue', shot: 'spike' });
   if (perfect) (m.volley as unknown as { hotSpike: boolean }).hotSpike = true;
 }
 function blockTry(jumpBefore: number | null, perfect = false, shot: 'spike' | 'tip' = 'spike') {
@@ -224,14 +225,17 @@ function blockTry(jumpBefore: number | null, perfect = false, shot: 'spike' | 't
 }
 describe('volleyball: the block is the jump', () => {
   it('stuffs a spike from the top of a jump timed with the hitter, softens one from a jump early or late, and lets it by with no jump', () => {
-    expect(blockTry(.45)).toBe('STUFF BLOCK');
-    expect(blockTry(.2)).toBe('BLOCK');
+    // (The block's hop at the net - model.ts VOLLEY_JUMP.hop - tops out a third of a second after it leaves.)
+    expect(blockTry(.32)).toBe('STUFF BLOCK');
+    expect(blockTry(.15)).toBe('BLOCK');
+    expect(blockTry(.45)).toBe('BLOCK');
+    expect(blockTry(.6)).toBe('none');
     expect(blockTry(null)).toBe('none');
   });
   it('meets a PERFECT SPIKE with a person\'s block too (a block press always answers), and never blocks a TIP', () => {
-    expect(blockTry(.45, true)).toBe('STUFF BLOCK');
-    expect(blockTry(.2, true)).not.toBe('none');
-    expect(blockTry(.45, false, 'tip')).toBe('none');
+    expect(blockTry(.32, true)).toBe('STUFF BLOCK');
+    expect(blockTry(.15, true)).not.toBe('none');
+    expect(blockTry(.32, false, 'tip')).toBe('none');
   });
 });
 

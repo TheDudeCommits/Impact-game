@@ -56,6 +56,12 @@ const NEAR_GONE=.3,NEAR_CLEAR=.75;
  *  past the lens - is within a few metres of it, not inside it: with `OcclusionFader.wideNear` the near band is
  *  WIDE_GONE..WIDE_CLEAR m (all of it gone, none of it). */
 const WIDE_GONE=2.2,WIDE_CLEAR=4.4;
+/** So a body between the camera and the person never turns into a fading dot pattern that reads as noise: under that
+ *  camera (`wideNear`) a body is thinned as GLASS - evenly, the whole of it at
+ *  once (its nearest joint's distance from the lens, never fragment by fragment), on a pixel-fine two-by-two screen at
+ *  most GLASS_MOST of it gone (every other pixel: an even half), its ink outline dropped (no dark dots) and what is left of
+ *  it lifted GLASS_LIFT toward white - a light, see-through ghost of the body. */
+const GLASS_MOST=.55,GLASS_LIFT=.6;
 const FADE_MOST=.82,WINDOW_MOST=.55,WINDOW_FROM=.35;
 /** Round 3c: through an authored shot about the victim (see shotVictim) the
  *  player's own body opens its window over the victim once it hides
@@ -92,6 +98,8 @@ const shared={
   uOccNear:{value:new THREE.Vector2(NEAR_GONE,NEAR_CLEAR)},
   uOccRect:{value:new THREE.Vector4(2,2,2,2)},
   uOccRectDepth:{value:0},
+  /** 1 while the football camera films (GLASS), else 0. */
+  uOccGlass:{value:0},
 };
 /** The fade's lens-bound uniforms (the eye, the target's window), as the split screen saves and puts back each half's
  *  (couch/viewState.ts). */
@@ -102,36 +110,49 @@ uniform vec3 uOccEye;
 uniform vec2 uOccNear;
 uniform vec4 uOccRect;
 uniform float uOccRectDepth;
+uniform float uOccGlass;
+uniform float uOccInk;
+float occDrop = 0.0;
 varying vec3 vOccWorld;
 varying vec3 vOccClip;
 const float OCC_BAYER[16] = float[16]( 0., 8., 2., 10., 12., 4., 14., 6., 3., 11., 1., 9., 15., 7., 13., 5. );
 bool occlusionDropped() {
-	float drop = max( uOccFade.x, 1.0 - smoothstep( uOccNear.x, uOccNear.y, distance( vOccWorld, uOccEye ) ) );
+	float drop = max( uOccFade.x, uOccGlass > .5 ? 0.0 : 1.0 - smoothstep( uOccNear.x, uOccNear.y, distance( vOccWorld, uOccEye ) ) );
 	if ( uOccFade.y > 0.0 && vOccClip.z > 0.05 && vOccClip.z < uOccRectDepth ) {
 		vec2 ndc = vOccClip.xy / vOccClip.z;
 		vec2 feather = max( ( uOccRect.zw - uOccRect.xy ) * .18, vec2( .02 ) );
 		vec2 inside = smoothstep( uOccRect.xy - feather, uOccRect.xy + feather, ndc ) * ( 1.0 - smoothstep( uOccRect.zw - feather, uOccRect.zw + feather, ndc ) );
 		drop = max( drop, uOccFade.y * inside.x * inside.y );
 	}
+	occDrop = drop;
 	if ( drop <= .004 ) return false;
+	if ( uOccGlass > .5 ) {
+		if ( uOccInk > .5 && drop > .12 ) return true;
+		ivec2 c2 = ivec2( mod( gl_FragCoord.xy, 2.0 ) );
+		float th = c2.y == 0 ? ( c2.x == 0 ? .125 : .625 ) : ( c2.x == 0 ? .875 : .375 );
+		return th < drop;
+	}
 	ivec2 cell = ivec2( mod( gl_FragCoord.xy, 4.0 ) );
 	return ( OCC_BAYER[ cell.y * 4 + cell.x ] + .5 ) / 16. < drop;
 }
 `;
-const KEY='occlusion-fade-v2',ROOM_KEY='occlusion-room-v1';
+const KEY='occlusion-fade-v3',ROOM_KEY='occlusion-room-v1';
 /** The dither, into a shader about to compile (see PARS). */
-function ditherShader(shader:THREE.WebGLProgramParametersWithUniforms,fade:{value:THREE.Vector2}){
-  Object.assign(shader.uniforms,shared);shader.uniforms.uOccFade=fade;
+function ditherShader(shader:THREE.WebGLProgramParametersWithUniforms,fade:{value:THREE.Vector2},ink:{value:number}){
+  Object.assign(shader.uniforms,shared);shader.uniforms.uOccFade=fade;shader.uniforms.uOccInk=ink;
   shader.vertexShader='varying vec3 vOccWorld;\nvarying vec3 vOccClip;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n\tvOccWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;\n\tvOccClip = gl_Position.xyw;');
   shader.fragmentShader=PARS+shader.fragmentShader;
   shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\n\tif ( occlusionDropped() ) discard;');
+  // (GLASS: what is left of a thinned body lifted toward white - light, not a dark half-tone - in its light, before the
+  // finish: every lit material and the toon finish end on opaque_fragment.)
+  shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`if ( uOccGlass > .5 && occDrop > .004 ) outgoingLight = mix( outgoingLight, vec3( 1.0 ), ${GLASS_LIFT.toFixed(3)} * min( 1.0, occDrop / ${GLASS_MOST.toFixed(3)} ) );\n\t#include <opaque_fragment>`);
 }
 const twins=new WeakSet<THREE.Material>();
 /** A material's twin: the same material, the same edits, and the dither. */
-function twinOf(original:THREE.Material,fade:{value:THREE.Vector2}){
-  const twin=original.clone(),compile=original.onBeforeCompile;
-  twin.onBeforeCompile=function(shader,renderer){compile.call(original,shader,renderer);ditherShader(shader,fade);};
+function twinOf(original:THREE.Material,fade:{value:THREE.Vector2},ink=false){
+  const twin=original.clone(),compile=original.onBeforeCompile,inkFlag={value:ink?1:0};
+  twin.onBeforeCompile=function(shader,renderer){compile.call(original,shader,renderer);ditherShader(shader,fade,inkFlag);};
   // The default key is onBeforeCompile's source, which is now this one's.
   const inherited=original.customProgramCacheKey===THREE.Material.prototype.customProgramCacheKey?compile.toString():undefined;
   twin.customProgramCacheKey=()=>`${inherited??original.customProgramCacheKey()}|${KEY}`;
@@ -178,7 +199,9 @@ export function installOcclusionFade(fighter:Fighter){
     const made:THREE.Material[]=[];
     list.forEach((material,slot)=>{
       if(!material||(material as THREE.ShaderMaterial).isShaderMaterial){made.push(material);return;}
-      const twin=twinOf(material,record.fade);made.push(twin);
+      // (An ink outline - a back-face hull, or an authored outline mesh - is dropped whole under GLASS.)
+      const ink=material.side===THREE.BackSide||!!material.userData?.ink||/outline/i.test(mesh.name);
+      const twin=twinOf(material,record.fade,ink);made.push(twin);
       record.twins.push({mesh,slot:Array.isArray(mesh.material)?slot:-1,original:material,twin});
     });
     if(warm&&made.some((m,i)=>m!==list[i])){
@@ -265,7 +288,7 @@ export class OcclusionFader{
    *  ultimate). With no crowd there is nothing to fade. */
   update(dt:number,camera:THREE.PerspectiveCamera,crowd:ReadonlyMap<string,Fighter>|undefined,self:Fighter,target:Fighter|undefined,focus:readonly (Fighter|undefined)[]){
     shared.uOccEye.value.copy(camera.position);
-    shared.uOccNear.value.set(this.wideNear?WIDE_GONE:NEAR_GONE,this.wideNear?WIDE_CLEAR:NEAR_CLEAR);
+    shared.uOccNear.value.set(this.wideNear?WIDE_GONE:NEAR_GONE,this.wideNear?WIDE_CLEAR:NEAR_CLEAR);shared.uOccGlass.value=this.wideNear?1:0;
     this.dt=Math.min(Math.max(Number.isFinite(dt)?dt:0,0),.1);this.camera=camera;this.self=self;this.target=target;this.focus=focus;
     const st=this.state;st.faded=0;st.most=0;st.window=0;st.twinned=0;st.room=0;
     camera.updateMatrixWorld();
@@ -342,6 +365,8 @@ export class OcclusionFader{
         }
       }
     }else r.lens=Infinity;
+    // (GLASS: the near band's thinning is the whole body's, by its nearest joint, and never past GLASS_MOST.)
+    if(this.wideNear){goal=Math.max(goal,1-THREE.MathUtils.smoothstep(r.lens,WIDE_GONE,WIDE_CLEAR));this.ease(r,Math.min(GLASS_MOST,goal*FADE_MOST),0);this.room(body,r);return;}
     this.ease(r,goal*FADE_MOST,0);this.room(body,r);
   };
   /** Ease a body's amounts toward their goals, hand them to its twins, and

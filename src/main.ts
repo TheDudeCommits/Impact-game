@@ -1106,9 +1106,13 @@ document.addEventListener('visibilitychange',pausePump);
  *  Goal Rush; Sky Spike's camera holds still and makes its own few moves (render/ball/SpikeCam.ts). */
 let ballHeard=0,ballHeardAt=-Infinity,ballMark='';
 const ballAudio=new BallAudio(audio,music);
+// (On the volleyball rules every swing is a touch of the ball, heard as the ball's: no fighter's move in it.)
+audio.quietSwings=()=>!!ballOf(network.snapshot)?.volley;
 // (A check on this machine logs each hit of the ball as it is played: `__ballSfx = []` - page ms it sounds at, the sound,
 // the page's own forecast touch's or the room's, the page's own fighter's touch or not; `__ballAudio.counts` tallies.)
-if(['localhost','127.0.0.1','[::1]'].includes(location.hostname)){ballAudio.trace=(id,own,mine,delay)=>{(window as unknown as {__ballSfx?:unknown[][]}).__ballSfx?.push([performance.now()+delay*1000,id,own,mine,delay]);};(window as unknown as {__ballAudio:BallAudio}).__ballAudio=ballAudio;}
+if(['localhost','127.0.0.1','[::1]'].includes(location.hostname)){ballAudio.trace=(id,own,mine,delay)=>{(window as unknown as {__ballSfx?:unknown[][]}).__ballSfx?.push([performance.now()+delay*1000,id,own,mine,delay]);};(window as unknown as {__ballAudio:BallAudio}).__ballAudio=ballAudio;
+  // (The fight's own mixer on this machine too, so a check can log every sound it plays.)
+  (window as unknown as {__combatAudio:CombatAudio}).__combatAudio=audio;}
 function ballSounds(snapshot:GameSnapshot){
   const view=ballOf(snapshot);if(!view)return;
   if(snapshot.serverTime<ballHeardAt-1)ballHeard=0;ballHeardAt=snapshot.serverTime;
@@ -1182,7 +1186,7 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   // (Where the page draws it, as the room judges this page's swing - BallMatch SEEN - not where the newest
   // snapshot has it, a round trip ahead of the frame.)
   const ballView=ballOf(snapshot);if(ballView){ballTargets.selfId=network.id;ballTargets.update(snapshot,ballField.ballPosition());}
-  const external=warView?riftPredictionTargets:ballView?ballTargets:undefined,assist=warView?{magnet:RIFT_RULES.aimMagnet}:ballView?ballAssist(ballView.mode):undefined;
+  const external=warView?riftPredictionTargets:ballView?ballTargets:undefined,assist=warView?{magnet:RIFT_RULES.aimMagnet}:ballView?ballAssist(ballView.mode,!!ballView.volley):undefined;
   if(!prediction.enabled){if(snapshot.players.some(p=>p.id===network.id)){ensureLocalCollision(snapshot.stage??'harbor');prediction.lockCombat=!!snapshot.lockCombat||!!(network===duel?duel.sim:network===practice?practice.sim:null)?.lockCombat;prediction.start(network.id,snapshot,localCollision);prediction.setExternalTargets(external,assist);}}
   else {prediction.setExternalTargets(external,assist);prediction.receive(snapshot);}
 };
@@ -2010,7 +2014,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
         // the BALL stance, on the opponent locked in the FIGHT stance (closer and lower, a fight's lock-on). The follow
         // camera's own shots (an awakening's, an ultimate's) still have the lens while they run; the rig's fading of
         // what stands in the way is judged from its own lens. Sky Spike is filmed by its broadcast camera (SpikeCam).
-        cam.free=!!ballView?.football&&goalLookChoice(settings)==='free';cam.selfId=network.id;
+        cam.free=!!ballView?.football&&goalLookChoice(settings)==='free';cam.selfId=network.id;ballChases[0].footFree=cam.free;
         // (`?ballpilot` in FREE LOOK: nobody's hand is on the view, so the pilot turns it toward where its body runs, at a
         // person's pace - a film of FREE LOOK as it is held.)
         if(cam.free&&ballPiloted)input.yaw=pilotLook(input.yaw,own.group.position,rawDt);
@@ -2027,7 +2031,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
         superRide.aim(view.camera,rawDt,ballView,ballField.ballPosition(),superCamChoice(settings),snapshot.serverTime); // (An option, off by default)
         // (The marks are laid through the lens as the chase rig has just aimed it - before, they were laid
         // through the follow camera's, and stood well off the bodies they mark.)
-        passMark?.update(ballView,snapshot.players.find(p=>p.id===network.id),snapshot.players,footStick,yaw,view.camera,view.renderer.domElement.clientWidth,view.renderer.domElement.clientHeight,id=>fighters.get(id)?.group.position);
+        passMark?.update(ballView,snapshot.players.find(p=>p.id===network.id),snapshot.players,footStick,yaw,view.camera,view.renderer.domElement.clientWidth,view.renderer.domElement.clientHeight,id=>fighters.get(id)?.group.position);ballField.namedMate=passMark?.pick??'';
         if(chase)camera.fader.update(rawDt,view.camera,camera.director.crowd,own,undefined,NO_FOCUS);}
       // Locked on, the camera steers the heading, so the accumulator the next
       // mouse delta is added to must be the heading on screen (Targeting reads

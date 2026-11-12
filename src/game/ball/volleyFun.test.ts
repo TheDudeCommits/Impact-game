@@ -153,7 +153,8 @@ describe('volleyball: a person\'s block always answers', () => {
       const t = m.now() - t0;
       if (!spiked && t >= 0) {
         spiked = true; m.view.touches = 3;
-        Object.assign(m.ball, { held: false, x: 0, y: 6.4, z: 1, vx: 0, vy: -10.5, vz: -19, sx: 0, sy: 0, sz: 0, lastId: hitter, lastTeam: 'blue', shot: 'spike' });
+        // (Struck as volleyball's jump strikes it - a raised hand a metre over the band, a stride off the net.)
+        Object.assign(m.ball, { held: false, x: 0, y: 3.7, z: 1.2, vx: 0, vy: -5, vz: -22, sx: 0, sy: 0, sz: 0, lastId: hitter, lastTeam: 'blue', shot: 'spike' });
         if (perfect) (m.volley as unknown as { hotSpike: boolean }).hotSpike = true;
       }
       if (!spiked) Object.assign(m.ball, { x: 0, y: 7, z: 3, vx: 0, vy: 0, vz: 0 });
@@ -167,12 +168,13 @@ describe('volleyball: a person\'s block always answers', () => {
     return 'none';
   }
   it('meets the spike from anywhere in the jump: a STUFF BLOCK at its top, a soft block or a BLOCK TOUCH lower', () => {
-    expect(block(.45)).toBe('STUFF BLOCK · PERFECT');
-    for (const lead of [.1, .2, .7]) expect(block(lead), `${lead} s`).toMatch(/^(BLOCK · GOOD|BLOCK TOUCH · LATE)$/);
+    // (The block's hop - model.ts VOLLEY_JUMP.hop - tops out a third of a second after it leaves.)
+    expect(block(.32)).toBe('STUFF BLOCK · PERFECT');
+    for (const lead of [.1, .2, .5]) expect(block(lead), `${lead} s`).toMatch(/^(BLOCK · GOOD|BLOCK TOUCH · LATE)$/);
     expect(block(.15, false, true)).toMatch(/BLOCK/);
     expect(block(null)).toBe('none');
   });
   it('is PLAY at the net as they attack: the jump at once, the block it makes', () => {
-    expect(block(.45, true)).toMatch(/BLOCK/);
+    expect(block(.32, true)).toMatch(/BLOCK/);
   });
 });

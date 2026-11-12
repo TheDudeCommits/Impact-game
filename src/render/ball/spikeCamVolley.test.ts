@@ -7,7 +7,8 @@ import type {FollowCamera} from '../FollowCamera';
 
 // Sky Spike on the volleyball rules is filmed from its own stand - bodies about twice the classic stand's height
 // on screen, your whole court and the net in the frame - and the classic stand is the classic's. (Higher and further
-// back, a body 1.6 times the classic's, the whole rally in the frame without rising.)
+// back, a body 1.6 times the classic's, the whole rally in the frame without rising. Then closer and lower, for
+// volleyball's own jump - bodies bigger still, the crowd a strip high in the frame.)
 const view = (o: Partial<BallView> = {}, court = true): BallView => ({
   kind: 'ball', mode: 'sky-spike', phase: 'live', access: 'bots', round: 1, hostId: null, capacity: 6, fillBots: true, startsAt: null, startedAt: 0, endsAt: 0, phaseUntil: 0,
   seats: [], score: {red: 0, blue: 0}, ball: {...freshBall(), held: false, y: 2, ...(court ? {court: VOLLEY_COURT} : {})}, clock: 0, overtime: false, touchTeam: null, touches: 0, rally: 1, servingTeam: 'red', serverId: null,
@@ -33,24 +34,25 @@ describe('volleyball\'s camera stand', () => {
     expect(vb.tall(0, -1)).toBeGreaterThan(90);
     expect(vb.tall(0, 1.5)).toBeGreaterThan(80);
   });
-  // The frame holds the whole rally without rising - a spike struck 6.6 m up over either side of the net under the
-  // score bug's line, the far wall (and the crowd behind it) in the top half's upper part only, and a set never tilts it.
-  it('holds a spike over either side under the score bug, and never rises to a set', () => {
+  // Volleyball's jump strikes a spike about four metres up (game/ball/model.ts VOLLEY_JUMP), so the frame holds the
+  // rally low and close - a spike over either side of the net under the score bug's line, a set's top in the frame, the
+  // far wall (and the low crowd strip over it) high in the frame, a set tilting the look up a little at most - and a body
+  // stands at least 150 px tall at your mid-court at 720p.
+  it('holds a spike over either side under the score bug, a set\'s top in the frame, and bodies at least 150 px tall', () => {
     for (const [w, h] of [[1280, 720], [844, 390]] as const) {
       const {px} = filmed(true, w, h);
-      for (const [x, z] of [[-3, -1.6], [0, -1.6], [3, -1.6], [0, 1.6]] as const) expect(px(x, 6.6, z).y / h, `${w}x${h} ${x},${z}`).toBeGreaterThan(.14);
-      expect(px(0, 8, 1).y / h).toBeGreaterThan(0);
-      // (Above the far wall: a little over a third of the frame - the platform's edge, the sky, the low stands' heads.)
-      expect(px(0, 1.15, VOLLEY_COURT.wallZ).y / h).toBeGreaterThan(.36);
+      for (const [x, z] of [[-3, -1.2], [0, -1.2], [3, -1.2], [0, 1.2]] as const) expect(px(x, 4, z).y / h, `${w}x${h} ${x},${z}`).toBeGreaterThan(.14);
+      expect(px(-3, 5.8, -1.6).y / h).toBeGreaterThan(0);
+      expect(px(0, 1.15, VOLLEY_COURT.wallZ).y / h).toBeLessThan(.3);
       expect(px(0, 0, -VOLLEY_COURT.z).y / h).toBeLessThan(1);
     }
+    expect(filmed(true).tall(2, -5)).toBeGreaterThan(150);
+    expect(filmed(true, 1440, 900).tall(2, -5)).toBeGreaterThan(169);
+    expect(filmed(true).tall(0, 1.5)).toBeGreaterThan(113);
     const still = filmed(true).cam.pose().look.y;
-    const ours = filmed(true, 1280, 720, {touchTeam: 'red', ball: {...freshBall(), held: false, x: -3, y: 6, z: -1.6, vy: 1, shot: 'set', lastTeam: 'red', court: VOLLEY_COURT}});
-    const theirs = filmed(true, 1280, 720, {touchTeam: 'blue', ball: {...freshBall(), held: false, x: 0, y: 6, z: 1.6, vy: 1, shot: 'set', lastTeam: 'blue', court: VOLLEY_COURT}}, {x: 0, y: 0, z: -4}, new THREE.Vector3(0, 6, 1.6));
-    expect(ours.cam.pose().look.y).toBeLessThanOrEqual(still + .05);
-    expect(theirs.cam.pose().look.y).toBeLessThanOrEqual(still + .05);
-    expect(ours.px(-3.5, 7.8, -1.6).y).toBeGreaterThan(0);
-    expect(theirs.px(0, 7, 1.6).y).toBeGreaterThan(0);
+    const ours = filmed(true, 1280, 720, {touchTeam: 'red', ball: {...freshBall(), held: false, x: -3, y: 5.8, z: -1.6, vy: 1, shot: 'set', lastTeam: 'red', court: VOLLEY_COURT}}, {x: 0, y: 0, z: -4}, new THREE.Vector3(-3, 5.8, -1.6));
+    expect(ours.cam.pose().look.y).toBeLessThanOrEqual(still + 1);
+    expect(ours.px(-3, 5.8, -1.6).y, String(ours.px(-3, 5.8, -1.6).y)).toBeGreaterThan(0);
   });
   it('holds your whole court and the net in the frame, on a screen and on a phone on its side', () => {
     for (const [w, h] of [[1280, 720], [1440, 900], [844, 390]] as const) {

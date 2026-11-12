@@ -199,7 +199,7 @@ export class BallTags {
   }
 
   /** Every frame: a tag over each seat's body (`at` gives where it is drawn, or null to leave it out). */
-  update(seats: readonly BallSeat[], selfId: string, at: (id: string, out: THREE.Vector3) => THREE.Vector3 | null, show: boolean, named?: (seat: BallSeat) => boolean) {
+  update(seats: readonly BallSeat[], selfId: string, at: (id: string, out: THREE.Vector3) => THREE.Vector3 | null, show: boolean, named?: (seat: BallSeat) => boolean, scale = 1) {
     if (!show || !seats.length) { this.mesh.geometry.instanceCount = 0; this.mesh.visible = false; this.bubbles.geometry.instanceCount = 0; this.bubbles.visible = false; return; }
     this.draw(seats, selfId);
     const pos = this.pos.array as Float32Array, row = this.row.array as Float32Array;
@@ -209,7 +209,7 @@ export class BallTags {
       if (!p) continue;
       const self = seat.id === selfId, k = n * 4;
       pos[k] = p.x; pos[k + 1] = p.y + OVER; pos[k + 2] = p.z; pos[k + 3] = self ? .55 : 1;
-      row[k] = ROWS - 1 - i; row[k + 1] = this.widths[i]; row[k + 2] = self ? .8 : 1; row[k + 3] = 0;
+      row[k] = ROWS - 1 - i; row[k + 1] = this.widths[i]; row[k + 2] = (self ? .8 : 1) * scale; row[k + 3] = 0;
       n++;
     }
     this.mesh.geometry.instanceCount = n; this.mesh.visible = n > 0;

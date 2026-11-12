@@ -105,8 +105,33 @@ const CLOSE = {fov: -7, height: .5, pitch: -2, riseFrom: 9, riseTo: 16, goalEdge
  *  - the walls: no swing round you - the boom is shortened along its own line (to `boomLeast` at most) and the lens
  *    lifted by `wallLift` of what the walls took (at most `wallLiftMost` m), so in a corner or against the glass it
  *    pulls in and up and looks down on you; it never enters a goal's mouth (it stands over the bar's height). */
-const FOOT = {boom: 8.4, boomNear: 7.6, boomLoft: 2.2, height: 6.4, heightNear: 6, heightLoft: 1.4, shoulder: .3, fov: 50, fovLoft: 8, fovBoost: 3,
-  far: .58, farNear: .84, nearFrom: 12, nearTo: 26, rays: 3, spread: .28, least: -48, steep: -74, most: -17, body: -.4, high: -.1, feet: -.62, top: .78, pitchRate: 3.2, pitchSpeed: .55, boomLeast: 3.4, wallGap: 1.2, wallLift: .6, wallLiftMost: 3.4} as const;
+const FOOT = {boom: 8, boomNear: 7.4, boomLoft: 2.2, height: 8, heightNear: 7.4, heightLoft: 1.2, shoulder: .3, fov: 50, fovLoft: 8, fovBoost: 3,
+  far: .58, farNear: .84, nearFrom: 12, nearTo: 26, rays: 3, spread: .28, least: -48, steep: -82, most: -17, body: -.4, high: -.1, feet: -.62, top: .78, pitchRate: 3.2, pitchSpeed: .55, boomLeast: 3.4, wallGap: 1.2, wallLift: .6, wallLiftMost: 3,
+  /** So the side glass and the stands never fill a third of a corner's frame, the heading never swings, and a phone
+   *  near a corner keeps the ball on screen: the tilt is judged on the whole frame - never flatter than leaves
+   *  `stands` of it off the pitch's floor (the glass, the stands, the roof: a grid of `gridX` x `gridY` rays from the lens),
+   *  the side walls' share as well as the far end's; and BALL LOCK keeps the ball `edge` of the frame's half-width inside
+   *  its sides by opening the lens up to `edgeFov` degrees (springs `edgeIn` and `edgeOut` a second) - never by turning
+   *  it (a turn to keep it in would swing the heading about thirteen times a minute). The tilt's cap (`pitchSpeed`) is lifted to
+   *  `pitchCatch` while the body's feet would stand outside `feetLow`..`feetHigh` of the frame at the tilt held. */
+  stands: .17, gridX: 9, gridY: 6, edge: .86, edgeFov: 10, edgeIn: 10, edgeOut: 1.5, feetLow: -.7, feetHigh: .55, pitchCatch: 3,
+  /** A wall close ahead of the body (its boundary along the heading `aheadFrom`-`aheadTo` m off, all of it at the
+   *  near end): the lens stands up to `aheadLift` m higher, may look down as steep as `aheadLeast` degrees, and the body
+   *  may stand as high as `aheadHigh` up the frame (kept under the middle, the wall and the stands take the top half
+   *  of a corner's frame): near a wall the play is round the body, seen from above. */
+  aheadFrom: 3, aheadTo: 10, aheadLift: 1.4, aheadLeast: -68, aheadHigh: .45,
+  /** By a wall (the nearest `nearWall`-`clearWall` m off): the lens slid toward the pitch's middle, square to the heading,
+   *  by `sideShare` of how far off it the body is that way (at most `sideMost` m, all of it with `sideTo` m of room
+   *  behind the body, none with `sideFrom`), closed `zoomWall` degrees, and the body
+   *  let stand up to `wallHigh` of the way to `aheadHigh`. */
+  nearWall: 2.5, clearWall: 7, sideShare: .45, sideMost: 4, sideFrom: 2.5, sideTo: 6, zoomWall: 8, wallHigh: .8,
+  /** The frame's turn toward the look point when the lens is off the heading's line: a spring this fast (1/s). */
+  viewRate: 2.2,
+  /** The lens stands no higher over the body than `liftPer` times how far off it stands (along the floor), and `liftLeast`
+   *  m at least (about 60 degrees down at most). */
+  liftPer: 1.75, liftLeast: 6,
+  /** BALL LOCK: the ball kept over `ballLow` of the frame's foot (tilting down for it), the feet no higher than `ballFeet`. */
+  ballLow: .82, ballFeet: .7} as const;
 const D2R = Math.PI / 180;
 const wrapped = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 /** The swings tried, nearest first (radians either way from straight behind). */
@@ -379,9 +404,18 @@ export class BallChase {
     const near = ball ? (1 - smooth(d, 2.5, 9)) * (1 - loft) : 0;
     const narrow = clamp((1.5 - camera.aspect) / .7, 0, 1);
     const boomWant = (FOOT.boom + (FOOT.boomNear - FOOT.boom) * near + FOOT.boomLoft * loft) * (1 + .25 * narrow);
-    const heightWant = FOOT.height + (FOOT.heightNear - FOOT.height) * near + FOOT.heightLoft * loft;
-    const shoulderWant = FOOT.shoulder * (1 - .6 * narrow);
-    const fovWant = FOOT.fov + FOOT.fovLoft * loft + (f.boosting ? FOOT.fovBoost : 0) + 6 * narrow;
+    // (A wall close ahead - FOOT.aheadFrom..aheadTo - lifts the lens, and lets it look down further.)
+    const ahead = 1 - smooth(this.boundary(b.x, b.z, f.heading), FOOT.aheadFrom, FOOT.aheadTo);
+    const heightWant = FOOT.height + (FOOT.heightNear - FOOT.height) * near + FOOT.heightLoft * loft + FOOT.aheadLift * ahead;
+    // (By a wall - FOOT.nearWall..clearWall m off the nearest - the lens slides across toward the pitch's
+    // middle, square to the heading, the look with it (no turn), up to FOOT.sideMost m; and it closes by FOOT.zoomWall
+    // degrees: less of the glass and the stands, more of the scramble round the body.)
+    const G2 = GOAL_RULES, wallGap = Math.min(G2.halfX - Math.abs(b.x), G2.halfZ - Math.abs(b.z), (G2.halfX + G2.halfZ - G2.corner - Math.abs(b.x) - Math.abs(b.z)) / Math.SQRT2);
+    const byWall = 1 - smooth(wallGap, FOOT.nearWall, FOOT.clearWall), across = -b.x * -Math.cos(f.heading) + -b.z * Math.sin(f.heading);
+    // (Only with room behind the body - FOOT.sideFrom..sideTo m: backed into a corner, a slide would put it off the frame's side.)
+    const sideMost = FOOT.sideMost * smooth(this.roomFoot(b.x, b.z, -Math.sin(f.heading), -Math.cos(f.heading), FOOT.boom), FOOT.sideFrom, FOOT.sideTo);
+    const shoulderWant = FOOT.shoulder * (1 - .6 * narrow) + clamp(across * FOOT.sideShare, -sideMost, sideMost) * byWall;
+    const fovWant = FOOT.fov + FOOT.fovLoft * loft + (f.boosting ? FOOT.fovBoost : 0) + 6 * narrow - FOOT.zoomWall * byWall;
     if (fresh) { this.boom.snap(boomWant); this.height.snap(heightWant); this.shoulder.snap(shoulderWant); this.fov.snap(fovWant); this.swing.snap(0); this.held.set(0, 0, 0); this.heldVel.set(0, 0, 0); }
     const boom = this.boom.to(boomWant, RIG.boomRate, dt), height = this.height.to(heightWant, RIG.boomRate, dt), shoulder = this.shoulder.to(shoulderWant, RIG.boomRate, dt);
     // (No swing round the body: the walls shorten and lift the boom instead. A swing left by the classic rig eases out.)
@@ -411,33 +445,64 @@ export class BallChase {
     }
     at.copy(b).add(this.offset);
     at.x = clamp(at.x, -G.halfX + .2, G.halfX - .2); at.z = clamp(at.z, -G.halfZ + .2, G.halfZ - .2); at.y = clamp(at.y, 1.5, G.ceiling - 1);
+    // (Never so high over a body it stands close to that it looks down more steeply than FOOT.liftPer allows - backed
+    // into a corner, a lens 2 m off and 10 m up would have the body under the frame's foot.)
+    at.y = Math.min(at.y, b.y + Math.max(FOOT.liftLeast, Math.hypot(at.x - b.x, at.z - b.z) * FOOT.liftPer));
     // The heading on screen: along the heading, turned to the play ahead when the walls moved the lens off its line.
-    const lookX = b.x + hx * 9 - hz * shoulder, lookZ = b.z + hz * 9 + hx * shoulder, view = Math.atan2(lookX - at.x, lookZ - at.z);
-    const fovNow = this.fov.to(fovWant, RIG.fovRate, dt), half = fovNow * D2R / 2, t = Math.tan(half);
+    const lookX = b.x + hx * 9 - hz * shoulder, lookZ = b.z + hz * 9 + hx * shoulder;
+    // (The turn toward the look point - the lens moved off the heading's line by the walls or slid across by them - is
+    // sprung on its own, slowly (FOOT.viewRate): else the lens's lag behind a quick slide swings the frame one way and
+    // back.)
+    const off = wrapped(Math.atan2(lookX - at.x, lookZ - at.z) - head);
+    if (fresh) this.viewOff.snap(off); else this.viewOff.to(off, FOOT.viewRate, dt);
+    const view = wrapped(head + this.viewOff.x);
+    // (BALL LOCK: the ball kept inside the frame's sides - FOOT.edge of its half-width - from where the lens stands now,
+    // not from the boom's full length: a lens the walls pull in would have a ball beside the body off its edge.
+    // The lens opens for it, up to FOOT.edgeFov degrees, rather than turning: no swing.)
+    let open = 0;
+    if (ball && !this.footFree) {
+      const off = Math.abs(wrapped(Math.atan2(ball.x - at.x, ball.z - at.z) - view));
+      if (off < 1.3) { const need = 2 * Math.atan(Math.tan(off) / (camera.aspect * FOOT.edge)) / D2R; open = clamp(need - fovWant, 0, FOOT.edgeFov); }
+    }
+    if (fresh) this.edgeOpen = open; else this.edgeOpen += (open - this.edgeOpen) * (1 - Math.exp(-(open > this.edgeOpen ? FOOT.edgeIn : FOOT.edgeOut) * dt));
+    const fovNow = this.fov.to(fovWant + this.edgeOpen, RIG.fovRate * 2, dt), half = fovNow * D2R / 2, t = Math.tan(half);
     // The tilt: the far boundary along the view `far` up the frame (the mean of a few rays), then the feet over the foot
     // of the frame, the ball and the head under its top.
     let reachFar = 0;
     for (let i = 0; i < FOOT.rays; i++) reachFar += this.boundary(at.x, at.z, view + (i - (FOOT.rays - 1) / 2) * FOOT.spread);
     reachFar = clamp(reachFar / FOOT.rays, 6, 60);
     // (The body's feet at FOOT.body up the frame; never so flat that the stands take more than the far rule leaves them.)
-    const elev = (x: number, y: number, z: number) => Math.atan2(y - at.y, Math.max(.5, Math.hypot(x - at.x, z - at.z))), feet = elev(b.x, b.y, b.z);
+    const elev = (x: number, y: number, z: number) => Math.atan2(y - at.y, Math.max(.15, Math.hypot(x - at.x, z - at.z))), feet = elev(b.x, b.y, b.z);
     // (A boundary close ahead - a wall the body runs at - is the play's edge: more of it may stand in the frame, rather than
     // the empty grass behind the body.)
     const farUp = FOOT.far + (FOOT.farNear - FOOT.far) * (1 - smooth(reachFar, FOOT.nearFrom, FOOT.nearTo));
-    let pitchWant = Math.min(feet - Math.atan(FOOT.body * t), -Math.atan2(at.y, reachFar) - Math.atan(farUp * t));
-    pitchWant = clamp(pitchWant, FOOT.least * D2R, FOOT.most * D2R);
+    // (And never flatter than leaves FOOT.stands of the whole frame off the floor - the side glass in a
+    // corner or along a wall counted as well as the far end's.)
+    let pitchWant = Math.min(feet - Math.atan(FOOT.body * t), -Math.atan2(at.y, reachFar) - Math.atan(farUp * t), this.standsPitch(at, view, t, camera.aspect));
+    pitchWant = clamp(pitchWant, THREE.MathUtils.lerp(FOOT.least, FOOT.aheadLeast, ahead) * D2R, FOOT.most * D2R);
     if (ball) pitchWant = Math.max(pitchWant, elev(ball.x, ball.y, ball.z) - Math.atan(FOOT.top * t));
     pitchWant = Math.max(pitchWant, elev(s.x, s.y + 1.9, s.z) - Math.atan(FOOT.top * t));
     pitchWant = Math.min(pitchWant, feet - Math.atan(FOOT.feet * t));
     // (Backed into a corner the lens may stand little behind the body: it looks further down onto it, as steep as `steep`.)
-    const behind = (b.x - at.x) * hx + (b.z - at.z) * hz, cornered = smooth(2.5 - behind, 0, 2.5), least = THREE.MathUtils.lerp(FOOT.least, FOOT.steep, cornered) * D2R;
+    const behind = (b.x - at.x) * hx + (b.z - at.z) * hz, cornered = smooth(2.5 - behind, 0, 2.5), least = THREE.MathUtils.lerp(THREE.MathUtils.lerp(FOOT.least, FOOT.aheadLeast, ahead), FOOT.steep, cornered) * D2R;
     // (Never so steep that the body climbs over the frame's middle - `high`: near an end the wall and the goal take the
     // top of the frame rather than the body going up into it - but when backed into a corner.)
-    if (cornered < 1) pitchWant = Math.max(pitchWant, feet - Math.atan(FOOT.high * t) - cornered * .6);
-    pitchWant = Math.min(pitchWant, feet - Math.atan(FOOT.feet * t));
+    if (cornered < 1) pitchWant = Math.max(pitchWant, feet - Math.atan((FOOT.high + (FOOT.aheadHigh - FOOT.high) * Math.max(ahead, byWall * FOOT.wallHigh)) * t) - cornered * .6);
     pitchWant = clamp(pitchWant, least, (FOOT.most + 14) * D2R);
+    // (And the feet in the frame whatever the clamp - a lens the walls lifted and pulled in looks down
+    // further than `least` rather than lose the body off the frame's foot.)
+    pitchWant = Math.max(FOOT.steep * D2R, Math.min(pitchWant, feet - Math.atan(FOOT.feet * t)));
+    // (BALL LOCK: a ball run in behind the body, between it and the lens, over the frame's foot - tilted down for it, as
+    // far as keeps the feet under FOOT.ballFeet of the frame: the high lens's foot is 4 m in front of it, and a carrier
+    // run past the body would leave the frame there.)
+    if (ball) pitchWant = Math.max(FOOT.steep * D2R, Math.min(pitchWant, Math.max(elev(ball.x, ball.y, ball.z) + Math.atan(FOOT.ballLow * t), feet - Math.atan(FOOT.ballFeet * t))));
     if (fresh) this.pitch.snap(pitchWant);
-    const was = this.pitch.x, next = this.pitch.to(pitchWant, FOOT.pitchRate, dt), cap = FOOT.pitchSpeed * dt;
+    // (The cap is lifted while the body's feet would stand outside FOOT.feetLow..feetHigh of the frame at the tilt held
+    // now - the walls pull the lens in and up faster than 0.55 rad/s turns it, and the body would slide off the frame's
+    // foot for most of a second.)
+    const heldY = Math.tan(feet - this.pitch.x) / t, ballY = ball ? Math.tan(elev(ball.x, ball.y, ball.z) - this.pitch.x) / t : 0;
+    const out = heldY < FOOT.feetLow || heldY > FOOT.feetHigh || ballY < -FOOT.ballLow - .1;
+    const was = this.pitch.x, next = this.pitch.to(pitchWant, out ? FOOT.pitchRate * 3 : FOOT.pitchRate, dt), cap = (out ? FOOT.pitchCatch : FOOT.pitchSpeed) * dt;
     if (!fresh && Math.abs(next - was) > cap) { this.pitch.x = was + Math.sign(next - was) * cap; this.pitch.v = Math.sign(next - was) * FOOT.pitchSpeed; }
     const pitch = this.pitch.x;
     this.punch = Math.max(0, this.punch - dt * 3.2);
@@ -449,6 +514,36 @@ export class BallChase {
     camera.fov = fovNow - RIG.punchMost * .5 * this.punch * this.punch;
     camera.updateProjectionMatrix(); camera.updateMatrixWorld();
     this.yaw = view; this.ready = true; this.tight = 0;
+  }
+  /** BALL LOCK: how far the lens is opened to keep the ball inside the frame's sides (degrees). */
+  private edgeOpen = 0;
+  /** The frame's turn off the heading toward the look point (rad), sprung (FOOT.viewRate). */
+  private readonly viewOff = new Spring(0);
+  /** FREE LOOK - the frame never turns to the ball by itself (main.ts sets it with BallCam.free). */
+  footFree = false;
+  /** The share of the frame (a FOOT.gridX x FOOT.gridY grid of rays from the lens at `at`, along `view`,
+   *  tilted `pitch`) that does not land on the pitch's floor - inside its walls, or a goal's mouth. */
+  private standsAt(at: THREE.Vector3, view: number, pitch: number, t: number, aspect: number) {
+    const G = GOAL_RULES, a = view + Math.PI, ca = Math.cos(a), sa = Math.sin(a), cp = Math.cos(pitch), sp = Math.sin(pitch), tx = t * aspect;
+    let miss = 0;
+    for (let i = 0; i < FOOT.gridX; i++) for (let j = 0; j < FOOT.gridY; j++) {
+      const u = ((i + .5) / FOOT.gridX * 2 - 1) * tx, v = ((j + .5) / FOOT.gridY * 2 - 1) * t;
+      const y = v * cp + sp, z = v * sp - cp;
+      if (y >= -1e-4) { miss++; continue; }
+      const k = at.y / -y, x = at.x + (u * ca + z * sa) * k, w = at.z + (-u * sa + z * ca) * k, ax = Math.abs(x), az = Math.abs(w);
+      const on = (ax <= G.halfX && az <= G.halfZ && ax + az <= G.halfX + G.halfZ - G.corner) || (ax <= G.goalHalfWidth && az <= G.halfZ + G.goalDepth);
+      if (!on) miss++;
+    }
+    return miss / (FOOT.gridX * FOOT.gridY);
+  }
+  /** The flattest tilt (between FOOT.steep and FOOT.most degrees) that leaves no more than FOOT.stands of the
+   *  frame off the floor (standsAt), found by halving. */
+  private standsPitch(at: THREE.Vector3, view: number, t: number, aspect: number) {
+    let lo = FOOT.steep * D2R, hi = FOOT.most * D2R;
+    if (this.standsAt(at, view, hi, t, aspect) <= FOOT.stands) return hi;
+    if (this.standsAt(at, view, lo, t, aspect) > FOOT.stands) return lo;
+    for (let i = 0; i < 8; i++) { const mid = (lo + hi) / 2; if (this.standsAt(at, view, mid, t, aspect) <= FOOT.stands) lo = mid; else hi = mid; }
+    return lo;
   }
   /** How far from (x, z) along `yaw` the pitch's boundary is (its walls and chamfered corners; m). */
   private boundary(x: number, z: number, yaw: number) {

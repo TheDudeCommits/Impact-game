@@ -136,12 +136,41 @@ export const FOOTBALL = {
    *  - `support`: a side's support with the other side on the ball within `box` m of its goal holds the space at the edge
    *    of its box (`edge` m out, `far` m across on the far side of the ball) and stands no nearer the ball than `off` m: at
    *    most two (the one pressing and its cover) go to the ball near the box. */
-  fun2: {keeper: {from: 14, dive: {easy: .4, normal: 1.1, hard: 1.45}, react: .06, full: .25, high: 2.5, ahead: .06, catch: 30, hands: .35, push: 9, up: 4.5, keep: .35},
+  fun2: {keeper: {from: 14, dive: {easy: .7, normal: 1.25, hard: 1.95}, react: .06, full: .25, high: 2.5, ahead: .06, catch: 30, hands: .35, push: 9, up: 4.5, keep: .35},
     aim: {range: 20, within: 55 * Math.PI / 180, side: .5},
     kick: {pass: .09, shot: .12},
     tackle: {front: {easy: 125 * Math.PI / 180, normal: 108 * Math.PI / 180, hard: 90 * Math.PI / 180}, miss: .3, missPace: .8, missAgain: .45, live: .3, reach: .25},
     shield: {most: 2.2},
     pass: {cone: 62 * Math.PI / 180, wide: 100 * Math.PI / 180, blocked: .55, marked: .6, tight: 1.8, chip: 3.2, chipFrom: 7, round: [2, 3.2, -2, -3.2]}, support: {box: 15, edge: 7, far: 3.5, off: 6}},
+  /** So a person's passes get through and their pokes win (else about half the passes are cut out and a poke wins about
+   *  1 in 10):
+   *  - `pass`: a person's PASS along the floor leaves quicker (`arrive` m/s plus `perM` a metre, at most `most`), and is
+   *    played only where it gets through (personPass, passMargin): along the floor no rival may reach its line before it
+   *    passes - a rival `reach` m off it gets there, and one further off runs to it at `run` m/s after `react` s (at once
+   *    within `close` m of the ball) - nor stand
+   *    within `mark` m of the team-mate as it arrives (the last `near` m of it); lofted, none within `loftMark` m of where
+   *    it lands. The pass gets past the one pressing the passer - any of theirs within `atBall` m of the ball as it is
+   *    struck lets it by for its first `clear` s (a chip's, `loftClear`: it has left the foot - else the presser takes
+   *    it off the boot a tick after it leaves). Of the team-mates the stick is toward, the first played clear of them: straight, led round, or chipped
+   *    (from `chipFrom` m); none: another team-mate within the wide cone who can be; none at all, the stick's pick chipped
+   *    over them (never rolled into a rival's feet). With nobody near the stick it is a pass into space, as aimed.
+   *  - `tackle`: a person's POKE is live `live` s and reaches `reach` m further (by level) than a bot's, and wins from
+   *    within `front` rad of the carrier's run (by level: in front and beside it - FOOTBALL.fun2.tackle.front's 125 / 108 /
+   *    90 degrees cut the side off) - and against a bot's ball just taken from `settle` s on (a bot's FOOTBALL.settle): a poke timed as the
+   *    ball arrives, from in front or beside, lands; from behind it is still shielded.
+   *  - `aim`: a person's SHOOT put on frame (FOOTBALL.fun2.aim) goes for the corner `aim` m inside the post's inset by the
+   *    other side's level (in place of FOOTBALL.fun.corner.in, 0.3, for all): a HARD keeper's dive reaches what an EASY
+   *    one's does not.
+   *  - `botHelp`: a bot's SHOOT whose line runs outside the frame is laid inside the post only from this near it (m;
+   *    a person's FOOTBALL.shot.help, 2.5): a bot's aim's error by level (sportBrain SPORT_BOT `aim`) is a shot wide or
+   *    off the post, not the corner - with a person's help rival bots score 40-60% of their shots, most a corner the help
+   *    lays.
+   *  - `mates`: a person's team-mates' level by the level picked (BallBrain BOT_LEVELS' `mates`, NORMAL's own on NORMAL,
+   *    puts the person on top of an even side: they win nearly every match); their keeper dives as a `matesKeeper` one
+   *    (an EASY keeper behind the person concedes every shot it faces). */
+  fun3: {pass: {arrive: 15, perM: .25, most: 28, reach: 1.35, atBall: 1.5, clear: .4, loftClear: .4, close: 3, run: 8.5, react: .2, near: 1.8, mark: 1.3, loftMark: 2.2, chipFrom: 5},
+    tackle: {live: .42, reach: {easy: .65, normal: .5, hard: .3}, front: {easy: 135 * Math.PI / 180, normal: 122 * Math.PI / 180, hard: 100 * Math.PI / 180}, settle: .12},
+    aim: {easy: .3, normal: .4, hard: .65}, botHelp: 0, mates: {easy: 'normal', normal: 'easy', hard: 'easy'}, matesKeeper: 'normal'},
 } as const;
 
 /** Whether a body takes a team-mate's pass meant for a person (FOOTBALL.fun.kind) - the person's first
@@ -189,50 +218,83 @@ export function passPick(from: {x: number; z: number}, yaw: number, mates: reado
   return best;
 }
 
-/** FOOTBALL.fun2.pass: a person's PASS - the best open team-mate within the cone of the stick's `yaw` (or
- *  none: a pass into space), whether it is chipped over one of theirs stood in the lane near the ball, and the team-mate
- *  as the pass should be led to (moved to one side of them when one of theirs further along the lane is in the way). */
+/** FOOTBALL.fun3.pass: how clear a pass from `from` to `to` is of `foes` (m; under 0, one of them gets to
+ *  the ball first) - along the floor, each rival's distance from its line less what it can run before the ball passes it
+ *  (and at the team-mate's end, how tightly they are marked); lofted, how near one stands to where it lands. */
+export function passMargin(from: {x: number; z: number}, to: {x: number; z: number}, foes: readonly {x: number; z: number}[], lofted: boolean, ground = 1) {
+  const F = FOOTBALL.fun3.pass, ex = to.x - from.x, ez = to.z - from.z, L = Math.hypot(ex, ez) || 1e-3;
+  let worst = Infinity;
+  if (lofted) { for (const f of foes) worst = Math.min(worst, Math.hypot(f.x - to.x, f.z - to.z) - F.loftMark); return worst; }
+  const v0 = personGround(L, ground).v0, a = rollOf(ground);
+  for (const f of foes) {
+    const s = ((f.x - from.x) * ex + (f.z - from.z) * ez) / L;
+    if (s < 0) continue;
+    if (s > L - F.near) { worst = Math.min(worst, Math.hypot(f.x - to.x, f.z - to.z) - F.mark); continue; }
+    // (The one pressing - within `atBall` m of the ball as it is struck - lets it by: BallMatch, it has left the foot.)
+    const at = Math.hypot(f.x - from.x, f.z - from.z);
+    if (at < F.atBall) continue;
+    const q = Math.abs((f.x - from.x) * ez - (f.z - from.z) * ex) / L, k = v0 * v0 - 2 * a * s, t = k <= 0 ? Infinity : (v0 - Math.sqrt(k)) / a;
+    // (One near the ball, within `close` m of it, is moving already: no moment to react.)
+    const react = at < F.close ? 0 : F.react;
+    worst = Math.min(worst, q - F.reach - F.run * Math.max(0, t - react));
+  }
+  return worst;
+}
+
+/** FOOTBALL.fun2.pass and FOOTBALL.fun3.pass: a person's PASS - of the team-mates the stick's
+ *  `yaw` is toward (best first: nearest the stick, open, unmarked), the first one a pass gets through to: straight along
+ *  the floor, led round one of theirs in the lane (to one side of the team-mate, the side that clears), or chipped over;
+ *  none of them, another team-mate within the wide cone who can be reached; nobody at all, the stick's pick chipped.
+ *  Nobody near the stick: a pass into space, as aimed. Returns the team-mate as the pass should be
+ *  led to and whether it is lofted. */
 export function personPass(from: {x: number; z: number}, yaw: number, mates: readonly Mate[], foes: readonly {x: number; z: number}[]): {mate?: Mate; lofted: boolean} {
-  const P = FOOTBALL.pass, Q = FOOTBALL.fun2.pass, ux = Math.sin(yaw), uz = Math.cos(yaw);
-  const blockers = (to: {x: number; z: number}) => {
-    const ex = to.x - from.x, ez = to.z - from.z, L2 = ex * ex + ez * ez || 1e-6, out: {x: number; z: number; t: number}[] = [];
-    for (const f of foes) { const t = ((f.x - from.x) * ex + (f.z - from.z) * ez) / L2; if (t > 0 && t < .95 && Math.hypot(from.x + ex * t - f.x, from.z + ez * t - f.z) < 1.25 + Math.sqrt(L2) * .03) out.push({x: f.x, z: f.z, t}); }
-    return out;
-  };
-  let best: Mate | undefined, score = Infinity;
-  // (Nobody within the cone: the nearest the stick within `wide`, so a PASS pressed finds somebody of the side.)
-  for (const cone of [Q.cone, Q.wide]) for (const m of best ? [] : mates) {
+  const P = FOOTBALL.pass, Q = FOOTBALL.fun2.pass, F = FOOTBALL.fun3.pass, ux = Math.sin(yaw), uz = Math.cos(yaw);
+  const ranked: {m: Mate; s: number; off: number; d: number; wide: boolean}[] = [];
+  for (const m of mates) {
     const ex = m.x - from.x, ez = m.z - from.z, d = Math.hypot(ex, ez);
     if (d < P.near || d > P.far) continue;
     const off = Math.acos(Math.max(-1, Math.min(1, (ex * ux + ez * uz) / d)));
-    if (off > cone) continue;
+    if (off > Q.wide) continue;
     const marked = foes.some(f => Math.hypot(f.x - m.x, f.z - m.z) < Q.tight);
-    const s = off + d * .004 + (m.keeper ? FOOTBALL.fun.keeperOff : 0) + (blockers(m).length ? Q.blocked : 0) + (marked ? Q.marked : 0);
-    if (s < score) { score = s; best = m; }
+    ranked.push({m, off, d, wide: off > Q.cone, s: off + d * .004 + (m.keeper ? FOOTBALL.fun.keeperOff : 0) + (marked ? Q.marked : 0)});
   }
-  if (!best) return {lofted: false};
-  const inWay = blockers(best);
-  if (!inWay.length) return {mate: best, lofted: false};
-  const d = Math.hypot(best.x - from.x, best.z - from.z);
-  // (One of theirs right on the ball, in the lane: chipped over them.)
-  if (inWay.some(f => Math.hypot(f.x - from.x, f.z - from.z) < Q.chip) && d >= Q.chipFrom) return {mate: best, lofted: true};
-  // (Further along: led round them - to one side of the team-mate, the first that clears the lane, inside the walls.)
-  const nx = (best.z - from.z) / (d || 1), nz = -(best.x - from.x) / (d || 1);
-  for (const k of Q.round) {
-    const to = {...best, x: Math.max(-GOAL_RULES.halfX + 1.5, Math.min(GOAL_RULES.halfX - 1.5, best.x + nx * k)), z: Math.max(-GOAL_RULES.halfZ + 1.5, Math.min(GOAL_RULES.halfZ - 1.5, best.z + nz * k))};
-    if (!blockers(to).length) return {mate: to, lofted: false};
+  if (!ranked.length) return {lofted: false};
+  // (The cone's first, then the wide cone's - the wide only when the cone has nobody or nobody a pass gets through to.)
+  ranked.sort((a, b) => Number(a.wide) - Number(b.wide) || a.s - b.s);
+  const options = (r: (typeof ranked)[number]) => {
+    const out: {mate: Mate; lofted: boolean; margin: number}[] = [{mate: r.m, lofted: false, margin: passMargin(from, r.m, foes, false)}];
+    const nx = (r.m.z - from.z) / (r.d || 1), nz = -(r.m.x - from.x) / (r.d || 1);
+    for (const k of Q.round) {
+      const to = {...r.m, x: Math.max(-GOAL_RULES.halfX + 1.5, Math.min(GOAL_RULES.halfX - 1.5, r.m.x + nx * k)), z: Math.max(-GOAL_RULES.halfZ + 1.5, Math.min(GOAL_RULES.halfZ - 1.5, r.m.z + nz * k))};
+      out.push({mate: to, lofted: false, margin: passMargin(from, to, foes, false)});
+    }
+    if (r.d >= F.chipFrom) out.push({mate: r.m, lofted: true, margin: passMargin(from, r.m, foes, true)});
+    return out;
+  };
+  let first: ReturnType<typeof options> | undefined;
+  for (const r of ranked) {
+    const o = options(r);
+    first ??= o;
+    const clear = o.find(x => x.margin >= 0);
+    if (clear) return {mate: clear.mate, lofted: clear.lofted};
   }
-  return {mate: best, lofted: d >= Q.chipFrom};
+  // (Nobody a pass gets through to: the stick's pick chipped over them, never rolled into a rival's feet - too near to
+  // chip, the way along the floor least in their way.)
+  const o = first!, chip = o.find(x => x.lofted);
+  return chip ? {mate: chip.mate, lofted: true} : {mate: o.reduce((a, b) => b.margin > a.margin ? b : a).mate, lofted: false};
 }
 
 /** The floor's slowing of a rolling ball (m/s a second) at a ground share (BallState.ground). */
 const rollOf = (ground = 1) => GOAL_RULES.roll * ground;
-/** How fast a pass along the floor leaves to cover `d` m, and how long it takes (FOOTBALL.pass). */
-export function groundPass(d: number, ground = 1) {
-  const P = FOOTBALL.pass, a = rollOf(ground), arrive = P.arrive + P.perM * d;
+/** How fast a pass along the floor leaves to cover `d` m, and how long it takes (FOOTBALL.pass; `fast`, a person's -
+ *  FOOTBALL.fun3.pass). */
+export function groundPass(d: number, ground = 1, fast = false) {
+  const P = fast ? FOOTBALL.fun3.pass : FOOTBALL.pass, a = rollOf(ground), arrive = P.arrive + P.perM * d;
   const v0 = Math.min(P.most, Math.sqrt(arrive * arrive + 2 * a * d)), end = Math.sqrt(Math.max(0, v0 * v0 - 2 * a * d));
   return {v0, t: Math.max(.15, (v0 - end) / a)};
 }
+/** A person's pass along the floor (FOOTBALL.fun3.pass). */
+export const personGround = (d: number, ground = 1) => groundPass(d, ground, true);
 /** The ballistic velocity to land at a point after `t` s (strike.ts arc's, drag made up for roughly). */
 export function arcTo(from: Vec3, toX: number, toY: number, toZ: number, t: number, g: number) {
   const k = 1 + GOAL_RULES.drag * t * .5;
@@ -242,28 +304,28 @@ export function arcTo(from: Vec3, toX: number, toY: number, toZ: number, t: numb
 /** A PASS's flight (FOOTBALL.pass): to `mate` led into their run (their run carried on over the flight, worked out again
  *  `rounds` times, inside the walls by `wall` m), or into space along `yaw` with nobody. Lofted: the same spot, in the air.
  *  `g` the ball's gravity, `r` its radius, `ground` the floor's share (BallState.ground). */
-export function passTo(ball: Vec3, yaw: number, mate: Mate | undefined, lofted: boolean, g: number, r: number, ground = 1) {
+export function passTo(ball: Vec3, yaw: number, mate: Mate | undefined, lofted: boolean, g: number, r: number, ground = 1, fast = false) {
   const P = FOOTBALL.pass, inX = GOAL_RULES.halfX - P.wall, inZ = GOAL_RULES.halfZ - P.wall;
   let tx = mate ? mate.x : ball.x + Math.sin(yaw) * P.space, tz = mate ? mate.z : ball.z + Math.cos(yaw) * P.space;
-  const time = (x: number, z: number) => { const d = Math.hypot(x - ball.x, z - ball.z); return lofted ? P.loftT + d * P.loftPerM : groundPass(d, ground).t; };
+  const time = (x: number, z: number) => { const d = Math.hypot(x - ball.x, z - ball.z); return lofted ? P.loftT + d * P.loftPerM : groundPass(d, ground, fast).t; };
   if (mate) for (let i = 0; i < P.rounds; i++) { const t = time(tx, tz); tx = mate.x + mate.vx * t; tz = mate.z + mate.vz * t; }
   tx = Math.max(-inX, Math.min(inX, tx)); tz = Math.max(-inZ, Math.min(inZ, tz));
   const d = Math.hypot(tx - ball.x, tz - ball.z) || 1e-3;
   if (lofted) return {...arcTo(ball, tx, r + .3, tz, time(tx, tz), g), tx, tz};
-  const v = groundPass(d, ground).v0;
+  const v = groundPass(d, ground, fast).v0;
   return {vx: (tx - ball.x) / d * v, vy: 0, vz: (tz - ball.z) / d * v, tx, tz};
 }
 
 /** A SHOT's flight (FOOTBALL.shot) at `charge` (0: a tap, 1: full), along `yaw` (the view, bent by the stick), with the
  *  striker's run (`run`) carried. Put inside the post when its line is near the frame. */
-export function shotAt(ball: Vec3, yaw: number, charge: number, team: BallTeam, run: {vx: number; vz: number}, g: number, r: number, open?: number) {
+export function shotAt(ball: Vec3, yaw: number, charge: number, team: BallTeam, run: {vx: number; vz: number}, g: number, r: number, open?: number, help: number = FOOTBALL.shot.help) {
   const S = FOOTBALL.shot, R = GOAL_RULES, gz = team === 'red' ? R.halfZ : -R.halfZ;
   let dx = Math.sin(yaw), dz = Math.cos(yaw);
   const speed = S.tap + (S.full - S.tap) * charge + Math.max(0, Math.min(S.runMost, (run.vx * dx + run.vz * dz) * S.momentum));
   const toward = Math.sign(gz - ball.z);
   if (dz * toward > .2) {
     const t = (gz - ball.z) / dz, hitX = ball.x + dx * t;
-    if (Math.abs(t) < R.halfZ * S.reach && Math.abs(hitX) < R.goalHalfWidth + S.help) {
+    if (Math.abs(t) < R.halfZ * S.reach && Math.abs(hitX) < R.goalHalfWidth + help) {
       const inside = R.goalHalfWidth - r - S.inset, C = FOOTBALL.fun.corner;
       // (A person's shot at the middle of the goal goes for the corner away from the keeper - `open`.)
       const tx = open && Math.abs(hitX) < R.goalHalfWidth * C.within ? Math.sign(open) * (inside - C.in) : Math.max(-inside, Math.min(inside, hitX)), flat = Math.hypot(tx - ball.x, gz - ball.z);

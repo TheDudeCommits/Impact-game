@@ -112,6 +112,9 @@ interface Full {
   /** How much of the take the hips and legs take (0-1, every frame; absent: all of it) - a ready pose on a body
    *  still running to the ball keeps its own stride under it, so its feet never slide. */
   legs?: () => number;
+  /** The follow-through held - `after` s past the contact the take stands still for `hold` s, then runs on
+   *  (the kick's top, held a beat: seen at play distance). */
+  peak?: {after: number; hold: number};
 }
 const full = new Map<Fighter, Full>();
 const tracksFull = (body: Fighter, clip: THREE.AnimationClip): FullTrack[] => {
@@ -125,14 +128,14 @@ const tracksFull = (body: Fighter, clip: THREE.AnimationClip): FullTrack[] => {
 };
 /** A football take on `body`, full body (see TAKE). `at`: the event's server time (NaN: now, entered just before the
  *  contact); `contact` s into the clip; `end` s into it where it blends back (default: its end). */
-export function startTake(body: Fighter, clip: THREE.AnimationClip, o: {at: number; contact: number; rate?: number; end?: number; hold?: () => boolean; then?: THREE.AnimationClip; wind?: () => number | undefined; lead?: number; ready?: number; legs?: () => number}) {
+export function startTake(body: Fighter, clip: THREE.AnimationClip, o: {at: number; contact: number; rate?: number; end?: number; hold?: () => boolean; then?: THREE.AnimationClip; wind?: () => number | undefined; lead?: number; ready?: number; legs?: () => number; peak?: {after: number; hold: number}}) {
   const tracks = tracksFull(body, clip);
   if (!tracks.length) return 0;
   layers.delete(body);
   // (A shot's own event after its wind-up carries on from where the wind-up stands: no blend in again.)
   const was = full.get(body), carried = !!was?.wind && !o.wind && was.clip === clip;
   full.set(body, {tracks, clip, at: o.at, contact: o.contact, rate: o.rate ?? 1, end: Math.min(clip.duration, o.end ?? clip.duration), first: carried ? -Infinity : NaN, hold: o.hold, wind: o.wind, lead: o.lead,
-    then: o.then ? {clip: o.then, tracks: tracksFull(body, o.then)} : undefined, ready: o.ready, legs: o.legs});
+    then: o.then ? {clip: o.then, tracks: tracksFull(body, o.then)} : undefined, ready: o.ready, legs: o.legs, peak: o.peak});
   return tracks.length;
 }
 /** The ready pose's swing begun - the take runs on from where it stands to its contact at `at` (server s). */
@@ -163,7 +166,9 @@ function stepFull(body: Fighter, f: Full, drawn: number) {
     if (share === undefined) { full.delete(body); return; }
     time = Math.max(0, f.contact - (f.lead ?? TAKE.wind) * (1 - share));
   } else {
-    time = Math.max(0, Math.min(f.clip.duration, f.contact + (drawn - f.at) * f.rate));
+    let since = drawn - f.at;
+    if (f.peak && since > f.peak.after) since = since < f.peak.after + f.peak.hold ? f.peak.after : since - f.peak.hold;
+    time = Math.max(0, Math.min(f.clip.duration, f.contact + since * f.rate));
     if (f.ready !== undefined) time = Math.min(time, f.ready);
     if (f.dropped !== undefined) {
       if (Number.isNaN(f.dropped)) f.dropped = drawn;

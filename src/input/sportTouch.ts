@@ -105,8 +105,8 @@ type VolleyAt = { z: number; x?: number; y?: number; grounded?: boolean };
 /** VOLLEYBALL (game/ball/volley.ts; `?volleyball`): one PLAY a touch, so the big button is PLAY, named for
  *  what it does now (SERVE, RECEIVE, SET, SPIKE, OVER - the rules' own word, BallView.volley.prompt); the pass's button is
  *  the TIP only while you are up for the attack (and hidden otherwise: any other press of it is PLAY too); JUMP is named
- *  BLOCK at the net while the other side attacks (the jump is the block); BOOST is the DIVE at a low ball of yours just
- *  out of reach; no moment's button; SUPER only with the meter full and you up for the attack - the one moment it does
+ *  BLOCK at the net while the other side attacks (the jump is the block); the dash is DIVE (always so named - at a
+ *  low ball of yours just out of reach it dives); no moment's button; SUPER only with the meter full and you up for the attack - the one moment it does
  *  something. */
 function volleySet(view: BallView, selfId: string, superFace: (label: string) => SportFace | null, at?: VolleyAt): SportSet {
   const vol = view.volley!, team = view.seats.find(s => s.id === selfId)?.team, b = view.ball;
@@ -125,7 +125,8 @@ function volleySet(view: BallView, selfId: string, superFace: (label: string) =>
     main: { action: 'light', label, glyph },
     pass: attack ? { action: 'heavy', label: 'TIP', glyph: 'tip' } : null,
     jump: { action: 'jump', label: theirs && atNet ? 'BLOCK' : 'JUMP', glyph: theirs && atNet ? 'block' : 'jump' },
-    run: { action: 'dash', label: low ? 'DIVE' : 'BOOST', glyph: low ? 'dive' : 'boost', hold: !low },
+    // (On the volleyball rules the dash's button says DIVE always - the bar under the view says DIVE too.)
+    run: { action: 'dash', label: 'DIVE', glyph: 'dive', hold: !low },
     side: null,
     super: attack ? superFace('SUPER') : null,
   };
@@ -256,9 +257,10 @@ function sportSetOf(view: BallView, selfId: string, fight: boolean, superFace: (
  *  there (the moment's DIVE is the same press, when it shows). */
 export function sportTouchName(mode: BallModeId, fight: boolean, action: string): string | undefined {
   // (On a page on the sport rules - game/ball/sportRules.ts, the default - the football and volleyball sets'
-  // own buttons: volleySet's PLAY, TIP, BOOST (the DIVE's press), SUPER; football's SPRINT, TACKLE, TRICK, and SPORT in FIGHT.)
+  // own buttons: volleySet's PLAY, TIP, DIVE, SUPER; football's SPRINT, TACKLE, TRICK, and SPORT in FIGHT.)
   if (sportPage()) {
-    if (mode === 'sky-spike') return ({ light: 'PLAY', heavy: 'TIP', jump: 'JUMP', dash: 'BOOST', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
+    // (The dash is DIVE on the volleyball rules, the phone's button and the strip alike.)
+    if (mode === 'sky-spike') return ({ light: 'PLAY', heavy: 'TIP', jump: 'JUMP', dash: 'DIVE', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
     return (fight
       ? { light: 'LIGHT', heavy: 'HEAVY', jump: 'JUMP', dash: 'DASH', target: 'SPORT', ultimate: 'ULT', interact: 'JUMP' }
       : { light: 'PASS', heavy: 'SHOOT', jump: 'JUMP', dash: 'SPRINT', target: 'FIGHT', guard: 'TACKLE', special: 'TRICK', ultimate: 'SUPER', interact: 'JUMP' } as Record<string, string>)[action];
