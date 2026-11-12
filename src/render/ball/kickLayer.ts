@@ -112,6 +112,9 @@ interface Full {
   /** How much of the take the hips and legs take (0-1, every frame; absent: all of it) - a ready pose on a body
    *  still running to the ball keeps its own stride under it, so its feet never slide. */
   legs?: () => number;
+  /** Volleyball's ready stance between touches (ballMoves.ts STANCE): the held pose's weight shifting - the upper
+   *  body swaying `sway` radians at most round the spine, side to side and turning a little, on its own beat (`phase`). */
+  sway?: {amount: number; phase: number; node?: THREE.Object3D | null};
   /** The follow-through held - `after` s past the contact the take stands still for `hold` s, then runs on
    *  (the kick's top, held a beat: seen at play distance). */
   peak?: {after: number; hold: number};
@@ -128,14 +131,15 @@ const tracksFull = (body: Fighter, clip: THREE.AnimationClip): FullTrack[] => {
 };
 /** A football take on `body`, full body (see TAKE). `at`: the event's server time (NaN: now, entered just before the
  *  contact); `contact` s into the clip; `end` s into it where it blends back (default: its end). */
-export function startTake(body: Fighter, clip: THREE.AnimationClip, o: {at: number; contact: number; rate?: number; end?: number; hold?: () => boolean; then?: THREE.AnimationClip; wind?: () => number | undefined; lead?: number; ready?: number; legs?: () => number; peak?: {after: number; hold: number}}) {
+export function startTake(body: Fighter, clip: THREE.AnimationClip, o: {at: number; contact: number; rate?: number; end?: number; hold?: () => boolean; then?: THREE.AnimationClip; wind?: () => number | undefined; lead?: number; ready?: number; legs?: () => number; sway?: number; peak?: {after: number; hold: number}}) {
   const tracks = tracksFull(body, clip);
   if (!tracks.length) return 0;
   layers.delete(body);
   // (A shot's own event after its wind-up carries on from where the wind-up stands: no blend in again.)
   const was = full.get(body), carried = !!was?.wind && !o.wind && was.clip === clip;
   full.set(body, {tracks, clip, at: o.at, contact: o.contact, rate: o.rate ?? 1, end: Math.min(clip.duration, o.end ?? clip.duration), first: carried ? -Infinity : NaN, hold: o.hold, wind: o.wind, lead: o.lead,
-    then: o.then ? {clip: o.then, tracks: tracksFull(body, o.then)} : undefined, ready: o.ready, legs: o.legs, peak: o.peak});
+    then: o.then ? {clip: o.then, tracks: tracksFull(body, o.then)} : undefined, ready: o.ready, legs: o.legs, peak: o.peak,
+    sway: o.sway ? {amount: o.sway, phase: Math.random() * 6.283, node: tracks.find(t => !t.lower && /spine|chest/i.test(t.node.name))?.node ?? null} : undefined});
   return tracks.length;
 }
 /** The ready pose's swing begun - the take runs on from where it stands to its contact at `at` (server s). */
@@ -188,7 +192,15 @@ function stepFull(body: Fighter, f: Full, drawn: number) {
   }
   const lw = f.legs ? w * THREE.MathUtils.clamp(f.legs(), 0, 1) : w;
   for (const tr of f.tracks) { _q.fromArray(tr.sample.evaluate(time) as unknown as number[]); tr.node.quaternion.slerp(_q, tr.lower ? lw : w); }
+  // (A ready stance's weight shifting, on the spine over the held pose.)
+  const sw = f.sway;
+  if (sw?.node && f.ready !== undefined) {
+    const a = sw.amount * w, t = drawn * 1.9 + sw.phase;
+    _e.set(Math.sin(t * .5) * a * .25, Math.sin(t * .37 + 1) * a, Math.sin(t) * a * .6);
+    sw.node.quaternion.multiply(_s.setFromEuler(_e));
+  }
 }
+const _e = new THREE.Euler(), _s = new THREE.Quaternion();
 /** For the checks: how many bodies have a layer or a take on now. */
 export const kicksOn = () => layers.size + full.size;
 export function clearKicks() { layers.clear(); full.clear(); }

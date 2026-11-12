@@ -148,7 +148,9 @@ export class StanceMarks {
     }
     if (me) {
       if (lock) this.put(KIND.fight, me.x, me.z, 1.35, 0, 1, FIGHT, .9, me.y);
-      else {
+      // (Not on the sport rules' football - its one mark under you is BallField's single thin ring, the arrow over your
+      // head the rest; the gold ring inside the side's made a red and yellow double ring that read as a debug aid.)
+      else if (!view.football) {
         const ang = ball ? Math.atan2(ball.x - me.x, ball.z - me.z) : 0;
         this.put(KIND.ball, me.x, me.z, 1.3, ang, ball ? .95 : .5, GOLD, 0, me.y);
       }

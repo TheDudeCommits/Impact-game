@@ -57,6 +57,10 @@ export function jumpIn(ball: {y: number; vy: number; grav?: number}, arc: {apex:
   return t - (high ? arc.rise - T.swing + T.contact : T.lowLead);
 }
 
+/** The page's own seat's cues as they stand this frame (the split screen's second seat's are its own), for the HUD's
+ *  timing bar (ui/hud/BallHud.ts). */
+export const ownCues: {state: {readonly jump: number; readonly share: number; readonly window: boolean; readonly beat: number; readonly air: number} | null} = {state: null};
+
 /**
  * Sky Spike's timing cues. A PERFECT SPIKE is struck from the top of the jump: without a cue a player could only guess
  * at the window. Here the rhythm is shown and heard, so it is learned in a few rallies:
@@ -87,8 +91,10 @@ export class SpikeCues {
   private n = 0;
   /** Each cue's sound, once a moment. */
   onTick: (kind: SpikeCueTick) => void = () => {};
-  /** What this page's own cues are doing (for checks and the drills). */
-  readonly state = {jump: NaN, share: 0, window: false, dive: false};
+  /** What this page's own cues are doing (for checks and the drills); `beat`, the seconds to the jump's beat while a
+   *  set is coming down to you (however far off; `jump` is the ring's, its last `jumpLead`), and `air`, the jump's climb
+   *  toward the window for an attack you are up for (0-1, 1 open) - the prompt's timing bar reads them (ownCues). */
+  readonly state = {jump: NaN, share: 0, window: false, dive: false, beat: NaN, air: NaN};
   private wasWindow = false; private flareAge = Infinity; private jumpTold = ''; private diveTold = '';
   /** The set the jump's beat is for: which, whether it is a floating one (read as it left the hand), and whether its beat
    *  is still ahead (a set first seen already past its beat gets none). */
@@ -167,7 +173,8 @@ export class SpikeCues {
   update(dt: number, view: BallView | undefined, self: string, players: readonly PlayerState[], at: (id: string) => THREE.Vector3 | undefined, ball: THREE.Vector3 | null, show: boolean) {
     this.time.value += dt; this.n = 0; this.flareAge += dt;
     for (const [id, age] of this.theirsFlare) this.theirsFlare.set(id, age + dt);
-    this.state.jump = NaN; this.state.share = 0; this.state.window = false; this.state.dive = false;
+    this.state.jump = NaN; this.state.share = 0; this.state.window = false; this.state.dive = false; this.state.beat = NaN; this.state.air = NaN;
+    if (this.half === 0) ownCues.state = this.state;
     if (!show || !view || view.mode !== 'sky-spike' || !ball || (view.phase !== 'live' && view.phase !== 'kickoff')) { this.wasWindow = false; this.flush(); return; }
     let team: BallTeam | undefined, fighter: FighterId | undefined;
     for (const s of view.seats) if (s.id === self) { team = s.team; fighter = s.fighter; }
@@ -199,6 +206,7 @@ export class SpikeCues {
       // (Where it comes through hitting height: near enough to you to be yours.)
       const when = untilDown(b.y, b.vy, this.setHigh ? arc.apex + T.reach : T.low, g);
       const near = Number.isFinite(when) && Math.hypot(b.x + b.vx * when - me.x, b.z + b.vz * when - me.z) < 3.2;
+      if (near && this.setArmed && t > -.08) this.state.beat = t;
       if (near && this.setArmed && t > -.08 && t < CUE.jumpLead) {
         this.state.jump = t;
         const k = Math.max(0, t / CUE.jumpLead);
@@ -214,6 +222,7 @@ export class SpikeCues {
     const share = air ? me.y / Math.max(.1, arc.apex) : 0;
     this.state.share = share;
     const open = air && share >= T.apex && dBall < 3.6 && (attack || serving);
+    if (air && (attack || serving) && dBall < 4.4 && (open || !this.wasWindow)) this.state.air = open ? 1 : Math.min(.99, share / T.apex);
     if (air && (attack || serving) && dBall < 4.4 && !open && share > .45 && share < T.apex && !this.wasWindow) {
       const k = (share - .45) / (T.apex - .45);
       this.put(KIND.ring, hand.x, hand.y, hand.z, (1.6 + 2.6 * (1 - k)) * (Z?.hand ?? 1), .9, (.3 + .55 * k) * (Z?.handAlpha ?? 1), WHITE);

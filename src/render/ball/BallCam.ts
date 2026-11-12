@@ -52,6 +52,8 @@ export class BallCam {
   selfId = '';
   /** SPORT's BALL LOCK: the drawn body's run, sprung (m/s along x and z), for the heading a carrier is held toward. */
   private runX = 0; private runZ = 0; private lastRunX = NaN; private lastRunZ = NaN;
+  /** The drawn ball's run (m/s, sprung), its last place, and the last big turn (CALM.back). */
+  private ballVx = 0; private ballVz = 0; private lastBallX = NaN; private lastBallZ = NaN; private clock = 0; private bigAt = -Infinity; private bigSign = 0;
   private presses = 0;
   private yaw = NaN;
   /** The heading's turning speed (radians a second): the spring's. */
@@ -139,6 +141,10 @@ export class BallCam {
     if (Number.isFinite(me.lastRunX) && !placed && dt > 0) { const k = Math.min(1, dt * 8); me.runX += ((self.x - me.lastRunX) / dt - me.runX) * k; me.runZ += ((self.z - me.lastRunZ) / dt - me.runZ) * k; }
     else { me.runX = me.runZ = 0; }
     me.lastRunX = self.x; me.lastRunZ = self.z;
+    // (The drawn ball's run along the floor, sprung - CALM.lead.)
+    if (Number.isFinite(me.lastBallX) && dt > 0) { const k = Math.min(1, dt * 10), vx = (ball.x - me.lastBallX) / dt, vz = (ball.z - me.lastBallZ) / dt; if (Math.abs(vx) + Math.abs(vz) < 80) { me.ballVx += (vx - me.ballVx) * k; me.ballVz += (vz - me.ballVz) * k; } }
+    else { me.ballVx = me.ballVz = 0; }
+    me.lastBallX = ball.x; me.lastBallZ = ball.z; me.clock += dt;
     const turn = Number.isFinite(me.handed) ? wrapped(yaw - me.handed) : 0, reset = Math.abs(turn) > RESET || placed;
     // (The player's own turn is taken as it is; for HOLD s after it the lens lets their view be, then eases in.)
     if (reset || Math.abs(turn) > 1e-6) me.still = 0; else me.still += dt;
@@ -155,10 +161,14 @@ export class BallCam {
     } else {
       // (The ball's bearing as the lens sees it, from its stand CALM.boom m behind the body: a ball close beside the body
       // is well inside the frame, and swings the heading far less than it does off the body itself.)
-      const lx = self.x - Math.sin(now) * CALM.boom, lz = self.z - Math.cos(now) * CALM.boom, gap = wrapped(Math.atan2(ball.x - lx, ball.z - lz) - now);
+      // (Where the ball will be CALM.lead s on along the floor - a pass or a clearance is followed as it goes,
+      // not after it has left the frame.)
+      const bx = ball.x + me.ballVx * CALM.lead, bz = ball.z + me.ballVz * CALM.lead;
+      const lx = self.x - Math.sin(now) * CALM.boom, lz = self.z - Math.cos(now) * CALM.boom, gap = wrapped(Math.atan2(bx - lx, bz - lz) - now);
       if (Math.abs(gap) > CALM.dead) goal = now + gap - Math.sign(gap) * CALM.dead;
       // (A ball gone out of the frame - a long ball behind you - is fetched back quicker, so it is lost only briefly.)
-      if (Math.abs(gap) > CALM.out) { most = CALM.fetch; k = CALM.rate * 1.3; fetching = true; }
+      // (A ball beyond the scramble - CALM.scramble m - fetched quicker still, CALM.fetchFar.)
+      if (Math.abs(gap) > CALM.out) { most = d > CALM.scramble ? CALM.fetchFar : CALM.fetch; k = CALM.rate * (d > CALM.scramble ? 1.6 : 1.3); fetching = true; }
       const rise = Math.atan2(ball.y - self.y - 1.2, Math.max(d, .01));
       pull = smooth(d, CALM.near - 1, CALM.near + 2) * (1 - smooth(rise, .85, 1.2));
     }
@@ -176,6 +186,10 @@ export class BallCam {
         const h = Math.min(left, 1 / 60), g = wrapped(goal - me.yaw);
         me.rate += (k * k * pull * g - 2 * k * me.rate) * h;
         me.rate = clamp(me.rate, -most, most);
+        // (Never whipped back - a turn the other way within CALM.back s of a quick one (over CALM.quick
+        // rad/s) is held under CALM.slow rad/s, unless the ball has left the frame and is being fetched.)
+        if ((!fetching || d < CALM.scramble) && Math.sign(me.rate) === -me.bigSign && me.clock - me.bigAt < CALM.back) me.rate = clamp(me.rate, -CALM.slow, CALM.slow);
+        if (Math.abs(me.rate) > CALM.quick) { me.bigAt = me.clock; me.bigSign = Math.sign(me.rate); }
         me.yaw += me.rate * h; left -= h;
       }
     }
@@ -194,7 +208,15 @@ export class BallCam {
  *    frame (CALM.out rad off) is fetched back at up to CALM.fetch rad/s;
  *  - every turn on a spring capped at CALM.most rad/s; a ball close by (CALM.near m) or overhead holds the view, as ever;
  *    the player's own turn is taken as it is, and for HOLD s after it the lens lets it be. */
-const CALM = {boom: 8.4, dead: .36, rate: 2.6, most: .95, out: .62, fetch: 1.4, near: 3.2, carryRate: 2, carryMost: .9, goalShare: .35, goalMost: .35, run: 2,
+const CALM = {boom: 6.2, dead: .28, rate: 2.6, most: .95, out: .5, fetch: 2, near: 5, carryRate: 2, carryMost: .9, goalShare: .35, goalMost: .35, run: 2,
+  /** So the camera neither tilts nor swings, its lens close (BallChase FOOT): `boom` the lens's own stand (6.2 m), the
+   *  dead zone `dead` 0.28 and `out` 0.5 rad of it (the close lens's frame is narrow at the play), a ball out of the
+   *  frame fetched at `fetch` 2 rad/s; the ball's bearing taken from where it will be `lead` s on; a turn back the other
+   *  way within `back` s of one quicker than `quick` rad/s is held under `slow` rad/s (a ball being fetched excepted). */
+  lead: .3, back: 1.3, quick: .45, slow: .4,
+  /** A ball within `near` m of the body (its hold, above: 5 m) is framed by the rig's truck and
+   *  lens (BallChase FOOT.truck, edgeFov) rather than a turn; and within `scramble` m even a fetch never whips back. */
+  scramble: 9, fetchFar: 2.6,
   /** By a wall (the nearest `wallFrom`-`wallTo` m off) the spring's rate and its cap at these shares. */
   wallFrom: 2.5, wallTo: 6, wallRate: .6, wallMost: .6} as const;
 /** Where the sun's shadow box centres in a ball match (main.ts, GameRenderer.shadowCentred): between the player and the

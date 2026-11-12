@@ -1310,8 +1310,9 @@ export class BallMatch implements ExternalTargets, LessonHost {
     if (this.celebration?.id === this.view.serverId) this.celebration = null;
     this.view.phase = 'kickoff'; this.view.phaseUntil = this.sim.serverTime + (this.view.practice ? 1 : this.volley ? VOLLEY.serve.seconds : R.serveSeconds);
     this.view.touchTeam = team; this.view.touches = 0; this.view.rally = 0; this.view.fever = false; this.feverTold = false;
-    // SUDDEN DEATH: every point is a FEVER point, worth two.
-    if (this.view.mutator === 'sudden-death') { this.view.fever = true; this.feverTold = true; }
+    // SUDDEN DEATH: every point is a FEVER point, worth two. (Not on the volleyball rules - every point counts one
+    // there, so nothing may say FEVER or double.)
+    if (this.view.mutator === 'sudden-death' && !this.volley) { this.view.fever = true; this.feverTold = true; }
     this.placeBallAtRest(); this.touchesLog = [];
     if (!this.view.practice) this.placeAll();
     this.liveSince = this.sim.serverTime; this.view.replay = null; this.skips.clear(); this.scoredAt = Infinity; this.scoredBy = null;
@@ -2970,7 +2971,9 @@ export class BallMatch implements ExternalTargets, LessonHost {
     const b = this.ball;
     this.view.rally++;
     if (this.view.rally === SPIKE_RULES.rallyHeat) this.emit('rally', {x: b.x, y: b.y, z: b.z, value: this.view.rally, text: 'RALLY HEATS UP'});
-    if (this.view.rally >= SPIKE_RULES.fever && !this.feverTold) {
+    // (No FEVER on the volleyball rules - its banner said EVERY POINT COUNTS DOUBLE and the score bug FEVER ×2 while
+    // every point counted one; the rally's own count on the bug and RALLY's line stand for a long rally there.)
+    if (this.view.rally >= SPIKE_RULES.fever && !this.feverTold && !this.volley) {
       // (SWINGS.feverBehind: level, a point either way counts double; otherwise only the side behind's - the team
       // named.)
       const {red, blue} = this.view.score, behind = !SWINGS.feverBehind || red === blue ? undefined : red < blue ? 'red' : 'blue';

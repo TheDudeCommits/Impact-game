@@ -14,7 +14,7 @@ import {GroundMarks,MARK} from '../vfx/GroundMarks';
 import {BallCharms} from './BallCharms';
 import {BallTags} from './BallTags';
 import {arenaMood,crowdHype} from './hype';
-import {sideRing} from './TeamTrim';
+import {FOOT_SAND_RED,sideRing} from './TeamTrim';
 import {MOTIF_RATE,fighterColour,superLook} from './superShotLooks';
 import {AimLine} from './aimLine';
 import {FightMarks} from './FightMarks';
@@ -60,6 +60,8 @@ const AHEAD=.12,BLEND=.028,SNAP=4;
 const RING=1.2,MEND=.07,REFUSED=.12,HEARD=.42,HEARD_PAST=.1,HEARD_BACK=.12,LEAD_EASE={least:.15,most:.6,settle:10},LEAD_MEET=2.4,LEAD_LOOK=1.2;
 
 const TEAM:Record<BallTeam,THREE.Color>={red:new THREE.Color(BALL_TEAM_COLOURS.red),blue:new THREE.Color(BALL_TEAM_COLOURS.blue)};
+/** The red side's rings on the sand (TeamTrim.ts FOOT_SAND_RED). */
+const SAND_RED=new THREE.Color(FOOT_SAND_RED.ring);
 const NEUTRAL=new THREE.Color(.9,.92,1),WHITE=new THREE.Color(1,1,1),INK=new THREE.Color(.012,.012,.016),GOLD=new THREE.Color(1,.72,.28);
 const DUST=new THREE.Color(.42,.38,.33),PINK=new THREE.Color(1,.62,.76),PALE=new THREE.Color(.75,.9,1),CLOCK=new THREE.Color(.92,.92,.96);
 /** The manga clouds' paper - cold, warmed by a burning ball, and the grey of a ball at OVERDRIVE's smoke. */
@@ -110,14 +112,25 @@ const FOOT_RING=.5;
  *  720 px of height, 9 at 390, in between by the height - so a 0.6 m ball 35 m off still reads (it was 8.7 px at 1280 x
  *  720 and 4.7 at 844 x 390). The radius to draw `r` at, from `camera` (a perspective lens) to `at`. */
 const FOOT_FLOOR={high:720,highPx:17,low:390,lowPx:13} as const;
-/** A ball big enough to see (FOOT_FLOOR was 12 px and 9): on football the ball's ink line is at least `ink` px wide and
- *  a paper halo `halo` px wide stands outside it (ink on the paper: it reads on grass, sand, a dark roof and a crowd
- *  alike) - the hulls scaled by the drawn ball's size on screen. */
-const FOOT_RIM={ink:1.6,halo:1.9,alpha:.92} as const;
+/** So the ball is never a few pixels wide or lost under bodies or rings - the sport rules' football (BallView.football)
+ *  only - the ball the clearest thing on screen:
+ *  - never under `highPx` px across at 720 px of height (`lowPx` at 390, in between by the height), however far it is;
+ *  - its ink line at least `ink` px and a white halo `halo` px wide outside it, whole (`alpha`);
+ *  - drawn over every body (and every floor mark): no body hides it at a touch or a tackle - its halo, ink and face in
+ *    that order over the rest of the frame (`order`);
+ *  - its shadow always under it, at least `shadowAlpha` dark;
+ *  - its ribbon only off a ball struck at `trailFrom` m/s or more (a shot, a long ball: full at `trailFull`), `trailLife` s
+ *    long - a dribble and a short pass leave none. */
+/** So the person's mark is not a big double ring and team-mates' and rivals' rings do not look alike - football only:
+ *  the rings on the floor under the bodies - your own a single thin one (`own` m across, `ownAlpha` strong; the arrow
+ *  over your head is your mark), a team-mate's smaller and faint (`mate`, `mateAlpha`), none under a rival (their kits
+ *  say whose they are). */
+const FOOT_RINGS={own:.95,ownAlpha:.75,mate:.78,mateAlpha:.3} as const;
+const FOOT_DRAW={highPx:24,lowPx:17,ink:1.7,halo:2.6,alpha:1,order:30,shadowAlpha:.48,trailFrom:17,trailFull:24,trailLife:.24} as const;
 function footDrawn(r:number,camera:THREE.Camera,at:{x:number;y:number;z:number}){
   const lens=camera as THREE.PerspectiveCamera,h=typeof innerHeight==='number'&&innerHeight>0?innerHeight:720;
   if(!lens.isPerspectiveCamera)return r;
-  const F=FOOT_FLOOR,px=F.lowPx+(F.highPx-F.lowPx)*THREE.MathUtils.clamp((h-F.low)/(F.high-F.low),0,1);
+  const F=FOOT_FLOOR,px=FOOT_DRAW.lowPx+(FOOT_DRAW.highPx-FOOT_DRAW.lowPx)*THREE.MathUtils.clamp((h-F.low)/(F.high-F.low),0,1);
   const d=Math.hypot(at.x-lens.position.x,at.y-lens.position.y,at.z-lens.position.z),least=px*d*Math.tan(lens.fov*Math.PI/360)/h;
   return Math.max(r,least);
 }
@@ -129,7 +142,12 @@ const FOOT_QUIET={size:.6,life:.7} as const;
  *  from a run of `from` m/s, each second stride of a foot at the front of its stride (`front` m ahead of the body or
  *  more) meets the ball `meet` ball radii in front of it and sends it `out` m on plus `outPer` a m/s of the run (at
  *  most `outMost`) over a stride pair of `least`-`most` s (`pace` m of run a touch without feet to read). */
-const FOOT_DRIBBLE={from:2.2,front:.12,meet:1.1,out:.22,outPer:.06,outMost:.8,least:.38,most:.8,pace:2.6,period:.55,ease:30,kick:.7} as const;
+const FOOT_DRIBBLE={from:2.2,front:.12,meet:1.1,out:.16,outPer:.04,outMost:.48,least:.38,most:.8,pace:2.6,period:.55,ease:30,kick:.7} as const;
+/** So the ball is at the feet, not beside the person - football: the carried ball is drawn in front of the carrier's
+ *  drawn body along its own facing, turned with it at up to `turn` rad/s; and the dribble's touches go only so far out
+ *  (FOOT_DRIBBLE `out`, `outPer`, `outMost`: about 0.45 m at a run) - at the close camera the touch reads, and the ball
+ *  stays at the feet. */
+const FOOT_CARRY={turn:40} as const;
 /** So the kick and the dribble's touches read at play distance, not only in close crops: on football each PASS and SHOOT is swept by one crescent - the engine's drawn blade arc, white with the
  *  side's colour at its edge - through where the ball was struck, along the kick, `y` m up and `back` m behind the
  *  ball: `size` m (a pass) to `size + power` (a full shot), up `life` to `life + lifePower` s, never quieted
@@ -550,8 +568,10 @@ export class BallField {
       void main(){float edge=1.-abs(dot(normalize(vN),normalize(vV)));gl_FragColor=vec4(uColor,mix(1.,smoothstep(.45,.75,edge),uThin));}`});
   private readonly sphere=new THREE.SphereGeometry(1,40,28);
   private readonly outline=new THREE.Mesh(this.sphere,this.outlineMaterial);
-  /** Football's paper halo outside the ink line (FOOT_RIM). */
-  private readonly haloMaterial=new THREE.MeshBasicMaterial({name:'Ball halo',color:0xfff7e6,side:THREE.BackSide,transparent:true,opacity:FOOT_RIM.alpha,depthWrite:false,toneMapped:false});
+  /** Football's white halo outside the ink line (FOOT_DRAW). */
+  private readonly haloMaterial=new THREE.MeshBasicMaterial({name:'Ball halo',color:0xffffff,side:THREE.BackSide,transparent:true,opacity:FOOT_DRAW.alpha,depthWrite:false,toneMapped:false});
+  /** The football ball drawn over everything (FOOT_DRAW.order) - set while it is. */
+  private onTop=false;
   private readonly halo=new THREE.Mesh(this.sphere,this.haloMaterial);
   private bodyMesh!:THREE.Mesh;
   /** The ball drawn over the body meeting it (MEET: a body between the lens and the ball - your own side's, from
@@ -1309,6 +1329,9 @@ export class BallField {
     if(stick){rate=CARRY.turn;if(Math.hypot(stick.moveX,stick.moveZ)>=CARRY.stick)want=Math.atan2(stick.moveX,stick.moveZ);}
     else if(ahead){rate=CARRY.turn*1.5;if(Math.hypot(c.vx,c.vz)>=CARRY_DRAW.run)want=Math.atan2(c.vx,c.vz);}
     else{const hx=this.drawn.x-body.x,hz=this.drawn.z-body.z;if(Math.hypot(hx,hz)>.3)want=Math.atan2(hx,hz);}
+    // (Football - FOOT_CARRY: in front of the drawn body's own facing, as quick as it turns, so the ball is at the feet,
+    // not beside the person - the room's carry turns at its own rate, the body at its own.)
+    if(view.football){const face=this.facingOf(id);if(face!==undefined&&Number.isFinite(face)){want=face;rate=FOOT_CARRY.turn;}}
     const most=rate*dt;c.heading=wrapAngle(c.heading+Math.max(-most,Math.min(most,wrapAngle(want-c.heading))));
     // (Its place: the body's this frame - a drawn one is drawn after the ball, main.ts, so here a frame old: carried on by
     // its own run - and held inside the boards as the room's flight holds the ball, a goal's mouth open to its net.)
@@ -1363,6 +1386,8 @@ export class BallField {
   private readonly footL=new THREE.Vector3();private readonly footR=new THREE.Vector3();
   /** The drawn feet of a body (main.ts: its LeftFoot and RightFoot), into `l` and `r`; false without them. */
   feetOf:(id:string,l:THREE.Vector3,r:THREE.Vector3)=>boolean=()=>false;
+  /** The drawn body's facing (rad, the heading's sense: 0 along +z; main.ts: its group's turn), or undefined. */
+  facingOf:(id:string)=>number|undefined=()=>undefined;
 
   /** The base's own flight run on to `at` (server s) into this.sim: it stands still while stopped or clashing, then flies. */
   private flown(at:number){
@@ -1433,7 +1458,9 @@ export class BallField {
   private dress(view:BallView,selfId:string,camera:THREE.Camera,dt:number,seconds:number,serverTime:number){
     // RUMBLE's GIANT BALL swells it (and lets it go) over a few frames.
     this.grown+=((this.base.size||1)-this.grown)*Math.min(1,dt*6);
-    const b=this.lookBall(),r=ballRadius(view.mode)*this.grown,frozen=this.frozen,speed=this.velocity.length(),fx=this.fx;
+    // (Football's full-power hang at the boot - FOOTBALL.fun.full, a tenth of a second - is the shot's beat, not
+    // a ball stopped in time: it keeps its look, no pale ice and no clock.)
+    const b=this.lookBall(),r=ballRadius(view.mode)*this.grown,frozen=this.frozen&&!(view.football&&this.freezeLength<=.2+1e-6),speed=this.velocity.length(),fx=this.fx;
     const volley=!!view.volley;
     this.ball.scale.setScalar(view.football?footDrawn(r,camera,b):volley?volleyDrawn(r,camera,b):r);
     if(!frozen)this.time.value+=dt;
@@ -1449,7 +1476,12 @@ export class BallField {
     this.ball.position.copy(this.drawn);this.ball.visible=true;
     // (Volleyball: the ball on the hands that play it - MEET.)
     if(volley&&!b.held&&!frozen)this.ball.position.add(this.meet(view,serverTime,camera));else{this.onHands.set(0,0,0);this.overBody=false;}
-    {const over=this.overBody;if(this.bodyMaterial.depthTest===over){this.bodyMaterial.depthTest=this.outlineMaterial.depthTest=!over;this.bodyMesh.renderOrder=over?21:0;this.outline.renderOrder=over?20:-1;}}
+    {const over=this.overBody;if(!this.onTop&&this.bodyMaterial.depthTest===over){this.bodyMaterial.depthTest=this.outlineMaterial.depthTest=!over;this.bodyMesh.renderOrder=over?21:0;this.outline.renderOrder=over?20:-1;}}
+    // (Football: the ball over every body and mark - FOOT_DRAW.order: its halo, its ink, its face, each drawn
+    // in the transparent pass after the bodies, in that order, without the depth test.)
+    {const top=!!view.football&&!frozen;if(top!==this.onTop){this.onTop=top;const o=FOOT_DRAW.order;
+      this.bodyMaterial.depthTest=this.outlineMaterial.depthTest=this.haloMaterial.depthTest=!top;
+      this.bodyMesh.renderOrder=top?o+2:0;this.outline.renderOrder=top?o+1:-1;this.halo.renderOrder=top?o:-2;}}
     // The spin the room sent, and the roll: on the floor it rolls true (up x v / r), in the air a little topspin.
     if(!frozen){
       if(b.held)this.omega.set(0,1.2,0);
@@ -1497,12 +1529,12 @@ export class BallField {
     (this.outlineMaterial.uniforms.uColor.value as THREE.Color).setHex(frozen?0xf2f2f4:0x050506);
     // The ink outline thickens a little as the ball heats, so its edge holds against the fire round it.
     this.outline.scale.setScalar((volley?VOLLEY_DRAW.outline:1.075)+Math.min(1,this.heat/4)*.05);
-    // (Football's ink line and paper halo, a few pixels wide whatever the ball's size on screen - FOOT_RIM.)
+    // (Football's ink line and halo, a few pixels wide whatever the ball's size on screen - FOOT_DRAW.)
     if(view.football){
       const lens=camera as THREE.PerspectiveCamera,h=typeof innerHeight==='number'&&innerHeight>0?innerHeight:720,drawnR=this.ball.scale.x;
       const px=lens.isPerspectiveCamera?drawnR/Math.max(.2,lens.position.distanceTo(this.drawn))/Math.tan(lens.fov*Math.PI/360)*h/2:20;
-      const ink=1+Math.max(.075,FOOT_RIM.ink/Math.max(2,px));
-      this.outline.scale.setScalar(ink);this.halo.scale.setScalar(ink+FOOT_RIM.halo/Math.max(2,px));this.halo.visible=!frozen;
+      const ink=1+Math.max(.075,FOOT_DRAW.ink/Math.max(2,px));
+      this.outline.scale.setScalar(ink);this.halo.scale.setScalar(ink+FOOT_DRAW.halo/Math.max(2,px));this.halo.visible=!frozen;
     }else this.halo.visible=false;
     const a=this.auraMaterial.uniforms,size=r*(3.2+tier*.5)+(b.super?r*1.2:0);
     this.aura.visible=this.heat>=.9||b.super;
@@ -1512,7 +1544,9 @@ export class BallField {
     // oldest let go after its life; wider for a faster, hotter ball, nothing at a roll.
     // (None behind a carried ball - it runs at a body's pace at a body's feet, and the ring under it says whose.)
     // (Volleyball: a short ribbon off a ball struck hard only - VOLLEY_DRAW.)
-    const life=volley&&!b.super?VOLLEY_DRAW.trailLife:.3+tier*.06+(b.super?.25:0),width=(volley&&!b.super?Math.min(1,Math.max(0,(speed-VOLLEY_DRAW.trailFrom)/6)):Math.min(1,Math.max(0,(speed-3)/14)))*r*2*(1+tier*.22)*(b.super?1.35:1)*(this.carried?1-this.carried.k:1),stroke=this.gear.trailColour(view,b,team);
+    // (Football: a short ribbon off a hard hit only - FOOT_DRAW.)
+    const foot=!!view.football&&!b.super;
+    const life=volley&&!b.super?VOLLEY_DRAW.trailLife:foot?FOOT_DRAW.trailLife:.3+tier*.06+(b.super?.25:0),width=(volley&&!b.super?Math.min(1,Math.max(0,(speed-VOLLEY_DRAW.trailFrom)/6)):foot?Math.min(1,Math.max(0,(speed-FOOT_DRAW.trailFrom)/(FOOT_DRAW.trailFull-FOOT_DRAW.trailFrom))):Math.min(1,Math.max(0,(speed-3)/14)))*r*2*(1+tier*.22)*(b.super?1.35:1)*(this.carried?1-this.carried.k:1),stroke=this.gear.trailColour(view,b,team);
     if(!frozen){
       this.trailClock+=dt;const trail=this.trail;
       // The ribbon's colours: a SUPER SHOT's or a LINK SHOT's own two, else the striker's ball gear trail.
@@ -1548,8 +1582,8 @@ export class BallField {
       const share=r/Math.max(.1,this.eye.distanceTo(this.drawn))*camera.projectionMatrix.elements[5];
       this.thin+=(smooth(share,SHAPE.thinFrom,SHAPE.thinFull)-this.thin)*Math.min(1,dt*12);
       const thin=this.thin>.02?this.thin:0,see=thin>0;
-      u.uThin.value=thin;this.outlineMaterial.uniforms.uThin.value=thin;a.uGlow.value*=1-thin*.85;this.haloMaterial.opacity=FOOT_RIM.alpha*(1-thin);
-      this.bodyMaterial.transparent=this.outlineMaterial.transparent=see;this.bodyMaterial.depthWrite=this.outlineMaterial.depthWrite=thin<.5;
+      u.uThin.value=thin;this.outlineMaterial.uniforms.uThin.value=thin;a.uGlow.value*=1-thin*.85;this.haloMaterial.opacity=FOOT_DRAW.alpha*(1-thin);
+      this.bodyMaterial.transparent=this.outlineMaterial.transparent=see||this.onTop;this.bodyMaterial.depthWrite=this.outlineMaterial.depthWrite=thin<.5;
       this.look.share=share;this.look.thin=thin;
     }
     this.ribbon.mesh.material.uniforms.uHeat.value=this.heat/4;
@@ -1604,7 +1638,7 @@ export class BallField {
     // The shadow straight under the ball, softer and wider the higher it is; a fine ring to find it by when high.
     const height=Math.max(0,y-r);
     // (SPORT mode: the small ball's ring is always lit and never smaller than a stride's half metre, to find it by.)
-    if(view.football)fx.put(K.shadow,x,.035,z,Math.max(FOOT_RING,r*(1.15+height*.06)),INK,.55/(1+height*.22),Math.max(.6,Math.min(1,Math.max(0,(height-1.5)/4))*.6));
+    if(view.football)fx.put(K.shadow,x,.035,z,Math.max(FOOT_RING,r*(1.15+height*.06)),INK,Math.max(FOOT_DRAW.shadowAlpha,.6/(1+height*.15)),Math.max(.6,Math.min(1,Math.max(0,(height-1.5)/4))*.6));
     // (Volleyball: always there and always dark enough to find - a ball's shadow is where it is over the court.)
     else if(volley)fx.put(K.shadow,this.ball.position.x,.035,this.ball.position.z,Math.max(VOLLEY_DRAW.shadow,r*(1.15+height*.05)),INK,Math.max(VOLLEY_DRAW.shadowAlpha,.7/(1+height*.12)),height>VOLLEY_DRAW.ringFrom?.75:0);
     else fx.put(K.shadow,x,.035,z,r*(1.15+height*.06),INK,.55/(1+height*.22),Math.min(1,Math.max(0,(height-1.5)/4))*.6);
@@ -1614,10 +1648,16 @@ export class BallField {
     if(holder?.team)fx.put(K.side,x,.045,z,r*CARRY_DRAW.ring,TEAM[holder.team],CARRY_DRAW.alpha*holder.k,0);
     // Each fighter's side, in a ring on the floor under them (yours brighter, and doubled). (The others'
     // step back - TeamTrim.ts sideRing - now that each body wears its side's colour.)
-    const ring=sideRing();
+    const ring=sideRing();let myTeam:BallTeam|undefined;
+    if(view.football)for(let i=0;i<view.seats.length;i++)if(view.seats[i].id===selfId){myTeam=view.seats[i].team;break;}
     if(view.phase!=='lobby')for(let i=0;i<view.seats.length;i++){
       const seat=view.seats[i],at=this.where(seat.id,this.spot);if(!at)continue;
-      const own=seat.id===selfId;fx.put(K.side,at.x,.04,at.z,own?1.05:ring.size,TEAM[seat.team],own?1:ring.alpha,own?1:0);
+      const own=seat.id===selfId;
+      // (Football - FOOT_RINGS: your own one thin ring, a team-mate's fainter, none under a rival.)
+      if(view.football){const F=FOOT_RINGS,mate=!own&&!!myTeam&&seat.team===myTeam,c=view.arena==='dust-yard'&&seat.team==='red'?SAND_RED:TEAM[seat.team];if(own)fx.put(K.side,at.x,.04,at.z,F.own,c,F.ownAlpha,0);else if(mate)fx.put(K.side,at.x,.04,at.z,F.mate,c,F.mateAlpha,0);}
+      // (The volleyball rules: not a ring under every body - one mark on the floor for the person, under your own feet,
+      // and none under anyone else's: their kits say their sides.)
+      else if(own||!volley)fx.put(K.side,at.x,.04,at.z,own?1.05:ring.size,TEAM[seat.team],own?1:ring.alpha,own?1:0);
       // (Where it was a frame ago and how fast it goes, for the skid it may leave.)
       let m=this.bodies.get(seat.id);
       if(!m){m={x:at.x,z:at.z,vx:0,vz:0,skid:-Infinity};this.bodies.set(seat.id,m);}

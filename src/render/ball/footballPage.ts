@@ -41,8 +41,13 @@ export const GOAL_LOOK_NAME: Record<GoalLook, string> = {lock: 'BALL LOCK', free
  *  over a team-mate's ball coming to you in the moment a first-time press would play it. */
 /** The attacked goal's mark (PassMark.goal): its width and height (px), and how far over the bar it floats (m). */
 export const GOAL_MARK = {w: 30, h: 34, over: 1.1} as const;
-/** The page's own fighter's mark (PassMark.self): its width and height (px) and how far over the head it floats (m). */
-export const SELF_MARK = {w: 26, h: 18, over: .05} as const;
+/** The page's own fighter's mark (PassMark.self): its width and height (px) and how far over the head it floats (m).
+ *  A big arrow (the double ring under you is gone, so this is your one mark): 34 x 26, on a white edge `edge` px wide;
+ *  on a phone (a frame under `small` px tall) `phone` of that. */
+export const SELF_MARK = {w: 34, h: 26, over: .1, edge: 2.5, small: 500, phone: .78} as const;
+/** The same mark on the volleyball rules, a size up for its further camera (px, and m over the head); the football
+ *  mark is the same size, so the two share SELF_MARK's edge and phone scale. */
+export const VOLLEY_SELF_MARK = {w: 34, h: 24, over: .1} as const;
 export class PassMark {
   private readonly el: HTMLElement;
   private readonly at = new THREE.Vector3();
@@ -69,7 +74,7 @@ export class PassMark {
     this.self.setAttribute('aria-hidden', 'true');
     Object.assign(this.self.style, {position: 'absolute', left: '0', top: '0', width: '0', height: '0', pointerEvents: 'none', zIndex: '3', display: 'none',
       borderLeft: `${SELF_MARK.w / 2}px solid transparent`, borderRight: `${SELF_MARK.w / 2}px solid transparent`, borderTop: `${SELF_MARK.h}px solid #fff`,
-      filter: 'drop-shadow(0 0 1.5px #fff) drop-shadow(0 2px 0 rgba(0,0,0,.6))'});
+      filter: `drop-shadow(0 0 ${SELF_MARK.edge / 2}px #fff) drop-shadow(0 0 ${SELF_MARK.edge / 2}px #fff) drop-shadow(0 2px 0 rgba(0,0,0,.6))`});
     parent.appendChild(this.self);
     this.goal = document.createElement('div');
     this.goal.className = 'ball-goal-mark';
@@ -84,7 +89,7 @@ export class PassMark {
   update(view: BallView | undefined, me: PlayerState | undefined, players: readonly PlayerState[], stick: {x: number; z: number}, yaw: number, camera: THREE.Camera, width: number, height: number, drawn: (id: string) => THREE.Vector3 | undefined) {
     const b = view?.ball;
     // (The lens as it is aimed this frame, its inverse included: the marks are laid through it.)
-    if (view?.football) camera.updateMatrixWorld();
+    if (view?.football || view?.volley) camera.updateMatrixWorld();
     this.mark(view, me, camera, width, height, drawn);
     this.goalMark(view, me, camera, width, height);
     if (!view?.football || !me || !b || view.phase !== 'live') { this.hide(true); return; }
@@ -119,16 +124,22 @@ export class PassMark {
     if (this.shown !== key) { this.el.style.display = 'block'; this.shown = key; }
   }
   /** The page's own fighter's mark (SELF_MARK): over its drawn head while a football match is in a kickoff or in play
-   *  and the fighter is up; not over a replay or the celebrations. */
+   *  and the fighter is up; not over a replay or the celebrations. On the volleyball rules too (BallView.volley), so
+   *  the person is found at a glance: the one mark that says which fighter is you - the floor's ring under you is the
+   *  only other. */
   private mark(view: BallView | undefined, me: PlayerState | undefined, camera: THREE.Camera, width: number, height: number, drawn: (id: string) => THREE.Vector3 | undefined) {
     const team = me && view?.seats.find(s => s.id === me.id)?.team;
-    if (!view?.football || !me || !team || !me.alive || (view.phase !== 'live' && view.phase !== 'kickoff')) { this.hideSelf(); return; }
-    const where = drawn(me.id);
-    this.at.set(where?.x ?? me.x, (where?.y ?? me.y) + 1.9 * (me.size ?? 1) + SELF_MARK.over, where?.z ?? me.z).project(camera);
+    if (!(view?.football || view?.volley) || view.replay || !me || !team || !me.alive || (view.phase !== 'live' && view.phase !== 'kickoff')) { this.hideSelf(); return; }
+    const where = drawn(me.id), M = view.volley ? VOLLEY_SELF_MARK : SELF_MARK;
+    this.at.set(where?.x ?? me.x, (where?.y ?? me.y) + 1.9 * (me.size ?? 1) + M.over, where?.z ?? me.z).project(camera);
     if (this.at.z > 1 || Math.abs(this.at.x) > 1.05 || Math.abs(this.at.y) > 1.05) { this.hideSelf(); return; }
-    const sx = (this.at.x * .5 + .5) * width - SELF_MARK.w / 2, sy = (-this.at.y * .5 + .5) * height - SELF_MARK.h;
-    this.self.style.transform = `translate(${sx.toFixed(1)}px,${sy.toFixed(1)}px)`;
-    if (this.selfShown !== team) { this.self.style.borderTopColor = `#${BALL_TEAM_COLOURS[team].toString(16).padStart(6, '0')}`; this.self.style.display = 'block'; this.selfShown = team; }
+    const k = height < SELF_MARK.small ? SELF_MARK.phone : 1, sx = (this.at.x * .5 + .5) * width - M.w / 2, sy = (-this.at.y * .5 + .5) * height - M.h * (1 + k) / 2;
+    this.self.style.transform = `translate(${sx.toFixed(1)}px,${sy.toFixed(1)}px)` + (k < 1 ? ` scale(${k})` : '');
+    const key = team + (view.volley ? 'v' : '');
+    if (this.selfShown !== key) {
+      Object.assign(this.self.style, {borderLeftWidth: `${M.w / 2}px`, borderRightWidth: `${M.w / 2}px`, borderTopWidth: `${M.h}px`, borderTopColor: `#${BALL_TEAM_COLOURS[team].toString(16).padStart(6, '0')}`, display: 'block'});
+      this.selfShown = key;
+    }
   }
   /** The goal the page's own side attacks (GOAL_MARK): over its bar on screen, else at the frame's edge toward it. */
   private goalMark(view: BallView | undefined, me: PlayerState | undefined, camera: THREE.Camera, width: number, height: number) {

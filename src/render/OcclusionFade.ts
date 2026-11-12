@@ -62,6 +62,12 @@ const WIDE_GONE=2.2,WIDE_CLEAR=4.4;
  *  most GLASS_MOST of it gone (every other pixel: an even half), its ink outline dropped (no dark dots) and what is left of
  *  it lifted GLASS_LIFT toward white - a light, see-through ghost of the body. */
 const GLASS_MOST=.55,GLASS_LIFT=.6;
+/** So no dithered black blob covers the person: under that camera a body with a joint within `nearTo` m of the lens
+ *  goes all the way (`near`), and one standing over the person or filling the frame from in front of them (more than
+ *  `coverFrom` of the test's measure) goes too (`cover`), either way at `ease` a second (the body's own fade is 3.5: a
+ *  third of a second of half-screen each time): hidden, never half-screened - a half-screened dark body read as a
+ *  dotted black blob (the toon finish's halftone on what was left). */
+const GLASS4={near:1,nearTo:3.6,cover:1,coverFrom:.1,ease:16,shadowFrom:.9} as const;
 const FADE_MOST=.82,WINDOW_MOST=.55,WINDOW_FROM=.35;
 /** Round 3c: through an authored shot about the victim (see shotVictim) the
  *  player's own body opens its window over the victim once it hides
@@ -173,6 +179,8 @@ interface FadeState{
   /** Ward's SURGERY, if the fighter has one: its mesh and how far inside it the
    *  lens is. */
   room?:THREE.Mesh;inside:{value:number};
+  /** GLASS4: while hidden under the football camera, its meshes' own castShadow, kept to put back. */
+  shadowOff?:Map<THREE.Object3D,boolean>;
 }
 const records=new WeakMap<object,FadeState>();
 
@@ -366,9 +374,18 @@ export class OcclusionFader{
       }
     }else r.lens=Infinity;
     // (GLASS: the near band's thinning is the whole body's, by its nearest joint, and never past GLASS_MOST.)
-    if(this.wideNear){goal=Math.max(goal,1-THREE.MathUtils.smoothstep(r.lens,WIDE_GONE,WIDE_CLEAR));this.ease(r,Math.min(GLASS_MOST,goal*FADE_MOST),0);this.room(body,r);return;}
+    // (The near band all the way, the cover to GLASS4.cover.)
+    if(this.wideNear){const near=r.lens<GLASS4.nearTo?GLASS4.near:0;this.ease(r,Math.max(near,goal>GLASS4.coverFrom?GLASS4.cover:0),0,GLASS4.ease);this.shadow(r,r.body>GLASS4.shadowFrom);this.room(body,r);return;}
+    this.shadow(r,false);
     this.ease(r,goal*FADE_MOST,0);this.room(body,r);
   };
+  /** GLASS4: a body hidden under the football camera casts no shadow meanwhile - its shadow, a dotted dark
+   *  shape on the glass or the turf where the body had gone, read as the blob the body was hidden to remove. */
+  private shadow(r:FadeState,off:boolean){
+    if(off===!!r.shadowOff)return;
+    if(off){const kept=new Map<THREE.Object3D,boolean>();for(const t of r.twins)if(!kept.has(t.mesh)){kept.set(t.mesh,t.mesh.castShadow);t.mesh.castShadow=false;}r.shadowOff=kept;}
+    else{for(const [mesh,was] of r.shadowOff!)mesh.castShadow=was;r.shadowOff=undefined;}
+  }
   /** Ease a body's amounts toward their goals, hand them to its twins, and
    *  draw it with them only while anything is to be thinned. */
   private ease(r:FadeState,body:number,window:number,out=FADE_OUT,into=FADE_IN){

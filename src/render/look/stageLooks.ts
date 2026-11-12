@@ -1027,10 +1027,20 @@ export const VOLLEY_FILL = { intensity: 3.2, white: .55, dir: [.35, .6, -.72] as
 export const VOLLEY_ARENA_LIFT: Partial<Record<BallArenaId, { key: number; fill: number; hemi: number; warm: number }>> = {
   'ember-rim': { key: 1.35, fill: 1.35, hemi: 1.7, warm: .45 },
 };
+/** So the sand, the sunset grade, the red team's bodies, their outlines and the rings are not one orange-red band: on
+ *  the volleyball rules the sunset stays in the sky and off the play. The key light's colour is taken `key` of the way
+ *  to white (the sun still low and its shadows long), the fighters' warm terminator band `mid` as strong and its hue
+ *  `midWhite` of the way to white, and the frame's grade `split` its split toning with its highlights' tint `highlight`
+ *  of the way to white - so the court's pale paint (BallArena VOLLEY_STAGE.paint) reads pale and the kits keep their
+ *  own red and blue. The sky's own colours are the sky's: the sunset is still there over the play. */
+export const VOLLEY_GRADE = { key: .75, mid: .45, midWhite: .6, split: .4, highlight: .8 } as const;
 function volleyLook(look: LookPreset, arena?: BallArenaId): LookPreset {
   const k = look.key.color, w = VOLLEY_FILL.white, ch = (shift: number) => Math.round(((k >> shift) & 255) * (1 - w) + 255 * w) << shift;
   const lift = arena ? VOLLEY_ARENA_LIFT[arena] : undefined, mixed = (a: number, b: number, t: number) => [16, 8, 0].reduce((c, sh) => c | Math.round(((a >> sh) & 255) * (1 - t) + ((b >> sh) & 255) * t) << sh, 0);
-  return { ...look, key: lift ? { ...look.key, intensity: look.key.intensity * lift.key } : look.key,
+  const G = VOLLEY_GRADE;
+  return { ...look, key: { ...look.key, color: mixed(look.key.color, 0xffffff, G.key), intensity: look.key.intensity * (lift?.key ?? 1) },
     fill: { color: ch(16) | ch(8) | ch(0), intensity: VOLLEY_FILL.intensity * (lift?.fill ?? 1), dir: dir(...VOLLEY_FILL.dir) },
-    hemi: { ...look.hemi, sky: lift ? mixed(look.hemi.sky, look.hemi.ground, lift.warm) : look.hemi.sky, intensity: look.hemi.intensity * VOLLEY_FILL.hemi * (lift?.hemi ?? 1) } };
+    hemi: { ...look.hemi, sky: lift ? mixed(look.hemi.sky, look.hemi.ground, lift.warm) : look.hemi.sky, intensity: look.hemi.intensity * VOLLEY_FILL.hemi * (lift?.hemi ?? 1) },
+    toon: { ...look.toon, mid: mixed(look.toon.mid, 0xffffff, G.midWhite), midStrength: look.toon.midStrength * G.mid },
+    grade: { ...look.grade, split: look.grade.split * G.split, highlightTint: mixed(look.grade.highlightTint, 0xffffff, G.highlight) } };
 }

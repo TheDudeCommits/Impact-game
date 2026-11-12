@@ -67,8 +67,18 @@ export const VOLLEY_BOT = {
   defClassic: [4.6, 6.4] as const, defDeep: [7.3, 8.7] as const,
   /** Cover: where the hitter's team-mates stand as the attack goes (off the hitter, metres back from the net). */
   coverZ: 3.2, coverBack: 5.5,
+  /** So no two or three of the person's side stand on one spot (nobody could tell who goes for the ball, or which is
+   *  you) - volleyball's court: a bot off the ball takes its spot at least `apart` m from every team-mate bot (where it
+   *  is going; the one playing the ball where it is - parted from the spot the ball is played from as well, a third
+   *  more of the bots' sets fell unplayed), and `person` m from a person where they stand (a little shorter: at `apart`
+   *  the bots left every ball near the person to them), slid off along the line between them (and across the court
+   *  where they are in line), `edge` m inside the sidelines and its own half - all but a hitter on its approach, whose
+   *  wing is the attack's; two going up for one block stand side by side, `pair` m each off its middle. */
+  spacing: {apart: 2.6, person: 2.4, edge: .6, net: .9, pair: .6},
 } as const;
 type Command = Omit<PlayerInput, 'seq'>;
+/** Each match's bots' spots off the ball (VolleyBrain spaced), by bot, and when each was laid (server s). */
+const spotsOf = new WeakMap<Volley, Map<string, {x: number; z: number; at: number; block?: number}>>();
 const own = (team: BallTeam) => team === 'red' ? -1 : 1;
 const gauss = (r: () => number) => { let s = 0; for (let i = 0; i < 4; i++) s += r(); return (s - 2) / Math.sqrt(4 / 12); };
 
@@ -227,6 +237,13 @@ export class VolleyBrain {
     }
     if (theirSet && this.blocking) {
       const spotB = {x: Math.max(-edge, Math.min(edge, theirSet.x)), z: s * B.blockZ}, arc = hopArc(me.fighter);
+      // (Two going up for one attack block side by side - each `pair` m off the middle, on its own side of the
+      // other - not on one spot.)
+      if (V.court !== spikeCourt()) {
+        const goals = spotsOf.get(V) ?? new Map(), key = theirSet.at, mate = [...goals].find(([id, g]) => id !== this.id && g.block === key && view.seats.find(q => q.id === id)?.team === team);
+        if (mate) { const o = V.bodyOf(mate[0]); spotB.x = Math.max(-edge, Math.min(edge, spotB.x + (me.x <= (o?.x ?? spotB.x) ? -1 : 1) * B.spacing.pair)); }
+        goals.set(this.id, {x: spotB.x, z: spotB.z, at: now, block: key}); spotsOf.set(V, goals);
+      }
       // (Up at the top of the jump as the spike crosses: a breath after the set's best moment.)
       const jumpAt = theirSet.best + .08 - arc.rise + this.blockErr;
       // (Only from the spot: a jump short of the net blocks nothing.)
@@ -243,7 +260,7 @@ export class VolleyBrain {
       // (On volleyball's court a spike from volleyball's jump lands deeper - strike.ts - so its diggers stand deeper.)
       const deep = V.court !== spikeCourt() ? VOLLEY_BOT.defDeep : VOLLEY_BOT.defClassic;
       spot = setter ? {x: sx * .3, z: s * at(0, 3.2).z} : {x: at(side * 3.4, 0).x + sx * .25, z: s * at(0, side * sx > 0 ? deep[0] : deep[1]).z};
-      this.run(me, spot, input, .35); input.yaw = Math.atan2(b.x - me.x, b.z - me.z);
+      this.run(me, this.spaced(spot, seat, view, now), input, .35); input.yaw = Math.atan2(b.x - me.x, b.z - me.z);
       return;
     }
     if (personSets) spot = {x: (bots.indexOf(this.id) === 0 ? -1 : 1) * V.wing, z: s * at(0, B.approachZ).z};
@@ -253,8 +270,46 @@ export class VolleyBrain {
     else if (touch === 3 && V.lastSet) spot = {x: V.lastSet.x * .5 + side * 1.4, z: s * at(0, setter ? B.coverZ : B.coverBack).z};
     else if (touch === 1) spot = {x: at(side * B.wide, 0).x, z: s * at(0, B.deep).z};
     else spot = {x: at(side * 3.5, 0).x, z: s * at(0, sideOf(b.z) === team ? B.deep : B.defZ).z};
-    this.run(me, spot, input, .35);
+    // (A hitter's approach - its wing for the set to come, or the wing a person sets to - is the attack's own spot,
+    // laid apart already: parted from the setter's ball it took the set and the spike wide, and out.)
+    const attacking = personSets || (touch === 2 && !setter);
+    this.run(me, this.spaced(spot, seat, view, now, attacking), input, .35);
     input.yaw = Math.atan2(b.x - me.x, b.z - me.z);
+  }
+  /** VOLLEY_BOT.spacing: `spot` slid off every team-mate (where they stand) and off the spot its side's ball is
+   *  played from (its owner's, while it is ours), to `apart` m from each - on the classic court as it was. */
+  private spaced(spot: {x: number; z: number}, seat: BallSeat, view: BallView, now: number, fixed = false): {x: number; z: number} {
+    const V = this.volley, S = VOLLEY_BOT.spacing, C = V.court, s = own(seat.team);
+    if (C === spikeCourt()) return spot;
+    // (Each team-mate where it is going - a bot off the ball's own spot, this tick or the last - else where it stands: two
+    // bots bound for one cover spot are parted before they get there, not after. A spot that is `fixed` - a hitter's
+    // approach - is only told to the others.)
+    let goals = spotsOf.get(V);
+    if (!goals) { goals = new Map(); spotsOf.set(V, goals); }
+    if (fixed) { goals.set(this.id, {x: spot.x, z: spot.z, at: now}); return spot; }
+    const others: {x: number; z: number; d?: number}[] = [];
+    for (const q of view.seats) {
+      if (q.team !== seat.team || q.id === this.id) continue;
+      const g = goals.get(q.id), p = V.bodyOf(q.id);
+      if (g && now - g.at < .25 && q.id !== V.owner) others.push(g); else if (p) others.push(q.bot ? p : {x: p.x, z: p.z, d: S.person});
+    }
+    let x = spot.x, z = spot.z;
+    for (let pass = 0; pass < 3; pass++) {
+      let moved = false;
+      for (const o of others) {
+        let dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz);
+        const apart = o.d ?? S.apart;
+        if (d >= apart) continue;
+        // (In line, or on top: across the court, toward the side with more room.)
+        if (d < .3) { dx = x >= 0 ? 1 : -1; dz = 0; d = 1; if (Math.abs(o.x + dx * apart) > C.x - S.edge) dx = -dx; }
+        x = o.x + dx / d * apart; z = o.z + dz / d * apart; moved = true;
+      }
+      x = Math.max(-(C.x - S.edge), Math.min(C.x - S.edge, x));
+      const zz = Math.max(S.net, Math.min(C.z - S.edge, z * s)); z = zz * s;
+      if (!moved) break;
+    }
+    goals.set(this.id, {x, z, at: now});
+    return {x, z};
   }
   private blockKey = ''; private blocking = false; private blockErr = 0;
   private run(me: PlayerState, to: {x: number; z: number}, input: Command, stop: number) {

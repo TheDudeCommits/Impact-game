@@ -368,11 +368,19 @@ export function ballSwapFor(body: Fighter, state: PlayerState): Transplanted | u
  *  ball is struck (`releaseTake`), into its follow-through for `after` s, then back to the body's own. A swing with no
  *  ready pose before it (a bot's touch from further off) is drawn the same from its press. A ready pose whose ball goes
  *  elsewhere is let go (`dropTake`). Presentation only: the touch and its timing are the rules'. */
-export const VPOSE = {lead: .42, air: .4, serve: .55, after: .38, still: 1.2, run: 3.5} as const;
+export const VPOSE = {lead: .42, air: .4, serve: .55, after: .38, still: .35, run: 1.6} as const;
+/** So bodies neither stand like statues between touches nor slide into poses: (1) a ready pose's legs are the take's
+ *  only on a body all but stopped (VPOSE `still` m/s, the body's own stride from `run`; at 1.2 and 3.5 a body slowing
+ *  onto its spot glided the last metre on planted feet), and (2) every body on the volleyball rules standing between
+ *  touches - live, on the floor, no touch of its own coming, under `still` m/s for `settle` s - holds volleyball's
+ *  ready stance: the dig's ready pose (knees bent, arms out in front), its weight shifting (`sway` radians round the
+ *  spine, kickLayer), let go the moment it moves off (`move` m/s) or has a touch to make; its yaw is its own, on the
+ *  ball. */
+export const STANCE = {still: .3, settle: .25, move: .6, sway: .07} as const;
 const vposed = new WeakMap<Fighter, {key: string; take: BallMoveKey; released: boolean; swing: string}>();
 /** For the checks (window.volleyPoses): ready poses taken, swings played on from one, swings drawn from their press
  *  (none before them), ready poses let go. */
-export const volleyPoses = {ready: 0, released: 0, fresh: 0, dropped: 0};
+export const volleyPoses = {ready: 0, released: 0, fresh: 0, dropped: 0, stance: 0};
 function volleyPose(body: Fighter, state: PlayerState, ctx: BallMoveContext) {
   const view = ctx.view, vol = view.volley, now = ctx.now;
   strideOf(body, state);
@@ -397,8 +405,20 @@ function volleyPose(body: Fighter, state: PlayerState, ctx: BallMoveContext) {
     else if (!p.released && want.follow) retakeAt(body, want.at);
     return;
   }
+  // (Between touches, volleyball's ready stance - STANCE.)
+  const g = stride.get(body), speed = g?.speed ?? 0, standing = view.phase === 'live' && state.grounded && state.action === 'idle' && state.alive;
+  if (p && !p.released && p.key === 'stance') {
+    if (standing && speed < STANCE.move) return;
+    dropTake(body); vposed.set(body, {...p, released: true}); return;
+  }
   if (p && !p.released) { dropTake(body); volleyPoses.dropped++; vposed.set(body, {...p, released: true}); }
+  if (!standing || speed >= STANCE.still) { settled.delete(body); return; }
+  const since = settled.get(body) ?? now; settled.set(body, since);
+  if (now - since < STANCE.settle || takeOn(body)) return;
+  if (volleyTake(body, state, 'SS.dig', now + VPOSE.lead, true, STANCE.sway)) { volleyPoses.stance++; vposed.set(body, {key: 'stance', take: 'SS.dig', released: false, swing: p?.swing ?? ''}); }
 }
+/** When each body came to a stop between touches (server s), for the ready stance's settle. */
+const settled = new WeakMap<Fighter, number>();
 /** The ready pose this body should hold now, if any: its key (one a ball), the take and the moment its swing is aimed at
  *  (`follow`: the room's moment for it, which the forecast keeps refining). */
 function readyFor(view: BallView, vol: VolleyView, state: PlayerState, now: number): {key: string; take: BallMoveKey; at: number; follow: boolean} | null {
@@ -418,14 +438,14 @@ function readyFor(view: BallView, vol: VolleyView, state: PlayerState, now: numb
 }
 /** A volleyball take on `body` (kickLayer startTake): fitted to its rig, its contact at `at` (server s), held short of
  *  its swing while `ready`. */
-function volleyTake(body: Fighter, state: PlayerState, key: BallMoveKey, at: number, ready = false) {
+function volleyTake(body: Fighter, state: PlayerState, key: BallMoveKey, at: number, ready = false, sway = 0) {
   const row = BALL_MOVES[key];
   if (!row?.on) return 0;
   const fit = fitTo(body, state, key);
   if (!fit) return 0;
   const contact = fit.take.contact * fit.clip.duration, rate = row.pace ?? 1;
   return startTake(body, fit.clip, {at, contact, rate, end: Math.min(fit.clip.duration, contact + VPOSE.after * rate), ready: ready ? Math.max(0, contact - SHOOT.contact * rate) : undefined,
-    legs: () => { const g = stride.get(body); return g ? 1 - THREE.MathUtils.smoothstep(g.speed, VPOSE.still, VPOSE.run) : 1; }});
+    legs: () => { const g = stride.get(body); return g ? 1 - THREE.MathUtils.smoothstep(g.speed, VPOSE.still, VPOSE.run) : 1; }, sway});
 }
 /** Each body's pace along the floor (m/s, smoothed), for the ready pose's legs (volleyTake): under VPOSE.still the
  *  take's own, over VPOSE.run the body's stride. */

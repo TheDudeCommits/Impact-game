@@ -53,7 +53,9 @@ describe('the ball cam', () => {
     // Behind: it comes round, never faster than the cap.
     let most = 0; yaw = held;
     for (let i = 0; i < 180; i++) { const next = cam.steer(r, 1 / 60, yaw, 'dynamic', self, new THREE.Vector3(0, 1, -12), v, 'red'); most = Math.max(most, Math.abs(Math.atan2(Math.sin(next - yaw), Math.cos(next - yaw))) * 60); yaw = next; }
-    expect(most).toBeLessThanOrEqual(1.6 + 1e-6);
+    // (A ball gone out of the frame is fetched at up to 2 rad/s, the lens being close; one beyond the scramble, as this
+    // one twelve metres off, at up to 2.6.)
+    expect(most).toBeLessThanOrEqual(2.6 + 1e-6);
   });
   it('lets the player look away for a moment, then comes back to the ball', () => {
     const cam = new BallCam(), r = rig(), self = new THREE.Vector3(), ball = new THREE.Vector3(0, 1, 12);

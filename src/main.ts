@@ -440,7 +440,24 @@ stanceMarks.onEvent=e=>{
   const mine=e.actorId===network.id||couch.on&&e.actorId===couch.ids[1],hit=e.targetId===network.id;
   if(e.kind==='tackle'&&(mine||hit)){const big=e.text==='TAKEDOWN';for(const lens of ballLenses)lens.impact(big?.85:.6,undefined,mine?2:1);
     if(mine){view.speedLines(big?.8:.5);if(big){view.impactFrame(.85,stanceAt.set(e.x,e.y,e.z));view.chromaticPulse(.8);}}}
-  else if(e.kind==='strike'&&mine)for(const lens of ballChases)lens.impact(Math.min(.5,.18+(e.value??0)/90),undefined,1);};
+  else if(e.kind==='strike'&&mine){for(const lens of ballChases)lens.impact(Math.min(.5,.18+(e.value??0)/90),undefined,1);if(ballOf(network.snapshot)?.football)footHit();}
+  // (Football: a won tackle is a contact - the one robbed flinches and holds a beat (the fight's hit freeze and
+  // flash), the lens shakes a touch for the two in it - FOOT_TACKLE.)
+  else if(e.kind==='steal'&&e.won&&(e.text==='POKE'||e.text==='SLIDE')&&ballOf(network.snapshot)?.football){
+    const by=fighters.get(e.actorId??''),lost=fighters.get(e.targetId??'');
+    if(by&&lost){const d=stanceAt.set(lost.group.position.x-by.group.position.x,0,lost.group.position.z-by.group.position.z);if(d.lengthSq()>1e-6)d.normalize();lost.impact(true,'light',undefined,undefined,d,FOOT_TACKLE.weight);}
+    if(mine||hit){for(const lens of ballLenses)lens.impact(FOOT_TACKLE.shake,undefined,1);footHit();}}};
+/** So a tackle shows its touch and its impact: a won tackle on football - the robbed carrier takes the fight's light
+ *  flinch (`weight` of a blow's worth: its flash and hold), and the lens of a player in it shakes `shake`. */
+const FOOT_TACKLE={weight:30,shake:.42} as const;
+/** A hit-stop on the moments that matter: on football the page's own SHOOT and a won tackle it is in hold the drawn
+ *  match `hold` s (the room plays on: nothing pressed is lost), then draw it `pace` times as fast until it has caught
+ *  up (`hold / (pace - 1)` s), the drawn clock let fall up to `most` s behind the newest state meanwhile; a goal has
+ *  its own hold (GoalHold). */
+const FOOT_HIT={hold:.06,pace:1.4,most:6/60} as const;
+let footHitAt=-Infinity;
+const footHit=()=>{footHitAt=performance.now();};
+function footHitPhase(now:number):''|'hold'|'catch'{const t=(now-footHitAt)/1000;return t<0||t>=FOOT_HIT.hold+FOOT_HIT.hold/(FOOT_HIT.pace-1)?'':t<FOOT_HIT.hold?'hold':'catch';}
 const stanceAt=new THREE.Vector3();
 /** A ball match's command says the seat's stance: the opponent locked (FIGHT), or the ball (game/ball/stance.ts). */
 function ballAim<T extends {targetId?:string|null;lock?:boolean}>(command:T|undefined,seat:0|1):T|undefined{
@@ -449,7 +466,7 @@ function ballAim<T extends {targetId?:string|null;lock?:boolean}>(command:T|unde
 const ballLenses=[{impact:(w:number,d?:THREE.Vector3,t:0|1|2=0)=>{camera.impact(w,d,t);ballChases[0].impact(w,d,t);}},{impact:(w:number,d?:THREE.Vector3,t:0|1|2=0)=>{camera2?.impact(w,d,t);ballChases[1].impact(w,d,t);}}] as const;
 const superRide=new SuperRide(); // The lens riding a SUPER SHOT, an option (render/ball/superRide.ts)
 const ballMoments=new BallMoments(view,()=>couch.split&&camera2?[[ballLenses[0],fighters.get(couch.ids[0])?.group.position],[ballLenses[1],fighters.get(couch.ids[1])?.group.position]]:[[ballLenses[0],shownSelf]],()=>ballField.ballPosition());
-ballField.bodyOf=id=>fighters.get(id)?.group.position;ballField.feetOf=(id,l,r)=>{const j=fighters.get(id)?.joints,a=j?.get('LeftFoot'),b=j?.get('RightFoot');if(!a||!b)return false;a.getWorldPosition(l);b.getWorldPosition(r);return true;}; // (The dribble's touches, BallField.dribble.)
+ballField.bodyOf=id=>fighters.get(id)?.group.position;ballField.facingOf=id=>fighters.get(id)?.group.rotation.y;ballField.feetOf=(id,l,r)=>{const j=fighters.get(id)?.joints,a=j?.get('LeftFoot'),b=j?.get('RightFoot');if(!a||!b)return false;a.getWorldPosition(l);b.getWorldPosition(r);return true;}; // (The dribble's touches, BallField.dribble.)
 // (The page's own swing as its prediction has it - offline, as the match in this browser has it,
 // at the time drawn - for its aim line, its charge and its take: render/ball/ownShot.ts.)
 ownShot.read=()=>network===localBall?localBall.match?.sim.actors.get(network.id):prediction.local;ownShot.clock=()=>network===localBall?timeline.drawnAt??NaN:prediction.localTime;ownShot.drawn=()=>network!==localBall&&prediction.active;
@@ -1777,7 +1794,7 @@ function splitFrame(dt:number,snapshot:GameSnapshot){
     const heading=spike.steer(rig,dt,seatView.yaw,yaw,cam.on,body.group.position,ballField.ballPosition(),ballView,teamOf(ballView,id),rig.camera.aspect);
     rig.update(dt,body,heading,seatView.pitch,occluders(),settings.shake,!cam.active&&!spike.active&&held&&held!==body?held:undefined,!cam.active&&!spike.active&&couch.lockedOf(id));spike.aim(rig,rig.camera,settings.shake);
     const chase=cam.active&&ballView?.mode==='goal-rush';
-    chaseFrame.self.copy(body.group.position);chaseFrame.heading=yaw;chaseFrame.ball=subject;chaseFrame.fight=!!foe;chaseFrame.boosting=!!body.state.boost;chaseFrame.shake=settings.shake;chaseFrame.football=!!ballView?.football;if(ballView)chaseFrame.mode=ballView.mode;
+    chaseFrame.self.copy(body.group.position);chaseFrame.heading=yaw;chaseFrame.ball=subject;chaseFrame.fight=!!foe;chaseFrame.boosting=!!body.state.boost;chaseFrame.shake=settings.shake;chaseFrame.football=!!ballView?.football;chaseFrame.mine=!!ballView&&ballView.ball.carry===id;if(ballView)chaseFrame.mode=ballView.mode;
     ballChases[half].aim(rig.camera,dt,chase,ballView?chaseFrame:null);
     seatView.yaw=rig.inputYaw;seatView.pitch=rig.inputPitch;
     halfStates[half].capture(half===0,rig.camera.position);
@@ -1832,12 +1849,14 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // A clock the arena's own time scale drives, a tick behind the newest
     // state it has produced, so two states are always there to blend.
     const local=network===royale?royale:network===duel?duel:network===arcade?arcade:network===practice?practice:network===localRift?localRift:network===localBall?localBall:localObjective,newest=timeline.newest??0,scale=network===arcade?arcade.game?.timeScale??1:1;
-    let next=localClock+rawDt*(local.paused?0:scale);
-    if(network===localBall&&steadyBallClock&&!local.paused&&inputClock.last>0){
+    // (Football: a hit-stop - the drawn match held FOOT_HIT.hold s and caught up over FOOT_HIT.catch s.)
+    const hit=network===localBall?footHitPhase(now):'';
+    let next=localClock+rawDt*(local.paused||hit==='hold'?0:hit==='catch'?scale*FOOT_HIT.pace:scale);
+    if(network===localBall&&steadyBallClock&&!local.paused&&!hit&&inputClock.last>0){
       const err=newest+inputClock.backlog+(now-inputClock.last)/1000*inputClock.rate-BALL_CLOCK.behind-next;
       next+=Math.abs(err)>BALL_CLOCK.snap?err:Math.max(-rawDt*BALL_CLOCK.pace,Math.min(rawDt*BALL_CLOCK.pace,err*Math.min(1,rawDt*BALL_CLOCK.gain)));
     }
-    localClock=Math.min(newest,Math.max(newest-3/60,next));
+    localClock=Math.min(newest,Math.max(newest-(hit?FOOT_HIT.most:3/60),next));
     presented=timeline.at(localClock-LOCAL_DELAY/1000);
   }else presented=timeline.sample(now);
   prediction.visualTime=presented?.time??NaN; // Round 5 (PARRY): a parry's vanish is drawn with the parry (Prediction.visualTime).
@@ -2025,7 +2044,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
         const heading=spike.steer(camera,rawDt,input.yaw,yaw,cam.on,own.group.position,ballField.ballPosition(),ballView,teamOf(ballView,network.id),view.camera.aspect);netSheer.value=spike.sheer;
         const chase=cam.active&&ballView?.mode==='goal-rush'&&!((view.camera.userData.rig as {shotWeight?:number}|undefined)?.shotWeight! > .5);camera.fading=!chase;camera.fader.wideNear=chase&&!!ballView?.football;
         camera.update(rawDt,own,heading,input.pitch,occluders(),settings.shake,!cam.active&&!spike.active&&held?bodyOf(held):undefined,!cam.active&&!spike.active&&targeting.locked);spike.aim(camera,view.camera,settings.shake);
-        chaseFrame.self.copy(own.group.position);chaseFrame.heading=yaw;chaseFrame.ball=cam.free&&!foe?null:subject;chaseFrame.fight=!!foe;chaseFrame.boosting=!!own.state.boost;chaseFrame.shake=settings.shake;chaseFrame.football=!!ballView?.football;if(ballView)chaseFrame.mode=ballView.mode;
+        chaseFrame.self.copy(own.group.position);chaseFrame.heading=yaw;chaseFrame.ball=cam.free&&!foe?null:subject;chaseFrame.fight=!!foe;chaseFrame.boosting=!!own.state.boost;chaseFrame.shake=settings.shake;chaseFrame.football=!!ballView?.football;chaseFrame.mine=!!ballView&&ballView.ball.carry===network.id;if(ballView)chaseFrame.mode=ballView.mode;
         ballChases[0].aim(view.camera,rawDt,chase,ballView?chaseFrame:null);
         ARENA_LENS.uLensFade.value=chase&&ballChases[0].active&&!!ballView?.football?1:0; // (The cage and the goals thin near the SPORT lens.)
         superRide.aim(view.camera,rawDt,ballView,ballField.ballPosition(),superCamChoice(settings),snapshot.serverTime); // (An option, off by default)

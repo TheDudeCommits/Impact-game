@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import * as THREE from 'three';
-import {SpikeCam} from './SpikeCam';
+import {KEEP, SpikeCam} from './SpikeCam';
 import {freshBall} from '../../game/ball/physics';
 import {VOLLEY_COURT, type BallView} from '../../game/ball/model';
 import type {FollowCamera} from '../FollowCamera';
@@ -51,8 +51,9 @@ describe('volleyball\'s camera stand', () => {
     expect(filmed(true).tall(0, 1.5)).toBeGreaterThan(113);
     const still = filmed(true).cam.pose().look.y;
     const ours = filmed(true, 1280, 720, {touchTeam: 'red', ball: {...freshBall(), held: false, x: -3, y: 5.8, z: -1.6, vy: 1, shot: 'set', lastTeam: 'red', court: VOLLEY_COURT}}, {x: 0, y: 0, z: -4}, new THREE.Vector3(-3, 5.8, -1.6));
-    expect(ours.cam.pose().look.y).toBeLessThanOrEqual(still + 1);
-    expect(ours.px(-3, 5.8, -1.6).y, String(ours.px(-3, 5.8, -1.6).y)).toBeGreaterThan(0);
+    // (A set's top is kept under the score bug's band - KEEP - the look rising after it, a few metres at most.)
+    expect(ours.cam.pose().look.y).toBeLessThanOrEqual(still + 3.2);
+    expect(ours.px(-3, 5.8, -1.6).y / 720, String(ours.px(-3, 5.8, -1.6).y)).toBeGreaterThan(KEEP.top - .02);
   });
   it('holds your whole court and the net in the frame, on a screen and on a phone on its side', () => {
     for (const [w, h] of [[1280, 720], [1440, 900], [844, 390]] as const) {

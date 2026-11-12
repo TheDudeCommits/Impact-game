@@ -30,6 +30,15 @@ export const KIT = {ink: 1, rim: 1, inkLight: 1, widen: 1.3} as const;
  *  match (BallView.volley) wears the same kits as football's, the line a little wider again (`widen` ink widths: its
  *  camera stands further off). */
 export const VOLLEY_KIT = {widen: 1.6} as const;
+/** So team outlines and spiky shapes do not merge bodies into noise - football (BallView.football) only: the side's
+ *  line only `widen` ink widths out (KIT's 1.3, a broad hull, drew every spike of hair, cape and blade as a coloured
+ *  scribble) - a clean thin edge in the side's colour, the rim light carrying the rest. */
+export const FOOT_KIT = {widen: .35} as const;
+/** So the red side does not melt into the sand's orange floor - football only: on The Wreck Yard's sand the red side's
+ *  kit is a deep crimson line (`ink`) and a crimson-pink rim (`rim`), cooler and darker than the sand where the match's
+ *  red (a warm pinkish red) was its own tone; its floor rings take `ring`. Elsewhere the side's own colour. */
+export const FOOT_SAND_RED = {ink: 0x8e0838, rim: 0xff1f66, ring: 0xd0105a} as const;
+const SAND_RIM = rimOf('red').setHex(FOOT_SAND_RED.rim), SAND_INK = new THREE.Color(FOOT_SAND_RED.ink);
 export const KEEPER_COLOURS: Record<BallTeam, number> = {red: 0x35e07c, blue: 0xffc531};
 const keeperOf = (team: BallTeam) => { const c = new THREE.Color(KEEPER_COLOURS[team]); return c.multiplyScalar(1 / Math.max(c.r, c.g, c.b, 1e-4)); };
 const KIT_INK: Record<BallTeam, THREE.Color> = {red: rimOf('red').multiplyScalar(KIT.inkLight), blue: rimOf('blue').multiplyScalar(KIT.inkLight)};
@@ -58,12 +67,15 @@ export class TeamTrimmer {
    *  the frame is filmed from (a split screen's second half: `lens2`; a body is as near as its nearer lens). */
   update(view: BallView | undefined, body: (id: string) => TrimBody | undefined, lens?: Place | null, lens2?: Place | null, on = teamTrimOn()) {
     this.frame++;
-    const kit = !!view?.football || !!view?.volley, widen = view?.volley ? VOLLEY_KIT.widen : KIT.widen;
+    const kit = !!view?.football || !!view?.volley, widen = view?.volley ? VOLLEY_KIT.widen : view?.football ? FOOT_KIT.widen : KIT.widen;
     if (view && on) for (let i = 0; i < view.seats.length; i++) {
       const seat = view.seats[i], b = body(seat.id);
       if (!b) continue;
       // (A football match's kits - KIT, KEEPER_COLOURS.)
-      if (kit) { b.setTeamTrim(seat.keeper ? KEEPER_INK[seat.team] : KIT_INK[seat.team], seat.keeper ? KEEPER_RIM[seat.team] : RIM[seat.team], KIT.ink, KIT.rim, widen); this.worn.set(b, this.frame); continue; }
+      if (kit) {
+        const sand = !!view.football && view.arena === 'dust-yard' && seat.team === 'red' && !seat.keeper;
+        b.setTeamTrim(seat.keeper ? KEEPER_INK[seat.team] : sand ? SAND_INK : KIT_INK[seat.team], seat.keeper ? KEEPER_RIM[seat.team] : sand ? SAND_RIM : RIM[seat.team], KIT.ink, KIT.rim, widen); this.worn.set(b, this.frame); continue;
+      }
       const at = b.group?.position, d = at ? Math.min(lens ? Math.hypot(at.x - lens.x, at.y - lens.y, at.z - lens.z) : Infinity, lens2 ? Math.hypot(at.x - lens2.x, at.y - lens2.y, at.z - lens2.z) : Infinity) : Infinity;
       const t = Math.min(1, Math.max(0, (d - TRIM.near) / (TRIM.far - TRIM.near))), k = t * t * (3 - 2 * t);
       b.setTeamTrim(INK[seat.team], RIM[seat.team], TRIM.inkNear + (TRIM.ink - TRIM.inkNear) * k, TRIM.rimNear + (TRIM.rim - TRIM.rimNear) * k);

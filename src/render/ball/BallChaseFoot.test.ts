@@ -60,16 +60,18 @@ describe("Goal Rush's SPORT camera", () => {
     // (The tilt's own cap, with the heading's roll into it on the frame's measure.)
     expect(worst).toBeLessThan(.7);
   });
-  it('backed into a corner or against the glass it pulls in and up, inside the walls, never swung round the body', () => {
+  it('backed into a corner or against the glass it keeps its stand behind the body - out past the glass if it must - never swung round the body', () => {
     for (const [x, z, heading] of [[9.5, -15, -.6], [0, -R.halfZ + 1, 0], [-R.halfX + 1, 0, Math.PI / 2]] as const) {
       const rig = new BallChase(), cam = camera(), f = frame({ self: new THREE.Vector3(x, 0, z), heading, ball: new THREE.Vector3(x + Math.sin(heading) * 2, .3, z + Math.cos(heading) * 2) });
       run(rig, cam, f, 180);
       const p = cam.position;
-      expect(Math.abs(p.x)).toBeLessThanOrEqual(R.halfX - .2);
-      expect(Math.abs(p.z)).toBeLessThanOrEqual(R.halfZ - .2);
-      expect(Math.abs(p.x) + Math.abs(p.z)).toBeLessThanOrEqual(R.halfX + R.halfZ - R.corner + .1);
-      // (Up, but no higher over a body it stands close to than BallChase FOOT.liftPer allows - 6 m at least.)
-      expect(p.y).toBeGreaterThan(5.9);
+      // (The lens may stand up to 1.6 m out past the glass - the cage's frame and glass fade near the lens, BallArena
+      // ARENA_LENS - so backed against it the body is still filmed from behind and above, not from over its head: a lens
+      // kept inside looked straight down on a body 30 px tall.)
+      expect(Math.abs(p.x)).toBeLessThanOrEqual(R.halfX + 1.8);
+      expect(Math.abs(p.z)).toBeLessThanOrEqual(R.halfZ + 1.8);
+      expect((x - p.x) * Math.sin(heading) + (z - p.z) * Math.cos(heading)).toBeGreaterThan(2.4);
+      expect(p.y).toBeGreaterThan(4.5);
       // (Still looking along the heading, give or take the turn to the play ahead a moved lens makes.)
       const d = new THREE.Vector3(); cam.getWorldDirection(d);
       expect(Math.abs(Math.atan2(Math.sin(Math.atan2(d.x, d.z) - heading), Math.cos(Math.atan2(d.x, d.z) - heading)))).toBeLessThan(.6);

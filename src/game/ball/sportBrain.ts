@@ -56,6 +56,17 @@ export const FUN = {tight: 1.5, tightAfter: .55, open: 2.6, lane: 1.4, lanePerM:
   /** The chance a side of bots alone shoots from (spChance), by level (SHOT_CHANCE, 0.12, for every level, left them
    *  shy or wasteful). */
   chance: {easy: .16, normal: .09, hard: .07}} as const;
+/** The person kept in the play (left to the bots, a scripted person stood 20 s at a time alone while play was
+ *  elsewhere). A person is "in it" with the ball at their feet, the ball within `near` m of them, or a pass
+ *  on its way to them; once out of it `idle` s:
+ *  - their side's carrier gives it to them with a lane clear (`lane` m) and nobody of theirs within `open` m of them, up
+ *    to `far` m - lofted over one in the way - before its own shot unless that is a great chance;
+ *  - their side leaves a loose ball they could reach within `defer` s of a bot to them;
+ *  - the other side's carrier within `toward` m of them runs at them (its line to goal bent `bend` of the way toward
+ *    them), and keeps it `keep` s longer before it passes;
+ *  - their side's nearest stands off that carrier (no nearer than `standOff` m) while the person is within `leave` m of
+ *    it and goal-side: the tackle is theirs to make. */
+export const FUN4 = {near: 6, idle: 3, lane: 1.3, open: 1.6, far: 24, defer: .45, toward: 24, bend: .6, keep: 1.5, standOff: 3.2, leave: 14} as const;
 /** A team-mate who is a person is worth this much more as a pass (one person among bots is never a spectator); an open
  *  one is fed (FUN). A call (FOOTBALL.call) is answered the first tick a lane to them is open. */
 const PERSON = {bonus: 5} as const;
@@ -106,6 +117,8 @@ export class SportBrain extends BallBrain {
     const mates: PlayerState[] = [], foes: PlayerState[] = [];
     for (const q of players) { if (q.id === me.id || !q.alive) continue; const s = seatOf(q.id); if (!s || s.out !== undefined) continue; (s.team === team ? mates : foes).push(q); }
     this.clock = now;
+    // (How long each person has been out of the play - FUN4.)
+    this.spWatch(view, players, now);
     // A lofted PASS: the key held past a tap's, the stick and the view on the team-mate.
     if (now < this.loftTo && b.carry === me.id) { input.lightHeld = true; input.yaw = this.loftAim; input.moveX = Math.sin(this.loftAim); input.moveZ = Math.cos(this.loftAim); return input; }
     this.loftTo = 0;
@@ -130,13 +143,21 @@ export class SportBrain extends BallBrain {
     if (!carrier) {
       // A loose ball: the side's quickest to it goes; the rest take their places.
       // (A person about as near - FUN.defer s - is left to it: the loose ball is theirs to win.)
-      const mine = this.spReach(me, b), quickest = mates.every(q => seatOf(q.id)?.role === 'keeper' || this.spReach(q, b) >= mine - .05 && !(seatOf(q.id)?.bot === false && this.spReach(q, b) < mine + FUN.defer));
+      // (A person out of the play FUN4.idle s is left a loose ball they could reach within FUN4.defer s.)
+      const mine = this.spReach(me, b), quickest = mates.every(q => seatOf(q.id)?.role === 'keeper' || this.spReach(q, b) >= mine - .05 && !(seatOf(q.id)?.bot === false && this.spReach(q, b) < mine + (this.spIdle(q.id, now) ? FUN4.defer : FUN.defer)));
       if (quickest) return this.spMeet(me, b, input, now, 1.1);
       return this.spShape(me, seat, b, b, mates, input, now, dir, ownZ, false);
     }
     if (!theirs) return this.spShape(me, seat, carrier, b, mates, input, now, dir, ownZ, true, foes);
     // Their carrier: the nearest of this side (not the keeper) meets them from in front; the rest stand goal-side.
     const mineD = gap(me, carrier), nearest = mates.every(q => seatOf(q.id)?.role === 'keeper' || gap(q, carrier) >= mineD - .05);
+    // (A person of this side out of the play, near the carrier and goal-side of it - FUN4.leave - has the
+    // tackle: this bot stands off, FUN4.standOff m in front, rather than winning it first.)
+    const waiting = mates.find(q => seatOf(q.id)?.bot === false && this.spIdle(q.id, now) && gap(q, carrier) < FUN4.leave && (carrier.z - q.z) * dir > -1);
+    if (waiting && nearest) {
+      const gx = 0 - carrier.x, gz = ownZ - carrier.z, gd = Math.hypot(gx, gz) || 1;
+      return this.spGo(me, {x: carrier.x + gx / gd * FUN4.standOff, z: carrier.z + gz / gd * FUN4.standOff}, input, now, 6, .3);
+    }
     // (The cover - when the one pressing has been beaten (no longer between the carrier and goal) or the
     // carrier is in range of goal (FUN.danger m), the nearest of this side still goal-side steps in too.)
     const goalSide = (q: {z: number}) => (carrier.z - q.z) * dir > .5, field = mates.filter(q => seatOf(q.id)?.role !== 'keeper');
@@ -195,6 +216,10 @@ export class SportBrain extends BallBrain {
     const L = SPORT_BOT[this.lvl], gz = dir * GOAL_RULES.halfZ, toGoal = Math.hypot(0 - me.x, gz - me.z), seatOf = (id: string) => view.seats.find(s => s.id === id);
     const pressure = foes.reduce((m, f) => Math.min(m, gap(f, me)), Infinity), held = now - this.since;
     const person = (id: string) => { const s = seatOf(id); return !!s && !s.bot; };
+    const pd0 = (q: {x: number; z: number}) => gap(q, me);
+    // (A person of the other side out of the play and within FUN4.toward m - FUN4: this carrier runs at them
+    // and keeps it FUN4.keep s longer.)
+    const hunted = foes.find(f => person(f.id) && this.spIdle(f.id, now) && gap(f, me) < FUN4.toward);
     // (The carry's length and the feed's moment, drawn as the ball comes to this bot.)
     if (Number.isNaN(this.carryFor)) { this.carryFor = L.carry[0] + (L.carry[1] - L.carry[0]) * this.rnd(); this.feedAt = FUN.feed + (FUN.feedTo - FUN.feed) * this.rnd(); }
     const lane = (q: {x: number; z: number}) => laneFrom(b, q, foes, FUN.lane + FUN.lanePerM * gap(b, q));
@@ -217,6 +242,12 @@ export class SportBrain extends BallBrain {
     const pOpen = !!p && foes.every(f => gap(f, p) > FUN.open) && laneFrom(b, p, foes, FUN.lane) && gap(p, me) > FOOTBALL.pass.near + .5 && gap(p, me) < FOOTBALL.pass.far - 6;
     const keeper = seat.role === 'keeper';
     if (p && pOpen && held > (keeper ? .3 : this.feedAt)) return this.spPassTo(me, p, input, false);
+    // (A person of this side out of the play - FUN4: given it with a lane and a little room, lofted over one
+    // in the way, before this bot's own shot unless that is a great one.)
+    if (p && this.spIdle(p.id, now) && held > Math.min(this.feedAt, .35) && foes.every(f => gap(f, p) > FUN4.open) && pd0(p) > FOOTBALL.pass.near + .5 && pd0(p) < FUN4.far) {
+      const gz0 = dir * GOAL_RULES.halfZ, great = this.spChance(me, gz0, dir, foes.filter(f => Math.abs(f.z - gz0) > 3)) >= SHOT_GREAT;
+      if (!great) return this.spPassTo(me, p, input, !laneFrom(b, p, foes, FUN4.lane) && pd0(p) > FUN.chipFrom);
+    }
     // (Free, but one of theirs in the lane: chipped over the one on the ball when that is all that is in the way and the
     // person is far enough off for a loft; else the carrier slides the ball across to open the angle, FUN.shift.)
     let shift: {x: number; z: number} | undefined;
@@ -261,7 +292,7 @@ export class SportBrain extends BallBrain {
       const tight = pressure < FUN.tight;
       // (One of theirs on it: a pass once it has had a moment; the keeper gives it to a team-mate at once; otherwise kept
       // FUN carry's s - dribbled, turned, looked up - before it goes to the best there is.)
-      const due = keeper ? held > .5 : tight ? held > FUN.tightAfter : held > this.carryFor;
+      const due = keeper ? held > .5 : tight ? held > FUN.tightAfter : held > this.carryFor + (hunted ? FUN4.keep : 0);
       if (due && top && top.score > (tight || keeper ? -6 : -4)) return this.spPassTo(me, top.q, input, !top.lane && gap(top.q, me) > 9);
       // (Shielded long enough - FOOTBALL.fun2.shield.most - it goes on whatever: the best there is, else
       // lofted on into space up the pitch.)
@@ -277,6 +308,8 @@ export class SportBrain extends BallBrain {
     // box (BOX_EDGE m out), not into the net, unless their keeper is off its line and the goal is open.
     const keeperHome = foes.some(f => Math.hypot(f.x, f.z - gz) < 5), to = keeperHome ? {x: me.x * .5, z: gz - dir * BOX_EDGE} : {x: 0, z: gz};
     let ax = to.x - me.x, az = to.z - me.z;
+    // (At a person waiting for the play - the run bent toward them, FUN4.bend of the way.)
+    if (hunted && (hunted.z - me.z) * dir > -2) { const d0 = Math.hypot(ax, az) || 1, hx = hunted.x - me.x, hz = hunted.z - me.z, hd = Math.hypot(hx, hz) || 1; ax = ax / d0 * (1 - FUN4.bend) + hx / hd * FUN4.bend; az = az / d0 * (1 - FUN4.bend) + hz / hd * FUN4.bend; }
     // (At the edge with no shot on: hold it up and lay it off - the next look passes it.)
     // (Held there FUN.edgeHold s with no pass on, it is shot - one stood still at the edge of the box, nobody pressing
     // it, would hold the match up for minutes.)
@@ -313,6 +346,24 @@ export class SportBrain extends BallBrain {
     return input;
   }
   private carryFor = NaN; private feedAt = 0;
+  /** FUN4: when each person was last in the play (match s). */
+  private readonly inPlayAt = new Map<string, number>();
+  private watchAt = -Infinity;
+  private spWatch(view: BallView, players: readonly PlayerState[], now: number) {
+    const b = view.ball;
+    // (A break in the play - a goal, a kickoff - starts every person's count afresh.)
+    if (now - this.watchAt > .5) this.inPlayAt.clear();
+    this.watchAt = now;
+    for (const s of view.seats) {
+      if (s.bot) continue;
+      const p = players.find(q => q.id === s.id);
+      if (!p) continue;
+      const passing = !b.carry && view.events.some(e => e.kind === 'pass' && e.targetId === s.id && now - e.at < 2.5 && b.lastId === e.actorId);
+      if (!this.inPlayAt.has(s.id) || b.carry === s.id || gap(p, b) < FUN4.near || passing || view.phase !== 'live') this.inPlayAt.set(s.id, now);
+    }
+  }
+  /** Whether a person has been out of the play FUN4.idle s or more. */
+  private spIdle(id: string, now: number) { const at = this.inPlayAt.get(id); return at !== undefined && now - at >= FUN4.idle; }
   /** A pass on its way to this bot: met first time, now and then - a SHOOT pressed as it comes (FOOTBALL.press.buffer)
    *  in range of goal with a line to it, or a PASS on to an open team-mate with one of theirs closing - else taken. */
   private spFirst(me: PlayerState, seat: BallSeat, b: BallState, mates: PlayerState[], foes: PlayerState[], input: Command, now: number, dir: number, met: Command): Command {

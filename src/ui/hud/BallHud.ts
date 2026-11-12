@@ -18,6 +18,8 @@ import { hasStances } from '../../game/ball/stance';
 import { ULTIMATE_COST } from '../../game/moves';
 import { SECOND } from '../../game/couchSeat';
 import { BANNER_RANK, BANNER_RULES, LINE_RANK, LINE_RULES, Slot, type Shown } from './ballBanner';
+import { VOLLEY } from '../../game/ball/volley';
+import { ownCues } from '../../render/ball/SpikeCues';
 import './ballHud.css';
 
 /**
@@ -43,6 +45,13 @@ import './ballHud.css';
 const KMH = 3.6;
 /** A line under the score is up this long (ms). */
 const LINE_MS = 2600;
+/** A point's banner on the volleyball rules is up this long (ms) - the score's own pulse says the rest. */
+export const VOLLEY_POINT_MS = 650;
+/** So the prompt reads clearly and times the press: the prompt's timing bar on the volleyball rules fills over the last
+ *  `lead` s to the moment to press - a receive's or a set's best moment less the swing's contact (game/ball/volley.ts
+ *  VOLLEY.tier), the jump's beat for your spike (render/ball/SpikeCues.ts) - and over your jump's climb to the spike's
+ *  window; it is gold (`now`) inside the PERFECT window. */
+export const VOLLEY_TIMER = { lead: 1.1 } as const;
 /** SHOOT's charge readout stays this long after its blow (ms), as it ended, then goes. */
 const CHARGE_KEPT = 320;
 
@@ -78,6 +87,8 @@ class SeatStrip {
   /** Goal Rush's SPORT mode (`?football`): the badge says SPORT where it said BALL, and the legend under it names SPORT's
    *  buttons and the camera's state (BALL LOCK or FREE LOOK). */
   private readonly sportOn: Flag; private readonly legend: Markup;
+  /** The SPORT strip faded out (FOOT_STRIP) - set by BallHud on the sport rules' football. */
+  private readonly quiet: Flag;
   private readonly charge: HTMLElement; private readonly chargeFill: Fill; private readonly chargeState: Data; private readonly chargeSide: Data;
   /** Whether SHOOT's charge shown last reached full, and until when (ms) it stays after its blow. */
   private chargedFull = false; private chargeUntil = -Infinity;
@@ -89,7 +100,7 @@ class SeatStrip {
     el('b', '', this.stance); this.stanceName = new Text(el('span', '', this.stance));
     this.stanceHp = new Fill(el('b', '', el('i', 'bh-stance-hp', this.stance)));
     this.stanceKey = new Markup(el('small', 'ux-keys', this.stance));
-    this.sportOn = new Flag(this.stance, 'sport'); this.legend = new Markup(el('small', 'ux-keys bh-legend', this.stance));
+    this.sportOn = new Flag(this.stance, 'sport'); this.legend = new Markup(el('small', 'ux-keys bh-legend', this.stance)); this.quiet = new Flag(this.stance, 'quiet');
     const hp = el('i', 'bh-hp', this.root); this.hp = new Fill(el('b', '', hp), .01); this.hpOn = new Flag(hp, 'on'); this.low = new Flag(hp, 'low');
     const bars = el('div', 'bh-bars', this.root);
     const bar = (kind: string, name: string) => {
@@ -122,7 +133,7 @@ class SeatStrip {
 
   /** `lock`: the opponent the seat's FIGHT stance is on, or null in the BALL stance; `stances`: whether the badge shows.
    *  Returns the stance shown ('' for none). */
-  update(v: BallView, self: PlayerState, lock: string | null, stances: boolean, players: readonly PlayerState[], keys: { boost: string; super: string; stance: string; legend?: string }): 'ball' | 'fight' | '' {
+  update(v: BallView, self: PlayerState, lock: string | null, stances: boolean, players: readonly PlayerState[], keys: { boost: string; super: string; stance: string; legend?: string; quiet?: boolean }): 'ball' | 'fight' | '' {
     this.mode.set(v.mode); this.chargeSide.set(v.seats.find(s => s.id === self.id)?.team ?? '');
     const fights = v.mode === 'goal-rush' && (!v.practice || !!v.lesson);
     this.hpOn.set(fights);
@@ -155,21 +166,26 @@ class SeatStrip {
     // (Football's dash is SPRINT - its legend's, its phone button's - so its bar is too.)
     this.boostName.set(v.football ? 'SPRINT' : v.volley ? 'DIVE' : 'BOOST');
     this.sportOn.set(!!v.football); this.legend.set(v.football && !lock ? keys.legend ?? '' : '');
+    this.quiet.set(!!v.football && !lock && !!keys.quiet);
     return kind;
   }
   remove() { this.root.remove(); }
 }
 
-/** A clear HUD with a control strip big enough to read: football's
- *  SPORT legend - the buttons that do something now, always shown, as keys with their words: with the ball at your feet
- *  PASS, SHOOT, TRICK; your side on it, CALL (a PASS without the ball); else TACKLE; SPRINT always. (The camera's state
- *  follows it.) A touch screen's are its buttons: none here. */
-function footLegend(v: BallView, self: string, keyed: boolean, at: { device: ModeHudFrame['input']; family: ModeHudFrame['family'] }) {
+/** A clear HUD with a control strip big enough to read: football's SPORT legend, as keys with their words, the same
+ *  from moment to moment: one fixed line - PASS, SHOOT, TACKLE, SPRINT, TRICK, whoever has the ball (PASS without it
+ *  is the call, as ever) - then the camera's state. A touch screen's are its buttons: none here. */
+function footLegend(keyed: boolean, at: { device: ModeHudFrame['input']; family: ModeHudFrame['family'] }) {
   if (!keyed) return '';
-  const b = v.ball, team = v.seats.find(s => s.id === self)?.team, ours = !!b.carry && v.seats.find(s => s.id === b.carry)?.team === team;
-  const now = b.carry === self ? '{light} PASS {heavy} SHOOT {special} TRICK' : ours ? '{light} CALL' : '{guard} TACKLE';
-  return promptText(`${now} {dash} SPRINT`, at);
+  return promptText('{light} PASS {heavy} SHOOT {guard} TACKLE {dash} SPRINT {special} TRICK', at);
 }
+/** Football's SPORT strip (the keys) is shown for the first `first` s of live play of the visit's football
+ *  (its first match, or as far into the next as it takes), then fades; it comes back while the pause menu is open and for
+ *  `back` s after it closes. Never faded in the FIGHT stance (its badge names the one locked). */
+const FOOT_STRIP = { first: 20, back: 8 } as const;
+const footStrip = { seen: 0, lastNow: NaN, backUntil: -Infinity };
+let pauseScrim: Element | null | undefined;
+const pauseOpen = () => { if (typeof document !== 'object') return false; if (!pauseScrim?.isConnected) pauseScrim = document.querySelector('.settings-scrim'); return !!pauseScrim && !pauseScrim.classList.contains('hidden'); };
 
 /** SPORT mode (`?football`): what the banner and the line under the score still say. */
 const SPORT_SAID: ReadonlySet<BallEvent['kind']> = new Set<BallEvent['kind']>(['goal', 'own-goal', 'overtime', 'fever', 'win', 'super', 'duel', 'duel-won', 'wipeout', 'tackle', 'reversal', 'chat', 'accolade']);
@@ -200,6 +216,10 @@ class BallHud implements ModeHud {
   private charms!: HTMLElement; private charmsKey = '';
   private chatButton!: HTMLButtonElement; private chatOn!: Flag;
   private prompt!: HTMLElement; private promptText!: Markup; private promptOn!: Flag;
+  /** The prompt's timing bar (VOLLEY_TIMER) and what it is timing now - a touch's moment on the page's clock, the
+   *  jump's beat, or the climb in the air. */
+  private timer!: HTMLElement; private timerFill!: HTMLElement; private timerOn!: Flag; private timerNow!: Flag;
+  private timed: { kind: 'touch'; at: number } | { kind: 'jump' | 'air' } | null = null;
   /** The first-time hints (ui/ball/ballHints.ts) in the prompt lane, when it has nothing else to say and the coach's tip
    *  is not up. */
   private readonly hints = new BallHints(() => !!this.root?.querySelector('.mode-hud .coach-tip.on'));
@@ -253,6 +273,7 @@ class BallHud implements ModeHud {
     // RUMBLE: the charms at work, each a chip in its colour with whose it is and the seconds it has left.
     this.charms = el('div', 'bh-charms', m.zone('3'));
     this.prompt = el('div', 'hk-slip bh-prompt hidden', m.zone('6')); this.promptText = new Markup(this.prompt); this.promptOn = new Flag(this.prompt); this.promptOn.set(true);
+    this.timer = el('div', 'bh-timer', m.zone('6')); this.timerFill = el('i', '', this.timer); el('b', '', this.timer); this.timerOn = new Flag(this.timer, 'on'); this.timerNow = new Flag(this.timer, 'now');
     // FREE PLAY's prompt is also the reset's button on a touch screen (main.ts hears the event and tells the room).
     this.prompt.addEventListener('pointerdown', event => { if (this.prompt.dataset.act === 'reset') { event.stopPropagation(); window.dispatchEvent(new CustomEvent('ball-reset')); } });
     // Quick chat's button on a touch screen (ui/ball/QuickChat.ts opens on the event): a small round one in the corner
@@ -287,6 +308,8 @@ class BallHud implements ModeHud {
     if (this.root && live !== this.live) { this.live = live; if (live) this.root.dataset.ballLive = ''; else delete this.root.dataset.ballLive; }
     // (#interface[data-ball-volley] on the volleyball rules - the prompt's one place, bottom centre over the bars.)
     if (this.root && !!v.volley !== ('ballVolley' in this.root.dataset)) { if (v.volley) this.root.dataset.ballVolley = ''; else delete this.root.dataset.ballVolley; }
+    // (#interface[data-ball-foot] on the sport rules' football - its strip and bars at the foot's left corner.)
+    if (this.root && !!v.football !== ('ballFoot' in this.root.dataset)) { if (v.football) this.root.dataset.ballFoot = ''; else delete this.root.dataset.ballFoot; }
     this.roster(v, f);
     this.selfId = f.self.id; this.lastSelf = f.self; this.seats(v, f, own);
     const spike = v.mode === 'sky-spike';
@@ -369,6 +392,11 @@ class BallHud implements ModeHud {
     else if (charged) this.promptText.set(promptText('KI CHARGE · YOUR NEXT {heavy} FLIES AT OVERDRIVE', { device: f.input, family: f.family }));
     else if (practice) this.promptText.set(f.input === 'touch' ? '<span class="ux-prompt"><b>TAP: RESET BALL</b></span>' : `<span class="ux-prompt">${f.input === 'controller' ? padKey(f.family, 'select') : '<kbd>⌫</kbd>'}<b>RESET BALL</b></span>`);
     else if (hint) this.promptText.set(hint);
+    // (What the timing bar times - your own receive or set (its moment on the page's clock), your spike's jump, your
+    // climb in the air.)
+    const yours = !!vol && vol.owner === f.self.id && v.phase === 'live';
+    this.timed = !vol || !play ? null : yours && (vol.touch === 1 || vol.touch === 2) && (play === 'RECEIVE' || play === 'SET')
+      ? { kind: 'touch', at: performance.now() + (vol.at - VOLLEY.contact - f.snapshot.serverTime) * 1000 } : play === 'JUMP' ? { kind: 'jump' } : play === 'SPIKE' ? { kind: 'air' } : null;
     if (practice && f.input === 'touch') this.prompt.dataset.act = 'reset'; else delete this.prompt.dataset.act;
     this.chatOn.set(f.input === 'touch' && !v.practice && !alone && v.phase !== 'lobby' && v.phase !== 'over');
     // The events.
@@ -455,11 +483,19 @@ class BallHud implements ModeHud {
     const stances = hasStances(v) && v.phase !== 'lobby' && v.phase !== 'over';
     const on = stances && !!own && own.out === undefined, lock = on ? hudView.ballLock() : null;
     const teach = f.snapshot.serverTime - v.startedAt < 40 || v.phase === 'kickoff' || v.phase === 'countdown';
+    // (The football strip's fade - FOOT_STRIP.)
+    let quiet = false;
+    if (v.football && keyed) {
+      const dt = Number.isFinite(footStrip.lastNow) ? Math.min(.25, Math.max(0, (f.now - footStrip.lastNow) / 1000)) : 0; footStrip.lastNow = f.now;
+      if (pauseOpen()) footStrip.backUntil = f.now + FOOT_STRIP.back * 1000;
+      else if (v.phase === 'live' && !v.replay) footStrip.seen += dt;
+      quiet = footStrip.seen >= FOOT_STRIP.first && f.now > footStrip.backUntil;
+    }
     const kind = this.strip.update(v, f.self, lock, on, f.snapshot.players, {
       boost: keyed ? promptKey('dash', at) : '', super: keyed ? promptKey('ultimate', at) : '',
       stance: keyed && (teach || v.football) ? promptText(lock ? `{target} ${v.football ? 'SPORT' : 'BALL'}` : '{target} FIGHT', at) : '',
       // (SPORT mode: the buttons and the camera's state - its key while the match is young, its state always.)
-      legend: v.football ? footLegend(v, f.self.id, keyed, at) + (keyed ? ` <kbd>${f.input === 'controller' ? 'L3' : 'V'}</kbd> ` : ' ') + hudView.goalLook() : '',
+      legend: v.football ? footLegend(keyed, at) + (keyed ? ` <kbd>${f.input === 'controller' ? 'L3' : 'V'}</kbd> ` : ' ') + hudView.goalLook() : '', quiet,
     });
     if (this.root) { if (kind) this.root.dataset.ballStance = kind; else delete this.root.dataset.ballStance; }
     const two = half ? f.snapshot.players.find(p => p.id === SECOND) : undefined, seat = two ? v.seats.find(s => s.id === SECOND) : undefined;
@@ -527,10 +563,12 @@ class BallHud implements ModeHud {
         this.show(now, R.duel, 'super', e.team ?? '', `${who} · SUPER SHOT`, superShotName(seat(e.actorId)?.fighter), v.mode === 'goal-rush' ? `A GOAL FROM IT COUNTS ${GOAL_RULES.superGoal}` : 'INTO THE EMPTIEST CORNER', 1900); break;
       case 'duel': this.show(now, R.duel, 'clash', e.team ?? '', `${who} MEETS ${superShotName(seat(e.targetId)?.fighter)}`, 'TECHNIQUE DUEL!!', 'A PERFECT GUARD AGAINST A SUPER SHOT', 1200); break;
       case 'duel-won': this.show(now, R.duel, e.text === 'SHOT STOPPED' ? 'save' : 'super', e.team ?? '', e.text === 'SHOT STOPPED' ? `${who} WINS THE DUEL` : `${who} BREAKS THROUGH`, e.text === 'SHOT STOPPED' ? 'SHOT STOPPED!!' : 'BREAKS THROUGH!!', nameOf(seat(e.targetId)) ? `OVER ${nameOf(seat(e.targetId))}` : '', 1800); break;
-      case 'kill': this.show(now, R.score, 'kill', e.team ?? '', lesson ? '' : mine ? 'POINT' : `${BALL_TEAM_NAMES[e.team!]} POINT`, e.text === 'SUPER SHOT' ? 'SUPER SHOT!!' : e.shot === 'spike' ? 'SPIKED!' : 'KILL!', [who, shot, (e.value ?? 1) > 1 ? '×2 FEVER' : ''].filter(Boolean).join(' · '), v.lesson ? 1500 : 2400); break;
-      case 'ace': this.show(now, R.score, 'ace', e.team ?? '', lesson ? '' : mine ? 'POINT' : `${BALL_TEAM_NAMES[e.team!]} POINT`, 'ACE!', who, v.lesson ? 1500 : 2400); break;
-      case 'out': this.show(now, R.score, 'out', e.team ?? '', `${BALL_TEAM_NAMES[e.team!]} POINT`, 'OUT!', who ? `OFF ${who}` : '', 1900); break;
-      case 'touches': this.show(now, R.score, 'out', e.team ?? '', `${BALL_TEAM_NAMES[e.team!]} POINT`, 'FOUR TOUCHES!', `${SPIKE_RULES.touches} A SIDE`, 1900); break;
+      // (The volleyball rules: a point's words up for VOLLEY_POINT_MS only, small, under the score bug - SPIKED! stood
+      // two seconds over the net and the next serve's ball.)
+      case 'kill': this.show(now, R.score, 'kill', e.team ?? '', lesson ? '' : mine ? 'POINT' : `${BALL_TEAM_NAMES[e.team!]} POINT`, e.text === 'SUPER SHOT' ? 'SUPER SHOT!!' : e.shot === 'spike' ? 'SPIKED!' : 'KILL!', [who, shot, (e.value ?? 1) > 1 ? '×2 FEVER' : ''].filter(Boolean).join(' · '), v.lesson ? 1500 : v.volley ? VOLLEY_POINT_MS : 2400); break;
+      case 'ace': this.show(now, R.score, 'ace', e.team ?? '', lesson ? '' : mine ? 'POINT' : `${BALL_TEAM_NAMES[e.team!]} POINT`, 'ACE!', who, v.lesson ? 1500 : v.volley ? VOLLEY_POINT_MS : 2400); break;
+      case 'out': this.show(now, R.score, 'out', e.team ?? '', `${BALL_TEAM_NAMES[e.team!]} POINT`, 'OUT!', who ? `OFF ${who}` : '', v.volley ? VOLLEY_POINT_MS : 1900); break;
+      case 'touches': this.show(now, R.score, 'out', e.team ?? '', `${BALL_TEAM_NAMES[e.team!]} POINT`, 'FOUR TOUCHES!', `${SPIKE_RULES.touches} A SIDE`, v.volley ? VOLLEY_POINT_MS : 1900); break;
       // (Sky Spike's block stands under the score now, over the net it was struck at, while the ball is live.)
       // (Goal Rush's TRAP - twenty a match - is the sport's first touch: no line under the score, which a
       // PERFECT GUARD keeps; its mark and its thud are the pitch's.)
@@ -641,10 +679,23 @@ class BallHud implements ModeHud {
    *  prediction (render/ball/ownShot.ts) - online the room's word on it is a round trip and more late, and the readout
    *  filled as the ball was already on its way. A page that predicts nothing reads its own state as last told. */
   private shotFrame() {
+    this.timerFrame();
     if (!this.strip || !this.selfId) return;
     const now = performance.now(), self = this.lastSelf;
     if (ownShot.read()) { const c = ownCharge(this.selfId); this.strip.shot(c ? c.charge : null, now, !!c && chargeFull(c)); }
     else this.strip.shot(self?.action === 'heavy' && self.strike === 'charge' ? self.charge ?? 0 : null, now);
+  }
+
+  /** The prompt's timing bar (VOLLEY_TIMER), every frame: full on the moment to press, gold inside PERFECT. */
+  private timerFrame() {
+    const t = this.timed;
+    if (!t || !this.timer) { this.timerOn?.set(false); return; }
+    let fill = NaN, now = false;
+    if (t.kind === 'touch') { const left = (t.at - performance.now()) / 1000; if (left > -.2) { fill = 1 - left / VOLLEY_TIMER.lead; now = Math.abs(left) <= VOLLEY.tier.perfect; } }
+    else { const c = ownCues.state; if (t.kind === 'jump' && c && Number.isFinite(c.beat)) { fill = 1 - c.beat / VOLLEY_TIMER.lead; now = c.beat <= .03; } else if (c && Number.isFinite(c.air)) { fill = c.air; now = c.air >= 1; } }
+    if (!Number.isFinite(fill)) { this.timerOn.set(false); return; }
+    this.timerOn.set(true); this.timerNow.set(now);
+    this.timerFill.style.transform = `scaleX(${Math.min(1, Math.max(0, fill)).toFixed(3)})`;
   }
 
   /** An arrow at the screen's edge toward the ball when the view has lost it. */
@@ -657,7 +708,7 @@ class BallHud implements ModeHud {
     if (this.edge.onScreen) return;
     const zone = this.arrow.parentElement, w = zone?.clientWidth ?? 1600, h = zone?.clientHeight ?? 900;
     // (On the touch controls it stays above the sports set's buttons down the right: input/sportTouch.ts, JUMP's top.)
-    const x = this.edge.side > 0 ? w - (v.football ? 150 : 70) : 16, y = Math.max(60, Math.min(h - (f.input === 'touch' ? 216 : 120), (this.edge.height * .5 + .5) * h));
+    const x = this.edge.side > 0 ? w - (v.football ? 205 : 70) : 16, y = Math.max(60, Math.min(h - (f.input === 'touch' ? 216 : 120), (this.edge.height * .5 + .5) * h));
     this.arrow.style.transform = `translate(${x}px,${y}px)`;
     this.arrow.dataset.side = this.edge.side > 0 ? 'r' : 'l';
     this.arrow.dataset.team = b.lastTeam ?? '';
@@ -665,5 +716,5 @@ class BallHud implements ModeHud {
     void f;
   }
 
-  unmount() { if (this.shotLoop && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(this.shotLoop); this.shotLoop = 0; this.lastSelf = undefined; this.hints.clear(); ballSpeech.clear(); if (this.root) { delete this.root.dataset.ballReplay; delete this.root.dataset.ballLive; delete this.root.dataset.ballStance; delete this.root.dataset.ballVolley; } this.strip?.remove(); this.second?.remove(); this.second = undefined; this.live = false; this.replay?.remove(); this.wipe?.remove(); this.mood?.remove(); this.chatButton?.remove(); this.replayKey = ''; this.replayShown = false; this.board?.remove(); this.line?.remove(); this.banner?.remove(); this.banners.clear(); this.bannerShown = null; this.lines.clear(); this.lineShown = ''; this.charms?.remove(); this.charmsKey = ''; this.prompt?.remove(); this.arrow?.remove(); this.out?.remove(); this.shownOut = ''; this.slots = []; this.rosterKey = ''; this.lastEvent = 0; this.countdown = -1; }
+  unmount() { if (this.shotLoop && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(this.shotLoop); this.shotLoop = 0; this.lastSelf = undefined; this.hints.clear(); ballSpeech.clear(); if (this.root) { delete this.root.dataset.ballReplay; delete this.root.dataset.ballLive; delete this.root.dataset.ballStance; delete this.root.dataset.ballVolley; delete this.root.dataset.ballFoot; } this.strip?.remove(); this.second?.remove(); this.second = undefined; this.live = false; this.replay?.remove(); this.wipe?.remove(); this.mood?.remove(); this.chatButton?.remove(); this.replayKey = ''; this.replayShown = false; this.board?.remove(); this.line?.remove(); this.banner?.remove(); this.banners.clear(); this.bannerShown = null; this.lines.clear(); this.lineShown = ''; this.charms?.remove(); this.charmsKey = ''; this.prompt?.remove(); this.timer?.remove(); this.timed = null; this.arrow?.remove(); this.out?.remove(); this.shownOut = ''; this.slots = []; this.rosterKey = ''; this.lastEvent = 0; this.countdown = -1; }
 }

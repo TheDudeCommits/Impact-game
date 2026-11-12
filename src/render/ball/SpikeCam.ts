@@ -117,6 +117,13 @@ const SIDE = {back: 14, up: 7, lookZ: 8, lookY: .3, fov: 33, most: 0, dead: DRIF
  *  top (5.8 m) tilts the look up a little after it (`liftFrom`). */
 const VOLLEY = {back: 14, up: 7.5, lookZ: 1, lookY: .8, fov: 24, most: .8, dead: DRIFT.dead, liftFrom: 5, liftShare: .35, liftMost: 1, servePush: .5, serveDown: .2, serveBack: 2.4, serveFov: 3,
   blockLift: .5, blockPhoneLift: 2.2, blockToward: 1.5, blockFov: 3, move: .8, lens: .7, wide: 1, wideFov: 0, narrowFov: 0, across: 16 / 9, narrowMost: 52, setLift: 0, theirLift: 0};
+/** So the ball never leaves the frame at the top on high sets and serves - volleyball's stand only: the ball - where it
+ *  is, or the top of its climb if that comes within `ahead` s, and `over` m over it for the ball itself - is kept under
+ *  the top `top` of the frame (the score bug's band and a little more), while your own fighter's feet stay over the
+ *  bottom `bottom` of it: the look tilts up after the ball, and where the two will not both fit at the stand's lens,
+ *  the lens opens. At most a tilt of `tilt` degrees and `fov` degrees more lens; up quickly (`in`, 1/s) and back slowly
+ *  (`out`), so it eases up for a high set or a serve and back down. */
+export const KEEP = {ahead: .35, over: .35, top: .16, bottom: .07, tilt: 16, fov: 14, in: 7, out: 1.8} as const;
 const STANDS: Record<SpikeCamStyle, Record<keyof typeof CLASSIC, number>> = {classic: CLASSIC, side: SIDE};
 const clamp = THREE.MathUtils.clamp;
 const wrapped = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
@@ -165,6 +172,8 @@ export class SpikeCam {
   private lift = 0;
   private serveW = 0; private setW = 0; private theirW = 0; private pointW = 0; private followW = 0; private followUntil = -Infinity;
   private tenseW = 0; private climbW = 0; private blockW = 0;
+  /** The look's tilt up after the ball (radians) and the lens opened for it (degrees) - KEEP. */
+  private keepTilt = 0; private keepFov = 0;
   /** The rally's last strike was a PERFECT SPIKE or a SUPER SHOT (its point, if it wins one, is the big one). */
   private big = false; private pointBig = 1;
   private punch = 0; private punchGoal = 0; private trauma = 0; private age = 0;
@@ -178,6 +187,7 @@ export class SpikeCam {
   private forget() {
     this.handed = NaN; this.away = this.still = 0; this.vx = 0; this.lift = 0; this.placed = false;
     this.serveW = this.setW = this.theirW = this.pointW = this.followW = this.tenseW = this.climbW = this.blockW = 0; this.followUntil = -Infinity; this.punch = this.punchGoal = this.trauma = 0;
+    this.keepTilt = this.keepFov = 0;
   }
 
   /**
@@ -255,6 +265,8 @@ export class SpikeCam {
     const d = Math.hypot(dx, dy, dz) || 1, push = (P.servePush * this.serveW * (1 + (TENSE.serve - 1) * this.tenseW) + SET.push * this.setW + POINT.push * this.pointW * this.pointBig
       + TENSE.push * this.tenseW + CRESCENDO.push * this.climbW * (1 - this.tenseW * .5)) * P.move;
     eye.x += dx / d * push; eye.y += dy / d * push - P.serveDown * this.serveW; eye.z += dz / d * push;
+    // (Volleyball's stand: the ball kept in the frame - KEEP.)
+    if (court) this.keep(view, b, self, eye, look, dt);
     // The player's pan: the look turned about the eye.
     dx = look.x - eye.x; dz = look.z - eye.z;
     const flat = Math.hypot(dx, dz), heading = Math.atan2(dx, dz) + this.away;
@@ -273,6 +285,7 @@ export class SpikeCam {
     // the last bit.)
     this.fov = base + P.blockFov * this.blockW + (view.servingTeam === team ? P.serveFov * this.serveW : 0) - POINT.fov * this.pointW * this.pointBig * P.lens - this.punch * P.lens
       - TENSE.fov * this.tenseW * P.lens - CRESCENDO.fov * this.climbW * (1 - this.tenseW * .5) * P.lens;
+    if (court) this.fov += this.keepFov;
     this.placed = true;
     this.handed = heading;
     return heading;
@@ -299,6 +312,27 @@ export class SpikeCam {
   }
   /** The eye and look this frame, for checks. */
   pose() { return {eye: this.eye, look: this.look, fov: this.fov, yaw: this.yaw}; }
+
+  /** KEEP: the tilt and the lens that keep the ball - where it is or the top of its climb soon - under the frame's
+   *  top band with your own feet over its foot, eased toward; the look raised by the tilt about the eye. Angles off the
+   *  view's axis are taken as shares of the half lens (a long lens: within a few per cent of the screen's own). */
+  private keep(view: BallView, ball: Vec3, self: Vec3, eye: THREE.Vector3, look: THREE.Vector3, dt: number) {
+    let tilt = 0, open = 0;
+    if (view.phase === 'live' || view.phase === 'kickoff') {
+      const g = SPIKE_RULES.gravity * (view.ball.grav || 1), vy = view.ball.vy, t = vy > 0 ? Math.min(KEEP.ahead, vy / g) : 0;
+      const high = Math.max(ball.y, ball.y + vy * t - .5 * g * t * t) + KEEP.over;
+      const flat = Math.hypot(look.x - eye.x, look.z - eye.z), axis = Math.atan2(look.y - eye.y, flat);
+      const top = Math.atan2(high - eye.y, Math.hypot(ball.x - eye.x, ball.z - eye.z)), foot = Math.atan2(self.y - eye.y, Math.hypot(self.x - eye.x, self.z - eye.z));
+      const kt = 1 - 2 * KEEP.top, kb = 1 - 2 * KEEP.bottom, half = (this.fov - this.keepFov) * Math.PI / 360;
+      // (The half lens both need, at most KEEP.fov more; then the tilt that puts the ball under the band.)
+      const need = Math.min(half + KEEP.fov * Math.PI / 360, Math.max(half, (top - foot) / (kt + kb)));
+      open = (need - half) * 360 / Math.PI;
+      tilt = clamp(top - kt * need - axis, 0, KEEP.tilt * Math.PI / 180);
+    }
+    if (!this.placed) { this.keepTilt = tilt; this.keepFov = open; }
+    else { this.keepTilt += (tilt - this.keepTilt) * ease(tilt > this.keepTilt ? KEEP.in : KEEP.out, dt); this.keepFov += (open - this.keepFov) * ease(open > this.keepFov ? KEEP.in : KEEP.out, dt); }
+    if (this.keepTilt > 1e-5) { const flat = Math.hypot(look.x - eye.x, look.z - eye.z), axis = Math.atan2(look.y - eye.y, flat); look.y = eye.y + flat * Math.tan(axis + this.keepTilt); }
+  }
 
   private weigh(w: number, goal: number, rateIn: number, rateOut: number, dt: number) {
     if (!this.placed) return goal;

@@ -173,6 +173,12 @@
 #interface[data-hud="goal-rush"] .bh-arrow[data-foot]{gap:10px;padding:7px 14px 8px;font-size:max(18px,calc(30 * var(--bh-u)));border:2px solid #fff9ef;box-shadow:0 3px 0 rgba(0,0,0,.5)}
 #interface[data-hud="goal-rush"] .bh-arrow[data-foot] i{border-width:12px;border-left-width:19px}
 #interface[data-hud="goal-rush"] .bh-arrow[data-foot] b::before{content:'';display:inline-block;width:.78em;height:.78em;margin-right:.3em;vertical-align:-.08em;border-radius:50%;background:radial-gradient(circle at 50% 50%,#0b0c0e 0 22%,#fff9ef 24%);box-shadow:0 0 0 2px #0b0c0e}
+/* So the off-screen BALL tag and its arrow are not tiny: on football the chip is half as big again - a white ball on
+   ink, a thick white edge, the arrow a broad wedge in the colour of the side that touched it last - and pulses once as
+   it comes. */
+#interface[data-hud="goal-rush"][data-ball-foot] .bh-arrow[data-foot]{gap:12px;padding:9px 16px 10px;font-size:max(24px,calc(42 * var(--bh-u)));border:3px solid #fff;box-shadow:0 4px 0 rgba(0,0,0,.55),0 0 0 2px #0b0c0e}
+#interface[data-hud="goal-rush"][data-ball-foot] .bh-arrow[data-foot] i{border-width:16px;border-left-width:26px}
+#interface[data-hud="goal-rush"][data-ball-foot] .bh-arrow[data-foot] b::before{width:.9em;height:.9em;background:radial-gradient(circle at 50% 50%,#0b0c0e 0 20%,#fff 22%);box-shadow:0 0 0 3px #0b0c0e,0 0 0 5px #fff}
 
 /* ---- The replay (render/ball/BallReplay.ts): its tag over the letterbox, and the fight's plates and cards put away
    while it shows (the scoreboard stays). */
@@ -297,6 +303,22 @@
 #interface[data-hud="goal-rush"] .bh-stance.sport:not([data-stance="fight"]){gap:calc(14 * var(--bh-u));padding:calc(8 * var(--bh-u)) calc(22 * var(--bh-u)) calc(9 * var(--bh-u)) calc(14 * var(--bh-u))}
 #interface[data-hud="goal-rush"] .bh-stance.sport:not([data-stance="fight"])>small.bh-legend{font:800 calc(24 * var(--bh-u))/1 'Barlow Condensed',sans-serif;color:#fff9ef;letter-spacing:.06em}
 #interface[data-hud="goal-rush"] .bh-stance.sport:not([data-stance="fight"])>small.bh-legend kbd{font-size:.92em;margin:0 .25em 0 .75em}
+/* Football's strip and bars at the foot's left corner (the person stands at the bottom middle of the frame:
+   the bars covered the pitch's near edge there), the strip faded out after the visit's first 20 s of play (BallHud
+   FOOT_STRIP; back while paused). */
+#interface[data-hud="goal-rush"][data-ball-foot]:not([data-input="touch"]) .combat-hud .mode-hud>[data-zone="9"]{left:calc(22 * var(--bh-u) + env(safe-area-inset-left,0px));transform:none;align-items:flex-start;bottom:calc(18 * var(--bh-u) + env(safe-area-inset-bottom,0px))}
+#interface[data-hud="goal-rush"][data-ball-foot] .bh-stance.sport{transition:opacity .35s ease-out}
+#interface[data-hud="goal-rush"][data-ball-foot] .bh-stance.sport.quiet:not([data-stance="fight"]){opacity:0;transition:opacity 1.2s ease-in}
+#interface[data-hud="goal-rush"][data-ball-foot] .bh-bar>i{width:calc(120 * var(--bh-u));height:calc(14 * var(--bh-u))}
+#interface[data-hud="goal-rush"][data-ball-foot] .bh-bar small{font-size:calc(21 * var(--bh-u))}
+/* (The health line under the strip as long as the bars, not the strip: it stayed a long white rule along the foot once the
+   strip had faded.) */
+#interface[data-hud="goal-rush"][data-ball-foot] .bh-hp{align-self:flex-start;width:calc(420 * var(--bh-u));height:calc(7 * var(--bh-u))}
+/* (A short screen - a phone on its side with keys, a small window: the strip and bars a fifth smaller again, from the
+   corner.) */
+@media(max-height:520px){#interface[data-hud="goal-rush"][data-ball-foot]:not([data-input="touch"]) .combat-hud .mode-hud>[data-zone="9"]{scale:.8;transform-origin:0 100%}}
+/* (The fight's own key hints - MOVE, JUMP - are not football's: its strip names its keys, and the corner is the strip's.) */
+#interface[data-hud="goal-rush"][data-ball-foot] .combat-hud .controls-hint{display:none!important}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b{display:flex;align-items:center;gap:calc(7 * var(--bh-u));color:var(--bh-gold,#ffcf5a)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>b::after{content:'';order:-1;width:.62em;height:.62em;border-radius:50%;background:var(--bh-gold,#ffcf5a);box-shadow:0 0 6px var(--bh-gold,#ffcf5a)}
 #interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>span:empty,#interface:is([data-hud="goal-rush"],[data-hud="sky-spike"]) .bh-stance>small:empty{display:none}
@@ -390,3 +412,38 @@
    lane is one fixed place, bottom centre just over the bars - the camera keeps the court's bodies above it. */
 #interface[data-ball-volley] .combat-hud .mode-hud{--mh-lane:calc(var(--mh-above-strip) - 4px)}
 #interface[data-ball-volley] .combat-hud .mode-hud>[data-zone="6"] .bh-prompt{font-size:.92em;opacity:.94}
+
+/* ---- The volleyball rules' screen: the play easy to follow - who is who, where the ball is, when to press.
+   The prompt: in the plain HUD face (the halo skin's sans, never the display face, whose Latin letters read as kana),
+   bold and a size up, its keys white caps; under it the timing bar (BallHud VOLLEY_TIMER) that fills to its gold notch on
+   the moment to press and turns gold inside the PERFECT window. */
+#interface[data-ball-volley] .combat-hud .mode-hud>[data-zone="6"] .bh-prompt.hk-slip{font:800 calc(32 * var(--bh-u))/1.1 var(--hl-sans,system-ui,sans-serif);font-style:normal;letter-spacing:.04em;text-transform:uppercase;
+  text-shadow:0 2px 0 rgba(0,0,0,.55);padding:calc(9 * var(--bh-u)) calc(24 * var(--bh-u)) calc(10 * var(--bh-u));background:rgba(8,10,18,.88);color:#fff;opacity:1;gap:calc(10 * var(--bh-u));align-items:center}
+#interface[data-ball-volley] .combat-hud .mode-hud>[data-zone="6"] .bh-prompt.hk-slip :is(kbd,.ux-prompt){font:800 .86em/1 var(--hl-sans,system-ui,sans-serif);font-style:normal;letter-spacing:.02em}
+#interface[data-ball-volley] .combat-hud .mode-hud>[data-zone="6"] .bh-prompt.hk-slip kbd{min-width:1.3em;padding:.2em .42em;background:#fff;color:#0b0c0e;border:0;border-radius:.2em;box-shadow:0 calc(2 * var(--bh-u)) 0 rgba(0,0,0,.55);text-align:center}
+#interface[data-ball-volley] .combat-hud .mode-hud>[data-zone="6"] .bh-timer{display:none;position:relative;width:calc(300 * var(--bh-u));height:calc(14 * var(--bh-u));margin-top:calc(2 * var(--bh-u));box-sizing:border-box;
+  background:rgba(8,10,18,.82);border:max(1px,calc(2 * var(--bh-u))) solid rgba(255,255,255,.9)}
+#interface[data-ball-volley] .combat-hud .mode-hud>[data-zone="6"] .bh-timer.on{display:block}
+#interface[data-ball-volley] .bh-timer i{position:absolute;inset:0;background:#fff;transform-origin:0 50%;transform:scaleX(0)}
+#interface[data-ball-volley] .bh-timer b{position:absolute;right:calc(-5 * var(--bh-u));top:calc(-9 * var(--bh-u));bottom:calc(-9 * var(--bh-u));width:calc(7 * var(--bh-u));background:var(--bh-gold);box-shadow:0 0 0 max(1px,calc(2 * var(--bh-u))) #0b0c0e}
+#interface[data-ball-volley] .bh-timer.now{border-color:var(--bh-gold);box-shadow:0 0 calc(16 * var(--bh-u)) var(--bh-gold)}
+#interface[data-ball-volley] .bh-timer.now i{background:var(--bh-gold)}
+/* A point's banner (BallHud VOLLEY_POINT_MS: up for 0.65 s): small, under the score bug, off the net and the ball. */
+#interface[data-ball-volley] .bh-banner{padding:calc(5 * var(--bh-u)) calc(30 * var(--bh-u)) calc(7 * var(--bh-u));gap:calc(2 * var(--bh-u))}
+#interface[data-ball-volley] .bh-banner strong{font-size:calc(44 * var(--bh-u))}
+#interface[data-ball-volley] .bh-banner small{font-size:calc(18 * var(--bh-u))}
+#interface[data-ball-volley] .bh-banner.on{animation-duration:.14s}
+/* A phone on its side (the score bug and the bars were small on a phone): on the volleyball rules the
+   whole HUD a quarter bigger there (its unit), the score bug's one row taller with bigger scores, and the bars longer
+   and thicker - on the touch strip too. */
+@media (orientation:landscape) and (max-height:520px){
+  #interface[data-hud="sky-spike"][data-ball-volley]{--bh-u:min(.64px,.165vh)}
+  #interface[data-hud="sky-spike"][data-ball-volley][data-volley] .bh-board{--bh-bug:60}
+  #interface[data-hud="sky-spike"][data-ball-volley][data-volley] .bh-board .bh-score{font-size:calc(50 * var(--bh-u));min-width:calc(60 * var(--bh-u))}
+  #interface[data-hud="sky-spike"][data-ball-volley][data-volley] .bh-board .bh-middle strong{font-size:calc(28 * var(--bh-u))}
+  #interface[data-hud="sky-spike"][data-ball-volley] .bh-bar>i{width:calc(170 * var(--bh-u));height:calc(22 * var(--bh-u))}
+  #interface[data-input="touch"][data-hud="sky-spike"][data-ball-volley] .bh-bar>i{width:calc(96 * var(--bh-u));height:calc(20 * var(--bh-u))}
+  /* (The prompt and its bar a size down again there, so they stay off the near court's bodies.) */
+  #interface[data-ball-volley] .combat-hud .mode-hud>[data-zone="6"] .bh-prompt.hk-slip{font-size:calc(25 * var(--bh-u))}
+  #interface[data-ball-volley] .combat-hud .mode-hud>[data-zone="6"] .bh-timer{width:calc(230 * var(--bh-u));height:calc(12 * var(--bh-u))}
+}

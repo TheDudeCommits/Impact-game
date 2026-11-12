@@ -216,8 +216,13 @@ export class BallArena {
    *    `weave` as strong again (about a tenth of the classic net's), the white band whole over it.
    *  - Every arena Sky Spike plays in as readable as Tide Court, Ember Rim's dark night too: Ember Rim's court
    *    slabs a pale ash basalt (`emberSlab`) with the sides' colours stronger in them, its free zone a lighter rock
-   *    (`emberFree`), so the court reads under the night as the beach's sand does at dusk (stageLooks.ts lights it too). */
-  static readonly VOLLEY_STAGE={drop:9,tide:5.5,bannerX:2.6,bannerZ:.62,pole:6,flag:.72,tape:.2,frame:0x8a7a6e,glass:.45,enso:.4,weave:.42,emberSlab:0x9a8e88,emberFree:0x4a3e3c} as const;
+   *    (`emberFree`), so the court reads under the night as the beach's sand does at dusk (stageLooks.ts lights it too).
+   *  - So the sand, the sunset, the red team and their rings are not one orange band, and the near team does not melt
+   *    into the court: inside the lines every arena's court is one pale, cool paint (`paint`, a light blue-grey, the
+   *    same on both halves) that both sides' kits stand out against - the sand, the planks and the basalt are the free
+   *    zone round it - with no ink circles on it; its lines a deep navy (`line`), only a volleyball court's (the
+   *    boundary, the centre line under the net and each side's attack line, whole). */
+  static readonly VOLLEY_STAGE={drop:9,tide:5.5,bannerX:2.6,bannerZ:.62,pole:6,flag:.72,tape:.2,frame:0x8a7a6e,glass:.45,enso:.4,weave:.42,emberSlab:0x9a8e88,emberFree:0x4a3e3c,paint:0xb9cbd8,line:0x18202e} as const;
 
   async load(){
     if(this.built)return;this.built=true;
@@ -1040,7 +1045,7 @@ export class BallArena {
         bFree=${lin(this.volley?BallArena.VOLLEY_STAGE.emberFree:0x1f1a1b)}*(.85+bGrain*.2);bRim=${lin(0x262021)}*(.85+bGrain*.25);
         bGlow=vec3(2.,.55,.1)*bCrack*(1.-bCourt)*(.25+.75*(1.-bZone))*(.6+.4*sin(uBallTime*1.7+bp.x*.3));`,
     } as Partial<Record<BallArenaId,string>>;
-    const courtInk=this.arena==='ember-rim'?lin(0xece6da):lin(0x0b0b0e);
+    const courtInk=this.volley?lin(BallArena.VOLLEY_STAGE.line):this.arena==='ember-rim'?lin(0xece6da):lin(0x0b0b0e);
     addShaderPatch(material,`ball-court-v2-${this.arena}${C===CLASSIC_COURT?'':`-${C.x}x${C.z}`}`,shader=>{
       shader.uniforms.uBallNoise={value:noiseTexture()};shader.uniforms.uBallTime=this.time;
       shader.vertexShader='varying vec3 vBallWorld;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvBallWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
@@ -1067,14 +1072,16 @@ export class BallArena {
         float bPetal=step(.7,texture2D(uBallNoise,bp*.85).a)*(1.-smoothstep(2.5,6.5,length(ba-vec2(${num(TX)},${num(TZ)}))));
         bRim=mix(bRim,${lin(0xffb3cc)},bPetal*.85);
         ${floor[this.arena]??''}
+        ${this.volley?`// (Volleyball's court one pale cool paint inside the lines - VOLLEY_STAGE.paint - a faint grain and sheen in it.)
+        bCol=${lin(BallArena.VOLLEY_STAGE.paint)}*(.94+bGrain*.08)*(1.-(bSeam+bJoint)*.06);`:''}
         vec3 bFloor=mix(bRim,mix(bFree,bCol,bCourt),bZone);
         // The lines: the court, the centre line under the net, service circles, quarter circles at the net, the
         // attack lines dashed, and a gold line round the free zone.
         float bL=ballLine(ballBox(bp,vec2(${num(R.courtHalfX)},${num(R.courtHalfZ)})),.055);
         bL=max(bL,ballLine(bp.y,.055)*step(ba.x,${num(R.courtHalfX)}));
-        bL=max(bL,ballLine(length(vec2(bp.x,ba.y-${num(R.courtHalfZ-2.45*kz)}))-.45,.05));
-        bL=max(bL,ballLine(length(vec2(ba.x-${num(R.courtHalfX)},bp.y))-1.5,.05)*step(ba.x,${num(R.courtHalfX)}));
-        bL=max(bL,ballLine(ba.y-${num(C===CLASSIC_COURT?3.3:3)},.045)*step(ba.x,${num(R.courtHalfX)})*step(.45,fract(bp.x*.9)));
+        ${this.volley?'':`bL=max(bL,ballLine(length(vec2(bp.x,ba.y-${num(R.courtHalfZ-2.45*kz)}))-.45,.05));
+        bL=max(bL,ballLine(length(vec2(ba.x-${num(R.courtHalfX)},bp.y))-1.5,.05)*step(ba.x,${num(R.courtHalfX)}));`}
+        bL=max(bL,ballLine(ba.y-${num(C===CLASSIC_COURT?3.3:3)},.045)*step(ba.x,${num(R.courtHalfX)})${this.volley?'':'*step(.45,fract(bp.x*.9))'});
         // The lines in ink, a brush's width, dry where the brush ran out.
         bL=max(bL,ballLine(ballBox(bp,vec2(${num(R.courtHalfX)},${num(R.courtHalfZ)})),.085));
         float bDry=step(.64,texture2D(uBallNoise,bp*vec2(2.3,2.9)).r)*.7;
