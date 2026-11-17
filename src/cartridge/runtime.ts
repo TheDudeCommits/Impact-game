@@ -134,6 +134,20 @@ class Runtime {
   // ---- addresses -------------------------------------------------------------------------------------------------
   /** A '/assets/...' address inside the host's base; any other as it is. */
   asset = (url: string): string => typeof url === 'string' && url.startsWith('/assets/') ? `${this.base}${url.slice(1)}` : url;
+  /** A JSON module's value (its big parts come as JSON.parse("...")): every '/assets/' string in it, and key, rebased. */
+  json = <T>(value: T): T => this.rebase(value) as T;
+  private rebase(value: unknown): unknown {
+    if (typeof value === 'string') return this.asset(value);
+    if (Array.isArray(value)) { for (let i = 0; i < value.length; i++) value[i] = this.rebase(value[i]); return value; }
+    if (value && typeof value === 'object') {
+      const record = value as Record<string, unknown>;
+      for (const key of Object.keys(record)) {
+        const each = this.rebase(record[key]);
+        if (key.startsWith('/assets/')) { delete record[key]; record[this.asset(key)] = each; } else record[key] = each;
+      }
+    }
+    return value;
+  }
   /** An address the game may fetch: inside its base (or data:/blob:). Anything else is a server, which the demo never calls. */
   resolve = (raw: string): string | undefined => {
     if (/^(data|blob):/i.test(raw)) return raw;

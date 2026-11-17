@@ -84,7 +84,7 @@ const memberName = (node: Node): string | undefined => {
 const isIdent = (node: unknown, names: Set<string> | string): boolean => isNode(node) && node.type === 'Identifier' && (typeof names === 'string' ? node.name === names : names.has(node.name as string));
 
 /** The module's code with the page's globals pointed at the cartridge runtime, or null where it uses none. */
-export function cartridgeCode(code: string, runtime: string): string | null {
+export function cartridgeCode(code: string, runtime: string, json = false): string | null {
   if (!/requestAnimationFrame|cancelAnimationFrame|setTimeout|setInterval|clearTimeout|clearInterval|IdleCallback|fetch|Storage|EventListener|Observer|window|globalThis|self\.|document\.|location|history|\/assets\//.test(code)) return null;
   let ast: Node;
   try { ast = parseAst(code) as unknown as Node; } catch { return null; }
@@ -111,6 +111,8 @@ export function cartridgeCode(code: string, runtime: string): string | null {
     if (node.type === 'CallExpression') {
       const callee = node.callee as Node, args = node.arguments as Node[];
       const name = memberName(callee);
+      // A JSON module's big values come as JSON.parse("..."): its '/assets/' strings (and keys) rebased as it is read.
+      if (json && name === 'parse' && isIdent(callee.object, 'JSON')) { s.appendLeft(node.start, '__rt.json('); s.appendLeft(node.end, ')'); used = true; return; }
       if ((name === 'addEventListener' || name === 'removeEventListener') && args.length && (callee.object as Node).type !== 'Super') {
         let dot = code.lastIndexOf('.', (callee.property as Node).start);
         if (code[dot - 1] === '?') dot--; // (x?.addEventListener: the whole ?. goes)
@@ -249,7 +251,7 @@ export default function cartridgePlugin(root: string): Plugin[] {
     transform(code, id) {
       const file = id.split('?', 1)[0];
       if (id.includes('?') || id.startsWith('\0') || !game(file) || !/\.(m?[jt]sx?|json)$/.test(file)) return null;
-      const out = cartridgeCode(code, runtime);
+      const out = cartridgeCode(code, runtime, file.endsWith('.json'));
       return out === null ? null : { code: out, map: null };
     },
   }];
