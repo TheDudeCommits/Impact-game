@@ -13,6 +13,9 @@ export interface Demo {
   ways: readonly string[];
   /** The one place the Duel is fought. */
   stage: StageId;
+  /** The score's pieces it ships (public/assets/music/originals/<name>.m4a): the home's, the fight's, the results'. Every
+   *  other slot of the soundtrack plays one of these (launch.ts gateMusic). */
+  music: readonly string[];
 }
 
 const wanted = (() => { try { return import.meta.env?.VITE_DEMO as string | undefined; } catch { return undefined; } })();
@@ -22,4 +25,5 @@ export const DEMO: Demo | undefined = wanted === 'dude-world' ? {
   modes: ['duel'],
   ways: ['offline'],
   stage: 'sunfall-arena',
+  music: ['pages-of-legend', 'static-trail', 'last-light', 'skyborn-ascent'],
 } : undefined;

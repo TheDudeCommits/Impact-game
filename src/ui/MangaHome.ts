@@ -11,6 +11,7 @@ import { homeRosterPages, homeAnimeOptions, homeWipStamp, homeWing, type HomeRos
 import { NO_UPCOMING as upcomingArt } from '../originals/launch';
 import { applyOriginalHomeArt } from '../originals/apply';
 import { gateHomeAssets, gateHomeRail, gateHomeRoster, LAUNCH } from '../originals/launch';
+import { DEMO } from '../originals/demo';
 import { MODES, MODE_OF_HOME, VARIANT_ORDER, modeHere } from './modes/catalogue';
 // The pack goes on first (it is fetched and applied behind a top-level await): HOME_ROSTER below is read when this loads.
 import '../engine/packs/boot';
@@ -151,6 +152,7 @@ export function mangaHome(selected:FighterId, botPlayers:number) {
         <nav class="home-actions" aria-label="Main menu">
           <button type="button" id="home-party" aria-haspopup="dialog"${LAUNCH.online?'':' hidden'}>PARTY</button>
           <button type="button" id="home-options" aria-haspopup="dialog">OPTIONS</button>
+          ${DEMO?'<button type="button" id="home-exit" aria-label="Exit Impact, back to the world">EXIT</button>':''}
           <button type="button" id="home-play" class="home-play" aria-label="Play BR vs Bots as ${FIGHTERS.konta?.name??'konta'}" disabled><span>PLAY</span></button>
         </nav>
       </div>

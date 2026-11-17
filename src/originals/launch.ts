@@ -274,6 +274,14 @@ export function gateMusic<T extends { url: string; title: string; artist: string
     const piece = ORIGINAL_SCORE[i % ORIGINAL_SCORE.length];
     (battle as T[])[i] = { ...track, url: piece.url, title: piece.title, artist: piece.artist };
   });
+  // The dude-world demo ships a few of the score's pieces (demo.ts DEMO.music): every other slot plays one of them.
+  if (DEMO) {
+    const shipped = Object.values(tracks).filter(track => DEMO.music.some(name => track.url.endsWith(`/${name}.m4a`)));
+    let turn = 0;
+    if (shipped.length) for (const track of [...Object.values(tracks), ...battle]) if (!shipped.includes(track)) {
+      const piece = shipped[turn++ % shipped.length]; Object.assign(track, { url: piece.url, title: piece.title, artist: piece.artist });
+    }
+  }
   return tracks;
 }
 

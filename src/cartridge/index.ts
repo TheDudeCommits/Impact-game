@@ -3,6 +3,7 @@
 // The demo's slice - one Duel against the game's own bot, on one stage, with a short roster - is the game's own launch
 // gate narrowed (src/originals/demo.ts); nothing online is offered or called.
 import { rt } from './runtime';
+import { titleCard } from './title';
 import type { Cartridge, CartridgeHost } from './contract';
 
 declare const __IMPACT_SOURCE__: string;
@@ -28,7 +29,8 @@ async function homeReady(root: HTMLElement, progress: (fraction: number) => void
 export default function impact(): Cartridge {
   let host: CartridgeHost;
   let game: Game | undefined;
-  const clear = { color: 0, alpha: 1 };
+  let title: ReturnType<typeof titleCard> | undefined;
+  const clear: { color: number; alpha: number; scratch?: InstanceType<CartridgeHost['THREE']['Color']> } = { color: 0, alpha: 1 };
   return {
     async mount(h, progress) {
       host = h;
@@ -38,25 +40,30 @@ export default function impact(): Cartridge {
       r.sortObjects = true; r.localClippingEnabled = false; r.clippingPlanes = []; r.toneMappingExposure = 1; r.shadowMap.autoUpdate = true;
       h.THREE.ColorManagement.enabled = true; h.THREE.Cache.enabled = false;
       rt.begin(h);
-      progress(.05);
+      // The game's own title card (index.html's #boot), under the world's veil while the game loads, then held a beat.
+      title = titleCard(h.ui, h.base);
+      const step = (fraction: number) => { progress(fraction); title?.progress(fraction); };
+      step(.05);
       let main: typeof import('../main');
       rt.importing = true;
       try { main = await import('../main'); } finally { rt.importing = false; }
-      progress(.35);
+      step(.35);
       game = main.bootImpact();
-      await homeReady(game.root, f => progress(.35 + f * .65));
-      progress(1);
+      await homeReady(game.root, f => step(.35 + f * .65));
+      step(1);
+      title?.done();
     },
     frame(_dt, now) {
       rt.frame(now);
       // The home draws nothing behind its menus (main.ts): the frame under them is the page's own colour, not the world's.
       if (game && !game.drawing()) {
-        const r = host.renderer, color = r.getClearColor(new host.THREE.Color()); clear.alpha = r.getClearAlpha(); clear.color = color.getHex();
+        const r = host.renderer; clear.alpha = r.getClearAlpha(); clear.color = r.getClearColor(clear.scratch ??= new host.THREE.Color()).getHex();
         r.setRenderTarget(null); r.setClearColor(0x0b1620, 1); r.clear(); r.setClearColor(clear.color, clear.alpha);
       }
     },
     resize() { game?.resize(); },
     unmount() {
+      title?.remove(); title = undefined;
       try { game?.dispose(); } catch (error) { console.error('Impact: dispose', error); }
       finally { game = undefined; rt.end(); }
     },

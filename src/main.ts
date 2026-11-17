@@ -354,7 +354,7 @@ const guided=new GuidedFightRun({root:root.querySelector<HTMLElement>('#interfac
 // LEARN TO PLAY (src/ui/ball/LearnToPlay.ts), the ball modes' guided first game, on this device's FREE PLAY.
 new LearnToPlay({root:root.querySelector<HTMLElement>('#interface')??root,modes:hud.modes,send:(type,payload)=>network.room?.send(type,payload),leave:()=>hud.onLeave()});
 // The first-visit notice: what the game is, that it is never monetized, and where a takedown goes.
-mountFirstVisit();
+if(!rt.hosted)mountFirstVisit(); // (inside dude-world the world's own page says what this is: the notice's pages are not shipped)
 const loadingScreen=new LoadingScreen(root);
 {const here={x:0,y:0,z:0};riftIntro.sound={impact:()=>{audio.cue('bomb',here,.55,.7,'intro',2);audio.cue('ground',here,.5,.6,'intro',2,.05);},roar:()=>audio.sample(take('beast-roar'),here,.8,.62,'intro',2),stamp:()=>audio.cue('crack',here,.35,1.25,'intro',1)};}
 /** The horde's frames: captured each tick here, or sent by a co-op room. */

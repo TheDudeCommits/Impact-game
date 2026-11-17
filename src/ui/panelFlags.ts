@@ -60,10 +60,12 @@ export function movesFlag(record: Change) {
   return false;
 }
 
-let installed: MutationObserver | undefined;
-/** Starts keeping the flags (once), and sets them now. */
+let installed: MutationObserver | undefined, installedOn: HTMLElement | undefined;
+/** Starts keeping the flags (once for each body: the dude-world cartridge's page roots are new on each visit), and sets
+ *  them now. */
 export function installPanelFlags(root: ParentNode = document, body: HTMLElement = document.body) {
-  if (installed) return;
+  if (installed && installedOn === body) return;
+  installed?.disconnect(); installedOn = body;
   const sync = () => { const up = new Set(panelFlagsUp(selector => !!root.querySelector(selector))); for (const [flag] of PANEL_FLAGS) if (body.classList.contains(flag) !== up.has(flag)) body.classList.toggle(flag, up.has(flag)); };
   sync();
   installed = new MutationObserver(records => { for (const record of records) if (movesFlag(record)) { sync(); return; } });

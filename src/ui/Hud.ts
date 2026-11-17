@@ -6,6 +6,7 @@ import {riftOf} from '../game/moba/model';
 import {ballOf} from '../game/ball/model';
 import { activePackRoster } from '../engine/packs/active';
 import { DEMO } from '../originals/demo';
+import { rt } from '../cartridge/runtime';
 import { commandList } from './commandList';
 import {customOf} from '../game/social/custom';
 import {customControls,customValue} from './social/CustomControls';
@@ -428,6 +429,8 @@ export class Hud {
     this.root.querySelector<HTMLButtonElement>('#home-dialog-close')!.onclick=()=>this.homeDialog.close();
     this.homeDialog.addEventListener('close',()=>{if(this.editingCode)showEntry(this.root.querySelector<HTMLInputElement>('#room-code')!,undefined);this.editingCode=false;this.homePreview.setPaused(false);if(!this.menu.classList.contains('hidden'))this.homeReturnFocus?.focus();});
     this.root.querySelector<HTMLButtonElement>('#home-options')!.onclick=()=>this.openHomeDialog('options');
+    // The dude-world demo's way out of the game, back to the world where the visitor stood (src/cartridge).
+    const exit=this.root.querySelector<HTMLButtonElement>('#home-exit');if(exit)exit.onclick=()=>{this.onPreviewStop();rt.host?.exit();};
     this.root.querySelector('#home-options-fields')!.addEventListener('click',event=>{const id=(event.target as Element).closest('button')?.id;if(id==='home-career')this.onCareer();else if(id==='home-controls')this.openHomeDialog('controls');});
     this.root.querySelector('[data-options-back]')!.addEventListener('click',()=>this.returnToOptions());
     this.root.querySelectorAll<HTMLButtonElement>('[data-controls-page]').forEach(button=>button.onclick=()=>this.showControlsPage(button.dataset.controlsPage as 'layout'|'guide'));

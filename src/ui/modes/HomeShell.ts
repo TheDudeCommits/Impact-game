@@ -17,6 +17,7 @@ import { Coach } from './Coach';
 import { HudPrompts } from './HudPrompts';
 import { LookHint } from './LookHint';
 import { CouchPrompt } from './CouchPrompt';
+import { DEMO } from '../../originals/demo';
 import { explainerSeen, modePrefs, setTrainingDummy, trainingDummy } from './prefs';
 import { LearnOffer } from '../../tutorial/LearnOffer';
 import './homeShell.css';
@@ -55,9 +56,10 @@ export class HomeShell {
       changeFighter: () => { this.root.querySelector<HTMLElement>('.home-fighter[aria-pressed="true"]')?.focus(); },
       story: deps.story,
       menuPad: deps.menuPad,
-      learn: mode => this.learn(mode),
+      // (The dude-world demo is the Duel alone: LEARN TO FIGHT, a Training lesson, is not in it - originals/demo.ts.)
+      learn: DEMO ? undefined : mode => this.learn(mode),
     });
-    this.offer = new LearnOffer(this.root, () => this.learn());
+    this.offer = DEMO ? { mount() {}, refresh() {} } as unknown as LearnOffer : new LearnOffer(this.root, () => this.learn());
     this.menu = new GameMenu(this.root, hud.modes);
     this.menu.variant = () => this.started && this.started.mode === hud.modes.layout ? this.started.variant : undefined;
     this.results = new ResultsShell(this.root, hud);
@@ -68,7 +70,7 @@ export class HomeShell {
     hud.modes.listeners.push({ frame: (f, layout) => prompts.frame(f, layout), clear: () => prompts.clear() }, { frame: (f, layout) => look.frame(f, layout), clear: () => look.clear() });
     hud.modes.listeners.push({ frame: (f, layout) => dock.frame(f, layout), clear: () => dock.clear() }, { frame: (f, layout) => coach.frame(f, layout), event: (e, s, layout) => coach.event(e, s, layout), clear: () => coach.clear() });
     // A second controller on the home: "Player 2 detected", offering the selected mode's COUCH way (CouchPrompt; never a phone).
-    new CouchPrompt(this.root, () => this.selected().mode, mode => { hud.onPreviewStop(); this.sheet.show(mode, { variant: 'couch' }); }, () => this.sheet.open, deps.menuPad);
+    if (!DEMO) new CouchPrompt(this.root, () => this.selected().mode, mode => { hud.onPreviewStop(); this.sheet.show(mode, { variant: 'couch' }); }, () => this.sheet.open, deps.menuPad);
     this.home();
     this.invites();
     this.failures();
