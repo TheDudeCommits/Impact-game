@@ -7,6 +7,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
+
+/** A WAV's length: [sample frames, sample rate], from its fmt and data chunks. */
+function wavFrames(wav, name) {
+  if (wav.toString('ascii', 0, 4) !== 'RIFF' || wav.toString('ascii', 8, 12) !== 'WAVE') throw new Error(`${name} is not a WAV`);
+  let rate = 0, align = 0;
+  for (let at = 12; at + 8 <= wav.length;) {
+    const id = wav.toString('ascii', at, at + 4), size = wav.readUInt32LE(at + 4);
+    if (id === 'fmt ') { rate = wav.readUInt32LE(at + 12); align = wav.readUInt16LE(at + 20); }
+    if (id === 'data') { if (!rate || !align) break; return [Math.floor(size / align), rate]; }
+    at += 8 + size + (size & 1);
+  }
+  throw new Error(`${name}: no fmt/data chunk`);
+}
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const site = process.env.DUDE_WORLD_SITE ?? path.join(os.homedir(), 'Claude Games/dude-world/site');
@@ -36,16 +50,27 @@ if (link) {
   if (fs.existsSync(path.join(assets, 'audio/v2'))) walk(path.join(assets, 'audio/v2'));
 } else {
   const list = fs.readFileSync(path.join(root, 'scripts/cartridge/files.txt'), 'utf8').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
-  let bytes = 0;
+  // The sound bank's WAVs go as the deploy's AAC copies (CombatAudio's packed bank: public/assets/audio/v2/packed.json names
+  // each copy's WAV length, [frames, rate], and the bank trims the encoder's delay to it - aacTrim.ts), about an eighth of
+  // their size. macOS's afconvert writes them (its AAC primes 2112 frames, as aacTrim.ts expects).
+  const packed = {};
+  let bytes = 0, wavBytes = 0, copies = 0;
   for (const file of list) {
     const from = path.join(root, 'public', file), to = path.join(out, file);
     if (!fs.existsSync(from)) throw new Error(`${file} is not in the checkout (git sparse-checkout add /public/${file})`);
     fs.mkdirSync(path.dirname(to), { recursive: true });
-    fs.copyFileSync(from, to);
-    bytes += fs.statSync(from).size;
+    const inBank = file.startsWith('assets/audio/v2/') && /\.wav$/i.test(file) && !link;
+    if (inBank) {
+      const wav = fs.readFileSync(from), m4a = to.replace(/\.wav$/i, '.m4a');
+      packed[file.slice('assets/audio/v2/'.length)] = wavFrames(wav, file);
+      execFileSync('afconvert', ['-f', 'm4af', '-d', 'aac', '-b', '96000', from, m4a]);
+      bytes += fs.statSync(m4a).size; wavBytes += wav.length; copies++;
+    } else { fs.copyFileSync(from, to); bytes += fs.statSync(from).size; }
     if (file.startsWith('assets/audio/v2/') && AUDIO.test(file)) sounds.push(file.slice('assets/audio/v2/'.length));
   }
-  console.log(`${list.length} run-time files, ${(bytes / 1e6).toFixed(1)} MB`);
+  fs.mkdirSync(path.join(out, 'assets/audio/v2'), { recursive: true });
+  fs.writeFileSync(path.join(out, 'assets/audio/v2/packed.json'), JSON.stringify({ files: packed }));
+  console.log(`${list.length} run-time files, ${(bytes / 1e6).toFixed(1)} MB (${copies} of the sound bank's WAVs as AAC: ${(wavBytes / 1e6).toFixed(1)} MB of WAV)`);
 }
 fs.mkdirSync(path.join(out, 'assets/audio/v2'), { recursive: true });
 fs.writeFileSync(path.join(out, 'assets/audio/v2/files.json'), JSON.stringify(sounds.sort()));

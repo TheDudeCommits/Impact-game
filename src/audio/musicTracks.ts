@@ -1,5 +1,5 @@
 import { applyOriginalMusic, applyOriginalSeries, originalUniverse, soundtrackQueue, type SoundtrackContext } from '../originals/apply';
-import { gateMusic } from '../originals/launch';
+import { demoMusic, gateMusic } from '../originals/launch';
 import { ORIGINAL_RIFT, ORIGINAL_SCORE, SOUNDTRACK as ORIGINAL_SOUNDTRACK } from '../originals/score';
 export type MusicPhase = 'lobby' | 'combat' | 'results';
 /** The worlds whose fighters fight to a theme of their own (src/originals/score.ts ORIGINAL_SCORE). */
@@ -83,7 +83,7 @@ const phases:Record<AnimeSeries,Record<Exclude<MusicPhase,'lobby'>,string>>={
   'grave-hound':{combat:'originals-grave-road',results:'originals-grave-road'},
   'salvage-wilds':{combat:'originals-static-trail',results:'originals-static-trail'},
 };
-applyOriginalSeries(MUSIC_TRACKS, FIGHTER_SERIES, phases, SCORED_FIGHTERS);
+applyOriginalSeries(MUSIC_TRACKS, FIGHTER_SERIES, phases, SCORED_FIGHTERS);demoMusic(MUSIC_TRACKS); // (the dude-world demo's pieces: originals/launch.ts)
 /** Home has an exclusive playlist. In-game queues match the player and current opponent. */
 export function selectMusicTracks(localFighter:string,opponentFighter:string|undefined,phase:MusicPhase,context?:SoundtrackContext):MusicTrack[]{
   const queue=fighterTracks(localFighter,opponentFighter,phase);

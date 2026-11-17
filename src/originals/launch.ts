@@ -274,14 +274,17 @@ export function gateMusic<T extends { url: string; title: string; artist: string
     const piece = ORIGINAL_SCORE[i % ORIGINAL_SCORE.length];
     (battle as T[])[i] = { ...track, url: piece.url, title: piece.title, artist: piece.artist };
   });
-  // The dude-world demo ships a few of the score's pieces (demo.ts DEMO.music): every other slot plays one of them.
-  const demo = DEMO;
-  if (demo) {
-    const shipped = Object.values(tracks).filter(track => demo.music.some(name => track.url.endsWith(`/${name}.m4a`)));
-    let turn = 0;
-    if (shipped.length) for (const track of [...Object.values(tracks), ...battle]) if (!shipped.includes(track)) {
-      const piece = shipped[turn++ % shipped.length]; Object.assign(track, { url: piece.url, title: piece.title, artist: piece.artist });
-    }
+  return demoMusic(tracks, battle);
+}
+/** The dude-world demo ships a few of the score's pieces (demo.ts DEMO.music): every other slot plays one of them (also
+ *  run on the worlds' themes, which src/audio/musicTracks.ts adds after the gate). */
+export function demoMusic<T extends { url: string; title: string; artist: string }>(tracks: Record<string, T>, battle: readonly T[] = []) {
+  const demo = DEMO; if (!demo) return tracks;
+  const shipped = (url: string) => demo.music.some(name => url.endsWith(`/${name}.m4a`));
+  const pieces = Object.values(tracks).filter(track => shipped(track.url));
+  let turn = 0;
+  if (pieces.length) for (const track of [...Object.values(tracks), ...battle]) if (!shipped(track.url)) {
+    const piece = pieces[turn++ % pieces.length]; Object.assign(track, { url: piece.url, title: piece.title, artist: piece.artist });
   }
   return tracks;
 }
