@@ -37,7 +37,7 @@
 /* The manga face (Electroharmonix) is for decorative titles only. A button you press - PLAY, SHOP, PARTY, OPTIONS -
    is set in the condensed italic of FIGHT! and CHAPTER CLOSED: "PLAY" no longer reads as アレムソ. */
 .manga-home .home-actions #home-play > span:first-child{font:italic 900 clamp(30px,3vw,50px)/1 Impact,'Barlow Condensed',sans-serif!important;letter-spacing:.01em}
-.manga-home .home-actions :is(#home-shop,#home-party,#home-options){font:italic 900 clamp(14px,1.15vw,19px)/1 Impact,'Barlow Condensed',sans-serif!important;letter-spacing:.03em}
+.manga-home .home-actions :is(#home-shop,#home-party,#home-options,#home-exit){font:italic 900 clamp(14px,1.15vw,19px)/1 Impact,'Barlow Condensed',sans-serif!important;letter-spacing:.03em}
 /* A hovered card that is not the selected one is a preview, and says so. */
 .home-mode-line.previewing{color:#6b6862}.home-mode-line.previewing :is(b,em,i){opacity:.72}
 .home-mode-line .home-mode-preview{flex:none;padding:2px 5px 1px;border:1.5px solid #111;color:#111;font:800 clamp(9px,.7vw,13px)/1 'Barlow Condensed',sans-serif!important;letter-spacing:.14em}
