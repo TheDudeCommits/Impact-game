@@ -81,7 +81,7 @@ const memberName = (node: Node): string | undefined => {
   if (node.computed && p.type === 'Literal' && typeof p.value === 'string') return p.value;
   return undefined;
 };
-const isIdent = (node: unknown, names: Set<string> | string): node is Node => isNode(node) && node.type === 'Identifier' && (typeof names === 'string' ? node.name === names : names.has(node.name as string));
+const isIdent = (node: unknown, names: Set<string> | string): boolean => isNode(node) && node.type === 'Identifier' && (typeof names === 'string' ? node.name === names : names.has(node.name as string));
 
 /** The module's code with the page's globals pointed at the cartridge runtime, or null where it uses none. */
 export function cartridgeCode(code: string, runtime: string): string | null {

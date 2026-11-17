@@ -1,5 +1,6 @@
 import type { Settings } from '../config';
 import { phone, tablet } from '../input/device';
+import { rt } from '../cartridge/runtime';
 
 export type Quality = Settings['quality'];
 const ORDER: readonly Quality[] = ['low', 'medium', 'high'];
@@ -67,7 +68,9 @@ export function rememberStep(gpu: string, quality: Quality) { try { localStorage
 
 let bootGpu = '';
 /** This machine's own preset: its GPU's, or lower where a fight here has stepped it down. */
-export const machineQuality = (device: TierDevice = { phone: phone(), tablet: tablet() }) => lowest(gpuTier(bootGpu, device), remembered(bootGpu));
+/** Inside dude-world (src/cartridge) the world's own quality is the machine's: low, mid (medium) or high. */
+const HOSTED: Record<string, Quality> = { low: 'low', mid: 'medium', high: 'high' };
+export const machineQuality = (device: TierDevice = { phone: phone(), tablet: tablet() }) => rt.host ? lowest(HOSTED[rt.host.quality] ?? 'medium', remembered(bootGpu)) : lowest(gpuTier(bootGpu, device), remembered(bootGpu));
 /** At boot: the preset for this machine, unless the player has chosen one. Answers whether `settings` changed. */
 export function autoQuality(settings: Settings, gpu: string, device: TierDevice = { phone: phone(), tablet: tablet() }): boolean {
   bootGpu = gpu;
