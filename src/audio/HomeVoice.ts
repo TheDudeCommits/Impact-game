@@ -1,4 +1,5 @@
 import type { FighterId } from '../game/types';
+import { routeMedia } from './contextRate';
 import { gateHomeVoices, HOME_VOICE_ASSETS as voiceManifest } from '../originals/launch';
 
 /** Only recorded, packaged lines are requested; adding a fighter needs no parallel code edit. */
@@ -28,7 +29,7 @@ export class HomeVoice {
   private blocked=false;
   private audible=false;
   constructor(parent:HTMLElement) {
-    this.audio=document.createElement('audio');this.audio.hidden=true;this.audio.preload='none';
+    this.audio=document.createElement('audio');this.audio.hidden=true;this.audio.preload='none';routeMedia(this.audio);
     this.audio.dataset.homeVoice='';parent.append(this.audio);
     this.audio.addEventListener('playing',()=>{
       if(!this.current||this.audio.paused)return;

@@ -7,12 +7,16 @@
  * written all through the code) are put inside the build here, where they are asked for: every fetch
  * (loading/assetVersions.ts) and the media addresses (ui/mediaArt.ts). At a site's root this changes nothing at all.
  */
+import { rt } from '../cartridge/runtime';
+
 const page = typeof location === 'object' ? location.pathname : '/';
 /** `/` or `/~<build>/`: the page's own folder (its address only ever changes its query and fragment). */
 export const SITE_BASE = page.replace(/[^/]*$/, '') || '/';
 
 /** A same-origin root address under /assets/ (or the version list), put inside the page's folder; any other as it is. */
 export function siteUrl(url: string, base = SITE_BASE): string {
+  // Inside dude-world (src/cartridge): the host's folder for the game's files.
+  if (rt.hosted) return rt.asset(url);
   if (base === '/' || typeof url !== 'string') return url;
   if (url.startsWith('/assets/') || url === '/asset-versions.json') return `${base}${url.slice(1)}`;
   if (typeof location !== 'object' || !/^https?:/i.test(url)) return url;

@@ -1,4 +1,5 @@
 import { selectMusicTracks, type MusicPhase, type MusicTrack } from './musicTracks';
+import { routeMedia } from './contextRate';
 import type { SoundtrackContext } from '../originals/apply';
 
 export interface MusicStatus { state: 'off' | 'loading' | 'ready' | 'playing' | 'paused' | 'unavailable'; message: string; track?: MusicTrack }
@@ -58,6 +59,7 @@ export class CharacterMusic {
   private makeDeck(): Deck {
     const audio = document.createElement('audio');
     audio.preload = 'none'; audio.volume = 0; audio.hidden = true;
+    routeMedia(audio); // (inside dude-world: through the host's output)
     const deck: Deck = { audio, weight: 0, token: 0 };
     audio.addEventListener('timeupdate', () => {
       if (this.decks[this.active] !== deck || this.fade || this.pending || !this.canPlay() || this.queue.length < 2) return;

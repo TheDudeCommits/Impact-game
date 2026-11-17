@@ -9,7 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "build:lab": "tsc --noEmit && vite build --mode fighter-lab",
     "test": "vitest run",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "build:cartridge": "vite build --config vite.cartridge.config.ts && node scripts/build/cartridgeShip.mjs"
   },
   "dependencies": {
     "@colyseus/sdk": "0.18.2",

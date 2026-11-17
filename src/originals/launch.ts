@@ -17,6 +17,7 @@ import { SAFE_STAGES } from './stages';
 import { ORIGINAL_SCORE } from './score';
 import VOICES from './voices.json';
 import { HOME_VOICE_OF } from './homeVoices';
+import { DEMO } from './demo';
 
 /** The match server this build was made for (Vite's VITE_MATCH_SERVER; nothing under node, where the packager and the
  *  tests import this module without Vite). */
@@ -79,7 +80,7 @@ export function unroutedVoices(id: FighterId): string[] {
 
 export const originalBody = (id: FighterId | string) => !!ORIGINALS[id as FighterId];
 
-export const isOriginal = (id: FighterId | string) => !LAUNCH.hold.includes(id as FighterId) && !!ORIGINALS[id as FighterId]
+export const isOriginal = (id: FighterId | string) => (!DEMO || DEMO.fighters.includes(id as FighterId)) && !LAUNCH.hold.includes(id as FighterId) && !!ORIGINALS[id as FighterId]
   && unroutedVoices(id as FighterId).length === 0;
 
 /** The fighters the gate lets through, in the game's order. */
@@ -115,6 +116,8 @@ function applyGate() {
     if (item.kind === 'fighter' && fighterShown(item.fighter)) (LOCKED as Map<FighterId, string>).delete(item.fighter);
   }
   for (const [id, name] of Object.entries(RENAMED_ITEMS)) { const item = ITEMS.find(each => each.id === id); if (item) item.name = name; }
+  // The dude-world demo's roster plays from the first visit: nothing of it is sold there (demo.ts).
+  if (DEMO) for (const id of DEMO.fighters) (LOCKED as Map<FighterId, string>).delete(id);
   // The road (economy/unlocks.ts ROAD: the shop's REWARDS page and the account's next goal list it by level) less what
   // the gate took off the shelves.
   const road = ROAD.filter(step => { const item = ITEMS.find(each => each.id === step.id); return !item || itemShown(item); });
@@ -132,7 +135,7 @@ type WayKey = 'offline' | 'online' | 'friends';
  *  War's map (src/game/moba/model.ts RIFT_STAGE: the Torn Plain). */
 const MODE_STAGE: Partial<Record<ModeKey, StageId>> = { 'last-stand': 'ashwood', 'bad-blood': 'blood-citadel', 'rift-war': 'rift-war', 'goal-rush': 'ball-pitch', 'sky-spike': 'ball-court' };
 
-export const stageSafe = (stage: StageId | string | undefined) => !!stage && (NEUTRAL_STAGES.includes(stage as StageId) || LAUNCH.stages.includes(stage as StageId));
+export const stageSafe = (stage: StageId | string | undefined) => !!stage && (DEMO ? stage === DEMO.stage : NEUTRAL_STAGES.includes(stage as StageId) || LAUNCH.stages.includes(stage as StageId));
 /** The stage a match is fought on: the one asked for if it is cleared, else `fallback` (the harbour unless a mode asks
  *  for a smaller place: a Duel is fought in the citadel's courtyard). */
 export const launchStage = (stage: StageId | undefined, fallback: StageId = FALLBACK_STAGE): StageId => stage && stageSafe(stage) ? stage : fallback;
@@ -156,6 +159,7 @@ gateSeries();
  *  O's (LAUNCH.objectives), and each only once its own place is cleared (Last Stand's village); Rift War by LAUNCH.riftWar
  *  and its map; any other by its stage. */
 export function modeOpen(mode: ModeKey | string): boolean {
+  if (DEMO && !DEMO.modes.includes(mode)) return false;
   if (mode === 'rift-war' && LAUNCH.riftWar !== 'open') return false;
   if (ballMode(mode) && !ballModesHere()) return false;
   if (mode === 'arcade') return LAUNCH.survival === 'open';
@@ -170,7 +174,7 @@ export const hordeOpen = () => modeOpen('arcade') || modeOpen('last-stand');
 export const raidersOpen = () => modeOpen('last-stand') || modeOpen('bad-blood');
 /** Whether a way to play a mode shows: the mode's, and a match server's for any way not played on this device (and for
  *  a ball mode, rooms this page's rules may play: ballRoomsHere). */
-export const wayOpen = (mode: ModeKey | string, way: WayKey | string, onDevice = way === 'offline') => modeOpen(mode) && (onDevice || LAUNCH.online && ballRoomsHere(mode));
+export const wayOpen = (mode: ModeKey | string, way: WayKey | string, onDevice = way === 'offline') => modeOpen(mode) && (!DEMO || DEMO.ways.includes(way)) && (onDevice || LAUNCH.online && ballRoomsHere(mode));
 
 /** The home screen's cards (src/ui/MangaHome.ts HomeMode), as the catalogue's modes and ways (catalogue.ts MODE_OF_HOME):
  *  BR vs Players and Private Room are the royale's ONLINE and FRIENDS, Battle Royale its BOTS. */
@@ -186,7 +190,7 @@ export function homeCardOpen(card: string): boolean {
 
 /** Where an offline Duel is fought when its tournament ring is not cleared: the Fallen Citadel's courtyard, a ring of a
  *  size for two (the harbour's spawn ring would put them seventy metres apart). */
-export const DUEL_FALLBACK: StageId = 'blood-citadel';
+export const DUEL_FALLBACK: StageId = DEMO?.stage ?? 'blood-citadel';
 /** src/game/duel/LocalDuel.ts DUEL_STAGE, through the gate (src/main.ts). */
 export const duelStage = (stage: StageId) => launchStage(stage, DUEL_FALLBACK);
 

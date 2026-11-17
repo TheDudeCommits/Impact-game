@@ -1,4 +1,5 @@
 import { SITE_BASE, siteUrl } from './siteBase';
+import { rt } from '../cartridge/runtime';
 
 // Inside a build served under a folder of its own (Player Two's /~<build>/), every file under /assets/ is asked for in
 // the page's own folder (siteBase.ts), and the version list is not read at all: there the folder is the version, and a
@@ -69,7 +70,8 @@ export async function retried(attempt: () => Promise<Response>, signal?: AbortSi
   }
 }
 
-if (native && typeof location !== 'undefined') {
+// (Inside dude-world the cartridge runtime answers the game's fetches: the world's own page keeps its own fetch.)
+if (native && typeof location !== 'undefined' && !rt.hosted) {
   void read();
   window.fetch = function (input: RequestInfo | URL, init?: RequestInit) {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;

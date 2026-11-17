@@ -1,4 +1,4 @@
-import { audioContext } from '../contextRate';
+import { audioContext, audioOut, ownContext } from '../contextRate';
 import type { FeedItem, RunView } from '../../survival/SurvivalGame';
 import type { CombatEvent } from '../../game/types';
 import { attackShout, linesOf, moveLine, ownLine, signatureLine, voicedOnCast } from '../bossVoices';
@@ -113,7 +113,7 @@ export class RiftAudio {
   private readonly visibility = () => {
     this.hidden = document.hidden;
     if (!this.ctx) return;
-    if (this.hidden) void this.ctx.suspend().catch(() => {}); else this.resume();
+    if (this.hidden) { if (ownContext(this.ctx)) void this.ctx.suspend().catch(() => {}); } else this.resume();
   };
 
   /** Per frame, from the survival effects: the place's bed, its level, the pause. */
@@ -552,7 +552,7 @@ export class RiftAudio {
     const curve = new Float32Array(2048);
     for (let i = 0; i < curve.length; i++) { const x = i / (curve.length - 1) * 2 - 1, a = Math.abs(x); curve[i] = a < .5 ? x : Math.sign(x) * (.5 + .5 * Math.tanh((a - .5) * 2)); }
     limit.curve = curve; limit.oversample = '2x';
-    limit.connect(ctx.destination);
+    limit.connect(audioOut(ctx));
     this.master = ctx.createGain(); this.master.gain.value = 0; this.master.connect(limit);
     this.beds = ctx.createGain(); this.beds.gain.value = 0; this.beds.connect(this.master);
     this.hits = ctx.createGain(); this.hits.gain.value = .45; this.hits.connect(this.master);

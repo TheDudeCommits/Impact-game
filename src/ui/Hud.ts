@@ -5,6 +5,7 @@ import {pulseClass} from './pulse';
 import {riftOf} from '../game/moba/model';
 import {ballOf} from '../game/ball/model';
 import { activePackRoster } from '../engine/packs/active';
+import { DEMO } from '../originals/demo';
 import { commandList } from './commandList';
 import {customOf} from '../game/social/custom';
 import {customControls,customValue} from './social/CustomControls';
@@ -24,7 +25,7 @@ import { setMatch } from '../social/presence';
 import { FIGHTERS, HUD_SKINS, MOVE_LAYOUTS, VFX_DENSITY, VFX_LEVELS, chooseQuality, type Settings } from '../config';
 import { launchInvite } from '../originals/launch';
 import { machineQuality } from '../render/qualityTier';
-import { mangaHome, mangaPortrait, HOME_MODES, HOME_ROSTER, type HomeMode } from './MangaHome';
+import { mangaHome, mangaPortrait, HOME_DEFAULT, HOME_MODES, HOME_ROSTER, type HomeMode } from './MangaHome';
 import { isLaboratoryPreviewFighter } from '../fighterLab';
 import { HomePreview } from './HomePreview';
 import { bindHomeVolumes, revealHomeFighter, showHomeVolume, stepHomeVolume } from './HomeVolumes';
@@ -65,8 +66,8 @@ export class Hud {
   private ownHitTimer=0;
   private foeHitTimer=0;
   /** A content pack starts on its first fighter: the default may not be one of its slots (src/engine/packs). */
-  selected:FighterId=activePackRoster()?.[0]??'konta';
-  private homeMode:HomeMode='bots';
+  selected:FighterId=activePackRoster()?.[0]??DEMO?.fighters[0]??'konta';
+  private homeMode:HomeMode=HOME_DEFAULT;
   private duelAccess:'online'|'bot'|'friend'='online';
   /** Arcade Survival alone, or a co-op room for up to four. */
   private arcadeParty:'solo'|'coop'='solo';
@@ -84,7 +85,7 @@ export class Hud {
   onParty=()=>{};onCareer=()=>{};onCustom=(_type:string,_value:unknown)=>{};
   private customKey='';
   private privateKind:'private'|'coop'|'duel'='private';
-  private guideFighter:FighterId='konta';
+  private guideFighter:FighterId=DEMO?.fighters[0]??'konta';
   private bindingEditor!:BindingEditor;
   /** How many fighters, including the player, the bot royale starts with. */
   botPlayers:number=8;

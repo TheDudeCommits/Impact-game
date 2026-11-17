@@ -224,8 +224,13 @@ import {mountGraphicsNotice} from './ui/graphicsNotice';
 import {textureBytes} from './render/textureBytes';
 import {showStartFailure} from './ui/startFailure';
 import {bootDone} from './boot/bootScreen'; // index.html's loading page (#boot) goes once the home is ready
+// The dude-world cartridge (src/cartridge): the same boot, inside the world's page, on its renderer and frame loop.
+import {rt} from './cartridge/runtime';
 
-const root=document.querySelector<HTMLElement>('#app')!;
+/** The game's boot: everything below, as the page has always run it. The page's own entry calls it once (at the end of
+ *  this file); the dude-world cartridge (src/cartridge/index.ts) calls it on each visit and `dispose`s it on the way out. */
+export function bootImpact(){
+const root=rt.app??document.querySelector<HTMLElement>('#app')!;
 // The renderer, tried twice and else a message and a RETRY in place of the boot mark (boot/webglFailure.ts).
 const settings=loadSettings(),view=makeRenderer(gentle=>new GameRenderer(root,settings,gentle),root,(error,first)=>errorReports.report('webgl',error,'renderer',undefined,true,[`first try: ${String((first as Error)?.message??first)}`,`host: ${location.hostname}`]));
 // VISUAL EFFECTS (Settings.vfx): the level every effect reads live (render/vfxLevel.ts); a menu's change applies at once below.
@@ -2102,10 +2107,11 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
 }
 requestAnimationFrame(frame);
 // What pagehide lets go is not taken back: a page the back/forward cache returns is loaded again (boot/pageLife.ts).
-reloadWhenRestored(window);
+if(!rt.hosted)reloadWhenRestored(window); // (never the world's page: a cartridge is let go on its way out instead)
 // A lost WebGL context is rebuilt when the browser gives it back (GameRenderer); one that does not come back reloads.
-reloadIfNotRestored(view.renderer.domElement,window);
-window.addEventListener('pagehide',()=>{clearInterval(inputTimer);void party.leave();career.leave();void network.leave();library.disposeWarmup();effects.dispose();castFx.now?.dispose();awakeningEffects.dispose();clashEffects.dispose();manga.dispose();environment.dispose();stages.dispose();audio.dispose();musicPanel.dispose();});
+if(!rt.hosted)reloadIfNotRestored(view.renderer.domElement,window);
+const letGo=()=>{clearInterval(inputTimer);void party.leave();career.leave();void network.leave();library.disposeWarmup();effects.dispose();castFx.now?.dispose();awakeningEffects.dispose();clashEffects.dispose();manga.dispose();environment.dispose();stages.dispose();audio.dispose();musicPanel.dispose();};
+window.addEventListener('pagehide',letGo);
 // Read-only evidence surface for local acceptance captures; never changes simulation state.
 // The scene, renderer and camera are here for the evidence scripts: what a
 // frame actually costs is a question about programs and textures, and
@@ -2115,3 +2121,28 @@ const eventCounts:Record<string,number>={};
  *  ('ultimate-meter'), and the HUD used to print them as they came. */
 const REJECTIONS:Record<string,string>={cooldown:'NOT READY',stamina:'NO STAMINA','ultimate-meter':'ULTIMATE NOT CHARGED'};
 Object.defineProperty(window,'arenaEvidence',{get:()=>({ballCeremony:ballCeremony.evidence(),ballStance:{lock:ballStances[0].lock,why:ballStances[0].lastChange,chase:ballChases[0].active,yaw:ballChases[0].yaw},couch:couch.on?{kind:couch.kind,screen:couch.screen,split:couch.split,yaw:couch.yaw,ids:[...couch.ids],views:couch.views.map(v=>({...v})),targets:couch.ids.map(id=>couch.targetOf(id)),halves:couch.split?view.halves():undefined}:undefined,trainingSwap:{pending:{self:swaps.pending('self'),opponent:swaps.pending('opponent')},log:swapLog,bench:[...trainingBench],picker:swapPicker.open},areaAim:input.aim.view,areaEvents:areaFx.drawn,areaLooks:areaFx.laidLooks,pause:{state:pauseLink.state,holding:pauseLink.holding,pausable:hud.modes.pausable(),paused:hud.modes.paused(),fightShown},rosterPolicy,fightersLoaded:library.loadedCount,textureSharing,survival:survival()?runView():undefined,coop:coop(),horde:horde.count,enemyResources:horde.resources,localOperation:network===localObjective,grunts:network===arcade?arcade.game?.horde.alive??0:online.hordeFrames.frames.reduce((n:number,f:{n:number})=>Math.max(n,f.n),0),enemies:()=>horde.evidence(),performance:view.perf(),eventCounts,state:network.snapshot,playerId:network.id,local:shownSelf,predicted:prediction.action,prediction:prediction.diagnostics,replays:{replayed:prediction.replayed,folded:prediction.folded},link:network===online?online.link.view(performance.now()):undefined,predicting:prediction.enabled&&prediction.active,locked:targeting.locked,targetId,targetCandidates:survival()?survivalTargets.players.filter(p=>p.alive&&p.id!==network.id&&(shownSelf?.team===undefined||p.team!==shownSelf.team)).map(p=>p.id):undefined,targetProxyCapacity:riftOf(network.snapshot)?riftTargets.capacity:survivalTargets.capacity,riftBodies:{shown:fighters.size,hidden:hiddenRiftBodies.size},cameraMode:camera.mode,combo:camera.comboEvidence(),cameraStyle:camera.style,styleBlend:camera.styleBlend,lockStyle:settings.lockStyle,lockGlow:{...hud.threatGlow.state},cameraFocusHistory:camera.picker.historyEntries,cameraEventHistory:camera.director.historyEntries,scene:view.scene,renderer:view.renderer,camera:view.camera,assets:[...fighters.values()].map(f=>({id:f.state.id,fighter:f.state.fighter,clips:f.clips.map(c=>c.name)})),motion:[...fighters.values()].map(f=>({id:f.state.id,...f.motionEvidence()}))})});
+/** The cartridge's way out (src/cartridge/index.ts): what pagehide lets go, and the match, the bodies, the stage, the sound and
+ *  the renderer's own targets with it. (Whatever the page started - timers, frames, listeners, observers, the GPU's
+ *  copies - the cartridge runtime takes back after this.) */
+const dispose=()=>{
+  startEpoch++;started=false;fightShown=false;input.enabled=false;input.clear();
+  try{finale.reset();vsSplash.skip();cutIn.hide();loadingScreen.hide();homeVoice.stop();}catch(error){console.warn('Impact: leaving the screens',error);}
+  try{prediction.stop();}catch(error){console.warn('Impact: prediction',error);}
+  for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])void each.leave().catch(()=>{});
+  try{clearFighters();}catch(error){console.warn('Impact: bodies',error);}
+  letGo();
+  try{library.evict(new Set(),0);}catch(error){console.warn('Impact: library',error);}
+  try{view.dispose();}catch(error){console.warn('Impact: renderer',error);}
+};
+return {
+  dispose,
+  /** The page changed size: the renderer's size and resolution for it (GameRenderer.applySettings). */
+  resize:()=>view.applySettings(settings),
+  /** Whether the frame drew the game (the home draws nothing behind its menus). */
+  drawing:()=>((started||!hud.homeVisible)&&!survivalHud.treeShown)||!!reportCapture,
+  /** The home's root, for the cartridge's wait on its pictures. */
+  root,
+};
+}
+// The page's own entry: the game boots as it always has. (A cartridge boots it itself, once per visit.)
+if(!rt.hosted)bootImpact();

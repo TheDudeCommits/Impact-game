@@ -28,6 +28,8 @@ export const HOME_MODES: readonly { id: HomeMode; label: string }[] = [
 // The ball modes stand after Last Stand. The rail is drawn in HOME_MODES' order; catalogue.ts MODE_ORDER says the same.
 export const HOME_RAIL: readonly HomeMode[] = ['duel','bots','training','arcade','last-stand','goal-rush','sky-spike','bad-blood','rift-war'];
 gateHomeRail(HOME_RAIL);
+/** The card the home opens on: Battle Royale's, or the first the gate leaves (the dude-world demo's Duel: originals/demo.ts). */
+export const HOME_DEFAULT: HomeMode = HOME_RAIL.includes('bots') ? 'bots' : HOME_RAIL[0] ?? 'bots';
 /** A card's ways to play, one line in the same order everywhere (offline / online / friends). The legacy ids the home
  *  still binds (Hud.ts: #choose-host/#choose-join, #choose-solo/#choose-coop, [data-duel]) sit on their words. */
 function variantWords(id:HomeMode){
@@ -126,7 +128,7 @@ export function mangaHome(selected:FighterId, botPlayers:number) {
     <div class="manga-page">
       <div class="home-mode-rail"><div class="home-modes" role="group" aria-label="Choose game mode">
         ${HOME_MODES.filter(mode=>HOME_RAIL.includes(mode.id)).map((mode,i)=>`<div class="home-mode-panel" data-panel="${mode.id}" style="--tilt:${i===0?-2:i===1?1:i===2?-1.5:i===3?-2:0}deg">
-          <button type="button" class="home-mode" data-mode="${mode.id}" aria-pressed="${mode.id==='bots'}" aria-label="${mode.label}">
+          <button type="button" class="home-mode" data-mode="${mode.id}" aria-pressed="${mode.id===HOME_DEFAULT}" aria-label="${mode.label}">
             <span class="home-mode-art">${cardImage(MODES[MODE_OF_HOME[mode.id].mode].art)}</span>
             <span class="home-mode-label">${mode.label.toUpperCase()}</span>
           </button>

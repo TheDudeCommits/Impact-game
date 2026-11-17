@@ -1,4 +1,5 @@
 import { phone } from '../input/device';
+import { rt } from '../cartridge/runtime';
 
 /**
  * The rate a phone's sound is decoded and mixed at (the phone pass, November 2026: "iOS memory"). Every sound the game
@@ -12,6 +13,21 @@ import { phone } from '../input/device';
 export const PHONE_SAMPLE_RATE = 32000;
 
 export function audioContext(latencyHint: AudioContextLatencyCategory, small = phone()): AudioContext {
+  // Inside dude-world (src/cartridge) the page's one context, the world's: never another.
+  if (rt.host) return rt.host.audio.ctx;
   if (small) { try { return new AudioContext({ latencyHint, sampleRate: PHONE_SAMPLE_RATE }); } catch { /* its own rate */ } }
   return new AudioContext({ latencyHint });
 }
+
+/** Where a context's mix goes out: its speakers, or inside dude-world the host's output (src/cartridge), which the world
+ *  fades in and out with the game. */
+export function audioOut(ctx: BaseAudioContext): AudioNode {
+  return rt.host && ctx === rt.host.audio.ctx ? rt.host.audio.out : ctx.destination;
+}
+/** A media element's sound inside dude-world: through the host's output too (on a page of its own it plays as it is). */
+export function routeMedia(element: HTMLMediaElement): void {
+  const host = rt.host; if (!host) return;
+  try { host.audio.ctx.createMediaElementSource(element).connect(host.audio.out); } catch { /* already routed */ }
+}
+/** Whether the game may close or suspend this context: never the world's. */
+export const ownContext = (ctx: BaseAudioContext | undefined) => !!ctx && !(rt.host && ctx === rt.host.audio.ctx);

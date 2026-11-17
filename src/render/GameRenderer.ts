@@ -35,11 +35,12 @@ import { loadInkImpacts } from './vfx/SparkField';
 import { VFX } from './vfxLevel';
 import { glRect, halves, type Rect } from '../couch/split';
 import { ContextGuard } from './contextGuard';
+import { rt } from '../cartridge/runtime';
 
 // Every three loader made without a manager of its own (models, textures, files) asks for a root /assets/ address inside the
 // page's own folder: a build served under a folder of its own (Player Two's) answers a root address with a redirect on every
 // request (loading/siteBase.ts). At a site's root, nothing changes.
-THREE.DefaultLoadingManager.setURLModifier(url => siteUrl(url));
+if (!rt.hosted) THREE.DefaultLoadingManager.setURLModifier(url => siteUrl(url)); // (a cartridge: its runtime sets it while the game is in, src/cartridge/runtime.ts)
 
 /** How far the sun's shadow box reaches from the fight, per quality: tight
  *  enough for crisp, stable texels, wide enough for a lock-on shot. */
@@ -117,7 +118,8 @@ export class GameRenderer {
     // so a multisampled default framebuffer would be memory and a resolve
     // spent on nothing. The old setup asked for it and got no anti-aliasing
     // at all, because the composer's targets had no samples.
-    this.renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:gentle?'default':'high-performance',alpha:false});
+    // Inside dude-world (src/cartridge) the world's own renderer: one renderer, one canvas, one context for the page.
+    this.renderer=rt.host?.renderer??new THREE.WebGLRenderer({antialias:false,powerPreference:gentle?'default':'high-performance',alpha:false});
     {const gl=this.renderer.getContext();this.context=new ContextGuard(this.renderer.domElement,()=>gl.isContextLost());this.context.guard(this.renderer);}
     this.governor=new ResolutionGovernor(this.renderer.getContext() as WebGL2RenderingContext);
     installSkinnedBounds();installSkeletonOnce();
@@ -126,7 +128,7 @@ export class GameRenderer {
     skipHiddenChildren(this.scene);
     // The feel pass: the hand-drawn impact flipbooks (vfx/inkImpactAtlas.ts), fetched by the game's own renderer.
     loadInkImpacts();
-    this.renderer.domElement.id='game-canvas';this.renderer.domElement.tabIndex=0;this.renderer.domElement.setAttribute('aria-label','Three-dimensional fighting arena');parent.append(this.renderer.domElement);
+    if(!rt.hosted){this.renderer.domElement.id='game-canvas';this.renderer.domElement.tabIndex=0;this.renderer.domElement.setAttribute('aria-label','Three-dimensional fighting arena');parent.append(this.renderer.domElement);}
     // A lost context (iOS Safari loses it under memory pressure and in the background; a GPU reset anywhere). three
     // keeps the page alive through it - it prevents the default, so the browser may give the context back - and on
     // restore rebuilds its own state, uploading every geometry, texture and program again from what the CPU still
@@ -186,6 +188,9 @@ export class GameRenderer {
    *  that the renderer can draw. Kept under its old name because main.ts
    *  awaits it in the load. */
   async loadSky(){this.refreshEnvironment();}
+  /** The cartridge's way out (src/cartridge): the frame's own targets and passes, the image light and the governor's queries. The
+   *  renderer itself is the world's: never disposed here. */
+  dispose(){this.environment?.dispose();this.environment=undefined;this.pmrem.dispose();this.composer.dispose();this.warmTarget?.dispose();this.shadowKeeper?.dispose();this.sharedShadow?.dispose();this.sun.shadow.map?.dispose();this.governor.dispose();this.scene.environment=null;this.scene.clear();}
   /** Depth range and haze are per stage. Wreckers' Causeway's island runs to 1.6 km
    *  and the Ash Chief cliff stands 440 m behind the Proving arena, so the
    *  harbour's 340 m far plane would cut both off in mid-air. Fog always ends

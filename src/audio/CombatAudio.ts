@@ -1,4 +1,4 @@
-import { audioContext } from './contextRate';
+import { audioContext, audioOut, ownContext } from './contextRate';
 import type { CombatEvent, PlayerState, Vec3 } from '../game/types';
 import { AUDIO_CUES, planCombatAudio, type AudioCue, type CueLayer } from './cuePlan';
 import CUE_ONSETS from './data/cueOnsets.json';
@@ -175,7 +175,7 @@ export class CombatAudio {
       this.compressor = this.context.createDynamicsCompressor();
       this.compressor.threshold.value = -9; this.compressor.knee.value = 10; this.compressor.ratio.value = 4;
       this.compressor.attack.value = .003; this.compressor.release.value = .18;
-      this.sfx.connect(this.master); this.speech.connect(this.master); this.master.connect(this.compressor).connect(this.context.destination);
+      this.sfx.connect(this.master); this.speech.connect(this.master); this.master.connect(this.compressor).connect(audioOut(this.context));
       this.ambienceBus = this.context.createGain(); this.ambienceBus.gain.value = this.mix.sfx; this.ambienceBus.connect(this.master);
       this.ambience = new StageAmbience(this.context, this.ambienceBus, url => this.loadSample(url).then(() => this.samples.get(url)), Math.random,
         url => { this.samples.delete(url); this.sampleLoads.delete(url); });
@@ -987,5 +987,5 @@ export class CombatAudio {
     this.updateVoiceActivity();
   }
   reset() { for (const key of [...this.loops.keys()]) this.letLoopGo(key, .3); for (const sound of this.sounds) this.stop(sound); this.auras.clear(); this.standsBy.clear(); this.seen.clear(); this.dashStates.clear(); this.casts.clear(); this.quips.reset(); clearTimeout(this.bellTimer); this.bellTimer = undefined; this.saidAt.clear(); }
-  dispose() { this.dead = true; clearTimeout(this.duckTimer); clearTimeout(this.bellTimer); this.abort.abort(); this.ambience?.dispose(); this.ambienceBus?.disconnect(); this.reset(); this.buffers.clear(); this.samples.clear(); this.reverb?.out.disconnect(); this.irs.clear(); this.master?.disconnect(); this.sfx?.disconnect(); this.speech?.disconnect(); this.compressor?.disconnect();for(const source of this.musicSources.values())source.disconnect();this.musicSources.clear(); void this.context?.close().catch(() => {}); }
+  dispose() { this.dead = true; clearTimeout(this.duckTimer); clearTimeout(this.bellTimer); this.abort.abort(); this.ambience?.dispose(); this.ambienceBus?.disconnect(); this.reset(); this.buffers.clear(); this.samples.clear(); this.reverb?.out.disconnect(); this.irs.clear(); this.master?.disconnect(); this.sfx?.disconnect(); this.speech?.disconnect(); this.compressor?.disconnect();for(const source of this.musicSources.values())source.disconnect();this.musicSources.clear(); if (ownContext(this.context)) void this.context?.close().catch(() => {}); else this.compressor?.disconnect(); }
 }

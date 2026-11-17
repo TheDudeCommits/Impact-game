@@ -1,5 +1,6 @@
 import { FIGHTERS } from '../config';
 import { siteUrl } from '../loading/siteBase'; // asset addresses inside the page's own folder
+import { DEMO } from '../originals/demo';
 import type { FighterId } from '../game/types';
 import spriteManifest from '../../public/assets/home/sprites/manifest.json';
 import { packArt, packHas } from '../engine/packs/active';
@@ -108,7 +109,7 @@ const pageArt=(page:PosePage,id:FighterId)=>page.sha256?siteUrl(`/assets/home/sp
 export class HomePreview {
   private canvas:HTMLCanvasElement;
   private context:CanvasRenderingContext2D;
-  private active:FighterId='konta';
+  private active:FighterId=DEMO?.fighters[0]??'konta';
   private ticket=0;
   private ready=false;
   private initialLoad?:Promise<void>;

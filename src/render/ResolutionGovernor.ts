@@ -170,6 +170,8 @@ export class ResolutionGovernor {
   /** The context came back after it was lost (GameRenderer): the queries in flight belonged to the lost one and never
    *  answer (kept, they filled `pending` and no timer was started again), and an extension has to be asked for anew on
    *  a restored context before its enums are valid. */
+  /** Let go of the timers in flight (the dude-world cartridge's way out: the context is the world's and stays). */
+  dispose() { const {gl, ext} = this; if (ext && this.open) gl.endQuery(ext.TIME_ELAPSED_EXT); this.open = false; for (const query of this.pending.splice(0)) gl.deleteQuery(query); }
   restored() { this.pending.length = 0; this.open = false; this.samples.length = 0; this.cpu.length = 0; this.ext = this.gl.getExtension('EXT_disjoint_timer_query_webgl2') as {TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number} | null; }
   /** A new quality starts from its own full resolution (`start`: a share of it, a phone allowed above one pixel a CSS
    *  pixel starting at one). */

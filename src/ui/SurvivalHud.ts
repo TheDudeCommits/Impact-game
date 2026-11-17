@@ -24,6 +24,7 @@ import { canFullScreen, enterFullScreen } from './fullScreen';
 import { SELF_AURA } from './survival/seats';
 import { RiftProfile } from './survival/profile';
 import { inFight, mountShop, partyEmote, playerBanner, playerPage, playerStamp, playerTitle, showRunPay, unwearSelf, wearParty, wearSelf } from './shop/boot';
+import { DEMO } from '../originals/demo';
 import { BANNER_MARKS, playBanner } from './survival/banners';
 import { gameCosmetics } from '../render/cosmetics/index';
 import { LIVING_NAMES } from '../render/cosmetics/skins';
@@ -226,7 +227,7 @@ export class SurvivalHud {
     this.root.querySelector<HTMLButtonElement>('#sv-leave')!.onclick = () => this.onLeave();
     this.profile = new RiftProfile(this.root);
     // The account, the shop and what a fight pays start with the game's interface (src/ui/shop/boot.ts).
-    mountShop();
+    if (!DEMO) mountShop(); // (the dude-world demo has no account, shop or sign-in: originals/demo.ts)
     this.profile.onAura = (fighter, colour) => { if (fighter === this.root.dataset.fighter) SELF_AURA.colour = colour; };
     this.profile.onClose = () => this.root.querySelector<HTMLButtonElement>('#sv-profile-open')?.focus();
     this.root.querySelector<HTMLButtonElement>('#sv-profile-open')!.onclick = () => this.profile.show(this.root.dataset.fighter as FighterId | undefined);

@@ -4,7 +4,7 @@ import { isLaboratoryPreviewFighter } from '../../fighterLab';
 import type { NetworkAccess } from '../../network';
 import { isObjectiveKind } from '../../game/objectives/model';
 import type { UiAction } from '../../input/gamepad';
-import type { HomeMode } from '../MangaHome';
+import { HOME_DEFAULT, type HomeMode } from '../MangaHome';
 import type { Hud } from '../Hud';
 import { readInvite } from '../roomInvite';
 import { LAUNCH } from '../../originals/launch';
@@ -85,7 +85,7 @@ export class HomeShell {
 
   /** The card the home has selected (Hud's own aria-pressed), as the catalogue's mode and way to play. */
   selected(): { card: HomeMode; mode: ModeId; variant?: VariantId } {
-    const card = (this.root.querySelector<HTMLElement>('.home-mode[aria-pressed="true"]')?.dataset.mode ?? 'bots') as HomeMode;
+    const card = (this.root.querySelector<HTMLElement>('.home-mode[aria-pressed="true"]')?.dataset.mode ?? HOME_DEFAULT) as HomeMode;
     return { card, ...MODE_OF_HOME[card] };
   }
   /** PLAY: the selected mode's sheet, on the way to play used last. */
