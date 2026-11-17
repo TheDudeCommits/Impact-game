@@ -29,6 +29,9 @@ const GLOBALS: Record<string, string> = {
 };
 const WINDOWS = new Set(['window', 'globalThis', 'self']);
 const OBSERVERS = new Set(['MutationObserver', 'ResizeObserver', 'IntersectionObserver', 'PerformanceObserver']);
+/** '/assets/' at the start of a template (FIRST), or inside any part of one after a quote, a bracket, an equals sign or a
+ *  space (markup and styles it writes: src="/assets/...", url('/assets/...')). */
+const FIRST = /(^|["'(=\s])\/assets\//g, INSIDE = /(["'(=\s])\/assets\//g;
 
 const isNode = (value: unknown): value is Node => !!value && typeof value === 'object' && typeof (value as Node).type === 'string';
 function walk(node: Node, visit: (node: Node, parent: Node | null) => void, parent: Node | null = null) {
@@ -103,8 +106,17 @@ export function cartridgeCode(code: string, runtime: string, json = false): stri
       return;
     }
     if (node.type === 'TemplateLiteral' && parent?.type !== 'TaggedTemplateExpression') {
-      const first = (node.quasis as Node[])[0];
-      if (first && ((first.value as { raw: string }).raw).startsWith('/assets/')) put(first.start, first.start + 1, '${__rt.base}');
+      // At the start (`/assets/${id}.webp`), or inside markup or a style it writes (src="/assets/...", url('/assets/...')).
+      (node.quasis as Node[]).forEach((quasi, i) => {
+        const raw = (quasi.value as { raw: string }).raw;
+        for (const m of raw.matchAll(i === 0 ? FIRST : INSIDE)) { const at = quasi.start + m.index! + m[1].length; put(at, at + 1, '${__rt.base}'); }
+      });
+      return;
+    }
+    // A string that writes markup or a style with an '/assets/' address inside it.
+    if (node.type === 'Literal' && typeof node.value === 'string' && /["'(=\s]\/assets\//.test(node.value) && !(parent?.type === 'Property' && parent.key === node)) {
+      const parts = node.value.split(/(?<=["'(=\s])\/assets\//);
+      put(node.start, node.end, `(${parts.map(part => JSON.stringify(part)).join('+__rt.base+"assets/"+')})`);
       return;
     }
     // x.addEventListener(...) / x.removeEventListener(...) -> __rt.on(x, ...) / __rt.off(x, ...)
