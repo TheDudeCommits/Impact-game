@@ -23,7 +23,7 @@ import { LiveHud } from './liveHud';
 import { FIGHTERS, loadSettings, type Settings } from '../config';
 import { ArenaSimulation } from '../game/simulation';
 import { DuelSet } from '../game/duel/DuelSet';
-import { COMBO_HP, COMBO_STAMINA, MOVES, SIMULATION_HZ, BIG_HITSTOP } from '../game/moves';
+import { COMBO_HP, COMBO_STAMINA, MOVES, SIMULATION_HZ } from '../game/moves';
 import { STAGES } from '../game/stages';
 import type { CombatEvent, FighterId, GameSnapshot, PlayerInput, PlayerState } from '../game/types';
 import { keptSkill } from '../boot/skill';
@@ -49,7 +49,7 @@ import { setToonLook, setToonResolution } from '../render/look/toonShading';
 import { lookFor } from '../render/look/stageLooks';
 import { skinnedBoundsOn } from '../render/skinnedBounds';
 import { ViewKeys, movementMask } from '../render/viewKeys';
-import { borrowedEvent, effectDonors, installTransplant, presentEvents, presentFighters, presentPlayers, presentSnapshot, slotNames, steadyBodies } from '../engine/client/transplant';
+import { borrowedEvent, installTransplant, presentFighters, presentPlayers, presentSnapshot, slotNames, steadyBodies } from '../engine/client/transplant';
 import { installBorrowedHurts } from '../engine/client/borrowedHurts';
 import { installStyleMoves, stylesReady } from '../engine/client/styleMoves';
 import { CombatAudio } from '../audio/CombatAudio';
@@ -293,22 +293,35 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     for (const [id, fighter] of fighters) if (!snapshot.players.some(p => p.id === id && !p.enemy)) { fighter.dispose(); fighters.delete(id); }
   }
 
-  /** The materials of what the scene holds, compiled for the world's picture (a colour target, no tone mapping, the
-   *  world's kind of fog), off the frame (KHR_parallel_shader_compile) - so the first frame the visitor sees the duel
-   *  has nothing left to build. */
-  async function compile() {
+  /** The materials of what the scene holds (or of `only`, lit as the scene is), compiled for the world's picture (a
+   *  colour target, no tone mapping, the world's kind of fog) and linked off the frame (KHR_parallel_shader_compile), so
+   *  the first frame that shows them has nothing left to build. The renderer is put back at once: only the linking is
+   *  waited for. */
+  async function compile(only?: THREE.Scene) {
     const rt0 = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, depthBuffer: true });
     const was = gl.getRenderTarget(), fog = scene.fog, shadow = gl.shadowMap.enabled;
+    let linked: Promise<unknown> = Promise.resolve();
     try {
       rt.within(() => {
         gl.setRenderTarget(rt0);
         scene.fog = new THREE.Fog(0xd6e9f8, 160, 1150);
         gl.shadowMap.enabled = shadow && shadows;
+        linked = gl.compileAsync(only ?? scene, lens, scene);
       });
-      await rt.within(() => gl.compileAsync(scene, lens, scene)).catch(() => undefined);
-    } finally {
-      scene.fog = fog; gl.shadowMap.enabled = shadow; gl.setRenderTarget(was); rt0.dispose();
-    }
+    } finally { scene.fog = fog; gl.shadowMap.enabled = shadow; gl.setRenderTarget(was); }
+    await linked.catch(() => undefined);
+    rt0.dispose();
+  }
+  /** A body of `id` built, compiled and let go before it steps in (FighterLibrary.warmup's job, off the drawn scene). */
+  async function warmBody(id: FighterId) {
+    const body = library.create({ id: 'warm-' + id, name: 'Warmup', fighter: id, x: 0, y: 0, z: 0, yaw: 0, hp: 1000, maxHp: 1000, stamina: 100, ultimate: 100,
+      action: 'idle', actionStarted: 0, actionDuration: 0, actionTime: 0, target: null, alive: true, isBot: true, grounded: true, guarding: false,
+      cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 } });
+    skinnedBoundsOn(body.group);
+    const only = new THREE.Scene();
+    only.add(body.group);
+    body.group.traverse(o => { o.visible = true; });
+    try { await compile(only); } finally { body.dispose(); }
   }
 
   /** The fighter who steps in next: the next of the five not in the ring now. Its files come in while the set before
@@ -320,7 +333,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     let next: FighterId = r.pair[0];
     for (let guard = 0; guard < ROSTER.length * 2; guard++) { rotation++; next = ROSTER[rotation % ROSTER.length]; if (!r.pair.includes(next)) break; }
     const chosen = challenger = next; challengerReady = false;
-    void loaded([chosen]).then(() => { if (challenger === chosen) challengerReady = true; })
+    void loaded([chosen]).then(() => warmBody(chosen).catch(() => undefined)).then(() => { if (challenger === chosen) challengerReady = true; })
       .catch(error => { console.warn('Impact live: the next fighter did not load', chosen, error); if (challenger === chosen) challenger = null; });
   }
   /** The pair after a decided set: the winner stays in their seat (the visitor's fighter, if they play, stays in
@@ -387,7 +400,6 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     const awakened = !borrowedEvent(event) && !!ring?.snapshot?.players.find(p => p.id === event.actorId)?.awakened;
     if (!bigBlowOf(event, awakened)) return;
     audio.bigBlow(event.endpoint ?? event.origin ?? { x: 0, y: 0, z: 0 }, event.actorId, .8 + Math.min(.35, (event.damage ?? 60) / 300));
-    void BIG_HITSTOP;
   };
   const blowHeading = (event: CombatEvent) => event.origin && event.endpoint ? new THREE.Vector3(event.endpoint.x - event.origin.x, 0, event.endpoint.z - event.origin.z) : undefined;
   const notify = (id: string | undefined, text: string, duration: number) => { if (id && id === me) hud.notify(text, duration); };
@@ -579,7 +591,6 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   });
 
   // ---- the frame
-  const steadyCache = { shown: fighters };
   return {
     court: {
       get matrix() { return courtMatrix; },
@@ -672,7 +683,6 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       } else input.aim.cancel();
       areaFx.update(serverTime, me ? input.aim.view : undefined, self, () => 0);
       const steady = steadyBodies(shown);
-      void steadyCache;
       effects.update(serverTime, worldDt, steady);
       awakeningEffects.update(serverTime, worldDt, fighters, settings.effects, view);
       castFx?.update(serverTime, worldDt, steady, settings.effects, view);
@@ -773,7 +783,6 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       catcher.geometry.dispose(); (catcher.material as THREE.Material).dispose();
       sun.shadow.map?.dispose();
       scene.clear();
-      void effectDonors;
     },
   };
 }
