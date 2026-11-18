@@ -60,6 +60,10 @@ function loadRuntime(): Promise<EfkModule> {
 /** What the runtime needs of the scene: its renderer and camera once a frame has been drawn (ArmoryHost). */
 export interface EffekseerHost { readonly root: THREE.Object3D; readonly renderer?: THREE.WebGLRenderer; readonly gameCamera?: THREE.Camera }
 
+/** Set by the dev probe's redraw (GameRenderer __look.redraw, the film look's before/after film): the frame drawn
+ *  again as it stands draws what is playing again, with nothing advanced. */
+export const effekseerRedraw = { on: false };
+
 class EffekseerRuntime {
   private context?: EfkContext;
   private starting?: Promise<void>;
@@ -157,15 +161,17 @@ class EffekseerRuntime {
   private draw(renderer: THREE.WebGLRenderer, camera: THREE.Camera) {
     if (!this.host.renderer) return;
     if (camera !== this.host.gameCamera) return;
-    const now = performance.now() / 1000;
-    if (now === this.drawn) return;
+    const now = performance.now() / 1000, again = now === this.drawn;
+    if (again && !effekseerRedraw.on) return;
     this.drawn = now;
     this.start();
     const ctx = this.context;
     if (!ctx) return;
-    const dt = this.last < 0 ? 0 : Math.min(.1, Math.max(0, now - this.last));
-    this.last = now;
-    ctx.update(dt * 60);
+    if (!again) {
+      const dt = this.last < 0 ? 0 : Math.min(.1, Math.max(0, now - this.last));
+      this.last = now;
+      ctx.update(dt * 60);
+    }
     for (const handle of this.live) if (!handle.exists) this.live.delete(handle);
     if (!this.live.size) return;
     const target = renderer.getRenderTarget();

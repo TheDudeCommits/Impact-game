@@ -1,6 +1,7 @@
 import { RANKED, bandOf, seasonOf, tierOf, type Rating, type RankedAnswer, type SeatRank } from '../../game/ball/ranked';
 import type { BallModeId } from '../../game/ball/model';
-import { account, economyServer } from '../shop/account';
+import { account } from '../shop/account';
+import { economyPost } from '../../network/p2Economy';
 
 /** The page's side of ranked (game/ball/ranked.ts has the rules): this browser's account's standing in each mode,
  *  asked of the match server (src/server/ball/ranked.ts, POST /ball/ranked) and kept for the session, and the ink
@@ -21,8 +22,9 @@ export function refreshRanks(force = false): Promise<RankedAnswer | undefined> {
   if (asking) return asking;
   if (!force && performance.now() - askedAt < 5000) return Promise.resolve(known);
   askedAt = performance.now();
-  asking = fetch(`${economyServer()}/ball/ranked`, { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify({ token }), signal: AbortSignal.timeout(5000) })
-    .then(async response => response.ok ? await response.json() as RankedAnswer : undefined)
+  /* (POST /ball/ranked on the match server; the economy world's `ranked` inside PlayerTwo once it is on: src/network/p2Economy.ts) */
+  asking = economyPost('ranked', { token }, 5000)
+    .then(response => response.status === 200 ? response.body as RankedAnswer : undefined)
     .then(answer => { if (answer && typeof answer.season === 'number') { known = answer; for (const each of listeners) each(); } return known; }, () => known)
     .finally(() => { asking = undefined; });
   return asking;

@@ -1,3 +1,4 @@
+import { cleanCode, CODE_INPUT, isRoomCode } from '../roomCode';
 import {FIGHTERS} from '../../config';
 import {isReleasedFighter} from '../../game/rosterAvailability';
 import type {FighterId,GameSnapshot,PlayerState} from '../../game/types';
@@ -49,10 +50,10 @@ export class ObjectiveUI {
     this.setup.addEventListener('close',()=>{this.editing=false;this.returnFocus?.focus({preventScroll:true});});
     this.setup.addEventListener('click',e=>{const b=(e.target as Element).closest<HTMLButtonElement>('button');if(!b)return;
       if(b.dataset.close!==undefined){this.setup.close();return;}
-      this.code=this.setup.querySelector<HTMLInputElement>('input')?.value.trim()??this.code;
+      this.code=cleanCode(this.setup.querySelector<HTMLInputElement>('input')?.value??this.code);
       if(b.dataset.faction){this.faction=b.dataset.faction as typeof this.faction;if(factionOf(this.fighter)!==this.faction)this.fighter=this.faction==='heroes'?'taisei':'oro';this.drawSetup();return;}
       if(b.dataset.fighter){this.fighter=b.dataset.fighter as FighterId;const label=this.setup.querySelector('[data-selected-name]');if(label)label.textContent=FIGHTERS[this.fighter].name;this.setup.querySelectorAll('[data-fighter]').forEach(el=>el.setAttribute('aria-pressed',String((el as HTMLElement).dataset.fighter===this.fighter)));return;}
-      if(b.dataset.access){const access=b.dataset.access as ObjectiveAccess;if(access==='join'&&!/^\d{6}$/.test(this.code)){this.error('Enter the 6-digit room code.');return;}this.error('');this.onStart({kind:'objective',objective:this.kind,access,role:this.kind==='bad-blood'?factionOf(this.fighter):'defenders',fighter:this.fighter,code:this.code});}
+      if(b.dataset.access){const access=b.dataset.access as ObjectiveAccess;if(access==='join'&&!isRoomCode(this.code)){this.error('Enter the room code.');return;}this.error('');this.onStart({kind:'objective',objective:this.kind,access,role:this.kind==='bad-blood'?factionOf(this.fighter):'defenders',fighter:this.fighter,code:this.code});}
     });
     this.panel.addEventListener('click',e=>{const b=(e.target as Element).closest<HTMLButtonElement>('button');if(!b)return;
       if(b.dataset.command)this.onCommand(b.dataset.command as 'start'|'rematch');if(b.dataset.fill!==undefined)this.onCustom('objective-fill',b.dataset.fill==='true');if(b.dataset.leave!==undefined)this.onLeave();
@@ -62,7 +63,7 @@ export class ObjectiveUI {
     });
     this.shop.addEventListener('click',e=>{const b=(e.target as Element).closest<HTMLButtonElement>('button');if(b?.dataset.close!==undefined)this.shop.close();if(b?.dataset.buy)this.onCustom('objective-buy',b.dataset.buy);});
     for(const surface of [this.panel,this.shop])surface.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const items=this.items(),i=items.indexOf(document.activeElement as HTMLElement);if(!items.length)return;if(e.shiftKey&&i<=0){items.at(-1)!.focus();e.preventDefault();}else if(!e.shiftKey&&i===items.length-1){items[0].focus();e.preventDefault();}});
-    const invite=new URLSearchParams(location.hash.slice(1)),mode=invite.get('mode'),code=invite.get('room');if(LAUNCH.online&&isObjectiveKind(mode)&&modeOpen(mode)&&code&&/^\d{6}$/.test(code))queueMicrotask(()=>this.open(mode,code));
+    const invite=new URLSearchParams(location.hash.slice(1)),mode=invite.get('mode'),code=invite.get('room');if(LAUNCH.online&&isObjectiveKind(mode)&&modeOpen(mode)&&isRoomCode(code))queueMicrotask(()=>this.open(mode,code));
   }
   open(kind:ObjectiveKind,code='',fighter:FighterId='konta'){this.kind=kind;this.code=code;this.fighter=kind==='bad-blood'&&!isBadBloodFighter(fighter)?'taisei':fighter;this.faction=factionOf(fighter);this.returnFocus=document.activeElement as HTMLElement;this.drawSetup();if(!this.setup.open)this.setup.showModal();this.setup.querySelector<HTMLElement>(code?'input':'[data-access]')?.focus();}
   private drawSetup(){
@@ -77,7 +78,7 @@ export class ObjectiveUI {
       <div class="objective-setup-body"><small>OPERATION BRIEFING</small><h3>${stand?'HOLD THE LINE.':'CHOOSE YOUR SIDE.'}</h3><p>${stand?'Defend the village against an escalating siege. Fight together. Build your defences. Survive one more wave.':'Three Heroes against three empowered Villains. Eliminate the opposing team to win.'}</p>
       <ol class="objective-rules">${stand?'<li><b>1–4 DEFENDERS</b><span>Go alone, bring your friends or join a squad.</span></li><li><b>ONE SHARED WAR CHEST</b><span>Kills fund village defences. Your own damage and KOs level you up automatically; full health every 5 levels.</span></li><li><b>EVERY LIFE MATTERS</b><span>Stand beside a fallen ally to revive. Lose the village or the whole squad, and the stand ends.</span></li>':`<li><b>VILLAINS · ${RULES.villainMultiplier}× POWER</b><span>Boosted stats. One life.</span></li><li><b>HEROES · ${RULES.heroReviveSeconds}s RETURN</b><span>One automatic revival each. A team wipe still ends the match.</span></li>`}</ol>
       <div class="objective-options"><button class="deploy-primary" data-access="bots">PLAY NOW <span>Local match · no server needed</span><i>→</i></button><button data-access="quick">${stand?'FIND A SQUAD':'ONLINE MATCH'}<span>${stand?'Play with other defenders':'Match with other players'}</span></button><button data-access="host">HOST FRIENDS<span>Private room · share an invitation</span></button>${stand?'<button class="deploy-alone" data-access="solo">LONE DEFENDER <span>Just you. No second chance.</span></button>':''}</div>
-      <div class="objective-join"><input aria-label="Team room code" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="6-DIGIT ROOM CODE" value="${escape(this.code)}"><button data-access="join">JOIN →</button></div><p class="objective-error" role="status"></p></div>`;
+      <div class="objective-join"><input aria-label="Team room code" ${CODE_INPUT} autocomplete="off" placeholder="ROOM CODE" value="${escape(this.code)}"><button data-access="join">JOIN →</button></div><p class="objective-error" role="status"></p></div>`;
   }
   get setupOpen(){return this.setup.open;}
   closeSetup(){if(this.shop.open){this.shop.close();return true;}if(!this.setup.open)return false;this.setup.close();return true;}

@@ -40,7 +40,10 @@ export class LocalDuel {
     const stage=placeForStart(place,'duel','offline')??DUEL_STAGE.id;
     // Lock combat (the experiment's preview, lockMode.ts): for its fighters, against one of them.
     const lock=lockCombatFor(fighter)||this.couch&&lockCombatFor(rival!);
-    const sim=new ArenaSimulation({roomMode:'match',stage,collision:await createRapierCollision(stage),maxStamina:COMBO_STAMINA,maxHp:COMBO_HP,...(lock?{lockCombat:true}:{})});
+    // `?simseed=N` (a film's two takes): the simulation's own random stream starts from N, so the
+    // same inputs on the same ticks play the same fight.
+    const seed=typeof location!=='undefined'?Number(new URLSearchParams(location.search).get('simseed'))||undefined:undefined;
+    const sim=new ArenaSimulation({roomMode:'match',stage,collision:await createRapierCollision(stage),maxStamina:COMBO_STAMINA,maxHp:COMBO_HP,...(lock?{lockCombat:true}:{}),...(seed?{seed}:{})});
     sim.addPlayer('you',fighter,name);
     if(this.couch){
       sim.addPlayer(SECOND,rival!,'Player 2');

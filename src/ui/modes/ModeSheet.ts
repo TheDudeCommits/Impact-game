@@ -1,3 +1,4 @@
+import { cleanCode, CODE_INPUT, isRoomCode } from '../roomCode';
 import {BALL_ARENAS, MODE_ARENAS, isBallArena} from '../../game/ball/arenas';
 import type {BallModeId} from '../../game/ball/model';
 import { isReleasedFighter } from '../../game/rosterAvailability';
@@ -178,7 +179,7 @@ export class ModeSheet {
   show(mode: ModeId, options: SheetOpen = {}) {
     if (!modeOpen(mode)) return;
     this.mode = mode; this.variant = this.variantFor(mode, options.variant);
-    this.code = options.code ?? ''; this.status = options.status ?? ''; this.invited = !!options.invited; this.editing = false;
+    this.code = cleanCode(options.code ?? ''); this.status = options.status ?? ''; this.invited = !!options.invited; this.editing = false;
     this.panels = options.showPanels ?? !explainerSeen(mode);
     this.rules = this.panels;
     const fighter = this.host.fighter();
@@ -187,7 +188,8 @@ export class ModeSheet {
     this.seats = undefined;
     this.draw();
     this.preload();
-    if (!this.dialog.open) this.dialog.showModal();
+    // (A sheet that scrolls - a phone on its side - opens at its top, not where the last mode's was left.)
+    if (!this.dialog.open) { this.dialog.scrollTop = 0; this.dialog.showModal(); }
     this.watch();
     // (An invite's GO joins: it takes the focus, rather than the code field - on a phone that raised the keyboard.)
     this.focus(this.code && this.variant === 'friends' && !this.invited ? '.ms-join input' : '.ms-go');
@@ -247,7 +249,7 @@ export class ModeSheet {
         <p class="ms-note">${escape(this.joining ? "You're joining a friend's room: they choose the rules." : v.note)}</p>
         ${this.modeOptions()}
         ${this.variant === 'online' || this.variant === 'friends' ? `<label class="ms-name"><span>YOUR NAME</span><input maxlength="18" autocomplete="nickname" value="${escape(this.host.name())}"></label>` : ''}
-        ${this.variant === 'friends' ? `<form class="ms-join"><input inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6-DIGIT CODE" aria-label="Room code" autocomplete="off" value="${escape(this.code)}"><button type="submit">JOIN</button></form>` : ''}
+        ${this.variant === 'friends' ? `<form class="ms-join"><input ${CODE_INPUT} placeholder="ROOM CODE" aria-label="Room code" autocomplete="off" value="${escape(this.code)}"><button type="submit">JOIN</button></form>` : ''}
         <p class="ms-status" role="status" aria-live="polite">${escape(this.status)}</p>
       </section>
       ${shown ? `<section class="ms-where" aria-live="polite"><small>LOCATION · ${shown.at} / ${shown.of}</small><b>${escape(shown.name)}</b><em>${escape(shown.scene)}</em></section>` : ''}
@@ -480,7 +482,7 @@ export class ModeSheet {
   private locked(fighter: FighterId) { return this.mode !== 'training' && !mayPlay(fighter, account.account); }
   private goNote() {
     if (this.unsupported) return 'NEEDS WEBGL 2';
-    if (this.variant === 'friends') return "YOU'LL GET A 6-DIGIT CODE";
+    if (this.variant === 'friends') return "YOU'LL GET A ROOM CODE";
     if (this.variant === 'couch') return '2 PLAYERS · ON THIS DEVICE';
     if (this.variant === 'online') return this.mode === 'duel' ? 'REAL PLAYERS ONLY' : 'MATCHMAKING';
     // Hosted rooms use their own ready gate; local modes can pause on this device.
@@ -505,7 +507,7 @@ export class ModeSheet {
     if (this.host.busy()) { this.say('Preparing your match…'); return; }
     if (this.unsupported) { this.say("This browser can't draw the game: it needs WebGL 2. Try the latest Chrome, Safari, Edge or Firefox."); return; }
     const fighter = this.fighter(), prefs = this.prefs(), mode = this.mode;
-    if (join && !/^\d{6}$/.test(this.code)) { this.say('Enter the 6-digit room code.'); this.focus('.ms-join input'); return; }
+    if (join && !isRoomCode(this.code)) { this.say('Enter the room code.'); this.focus('.ms-join input'); return; }
     // The place named for this way (undefined: RANDOM, or a way with no choice - online, or a joined room): the start deals it.
     const place = join ? undefined : namedPlaceFor(mode, this.variant, this.field());
     const objective = (access: 'quick' | 'bots' | 'solo' | 'host' | 'join'): Extract<NetworkAccess, { kind: 'objective' }> => ({ kind: 'objective', objective: mode as 'last-stand' | 'bad-blood', access, role: mode === 'bad-blood' ? factionOf(fighter) : 'defenders', fighter, code: join ? this.code : undefined, place });
@@ -576,7 +578,7 @@ export class ModeSheet {
     if (d.msClose !== undefined) this.close();
     else if (d.msVariant) this.setVariant(d.msVariant as VariantId);
     else if (d.msGo !== undefined) this.go(this.joining);
-    else if (b.closest('.ms-join') && b.type === 'submit') { event.preventDefault(); this.code = this.dialog.querySelector<HTMLInputElement>('.ms-join input')!.value.replace(/\D/g, ''); this.go(true); }
+    else if (b.closest('.ms-join') && b.type === 'submit') { event.preventDefault(); this.code = cleanCode(this.dialog.querySelector<HTMLInputElement>('.ms-join input')!.value); this.go(true); }
     else if (d.msPanels !== undefined) { this.panels = !this.panels; this.draw(); this.focus('[data-ms-panels]'); }
     else if (d.msHowto !== undefined) { this.rules = true; this.draw(); this.focus('[data-ms-rules-close]'); }
     else if (d.msRulesClose !== undefined) this.closeRules();
@@ -642,11 +644,11 @@ export class ModeSheet {
     }
     // Enter on a way's tab (after ← → or a click on it) starts that way, as the hint says.
     if (tab && event.key === 'Enter') { event.preventDefault(); this.go(this.joining); return; }
-    if (event.key === 'Enter' && (event.target as HTMLElement).closest('.ms-join input')) { event.preventDefault(); this.code = (event.target as HTMLInputElement).value.replace(/\D/g, ''); this.go(true); }
+    if (event.key === 'Enter' && (event.target as HTMLElement).closest('.ms-join input')) { event.preventDefault(); this.code = cleanCode((event.target as HTMLInputElement).value); this.go(true); }
   }
   private input(event: Event) {
     const el = event.target as HTMLInputElement;
-    if (el.closest('.ms-join')) { el.value = el.value.replace(/\D/g, '').slice(0, 6); this.code = el.value; }
+    if (el.closest('.ms-join')) { el.value = cleanCode(el.value); this.code = el.value; }
     else if (el.closest('.ms-name')) this.host.setName(el.value);
   }
   private paste(event: ClipboardEvent) {
@@ -685,7 +687,7 @@ export class ModeSheet {
     if (action === 'back') { this.close(); return true; }
     if (!items.includes(active)) { (this.rules ? scope.querySelector<HTMLElement>('[data-ms-rules-close]') : this.dialog.querySelector<HTMLElement>('.ms-go'))?.focus(); return true; }
     if (action === 'confirm') {
-      if (active === code) { this.editing = true; this.digit = 0; showEntry(code, { value: code.value.replace(/\D/g, '').padEnd(6, '0').slice(0, 6), digit: 0 }); this.code = code.value; this.say(entryHint()); }
+      if (active === code) { this.editing = true; this.digit = 0; showEntry(code, { value: cleanCode(code.value).padEnd(6, '0'), digit: 0 }); this.code = code.value; this.say(entryHint()); }
       // ✕ on a way's tab starts that way, as Enter does.
       else if (active.matches('[data-ms-variant]')) this.go(this.joining);
       else active.click();

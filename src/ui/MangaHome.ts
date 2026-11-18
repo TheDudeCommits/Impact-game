@@ -2,6 +2,7 @@ import type { FighterId } from '../game/types';
 import { siteUrl } from '../loading/siteBase'; // asset addresses inside the page's own folder
 import { FIGHTERS } from '../config';
 import { mediaArt } from './mediaArt';
+import { phone } from '../input/device';
 import { LABORATORY_FIGHTERS, RELEASED_FIGHTERS, isReleasedFighter } from '../game/rosterAvailability';
 import { isLaboratoryPreviewFighter } from '../fighterLab';
 import { spriteArt, posePoster, hasPoseSheet } from './HomePreview';
@@ -63,7 +64,9 @@ export const CARD_MASTER_WIDTH: Readonly<Record<string, number>> = { 'last-stand
 export const cardSmall = (art:string) => `/assets/home/modes/${art}-${CARD_WIDTH}.webp`;
 const CARD_SIZES = '(max-width: 600px) calc(79vw - 27px), (max-width: 1000px) 36vw, calc(17.6vw - 17px)';
 const cardImage = (art:string) => { const small=siteUrl(cardSmall(art)),master=siteUrl(`/assets/home/modes/${art}.webp`);
-  return `<img src="${small}" srcset="${small} ${CARD_WIDTH}w, ${master} ${CARD_MASTER_WIDTH[art] ?? 900}w" sizes="${CARD_SIZES}" alt="" draggable="false" fetchpriority="high">`; };
+  // A phone: on its side the rail's cards are their names alone (handheld.css), so a
+  // card's picture loads only where it is drawn (upright); it took the master, 400 KB a card, for nothing.
+  return `<img src="${small}" srcset="${small} ${CARD_WIDTH}w, ${master} ${CARD_MASTER_WIDTH[art] ?? 900}w" sizes="${CARD_SIZES}" alt="" draggable="false" ${phone() ? 'loading="lazy"' : 'fetchpriority="high"'}>`; };
 const portraitArt = (id:FighterId) => packArt(id,'portrait') ?? mediaArt(`/assets/home/portraits/${id}.webp`);
 export const HOME_ASSETS = [
   // Ship the prepared art library before gameplay agents activate these fighters.
@@ -157,7 +160,7 @@ export function mangaHome(selected:FighterId, botPlayers:number) {
     <dialog class="home-dialog" id="home-dialog" aria-labelledby="home-dialog-title">
       <button type="button" id="home-dialog-close" aria-label="Close dialog">×</button>
       <h2 id="home-dialog-title">PRIVATE ROOM</h2>
-      <div id="home-private-fields"><p id="invite-preview" class="invite-preview" hidden></p><label for="player-name">YOUR NAME</label><input id="player-name" maxlength="18" placeholder="Fighter" value="Fighter" autocomplete="nickname"><div class="home-room-size" id="home-room-size" role="group" aria-label="Fighters in the room"><span>FIGHTERS</span>${[2,4,8,12].map(n=>`<button type="button" data-room-size="${n}" aria-pressed="${n===8}" aria-label="${n===2?'One versus one':`${n} fighters`}">${n===2?'1V1':n}</button>`).join('')}</div><div class="home-room-tabs"><button type="button" id="create-private">HOST ROOM</button><button type="button" id="join-private-tab">JOIN ROOM</button><button type="button" id="quick-coop" hidden>QUICK MATCH</button></div><form id="home-join-form"><label for="room-code">SIX-DIGIT ROOM CODE</label><input id="room-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" autocomplete="off" aria-describedby="code-help home-dialog-status" required><button id="join-private" type="submit">JOIN ROOM</button></form><small id="code-help">Share your six-digit code. Seats your friends leave empty are filled with bots.</small></div>
+      <div id="home-private-fields"><p id="invite-preview" class="invite-preview" hidden></p><label for="player-name">YOUR NAME</label><input id="player-name" maxlength="18" placeholder="Fighter" value="Fighter" autocomplete="nickname"><div class="home-room-size" id="home-room-size" role="group" aria-label="Fighters in the room"><span>FIGHTERS</span>${[2,4,8,12].map(n=>`<button type="button" data-room-size="${n}" aria-pressed="${n===8}" aria-label="${n===2?'One versus one':`${n} fighters`}">${n===2?'1V1':n}</button>`).join('')}</div><div class="home-room-tabs"><button type="button" id="create-private">HOST ROOM</button><button type="button" id="join-private-tab">JOIN ROOM</button><button type="button" id="quick-coop" hidden>QUICK MATCH</button></div><form id="home-join-form"><label for="room-code">SIX-DIGIT ROOM CODE</label><input id="room-code" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" pattern="[0-9A-Za-z]{6}" maxlength="6" data-room-code placeholder="ROOM CODE" autocomplete="off" aria-describedby="code-help home-dialog-status" required><button id="join-private" type="submit">JOIN ROOM</button></form><small id="code-help">Share your six-digit code. Seats your friends leave empty are filled with bots.</small></div>
       <p id="home-arcade-note" hidden>Arcade Survival: one fighter against an endless horde, wave after wave.</p>
       <p id="home-coop-note" hidden>Up to four fighters in one run. The horde grows with the party; fall, and a friend can pick you back up.</p>
       <div id="home-options-fields" hidden></div>

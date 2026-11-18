@@ -202,6 +202,9 @@ export interface Settings { /** The ball modes' COMMENTARY (audio/ballCaller.ts)
    *  GPU at boot and stepped down in a fight that cannot hold its frame rate. A save holding the old default 'high'
    *  without this is not a choice. */
   qualityChosen?:boolean;
+  /** ART STYLE (render/look/filmLook.ts): 'film', the default, the painted cel picture on a film print; 'modern' Impact's
+   *  look before it. Unset is 'film'. */
+  artStyle?:'film'|'modern';
   powerMode?:'auto'|'cool'|'full';
   animStyle:'twos'|'snap'|'classic';
   /** The animation default the save was written under (ANIM_VERSION). */
@@ -220,6 +223,8 @@ export const HUD_SKINS=['halo','inked'] as const;
 export type HudSkin=typeof HUD_SKINS[number];
 /** The HUD looks a menu offers (Settings.hudSkin), the default first. */
 export const HUD_SKIN_OPTIONS:readonly (readonly [HudSkin,string])[]=[['halo','Halo'],['inked','Inked']];
+/** The ART STYLE's choices (Settings.artStyle), the default first. */
+export const ART_STYLE_OPTIONS:readonly (readonly ['film'|'modern',string,string?])[]=[['film','Retro film','Recommended'],['modern','Modern']];
 /** The graphics quality's choices, for every menu that offers them: AUTO is the machine's own (qualityTier.ts). */
 export const QUALITY_OPTIONS:readonly (readonly ['auto'|Settings['quality'],string])[]=[['auto','AUTO'],['high','HIGH'],['medium','MEDIUM'],['low','LOW']];
 /** What a quality menu shows: AUTO until the player has chosen. */
@@ -261,6 +266,7 @@ export function loadSettings():Settings {
     if(olderCamera&&defaults.cameraStyle==='close')defaults.cameraStyle='classic';
     if(typeof saved.cinematics==='boolean')defaults.cinematics=saved.cinematics;
     if(saved.lockStyle==='glow'||saved.lockStyle==='brackets')defaults.lockStyle=saved.lockStyle;
+    if(saved.artStyle==='modern')defaults.artStyle='modern';
     // (A save from before ANIM_VERSION holding 'twos', the default of its day, is moved to Anime (smooth) once.)
     if((saved.animStyle==='twos'&&saved.animVersion===ANIM_VERSION)||saved.animStyle==='snap'||saved.animStyle==='classic')defaults.animStyle=saved.animStyle;
     // (A save from before HUD_VERSION holding 'inked', the default of its day, is moved to Halo once.)

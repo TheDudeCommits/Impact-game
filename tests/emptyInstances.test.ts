@@ -115,7 +115,8 @@ describe('the empty instanced meshes are left out of the frame\'s draw', () => {
 
   it('is in the frame\'s draw: GameRenderer holds before the composer and gives back after it, whatever happens', () => {
     const source = fs.readFileSync(new URL('../src/render/GameRenderer.ts', import.meta.url), 'utf8');
-    expect(source).toMatch(/this\.emptyInstances\.hold\(\);\s*try\{if\(this\.probePose\)this\.renderProbe\(dt\);else this\.composer\.render\(dt\);\}\s*finally\{this\.emptyInstances\.release\(\);\}/);
+    // (the film look's painted knockout hold stands in for the composer while it is held: look/filmFreeze.ts)
+    expect(source).toMatch(/this\.emptyInstances\.hold\(\);\s*try\{if\(this\.probePose\)this\.renderProbe\(dt\);else if\(!this\.freeze\.draw\(this\.renderer,this\.time\)\)\{this\.composer\.render\(dt\);this\.paintAfter\(dt\);\}\}\s*finally\{this\.emptyInstances\.release\(\);\}/);
     // The warm draws go to the renderer directly, so they still draw (and link) an empty pool.
     expect(source).toMatch(/warmDraw\([^]*?this\.renderer\.render\(this\.scene,this\.camera\)/);
   });

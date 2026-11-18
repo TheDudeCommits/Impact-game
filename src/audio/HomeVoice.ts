@@ -39,6 +39,7 @@ export class HomeVoice {
     this.audio.addEventListener('pause',()=>this.activity(false));
     this.audio.addEventListener('error',()=>this.activity(false));
     window.addEventListener('pointerdown',this.activate);
+    window.addEventListener('pointerup',this.activate);   // a finger's tap starts sound as it lifts (audio/wake.ts)
     window.addEventListener('keydown',this.activate);
     document.addEventListener('visibilitychange',this.visibility);
   }
@@ -81,5 +82,5 @@ export class HomeVoice {
     this.audio.pause();this.activity(false);
   }
   private activity(value:boolean){if(this.audible===value)return;this.audible=value;this.onActivity(value);}
-  dispose(){this.stop();window.removeEventListener('pointerdown',this.activate);window.removeEventListener('keydown',this.activate);document.removeEventListener('visibilitychange',this.visibility);this.audio.remove();}
+  dispose(){this.stop();window.removeEventListener('pointerdown',this.activate);window.removeEventListener('pointerup',this.activate);window.removeEventListener('keydown',this.activate);document.removeEventListener('visibilitychange',this.visibility);this.audio.remove();}
 }

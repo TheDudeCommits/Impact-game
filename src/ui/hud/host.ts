@@ -22,7 +22,16 @@ export function domZoneLayer(root: HTMLElement): ZoneLayer | undefined {
 }
 
 /** An ultimate's or a transformation's cut-in (CutIn.ts), or the finisher's cinema bars (Letterbox.ts), on screen now. */
-export const rolling = () => typeof document === 'object' && !!document.querySelector('.cutin:not([hidden]), .cine-bar[style*="display: block"]');
+export const rolling = () => {
+  if (typeof document !== 'object') return false;
+  // (Asked every HUD frame: the page's live lists of the two, not a selector over the whole page - the attribute
+  // selector's search was a percent of a phone's frame at a quarter CPU.)
+  cuts ??= document.getElementsByClassName('cutin'); bars ??= document.getElementsByClassName('cine-bar');
+  for (let i = 0; i < cuts.length; i++) if (!cuts[i].hasAttribute('hidden')) return true;
+  for (let i = 0; i < bars.length; i++) if ((bars[i].getAttribute('style') ?? '').includes('display: block')) return true;
+  return false;
+};
+let cuts: HTMLCollectionOf<Element> | undefined, bars: HTMLCollectionOf<Element> | undefined;
 
 /**
  * Round 5 (UX): runs the mode's HUD module (modeHud.ts). Hud constructs it, calls `update` at the end of each HUD

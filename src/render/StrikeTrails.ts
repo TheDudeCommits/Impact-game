@@ -9,6 +9,7 @@ import { noiseGLSL } from './vfx/noise';
 import { roanEnabled } from './look/roanPass';
 import { DREAM_IMPACT } from './dreamFlag';
 import { onLens } from './lenses';
+import { refinedVfx } from './look/filmLook';
 
 // The smear behind a melee blow, drawn through its contact window.
 //
@@ -234,7 +235,7 @@ export class StrikeTrails {
       // The feel pass: a smear drawn as a thick
       // arc the width of a forearm and more, not a ribbon of light.
       const roan = roanEnabled();
-      const width = (slot === 'heavy' || slot === 'ultimate' || finisher ? (roan ? .27 : .15) : slot === 'special' ? (roan ? .22 : .12) : (roan ? .19 : .1)) * (.7 + .3 * budget) * StrikeTrails.widthScale;
+      const width = (slot === 'heavy' || slot === 'ultimate' || finisher ? (roan ? .27 : .15) : slot === 'special' ? (roan ? .22 : .12) : (roan ? .19 : .1)) * (.7 + .3 * budget) * StrikeTrails.widthScale * (refinedVfx() ? .78 : 1);
       let active = false;
       // Round 3d (ULTS): a hit-confirm ultimate's later blows are its
       // cinematic's, and trail only once its opener has landed (beats).
@@ -282,7 +283,7 @@ export class StrikeTrails {
       // seconds, and the arc hung across the dome as a disc.
       const step = s.hitstop && !s.timeStopped ? dt * .12 : dt;
       for (let i = 0; i < trail.ages.length; i++) trail.ages[i] += step;
-      const life = LIFE * (trail.heavy ? HEAVY_LIFE : 1) * StrikeTrails.lifeScale;
+      const life = LIFE * (trail.heavy ? HEAVY_LIFE : 1) * StrikeTrails.lifeScale * (refinedVfx() ? .85 : 1);
       while (trail.ages.length && trail.ages[trail.ages.length - 1] > life) { trail.spare.push(trail.tips.pop()!, trail.inners.pop()!); trail.ages.pop(); }
       const n = trail.tips.length;
       if (n < 2) { trail.mesh.visible = false; continue; }
@@ -356,7 +357,7 @@ export class StrikeTrails {
    *  across Player 1's, a swing seen from the side in Player 2's half closed to a line. */
   private face(camera: THREE.Camera) {
     camera.getWorldPosition(_cam);
-    for (const trail of this.trails.values()) if (trail.mesh.visible && trail.tips.length >= 2) this.lay(trail, LIFE * (trail.heavy ? HEAVY_LIFE : 1) * StrikeTrails.lifeScale);
+    for (const trail of this.trails.values()) if (trail.mesh.visible && trail.tips.length >= 2) this.lay(trail, LIFE * (trail.heavy ? HEAVY_LIFE : 1) * StrikeTrails.lifeScale * (refinedVfx() ? .85 : 1));
   }
   /** Drop every sample: a fighter switching between blade and fist. */
   private clear(trail: Trail) {

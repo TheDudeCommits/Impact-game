@@ -1,4 +1,5 @@
 import type { VfxLevel } from '../config';
+import { onFilmLook, refinedVfx } from './look/filmLook';
 
 export interface VfxProfile {
   /** The paper impact frame (GameRenderer.impactFrame): the whole picture turned to ink and paper for a frame or two -
@@ -56,18 +57,31 @@ export const VFX_PROFILES: Readonly<Record<VfxLevel, Readonly<VfxProfile>>> = {
  *  down, only the lettering that tells. The FIGHT stance (Tab) gives the player's own level back at once. */
 export const SPORT_VFX: Readonly<VfxProfile> = { impactFrame: 0, chroma: 0, speedLines: 0, grade: .3, cinema: .4, blur: 0, powerDim: .3, bloom: .7, spriteGain: .65, spriteSize: .65, shells: .35, lights: .4, bodyFlash: .6, aura: .5, glow: .5, armoryOpacity: .6, lettering: 'tags' };
 
+/** The film look's refined effects (look/filmLook.ts refinedVfx; a TV anime's effects the benchmark): every
+ *  factor at most this while the style is on, whatever level the player chose - the paper flash only on the biggest beats
+ *  (GameRenderer.impactFrame and CombatEffects.frame hold it to FILM_IMPACT, the sakuga moments), no colour
+ *  fringe, few speed lines and a short zoom blur, the sprites and shells smaller and fainter, the auras, glows
+ *  and lights down, only the lettering that tells. What the fight is read by keeps its strength, as at every level. */
+export const REFINED_VFX: Readonly<VfxProfile> = { impactFrame: 1, chroma: 0, speedLines: .3, grade: .45, cinema: .7, blur: .25, powerDim: .5, bloom: .8, spriteGain: .8, spriteSize: .8, shells: .45, lights: .55, bodyFlash: .6, aura: .55, glow: .6, armoryOpacity: .65, lettering: 'tags' };
+
 /** The level in force and its factors, read live by the systems above. */
 export const VFX: { level: VfxLevel } & VfxProfile = { level: 'full', ...VFX_PROFILES.full };
 let chosen: VfxLevel = 'full', sporting = false;
 const LETTERING = ['tags', 'big', 'all'] as const;
-function apply() {
-  Object.assign(VFX, VFX_PROFILES[chosen], { level: chosen });
-  if (!sporting) return;
-  for (const key of Object.keys(SPORT_VFX) as (keyof VfxProfile)[]) {
-    if (key === 'lettering') VFX.lettering = LETTERING[Math.min(LETTERING.indexOf(VFX.lettering), LETTERING.indexOf(SPORT_VFX.lettering))];
-    else (VFX as unknown as Record<string, unknown>)[key] = Math.min(VFX[key] as number, SPORT_VFX[key] as number);
+function cap(by: Readonly<VfxProfile>) {
+  for (const key of Object.keys(by) as (keyof VfxProfile)[]) {
+    if (key === 'lettering') VFX.lettering = LETTERING[Math.min(LETTERING.indexOf(VFX.lettering), LETTERING.indexOf(by.lettering))];
+    else (VFX as unknown as Record<string, unknown>)[key] = Math.min(VFX[key] as number, by[key] as number);
   }
 }
+function apply() {
+  Object.assign(VFX, VFX_PROFILES[chosen], { level: chosen });
+  if (refinedVfx()) cap(REFINED_VFX);
+  if (sporting) cap(SPORT_VFX);
+}
+// The style flipped in play (H): the refined effects follow at once.
+onFilmLook(() => apply());
+apply();
 
 /** Puts `level` in force (an unknown one is Full). */
 export function setVfxLevel(level: VfxLevel | undefined) {

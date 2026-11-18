@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { StageId } from '../../game/stages';
 import type { FinishLook, LookPreset, RigLook } from './stageLooks';
+import { FILM_SPARK, filmOn } from './filmLook';
 
 export interface SparkProfile {
   /** The outline at 1080p (px), and how much of the cloth's own colour its ink takes (0 black .. 1 the cloth's deepest). */
@@ -42,7 +43,7 @@ const mixHex = (a: number, b: number, t: number) => new THREE.Color(a).lerp(new 
 let finishOn = true;
 export function setAnimeFinish(on: boolean) { finishOn = on; }
 export const animeFinishOn = () => finishOn;
-export const sparkProfile = (): SparkProfile | undefined => finishOn ? SPARK : undefined;
+export const sparkProfile = (): SparkProfile | undefined => filmOn() ? FILM_SPARK : finishOn ? SPARK : undefined;
 
 /** A stage's look under the anime finish: the fighters' ramp, rim and rig, the ground, the grade and the compositing.
  *  The fighters' ink, cel passes, shade, sheen and wash ride on uniforms set with the look (toonShading.setToonLook). */

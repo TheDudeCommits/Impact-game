@@ -1,3 +1,4 @@
+import { cleanCode, isRoomCode } from './roomCode';
 import { commentaryOf } from '../audio/ballCaller';
 import { chaseCamOf, spikeCamOf, superCamOf } from '../render/ball/ballCamChoice';
 import { mediaArt } from './mediaArt';
@@ -253,8 +254,8 @@ export class Hud {
     });
     this.root.querySelector<HTMLFormElement>('#home-join-form')!.onsubmit=event=>{
       event.preventDefault();if(this.homeBusy)return;
-      const code=this.root.querySelector<HTMLInputElement>('#room-code')!.value.replace(/\D/g,'');
-      if(!/^\d{6}$/.test(code)){this.text('home-dialog-status','Enter a six-digit room code.');return;}
+      const code=cleanCode(this.root.querySelector<HTMLInputElement>('#room-code')!.value);
+      if(!isRoomCode(code)){this.text('home-dialog-status','Enter the room code.');return;}
       this.onStart(this.selected,'match',this.playerName(),this.homeDialog.dataset.kind==='duel'?{kind:'duel',access:'join',code}:this.homeDialog.dataset.kind==='coop'?{kind:'coop-join',code}:{kind:'join-private',code});
     };
     this.root.querySelector<HTMLInputElement>('#room-code')!.addEventListener('paste',event=>{
@@ -263,7 +264,7 @@ export class Hud {
       this.text('home-dialog-status',`Invite ready · ${invite.kind==='duel'?'Duel':invite.kind==='coop'?'Co-op Survival':'Private match'}. Press Join room when ready.`);
       this.root.querySelector<HTMLElement>('#join-private')!.focus();
     });
-    this.root.querySelector<HTMLInputElement>('#room-code')!.addEventListener('input',event=>{const input=event.target as HTMLInputElement;input.value=input.value.replace(/\D/g,'').slice(0,6);});
+    this.root.querySelector<HTMLInputElement>('#room-code')!.addEventListener('input',event=>{const input=event.target as HTMLInputElement;input.value=cleanCode(input.value);});
     this.root.querySelector<HTMLButtonElement>('#private-start')!.onclick=()=>this.onPrivateStart();
     this.root.querySelector<HTMLButtonElement>('#duel-cancel')!.onclick=()=>this.onLeave();
     this.root.querySelector<HTMLButtonElement>('#room-leave')!.onclick=()=>this.onLeave();
@@ -282,6 +283,7 @@ export class Hud {
     }
     this.root.querySelector<HTMLButtonElement>('#copy-room-code')!.onclick=()=>{const code=this.root.querySelector('#private-code')!.textContent??'';void navigator.clipboard.writeText(code.replace(/\s/g,'')).then(()=>this.notify('ROOM CODE COPIED')).catch(()=>this.notify('SHARE '+code));};
     this.root.querySelector<HTMLSelectElement>('[data-setting="quality"]')!.value=settings.quality;
+    {const art=this.root.querySelector<HTMLSelectElement>('[data-setting="artStyle"]');if(art)art.value=settings.artStyle??'film';}
     this.root.querySelector<HTMLSelectElement>('[data-setting="powerMode"]')!.value=settings.powerMode??'auto';
     this.root.querySelector<HTMLSelectElement>('[data-setting="cameraMode"]')!.value=settings.cameraMode;
     this.root.querySelector<HTMLSelectElement>('[data-setting="cameraStyle"]')!.value=settings.cameraStyle;
@@ -301,6 +303,7 @@ export class Hud {
   }
   private applySetting(key:string,input:HTMLInputElement|HTMLSelectElement|InkSelect){
     if(key==='quality')chooseQuality(this.settings,input.value,machineQuality());   // a preset is the player's from now on; AUTO the machine's
+    else if(key==='artStyle')this.settings.artStyle=input.value==='modern'?'modern':'film';   // ART STYLE: The film look or the modern one (render/look/filmLook.ts)
     else if(key==='powerMode')this.settings.powerMode=input.value==='cool'||input.value==='full'?input.value:'auto';
     else if(key==='cameraMode')this.settings.cameraMode=input.value as Settings['cameraMode'];
     else if(key==='cameraStyle')this.settings.cameraStyle=input.value==='close'||input.value==='chase'?input.value:'classic';
@@ -326,7 +329,9 @@ export class Hud {
     this.onSettings(this.settings);
   }
   private previewFighter(fighter:FighterId){this.homePreviewFighter=fighter;void this.homePreview.select(fighter);}
-  private get homeDialog(){return this.root.querySelector<HTMLDialogElement>('#home-dialog')!;}
+  /** (Asked every frame through settingsOpen: kept, and found again only if the home is drawn anew.) */
+  private homeDialogNode?:HTMLDialogElement;
+  private get homeDialog(){if(!this.homeDialogNode?.isConnected)this.homeDialogNode=this.root.querySelector<HTMLDialogElement>('#home-dialog')!;return this.homeDialogNode;}
   private updatePlayLabel(){
     const label=HOME_MODES.find(mode=>mode.id===this.homeMode)!.label;
     const play=this.root.querySelector('#home-play')!;
@@ -352,7 +357,7 @@ export class Hud {
     this.text('home-dialog-title',{duel:'DUEL WITH A FRIEND',private:'PRIVATE ROOM',arcade:'ARCADE SURVIVAL',options:'OPTIONS',controls:'CONTROLS',coop:'CO-OP SURVIVAL'}[kind]);
     // A co-op room is made and joined through the same name, host and code
     // fields as a private match.
-    if(kind==='private'||kind==='coop'||kind==='duel')this.text('code-help',kind==='duel'?'A private 1v1. Share the code or invite link. Both players choose their fighter before joining.':kind==='coop'?'Share your six-digit code, up to 4 fighters. QUICK MATCH puts you in any open party: mid-run, you drop in between rounds.':'Share your six-digit code. Seats your friends leave empty are filled with bots.');
+    if(kind==='private'||kind==='coop'||kind==='duel')this.text('code-help',kind==='duel'?'A private 1v1. Share the code or invite link. Both players choose their fighter before joining.':kind==='coop'?'Share your room code, up to 4 fighters. QUICK MATCH puts you in any open party: mid-run, you drop in between rounds.':'Share your room code. Seats your friends leave empty are filled with bots.');
     this.root.querySelector<HTMLElement>('#home-room-size')!.hidden=kind!=='private';
     this.root.querySelector<HTMLElement>('#quick-coop')!.hidden=kind!=='coop';
     for(const [id,show] of [['home-private-fields',kind==='private'||kind==='coop'||kind==='duel'],['home-arcade-note',kind==='arcade'],['home-coop-note',kind==='coop'],['home-options-fields',kind==='options'],['home-controls-fields',kind==='controls']] as const)this.root.querySelector<HTMLElement>('#'+id)!.hidden=!show;
@@ -373,7 +378,7 @@ export class Hud {
   }
   private async shareInvite(native:boolean){
     const code=this.root.querySelector('#private-code')!.textContent?.replace(/\s/g,'')??'';
-    if(!/^\d{6}$/.test(code))return;
+    if(!isRoomCode(code))return;
     // The one SHARE (social/share.ts): the link is at hand inside the press - the game's public address with the room's code
     // outside Player Two, Player Two's own (asked for as the room opened, social/presence.ts) inside it - so Safari lets it
     // copy or share.
@@ -646,7 +651,7 @@ export class Hud {
     if(this.homeDialog.open&&this.homeDialog.dataset.kind==='controls'&&this.controlsPage==='guide')this.renderGuide();
     const pad=mode==='controller';
     this.refreshBindingHints();
-    this.text('code-help',pad?`${label} · ${padName(family,'south')} edit code · D-pad digits · ${padName(family,'east')} done`:'Share your six-digit code. Up to 12 fighters.');
+    this.text('code-help',pad?`${label} · ${padName(family,'south')} edit code · D-pad letters and digits · ${padName(family,'east')} done`:'Share your room code. Up to 12 fighters.');
     if(pad)this.focusBy('pad');
     if(pad&&was!=='controller'&&(!this.menu.classList.contains('hidden')||this.settingsOpen)&&!this.focusables().includes(document.activeElement as HTMLElement))this.focusDefault();
   }
@@ -688,7 +693,7 @@ export class Hud {
     // The first press after the pad wakes up shows where it is, and does
     // nothing else: pressing a button nobody could see was focused is a guess.
     if(!items.includes(active)){this.focusDefault();return;}
-    if(action==='confirm'){if(active.id==='room-code'){this.editingCode=true;this.codeDigit=0;showEntry(active as HTMLInputElement,{value:(active as HTMLInputElement).value.replace(/\D/g,'').padEnd(6,'0').slice(0,6),digit:0});this.text('code-help',entryHint(this.padFamily));}else{active.click();this.nextStep(active);}return;}
+    if(action==='confirm'){if(active.id==='room-code'){this.editingCode=true;this.codeDigit=0;showEntry(active as HTMLInputElement,{value:cleanCode((active as HTMLInputElement).value).padEnd(6,'0').slice(0,6),digit:0});this.text('code-help',entryHint(this.padFamily));}else{active.click();this.nextStep(active);}return;}
     if((action==='left'||action==='right')&&active instanceof HTMLInputElement&&active.type==='range'){const sign=action==='right'?1:-1;active.value=String(Math.max(Number(active.min),Math.min(Number(active.max),Number(active.value)+sign*Number(active.step||.1))));active.dispatchEvent(new Event('input',{bubbles:true}));active.dispatchEvent(new Event('change',{bubbles:true}));return;}
     if((action==='left'||action==='right')&&active instanceof HTMLSelectElement){active.selectedIndex=Math.max(0,Math.min(active.options.length-1,active.selectedIndex+(action==='right'?1:-1)));active.dispatchEvent(new Event('change',{bubbles:true}));return;}
     // A setting's picker (inkSelect.ts) in Options or the pause menu: left and right step its value, as a slider's do
@@ -740,7 +745,10 @@ export class Hud {
     if(this.menu.classList.contains('hidden')&&!this.settingsOpen&&!this.resultsOpen&&!this.privateWaiting&&!this.objectives.blocking)return;
     if(this.focusables().length||this.objectives.blocking)this.focusDefault();
   }
-  get resultsOpen(){return this.objectives.resultsOpen||!this.root.querySelector('#results')!.classList.contains('hidden');}
+  /** The results section, made once with the HUD (its template, above) and never replaced: found once, since resultsOpen
+   *  is asked every frame (main.ts, the renderer's calm moments). */
+  private resultsNode?:HTMLElement;
+  get resultsOpen(){return this.objectives.resultsOpen||!(this.resultsNode??=this.root.querySelector<HTMLElement>('#results')!).classList.contains('hidden');}
   /** The lock-on reticle (round 4, LOCKON; src/ui/LockOnView.ts): brackets
    *  that hug a locked target's body with a red pin over the head, a hollow
    *  pin over the nominee, an arrow at the screen's edge for either off it.

@@ -34,6 +34,7 @@ import { isRoseEmpress } from './signature/RoseEmpressContact';
 import { bigBlowOf, cinematicBlowOf } from './bigBlowEvent';
 import { VFX } from './vfxLevel';
 import { LOCK_ESCAPE_WINDOW } from '../game/lockCombat';
+import { filmOn } from './look/filmLook';
 export type { ScreenFx } from './vfx/MotionFx';
 
 type CastView = {
@@ -1281,6 +1282,7 @@ export class CombatEffects {
     for (const cast of this.casts) if (cast.event.actorId === event.actorId && cast.event.slot === event.slot && cast.released && cast.contactAt === undefined) cast.contactAt = event.serverTime;
   }
 
+  private readonly koMid = new THREE.Vector3();
   /** A fighter going down for good: the biggest burst there is. */
   private knockout(event: CombatEvent, fighters?: ReadonlyMap<string, Fighter>) {
     const victim = event.targetId ? fighters?.get(event.targetId) : undefined, killer = fighters?.get(event.actorId);
@@ -1298,12 +1300,21 @@ export class CombatEffects {
     this.kit.groundImpact(p.x, p.y, p.z, 0, 1, 0, 3, time, el, p.y);
     this.kit.pulse(c.x, c.y + 1.4, c.z, 0xffffff, 14, 12, time, .7, 3);
     // The feel pass, iteration eleven: the knockout holds its ink frame as an ultimate's last blow does.
-    if (local) { this.frame(1, IMPACT_FRAME_HOLD); this.chroma(1); }
+    // In the film look the knockout keeps its own paper frame (a shorter rest than the other panels') and is
+    // then held a second as a painting, creeping in between the two bodies (its sakuga moments' harmony freeze).
+    if (local && filmOn()) {
+      this.screen?.impactFrame(1, undefined, IMPACT_FRAME_HOLD, true); this.chroma(1);
+      const mid = killer ? bodyCentre(killer, this.koMid).add(c).multiplyScalar(.5) : c;
+      this.screen?.paintedFreeze?.(mid);
+    } else if (local) { this.frame(1, IMPACT_FRAME_HOLD); this.chroma(1); }
   }
 
   /** The screen's answers, throttled: a string of hits must read as a
    *  string of blows, not as a strobe. */
   private frame(strength: number, hold = 0) {
+    // The film look keeps the panel for an ultimate's last blow and a knockout only (its sakuga moments'
+    // biggest beats; GameRenderer.impactFrame rations them further).
+    if (filmOn() && !(hold >= IMPACT_FRAME_HOLD)) return;
     const now = performance.now() / 1000;
     if (now - this.lastFrame < .4) { if (hold > 0) this.screen?.extendImpact?.(hold); return; }
     this.lastFrame = this.lastPanel = now; this.screen?.impactFrame(Math.min(1, strength * Math.max(.5, this.kit.density)), undefined, hold);

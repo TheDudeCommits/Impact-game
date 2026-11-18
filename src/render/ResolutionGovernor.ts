@@ -1,4 +1,6 @@
 
+import type {EffectsLadder} from './mobileLadder';
+
 /** The least share of the quality's pixel ratio the governor will ever draw at, and the step it is changed by. The
  *  renderer sets a floor above it (`floor`): on a high-density display never under one pixel a CSS pixel - the
  *  governor first took an M4's twelve-fighter match to 0.975, visibly soft on a Retina screen - and elsewhere three
@@ -72,6 +74,18 @@ export function nextScale({scale, floor = MIN_SCALE, strong = false, sinceDown, 
   return Math.min(1, Math.max(least, Math.abs(next - scale) < 1e-9 ? scale : Math.round(next / STEP) * STEP));
 }
 
+/** The window's frames, late or with room, by the governor's own measure (the adaptive ladder, mobileLadder.ts):
+ *  late when the frames' 75th percentile is over the frame aimed at (as `nextScale` reads a window without a timer) or,
+ *  timed, the GPU over its budget; room when the 90th is inside it and, timed, the GPU inside ROOM of its budget. Unlike
+ *  `nextScale` a frame the CPU holds back counts as late: an effect off is a draw less for the CPU as well. */
+export function ladderWindow(gaps: readonly number[], gpu: readonly number[] | undefined, {frameMs = 1000 / 60, budgetMs = BUDGET_MS}: {frameMs?: number; budgetMs?: number} = {}) {
+  if (gaps.length < MIN_SAMPLES) return {over: false, room: false};
+  const sorted = [...gaps].sort((a, b) => a - b), timed = gpu && gpu.length >= MIN_SAMPLES ? [...gpu].sort((a, b) => a - b) : undefined;
+  const over = quantile(sorted, .75) > Math.max(SLOW_FRAME_MS, frameMs * 1.2) || !!timed && quantile(timed, .75) > budgetMs;
+  const room = quantile(sorted, .9) < Math.max(FAST_FRAME_MS, frameMs * 1.08) && (!timed || quantile(timed, .9) < budgetMs * ROOM);
+  return {over, room};
+}
+
 export class ResolutionGovernor {
   /** The share of the quality's pixel ratio drawn at now, floor..1. */
   scale = 1;
@@ -87,6 +101,18 @@ export class ResolutionGovernor {
   cpuBound = false;
   /** No step up while the CPU holds the frame back (nextScale `cpuGate`): a phone allowed above one pixel a CSS pixel. */
   cpuGate = false;
+  /** The governor's next rung (mobileLadder.ts): a phone's or a tablet's effects, a step at a time once the resolution
+   *  has nothing left to give. Unset on a desktop, which never takes a step: nothing below reads it there. */
+  ladder?: EffectsLadder;
+  /** Set when the ladder took or gave back a step in the last window; the renderer clears it as it applies the step. */
+  ladderMoved = false;
+  /** A debug switch (`?mobileframes=MS` on a phone or a tablet, GameRenderer): every frame read as MS milliseconds long and
+   *  its GPU as untimed, so the steps down and back up can be driven in an emulator whose own frames are what they are. */
+  debugFrameMs?: number;
+  /** No fight live (GameRenderer `calm`: a load, a countdown, the results, a menu): the ladder's runs are not counted - a
+   *  loading screen's long frames are the load's, not the fight's. */
+  ladderRest = false;
+  private readonly gaps: number[] = [];
   /** Held to the strong budget now. */
   get relaxed() { return this.strong && this.plugged; }
   private readonly gl: WebGL2RenderingContext;
@@ -136,8 +162,15 @@ export class ResolutionGovernor {
    *  whether the scale changed. */
   update(now: number, hold = false, cpuMs?: number): boolean {
     const {gl, ext} = this;
-    if (cpuMs !== undefined && cpuMs >= 0 && cpuMs < 250) this.cpu.push(cpuMs);
-    if (ext) {
+    const debug = this.debugFrameMs;
+    // (The switch's frames fill the real time that passed: an emulator drawing a frame a second still judges a window of
+    // the phone's frames.)
+    if (debug !== undefined) { const n = this.lastFrame ? Math.max(1, Math.min(250, Math.round((now - this.lastFrame) / debug))) : 1; for (let i = 0; i < n; i++) { this.cpu.push(debug * .3); this.gaps.push(debug); } this.lastFrame = now; }
+    else if (cpuMs !== undefined && cpuMs >= 0 && cpuMs < 250) this.cpu.push(cpuMs);
+    // A phone's or a tablet's ladder reads the frames' gaps even where the GPU is timed.
+    if (debug === undefined && this.ladder && this.lastFrame) { const gap = now - this.lastFrame; if (gap < 250) this.gaps.push(gap); }
+    if (debug !== undefined) { /* the window is the switch's */ }
+    else if (ext) {
       while (this.pending.length && gl.getQueryParameter(this.pending[0], gl.QUERY_RESULT_AVAILABLE)) {
         const query = this.pending.shift()!;
         this.samples.push(gl.getQueryParameter(query, gl.QUERY_RESULT) / 1e6);
@@ -152,15 +185,26 @@ export class ResolutionGovernor {
     if (now - this.judgedAt < WINDOW_S * 1000) return false;
     this.judgedAt = now;
     let samples = this.samples.splice(0);
-    const cpu = this.cpu.splice(0);
+    const cpu = this.cpu.splice(0), gaps = this.gaps.splice(0);
+    if (debug !== undefined) samples = gaps;
     this.cpuBound = cpuLimited(cpu, this.frameMs);
     // A GPU that went disjoint in the window (a power-state or display switch) voids the timings in flight: the whole
     // window is dropped. It is asked once a window, not once a query: getParameter is a round trip to the GPU process
     // that waits until it has decoded every command queued before it, so one a frame held the page's main thread
     // behind its own frame's draws - 0.5-0.9 ms of waiting a frame, 5% of the main thread in a Training fight, measured.
-    if (ext && gl.getParameter(ext.GPU_DISJOINT_EXT)) samples = [];
-    if (hold) return false;
-    const next = nextScale({scale: this.scale, floor: this.floor, strong: this.relaxed, sinceDown: (now - this.downAt) / 1000, samples, timed: !!ext,budgetMs:this.budgetMs,frameMs:this.frameMs,cpu,cpuGate:this.cpuGate});
+    const timed = !!ext && debug === undefined;
+    if (timed && gl.getParameter(ext.GPU_DISJOINT_EXT)) samples = [];
+    if (hold) { this.ladder?.rest(); return false; }
+    let next = nextScale({scale: this.scale, floor: this.floor, strong: this.relaxed, sinceDown: (now - this.downAt) / 1000, samples, timed,budgetMs:this.budgetMs,frameMs:this.frameMs,cpu,cpuGate:this.cpuGate});
+    const ladder = this.ladder;
+    if (ladder && this.ladderRest) ladder.rest();
+    else if (ladder) {
+      const least = Math.min(1, Math.max(LEAST_SCALE, this.floor));
+      const {over, room} = ladderWindow(gaps, timed ? samples : undefined, {frameMs: this.frameMs, budgetMs: this.budgetMs ?? BUDGET_MS});
+      // Down: the resolution first, then the effects; back up: the effects first, then the resolution.
+      if (ladder.judge({over, room, spent: next <= least + 1e-3 || this.cpuBound, now})) this.ladderMoved = true;
+      if (ladder.tier > 0 && next > this.scale) next = this.scale;
+    }
     if (Math.abs(next - this.scale) < 1e-6) return false;
     if (next < this.scale) this.downAt = now;
     this.scale = next;
@@ -173,5 +217,5 @@ export class ResolutionGovernor {
   restored() { this.pending.length = 0; this.open = false; this.samples.length = 0; this.cpu.length = 0; this.ext = this.gl.getExtension('EXT_disjoint_timer_query_webgl2') as {TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number} | null; }
   /** A new quality starts from its own full resolution (`start`: a share of it, a phone allowed above one pixel a CSS
    *  pixel starting at one). */
-  reset(start = 1) { this.scale = start; this.samples.length = 0; this.cpu.length = 0; this.cpuBound = false; this.downAt = -1e9; }
+  reset(start = 1) { this.scale = start; this.samples.length = 0; this.cpu.length = 0; this.gaps.length = 0; this.cpuBound = false; this.downAt = -1e9; }
 }

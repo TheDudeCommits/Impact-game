@@ -3,6 +3,7 @@ import {ballArenaFor,ballCourtFor} from '../ball/arenaChoice';
 import {CLASSIC_COURT,sameCourt} from '../../game/ball/model';
 import { roanLook } from './roanPass';
 import { powerupLook } from './powerupLook';
+import { filmLook, filmOn } from './filmLook';
 import type { StageId } from '../../game/stages';
 import { originalLook } from '../../originals/looks';
 
@@ -1010,7 +1011,9 @@ export function lookFor(stage: StageId): LookPreset {
   // A ball stage is lit as the arena the match plays in.
   const arena = stage === 'ball-pitch' || stage === 'ball-court' ? BALL_ARENA_LOOKS[ballArenaFor(stage)] : undefined;
   const look = originalLook(stage, powerupLook(stage, roanLook(stage, arena ?? STAGE_LOOKS[stage] ?? STAGE_LOOKS.harbor)));
-  return stage === 'ball-court' && !sameCourt(ballCourtFor(), CLASSIC_COURT) ? volleyLook(look, ballArenaFor(stage)) : look;
+  const shown = stage === 'ball-court' && !sameCourt(ballCourtFor(), CLASSIC_COURT) ? volleyLook(look, ballArenaFor(stage)) : look;
+  // The film look (filmLook.ts; the default ART STYLE): the game drawn as a cel feature on a film print, over all of it.
+  return filmOn() ? filmLook(stage, shown) : shown;
 }
 
 /** So the fighters are not dark on the red-orange court - the volleyball rules' court only (its own court: arenaChoice

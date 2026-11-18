@@ -96,6 +96,8 @@ import './ui/survival.css';
 import './ui/controller.css';
 import './ui/coop.css';
 import './ui/rift.css';
+import {freshDrawing} from './render/look/filmDrawings';
+import {filmLookFor,setFilmLook} from './render/look/filmLook';
 import * as THREE from 'three';
 import {FIGHTERS,loadSettings} from './config';
 import {setVfxLevel,setVfxSport} from './render/vfxLevel';import {MotionFx} from './render/vfx/MotionFx';
@@ -147,7 +149,8 @@ import {nextTask} from './render/textureWarmup';
 import {libraryCap,TRAINING_BENCH,TRAINING_BENCH_STRONG} from './loading/retention';
 import {AreaBanner} from './ui/AreaBanner';
 import {borrowedEvent,effectDonors,installTransplant,presentEvents,presentFighters,presentPlayers,presentSnapshot,slotNames,steadyBodies,transplantKey} from './engine/client/transplant';
-import {installBorrowedHurts} from './engine/client/borrowedHurts';
+import {hurtsReady,installBorrowedHurts} from './engine/client/borrowedHurts';
+import {loadInkImpacts} from './render/vfx/SparkField';
 import {installBorrowedStrikes} from './engine/client/borrowedStrikes';
 import {installStyleMoves,stylesReady} from './engine/client/styleMoves';
 import {bodyCentre} from './render/vfx/VfxKit';
@@ -167,6 +170,7 @@ import {CombatExercise} from './render/CombatExercise';
 import {CombatTimeline} from './render/CombatTimeline';
 import {installGameplayRecorder} from './render/GameplayRecorder';
 import {CombatAudio} from './audio/CombatAudio';
+import {onActivation} from './audio/wake';
 import {MOVES,BIG_HITSTOP} from './game/moves';
 import {moveFor,AWAKENINGS} from './game/awakening';
 import {rushMove} from './game/awakening';
@@ -227,7 +231,11 @@ import {bootDone} from './boot/bootScreen'; // index.html's loading page (#boot)
 
 const root=document.querySelector<HTMLElement>('#app')!;
 // The renderer, tried twice and else a message and a RETRY in place of the boot mark (boot/webglFailure.ts).
-const settings=loadSettings(),view=makeRenderer(gentle=>new GameRenderer(root,settings,gentle),root,(error,first)=>errorReports.report('webgl',error,'renderer',undefined,true,[`first try: ${String((first as Error)?.message??first)}`,`host: ${location.hostname}`]));
+const settings=loadSettings();
+// The ART STYLE (render/look/filmLook.ts): The film look unless the player chose the modern one, set before the renderer
+// is made so its first frame is drawn in it.
+setFilmLook(filmLookFor(settings.artStyle));
+const view=makeRenderer(gentle=>new GameRenderer(root,settings,gentle),root,(error,first)=>errorReports.report('webgl',error,'renderer',undefined,true,[`first try: ${String((first as Error)?.message??first)}`,`host: ${location.hostname}`]));
 // VISUAL EFFECTS (Settings.vfx): the level every effect reads live (render/vfxLevel.ts); a menu's change applies at once below.
 setVfxLevel(settings.vfx);
 // Until the player chooses, the quality is the machine's: from its GPU, a phone on low (render/qualityTier.ts).
@@ -536,7 +544,7 @@ const survivalTargets=new SurvivalTargets(),riftTargets=new RiftTargets(),riftAs
 // VOL.5, the move transplant (src/engine/client/transplant.ts): a borrowed move's clips and effects, loaded with the room's.
 installTransplant({ensure:ids=>library.ensure(ids),donor:state=>library.has(state.fighter)?library.create(state):undefined,bodies:()=>fighters.values(),effects:donors=>{const room=network.snapshot?riftAssets.ids(network.snapshot):[hud.selected],ids=[...new Set([...room,...(network.snapshot?effectDonors(network.snapshot.players,room):[]),...donors,...benched()])];return Promise.all([castFx.get().then(cast=>cast.load(ids)),effects.load(ids)]).then(()=>{});},compile:()=>view.compileScene()});
 // The dream loop, round 90: Taisei's authored hurts lent to every body that has none (src/engine/client/borrowedHurts.ts).
-void installBorrowedHurts();
+void installBorrowedHurts(undefined,false); // (fetched once the home is up: afterHome below)
 // Lock combat's preview: the second-round strikes of the fighters with none of their own (engine/client/borrowedStrikes.ts).
 if(lockCombatOn())void installBorrowedStrikes();
 // Techniques (game/techniques.ts): each style's takes, fitted to the bodies that throw them (engine/client/styleMoves.ts).
@@ -771,8 +779,7 @@ hud.onFighterSelect=fighter=>{music.setContext(fighter,undefined,'lobby');party.
 // starts the home playlist once, respecting the persisted music preference.
 let homeMusicActivated=false;
 const activateHomeMusic=()=>{if(homeMusicActivated||!settings.musicEnabled)return;homeMusicActivated=true;music.setContext(hud.selected,undefined,'lobby');musicPanel.setEnabled(true);};
-window.addEventListener('pointerdown',activateHomeMusic,{once:true});
-window.addEventListener('keydown',activateHomeMusic,{once:true});
+onActivation(activateHomeMusic);   // a finger's tap as it lifts, a mouse's press, a key (audio/wake.ts: a touch's pointerdown may not start sound)
 let musicContext='';
 input.onTarget=()=>{const s=network.snapshot,p=s?.players.find(p=>p.id===network.id);if(!s||!p)return;
   // A ball match: Tab turns the ball cam off (the follow camera you chose) and on again (render/ball/BallCam.ts).
@@ -1062,8 +1069,12 @@ function sendCommand(){
   if(network===online&&timeline.drawnAt!==null)command.view=timeline.drawnAt;
   // `?autopilot`: the arcade plays itself, for captures and checks.
   if(pilot&&survival()){const auto=pilot.command(snapshot.players,snapshot.serverTime);command={...auto,seq:command.seq};if(auto.targetId)targetId=auto.targetId;}
-  const sent=exercise.active?exercise.command(command,snapshot,network.id)
+  let sent=exercise.active?exercise.command(command,snapshot,network.id)
     :input.enabled?command:{...command,moveX:0,moveZ:0,attack:undefined,jump:false,dash:false,guard:false,awaken:false};
+  // A film's two takes (a local Duel with ?simseed): the first keeps this page's command for
+  // each tick of the simulation, the second sends those same commands on the same ticks - the same fight in either look.
+  const film=(globalThis as {__duelInputs?:{record?:Record<number,typeof sent>;replay?:Record<number,typeof sent>}}).__duelInputs;
+  if(film&&network!==online){const tick=Math.round(snapshot.serverTime*60),kept=film.replay?.[tick];if(kept)sent={...kept,seq:sent.seq};if(film.record)film.record[tick]=JSON.parse(JSON.stringify(sent)) as typeof sent;}
   footStick.x=sent.moveX;footStick.z=sent.moveZ;
   noteBallStick(network.id,sent.moveX,sent.moveZ); // The sport kit: the stick a spike's arm and a BACK SET are chosen by (ballMoves.ts)
   if(!network.send(sent))return;if(network===online)unacked.push(sent.seq);
@@ -1377,6 +1388,7 @@ function applyCombatFrame(snapshot:GameSnapshot){
     // loses a whole batch every time a frame runs longer than the snapshot
     // interval - which under software rendering is most of them.
     eventCounts[event.kind]=(eventCounts[event.kind]??0)+1;
+    if(event.kind==='hit')freshDrawing();// The film look: a landed blow is always drawn (render/look/filmDrawings.ts)
     // Felt in the hands, on a pad that can: blows taken and landed, guards,
     // awakenings, ultimates and falls.
     {const pulse=pulseFor(event,network.id??'',id=>!!snapshot.players.find(player=>player.id===id)?.enemy);if(pulse)input.feel(pulse);}if(event.actorId===network.id&&event.kind==='cast'&&event.move&&!echoed.has(event.id)&&!(event.slot==='ultimate'&&carded())){if(event.slot==='area'&&event.fighter&&!couch.split)showAreaBanner(event.body??event.fighter,event.move,event.fighter);else personal(event.actorId,displayMove(event.fighter,event.move).toUpperCase(),1.1);}
@@ -1538,7 +1550,7 @@ async function ensureSnapshotAssets(snapshot:GameSnapshot,onWarm?:()=>void,also?
   const prepareEarly=(id:FighterId)=>{if(started)return;const go=()=>{if(!current()||started)return;try{for(const root of library.prepare(id))view.uploadTextures(root);}catch(error){console.warn('Fighter prepared on the warm-up instead',id,error);}};
     const idle=(globalThis as {requestIdleCallback?:(work:()=>void,options?:{timeout:number})=>number}).requestIdleCallback;if(idle)idle(go,{timeout:400});else setTimeout(go,0);};
   // (Techniques: the style takes come with the room's files, so its bodies fit theirs as they are built - styleMoves.ts.)
-  await Promise.all([stylesReady(),...(ballOf(snapshot)?[ballMovesReady()]:[]),Promise.all(ids.map(id=>library.ensure([id]).then(()=>prepareEarly(id)))).then(()=>stamp('bodies')),loadStage(snapshot.stage??'harbor').then(()=>stamp('stage')),extras,warmFx,...(also?[also]:[]),...(incoming?[horde.load(incoming),objectiveField.prepare()]:[]),...(riftOf(snapshot)?[riftField.load()]:[])]);
+  await Promise.all([stylesReady(),hurtsReady(),loadInkImpacts(),...(ballOf(snapshot)?[ballMovesReady()]:[]),Promise.all(ids.map(id=>library.ensure([id]).then(()=>prepareEarly(id)))).then(()=>stamp('bodies')),loadStage(snapshot.stage??'harbor').then(()=>stamp('stage')),extras,warmFx,...(also?[also]:[]),...(incoming?[horde.load(incoming),objectiveField.prepare()]:[]),...(riftOf(snapshot)?[riftField.load()]:[])]);
   stamp('assets-loaded');
   if(!current()){horde.collect();return;}
   if(incoming)horde.warm(view.scene,incoming);
@@ -1561,7 +1573,7 @@ async function ensureSnapshotAssets(snapshot:GameSnapshot,onWarm?:()=>void,also?
     const sharedEffects=!effectsWarmed;effectsWarmed=true;
     try{if(sharedEffects)try{awakeningEffects.warmup();clashEffects.warmup();}catch(error){console.warn('Shared effects warm-up',error);}
       castFx.now?.warmup(bodies);if(!started)await nextTask();await compileRoom();if(started)await view.uploadTexturesOverFrames(current);else await view.uploadTexturesInSlices(current);needed.forEach(id=>compiledFighters.add(id));}
-    finally{library.hideWarmup();library.disposeWarmup();if(sharedEffects){awakeningEffects.hideWarmup();clashEffects.hideWarmup();}}
+    finally{library.hideWarmup();library.retireWarmup();if(sharedEffects){awakeningEffects.hideWarmup();clashEffects.hideWarmup();}}
   });warming=warm.catch(()=>{});await warm;
   if(!current()){horde.collect();return;}
   // The stage's own images too, which are in the scene (hidden) once loaded: see uploadTextures. (In a fight already on - a
@@ -1682,6 +1694,10 @@ function watchSwaps(snapshot:GameSnapshot){
 // Home is actionable independently of the full roster. Idle downloads use one worker;
 // selecting a fighter or entering a match promotes its assets ahead of that queue.
 startup.readyMs=Math.round(performance.now()-startup.started);hud.ready();bootDone(); // (the loading page's end: boot/bootScreen.ts)
+// What only a fight draws - the borrowed hurts' takes (0.9 MB) and the ink impacts' flipbooks (0.4 MB) - is fetched
+// once the home is up, not with the first screen's downloads, where a phone's connection waited for them before the
+// home could be used. A room's load waits for both (ensureSnapshotAssets).
+{const afterHome=()=>{void hurtsReady();void loadInkImpacts();};const idle=(globalThis as {requestIdleCallback?:(go:()=>void,options?:{timeout:number})=>number}).requestIdleCallback;if(idle)idle(afterHome,{timeout:3000});else setTimeout(afterHome,500);}
 // Rapier, every match's collision (the offline modes' own simulation, the online one's prediction), is fetched once the home
 // screen is up and the page has its images, not with the page: in the entry (game/moba/LocalRift.ts imported it at the top)
 // it was 1.07 MB of a first visit's 3.3 MB of code before PLAY could be pressed. A start pressed before this imports it itself.
@@ -1881,7 +1897,9 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   touch.update(input.enabled,started&&network.snapshot?.status!=='waiting'&&!hud.objectives.blocking,!!ceremony); // a room's lobby may be read upright; its fight asks for landscape; a ball match's ceremony pages (its intro, the podium) are not drawn over
   if(qualityWatch.frame(rawDt,started&&!settings.qualityChosen&&settings.quality!=='low'&&!hud.settingsOpen&&!document.hidden,view.resolutionSpent,view.frames.target(settings.powerMode))){stepDown(settings);view.applySettings(settings);}
   // A phone on Balanced that cannot hold sixty draws an even thirty (render/framePolicy.ts).
-  if(view.frames.frame(rawDt,started&&!hud.settingsOpen&&!document.hidden,settings.powerMode)){view.applySettings(settings);frameRateToast();}
+  // (Only once the resolution and the effects are spent, and back to sixty at a calm moment.)
+  view.calm=!started||network.snapshot?.status!=='active'||hud.introOpen||hud.resultsOpen||hud.settingsOpen||document.hidden;
+  {const [policyDt,policyCpu,times]=view.policyFrame(rawDt);for(let i=0;i<times;i++)if(view.frames.frame(policyDt,started&&!hud.settingsOpen&&!document.hidden,settings.powerMode,view.resolutionSpent,policyCpu,view.calm)){view.applySettings(settings);if(view.frames.stepped)frameRateToast();}}
   objectiveField.update(snapshot,presented?.time??0,network.id,view.camera);
   riftField.setTarget(targeting.locked?targetId:null);riftField.update(snapshot,network.id,view.camera,dt,couch.split?couch.ids[1]:undefined);riftUI.update(snapshot,network.id,targeting.locked?targetId:null);
   // (Online, how far behind the room this page draws - its prediction's clock less the frame's - for an attack the
@@ -2050,7 +2068,9 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
         superRide.aim(view.camera,rawDt,ballView,ballField.ballPosition(),superCamChoice(settings),snapshot.serverTime); // (An option, off by default)
         // (The marks are laid through the lens as the chase rig has just aimed it - before, they were laid
         // through the follow camera's, and stood well off the bodies they mark.)
-        passMark?.update(ballView,snapshot.players.find(p=>p.id===network.id),snapshot.players,footStick,yaw,view.camera,view.renderer.domElement.clientWidth,view.renderer.domElement.clientHeight,id=>fighters.get(id)?.group.position);ballField.namedMate=passMark?.pick??'';
+        // (The canvas's size as the renderer set it: its clientWidth and clientHeight laid the whole page out every frame,
+        // in every mode, wherever the HUD had written to it first.)
+        passMark?.update(ballView,snapshot.players.find(p=>p.id===network.id),snapshot.players,footStick,yaw,view.camera,view.canvasSize.w,view.canvasSize.h,id=>fighters.get(id)?.group.position);ballField.namedMate=passMark?.pick??'';
         if(chase)camera.fader.update(rawDt,view.camera,camera.director.crowd,own,undefined,NO_FOCUS);}
       // Locked on, the camera steers the heading, so the accumulator the next
       // mouse delta is added to must be the heading on screen (Targeting reads

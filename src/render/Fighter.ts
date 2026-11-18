@@ -1995,7 +1995,15 @@ export class FighterLibrary {
    *  in the scene they still cost a matrix walk every frame - three thousand
    *  nodes, the most of any scene - so once compiled they leave it. */
   hideWarmup(){for(const f of this.warmFighters){f.group.visible=false;f.group.removeFromParent();}}
-  disposeWarmup(){for(const f of this.warmFighters)f.dispose();this.warmFighters=[];}
+  disposeWarmup(){for(const f of [...this.warmFighters,...this.retired])f.dispose();this.warmFighters=[];this.retired=[];}
+  /** The warm-up bodies kept, out of the scene, until the next room's are compiled. Their
+   *  materials were the only users of some programs - a form's body, the finale's pose - and three deletes a program
+   *  with its last user, so letting them go after the compile deleted those programs, and the fight linked them again in
+   *  the frame that first drew them: 10 s, 3 s and 2.8 s frames at a duel's end here (software GL). Kept, those draws
+   *  find their programs. The bodies kept before are let go only now, after the new room's compile has taken its own
+   *  hold of the programs the two share. */
+  retireWarmup(){const old=this.retired;this.retired=this.warmFighters;this.warmFighters=[];for(const f of this.retired)f.retire();for(const f of old)f.dispose();}
+  private retired:Fighter[]=[];
   /** Outfits with a body of their own (the shop's: economy/outfits.ts), loaded the first time a player wears one. */
   private outfitBodies=new Map<string,{source:GLTF;rush?:THREE.AnimationClip[]}|'loading'|'failed'>();
   /** The outfit a player can be drawn in now: theirs, if it is one of their fighter's and its body is here (and its
@@ -8558,6 +8566,9 @@ export class Fighter {
    *  places the contact itself. Taisei's hand bone is his fist now, so the general path serves him (a striking surface
    *  measured off the Oup77 mesh had it half a metre off the end of his arm). */
   meleeContactPoint(index:number,out:THREE.Vector3){return this.socket('contact',out,index);}
+  /** A warm-up body kept for its programs (FighterLibrary.retireWarmup): out of the scene and out of the bodies a swing
+   *  meets, nothing of it updated or drawn, its materials (and so their programs) kept until dispose. */
+  retire(){Fighter.drawn.delete(this);this.group.visible=false;this.group.removeFromParent();}
   dispose(){
     Fighter.drawn.delete(this);
     this.ragdoll?.dispose();this.ragdoll=undefined;

@@ -51,9 +51,31 @@ export const STICK_SHARE = .42;
 /** The HUD's pieces along the top (the plates, the middle's plaque or tools, the mode's top and side zones, a room's
  *  dock): PAUSE and the emote button go where none of them stands (TouchControls.placeTop). A drawn look's plate (Halo,
  *  hud/protos) counts by its painted parts - its whole box is mostly empty below its bars - and brings a clock. */
-const TOP_PIECES = '#interface .combat-hud .fighter-meter,#interface .combat-hud .fighter-meter>.hd-skin>:not([data-hd-glow]),#interface .combat-hud .hd-clock,#interface .combat-hud .match-status,#interface .mode-hud>:is([data-zone="2"],[data-zone="2b"],[data-zone="3"],[data-zone="1b"],[data-zone="3b"])>*,#interface .waiting-dock,#interface .rift-scoreboard,.sv-hud>*';
+export const TOP_PIECES = '#interface .combat-hud .fighter-meter,#interface .combat-hud .fighter-meter>.hd-skin>:not([data-hd-glow]),#interface .combat-hud .hd-clock,#interface .combat-hud .match-status,#interface .mode-hud>:is([data-zone="2"],[data-zone="2b"],[data-zone="3"],[data-zone="1b"],[data-zone="3b"])>*,#interface .waiting-dock,#interface .rift-scoreboard,.sv-hud>*';
+/** TOP_PIECES and OWN_PLATE, found container by container (the one selector over the
+ *  whole document - its `>*` and `:not` parts tried against every one of the page's 4,000-odd elements, the home's hidden
+ *  pages among them - was 1.3 ms of every placeTop on a desktop's core, twice a second through a fight, about 14% of the
+ *  fight's frame time in a phone's profile). The same elements: each part of the selector asked of the containers it
+ *  names, inside #interface as it says, the `:scope` keeping each part inside its container. */
+const MODE_ZONES = ':scope>:is([data-zone="2"],[data-zone="2b"],[data-zone="3"],[data-zone="1b"],[data-zone="3b"])>*';
+export function topPieces(root: ParentNode = document): HTMLElement[] {
+  const found = new Set<HTMLElement>(), iface = root.querySelector<HTMLElement>('#interface');
+  const add = (list: Iterable<Element>) => { for (const el of list) found.add(el as HTMLElement); };
+  if (iface) {
+    for (const hud of iface.querySelectorAll('.combat-hud')) add(hud.querySelectorAll(':scope .fighter-meter,:scope .fighter-meter>.hd-skin>:not([data-hd-glow]),:scope .hd-clock,:scope .match-status'));
+    for (const hud of iface.querySelectorAll('.mode-hud')) add(hud.querySelectorAll(MODE_ZONES));
+    add(iface.querySelectorAll('.waiting-dock,.rift-scoreboard'));
+  }
+  for (const hud of root.querySelectorAll('.sv-hud')) add(hud.children);
+  return [...found];
+}
+export function ownPlate(root: ParentNode = document): HTMLElement[] {
+  const iface = root.querySelector<HTMLElement>('#interface'), found = new Set<HTMLElement>();
+  if (iface) for (const hud of iface.querySelectorAll('.combat-hud')) for (const el of hud.querySelectorAll<HTMLElement>(':scope .fighter-meter.own,:scope .fighter-meter.own>.hd-skin')) found.add(el);
+  return [...found];
+}
 /** The player's own plate: the inked container, or the drawn look's plate in it, whichever reaches further. */
-const OWN_PLATE = '#interface .combat-hud .fighter-meter.own,#interface .combat-hud .fighter-meter.own>.hd-skin';
+export const OWN_PLATE = '#interface .combat-hud .fighter-meter.own,#interface .combat-hud .fighter-meter.own>.hd-skin';
 /** The first stretch at least `want` wide along [from, to] that none of `taken` ([left, right] pairs) covers, or
  *  undefined. */
 export function firstGap(taken: readonly (readonly [number, number])[], from: number, to: number, want: number): number | undefined {
@@ -127,6 +149,11 @@ function sportHtml(slot: SportSlot) {
   return `<button type="button" tabindex="-1" class="tc-btn tc-sp tc-sp-${slot}" data-slot="${slot}" hidden><span class="tc-face"><svg class="tc-glyph" viewBox="0 0 32 32" aria-hidden="true"></svg>${slot === 'main' || slot === 'super' ? '<span class="ik-art"></span>' : ''}</span>`
     + `${slot === 'main' || slot === 'pass' ? '<i class="tc-wipe"></i>' : ''}${slot === 'super' || slot === 'run' || slot === 'main' ? '<i class="tc-ring"></i>' : ''}<b></b></button>`;
 }
+/** The turn card's way past, remembered for the visit (sessionStorage). */
+const UPRIGHT_KEY = 'impact-upright-ok';
+const uprightAllowed = () => { try { return sessionStorage.getItem(UPRIGHT_KEY) === '1'; } catch { return false; } };
+/** An app's own browser (Instagram's, Facebook's, X's, TikTok's ...): the screen often cannot be turned there. */
+const IN_APP = () => typeof navigator === 'object' && /\b(Instagram|FBAN|FBAV|FB_IAB|Twitter|musical_ly|TikTok|BytedanceWebview|Snapchat|LinkedInApp)/i.test(navigator.userAgent ?? '');
 /** The page's own box, CSS pixels: what the HUD and these controls are laid out in (innerWidth can be wider on a phone,
  *  see handheld.css). As of the last resize (ui/viewport.ts): read every frame, clientWidth laid the page out each time. */
 const page = () => [pageWidth(), pageHeight()] as const;
@@ -159,8 +186,13 @@ export class TouchControls {
   private upright = false;
   private held = false;
   private pausedForTurn = false;
+  /** The turn card put away for this visit (its MY SCREEN WON'T TURN), and the timer that offers that. */
+  private uprightOk = false;
+  private stuckTimer = 0;
   private wheelUntil = 0;
   private placedAt = 0;
+  /** When the controls last came up (placeTop looks more often for a while after). */
+  private shownAt = 0;
   /** A phone (input/device.ts), read again when the window changes. */
   private isPhone = phone();
   /** The ball modes' set (input/sportTouch.ts): its buttons, what each shows now, and the fighter's last state (BOOST
@@ -207,9 +239,16 @@ export class TouchControls {
     this.art = new TouchArt(this.root, id => this.buttons.get(id as TouchButton), this.root.querySelector<HTMLElement>('.tc-awaken .tc-face') ?? undefined,
       id => id === 'heavy' ? this.sport.get('main') : id === 'ultimate' ? this.sport.get('super') : undefined);
     this.turn.className = 'tc-turn'; this.turn.setAttribute('role', 'alert');
-    this.turn.innerHTML = '<div><i aria-hidden="true">⟳</i><strong>TURN YOUR PHONE</strong><span>Fights play in landscape.</span></div>';
+    this.turn.innerHTML = '<div><i aria-hidden="true">⟳</i><strong>TURN YOUR PHONE</strong><span>Fights play in landscape.</span><button type="button" class="tc-turn-anyway">MY SCREEN WON\'T TURN</button></div>';
+    // A way past the card for a screen that will not turn (an app's own browser, a
+    // rotation lock), at once in an app's browser and after a few seconds anywhere else; it stays put away for the visit.
+    this.uprightOk = uprightAllowed();
+    this.turn.querySelector('.tc-turn-anyway')!.addEventListener('click', () => {
+      this.uprightOk = true; try { sessionStorage.setItem(UPRIGHT_KEY, '1'); } catch { /* this page only */ }
+      this.upright = false; this.pausedForTurn = false; document.documentElement.classList.remove('tc-upright', 'tc-turn-stuck');
+    });
     parent.append(this.root, this.turn);
-    const size = () => { this.isPhone = phone(); this.root.classList.toggle('tc-tablet', tablet()); };
+    const size = () => { this.isPhone = phone(); this.root.classList.toggle('tc-tablet', tablet()); this.placedAt = 0; this.shownAt = performance.now(); };
     size(); window.addEventListener('resize', size);
     const options = { capture: true, passive: false } as const;
     window.addEventListener('touchstart', event => this.start(event), options);
@@ -233,8 +272,12 @@ export class TouchControls {
     // answers, and this runs every frame - on a desktop that was a synchronous layout pass a frame for an answer that is
     // always no (measured: 3.5-4.5% of the main thread in a twelve-fighter match and in Training).
     let upright = false;
-    if (inMatch && this.isPhone) { const [width, height] = page(); upright = height > width; }
-    if (upright !== this.upright) { this.upright = upright; document.documentElement.classList.toggle('tc-upright', upright); if (!upright) this.pausedForTurn = false; }
+    if (inMatch && this.isPhone && !this.uprightOk) { const [width, height] = page(); upright = height > width; }
+    if (upright !== this.upright) {
+      this.upright = upright; document.documentElement.classList.toggle('tc-upright', upright); if (!upright) this.pausedForTurn = false;
+      clearTimeout(this.stuckTimer); document.documentElement.classList.toggle('tc-turn-stuck', upright && IN_APP());
+      if (upright && !IN_APP()) this.stuckTimer = window.setTimeout(() => { if (this.upright) document.documentElement.classList.add('tc-turn-stuck'); }, 6000);
+    }
     if (upright && playing && !this.pausedForTurn) { this.pausedForTurn = true; this.release(); this.input.onMenu('keyboard'); }
     const want = playing && !upright && !held && this.input.mode === 'touch';
     if (want !== this.shown) this.show(want);
@@ -252,8 +295,10 @@ export class TouchControls {
     this.input.touchHold(this.forward * ease, this.right * ease, guard, jumpHeld);
     if (this.wheelUntil && performance.now() > this.wheelUntil) this.openWheel(false);
     if (this.sportOn) this.shotRing(now);
-    // A mode's HUD mounts its pieces as the fight begins, and the plaque's text changes its width.
-    if (performance.now() - this.placedAt > 500) this.placeTop();
+    // A mode's HUD mounts its pieces as the fight begins, and the plaque's text changes its width: twice a second for
+    // the fight's first seconds, then every two (each look reads the HUD's boxes, a layout of the page mid-frame: 1.6 %
+    // of a phone's frame time at a quarter CPU). A resize places them at once.
+    if (now - this.placedAt > (now - this.shownAt < 4000 ? 500 : 2000)) this.placeTop();
   }
   /** PAUSE, then the emote button (its wheel under it), in the first place the HUD leaves, row by row down from the top:
    *  side by side where they fit (the top row right of the player's own plate), else PAUSE first and the emote in the
@@ -265,12 +310,12 @@ export class TouchControls {
     const safe = this.root.querySelector<HTMLElement>('.tc-safe')?.getBoundingClientRect();
     const insetL = safe && safe.width > 0 ? Math.max(0, safe.left - origin.left) : 0, insetR = safe && safe.width > 0 ? Math.max(0, origin.right - safe.right) : 0;
     const size = pause.getBoundingClientRect().width || 44, gap = 8, top = 10 + (safe && safe.width > 0 ? Math.max(0, safe.top - origin.top) : 0), width = (origin.width || page()[0]) - insetR;
-    const all = [...document.querySelectorAll<HTMLElement>(TOP_PIECES)].map(el => el.getBoundingClientRect())
+    const all = topPieces().map(el => el.getBoundingClientRect())
       .filter(r => r.width > 0 && r.height > 0 && r.width < width * .6);
     // What stands in the row of buttons whose top is `y`, as [left, right] spans.
     const row = (y: number) => all.filter(r => r.top - origin.top < y + size + gap && r.bottom - origin.top > y - gap)
       .map(r => [r.left - origin.left - gap, r.right - origin.left + gap] as const);
-    const own = [...document.querySelectorAll<HTMLElement>(OWN_PLATE)].map(el => el.getBoundingClientRect()).filter(r => r.width > 0)
+    const own = ownPlate().map(el => el.getBoundingClientRect()).filter(r => r.width > 0)
       .reduce<DOMRect | undefined>((wide, r) => !wide || r.right > wide.right ? r : wide, undefined);
     const from = (y: number) => y === top && own && own.width > 0 ? own.right - origin.left + gap : 16 + insetL;
     const rows = [0, 1, 2, 3].map(i => top + i * (size + gap)), emoting = getComputedStyle(emote).display !== 'none';
@@ -382,7 +427,7 @@ export class TouchControls {
   private text(id: TouchButton, value: string) { const node = this.numbers.get(id); if (node && node.textContent !== value) node.textContent = value; }
 
   private show(on: boolean) {
-    this.shown = on; this.root.hidden = !on; this.placedAt = 0; this.metersAt = -Infinity; this.sportFaces.clear();
+    this.shown = on; this.root.hidden = !on; this.placedAt = 0; this.shownAt = performance.now(); this.metersAt = -Infinity; this.sportFaces.clear();
     document.documentElement.classList.toggle('touch-play', on);
     if (!on) this.release();
   }

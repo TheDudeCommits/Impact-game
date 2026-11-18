@@ -83,14 +83,20 @@ export function borrowAhead(scene: THREE.Object3D, clips: readonly THREE.Animati
   waiting.set(scene, { clips, fighter });
   start();
 }
-/** Installs the hooks (main.ts). `from` loads the donor another way (the tests read it off the disk). */
-export function installBorrowedHurts(from?: () => Promise<HurtDonor | undefined>) {
+/** Installs the hooks (main.ts). `from` loads the donor another way (the tests read it off the disk). `eager` false
+ *  leaves the fetch for later (the takes' file is 0.9 MB, a fight's only, and it was
+ *  fetched with the first screen; main.ts asks for it once the home is up, and every room's load waits for it -
+ *  `hurtsReady` - as a body made, or a hurt asked for, starts it as before). */
+export function installBorrowedHurts(from?: () => Promise<HurtDonor | undefined>, eager = true) {
   if (from) load = from;
   Fighter.borrowedHurt = borrowedHurt;
   Fighter.borrowAhead = borrowAhead;
+  if (!eager) return Promise.resolve(undefined);
   start();
   return loading!;
 }
+/** The donor fetched (started now if it was not), for a room's load to wait for. */
+export function hurtsReady(): Promise<void> { start(); return loading!.then(() => {}); }
 /** For tests: forget the donor and every fit, and take the hooks out. */
 export function resetBorrowedHurts() {
   donor = undefined; loading = undefined; load = fetchDonor; failed = false; fits = new WeakMap(); waiting.clear(); report.clear();

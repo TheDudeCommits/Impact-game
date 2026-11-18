@@ -3,13 +3,17 @@ import { padName } from '../input/glyphs';
 
 export interface DigitEntry { value: string; digit: number }
 
+/** What each place turns through: the digits (a match server room's code), then PlayerTwo's letters (its rooms' codes:
+ *  A-Z less I, L and O). */
+export const CODE_RING = '0123456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
 /** The entry after one press. Presses that are not a direction, A or B change nothing. */
 export function enterDigit(entry: DigitEntry, action: UiAction, length = 6): DigitEntry & { done: boolean } {
-  const digits = entry.value.replace(/\D/g, '').padEnd(length, '0').slice(0, length).split('');
+  const digits = entry.value.toUpperCase().replace(/[^0-9A-Z]/g, '').padEnd(length, '0').slice(0, length).split('').map(c => CODE_RING.includes(c) ? c : '0');
   let digit = ((Math.trunc(entry.digit) % length) + length) % length;
   if (action === 'confirm' || action === 'back') return { value: digits.join(''), digit, done: true };
   if (action === 'left' || action === 'right') digit = (digit + (action === 'right' ? 1 : length - 1)) % length;
-  else if (action === 'previous' || action === 'next') digits[digit] = String((Number(digits[digit]) + (action === 'previous' ? 1 : 9)) % 10);
+  else if (action === 'previous' || action === 'next') { const n = CODE_RING.length; digits[digit] = CODE_RING[(CODE_RING.indexOf(digits[digit]) + (action === 'previous' ? 1 : n - 1)) % n]; }
   return { value: digits.join(''), digit, done: false };
 }
 

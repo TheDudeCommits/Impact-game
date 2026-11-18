@@ -131,7 +131,9 @@ describe('the render loop follows the policy (main.ts)', () => {
     const { readFileSync } = await import('node:fs');
     const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
     expect(main).toContain('gate.draw(now,previous,view.frames.target(settings.powerMode))');
-    expect(main).toMatch(/if\(view\.frames\.frame\(rawDt,started&&!hud\.settingsOpen&&!document\.hidden,settings\.powerMode\)\)\{view\.applySettings\(settings\);/);
+    // (The adaptive ladder: the step and the frame's time through the debug switch, the ladder's word on the resolution and the
+    // effects, and the calm moment for the way back to sixty.)
+    expect(main).toContain('const [policyDt,policyCpu,times]=view.policyFrame(rawDt);for(let i=0;i<times;i++)if(view.frames.frame(policyDt,started&&!hud.settingsOpen&&!document.hidden,settings.powerMode,view.resolutionSpent,policyCpu,view.calm)){view.applySettings(settings);');
     // The input is still sent on its own timer, whatever the frames drawn.
     expect(main).toContain('inputTimer=setInterval(pushInput,1000/INPUT_HZ)');
     const renderer = readFileSync(new URL('../src/render/GameRenderer.ts', import.meta.url), 'utf8');

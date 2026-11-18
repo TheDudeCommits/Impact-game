@@ -74,7 +74,24 @@ export function cueFighter(cue: string, ids: readonly string[] = ALL_FIGHTERS): 
 const routed = new Set(Object.keys(VOICES.cues));
 
 export function unroutedVoices(id: FighterId): string[] {
-  return Object.keys(VOICE_CUES).filter(cue => cueFighter(cue) === id && !routed.has(cue));
+  return unroutedByFighter().get(id)?.slice() ?? [];
+}
+/** Each fighter's unrouted cues, from one pass over the cues (asked fighter by fighter,
+ *  every cue's owner was worked out again for every fighter - `SHOWN_FIGHTERS` below, at the module's load, held the
+ *  page's boot 0.35 s on a desktop and about 1.4 s on a phone's CPU). The same lists, in the cues' own order. */
+let unrouted: Map<string, string[]> | undefined;
+function unroutedByFighter() {
+  if (unrouted) return unrouted;
+  unrouted = new Map();
+  for (const cue of Object.keys(VOICE_CUES)) {
+    if (routed.has(cue)) continue;
+    const owner = cueFighter(cue);
+    if (owner === undefined) continue;
+    let list = unrouted.get(owner);
+    if (!list) unrouted.set(owner, list = []);
+    list.push(cue);
+  }
+  return unrouted;
 }
 
 export const originalBody = (id: FighterId | string) => !!ORIGINALS[id as FighterId];

@@ -4,6 +4,7 @@ import { noiseTexture, NOISE_GLSL } from './noiseTexture';
 import { VEIL_GLSL, veilUniforms } from './VictimVeil';
 import { INK_IMPACT_URL } from './inkImpactAtlas';
 import { VFX } from '../vfxLevel';
+import { EFFECT_DRAWINGS, refinedVfx } from '../look/filmLook';
 
 /** What a sprite draws. Every impact in the game is built out of these ten
  *  shapes, all procedural: a hot core flash, a starburst with an ink rim, a
@@ -18,7 +19,7 @@ export const DREAM_KINDS = 11;
  *  sequence is turned on screen to the blow (its axis), as the procedural burst is. Until the image has loaded, a
  *  transparent texel: the procedural sprites around it still draw. */
 const inkUniforms: { value: THREE.Texture }[] = [];
-let inkReady = false, inkLoading = false, inkLoaded: THREE.Texture | undefined;
+let inkReady = false, inkLoading: Promise<void> | undefined, inkLoaded: THREE.Texture | undefined;
 let inkBlank: THREE.Texture | undefined;
 const inkTexture = () => {
   if (inkLoaded) return inkLoaded;
@@ -27,15 +28,19 @@ const inkTexture = () => {
 };
 /** Fetch the flipbooks: called by the game's renderer (GameRenderer), so a scene built without one - a test, a lab -
  *  keeps the procedural sparks and never depends on an image arriving. Idempotent. */
-export function loadInkImpacts() {
-  if (inkLoading || typeof document === 'undefined') return;
-  inkLoading = true;
-  new THREE.TextureLoader().load(INK_IMPACT_URL, loaded => {
+export function loadInkImpacts(): Promise<void> {
+  if (typeof document === 'undefined') return Promise.resolve();
+  if (inkLoading) return inkLoading;
+  // (Answers when they are in - or could not be had - so a room's load waits for them
+  // and its upload covers them; main.ts asks once the home is up rather than with the first screen's downloads.)
+  inkLoading = new Promise<void>(done => new THREE.TextureLoader().load(INK_IMPACT_URL, loaded => {
     loaded.colorSpace = THREE.NoColorSpace; loaded.generateMipmaps = true; loaded.minFilter = THREE.LinearMipmapLinearFilter; loaded.anisotropy = 4;
     inkLoaded = loaded;
     for (const u of inkUniforms) u.value = loaded;
     inkReady = true;
-  });
+    done();
+  }, undefined, () => done()));
+  return inkLoading;
 }
 /** Whether the flipbooks have loaded (VfxKit falls back to the procedural burst until then). */
 export const inkImpactsReady = () => inkReady;
@@ -98,6 +103,9 @@ const VERTEX = /* glsl */`
 attribute vec4 aPosBorn; attribute vec4 aVelLife; attribute vec4 aSize; attribute vec4 aColA;
 attribute vec4 aColB; attribute vec4 aKind; attribute vec4 aAxisG; attribute vec4 aExtra;
 uniform float uTime; uniform vec3 uAnchor[${ANCHORS}]; uniform vec3 uKey;
+// (The film look, look/filmLook.ts EFFECT_DRAWINGS: each sprite animated in drawings, this many a second from
+// its own birth, as a 1980s effects animator drew them on twos; 0 smooth.)
+uniform float uStep;
 // VISUAL EFFECTS (render/vfxLevel.ts): the level's share of every sprite's size, 1 at Full.
 uniform float uFxSize;
 varying vec2 vUv; varying vec4 vColA; varying vec4 vColB; varying vec4 vInfo; varying vec3 vShape; varying vec3 vKey;
@@ -105,7 +113,9 @@ varying vec3 vVeil;
 varying vec2 vInk;
 void main(){
   vInk = vec2(aSize.w, aExtra.z);
-  float age = uTime - aPosBorn.w, life = aVelLife.w, t = age / max(life, 1e-4);
+  float age = uTime - aPosBorn.w, life = aVelLife.w;
+  if (uStep > 0.0 && age >= 0.0) age = floor(age * uStep + 1e-3) / uStep;
+  float t = age / max(life, 1e-4);
   // The orientation carries the anchor in its upper bits: orient + 4 * anchor.
   float anchor = floor(aKind.y / 4.0 + 1e-3), orient = aKind.y - anchor * 4.0;
   vUv = position.xy; vColA = aColA; vColB = aColB; vInfo = vec4(t, age, aKind.x, aKind.z); vShape = vec3(1.0, 1.0, orient);
@@ -594,7 +604,7 @@ export class SparkField {
     geometry.instanceCount = capacity;
     const material = new THREE.ShaderMaterial({
       name: `SparkField-${name}`, vertexShader: VERTEX, fragmentShader: FRAGMENT,
-      uniforms: { uTime: { value: 0 }, uNoise: { value: noiseTexture() }, uAnchor: { value: Array.from({ length: ANCHORS }, () => new THREE.Vector3()) }, uKey: { value: new THREE.Vector3(-.4, .8, .45).normalize() }, uInk: { value: inkTexture() }, uFxSize: { value: 1 }, uFxGain: { value: 1 }, ...veilUniforms(veil) },
+      uniforms: { uTime: { value: 0 }, uStep: { value: 0 }, uNoise: { value: noiseTexture() }, uAnchor: { value: Array.from({ length: ANCHORS }, () => new THREE.Vector3()) }, uKey: { value: new THREE.Vector3(-.4, .8, .45).normalize() }, uInk: { value: inkTexture() }, uFxSize: { value: 1 }, uFxGain: { value: 1 }, ...veilUniforms(veil) },
       transparent: true, depthWrite: false, depthTest: true, toneMapped: false, side: THREE.DoubleSide, forceSinglePass: true,
       blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
       blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
@@ -641,6 +651,7 @@ export class SparkField {
     }
     this.mesh.material.uniforms.uTime.value = time - this.epoch;
     const u = this.mesh.material.uniforms; u.uFxSize.value = VFX.spriteSize; u.uFxGain.value = VFX.spriteGain;
+    u.uStep.value = refinedVfx() ? EFFECT_DRAWINGS : 0;
   }
 
   /** Where anchor `i`'s body has moved since the sprites on it were born. */

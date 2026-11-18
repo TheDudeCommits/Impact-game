@@ -1,15 +1,14 @@
-import { account, economyServer } from '../../ui/shop/account';
+import { account } from '../../ui/shop/account';
+import { economyPost } from '../../network/p2Economy';
 import type { FighterId } from '../../game/types';
 
 export interface KeptFighter { hash: string; code: string; name: string; body: FighterId; at: number }
 
 async function call<T>(path: string, body: Record<string, unknown>): Promise<T> {
-  const response = await fetch(`${economyServer()}/api/economy/${path}`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(6000),
-  });
-  let json: { error?: string } & Record<string, unknown> = {};
-  try { json = await response.json(); } catch { /* an empty answer */ }
-  if (!response.ok) throw new Error(json.error ?? `The server answered ${response.status}.`);
+  /* (to the economy world inside PlayerTwo once it is on, to the match server otherwise: src/network/p2Economy.ts) */
+  const response = await economyPost(path, body, 6000);
+  const json = (response.body && typeof response.body === 'object' ? response.body : {}) as { error?: string } & Record<string, unknown>;
+  if (response.status < 200 || response.status >= 300) throw new Error(json.error ?? `The server answered ${response.status}.`);
   return json as T;
 }
 /** The account's token; a page with no account yet is asked to sign in, not told its account is unknown. */

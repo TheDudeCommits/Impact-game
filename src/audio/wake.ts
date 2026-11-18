@@ -9,4 +9,15 @@ export function wakeOnReturn(context: () => BaseAudioContext | undefined, live: 
   if (typeof addEventListener !== 'function' || typeof document !== 'object') return;
   const wake = () => { const ctx = context(); if (live() && asleep(ctx) && !document.hidden) void (ctx as AudioContext).resume?.().catch(() => {}); };
   addEventListener('pointerdown', wake, true); addEventListener('keydown', wake, true); document.addEventListener('visibilitychange', wake);
+  // A finger's press lets sound start only as it lifts (the browsers' user activation: pointerup and touchend for a
+  // touch, never its pointerdown), so a phone's first tap woke nothing without these.
+  addEventListener('pointerup', wake, true); addEventListener('touchend', wake, true);
+}
+/** The press that lets a page start its sound (the HTML standard's activation-triggering events): a mouse's pointerdown,
+ *  a finger's or a pen's pointerup, touchend, a key. Listen with `onActivation`; a touch's pointerdown is passed over. */
+export function onActivation(handler: () => void): void {
+  if (typeof addEventListener !== 'function') return;
+  const pointer = (event: PointerEvent) => { if ((event.type === 'pointerdown') === (event.pointerType === 'mouse')) handler(); };
+  addEventListener('pointerdown', pointer, true); addEventListener('pointerup', pointer, true);
+  addEventListener('touchend', handler, true); addEventListener('keydown', handler, true);
 }
