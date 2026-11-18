@@ -20,6 +20,7 @@ import type { LiveCourt, LiveHost, LiveStatus, LiveView } from './live-contract'
 import { rt } from './runtime';
 import { RING, RING_BOUNDS, RingCollision, registerRing } from './liveRing';
 import { LiveHud } from './liveHud';
+import { Likeness, type Worn } from './likeness';
 import { FIGHTERS, loadSettings, type Settings } from '../config';
 import { ArenaSimulation } from '../game/simulation';
 import { DuelSet } from '../game/duel/DuelSet';
@@ -274,7 +275,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     stylesReady(),
   ]).then(() => {});
 
-  function clearFighters() { for (const body of fighters.values()) body.dispose(); fighters.clear(); }
+  function clearFighters() { for (const body of fighters.values()) drop(body); fighters.clear(); }
+  /** A body let go (a new round, a new set): the visitor's likeness comes off it first (its geometries are kept). */
+  function drop(body: Fighter) { if (worn?.fighter === body) { worn.remove(); worn = null; } body.dispose(); }
   function clearFlights() {
     audio.reset(); areaFx.reset(); effects.reset(); castFx?.reset(); awakeningEffects.reset(); clashEffects.reset(); manga.reset();
   }
@@ -282,7 +285,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     for (const p of snapshot.players) {
       if (p.enemy || !library.has(p.fighter)) continue;
       const have = fighters.get(p.id);
-      if (have && have.bodyFighter !== p.fighter) { have.dispose(); fighters.delete(p.id); }
+      if (have && have.bodyFighter !== p.fighter) { drop(have); fighters.delete(p.id); }
       if (!fighters.has(p.id)) {
         const fighter = library.create(p);
         skinnedBoundsOn(fighter.group);
@@ -290,7 +293,41 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         scene.add(fighter.group);
       }
     }
-    for (const [id, fighter] of fighters) if (!snapshot.players.some(p => p.id === id && !p.enemy)) { fighter.dispose(); fighters.delete(id); }
+    for (const [id, fighter] of fighters) if (!snapshot.players.some(p => p.id === id && !p.enemy)) { drop(fighter); fighters.delete(id); }
+    wearMine();
+  }
+
+  // ---- the visitor's likeness (./likeness.ts): their own model, worn by the fighter they take over
+  /** Loaded after the first set's files, and kept (the world serves it; its browser usually has it already). */
+  let likeness: Likeness | null = null;
+  let worn: Worn | null = null;
+  const visitor = host.visitor;
+  /** The visitor's fighter wears them (as soon as the model is in; again on every new body of that seat). */
+  function wearMine() {
+    const own = me ? fighters.get(me) : undefined;
+    if (worn && worn.fighter !== own) { unwear(); }
+    if (!own || worn || !likeness) return;
+    worn = rt.within(() => likeness!.wear(own));
+    // (its dash ghosts are built again from the body it draws now)
+    effects.kit.ghosts.forget(own);
+    worn?.pose();
+  }
+  function unwear() {
+    if (!worn) return;
+    const body = worn.fighter;
+    worn.remove(); worn = null;
+    effects.kit.ghosts.forget(body);
+  }
+  function loadLikeness() {
+    if (!visitor?.model || likeness) return;
+    void Likeness.load(visitor.model).then(async loaded => {
+      likeness = loaded;
+      // its materials compiled for the world's picture before anyone walks in
+      const copy = loaded.warm(), only = new THREE.Scene();
+      only.add(copy.body);
+      try { await compile(only); } finally { copy.free(); }
+      wearMine();
+    }).catch(error => console.warn('Impact live: the visitor\'s model did not load; they play the fighter as it is', error));
   }
 
   /** The materials of what the scene holds (or of `only`, lit as the scene is), compiled for the world's picture (a
@@ -523,6 +560,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const avoid = [];
       for (const id of new Set([p.id, p.target, me])) { const body = id ? fighters.get(id) : undefined, box = body ? screenBox(body) : undefined; if (box) avoid.push(box); }
       cutIn.show(p.fighter, displayMove(p.fighter, awakening ? AWAKENINGS[p.fighter].name : slotNames(p, 'ultimate')?.name ?? moveFor(p.fighter, 'ultimate', !!p.awakened).name), side, avoid);
+      // (the visitor's card carries their name: the fighter is them now)
+      if (p.id === me && visitor) { const who = cutIn.element.querySelector('.cutin-card small'); if (who) who.textContent = visitor.name; }
     }
   }
 
@@ -570,6 +609,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   await compile();
   awakeningEffects.hideWarmup(); clashEffects.hideWarmup();
   progress(0.95);
+  // the visitor's model: after the first set's own files (the duel never waits for it)
+  loadLikeness();
 
   // ---- dev and tests: what the duel is doing (window.__impact, taken away with the game)
   rt.global('__impact', {
@@ -580,6 +621,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     },
     camera: () => ({ position: camera.position.toArray().map(v => +v.toFixed(2)), fov: camera.fov }),
     drawn: () => ({ ...drawn }),
+    /** Tests: the visitor's model loaded, and worn by their fighter. */
+    likeness: () => ({ loaded: !!likeness, worn: !!worn, fighter: worn?.fighter.state.fighter ?? null }),
     shadow: (opacity?: number) => {
       const m = catcher.material as THREE.ShadowMaterial;
       if (opacity !== undefined) m.opacity = opacity;
@@ -648,6 +691,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         if (p.id === me) self = p;
       }
       shownSelf = self;
+      // the visitor's body takes the pose of the fighter they play (after every layer of its own)
+      worn?.pose();
       for (const [id, body] of fighters) {
         if (!body.steps.length) continue;
         const mine = id === me;
@@ -737,6 +782,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const own = fighters.get(best.id);
       if (own) aim(s, best, own, 1 / 60);
       hud.enter(best.fighter);
+      // the fighter becomes the visitor, under the world's burst: their body (once their model is in) and their plate
+      hud.likeness = visitor ? { name: visitor.name, portrait: visitor.pictures.portrait } : null;
+      wearMine();
       void audio.unlock().catch(() => undefined);
       return true;
     },
@@ -746,6 +794,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const out = { at: new THREE.Vector3(p?.x ?? 0, 0, p?.z ?? 0), yaw: p?.yaw ?? 0 };
       if (me) r?.seat(me, false);
       me = null;
+      // the bot plays its own fighter again: its own body, its own plate
+      unwear();
+      hud.likeness = null;
       input.enabled = false; input.clear(); input.aim.cancel();
       targeting.reset(); targetId = null;
       cutIn.hide(); vsSplash.skip(); letterbox.set(0); hud.leave(); manga.reset();
@@ -768,7 +819,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       if (!s) return null;
       const side = (id: string) => {
         const p = s.players.find(q => q.id === id), f = p ? FIGHTERS[p.fighter] : undefined;
-        return { name: f?.name ?? '', score: duel?.scores[id] ?? 0, color: f?.color ?? '#ffffff' };
+        return { name: id === me && visitor ? visitor.name : f?.name ?? '', score: duel?.scores[id] ?? 0, color: f?.color ?? '#ffffff' };
       };
       const line = !duel ? 'DUEL' : duel.phase === 'complete' ? 'FINAL' : duel.phase === 'interval' ? `ROUND ${duel.round} · GET READY` : `ROUND ${duel.round} · FIRST TO TWO`;
       return { sides: [side(SEATS[0]), side(SEATS[1])], line };
@@ -777,6 +828,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     dispose() {
       ring?.dispose(); ring = null;
       clearFighters();
+      worn?.remove(); worn = null; likeness = null;
       for (const each of [effects, castFx, awakeningEffects, clashEffects, areaFx]) { try { each?.dispose(); } catch (error) { console.warn('Impact live: dispose', error); } }
       try { audio.dispose(); } catch { /* gone */ }
       cutIn.hide(); hud.dispose(); manga.dispose?.();

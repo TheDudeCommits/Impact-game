@@ -35,6 +35,79 @@ export interface LiveHost {
   /** A small JSON-safe store for the game's settings (localStorage under `dw.game.<id>.<key>`). */
   save(key: string, value: unknown): void;
   load<T>(key: string): T | null;
+  /** Who walks in. The player the visitor takes over becomes them, drawn in the game's own style; leave() gives the
+   *  bot its own look back. */
+  readonly visitor: LiveLikeness;
+}
+
+/**
+ * The visitor's own character: what they look like and what they wear, as data each game draws in its own art and
+ * character style. Hoop It makes them a chibi, Impact a fighter: the same person in every game, with their hair, their
+ * face and every item they wear as it really is. A game maps what it already has (its own curly hairdo, its own high-tops),
+ * builds what it lacks from these colours and words in its own manner, and never swaps an item for a different one.
+ * Colours are '#rrggbb'. URLs are absolute.
+ */
+export interface LiveLikeness {
+  /** What the game calls them on its name plates, its HUD and its scoreboard. */
+  name: string;
+  /** Fair olive skin. */
+  skin: string;
+  /** The iris. */
+  eyes: string;
+  /** Thick, straight, dark. */
+  brows: string;
+  /** Light stubble along the jaw and chin (a tint over the skin), or null. */
+  stubble: string | null;
+  /** A cheerful face: a friendly closed smile, never a scowl. */
+  mood: 'cheerful';
+  hair: {
+    /** Tight curls piled on top and over the brow, the sides and back faded short (a skin fade at the bottom). */
+    style: 'curly-top-fade';
+    /** The curls: silver. */
+    color: string;
+    /** Deep between the curls. */
+    shade: string;
+    /** The faded sides, where they start (they fade into the skin below). */
+    fade: string;
+  };
+  outfit: {
+    /** A zip-up bomber, worn open over the tee, with a shirt collar and ribbed cuffs and hem. */
+    jacket: {
+      style: 'skyline-bomber';
+      /** Light from the collar over the shoulders and chest, down to the skyline. */
+      top: string;
+      /** A city skyline in silhouette across the chest, the back and the upper sleeves: the buildings rise out of the
+       *  dark half into the light one. Everything below it is `bottom`, the sleeves from just above the elbow. */
+      bottom: string;
+      /** The cuffs and the hem band. */
+      rib: string;
+      /** The zip, two silver lines down the open front. */
+      zip: string;
+      /** The back: `word` in heavy slab serif capitals over the emblem, the banner under it. */
+      word: string;
+      /** The emblem: a bull's head seen from the front, red, with white horns curving up, black eyes and nostrils, in a
+       *  black outline. A small one sits on the left chest. */
+      emblem: string;
+      horns: string;
+      /** A ribbon banner under the emblem, white capitals on red. */
+      banner: string;
+      bannerColor: string;
+    };
+    /** The tee under the open jacket. */
+    shirt: string;
+    /** Loose joggers, gathered in a cuff at the ankle. */
+    pants: { style: 'joggers'; color: string };
+    /** High-top basketball shoes: white side panels and toe box, red toe cap, heel, eyestay and collar, a black swoosh
+     *  arc down each side, black laces, a white midsole on a red outsole. */
+    shoes: { style: 'hi-top'; base: string; overlay: string; swoosh: string; laces: string; sole: string; outsole: string };
+  };
+  /** Pictures of them on a transparent ground: the face and shoulders (a portrait for a HUD plate or a card) and the
+   *  front and back views (the reference every drawing of them follows). */
+  pictures: { portrait: string; front: string; back: string };
+  /** Their own rigged 3D model (glTF): one skinned mesh in metres, facing +z, soles on y = 0, rigged with HISSATSU's
+   *  Tripo skeleton names (Hip, Spine01, Head, L_Upperarm...). For a game whose characters are full-size people: it
+   *  wears the game's own materials and plays the game's own animations, retargeted. */
+  model: string;
 }
 
 /** One draw of the game into the world's picture. */

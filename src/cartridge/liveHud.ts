@@ -47,6 +47,27 @@ export class LiveHud {
   private lastFoeId: string | null = null;
   private fighter: FighterId | null = null;
   private seenEvent = 0;
+  private wearing: { name: string; portrait: string } | null = null;
+
+  /** The visitor, when the fighter they play has become them (the world's LiveLikeness): their name in the plate's
+   *  lettering and their portrait in its picture. Null: the fighter's own plate again. */
+  get likeness() { return this.wearing; }
+  set likeness(who: { name: string; portrait: string } | null) {
+    this.wearing = who;
+    if (who) { this.wearLikeness(); return; }
+    // the fighter's own name and picture back (the plates write a picture again when their key is reset)
+    if (this.fighter) for (const node of this.root.querySelectorAll('.fighter-meter.own [data-hd="name"], #own-name')) node.textContent = FIGHTERS[this.fighter].name.toUpperCase();
+    this.protos.refresh();
+  }
+  /** The own plate shows the visitor: written only where it differs (every HUD tick, after the plates' own writes). */
+  private wearLikeness() {
+    const who = this.wearing; if (!who) return;
+    const name = who.name.toUpperCase();
+    for (const node of this.root.querySelectorAll('.fighter-meter.own [data-hd="name"], #own-name')) if (node.textContent !== name) node.textContent = name;
+    for (const img of this.root.querySelectorAll<HTMLImageElement>('.fighter-meter.own img[data-hd-bust]')) {
+      if (img.getAttribute('src') !== who.portrait) { img.src = who.portrait; img.removeAttribute('data-fallback'); }
+    }
+  }
 
   constructor(parent: HTMLElement, private readonly settings: Settings) {
     const root = this.root = document.createElement('div');
@@ -117,6 +138,7 @@ export class LiveHud {
     this.inked.update(self, target);
     const inView = snapshot.status === 'active';
     this.protos.update(self, target, snapshot.serverTime, null, inView);
+    this.wearLikeness();
     const now = performance.now(), ready = this.cards.update(self, snapshot.serverTime);
     this.inked.ultimateTick(ready, this.cards.ultimate, now);
     const phase = hudPhaseOf(snapshot);

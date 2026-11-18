@@ -167,7 +167,9 @@ export class Afterimages {
     const walk = (o: THREE.Object3D) => {
       if (o !== fighter.group && summon && o.name.startsWith('fighter-')) return;
       const mesh = o as THREE.Mesh;
-      if (mesh.isMesh && !(mesh as THREE.InstancedMesh).isInstancedMesh && !mesh.name.endsWith('-ink') && mesh.name !== 'contact-shadow' && !/outline/i.test(mesh.name)) {
+      // (A body put away on a layer no camera draws - a fighter the dude.work visitor wears, src/cartridge/likeness.ts -
+      // leaves no ghost: the body worn over it does.)
+      if (mesh.isMesh && mesh.layers.isEnabled(0) && !(mesh as THREE.InstancedMesh).isInstancedMesh && !mesh.name.endsWith('-ink') && mesh.name !== 'contact-shadow' && !/outline/i.test(mesh.name)) {
         const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
         if (!(mesh.name.startsWith('awaken-on') && materials.some(m => m.transparent))) sources.push(mesh);
       }
@@ -266,6 +268,12 @@ export class Afterimages {
   }
 
   /** Forget fighters that have left the match. */
+  /** A fighter's body changed (worn, or given back): its ghosts are built again from what it draws now. */
+  forget(fighter: Fighter) {
+    const pool = this.pools.get(fighter);
+    if (pool) { this.releasePool(pool); this.pools.delete(fighter); }
+  }
+
   retain(fighters: ReadonlyMap<string, Fighter>) {
     for (const [fighter, pool] of this.pools) {
       let present = false; for (const f of fighters.values()) if (f === fighter) { present = true; break; }
