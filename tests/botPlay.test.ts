@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ArenaSimulation } from '../src/game/simulation';
 import type { CombatEvent, PlayerInput } from '../src/game/types';
+import { ULTIMATE_COST } from '../src/game/moves';
+import { LEVEL_TOP } from '../src/game/adaptive';
 
 /** bots that play better rather than hit harder - they punish a swing that is over while
  *  its thrower is still in the recovery (simulation.ts botPunish) and meet a jump at them (botAntiAir). The classic bot
  *  (Actor.botClassic, bot_strength.mts's control) does neither. */
 afterEach(() => vi.restoreAllMocks());
-type Sim = ArenaSimulation & { actors: Map<string, { botSkill: number; botClassic?: boolean; nextBotThink: number; state: { x: number; z: number } }> };
+type Sim = ArenaSimulation & { actors: Map<string, { botSkill: number; botClassic?: boolean; nextBotThink: number; state: { x: number; z: number; ultimate: number } }> };
 function arena(classic: boolean, seed = 11, fighter: 'kenzo' | 'taisei' = 'kenzo') {
   const sim = new ArenaSimulation({ roomMode: 'match', trainingBot: false, lockCombat: true, seed }) as Sim;
   sim.addPlayer('me', fighter, 'Me', false, { x: 0, y: 0, z: 0 });
@@ -61,5 +63,24 @@ describe('bots that play better', () => {
     } finally { sim.dispose(); }
     const anti = spy.mock.calls.filter(call => (call[3] ?? 'n') === 'b' || call[2] === 'light');
     expect(anti.length).toBeGreaterThanOrEqual(2);
+  });
+  // the top level punishes a recovery with the heaviest blow that lands in it - its
+  // ultimate on a full bar - where the skill-1 bot throws a heavy or a light.
+  it('punish with the ultimate at the top level, on a full bar; the skill-1 bot does not', () => {
+    for (const top of [true, false]) {
+      const spy = presses(), { sim, input } = arena(false, 11, 'taisei');
+      if (top) sim.setBotLevel('bot', LEVEL_TOP);
+      try {
+        for (let t = 0; t < 60 * 24; t++) {
+          if (t % 150 === 30) { const me = sim.actors.get('me')!, bot = sim.actors.get('bot')!; me.state.x = 0; me.state.z = 0; bot.state.x = 0; bot.state.z = -2.2; bot.state.ultimate = ULTIMATE_COST; input({ attack: 'special', targetId: '' }); }
+          else input();
+          sim.step();
+        }
+      } finally { sim.dispose(); }
+      const big = spy.mock.calls.filter(call => call[2] === 'ultimate').length;
+      if (top) expect(big, 'the top level').toBeGreaterThanOrEqual(1);
+      else expect(big, 'the skill-1 bot').toBe(0);
+      spy.mockRestore();
+    }
   });
 });

@@ -1,3 +1,4 @@
+import { inPlayerTwo, playerTwo } from '../boot/playerTwo';
 export const QUEUE_MODES = ['royale', 'duel', 'last-stand', 'bad-blood', 'rift-war', 'arcade', 'goal-rush', 'sky-spike'] as const;
 export type QueueMode = typeof QUEUE_MODES[number];
 export interface ModeCount { queue: number; playing: number; standby: number }
@@ -13,6 +14,8 @@ const server = () => {
   const env = (import.meta as { env?: Record<string, string | undefined> }).env ?? {};
   return (env.VITE_MATCH_SERVER || `${location.protocol === 'https:' ? 'https' : 'http'}://${location.hostname}:2567`).replace(/^ws/, 'http').replace(/\/+$/, '');
 };
+/** Whether this page asks nobody: inside PlayerTwo's player, unless `?railway` sends it to the match server. */
+const insidePlayerTwo = () => inPlayerTwo() && !(typeof location === 'object' && new URLSearchParams(location.search).has('railway'));
 const randomId = () => { try { return crypto.randomUUID(); } catch { return `p-${Math.random().toString(36).slice(2, 14)}${Date.now().toString(36)}`; } };
 
 /** A view the page can trust: numbers where numbers belong (anything else reads as none). */
@@ -35,15 +38,25 @@ export class PopulationLink {
   private last = -Infinity;
   private asking = false;
   private timer: ReturnType<typeof setInterval> | undefined;
-  constructor(private readonly fetcher: (url: string) => Promise<unknown> = url => fetch(url, { signal: AbortSignal.timeout(5000) }).then(r => r.ok ? r.json() : undefined), private readonly url = server) {}
+  private wanted = false;
+  constructor(private readonly fetcher: (url: string) => Promise<unknown> = url => fetch(url, { signal: AbortSignal.timeout(5000) }).then(r => r.ok ? r.json() : undefined), private readonly url = server,
+    private readonly nobody: () => boolean = insidePlayerTwo) {}
   /** Heard on every answer (and undefined when the server has no counts). */
   on(listener: (view: PopulationView | undefined) => void) { this.listeners.add(listener); if (this.view) listener(this.view); return () => this.listeners.delete(listener); }
-  /** The page's ask, once a second at most, as often as where it is wants. */
-  start() { if (this.timer || typeof window !== 'object') return; this.timer = setInterval(() => void this.tick(), 1000); void this.tick(); }
-  stop() { clearInterval(this.timer); this.timer = undefined; }
+  /** The page's ask, once a second at most, as often as where it is wants - once PlayerTwo's SDK has said whether the
+   *  page is in its player (at once anywhere without it), and never there. */
+  start() {
+    if (this.wanted || typeof window !== 'object') return;
+    this.wanted = true;
+    void playerTwo().then(() => {
+      if (!this.wanted || this.timer || this.nobody()) return;
+      this.timer = setInterval(() => void this.tick(), 1000); void this.tick();
+    });
+  }
+  stop() { this.wanted = false; clearInterval(this.timer); this.timer = undefined; }
   /** Asks now if it is time (or `force`): true when it asked. */
   async tick(force = false, now = performance.now()): Promise<boolean> {
-    if (this.asking || typeof document === 'object' && document.hidden) return false;
+    if (this.asking || typeof document === 'object' && document.hidden || this.nobody()) return false;
     const where = this.where(), period = this.period(where);
     if (!force && now - this.last < period) return false;
     this.asking = true; this.last = now;

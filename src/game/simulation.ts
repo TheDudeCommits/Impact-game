@@ -423,6 +423,9 @@ interface Actor {
   /** Bots only: how much EASE it plays with, 0 to 1 (BOT_EASE) - none unless the adaptive difficulty set a level under
    *  1 (adaptive.ts levelParts). */
   botEase: number;
+  /** bots only: how much EDGE it plays with, 0 to 1 (BOT_SHARP) - none unless the
+   *  adaptive difficulty set a level over 2 (adaptive.ts levelParts). */
+  botSharp: number;
   /** The level the adaptive difficulty set (adaptive.ts LEVEL_TOP), and the skill it was drawn with, which it goes back
    *  to when it is let go. Both unset while it plays as drawn. */
   botLevel?: number;
@@ -829,6 +832,25 @@ const BOT_WINDED = [8, 18, 14] as const;
  *  - chase: it chases its launches less by this share.
  *  A bot with no ease draws nothing more off the seeded stream than it did. */
 const BOT_EASE = { think: 1.2, guard: .7, react: .16, drop: .5, hold: .4, chase: .6 } as const;
+/** What a bot's EDGE (Actor.botSharp, 0 to 1 - none to level 2, all of it at level 3) adds to the skill-1 bot - the top
+ *  level a strong player needs, its edge in its abilities, combos and attacks, never in its body - at full edge, a
+ *  person's reactions kept:
+ *  - block, parry, react: its blocks and parries by these shares of a blow it reads, the parry pressed no sooner than a
+ *    person sees the swing (BOT_REACTION), now `react` sooner: .20 s at the top;
+ *  - punish, punishReact: its punishes by this share, seen this much sooner (.10 s at the top), with the heaviest blow
+ *    that lands before the recovery is out - its ultimate on a full bar, its special when it is up - not only a heavy;
+ *  - antiAir: its anti-airs by this share;
+ *  - ultimate: its ultimate kept for a body it is sure of (its own parry's punish, a body its blow left reeling, the
+ *    recovery it punishes, a body on the floor), the raw throw at a standing body cut by this share;
+ *  - ender, counter: its strings ended on an ender, and its counter-vanishes, by these shares;
+ *  - charge, feed: against a guard held up, its guard-breaking charge by this share, and this share of the swings it
+ *    would have fed the guard held back;
+ *  - think: its thinking clock quicker by this share of itself.
+ *  Measured, level 3 against level 2 (three seeds): 1.07, winning six duels in ten. Tried and
+ *  left out: more of its bar kept in hand and more turtling (cost 3%), better-timed lock escapes (nothing), a clock
+ *  quicker still (nothing). The parry's share of it is about 3%. A bot with no edge draws nothing more off the seeded
+ *  stream than it did. */
+const BOT_SHARP = { block: .3, parry: .06, react: .04, punish: .15, punishReact: .02, antiAir: .2, ultimate: .7, ender: .15, counter: .1, charge: .3, feed: .6, think: .2 } as const;
 /** The ultimate meter a blow on the horde builds, against a blow on a
  *  fighter: a swing through a crowd lands a dozen times. */
 const EXTERNAL_METER = .45;
@@ -1303,7 +1325,7 @@ export class ArenaSimulation {
       lastDamageAt: -10, chainHits: 0, scalingHits: 0, spawn: position(origin),
       guardAt: -Infinity, wasGuarding: false, guardHeld: false, guardPressedAt: -Infinity,
       guardReleasedAt: -Infinity, parryCaught: false, parryLockUntil: -Infinity, counterUntil: -Infinity, parriedUntil: -Infinity,
-      bounceOnLand: false, launchLead: 0, launchSpan: 0, launchRun: 0, botSkill: this.random(), botEase: 0,
+      bounceOnLand: false, launchLead: 0, launchSpan: 0, launchRun: 0, botSkill: this.random(), botEase: 0, botSharp: 0,
       mx: 0, mz: 0, blockedUntil: -Infinity, castSerial: 0, rushStage: 0, rushUntil: -Infinity, rushOpened: [],
       chaseUntil: -Infinity, lightChaseUntil: -Infinity, dashChase: false, vanishedAt: -Infinity, intent: null, intentCast: -1, faceYaw: state.yaw,
       // Round 4b (COMBAT): every field the rollback checkpoint carries is set from the start - a key the server's copy
@@ -1357,7 +1379,7 @@ export class ArenaSimulation {
   setBotSkill(id: string, skill: number) {
     const a = this.actors.get(id);
     if (!a || !Number.isFinite(skill)) return;
-    this.adaptive.pin(id); a.botLevel = a.botOwn = undefined; a.botEase = 0; a.botSkill = Math.max(0, Math.min(1, skill));
+    this.adaptive.pin(id); a.botLevel = a.botOwn = undefined; a.botEase = a.botSharp = 0; a.botSkill = Math.max(0, Math.min(1, skill));
   }
   /** A bot held at one level (adaptive.ts LEVEL_TOP) whatever the field. */
   setBotLevel(id: string, level: number) { const a = this.actors.get(id); if (a && Number.isFinite(level)) { this.adaptive.pin(id); this.setLevel(a, level); } }
@@ -1366,12 +1388,12 @@ export class ArenaSimulation {
   private setLevel(a: Actor, level: number | undefined) {
     if (level === undefined) {
       if (a.botOwn !== undefined) a.botSkill = a.botOwn;
-      a.botLevel = a.botOwn = undefined; a.botEase = 0;
+      a.botLevel = a.botOwn = undefined; a.botEase = a.botSharp = 0;
       return;
     }
     if (a.botOwn === undefined) a.botOwn = a.botSkill;
-    const { ease, skill } = levelParts(level);
-    a.botLevel = level; a.botEase = ease; a.botSkill = skill;
+    const { ease, skill, sharp } = levelParts(level);
+    a.botLevel = level; a.botEase = ease; a.botSkill = skill; a.botSharp = sharp;
   }
   /** A custom room's or a party's difficulty: a step from the adaptive aim (adaptive.ts DIFFICULTY_STEP). */
   setDifficulty(difficulty: Difficulty | undefined) { this.adaptive.setDifficulty(difficulty); }
@@ -5282,7 +5304,7 @@ export class ArenaSimulation {
     // The attacker may answer it in turn (the vanish-read), a bot now and then.
     by.lockCounterOn = p.id; by.lockCounterUntil = this.serverTime + LOCK_COUNTER_WINDOW;
     if (q.isBot && !by.external && q.stamina >= LOCK_COUNTER_STAMINA
-        && this.random() < (LOCK_BOT_COUNTER[0] + (LOCK_BOT_COUNTER[1] - LOCK_BOT_COUNTER[0]) * by.botSkill) * (1 - by.botEase)) {
+        && this.random() < (LOCK_BOT_COUNTER[0] + (LOCK_BOT_COUNTER[1] - LOCK_BOT_COUNTER[0]) * by.botSkill) * (1 - by.botEase) + BOT_SHARP.counter * by.botSharp) {
       const press = this.serverTime + Math.max(.04, LOCK_BOT_REACT[0] + (LOCK_BOT_REACT[1] - LOCK_BOT_REACT[0]) * by.botSkill + this.gauss() * LOCK_BOT_SPREAD[1]);
       by.botGuardFrom = press; by.botGuardUntil = press + .12; by.botTimed = true;
     }
@@ -5479,7 +5501,7 @@ export class ArenaSimulation {
     // (Its clock, its aggression, its pace and the way it circles are its own - the skill it was drawn with,
     // botOwn, where a level is set - and only its craft is the level's.)
     const own = a.botOwn ?? a.botSkill;
-    a.nextBotThink = this.serverTime + (a.botClassic ? .18 + a.botSkill * .16 : Math.min(BOT_THINK_MOST, .18 + own * .16) * (1 + BOT_EASE.think * a.botEase));
+    a.nextBotThink = this.serverTime + (a.botClassic ? .18 + a.botSkill * .16 : Math.min(BOT_THINK_MOST, .18 + own * .16) * (1 + BOT_EASE.think * a.botEase) * (1 - BOT_SHARP.think * a.botSharp));
     // In a royale a bot fights whoever is nearest, bot or not. In training the
     // sparring bot only ever has the one person to look at.
     const opponents = [...this.actors.values()].filter(b => b !== a && b.state.alive && this.hostile(a.state, b.state)
@@ -5577,6 +5599,9 @@ export class ArenaSimulation {
         && this.random() < .55 + a.botSkill * .4) attack = 'ultimate';
     else if (chase) attack = 'light';
     else if (wait) attack = undefined;
+    // (its ultimate kept for a body it is sure of - its parry's punish, a body its blow left reeling.)
+    else if ((punish || reeling) && a.botSharp > 0 && p.ultimate >= ULTIMATE_COST && ready('ultimate') && d < this.botUltimateReach(a)
+      && this.random() < a.botSharp) attack = 'ultimate';
     else if (punish) attack = ready('heavy') && this.random() < .45 + a.botSkill * .4 ? 'heavy' : 'light';
     else if (reeling) attack = reeling;
     // Ground hits: getting up, every normal would be dodged - it closes in and
@@ -5590,7 +5615,7 @@ export class ArenaSimulation {
       && this.random() < (areaPick.caught >= 2 ? .55 : .2 + a.botSkill * .15) * aggression) attack = 'area';
     else if (apart) attack = sighted && d < 20 && ready('special') && this.random() < .3 * aggression ? 'special'
       : sighted && this.moveOf(a, 'heavy').style !== 'melee' && d < this.moveOf(a, 'heavy').range && this.random() < .25 ? 'heavy' : undefined;
-    else if (p.ultimate >= ULTIMATE_COST && d < 6 && ready('ultimate') && this.random() < .35 * aggression) attack = 'ultimate';
+    else if (p.ultimate >= ULTIMATE_COST && d < 6 && ready('ultimate') && this.random() < .35 * aggression * (1 - BOT_SHARP.ultimate * a.botSharp)) attack = 'ultimate';
     // (Lock combat, one on one: the string is the rounds and their finisher, carried on light by light as a person
     // mashing carries it - an ender out of it cut the second round short and threw its heavy at a body the knockaway had
     // sent off: bot Duels ran 29% longer than on the live rules, their heavies landing 49% of the time against 78%. With
@@ -5606,7 +5631,9 @@ export class ArenaSimulation {
     // Round 3e (VARIETY): in its own reach, and the stride its step closes -
     // a claw or a fist that swung from 2.9 m, as a sword does, only ever hit
     // the air, and the short-armed fighters lost nearly every bot duel.
-    else if (d < swing && !a.botWinded) attack = this.random() < .24 ? 'heavy' : 'light';
+    // (a guard held up is not fed a swing it would block - BOT_SHARP.feed - and waited out instead.)
+    else if (d < swing && !a.botWinded && !(a.botSharp > 0 && other.state.guarding && this.random() < BOT_SHARP.feed * a.botSharp))
+      attack = this.random() < .24 ? 'heavy' : 'light';
     else if (d < 23 && sighted && ready('special') && !a.botWinded && this.random() < .12 * aggression) attack = 'special';
     // With ease it lets a string go now and then (a landed one, or one out of its own blow leaving them reeling), and
     // holds back from starting a swing (BOT_EASE).
@@ -5688,7 +5715,7 @@ export class ArenaSimulation {
     const left = o.start + o.move.duration - now;
     if (left <= 0) return false;
     const key = `${other.state.id}:${o.id}`;
-    if (a.botPunishRead !== key) { a.botPunishRead = key; a.botPunishAt = now + Math.max(.05, scale(BOT_PUNISH_REACT) + BOT_EASE.react * a.botEase + this.gauss() * .03); a.botPunishGo = this.random() < scale(BOT_PUNISH) * (1 - a.botEase); }
+    if (a.botPunishRead !== key) { a.botPunishRead = key; a.botPunishAt = now + Math.max(.05, scale(BOT_PUNISH_REACT) + BOT_EASE.react * a.botEase - BOT_SHARP.punishReact * a.botSharp + this.gauss() * .03); a.botPunishGo = this.random() < scale(BOT_PUNISH) * (1 - a.botEase) + BOT_SHARP.punish * a.botSharp; }
     if (!a.botPunishGo || now < a.botPunishAt!) return false;
     const ready = (slot: AttackSlot) => now > (p.cooldowns[slot] ?? 0);
     const heavy = this.moveOf(a, 'heavy'), light = this.moveOf(a, 'light');
@@ -5696,7 +5723,12 @@ export class ArenaSimulation {
     const swing = this.botSwing(a), dashIn = this.locking(a) && d > swing && d <= LOCK_DASH_IN ? (d - swing) / BOT_DASH_IN_SPEED : 0;
     const lands = (move: MoveDefinition, slot: AttackSlot) => ready(slot) && (slot === 'light' ? dashIn : 0) + move.contacts[0] + 1 / 60 < left
       && (move.style === 'melee' ? d <= (slot === 'light' ? (this.locking(a) ? LOCK_DASH_IN : swing) : this.reachOf(a, slot, move)) : d <= move.range);
-    const attack: AttackSlot | undefined = lands(heavy, 'heavy') ? 'heavy' : lands(light, 'light') ? 'light' : undefined;
+    let attack: AttackSlot | undefined = lands(heavy, 'heavy') ? 'heavy' : lands(light, 'light') ? 'light' : undefined;
+    // (the heaviest blow that lands in the recovery - its ultimate on a full bar, else its special.)
+    if (a.botSharp > 0 && this.random() < a.botSharp) {
+      if (p.ultimate >= ULTIMATE_COST && lands(this.moveOf(a, 'ultimate'), 'ultimate')) attack = 'ultimate';
+      else if (lands(this.moveOf(a, 'special'), 'special')) attack = 'special';
+    }
     if (!attack) return false;
     a.botPunishGo = false;
     return this.botPress(a, other, attack);
@@ -5709,7 +5741,7 @@ export class ArenaSimulation {
     const q = other.state, now = this.serverTime;
     if (q.grounded || other.reaction || other.cast || d > 3.6 || q.y - a.state.y > 3.2) return false;
     const key = `${q.id}:${other.jumpStartedAt}`;
-    if (a.botAirRead !== key) { a.botAirRead = key; a.botAirAt = Math.max(now, other.jumpStartedAt) + Math.max(.05, scale(BOT_AIR_REACT) + BOT_EASE.react * a.botEase + this.gauss() * .03); a.botAirGo = this.random() < scale(BOT_ANTI_AIR) * (1 - a.botEase); }
+    if (a.botAirRead !== key) { a.botAirRead = key; a.botAirAt = Math.max(now, other.jumpStartedAt) + Math.max(.05, scale(BOT_AIR_REACT) + BOT_EASE.react * a.botEase + this.gauss() * .03); a.botAirGo = this.random() < scale(BOT_ANTI_AIR) * (1 - a.botEase) + BOT_SHARP.antiAir * a.botSharp; }
     if (!a.botAirGo || now < a.botAirAt!) return false;
     // Coming its way (or already over it), and in reach of the blow by the time it lands.
     const toward = (a.state.x - q.x) * other.mx + (a.state.z - q.z) * other.mz;
@@ -5745,7 +5777,7 @@ export class ArenaSimulation {
       if (ready('counter') && roll < .03 + skill * .12 + READ_COUNTER * known) return { attack: 'heavy', dir: 'b' };
       if (ready('slip') && roll < .08 + skill * .16 + READ_SLIP * known) return { attack: 'light', dir: 's' };
     }
-    if (q.guarding && d < swing + 1.5 && ready('charge') && roll < .2 + skill * .25) return { attack: 'heavy', dir: 'f' };
+    if (q.guarding && d < swing + 1.5 && ready('charge') && roll < .2 + skill * .25 + BOT_SHARP.charge * a.botSharp) return { attack: 'heavy', dir: 'f' };
     if (d > swing && d < 5.5 && ready('rush') && roll < .1 + skill * .18) return { attack: 'light', dir: 'f' };
     return undefined;
   }
@@ -6011,7 +6043,7 @@ export class ArenaSimulation {
    *  string has gone and the better the bot: off the floor the air strike, on it the blowback, the launcher, then the
    *  knockdown or - with the special ready - the stun. Undefined: the string goes on. */
   private botEnder(a: Actor, landed: Cast): AttackSlot | undefined {
-    const p = a.state, chance = (([.06, .16, .3][landed.stage] ?? 0) + a.botSkill * .2) * (1 - a.botEase);
+    const p = a.state, chance = (([.06, .16, .3][landed.stage] ?? 0) + a.botSkill * .2) * (1 - a.botEase) + BOT_SHARP.ender * a.botSharp;
     if (this.random() >= chance) return undefined;
     if (!p.grounded) return 'heavy';
     return landed.stage === 2 && p.cooldowns.special <= this.serverTime && this.random() < .45 ? 'special' : 'heavy';
@@ -6090,12 +6122,12 @@ export class ArenaSimulation {
     // Techniques: a route it knows (familiarity) it parries and blocks more.
     const known = this.familiarity(a);
     // (with ease, fewer parries and blocks - BOT_EASE.)
-    const parry = (BOT_PARRY[0] + (BOT_PARRY[1] - BOT_PARRY[0]) * skill + READ_PARRY * known) * (1 - a.botEase);
-    const block = (BOT_BLOCK[0] + (BOT_BLOCK[1] - BOT_BLOCK[0]) * skill + READ_BLOCK * known) * (1 - BOT_EASE.guard * a.botEase);
+    const parry = (BOT_PARRY[0] + (BOT_PARRY[1] - BOT_PARRY[0]) * skill + READ_PARRY * known) * (1 - a.botEase) + BOT_SHARP.parry * a.botSharp;
+    const block = (BOT_BLOCK[0] + (BOT_BLOCK[1] - BOT_BLOCK[0]) * skill + READ_BLOCK * known) * (1 - BOT_EASE.guard * a.botEase) + BOT_SHARP.block * a.botSharp;
     if (roll < parry) {
       const spread = BOT_TIMING[0] + (BOT_TIMING[1] - BOT_TIMING[0]) * skill;
       const aim = now + due - (BOT_PARRY_LEAD + this.gauss() * spread);
-      const reacts = thrown + BOT_REACTION[0] + (BOT_REACTION[1] - BOT_REACTION[0]) * skill + BOT_EASE.react * a.botEase
+      const reacts = thrown + BOT_REACTION[0] + (BOT_REACTION[1] - BOT_REACTION[0]) * skill + BOT_EASE.react * a.botEase - BOT_SHARP.react * a.botSharp
         + BOT_REACTION_SPREAD * unitSpread(`${a.state.id}:${read}`);
       const press = Math.max(now, aim, reacts);
       if (press < now + due && (!holding || press - now >= PARRY_REARM)) {

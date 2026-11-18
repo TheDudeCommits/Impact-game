@@ -7,7 +7,7 @@ import { ArenaRoom } from '../src/server/ArenaRoom';
 import type { Client, FixedTimestepCallback } from 'colyseus';
 
 afterEach(() => vi.restoreAllMocks());
-type Bot = { botSkill: number; botEase: number; botLevel?: number; botOwn?: number };
+type Bot = { botSkill: number; botEase: number; botSharp: number; botLevel?: number; botOwn?: number };
 const actor = (sim: ArenaSimulation, id: string) => (sim as unknown as { actors: Map<string, Bot> }).actors.get(id)!;
 
 describe('adaptive difficulty: the rules', () => {
@@ -19,20 +19,22 @@ describe('adaptive difficulty: the rules', () => {
     expect(strengthFor(1, DIFFICULTY_STEP.easy)).toBeLessThan(strengthFor(1)); expect(strengthFor(1, DIFFICULTY_STEP.hard)).toBeGreaterThan(strengthFor(1));
   });
 
-  it('turns a level into its two dials: all ease at 0, the plain bot at 1, skill 1 at the top', () => {
-    expect(levelParts(0)).toEqual({ ease: 1, skill: 0 });
-    expect(levelParts(.5)).toEqual({ ease: .5, skill: 0 });
-    expect(levelParts(1)).toEqual({ ease: 0, skill: 0 });
-    expect(levelParts(1.5)).toEqual({ ease: 0, skill: .5 });
-    expect(levelParts(LEVEL_TOP)).toEqual({ ease: 0, skill: 1 });
-    expect(levelParts(-3)).toEqual({ ease: 1, skill: 0 }); expect(levelParts(9)).toEqual({ ease: 0, skill: 1 });
+  it('turns a level into its three dials: all ease at 0, the plain bot at 1, skill 1 at 2, all the edge at the top', () => {
+    expect(levelParts(0)).toEqual({ ease: 1, skill: 0, sharp: 0 });
+    expect(levelParts(.5)).toEqual({ ease: .5, skill: 0, sharp: 0 });
+    expect(levelParts(1)).toEqual({ ease: 0, skill: 0, sharp: 0 });
+    expect(levelParts(1.5)).toEqual({ ease: 0, skill: .5, sharp: 0 });
+    expect(levelParts(2)).toEqual({ ease: 0, skill: 1, sharp: 0 });
+    expect(levelParts(2.5)).toEqual({ ease: 0, skill: 1, sharp: .5 });
+    expect(LEVEL_TOP).toBe(3); expect(levelParts(LEVEL_TOP)).toEqual({ ease: 0, skill: 1, sharp: 1 });
+    expect(levelParts(-3)).toEqual({ ease: 1, skill: 0, sharp: 0 }); expect(levelParts(9)).toEqual({ ease: 0, skill: 1, sharp: 1 });
   });
 
   it('knows what each level\'s play is worth, rising all the way, and finds the level a strength asks for', () => {
     for (let i = 1; i < PLAY.length; i++) expect(PLAY[i], `level step ${i}`).toBeGreaterThan(PLAY[i - 1]);
     expect(playAt(1.5)).toBeCloseTo(1, 9);                               // the reference: strength 1 by definition
     expect(playAt(0)).toBeCloseTo(PLAY[0], 9); expect(playAt(LEVEL_TOP)).toBeCloseTo(PLAY[PLAY.length - 1], 9);
-    for (const level of [0, .1, .3, .77, 1, 1.2, 1.5, 1.9, LEVEL_TOP]) expect(levelFor(playAt(level)), String(level)).toBeCloseTo(level, 6);
+    for (const level of [0, .1, .3, .77, 1, 1.2, 1.5, 1.9, 2.2, 2.6, LEVEL_TOP]) expect(levelFor(playAt(level)), String(level)).toBeCloseTo(level, 6);
     // Out of the levels' reach, the nearest end: never a bigger body.
     expect(levelFor(.01)).toBe(0); expect(levelFor(50)).toBe(LEVEL_TOP);
   });
@@ -128,9 +130,9 @@ describe('adaptive difficulty in the simulation', () => {
   it('takes the page\'s skill for the player and sets the bot\'s level from it - ease for a new hand, the best for a strong one', () => {
     const weak = match(); weak.setPlayerSkill('me', .4); weak.startMatch(); weak.step();
     expect(weak.adaptive.strengthOf('bot')).toBeCloseTo(.4 * AHEAD, 6);
-    const w = actor(weak, 'bot'); expect(w.botLevel).toBeLessThan(1); expect(w.botEase).toBeCloseTo(1 - w.botLevel!, 9); expect(w.botSkill).toBe(0);
+    const w = actor(weak, 'bot'); expect(w.botLevel).toBeLessThan(1); expect(w.botEase).toBeCloseTo(1 - w.botLevel!, 9); expect(w.botSkill).toBe(0); expect(w.botSharp).toBe(0);
     const strong = match(); strong.setPlayerSkill('me', 3); strong.startMatch(); strong.step();
-    const s = actor(strong, 'bot'); expect(s.botLevel).toBe(LEVEL_TOP); expect(s.botEase).toBe(0); expect(s.botSkill).toBe(1);
+    const s = actor(strong, 'bot'); expect(s.botLevel).toBe(LEVEL_TOP); expect(s.botEase).toBe(0); expect(s.botSkill).toBe(1); expect(s.botSharp).toBe(1);
     expect(strong.getPlayer('me')!.skill).toBeCloseTo(3, 3);
   });
   it('lets a bot go back to the skill it was drawn with, and holds a pinned bot where it was put', () => {
@@ -138,7 +140,7 @@ describe('adaptive difficulty in the simulation', () => {
     sim.setPlayerSkill('me', .4); sim.startMatch(); sim.step();
     expect(actor(sim, 'bot').botOwn).toBe(drawn);
     sim.removePlayer('me'); for (let i = 0; i < 3 * 60; i++) sim.step();
-    expect(actor(sim, 'bot').botSkill).toBe(drawn); expect(actor(sim, 'bot').botEase).toBe(0); expect(actor(sim, 'bot').botLevel).toBeUndefined();
+    expect(actor(sim, 'bot').botSkill).toBe(drawn); expect(actor(sim, 'bot').botEase).toBe(0); expect(actor(sim, 'bot').botSharp).toBe(0); expect(actor(sim, 'bot').botLevel).toBeUndefined();
     const pinned = match(); pinned.setBotSkill('bot', .9); pinned.setPlayerSkill('me', .4); pinned.startMatch(); pinned.step();
     expect(actor(pinned, 'bot').botSkill).toBe(.9); expect(actor(pinned, 'bot').botEase).toBe(0);
   });

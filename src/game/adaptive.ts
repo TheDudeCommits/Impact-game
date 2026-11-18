@@ -1,27 +1,29 @@
 /** Adaptive difficulty: every bot set against a player plays a little better than they do, in a body exactly like
  *  theirs - its health, stamina and every blow, both ways, are a player's. A bot's STRENGTH (what it trades: a bot of
  *  strength 1.5 deals one and a half times the damage it takes from a bot of strength 1, the plain bot at skill one
- *  half) is carried by its play alone, its LEVEL: EASE below level 1, SKILL above (levelParts); PLAY is the strength
- *  measured at each level. A player's SKILL is in the same units, read off their exchange with the bots
- *  (SkillEvidence), and every bot set against them stands AHEAD of them in its play. The page keeps its player's skill
- *  (boot/skill.ts) and hands it to every room it joins; the room hands it back in the player's snapshot
- *  (PlayerState.skill). Data and arithmetic only. */
+ *  half) is carried by its play alone, its LEVEL: EASE below level 1, SKILL from 1 to 2, EDGE from 2 to the top
+ *  (levelParts); PLAY is the strength measured at each level. A player's SKILL is in the same units, read off their
+ *  exchange with the bots (SkillEvidence), and every bot set against them stands AHEAD of them in its play. The page
+ *  keeps its player's skill (boot/skill.ts) and hands it to every room it joins; the room hands it back in the player's
+ *  snapshot (PlayerState.skill). Data and arithmetic only. */
 
-/** The top of a bot's level: no ease, skill 1. */
-export const LEVEL_TOP = 2;
-/** A level's two dials: its ease (1 at level 0, falling to none at level 1) and its skill (0 up to level 1, rising to 1
- *  at LEVEL_TOP). */
+/** The top of a bot's level: no ease, skill 1, all of its edge. */
+export const LEVEL_TOP = 3;
+/** A level's three dials: its ease (1 at level 0, falling to none at level 1), its skill (0 up to level 1, rising to 1
+ *  at level 2) and its edge (0 up to level 2, rising to 1 at LEVEL_TOP: simulation.ts BOT_SHARP). */
 export function levelParts(level: number) {
   const l = Math.max(0, Math.min(LEVEL_TOP, Number.isFinite(level) ? level : 1));
-  return { ease: Math.max(0, 1 - l), skill: Math.max(0, l - 1) };
+  return { ease: Math.max(0, 1 - l), skill: Math.max(0, Math.min(1, l - 1)), sharp: Math.max(0, l - 2) };
 }
 /** What a bot's play is worth at levels 0, 0.25, 0.5 ... LEVEL_TOP, in STRENGTH units: its exchange with the level-1.5
  *  bot (strength 1 by definition), bodies equal, lock combat on (768 seat-swapped mirror duels a level over the
- *  released roster, from two seeds; the two agreed within 2.5%). Rising all the way: a level up is never a weaker bot.
- *  The ease carries most of it (a level-0 bot wins none of its duels against the plain bot, a level-0.75 bot three in
- *  ten); the skill, bot against bot, about 5% (a bot seldom whiffs or jumps in, which the better bot punishes and
- *  meets). */
-export const PLAY = [0.324, 0.46, 0.634, 0.874, 0.977, 0.982, 1, 1.006, 1.023] as const;
+ *  released roster, from two seeds; the two agreed within 2.5%). Above level 2 (the edge) a straight line in ratio from
+ *  level 2 to level 3's measured 1.096, which the measures at 2.25, 2.5 and 2.75 (1.043, 1.045, 1.073) lie within 2%
+ *  of. Rising all the way: a level up is never a weaker bot. The ease carries most of it (a level-0 bot wins none of
+ *  its duels against the plain bot, a level-0.75 bot three in ten, level 3 more than six in ten); the skill, bot
+ *  against bot, about 5% and the edge 7% more (a bot seldom whiffs or jumps in, which the better bot punishes and
+ *  meets, so a person gives both more to work with). */
+export const PLAY = [0.324, 0.46, 0.634, 0.874, 0.977, 0.982, 1, 1.006, 1.023, 1.041, 1.059, 1.077, 1.096] as const;
 const STEP = LEVEL_TOP / (PLAY.length - 1);
 /** The strength of a bot's play at a level (PLAY, between its measures in ratio). */
 export function playAt(level: number) {
@@ -40,17 +42,20 @@ export function levelFor(strength: number) {
 /** How far ahead of a player the bots stand, in their play: 5%. */
 export const AHEAD = 1.05;
 /** A new player's skill: a little under a strength-1 player, so their first bot is the plain bot with a touch of ease
- *  (level 0.93) - at 1 it would be the best there is, the levels above the plain bot being worth so little bot against
- *  bot. The match finds them out from there (PRIOR): a fight lost 0-1500 takes them to about .25 and their bot to
- *  level 0, one won 1500-0 to the best level. A page keeps the skill it learnt (boot/skill.ts). */
+ *  (level 0.93) - at 1 it would be past the skill-1 bot, the skill being worth so little bot against bot. The match
+ *  finds them out from there (PRIOR): a fight lost 0-1500 takes them to about .45 and their bot to level .26, a second
+ *  to level 0; one won 1500-0 to the best level. A page keeps the skill it learnt (boot/skill.ts). */
 export const START_SKILL = .9;
 /** The strength a new player's bots stand at. */
 export const BASE_STRENGTH = START_SKILL * AHEAD;
 /** The skill the game believes, at most and at least (a page's word is clamped to it). */
 export const SKILL_RANGE = [.25, 8] as const;
-/** How much damage of the skill a player came in with stands behind it, on each side: about two fifths of a Duel's
- *  health bar, so a match's first exchange moves it a little and a whole fight moves it most of the way. */
-export const PRIOR = 600;
+/** How much damage of the skill a player came in with stands behind it, on each side: a Duel's whole health bar, so a
+ *  match's first exchange moves it a little and a whole fight about half of the way. One duel's exchange runs from 0.6
+ *  to 1.8 between two fixed strengths, and a skill that follows each fight too closely swings the bot's level with it:
+ *  at 600 (two fifths of a bar) the bots against a stand-in of strength 1.02 ended 4% behind it over 94 duels, at
+ *  1500 even, and 5% ahead of a stand-in of 0.9. */
+export const PRIOR = 1500;
 /** How often a match looks again at its players and sets its bots, in seconds of play. */
 export const RETUNE_SECONDS = 2;
 import type { Difficulty } from './social/custom';
