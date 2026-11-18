@@ -6,6 +6,11 @@
 // the globals it hangs on window, its page roots (document.body, document.documentElement) and every '/assets/' address
 // in its code. So everything the game starts is known, the world's frame loop drives it (frame()), and end() stops all of
 // it. The game's own build (vite.config.ts) never rewrites anything: there `rt.hosted` stays false and nothing changes.
+//
+// LIVE (src/cartridge/live.ts, the world's src/core/live.ts): the game plays in the same frames as the world, which draws
+// its own picture before and after the game's. Then (`begin(host, true)`) nothing of three's shared state is swapped in
+// for the game (the world would draw with it), and only what three uploads inside the game's own calls (`within`) is the
+// game's to let go: the world's uploads in between are the world's.
 import type { CartridgeHost } from './contract';
 import type * as THREE_NS from 'three';
 
@@ -119,6 +124,12 @@ class ThreeState {
 class Runtime {
   /** True from the first mount on: the game runs inside the world. */
   hosted = false;
+  /** A live game (begin(host, true)): it shares every frame with the world. */
+  live = false;
+  /** How deep inside the game's own calls the page is (a live game's `within`): only then is a GPU upload the game's. */
+  private inside = 0;
+  /** Run `fn` as the game: what three uploads for it meanwhile is the game's (a live game; a cartridge's is all its own). */
+  within<T>(fn: () => T): T { this.inside++; try { return fn(); } finally { this.inside--; } }
   /** Between a visit's end and the next mount: what a late callback of the last visit asks for is refused. */
   private dead = false;
   host?: CartridgeHost;
@@ -275,10 +286,10 @@ class Runtime {
   private unwatchGpu?: () => void;
   private watchGpu(T: Three) {
     const proto = T.EventDispatcher.prototype as unknown as { addEventListener: (type: string, fn: unknown) => void; removeEventListener: (type: string, fn: unknown) => void };
-    const add = proto.addEventListener, remove = proto.removeEventListener, gpu = this.gpu;
+    const add = proto.addEventListener, remove = proto.removeEventListener, gpu = this.gpu, mine = () => !this.live || this.inside > 0;
     // three's renderer listens for 'dispose' on every texture, geometry, material, render target and instanced mesh it
-    // uploads: whatever gets one while the game is in is the game's.
-    proto.addEventListener = function (this: { dispose?: () => void }, type: string, fn: unknown) { if (type === 'dispose') gpu.add(this); return add.call(this, type, fn); };
+    // uploads: whatever gets one while the game is in (a live game: inside its own calls) is the game's.
+    proto.addEventListener = function (this: { dispose?: () => void }, type: string, fn: unknown) { if (type === 'dispose' && mine()) gpu.add(this); return add.call(this, type, fn); };
     proto.removeEventListener = function (this: { dispose?: () => void; _listeners?: Record<string, unknown[]> }, type: string, fn: unknown) {
       const out = remove.call(this, type, fn); if (type === 'dispose' && !this._listeners?.dispose?.length) gpu.delete(this); return out; };
     this.unwatchGpu = () => { proto.addEventListener = add; proto.removeEventListener = remove; };
@@ -294,12 +305,12 @@ class Runtime {
 
   private readonly threeState = new ThreeState();
 
-  /** A visit begins: everything above starts noting, the game's page roots go into host.ui. */
-  begin(host: CartridgeHost) {
-    this.host = host; this.base = host.base; this.hosted = true; this.dead = false; this.three = host.THREE;
+  /** A visit begins: everything above starts noting, the game's page roots go into host.ui. `live`: a live game (above). */
+  begin(host: CartridgeHost, live = false) {
+    this.host = host; this.base = host.base; this.hosted = true; this.dead = false; this.three = host.THREE; this.live = live; this.inside = 0;
     if (typeof location === 'object' && /[?&]impact-assets\b/.test(location.search)) { this.requested ??= new Set(); performance.setResourceTimingBufferSize?.(20000); }
     const T = host.THREE;
-    this.threeState.enter(T);
+    if (!live) this.threeState.enter(T);
     this.watchGpu(T);
     T.DefaultLoadingManager.setURLModifier(url => this.asset(url));
     const r = host.renderer as unknown as Record<string, unknown>;
@@ -340,12 +351,13 @@ class Runtime {
     if (host && T) {
       T.DefaultLoadingManager.setURLModifier(undefined as unknown as (url: string) => string);
       const r = host.renderer as unknown as Record<string, unknown>;
-      for (const key of Object.keys(r)) if (!this.rendererOwn?.has(key)) delete r[key];
-      for (const [key, d] of this.rendererOwn ?? []) if (d && typeof d.value === 'function' && r[key] !== d.value) Object.defineProperty(r, key, d);
+      // (A live game never touches the instance, and the world goes on using it meanwhile: what is on it now is the world's.)
+      if (!this.live) for (const key of Object.keys(r)) if (!this.rendererOwn?.has(key)) delete r[key];
+      if (!this.live) for (const [key, d] of this.rendererOwn ?? []) if (d && typeof d.value === 'function' && r[key] !== d.value) Object.defineProperty(r, key, d);
       host.renderer.debug.checkShaderErrors = this.debugChecks;
       this.releaseGpu();
       this.unwatchGpu?.(); this.unwatchGpu = undefined;
-      this.threeState.leave(T);
+      if (!this.live) this.threeState.leave(T);
     }
   }
 }

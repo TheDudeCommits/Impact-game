@@ -1,6 +1,6 @@
-// The dude-world cartridge's install (npm run build:cartridge, after the build): dist-cartridge/ and the demo's run-time
+// The dude-world live build's install (npm run build:cartridge, after the build): dist-cartridge/ and the duel's run-time
 // files into the site, at <site>/public/games/impact/ (the site: DUDE_WORLD_SITE, else ~/Claude Games/dude-world/site).
-//   node scripts/build/cartridgeShip.mjs          copies the files the demo uses (scripts/cartridge/files.txt) and no others
+//   node scripts/build/cartridgeShip.mjs          copies the files the live duel uses (scripts/cartridge/live-files.txt) and no others
 //   node scripts/build/cartridgeShip.mjs --link   (development) links the checkout's public/assets instead of copying
 // Either way assets/audio/v2/files.json lists the sound files there: the sound bank asks for no other (audioFiles.ts).
 import fs from 'node:fs';
@@ -27,8 +27,8 @@ const site = process.env.DUDE_WORLD_SITE ?? path.join(os.homedir(), 'Claude Game
 const out = path.join(site, 'public/games/impact');
 const dist = path.join(root, 'dist-cartridge');
 const link = process.argv.includes('--link');
-if (!fs.existsSync(path.join(dist, 'cartridge.js'))) throw new Error('build the cartridge first: npx vite build --config vite.cartridge.config.ts');
-if (!fs.existsSync(path.join(site, 'src/core/cartridge.ts'))) throw new Error(`no dude-world site at ${site}`);
+if (!fs.existsSync(path.join(dist, 'live.js'))) throw new Error('build it first: npx vite build --config vite.cartridge.config.ts');
+if (!fs.existsSync(path.join(site, 'src/core/live.ts'))) throw new Error(`no dude-world site at ${site}`);
 
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
@@ -49,7 +49,7 @@ if (link) {
   const walk = (dir, rel = '') => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const r = rel ? `${rel}/${e.name}` : e.name; if (e.isDirectory()) walk(path.join(dir, e.name), r); else if (AUDIO.test(e.name)) sounds.push(r); } };
   if (fs.existsSync(path.join(assets, 'audio/v2'))) walk(path.join(assets, 'audio/v2'));
 } else {
-  const list = fs.readFileSync(path.join(root, 'scripts/cartridge/files.txt'), 'utf8').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+  const list = fs.readFileSync(path.join(root, 'scripts/cartridge/live-files.txt'), 'utf8').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
   // The sound bank's WAVs go as the deploy's AAC copies (CombatAudio's packed bank: public/assets/audio/v2/packed.json names
   // each copy's WAV length, [frames, rate], and the bank trims the encoder's delay to it - aacTrim.ts), about an eighth of
   // their size. macOS's afconvert writes them (its AAC primes 2112 frames, as aacTrim.ts expects).

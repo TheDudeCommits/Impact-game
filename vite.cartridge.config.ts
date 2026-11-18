@@ -1,10 +1,13 @@
-// The dude-world cartridge build (from the site's tools/cartridge/vite.cartridge.config.ts template): src/cartridge/index.ts
-// into dist-cartridge/cartridge.js (+ chunks/ and assets/), one ES module the world imports at run time. `import 'three'`
+// The dude-world LIVE build (the world's docs/LIVE.md, src/core/live.ts; from the site's tools/cartridge template):
+// src/cartridge/live.ts into dist-cartridge/live.js (+ chunks/ and assets/), one ES module the world imports at run time:
+// Impact's duel always on in the Gate Ring, joined by walking onto the ring floor (src/cartridge/livegame.ts). `import 'three'`
 // resolves to src/cartridge/three-shim.js (copied from the site), so the game runs on the world's own three.js and
 // renderer; everything else it imports (rapier, its own code) is bundled in. The game's own pass for the world
 // (scripts/build/cartridgePlugin.ts) points its page globals at the cartridge runtime and scopes its stylesheets, and the
 // demo's gate is on (VITE_DEMO, src/originals/demo.ts) with no match server (VITE_MATCH_SERVER *.invalid: nothing online).
-//   npm run build:cartridge   (builds, then scripts/build/cartridgeShip.mjs copies it and the demo's files into the site)
+//   npm run build:cartridge   (builds, then scripts/build/cartridgeShip.mjs copies it and the duel's files into the site)
+// VITE_LIVE: the game's modules that would change three's shared state for the page (look/air.ts, look/placeShadows.ts)
+// leave it alone, as the world draws in the same frames with the same three.
 import { defineConfig, type Plugin } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -20,6 +23,7 @@ const commit = git('rev-parse', '--short=12', 'HEAD'), branch = git('rev-parse',
 // The demo: its gate, and no match server (launch.ts LAUNCH.online is false for an .invalid host).
 process.env.VITE_DEMO = 'dude-world';
 process.env.VITE_MATCH_SERVER = 'https://offline.invalid';
+process.env.VITE_LIVE = '1';
 
 /** As the game's own build (vite.config.ts): the JSON it bundles from public/assets loses its provenance fields. */
 const stripProvenance: Plugin = { name: 'impact-strip-provenance', apply: 'build', enforce: 'pre', transform(code, id) {
@@ -42,9 +46,9 @@ export default defineConfig({
   build: {
     outDir: 'dist-cartridge', emptyOutDir: true, target: 'es2022', sourcemap: false, modulePreload: false, chunkSizeWarningLimit: 4000,
     rollupOptions: {
-      input: fileURLToPath(new URL('./src/cartridge/index.ts', import.meta.url)),
+      input: fileURLToPath(new URL('./src/cartridge/live.ts', import.meta.url)),
       preserveEntrySignatures: 'strict',
-      output: { format: 'es', entryFileNames: 'cartridge.js', chunkFileNames: 'chunks/[name]-[hash].js', assetFileNames: 'assets/[name]-[hash][extname]', comments: { legal: true } },
+      output: { format: 'es', entryFileNames: 'live.js', chunkFileNames: 'chunks/[name]-[hash].js', assetFileNames: 'assets/[name]-[hash][extname]', comments: { legal: true } },
     },
   },
 });

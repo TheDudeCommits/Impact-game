@@ -29,14 +29,27 @@ function applyBoneTransform(this: THREE.SkinnedMesh, index: number, target: THRE
   return target.applyMatrix4(this.bindMatrixInverse);
 }
 
+function computeBoundingSphere(this: THREE.SkinnedMesh) {
+  if (this.frustumCulled) return exact.call(this);
+  const geometry = this.geometry;
+  if (!geometry.boundingSphere) geometry.computeBoundingSphere();
+  (this.boundingSphere ??= new THREE.Sphere()).copy(geometry.boundingSphere!);
+}
+
 export function installSkinnedBounds() {
   if (installed) return;
   installed = true;
   (THREE.SkinnedMesh.prototype as { applyBoneTransform: unknown }).applyBoneTransform = applyBoneTransform;
-  THREE.SkinnedMesh.prototype.computeBoundingSphere = function (this: THREE.SkinnedMesh) {
-    if (this.frustumCulled) return exact.call(this);
-    const geometry = this.geometry;
-    if (!geometry.boundingSphere) geometry.computeBoundingSphere();
-    (this.boundingSphere ??= new THREE.Sphere()).copy(geometry.boundingSphere!);
-  };
+  THREE.SkinnedMesh.prototype.computeBoundingSphere = computeBoundingSphere;
+}
+
+/** The same two on the skinned meshes under `root` alone, as their own (the live build for dude.work, src/cartridge/live.ts:
+ *  the world draws its own skinned bodies with the same three, as three wrote it). */
+export function skinnedBoundsOn(root: THREE.Object3D) {
+  root.traverse(o => {
+    const mesh = o as THREE.SkinnedMesh;
+    if (!mesh.isSkinnedMesh) return;
+    (mesh as { applyBoneTransform: unknown }).applyBoneTransform = applyBoneTransform;
+    mesh.computeBoundingSphere = computeBoundingSphere;
+  });
 }

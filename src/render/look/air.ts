@@ -125,7 +125,9 @@ export function installAir() {
   // ShaderMaterials built later from UniformsLib.fog (the places' falls, foam, puffs) take it too.
   Object.assign(THREE.UniformsLib.fog, airUniforms);
 }
-installAir();
+// (Not in the live build for dude.work, src/cartridge/live.ts: there the world draws in the same frames with the same
+// three, and three's fog chunks are the world's. The fighters stand in the world's own air - its fog on their scene.)
+if (!import.meta.env?.VITE_LIVE) installAir();
 
 /** The air's quality: 'low' keeps the haze and drops its shaping (height, the sun's side, the colour loss). */
 let quality: 'high' | 'medium' | 'low' = 'high';

@@ -247,9 +247,10 @@ export default function cartridgePlugin(root: string): Plugin[] {
     load(id) { return id === PRIVY ? `export function mount() { return Promise.reject(new Error('Sign-in is off in this demo.')); }\n` : null; },
   }, {
     name: 'impact-cartridge-css', enforce: 'pre',
-    // The game's `import './x.css'`: the scoped text, handed to the runtime (put in on mount, out on unmount).
+    // The game's `import './x.css'`: the scoped text, handed to the runtime (put in on mount, out on unmount). (And the
+    // live build's own, src/cartridge/liveHud.ts: the game's stylesheets it puts together, scoped the same way.)
     async resolveId(source, importer) {
-      if (!importer || !game(importer.split('?', 1)[0]) || !/\.css$/.test(source)) return null;
+      if (!importer || !(game(importer.split('?', 1)[0]) || ours(importer.split('?', 1)[0])) || !/\.css$/.test(source)) return null;
       const resolved = await this.resolve(source, importer, { skipSelf: true });
       return resolved ? `${CSS}${resolved.id}.js` : null; // (not ending in .css: Vite's own CSS pass is for the ?inline text)
     },

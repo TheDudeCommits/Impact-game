@@ -51,7 +51,8 @@ export function installShadowEdge() {
   if (pcf < 0 || at < 0) { console.warn('look: the shadow edge fade did not find three\'s PCF shadow'); return; }
   THREE.ShaderChunk.shadowmap_pars_fragment = chunk.slice(0, at) + EDGE.slice(1) + chunk.slice(at + end.length);
 }
-installShadowEdge();
+// (Not in the live build for dude.work, src/cartridge/live.ts: the world's shadows are drawn with three's chunk too.)
+if (!import.meta.env?.VITE_LIVE) installShadowEdge();
 
 /** The materials named per place, for the tests. */
 export const PLACE_CASTERS = CASTERS;
