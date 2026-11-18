@@ -75,10 +75,14 @@ export class Input {
   onView=()=>false;
   onModeChange=(_mode:InputMode)=>{};
   onUiAction=(_action:UiAction)=>{};
+  /** Inside dude.work (src/cartridge/live.ts) the page and its keys are the world's: while the input is off, no key is
+   *  the game's (P, Esc and the rest go by untouched). */
+  shared=false;
   constructor(readonly canvas:HTMLCanvasElement) {
     window.addEventListener(BINDINGS_EVENT,()=>this.clear());
     window.addEventListener('keydown',e=>{
       if(isCapturingBinding())return;
+      if(this.shared&&!this.enabled)return;
       // Esc goes back (it closes the pause menu, never opens it); P pauses - a field typed into keeps its P.
       if (e.code==='Escape') { if(!e.repeat){this.useMode('keyboard');this.onMenu('keyboard',pauseKey()==='Escape'?'menu':'back');}return; }
       if ((e.target as HTMLElement | null)?.matches?.('input,select,textarea')) return;

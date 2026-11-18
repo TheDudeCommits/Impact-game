@@ -204,6 +204,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   const audio = new CombatAudio({ byRoom: true });
   audio.setMix({ master: settings.volume, sfx: settings.sfxVolume, voice: settings.voiceVolume });
   const input = new Input(host.canvas);
+  input.shared = true;
   input.enabled = false;
   input.sensitivity = settings.sensitivity;
   input.rumble.scale = settings.vibration;

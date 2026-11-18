@@ -312,7 +312,9 @@ class Runtime {
     const T = host.THREE;
     if (!live) this.threeState.enter(T);
     this.watchGpu(T);
-    T.DefaultLoadingManager.setURLModifier(url => this.asset(url));
+    // (A live game's addresses are all rebased as it is built - every '/assets/' string, template and JSON value - so the
+    // page's default loading manager stays the world's.)
+    if (!live) T.DefaultLoadingManager.setURLModifier(url => this.asset(url));
     const r = host.renderer as unknown as Record<string, unknown>;
     this.rendererOwn = new Map(Object.keys(r).map(key => [key, Object.getOwnPropertyDescriptor(r, key)]));
     this.debugChecks = host.renderer.debug.checkShaderErrors;
@@ -349,7 +351,7 @@ class Runtime {
     this.html?.remove(); this.html = this.body = this.app = undefined;
     const host = this.host, T = this.three;
     if (host && T) {
-      T.DefaultLoadingManager.setURLModifier(undefined as unknown as (url: string) => string);
+      if (!this.live) T.DefaultLoadingManager.setURLModifier(undefined as unknown as (url: string) => string);
       const r = host.renderer as unknown as Record<string, unknown>;
       // (A live game never touches the instance, and the world goes on using it meanwhile: what is on it now is the world's.)
       if (!this.live) for (const key of Object.keys(r)) if (!this.rendererOwn?.has(key)) delete r[key];
