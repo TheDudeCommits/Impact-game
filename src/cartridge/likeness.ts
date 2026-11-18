@@ -213,22 +213,69 @@ class LiveRetarget {
 /** The uniforms a fighter's materials share (Fighter.ts: its hit flash and its smear), which the visitor's wear too. */
 interface Looks { flash: { value: THREE.Vector4 }; flashFlat: { value: number }; smear: Parameters<typeof applyLimbSmear>[1] }
 
+/** The face decal's map is an atlas of expressions (the model's manifest, gltf extras `avatar.face`): `cols` x `rows`
+ *  cells named by `cells`, of which the face shows one at a time. */
+interface FaceAtlas { cells: string[]; cols: number; rows: number }
+/** The fight on his face: the cell each of Impact's actions shows (the rest, `determined`). */
+const MOOD: Partial<Record<string, string>> = {
+  light: 'fierce', heavy: 'fierce', special: 'fierce', area: 'fierce', ultimate: 'shout', awaken: 'shout',
+  flinch: 'wince', hurt: 'wince', launched: 'wince', knockdown: 'wince', getup: 'wince', stun: 'wince', splat: 'wince', defeated: 'wince',
+  victory: 'laugh',
+};
+/** The cells drawn with the eyes open, which blink (the world's src/avatar/expression.ts EYES_OPEN). */
+const EYES_OPEN = new Set(['neutral', 'fierce', 'determined']);
+
+/** The visitor's face, as the world draws it (src/avatar/expression.ts): one cell of the atlas at a time, cut between at
+ *  once as limited animation does - here the fight's mood by the fighter's action - and a blink every 2 to 6 s (100 to
+ *  140 ms shut) while the eyes are open. The map is the decal's own, cloned, so each copy shows its own cell. */
+class Face {
+  private shown = '';
+  private t = 0;
+  private nextBlink = 1.5 + Math.random() * 3;
+  private shut = 0;
+  constructor(readonly map: THREE.Texture, private readonly atlas: FaceAtlas) {
+    map.repeat.set(1 / atlas.cols, 1 / atlas.rows);
+    this.show(this.cell('determined'));
+  }
+  private cell(id: string) { return this.atlas.cells.includes(id) ? id : 'neutral'; }
+  update(dt: number, action: string) {
+    this.t += dt;
+    const want = this.cell(MOOD[action] ?? 'determined');
+    if (this.shut > 0) this.shut -= dt;
+    else if (this.t >= this.nextBlink && EYES_OPEN.has(want)) { this.shut = .1 + Math.random() * .04; this.nextBlink = this.t + 2 + Math.random() * 4; }
+    this.show(this.shut > 0 && EYES_OPEN.has(want) && this.atlas.cells.includes('blink') ? 'blink' : want);
+  }
+  private show(id: string) {
+    if (id === this.shown) return;
+    const i = this.atlas.cells.indexOf(id); if (i < 0) return;
+    this.shown = id;
+    // the atlas keeps glTF's top-left origin (flipY off): row r is r / rows down
+    this.map.offset.set((i % this.atlas.cols) / this.atlas.cols, Math.floor(i / this.atlas.cols) / this.atlas.rows);
+  }
+}
+
 /** The visitor's meshes in a fighter's materials (Fighter.ts's chain: toon ramp and rim, hit flash, smear, and an ink
- *  hull on the body; the face decal over it as it came, shaded the same). Returns the materials made. */
-function dress(body: THREE.Object3D, looks: Looks, outlineWidth: number): THREE.Material[] {
+ *  hull on the body; the face decal over it showing one expression, shaded the same). Returns the materials made, and
+ *  the face when the model has an expression atlas. */
+function dress(body: THREE.Object3D, looks: Looks, outlineWidth: number, atlas: FaceAtlas | null): { made: THREE.Material[]; face: Face | null } {
   const width = outlineWidth / .003, made: THREE.Material[] = [];
   const shells: [THREE.SkinnedMesh, THREE.Mesh][] = [];
+  let face: Face | null = null;
   body.traverse(o => {
     const mesh = o as THREE.SkinnedMesh; if (!mesh.isMesh || mesh.name.endsWith('-ink')) return;
     const src = mesh.material as THREE.MeshStandardMaterial;
     const decal = !!src.transparent;
+    // the face decal's atlas: its own copy of the map, showing one cell (all of it at once is seven faces on one)
+    let map = src.map ?? null;
+    if (decal && map && atlas && mesh.name === 'avatar-face' && !face) { map = map.clone(); map.needsUpdate = true; face = new Face(map, atlas); }
     const mat = new THREE.MeshToonMaterial({
-      map: src.map ?? null, color: src.color?.clone() ?? new THREE.Color(1, 1, 1), gradientMap: TOON_GRADIENT,
+      map, color: src.color?.clone() ?? new THREE.Color(1, 1, 1), gradientMap: TOON_GRADIENT,
       normalMap: src.normalMap ?? null, transparent: decal, opacity: src.opacity ?? 1, alphaTest: src.alphaTest ?? 0,
       side: src.side ?? THREE.FrontSide, depthWrite: decal ? false : src.depthWrite,
     });
     mat.name = `likeness-${src.name || 'body'}`;
-    if (decal) { mat.polygonOffset = true; mat.polygonOffsetFactor = -1; mat.polygonOffsetUnits = -1; }
+    // drawn over the skin it lies on, never through anything in front of it (the world's offset for the face)
+    if (decal) { mat.polygonOffset = true; mat.polygonOffsetFactor = -2; mat.polygonOffsetUnits = -4; }
     applyToonShading(mat, 'body');
     // His black cloth reads black, as Impact keeps a matte black (toonShading.ts LOOK_MATTE: a third of the look's albedo
     // floor; at the whole of it his black joggers and the jacket's dark half read pale indigo under the key).
@@ -250,12 +297,22 @@ function dress(body: THREE.Object3D, looks: Looks, outlineWidth: number): THREE.
     if ((shell as THREE.SkinnedMesh).isSkinnedMesh && mesh.isSkinnedMesh) { (shell as THREE.SkinnedMesh).bind(mesh.skeleton, mesh.bindMatrix); (shell as THREE.SkinnedMesh).bindMode = mesh.bindMode; }
     mesh.add(shell);
   }
-  return made;
+  return { made, face };
+}
+
+/** The model's expression atlas, from its manifest (the world reads the same: src/avatar/index.ts), if it has one. */
+function faceAtlas(gltf: GLTF): FaceAtlas | null {
+  type Manifest = { avatar?: { face?: Partial<FaceAtlas> } };
+  const face = ((gltf.userData as Manifest | undefined)?.avatar ?? (gltf.scene.userData as Manifest | undefined)?.avatar)?.face;
+  if (!face || !Array.isArray(face.cells) || !face.cells.length) return null;
+  const cols = Math.round(Number(face.cols)), rows = Math.round(Number(face.rows));
+  if (!(cols >= 1 && rows >= 1 && cols * rows >= face.cells.length)) return null;
+  return { cells: face.cells.map(String), cols, rows };
 }
 
 /** The visitor's model, loaded once and kept: each fighter they take over wears a copy (`wear`). */
 export class Likeness {
-  private constructor(private readonly template: THREE.Object3D, private readonly height: number) {}
+  private constructor(private readonly template: THREE.Object3D, private readonly height: number, private readonly atlas: FaceAtlas | null) {}
 
   /** Fetch and prepare the visitor's model (the world serves it; the browser usually has it from the world already). */
   static async load(url: string): Promise<Likeness> {
@@ -289,20 +346,20 @@ export class Likeness {
     });
     const box = new THREE.Box3();
     template.traverse(o => { const mesh = o as THREE.Mesh; if (mesh.isMesh && !(mesh.material as THREE.Material).transparent) box.union(new THREE.Box3().setFromObject(mesh)); });
-    return new Likeness(template, Math.max(.5, box.isEmpty() ? 1.75 : box.max.y - box.min.y));
+    return new Likeness(template, Math.max(.5, box.isEmpty() ? 1.75 : box.max.y - box.min.y), faceAtlas(gltf));
   }
 
   /** A dressed copy that nobody wears, for compiling the visitor's materials before anyone walks in (its own
    *  uniforms: the programs are the same whoever wears them). `free` lets it go. */
   warm(): { body: THREE.Object3D; free(): void } {
     const body = cloneSkinned(this.template);
-    const made = dress(body, { flash: { value: new THREE.Vector4(1, 1, 1, 0) }, flashFlat: { value: 0 }, smear: { point: { value: new THREE.Vector4(0, 0, 0, .6) }, motion: { value: new THREE.Vector4(0, 1, 0, 0) }, limb: { value: new THREE.Vector4(1, 0, 0, 0) } } }, .003);
-    return { body, free: () => { body.removeFromParent(); for (const m of made) m.dispose(); } };
+    const { made, face } = dress(body, { flash: { value: new THREE.Vector4(1, 1, 1, 0) }, flashFlat: { value: 0 }, smear: { point: { value: new THREE.Vector4(0, 0, 0, .6) }, motion: { value: new THREE.Vector4(0, 1, 0, 0) }, limb: { value: new THREE.Vector4(1, 0, 0, 0) } } }, .003, this.atlas);
+    return { body, free: () => { body.removeFromParent(); for (const m of made) m.dispose(); face?.map.dispose(); } };
   }
 
   /** The visitor in `fighter`'s place, until `remove`. */
   wear(fighter: Fighter): Worn | null {
-    try { return new Worn(fighter, cloneSkinned(this.template), this.height); }
+    try { return new Worn(fighter, cloneSkinned(this.template), this.height, this.atlas); }
     catch (error) { console.warn('Impact live: the visitor could not wear', fighter.state.fighter, error); return null; }
   }
 }
@@ -312,8 +369,9 @@ export class Worn {
   private readonly retargets = new Map<Fighter, LiveRetarget | null>();
   private readonly materials: THREE.Material[] = [];
   private readonly away = new Map<THREE.Object3D, number>();
+  private readonly face: Face | null;
   readonly body: THREE.Object3D;
-  constructor(readonly fighter: Fighter, body: THREE.Object3D, ownHeight: number) {
+  constructor(readonly fighter: Fighter, body: THREE.Object3D, ownHeight: number, atlas: FaceAtlas | null) {
     this.body = body;
     body.name = 'likeness';
     // the fighter's height (its standing box, weapons aside, as Fighter.ts normalises it)
@@ -324,7 +382,9 @@ export class Worn {
     box.applyMatrix4(into);
     const height = box.isEmpty() ? FIGHTERS[fighter.state.fighter]?.height ?? 1.7 : box.max.y - box.min.y;
     body.scale.setScalar(height / ownHeight);
-    this.materials.push(...dress(body, fighter, FIGHTERS[fighter.state.fighter]?.outlineWidth ?? .003));
+    const dressed = dress(body, fighter, FIGHTERS[fighter.state.fighter]?.outlineWidth ?? .003, atlas);
+    this.materials.push(...dressed.made);
+    this.face = dressed.face;
     fighter.group.add(body);
     body.updateMatrixWorld(true);
     this.putAway(fighter.model);
@@ -341,9 +401,11 @@ export class Worn {
     });
   }
 
-  /** Each frame after the fighter has posed: the visitor's skeleton takes the pose of the body it shows. */
-  pose() {
+  /** Each frame after the fighter has posed (`dt`: the frame's seconds): the visitor's skeleton takes the pose of the
+   *  body it shows, and his face the fight's mood. */
+  pose(dt = 0) {
     const fighter = this.fighter, body = fighter.shownBody;
+    this.face?.update(dt, fighter.state.action);
     // a form (an awakened body of its own) is put away too the first time it shows
     if (body !== fighter) this.putAway(body.model);
     let plan = this.retargets.get(body);
@@ -364,5 +426,6 @@ export class Worn {
     this.body.removeFromParent();
     for (const m of this.materials) m.dispose();
     this.materials.length = 0;
+    this.face?.map.dispose();
   }
 }

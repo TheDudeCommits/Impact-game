@@ -692,7 +692,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       }
       shownSelf = self;
       // the visitor's body takes the pose of the fighter they play (after every layer of its own)
-      worn?.pose();
+      worn?.pose(worldDt);
       for (const [id, body] of fighters) {
         if (!body.steps.length) continue;
         const mine = id === me;
