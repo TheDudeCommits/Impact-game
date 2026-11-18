@@ -76,3 +76,30 @@ fs.mkdirSync(path.join(out, 'assets/audio/v2'), { recursive: true });
 fs.writeFileSync(path.join(out, 'assets/audio/v2/files.json'), JSON.stringify(sounds.sort()));
 const size = dir => fs.readdirSync(dir, { withFileTypes: true }).reduce((n, e) => n + (e.isDirectory() ? size(path.join(dir, e.name)) : e.isFile() ? fs.statSync(path.join(dir, e.name)).size : 0), 0);
 console.log(`cartridge in ${out}: code ${(size(dist) / 1e6).toFixed(1)} MB${link ? ' (assets linked from the checkout)' : ''}`);
+
+// The live build's checks (the world's rules, docs/LIVE.md): one three.js (the world's: none of its code bundled), no
+// renderer or GL context of the game's own, every stylesheet a scoped string (no .css file nothing loads); and what the
+// first load weighs - live.js and what the duel's chunk imports statically (the rest comes as it is asked for).
+{
+  const files = [];
+  const walk = dir => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) walk(p); else files.push(p); } };
+  walk(dist);
+  const fail = [], js = files.filter(f => f.endsWith('.js'));
+  for (const f of files) if (f.endsWith('.css')) fail.push(`a stylesheet left as a file: ${path.relative(dist, f)}`);
+  for (const f of js) {
+    const t = fs.readFileSync(f, 'utf8');
+    // (three's own chunk defines BRDF_Lambert; the toon look's shader edits only call it)
+    if (/vec3 BRDF_Lambert\(|THREE\.WebGLRenderer:/.test(t)) fail.push(`${path.relative(dist, f)}: a copy of three.js`);
+    if (/new [A-Za-z_$.]*WebGLRenderer\(/.test(t)) fail.push(`${path.relative(dist, f)}: makes a WebGLRenderer`);
+    if (/getContext\(\s*["'`](webgl2?|experimental-webgl)/.test(t)) fail.push(`${path.relative(dist, f)}: asks for a GL context`);
+  }
+  const seen = new Set();
+  const closure = f => { if (seen.has(f)) return; seen.add(f); const t = fs.readFileSync(f, 'utf8'); for (const m of t.matchAll(/\bfrom\s*["'](\.\.?\/[^"']+)["']|\bimport\s*["'](\.\.?\/[^"']+)["']/g)) closure(path.resolve(path.dirname(f), m[1] ?? m[2])); };
+  closure(path.join(dist, 'live.js'));
+  const game = js.find(f => /[\\/]livegame-[^\\/]+\.js$/.test(f));
+  if (game) closure(game);
+  const bytes = list => list.reduce((n, f) => n + fs.statSync(f).size, 0);
+  console.log(`live: first load ${(bytes([...seen]) / 1e6).toFixed(2)} MB of JS in ${seen.size} files (of ${(bytes(js) / 1e6).toFixed(1)} MB in ${js.length}: the rest loads on demand)`);
+  if (fail.length) { console.error(`live: FAIL\n  ${fail.join('\n  ')}`); process.exitCode = 1; }
+  else console.log('live: ok - one three.js (the world\'s), no renderer or GL context of its own, every stylesheet a scoped string');
+}

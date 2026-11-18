@@ -179,7 +179,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   // The fighters' shadows on the world's ring: a floor that draws only the shade (nothing else of it shows, and the
   // ink weight the world keeps in alpha is left as the ring painted it).
   const catcher = new THREE.Mesh(new THREE.CircleGeometry(10.4, 64).rotateX(-Math.PI / 2), new THREE.ShadowMaterial({
-    opacity: 0.32, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+    opacity: 0.5, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
     blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
     blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor,
   }));
@@ -568,6 +568,12 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     },
     camera: () => ({ position: camera.position.toArray().map(v => +v.toFixed(2)), fov: camera.fov }),
     drawn: () => ({ ...drawn }),
+    shadow: (opacity?: number) => {
+      const m = catcher.material as THREE.ShadowMaterial;
+      if (opacity !== undefined) m.opacity = opacity;
+      return { map: !!sun.shadow.map, mapSize: sun.shadow.mapSize.x, cast: sun.castShadow, catcher: catcher.visible, opacity: m.opacity, sun: sun.position.toArray().map(v => +v.toFixed(2)),
+        casters: (() => { let n = 0; scene.traverse(o => { if ((o as THREE.Mesh).isMesh && o.castShadow && o.visible) n++; }); return n; })() };
+    },
     /** Tests: the set decided now (the first seat wins), so the next one comes round. */
     decide: () => { const r = ring; if (r && !r.decided) r.set.forfeit(r.sim, r.set.startedAt === null ? null : SEATS[0]); },
   });
