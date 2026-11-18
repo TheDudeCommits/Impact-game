@@ -141,6 +141,18 @@ class RingSet {
     if (human) this.sim.setPlayerSkill(id, keptSkill());
     else actor.nextBotThink = 0;
   }
+  /** The visitor walks in: their fighter on its feet at full health and stamina, whatever the set had come to (Amir,
+   *  2026-11-19: "in Impact, whenever I enter the ring, regardless of what stage the fight was in, the visitor should
+   *  spawn at full health and stamina"). Down or out, it is stood up where it fell; nothing lingering from before. */
+  freshen(id: string) {
+    const a = this.sim.actors.get(id);
+    if (!a) return;
+    if (!a.state.alive) this.sim.revive(id, a.state.maxHp);
+    a.state.hp = a.state.maxHp;
+    a.state.stamina = a.state.maxStamina ?? a.state.stamina;
+    delete a.statuses; delete a.state.status;
+    this.publish();
+  }
   get decided() { return this.set.view.phase === 'complete'; }
   dispose() { this.sim.dispose(); }
 }
@@ -771,6 +783,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       if (!best) return false;
       me = best.id;
       r.seat(me, true);
+      r.freshen(me);
       input.clear();
       input.enabled = true;
       targeting.reset(); autoLock.reset(); targetId = null;
