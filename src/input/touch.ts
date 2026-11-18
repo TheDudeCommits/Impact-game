@@ -44,6 +44,9 @@ function buttonHtml(id: TouchButton, label: string) {
 const STICK_RING = '<svg class="tc-ring-svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48"/><path d="M44 13l6-6 6 6M44 87l6 6 6-6M13 44l-6 6 6 6M87 44l6 6-6 6"/></svg>';
 /** The stick's reach from where the thumb landed, CSS pixels at a phone's size (a tablet's is larger: --tc-k). */
 export const STICK_RADIUS = 58;
+/** TOUCH BUTTON SIZE (Settings.touchSize, set as --tc-u on the page by main.ts touchFeel): the stick's and AREA's reach
+ *  grow with the buttons. */
+const touchUser = () => (typeof document === 'object' && parseFloat(document.documentElement.style.getPropertyValue('--tc-u'))) || 1;
 /** Shares of the reach: nothing inside the deadzone, full speed from `STICK_FULL` out. */
 export const STICK_DEADZONE = .14, STICK_FULL = .8;
 /** The stick takes touches that start on this share of the screen's width; the rest of it looks. */
@@ -512,7 +515,7 @@ export class TouchControls {
   }
   /** The dot on AREA's ring: where the aim sits, as a share of the reach. */
   private placeDot(right: number, forward: number) { const r = this.aimReach(); this.aimDot.style.transform = `translate(${(right * r).toFixed(1)}px,${(-forward * r).toFixed(1)}px)`; }
-  private aimReach() { return AIM_RADIUS * (this.root.classList.contains('tc-tablet') ? 1.3 : 1); }
+  private aimReach() { return AIM_RADIUS * (this.root.classList.contains('tc-tablet') ? 1.3 : 1) * touchUser(); }
   private placeStick(x: number, y: number) {
     const r = this.reach(), margin = 10, [width, height] = page();
     // The whole base on the screen, however close to the edge the thumb landed.
@@ -530,7 +533,7 @@ export class TouchControls {
     this.knob.style.transform = `translate(${dx}px,${dy}px)`;
   }
   /** The stick's reach on this screen (a tablet's controls are drawn larger: .tc-tablet). */
-  private reach() { return STICK_RADIUS * (this.root.classList.contains('tc-tablet') ? 1.3 : 1); }
+  private reach() { return STICK_RADIUS * (this.root.classList.contains('tc-tablet') ? 1.3 : 1) * touchUser(); }
   private move(event: TouchEvent) {
     let taken = false;
     for (const touch of Array.from(event.changedTouches)) {

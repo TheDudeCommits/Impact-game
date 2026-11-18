@@ -1,5 +1,4 @@
 import {keptSkill} from '../../boot/skill';
-import {botSkillFor,skillFrom} from '../adaptive';
 import { isReleasedFighter, requireReleasedFighter } from '../rosterAvailability';
 import {DuelSet} from './DuelSet';
 import {ArenaSimulation} from '../simulation';
@@ -57,9 +56,8 @@ export class LocalDuel {
     // The featured rivalry is the first choice for these two; everyone else draws a live rival.
     const foe=rival&&isReleasedFighter(rival)&&!HELD.has(rival)?rival:fighter==='koko'?'oro':fighter==='oro'?'koko':sim.pick(lock?roster.filter(locks):roster);
     sim.addPlayer('duel-bot',foe,'Rival',true);
-    // the rival plays as well as the player does (adaptive.ts botSkillFor), where its skill
-    // was a roll of the dice each match - a strong player could draw a rival that never punished, a new one a sharp one.
-    sim.setBotSkill('duel-bot',botSkillFor(skillFrom(keptSkill())));
+    // The rival's play is set from the player's skill as the fight starts and as it goes (adaptive.ts: a level 5% ahead of
+    // them, their body exactly the rival's), where its skill was a roll of the dice each match.
     this.sim=sim;this.startsAt=sim.serverTime+3;
     this.room={send:type=>{if(type==='duel-runback'){this.set.request(this.sim!,'you');this.onControlReset();this.publish();}}};this.predictionReady=true;this.publish();
   }

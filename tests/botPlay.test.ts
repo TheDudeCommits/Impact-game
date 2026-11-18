@@ -12,7 +12,9 @@ function arena(classic: boolean, seed = 11, fighter: 'kenzo' | 'taisei' = 'kenzo
   sim.addPlayer('me', fighter, 'Me', false, { x: 0, y: 0, z: 0 });
   sim.addPlayer('bot', 'kenzo', 'Bot', true, { x: 0, y: 0, z: -2.8 });
   sim.startMatch();
-  const bot = sim.actors.get('bot')!; bot.botSkill = 1; if (classic) bot.botClassic = true;
+  // (held at skill 1 - a bot left to the adaptive difficulty takes its level from the player.)
+  sim.setBotSkill('bot', 1);
+  const bot = sim.actors.get('bot')!; if (classic) bot.botClassic = true;
   let seq = 0;
   // Its thinking clock held off (it would walk in and swing of its own accord): what is measured is the reflex alone.
   const input = (more: Partial<PlayerInput> = {}) => { bot.nextBotThink = Infinity; sim.submitInput('me', { seq: seq++, moveX: 0, moveZ: 0, yaw: 0, ...more }); };

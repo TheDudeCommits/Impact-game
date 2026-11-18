@@ -232,6 +232,9 @@ import {bootDone} from './boot/bootScreen'; // index.html's loading page (#boot)
 const root=document.querySelector<HTMLElement>('#app')!;
 // The renderer, tried twice and else a message and a RETRY in place of the boot mark (boot/webglFailure.ts).
 const settings=loadSettings();
+/** TOUCH BUTTON SIZE and OPACITY on the page (handheld.css reads --tc-u and --tc-a; input/touch.ts the stick's reach). */
+const touchFeel=(s:{touchSize?:number;touchAlpha?:number})=>{const r=document.documentElement.style;r.setProperty('--tc-u',String(s.touchSize??1));r.setProperty('--tc-a',String(s.touchAlpha??1));};
+touchFeel(settings);
 // The ART STYLE (render/look/filmLook.ts): The film look unless the player chose the modern one, set before the renderer
 // is made so its first frame is drawn in it.
 setFilmLook(filmLookFor(settings.artStyle));
@@ -843,7 +846,7 @@ hud.onFightBot=()=>{const [fighter,,name,access]=lastMatchStart??[hud.selected,'
 mountSocialPlay(root.querySelector<HTMLElement>('#interface')??root,()=>pageWhere({started,online:network===online,snapshot:network.snapshot,selfId:network.id,access:lastMatchStart?.[3],
   local:network===royale?'royale':network===duel?'duel':network===localRift?'rift-war':network===arcade?'arcade':network===localObjective?objectiveOf(network.snapshot)?.kind:undefined}),
   mode=>{const [fighter,,name]=lastMatchStart??[hud.selected,'match',hud.playerName()],access=queueAccess(mode,fighter);if(!access)return;standby.end();returnToLobby();void hud.onStart(fighter,'match',name,access);});
-hud.onSettings=s=>{setVfxLevel(s.vfx);setCommentary(s.commentary);Fighter.animStyle=animOverride??s.animStyle;input.sensitivity=s.sensitivity;input.rumble.scale=s.vibration;effects.density=s.effects;manga.density=s.effects;view.applySettings(s);audio.setMix({master:s.volume,sfx:s.sfxVolume,voice:s.voiceVolume});homeVoice.setMix(s.volume,s.voiceVolume);music.setVolume(s.volume*s.musicVolume);};
+hud.onSettings=s=>{touchFeel(s);setVfxLevel(s.vfx);setCommentary(s.commentary);Fighter.animStyle=animOverride??s.animStyle;input.sensitivity=s.sensitivity;input.rumble.scale=s.vibration;effects.density=s.effects;manga.density=s.effects;view.applySettings(s);audio.setMix({master:s.volume,sfx:s.sfxVolume,voice:s.voiceVolume});homeVoice.setMix(s.volume,s.voiceVolume);music.setVolume(s.volume*s.musicVolume);};
 hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packRefuses(mode,access as {kind:string});if(refused){hud.error(refused);return;}}if(party.joined&&access?.kind!=='party'){partyUI.show();partyUI.notice(party.view?.leader===party.id?'You lead a party: choose the match here and START it together.':'You are in a party: READY here, and your leader starts the match.');return;}const laboratory=mode==='training'&&(!access||access.kind==='public')&&fighter===laboratoryFighter()?fighter:undefined;const epoch=++startEpoch;if(!laboratory&&lockedStart(fighter,mode==='training'))return;fighterLabEntry?.close();homeVoice.stop();
   // On a thin line (loading/backgroundPolicy.ts thinLine) the sound bank waits while the room's bodies, stage and effects come in
   // (CombatAudio.holdFetches; opened by the room's load as its compile begins, or when this start ends). Not for a survival run:

@@ -211,6 +211,11 @@ export interface Settings { /** The ball modes' COMMENTARY (audio/ballCaller.ts)
   animVersion?:number;
   /** How hard a controller rumbles, 0-1. */
   vibration:number;
+  /** TOUCH BUTTON SIZE and OPACITY, phones and tablets: the controls drawn 0.85-1.15 of their size (handheld.css --tc-u,
+   *  under the tablet's own 1.3) and standing 0.4-1 solid at rest (--tc-a; a press shows a button whole). main.ts
+   *  touchFeel. */
+  touchSize:number;
+  touchAlpha:number;
   hudSkin:HudSkin;
   hudVersion?:number;
   moveLayout:MoveLayout;
@@ -237,13 +242,15 @@ export function chooseQuality(settings:Settings,value:string,machine?:Settings['
 }
 export function loadSettings():Settings {
   const vfx=defaultVfx();
-  const defaults:Settings={sensitivity:1,shake:.5,effects:VFX_DENSITY[vfx],vfx,volume:.7,sfxVolume:.85,voiceVolume:1,musicVolume:.75,musicEnabled:true,homeAnimations:true,audioMixVersion:3,quality:'high',powerMode:'auto',cameraMode:'dynamic',cameraStyle:'classic',cameraVersion:CAMERA_VERSION,cinematics:true,lockStyle:'glow',vibration:1,animStyle:'snap',animVersion:ANIM_VERSION,hudSkin:'halo',hudVersion:HUD_VERSION,moveLayout:'row',errorReports:true};
+  const defaults:Settings={touchSize:1,touchAlpha:1,sensitivity:1,shake:.5,effects:VFX_DENSITY[vfx],vfx,volume:.7,sfxVolume:.85,voiceVolume:1,musicVolume:.75,musicEnabled:true,homeAnimations:true,audioMixVersion:3,quality:'high',powerMode:'auto',cameraMode:'dynamic',cameraStyle:'classic',cameraVersion:CAMERA_VERSION,cinematics:true,lockStyle:'glow',vibration:1,animStyle:'snap',animVersion:ANIM_VERSION,hudSkin:'halo',hudVersion:HUD_VERSION,moveLayout:'row',errorReports:true};
   try {
     const saved=JSON.parse(localStorage.getItem('rift-settings')||'{}');
     if(!saved||typeof saved!=='object')return defaults;
     for(const key of ['shake','volume','sfxVolume','voiceVolume','musicVolume','vibration'] as const)if(Number.isFinite(saved[key]))defaults[key]=Math.max(0,Math.min(1,saved[key]));
     if(saved.audioMixVersion!==3&&Number.isFinite(saved.musicVolume)&&saved.musicVolume>0)defaults.musicVolume=Math.min(1,saved.musicVolume*2.5);
     if(Number.isFinite(saved.sensitivity))defaults.sensitivity=Math.max(.3,Math.min(2,saved.sensitivity));
+    if(Number.isFinite(saved.touchSize))defaults.touchSize=Math.max(.85,Math.min(1.15,saved.touchSize));
+    if(Number.isFinite(saved.touchAlpha))defaults.touchAlpha=Math.max(.4,Math.min(1,saved.touchAlpha));
     if(['high','medium','low'].includes(saved.quality))defaults.quality=saved.quality;
     defaults.qualityChosen=saved.qualityChosen===true;
     defaults.powerMode=['auto','cool','full'].includes(saved.powerMode)?saved.powerMode:'auto';

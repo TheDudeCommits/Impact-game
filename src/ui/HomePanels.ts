@@ -11,6 +11,8 @@ const sliders = [
   ['sfxVolume','SOUND EFFECTS',0,1,.05], ['voiceVolume','CHARACTER VOICES',0,1,.05],
   ['sensitivity','CAMERA SENSITIVITY',.3,2,.1], ['shake','CAMERA SHAKE',0,1,.1],
   ['vibration','CONTROLLER VIBRATION',0,1,.1],
+  // (a phone or a tablet: the touch controls' size and how solid they stand; Settings.touchSize / touchAlpha)
+  ...(handheld()?[['touchSize','TOUCH BUTTON SIZE',.85,1.15,.05],['touchAlpha','TOUCH BUTTON OPACITY',.4,1,.05]] as const:[]),
 ] as const;
 /** The graphics levels, in one list for both settings menus (the home's OPTIONS and the pause menu's): config.ts's, AUTO
  *  first - the machine's pick (render/qualityTier.ts) until the player chooses a level (Settings.qualityChosen). */

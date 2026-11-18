@@ -7,9 +7,10 @@ import {ART_STYLE_OPTIONS,CAMERA_OPTIONS,CAMERA_STYLE_OPTIONS,errorReportsOption
 import './inkSelect';
 import './pauseMenu.css';
 import {GUARD_HINT} from './guardGuide';
+import {handheld} from '../input/device';
 
 export function pauseMenu(settings:Settings){
-  const slider=(key:'sensitivity'|'shake'|'vibration'|'effects'|'volume'|'sfxVolume'|'voiceVolume'|'musicVolume',label:string,min=0,max=1,step=.05)=>`<label class="pause-slider" for="pause-${key}"><span>${label}</span><output data-option-value="${key}" for="pause-${key}">${optionValue(key,settings[key])}</output><input id="pause-${key}" data-setting="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${settings[key]}"></label>`;
+  const slider=(key:'sensitivity'|'shake'|'vibration'|'touchSize'|'touchAlpha'|'effects'|'volume'|'sfxVolume'|'voiceVolume'|'musicVolume',label:string,min=0,max=1,step=.05)=>`<label class="pause-slider" for="pause-${key}"><span>${label}</span><output data-option-value="${key}" for="pause-${key}">${optionValue(key,settings[key])}</output><input id="pause-${key}" data-setting="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${settings[key]}"></label>`;
   // The game's own picker (inkSelect.ts) where a native select stood; Hud sets each one's value from the settings.
   // (A third word is the option's note in the list - RECOMMENDED, 60 FPS - keeping the button's value short.)
   const pick=(key:'artStyle'|'cameraMode'|'cameraStyle'|'lockStyle'|'quality'|'powerMode'|'animStyle'|'hudSkin'|'moveLayout'|'vfx'|'commentary'|'spikeCam'|'chaseCam'|'superCam'|'goalLook',id:string,label:string,options:readonly (readonly [string,string,string?])[])=>`<label><span>${label}</span><ink-select id="${id}" data-setting="${key}" label="${label}">${options.map(([value,text,tag])=>`<option value="${value}"${tag?` data-tag="${tag}"`:''}${value===(key==='quality'?qualityChoice(settings):settings[key]??options[0][0])?' selected':''}>${text}</option>`).join('')}</ink-select></label>`;
@@ -20,7 +21,7 @@ export function pauseMenu(settings:Settings){
     <section class="pause-moves" aria-labelledby="pause-moves-title"><div class="pause-moves-head"><button type="button" data-pause-page="settings"><span aria-hidden="true">◀</span> BACK</button><h3 id="pause-moves-title">MOVE LIST</h3></div><div id="pause-move-list"></div></section>
     <div class="pause-settings-grid">
       <section class="pause-group" aria-labelledby="pause-gameplay-title"><h3 id="pause-gameplay-title"><span>01</span> GAMEPLAY</h3>
-        ${slider('sensitivity','Camera sensitivity',.3,2,.1)}${slider('shake','Camera shake',0,1,.1)}${slider('vibration','Controller vibration',0,1,.1)}
+        ${slider('sensitivity','Camera sensitivity',.3,2,.1)}${slider('shake','Camera shake',0,1,.1)}${slider('vibration','Controller vibration',0,1,.1)}${handheld()?`${slider('touchSize','Touch button size',.85,1.15,.05)}${slider('touchAlpha','Touch button opacity',.4,1,.05)}`:''}
         <div class="pause-selects">${pick('vfx','pause-vfx','Visual effects',VFX_OPTIONS)}</div>
         <div class="pause-selects">${pick('cameraMode','pause-camera','Camera',CAMERA_OPTIONS)}${pick('cameraStyle','pause-camera-style','Camera style',CAMERA_STYLE_OPTIONS)}${pick('lockStyle','pause-lock-style','Lock-on style',[['glow','Glow'],['brackets','Brackets']])}${pick('artStyle','pause-art-style','Art style',ART_STYLE_OPTIONS)}${pick('quality','pause-quality','Graphics',QUALITY_OPTIONS)}</div>
         ${modeOpen('goal-rush')?`<div class="pause-selects">${pick('spikeCam','pause-spike-cam','Sky Spike camera',SPIKE_CAM_OPTIONS)}${pick('chaseCam','pause-chase-cam','Goal Rush camera',CHASE_CAM_OPTIONS)}${pick('superCam','pause-super-cam','Super shot camera',SUPER_CAM_OPTIONS)}${footballWanted(typeof location==='object'?location:undefined)?pick('goalLook','pause-goal-look','Sport mode view',GOAL_LOOK_OPTIONS):''}</div>`:''}
