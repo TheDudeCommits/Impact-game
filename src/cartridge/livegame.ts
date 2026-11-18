@@ -61,6 +61,9 @@ import { pulseFor } from '../input/rumble';
 import { DamageNumbers } from '../ui/DamageNumbers';
 import { MangaImpact } from '../ui/MangaImpact';
 import { CutIn, awakeningCutIn, cutInKey, cutInSide } from '../ui/CutIn';
+import { VsSplash } from '../ui/VsSplash';
+import { Letterbox } from '../ui/Letterbox';
+import { roanEnabled } from '../render/look/roanPass';
 import { bodyBulk } from '../render/CameraDirector';
 
 /** The demo's five original fighters (src/originals/demo.ts DEMO.fighters): the only cast the duel deals. */
@@ -77,6 +80,8 @@ const BETWEEN = 5;
 const MOST_STEPS = 6;
 const FIGHT_LINE = '/assets/audio/survival/announcer-fight.m4a';
 const VICTORY_LINE = '/assets/audio/survival/announcer-victory.m4a', FLAWLESS_LINE = '/assets/audio/survival/announcer-flawless.m4a';
+/** main.ts: how long after an exchange of blows the chase camera's combo shot holds. */
+const LOCK_EXCHANGE_MS = 1100;
 const REJECTIONS: Record<string, string> = { cooldown: 'NOT READY', stamina: 'NO STAMINA', 'ultimate-meter': 'ULTIMATE NOT CHARGED' };
 
 export interface Running {
@@ -208,6 +213,13 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   const damageNumbers = new DamageNumbers(root), manga = new MangaImpact(root);
   const cutIn = new CutIn(hud.root);
   cutIn.onShow = () => audio.ui(UI_SFX.cutIn, 0.4);
+  // the FIGHT card at each bell, and the finisher's cinema bars (the visitor's alone, as host.ui is)
+  const vsSplash = new VsSplash(hud.root), letterbox = new Letterbox(root);
+  vsSplash.onBeat = beat => {
+    if (beat === 'fight') { audio.ui(UI_SFX.fight, .55, .05); audio.announce(FIGHT_LINE, .95, .08); audio.bell(); }
+    else if (beat === 'fight-slam') audio.ui(UI_SFX.slam, .5);
+  };
+  manga.onKnockout = () => audio.ui(UI_SFX.ko, .5);
   manga.density = settings.effects;
   manga.bodies = (id, out) => { const f = fighters.get(id); if (!f) return false; bodyCentre(f, out); return true; };
   effects.settings = settings;
@@ -240,7 +252,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   let epoch = 0;
   let ragdolls = false;
   let shownSelf: PlayerState | undefined;
-  let lastHud = 0, markerHoldUntil = 0;
+  let lastHud = 0, markerHoldUntil = 0, lockExchangeAt = -Infinity;
+  const drawn = { calls: 0, tris: 0 };
   const cutInSeen = new Map<string, string>();
   const numberAnchor = new THREE.Vector3(), marker = new THREE.Vector3();
   /** The world's lens in the game's scene, from the last draw (what the effects face while the visitor watches). */
@@ -389,7 +402,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       if (me) {
         input.yaw = snapshot.players.find(p => p.id === me)?.yaw ?? Math.PI;
         followCam.lookAlong(input.yaw);
-        audio.announce(FIGHT_LINE, .9);
+        void vsSplash.fight();
       }
     }
     timeline.push(snapshot, performance.now());
@@ -443,6 +456,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       if (me && event.kind === 'land' && (event.drop ?? 0) >= 1) followCam.impact(Math.min(.6, .12 + ((event.drop ?? 0) - 1) * .07) * witness(event));
       if (me && event.kind === 'projectile-clash') followCam.impact(.42 * witness(event));
       if (me && event.kind === 'break') { followCam.impact(.4 * witness(event), blowHeading(event)); if (event.actorId === me) hud.notify('BREAK', .8); else notify(event.targetId, 'BROKEN', .8); }
+      if ((event.kind === 'hit' || event.kind === 'blocked' || event.kind === 'chase') && involved(event)) lockExchangeAt = performance.now();
       if (me && event.kind === 'hit' && event.actorId === me && (event.branch || event.slot === 'light' && (event.chain ?? 0) >= 3)) followCam.comboPunch();
       if (me && event.kind === 'hit' && event.counter) { if (event.actorId === me) hud.notify('COUNTER', .6); else notify(event.targetId, 'COUNTERED', .6); }
     }
@@ -512,9 +526,12 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     for (const p of snapshot.players) if (p.id !== self.id && p.alive) { rivals++; rival = p.id; }
     followCam.sole = rivals === 1;
     const held = targetId || (followCam.sole && (settings.cameraMode === 'arena' || settings.cameraMode === 'smart') ? rival : '');
+    followCam.comboShot = settings.cameraStyle === 'chase' && followCam.sole && performance.now() - lockExchangeAt < LOCK_EXCHANGE_MS;
     followCam.mode = settings.cameraMode;
     followCam.style = settings.cameraStyle;
     followCam.cinematics = settings.cinematics;
+    followCam.finisherCuts = roanEnabled();
+    followCam.cuts.arena = true;
     followCam.battlefield = false;
     followCam.wide = 0;
     followCam.movementBasis(movementMask(input.keys, !input.arrowsLook));
@@ -549,6 +566,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         players: s.players.map(p => ({ id: p.id, fighter: p.fighter, bot: p.isBot, x: +p.x.toFixed(2), y: +p.y.toFixed(2), z: +p.z.toFixed(2), yaw: +p.yaw.toFixed(2), hp: Math.round(p.hp), action: p.action })) };
     },
     camera: () => ({ position: camera.position.toArray().map(v => +v.toFixed(2)), fov: camera.fov }),
+    drawn: () => ({ ...drawn }),
+    /** Tests: the set decided now (the first seat wins), so the next one comes round. */
+    decide: () => { const r = ring; if (r && !r.decided) r.set.forfeit(r.sim, r.set.startedAt === null ? null : SEATS[0]); },
   });
 
   // ---- the frame
@@ -652,6 +672,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       strikeTrails.update(worldDt, steady, view);
       clashEffects.update(serverTime, view, settings.effects);
       if (me) { hud.tick(); damageNumbers.update(camera); manga.update(camera); }
+      letterbox.set(me ? followCam.cuts.bars : 0);
       // the drawn bodies' bones once a draw (skeletonOnce's rule, on these bodies alone)
     },
 
@@ -669,11 +690,15 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const dir = view.sunDir.lengthSq() > .01 ? view.sunDir : keyDir;
       sun.position.copy(dir).normalize().multiplyScalar(40);
       sun.target.position.set(0, 0, 0);
-      const fog = scene.fog, shadow = gl.shadowMap.enabled;
+      const fog = scene.fog, shadow = gl.shadowMap.enabled, info = gl.info.render, calls = info.calls, tris = info.triangles;
       scene.fog = view.fog;
       gl.shadowMap.enabled = shadow && shadows;
       try { gl.render(scene, view.camera); }
-      finally { scene.fog = fog; gl.shadowMap.enabled = shadow; }
+      finally {
+        scene.fog = fog; gl.shadowMap.enabled = shadow;
+        // (what this draw cost, for the tests: three counts on unless the page resets it per render)
+        drawn.calls = gl.info.autoReset ? info.calls : info.calls - calls; drawn.tris = gl.info.autoReset ? info.triangles : info.triangles - tris;
+      }
     },
 
     join(at: THREE.Vector3, _yaw: number) {
@@ -706,7 +731,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       me = null;
       input.enabled = false; input.clear(); input.aim.cancel();
       targeting.reset(); targetId = null;
-      cutIn.hide(); hud.leave(); manga.reset();
+      cutIn.hide(); vsSplash.skip(); letterbox.set(0); hud.leave(); manga.reset();
       effects.localId = ''; SIGNATURE.localId = '';
       return out;
     },

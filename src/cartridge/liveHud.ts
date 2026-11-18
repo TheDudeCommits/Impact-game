@@ -28,6 +28,8 @@ import '../ui/hud/protos/halo.css';
 import '../ui/hud/protos/haloModes.css';
 import '../ui/hud/zones.css';
 
+const WORLD_CSS = '[data-game="impact"] #interface .combat-hud .fighter-meter{translate:0 34px}';
+
 export class LiveHud {
   readonly root: HTMLElement;
   private readonly combat: HTMLElement;
@@ -58,7 +60,10 @@ export class LiveHud {
       <div class="controls-hint" id="controls-hint">${keyboardCombatHints()}</div>
     </section>`;
     parent.append(root);
+    // Room for the world's Leave pill in the top-left corner: the plates step down under it (Hoop It's scoreboard does).
+    rt.addCss(WORLD_CSS);
     this.combat = root.querySelector<HTMLElement>('.combat-hud')!;
+    this.noPause(root.querySelector('#controls-hint')!);
     // The duel's look, as Hud.ts sets it: the Halo plates (the default skin), the cards in a row, the rival plate.
     const skin = settings.hudSkin ?? 'halo';
     root.dataset.skin = skin; inkedFit.comboTop = skin === 'halo' ? 340 : 300;
@@ -93,7 +98,11 @@ export class LiveHud {
   setInput(mode: 'keyboard' | 'controller' | 'touch', family: PadFamily = 'generic') {
     this.root.dataset.input = mode; this.root.dataset.pad = family;
     const hint = this.root.querySelector('#controls-hint');
-    if (hint) hint.innerHTML = mode === 'controller' ? padCombatHints(family, 'LOCK ON') : keyboardCombatHints('LOCK ON');
+    if (hint) { hint.innerHTML = mode === 'controller' ? padCombatHints(family, 'LOCK ON') : keyboardCombatHints('LOCK ON'); this.noPause(hint); }
+  }
+  /** The strip's PAUSE goes: there is no pause inside the world (its Esc, and its Leave pill, take the visitor out). */
+  private noPause(hint: Element) {
+    for (const item of hint.querySelectorAll('.control-item')) if (/\bPAUSE\b/.test(item.textContent ?? '')) item.remove();
   }
 
   /** Every HUD tick while the visitor plays (Hud.ts update, the duel's part). */
