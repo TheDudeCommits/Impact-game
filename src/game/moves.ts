@@ -974,6 +974,21 @@ for (const fighter of Object.keys(MOVES) as FighterId[]) MOVES[fighter] = { ...M
  *  for these few frames; it is the single largest contributor to a hit reading
  *  as a collision rather than two animations overlapping. */
 export const HITSTOP: Record<AttackSlot, number> = { light: .08, heavy: .13, special: .16, ultimate: .22, area: .16 };
+/** A blow's weight, from what it dealt: the struck body's impact freeze is scaled by it (simulation.ts hit). */
+export const blowWeight = (damage: number) => Math.max(.75, Math.min(1.25, .7 + damage / 200));
+/** A jab's weight (about 20 damage, the roster's lights). */
+export const JAB_WEIGHT = .8;
+/** How much heavier than a jab a blow is - 0 for a light, about a fifth for a heavy (65 damage), a quarter at most (a
+ *  special, an ultimate). The thrower's freeze grows by this share of itself (simulation.ts hit: a heavy's 78 ms to 96, a
+ *  special's 96 to 120, an ultimate's 132 to 165), and the drawn contact pose is held this share longer
+ *  (render/Fighter.ts ANIME_HOLD), so a heavy is felt in the hands. What a heavy leaves its thrower ahead by on hit
+ *  shrinks by as much (17-33 ms of the 140-260 a heavy, a special and an ultimate leave). */
+export const heftOf = (damage: number) => Math.min(.25, Math.max(0, blowWeight(damage) - JAB_WEIGHT));
+/** A COUNTER (lock combat: a light or heavy landed in the other's swing before its blow) and a PUNISH (a blow landed in
+ *  the recovery of a swing that found nobody) hold both bodies this much longer than the blow would - the read is felt in
+ *  the hands, not only read in a tag - with a sharper layer on the blow's sound and its pulse (audio/sfxPlan.ts
+ *  rewardLayer, input/rumble.ts). */
+export const REWARD_HITSTOP = 1.5;
 export const BIG_HITSTOP = { special: .22, ultimate: .26, ender: .2, finisher: .17 } as const;
 /** v70, the dream loop's throw (23 October 2026): a combo ender's struck body (the blowback, the launcher, the knockdown,
  *  the air strike) is held at most this long - frozen in the pose it was hit into, flashed and shaken as ever

@@ -17,6 +17,32 @@ export function frameSteps(rawDt: number) {
   return { world: Math.min(WORLD_MAX_STEP, real), camera: real, correction: real };
 }
 
+/** A fight on this device (Duel, Training, the arcade, the ball matches: every mode whose arena runs in the page) is drawn
+ *  on a clock steered onto one steady lag behind the match. A free clock runs between its two clamps (newest-3 ticks,
+ *  newest), so whichever end a session drifted to it stayed at - measured 2 to 4 ticks behind from one session to the
+ *  next, a press timed by eye landing in one and late in the next. This one is pulled onto `behind` the match's own clock
+ *  (its newest tick plus the time the input clock has banked toward the next: smooth, real time) - gently (`gain` a
+ *  second, never more than `pace` of the frame's time a frame, so the frames stay even), or at once past `snap` (a stall,
+ *  the start). `behind` leaves the frame's own tick, sent after the clock is read, half a tick of room before the clamp
+ *  at the newest (1.2 ticks hit it and doubled the uneven frames). Measured: 2.1-2.5 ticks behind the newest over five
+ *  sessions, no frame uneven or stalled. */
+export const STEADY_CLOCK = { behind: 1.5 / 60, gain: 4, pace: .08, snap: 3 / 60 } as const;
+/** The drawing clock's next value: `next` (the free clock's step, arena seconds) pulled toward `behind` the match's
+ *  continuous clock `matchClock` (its newest tick plus the time banked toward the next), over a frame of `rawDt` seconds. */
+export function steadyStep(next: number, matchClock: number, rawDt: number) {
+  const err = matchClock - STEADY_CLOCK.behind - next;
+  if (Math.abs(err) > STEADY_CLOCK.snap) return next + err;
+  return next + Math.max(-rawDt * STEADY_CLOCK.pace, Math.min(rawDt * STEADY_CLOCK.pace, err * Math.min(1, rawDt * STEADY_CLOCK.gain)));
+}
+
+/** The fight is drawn at no more than about sixty frames a second unless a desktop's player asked for every frame. The
+ *  display's own interval is the median of the last requests' gaps; every `every`th request is drawn, the count the most
+ *  refreshes that still keep the target: a 60, 90 or 100 Hz display draws every frame, a 120 Hz one every other (60), a
+ *  144 Hz one every other (72), a 165 Hz one every other (82) and a 240 Hz one every fourth (60). COUNT_SLACK of a refresh
+ *  keeps an exact ratio - 120 Hz against sixty - from flipping between two counts on jitter. A request that comes most of
+ *  a target's interval after the last frame drawn is drawn whatever the count, so a page running behind its display is
+ *  never held back further. `fps` Infinity draws every request (FULL DETAIL on a desktop: FramePolicy.drawRate). */
+export const COUNT_SLACK = .08;
 export const FRAME_MS = 1000 / 60;
 export class FrameGate {
   private readonly gaps = new Float64Array(15);
@@ -35,7 +61,7 @@ export class FrameGate {
   draw(now: number, previous: number, fps=60) {
     if (this.lastRequest > 0) this.gaps[this.count++ % this.gaps.length] = now - this.lastRequest;
     this.lastRequest = now;
-    const target=1000/fps,refresh = this.interval, every = Math.max(1, Math.round(target / refresh - .1));
+    const target=1000/fps,refresh = this.interval, every = Math.max(1, Math.floor(target / refresh + COUNT_SLACK));
     if (++this.skipped < every && now - previous < target - refresh * .5) return false;
     this.skipped = 0;
     return true;

@@ -262,6 +262,12 @@ export interface CombatEvent {
   reason?: string;
   /** Lock combat: on a 'hit', a light or heavy that caught its body's own swing before its blow. */
   counter?: boolean;
+  /** On a 'hit' between fighters: a blow that caught its body in the recovery of a swing that found nobody (simulation.ts
+   *  hit, REWARD_HITSTOP). */
+  punish?: boolean;
+  /** On a 'hit' that holds its body in a stagger and on a 'blocked', between fighters: what the blow leaves its thrower
+   *  ahead by, in sixtieths (negative: behind) - Training's readout (simulation.ts frameAdvantage). */
+  advantage?: number;
   /** Lock combat: on a 'hit' and a 'lock-gap', the round of the string (0 the first). */
   round?: number;
   seed?: number;

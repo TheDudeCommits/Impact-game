@@ -15,6 +15,7 @@ import type { Fighter } from '../../Fighter';
 import { effekseerLoaded } from './effekseer';
 import { skipHiddenChildren } from '../../hiddenMatrices';
 import { VFX } from '../../vfxLevel';
+import { sceneDrawingSize } from '../../look/sceneBuffer';
 import type { ArmoryContext, ArmoryFlashApi, ArmoryLightHandle, ArmoryLightsApi, ArmoryShakeApi } from './types';
 
 /**
@@ -504,7 +505,7 @@ export class ArmoryHost implements EffectLayer {
     if (this.begun.size !== 0 && !this.begun.has(owner)) { this.begun.add(owner); return; }
     this.begun.clear(); this.begun.add(owner);
     this.frames++;
-    if (this.renderer) { this.renderer.getDrawingBufferSize(_s); if (_s.x > 0) frame.uResolution.value.set(_s.x, _s.y); }
+    if (this.renderer) { sceneDrawingSize(this.renderer, _s); if (_s.x > 0) frame.uResolution.value.set(_s.x, _s.y); }
     const camera = this.gameCamera as THREE.PerspectiveCamera | undefined;
     if (camera?.isPerspectiveCamera) { frame.uCameraNear.value = camera.near; frame.uCameraFar.value = camera.far; }
     frame.uShaderIntensity.value = settings.global.shaderIntensity;

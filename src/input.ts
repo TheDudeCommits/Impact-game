@@ -1,5 +1,5 @@
 import type { AttackSlot, PlayerInput } from './game/types';
-import { GamepadControls, type InputMode, type PadFamily, type UiAction } from './input/gamepad';
+import { GamepadControls, type InputMode, type PadFamily, type PadFrame, type UiAction } from './input/gamepad';
 import { Rumble, type Actuator, type Pulse } from './input/rumble';
 import { TouchHaptics } from './input/haptics';
 import { ACTIONS, BINDINGS_EVENT, boundTo, getBindings, heldBinding, isCapturingBinding, pauseKey, type BindingAction } from './input/bindings';
@@ -175,6 +175,19 @@ export class Input {
   }
   /** Call every render, including lobby and pause, so camera speed is frame-rate independent. */
   update(dt:number){
+    const frame=this.poll();if(!frame)return;
+    const seconds=Math.max(0,Math.min(.1,Number.isFinite(dt)?dt:0));
+    // Aiming with the pad, the right stick moves the reticle and the view holds still.
+    if(this.aim.active&&this.aim.view.source==='pad'){this.aim.nudge(frame.lookX*AIM_STICK*seconds*this.sensitivity,-frame.lookY*AIM_STICK*seconds*this.sensitivity,this.yaw);return;}
+    this.yaw-=frame.lookX*2.7*seconds*this.sensitivity;
+    this.pitch=Math.max(-.28,Math.min(.72,this.pitch+frame.lookY*1.75*seconds*this.sensitivity));
+  }
+  /** Reads the pad: its sticks and held buttons, its presses, its menu keys - all of update but the view's turn, which
+   *  takes the frame's time. The frame reads it through update; the input pump reads it as well, before it makes each
+   *  command (main.ts pumpInput), so a press reaches the fight at the pump's sixty a second whatever the frame rate. (Read
+   *  on drawn frames alone, a pad at thirty frames a second was read at thirty: a press, a let-go guard, up to a frame
+   *  late.) Answers the pad's frame when the view may turn by it. */
+  poll():PadFrame|undefined{
     if(isCapturingBinding()){this.clear();return;}
     if(this.wasEnabled!==this.enabled){this.clear();this.wasEnabled=this.enabled;}
     const pads=typeof navigator.getGamepads==='function'?Array.from(navigator.getGamepads()):[];
@@ -202,11 +215,7 @@ export class Input {
     else if(frame.area==='release')this.releaseAim('pad');
     else if(frame.area==='cancel'&&this.aim.view.source==='pad')this.aim.cancel();
     if(frame.guardPressed&&this.aim.active)this.aim.cancel();
-    const seconds=Math.max(0,Math.min(.1,Number.isFinite(dt)?dt:0));
-    // Aiming with the pad, the right stick moves the reticle and the view holds still.
-    if(this.aim.active&&this.aim.view.source==='pad'){this.aim.nudge(frame.lookX*AIM_STICK*seconds*this.sensitivity,-frame.lookY*AIM_STICK*seconds*this.sensitivity,this.yaw);return;}
-    this.yaw-=frame.lookX*2.7*seconds*this.sensitivity;
-    this.pitch=Math.max(-.28,Math.min(.72,this.pitch+frame.lookY*1.75*seconds*this.sensitivity));
+    return frame;
   }
   /** Rumbles the pad, when it is the pad being played and it can; on the touch controls, the phone's own buzz. */
   feel(pulse:Pulse){if(this.mode==='controller'&&this.focused&&this.actuator?.playEffect)this.rumble.add(pulse);else if(this.mode==='touch'&&this.focused){this.haptics.scale=this.rumble.scale;this.haptics.add(pulse);}}

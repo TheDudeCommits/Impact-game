@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Pass, FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import type { GradeLook, LookPreset } from './stageLooks';
 import { FILM } from './filmLook';
+import { ScreenUpscale, UPSCALE } from './upscale';
 
 const VERTEX = /* glsl */`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}`;
 
@@ -227,6 +228,8 @@ uniform float uWrapPx;
 // No flicker, gate weave, dust or scratches: a well-kept print, its grain re-dealt 24 times a second.
 uniform float uReel;
 uniform float uReelStep24;
+// 0 while the frame is upscaled to the screen (look/upscale.ts), which draws the film grain itself, after the upscale.
+uniform float uGrainHere;
 uniform vec4 uReelA;
 uniform vec4 uReelB;
 uniform vec4 uReelC;
@@ -613,7 +616,7 @@ void main() {
 		float n = hash12( gl_FragCoord.xy + fract( grainSeed * .618034 ) * 1013. ) + hash12( gl_FragCoord.xy * 1.37 + fract( grainSeed * .754878 ) * 997. ) - 1.;
 		c += n * uFinishB.z * uAnime * ( .4 + .6 * ( 1. - abs( luma( c ) - .45 ) * 1.6 ) );
 	}
-	if ( uReel > .5 ) {
+	if ( uReel > .5 && uGrainHere > .5 ) {
 		float s24 = uReelStep24;
 		// The film look's grain lives in the print (after the curve): soft clumps uReelD.x px wide in two sizes
 		// and a fine tooth, re-dealt 24 times a second, most in the mids, each dye layer a little its own.
@@ -669,7 +672,7 @@ export class LookFinalPass extends Pass {
     uAnimeShadow: { value: new THREE.Color(1, 1, 1) }, uAnimeLift: { value: new THREE.Color(0, 0, 0) }, uAnimeWarm: { value: new THREE.Color(1, 1, 1) },
     uAnimeVignette: { value: 0 }, uWrapPx: { value: 3 },
     // The film look (look/filmLook.ts; see the shader's uReel): set by setFilmLook, stepped by stepFilm.
-    uReel: { value: 0 }, uReelStep24: { value: 0 },
+    uReel: { value: 0 }, uReelStep24: { value: 0 }, uGrainHere: { value: 1 },
     uReelA: { value: new THREE.Vector4() }, uReelB: { value: new THREE.Vector4() }, uReelC: { value: new THREE.Vector4() },
     uReelHalo: { value: new THREE.Color(1, .36, .14) }, uReelShadowTone: { value: new THREE.Color(1, 1, 1) }, uReelHighlightTone: { value: new THREE.Color(1, 1, 1) }, uReelLift: { value: new THREE.Color(1, .92, .9) },
     uReelInk: { value: new THREE.Vector4(1, .6, 40, 140) }, uReelD: { value: new THREE.Vector4(1.15, 0, 0, 0) },
@@ -690,7 +693,29 @@ export class LookFinalPass extends Pass {
     // Dev builds: the game's own final pass (the first made), for tuning a look live from the console.
     if (import.meta.env?.DEV && typeof window !== 'undefined') (window as { __lookFinal?: LookFinalPass }).__lookFinal ??= this;
   }
+  /** A desktop's upscale (look/upscale.ts): `on` while the scene is drawn smaller than the screen, the frame then drawn
+   *  into a target of its own and taken to the screen with the grain; `possible` keeps the upscale made (and its
+   *  programs linked by compile) while the scene is the screen's size, so a later step down links nothing. */
+  setUpscale(on: boolean, possible = on) {
+    const u = this.uniforms;
+    if (on || possible) this.upscaler ??= new ScreenUpscale({ uTime: u.uTime, uReelStep24: u.uReelStep24, uReelA: u.uReelA, uReelD: u.uReelD });
+    this.upscaling = on && !!this.upscaler;
+    this.uniforms.uGrainHere.value = this.upscaling ? 0 : 1;
+  }
+  get upscaled() { return this.upscaling; }
+  private upscaler?: ScreenUpscale;
+  private upscaling = false;
+  private frame?: THREE.WebGLRenderTarget;
+  private readonly sceneSize = new THREE.Vector2(1, 1);
+  /** The target the frame is drawn into before the upscale: the scene's size, display-encoded 8-bit colour. */
+  private frameTarget() {
+    const w = Math.max(1, Math.floor(this.sceneSize.x)), h = Math.max(1, Math.floor(this.sceneSize.y));
+    if (!this.frame) this.frame = new THREE.WebGLRenderTarget(w, h, { depthBuffer: false, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false });
+    else if (this.frame.width !== w || this.frame.height !== h) this.frame.setSize(w, h);
+    return this.frame;
+  }
   setSize(width: number, height: number) {
+    this.sceneSize.set(width, height);
     const u = this.uniforms, scale = Math.max(.5, height / 1080);
     u.uResolution.value.set(width, height); u.uFinishB.value.w = this.fringe * scale; u.uWrapPx.value = 3 * scale;
     this.reelScale = scale; if (u.uReel.value) this.setFilm(true, this.reelFull);
@@ -757,13 +782,20 @@ export class LookFinalPass extends Pass {
     this.uniforms.tBloom.value = bloom; this.uniforms.uHasBloom.value = bloom ? 1 : 0;
     // The anime finish's diffusion glow: the bloom's pyramid, its threshold lowered.
     this.uniforms.tGlow.value = bloom; this.uniforms.uHasFinish.value = bloom ? 1 : 0;
-    renderer.setRenderTarget(this.renderToScreen ? null : writeBuffer);
+    const upscale = this.renderToScreen && this.upscaling, target = upscale ? this.frameTarget() : this.renderToScreen ? null : writeBuffer;
+    this.uniforms.uGrainHere.value = upscale && UPSCALE.screenGrain ? 0 : 1;
+    renderer.setRenderTarget(target);
     this.quad.render(renderer);
+    if (upscale) this.upscaler!.render(renderer, target!, UPSCALE.screenGrain && this.uniforms.uReel.value > .5);
   }
   /** Its program linked now for where it draws (`target`: null for the screen), as LookBloom.compile. */
   compile(renderer: THREE.WebGLRenderer, camera: THREE.Camera, target: THREE.WebGLRenderTarget | null) {
     const mesh = (this.quad as unknown as { _mesh: THREE.Mesh })._mesh, previous = renderer.getRenderTarget();
-    try { renderer.setRenderTarget(target); renderer.compile(mesh, camera); } finally { renderer.setRenderTarget(previous); }
+    try {
+      renderer.setRenderTarget(target); renderer.compile(mesh, camera);
+      // A desktop's upscale: this pass's program for its own target too, and the upscale's for the screen.
+      if (target === null && this.upscaler) { renderer.setRenderTarget(this.frameTarget()); renderer.compile(mesh, camera); this.upscaler.compile(renderer, camera); }
+    } finally { renderer.setRenderTarget(previous); }
   }
-  dispose() { this.material.dispose(); this.quad.dispose(); }
+  dispose() { this.material.dispose(); this.quad.dispose(); this.upscaler?.dispose(); this.frame?.dispose(); }
 }

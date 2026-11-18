@@ -107,6 +107,10 @@ export class SurvivalHud {
   private draftKey = '';
   private resultShown = false;
   private scoreShown = 0;
+  /** The HUD's easings (the score counting up, the boss bars' echo) step by the time since the last frame, in sixtieths:
+   *  a display drawn faster than sixty (FULL DETAIL on a desktop) counted up and drained them faster, frame by frame. */
+  private easedAt = 0;
+  private eased = 1;
   private inputMode: InputMode = 'keyboard';
   private family: PadFamily = 'generic';
   private openedAt = 0;
@@ -485,6 +489,7 @@ export class SurvivalHud {
   }
   private frame(view: RunView, fighter: FighterId) {
     this.hero = fighter;
+    { const now = performance.now(); this.eased = this.easedAt ? Math.max(0, Math.min(6, (now - this.easedAt) * .06)) : 1; this.easedAt = now; }
     this.warmPortraits(view.upcoming);
     // The controls strip has said its piece by round three: it stood over the
     // bottom-left corner, where the fighter often is, thirteen minutes in.
@@ -512,7 +517,7 @@ export class SurvivalHud {
     tag.classList.toggle('hidden', !path);
     if (path && tag.dataset.kind !== path) { tag.dataset.kind = path; tag.textContent = PATH_INFO[path].name; tag.style.setProperty('--c', `#${PATH_INFO[path].color.toString(16).padStart(6, '0')}`); }
     if (rift !== undefined) this.fill('sv-rift', rift);
-    this.scoreShown += (view.score - this.scoreShown) * .18;
+    this.scoreShown += (view.score - this.scoreShown) * (1 - Math.pow(1 - .18, this.eased));
     if (Math.abs(view.score - this.scoreShown) < 1) this.scoreShown = view.score;
     this.text('sv-score', thousands(this.scoreShown));
     this.text('sv-kills', `${view.kills} KO`);
@@ -588,7 +593,7 @@ export class SurvivalHud {
       }
       const share = Math.max(0, boss.hp / boss.maxHp);
       let echo = this.echoes.get(boss.id) ?? 1;
-      echo += (share - echo) * .07; if (share > echo) echo = share;
+      echo += (share - echo) * (1 - Math.pow(1 - .07, this.eased)); if (share > echo) echo = share;
       this.echoes.set(boss.id, echo);
       (bar.querySelector('.sv-bossbar-hp') as HTMLElement).style.transform = `scaleX(${share})`;
       (bar.querySelector('.sv-bossbar-echo') as HTMLElement).style.transform = `scaleX(${echo})`;

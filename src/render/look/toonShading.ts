@@ -52,6 +52,8 @@ export const frameUniforms = {
 };
 /** Ink: its colour, and its width as a fraction of the viewport height -
  *  2.2 px at 1080p, the same on every fighter at every distance up close. */
+/** the widths (inkUniforms.uInkWeight): the line facing the key light, and away from it, of its even width. */
+export const INK_WEIGHT = { lit: .55, shade: 1.7 };
 export const inkUniforms = {
   uInkColor: { value: new THREE.Color(.012, .008, .01) },
   // The colour pass: a silhouette line a good deal heavier than 2.2 px at
@@ -59,6 +61,11 @@ export const inkUniforms = {
   uInkWidth: { value: (roanEnabled() ? 3.2 : 2.2) / 1080 },
   /** The film look's boil (filmLook.ts): the line's pressure re-drawn every animation step. */
   uReelBoil: filmUniforms.uReelBoil,
+  /** : the key light's direction in the lens's space
+   *  (GameRenderer.updatePost), and the line's width on the side facing it (x) and on the side away from it (y) - the
+   *  pen heavier in the shade and lighter in the light, as a hand-inked cel is drawn. (1, 1): the even line before. */
+  uInkLight: { value: new THREE.Vector3(0, 1, 0) },
+  uInkWeight: { value: new THREE.Vector2(1, 1) },
 };
 
 const celOn = roanEnabled() && (typeof location === 'undefined' || new URLSearchParams(location.search).get('cel') !== '0');
@@ -733,7 +740,7 @@ export function applyInkShell(material: THREE.MeshToonMaterial, relativeWidth: n
     Object.assign(shader.uniforms, inkUniforms, frameUniforms);
     shader.uniforms.uInkTint = sparkUniforms.uInkTint;
     shader.uniforms.uInkScale = { value: relativeWidth };
-    shader.vertexShader = 'uniform float uInkWidth;\nuniform float uInkScale;\nuniform vec4 uReelBoil;\n' + shader.vertexShader;
+    shader.vertexShader = 'uniform float uInkWidth;\nuniform float uInkScale;\nuniform vec4 uReelBoil;\nuniform vec3 uInkLight;\nuniform vec2 uInkWeight;\n' + shader.vertexShader;
     shader.vertexShader = replaceOnce(shader.vertexShader, '#include <project_vertex>', `#include <project_vertex>
 	{
 		float inkDepth = max( - mvPosition.z, .05 );
@@ -754,6 +761,9 @@ export function applyInkShell(material: THREE.MeshToonMaterial, relativeWidth: n
 			float press = mix( mix( mix( h000, h100, hf.x ), mix( h010, h110, hf.x ), hf.y ), mix( mix( h001, h101, hf.x ), mix( h011, h111, hf.x ), hf.y ), hf.z );
 			inkFar *= 1.0 + ( press - .5 ) * uReelBoil.z;
 		}
+		// heavier on the side away from the key light, lighter in it (the hull's normal is turned inward).
+		float inkLit = dot( - normalize( transformedNormal ), uInkLight );
+		inkFar *= mix( uInkWeight.y, uInkWeight.x, smoothstep( -.35, .55, inkLit ) );
 		mvPosition.xyz -= normalize( transformedNormal ) * uInkWidth * uInkScale * inkPixel * inkFar;
 		mvPosition.z -= ${depthBias.toFixed(4)};
 		gl_Position = projectionMatrix * mvPosition;

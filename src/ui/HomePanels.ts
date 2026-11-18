@@ -4,7 +4,7 @@ import { modeOpen } from '../originals/launch';
 import { ART_STYLE_OPTIONS, HUD_SKIN_OPTIONS, MOVE_LAYOUT_OPTIONS, QUALITY_OPTIONS, qualityChoice, VFX_OPTIONS, type CameraStyle, type Settings } from '../config';
 import './inkSelect';
 import { legalEntry } from './legal';
-import { phone } from '../input/device';
+import { handheld, phone } from '../input/device';
 
 const sliders = [
   ['volume','MASTER VOLUME',0,1,.05], ['musicVolume','MUSIC VOLUME',0,1,.05],
@@ -17,8 +17,9 @@ const sliders = [
 export { ART_STYLE_OPTIONS, QUALITY_OPTIONS };
 export const CAMERA_OPTIONS:readonly (readonly [Settings['cameraMode'],string,string?])[]=[['dynamic','Dynamic','Recommended'],['smart','Stable','New'],['arena','Arena'],['lockon','Lock-on'],['free','Free']];
 export const CAMERA_STYLE_OPTIONS:readonly (readonly [CameraStyle,string,string?])[]=[['classic','Classic','Recommended'],['close','Close'],['chase','Chase']];
-/** POWER USE (render/framePolicy.ts). Balanced on a phone is sixty while the phone holds it and an even thirty when not. */
-export const POWER_OPTIONS:readonly (readonly [string,string,string])[]=[['auto','Balanced',phone()?'30-60 FPS':'60 FPS'],['cool','Cooler','30 FPS'],['full','Full detail','60 FPS']];
+/** POWER USE (render/framePolicy.ts). Balanced on a phone is sixty while the phone holds it and an even thirty when not;
+ *  Full detail on a desktop is drawn at the display's own rate (FramePolicy.drawRate). */
+export const POWER_OPTIONS:readonly (readonly [string,string,string])[]=[['auto','Balanced',phone()?'30-60 FPS':'60 FPS'],['cool','Cooler','30 FPS'],['full','Full detail',handheld()?'60 FPS':'Max FPS']];
 export function homeOptions(settings:Settings) {
   // The game's own picker (inkSelect.ts) where a native select stood.
   const pick=(key:'artStyle'|'quality'|'powerMode'|'cameraMode'|'cameraStyle'|'lockStyle'|'hudSkin'|'moveLayout'|'vfx'|'commentary'|'spikeCam'|'chaseCam'|'superCam',label:string,options:readonly (readonly [string,string,string?])[])=>`<label class="home-option home-option-select"><span>${label}</span><ink-select id="home-setting-${key}" data-home-setting="${key}" label="${label[0]}${label.slice(1).toLowerCase()}">${options.map(([value,text,tag])=>`<option value="${value}"${tag?` data-tag="${tag}"`:''}${value===(key==='quality'?qualityChoice(settings):settings[key]??options[0][0])?' selected':''}>${text}</option>`).join('')}</ink-select></label>`;

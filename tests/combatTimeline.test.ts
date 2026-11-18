@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ArenaSimulation } from '../src/game/simulation';
 import { MOVES } from '../src/game/moves';
 import type { CombatEvent, GameSnapshot, PlayerState } from '../src/game/types';
-import { CombatTimeline } from '../src/render/CombatTimeline';
+import { CATCH_UP, CATCH_UP_SNAP, CombatTimeline } from '../src/render/CombatTimeline';
 
 function player(id = 'a', changes: Partial<PlayerState> = {}): PlayerState {
   return { id, name: id, fighter: 'taisei', x: 0, y: 0, z: 0, yaw: 0,
@@ -222,5 +222,33 @@ describe('shared buffered combat timeline', () => {
     const fresh = timeline.sample(200)!;
     expect(fresh.time).toBe(0); expect(fresh.snapshot.players[0].id).toBe('new');
     expect(fresh.events.map(e => e.id)).toEqual([1]);
+  });
+});
+
+/** after a stall the clock runs to its delay at CATCH_UP, not in one frame. */
+describe('the timeline after a stall', () => {
+  const run = (stallMs: number) => {
+    const timeline = new CombatTimeline();
+    const steps: number[] = [];
+    let last: number | null = null, sent = 0;
+    // Snapshots every 50 ms, none from 1300 ms for `stallMs`, then all of them at once and on again.
+    const packets = Array.from({ length: 60 }, (_, k) => ({ at: 1000 + 50 * k, s: snapshot(1 + .05 * k, [player('a', { x: k })]) }));
+    for (const p of packets) if (p.at >= 1300 && p.at < 1300 + stallMs) p.at = 1300 + stallMs;
+    for (let nowMs = 1000; nowMs <= 3500; nowMs += 1000 / 60) {
+      while (sent < packets.length && nowMs >= packets[sent].at) { timeline.push(packets[sent].s, packets[sent].at); sent++; }
+      const frame = timeline.sample(nowMs)!;
+      if (last !== null && nowMs > 1100) steps.push((frame.time - last) * 60);
+      last = frame.time;
+    }
+    return steps;
+  };
+  it('catches up from a 150 ms stall at no more than CATCH_UP times real time', () => {
+    const steps = run(150);
+    expect(Math.min(...steps), 'it stood through the stall').toBeLessThan(.2);
+    expect(Math.max(...steps), 'and ran no faster than CATCH_UP after it').toBeLessThanOrEqual(CATCH_UP + .01);
+  });
+  it('jumps a long stall, as before (a gap over CATCH_UP_SNAP once the arrivals\' jitter is allowed for)', () => {
+    expect(CATCH_UP_SNAP).toBeLessThan(1);
+    expect(Math.max(...run(1000))).toBeGreaterThan(CATCH_UP * 2);
   });
 });

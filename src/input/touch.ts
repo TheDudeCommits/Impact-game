@@ -210,9 +210,10 @@ export class TouchControls {
   /** BOOST: when it last pressed for a dash, and the stick eased under the boost's hold for a moment so that lifting BOOST
    *  stops it (the kernel ends a boost when the stick falls under half: simulation.ts SportFeel.boost). */
   private boostPressAt = 0;
-  /** Frames (update calls) left to read the stick eased: two, so at least one command goes out with it at any frame rate
-   *  (pushInput sends between frames too). */
-  private easeFrames = 0;
+  /** Until when (performance.now()) the stick is read eased: two sixtieths, so at least one command goes out with it at
+   *  any frame rate (the input pump sends between frames too). Counted in frames until now: two frames of a
+   *  display drawn at 144 (FULL DETAIL on a desktop) were 14 ms, which a sixtieth's command could miss. */
+  private easeUntil = 0;
   /** The emote wheel's slot (shop/boot.ts, as keys 1-4 do). */
   onEmote = (_slot: number) => {};
 
@@ -282,23 +283,33 @@ export class TouchControls {
     const want = playing && !upright && !held && this.input.mode === 'touch';
     if (want !== this.shown) this.show(want);
     if (!this.shown) return;
-    let guard = false, jumpHeld = false, boost = false;
-    for (const finger of this.fingers.values()) { if (finger.role === 'guard') guard = true; else if (finger.role === 'jump') jumpHeld = true; else if (finger.role === 'boost') boost = true; }
+    let boost = false;
+    for (const finger of this.fingers.values()) if (finger.role === 'boost') boost = true;
     const now = performance.now();
     // BOOST held (the ball modes): a boost that stopped - a landing, a stun, the stick let go and pushed again, the bar
     // refilled from empty - is pressed for again while the stick holds (a dash on the floor runs on as the boost).
     const self = this.self, pushed = Math.hypot(this.forward, this.right) >= .55;
     if (boost && pushed && self && !self.boost && self.grounded && (self.stamina ?? 0) >= 20 && now - this.boostPressAt >= BOOST_REPRESS_MS) { this.boostPressAt = now; this.input.touchPress('dash'); }
-    // BOOST lifted after a hold: the stick read under half for a moment, which ends the boost, and the run goes on.
-    const ease = this.easeFrames > 0 ? .45 : 1;
-    if (this.easeFrames > 0) this.easeFrames--;
-    this.input.touchHold(this.forward * ease, this.right * ease, guard, jumpHeld);
+    // BOOST lifted after a hold: the stick read under half for a moment (hold's ease), which ends the boost, and the run
+    // goes on.
+    this.hold();
     if (this.wheelUntil && performance.now() > this.wheelUntil) this.openWheel(false);
     if (this.sportOn) this.shotRing(now);
     // A mode's HUD mounts its pieces as the fight begins, and the plaque's text changes its width: twice a second for
     // the fight's first seconds, then every two (each look reads the HUD's boxes, a layout of the page mid-frame: 1.6 %
     // of a phone's frame time at a quarter CPU). A resize places them at once.
     if (now - this.placedAt > (now - this.shownAt < 4000 ? 500 : 2000)) this.placeTop();
+  }
+  /** The stick and the held buttons (GUARD, JUMP) to Input, as they stand now (Input.touchHold): every frame, and as a
+   *  finger lands, drags or lifts. The input pump makes commands between frames too, at sixty a second (main.ts
+   *  pumpInput): written only by the frame - after that frame's command had gone, until now - the stick and
+   *  GUARD reached the fight a frame late, two at thirty frames a second. (BOOST lifted eases the stick for a moment:
+   *  easeUntil.) */
+  private hold() {
+    let guard = false, jumpHeld = false;
+    for (const finger of this.fingers.values()) { if (finger.role === 'guard') guard = true; else if (finger.role === 'jump') jumpHeld = true; }
+    const ease = performance.now() < this.easeUntil ? .45 : 1;
+    this.input.touchHold(this.forward * ease, this.right * ease, guard, jumpHeld);
   }
   /** PAUSE, then the emote button (its wheel under it), in the first place the HUD leaves, row by row down from the top:
    *  side by side where they fit (the top row right of the player's own plate), else PAUSE first and the emote in the
@@ -438,7 +449,7 @@ export class TouchControls {
     this.fingers.clear(); this.forward = 0; this.right = 0; this.stickNode.classList.remove('on');
     for (const node of this.buttons.values()) node.classList.remove('down');
     for (const node of this.sport.values()) node.classList.remove('down');
-    this.easeFrames = 0;
+    this.easeUntil = 0;
     this.input.touchKey('heavy', false);
     this.input.touchHold(0, 0, false, false); this.openWheel(false);
   }
@@ -462,6 +473,7 @@ export class TouchControls {
       this.fingers.set(touch.identifier, { role: stick ? 'stick' : 'look', x: touch.clientX, y: touch.clientY });
       if (stick) this.placeStick(touch.clientX, touch.clientY);
     }
+    if (taken && this.shown) this.hold();
     if (taken && event.cancelable) event.preventDefault();
   }
   private press(id: number, button: TouchButton, touch: Touch, node = this.buttons.get(button)) {
@@ -472,7 +484,7 @@ export class TouchControls {
     if (button === 'guard') return;   // held: Input.touchHold
     if (button === 'area') { this.aimStart(id, touch); return; }
     // BOOST (the ball modes): a dash, which on the floor runs on as the boost; held, update() keeps it going.
-    if (button === 'boost') { this.boostPressAt = performance.now(); this.easeFrames = 0; this.input.touchPress('dash'); return; }
+    if (button === 'boost') { this.boostPressAt = performance.now(); this.easeUntil = 0; this.input.touchPress('dash'); return; }
     // The ball modes' shot (sportTouch.ts `held`): its key goes down with the finger, as a keyboard's does.
     if (button === 'heavy' && node?.dataset.held !== undefined) this.input.touchKey('heavy', true);
     this.input.touchPress(button);
@@ -530,6 +542,7 @@ export class TouchControls {
       else if (finger.role === 'area') this.aimMove(touch);
       finger.x = touch.clientX; finger.y = touch.clientY;
     }
+    if (taken && this.shown) this.hold();
     if (taken && event.cancelable) event.preventDefault();
   }
   private end(event: TouchEvent) {
@@ -544,8 +557,9 @@ export class TouchControls {
       // The shot's key comes up with the last finger on it.
       if (finger.role === 'heavy' && ![...this.fingers.values()].some(f => f.role === 'heavy')) this.input.touchKey('heavy', false);
       // BOOST lifted after a hold stops the boost; a quick tap's burst runs on while the stick holds (sportTouch.ts).
-      if (finger.role === 'boost' && performance.now() - (finger.at ?? 0) >= BOOST_HOLD_MS && this.self?.boost && ![...this.fingers.values()].some(f => f.role === 'boost')) this.easeFrames = 2;
+      if (finger.role === 'boost' && performance.now() - (finger.at ?? 0) >= BOOST_HOLD_MS && this.self?.boost && ![...this.fingers.values()].some(f => f.role === 'boost')) this.easeUntil = performance.now() + 2000 / 60;
     }
+    if (taken && this.shown) this.hold();
     // No click after a touch the controls took (the browser's own would land on whatever is under the finger).
     if (taken && event.cancelable) event.preventDefault();
   }

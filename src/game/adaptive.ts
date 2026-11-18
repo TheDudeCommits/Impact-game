@@ -1,6 +1,17 @@
 
 /** A bot facing a player the game knows nothing of yet: half again today's bot. */
 export const BASE_STRENGTH = 1.5;
+/** What the bots' play is worth on its own since it was taught to punish a recovery and meet a jump (simulation.ts
+ *  botPunish, botAntiAir), in STRENGTH units: the new bot's exchange with the classic one at equal power, at botSkill 0
+ *  and 1 (lock combat on, as the rooms play it). A bot set to a strength carries that much of it in its play and only the
+ *  rest in POWER (powerOf), so its total stays the strength it was set to. */
+export const PLAY = [1, 1.07] as const;
+/** The worth of a bot's play at its skill (0 to 1): PLAY between its ends. */
+export const playFor = (botSkill: number) => PLAY[0] + (PLAY[1] - PLAY[0]) * Math.max(0, Math.min(1, botSkill));
+/** An offline Duel's rival plays as well as the player (LocalDuel): its botSkill from their skill, on a log scale - a
+ *  player who trades evenly with today's bot (skill 1) meets a rival of about .3, a new one (START_SKILL) about .45, and
+ *  one three and a half times today's bot or more the best there is. */
+export const botSkillFor = (skill: number) => Math.max(0, Math.min(1, Math.log(Math.max(skill, 1e-3) / .6) / Math.log(3.5 / .6)));
 export const AHEAD = 1.15;
 export const AHEAD_BAND = [1.1, 1.2] as const;
 /** A new player's skill: what puts the bots at BASE_STRENGTH. */
@@ -86,8 +97,13 @@ export class AdaptiveDirector {
   evidenceOf(id: string): Readonly<SkillEvidence> | undefined { return this.evidence.get(id); }
   /** A bot's strength now (1: today's bot). */
   strengthOf(id: string | undefined) { return id === undefined ? 1 : this.strengths.get(id) ?? 1; }
+  /** What a bot's play is worth (PLAY at its skill; the simulation says, 1 for anyone else). */
+  playOf: (id: string) => number = () => 1;
+  /** The part of a set strength a bot carries in POWER: the strength less what its play is already worth. 1 for anyone
+   *  whose strength is not set (a human; a bot in a field with no human in it). */
+  powerOf(id: string | undefined) { const strength = id === undefined ? undefined : this.strengths.get(id); return strength === undefined ? 1 : strength / Math.max(.05, this.playOf(id!)); }
   /** What a blow from `attacker` on `target` is multiplied by. */
-  factor(attacker: string | undefined, target: string) { return power(this.strengthOf(attacker)) / power(this.strengthOf(target)); }
+  factor(attacker: string | undefined, target: string) { return power(this.powerOf(attacker)) / power(this.powerOf(target)); }
   /** A blow landed: the evidence of the human in it, if it was between a human and a bot. */
   tally(attacker: string | undefined, target: string, applied: number) {
     if (!this.enabled || attacker === undefined || attacker === target) return;

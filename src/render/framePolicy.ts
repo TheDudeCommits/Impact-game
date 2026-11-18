@@ -1,5 +1,5 @@
 import type { Settings } from '../config';
-import { phone } from '../input/device';
+import { handheld, phone } from '../input/device';
 
 /**
  * The rate a fight is drawn at, by the POWER USE setting (Settings.powerMode) and the device (the phone pass, November
@@ -7,7 +7,10 @@ import { phone } from '../input/device';
  * sixty a second (main.ts's input timer, the arenas' clocks); only the drawing does (FrameGate).
  *
  *   'cool' (Cooler): thirty everywhere.
- *   'full' (Full detail): sixty everywhere, a phone's included - the player's way to sixty whatever this decides.
+ *   'full' (Full detail): sixty everywhere, a phone's included - the player's way to sixty whatever this decides. On a
+ *     desktop (no phone, no tablet) it is drawn at the display's own rate (drawRate: a
+ *     144 Hz monitor's player who picked FULL DETAIL asked for every frame it shows); its budget (target: the resolution
+ *     governor's, the quality watch's) stays sixty, so nothing is given up in pixels to chase the higher rate.
  *   'auto' (Balanced): sixty on a desktop or a tablet. On a phone, sixty while it holds it; a phone that cannot - in a
  *     fight, STEP_SECONDS seconds in a row each with a quarter or more of its frames late (the second's 75th-percentile
  *     gap over LATE_MS: a vsync missed) - draws an even thirty from then on for the visit, every frame the same length,
@@ -41,8 +44,8 @@ export class FramePolicy {
   /** Sixty is due: taken at the next calm moment. */
   due = false;
   private lowFor = 0;
-  /** `small`: a phone (input/device.ts), read once. */
-  constructor(readonly small = phone()) {}
+  /** `small`: a phone (input/device.ts), read once; `desk`: neither a phone nor a tablet. */
+  constructor(readonly small = phone(), readonly desk = !small && !handheld()) {}
 
   /** The rate aimed at now, for the frame gate, the resolution governor and the quality watch. */
   target(mode: Settings['powerMode'] = 'auto'): 30 | 60 {
@@ -50,6 +53,13 @@ export class FramePolicy {
     if (mode === 'cool') return 30;
     if (mode === 'full') return 60;
     return this.small && this.stepped ? 30 : 60;
+  }
+
+  /** The most frames a second the fight is drawn at (FrameGate): the target, but FULL DETAIL on a desktop draws every
+   *  frame the display shows (Infinity). The rest of the page budgets for `target`. */
+  drawRate(mode: Settings['powerMode'] = 'auto'): number {
+    const target = this.target(mode);
+    return mode === 'full' && this.desk ? Infinity : target;
   }
 
   /** A drawn frame, `dt` seconds after the last one drawn; `watching`: a fight on screen and taking its frames (not a

@@ -105,7 +105,7 @@ import {Input} from './input';
 import {pulseFor} from './input/rumble';
 import {INPUT_HZ} from './game/catchUp';
 import {InputClock} from './game/inputClock';
-import {FrameGate,frameSteps} from './render/frameClock';
+import {FrameGate,frameSteps,steadyStep} from './render/frameClock';
 import {DUEL_STAGE,LocalDuel} from './game/duel/LocalDuel';
 import {Couch,plannedSeats,type CouchKind} from './couch/couch';
 import {movementMaskOfSeat} from './couch/seats';
@@ -370,20 +370,12 @@ techniques.bodyOf=id=>{const body=horde.body(id);return body?{x:body.group.posit
 /** The online display delay, and the local one: a tick behind the arena, so
  *  the two latest states can be interpolated and nothing waits on a wire. */
 const ONLINE_DELAY=60,LOCAL_DELAY=1000/60;
-/** A ball match on this device runs its drawing clock steered onto one steady lag behind the match (a PERFECT
- *  STRIKE timed by eye has to land the same way every time). The clock the other modes keep (below) runs free
- *  between its two clamps, so whichever end a session drifted to it stayed at: measured 2 to 4 ticks behind from one
- *  session to the next, the same press a PERFECT STRIKE in one and late in the next. This one is pulled onto `behind`
- *  the match's own clock (its newest tick plus the time the input clock has banked toward the next: smooth, real time) - gently (`gain` a second, never more than `pace` of the
- *  frame's time a frame, so the frames stay even), or at once past `snap` (a stall, the start). `behind` leaves the frame's
- *  own tick sent after the clock is read half a tick of room before the clamp at the newest (1.2 ticks hit it
- *  and doubled the uneven frames). */
-const BALL_CLOCK={behind:1.5/60,gain:4,pace:.08,snap:3/60} as const;
-/** On this machine only, for the checks' before and after on one build: `?freeclock` keeps a ball match on the free
- *  clock, `?noforecast` draws the page's own touches when the room's word comes, and an attack the room puts back into
- *  the page's time as the snapshots have it, as they were drawn before the forecast. */
+/** Every fight on this device is drawn on one steady lag behind its newest tick (render/frameClock.ts STEADY_CLOCK). On
+ *  this machine only, for the checks' before and after on one build: `?freeclock` keeps a fight on this device on the
+ *  free clock, `?noforecast` draws the page's own touches when the room's word comes, and an attack the room puts back
+ *  into the page's time as the snapshots have it, as they were drawn before the forecast. */
 const ballChecks=['localhost','127.0.0.1','[::1]'].includes(location.hostname)?new URLSearchParams(location.search):new URLSearchParams();
-const steadyBallClock=!ballChecks.has('freeclock'),forecastTouches=!ballChecks.has('noforecast');
+const steadyClock=!ballChecks.has('freeclock'),forecastTouches=!ballChecks.has('noforecast');
 /** The local arena's visual clock, in arena seconds: it runs at the arena's
  *  own time scale (slow motion on a boss's fall), a tick behind its newest. */
 let localClock=0;
@@ -942,7 +934,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     pilot=autopilotParam&&autopilotAllowed?new Autopilot(.8,network.id):undefined;
     if(couch.split&&network.snapshot)beginSplit(network.snapshot);else if(couch.on)couchHud.share(()=>couch.seats.seats);
     hud.setSurvival(arcadeRun||coopRun);lastMatchStart=[fighter,mode,name,access?.kind==='bots'&&access.lone?{kind:'bots',players:access.players}:access];hud.resultAgainLabel=access?.kind==='duel'?(access.access==='online'?'FIND NEXT DUEL':access.access==='bot'?'DUEL AGAIN':'NEW FRIEND DUEL'):access?.kind==='create-private'||access?.kind==='join-private'?'NEW PRIVATE ROOM':'PLAY AGAIN';
-    music.setContext(fighter,undefined,'combat',{mode:network.snapshot?modeOfSnapshot(network.snapshot,arcadeRun||coopRun):undefined,turn:startEpoch});musicPanel.setEnabled(settings.musicEnabled);started=true;fetchPlannedBots();clearInterval(inputTimer);inputClock.reset();unacked.length=0;inputTimer=setInterval(pushInput,1000/INPUT_HZ) as unknown as number;hud.enter(fighter);loadingScreen.done();input.enabled=true;
+    music.setContext(fighter,undefined,'combat',{mode:network.snapshot?modeOfSnapshot(network.snapshot,arcadeRun||coopRun):undefined,turn:startEpoch});musicPanel.setEnabled(settings.musicEnabled);started=true;fetchPlannedBots();clearInterval(inputTimer);inputClock.reset();unacked.length=0;inputTimer=setInterval(pumpInput,1000/INPUT_HZ) as unknown as number;hud.enter(fighter);loadingScreen.done();input.enabled=true;
     // Round 5 (SOLOPAUSE): a frame of the fight drawn behind the fading loading screen - a local match's clock starts
     // now, and a versus room hears it (ReadyGate) and runs its READY hold from here, then FIGHT.
     requestAnimationFrame(()=>requestAnimationFrame(()=>{if(epoch!==startEpoch)return;fightShown=true;if(network===online)online.ready();
@@ -1111,6 +1103,13 @@ function pushInput(){
   if(network===online)prediction.flush();
   const due=inputClock.advance(performance.now()),wire=network===online;
   for(let steps=0;steps<due&&!(wire&&inFlight()>=MAX_IN_FLIGHT);steps++)sendCommand();
+}
+/** The input pump's own beat (INPUT_HZ, between frames as well as on them): the pad read first, so the commands it makes
+ *  hold this moment's sticks and presses, not the last drawn frame's (Input.poll). Only while the fight takes this
+ *  input: a menu's pad is read by the frame alone, as it always was (its presses move the focus: Hud.keepPadFocus). */
+function pumpInput(){
+  if(started&&input.enabled)input.poll();
+  pushInput();
 }
 /** Round 5 (SOLOPAUSE): what this page wants of a room that pauses for it - held while the menu or a bug report
  *  is open, or the tab is hidden - told to the room (PauseLink). Every frame, every snapshot, and as the tab hides (no
@@ -1390,8 +1389,8 @@ function applyCombatFrame(snapshot:GameSnapshot){
     eventCounts[event.kind]=(eventCounts[event.kind]??0)+1;
     if(event.kind==='hit')freshDrawing();// The film look: a landed blow is always drawn (render/look/filmDrawings.ts)
     // Felt in the hands, on a pad that can: blows taken and landed, guards,
-    // awakenings, ultimates and falls.
-    {const pulse=pulseFor(event,network.id??'',id=>!!snapshot.players.find(player=>player.id===id)?.enemy);if(pulse)input.feel(pulse);}if(event.actorId===network.id&&event.kind==='cast'&&event.move&&!echoed.has(event.id)&&!(event.slot==='ultimate'&&carded())){if(event.slot==='area'&&event.fighter&&!couch.split)showAreaBanner(event.body??event.fighter,event.move,event.fighter);else personal(event.actorId,displayMove(event.fighter,event.move).toUpperCase(),1.1);}
+    // awakenings, ultimates and falls. (A blow of the player's own the local copy presented already was felt then.)
+    if(!prediction.impactWasPresented(event)){const pulse=pulseFor(event,network.id??'',id=>!!snapshot.players.find(player=>player.id===id)?.enemy);if(pulse)input.feel(pulse);}if(event.actorId===network.id&&event.kind==='cast'&&event.move&&!echoed.has(event.id)&&!(event.slot==='ultimate'&&carded())){if(event.slot==='area'&&event.fighter&&!couch.split)showAreaBanner(event.body??event.fighter,event.move,event.fighter);else personal(event.actorId,displayMove(event.fighter,event.move).toUpperCase(),1.1);}
     else if(couch.split&&event.actorId===SECOND&&event.kind==='cast'&&event.move&&event.slot!=='ultimate')personal(event.actorId,displayMove(event.fighter,event.move).toUpperCase(),1.1);
     if(event.kind==='awaken'&&event.move&&(event.actorId===network.id||couch.split&&event.actorId===SECOND)){if(!carded())personal(event.actorId,displayMove(event.fighter,event.move).toUpperCase(),1.8);if(event.actorId===network.id)camera.impact(.4);}if((event.kind==='hit'||event.kind==='blocked')&&event.endpoint&&(event.damage||event.downed)){
       // Which way the blow travelled, so the body can be bent away from it.
@@ -1477,6 +1476,8 @@ function applyCombatFrame(snapshot:GameSnapshot){
         if((!personal(event.actorId,mine,!event.reason||event.reason==='counter'?.8:.6)||couch.split)&&onMe)personal(event.targetId,onMe,!event.reason?.6:.8);
       }
       if(event.kind==='hit'&&event.counter){if(!personal(event.actorId,'COUNTER',.6)||couch.split)personal(event.targetId,'COUNTERED',.6);}
+      // (a blow in the recovery of a swing that found nobody, held longer as a COUNTER is - simulation.ts hit.)
+      else if(event.kind==='hit'&&event.punish){if(!personal(event.actorId,'PUNISH',.6)||couch.split)personal(event.targetId,'PUNISHED',.6);}
       }
 };
 let commonLoad:Promise<void>|undefined;
@@ -1838,7 +1839,8 @@ installPanelFlags();
 // because handing it the clamp made the shot advance in slow motion while the
 // fight did not, and below 20 fps it fell metres behind. FollowCamera bounds
 // its own step; see the note on `update`. The policy is `frameSteps`.
-// At most about sixty frames a second, whatever the display asks for (see FrameGate).
+// At most about sixty frames a second, whatever the display asks for (see FrameGate) - FULL DETAIL on a desktop excepted,
+// drawn at the display's own rate (FramePolicy.drawRate).
 const gate=new FrameGate(),viewFrustum=new THREE.Frustum(),secondFrustum=new THREE.Frustum(),viewProjection=new THREE.Matrix4();
 function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   phoneShell.fighting(started&&!hud.settingsOpen);   // the screen kept on in a fight, not behind the pause menu (ui/phoneShell.ts)
@@ -1857,7 +1859,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   // (The pad is still read: its presses drive that card - until 28 October 2026 a paused match's menu never heard them,
   // START did not close it and the D-pad did not move.)
   if(covered&&canvasSize===drawnSize){previous=now;input.enabled=false;input.update(0);hud.keepPadFocus();return;}
-  if(!gate.draw(now,previous,view.frames.target(settings.powerMode)))return;
+  if(!gate.draw(now,previous,view.frames.drawRate(settings.powerMode)))return;
   const steps=frameSteps((now-previous)/1000);previous=now;const dt=steps.world,rawDt=steps.camera;
   pausePump(); // Round 5 (SOLOPAUSE): and a room that pauses for this page.
   let presented:ReturnType<CombatTimeline['sample']>;
@@ -1868,10 +1870,9 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // (Football: a hit-stop - the drawn match held FOOT_HIT.hold s and caught up over FOOT_HIT.catch s.)
     const hit=network===localBall?footHitPhase(now):'';
     let next=localClock+rawDt*(local.paused||hit==='hold'?0:hit==='catch'?scale*FOOT_HIT.pace:scale);
-    if(network===localBall&&steadyBallClock&&!local.paused&&!hit&&inputClock.last>0){
-      const err=newest+inputClock.backlog+(now-inputClock.last)/1000*inputClock.rate-BALL_CLOCK.behind-next;
-      next+=Math.abs(err)>BALL_CLOCK.snap?err:Math.max(-rawDt*BALL_CLOCK.pace,Math.min(rawDt*BALL_CLOCK.pace,err*Math.min(1,rawDt*BALL_CLOCK.gain)));
-    }
+    // (Every mode on this device steers onto one steady lag: STEADY_CLOCK. Not through football's hit-stop, nor the
+    // arcade's slow motion, whose ticks come a fraction a command.)
+    if(steadyClock&&!local.paused&&!hit&&scale===1&&inputClock.last>0)next=steadyStep(next,newest+inputClock.backlog+(now-inputClock.last)/1000*inputClock.rate,rawDt);
     localClock=Math.min(newest,Math.max(newest-(hit?FOOT_HIT.most:3/60),next));
     presented=timeline.at(localClock-LOCAL_DELAY/1000);
   }else presented=timeline.sample(now);
@@ -1893,8 +1894,11 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   // Couch play: the same gate opens the two seats; the single player's own input stays off for the fight (its pause keys
   // and the menus are still its own).
   if(couch.on)couch.live=started&&!finale.holding(seconds())&&network.predictionReady&&!hud.introOpen&&!hud.resultsOpen&&!bugReport.open&&!hud.settingsOpen&&!document.hidden&&!vsSplash.open&&!(survival()&&(survivalHud.draftOpen||survivalHud.resultsOpen||runView()?.phase==='travel'));
-  input.update(dt);hud.keepPadFocus();pushInput();environment.update(now/1000);stages.update(now/1000);
+  // The pad, then the touch controls' stick and held buttons, then this frame's command: until now the touch
+  // controls were read after the command had gone, so the stick and GUARD reached the fight a frame late.
+  input.update(dt);hud.keepPadFocus();
   touch.update(input.enabled,started&&network.snapshot?.status!=='waiting'&&!hud.objectives.blocking,!!ceremony); // a room's lobby may be read upright; its fight asks for landscape; a ball match's ceremony pages (its intro, the podium) are not drawn over
+  pushInput();environment.update(now/1000);stages.update(now/1000);
   if(qualityWatch.frame(rawDt,started&&!settings.qualityChosen&&settings.quality!=='low'&&!hud.settingsOpen&&!document.hidden,view.resolutionSpent,view.frames.target(settings.powerMode))){stepDown(settings);view.applySettings(settings);}
   // A phone on Balanced that cannot hold sixty draws an even thirty (render/framePolicy.ts).
   // (Only once the resolution and the effects are spent, and back to sixty at a calm moment.)
@@ -1979,12 +1983,19 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
       for(const step of body.steps){audio.step(step,step.speed,mine);effects.footstep(step,serverTime);}
       body.steps.length=0;
     }
+    // The local fighter's blows on a body that cannot get out of their way, presented on the tick the local copy lands
+    // them (Prediction.takeImpacts): heard, felt, shaken and sparked now; the server's event for each is passed over when
+    // it comes (impactWasPresented), and its damage number waits for it.
+    // (As the server's event is answered in applyCombatFrame: the move's own style and how far up the body it arrived,
+    // the thrower's arm stopped by a light or a heavy; until now only the Kazeyose came this way.)
     for(const event of localImpacts){
       const heading=blowHeading(event);
       const detail=impactDetail(event);
+      {const pulse=pulseFor(event,network.id??'',id=>!!snapshot.players.find(player=>player.id===id)?.enemy);if(pulse)input.feel(pulse);}
       bigBlowSound(event);
-      fighters.get(event.targetId??'')?.impact(true,event.slot,'melee',event.contactIndex,heading,event.damage,undefined,detail);
-      fighters.get(event.actorId)?.impact(false,event.slot,undefined,undefined,heading,event.damage,undefined,detail);
+      const struck=snapshot.players.find(player=>player.id===event.targetId),height=struck&&event.endpoint?event.endpoint.y-struck.y:undefined;
+      fighters.get(event.targetId??'')?.impact(true,event.slot,eventStyle(event)??'melee',event.contactIndex,heading,event.damage,height,detail);
+      if(event.slot==='light'||event.slot==='heavy')fighters.get(event.actorId)?.impact(false,event.slot,undefined,undefined,heading,event.damage,undefined,detail);
       camera.impact(Math.min(1,.2+screenWorth(event)/460),heading,hitTier(event.slot,event.chain));
       camera.holdFor(Math.min(1,(event.damage??0)/240));markerHoldUntil=performance.now()/1000+.5;
       view.punch(Math.min(.55,screenWorth(event)/420)*settings.effects);
@@ -2112,7 +2123,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // Every body the ceremony films is its subject: none is faded as though it stood in the follow camera's way.
     const own=fighters.get(network.id);if(own){ceremonyBodies.length=0;for(const f of fighters.values())ceremonyBodies.push(f);camera.fader.update(rawDt,view.camera,undefined,own,undefined,ceremonyBodies);}}else if(shownSelf)view.setFocus(view.shadowCentred?ballShadowFocus(shownSelf,ballField.ballPosition(),ballShadow[0]):shownSelf);// look: the sun's shadow box and the screen effects follow the fight (a replay's, the ball)
   ballReplayBars+=((replayed?1:0)-ballReplayBars)*Math.min(1,rawDt*7);
-  hud.tick();damageNumbers.update(view.camera);manga.update(view.camera);letterbox.set(couch.on?0:Math.max(camera.cuts.bars,ballReplayBars,ballCeremony.bars));view.cinemaGrade(couch.on?0:camera.cuts.grade);if(camera.cuts.opened!==heardCinema){heardCinema=camera.cuts.opened;if(camera.cuts.openedKind==='confirm'&&camera.cuts.active)audio.ui('fx-swing-huge',.22,.1);}
+  hud.tick();damageNumbers.update(view.camera,rawDt);manga.update(view.camera);letterbox.set(couch.on?0:Math.max(camera.cuts.bars,ballReplayBars,ballCeremony.bars));view.cinemaGrade(couch.on?0:camera.cuts.grade);if(camera.cuts.opened!==heardCinema){heardCinema=camera.cuts.opened;if(camera.cuts.openedKind==='confirm'&&camera.cuts.active)audio.ui('fx-swing-huge',.22,.1);}
   if(((started||!hud.homeVisible)&&!survivalHud.treeShown)||reportCapture){if(sideLens){const o=fighters.get(network.id)?.group.position;if(o){view.camera.position.set(o.x+6,1.3,o.z);view.camera.lookAt(o.x,1,o.z);view.camera.updateMatrixWorld();}}if(!couch.split)grunts.prepareCamera(view.camera);view.render(rawDt);ballCeremony.afterDraw(view.renderer.domElement);drawnSize=view.renderer.domElement.width*65536+view.renderer.domElement.height;}
   // Training's switch, measured: the frame that drew the new body (swapLog).
   for(let i=swapLanding.length-1;i>=0;i--){const landing=swapLanding[i];if(fighters.get(landing.actor)?.bodyFighter===landing.fighter){landing.entry.shownMs=Math.round(performance.now()-landing.askedAt);swapLanding.splice(i,1);}}

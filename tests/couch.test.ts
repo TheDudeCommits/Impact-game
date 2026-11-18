@@ -118,9 +118,12 @@ describe('couch versus in the simulation', () => {
     for (let tick = 0; tick < 60 * 8; tick++) {
       const s = sim.snapshot(false), a = s.players.find(p => p.id === 'you')!, b = s.players.find(p => p.id === SECOND)!;
       const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz) || 1, close = d < 2.2;
-      // Player 1 walks in and presses light; Player 2 does the same from the other side, on a different beat.
-      sim.submitInput('you', { seq: tick + 1, moveX: close ? 0 : dx / d, moveZ: close ? 0 : dz / d, yaw: Math.atan2(dx, dz), targetId: SECOND, lock: true, ...(close && tick % 11 === 0 ? { attack: 'light' as const } : {}) });
-      sim.submitInput(SECOND, { seq: tick + 1, moveX: close ? 0 : -dx / d, moveZ: close ? 0 : -dz / d, yaw: Math.atan2(-dx, -dz), targetId: 'you', lock: true, ...(close && tick % 17 === 5 ? { attack: 'light' as const } : {}) });
+      // Player 1 walks in and presses light; Player 2 does the same from the other side, on a different beat - each in a
+      // half of the fight of its own (a counter holds both bodies longer, and two
+      // fixed beats pressed into each other land one player's every blow as a counter: what the test is about is that
+      // each seat's own commands reach the match and land, not who wins a trade).
+      sim.submitInput('you', { seq: tick + 1, moveX: close ? 0 : dx / d, moveZ: close ? 0 : dz / d, yaw: Math.atan2(dx, dz), targetId: SECOND, lock: true, ...(close && tick < 240 && tick % 11 === 0 ? { attack: 'light' as const } : {}) });
+      sim.submitInput(SECOND, { seq: tick + 1, moveX: close ? 0 : -dx / d, moveZ: close ? 0 : -dz / d, yaw: Math.atan2(-dx, -dz), targetId: 'you', lock: true, ...(close && tick >= 240 && tick % 17 === 5 ? { attack: 'light' as const } : {}) });
       sim.step(1 / 60);
       for (const e of sim.drainEvents()) if (e.kind === 'hit' && e.actorId in hits) hits[e.actorId]++;
     }

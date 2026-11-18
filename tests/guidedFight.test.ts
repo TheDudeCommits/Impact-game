@@ -17,11 +17,28 @@ function at(step: StepId, t = 10) {
 }
 
 describe('LEARN TO FIGHT: the steps', () => {
-  it('runs move, light, heavy, guard, parry, dash, special, technique, ultimate, then a real fight', () => {
-    expect(STEPS.map(s => s.id)).toEqual(['move', 'light', 'heavy', 'guard', 'parry', 'dash', 'special', 'technique', 'ultimate', 'fight']);
+  // (ESCAPE A STRING after GUARD - the lock escape, the default defence in every mode.)
+  it('runs move, light, heavy, guard, escape, parry, dash, special, technique, ultimate, then a real fight', () => {
+    expect(STEPS.map(s => s.id)).toEqual(['move', 'light', 'heavy', 'guard', 'escape', 'parry', 'dash', 'special', 'technique', 'ultimate', 'fight']);
     // The dummy stands for the attacks, swings for the defence, fights at the end; the ultimate's meter is filled for it.
-    expect(STEPS.filter(s => s.dummy !== 'still').map(s => [s.id, s.dummy])).toEqual([['guard', 'jab'], ['parry', 'swing'], ['fight', 'fight']]);
+    expect(STEPS.filter(s => s.dummy !== 'still').map(s => [s.id, s.dummy])).toEqual([['guard', 'jab'], ['escape', 'string'], ['parry', 'swing'], ['fight', 'fight']]);
     expect(STEPS.filter(s => s.fill).map(s => s.id)).toEqual(['ultimate']);
+    expect(STEPS.filter(s => s.stamina).map(s => s.id)).toEqual(['escape']);
+  });
+
+  it('ticks ESCAPE on a clean vanish out of the string, and says why a try did not count', () => {
+    const lesson = at('escape'), kb = { device: 'keyboard' as const, family: 'generic' as const };
+    lesson.event(ev({ kind: 'lock-gap', actorId: BOT, targetId: ME, reason: 'early' }), 10);
+    expect(stepFeedback('escape', lesson.progress, kb)).toMatch(/TOO EARLY/);
+    lesson.event(ev({ kind: 'lock-gap', actorId: BOT, targetId: ME }), 11);
+    lesson.event(ev({ kind: 'hit', actorId: BOT, targetId: ME, slot: 'light', chain: 0 }), 11.3);
+    expect(stepFeedback('escape', lesson.progress, kb)).toMatch(/AS THE RING CLOSES/);
+    lesson.event(ev({ kind: 'lock-escape', actorId: ME, targetId: BOT, reason: 'late' }), 12);
+    expect(stepFeedback('escape', lesson.progress, kb)).toMatch(/SOONER/);
+    expect(lesson.done.has('escape')).toBe(false);
+    lesson.event(ev({ kind: 'lock-escape', actorId: ME, targetId: BOT }), 13);
+    expect(lesson.done.has('escape')).toBe(true);
+    expect(stepLine('escape', kb, 'x')).toContain('<b>ESCAPE</b>');
   });
 
   it('ticks MOVE & LOOK only once the player has walked and the view has turned, a reset not counting as a walk', () => {
@@ -175,6 +192,16 @@ describe('LEARN TO FIGHT: the dummy', () => {
     expect(dummyCommand('jab', near, me, 3.5, clock)!.attack).toBeUndefined();
     expect(dummyCommand('swing', near, me, 10, clock)!.attack).toBe('heavy');
     expect(dummyCommand('swing', near, { ...me, alive: false }, 20, clock)!.attack).toBeUndefined();
+  });
+  it('runs ESCAPE\'s string: its first light on its clock, then mashed on until the finisher\'s round', () => {
+    const clock: { next: number; mash?: number } = { next: 0 };
+    const near = { x: 0, z: 3 - SWINGS.string.reach + .1, busy: false };
+    expect(dummyCommand('string', near, me, 1, clock)!.attack).toBe('light');
+    expect(clock.next).toBeCloseTo(1 + SWINGS.string.every);
+    expect(dummyCommand('string', { ...near, busy: true, stringStage: 0 }, me, 1.05, clock)!.attack).toBe('light');
+    expect(dummyCommand('string', { ...near, busy: true, stringStage: 1 }, me, 1.1, clock)!.attack).toBeUndefined();   // MASH apart
+    expect(dummyCommand('string', { ...near, busy: true, stringStage: 1 }, me, 1.2, clock)!.attack).toBe('light');
+    expect(dummyCommand('string', { ...near, busy: true, stringStage: 3 }, me, 2, clock)!.attack, 'no chase after the knockaway').toBeUndefined();
   });
 });
 

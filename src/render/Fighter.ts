@@ -31,6 +31,7 @@ import { rosterPrefetch } from '../loading/rosterPrefetch';
 import {PriorityQueue} from '../loading/PriorityQueue';
 import * as THREE from 'three';
 import { addShaderPatch } from './look/shaderPatch';
+import { applyFaceLight, FaceRig, faceLightUniforms } from './look/faceLight';
 import { applyAuthoredInk, applyHitFlash, applyInkShell, applyLimbSmear, applyTeamTrim, applyToonShading, headWeights, limbWeights, teamTrim, toonKind } from './look/toonShading';
 import { applyThreatInk, threatInk } from './ThreatOutline';
 import { SHADOW_SIDE_FIGHTERS, fixShadowSide } from './look/shadowSide';
@@ -66,7 +67,7 @@ import { Ragdoll, ragdollsReady } from './Ragdoll';
 import { COMBO_KEYS, COMBO_SLOT, comboMove, hasCombos, type ComboKey } from '../game/combos';
 import { isTechnique, TECHNIQUE_KEYS, TECHNIQUE_SLOT, type TechniqueKey } from '../game/techniques';
 import { comboClip, comboFormClip, type ComboClip } from './comboClips';
-import { LAUNCH_GRAVITY, MOVES, OUTCOME_LIFT, PUSH_RADIUS, RUSH_STAGES, WHIFF_RECOVERY, meleeReach, type MoveDefinition, type Outcome } from '../game/moves';
+import { LAUNCH_GRAVITY, MOVES, OUTCOME_LIFT, PUSH_RADIUS, RUSH_STAGES, WHIFF_RECOVERY, heftOf, meleeReach, type MoveDefinition, type Outcome } from '../game/moves';
 import { FALL_GRAVITY, jumpArc } from '../game/moves'; // Round 4b (JUMP): the jump clip paced on each fighter's own arc.
 import { AWAKENINGS, AWAKENING_ENTRY, AWAKENING_SWAP, awakeningSwapAt, moveFor as awakenedMoveFor, rushMove as authoredRushMove } from '../game/awakening';
 import { lockRoundMove } from '../game/lockCombat';
@@ -1515,7 +1516,13 @@ const STANCE_ACTIONS=new Set<string>(['idle','guard']);
 
 // Ward's Block is a whole-body pose like Kosho's: blocking and walking measured
 // the planted foot sliding at 98% of travel without the stride.
-const GUARD_STRIDE=new Set<FighterId>(['koko','kosho','gummy','ward','kagari']);
+// (measured again over the whole released roster, a hundred bodies, with
+// tests/footContact.test.ts's skateRatio - the guard walked at 2.2 m/s for 3.2 s, the stride off and on. Eleven Blocks
+// are carried at 0.99-1.0 of travel without it and 0.10-0.63 with it: Senko, Kubiwa, Hinomoto, Bonsho, Psyche, Svanhild,
+// Shiun, Magatsu, Rook, Asahi and Shijima (0.99 to 0.63). Koko and Kosho still need it (1.00 to 0.11-0.29). Gummy, Ward
+// and Kagari no longer do - their bodies since stand planted without it (0.00-0.02) and slide with it (0.26-0.40) - so
+// they are out. The other eighty-four are planted without it; Torsion floats, 1.0 either way.)
+const GUARD_STRIDE=new Set<FighterId>(['koko','kosho','senko','kubiwa','hinomoto','bonsho','psyche','svanhild','shiun','magatsu','rook','asahi','shijima']);
 /** A touchdown softer than this is a step off a kerb and has nothing to
  *  absorb; above it, the knees give 2.6 cm per metre a second, to a limit.
  *  A jump lands at 8.8 m/s, which is the whole 15 cm. */
@@ -1624,6 +1631,11 @@ const TARGET_STRIDE=1.35,CADENCE_RANGE:[number,number]=[.7,2.2];
 // where the walk mixes in at 4.5 m/s (0.19-0.28 at the roster's), 3.8 steps a second. The cadence row's other steps and the
 // library's jog measured worse.
 const STRIDE_SCALE:Partial<Record<FighterId,number>>={taisei:1.27,kuzu:1.15};
+/** a travelling melee's legs around its last blow - the stride eased out over STRIDE_PLANT[0]
+ *  s up to the blow, so it lands planted as drawn, held out until [1] s after it, and eased back in by [2] for the recovery
+ *  the body still travels through. (It stayed out from 0.12 s after the blow to the end of the move: the feet skated
+ *  under the follow-through at the full run the simulation keeps through an attack.) */
+const STRIDE_PLANT=[.04,.1,.26] as const;
 /** Where the gait is all walk and where it is all run, in metres a second.
  *  Between them it is a mix of the two read from one stride clock. */
 const GAIT_RANGE:[number,number]=[1.6,6];
@@ -2770,6 +2782,14 @@ export class Fighter {
   /** Whether a clip has been chosen for this body at least once. */
   private posed=false;
   private outlineMaterials:THREE.Material[]=[];
+  /** look/faceLight.ts: this fighter's face light, its head's calibration and the meshes it reads. */
+  private readonly faceLight=faceLightUniforms();
+  /** the head calibrated on the first frame it is drawn standing (its pose then is the idle's), then followed. */
+  private updateFaceLight(){
+    const head=this.headBone;if(!head||!this.faceMeshes.length)return;
+    if(!this.faceRig.ready)this.faceRig.calibrate(this.faceMeshes,head,this.neckBone,this.group.getWorldDirection(new THREE.Vector3()));
+    this.faceRig.update(this.faceLight,head);
+  }private readonly faceRig=new FaceRig();private readonly faceMeshes:THREE.Mesh[]=[];
   /** Round 4b (TARGETING): the lock's glow on this body's ink (ThreatOutline); unlit, the ink as it was. */
   readonly threatInk=threatInk();
   /** This body's side in a ball match, on its ink and its rim light (look/toonShading.ts applyTeamTrim;
@@ -3377,6 +3397,8 @@ export class Fighter {
         // highlight and face softening (src/render/look/toonShading.ts).
         applyToonShading(mat,toonKind(mesh.name,material.name));
         if(lensFacingNormals(state.fighter))addShaderPatch(mat,'lens-normal-v1',lensNormalPatch);
+        // The face lit as one form (look/faceLight.ts) - a body material's head-riding front, calibrated per fighter.
+        if(toonKind(mesh.name,material.name)==='body'){applyFaceLight(mat,this.faceLight);if(!this.faceMeshes.includes(mesh))this.faceMeshes.push(mesh);}
         applyTeamTrim(mat,this.teamTrim,'body'); // The side's colour on the rim in a ball match (nothing outside one).
         applyHitFlash(mat,this.flash,this.flashFlat);
         applyHagureMoonlessLook(mat,state.fighter,this.isForm);
@@ -4819,7 +4841,9 @@ export class Fighter {
       const move=this.moveFor(state);
       if(move.style==='melee'){
         const big=!!Fighter.ender(state)||state.action==='special'||this.rushStage(state)>=RUSH_STAGES-1;
-        this.drawn.actionTime=Fighter.animeWarp(this.moveClock,move.contacts,duration,big?ANIME_HOLD.big:state.action==='heavy'?ANIME_HOLD.heavy:ANIME_HOLD.light)/duration;
+        // (held longer by how much heavier than a jab the blow is - a light's as it was, a
+        // heavy's about a fifth longer, a big blow's a quarter - as the simulation holds its thrower: moves.ts heftOf.)
+        this.drawn.actionTime=Fighter.animeWarp(this.moveClock,move.contacts,duration,(big?ANIME_HOLD.big:state.action==='heavy'?ANIME_HOLD.heavy:ANIME_HOLD.light)*(1+heftOf(move.damage)))/duration;
       }
     }
     return this.drawn;
@@ -5729,6 +5753,7 @@ export class Fighter {
    *  the reaction gates fired at half rate against a simulation that had not
    *  slowed down at all. */
   update(dt:number,state:PlayerState,interpolated=false,real=dt){
+    this.updateFaceLight();
     if(DREAM_IMPACT)state=this.reeling(state,real);
     state=castHold(this.castHeld,state,real,this.locomotionSpeed,this.isForm,this.active);
     this.swap=Fighter.transplant?.(this,state);
@@ -6096,8 +6121,11 @@ export class Fighter {
     this.hipYaw+=(wantHip-this.hipYaw)*(1-Math.exp(-dt*9));
     // A melee approach, which is the one time a fighter crosses several metres
     // of floor without `state.action` being 'run'. The stride is mixed in by
-    // how fast the body is actually travelling and taken back out once the
-    // blow has landed, so the follow-through is the pose the animator drew.
+    // how fast the body is actually travelling and taken out at the blow, so
+    // the contact is the pose the animator drew. (
+    // and back in for the recovery while the body still travels - held travel
+    // owns translation through every attack - where it stayed out from 0.12 s
+    // after the blow and the recovery skated: STRIDE_PLANT.)
     {
       const stride=TARGET_STRIDE*(this.legLength||.85)*(STRIDE_SCALE[this.state.fighter]??1);
       this.strideClock+=this.travelled/Math.max(.2,stride);
@@ -6116,7 +6144,7 @@ export class Fighter {
       // (A combo ender in the special's slot that is a blow is a melee move like any other.)
       const walking=attacking&&(state.action==='special'||state.action==='ultimate')&&state.grounded&&!kicking&&!(Fighter.ender(state)&&move?.style==='melee');
       const want=attacking&&state.grounded&&!this.floating&&((move?.style==='melee'&&!kicking)||walking)
-        ?THREE.MathUtils.clamp((this.locomotionSpeed-1.1)/2.4,0,1)*(walking?1:(1-THREE.MathUtils.smoothstep(past,0,.12)))*.62:0;
+        ?THREE.MathUtils.clamp((this.locomotionSpeed-1.1)/2.4,0,1)*(walking?1:1-THREE.MathUtils.smoothstep(past,-STRIDE_PLANT[0],0)*(1-THREE.MathUtils.smoothstep(past,STRIDE_PLANT[1],STRIDE_PLANT[2])))*.62:0;
       // A previous lunge's residual gait must not bend the next authored kick.
       this.stride=kicking?0:this.stride+(want-this.stride)*(1-Math.exp(-dt*(want>this.stride?16:9)));
     }

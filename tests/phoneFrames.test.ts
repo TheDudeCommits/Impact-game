@@ -63,6 +63,15 @@ describe('Balanced on a phone: sixty while it holds, an even thirty when it cann
     expect(policy.target('full')).toBe(60);
     expect(policy.target('auto')).toBe(60);
   });
+  it('Full detail on a desktop is drawn at the display\'s own rate, budgeted at sixty; a phone and a tablet keep sixty', () => {
+    const desk = new FramePolicy(false, true), tablet = new FramePolicy(false, false), phone = new FramePolicy(true);
+    expect(desk.drawRate('full')).toBe(Infinity);
+    expect(desk.target('full')).toBe(60);
+    for (const policy of [tablet, phone]) { expect(policy.drawRate('full')).toBe(60); expect(policy.target('full')).toBe(60); }
+    // (The no-overheating sixty stays every other mode's, on every device.)
+    for (const policy of [desk, tablet, phone]) { expect(policy.drawRate('auto')).toBe(60); expect(policy.drawRate('cool')).toBe(30); }
+    expect(phone.desk).toBe(false);
+  });
 });
 
 describe('the resolution governor without a GPU timer keeps the pixels a busy CPU cannot use', () => {
@@ -130,12 +139,12 @@ describe('the render loop follows the policy (main.ts)', () => {
   it('gates its frames, judges the step and rebudgets the renderer by the frame policy; the simulation keeps its own clock', async () => {
     const { readFileSync } = await import('node:fs');
     const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
-    expect(main).toContain('gate.draw(now,previous,view.frames.target(settings.powerMode))');
+    expect(main).toContain('gate.draw(now,previous,view.frames.drawRate(settings.powerMode))');
     // (The adaptive ladder: the step and the frame's time through the debug switch, the ladder's word on the resolution and the
     // effects, and the calm moment for the way back to sixty.)
     expect(main).toContain('const [policyDt,policyCpu,times]=view.policyFrame(rawDt);for(let i=0;i<times;i++)if(view.frames.frame(policyDt,started&&!hud.settingsOpen&&!document.hidden,settings.powerMode,view.resolutionSpent,policyCpu,view.calm)){view.applySettings(settings);');
-    // The input is still sent on its own timer, whatever the frames drawn.
-    expect(main).toContain('inputTimer=setInterval(pushInput,1000/INPUT_HZ)');
+    // The input is still sent on its own timer, whatever the frames drawn (its pump reads the pad first: pumpInput).
+    expect(main).toContain('inputTimer=setInterval(pumpInput,1000/INPUT_HZ)');
     const renderer = readFileSync(new URL('../src/render/GameRenderer.ts', import.meta.url), 'utf8');
     expect(renderer).toContain('this.governor.frameMs=1000/fps');
   });

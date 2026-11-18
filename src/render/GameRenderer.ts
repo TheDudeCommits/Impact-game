@@ -13,12 +13,17 @@ import { focusUniforms, LookBloomPass, LookFinalPass } from './look/LookPost';
 import { SkyDome } from './look/SkyDome';
 import { Atmosphere } from './look/Atmosphere';
 import { StageLife } from './look/StageLife';
-import { frameUniforms, setToonLook, setToonResolution } from './look/toonShading';
+import { frameUniforms, INK_WEIGHT, inkUniforms, setToonLook, setToonResolution } from './look/toonShading';
 import { setCloudTime, setCookieLook } from './look/lightCookie';
 import { setAlbedoLook, setRoomDim, windowGlow } from './look/stageMaterials';
 import { liftFightersUnderGrade } from './look/gradeReadability';
 import { ResolutionGovernor } from './ResolutionGovernor';
 import {phoneSharpness,powerBudget} from './powerBudget';
+import { gpuName } from './qualityTier';
+import { recallSettled, rememberSettled, settledKey, SettleWatch } from './resolutionMemory';
+import { abOff, onAbChange, setAbOff, type AbName } from './look/abSwitch';
+import { setSceneRatio } from './look/sceneBuffer';
+import { UPSCALE } from './look/upscale';
 import {FramePolicy} from './framePolicy';
 import {EffectsLadder,LONGEST_WAIT_S,cutBudget,ladderFor,reallocates,type LadderBudget} from './mobileLadder';
 import {handheld} from '../input/device';
@@ -222,6 +227,8 @@ export class GameRenderer {
     onFilmLook(()=>this.restyle());
     this.camera.position.set(3.2,3.6,15);this.camera.lookAt(0,1,-1);
     window.addEventListener('resize',()=>this.resize());this.applySettings(settings);
+    // (The look's A/B switches flipped by the probe: the upscale's on or off takes the ratio again.)
+    onAbChange(()=>{this.setRatio(this.sceneRatio);this.resize();this.updateInk();});
     this.applyLook(this.look,STAGES.harbor);
     if(import.meta.env?.DEV)this.installProbe();
   }
@@ -283,7 +290,7 @@ export class GameRenderer {
     const on=filmOn();
     this.applyLook(lookFor(this.stage),STAGES[this.stage]);
     this.refreshEnvironment();
-    this.finalPass.setFilm(on,this.scenePass.tier!=='off');
+    this.finalPass.setFilm(on,this.scenePass.tier==='medium'||this.scenePass.tier==='high');
     if(!on){this.farView.visible=false;this.freeze.cancel();this.freezeIn=-1;}
     this.stepFilm();
   }
@@ -444,7 +451,7 @@ export class GameRenderer {
   private warmTarget?:THREE.WebGLRenderTarget;
   resize(){const w=innerWidth,h=innerHeight,views=this.split?halves(this.split.screen,w,h):undefined,half=views?.[0];this.page.w=w;this.page.h=h;this.views=views;this.camera.aspect=half?half.w/half.h:w/h;this.camera.updateProjectionMatrix();
     // Player 2's lens culls by its own frustum (lenses.ts), so it keeps its half's shape through a resize too.
-    if(this.split&&views){this.split.second.aspect=views[1].w/views[1].h;this.split.second.updateProjectionMatrix();}this.renderer.setSize(w,h);this.composer.setSize(half?.w??w,half?.h??h);setToonResolution((half?.h??h)*this.renderer.getPixelRatio());}
+    if(this.split&&views){this.split.second.aspect=views[1].w/views[1].h;this.split.second.updateProjectionMatrix();}this.renderer.setSize(w,h);this.composer.setSize(half?.w??w,half?.h??h);setToonResolution((half?.h??h)*this.sceneRatio);}
   /** The page's size and a split screen's halves (CSS pixels) as the last resize found them: a split frame reads these,
    *  not the window's - `innerWidth` and `innerHeight` lay the page out again whenever the frame's HUD has changed it,
    *  three times a frame on a phone's split screen. */
@@ -460,7 +467,7 @@ export class GameRenderer {
    *  `focus` is where each half's player stands (the shadow's box is placed for both before either is drawn). The second
    *  lens is the frame's too for what culls by its camera (lenses.ts). */
   private split?:SplitView;
-  setSplit(split?:SplitView){this.split=split;this.resize();setSecondLens(split?.second);if(split){const r=this.halves()[1];split.second.aspect=r.w/r.h;split.second.updateProjectionMatrix();}else{this.sharedShadow?.dispose();this.sharedShadow=undefined;this.sharing=false;}}
+  setSplit(split?:SplitView){this.split=split;this.setRatio(this.sceneRatio);this.resize();setSecondLens(split?.second);if(split){const r=this.halves()[1];split.second.aspect=r.w/r.h;split.second.updateProjectionMatrix();}else{this.sharedShadow?.dispose();this.sharedShadow=undefined;this.sharing=false;}}
   /** The split screen's one shadow pass for both halves (renderHalves): the sun's own shadow, its map and its box each
    *  SHARE_GROW wider - the same texel, so the same shadow - drawn once while the two halves' boxes stand within
    *  SHARE_REACH of each other, when it holds both whole (two people in one ring, or side by side). Made with the split
@@ -481,12 +488,21 @@ export class GameRenderer {
     const sharp=phoneSharpness({phone:this.frames.small,quality:q,powerMode:settings.powerMode,economical:budget.economical,dpr:devicePixelRatio,timed:this.governor.timed,fps}),cap=sharp?.cap??budget.pixelCap;
     this.budgetStrong=this.governor.relaxed;
     // The film look's tier for this quality (below); on a phone or a tablet the ladder's last step is its painting.
-    const film:PaintTier=q==='low'||budget.economical?'off':q==='medium'?'medium':'high';
+    // a phone or a tablet at LOW paints too, small (filmPaint.ts 'low'), its ladder's last step taking it away
+    // when the device cannot hold its rate (?ab=phonepaint: no painting at LOW, as before). A desktop at LOW does not.
+    const film:PaintTier=budget.economical?'off':q==='low'?(this.handheld&&!abOff('phonepaint')?'low':'off'):q==='medium'?'medium':'high';
     const rungs:LadderBudget={samples:budget.samples,bloom:budget.bloom,shadowSize:budget.shadowSize,paint:film!=='off'&&filmLookFor(settings.artStyle)};
     const key=`${q}:${settings.powerMode??'auto'}:${this.hordeWorkload}:${this.budgetStrong}:${fps}:${cap}${this.handheld?`:${!!settings.qualityChosen}:${rungs.paint}`:''}`;
     // (A quality the player chose, or FULL DETAIL, is kept whole: the ladder has no steps there.)
     const ladder=this.governor.ladder,steps=ladder&&settings.powerMode!=='full'&&!settings.qualityChosen?ladderFor(rungs).length:0;
-    if(key!==this.budgetKey){this.governor.reset(sharp?.start);this.budgetKey=key;this.pendingRatio=0;ladder?.reset(steps);this.waitingSince=-1;this.ratioSince=-1;}
+    // A desktop starts a budget at the share its last fights settled at under it (resolutionMemory.ts), not at the top.
+    let kept:number|undefined;
+    if(key!==this.budgetKey){
+      this.settleKey=sharp||ladder?'':settledKey(this.gpu??=gpuName(this.renderer.getContext()),key,this.page.w,this.page.h);
+      kept=this.settleKey?recallSettled(this.settleKey):undefined;
+      this.governor.reset(sharp?.start??kept);this.settleWatch.reset(kept);
+      this.budgetKey=key;this.pendingRatio=0;ladder?.reset(steps);this.waitingSince=-1;this.ratioSince=-1;
+    }
     this.governor.budgetMs=budget.gpuBudget;this.governor.frameMs=1000/fps;this.governor.cpuGate=!!sharp;
     this.pixelCap=Math.min(devicePixelRatio,cap);
     // Never under one pixel a CSS pixel where the display has more than that; elsewhere three quarters (a phone drawing
@@ -494,7 +510,8 @@ export class GameRenderer {
     this.governor.floor=sharp?sharp.floor:this.pixelCap>1?Math.max(.6,1/this.pixelCap):.75;
     // A phone or a tablet never under one pixel a CSS pixel; its effects step down instead (mobileLadder.ts).
     if(ladder)this.governor.floor=Math.min(1,Math.max(this.governor.floor,1/this.pixelCap));
-    this.renderer.setPixelRatio(this.pixelCap*this.governor.scale);this.composer.setPixelRatio(this.pixelCap*this.governor.scale);
+    if(kept!==undefined)this.governor.scale=Math.min(1,Math.max(this.governor.floor,this.governor.scale));
+    this.setRatio(this.pixelCap*this.governor.scale);
     // A phone's or a tablet's ladder: the preset's budget with the steps it has taken.
     this.ladderBudget=ladder?rungs:undefined;
     const cut=ladder?cutBudget(rungs,ladder.tier):undefined;this.appliedTier=ladder?ladder.tier:0;
@@ -545,7 +562,7 @@ export class GameRenderer {
   }
   /** The film look's painted set at a tier, and the final pass's ink on the set and soft print with it (uniforms only:
    *  nothing links, nothing is allocated - the pass's targets were made for the preset with the room). */
-  private paintTier(tier:PaintTier){this.scenePass.tier=tier;this.finalPass.setFilm(filmOn(),tier!=='off');}
+  private paintTier(tier:PaintTier){this.scenePass.tier=tier;this.finalPass.setFilm(filmOn(),tier==='medium'||tier==='high');}
   /** With the debug switch on: each change of the tier, the rate or the pixel ratio, with its time (ms since the page began). */
   private mobileHistory?:{t:number;tier:number;fps:number;pr:number;calm:boolean}[];
   private noteLadder(){
@@ -861,9 +878,16 @@ export class GameRenderer {
   private lastPunch=0;
   private reducedMotion=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   private readonly projected=new THREE.Vector3();
+  /** the ink's key light in the lens's space, and its widths (look/toonShading.ts uInkLight; ?ab=inkweight
+   *  draws the even line). Each frame before the draw, and wherever the lens is moved for one (the probe's poses). */
+  private updateInk(){
+    inkUniforms.uInkLight.value.subVectors(this.sun.position,this.sun.target.position).normalize().transformDirection(this.camera.matrixWorldInverse);
+    if(abOff('inkweight'))inkUniforms.uInkWeight.value.set(1,1);else inkUniforms.uInkWeight.value.set(INK_WEIGHT.lit,INK_WEIGHT.shade);
+  }
   private updatePost(dt:number){
     const u=this.finalPass.uniforms,f=frameUniforms;
     u.uTime.value=this.time;
+    this.updateInk();
     // Speed lines re-dealt twenty times a second, like hand-drawn lines boil.
     u.uSeed.value=Math.floor(this.time*20)%997;
     u.uPunch.value=this.punchLevel;u.uChroma.value=this.chromaFrames>0?this.chromaPx:0;
@@ -971,7 +995,7 @@ export class GameRenderer {
     // that transition, including shadow/MSAA cost, not just resolution.
     if(this.budgetStrong!==this.governor.relaxed)this.applySettings(this.settings);
     // (A phone's or a tablet's step waits for a calm moment, or LONGEST_WAIT_S: a resize mid-fight is a hitch.)
-    if(this.pendingRatio&&this.ratioDue()){const ratio=this.pendingRatio;this.pendingRatio=0;this.ratioSince=-1;this.renderer.setPixelRatio(ratio);this.composer.setPixelRatio(ratio);this.resize();}
+    if(this.pendingRatio&&this.ratioDue()){const ratio=this.pendingRatio;this.pendingRatio=0;this.ratioSince=-1;this.setRatio(ratio);this.resize();}
     if(this.governor.ladder){this.governor.ladderRest=this.calm;this.applyLadder(performance.now());if(this.mobileHistory)this.noteLadder();}
     this.frameTimes.push(dt*1000);if(this.frameTimes.length>600)this.frameTimes.shift();
     this.time+=Math.min(dt,.1);
@@ -1014,6 +1038,8 @@ export class GameRenderer {
     const end=performance.now(),cpu=end-this.frameBegin;
     this.lastCpu=Number.isFinite(cpu)?cpu:undefined;
     if(this.governor.update(end,this.holdResolution,Number.isFinite(cpu)?cpu:undefined))this.pendingRatio=this.pixelCap*this.governor.scale;
+    // (A share held through ten seconds of fighting is kept for the next session: resolutionMemory.ts.)
+    if(this.settleKey){const settled=this.settleWatch.frame(dt,this.governor.scale,this.calm);if(settled!==undefined)rememberSettled(this.settleKey,settled);}
   }
   /** A split screen's frame, timed and held as the single view's is (the empty instanced pools left out of both draws). */
   private splitFrame(dt:number,split:NonNullable<GameRenderer['split']>){
@@ -1089,6 +1115,21 @@ export class GameRenderer {
   get resolutionSpent(){return (this.governor.scale<=this.governor.floor+1e-3||this.handheld&&this.governor.cpuBound)&&(this.governor.ladder?.settled(performance.now())??true);}
   /** Round 4: a resolution step waiting for the next frame (see render). */
   private pendingRatio=0;
+  /** The scene's pixels a CSS pixel (the quality's cap times the governor's share): the composer's ratio. */
+  private sceneRatio=1;
+  /** look/upscale.ts: on a desktop the canvas holds the screen's own pixels and the final pass's upscale takes
+   *  the scene's frame there. A phone, a tablet, a split screen (its halves are drawn straight to the screen) or
+   *  ?ab=upscale draw the canvas at the scene's ratio and leave the stretching to the browser, as before. */
+  private setRatio(ratio:number){
+    const possible=!this.handheld&&!this.split&&!abOff('upscale'),screen=possible?Math.max(ratio,devicePixelRatio):ratio;
+    this.sceneRatio=ratio;setSceneRatio(this.renderer,ratio);
+    this.renderer.setPixelRatio(screen);this.composer.setPixelRatio(ratio);
+    this.finalPass.setUpscale(screen>ratio*1.001,possible);
+  }
+  /** Where a desktop's resolution settles under the current budget (resolutionMemory.ts; '' on a phone or a tablet). */
+  private settleKey='';
+  private readonly settleWatch=new SettleWatch();
+  private gpu?:string;
   /** The last frame's main-thread time, ms (from its start to its draw calls sent), for the frame policy. */
   lastCpu?:number;
   /** The adaptive ladder's debug switch (installMobileDebug) for the frame policy: the frame's step and main-thread time as
@@ -1126,7 +1167,7 @@ export class GameRenderer {
   private renderProbe(dt:number){
     const pose=this.probePose!;
     this.savedPosition.copy(this.camera.position);this.savedQuaternion.copy(this.camera.quaternion);
-    this.camera.position.copy(pose.position);this.camera.lookAt(pose.target);this.camera.updateMatrixWorld();
+    this.camera.position.copy(pose.position);this.camera.lookAt(pose.target);this.camera.updateMatrixWorld();this.updateInk();
     this.composer.render(dt);
     this.camera.position.copy(this.savedPosition);this.camera.quaternion.copy(this.savedQuaternion);this.camera.updateMatrixWorld();
   }
@@ -1139,6 +1180,10 @@ export class GameRenderer {
       // The film look off and on, on the running stage (not kept for the next visit), and the frame drawn again as it
       // stands - nothing advanced - so one held frame is drawn both ways.
       film:(on:boolean)=>{setFilmLook(on);return filmOn();},
+      // The look changes' A/B switches (look/abSwitch.ts), flipped on the running page for the before/after stills.
+      ab:(name:AbName,off:boolean)=>{setAbOff(name,off);return abOff(name);},
+      upscale:(o:Partial<typeof UPSCALE>)=>({...Object.assign(UPSCALE,o)}),
+      inkWeight:(o:Partial<typeof INK_WEIGHT>)=>{Object.assign(INK_WEIGHT,o);this.updateInk();return {...INK_WEIGHT};},
       // The painted freeze taken from the frame just drawn (call after redraw) and shown, focused on (x, y) in uv.
       freeze:(x=.5,y=.5)=>{this.freezeFocus.set(x,y);this.freeze.capture(this.renderer,this.time,this.freezeFocus);return this.freeze.draw(this.renderer,this.time);},
       freezeOff:()=>{this.freeze.cancel();this.freezeIn=-1;},
@@ -1149,7 +1194,7 @@ export class GameRenderer {
         for(const [k,v] of Object.entries(patch.spark??{}))Object.assign((FILM_SPARK as unknown as Record<string,Record<string,number>>)[k],v);
         this.restyle();return JSON.parse(JSON.stringify({film:FILM,look:LOOK,spark:FILM_SPARK,paint:PAINT}));},
       scene:this.scene,
-      redraw:()=>{if(filmOn())holdDrawings(this.scene,this.time);this.updateShadow();effekseerRedraw.on=true;drawingFrame(true);try{this.emptyInstances.hold();try{this.composer.render(0);}finally{this.emptyInstances.release();}}finally{drawingFrame(false);effekseerRedraw.on=false;}},
+      redraw:()=>{if(filmOn())holdDrawings(this.scene,this.time);this.updateShadow();effekseerRedraw.on=true;drawingFrame(true);try{this.emptyInstances.hold();try{if(this.probePose)this.renderProbe(0);else this.composer.render(0);}finally{this.emptyInstances.release();}}finally{drawingFrame(false);effekseerRedraw.on=false;}},
       // Another quality tier on the running game, to cost the finish's tiers on the GPU timer.
       quality:(quality:Settings['quality'])=>{this.applySettings({...this.settings,quality});return quality;},
       impact:(s:number,hold=0)=>{this.lastImpact=-10;this.impactFrame(s);this.impactHold=hold;},
@@ -1163,7 +1208,7 @@ export class GameRenderer {
       tune:(o:{samples?:number;pixelRatio?:number;bloom?:boolean;half?:boolean;sky?:boolean;air?:boolean;life?:boolean;shadows?:boolean;legacy?:{shadow?:boolean;matrices?:boolean;skeletons?:boolean;lenses?:boolean;sizes?:boolean}})=>{
         if(o.legacy){if(o.legacy.lenses!==undefined)setSecondLens(o.legacy.lenses?undefined:this.split?.second);if(o.legacy.shadow!==undefined)SPLIT_LEGACY.shadow=o.legacy.shadow;if(o.legacy.matrices!==undefined)SPLIT_LEGACY.matrices=o.legacy.matrices;if(o.legacy.sizes!==undefined)SPLIT_LEGACY.sizes=o.legacy.sizes;if(o.legacy.skeletons!==undefined)skeletonOnce.on=!o.legacy.skeletons;}
         if(o.samples!==undefined)for(const t of [this.composer.renderTarget1,this.composer.renderTarget2]){t.samples=o.samples;t.dispose();}
-        if(o.pixelRatio!==undefined){this.renderer.setPixelRatio(o.pixelRatio);this.composer.setPixelRatio(o.pixelRatio);this.resize();}
+        if(o.pixelRatio!==undefined){this.setRatio(o.pixelRatio);this.resize();}
         if(o.bloom!==undefined)this.bloomPass.enabled=o.bloom;
         if(o.half!==undefined)for(const t of [this.composer.renderTarget1,this.composer.renderTarget2]){t.texture.type=o.half?THREE.HalfFloatType:THREE.UnsignedInt101111Type;t.texture.format=o.half?THREE.RGBAFormat:THREE.RGBFormat;t.dispose();}
         if(o.sky!==undefined)this.sky.mesh.visible=o.sky;

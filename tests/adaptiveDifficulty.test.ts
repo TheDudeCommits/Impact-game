@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AHEAD, AdaptiveDirector, BASE_STRENGTH, DIFFICULTY_STEP, PRIOR, SKILL_RANGE, START_SKILL, SkillEvidence, meanSkill, power, skillFrom, strengthFor } from '../src/game/adaptive';
+import { AHEAD, AdaptiveDirector, BASE_STRENGTH, DIFFICULTY_STEP, PLAY, PRIOR, SKILL_RANGE, START_SKILL, SkillEvidence, botSkillFor, meanSkill, playFor, power, skillFrom, strengthFor } from '../src/game/adaptive';
 import { ArenaSimulation } from '../src/game/simulation';
 import { COMBO_HP, COMBO_STAMINA } from '../src/game/moves';
 import { ROSTER_PROTOCOL } from '../src/game/rosterProtocol';
@@ -23,6 +23,26 @@ describe('adaptive difficulty: the rules', () => {
     const d = new AdaptiveDirector(); d.fix('a', 2); d.fix('b', 2); d.fix('c', 1);
     expect(d.factor('a', 'b')).toBeCloseTo(1, 9);
     expect(d.factor('a', 'c') / d.factor('c', 'a')).toBeCloseTo(2, 9);   // a trades two for one with today's bot
+  });
+
+  it('carries a bot\'s strength in its play first and the rest in power, so its total is what it was set to', () => {
+    // PLAY: the new play's measured worth, by skill (lock combat on).
+    expect(PLAY[0]).toBeGreaterThanOrEqual(.95); expect(PLAY[1]).toBeGreaterThanOrEqual(PLAY[0]); expect(PLAY[1]).toBeLessThan(1.3);
+    const d = new AdaptiveDirector(); d.fix('bot', 2); d.fix('peer', 2);
+    d.playOf = id => id === 'bot' ? playFor(1) : 1;
+    expect(d.strengthOf('bot')).toBe(2);
+    expect(d.powerOf('bot') * playFor(1)).toBeCloseTo(2, 9);
+    expect(d.factor('bot', 'human')).toBeCloseTo(power(2 / playFor(1)), 9);
+    expect(d.factor('human', 'bot')).toBeCloseTo(1 / power(2 / playFor(1)), 9);
+    // Unset (no human in the field): no power either way, as before.
+    expect(d.powerOf('stranger')).toBe(1);
+  });
+
+  it('gives an offline Duel\'s rival the player\'s own skill, not a roll', () => {
+    expect(botSkillFor(.3)).toBe(0); expect(botSkillFor(10)).toBe(1);
+    expect(botSkillFor(1)).toBeGreaterThan(.2); expect(botSkillFor(1)).toBeLessThan(botSkillFor(START_SKILL));
+    expect(botSkillFor(START_SKILL)).toBeGreaterThan(.35); expect(botSkillFor(START_SKILL)).toBeLessThan(.55);
+    expect(botSkillFor(2)).toBeGreaterThan(botSkillFor(START_SKILL));
   });
 
   it('takes a page\'s word for its skill only as a number in range, and starts a stranger at the start', () => {
@@ -96,8 +116,9 @@ describe('adaptive difficulty in the simulation', () => {
     expect(sim.adaptive.strengthOf('bot')).toBeCloseTo(BASE_STRENGTH, 6);
     expect(sim.getPlayer('me')!.skill).toBeCloseTo(START_SKILL, 3);
     expect(sim.getPlayer('bot')!.skill).toBeUndefined();
+    // (the bot's play carries PLAY of its strength - by its skill - and the blows the rest.)
     const before = sim.getPlayer('me')!.hp; sim.damage('me', 100, 'bot', 'test');
-    expect(before - sim.getPlayer('me')!.hp).toBeCloseTo(100 * power(BASE_STRENGTH), 6);
+    expect(before - sim.getPlayer('me')!.hp).toBeCloseTo(100 * power(BASE_STRENGTH / playFor(sim.actors.get('bot')!.botSkill)), 6);
   });
   it('takes the page\'s skill for the player, and sets the bots from it', () => {
     const sim = match(); sim.setPlayerSkill('me', 3); sim.startMatch(); sim.step();

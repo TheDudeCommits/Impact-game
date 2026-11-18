@@ -5,7 +5,7 @@ import { InputQueue } from '../src/server/InputQueue';
 import { StepClock } from '../src/server/StepClock';
 import { ArenaRoom } from '../src/server/ArenaRoom';
 import { catchUp, INPUT_HZ } from '../src/game/catchUp';
-import { DRAIN_ENGAGE, DRAIN_GENTLE, DRAIN_MAX, InputClock, QUEUE_TARGET, RATE_SLEW, REPORT_STALE, drainFor } from '../src/game/inputClock';
+import { CLEAN_AFTER, DRAIN_ENGAGE, DRAIN_GENTLE, DRAIN_MAX, InputClock, QUEUE_CLEAN, QUEUE_TARGET, RATE_SLEW, REPORT_STALE, drainFor } from '../src/game/inputClock';
 import type { GameSnapshot, PlayerInput } from '../src/game/types';
 
 const TICK_MS = 1000 / 60;
@@ -235,7 +235,7 @@ function drive(p: Pattern) {
   prediction.start('me', server.snapshot(false, true));
   const up: { at: number; input: PlayerInput }[] = [], down: { at: number; s: GameSnapshot }[] = [];
   const lows: { at: number; low: number }[] = [];
-  let seq = 0, rejected = 0, maxCorrection = 0, drawn = 0, idealPath = 0, lastUp = 0, lastDown = 0, stepped = 0;
+  let seq = 0, rejected = 0, maxCorrection = 0, drawn = 0, idealPath = 0, lastUp = 0, lastDown = 0, stepped = 0, starved = 0;
   let shown: { x: number; z: number } | undefined;
   const walk = (n: number): PlayerInput => ({ seq: n, moveX: Math.cos(n * .01), moveZ: Math.sin(n * .01), yaw: 0 });
   const upload = (now: number) => {
@@ -270,6 +270,7 @@ function drive(p: Pattern) {
   const step = (now: number) => {
     while (up.length && up[0].at <= now) if (!queue.push(up.shift()!.input)) rejected++;
     const input = queue.take();
+    if (!input && now > 1000) starved++;
     if (input) server.submitInput('me', input);
     server.step(1 / 60, new Set(input ? [] : ['me']));
     stepped++;
@@ -292,7 +293,7 @@ function drive(p: Pattern) {
       }
     }
     const fullSpeed = idealPath / (seq - 60) * 60;
-    return { rejected, maxCorrection, lows, stepsPerSecond: stepped / p.seconds, speed: drawn / (p.seconds - 1) / fullSpeed, sent: seq };
+    return { rejected, maxCorrection, lows, stepsPerSecond: stepped / p.seconds, speed: drawn / (p.seconds - 1) / fullSpeed, sent: seq, starved, target: clock.target };
   } finally { prediction.stop(); server.dispose(); ideal.dispose(); }
 }
 
@@ -348,3 +349,42 @@ describe('ordered input drains through bursts, stalls and a slow server loop', (
     expect(r.sent / 30).toBeLessThan(58);
   });
 });
+
+/** a clean link is steered one command shallower (inputClock.ts QUEUE_CLEAN), a tick
+ *  sooner on every exchange; a jittery one keeps the warm buffer. */
+describe('the input queue one command shallower on a clean link', () => {
+  const CLEAN: Pattern = { seconds: 40, slow: 0, keepsTime: true, stalls: [], stallMs: 0, batchMs: 0, jitterMs: 2, hitches: [], hitchMs: 0, latencyMs: 30, fps: 60 };
+  it('settles on QUEUE_CLEAN once the queue has stood at its warm buffer for CLEAN_AFTER, without starving or a correction', () => {
+    const r = drive(CLEAN);
+    const settled = r.lows.filter(s => s.at >= (CLEAN_AFTER + 4) * 1000);
+    expect(r.target).toBe(QUEUE_CLEAN);
+    expect(Math.max(...settled.map(s => s.low)), 'standing depth on the clean link').toBe(QUEUE_CLEAN);
+    expect(r.starved).toBe(0);
+    expect(r.rejected).toBe(0);
+    expect(r.maxCorrection).toBeLessThan(.001);
+    expect(r.speed).toBeGreaterThan(.99);
+  });
+  it('keeps the warm buffer on a jittery, bursty link', () => {
+    const r = drive({ ...WAN, slow: .02 });
+    expect(r.target).toBe(QUEUE_TARGET);
+  });
+  it('hands the target back at the first tick with nothing to spare, and waits before trying again', () => {
+    const clock = new InputClock();
+    let now = 1000;
+    const second = (report: number) => { for (let i = 0; i < 60; i++) { if (i % 2 === 0) clock.report(report); now += TICK_MS; clock.advance(now); } };
+    for (let s = 0; s <= CLEAN_AFTER; s++) second(QUEUE_TARGET);
+    expect(clock.target).toBe(QUEUE_CLEAN);
+    expect(drainFor(QUEUE_TARGET, false, QUEUE_CLEAN), 'the one command over is drained at once').toBeGreaterThan(0);
+    second(1);
+    expect(clock.target).toBe(QUEUE_TARGET);
+    for (let s = 0; s <= CLEAN_AFTER + 5; s++) second(QUEUE_TARGET);
+    expect(clock.target, 'not again inside CLEAN_HOLD').toBe(QUEUE_TARGET);
+  });
+  it('counts no evidence before its own clock has started', () => {
+    const clock = new InputClock();
+    clock.report(QUEUE_TARGET);                 // a snapshot before the first command went
+    clock.advance(500_000); clock.report(QUEUE_TARGET);
+    expect(clock.target, 'one report on a running clock is not ten seconds of them').toBe(QUEUE_TARGET);
+  });
+});
+

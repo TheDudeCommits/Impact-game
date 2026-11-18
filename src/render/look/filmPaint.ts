@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Pass, FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { filmOn } from './filmLook';
+import { abOff } from './abSwitch';
 
 /**
  * THE PAINTED SET: the film look's stage, painted by hand.
@@ -31,6 +32,9 @@ export const PAINT = {
   /** The painting's size, of the frame's, per quality (GameRenderer.applySettings): HIGH half, MEDIUM a little under;
    *  the radius above stays in half-size pixels at 1080p, so a patch is the same size on screen either way. */
   scale: .5, scaleMedium: .4,
+  /** A phone's painting at LOW, of the frame's size (the radius stays in 1080p
+   *  half-size pixels, so a patch is the same size on its screen), and no more than this many pixels tall. */
+  scaleLow: .65, maxHeightLow: 600,
   /** ...and never more than this many pixels tall: a sharp screen (a 4K monitor, a Retina laptop at HIGH's 1.5 pixels a
    *  point) paints no finer than a 1440p one - the patches are the same size on screen, only their soft edges are a
    *  little softer, and the set's own detail is painted back from the whole-size picture anyway. */
@@ -44,6 +48,11 @@ export const PAINT = {
   detail: .8, lightDetail: .25,
   /** (for measuring) skip the bodies' and effects' draw: wrong alone. */
   debugRedraw: true,
+  /** The strokes along the forms: how far a stroke stretches
+   *  along a clear edge (an ellipse of the disc's area, its long axis 1 + stretch times the edge's strength), and the
+   *  edge strength (the structure tensor's anisotropy, 0..1) over which the form takes the stroke's direction from the
+   *  slow field of angles; `edge` the tensor's size under which the set counts as flat paint. */
+  brush: { on: true, stretch: 2, from: .15, to: .55, edge: .003, edgeFull: .03 },
 };
 
 const VERT = /* glsl */`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}`;
@@ -54,9 +63,26 @@ float pn( vec2 p ) { vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3. - 2. 
 float pfbm( vec2 p ) { return pn( p ) * .5 + pn( p * 2.03 + 7.1 ) * .3 + pn( p * 4.01 + 3.3 ) * .2; }
 float plum( vec3 c ) { return dot( c, vec3( .2126, .7152, .0722 ) ); }`;
 
+/** Pass 2a0 : the set's structure tensor at the painting's size - the Sobel gradient of its (compressed)
+ *  luminance, one painting pixel apart, as (gx², gy², gx·gy). */
+const TENSOR_FRAG = /* glsl */`
+uniform sampler2D tSrc; uniform vec2 uRes;
+varying vec2 vUv;
+${NOISE}
+float tl( vec2 p ) { vec3 c = max( texture2D( tSrc, p ).rgb, 0. ); return plum( c / ( 1. + c ) ); }
+void main() {
+	vec2 d = 1. / uRes;
+	float a = tl( vUv + vec2( - d.x, d.y ) ), b = tl( vUv + vec2( 0., d.y ) ), c = tl( vUv + d );
+	float l = tl( vUv - vec2( d.x, 0. ) ), r = tl( vUv + vec2( d.x, 0. ) );
+	float e = tl( vUv - d ), f = tl( vUv - vec2( 0., d.y ) ), g = tl( vUv + vec2( d.x, - d.y ) );
+	float gx = ( c + 2. * r + g ) - ( a + 2. * l + e ), gy = ( a + 2. * b + c ) - ( e + 2. * f + g );
+	gl_FragColor = vec4( gx * gx, gy * gy, gx * gy, 1. );
+}`;
+
 /** Pass 2a: the half-size painting of the set (linear HDR in, linear HDR out). */
 const PAINT_FRAG = /* glsl */`
 uniform sampler2D tSrc; uniform vec2 uRes; uniform vec2 uSrcRes; uniform float uRadius; uniform float uSharp; uniform float uSat;
+uniform sampler2D tTensor; uniform float uAniso; uniform vec4 uBrush; uniform vec2 uBrushEdge;
 varying vec2 vUv;
 ${NOISE}
 // statistics in a compressed space (c / (1 + c)), so a bright sky or a hot spark does not swamp a patch's spread
@@ -75,6 +101,27 @@ void main() {
 	float ang = ( pn( vUv * vec2( uRes.x / uRes.y, 1. ) * 3.2 ) - .5 ) * 2.2;
 	mat2 rot = mat2( cos( ang ), - sin( ang ), sin( ang ), cos( ang ) );
 	float R = uRadius * sc;
+	if ( uAniso > .5 ) {
+		// the strokes along the forms (Kyprianidis, Kang and Doellner 2009's anisotropic Kuwahara). The set's own
+		// structure tensor, smoothed by five reads round the point, gives the edge's direction and its strength; on a
+		// clear edge the four patches turn to run along it and stretch with it (an ellipse of the disc's area), so a
+		// rock's rim, a branch or a cloud's edge is laid in with strokes that follow it. Where the set is flat paint,
+		// the slow field of angles above, as before.
+		vec2 o = R * .6 * px;
+		vec4 T = texture2D( tTensor, vUv ) * 2. + texture2D( tTensor, vUv + vec2( o.x, 0. ) ) + texture2D( tTensor, vUv - vec2( o.x, 0. ) )
+			+ texture2D( tTensor, vUv + vec2( 0., o.y ) ) + texture2D( tTensor, vUv - vec2( 0., o.y ) );
+		float E = T.x, G = T.y, F = T.z, disc = sqrt( ( E - G ) * ( E - G ) + 4. * F * F );
+		float l1 = .5 * ( E + G + disc ), l2 = max( .5 * ( E + G - disc ), 0. );
+		vec2 t = vec2( l1 - E, - F );
+		t = dot( t, t ) > 1e-12 ? normalize( t ) : vec2( 0., 1. );
+		float an = ( l1 - l2 ) / ( l1 + l2 + 1e-6 );
+		float lead = smoothstep( uBrush.y, uBrush.z, an ) * smoothstep( uBrushEdge.x, uBrushEdge.y, l1 );
+		vec2 field = vec2( cos( ang ), - sin( ang ) );
+		if ( dot( t, field ) < 0. ) t = - t;
+		vec2 dir = normalize( mix( field, t, lead ) );
+		float sa = 1. + uBrush.x * an * lead, sb = 1. / sa;
+		rot = mat2( dir.x * sa, dir.y * sa, - dir.y * sb, dir.x * sb );
+	}
 	vec3 m[ 4 ]; vec3 v[ 4 ];
 	for ( int q = 0; q < 4; q ++ ) { m[ q ] = vec3( 0. ); v[ q ] = vec3( 0. ); }
 	// four overlapping patches (quadrants of a disc), 3 x 3 taps each less the corner past the disc. Each point is read
@@ -169,7 +216,14 @@ function paperTexture(): THREE.DataTexture {
 
 /** The painting a quality draws (GameRenderer.applySettings): HIGH's, MEDIUM's smaller one, or none (LOW, a phone's; a
  *  crowd fight on a machine that has no time to spare). */
-export type PaintTier = 'off' | 'medium' | 'high';
+/** 'low' : a phone's or a tablet's painting at LOW - small, without the strokes' structure pass. */
+export type PaintTier = 'off' | 'low' | 'medium' | 'high';
+
+/** The painting's size, of the frame's, for a tier. */
+function paintScale(tier: PaintTier, height: number) {
+  const h = Math.max(1, height);
+  return tier === 'low' ? Math.min(PAINT.scaleLow, PAINT.maxHeightLow / h) : Math.min(tier === 'medium' ? PAINT.scaleMedium : PAINT.scale, PAINT.maxHeight / h);
+}
 
 export class PaintedScenePass extends Pass {
   /** As three's RenderPass: clear the target first. */
@@ -181,9 +235,15 @@ export class PaintedScenePass extends Pass {
    *  the targets are made for it with the room (compile), so the step given back in a fight allocates nothing. */
   preset: PaintTier = 'high';
   private readonly paintRT = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false });
+  /** the set's structure tensor, at the painting's size (TENSOR_FRAG). */
+  private readonly tensorRT = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false });
+  private readonly tensorMat = new THREE.ShaderMaterial({ name: 'FilmTensor', vertexShader: VERT, fragmentShader: TENSOR_FRAG, depthTest: false, depthWrite: false,
+    uniforms: { tSrc: { value: null as THREE.Texture | null }, uRes: { value: new THREE.Vector2(1, 1) } } });
+  private readonly tensorQuad = new FullScreenQuad(this.tensorMat);
   private readonly paintMat = new THREE.ShaderMaterial({ name: 'FilmPaint', vertexShader: VERT, fragmentShader: PAINT_FRAG, depthTest: false, depthWrite: false,
     uniforms: { tSrc: { value: null as THREE.Texture | null }, uRes: { value: new THREE.Vector2(1, 1) }, uSrcRes: { value: new THREE.Vector2(1, 1) },
-      uRadius: { value: PAINT.radius }, uSharp: { value: PAINT.sharpness }, uSat: { value: PAINT.saturation } } });
+      uRadius: { value: PAINT.radius }, uSharp: { value: PAINT.sharpness }, uSat: { value: PAINT.saturation },
+      tTensor: { value: this.tensorRT.texture }, uAniso: { value: 0 }, uBrush: { value: new THREE.Vector4() }, uBrushEdge: { value: new THREE.Vector2() } } });
   /** The set as drawn in 1: its colour (painted from, its detail read back) and its depth (laid into the frame with the
    *  painting). Made on the first painted frame in the frame's own colour format, never on a phone (LOW draws no painting). */
   private setRT: THREE.WebGLRenderTarget | null = null;
@@ -230,8 +290,8 @@ export class PaintedScenePass extends Pass {
   }
   private sizePaint(scale: number) {
     const w = Math.max(1, Math.round(this.full.x * scale)), h = Math.max(1, Math.round(this.full.y * scale));
-    this.paintRT.setSize(w, h);
-    this.paintMat.uniforms.uRes.value.set(w, h); this.paintMat.uniforms.uSrcRes.value.copy(this.full);
+    this.paintRT.setSize(w, h); this.tensorRT.setSize(w, h);
+    this.paintMat.uniforms.uRes.value.set(w, h); this.paintMat.uniforms.uSrcRes.value.copy(this.full); this.tensorMat.uniforms.uRes.value.set(w, h);
     this.layMat.uniforms.uPaintRes.value.set(w, h);
     this.paintScale = scale;
   }
@@ -279,10 +339,18 @@ export class PaintedScenePass extends Pass {
       try { renderer.render(scene, this.camera); }
       finally { maps.render = drawShadows; shown(fx, true); shown(parts, true); }
       // 2. painted at a fraction of the size
-      const scale = Math.min(this.tier === 'medium' ? PAINT.scaleMedium : PAINT.scale, PAINT.maxHeight / Math.max(1, this.full.y));
+      const scale = paintScale(this.tier, this.full.y);
       if (scale !== this.paintScale) this.sizePaint(scale);
       const p = this.paintMat.uniforms, l = this.layMat.uniforms;
       p.tSrc.value = setRT.texture; p.uRadius.value = PAINT.radius; p.uSharp.value = PAINT.sharpness; p.uSat.value = PAINT.saturation;
+      // the set's structure first, for the strokes to follow (?ab=brush: the slow field of angles alone).
+      const brush = PAINT.brush, aniso = brush.on && !abOff('brush') && this.tier !== 'low';
+      p.uAniso.value = aniso ? 1 : 0;
+      if (aniso) {
+        (p.uBrush.value as THREE.Vector4).set(brush.stretch, brush.from, brush.to, 0); (p.uBrushEdge.value as THREE.Vector2).set(brush.edge, brush.edgeFull);
+        this.tensorMat.uniforms.tSrc.value = setRT.texture;
+        renderer.setRenderTarget(this.tensorRT); this.tensorQuad.render(renderer);
+      }
       l.uEdge.value = PAINT.edge; l.uTooth.value = PAINT.tooth; l.uWash.value = PAINT.wash; l.uDetail.value = PAINT.detail; l.uLightDetail.value = PAINT.lightDetail;
       renderer.setRenderTarget(this.paintRT); this.paintQuad.render(renderer);
       renderer.setRenderTarget(target);
@@ -308,12 +376,13 @@ export class PaintedScenePass extends Pass {
     const mesh = (quad: FullScreenQuad) => (quad as unknown as { _mesh: THREE.Mesh })._mesh;
     try {
       if (filmOn() && PAINT.on && this.preset !== 'off') {
-        this.sizePaint(Math.min(this.preset === 'medium' ? PAINT.scaleMedium : PAINT.scale, PAINT.maxHeight / Math.max(1, this.full.y)));
-        renderer.initRenderTarget(this.paintRT); renderer.initRenderTarget(this.setTarget(frame));
+        this.sizePaint(paintScale(this.preset, this.full.y));
+        renderer.initRenderTarget(this.paintRT); renderer.initRenderTarget(this.tensorRT); renderer.initRenderTarget(this.setTarget(frame));
       }
+      renderer.setRenderTarget(this.tensorRT); renderer.compile(mesh(this.tensorQuad), camera);
       renderer.setRenderTarget(this.paintRT); renderer.compile(mesh(this.paintQuad), camera);
       renderer.setRenderTarget(frame); renderer.compile(this.layMesh, camera);
     } finally { renderer.setRenderTarget(previous); }
   }
-  dispose() { this.paintRT.dispose(); this.paintMat.dispose(); this.layMat.dispose(); this.paintQuad.dispose(); this.setRT?.depthTexture?.dispose(); this.setRT?.dispose(); this.layMesh.geometry.dispose(); }
+  dispose() { this.tensorRT.dispose(); this.tensorMat.dispose(); this.tensorQuad.dispose(); this.paintRT.dispose(); this.paintMat.dispose(); this.layMat.dispose(); this.paintQuad.dispose(); this.setRT?.depthTexture?.dispose(); this.setRT?.dispose(); this.layMesh.geometry.dispose(); }
 }

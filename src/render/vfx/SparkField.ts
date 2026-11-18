@@ -3,6 +3,8 @@ import { noiseGLSL } from './noise';
 import { noiseTexture, NOISE_GLSL } from './noiseTexture';
 import { VEIL_GLSL, veilUniforms } from './VictimVeil';
 import { INK_IMPACT_URL } from './inkImpactAtlas';
+import { phone } from '../../input/device';
+import { abOff } from '../look/abSwitch';
 import { VFX } from '../vfxLevel';
 import { EFFECT_DRAWINGS, refinedVfx } from '../look/filmLook';
 
@@ -34,11 +36,21 @@ export function loadInkImpacts(): Promise<void> {
   // (Answers when they are in - or could not be had - so a room's load waits for them
   // and its upload covers them; main.ts asks once the home is up rather than with the first screen's downloads.)
   inkLoading = new Promise<void>(done => new THREE.TextureLoader().load(INK_IMPACT_URL, loaded => {
-    loaded.colorSpace = THREE.NoColorSpace; loaded.generateMipmaps = true; loaded.minFilter = THREE.LinearMipmapLinearFilter; loaded.anisotropy = 4;
-    inkLoaded = loaded;
-    for (const u of inkUniforms) u.value = loaded;
-    inkReady = true;
-    done();
+    const use = (atlas: THREE.Texture) => {
+      atlas.colorSpace = THREE.NoColorSpace; atlas.generateMipmaps = true; atlas.minFilter = THREE.LinearMipmapLinearFilter; atlas.anisotropy = 4;
+      inkLoaded = atlas;
+      for (const u of inkUniforms) u.value = atlas;
+      inkReady = true;
+      done();
+    };
+    // A phone's atlas at 1024 px (128 px cells): a quarter of the 2048 px one's
+    // 21 MB with its mipmaps, the largest single texture in a phone's fight. Its channels are data (fill, heat, ink,
+    // coverage), so shrunk unpremultiplied and unconverted, turned over as three's loader would have it uploaded.
+    const image = loaded.image as HTMLImageElement | undefined;
+    if (phone() && !abOff('phonepaint') && image && image.width > 1024 && typeof createImageBitmap === 'function') {
+      createImageBitmap(image, { resizeWidth: 1024, resizeHeight: 1024, resizeQuality: 'high', premultiplyAlpha: 'none', colorSpaceConversion: 'none', imageOrientation: 'flipY' })
+        .then(bitmap => { const atlas = new THREE.Texture(bitmap as unknown as HTMLImageElement); atlas.flipY = false; atlas.needsUpdate = true; loaded.dispose(); use(atlas); }, () => use(loaded));
+    } else use(loaded);
   }, undefined, () => done()));
   return inkLoading;
 }

@@ -30,7 +30,7 @@ import { DIZZY_GUARD, DIZZY_SECONDS, LAUNCHING, OUTCOME_DOWN, OUTCOME_LIFT, SPIN
 import { BLOCK_DRAG, BLOCK_PUSH_ENDER, BLOCK_RECOIL, GUARD_COST, GUARD_COST_DAMAGE, GUARD_FRONT, GUARD_REAR_COST, JUST_GUARD_ADVANTAGE_KIT,
   PARRY_FREEZE, PARRY_LOCKOUT, PARRY_REACH, PARRY_REARM, PARRY_STAMINA } from './moves';
 // The feel pass: the blows that hold both bodies longer (game/bigBlow.ts).
-import { BIG_ENDER_HOLD, BIG_HITSTOP, BIG_LAUNCH_MOST } from './moves';
+import { BIG_ENDER_HOLD, BIG_HITSTOP, BIG_LAUNCH_MOST, blowWeight, heftOf, REWARD_HITSTOP } from './moves';
 // Ground hits (8 October 2026): a fighter down on the floor is hit - a normal for less, an ultimate whole.
 import { GROUND_HIT_HOLD, GROUND_HIT_MOST, GROUND_HIT_SHOVE, groundHitDamage } from './moves';
 import { isBigBlow } from './bigBlow';
@@ -49,7 +49,7 @@ import { blinkWindow, planTour, priorVisits, REVISIT_TURN, TIME_STOP_TOURS, tour
   type TimeStopTour, type TourStyle } from './timeStopBarrage';
 import { STAGES, type StageId } from './stages';
 import { stageColliders } from './environmentLayout';
-import { AdaptiveDirector, type Difficulty } from './adaptive';
+import { AdaptiveDirector, playFor, type Difficulty } from './adaptive';
 import type { AttackSlot, CollisionMovement, CollisionWorld, CombatEvent, FighterId, GameSnapshot, PlayerInput, PlayerState, ReactionKind, RoomMode, Vec3 } from './types';
 
 const TAU = Math.PI * 2;
@@ -499,6 +499,18 @@ interface Actor {
   botTimed?: boolean;
   /** Round 5 (PARRY), bots only: its bar spent, it is getting it back. */
   botWinded?: boolean;
+  /** bots only: the last swing of somebody else's it has seen end - whiffed or on a guard -
+   *  and whether and when it punishes it (botPunish); the last jump at it it has seen, and whether and when it meets it
+   *  (botAntiAir). Each decided once. */
+  botPunishRead?: string;
+  botPunishAt?: number;
+  botPunishGo?: boolean;
+  botAirRead?: string;
+  botAirAt?: number;
+  botAirGo?: boolean;
+  /** The strength measurement's control: the bot as it played before - no punish in a recovery,
+   *  no anti-air, the old thinking clock. Never set by the game. */
+  botClassic?: boolean;
   /** Arcade survival only; every field below is absent on a roster fighter in
    *  a royale, training or private room, and every rule that reads one falls
    *  back to exactly what it did before. See `addCombatant`. */
@@ -764,6 +776,24 @@ const BOT_TIMING = [.07, .045] as const;
 const BOT_READ = .4;
 const BOT_TURTLE = [.12, .2] as const;
 const BOT_REACTION = [.34, .24] as const;
+/** bots that play better rather than hit harder (adaptive.ts PLAY). From the least skilled
+ *  bot to the most:
+ *  - BOT_THINK_MOST: the longest between its decisions. The clock was .18 + .16 x skill seconds - the better bot thought
+ *    the slower, .34 s at the top - and is kept below this (the top bots decide at .24); turned the other way round for
+ *    every bot (.24 down to .14) it swung more and guarded less and lost 13% of its exchange with the old one at skill .5,
+ *    so the bottom of it stands. What a person decides on sight is not on the clock at all now: the two below;
+ *  - BOT_PUNISH, BOT_PUNISH_REACT: the chance it punishes a swing it has seen end - every contact gone by, on nothing or
+ *    on its guard - while the thrower is still in its recovery, and how long it takes to see it (botPunish). Until then
+ *    a bot punished its own parry and nothing else;
+ *  - BOT_ANTI_AIR, BOT_AIR_REACT: the chance it meets a jump at it - with the Rising Strike when it has it, else a light
+ *    as they come into reach - and how long after they leave the floor it can (botAntiAir). Until then it never did. */
+const BOT_THINK_MOST = .24;
+const BOT_PUNISH = [.2, .8] as const;
+const BOT_PUNISH_REACT = [.24, .12] as const;
+const BOT_ANTI_AIR = [.15, .65] as const;
+/** How fast a lock string's dash-in closes on its target, m/s, as a bot reckons it for a punish. */
+const BOT_DASH_IN_SPEED = 14;
+const BOT_AIR_REACT = [.22, .12] as const;
 const BOT_REACTION_SPREAD = .03;
 const BOT_PARRY_LEAD = .03;
 const BOT_GUARD_LEAD = .19;
@@ -1144,6 +1174,8 @@ export class ArenaSimulation {
   constructor(options: SimulationOptions = {}) {
     this.roomMode = options.roomMode ?? 'training';
     this.adaptive = new AdaptiveDirector(options.adaptive ?? this.roomMode !== 'training');
+    // (what a bot's own play is worth, by its skill - the rest of its strength is POWER: adaptive.ts PLAY.)
+    this.adaptive.playOf = id => { const a = this.actors.get(id); return a?.state.isBot && !a.kit && !a.botClassic ? playFor(a.botSkill) : 1; };
     this.status = this.roomMode === 'training' ? 'active' : 'waiting';
     this.stage = options.stage ?? 'harbor';
     this.collision = options.collision;
@@ -1298,6 +1330,9 @@ export class ArenaSimulation {
   setPlayerSkill(id: string, skill: unknown) { this.adaptive.join(id, skill); }
   /** A bot held at one strength whatever the field (scripts/engine/bot_strength.mts, the tests). */
   setBotStrength(id: string, strength: number) { this.adaptive.fix(id, strength); }
+  /** A bot's skill (Actor.botSkill, 0 to 1), where it is not the roll addPlayer made: an offline Duel's rival, from the
+   *  player's own skill (adaptive.ts botSkillFor). */
+  setBotSkill(id: string, skill: number) { const a = this.actors.get(id); if (a && Number.isFinite(skill)) a.botSkill = Math.max(0, Math.min(1, skill)); }
   /** A custom room's or a party's difficulty: a step from the adaptive aim (adaptive.ts DIFFICULTY_STEP). */
   setDifficulty(difficulty: Difficulty | undefined) { this.adaptive.setDifficulty(difficulty); }
   setMods(id: string, mods: Partial<CombatMods>) {
@@ -4459,6 +4494,7 @@ export class ArenaSimulation {
       this.emit({ kind: guardBreak ? 'guard-break' : 'blocked', actorId, targetId: p.id, slot, damage,
         contactIndex, origin: position(origin), endpoint: centre(p), fromBehind: !front || undefined,
         chain: slot === 'light' ? stage : undefined, branch: own?.branch });
+      const guarded = this.events[this.events.length - 1];
       if (!guardBreak) {
         const before = p.hp;
         p.hp = slot === 'ultimate' ? Math.max(0, p.hp - damage) : Math.max(1, p.hp - damage);
@@ -4483,6 +4519,8 @@ export class ArenaSimulation {
           this.freeze(attacker, held);
           attacker.kx = fromX / blockN * shove * BLOCK_RECOIL; attacker.kz = fromZ / blockN * shove * BLOCK_RECOIL;
           attacker.knockbackDrag = BLOCK_DRAG;
+          // (what the blocked blow leaves its thrower ahead or behind by - Training's readout.)
+          if (own && fighters && guarded) guarded.advantage = this.frameAdvantage(attacker, own, target);
         }
         return;
       }
@@ -4570,6 +4608,12 @@ export class ArenaSimulation {
     const armoured = graced || poised || poise !== 'broken' && !!target.cast && target.armour !== false && p.hp > 0 && !breaksArmour(slot, target.cast.slot) && !guardBreak && !unarmoured;
     // Lock combat: caught in the swing before its blow, a COUNTER.
     const counter = !armoured && !floored && !crowd && unarmoured && target.cast!.nextContact === 0 && !!attacker && attacker !== target;
+    // caught in the recovery of a swing that found nobody - every contact of it past, none
+    // landed, no hitbox open and nothing it let go of still flying - a PUNISH, rewarded as a COUNTER is (REWARD_HITSTOP).
+    const whiff = target.cast;
+    const punish = !counter && !floored && fighters && !!whiff && !whiff.connected && whiff.nextContact >= whiff.move.contacts.length
+      && !whiff.live?.length && !this.projectiles.some(shot => shot.actorId === p.id && shot.castId === whiff.id)
+      && !this.areas.some(strike => strike.actorId === p.id && strike.castId === whiff.id);
     if (minor && !armoured) target.minorArmourUntil = this.serverTime + MINOR_GRACE;
     // Hit out of it, the string they were throwing is over as well.
     if (!armoured) { target.cast = null; target.dashUntil = 0; target.rushUntil = -Infinity; }
@@ -4812,7 +4856,13 @@ export class ArenaSimulation {
     // Ground hits: the body lying there is not held - its pose holds still on
     // its own, and a freeze would hold its floor clock past `floorUntil`. The
     // thrower holds as for any blow.
-    if (!(minor && armoured) && !floored) this.freeze(target, held * clamp(.7 + damage / 200, .75, 1.25));
+    // (a COUNTER or a PUNISH holds both bodies REWARD_HITSTOP longer. And the thrower's hold
+    // grows with how much heavier than a jab the blow is (heftOf, below) - a heavy is felt in the hands - where it was a
+    // flat share of the slot's stop; the struck body's already scales with what it dealt (blowWeight), and is left as it
+    // was: its reactions are timed to that hold - lengthened by the same amount, the knockdowns' and launches' takes
+    // jumped a frame in tests/reactionTakes (a hand 34 cm on Ippon's get-up, a head 29 cm in Asahi's launch).)
+    const reward = counter || punish ? REWARD_HITSTOP : 1, heavier = stop * .6 * heftOf(damage);
+    if (!(minor && armoured) && !floored) this.freeze(target, held * blowWeight(damage) * reward);
     if (roundEnd) {
       // Announced once the freeze is known: the window opens as the body comes out of it.
       // The window runs from the end of this blow's own freeze, on the clock: it is not held through the freezes of the
@@ -4823,17 +4873,21 @@ export class ArenaSimulation {
         due: target.lockTo, ...(target.lockBarred ? { reason: 'early' } : {}) });
     }
     if (attacker) {
-      if (!move.detached) this.freeze(attacker, stop * .6);
+      if (!move.detached) this.freeze(attacker, (stop * .6 + heavier) * reward);
       attacker.state.combo = this.serverTime < attacker.comboUntil ? (attacker.state.combo ?? 0) + 1 : 1;
       attacker.comboUntil = this.serverTime + COMBO_WINDOW;
     }
+    // (what the blow leaves its thrower ahead or behind by, for a body it holds in a stagger - Training's readout.
+    // Not for a launch, a knockdown or a trade, whose bodies are in no stagger to count from.)
+    const ahead = own && attacker && fighters && !armoured && !floored && p.hp > 0 && (reaction === 'flinch' || reaction === 'hurt' || reaction === 'stun')
+      ? this.frameAdvantage(attacker, own, target) : undefined;
     this.emit({ kind: 'hit', actorId, targetId: p.id, fighter: source?.fighter, slot, actionSeq:own?attacker!.state.actionSeq:undefined,
       chain: slot === 'light' ? stage : undefined, ...(own?.branch ? { branch: own.branch } : {}), move: move.name, damage, origin: position(origin), endpoint: centreOf(p), contactIndex,
       ...(style > 1 ? { style: +style.toFixed(2) } : {}), combo: attacker?.state.combo, reaction: armoured && poised ? undefined : reaction, fromBehind: !front, ...(critical ? { critical } : {}),
       ...(area?.bullseye ? { bullseye: true } : {}),
       ...(shaped && shaped !== 'spent' && !armoured && (!juggling || shaped === 'groundBounce' || shaped === 'wallBounce') ? { outcome: shaped } : {}),
       ...(target.launchLead > 0 && target.launchRun === 0 ? { lift: target.vy } : {}),
-      ...(floored ? { downed: true } : {}), ...(counter ? { counter: true } : {}),
+      ...(floored ? { downed: true } : {}), ...(counter ? { counter: true } : {}), ...(punish ? { punish: true } : {}), ...(ahead !== undefined ? { advantage: ahead } : {}),
       ...(own?.round && slot === 'light' ? { round: own.round } : {}) });
     if (finisher && move.status && p.hp > 0) this.afflict(target, actorId, move.status);
     if (p.hp === 0) this.eliminate(target, actorId);
@@ -5378,10 +5432,12 @@ export class ArenaSimulation {
     // A reflex, on every tick rather than on the thinking clock: a parry
     // lives in a sixth of a second, which the thinking clock steps over.
     this.botDefend(a);
+    // and the openings a person punishes on sight - a swing over and its thrower still in it, a jump at it.
+    if (!a.botClassic && this.botPunish(a)) return;
     if (this.serverTime < a.nextBotThink) return;
     // Not every bot thinks at the same rate. A field of twelve on one clock
-    // reads as one opponent copied twelve times.
-    a.nextBotThink = this.serverTime + .18 + a.botSkill * .16;
+    // reads as one opponent copied twelve times. (the best no slower than BOT_THINK_MOST.)
+    a.nextBotThink = this.serverTime + (a.botClassic ? .18 + a.botSkill * .16 : Math.min(BOT_THINK_MOST, .18 + a.botSkill * .16));
     // In a royale a bot fights whoever is nearest, bot or not. In training the
     // sparring bot only ever has the one person to look at.
     const opponents = [...this.actors.values()].filter(b => b !== a && b.state.alive && this.hostile(a.state, b.state)
@@ -5549,6 +5605,80 @@ export class ArenaSimulation {
     // leap a jump along a run is now (8-9 m at 15-19 m/s), which carried it
     // over their head; a stuck bot's jump still goes where it was going.
     if (hop) a.input.moveX = a.input.moveZ = 0;
+  }
+
+  /** what a blow leaves its thrower ahead by, in sixtieths (Training's readout, TrainingHud):
+   *  when the body it struck or that guarded it can next act, less when the thrower can - the thrower at the end of the
+   *  cast the blow is from, the other out of its stagger or its guard's hold, each with the rest of this blow's freeze
+   *  counted in (every timer of a frozen body waits with it). A thrower that cancels the move into its next one is further
+   *  ahead than this says. */
+  private frameAdvantage(a: Actor, cast: Cast, t: Actor) {
+    const now = this.serverTime;
+    const own = cast.start + cast.move.duration + Math.max(0, a.hitstopUntil - now);
+    const theirs = Math.max(now, t.stunUntil, t.blockedUntil) + Math.max(0, t.hitstopUntil - now);
+    return Math.round((theirs - own) * 60);
+  }
+
+  /** the openings a bot punishes on sight, on every tick rather than on its thinking clock
+   *  (a recovery lasts a quarter to half a second, which the clock can step over). The nearest opponent's swing over -
+   *  every contact of it gone by and no hitbox open, whether it found nothing or a guard - with the thrower still in its
+   *  recovery: once the bot has seen it (BOT_PUNISH_REACT), as often as its skill says (BOT_PUNISH), the heaviest of its
+   *  heavy and its light that lands before the recovery is out, from inside its reach. A jump at it: botAntiAir. True
+   *  when it pressed. */
+  private botPunish(a: Actor): boolean {
+    const p = a.state, now = this.serverTime;
+    if (a.kit || a.cast || a.reaction || a.botWinded || now < a.stunUntil || now < a.dashUntil || now < a.blockedUntil || a.input.attack || !p.grounded) return false;
+    let other: Actor | undefined, d = Infinity;
+    for (const b of this.actors.values()) {
+      if (b === a || !b.state.alive || !this.hostile(p, b.state) || b.kit) continue;
+      const gap = distance(p, b.state);
+      if (gap < d) { d = gap; other = b; }
+    }
+    if (!other || d > 6) return false;
+    const skill = a.botSkill, scale = (range: readonly [number, number]) => range[0] + (range[1] - range[0]) * skill;
+    if (this.botAntiAir(a, other, d, scale)) return true;
+    const o = other.cast;
+    if (!o || o.nextContact < o.move.contacts.length || o.live?.length || other.reaction) return false;
+    const left = o.start + o.move.duration - now;
+    if (left <= 0) return false;
+    const key = `${other.state.id}:${o.id}`;
+    if (a.botPunishRead !== key) { a.botPunishRead = key; a.botPunishAt = now + Math.max(.05, scale(BOT_PUNISH_REACT) + this.gauss() * .03); a.botPunishGo = this.random() < scale(BOT_PUNISH); }
+    if (!a.botPunishGo || now < a.botPunishAt!) return false;
+    const ready = (slot: AttackSlot) => now > (p.cooldowns[slot] ?? 0);
+    const heavy = this.moveOf(a, 'heavy'), light = this.moveOf(a, 'light');
+    // (Lock combat: a light from out of its reach is a dash-in at them - LOCK_DASH_IN - and lands that much later.)
+    const swing = this.botSwing(a), dashIn = this.locking(a) && d > swing && d <= LOCK_DASH_IN ? (d - swing) / BOT_DASH_IN_SPEED : 0;
+    const lands = (move: MoveDefinition, slot: AttackSlot) => ready(slot) && (slot === 'light' ? dashIn : 0) + move.contacts[0] + 1 / 60 < left
+      && (move.style === 'melee' ? d <= (slot === 'light' ? (this.locking(a) ? LOCK_DASH_IN : swing) : this.reachOf(a, slot, move)) : d <= move.range);
+    const attack: AttackSlot | undefined = lands(heavy, 'heavy') ? 'heavy' : lands(light, 'light') ? 'light' : undefined;
+    if (!attack) return false;
+    a.botPunishGo = false;
+    return this.botPress(a, other, attack);
+  }
+  /** a body jumping in on a bot - off the floor of its own accord (not thrown), within a
+   *  few metres and coming its way - met as it comes into reach, once the bot has seen the jump (BOT_AIR_REACT), as often
+   *  as its skill says (BOT_ANTI_AIR): the Rising Strike when it has it, else a light (a melee blow thrown at a body in
+   *  the air rises to meet it). */
+  private botAntiAir(a: Actor, other: Actor, d: number, scale: (range: readonly [number, number]) => number): boolean {
+    const q = other.state, now = this.serverTime;
+    if (q.grounded || other.reaction || other.cast || d > 3.6 || q.y - a.state.y > 3.2) return false;
+    const key = `${q.id}:${other.jumpStartedAt}`;
+    if (a.botAirRead !== key) { a.botAirRead = key; a.botAirAt = Math.max(now, other.jumpStartedAt) + Math.max(.05, scale(BOT_AIR_REACT) + this.gauss() * .03); a.botAirGo = this.random() < scale(BOT_ANTI_AIR); }
+    if (!a.botAirGo || now < a.botAirAt!) return false;
+    // Coming its way (or already over it), and in reach of the blow by the time it lands.
+    const toward = (a.state.x - q.x) * other.mx + (a.state.z - q.z) * other.mz;
+    if (toward <= 0 && d > 1.4) return false;
+    if (d > this.botSwing(a) + .4) return false;
+    a.botAirGo = false;
+    const rise = (a.techniqueReady.rise ?? -Infinity) <= now;
+    return this.botPress(a, other, 'light', rise ? 'b' : 'n');
+  }
+  /** A bot's press at `other`, its guard plans dropped, its feet as they were. */
+  private botPress(a: Actor, other: Actor, attack: AttackSlot, dir: StickDir = 'n') {
+    const dx = other.state.x - a.state.x, dz = other.state.z - a.state.z;
+    a.botGuardFrom = a.botGuardUntil = undefined; a.botTimed = false;
+    this.submitInput(a.state.id, { seq: a.lastSeq + 1, moveX: a.input.moveX, moveZ: a.input.moveZ, yaw: Math.atan2(dx, dz), targetId: other.state.id, attack, guard: false, dir });
+    return true;
   }
 
   /** Techniques (techniques.ts): the stick move a bot throws now, if the moment asks for one - a Rising Strike at a body

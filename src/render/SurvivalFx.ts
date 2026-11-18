@@ -31,6 +31,7 @@ import { riftMoment, riftMomentReset, seriesOfUniverse } from '../audio/musicTra
 import { ForkFx } from './survival/forkFx';
 import { PATH_MARKS } from '../ui/survival/pathMarks';
 import { THREAT_MARKS } from '../ui/survival/threatMarks';
+import { sceneDrawingSize } from './look/sceneBuffer';
 
 const _look = new THREE.Vector3();
 /** Techniques that cut through a line of bodies at once, and draw themselves. */
@@ -1267,7 +1268,7 @@ export class SurvivalFx {
     const subjects: GlowSubject[] = party.map((member, i) => ({ id: member.id, colour: i ? seatColour(member.seat) : SELF_AURA.colour,
       strength: i ? 1 : aura ? .8 : .55, ring: i > 0, down: member.down }));
     const renderer = this.screen?.renderer;
-    if (renderer) { renderer.getDrawingBufferSize(_size); this.glow.resize(_size.x, _size.y); }
+    if (renderer) { sceneDrawingSize(renderer, _size); this.glow.resize(_size.x, _size.y); }
     this.glow.update(subjects, time, dt);
     const marks: MarkSubject[] = [];
     for (let i = 1; i < party.length; i++) {

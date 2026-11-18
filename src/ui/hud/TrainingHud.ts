@@ -58,6 +58,8 @@ const STEP_SETTLE_MS = 260;
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
 /** A string's hits and damage, each a figure and a word (trainingHalo.css sets them apart; the inked look reads "16 HITS · 494"). */
+/** The frame readout: a sixtieth's lead (+) or lag (-), and on what. */
+export const framesHtml = (frames: number, hit: boolean) => `<strong>${frames > 0 ? '+' : frames < 0 ? '−' : '±'}${Math.abs(frames)}</strong> <i>ON ${hit ? 'HIT' : 'BLOCK'}</i>`;
 const comboHtml = (hits: number, damage: number) => `<strong>${hits}</strong> <i>HIT${hits === 1 ? '' : 'S'}</i> <span class="sep">·</span> <strong>${Math.round(damage)}</strong> <i class="dmg">DMG</i>`;
 const read = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
 const write = (key: string, value: string) => { try { localStorage.setItem(key, value); } catch { /* the choice lasts the visit */ } };
@@ -69,6 +71,9 @@ class TrainingHud implements ModeHud {
   private readonly toolNodes = new Map<Tool, HTMLButtonElement>();
   private chip!: HTMLElement; private chipWord!: HTMLElement;
   private combo!: HTMLElement; private comboLast!: HTMLElement; private comboBest!: HTMLElement;
+  /** the frame readout under the combo's - what the player's last blow left them ahead or
+   *  behind by, on a hit or on a guard (the event's `advantage`, simulation.ts frameAdvantage). */
+  private frames!: HTMLElement;
   private trialsNode!: HTMLElement; private trialsWho!: HTMLElement; private trialsCount!: HTMLElement;
   private readonly rows = new Map<string, HTMLElement>();
   private readonly sections = new Map<TrialSection, { node: HTMLElement; count: HTMLElement; total: number }>();
@@ -219,7 +224,8 @@ class TrainingHud implements ModeHud {
     this.chip = el('div', 'training-dummy'); this.chipWord = el('b');
     this.chip.append(el('small', '', 'DUMMY'), this.chipWord);
     this.combo = el('div', 'training-combo'); this.comboLast = el('b'); this.comboBest = el('b');
-    this.combo.append(el('small', '', 'LAST COMBO'), this.comboLast, el('small', '', 'BEST'), this.comboBest);
+    this.frames = el('b'); setHtml(this.frames, '—');
+    this.combo.append(el('small', '', 'LAST COMBO'), this.comboLast, el('small', '', 'BEST'), this.comboBest, el('small', '', 'FRAMES'), this.frames);
     m.zone('3b').append(this.chip, this.combo);
     // 8b: the move trials.
     this.trialsNode = el('section', 'training-trials'); this.trialsNode.setAttribute('aria-label', 'Move trials');
@@ -238,7 +244,7 @@ class TrainingHud implements ModeHud {
     const { snapshot: s, self, phase } = f;
     this.selfId = self.id; this.live = phase === 'active';
     // Another fighter (the switch): their own trials from the top, and the combo readout is theirs to fill.
-    if (self.fighter !== this.fighter) { if (this.fighter) { this.tracker.reset(); this.drawCombo(); this.swing = undefined; this.castSeq = -1; } this.buildTrials(self.fighter); }
+    if (self.fighter !== this.fighter) { if (this.fighter) { this.tracker.reset(); this.drawCombo(); setHtml(this.frames, '—'); this.swing = undefined; this.castSeq = -1; } this.buildTrials(self.fighter); }
     const paired = !!s.trainingPair?.includes(self.id);
     if (paired !== this.couchPair) { this.couchPair = paired; attr(this.root, 'trainingPair', paired ? '' : undefined); this.drawDefence(); }
     this.pair = { self: self.fighter, opponent: (paired ? s.players.find(p => p.id !== self.id && s.trainingPair!.includes(p.id)) : s.players.find(p => p.id !== self.id && p.isBot && !p.enemy))?.fighter };
@@ -281,6 +287,8 @@ class TrainingHud implements ModeHud {
     }
     // The swing touched someone (landed, blocked or parried): not a miss.
     if ((event.kind === 'hit' || event.kind === 'blocked' || event.kind === 'just-guard' || event.kind === 'guard-break') && event.targetId && event.targetId !== self) this.swing = undefined;
+    // What the blow left the player ahead or behind by: +3 ON HIT, -5 ON BLOCK.
+    if ((event.kind === 'hit' || event.kind === 'blocked') && event.targetId && event.targetId !== self && event.advantage !== undefined) setHtml(this.frames, framesHtml(event.advantage, event.kind === 'hit'));
     if (event.kind === 'whiff' && event.slot === 'ultimate') this.miss();
     if (event.kind === 'awaken') { this.tick('awaken'); return; }
     if (event.kind !== 'hit' || !event.targetId || event.targetId === self) return;
