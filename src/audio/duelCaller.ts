@@ -5,12 +5,12 @@ import type { CombatEvent, GameSnapshot, PlayerState } from '../game/types';
  *  Duel's moments - against the CPU, on the couch, online, and the ranked Duel that uses the same page path - on the ball
  *  caller's design (audio/ballCaller.ts):
  *
- *  Who: a designed voice, recorded once one of the anime-style voices made for the game is picked. Its line
- *  book is scripts/originals/duel/caller.json (each moment's lines, 1-3 each, original English with the odd Japanese hype
- *  word; no line quotes or names another work); the takes, when made, are listed by voice and moment in
- *  src/audio/data/duelCaller.json, which this reads. Until then a moment the Rift's announcer has a fitting line for
- *  borrows it (BORROWED: the game's own designed voice, public/assets/audio/survival/announcer-*.m4a), and the rest are
- *  quiet.
+ *  Who: the game's own announcer, the Rift's voice. Its line book is scripts/originals/duel/caller.json (each moment's
+ *  lines, 1-3 each, original English with the odd Japanese hype word; no line quotes or names another work; its
+ *  voiceDesign and generation say how the lines were spoken: the Rift's own take where it already says the line, else a
+ *  clone of the voice made from its shipped lines); the takes are listed by voice and moment in
+ *  src/audio/data/duelCaller.json, which this reads (`voice`: 'rift'). A moment a voice has no line for borrows the
+ *  Rift announcer's fitting line (BORROWED: public/assets/audio/survival/announcer-*.m4a), or stays quiet.
  *
  *  How it talks (DuelCaller.say): rarely. Never over itself: a line waits for the last to end (GAP), and only a moment two
  *  priorities bigger cuts it. Never over a fighter's own big line (a move's call, a transformation's name, a win line -
@@ -67,7 +67,7 @@ let announcer = true;
 export function setAnnouncer(on: unknown) { announcer = on !== false; }
 export const announcerOn = () => announcer;
 let voiceChosen = '';
-/** The recorded voice the lines come from (duelCaller.json's `voices`; none made yet): its own lines, else the borrowed. */
+/** The recorded voice the lines come from (duelCaller.json's `voices`; `voice` names the one spoken): its own lines, else the borrowed. */
 export function setDuelVoice(voice: string) { voiceChosen = voice; }
 type Made = { voice?: string; voices?: Partial<Record<string, { name?: string; lines: Partial<Record<string, string[]>> }>> };
 /** A moment's lines: the chosen voice's own (duelCaller.json), else the borrowed; none with the announcer off. */

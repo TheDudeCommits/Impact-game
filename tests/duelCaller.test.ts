@@ -4,7 +4,7 @@ import { BIG, BORROWED, DUEL_CALLER, DUEL_MOMENTS, DuelCaller, DuelWatch, GAP, R
 import type { CombatEvent, GameSnapshot, PlayerState } from '../src/game/types';
 
 /** The Duel's announcer (src/audio/duelCaller.ts): rare, never over itself or
- *  a fighter's own big line, its lines borrowed from the Rift's announcer until its own voice is recorded. */
+ *  a fighter's own big line, its lines in the game's own announcer voice (a voice with none borrows the Rift's own). */
 function rig(fighterLines: (readonly [number, number])[] = []) {
   let now = 0;
   const said: { url: string; at: number }[] = [];
@@ -71,7 +71,7 @@ describe('the Duel\'s announcer: how it talks', () => {
     }
     // The round's own three, and two of the fight's (SPACING after the last line): five a minute at the most.
     expect(said.length / 10).toBeLessThanOrEqual(5);
-    expect(said.filter(l => /round|fight|finisher/.test(l.url)).length).toBe(30);
+    expect(said.filter(l => /round|fight|finisher|\/ko-\d/.test(l.url)).length).toBe(30);
     for (let i = 1; i < said.length; i++) expect(said[i].at - said[i - 1].at, `${i}`).toBeGreaterThanOrEqual(1.4 - 1e-9);
   });
 });
@@ -91,13 +91,18 @@ describe('the Duel\'s announcer: its lines', () => {
     for (const banned of ['finish him', 'flawless victory', 'new challenger', 'let\'s rock', 'heaven or hell', 'get ready for the next', 'first blood', 'ippon'])
       expect(all, banned).not.toContain(banned);
   });
-  it('borrows only the Rift announcer\'s own files, every one on disk, until its own voice is recorded', () => {
+  it('speaks in today\'s announcer: every moment its own recorded lines, every file on disk; a voice with no lines borrows the Rift\'s', () => {
     for (const url of allDuelCallerFiles()) {
       expect(url, url).toMatch(/^\/assets\/audio\/(survival\/announcer-|duel\/caller\/)/);
       expect(existsSync(`public${url}`), url).toBe(true);
     }
-    expect(duelCallerLines('fight')).toEqual(BORROWED.fight);
-    expect(duelCallerLines('double-ko')).toEqual([]);
+    for (const m of DUEL_MOMENTS) {
+      const own = duelCallerLines(m);
+      expect(own.length, m).toBe(book.lines.filter(l => l.moment === m).length);
+      for (const url of own) expect(url, m).toMatch(/^\/assets\/audio\/duel\/caller\/rift\/[a-z0-9-]+\.m4a$/);
+    }
+    expect(duelCallerLines('fight', 'no-such-voice')).toEqual(BORROWED.fight);
+    expect(duelCallerLines('double-ko', 'no-such-voice')).toEqual([]);
   });
 });
 
