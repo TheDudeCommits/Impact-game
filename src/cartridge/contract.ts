@@ -1,4 +1,4 @@
-// THE CARTRIDGE CONTRACT. Each of Amir's games runs inside the world as a cartridge: the game's own code, rules,
+// THE CARTRIDGE CONTRACT. Each of Dude's games runs inside the world as a cartridge: the game's own code, rules,
 // controls, camera, menus, HUD and look, on the world's three.js, renderer and frame loop. Every game port codes
 // against this file; docs/CARTRIDGES.md has the rules. Change it only with the lead's agreement.
 import type * as THREE from 'three';

@@ -1,4 +1,4 @@
-// THE LIVE CONTRACT. Each of Amir's games plays live inside the world, at its own place: an ongoing match on the game's
+// THE LIVE CONTRACT. Each of Dude's games plays live inside the world, at its own place: an ongoing match on the game's
 // own code, rules and bots, standing in the world and drawn through the world's camera like everything else. A visitor
 // who walks in takes over one of its players. From that moment the game's own camera, controls, HUD and sound carry
 // them, until they leave (Esc, the Leave button, or the game's own quit), and the world takes them back where they are.

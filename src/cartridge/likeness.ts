@@ -9,7 +9,7 @@
  * visitor's skeleton (`pose`).
  *
  * The carrying is the world's own retarget (tools/avatar/retarget.mts, from HISSATSU src/engine/anim/Retarget.ts:
- * Amir's code) run on the live pose rather than on a clip: every bone of the visitor's body turns from ITS OWN rest as
+ * Dude's code) run on the live pose rather than on a clip: every bone of the visitor's body turns from ITS OWN rest as
  * the fighter's bone turned from the fighter's rest, in the space both bodies stand in, its direction first laid along
  * the fighter's; the hips ride as high as the fighter's in proportion to the legs, then are set so the lower foot is as
  * far off the floor as the fighter's ("the feet decide, the hips follow"). The fighters' rigs are Tripo rigs spelled the

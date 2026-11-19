@@ -1,4 +1,4 @@
-// The cartridge runtime: what the game's code calls instead of the page's own globals while Impact runs inside Amir's
+// The cartridge runtime: what the game's code calls instead of the page's own globals while Impact runs inside Dude's
 // dude-world as a cartridge (src/cartridge/index.ts, docs: the site's docs/CARTRIDGES.md).
 //
 // The cartridge build (vite.cartridge.config.ts, scripts/build/cartridgePlugin.ts) points the game's own calls here:
