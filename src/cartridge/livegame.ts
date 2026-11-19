@@ -73,6 +73,8 @@ const SEATS = ['ring-a', 'ring-b'] as const;
 const STEP = 1 / SIMULATION_HZ;
 /** main.ts LOCAL_DELAY: the drawn frame one tick behind the newest. */
 const LOCAL_DELAY = 1000 / 60;
+/** dude.work (round 5): draws between looks through the scene for its instanced pools (emptyPools). */
+const POOL_LOOK = 120;
 /** Seconds from a set's first frame to its first bell (LocalDuel waits 3; there is no VS screen to cover here). */
 const INTRO = 2;
 /** Seconds a decided set holds its winner's pose before the next one starts. */
@@ -141,7 +143,7 @@ class RingSet {
     if (human) this.sim.setPlayerSkill(id, keptSkill());
     else actor.nextBotThink = 0;
   }
-  /** The visitor walks in: their fighter on its feet at full health and stamina, whatever the set had come to (Amir,
+  /** The visitor walks in: their fighter on its feet at full health and stamina, whatever the set had come to (Dude,
    *  2026-11-19: "in Impact, whenever I enter the ring, regardless of what stage the fight was in, the visitor should
    *  spawn at full health and stamina"). Down or out, it is stood up where it fell; nothing lingering from before. */
   freshen(id: string) {
@@ -645,6 +647,17 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     decide: () => { const r = ring; if (r && !r.decided) r.set.forfeit(r.sim, r.set.startedAt === null ? null : SEATS[0]); },
   });
 
+  // ---- (dude.work round 5) the scene's instanced pools, looked for again every POOL_LOOK draws (effects come and go with
+  // the sets); emptyPools() hides those drawn with nothing in them for the draw that follows (draw puts them back)
+  const pools: THREE.InstancedMesh[] = [], idleNow: THREE.InstancedMesh[] = [];
+  let poolDraws = 0;
+  const emptyPools = (): THREE.InstancedMesh[] => {
+    if (poolDraws++ % POOL_LOOK === 0) { pools.length = 0; scene.traverse(o => { if ((o as THREE.InstancedMesh).isInstancedMesh) pools.push(o as THREE.InstancedMesh); }); }
+    idleNow.length = 0;
+    for (const m of pools) if (m.visible && m.count === 0) { m.visible = false; idleNow.push(m); }
+    return idleNow;
+  };
+
   // ---- the frame
   return {
     court: {
@@ -767,8 +780,14 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const fog = scene.fog, shadow = gl.shadowMap.enabled, info = gl.info.render, calls = info.calls, tris = info.triangles;
       scene.fog = view.fog;
       gl.shadowMap.enabled = shadow && shadows;
+      // (dude.work round 5) the effects' pools with nothing in them left out of the draw: an InstancedMesh at count 0 (the
+      // debris, steam, flames, auras, sparks and cores at rest, some twenty) draws nothing, but three still binds its program
+      // and uniforms and issues a draw of no instances for each, every frame the ring is in view, the Overlook's and the
+      // title's included; each one's own visibility is put back after the draw, so nothing else sees the change
+      const idle = emptyPools();
       try { gl.render(scene, view.camera); }
       finally {
+        for (const m of idle) m.visible = true;
         scene.fog = fog; gl.shadowMap.enabled = shadow;
         // (what this draw cost, for the tests: three counts on unless the page resets it per render)
         drawn.calls = gl.info.autoReset ? info.calls : info.calls - calls; drawn.tris = gl.info.autoReset ? info.triangles : info.triangles - tris;
