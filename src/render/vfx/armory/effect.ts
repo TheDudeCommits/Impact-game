@@ -11,6 +11,7 @@ import { FITS, HeatRamp, autoFit, guessHeat, type Fit, type Palette } from './fi
 import { macroValue, turnHue, type Macros } from './macros';
 import { armorySound, type CastSound, type SoundMode } from './sound';
 import { effekseerHost } from './effekseer';
+import { lighterCast } from './lighter';
 
 /**
  * An Armory effect as a VOL.2 effect type: `armory/<id>` (docs/engine/armory/README.md).
@@ -408,6 +409,8 @@ class ArmoryInstance extends PooledEffect<ArmoryParams> {
       if (v !== undefined) values.set(key, v);
     }
     for (const [key, value] of Object.entries(p.set ?? {})) values.set(key, value);
+    // (An effect too heavy for the game's close camera cast lighter, on what this cast has: lighter.ts LIGHTER_SETS.)
+    lighterCast(this.type.effectId, values, defaults);
     this.follow(frame);
     // The space rested while it was hidden (hiddenMatrices.ts: the frame's matrix pass leaves a hidden space alone), and a
     // movable zone's last cast may have left what is under its root a victim's walk away. Brought up to date here, once a

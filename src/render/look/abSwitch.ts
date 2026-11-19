@@ -23,14 +23,16 @@
  *  And:
  *  - kostill: no painted still on a knockout in the film look (render/CombatEffects.ts knockout; look/filmFreeze.ts):
  *    the off switch brings back the frame held 1.15 s as a painting;
- *  - roundbodies: a Duel's next round keeps its two bodies (main.ts onSnapshot) where it built them afresh.
+ *  - roundbodies: a Duel's next round keeps its two bodies (main.ts onSnapshot) where it built them afresh;
+ *  - lightfx: the Armory's heaviest kits drawn lighter for the game's close camera (render/vfx/armory/lighter.ts:
+ *    smoke-shaped particles, ground fields' marks and decals, volumes that fill the screen, the dustiest casts thinned).
  *  The look's probe (window.__look.ab) flips them in a running page for the before/after stills. */
 export type AbName = 'upscale' | 'inkweight' | 'brush' | 'face' | 'phonepaint' | 'resmemory'
   | 'guard' | 'seethrough' | 'fxcap' | 'inkhits' | 'facefix' | 'onones' | 'hitflash' | 'posesnap' | 'hitzone' | 'settle' | 'hairhit'
-  | 'kostill' | 'roundbodies';
+  | 'kostill' | 'roundbodies' | 'lightfx';
 export const AB_NAMES: readonly AbName[] = ['upscale', 'inkweight', 'brush', 'face', 'phonepaint', 'resmemory',
   'guard', 'seethrough', 'fxcap', 'inkhits', 'facefix', 'onones', 'hitflash', 'posesnap', 'hitzone', 'settle', 'hairhit',
-  'kostill', 'roundbodies'];
+  'kostill', 'roundbodies', 'lightfx'];
 
 const off = new Set<string>((() => {
   try { return (new URLSearchParams(location.search).get('ab') ?? '').split(',').map(s => s.trim()).filter(Boolean); }
