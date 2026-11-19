@@ -83,6 +83,10 @@ type PackedBank = Record<string, [number, number]>;
  *  starts and comes back after the last one (time constants, s), and how far ahead of a line's first sound it starts
  *  down: two of its time constants, so it is down by the first word (updateVoiceActivity). */
 const VOICE_DUCK = .72, DUCK_DOWN = .04, DUCK_UP = .18, DUCK_LEAD = .08;
+/** dude.work (round 5): a load that met the ring out of earshot (setHeard): its file is kept, its decode left for later. */
+const AWAY = new Error('out of earshot');
+/** dude.work (round 5): ms between the cues decoded again as the ring comes back into earshot, one at a time. */
+const RESTORE_GAP_MS = 12;
 
 /** `start`: when it sounds, on the audio clock - a layer's delay after it was scheduled. */
 interface ActiveSound { source: AudioBufferSourceNode; gain: GainNode; pan: StereoPannerNode; priority: number; owner: string; bus: 'sfx' | 'voice'; phase?: CueLayer['phase']; stopping: boolean; sequence?:number; start: number; level: number; end: number }
@@ -132,6 +136,47 @@ export class CombatAudio {
   /** With `byRoom`, the bank holds every match's cues and the own cues of the fighters asked for (prepare), not the
    *  whole roster's (the game's; a bare CombatAudio, as the tests build one, opens the whole bank as before). */
   constructor(private readonly options: { byRoom?: boolean } = {}) {}
+  /**
+   * dude.work (round 5, the world's rule of round 2: decode sound only while it can be heard). The ring out of earshot
+   * (setHeard(false), the live build's judgement from the world's lens): every sound stops, the decoded bank and one-shots
+   * are let go (some 50 MB: a pair's voices, cues and lines), and the files are kept as they came (`kept`, a few MB), so
+   * coming back is a decode alone; meanwhile nothing is decoded (a challenger's files are fetched and kept). Heard again,
+   * what is wanted is decoded again a cue at a time, RESTORE_GAP_MS apart (three hundred decodes at once were a burst on the
+   * page's thread), the room's cues first. Outside dude.work nothing is ever let go.
+   */
+  private away = false;
+  private kept = new Map<string, ArrayBuffer>();
+  private restoreTimer?: ReturnType<typeof setTimeout>;
+  setHeard(on: boolean): void {
+    if (this.dead || this.away === !on) return;
+    this.away = !on;
+    clearTimeout(this.restoreTimer); this.restoreTimer = undefined;
+    if (this.away) {
+      this.reset();
+      this.buffers.clear(); this.cueLoads.clear(); this.samples.clear(); this.sampleLoads.clear();
+      this.loading = undefined;
+      return;
+    }
+    if (!this.context) return;
+    const cues = (Object.keys(AUDIO_CUES) as AudioCue[]).filter(cue => {
+      if (!this.options.byRoom) return true;
+      const owner = cueFighter(cue);
+      return owner ? this.wanted.has(owner) : !byNeed(cue) || this.needed.has(cue);
+    });
+    const ordered = [...cues.filter(byNeed), ...cues.filter(cue => !byNeed(cue))], urls = situationSamples(this.wanted);
+    let i = 0, j = 0;
+    const next = (): void => {
+      this.restoreTimer = undefined;
+      if (this.away || this.dead) return;
+      if (i < ordered.length) void this.loadCue(ordered[i++]);
+      else if (j < urls.length) void this.loadSample(urls[j++]);
+      else return;
+      this.restoreTimer = setTimeout(next, RESTORE_GAP_MS);
+    };
+    // (what unlock() waits on: the paced decodes, not a second whole load)
+    this.loading = Promise.resolve();
+    next();
+  }
   /** Fighters whose own cues are wanted (prepare), the by-need sounds they name (roomCues.ts), and each cue's load. */
   private wanted = new Set<string>();
   private needed = new Set<AudioCue>();
@@ -158,10 +203,15 @@ export class CombatAudio {
    *  task of the room's compile - each next request is asked for by script - left the line idle, and the bank took twice as
    *  long to come. Nothing else of the room is fetched after the hold: Effekseer's files come with its models now.) */
   private async download(url: string, init: RequestInit, what: string): Promise<ArrayBuffer> {
+    // (dude.work round 5: a file kept from before is decoded again from its copy: decodeAudioData takes the buffer it is given)
+    const had = this.kept.get(url);
+    if (had) return had.slice(0);
     if (this.held) await this.held;
     const response = await fetch(url, init);
     if (!response.ok || response.headers.get('content-type')?.includes('text/html')) throw new Error(`Could not load sound: ${what}`);
-    return await response.arrayBuffer();
+    const bytes = await response.arrayBuffer();
+    if (this.options.byRoom) this.kept.set(url, bytes.slice(0));
+    return bytes;
   }
 
   async unlock(): Promise<void> {
@@ -263,27 +313,34 @@ export class CombatAudio {
             const decoded = await this.decode(`/assets/audio/v2/${file.replace(/\.wav$/, '.m4a')}`, cue);
             if (this.dead) return;
             const buffer = trimAac(this.context!, decoded, frames);
-            if (buffer) { this.buffers.set(cue, buffer); return; }
+            if (buffer) { if (!this.away) this.buffers.set(cue, buffer); return; }
             // Said once, by the first copy to come back wrong: the others already asked for are in flight and get here
             // too (Firefox said it 424 times on a first room).
             if (!this.wavOnly) console.warn(`Sound bank: this browser decodes AAC to another length (${cue}: ${decoded.duration.toFixed(4)} s, not ${(frames[0] / frames[1]).toFixed(4)}); the WAVs from here on`);
             this.wavOnly = true;
           } catch (error) {
             if (this.dead) return;
+            if (error === AWAY) throw error;
             // One that cannot decode AAC at all hears the WAVs; a copy that failed to arrive, its own WAV.
             if (error instanceof DOMException && error.name !== 'AbortError') this.wavOnly = true;
             console.warn(`Sound bank: ${cue}'s AAC copy failed; its WAV instead`, error);
           }
         }
         const buffer = await this.decode(`/assets/audio/v2/${file}`, cue);
-        if (!this.dead) this.buffers.set(cue, buffer);
-      } catch (error) { if (!this.dead) console.warn(error); }
+        if (!this.dead && !this.away) this.buffers.set(cue, buffer);
+      } catch (error) {
+        // (out of earshot: its file kept, its record let go, so it is decoded when the ring is heard again)
+        if (error === AWAY) { if (this.cueLoads.get(cue) === loading) this.cueLoads.delete(cue); return; }
+        if (!this.dead) console.warn(error);
+      }
     })();
     this.cueLoads.set(cue, loading);
     return loading;
   }
   private async decode(url: string, cue: AudioCue): Promise<AudioBuffer> {
-    return this.context!.decodeAudioData(await this.download(url, { signal: this.abort.signal, priority: 'low' }, cue));
+    const bytes = await this.download(url, { signal: this.abort.signal, priority: 'low' }, cue);
+    if (this.away) throw AWAY;
+    return this.context!.decodeAudioData(bytes);
   }
   setVolume(value: number) { this.setMix({ master: value }); }
   getMix(): AudioMix { return { ...this.mix }; }
@@ -843,8 +900,11 @@ export class CombatAudio {
       const ctx = this.context;
       if (!ctx || this.dead) { this.sampleLoads.delete(url); return; }
       try {
-        const buffer = await ctx.decodeAudioData(await this.download(survivalStandIn(url), { signal: this.abort.signal }, url));
-        if (!this.dead) this.samples.set(url, buffer);
+        const bytes = await this.download(survivalStandIn(url), { signal: this.abort.signal }, url);
+        // (dude.work round 5: out of earshot, kept and not decoded; asked again when the ring is heard)
+        if (this.away) { if (this.sampleLoads.get(url) === loading) this.sampleLoads.delete(url); return; }
+        const buffer = await ctx.decodeAudioData(bytes);
+        if (!this.dead && !this.away) this.samples.set(url, buffer);
       } catch (error) { if (!this.dead) console.warn(error); }
     })();
     this.sampleLoads.set(url, loading);
@@ -987,5 +1047,5 @@ export class CombatAudio {
     this.updateVoiceActivity();
   }
   reset() { for (const key of [...this.loops.keys()]) this.letLoopGo(key, .3); for (const sound of this.sounds) this.stop(sound); this.auras.clear(); this.standsBy.clear(); this.seen.clear(); this.dashStates.clear(); this.casts.clear(); this.quips.reset(); clearTimeout(this.bellTimer); this.bellTimer = undefined; this.saidAt.clear(); }
-  dispose() { this.dead = true; clearTimeout(this.duckTimer); clearTimeout(this.bellTimer); this.abort.abort(); this.ambience?.dispose(); this.ambienceBus?.disconnect(); this.reset(); this.buffers.clear(); this.samples.clear(); this.reverb?.out.disconnect(); this.irs.clear(); this.master?.disconnect(); this.sfx?.disconnect(); this.speech?.disconnect(); this.compressor?.disconnect();for(const source of this.musicSources.values())source.disconnect();this.musicSources.clear(); if (ownContext(this.context)) void this.context?.close().catch(() => {}); else this.compressor?.disconnect(); }
+  dispose() { this.dead = true; clearTimeout(this.duckTimer); clearTimeout(this.bellTimer); clearTimeout(this.restoreTimer); this.kept.clear(); this.abort.abort(); this.ambience?.dispose(); this.ambienceBus?.disconnect(); this.reset(); this.buffers.clear(); this.samples.clear(); this.reverb?.out.disconnect(); this.irs.clear(); this.master?.disconnect(); this.sfx?.disconnect(); this.speech?.disconnect(); this.compressor?.disconnect();for(const source of this.musicSources.values())source.disconnect();this.musicSources.clear(); if (ownContext(this.context)) void this.context?.close().catch(() => {}); else this.compressor?.disconnect(); }
 }

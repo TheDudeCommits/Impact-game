@@ -75,6 +75,9 @@ const STEP = 1 / SIMULATION_HZ;
 const LOCAL_DELAY = 1000 / 60;
 /** dude.work (round 5): draws between looks through the scene for its instanced pools (emptyPools). */
 const POOL_LOOK = 120;
+/** dude.work (round 5): the ring's earshot (m from its middle, the world's lens): decoded within EAR_IN, let go beyond
+ *  EAR_OUT, once the visitor has stayed near EAR_NEAR_MS or far EAR_FAR_MS (the courts' own rule since round 2). */
+const EAR_IN = 90, EAR_OUT = 130, EAR_NEAR_MS = 1500, EAR_FAR_MS = 4000;
 /** Seconds from a set's first frame to its first bell (LocalDuel waits 3; there is no VS screen to cover here). */
 const INTRO = 2;
 /** Seconds a decided set holds its winner's pose before the next one starts. */
@@ -643,6 +646,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       return { map: !!sun.shadow.map, mapSize: sun.shadow.mapSize.x, cast: sun.castShadow, catcher: catcher.visible, opacity: m.opacity, sun: sun.position.toArray().map(v => +v.toFixed(2)),
         casters: (() => { let n = 0; scene.traverse(o => { if ((o as THREE.Mesh).isMesh && o.castShadow && o.visible) n++; }); return n; })() };
     },
+    /** Tests (dude.work round 5): whether the ring is heard now (its sound decoded), by the world's lens. */
+    heard: () => heard,
     /** Tests: the set decided now (the first seat wins), so the next one comes round. */
     decide: () => { const r = ring; if (r && !r.decided) r.set.forfeit(r.sim, r.set.startedAt === null ? null : SEATS[0]); },
   });
@@ -658,6 +663,21 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     return idleNow;
   };
 
+  // ---- (dude.work round 5) can the ring be heard? The world's rule of round 2, judged from its lens, told every frame in
+  // view or not (host.lens): within EAR_IN m of the ring the sound is decoded, beyond EAR_OUT let go (CombatAudio.setHeard:
+  // some 50 MB of a pair's decoded voices, cues and lines, held for the page's life before wherever the visitor was), each
+  // once the visitor has stayed near EAR_NEAR_MS or far EAR_FAR_MS (a flight over the ring decodes nothing for a moment);
+  // playing, always heard. A world without the lens, or one whose frames have stopped (a hidden tab): as it was.
+  let heard = true, wantHeard = true, wantAt = 0;
+  const judgeEar = (now: number) => {
+    const l = (host as unknown as { lens?: { distance: number; time: number } }).lens;
+    if (!l || now - l.time > 2000) return;
+    const on = host.playing || l.distance < EAR_IN ? true : l.distance > EAR_OUT ? false : wantHeard;
+    if (on !== wantHeard) { wantHeard = on; wantAt = now; }
+    if (heard !== wantHeard && (host.playing || now - wantAt >= (wantHeard ? EAR_NEAR_MS : EAR_FAR_MS))) { heard = wantHeard; audio.setHeard(heard); }
+  };
+  const earTimer = setInterval(() => judgeEar(performance.now()), 1000);
+
   // ---- the frame
   return {
     court: {
@@ -667,6 +687,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     get camera() { return camera; },
 
     update(dt: number, now: number) {
+      judgeEar(performance.now());
       Fighter.beginFrame(now);
       const rawDt = Math.max(0, dt), worldDt = Math.min(.05, rawDt);
       const r = ring;
@@ -858,6 +879,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     },
 
     dispose() {
+      clearInterval(earTimer);
       ring?.dispose(); ring = null;
       clearFighters();
       worn?.remove(); worn = null; likeness = null;
