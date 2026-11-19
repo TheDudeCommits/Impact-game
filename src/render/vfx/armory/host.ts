@@ -15,7 +15,7 @@ import type { Fighter } from '../../Fighter';
 import { effekseerLoaded } from './effekseer';
 import { skipHiddenChildren } from '../../hiddenMatrices';
 import { VFX } from '../../vfxLevel';
-import { LIGHT, lighterShader, lighterVolume } from './lighter';
+import { LIGHT, lighterParticles, lighterShader, lighterVolume } from './lighter';
 import { sceneDrawingSize } from '../../look/sceneBuffer';
 import type { ArmoryContext, ArmoryFlashApi, ArmoryLightHandle, ArmoryLightsApi, ArmoryShakeApi } from './types';
 
@@ -124,7 +124,10 @@ function adaptNode(node: THREE.Object3D, adapted: WeakSet<object>, clock?: { val
     if (!(material as THREE.RawShaderMaterial).isRawShaderMaterial && !(material as THREE.ShaderMaterial).isShaderMaterial) patchOnBeforeCompile(material, ensureNoise);
     // (The kits the game's close camera makes heaviest - smoke-shaped particles, ground fields' marks - drawn lighter:
     // lighter.ts. A kit's program is told apart by its own text; any other is left as it is.)
-    if ((material as THREE.ShaderMaterial).isShaderMaterial && !(material as THREE.RawShaderMaterial).isRawShaderMaterial) patchOnBeforeCompile(material, lighterShader);
+    if ((material as THREE.ShaderMaterial).isShaderMaterial && !(material as THREE.RawShaderMaterial).isRawShaderMaterial) {
+      lighterParticles(mesh, material);
+      patchOnBeforeCompile(material, lighterShader);
+    }
     const uniforms = (material as THREE.ShaderMaterial).uniforms;
     if (uniforms && clock && delta) {
       if (uniforms.uTime === frame.uTime) uniforms.uTime = clock;

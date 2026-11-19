@@ -24,7 +24,16 @@ import { abOff, onAbChange } from '../../look/abSwitch';
  *    its opacity, two from there, three from half - eased between so no edge changes from one frame to the next.
  *  - Particles (smoke, exact): the noise is bounded, so once a fragment's octaves so far put it further out than the
  *    rest could bring it back, it is discarded there, as it would have been after them (a fifth of every puff's quad,
- *    a tenth of its noise).
+ *    a tenth of its noise). The line it has to clear is its alpha's, not just its mask's (PUFF_LINE): a puff at a
+ *    fiftieth of its opacity shows nothing past 0.96 of its radius, whatever its noise does, so its fragments there go
+ *    before the first octave, and its quad is drawn only that far out (the uv scaled with it); one that cannot clear
+ *    the line anywhere is not drawn.
+ *  - Particles and every Armory program with a soft fade (exact): the game draws no depth prepass, so the scene depth
+ *    the fade reads is the host's texel of "nothing in front" and the fade comes to 1 for every fragment drawn; it is
+ *    not read (SOFT_SKIP).
+ *  - The heaviest smoke (PUFF_THIN): Magatsu's pyre, hundreds of faint puffs around the fighter, drawn with half its
+ *    puffs, each twice as opaque, kept or not by the puff's own seed (the same frame drawn both ways: the smoke as dense
+ *    on average, its puffs in a different layout; the mean pixel 3 to 10 of 255 from where it was, by the throw).
  *  - Ground fields (exact): the mark loops stop at the marks there are.
  *  - Ground decals (exact): a crack beyond its spreading reach, a dust ring beyond its radius and a scorch whose noise
  *    still to come could not lift it over the discard are dropped before that noise.
@@ -41,7 +50,8 @@ import { abOff, onAbChange } from '../../look/abSwitch';
  * What the ten heaviest G moves add to a frame at their worst held moment, before -> after (1920x1080 at 2x, High, an
  * M4 Mac mini; two throws of the same dice): Magatsu 148 -> 88 ms, Tancho 94 -> 43, Murex 81 -> 37, Shakudo 69 -> 26,
  * Dorado 66 -> 36, Rakucho 46 -> 21, Amagoi 36 -> 15, Ippon 34 -> 19, Buna 34 -> 15; Tsubute's 42 not (its pollen is a
- * medium that keeps its steps).
+ * medium that keeps its steps). Magatsu's again with its smoke thinned (the same held frame both ways, three runs): 174
+ * -> 68 ms at its worst moment (39%; it was 60%).
  * `?ab=lightfx` turns all of it off (the probe flips it in a running page: the same frame drawn both ways).
  */
 export const LIGHT = { value: abOff('lightfx') ? 0 : 1 };
@@ -57,8 +67,37 @@ export const PUFF = new THREE.Vector4(.07, .12, .5, .65);
 const PUFF_U = { value: PUFF };
 /** The smoke shape's exact early discard (1 on, 0 off; see lighterShader): kept switchable for measuring. */
 export const PUFF_CUT = { value: 1 };
+/** The smoke shape's alpha line (1 on, 0 off; with PUFF_CUT; see lighterShader), switchable as PUFF_CUT: a faint puff's
+ *  fragment is dropped wherever its alpha, not just its mask, cannot clear the kit's 0.004, and its quad is drawn only as
+ *  far out as that line can reach. */
+export const PUFF_LINE = { value: 1 };
 /** The ground decals' exact early discards (1 on, 0 off; see lighterShader), switchable as PUFF_CUT. */
 export const DECAL_CUT = { value: 1 };
+/** Smoke too heavy for the game's close camera whatever its program does - Magatsu's pyre, hundreds of faint puffs deep
+ *  around the fighter, 50 ms of a frame at its worst - drawn thinner with the switch on: by particle system (its
+ *  ParticleSystem's name), the share of its puffs drawn, each of those that much more opaque, so the smoke is as dense
+ *  as it was; their octaves still by the alpha they had (PUFF), so each is the puff it was. A puff is kept or not by its
+ *  own seed for its whole life: the simulation and its dice are untouched, and the very frame can be drawn both ways. */
+export const PUFF_THIN: Readonly<Record<string, { value: number }>> = { 'ext_pyre.smoke': { value: .5 } };
+const THIN_NONE = { value: 1 };
+const THIN_OF = new WeakMap<object, { value: number }>();
+/** (host.ts adaptNode) A particle system's mesh and material: the material takes the system's share (PUFF_THIN). */
+export function lighterParticles(mesh: THREE.Object3D, material: object) {
+  const thin = mesh.name.startsWith('Particles:') ? PUFF_THIN[mesh.name.slice('Particles:'.length)] : undefined;
+  if (thin) THIN_OF.set(material, thin);
+}
+/** The soft particles' fade skipped (1 on, 0 off; see lighterShader), switchable as PUFF_CUT. The game draws no depth
+ *  prepass, so the scene depth the Armory's soft fade reads is the host's one texel of "nothing in front" (host.ts), and
+ *  the fade comes to exactly 1 for every fragment drawn: a program reading that texel skips the read and the divide. */
+export const SOFT_SKIP = { value: 1 };
+/** The Armory's soft fade, as its shader library writes it (shaders/lib/common.glsl.js). */
+const SOFT_FN = 'float softFade(sampler2D sceneDepth, vec2 screenUV, float fragViewZ, float near, float far, float fadeDist) {';
+const SOFT_CALL = /\bsoftFade\(uSceneDepth,/g;
+/** Whether a program's scene depth is the host's texel of "nothing in front" (a 1x1 texture of 255s). */
+const farTexel = (u: unknown) => {
+  const image = (u as { value?: { image?: { width?: number; height?: number; data?: ArrayLike<number> } } } | undefined)?.value?.image;
+  return !!image?.data && image.width === 1 && image.height === 1 && Array.from(image.data).every(v => v === 255);
+};
 
 /** The ground decal kit's fragment, as the Armory writes it (effects/GroundDecals.js DECAL_FRAGMENT): CRACK's branches and
  *  reach, DUSTRING's noise. */
@@ -75,35 +114,94 @@ const DECAL_SCORCH = `      float n = fbm3(vec3(c * 2.4, uSeed * 13.0));
 const PARTICLE_MASK = /float mask = shapeMask\(vUv\);\s*if \(mask <= 0\.004\) discard;\s*\/\/ Alpha over lifetime\.\s*float fade = (smoothstep\(0\.0, max\(uFadeIn, 1e-3\), vT\) \*\s*\(1\.0 - smoothstep\(clamp\(uFadeOut, 0\.0, 0\.999\), 1\.0, vT\)\));/;
 const SMOKE_NOISE = 'float n = fbm3(vec3(c * 1.6, vSeed * 21.0 + vClock * 0.25));';
 const SHAPE_FN = 'float shapeMask(vec2 uv) {';
+const PARTICLE_ALPHA = 'float alpha = mask * fade * uOpacity;';
+/** The particle kit's vertex stage, as the Armory writes it (ParticleSystem.js PARTICLE_VERTEX): the dead particle's
+ *  exit, and where the quad's corner is placed. */
+const PARTICLE_DEAD = `    if (age < 0.0 || t > 1.0) {
+      gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+      return;
+    }`;
+const PARTICLE_PLACE = '    mvPosition.xy += corner;';
 /** The ground field's per-slot gate (GroundField.js: POCK's height, cover and heat, RUT's force). */
 const MARK_GATE = /float on = step\(float\(i\), uMarkCount - 1\.0\);/g;
 
 /** A program of an Armory kit made lighter (see above), where it is one of the kits; any other is left as it is. */
-export function lighterShader(shader: { uniforms: Record<string, unknown>; fragmentShader: string }) {
+export function lighterShader(this: unknown, shader: { uniforms: Record<string, unknown>; fragmentShader: string; vertexShader?: string }) {
   let src = shader.fragmentShader, touched = false;
-  if (PARTICLE_MASK.test(src) && src.includes(SHAPE_FN)) {
+  if (PARTICLE_MASK.test(src) && src.includes(SHAPE_FN) && src.includes(PARTICLE_ALPHA)) {
     src = src.replace(PARTICLE_MASK, (_m, fade) => `// Alpha over lifetime (first: no shape lifts a fragment whose life has not the alpha to clear the threshold).
     float fade = ${fade};
-    if (armoryLight > 0.5 && fade * uOpacity < 0.004) discard;
+    // (a thinned system's puffs drawn the denser for the ones not drawn: PUFF_THIN)
+    armoryBoost = armoryLight > 0.5 ? 1.0 / armoryThin : 1.0;
+    if (armoryLight > 0.5 && fade * uOpacity * armoryBoost < 0.004) discard;
     armoryReach = armoryLight > 0.5 ? fade * uOpacity : 1.0;
     float mask = shapeMask(vUv);
-    if (mask <= 0.004) discard;`);
-    src = src.replace(SHAPE_FN, `uniform vec4 armoryPuff;\nuniform float armoryPuffCut;\nfloat armoryReach = 1.0;\n${SHAPE_FN}`);
+    if (mask <= 0.004) discard;`).replace(PARTICLE_ALPHA, `float alpha = mask * fade * uOpacity * armoryBoost;
+    if (armoryBoost > 1.0) alpha = min(alpha, 1.0);`);
+    src = src.replace(SHAPE_FN, `uniform vec4 armoryPuff;
+uniform float armoryPuffCut;
+uniform float armoryPuffLine;
+uniform float armoryThin;
+float armoryReach = 1.0;
+float armoryBoost = 1.0;
+// (lighter.ts) A smoke fragment whose d + n * 0.42 comes to at least x cannot clear the kit's discards: its mask's
+// (0.004: x past 0.9633) or, with the alpha line on, its alpha's (mask x fade x opacity, x a thinned system's boost,
+// under 0.004; the soft fade only lowers it).
+bool armoryGone(float x) {
+  return x > 0.966 || (armoryPuffLine > 0.5 && smoothstep(1.0, 0.05, x) * 0.9 * armoryReach * armoryBoost < 0.004);
+}
+${SHAPE_FN}`);
     shader.uniforms.armoryPuff = PUFF_U;
     shader.uniforms.armoryPuffCut = PUFF_CUT;
+    shader.uniforms.armoryPuffLine = PUFF_LINE;
+    // (a system's share only where the vertex stage below takes it too: else every puff, at the alpha it had)
+    const vs = shader.vertexShader;
+    const vertexKit = !!vs && vs.includes(PARTICLE_DEAD) && vs.includes(PARTICLE_PLACE) && vs.includes('vUv = uv;');
+    shader.uniforms.armoryThin = (vertexKit && this && typeof this === 'object' && THIN_OF.get(this)) || THIN_NONE;
     // A faint puff's erosion: the octaves it can show (three from a quarter's opacity, two from a tenth), eased.
     if (src.includes(SMOKE_NOISE)) src = src.replace(SMOKE_NOISE, `vec3 armoryP = vec3(c * 1.6, vSeed * 21.0 + vClock * 0.25);
       float armoryW2 = smoothstep(armoryPuff.x, armoryPuff.y, armoryReach), armoryW3 = smoothstep(armoryPuff.z, armoryPuff.w, armoryReach);
       vec3 armoryP2 = armoryP * 2.02, armoryP3 = armoryP2 * 2.02;
-      float n = 0.5 * snoise(armoryP);
       // (Exact: this noise never passes 1.1 either way (1.04 at its most, sampled), so the octaves still to come move
-      // d + n * 0.42 by at most 0.462 times their weights; a fragment they could not bring back under the discard
-      // line (0.9633: a mask of 0.004) is discarded now, as it would be once they were paid for.)
+      // d + n * 0.42 by at most 0.462 times their weights; a fragment they could not bring back over the kit's discards
+      // is discarded now, as it would be once they were paid for - with the alpha line, before the first.)
       bool armoryCut = armoryLight > 0.5 && armoryPuffCut > 0.5;
-      if (armoryCut && d + n * 0.42 - (armoryW2 * 0.25 + armoryW3 * 0.125) * 0.462 > 0.966) return 0.0;
+      if (armoryCut && armoryPuffLine > 0.5 && armoryGone(d - (0.5 + armoryW2 * 0.25 + armoryW3 * 0.125) * 0.462)) return 0.0;
+      float n = 0.5 * snoise(armoryP);
+      if (armoryCut && armoryGone(d + n * 0.42 - (armoryW2 * 0.25 + armoryW3 * 0.125) * 0.462)) return 0.0;
       if (armoryW2 > 0.0) n += armoryW2 * 0.25 * snoise(armoryP2);
-      if (armoryCut && d + n * 0.42 - armoryW3 * 0.125 * 0.462 > 0.966) return 0.0;
+      if (armoryCut && armoryGone(d + n * 0.42 - armoryW3 * 0.125 * 0.462)) return 0.0;
       if (armoryW3 > 0.0) n += armoryW3 * 0.125 * snoise(armoryP3);`);
+    // A smoke puff's quad drawn only as far out as anything of it can show (exact, as the alpha line above: the mask's
+    // smoothstep inverted at the line its alpha has to clear, plus the most its octaves can move it, plus 0.03 so the
+    // multisampled edge never crosses a drawn pixel), and one too faint to clear the line anywhere not drawn at all.
+    // The uv is scaled with the corner, so every pixel still drawn reads the very uv it read before.
+    if (vs && vertexKit) {
+      const declared = (name: string) => new RegExp(`uniform\\s+float\\s+${name}\\s*;`).test(vs);
+      const decl = ['armoryLight', 'armoryPuffCut', 'armoryPuffLine', 'armoryThin', 'uOpacity', 'uFadeIn', 'uFadeOut'].filter(u => !declared(u))
+        .map(u => `uniform float ${u};\n`).join('');
+      shader.vertexShader = `${decl}uniform vec4 armoryPuff;\n` + vs.replace(PARTICLE_DEAD, `${PARTICLE_DEAD}
+    // (lighter.ts: a thinned system draws its share of its puffs, each kept or not by its own seed for its whole life)
+    if (armoryLight > 0.5 && armoryThin < 1.0 && fract(aSeed * 97.31) >= armoryThin) {
+      gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+      return;
+    }
+    float armoryK = 1.0;
+    #if SHAPE == 1 && !defined(USE_LIT)
+    if (armoryLight > 0.5 && armoryPuffCut > 0.5 && armoryPuffLine > 0.5) {
+      float armoryR = smoothstep(0.0, max(uFadeIn, 1e-3), t) * (1.0 - smoothstep(clamp(uFadeOut, 0.0, 0.999), 1.0, t)) * uOpacity;
+      // (the line at the alpha it is drawn with, a thinned system's boost in it; the octaves by the alpha it had)
+      float armoryQ = 0.004 / 0.9 * max(1.0, 1.0 / max(armoryR / armoryThin, 1e-6));
+      if (armoryQ >= 1.0) {
+        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+        return;
+      }
+      float armoryW = 0.5 + 0.25 * smoothstep(armoryPuff.x, armoryPuff.y, armoryR) + 0.125 * smoothstep(armoryPuff.z, armoryPuff.w, armoryR);
+      armoryK = min(1.0, 1.0 - 0.95 * (0.5 - sin(asin(1.0 - 2.0 * armoryQ) / 3.0)) + armoryW * 0.462 + 0.03);
+      vUv = 0.5 + (uv - 0.5) * armoryK;
+    }
+    #endif`).replace(PARTICLE_PLACE, '    mvPosition.xy += corner * armoryK;');
+    }
     touched = true;
   }
   if (MARK_GATE.test(src)) {
@@ -140,6 +238,21 @@ export function lighterShader(shader: { uniforms: Record<string, unknown>; fragm
     shader.uniforms.armoryDecalCut = DECAL_CUT;
     touched = true;
   }
+  // The soft fade (exact): with the host's texel of "nothing in front" as the scene depth, 1 for every fragment drawn.
+  const soft = src.indexOf(SOFT_FN), main = src.lastIndexOf('void main()');
+  if (soft >= 0 && main > soft && farTexel(shader.uniforms.uSceneDepth) && SOFT_CALL.test(src.slice(main))) {
+    src = `${src.slice(0, main)}uniform float armorySoftSkip;
+// (lighter.ts) The scene depth is the host's texel of "nothing in front" (the game draws no depth prepass): the Armory's
+// soft fade comes to exactly 1 for every fragment drawn, so it is not read.
+float armorySoftFade(sampler2D sceneDepth, vec2 screenUV, float fragViewZ, float near, float far, float fadeDist) {
+  if (armoryLight > 0.5 && armorySoftSkip > 0.5) return 1.0;
+  return softFade(sceneDepth, screenUV, fragViewZ, near, far, fadeDist);
+}
+${src.slice(main).replace(SOFT_CALL, 'armorySoftFade(uSceneDepth,')}`;
+    shader.uniforms.armorySoftSkip = SOFT_SKIP;
+    touched = true;
+  }
+  SOFT_CALL.lastIndex = 0;
   const hull = lighterHull(src, shader.uniforms);
   if (hull) { src = hull; touched = true; }
   if (!touched) return;

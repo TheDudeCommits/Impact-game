@@ -25,7 +25,8 @@
  *    the off switch brings back the frame held 1.15 s as a painting;
  *  - roundbodies: a Duel's next round keeps its two bodies (main.ts onSnapshot) where it built them afresh;
  *  - lightfx: the Armory's heaviest kits drawn lighter for the game's close camera (render/vfx/armory/lighter.ts:
- *    smoke-shaped particles, ground fields' marks and decals, volumes that fill the screen, the dustiest casts thinned).
+ *    smoke-shaped particles, ground fields' marks and decals, volumes that fill the screen, the soft fade with no depth
+ *    to read, the dustiest casts and Magatsu's pyre smoke thinned).
  *  The look's probe (window.__look.ab) flips them in a running page for the before/after stills. */
 export type AbName = 'upscale' | 'inkweight' | 'brush' | 'face' | 'phonepaint' | 'resmemory'
   | 'guard' | 'seethrough' | 'fxcap' | 'inkhits' | 'facefix' | 'onones' | 'hitflash' | 'posesnap' | 'hitzone' | 'settle' | 'hairhit'

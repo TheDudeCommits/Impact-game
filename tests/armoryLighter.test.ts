@@ -8,7 +8,9 @@ import { GroundField, GroundMode } from '../src/render/vfx/armory/vendor/vfx/Gro
 import { DecalSystem, DecalType } from '../src/render/vfx/armory/vendor/effects/GroundDecals.js';
 // @ts-expect-error vendored JavaScript with no declarations (the Armory's own raymarched volume kit)
 import { VolumeHull, HullShape, Medium } from '../src/render/vfx/armory/vendor/vfx/VolumeHull.js';
-import { LIGHT, VOLUME, lighterCast, lighterShader, lighterVolume } from '../src/render/vfx/armory/lighter';
+import { LIGHT, PUFF, PUFF_LINE, PUFF_THIN, SOFT_SKIP, VOLUME, lighterCast, lighterParticles, lighterShader, lighterVolume } from '../src/render/vfx/armory/lighter';
+// (the Armory's frame uniforms: the scene depth the soft fade reads)
+import { frame } from '../src/render/vfx/armory/vendor/core/FrameUniforms.js';
 
 /** The Armory's heaviest kits drawn lighter for the game's close camera (render/vfx/armory/lighter.ts): each patch finds
  *  the vendored text it was written against, and does only what it says. */
@@ -27,10 +29,12 @@ describe('the particle kit, lighter', () => {
     expect(s.fragmentShader.startsWith('uniform float armoryLight;')).toBe(true);
     const main = s.fragmentShader.slice(s.fragmentShader.indexOf('void main()'));
     // the fade, then the early discard, then the shape
-    expect(main.indexOf('float fade =')).toBeLessThan(main.indexOf('fade * uOpacity < 0.004) discard;'));
-    expect(main.indexOf('fade * uOpacity < 0.004) discard;')).toBeLessThan(main.indexOf('float mask = shapeMask(vUv);'));
+    expect(main.indexOf('float fade =')).toBeLessThan(main.indexOf('fade * uOpacity * armoryBoost < 0.004) discard;'));
+    expect(main.indexOf('fade * uOpacity * armoryBoost < 0.004) discard;')).toBeLessThan(main.indexOf('float mask = shapeMask(vUv);'));
     // what follows it is the Armory's own, untouched
-    expect(main).toContain('float alpha = mask * fade * uOpacity;');
+    // (times a thinned system's boost: 1, so the very same number, for every other)
+    expect(main).toContain('float alpha = mask * fade * uOpacity * armoryBoost;');
+    expect(main).toContain('armoryBoost = armoryLight > 0.5 ? 1.0 / armoryThin : 1.0;');
     expect(balanced(s.fragmentShader)).toBe(true);
   });
 
@@ -47,17 +51,161 @@ describe('the particle kit, lighter', () => {
     expect(o3).toBeGreaterThan(o2);
     // nothing else adds to the noise in between (the two octaves' own lines do)
     expect((src.slice(o1, o3 + 80).match(/\bn \+= /g) ?? []).length).toBe(2);
-    expect(src).toContain('uniform vec4 armoryPuff;\nuniform float armoryPuffCut;\nfloat armoryReach = 1.0;\nfloat shapeMask(vec2 uv) {');
+    expect(src).toContain('uniform vec4 armoryPuff;\nuniform float armoryPuffCut;\nuniform float armoryPuffLine;\nuniform float armoryThin;\nfloat armoryReach = 1.0;\nfloat armoryBoost = 1.0;\n');
+    expect(src.indexOf('bool armoryGone(float x) {')).toBeLessThan(src.indexOf('float shapeMask(vec2 uv) {'));
     // the early discard, before each octave still to come, only with the switch on
-    expect((src.match(/if \(armoryCut && d \+ n \* 0\.42 - /g) ?? []).length).toBe(2);
+    expect((src.match(/if \(armoryCut && armoryGone\(d \+ n \* 0\.42 - /g) ?? []).length).toBe(2);
     expect(src).toContain('bool armoryCut = armoryLight > 0.5 && armoryPuffCut > 0.5;');
     expect(src).toContain('smoothstep(armoryPuff.z, armoryPuff.w, armoryReach)');
+  });
+
+  it('drops a faint puff\'s fragment at its alpha line before the first octave, and draws its quad only that far out', () => {
+    const smoke = new ParticleSystem({ name: 'test.smoke3', capacity: 4, shape: ParticleShape.SMOKE });
+    const s = patched(smoke.material);
+    expect(s.uniforms.armoryPuffLine).toBe(PUFF_LINE);
+    const f = s.fragmentShader;
+    // the alpha line, only with the switch, the cut and the line on, before the first octave is paid for
+    expect(f).toContain('smoothstep(1.0, 0.05, x) * 0.9 * armoryReach * armoryBoost < 0.004');
+    const pre = f.indexOf('if (armoryCut && armoryPuffLine > 0.5 && armoryGone(d - (0.5 + armoryW2 * 0.25 + armoryW3 * 0.125) * 0.462)) return 0.0;');
+    expect(pre).toBeGreaterThan(0);
+    expect(pre).toBeLessThan(f.indexOf('float n = 0.5 * snoise(armoryP);'));
+    const v = s.vertexShader!;
+    // declared once each (the kit's vertex stage has none of them), and only for the smoke shape, unlit
+    for (const u of ['armoryLight', 'armoryPuffCut', 'armoryPuffLine', 'armoryThin', 'uOpacity', 'uFadeIn', 'uFadeOut']) expect(v.match(new RegExp(`uniform float ${u};`, 'g'))?.length).toBe(1);
+    expect(v).toContain('#if SHAPE == 1 && !defined(USE_LIT)');
+    // after the kit's own exit for the dead, before the corner is placed; the uv scaled with the corner
+    expect(v.indexOf('float armoryK = 1.0;')).toBeGreaterThan(v.indexOf('if (age < 0.0 || t > 1.0) {'));
+    expect(v).toContain('vUv = 0.5 + (uv - 0.5) * armoryK;');
+    expect(v).toContain('    mvPosition.xy += corner * armoryK;');
+    expect(v).not.toContain('    mvPosition.xy += corner;');
+    expect(balanced(v)).toBe(true);
+  });
+
+  it('cuts nothing that shows: the line inverts the mask exactly, and no sampled fragment past it clears the discards', () => {
+    // (the GLSL above in JavaScript: the kit's smoothstep, its mask, and Ashima's simplex noise as noise.glsl.js has it)
+    const ss = (e0: number, e1: number, x: number) => { const u = Math.min(Math.max((x - e0) / (e1 - e0), 0), 1); return u * u * (3 - 2 * u); };
+    const fl = Math.floor, mod289 = (x: number) => x - fl(x * (1 / 289)) * 289, permute = (x: number) => mod289(((x * 34) + 10) * x);
+    const snoise = (vx: number, vy: number, vz: number) => {
+      const s0 = (vx + vy + vz) / 3; let ix = fl(vx + s0), iy = fl(vy + s0), iz = fl(vz + s0);
+      const t0 = (ix + iy + iz) / 6, x0 = [vx - ix + t0, vy - iy + t0, vz - iz + t0];
+      const g = [x0[1] <= x0[0] ? 1 : 0, x0[2] <= x0[1] ? 1 : 0, x0[0] <= x0[2] ? 1 : 0], l = g.map(e => 1 - e);
+      const i1 = [Math.min(g[0], l[2]), Math.min(g[1], l[0]), Math.min(g[2], l[1])], i2 = [Math.max(g[0], l[2]), Math.max(g[1], l[0]), Math.max(g[2], l[1])];
+      const xs = [x0, x0.map((e, k) => e - i1[k] + 1 / 6), x0.map((e, k) => e - i2[k] + 1 / 3), x0.map(e => e - .5)];
+      ix = mod289(ix); iy = mod289(iy); iz = mod289(iz);
+      const pz = [0, i1[2], i2[2], 1].map(o => permute(iz + o)), py = [0, i1[1], i2[1], 1].map((o, k) => permute(pz[k] + iy + o));
+      const p = [0, i1[0], i2[0], 1].map((o, k) => permute(py[k] + ix + o));
+      const n7 = Math.fround(0.142857142857), ns = [n7 * 2, n7 * .5 - 1, n7];
+      let out = 0;
+      for (let k = 0; k < 4; k++) {
+        const j = p[k] - 49 * fl(p[k] * ns[2] * ns[2]), x_ = fl(j * ns[2]), y_ = fl(j - 7 * x_);
+        const x = x_ * ns[0] + ns[1], y = y_ * ns[0] + ns[1], h = 1 - Math.abs(x) - Math.abs(y), sh = h <= 0 ? -1 : 0;
+        let gx = x + (fl(x) * 2 + 1) * sh, gy = y + (fl(y) * 2 + 1) * sh, gz = h;
+        const r = 1.79284291400159 - 0.85373472095314 * (gx * gx + gy * gy + gz * gz); gx *= r; gy *= r; gz *= r;
+        const X = xs[k]; let m = Math.max(.6 - (X[0] * X[0] + X[1] * X[1] + X[2] * X[2]), 0); m *= m;
+        out += m * m * (gx * X[0] + gy * X[1] + gz * X[2]);
+      }
+      return 42 * out;
+    };
+    const gone = (x: number, reach: number) => x > 0.966 || ss(1, 0.05, x) * 0.9 * reach < 0.004;
+    const line = (reach: number) => 1 - 0.95 * (0.5 - Math.sin(Math.asin(1 - 2 * (0.004 / 0.9 * Math.max(1, 1 / reach))) / 3));
+    let shown = 0, near = 0;
+    for (let i = 0; i < 3000; i++) {
+      const reach = Math.exp(-5.4 + (i / 3000) * 5.6); // 0.0045 .. 1.2
+      const q = 0.004 / 0.9 * Math.max(1, 1 / reach);
+      // the inverse: the mask at the line is the line (the alpha's, or the mask's own over full opacity)
+      expect(ss(1, 0.05, line(reach)) * 0.9).toBeCloseTo(q * 0.9, 6);
+      const W2 = ss(PUFF.x, PUFF.y, reach), W3 = ss(PUFF.z, PUFF.w, reach), W = 0.5 + 0.25 * W2 + 0.125 * W3;
+      const k = Math.min(1, line(reach) + W * 0.462 + 0.03), seed = (i * 0.618) % 1, clock = i * 0.37;
+      for (let j = 0; j < 60; j++) {
+        // a point of the whole quad, a third of them within 0.15 of where the line says the puff ends
+        const a = j * 2.39996, r = j % 3 ? Math.sqrt(((j * 0.7548) % 1) * 2) : k - 0.03 - 0.15 * ((j * 0.5698) % 1);
+        const cx = r * Math.cos(a), cy = r * Math.sin(a);
+        if (Math.abs(cx) > 1 || Math.abs(cy) > 1) continue;
+        const d = Math.hypot(cx, cy), P = [cx * 1.6, cy * 1.6, seed * 21 + clock * 0.25];
+        const n = 0.5 * snoise(P[0], P[1], P[2]) + W2 * 0.25 * snoise(P[0] * 2.02, P[1] * 2.02, P[2] * 2.02) + W3 * 0.125 * snoise(P[0] * 4.0804, P[1] * 4.0804, P[2] * 4.0804);
+        const mask = ss(1, 0.05, d + n * 0.42) * 0.9;
+        if (!(mask > 0.004 && mask * reach >= 0.004)) continue;
+        shown++;
+        if (d > k - 0.2) near++;
+        // drawn (inside the shrunk quad), and not dropped before the first octave
+        expect(Math.max(Math.abs(cx), Math.abs(cy))).toBeLessThan(k);
+        expect(gone(d - W * 0.462, reach)).toBe(false);
+      }
+    }
+    expect(shown).toBeGreaterThan(20000);
+    expect(near).toBeGreaterThan(500);
+  });
+
+  it('draws a thinned system\'s share of its puffs, kept by seed, each the denser for it; its octaves by the alpha it had', () => {
+    const pyre = new ParticleSystem({ name: 'ext_pyre.smoke', capacity: 4, shape: ParticleShape.SMOKE });
+    // the host's adapt step hands the material its system's share; another system's keeps all of its puffs
+    lighterParticles(pyre.mesh, pyre.material);
+    const shader = { uniforms: { ...pyre.material.uniforms } as Record<string, unknown>, fragmentShader: pyre.material.fragmentShader, vertexShader: pyre.material.vertexShader };
+    lighterShader.call(pyre.material, shader);
+    expect(shader.uniforms.armoryThin).toBe(PUFF_THIN['ext_pyre.smoke']);
+    expect(PUFF_THIN['ext_pyre.smoke'].value).toBeGreaterThan(0);
+    expect(PUFF_THIN['ext_pyre.smoke'].value).toBeLessThan(1);
+    const other = new ParticleSystem({ name: 'test.thin', capacity: 4, shape: ParticleShape.SMOKE });
+    lighterParticles(other.mesh, other.material);
+    const s2 = { uniforms: { ...other.material.uniforms } as Record<string, unknown>, fragmentShader: other.material.fragmentShader, vertexShader: other.material.vertexShader };
+    lighterShader.call(other.material, s2);
+    expect((s2.uniforms.armoryThin as { value: number }).value).toBe(1);
+    expect(s2.uniforms.armoryThin).not.toBe(shader.uniforms.armoryThin);
+    // and none where the vertex stage is not the kit's (it could not take the share): every puff, at the alpha it had
+    const s3 = { uniforms: { ...pyre.material.uniforms } as Record<string, unknown>, fragmentShader: pyre.material.fragmentShader, vertexShader: 'void main() { gl_Position = vec4(0.0); }' };
+    lighterShader.call(pyre.material, s3);
+    expect((s3.uniforms.armoryThin as { value: number }).value).toBe(1);
+    // the vertex stage: kept or not by the puff's own seed (fixed for its life), before anything else is worked out
+    const v = shader.vertexShader;
+    const cull = v.indexOf('if (armoryLight > 0.5 && armoryThin < 1.0 && fract(aSeed * 97.31) >= armoryThin) {');
+    expect(cull).toBeGreaterThan(v.indexOf('if (age < 0.0 || t > 1.0) {'));
+    expect(cull).toBeLessThan(v.indexOf('float armoryK = 1.0;'));
+    // the quad's line at the alpha drawn (boosted), its octaves' reach at the alpha it had
+    expect(v).toContain('max(armoryR / armoryThin, 1e-6)');
+    expect(v).toContain('smoothstep(armoryPuff.x, armoryPuff.y, armoryR)');
+    // the fragment: octaves by armoryReach (fade x opacity), the line and the alpha by it x the boost
+    const f = shader.fragmentShader;
+    expect(f).toContain('armoryReach = armoryLight > 0.5 ? fade * uOpacity : 1.0;');
+    expect(f).toContain('smoothstep(armoryPuff.x, armoryPuff.y, armoryReach)');
+    expect(f).toContain('smoothstep(1.0, 0.05, x) * 0.9 * armoryReach * armoryBoost < 0.004');
+    expect(f).toContain('if (armoryBoost > 1.0) alpha = min(alpha, 1.0);');
+    // the seeds a system is filled with keep about its share (the kit's seeds: Math.random)
+    const share = PUFF_THIN['ext_pyre.smoke'].value;
+    let kept = 0; const N = 20000;
+    for (let i = 0; i < N; i++) { const x = Math.random() * 97.31; if (x - Math.floor(x) < share) kept++; }
+    expect(Math.abs(kept / N - share)).toBeLessThan(0.02);
+  });
+
+  it('skips the soft fade only where the scene depth is the host\'s texel of "nothing in front"', () => {
+    const before = frame.uSceneDepth.value;
+    try {
+      const far = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+      frame.uSceneDepth.value = far as never;
+      const smoke = new ParticleSystem({ name: 'test.soft1', capacity: 4, shape: ParticleShape.SMOKE });
+      const s = patched(smoke.material);
+      expect(s.uniforms.armorySoftSkip).toBe(SOFT_SKIP);
+      const f = s.fragmentShader, main = f.slice(f.lastIndexOf('void main()'));
+      expect(main).toContain('alpha *= armorySoftFade(uSceneDepth, screenUV, vViewZ, uCameraNear, uCameraFar, uSoftFade);');
+      expect(main).not.toMatch(/[^y]softFade\(uSceneDepth,/);
+      // the wrapper: 1 with the switch and the knob on, else the Armory's own fade
+      expect(f).toContain('if (armoryLight > 0.5 && armorySoftSkip > 0.5) return 1.0;\n  return softFade(sceneDepth, screenUV, fragViewZ, near, far, fadeDist);');
+      expect(f.indexOf('float armorySoftFade(')).toBeLessThan(f.lastIndexOf('void main()'));
+      expect(f.indexOf('float softFade(sampler2D sceneDepth')).toBeLessThan(f.indexOf('float armorySoftFade('));
+      expect(balanced(f)).toBe(true);
+      // a real depth (any other texture), or none: left as the Armory has it
+      frame.uSceneDepth.value = new THREE.DataTexture(new Uint8Array([10, 20, 30, 40, 255, 255, 255, 255]), 2, 1) as never;
+      const s2 = patched(new ParticleSystem({ name: 'test.soft2', capacity: 4, shape: ParticleShape.SMOKE }).material);
+      expect(s2.fragmentShader).not.toContain('armorySoftFade');
+      expect(s2.uniforms.armorySoftSkip).toBeUndefined();
+    } finally {
+      frame.uSceneDepth.value = before;
+    }
   });
 
   it('changes only the smoke shape\'s branch (every other shape is compiled without it)', () => {
     const soft = new ParticleSystem({ name: 'test.soft', capacity: 4, shape: ParticleShape.SOFT });
     const src = patched(soft.material).fragmentShader;
-    expect(src).toContain('fade * uOpacity < 0.004) discard;');
+    expect(src).toContain('fade * uOpacity * armoryBoost < 0.004) discard;');
     const smoke = src.slice(src.indexOf('#elif SHAPE == 1'), src.indexOf('#elif SHAPE == 2'));
     expect(smoke).toContain('armoryW2');
     expect(src.replace(smoke, '')).not.toContain('armoryW2');
