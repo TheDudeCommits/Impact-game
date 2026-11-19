@@ -20,11 +20,17 @@
  *  - hitzone: the reaction picked by where the blow lands: high, middle or low;
  *  - settle: a knocked-down body settling onto the floor as it lands;
  *  - hairhit: hair and cloth pushed along the blow.
+ *  And:
+ *  - kostill: no painted still on a knockout in the film look (render/CombatEffects.ts knockout; look/filmFreeze.ts):
+ *    the off switch brings back the frame held 1.15 s as a painting;
+ *  - roundbodies: a Duel's next round keeps its two bodies (main.ts onSnapshot) where it built them afresh.
  *  The look's probe (window.__look.ab) flips them in a running page for the before/after stills. */
 export type AbName = 'upscale' | 'inkweight' | 'brush' | 'face' | 'phonepaint' | 'resmemory'
-  | 'guard' | 'seethrough' | 'fxcap' | 'inkhits' | 'facefix' | 'onones' | 'hitflash' | 'posesnap' | 'hitzone' | 'settle' | 'hairhit';
+  | 'guard' | 'seethrough' | 'fxcap' | 'inkhits' | 'facefix' | 'onones' | 'hitflash' | 'posesnap' | 'hitzone' | 'settle' | 'hairhit'
+  | 'kostill' | 'roundbodies';
 export const AB_NAMES: readonly AbName[] = ['upscale', 'inkweight', 'brush', 'face', 'phonepaint', 'resmemory',
-  'guard', 'seethrough', 'fxcap', 'inkhits', 'facefix', 'onones', 'hitflash', 'posesnap', 'hitzone', 'settle', 'hairhit'];
+  'guard', 'seethrough', 'fxcap', 'inkhits', 'facefix', 'onones', 'hitflash', 'posesnap', 'hitzone', 'settle', 'hairhit',
+  'kostill', 'roundbodies'];
 
 const off = new Set<string>((() => {
   try { return (new URLSearchParams(location.search).get('ab') ?? '').split(',').map(s => s.trim()).filter(Boolean); }

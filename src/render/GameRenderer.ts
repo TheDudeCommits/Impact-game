@@ -29,6 +29,7 @@ import {FramePolicy} from './framePolicy';
 import {EffectsLadder,LONGEST_WAIT_S,cutBudget,ladderFor,reallocates,type LadderBudget} from './mobileLadder';
 import {handheld} from '../input/device';
 import {materialTextures,nextTask,showCasters,warmTextures} from './textureWarmup';
+import {exposeForWarm} from './pipelineWarmup';
 import { compileShadowPrograms, introspectProgramsInSlices, programsLinked } from './programWarmup';
 import {setTextureCap,textureCapFor} from './textureCap';
 import {setLiveQuality} from './liveQuality';
@@ -443,13 +444,57 @@ export class GameRenderer {
       warm=showCasters(roots,this.scene,whole);
       for(const skeleton of warm.skeletons){skeleton.computeBoneTexture();if(skeleton.boneTexture)this.uploadTexture(skeleton.boneTexture);}
       if(!warm.casters&&!warm.unculled.length)return;
-      const target=this.warmTarget??=this.composer.renderTarget1.clone();
-      target.samples=0;target.setSize(16,16);
-      this.renderer.setRenderTarget(target);this.renderer.render(this.scene,this.camera);
+      this.renderer.setRenderTarget(this.warmFrame());this.renderer.render(this.scene,this.camera);
     }catch(error){console.warn('warm draw failed',error);}
     finally{this.renderer.setRenderTarget(previous);warm?.restore();}
   }
   private warmTarget?:THREE.WebGLRenderTarget;
+  /** The warm draw's 16-pixel target: the frame's own in everything a GPU pipeline is made for - its colour type and
+   *  format, its depth and its samples. On ANGLE's Metal a draw's pipeline is made for the samples of the target it
+   *  draws into; warmed single-sampled (as it was), every effect's first real draw into the multisampled frame made its
+   *  own, 100-200 ms of the GPU process the first time a fighter threw a G (Kenzo's cyclone, Gohaku's, Imago's).
+   *  Made again whenever the frame's targets change (a quality's samples). */
+  private warmFrame(){
+    const frame=this.composer.renderTarget1,old=this.warmTarget;
+    if(old&&old.samples===frame.samples&&old.texture.type===frame.texture.type&&old.texture.format===frame.texture.format&&old.depthBuffer===frame.depthBuffer&&old.stencilBuffer===frame.stencilBuffer)return old;
+    old?.dispose();
+    const target=this.warmTarget=frame.clone();
+    target.setSize(16,16);
+    return target;
+  }
+  /** The GPU pipelines the fight will draw with, made before it: real frames
+   *  drawn through the frame's own passes, the scene's top-level things a few at a time with everything under them shown
+   *  and drawable (pipelineWarmup.ts `exposeForWarm`: hidden pools shown, empty ones given an instance), so each
+   *  material meets the very target the fight draws it into - the set its painted target, the bodies and the effects the
+   *  multisampled frame - and, at a load, every pass after them too. On ANGLE's Metal a pipeline is made for the program,
+   *  its blending and that target the first time they meet; met in the fight, with nothing in macOS's shader cache for
+   *  them (each the first time after a release), they froze it: the fight's first frames (two frames of 1.2-2.2 s,
+   *  measured), a first G at its impact (150-300 ms), a first knockout. `onScreen` false (a fight on screen: Training's
+   *  switch) draws the scene's pass alone into the composer's own target, which the next frame draws over before anything
+   *  reads it; true (behind the loading screen) draws the whole frame. A frame between slices, so a loading screen moves.
+   *  `current` false (the room was left) stops it. Answers how many drawables it showed. */
+  async warmPipelines(current:()=>boolean,onScreen=true,perFrame=16){
+    const roots=this.scene.children.filter(o=>!(o as THREE.Light).isLight&&!(o as THREE.Camera).isCamera);
+    let drawn=0;
+    // (At a load, the image light's programs too: the stage is put up as the fight is shown, and its first prefiltered
+    // sky - three's PMREM, three programs into its own targets - was a 2.25 s frame there with a cold cache.)
+    if(onScreen&&!this.context.lost){try{this.refreshEnvironment();}catch(error){console.warn('environment warm-up',error);}}
+    for(let i=0;i<roots.length;i+=perFrame){
+      if(!current()||this.context.lost)return drawn;
+      const exposed=exposeForWarm(roots.slice(i,i+perFrame),this.scene),autoClear=this.renderer.autoClear,previous=this.renderer.getRenderTarget();
+      drawingFrame(true);
+      try{
+        if(onScreen)this.composer.render(0);
+        else this.scenePass.render(this.renderer,this.composer.writeBuffer,this.composer.readBuffer);
+        drawn+=exposed.count;
+      }catch(error){console.warn('pipeline warm-up',error);}
+      finally{drawingFrame(false);exposed.restore();this.renderer.autoClear=autoClear;this.renderer.setRenderTarget(previous);
+        // (The sun's map was drawn with the pools in it: the next frame draws it again, whatever the ladder's shadow rate.)
+        this.renderer.shadowMap.needsUpdate=true;}
+      await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
+    }
+    return drawn;
+  }
   resize(){const w=innerWidth,h=innerHeight,views=this.split?halves(this.split.screen,w,h):undefined,half=views?.[0];this.page.w=w;this.page.h=h;this.views=views;this.camera.aspect=half?half.w/half.h:w/h;this.camera.updateProjectionMatrix();
     // Player 2's lens culls by its own frustum (lenses.ts), so it keeps its half's shape through a resize too.
     if(this.split&&views){this.split.second.aspect=views[1].w/views[1].h;this.split.second.updateProjectionMatrix();}this.renderer.setSize(w,h);this.composer.setSize(half?.w??w,half?.h??h);setToonResolution((half?.h??h)*this.sceneRatio);}

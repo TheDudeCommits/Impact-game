@@ -98,6 +98,7 @@ import './ui/coop.css';
 import './ui/rift.css';
 import {freshDrawing} from './render/look/filmDrawings';
 import {filmLookFor,setFilmLook} from './render/look/filmLook';
+import {abOff} from './render/look/abSwitch';
 import * as THREE from 'three';
 import {FIGHTERS,loadSettings} from './config';
 import {setVfxLevel,setVfxSport} from './render/vfxLevel';import {MotionFx} from './render/vfx/MotionFx';
@@ -1178,7 +1179,12 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   // on: the timeline learns its arrival offset afresh (CombatTimeline.reanchor).
   if(network===online){const frozen=!!snapshot.pause?.paused;if(roomFrozen&&!frozen)timeline.reanchor();roomFrozen=frozen;pauseLink.observe(snapshot);pausePump();}
   const duelKey=snapshot.duel?`${snapshot.duel.set}:${snapshot.duel.round}`:'';
-  if(snapshot.duel?.phase==='playing'&&snapshot.status==='active'&&duelKey!==duelRoundKey){if(duelRoundKey){clearFighters();}duelRoundKey=duelKey;timeline.reset();camera.reset();introFor=null;victoryFor=null;network.onControlReset();input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;camera.lookAlong(input.yaw);}
+  // A Duel's next round keeps its two bodies: the room puts both back on their
+  // marks, alive, and a body already takes a respawn's jump as one (its ragdoll handed back, its travel and its hair's
+  // springs not carried across). Rebuilt for every round, the two were 45 ms of building in the round's first frame - a
+  // 70-80 ms frame three seconds after every knockout. A new set (a runback, where a fighter may change) builds afresh,
+  // as before; `?ab=roundbodies` builds every round afresh again.
+  if(snapshot.duel?.phase==='playing'&&snapshot.status==='active'&&duelKey!==duelRoundKey){if(duelRoundKey&&(duelRoundKey.split(':')[0]!==duelKey.split(':')[0]||abOff('roundbodies'))){clearFighters();}duelRoundKey=duelKey;timeline.reset();camera.reset();introFor=null;victoryFor=null;network.onControlReset();input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;camera.lookAlong(input.yaw);}
   if(!snapshot.duel)duelRoundKey='';
   // A friends' royale's next match in the same room (server/social/RoomAgain.ts): its fighters afresh, as a Duel's next set's.
   {const again=snapshot.lobby?.again?.match??0;if(again>againSeen&&againSeen){clearFighters();timeline.reset();camera.reset();introFor=null;victoryFor=null;targetId=null;targeting.reset();network.onControlReset();}againSeen=again;}
@@ -1593,7 +1599,10 @@ async function ensureSnapshotAssets(snapshot:GameSnapshot,onWarm?:()=>void,also?
     // Its roots: the Armory's pools, and whole, the room's bodies with their forms (hidden until an awakening) and the place, so
     // every shadow program a body, a form or a prop of the place needs is linked here and every buffer of theirs sent
     // (GameRenderer.warmDraw; launch day 15).
-    if(warmEnabled()&&performance.now()-loadStart<45000){const place=stages.root(snapshot.stage??'harbor');view.warmDraw(warmRoots(),[...[...fighters.values()].map(fighter=>fighter.group),...(place?[place]:[])]);stamp('warm-drawn');await warmEffekseer(view.renderer,view.camera).catch(()=>{});stamp('effekseer');}
+    if(warmEnabled()&&performance.now()-loadStart<45000){const place=stages.root(snapshot.stage??'harbor');view.warmDraw(warmRoots(),[...[...fighters.values()].map(fighter=>fighter.group),...(place?[place]:[])]);stamp('warm-drawn');await warmEffekseer(view.renderer,view.camera).catch(()=>{});stamp('effekseer');
+      // (And every GPU pipeline the fight will draw with, made here through the frame's own passes -
+      // GameRenderer.warmPipelines - not in the fight's first frames, its first G or its first knockout.)
+      await view.warmPipelines(current);stamp('pipelines');}
     // The sound, which came in while the room compiled: waited for here as it was before the compile. Its cap is 30 s, not the
     // old 3: on a thin line the bank starts only as the compile does (CombatAudio.holdFetches), and its 13.5 MB for a royale
     // of twelve take 9 s at 12 Mbit/s; a line under 3.6 Mbit/s would start the fight with some still to come (it starts
@@ -1653,6 +1662,9 @@ async function prepareSwap(room:GameSnapshot,fighter:FighterId,side:SwapSide){
   if(!warmEnabled())return;
   if(pooledCasters()>casters)view.warmDraw(warmRoots());
   await warmEffekseer(view.renderer,view.camera).catch(()=>{});
+  // (And the newcomer's effects' GPU pipelines, made now into the frame's own target rather than on their first cast:
+  // the scene's pass alone, which the next frame draws over - GameRenderer.warmPipelines.)
+  await view.warmPipelines(()=>started,false);
 }
 async function switchTraining(side:SwapSide,fighter:FighterId,random=false){
   const room=network.snapshot,now=room?.players.find(p=>p.id===swapActor(side));

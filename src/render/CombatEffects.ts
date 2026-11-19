@@ -35,6 +35,7 @@ import { bigBlowOf, cinematicBlowOf } from './bigBlowEvent';
 import { VFX } from './vfxLevel';
 import { LOCK_ESCAPE_WINDOW } from '../game/lockCombat';
 import { filmOn } from './look/filmLook';
+import { abOff } from './look/abSwitch';
 export type { ScreenFx } from './vfx/MotionFx';
 
 type CastView = {
@@ -1300,12 +1301,12 @@ export class CombatEffects {
     this.kit.groundImpact(p.x, p.y, p.z, 0, 1, 0, 3, time, el, p.y);
     this.kit.pulse(c.x, c.y + 1.4, c.z, 0xffffff, 14, 12, time, .7, 3);
     // The feel pass, iteration eleven: the knockout holds its ink frame as an ultimate's last blow does.
-    // In the film look the knockout keeps its own paper frame (a shorter rest than the other panels') and is
-    // then held a second as a painting, creeping in between the two bodies (its sakuga moments' harmony freeze).
+    // In the film look the knockout keeps its own paper frame (a shorter rest than the other panels'). Its painted
+    // still (look/filmFreeze.ts: the frame held 1.15 s as a painting while the fight ran on underneath) is gone: it read
+    // as the game freezing on every knockout. The fight keeps moving through it; `?ab=kostill` brings it back.
     if (local && filmOn()) {
       this.screen?.impactFrame(1, undefined, IMPACT_FRAME_HOLD, true); this.chroma(1);
-      const mid = killer ? bodyCentre(killer, this.koMid).add(c).multiplyScalar(.5) : c;
-      this.screen?.paintedFreeze?.(mid);
+      if (abOff('kostill')) this.screen?.paintedFreeze?.(killer ? bodyCentre(killer, this.koMid).add(c).multiplyScalar(.5) : c);
     } else if (local) { this.frame(1, IMPACT_FRAME_HOLD); this.chroma(1); }
   }
 
