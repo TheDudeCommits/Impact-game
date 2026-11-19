@@ -1895,6 +1895,19 @@ function rigidReactions(clips:THREE.AnimationClip[],joints:Map<string,THREE.Bone
 }
 /** The state a body built only to be compiled or prepared stands in: far off, idle (FighterLibrary.warmup, prepare). */
 const warmState=(fighter:FighterId):PlayerState=>({id:'warm-'+fighter,name:'Warmup',fighter,x:1000,y:0,z:1000,yaw:0,hp:1000,maxHp:1000,stamina:100,ultimate:100,action:'idle',actionStarted:0,actionDuration:0,actionTime:0,target:null,alive:true,isBot:false,grounded:true,guarding:false,cooldowns:{light:0,heavy:0,special:0,ultimate:0}});
+/** (dude.work round 4) A model let go for good: what three holds of it (its geometries, its own materials, its textures'
+ *  uploads and its skeletons' bone textures) disposed. Never one a body still draws. */
+function disposeModel(root:THREE.Object3D){
+  const textures=new Set<THREE.Texture>(),materials=new Set<THREE.Material>();
+  root.traverse(o=>{
+    const mesh=o as THREE.Mesh;if(!mesh.isMesh&&!(o as THREE.Points).isPoints&&!(o as THREE.Line).isLine)return;
+    mesh.geometry?.dispose();
+    for(const material of [mesh.material].flat()){if(!material)continue;materials.add(material);for(const value of Object.values(material))if((value as THREE.Texture|null)?.isTexture)textures.add(value as THREE.Texture);}
+  });
+  for(const t of textures)t.dispose();
+  for(const m of materials)m.dispose();
+  disposeSkeletons(root);
+}
 export class FighterLibrary {
   private sources=new Map<FighterId,GLTF>();
   private warmFighters:Fighter[]=[];
@@ -1973,6 +1986,11 @@ export class FighterLibrary {
       const id=spare.shift()!;
       // Its decoded images closed - one another body or the stage still draws only when that one lets go.
       for(const root of [this.sources.get(id)?.scene,this.forms.get(id)?.scene])if(root)releaseTextures(root);
+      // (dude.work round 4) and what three holds of it let go too: its geometries (three keeps every uploaded one, arrays and
+      // all, until it is disposed: a fighter's 7-8 MB stayed with each set), its own materials and its textures' uploads (a
+      // shared image's upload stays while another loaded model's texture still uses it). No body of it is left: the ring's
+      // two and the one coming are kept, and every body is dropped before a set begins.
+      for(const root of [this.sources.get(id)?.scene,this.forms.get(id)?.scene])if(root)disposeModel(root);
       this.sources.delete(id);this.forms.delete(id);this.rush.delete(id);this.loaded.delete(id);this.queue.completed.delete(id);
       gone.push(id);
     }
