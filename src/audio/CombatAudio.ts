@@ -140,9 +140,10 @@ export class CombatAudio {
    * dude.work (round 5, the world's rule of round 2: decode sound only while it can be heard). The ring out of earshot
    * (setHeard(false), the live build's judgement from the world's lens): every sound stops, the decoded bank and one-shots
    * are let go (some 50 MB: a pair's voices, cues and lines), and the files are kept as they came (`kept`, a few MB), so
-   * coming back is a decode alone; meanwhile nothing is decoded (a challenger's files are fetched and kept). Heard again,
-   * what is wanted is decoded again a cue at a time, RESTORE_GAP_MS apart (three hundred decodes at once were a burst on the
-   * page's thread), the room's cues first. Outside dude.work nothing is ever let go.
+   * coming back is a decode alone; meanwhile nothing is fetched or decoded (loadCue, loadSample: each layer the far match
+   * played asked for its sound again, a copy of its file and a refusal each time; a challenger's files come when the ring is
+   * heard). Heard again, what is wanted is decoded again a cue at a time, RESTORE_GAP_MS apart (three hundred decodes at once
+   * were a burst on the page's thread), the room's cues first. Outside dude.work nothing is ever let go.
    */
   private away = false;
   private kept = new Map<string, ArrayBuffer>();
@@ -298,6 +299,8 @@ export class CombatAudio {
       .catch(() => null);
   }
   private loadCue(cue: AudioCue): Promise<void> {
+    // (dude.work round 5: out of earshot nothing is loaded; setHeard(true) asks for what is wanted)
+    if (this.away) return Promise.resolve();
     let loading = this.cueLoads.get(cue);
     if (loading) return loading;
     loading = (async () => {
@@ -890,6 +893,8 @@ export class CombatAudio {
     await Promise.race([Promise.allSettled(all), new Promise<void>(done => setTimeout(done, cap))]);
   }
   private loadSample(url: string): Promise<void> {
+    // (dude.work round 5: out of earshot nothing is loaded; setHeard(true) asks for what is wanted)
+    if (this.away) return Promise.resolve();
     let loading = this.sampleLoads.get(url);
     if (loading) return loading;
     // Asked for before the context exists (a room prepared ahead of the first click): nothing is recorded, so the next
