@@ -668,11 +668,15 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   // some 50 MB of a pair's decoded voices, cues and lines, held for the page's life before wherever the visitor was), each
   // once the visitor has stayed near EAR_NEAR_MS or far EAR_FAR_MS (a flight over the ring decodes nothing for a moment);
   // playing, always heard. A world without the lens, or one whose frames have stopped (a hidden tab): as it was.
+  // (by the nearer of the lens and the visitor: behind the title the lens flies round the island while the visitor waits at
+  // the Overlook's rail, 80 m from the ring, where they arrive: the sound is decoded behind the title, as it always was,
+  // not under the fly-in and the first look)
   let heard = true, wantHeard = true, wantAt = 0;
   const judgeEar = (now: number) => {
-    const l = (host as unknown as { lens?: { distance: number; time: number } }).lens;
+    const l = (host as unknown as { lens?: { distance: number; time: number; visitorDistance?: number } }).lens;
     if (!l || now - l.time > 2000) return;
-    const on = host.playing || l.distance < EAR_IN ? true : l.distance > EAR_OUT ? false : wantHeard;
+    const d = Math.min(l.distance, l.visitorDistance ?? Infinity);
+    const on = host.playing || d < EAR_IN ? true : d > EAR_OUT ? false : wantHeard;
     if (on !== wantHeard) { wantHeard = on; wantAt = now; }
     if (heard !== wantHeard && (host.playing || now - wantAt >= (wantHeard ? EAR_NEAR_MS : EAR_FAR_MS))) { heard = wantHeard; audio.setHeard(heard); }
   };
