@@ -17,7 +17,15 @@ import { abOff, onAbChange } from './abSwitch';
 export const FACE_LIGHT = { amount: .7 };
 /** Every fighter's switch at once (?ab=face, and the probe's flip, which draws without a fighter's update). */
 const faceOn = { value: abOff('face') ? 0 : 1 };
-onAbChange(() => { faceOn.value = abOff('face') ? 0 : 1; });
+/** The back-light guard (?ab=facefix turns it off): see the patch. */
+const faceFix = { value: abOff('facefix') ? 0 : 1 };
+onAbChange(() => { faceOn.value = abOff('face') ? 0 : 1; faceFix.value = abOff('facefix') ? 0 : 1; });
+/** The key light's direction, world space, toward the light (GameRenderer sets it from its sun every frame). */
+const faceKey = { value: new THREE.Vector3(0, 1, 0) };
+export function setFaceKey(light: THREE.DirectionalLight) {
+  faceKey.value.copy(light.position).sub(light.target.position);
+  if (faceKey.value.lengthSq() < 1e-8) faceKey.value.set(0, 1, 0); else faceKey.value.normalize();
+}
 
 export interface FaceLight {
   /** xyz: the head's centre (world); w: the face's reach (m). */
@@ -34,10 +42,12 @@ export function faceLightUniforms(): FaceLight {
 /** The patch, on a fighter's toon body material (after look/toonShading's: it reads vLookHead, vLookWorld and
  *  LOOK_FACE). Each fighter's materials carry its own uniforms; the program is shared. */
 export function applyFaceLight(material: THREE.Material, u: FaceLight) {
-  addShaderPatch(material, 'look-face-light-v1', shader => {
+  addShaderPatch(material, 'look-face-light-v2', shader => {
     Object.assign(shader.uniforms, u);
     shader.uniforms.uFaceOn = faceOn;
-    shader.fragmentShader = 'uniform vec4 uFaceCenter;\nuniform vec3 uFaceForward;\nuniform vec3 uFaceUp;\nuniform float uFaceAmount;\nuniform float uFaceOn;\n' + shader.fragmentShader;
+    shader.uniforms.uFaceFix = faceFix;
+    shader.uniforms.uFaceKey = faceKey;
+    shader.fragmentShader = 'uniform vec4 uFaceCenter;\nuniform vec3 uFaceForward;\nuniform vec3 uFaceUp;\nuniform float uFaceAmount;\nuniform float uFaceOn;\nuniform float uFaceFix;\nuniform vec3 uFaceKey;\n' + shader.fragmentShader;
     shader.fragmentShader = replaceOnce(shader.fragmentShader, '#include <normal_fragment_maps>', `#include <normal_fragment_maps>
 	if ( uFaceAmount * uFaceOn > 0.0 ) {
 		// the face's light from the sphere round the head's centre, where the fragment rides the head wholly,
@@ -54,6 +64,12 @@ export function applyFaceLight(material: THREE.Material, u: FaceLight) {
 		// never past where the face's own normal and the sphere's disagree by about a right angle: a lit plane is never
 		// turned into the shade by a sphere that fits it badly
 		lookFace *= smoothstep( -.1, .35, dot( normal, lookSphere ) );
+		// Lit from behind, the sphere put the whole face in shade - a dark grey mask
+		// (Strix, Jinlin, Wataame in the Proving Hall's torchlight). Where the sphere faces away from the key light and
+		// the face's own normal is lit more, the bend lets go: the face light may clean a face up, never sink it in shadow.
+		vec3 lookKey = normalize( ( viewMatrix * vec4( uFaceKey, 0.0 ) ).xyz );
+		float lookKeySphere = dot( lookSphere, lookKey );
+		lookFace *= 1.0 - uFaceFix * smoothstep( -.05, .05, dot( normal, lookKey ) - lookKeySphere ) * ( 1.0 - smoothstep( -.45, .1, lookKeySphere ) );
 		if ( lookFace > 0.0 ) normal = normalize( mix( normal, lookSphere, lookFace ) );
 	}`, 'face light');
   });

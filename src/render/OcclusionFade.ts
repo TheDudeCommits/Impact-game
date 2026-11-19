@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import {bodyBulk} from './CameraDirector';
 import {StageFade} from './StageFade';
+import {onFilmLook,refinedVfx} from './look/filmLook';
+import {abOff,onAbChange} from './look/abSwitch';
 import type {Fighter} from './Fighter';
 
 /** Occlusion fading (round 3b, the blind critic: "nothing fades out when it
@@ -106,7 +108,18 @@ const shared={
   uOccRectDepth:{value:0},
   /** 1 while the football camera films (GLASS), else 0. */
   uOccGlass:{value:0},
+  /** 1 in the film look (look/filmLook.ts refinedVfx; ?ab=seethrough turns it off): the window over the target draws the
+   *  body in front as a pencil line instead of thinning it with dots (SKETCH). */
+  uOccSketch:{value:0},
 };
+/** The film look's see-through (uOccSketch): where the window would thin the player's body over the target, the body
+ *  is drawn only along its own outline, as the lens sees it (a fragment whose surface turns more than SKETCH_RIM away from
+ *  the lens; 0 faces it, 1 grazes), in SKETCH_INK, and its ink shell is dropped there so no dark shell shows through - a
+ *  pencil drawing of the body over the person it would hide, the way an animator's construction lines read. */
+const SKETCH_RIM=.6,SKETCH_INK=[.035,.03,.045] as const;
+/** Set on every update, and at once when the look or the switch is flipped (a held frame's redraw runs no update). */
+const syncSketch=()=>{shared.uOccSketch.value=refinedVfx()&&!abOff('seethrough')?1:0;};
+onFilmLook(syncSketch);onAbChange(syncSketch);
 /** The fade's lens-bound uniforms (the eye, the target's window), as the split screen saves and puts back each half's
  *  (couch/viewState.ts). */
 export const occlusionUniforms=shared;
@@ -118,18 +131,28 @@ uniform vec4 uOccRect;
 uniform float uOccRectDepth;
 uniform float uOccGlass;
 uniform float uOccInk;
+uniform float uOccSketch;
 float occDrop = 0.0;
+float occSketchHere = 0.0;
 varying vec3 vOccWorld;
 varying vec3 vOccClip;
 const float OCC_BAYER[16] = float[16]( 0., 8., 2., 10., 12., 4., 14., 6., 3., 11., 1., 9., 15., 7., 13., 5. );
 bool occlusionDropped() {
 	float drop = max( uOccFade.x, uOccGlass > .5 ? 0.0 : 1.0 - smoothstep( uOccNear.x, uOccNear.y, distance( vOccWorld, uOccEye ) ) );
+	float win = 0.0;
 	if ( uOccFade.y > 0.0 && vOccClip.z > 0.05 && vOccClip.z < uOccRectDepth ) {
 		vec2 ndc = vOccClip.xy / vOccClip.z;
 		vec2 feather = max( ( uOccRect.zw - uOccRect.xy ) * .18, vec2( .02 ) );
 		vec2 inside = smoothstep( uOccRect.xy - feather, uOccRect.xy + feather, ndc ) * ( 1.0 - smoothstep( uOccRect.zw - feather, uOccRect.zw + feather, ndc ) );
-		drop = max( drop, uOccFade.y * inside.x * inside.y );
+		win = uOccFade.y * inside.x * inside.y;
 	}
+	ivec2 cell = ivec2( mod( gl_FragCoord.xy, 4.0 ) );
+	float bayer = ( OCC_BAYER[ cell.y * 4 + cell.x ] + .5 ) / 16.;
+	// The film look's window (SKETCH): the body drawn as a line there rather than thinned; the screen only blends the line
+	// into the whole body across the window's feathered edge. The ink shell goes where the line is drawn.
+	if ( uOccSketch > .5 && uOccGlass < .5 ) {
+		if ( win > .004 && bayer < smoothstep( .05, .25, win ) ) { occSketchHere = 1.0; if ( uOccInk > .5 ) return true; }
+	} else drop = max( drop, win );
 	occDrop = drop;
 	if ( drop <= .004 ) return false;
 	if ( uOccGlass > .5 ) {
@@ -138,11 +161,10 @@ bool occlusionDropped() {
 		float th = c2.y == 0 ? ( c2.x == 0 ? .125 : .625 ) : ( c2.x == 0 ? .875 : .375 );
 		return th < drop;
 	}
-	ivec2 cell = ivec2( mod( gl_FragCoord.xy, 4.0 ) );
-	return ( OCC_BAYER[ cell.y * 4 + cell.x ] + .5 ) / 16. < drop;
+	return bayer < drop;
 }
 `;
-const KEY='occlusion-fade-v3',ROOM_KEY='occlusion-room-v1';
+const KEY='occlusion-fade-v4',ROOM_KEY='occlusion-room-v1';
 /** The dither, into a shader about to compile (see PARS). */
 function ditherShader(shader:THREE.WebGLProgramParametersWithUniforms,fade:{value:THREE.Vector2},ink:{value:number}){
   Object.assign(shader.uniforms,shared);shader.uniforms.uOccFade=fade;shader.uniforms.uOccInk=ink;
@@ -153,6 +175,12 @@ function ditherShader(shader:THREE.WebGLProgramParametersWithUniforms,fade:{valu
   // (GLASS: what is left of a thinned body lifted toward white - light, not a dark half-tone - in its light, before the
   // finish: every lit material and the toon finish end on opaque_fragment.)
   shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`if ( uOccGlass > .5 && occDrop > .004 ) outgoingLight = mix( outgoingLight, vec3( 1.0 ), ${GLASS_LIFT.toFixed(3)} * min( 1.0, occDrop / ${GLASS_MOST.toFixed(3)} ) );\n\t#include <opaque_fragment>`);
+  // SKETCH: a lit material keeps only its outline, in ink; an unlit one (no surface to find an outline on) is dropped there.
+  const lit=shader.fragmentShader.includes('#include <normal_fragment_begin>')&&/varying vec3 vViewPosition/.test(shader.fragmentShader);
+  const sketch=lit
+    ?`if ( occSketchHere > .5 ) { if ( 1.0 - abs( dot( normalize( normal ), normalize( vViewPosition ) ) ) < ${SKETCH_RIM.toFixed(3)} ) discard; outgoingLight = vec3( ${SKETCH_INK.map(v=>v.toFixed(3)).join(', ')} ); }`
+    :'if ( occSketchHere > .5 ) discard;';
+  shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`${sketch}\n\t#include <opaque_fragment>`);
 }
 const twins=new WeakSet<THREE.Material>();
 /** A material's twin: the same material, the same edits, and the dither. */
@@ -296,7 +324,7 @@ export class OcclusionFader{
    *  ultimate). With no crowd there is nothing to fade. */
   update(dt:number,camera:THREE.PerspectiveCamera,crowd:ReadonlyMap<string,Fighter>|undefined,self:Fighter,target:Fighter|undefined,focus:readonly (Fighter|undefined)[]){
     shared.uOccEye.value.copy(camera.position);
-    shared.uOccNear.value.set(this.wideNear?WIDE_GONE:NEAR_GONE,this.wideNear?WIDE_CLEAR:NEAR_CLEAR);shared.uOccGlass.value=this.wideNear?1:0;
+    shared.uOccNear.value.set(this.wideNear?WIDE_GONE:NEAR_GONE,this.wideNear?WIDE_CLEAR:NEAR_CLEAR);shared.uOccGlass.value=this.wideNear?1:0;syncSketch();
     this.dt=Math.min(Math.max(Number.isFinite(dt)?dt:0,0),.1);this.camera=camera;this.self=self;this.target=target;this.focus=focus;
     const st=this.state;st.faded=0;st.most=0;st.window=0;st.twinned=0;st.room=0;
     camera.updateMatrixWorld();

@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { DREAM_IMPACT } from '../src/render/dreamFlag';
+import { setAbOff } from '../src/render/look/abSwitch';
 import { DREAM_FLINCH, DREAM_HURTS, Fighter, dreamHurt } from '../src/render/Fighter';
 import type { FighterId } from '../src/game/types';
 import { loadRigWithExtras } from './extraClips';
@@ -64,6 +65,10 @@ function struck(samples: ReactSample[]) {
   return out;
 }
 describe.runIf(DREAM_IMPACT)('a string on a body with the takes', () => {
+  // Hit zones (hitzone): a standing body's take is picked by where each blow lands as it is drawn
+  // (tests/feelBatch2.test.ts). The string's turns below are the stage's, as `?ab=hitzone` draws them.
+  beforeAll(() => setAbOff('hitzone', true));
+  afterAll(() => setAbOff('hitzone', false));
   it.each([['ouga', 'taisei'], ['taisei', 'ouga']] as [FighterId, FighterId][])('%s under %s\'s string', async (id, by) => {
     const victim = await buildBody(id, 'b'), attacker = await buildBody(by, 'a');
     try {

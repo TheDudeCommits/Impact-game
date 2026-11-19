@@ -603,7 +603,7 @@ export class SparkField {
   private started = false;
   /** `veil`: how much of itself the field gives up over a struck body (see
    *  VictimVeil); 0 leaves it alone. */
-  constructor(scene: THREE.Scene, readonly capacity: number, name: string, renderOrder: number, veil = 0) {
+  constructor(scene: THREE.Scene, readonly capacity: number, name: string, renderOrder: number, veil = 0, veilCap = false) {
     const geometry = new THREE.InstancedBufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute([-1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0], 3));
     geometry.setIndex([0, 1, 2, 0, 2, 3]);
@@ -616,7 +616,7 @@ export class SparkField {
     geometry.instanceCount = capacity;
     const material = new THREE.ShaderMaterial({
       name: `SparkField-${name}`, vertexShader: VERTEX, fragmentShader: FRAGMENT,
-      uniforms: { uTime: { value: 0 }, uStep: { value: 0 }, uNoise: { value: noiseTexture() }, uAnchor: { value: Array.from({ length: ANCHORS }, () => new THREE.Vector3()) }, uKey: { value: new THREE.Vector3(-.4, .8, .45).normalize() }, uInk: { value: inkTexture() }, uFxSize: { value: 1 }, uFxGain: { value: 1 }, ...veilUniforms(veil) },
+      uniforms: { uTime: { value: 0 }, uStep: { value: 0 }, uNoise: { value: noiseTexture() }, uAnchor: { value: Array.from({ length: ANCHORS }, () => new THREE.Vector3()) }, uKey: { value: new THREE.Vector3(-.4, .8, .45).normalize() }, uInk: { value: inkTexture() }, uFxSize: { value: 1 }, uFxGain: { value: 1 }, ...veilUniforms(veil, veilCap) },
       transparent: true, depthWrite: false, depthTest: true, toneMapped: false, side: THREE.DoubleSide, forceSinglePass: true,
       blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
       blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor,

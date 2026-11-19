@@ -533,7 +533,7 @@ export class CombatEffects {
     const shell = new THREE.Mesh(this.sphere, shellMaterial); shell.name = 'impact-pressure-shell';
     const pressure = new THREE.Mesh(this.pressureGeometry, pressureWaveMaterial()); pressure.name = 'impact-ground-wave'; pressure.rotation.x = -Math.PI / 2; pressure.frustumCulled = false;
     const dust = new THREE.InstancedMesh(this.sphere, groundDustMaterial(), 12); dust.name = 'impact-ground-dust'; dust.frustumCulled = false; dust.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    const debrisMaterial = installVeil(new THREE.MeshBasicMaterial({ color: 0x6c604b, transparent: true, opacity: 1, depthWrite: false }), VEIL.rubble) as THREE.MeshBasicMaterial;
+    const debrisMaterial = installVeil(new THREE.MeshBasicMaterial({ color: 0x6c604b, transparent: true, opacity: 1, depthWrite: false }), VEIL.rubble, true) as THREE.MeshBasicMaterial;
     const debris = new THREE.InstancedMesh(this.spark, debrisMaterial, 10); debris.name = 'impact-ground-debris'; debris.frustumCulled = false; debris.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     group.add(shell, pressure, dust, debris, streaks, ink); this.scene.add(group);
     return { group, rim, streaks, ink, inkMaterial, shell, pressure, dust, debris, debrisMaterial, busy: false };
@@ -933,7 +933,7 @@ export class CombatEffects {
       this.detonations.add(key); if (this.detonations.size > 64) this.detonations.delete(this.detonations.values().next().value!);
       // A sword cut, a punch or an electric touch remains readable through its
       // contact spark; the barrage's ticks are not a string of bombs.
-      if (move.style === 'melee') { if (!this.claimTouchSpark(event)) this.melee(point, el, cls, time, dir, victim, floor, local, seed, anchor, !!source?.armed, hitTier(slot, event.branch, event.chain), MAGIC_MELEE.has(fighterId ?? ''), OWN_STEEL.has(fighterId ?? '')); }
+      if (move.style === 'melee') { if (!this.claimTouchSpark(event)) this.melee(point, el, cls, time, dir, victim, floor, local, seed, anchor, !!source?.armed, hitTier(slot, event.branch, event.chain), MAGIC_MELEE.has(fighterId ?? ''), OWN_STEEL.has(fighterId ?? ''), !!(event.counter || event.punish)); }
       else this.energy(point, time, seed, el, Math.max(cls, 2) as ImpactClass, local, victim, floor, anchor, dir);
       return;
     }
@@ -957,7 +957,7 @@ export class CombatEffects {
     }
     if (melee && !kazeyose || thrownSteel) {
       // Drawn already, on the frame the blow reached the body, where it did.
-      if (!(melee && !kazeyose && this.claimTouchSpark(event))) this.melee(point, el, thrownSteel ? Math.min(cls, 1) as ImpactClass : cls, time, dir, victim, floor, local, seed, anchor, !!source?.armed && !thrownSteel, hitTier(slot, event.branch, event.chain), MAGIC_MELEE.has(fighterId ?? ''), OWN_STEEL.has(fighterId ?? ''));
+      if (!(melee && !kazeyose && this.claimTouchSpark(event))) this.melee(point, el, thrownSteel ? Math.min(cls, 1) as ImpactClass : cls, time, dir, victim, floor, local, seed, anchor, !!source?.armed && !thrownSteel, hitTier(slot, event.branch, event.chain), MAGIC_MELEE.has(fighterId ?? ''), OWN_STEEL.has(fighterId ?? ''), !!(event.counter || event.punish));
       return;
     }
     this.energy(point, time, seed, el, Math.max(cls, 1) as ImpactClass, local, victim, floor, anchor, dir);
@@ -1042,11 +1042,11 @@ export class CombatEffects {
 
   /** A physical blow: the spark, and what it does to the floor - dust kicked
    *  out of the far side of the victim, never back over the attacker's feet. */
-  private melee(point: THREE.Vector3, el: Element, cls: ImpactClass, time: number, dir: THREE.Vector3 | undefined, victim: Fighter | undefined, floor: number, local: boolean, seed: number, anchor = 0, blade = false, tier?: HitTier, magic = false, ownSteel = false) {
+  private melee(point: THREE.Vector3, el: Element, cls: ImpactClass, time: number, dir: THREE.Vector3 | undefined, victim: Fighter | undefined, floor: number, local: boolean, seed: number, anchor = 0, blade = false, tier?: HitTier, magic = false, ownSteel = false, reward = false) {
     // The dream loop (22 October 2026): the burst sits on the body as it is drawn. A flung body is drawn a beat behind
     // where the blow found it, and an air string's last burst went off a metre and more from it - on the attacker.
     if (DREAM_IMPACT && victim) { const c = bodyCentre(victim, this.head), d = point.distanceTo(c); if (d > .8) point.sub(c).multiplyScalar(.45 / d).add(c); }
-    this.kit.hitSpark(point.x, point.y, point.z, el, cls, time, dir, local ? 2 : 1, anchor, magic ? 'blast' : blade ? 'slash' : 'burst', tier, ownSteel);
+    this.kit.hitSpark(point.x, point.y, point.z, el, cls, time, dir, local ? 2 : 1, anchor, magic ? 'blast' : blade ? 'slash' : 'burst', tier, ownSteel, reward);
     // (Round 38: and a big blow's body trails sparks and speed lines as it is thrown - VfxKit.trail.)
     if (tier && cls >= 2) this.kit.trail(victim, time, blade);
     const feet = victim?.group.position, low = !victim || victim.state.grounded;

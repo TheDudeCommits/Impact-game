@@ -1244,7 +1244,10 @@ const eventStyle=(event:CombatEvent)=>event.fighter&&event.slot
  *  (the finisher lands heavier), which side, and what the server decided. */
 // The feel pass: a big blow (game/bigBlow.ts) is snapped into, held shaking and flashed in its thrower's colour.
 const impactDetail=(event:CombatEvent)=>{const awakened=!borrowedEvent(event)&&!!network.snapshot?.players.find(p=>p.id===event.actorId)?.awakened,big=bigBlowOf(event,awakened)||cinematicBlowOf(event,awakened);
-  return {chain:event.chain,fromBehind:event.fromBehind,reaction:event.reaction,...(big?{big,tint:elementFor(event.fighter,event.slot,awakened,event.chain??0,event.branch as ComboKey|undefined).spike}:{}),...(event.downed?{downed:true}:{}),...(event.lift?{lift:event.lift}:{})};};
+  return {chain:event.chain,fromBehind:event.fromBehind,reaction:event.reaction,...(big?{big,tint:elementFor(event.fighter,event.slot,awakened,event.chain??0,event.branch as ComboKey|undefined).spike}:{}),...(event.downed?{downed:true}:{}),...(event.lift?{lift:event.lift}:{}),
+    // This (render/Fighter.ts): a COUNTER's or a PUNISH's ink frame (HIT_FLASH), and the thrower, whose limb
+    // says where on the body the blow landed (HIT_ZONE).
+    ...(event.kind==='hit'&&(event.counter||event.punish)?{reward:true}:{}),attacker:event.actorId};};
 /** A big blow heard (CombatAudio.bigBlow) and, in the player's own exchange, the score's beat under its freeze
  *  (CharacterMusic.punch, for the hold the simulation gives it: BIG_HITSTOP). Played where the blow is presented. */
 const bigBlowSound=(event:CombatEvent)=>{

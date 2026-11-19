@@ -134,7 +134,7 @@ export class Afterimages {
   private material() {
     return new THREE.ShaderMaterial({
       name: 'Afterimage', vertexShader: VERTEX, fragmentShader: FILL,
-      uniforms: { uTint: { value: new THREE.Color(0x9fe6ff) }, uOpacity: { value: 0 }, uInk: { value: 0 }, uLens: GHOST_FADE, uNearScale: { value: 1 }, ...veilUniforms(VEIL.ghost) },
+      uniforms: { uTint: { value: new THREE.Color(0x9fe6ff) }, uOpacity: { value: 0 }, uInk: { value: 0 }, uLens: GHOST_FADE, uNearScale: { value: 1 }, ...veilUniforms(VEIL.ghost, true) },
       transparent: true, depthWrite: false, toneMapped: false,
       blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
       blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
@@ -143,7 +143,7 @@ export class Afterimages {
   private inkMaterial() {
     return new THREE.ShaderMaterial({
       name: 'AfterimageInk', vertexShader: VERTEX, fragmentShader: INK, side: THREE.BackSide,
-      uniforms: { uOpacity: { value: 0 }, uInk: { value: INK_WIDTH }, uLens: GHOST_FADE, uNearScale: { value: 1 }, ...veilUniforms(VEIL.ghost) },
+      uniforms: { uOpacity: { value: 0 }, uInk: { value: INK_WIDTH }, uLens: GHOST_FADE, uNearScale: { value: 1 }, ...veilUniforms(VEIL.ghost, true) },
       transparent: true, depthWrite: false, toneMapped: false,
       blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
       blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor,

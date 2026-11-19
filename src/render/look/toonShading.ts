@@ -680,6 +680,18 @@ export function applyHitFlash(material: THREE.MeshToonMaterial, flash: { value: 
   });
 }
 const NO_FLAT = { value: 0 };
+/** The hit flash (`hitflash`, look/abSwitch.ts): a counter's or a punish's ink frame - the struck body drawn the
+ *  other way round for two frames, its fill near black (applyHitFlash's colour) and its line light. This is the line's
+ *  half: on a body's ink (its hull, or a rip's own outline mesh), `flash.w` of the way to `flash.rgb`, after the lock's
+ *  threat colour; nothing at 0, which is every frame but those. Under a silhouette frame the line is still the black
+ *  key (INK_SILHOUETTE comes after). */
+export function applyInkFlash(material: THREE.Material, flash: { value: THREE.Vector4 }) {
+  addShaderPatch(material, 'look-ink-flash-v1', shader => {
+    shader.uniforms.uInkFlash = flash;
+    shader.fragmentShader = 'uniform vec4 uInkFlash;\n' + shader.fragmentShader;
+    shader.fragmentShader = replaceOnce(shader.fragmentShader, '#include <opaque_fragment>', 'if ( uInkFlash.w > 0.0 ) outgoingLight = mix( outgoingLight, uInkFlash.rgb, uInkFlash.w );\n#include <opaque_fragment>', 'ink flash');
+  });
+}
 
 export function applyLimbSmear(material: THREE.Material, smear: { point: { value: THREE.Vector4 }; motion: { value: THREE.Vector4 }; limb?: { value: THREE.Vector4 } }) {
   const limb = smear.limb;

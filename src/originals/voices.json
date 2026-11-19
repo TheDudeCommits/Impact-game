@@ -14609,6 +14609,1350 @@
    "level": -16.5,
    "voice": "bruin",
    "text": "あー、負けた負けた。…冬眠すっか。"
+  },
+  "vo-kagari-hurt-a": {
+   "file": "voice/originals/px/kagari/vo-kagari-hurt-a.wav",
+   "seconds": 0.5,
+   "level": -17.0,
+   "voice": "kagari",
+   "text": "ぐっ!"
+  },
+  "vo-kagari-hurt-b": {
+   "file": "voice/originals/px/kagari/vo-kagari-hurt-b.wav",
+   "seconds": 0.59,
+   "level": -17.0,
+   "voice": "kagari",
+   "text": "かはっ!"
+  },
+  "vo-kagari-hurt-c": {
+   "file": "voice/originals/px/kagari/vo-kagari-hurt-c.wav",
+   "seconds": 0.41,
+   "level": -17.0,
+   "voice": "kagari",
+   "text": "ちっ!"
+  },
+  "vo-kagari-hurt-heavy-a": {
+   "file": "voice/originals/px/kagari/vo-kagari-hurt-heavy-a.wav",
+   "seconds": 0.916,
+   "level": -17.0,
+   "voice": "kagari",
+   "text": "ぐおおっ!"
+  },
+  "vo-kagari-hurt-heavy-b": {
+   "file": "voice/originals/px/kagari/vo-kagari-hurt-heavy-b.wav",
+   "seconds": 1.05,
+   "level": -17.0,
+   "voice": "kagari",
+   "text": "うあああっ!"
+  },
+  "vo-kuon-hurt-heavy-a": {
+   "file": "voice/originals/px/kuon/vo-kuon-hurt-heavy-a.wav",
+   "seconds": 0.958,
+   "level": -17.0,
+   "voice": "kuon",
+   "text": "うおっ…!"
+  },
+  "vo-kuon-hurt-heavy-b": {
+   "file": "voice/originals/kuon/vo-kuon-hurt-heavy-b.wav",
+   "seconds": 1.27,
+   "level": -17.0,
+   "voice": "kuon",
+   "text": "ぐっ…ぁあ！"
+  },
+  "vo-gaunt-hurt-a": {
+   "file": "voice/originals/gaunt/vo-gaunt-hurt-a.wav",
+   "seconds": 0.61,
+   "level": -17.0,
+   "voice": "gaunt",
+   "text": "ぐっ！"
+  },
+  "vo-gaunt-hurt-b": {
+   "file": "voice/originals/gaunt/vo-gaunt-hurt-b.wav",
+   "seconds": 0.705,
+   "level": -17.0,
+   "voice": "gaunt",
+   "text": "ぬぅっ！"
+  },
+  "vo-gaunt-hurt-c": {
+   "file": "voice/originals/gaunt/vo-gaunt-hurt-c.wav",
+   "seconds": 0.555,
+   "level": -17.0,
+   "voice": "gaunt",
+   "text": "がっ…！"
+  },
+  "vo-gaunt-hurt-heavy-a": {
+   "file": "voice/originals/gaunt/vo-gaunt-hurt-heavy-a.wav",
+   "seconds": 0.95,
+   "level": -17.0,
+   "voice": "gaunt",
+   "text": "ぐおおおっ！"
+  },
+  "vo-gaunt-hurt-heavy-b": {
+   "file": "voice/originals/gaunt/vo-gaunt-hurt-heavy-b.wav",
+   "seconds": 1.015,
+   "level": -17.0,
+   "voice": "gaunt",
+   "text": "ぬがあぁっ！"
+  },
+  "vo-haldor-hurt-heavy-a": {
+   "file": "voice/originals/haldor/vo-haldor-hurt-heavy-a.wav",
+   "seconds": 1.2,
+   "level": -17.0,
+   "voice": "haldor",
+   "text": "ぐおおぉ…"
+  },
+  "vo-haldor-hurt-heavy-b": {
+   "file": "voice/originals/haldor/vo-haldor-hurt-heavy-b.wav",
+   "seconds": 1.3,
+   "level": -17.0,
+   "voice": "haldor",
+   "text": "ぬぅおお…"
+  },
+  "vo-sorrel-hurt-heavy-a": {
+   "file": "voice/originals/sorrel/vo-sorrel-hurt-heavy-a.wav",
+   "seconds": 1.185,
+   "level": -17.0,
+   "voice": "sorrel",
+   "text": "うおっ…とぉ！"
+  },
+  "vo-sorrel-hurt-heavy-b": {
+   "file": "voice/originals/sorrel/vo-sorrel-hurt-heavy-b.wav",
+   "seconds": 0.95,
+   "level": -17.0,
+   "voice": "sorrel",
+   "text": "ぬぐぁっ！"
+  },
+  "vo-dorado-hurt-a": {
+   "file": "voice/originals/dorado/vo-dorado-hurt-a.wav",
+   "seconds": 0.5,
+   "level": -17.0,
+   "voice": "dorado",
+   "text": "ぬおっ！"
+  },
+  "vo-dorado-hurt-b": {
+   "file": "voice/originals/dorado/vo-dorado-hurt-b.wav",
+   "seconds": 0.68,
+   "level": -17.0,
+   "voice": "dorado",
+   "text": "ぐふっ！"
+  },
+  "vo-dorado-hurt-c": {
+   "file": "voice/originals/dorado/vo-dorado-hurt-c.wav",
+   "seconds": 0.645,
+   "level": -17.0,
+   "voice": "dorado",
+   "text": "むぅっ！"
+  },
+  "vo-dorado-hurt-heavy-a": {
+   "file": "voice/originals/dorado/vo-dorado-hurt-heavy-a.wav",
+   "seconds": 0.74,
+   "level": -17.0,
+   "voice": "dorado",
+   "text": "うおおおっ！"
+  },
+  "vo-dorado-hurt-heavy-b": {
+   "file": "voice/originals/dorado/vo-dorado-hurt-heavy-b.wav",
+   "seconds": 1.09,
+   "level": -17.0,
+   "voice": "dorado",
+   "text": "ぐわぁっ…！"
+  },
+  "vo-shiun-hurt-a": {
+   "file": "voice/originals/shiun/vo-shiun-hurt-a.wav",
+   "seconds": 0.64,
+   "level": -17.0,
+   "voice": "shiun",
+   "text": "くっ。"
+  },
+  "vo-shiun-hurt-b": {
+   "file": "voice/originals/shiun/vo-shiun-hurt-b.wav",
+   "seconds": 0.6,
+   "level": -17.0,
+   "voice": "shiun",
+   "text": "むっ…"
+  },
+  "vo-shiun-hurt-c": {
+   "file": "voice/originals/shiun/vo-shiun-hurt-c.wav",
+   "seconds": 0.425,
+   "level": -17.0,
+   "voice": "shiun",
+   "text": "っ…！"
+  },
+  "vo-magatsu-hurt-a": {
+   "file": "voice/originals/magatsu/vo-magatsu-hurt-a.wav",
+   "seconds": 0.485,
+   "level": -17.0,
+   "voice": "magatsu",
+   "text": "チッ！"
+  },
+  "vo-magatsu-hurt-b": {
+   "file": "voice/originals/magatsu/vo-magatsu-hurt-b.wav",
+   "seconds": 0.6,
+   "level": -17.0,
+   "voice": "magatsu",
+   "text": "ぐっ…！"
+  },
+  "vo-magatsu-hurt-c": {
+   "file": "voice/originals/magatsu/vo-magatsu-hurt-c.wav",
+   "seconds": 0.465,
+   "level": -17.0,
+   "voice": "magatsu",
+   "text": "ガッ！"
+  },
+  "vo-magatsu-hurt-heavy-a": {
+   "file": "voice/originals/magatsu/vo-magatsu-hurt-heavy-a.wav",
+   "seconds": 0.87,
+   "level": -17.0,
+   "voice": "magatsu",
+   "text": "ぐおあぁっ！"
+  },
+  "vo-magatsu-hurt-heavy-b": {
+   "file": "voice/originals/magatsu/vo-magatsu-hurt-heavy-b.wav",
+   "seconds": 1.06,
+   "level": -17.0,
+   "voice": "magatsu",
+   "text": "がああぁっ…！"
+  },
+  "vo-vesper-hurt-a": {
+   "file": "voice/originals/vesper/vo-vesper-hurt-a.wav",
+   "seconds": 0.69,
+   "level": -17.0,
+   "voice": "vesper",
+   "text": "くっ…"
+  },
+  "vo-vesper-hurt-b": {
+   "file": "voice/originals/vesper/vo-vesper-hurt-b.wav",
+   "seconds": 0.41,
+   "level": -17.0,
+   "voice": "vesper",
+   "text": "っ…！"
+  },
+  "vo-vesper-hurt-c": {
+   "file": "voice/originals/vesper/vo-vesper-hurt-c.wav",
+   "seconds": 0.53,
+   "level": -17.0,
+   "voice": "vesper",
+   "text": "んっ…"
+  },
+  "vo-banjaku-hurt-a": {
+   "file": "voice/originals/banjaku/vo-banjaku-hurt-a.wav",
+   "seconds": 0.635,
+   "level": -17.0,
+   "voice": "banjaku",
+   "text": "ぬっ。"
+  },
+  "vo-banjaku-hurt-b": {
+   "file": "voice/originals/banjaku/vo-banjaku-hurt-b.wav",
+   "seconds": 0.8,
+   "level": -17.0,
+   "voice": "banjaku",
+   "text": "ぐむっ…"
+  },
+  "vo-banjaku-hurt-c": {
+   "file": "voice/originals/banjaku/vo-banjaku-hurt-c.wav",
+   "seconds": 0.445,
+   "level": -17.0,
+   "voice": "banjaku",
+   "text": "…むぅ。"
+  },
+  "vo-ippon-hurt-a": {
+   "file": "voice/originals/ippon/vo-ippon-hurt-a.wav",
+   "seconds": 0.795,
+   "level": -17.0,
+   "voice": "ippon",
+   "text": "いてっ。"
+  },
+  "vo-ippon-hurt-b": {
+   "file": "voice/originals/ippon/vo-ippon-hurt-b.wav",
+   "seconds": 0.38,
+   "level": -17.0,
+   "voice": "ippon",
+   "text": "おっ。"
+  },
+  "vo-ippon-hurt-c": {
+   "file": "voice/originals/ippon/vo-ippon-hurt-c.wav",
+   "seconds": 0.5,
+   "level": -17.0,
+   "voice": "ippon",
+   "text": "むっ。"
+  },
+  "vo-ippon-hurt-heavy-a": {
+   "file": "voice/originals/ippon/vo-ippon-hurt-heavy-a.wav",
+   "seconds": 1.48,
+   "level": -17.0,
+   "voice": "ippon",
+   "text": "おぉ…っと。"
+  },
+  "vo-ippon-hurt-heavy-b": {
+   "file": "voice/originals/ippon/vo-ippon-hurt-heavy-b.wav",
+   "seconds": 0.92,
+   "level": -17.0,
+   "voice": "ippon",
+   "text": "いててて…"
+  },
+  "vo-tobari-hurt-a": {
+   "file": "voice/originals/tobari/vo-tobari-hurt-a.wav",
+   "seconds": 0.72,
+   "level": -17.0,
+   "voice": "tobari",
+   "text": "くっ…"
+  },
+  "vo-tobari-hurt-b": {
+   "file": "voice/originals/tobari/vo-tobari-hurt-b.wav",
+   "seconds": 0.37,
+   "level": -17.0,
+   "voice": "tobari",
+   "text": "っ…！"
+  },
+  "vo-tobari-hurt-c": {
+   "file": "voice/originals/tobari/vo-tobari-hurt-c.wav",
+   "seconds": 0.76,
+   "level": -17.0,
+   "voice": "tobari",
+   "text": "ぐ…"
+  },
+  "vo-tobari-hurt-heavy-a": {
+   "file": "voice/originals/tobari/vo-tobari-hurt-heavy-a.wav",
+   "seconds": 1.3,
+   "level": -17.0,
+   "voice": "tobari",
+   "text": "ぐっ…ぁあっ…"
+  },
+  "vo-tobari-hurt-heavy-b": {
+   "file": "voice/originals/tobari/vo-tobari-hurt-heavy-b.wav",
+   "seconds": 1.34,
+   "level": -17.1,
+   "voice": "tobari",
+   "text": "がっ…はぁ…"
+  },
+  "vo-akagane-hurt-a": {
+   "file": "voice/originals/akagane/vo-akagane-hurt-a.wav",
+   "seconds": 0.585,
+   "level": -17.0,
+   "voice": "akagane",
+   "text": "むっ！"
+  },
+  "vo-akagane-hurt-b": {
+   "file": "voice/originals/akagane/vo-akagane-hurt-b.wav",
+   "seconds": 0.89,
+   "level": -17.0,
+   "voice": "akagane",
+   "text": "ぐぅっ…"
+  },
+  "vo-akagane-hurt-c": {
+   "file": "voice/originals/akagane/vo-akagane-hurt-c.wav",
+   "seconds": 0.855,
+   "level": -17.0,
+   "voice": "akagane",
+   "text": "ぬぉ…"
+  },
+  "vo-akagane-hurt-heavy-a": {
+   "file": "voice/originals/akagane/vo-akagane-hurt-heavy-a.wav",
+   "seconds": 1.06,
+   "level": -17.0,
+   "voice": "akagane",
+   "text": "ぬおおおおっ！"
+  },
+  "vo-akagane-hurt-heavy-b": {
+   "file": "voice/originals/akagane/vo-akagane-hurt-heavy-b.wav",
+   "seconds": 1.49,
+   "level": -17.0,
+   "voice": "akagane",
+   "text": "ぐっ…おおぉっ！"
+  },
+  "vo-rook-hurt-a": {
+   "file": "voice/originals/rook/vo-rook-hurt-a.wav",
+   "seconds": 0.485,
+   "level": -17.0,
+   "voice": "rook",
+   "text": "っ…"
+  },
+  "vo-rook-hurt-b": {
+   "file": "voice/originals/rook/vo-rook-hurt-b.wav",
+   "seconds": 0.585,
+   "level": -17.0,
+   "voice": "rook",
+   "text": "くっ。"
+  },
+  "vo-rook-hurt-c": {
+   "file": "voice/originals/rook/vo-rook-hurt-c.wav",
+   "seconds": 0.5,
+   "level": -17.0,
+   "voice": "rook",
+   "text": "ぐっ。"
+  },
+  "vo-rook-hurt-heavy-a": {
+   "file": "voice/originals/rook/vo-rook-hurt-heavy-a.wav",
+   "seconds": 1.28,
+   "level": -17.0,
+   "voice": "rook",
+   "text": "ぐっ…ぁあ！"
+  },
+  "vo-rook-hurt-heavy-b": {
+   "file": "voice/originals/rook/vo-rook-hurt-heavy-b.wav",
+   "seconds": 1.08,
+   "level": -17.0,
+   "voice": "rook",
+   "text": "ぬ…ぐぅっ！"
+  },
+  "vo-gaku-hurt-a": {
+   "file": "voice/originals/gaku/vo-gaku-hurt-a.wav",
+   "seconds": 0.74,
+   "level": -17.0,
+   "voice": "gaku",
+   "text": "いてっ！"
+  },
+  "vo-gaku-hurt-b": {
+   "file": "voice/originals/gaku/vo-gaku-hurt-b.wav",
+   "seconds": 0.76,
+   "level": -17.0,
+   "voice": "gaku",
+   "text": "あうっ！"
+  },
+  "vo-gaku-hurt-c": {
+   "file": "voice/originals/gaku/vo-gaku-hurt-c.wav",
+   "seconds": 0.565,
+   "level": -17.0,
+   "voice": "gaku",
+   "text": "んぎっ！"
+  },
+  "vo-gaku-hurt-heavy-a": {
+   "file": "voice/originals/gaku/vo-gaku-hurt-heavy-a.wav",
+   "seconds": 1.065,
+   "level": -17.0,
+   "voice": "gaku",
+   "text": "うわあああっ！"
+  },
+  "vo-gaku-hurt-heavy-b": {
+   "file": "voice/originals/gaku/vo-gaku-hurt-heavy-b.wav",
+   "seconds": 1.07,
+   "level": -17.0,
+   "voice": "gaku",
+   "text": "いってぇぇっ！"
+  },
+  "vo-sorayomi-hurt-heavy-a": {
+   "file": "voice/originals/sorayomi/vo-sorayomi-hurt-heavy-a.wav",
+   "seconds": 0.855,
+   "level": -17.0,
+   "voice": "sorayomi",
+   "text": "きゃああっ！"
+  },
+  "vo-sorayomi-hurt-heavy-b": {
+   "file": "voice/originals/sorayomi/vo-sorayomi-hurt-heavy-b.wav",
+   "seconds": 1.37,
+   "level": -17.0,
+   "voice": "sorayomi",
+   "text": "いったぁぁい！"
+  },
+  "vo-basilissa-hurt-heavy-a": {
+   "file": "voice/originals/basilissa/vo-basilissa-hurt-heavy-a.wav",
+   "seconds": 0.8,
+   "level": -17.0,
+   "voice": "basilissa",
+   "text": "あああっ…！"
+  },
+  "vo-basilissa-hurt-heavy-b": {
+   "file": "voice/originals/basilissa/vo-basilissa-hurt-heavy-b.wav",
+   "seconds": 1.3,
+   "level": -17.0,
+   "voice": "basilissa",
+   "text": "くっ…うぅっ！"
+  },
+  "vo-kuzu-hurt-heavy-a": {
+   "file": "voice/originals/kuzu/vo-kuzu-hurt-heavy-a.wav",
+   "seconds": 1.145,
+   "level": -17.0,
+   "voice": "kuzu",
+   "text": "ギャアアアッ！"
+  },
+  "vo-kuzu-hurt-heavy-b": {
+   "file": "voice/originals/kuzu/vo-kuzu-hurt-heavy-b.wav",
+   "seconds": 1.01,
+   "level": -17.0,
+   "voice": "kuzu",
+   "text": "キャイィンッ！"
+  },
+  "vo-shakugo-hurt-a": {
+   "file": "voice/originals/shakugo/vo-shakugo-hurt-a.wav",
+   "seconds": 0.76,
+   "level": -17.0,
+   "voice": "shakugo",
+   "text": "ぬぅっ！"
+  },
+  "vo-shakugo-hurt-b": {
+   "file": "voice/originals/shakugo/vo-shakugo-hurt-b.wav",
+   "seconds": 0.725,
+   "level": -17.0,
+   "voice": "shakugo",
+   "text": "ぐむっ…"
+  },
+  "vo-shakugo-hurt-c": {
+   "file": "voice/originals/shakugo/vo-shakugo-hurt-c.wav",
+   "seconds": 0.495,
+   "level": -17.0,
+   "voice": "shakugo",
+   "text": "チッ…"
+  },
+  "vo-shakugo-hurt-heavy-a": {
+   "file": "voice/originals/shakugo/vo-shakugo-hurt-heavy-a.wav",
+   "seconds": 1.01,
+   "level": -17.0,
+   "voice": "shakugo",
+   "text": "ぬおおおっ！"
+  },
+  "vo-shakugo-hurt-heavy-b": {
+   "file": "voice/originals/shakugo/vo-shakugo-hurt-heavy-b.wav",
+   "seconds": 1.1,
+   "level": -17.0,
+   "voice": "shakugo",
+   "text": "ぐおぉぉっ…！"
+  },
+  "vo-buna-hurt-a": {
+   "file": "voice/originals/px/buna/vo-buna-hurt-a.wav",
+   "seconds": 0.535,
+   "level": -17.0,
+   "voice": "buna",
+   "text": "むっ…"
+  },
+  "vo-buna-hurt-b": {
+   "file": "voice/originals/px/buna/vo-buna-hurt-b.wav",
+   "seconds": 0.29,
+   "level": -17.8,
+   "voice": "buna",
+   "text": "ん…"
+  },
+  "vo-buna-hurt-c": {
+   "file": "voice/originals/buna/vo-buna-hurt-c.wav",
+   "seconds": 0.7,
+   "level": -17.0,
+   "voice": "buna",
+   "text": "くっ…"
+  },
+  "vo-buna-hurt-heavy-a": {
+   "file": "voice/originals/px/buna/vo-buna-hurt-heavy-a.wav",
+   "seconds": 0.86,
+   "level": -17.0,
+   "voice": "buna",
+   "text": "ぐっ…!"
+  },
+  "vo-buna-hurt-heavy-b": {
+   "file": "voice/originals/px/buna/vo-buna-hurt-heavy-b.wav",
+   "seconds": 1.01,
+   "level": -17.0,
+   "voice": "buna",
+   "text": "ぬぅっ…!"
+  },
+  "vo-suzuran-hurt-a": {
+   "file": "voice/originals/px/suzuran/vo-suzuran-hurt-a.wav",
+   "seconds": 0.72,
+   "level": -17.0,
+   "voice": "suzuran",
+   "text": "んっ!"
+  },
+  "vo-suzuran-hurt-b": {
+   "file": "voice/originals/px/suzuran/vo-suzuran-hurt-b.wav",
+   "seconds": 0.665,
+   "level": -17.0,
+   "voice": "suzuran",
+   "text": "あっ!"
+  },
+  "vo-suzuran-hurt-c": {
+   "file": "voice/originals/px/suzuran/vo-suzuran-hurt-c.wav",
+   "seconds": 0.368,
+   "level": -17.0,
+   "voice": "suzuran",
+   "text": "うっ!"
+  },
+  "vo-suzuran-hurt-heavy-a": {
+   "file": "voice/originals/px/suzuran/vo-suzuran-hurt-heavy-a.wav",
+   "seconds": 1.075,
+   "level": -17.0,
+   "voice": "suzuran",
+   "text": "ああっ!"
+  },
+  "vo-suzuran-hurt-heavy-b": {
+   "file": "voice/originals/px/suzuran/vo-suzuran-hurt-heavy-b.wav",
+   "seconds": 0.815,
+   "level": -17.0,
+   "voice": "suzuran",
+   "text": "うあっ!"
+  },
+  "vo-wataame-hurt-a": {
+   "file": "voice/originals/wataame/vo-wataame-hurt-a.wav",
+   "seconds": 0.81,
+   "level": -17.0,
+   "voice": "wataame",
+   "text": "ってぇ…"
+  },
+  "vo-wataame-hurt-b": {
+   "file": "voice/originals/wataame/vo-wataame-hurt-b.wav",
+   "seconds": 0.71,
+   "level": -17.0,
+   "voice": "wataame",
+   "text": "ぐえっ！"
+  },
+  "vo-wataame-hurt-c": {
+   "file": "voice/originals/wataame/vo-wataame-hurt-c.wav",
+   "seconds": 0.81,
+   "level": -17.0,
+   "voice": "wataame",
+   "text": "おぶっ！"
+  },
+  "vo-wataame-hurt-heavy-a": {
+   "file": "voice/originals/wataame/vo-wataame-hurt-heavy-a.wav",
+   "seconds": 0.84,
+   "level": -17.0,
+   "voice": "wataame",
+   "text": "のわぁっ！"
+  },
+  "vo-wataame-hurt-heavy-b": {
+   "file": "voice/originals/wataame/vo-wataame-hurt-heavy-b.wav",
+   "seconds": 1.16,
+   "level": -17.0,
+   "voice": "wataame",
+   "text": "いっでぇぇ…！"
+  },
+  "vo-kusushi-hurt-heavy-a": {
+   "file": "voice/originals/kusushi/vo-kusushi-hurt-heavy-a.wav",
+   "seconds": 1.05,
+   "level": -17.0,
+   "voice": "kusushi",
+   "text": "ぐぅぅっ…！"
+  },
+  "vo-kusushi-hurt-heavy-b": {
+   "file": "voice/originals/kusushi/vo-kusushi-hurt-heavy-b.wav",
+   "seconds": 0.97,
+   "level": -17.0,
+   "voice": "kusushi",
+   "text": "うぅあぁっ…！"
+  },
+  "vo-sashigane-hurt-heavy-a": {
+   "file": "voice/originals/sashigane/vo-sashigane-hurt-heavy-a.wav",
+   "seconds": 0.83,
+   "level": -17.0,
+   "voice": "sashigane",
+   "text": "ぐぉっ…！"
+  },
+  "vo-sashigane-hurt-heavy-b": {
+   "file": "voice/originals/sashigane/vo-sashigane-hurt-heavy-b.wav",
+   "seconds": 1.24,
+   "level": -17.0,
+   "voice": "sashigane",
+   "text": "ぬぐ…ぁっ！"
+  },
+  "vo-gosu-hurt-heavy-a": {
+   "file": "voice/originals/gosu/vo-gosu-hurt-heavy-a.wav",
+   "seconds": 0.74,
+   "level": -17.0,
+   "voice": "gosu",
+   "text": "うおわっ！"
+  },
+  "vo-gosu-hurt-heavy-b": {
+   "file": "voice/originals/gosu/vo-gosu-hurt-heavy-b.wav",
+   "seconds": 1.07,
+   "level": -17.0,
+   "voice": "gosu",
+   "text": "ぐあああっ！"
+  },
+  "vo-hakushi-hurt-heavy-a": {
+   "file": "voice/originals/hakushi/vo-hakushi-hurt-heavy-a.wav",
+   "seconds": 1.28,
+   "level": -17.0,
+   "voice": "hakushi",
+   "text": "あいたたたっ！"
+  },
+  "vo-hakushi-hurt-heavy-b": {
+   "file": "voice/originals/hakushi/vo-hakushi-hurt-heavy-b.wav",
+   "seconds": 1.18,
+   "level": -17.0,
+   "voice": "hakushi",
+   "text": "ぐおぉぉっ！"
+  },
+  "vo-tokan-hurt-heavy-a": {
+   "file": "voice/originals/tokan/vo-tokan-hurt-heavy-a.wav",
+   "seconds": 0.97,
+   "level": -17.0,
+   "voice": "tokan",
+   "text": "おおっと…"
+  },
+  "vo-tokan-hurt-heavy-b": {
+   "file": "voice/originals/tokan/vo-tokan-hurt-heavy-b.wav",
+   "seconds": 0.64,
+   "level": -17.0,
+   "voice": "tokan",
+   "text": "ぐえっ…"
+  },
+  "vo-ume-hurt-a": {
+   "file": "voice/originals/ume/vo-ume-hurt-a.wav",
+   "seconds": 0.82,
+   "level": -17.0,
+   "voice": "ume",
+   "text": "いたっ！"
+  },
+  "vo-ume-hurt-b": {
+   "file": "voice/originals/ume/vo-ume-hurt-b.wav",
+   "seconds": 0.89,
+   "level": -17.0,
+   "voice": "ume",
+   "text": "くぅっ！"
+  },
+  "vo-ume-hurt-c": {
+   "file": "voice/originals/ume/vo-ume-hurt-c.wav",
+   "seconds": 0.69,
+   "level": -17.0,
+   "voice": "ume",
+   "text": "あうっ！"
+  },
+  "vo-ume-hurt-heavy-a": {
+   "file": "voice/originals/ume/vo-ume-hurt-heavy-a.wav",
+   "seconds": 1.125,
+   "level": -17.0,
+   "voice": "ume",
+   "text": "ぐうぁあっ！"
+  },
+  "vo-ume-hurt-heavy-b": {
+   "file": "voice/originals/ume/vo-ume-hurt-heavy-b.wav",
+   "seconds": 1.17,
+   "level": -17.0,
+   "voice": "ume",
+   "text": "いったぁ…っ！"
+  },
+  "vo-lanthorn-hurt-heavy-a": {
+   "file": "voice/originals/lanthorn/vo-lanthorn-hurt-heavy-a.wav",
+   "seconds": 0.74,
+   "level": -17.0,
+   "voice": "lanthorn",
+   "text": "うわぁっ！"
+  },
+  "vo-lanthorn-hurt-heavy-b": {
+   "file": "voice/originals/lanthorn/vo-lanthorn-hurt-heavy-b.wav",
+   "seconds": 0.74,
+   "level": -17.0,
+   "voice": "lanthorn",
+   "text": "ぐあぁっ…！"
+  },
+  "vo-highsun-hurt-heavy-a": {
+   "file": "voice/originals/highsun/vo-highsun-hurt-heavy-a.wav",
+   "seconds": 0.85,
+   "level": -17.0,
+   "voice": "highsun",
+   "text": "ぬおおっ…！"
+  },
+  "vo-highsun-hurt-heavy-b": {
+   "file": "voice/originals/highsun/vo-highsun-hurt-heavy-b.wav",
+   "seconds": 1.17,
+   "level": -17.0,
+   "voice": "highsun",
+   "text": "ぐ…おぉっ！"
+  },
+  "vo-torsion-hurt-heavy-a": {
+   "file": "voice/originals/torsion/vo-torsion-hurt-heavy-a.wav",
+   "seconds": 0.9,
+   "level": -17.0,
+   "voice": "torsion",
+   "text": "きゃあぁっ！"
+  },
+  "vo-torsion-hurt-heavy-b": {
+   "file": "voice/originals/torsion/vo-torsion-hurt-heavy-b.wav",
+   "seconds": 1.545,
+   "level": -17.0,
+   "voice": "torsion",
+   "text": "ぎっ…ぁああっ！"
+  },
+  "vo-kubiwa-hurt-a": {
+   "file": "voice/originals/kubiwa/vo-kubiwa-hurt-a.wav",
+   "seconds": 0.68,
+   "level": -17.0,
+   "voice": "kubiwa",
+   "text": "あっ…"
+  },
+  "vo-kubiwa-hurt-b": {
+   "file": "voice/originals/kubiwa/vo-kubiwa-hurt-b.wav",
+   "seconds": 0.51,
+   "level": -17.0,
+   "voice": "kubiwa",
+   "text": "っ…！"
+  },
+  "vo-kubiwa-hurt-c": {
+   "file": "voice/originals/kubiwa/vo-kubiwa-hurt-c.wav",
+   "seconds": 0.68,
+   "level": -17.0,
+   "voice": "kubiwa",
+   "text": "くっ…"
+  },
+  "vo-kubiwa-hurt-heavy-a": {
+   "file": "voice/originals/kubiwa/vo-kubiwa-hurt-heavy-a.wav",
+   "seconds": 0.63,
+   "level": -17.0,
+   "voice": "kubiwa",
+   "text": "あぁっ…！"
+  },
+  "vo-kubiwa-hurt-heavy-b": {
+   "file": "voice/originals/kubiwa/vo-kubiwa-hurt-heavy-b.wav",
+   "seconds": 1.19,
+   "level": -17.0,
+   "voice": "kubiwa",
+   "text": "んっ…ぁあ…"
+  },
+  "vo-onigawara-hurt-a": {
+   "file": "voice/originals/onigawara/vo-onigawara-hurt-a.wav",
+   "seconds": 0.48,
+   "level": -17.0,
+   "voice": "onigawara",
+   "text": "ぐっ！"
+  },
+  "vo-onigawara-hurt-b": {
+   "file": "voice/originals/onigawara/vo-onigawara-hurt-b.wav",
+   "seconds": 0.58,
+   "level": -17.0,
+   "voice": "onigawara",
+   "text": "がっ…！"
+  },
+  "vo-onigawara-hurt-c": {
+   "file": "voice/originals/onigawara/vo-onigawara-hurt-c.wav",
+   "seconds": 0.38,
+   "level": -17.1,
+   "voice": "onigawara",
+   "text": "へっ…！"
+  },
+  "vo-minase-hurt-heavy-a": {
+   "file": "voice/originals/kanata/vo-minase-hurt-heavy-a.wav",
+   "seconds": 0.59,
+   "level": -17.0,
+   "voice": "kanata",
+   "text": "うぁっ…！"
+  },
+  "vo-minase-hurt-heavy-b": {
+   "file": "voice/originals/kanata/vo-minase-hurt-heavy-b.wav",
+   "seconds": 0.69,
+   "level": -17.0,
+   "voice": "kanata",
+   "text": "ぐぅっ…！"
+  },
+  "vo-shakudo-hurt-a": {
+   "file": "voice/originals/shakudo/vo-shakudo-hurt-a.wav",
+   "seconds": 0.71,
+   "level": -17.0,
+   "voice": "shakudo",
+   "text": "ぐっ！"
+  },
+  "vo-shakudo-hurt-b": {
+   "file": "voice/originals/shakudo/vo-shakudo-hurt-b.wav",
+   "seconds": 0.44,
+   "level": -17.0,
+   "voice": "shakudo",
+   "text": "ちっ！"
+  },
+  "vo-shakudo-hurt-c": {
+   "file": "voice/originals/shakudo/vo-shakudo-hurt-c.wav",
+   "seconds": 0.89,
+   "level": -17.0,
+   "voice": "shakudo",
+   "text": "いってぇ！"
+  },
+  "vo-shakudo-hurt-heavy-a": {
+   "file": "voice/originals/shakudo/vo-shakudo-hurt-heavy-a.wav",
+   "seconds": 1.4,
+   "level": -17.0,
+   "voice": "shakudo",
+   "text": "うおあああっ！"
+  },
+  "vo-shakudo-hurt-heavy-b": {
+   "file": "voice/originals/shakudo/vo-shakudo-hurt-heavy-b.wav",
+   "seconds": 0.74,
+   "level": -17.0,
+   "voice": "shakudo",
+   "text": "ぐぉあっ…！"
+  },
+  "vo-amagoi-hurt-heavy-a": {
+   "file": "voice/originals/amagoi/vo-amagoi-hurt-heavy-a.wav",
+   "seconds": 0.77,
+   "level": -17.0,
+   "voice": "amagoi",
+   "text": "ぬぅっ…！"
+  },
+  "vo-amagoi-hurt-heavy-b": {
+   "file": "voice/originals/amagoi/vo-amagoi-hurt-heavy-b.wav",
+   "seconds": 1.24,
+   "level": -17.0,
+   "voice": "amagoi",
+   "text": "ぐっ…ぁあ…"
+  },
+  "vo-hinomoto-hurt-heavy-a": {
+   "file": "voice/originals/hinomoto/vo-hinomoto-hurt-heavy-a.wav",
+   "seconds": 1.07,
+   "level": -17.0,
+   "voice": "hinomoto",
+   "text": "ぐおおぉっ！"
+  },
+  "vo-hinomoto-hurt-heavy-b": {
+   "file": "voice/originals/hinomoto/vo-hinomoto-hurt-heavy-b.wav",
+   "seconds": 1.25,
+   "level": -17.0,
+   "voice": "hinomoto",
+   "text": "ぬおおおっ…！"
+  },
+  "vo-shidare-hurt-a": {
+   "file": "voice/originals/shidare/vo-shidare-hurt-a.wav",
+   "seconds": 0.44,
+   "level": -17.0,
+   "voice": "shidare",
+   "text": "…っ"
+  },
+  "vo-shidare-hurt-b": {
+   "file": "voice/originals/shidare/vo-shidare-hurt-b.wav",
+   "seconds": 0.75,
+   "level": -17.0,
+   "voice": "shidare",
+   "text": "む…"
+  },
+  "vo-shidare-hurt-c": {
+   "file": "voice/originals/shidare/vo-shidare-hurt-c.wav",
+   "seconds": 0.535,
+   "level": -17.0,
+   "voice": "shidare",
+   "text": "くっ。"
+  },
+  "vo-shidare-hurt-heavy-a": {
+   "file": "voice/originals/shidare/vo-shidare-hurt-heavy-a.wav",
+   "seconds": 1.13,
+   "level": -17.0,
+   "voice": "shidare",
+   "text": "ぐ…っ！"
+  },
+  "vo-shidare-hurt-heavy-b": {
+   "file": "voice/originals/shidare/vo-shidare-hurt-heavy-b.wav",
+   "seconds": 1.33,
+   "level": -17.0,
+   "voice": "shidare",
+   "text": "ぬ…ぅっ！"
+  },
+  "vo-irbis-hurt-a": {
+   "file": "voice/originals/irbis/vo-irbis-hurt-a.wav",
+   "seconds": 0.63,
+   "level": -17.0,
+   "voice": "irbis",
+   "text": "グッ！"
+  },
+  "vo-irbis-hurt-b": {
+   "file": "voice/originals/irbis/vo-irbis-hurt-b.wav",
+   "seconds": 0.63,
+   "level": -17.0,
+   "voice": "irbis",
+   "text": "チィッ！"
+  },
+  "vo-irbis-hurt-c": {
+   "file": "voice/originals/irbis/vo-irbis-hurt-c.wav",
+   "seconds": 0.6,
+   "level": -17.0,
+   "voice": "irbis",
+   "text": "ガハッ！"
+  },
+  "vo-irbis-hurt-heavy-a": {
+   "file": "voice/originals/irbis/vo-irbis-hurt-heavy-a.wav",
+   "seconds": 1.04,
+   "level": -17.0,
+   "voice": "irbis",
+   "text": "グアアアッ！"
+  },
+  "vo-irbis-hurt-heavy-b": {
+   "file": "voice/originals/irbis/vo-irbis-hurt-heavy-b.wav",
+   "seconds": 1.0,
+   "level": -17.0,
+   "voice": "irbis",
+   "text": "ゴアァァッ！"
+  },
+  "vo-shibuichi-hurt-heavy-a": {
+   "file": "voice/originals/shibuichi/vo-shibuichi-hurt-heavy-a.wav",
+   "seconds": 1.03,
+   "level": -17.0,
+   "voice": "shibuichi",
+   "text": "うわあぁっ！"
+  },
+  "vo-shibuichi-hurt-heavy-b": {
+   "file": "voice/originals/shibuichi/vo-shibuichi-hurt-heavy-b.wav",
+   "seconds": 0.7,
+   "level": -17.0,
+   "voice": "shibuichi",
+   "text": "あううっ…！"
+  },
+  "vo-rakucho-hurt-a": {
+   "file": "voice/originals/rakucho/vo-rakucho-hurt-a.wav",
+   "seconds": 0.64,
+   "level": -17.0,
+   "voice": "rakucho",
+   "text": "うっ…"
+  },
+  "vo-rakucho-hurt-b": {
+   "file": "voice/originals/rakucho/vo-rakucho-hurt-b.wav",
+   "seconds": 0.62,
+   "level": -17.0,
+   "voice": "rakucho",
+   "text": "あっ…！"
+  },
+  "vo-rakucho-hurt-c": {
+   "file": "voice/originals/rakucho/vo-rakucho-hurt-c.wav",
+   "seconds": 0.44,
+   "level": -17.0,
+   "voice": "rakucho",
+   "text": "っ…"
+  },
+  "vo-rakucho-hurt-heavy-a": {
+   "file": "voice/originals/rakucho/vo-rakucho-hurt-heavy-a.wav",
+   "seconds": 1.69,
+   "level": -17.0,
+   "voice": "rakucho",
+   "text": "うあああっ…！"
+  },
+  "vo-rakucho-hurt-heavy-b": {
+   "file": "voice/originals/rakucho/vo-rakucho-hurt-heavy-b.wav",
+   "seconds": 1.65,
+   "level": -17.0,
+   "voice": "rakucho",
+   "text": "ぐっ…あぁっ！"
+  },
+  "vo-hisame-hurt-a": {
+   "file": "voice/originals/px/hisame/vo-hisame-hurt-a.wav",
+   "seconds": 0.83,
+   "level": -17.0,
+   "voice": "hisame",
+   "text": "くっ!"
+  },
+  "vo-hisame-hurt-b": {
+   "file": "voice/originals/px/hisame/vo-hisame-hurt-b.wav",
+   "seconds": 0.762,
+   "level": -17.0,
+   "voice": "hisame",
+   "text": "んっ!"
+  },
+  "vo-hisame-hurt-c": {
+   "file": "voice/originals/px/hisame/vo-hisame-hurt-c.wav",
+   "seconds": 0.78,
+   "level": -17.0,
+   "voice": "hisame",
+   "text": "はっ…!"
+  },
+  "vo-hisame-hurt-heavy-a": {
+   "file": "voice/originals/px/hisame/vo-hisame-hurt-heavy-a.wav",
+   "seconds": 0.955,
+   "level": -17.0,
+   "voice": "hisame",
+   "text": "くぅっ…!"
+  },
+  "vo-hisame-hurt-heavy-b": {
+   "file": "voice/originals/px/hisame/vo-hisame-hurt-heavy-b.wav",
+   "seconds": 0.945,
+   "level": -17.0,
+   "voice": "hisame",
+   "text": "ああっ!"
+  },
+  "vo-mizuhiki-hurt-heavy-a": {
+   "file": "voice/originals/mizuhiki/vo-mizuhiki-hurt-heavy-a.wav",
+   "seconds": 0.53,
+   "level": -17.0,
+   "voice": "mizuhiki",
+   "text": "うぁっ…！"
+  },
+  "vo-mizuhiki-hurt-heavy-b": {
+   "file": "voice/originals/mizuhiki/vo-mizuhiki-hurt-heavy-b.wav",
+   "seconds": 1.37,
+   "level": -17.0,
+   "voice": "mizuhiki",
+   "text": "ぐっ…ぅぅ！"
+  },
+  "vo-bonsho-hurt-heavy-a": {
+   "file": "voice/originals/bonsho/vo-bonsho-hurt-heavy-a.wav",
+   "seconds": 1.11,
+   "level": -17.0,
+   "voice": "bonsho",
+   "text": "おぉっ…とと！"
+  },
+  "vo-bonsho-hurt-heavy-b": {
+   "file": "voice/originals/bonsho/vo-bonsho-hurt-heavy-b.wav",
+   "seconds": 0.565,
+   "level": -17.0,
+   "voice": "bonsho",
+   "text": "ぐふぉっ…！"
+  },
+  "vo-akayuri-hurt-a": {
+   "file": "voice/originals/akayuri/vo-akayuri-hurt-a.wav",
+   "seconds": 0.55,
+   "level": -17.0,
+   "voice": "akayuri",
+   "text": "っ…"
+  },
+  "vo-akayuri-hurt-b": {
+   "file": "voice/originals/akayuri/vo-akayuri-hurt-b.wav",
+   "seconds": 0.63,
+   "level": -17.0,
+   "voice": "akayuri",
+   "text": "くっ。"
+  },
+  "vo-akayuri-hurt-c": {
+   "file": "voice/originals/akayuri/vo-akayuri-hurt-c.wav",
+   "seconds": 0.78,
+   "level": -17.0,
+   "voice": "akayuri",
+   "text": "ん…"
+  },
+  "vo-akayuri-hurt-heavy-a": {
+   "file": "voice/originals/akayuri/vo-akayuri-hurt-heavy-a.wav",
+   "seconds": 0.89,
+   "level": -17.0,
+   "voice": "akayuri",
+   "text": "あぁっ…！"
+  },
+  "vo-akayuri-hurt-heavy-b": {
+   "file": "voice/originals/akayuri/vo-akayuri-hurt-heavy-b.wav",
+   "seconds": 1.1,
+   "level": -17.0,
+   "voice": "akayuri",
+   "text": "ぐっ…ぅ！"
+  },
+  "vo-madake-hurt-heavy-a": {
+   "file": "voice/originals/madake/vo-madake-hurt-heavy-a.wav",
+   "seconds": 1.055,
+   "level": -17.0,
+   "voice": "madake",
+   "text": "ぬおおおおっ！"
+  },
+  "vo-madake-hurt-heavy-b": {
+   "file": "voice/originals/madake/vo-madake-hurt-heavy-b.wav",
+   "seconds": 1.38,
+   "level": -17.0,
+   "voice": "madake",
+   "text": "ぐわああああっ！"
+  },
+  "vo-rotfalke-hurt-a": {
+   "file": "voice/originals/rotfalke/vo-rotfalke-hurt-a.wav",
+   "seconds": 0.89,
+   "level": -17.0,
+   "voice": "rotfalke",
+   "text": "いったぁ！"
+  },
+  "vo-rotfalke-hurt-b": {
+   "file": "voice/originals/rotfalke/vo-rotfalke-hurt-b.wav",
+   "seconds": 0.56,
+   "level": -17.0,
+   "voice": "rotfalke",
+   "text": "きゃっ！"
+  },
+  "vo-rotfalke-hurt-c": {
+   "file": "voice/originals/rotfalke/vo-rotfalke-hurt-c.wav",
+   "seconds": 0.43,
+   "level": -17.0,
+   "voice": "rotfalke",
+   "text": "ちっ！"
+  },
+  "vo-rotfalke-hurt-heavy-a": {
+   "file": "voice/originals/rotfalke/vo-rotfalke-hurt-heavy-a.wav",
+   "seconds": 0.91,
+   "level": -17.0,
+   "voice": "rotfalke",
+   "text": "きゃあああっ！"
+  },
+  "vo-rotfalke-hurt-heavy-b": {
+   "file": "voice/originals/rotfalke/vo-rotfalke-hurt-heavy-b.wav",
+   "seconds": 1.69,
+   "level": -17.0,
+   "voice": "rotfalke",
+   "text": "ぐぅぅ…あぁっ！"
+  },
+  "vo-kinu-hurt-heavy-a": {
+   "file": "voice/originals/kinu/vo-kinu-hurt-heavy-a.wav",
+   "seconds": 0.86,
+   "level": -17.0,
+   "voice": "kinu",
+   "text": "がぁっ…！"
+  },
+  "vo-kinu-hurt-heavy-b": {
+   "file": "voice/originals/kinu/vo-kinu-hurt-heavy-b.wav",
+   "seconds": 0.79,
+   "level": -17.0,
+   "voice": "kinu",
+   "text": "うああっ…！"
+  },
+  "vo-hawser-hurt-a": {
+   "file": "voice/originals/hawser/vo-hawser-hurt-a.wav",
+   "seconds": 0.57,
+   "level": -17.0,
+   "voice": "hawser",
+   "text": "ぐっ！"
+  },
+  "vo-hawser-hurt-b": {
+   "file": "voice/originals/hawser/vo-hawser-hurt-b.wav",
+   "seconds": 0.81,
+   "level": -17.0,
+   "voice": "hawser",
+   "text": "がはっ！"
+  },
+  "vo-hawser-hurt-c": {
+   "file": "voice/originals/hawser/vo-hawser-hurt-c.wav",
+   "seconds": 0.715,
+   "level": -17.0,
+   "voice": "hawser",
+   "text": "ぬぐっ！"
+  },
+  "vo-hawser-hurt-heavy-a": {
+   "file": "voice/originals/hawser/vo-hawser-hurt-heavy-a.wav",
+   "seconds": 1.265,
+   "level": -17.0,
+   "voice": "hawser",
+   "text": "うあああああっ！"
+  },
+  "vo-hawser-hurt-heavy-b": {
+   "file": "voice/originals/hawser/vo-hawser-hurt-heavy-b.wav",
+   "seconds": 1.15,
+   "level": -17.0,
+   "voice": "hawser",
+   "text": "ぐおおおっ！"
+  },
+  "vo-murex-hurt-heavy-a": {
+   "file": "voice/originals/murex/vo-murex-hurt-heavy-a.wav",
+   "seconds": 1.69,
+   "level": -17.0,
+   "voice": "murex",
+   "text": "うわあああああっ！"
+  },
+  "vo-murex-hurt-heavy-b": {
+   "file": "voice/originals/murex/vo-murex-hurt-heavy-b.wav",
+   "seconds": 1.69,
+   "level": -17.0,
+   "voice": "murex",
+   "text": "ひっ…ああぁっ！"
+  },
+  "vo-ovid-hurt-heavy-a": {
+   "file": "voice/originals/ovid/vo-ovid-hurt-heavy-a.wav",
+   "seconds": 0.92,
+   "level": -17.0,
+   "voice": "ovid",
+   "text": "どわぁぁっ！"
+  },
+  "vo-ovid-hurt-heavy-b": {
+   "file": "voice/originals/ovid/vo-ovid-hurt-heavy-b.wav",
+   "seconds": 1.04,
+   "level": -17.0,
+   "voice": "ovid",
+   "text": "ぐおおぉっ！"
+  },
+  "vo-tsubute-hurt-heavy-a": {
+   "file": "voice/originals/px/tsubute/vo-tsubute-hurt-heavy-a.wav",
+   "seconds": 0.477,
+   "level": -17.6,
+   "voice": "tsubute",
+   "text": "うわっ!"
+  },
+  "vo-tsubute-hurt-heavy-b": {
+   "file": "voice/originals/px/tsubute/vo-tsubute-hurt-heavy-b.wav",
+   "seconds": 1.135,
+   "level": -17.0,
+   "voice": "tsubute",
+   "text": "ぐえっ!"
+  },
+  "vo-aqrab-hurt-a": {
+   "file": "voice/originals/aqrab/vo-aqrab-hurt-a.wav",
+   "seconds": 0.46,
+   "level": -17.0,
+   "voice": "aqrab",
+   "text": "チッ。"
+  },
+  "vo-aqrab-hurt-b": {
+   "file": "voice/originals/aqrab/vo-aqrab-hurt-b.wav",
+   "seconds": 0.77,
+   "level": -17.0,
+   "voice": "aqrab",
+   "text": "ぬっ…"
+  },
+  "vo-aqrab-hurt-c": {
+   "file": "voice/originals/aqrab/vo-aqrab-hurt-c.wav",
+   "seconds": 0.8,
+   "level": -17.0,
+   "voice": "aqrab",
+   "text": "ぐ…"
+  },
+  "vo-aqrab-hurt-heavy-a": {
+   "file": "voice/originals/aqrab/vo-aqrab-hurt-heavy-a.wav",
+   "seconds": 0.91,
+   "level": -17.0,
+   "voice": "aqrab",
+   "text": "ぐおぉっ！"
+  },
+  "vo-aqrab-hurt-heavy-b": {
+   "file": "voice/originals/aqrab/vo-aqrab-hurt-heavy-b.wav",
+   "seconds": 1.29,
+   "level": -17.0,
+   "voice": "aqrab",
+   "text": "ぬ…ぐぉっ！"
+  },
+  "vo-aquilo-hurt-a": {
+   "file": "voice/originals/aquilo/vo-aquilo-hurt-a.wav",
+   "seconds": 0.78,
+   "level": -17.0,
+   "voice": "aquilo",
+   "text": "くっ！"
+  },
+  "vo-aquilo-hurt-b": {
+   "file": "voice/originals/aquilo/vo-aquilo-hurt-b.wav",
+   "seconds": 0.42,
+   "level": -17.0,
+   "voice": "aquilo",
+   "text": "っ…！"
+  },
+  "vo-aquilo-hurt-c": {
+   "file": "voice/originals/aquilo/vo-aquilo-hurt-c.wav",
+   "seconds": 0.74,
+   "level": -17.0,
+   "voice": "aquilo",
+   "text": "ぐっ。"
+  },
+  "vo-aquilo-hurt-heavy-a": {
+   "file": "voice/originals/aquilo/vo-aquilo-hurt-heavy-a.wav",
+   "seconds": 0.87,
+   "level": -17.0,
+   "voice": "aquilo",
+   "text": "ぐあぁっ！"
+  },
+  "vo-aquilo-hurt-heavy-b": {
+   "file": "voice/originals/aquilo/vo-aquilo-hurt-heavy-b.wav",
+   "seconds": 0.82,
+   "level": -17.0,
+   "voice": "aquilo",
+   "text": "うおぁっ！"
+  },
+  "vo-svanhild-hurt-a": {
+   "file": "voice/originals/svanhild/vo-svanhild-hurt-a.wav",
+   "seconds": 0.54,
+   "level": -17.0,
+   "voice": "svanhild",
+   "text": "きゃっ！"
+  },
+  "vo-svanhild-hurt-b": {
+   "file": "voice/originals/svanhild/vo-svanhild-hurt-b.wav",
+   "seconds": 0.86,
+   "level": -17.0,
+   "voice": "svanhild",
+   "text": "いたっ…！"
+  },
+  "vo-svanhild-hurt-c": {
+   "file": "voice/originals/svanhild/vo-svanhild-hurt-c.wav",
+   "seconds": 0.62,
+   "level": -17.0,
+   "voice": "svanhild",
+   "text": "んっ…！"
+  },
+  "vo-svanhild-hurt-heavy-a": {
+   "file": "voice/originals/svanhild/vo-svanhild-hurt-heavy-a.wav",
+   "seconds": 1.085,
+   "level": -17.0,
+   "voice": "svanhild",
+   "text": "きゃああああっ！"
+  },
+  "vo-svanhild-hurt-heavy-b": {
+   "file": "voice/originals/svanhild/vo-svanhild-hurt-heavy-b.wav",
+   "seconds": 1.18,
+   "level": -17.0,
+   "voice": "svanhild",
+   "text": "いやぁぁっ！"
   }
  },
  "home": {

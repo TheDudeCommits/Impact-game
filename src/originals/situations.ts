@@ -45,6 +45,69 @@ export const QUALITY_LINES: Readonly<Record<string, Readonly<Record<string, read
   sashigane: { hurt: ['vo-sashigane-hurt-a', 'vo-sashigane-hurt-b'] },                     // Sashigane
 };
 
+/** Every released fighter cries out when hit, in their own cast voice: three hurt cries for each fighter that had none
+ *  (SITUATION_RULES.hurt: under 0.9 s) and two heavy ones (a launch, a knockdown, a wall splat: under 1.7 s) for each
+ *  that had no line of its own, at the existing cries' loudness, in the fighter's own preset and chain. Merged as
+ *  QUALITY_LINES is (applyOriginalSituations). */
+export const CRY_LINES: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {
+  kagari: { hurt: ['vo-kagari-hurt-a', 'vo-kagari-hurt-b', 'vo-kagari-hurt-c'], 'hurt-heavy': ['vo-kagari-hurt-heavy-a', 'vo-kagari-hurt-heavy-b'] },
+  kuon: { 'hurt-heavy': ['vo-kuon-hurt-heavy-a', 'vo-kuon-hurt-heavy-b'] },
+  gaunt: { hurt: ['vo-gaunt-hurt-a', 'vo-gaunt-hurt-b', 'vo-gaunt-hurt-c'], 'hurt-heavy': ['vo-gaunt-hurt-heavy-a', 'vo-gaunt-hurt-heavy-b'] },
+  haldor: { 'hurt-heavy': ['vo-haldor-hurt-heavy-a', 'vo-haldor-hurt-heavy-b'] },
+  sorrel: { 'hurt-heavy': ['vo-sorrel-hurt-heavy-a', 'vo-sorrel-hurt-heavy-b'] },
+  dorado: { hurt: ['vo-dorado-hurt-a', 'vo-dorado-hurt-b', 'vo-dorado-hurt-c'], 'hurt-heavy': ['vo-dorado-hurt-heavy-a', 'vo-dorado-hurt-heavy-b'] },
+  shiun: { hurt: ['vo-shiun-hurt-a', 'vo-shiun-hurt-b', 'vo-shiun-hurt-c'] },
+  magatsu: { hurt: ['vo-magatsu-hurt-a', 'vo-magatsu-hurt-b', 'vo-magatsu-hurt-c'], 'hurt-heavy': ['vo-magatsu-hurt-heavy-a', 'vo-magatsu-hurt-heavy-b'] },
+  vesper: { hurt: ['vo-vesper-hurt-a', 'vo-vesper-hurt-b', 'vo-vesper-hurt-c'] },
+  banjaku: { hurt: ['vo-banjaku-hurt-a', 'vo-banjaku-hurt-b', 'vo-banjaku-hurt-c'] },
+  ippon: { hurt: ['vo-ippon-hurt-a', 'vo-ippon-hurt-b', 'vo-ippon-hurt-c'], 'hurt-heavy': ['vo-ippon-hurt-heavy-a', 'vo-ippon-hurt-heavy-b'] },
+  tobari: { hurt: ['vo-tobari-hurt-a', 'vo-tobari-hurt-b', 'vo-tobari-hurt-c'], 'hurt-heavy': ['vo-tobari-hurt-heavy-a', 'vo-tobari-hurt-heavy-b'] },
+  akagane: { hurt: ['vo-akagane-hurt-a', 'vo-akagane-hurt-b', 'vo-akagane-hurt-c'], 'hurt-heavy': ['vo-akagane-hurt-heavy-a', 'vo-akagane-hurt-heavy-b'] },
+  rook: { hurt: ['vo-rook-hurt-a', 'vo-rook-hurt-b', 'vo-rook-hurt-c'], 'hurt-heavy': ['vo-rook-hurt-heavy-a', 'vo-rook-hurt-heavy-b'] },
+  gaku: { hurt: ['vo-gaku-hurt-a', 'vo-gaku-hurt-b', 'vo-gaku-hurt-c'], 'hurt-heavy': ['vo-gaku-hurt-heavy-a', 'vo-gaku-hurt-heavy-b'] },
+  sorayomi: { 'hurt-heavy': ['vo-sorayomi-hurt-heavy-a', 'vo-sorayomi-hurt-heavy-b'] },
+  basilissa: { 'hurt-heavy': ['vo-basilissa-hurt-heavy-a', 'vo-basilissa-hurt-heavy-b'] },
+  kuzu: { 'hurt-heavy': ['vo-kuzu-hurt-heavy-a', 'vo-kuzu-hurt-heavy-b'] },
+  shakugo: { hurt: ['vo-shakugo-hurt-a', 'vo-shakugo-hurt-b', 'vo-shakugo-hurt-c'], 'hurt-heavy': ['vo-shakugo-hurt-heavy-a', 'vo-shakugo-hurt-heavy-b'] },
+  buna: { hurt: ['vo-buna-hurt-a', 'vo-buna-hurt-b', 'vo-buna-hurt-c'], 'hurt-heavy': ['vo-buna-hurt-heavy-a', 'vo-buna-hurt-heavy-b'] },
+  suzuran: { hurt: ['vo-suzuran-hurt-a', 'vo-suzuran-hurt-b', 'vo-suzuran-hurt-c'], 'hurt-heavy': ['vo-suzuran-hurt-heavy-a', 'vo-suzuran-hurt-heavy-b'] },
+  wataame: { hurt: ['vo-wataame-hurt-a', 'vo-wataame-hurt-b', 'vo-wataame-hurt-c'], 'hurt-heavy': ['vo-wataame-hurt-heavy-a', 'vo-wataame-hurt-heavy-b'] },
+  kusushi: { 'hurt-heavy': ['vo-kusushi-hurt-heavy-a', 'vo-kusushi-hurt-heavy-b'] },
+  sashigane: { 'hurt-heavy': ['vo-sashigane-hurt-heavy-a', 'vo-sashigane-hurt-heavy-b'] },
+  gosu: { 'hurt-heavy': ['vo-gosu-hurt-heavy-a', 'vo-gosu-hurt-heavy-b'] },
+  hakushi: { 'hurt-heavy': ['vo-hakushi-hurt-heavy-a', 'vo-hakushi-hurt-heavy-b'] },
+  tokan: { 'hurt-heavy': ['vo-tokan-hurt-heavy-a', 'vo-tokan-hurt-heavy-b'] },
+  ume: { hurt: ['vo-ume-hurt-a', 'vo-ume-hurt-b', 'vo-ume-hurt-c'], 'hurt-heavy': ['vo-ume-hurt-heavy-a', 'vo-ume-hurt-heavy-b'] },
+  lanthorn: { 'hurt-heavy': ['vo-lanthorn-hurt-heavy-a', 'vo-lanthorn-hurt-heavy-b'] },
+  highsun: { 'hurt-heavy': ['vo-highsun-hurt-heavy-a', 'vo-highsun-hurt-heavy-b'] },
+  torsion: { 'hurt-heavy': ['vo-torsion-hurt-heavy-a', 'vo-torsion-hurt-heavy-b'] },
+  kubiwa: { hurt: ['vo-kubiwa-hurt-a', 'vo-kubiwa-hurt-b', 'vo-kubiwa-hurt-c'], 'hurt-heavy': ['vo-kubiwa-hurt-heavy-a', 'vo-kubiwa-hurt-heavy-b'] },
+  onigawara: { hurt: ['vo-onigawara-hurt-a', 'vo-onigawara-hurt-b', 'vo-onigawara-hurt-c'] },
+  minase: { 'hurt-heavy': ['vo-minase-hurt-heavy-a', 'vo-minase-hurt-heavy-b'] },
+  shakudo: { hurt: ['vo-shakudo-hurt-a', 'vo-shakudo-hurt-b', 'vo-shakudo-hurt-c'], 'hurt-heavy': ['vo-shakudo-hurt-heavy-a', 'vo-shakudo-hurt-heavy-b'] },
+  amagoi: { 'hurt-heavy': ['vo-amagoi-hurt-heavy-a', 'vo-amagoi-hurt-heavy-b'] },
+  hinomoto: { 'hurt-heavy': ['vo-hinomoto-hurt-heavy-a', 'vo-hinomoto-hurt-heavy-b'] },
+  shidare: { hurt: ['vo-shidare-hurt-a', 'vo-shidare-hurt-b', 'vo-shidare-hurt-c'], 'hurt-heavy': ['vo-shidare-hurt-heavy-a', 'vo-shidare-hurt-heavy-b'] },
+  irbis: { hurt: ['vo-irbis-hurt-a', 'vo-irbis-hurt-b', 'vo-irbis-hurt-c'], 'hurt-heavy': ['vo-irbis-hurt-heavy-a', 'vo-irbis-hurt-heavy-b'] },
+  shibuichi: { 'hurt-heavy': ['vo-shibuichi-hurt-heavy-a', 'vo-shibuichi-hurt-heavy-b'] },
+  rakucho: { hurt: ['vo-rakucho-hurt-a', 'vo-rakucho-hurt-b', 'vo-rakucho-hurt-c'], 'hurt-heavy': ['vo-rakucho-hurt-heavy-a', 'vo-rakucho-hurt-heavy-b'] },
+  hisame: { hurt: ['vo-hisame-hurt-a', 'vo-hisame-hurt-b', 'vo-hisame-hurt-c'], 'hurt-heavy': ['vo-hisame-hurt-heavy-a', 'vo-hisame-hurt-heavy-b'] },
+  mizuhiki: { 'hurt-heavy': ['vo-mizuhiki-hurt-heavy-a', 'vo-mizuhiki-hurt-heavy-b'] },
+  bonsho: { 'hurt-heavy': ['vo-bonsho-hurt-heavy-a', 'vo-bonsho-hurt-heavy-b'] },
+  akayuri: { hurt: ['vo-akayuri-hurt-a', 'vo-akayuri-hurt-b', 'vo-akayuri-hurt-c'], 'hurt-heavy': ['vo-akayuri-hurt-heavy-a', 'vo-akayuri-hurt-heavy-b'] },
+  madake: { 'hurt-heavy': ['vo-madake-hurt-heavy-a', 'vo-madake-hurt-heavy-b'] },
+  rotfalke: { hurt: ['vo-rotfalke-hurt-a', 'vo-rotfalke-hurt-b', 'vo-rotfalke-hurt-c'], 'hurt-heavy': ['vo-rotfalke-hurt-heavy-a', 'vo-rotfalke-hurt-heavy-b'] },
+  kinu: { 'hurt-heavy': ['vo-kinu-hurt-heavy-a', 'vo-kinu-hurt-heavy-b'] },
+  hawser: { hurt: ['vo-hawser-hurt-a', 'vo-hawser-hurt-b', 'vo-hawser-hurt-c'], 'hurt-heavy': ['vo-hawser-hurt-heavy-a', 'vo-hawser-hurt-heavy-b'] },
+  murex: { 'hurt-heavy': ['vo-murex-hurt-heavy-a', 'vo-murex-hurt-heavy-b'] },
+  ovid: { 'hurt-heavy': ['vo-ovid-hurt-heavy-a', 'vo-ovid-hurt-heavy-b'] },
+  tsubute: { 'hurt-heavy': ['vo-tsubute-hurt-heavy-a', 'vo-tsubute-hurt-heavy-b'] },
+  aqrab: { hurt: ['vo-aqrab-hurt-a', 'vo-aqrab-hurt-b', 'vo-aqrab-hurt-c'], 'hurt-heavy': ['vo-aqrab-hurt-heavy-a', 'vo-aqrab-hurt-heavy-b'] },
+  aquilo: { hurt: ['vo-aquilo-hurt-a', 'vo-aquilo-hurt-b', 'vo-aquilo-hurt-c'], 'hurt-heavy': ['vo-aquilo-hurt-heavy-a', 'vo-aquilo-hurt-heavy-b'] },
+  svanhild: { hurt: ['vo-svanhild-hurt-a', 'vo-svanhild-hurt-b', 'vo-svanhild-hurt-c'], 'hurt-heavy': ['vo-svanhild-hurt-heavy-a', 'vo-svanhild-hurt-heavy-b'] },
+};
+
+/** src/audio/voiceSituations.ts LINES, after main's cut lines are merged in and before anything reads it. */
 export function applyOriginalSituations(lines: Table) {
   if (!ORIGINAL_SITUATIONS_ON) return lines;
   for (const kinds of Object.values(lines)) {
@@ -54,7 +117,7 @@ export function applyOriginalSituations(lines: Table) {
       if (own.length) kinds[kind] = own; else delete kinds[kind];
     }
   }
-  for (const [fighter, kinds] of Object.entries(QUALITY_LINES)) {
+  for (const [fighter, kinds] of [...Object.entries(QUALITY_LINES), ...Object.entries(CRY_LINES)]) {
     const row = (lines[fighter] ??= {});
     for (const [kind, cues] of Object.entries(kinds)) row[kind] = [...new Set([...(row[kind] ?? []), ...cues])];
   }

@@ -7,6 +7,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import type { Settings } from '../config';
 import { STAGES, type StageDefinition, type StageId } from '../game/stages';
 import { previewStage } from './look/preview';
+import { setFaceKey } from './look/faceLight';
 import { lookFor, type LookPreset } from './look/stageLooks';
 import { animeFinishOn, setAnimeFinish } from './look/powerupLook';
 import { focusUniforms, LookBloomPass, LookFinalPass } from './look/LookPost';
@@ -999,6 +1000,7 @@ export class GameRenderer {
     if(this.governor.ladder){this.governor.ladderRest=this.calm;this.applyLadder(performance.now());if(this.mobileHistory)this.noteLadder();}
     this.frameTimes.push(dt*1000);if(this.frameTimes.length>600)this.frameTimes.shift();
     this.time+=Math.min(dt,.1);
+    setFaceKey(this.sun);
     this.stepFilm();
     // The film look's drawings (look/filmDrawings.ts): the fighters posed twelve times a second.
     if(filmOn())holdDrawings(this.scene,this.time);

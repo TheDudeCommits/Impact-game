@@ -4,6 +4,8 @@ import type { Fighter } from '../Fighter';
 import { bodyCentre, type VfxKit } from './VfxKit';
 import { ORIENT, SPRITE } from './SparkField';
 import { elementFor } from './palette';
+import { onFilmLook, refinedVfx } from '../look/filmLook';
+import { abOff, onAbChange } from '../look/abSwitch';
 
 
 /** So the far team is never small and blue-translucent: a volleyball block is a jump at the net with the hands up (the
@@ -64,7 +66,7 @@ void main(){
 }`;
 
 export const GUARD_FRAGMENT = /* glsl */`
-uniform float uTime; uniform float uCalm;
+uniform float uTime; uniform float uCalm; uniform float uGuardInk;
 varying vec3 vObj; varying vec3 vN; varying vec3 vView; varying vec4 vGuard; varying vec4 vHit; varying vec4 vFace; varying vec4 vTint;
 vec3 hash3(vec3 p){
   p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6)));
@@ -81,6 +83,53 @@ vec4 cells(vec3 x){
   }
   return vec4(sqrt(d1), sqrt(d2), fract(sin(dot(c1 + c2, vec3(12.9898, 78.233, 37.719))) * 43758.5453),
     fract(sin(dot(c1, vec3(41.3, 289.1, 97.7))) * 43758.5453));
+}
+// The film look's guard (uGuardInk; ?ab=guard keeps the glass orb there): the same orb with every event on it, drawn the way
+// the film draws. A brush ring round the body, heaviest on the side the fighter faces and left open behind it, its wash
+// the guard's colour between two ink edges; the stroke dries into broken bristles as the bar empties, and ink cracks
+// cross the face. A block swells the stroke where the ripple passes it and leaves a paper-white mark where the blow met
+// the orb (on the far wall too, seen through it); a parry turns the stroke paper-white and thickens it; a break takes it
+// apart cell by cell, as the glass orb's does (the discard above).
+vec4 inkGuard(vec3 n, vec3 v, float integrity, float alpha, float seed, float flare, vec3 tint, float crack, float spent,
+    float ring, float mark, float pulse, float flicker){
+  vec3 paper = vec3(1.0, .97, .9), inkLine = vec3(.07, .06, .09);
+  vec3 markColour = mix(paper, vTint.rgb, .3) * 1.1;
+  float lens = smoothstep(.35, 1.4, length(vView));
+  if (!gl_FrontFacing) return vec4(markColour, clamp(mark, 0.0, 1.0) * .9 * alpha * lens);
+  float nv = abs(dot(n, v));
+  // How far out from the orb's middle the fragment sits on the screen: 1 on the outline.
+  float reach = sqrt(max(0.0, 1.0 - nv * nv));
+  // Where round the outline it is, as the screen sees it.
+  vec3 up = abs(v.y) < .95 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+  vec3 across = normalize(cross(up, v)), upward = cross(v, across);
+  float theta = atan(dot(n, upward), dot(n, across));
+  // The side the fighter faces (aFace.xy), on the ground.
+  vec2 ground = vec2(n.x, n.z);
+  float gLen = length(ground);
+  float facing = gLen > 1e-3 ? clamp(dot(ground / gLen, vFace.xy) * .5 + .5, 0.0, 1.0) : .5;
+  // Brush pressure along the stroke: a slow swell and thinning, heavier toward the threat, lifted behind.
+  float pressure = .7 + .3 * sin(theta * 2.0 + seed) * cos(theta * 3.0 - seed * 1.3);
+  float width = ((.09 + .11 * facing) * pressure * (.6 + .4 * integrity) * (1.0 + .5 * flare + .35 * pulse) + ring * .06)
+    * smoothstep(.04, .28, facing);
+  float inner = 1.0 - width;
+  float band = smoothstep(inner - .012, inner + .012, reach);
+  // Across the stroke: 0 at its inner edge, 1 on the outline; ink at both edges, the wash between.
+  float u = clamp((reach - inner) / max(width, 1e-3), 0.0, 1.0);
+  float edges = max(1.0 - smoothstep(0.0, .28, u), smoothstep(.72, 1.0, u));
+  // Dry brush: each bristle row breaks along the stroke as the guard empties.
+  float bristle = fract(sin(floor(u * 7.0) * 91.7 + seed) * 4375.85);
+  float streak = fract(theta * .159155 * (2.0 + 3.0 * bristle) + bristle * 13.0);
+  band *= 1.0 - step(1.0 - spent * .55, streak) * .85;
+  vec3 wash = mix(tint, tint * tint, .35);
+  vec3 stroke = mix(mix(wash, inkLine, edges * .85), paper * 1.15, flare * .85);
+  float crackA = crack * smoothstep(.2, .8, spent) * .55;
+  float body = .035 * (.4 + .6 * facing);
+  vec3 c = mix(paper, wash, .4);
+  c = mix(c, inkLine, clamp(crackA * 1.6, 0.0, 1.0));
+  c = mix(c, stroke, band);
+  c = mix(c, markColour, clamp(mark, 0.0, 1.0));
+  float a = clamp(max(max(band * .92, mark * .9), max(crackA, body)), 0.0, 1.0) * alpha * flicker * lens;
+  return vec4(c, a);
 }
 void main(){
   float integrity = vGuard.x, alpha = vGuard.y, seed = vGuard.z, hitAge = vGuard.w;
@@ -112,6 +161,12 @@ void main(){
   // And the whole bubble shimmers with a blocked blow, as hard as it was: a block reads from any side of it. (A parry
   // has its flare; a break its shatter.)
   float pulse = kind < .5 ? power * exp(-hitAge * 12.0) : 0.0;
+  if (uGuardInk > .5) {
+    vec4 drawn = inkGuard(n, v, integrity, alpha, seed, flare, tint, crack, spent, ring, mark, pulse, flicker);
+    if (drawn.a < .003) discard;
+    gl_FragColor = drawn;
+    return;
+  }
   // The parry: energy surges over the whole shell from the contact point, in thin bands, and the rim and the lattice
   // blaze - the face stays clear enough that the fighter inside is seen through it.
   float surge = flare * pow(.5 + .5 * sin(ang * 9.0 - uTime * 42.0), 6.0) * smoothstep(3.3, 0.0, ang - hitAge * 12.0);
@@ -147,7 +202,7 @@ export class GuardFx {
    *  programs up again (round 2 of the performance sweep). Made in this order, at the same place and render order, the
    *  two meshes are sorted next to each other, the back walls first: the draws, their programs and their order are
    *  three's two passes. */
-  private readonly uniforms = { uTime: { value: 0 }, uCalm: { value: 0 } };
+  private readonly uniforms = { uTime: { value: 0 }, uCalm: { value: 0 }, uGuardInk: { value: 0 } };
   private readonly back = new THREE.ShaderMaterial({ vertexShader: GUARD_VERTEX, fragmentShader: GUARD_FRAGMENT, transparent: true, depthWrite: false, toneMapped: false, side: THREE.BackSide, uniforms: this.uniforms });
   private readonly front = new THREE.ShaderMaterial({ vertexShader: GUARD_VERTEX, fragmentShader: GUARD_FRAGMENT, transparent: true, depthWrite: false, toneMapped: false, side: THREE.FrontSide, uniforms: this.uniforms });
   /** The orbs' far walls (and the instances both draw), then their near walls. */
@@ -166,6 +221,10 @@ export class GuardFx {
   private readonly colour = new THREE.Color();
   /** prefers-reduced-motion: no flicker or wobble, a smaller snap and flash, fewer sparks. */
   reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /** The film look draws the orb in ink (inkGuard in the fragment shader); ?ab=guard keeps the glass one. Set on every
+   *  update, and straight away when the look or the switch is flipped (a held frame's redraw runs no update). */
+  private readonly syncInk = () => { this.uniforms.uGuardInk.value = refinedVfx() && !abOff('guard') ? 1 : 0; };
+  private readonly unhook = [onFilmLook(this.syncInk), onAbChange(this.syncInk)];
 
   constructor(scene: THREE.Scene, private readonly kit: VfxKit) {
     for (const [name, attribute] of [['aGuard', this.guard], ['aHit', this.hit], ['aFace', this.face], ['aTint', this.tint]] as const) {
@@ -309,6 +368,7 @@ export class GuardFx {
   update(time: number, dt: number, fighters: ReadonlyMap<string, Fighter>) {
     this.uniforms.uTime.value = time;
     this.uniforms.uCalm.value = this.reduced ? 1 : 0;
+    this.syncInk();
     const step = Math.min(.1, Math.max(0, dt));
     let count = 0;
     for (const fighter of fighters.values()) {
@@ -369,6 +429,7 @@ export class GuardFx {
   dispose() {
     this.reset();
     for (const mesh of [this.mesh, this.frontMesh]) { mesh.removeFromParent(); mesh.dispose(); }
+    for (const off of this.unhook) off();
     this.geometry.dispose(); this.back.dispose(); this.front.dispose();
   }
 }

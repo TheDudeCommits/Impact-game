@@ -101,8 +101,12 @@ describe('fighters wear the look', () => {
         // The side's trim rides between the two (look/toonShading.ts applyTeamTrim): after the ink's own
         // colour, before the lock's glow, and nothing at all outside a ball match. (v2: the hull widens by the
         // trim's `widen`, football's bold kits.)
-        expect(shaderPatchKeys(m)).toEqual(['look-ink-v2', 'look-team-trim-ink-v2', 'threat-ink-v1', 'look-limb-smear-v2']);
+        // The hit flash (hitflash): a counter's or a punish's ink frame turns the line light (applyInkFlash), last, so
+        // it wins over the lock's glow for its two frames; nothing at all on any other frame.
+        expect(shaderPatchKeys(m)).toEqual(['look-ink-v2', 'look-team-trim-ink-v2', 'threat-ink-v1', 'look-limb-smear-v2', 'look-ink-flash-v1']);
         const hull = compile(m, T.ShaderLib.toon);
+        expect(hull.fragmentShader).toContain('if ( uInkFlash.w > 0.0 ) outgoingLight = mix( outgoingLight, uInkFlash.rgb, uInkFlash.w );');
+        expect(hull.uniforms.uInkFlash.value.w).toBe(0);
         expect(hull.vertexShader).toContain('uThreatWiden');
         expect(hull.fragmentShader).toContain('mix( outgoingLight, uThreatColor, uThreatMix )');
         expect(hull.fragmentShader).toContain('gl_FragColor.rgb *= 1.0 - uLookSilhouette');
