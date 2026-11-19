@@ -59,7 +59,7 @@ export const server = defineServer({
   gracefullyShutdown: false,
   transport,
   ...(presence && link ? { presence, driver: new LinkDriver(link), selectProcessIdToCreateRoom: selectProcess(presence) } : {}),
-  rooms: { ...(RIFT_WAR_OPEN ? { rift_war:defineRoom(RiftRoom).filterBy(['access']) } : {}), ...(BALL_OPEN ? { ball_arena: defineRoom(BallRoom).filterBy(['ball','access','queue','mutator','band']) } : {}), duel_arena:defineRoom(DuelRoom), private_duel:defineRoom(PrivateDuelRoom), party:defineRoom(PartyRoom), objective_arena: defineRoom(ObjectiveRoom).filterBy(['objective','access']), arena: defineRoom(ArenaRoom).filterBy(['mode']), private_arena: defineRoom(PrivateArenaRoom), bot_arena: defineRoom(BotArenaRoom), survival_arena: defineRoom(SurvivalRoom) },
+  rooms: { ...(RIFT_WAR_OPEN ? { rift_war:defineRoom(RiftRoom).filterBy(['access']) } : {}), ...(BALL_OPEN ? { ball_arena: defineRoom(BallRoom).filterBy(['ball','access','queue','mutator','band']) } : {}), duel_arena:defineRoom(DuelRoom).filterBy(['queue']), private_duel:defineRoom(PrivateDuelRoom), party:defineRoom(PartyRoom), objective_arena: defineRoom(ObjectiveRoom).filterBy(['objective','access']), arena: defineRoom(ArenaRoom).filterBy(['mode']), private_arena: defineRoom(PrivateArenaRoom), bot_arena: defineRoom(BotArenaRoom), survival_arena: defineRoom(SurvivalRoom) },
   express(app) {
     if (RIFT_WAR_OPEN) mountPublicRiftMatchmaker(app as never);
     if (RIFT_WAR_OPEN) app.get('/rift-war/queue',async (_req:unknown,res:{setHeader(k:string,v:string):void;json(body:unknown):unknown;status(code:number):{json(body:unknown):unknown}})=>{res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Cache-Control','no-store');try{res.json(await riftQueue());}catch{res.status(503).json([]);}});
@@ -72,7 +72,7 @@ export const server = defineServer({
     mountRivalries(economy.kept);
     if (role === 'control' && link) answerRivalries(link);
     // Ranked 3 v 3's ratings (the ball modes): their own file beside the book, written here alone (ball/ranked.ts).
-    mountRanked(economy.kept);
+    mountRanked(economy.kept, undefined, pk => economy.book.hasLogin(pk));
     if (role === 'control' && link) answerRanked(link);
     mountRankedRoute(app as never, token => economy.book.find(token)?.pk);
     mountPopulation(app as never, new Population(() => matchMaker.query({})));

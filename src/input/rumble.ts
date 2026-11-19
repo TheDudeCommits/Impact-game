@@ -1,5 +1,6 @@
 import type { CombatEvent } from '../game/types';
 import { LOCK_ESCAPE_WINDOW } from '../game/lockCombat';
+import { PARRY_FREEZE } from '../game/moves';
 
 /** One burst of the pad's two motors: the heavy low one and the light high
  *  one, each 0-1, for so many milliseconds. `delay`: milliseconds from now it
@@ -53,6 +54,15 @@ export function pulseFor(event: CombatEvent, self: string, enemy?: (id: string) 
       return mine && event.targetId && !enemy?.(event.targetId) ? { strong: .5, weak: .6, ms: 200 } : undefined;
     default: return undefined;
   }
+}
+
+/** A parry's payoff (render/parryPayoff.ts): a second pulse as the parry's freeze lets go (PARRY_FREEZE after the parry's own
+ *  kick, which pulseFor gives at once) - a heavy thump in the parrier's hands, a dull knock in the parried thrower's. On a
+ *  pad and, through TouchHaptics, a phone that buzzes. */
+export function parryPayPulse(event: CombatEvent, self: string): Pulse | undefined {
+  if (event.kind !== 'just-guard') return undefined;
+  const delay = PARRY_FREEZE * 1000;
+  return event.targetId === self ? { strong: .75, weak: .3, ms: 90, delay } : event.actorId === self ? { strong: .4, weak: 0, ms: 60, delay } : undefined;
 }
 
 /** The part of a Gamepad's vibrationActuator the game uses. */

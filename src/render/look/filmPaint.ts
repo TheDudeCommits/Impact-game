@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Pass, FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { filmOn } from './filmLook';
 import { abOff } from './abSwitch';
+import { runBeforeEffects } from './beforeEffects';
 
 /**
  * THE PAINTED SET: the film look's stage, painted by hand.
@@ -313,6 +314,7 @@ export class PaintedScenePass extends Pass {
     renderer.autoClear = false;
     const target = this.renderToScreen ? null : readBuffer;
     if (!filmOn() || !PAINT.on || !this.allowed || !target || this.tier === 'off') {
+      runBeforeEffects(renderer, this.camera, target);
       renderer.setRenderTarget(target);
       if (this.clear) renderer.clear(renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil);
       renderer.render(this.scene, this.camera);
@@ -353,6 +355,8 @@ export class PaintedScenePass extends Pass {
       }
       l.uEdge.value = PAINT.edge; l.uTooth.value = PAINT.tooth; l.uWash.value = PAINT.wash; l.uDetail.value = PAINT.detail; l.uLightDetail.value = PAINT.lightDetail;
       renderer.setRenderTarget(this.paintRT); this.paintQuad.render(renderer);
+      // (what draws into a target of its own before the effects: here, between targets - beforeEffects.ts)
+      runBeforeEffects(renderer, this.camera, target);
       renderer.setRenderTarget(target);
       if (this.clear) renderer.clear(true, true, true);
       if (!PAINT.debugRedraw) return;

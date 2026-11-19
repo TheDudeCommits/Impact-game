@@ -1081,6 +1081,44 @@ export const JUST_GUARD_ADVANTAGE_KIT = .34;
  *  purpose: a 13 m room should reward putting someone in a corner. */
 export const WALL_SPLAT_SPEED = 4;
 export const WALL_SPLAT_STUN = .8;
+/** The G in combos: a wall splat or a launch cancels into a quick G, and a G hit staggers long enough to follow up.
+ *  Before it nothing cancelled into the area slot or out of it, and it always took its wind-up: the cast's release
+ *  (0.38 s for 95 of the 100 released fighters) and the circle's fill (0.6-1.85 s, 0.8 on average), about 1.13 s from
+ *  the press to the strike. simulation.ts reads these (areaComboVictim, quickArea, areaComboHold):
+ *  - launch: a blow that throws a body off the floor into a launch (a launch, a groundBounce, or the old rule's launch by
+ *    knockback - never a juggle, a hop, a crumple or a knockdown) opens its thrower's G, for at most this long, on the
+ *    thrower's own clock (its impact freezes hold the window, as they hold the chase's);
+ *  - splat: a wall splat (or a wall bounce) of a body the thrower's blow sent there opens it, for at most this long;
+ *  - pace: the quick G's cast plays at this share of its own time - its release at 0.19 s, the cast over at 0.31;
+ *  - telegraph: its circle fills this long, from the release to the strike: the strike 0.44 s after the press;
+ *  - stagger: how long its first strike on the body holds it on its feet, reeling (from its landing, for a body in the
+ *    air: driven down onto its feet at `drive` m/s, as the air knockdown drives one);
+ *  - drive: that drive;
+ *  - share: what each of its strikes deals the body it was thrown at, of its own share of the move: a blow at the circle's
+ *    rim (areaFalloff's half). The game puts that circle on the body, the player does not aim it, and the G pays its
+ *    bullseye for the aim (the more accurate the placement, the more the damage dealt): thrown whole, the G in a combo
+ *    dealt 2.25 times the best combo the same fighter had without it (scripts/engine/area_combo.mts), at half about 1.5.
+ *  The window (simulation.ts openAreaCombo): the body must still be in the circle when it strikes, and not yet getting up
+ *  (which dodges it), so each throw's window is how long its body stays in the combo - its flight back to the floor under
+ *  a launch's gravity and its time down there (OUTCOME_DOWN, or KNOCKDOWN_SECONDS), or a splat's stun (WALL_SPLAT_STUN,
+ *  0.8 s) - less the thrower's own quick G (release and fill, 0.44 s for 95 of the 100) and three ticks to spare, and
+ *  never more than `launch` or `splat`. A launch's body at OUTCOME_LIFT.launch (6.6 m/s) is in the air 0.84 s and down
+ *  0.36 (its window 0.5), a groundBounce's 0.69 and 0.34 (0.5), the lowest launch on the roster (a heavy at 4.6 m/s) 0.59
+ *  and 0.36 (0.46); a splat's window 0.3. The quick G's strikes on that body land even if it is down on the floor (as an
+ *  ultimate's do: no ground hit), and never throw it. The stagger: a person sees the strike and presses in about 0.2 s;
+ *  the slowest light on the roster lands 0.26 s after its press (0.16 on average), and from where a lock string's
+ *  knockaway leaves the body (4-5 m) its dash-in lands the light 0.45 s after the press - 0.65 s in all, so 0.7, just
+ *  under the parry's 0.72 (JUST_GUARD_ADVANTAGE, long enough for every heavy). One G a combo (the body's own flag, cleared
+ *  when its combo goes quiet), the G's own cooldown and stamina, and the string's damage scaling and juggle budget as for
+ *  any combo: tests/areaCombo.test.ts and scripts/engine/area_combo.mts (every released fighter). */
+export const AREA_COMBO = { launch: .5, splat: .3, pace: .5, telegraph: .25, stagger: .7, drive: 9, share: .5 } as const;
+/** The quick G (AREA_COMBO): a fighter's own area move, its cast at AREA_COMBO.pace of its time and its circle filling
+ *  AREA_COMBO.telegraph. Its damage, cost, cooldown, look and strikes are the move's own. */
+export function quickArea(move: MoveDefinition): MoveDefinition {
+  const pace = AREA_COMBO.pace;
+  return { ...move, duration: +(move.duration * pace).toFixed(4), contacts: move.contacts.map(c => +(c * pace).toFixed(4)),
+    ...(move.area ? { area: { ...move.area, telegraph: AREA_COMBO.telegraph } } : {}) };
+}
 /** A finisher that lands on someone already in the air drives them down, and
  *  they bounce once off the floor before the knockdown. */
 export const GROUND_BOUNCE_LIFT = 5.4;

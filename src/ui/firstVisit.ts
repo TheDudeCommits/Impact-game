@@ -1,3 +1,8 @@
+/** The first-visit notice, once per device: it shows until it is closed on this device, and again whenever
+ *  NOTICE_VERSION changes (its words change); the legal links keep every word of it a click away. Closing it any way
+ *  (the button, Escape, a pad's A or START) counts as read: NOTICE_VERSION is kept in localStorage under NOTICE_KEY,
+ *  which the error reports read (boot/errorReports.ts: nothing is sent before the notice has been seen), and which
+ *  keeps the notice away after that (a private window or blocked storage shows it each time). */
 import './firstVisit.css';
 import { CONTACT, CREDITS_PAGE, FAN_MADE, GAME_NAME, PRIVACY_PAGE, REPO_PAGE, TERMS_PAGE } from './legalLinks';
 import { UI_DIRECTION, type UiAction } from '../input/gamepad';
@@ -17,9 +22,10 @@ export const NOTICE_LINES = {
   terms: 'By playing you accept the',
 } as const;
 
-/** Whether the notice is due: every time the page opens, when somebody is there to read it (or it was asked for). */
-export function noticeDue(at: { webdriver: boolean; forced: boolean }): boolean {
-  return at.forced || !at.webdriver;
+/** Whether the notice is due: until this device has closed this version of it, when somebody is there to read it (or
+ *  it was asked for). `seen`: the version this device last closed (NOTICE_KEY), if any. */
+export function noticeDue(at: { webdriver: boolean; forced: boolean; seen?: string | null }): boolean {
+  return at.forced || (!at.webdriver && at.seen !== NOTICE_VERSION);
 }
 
 /** The dialog's inside. */
@@ -39,11 +45,12 @@ export function noticeHtml(): string {
 /** A link's words as the page viewer's title. */
 const labelOf = (link: HTMLElement) => (link.textContent ?? '').replace(/[↗→]/g, '').trim().toUpperCase();
 const write = (key: string, value: string) => { try { localStorage.setItem(key, value); } catch { /* a private window */ } };
+const read = (key: string) => { try { return localStorage.getItem(key); } catch { return null; /* blocked storage */ } };
 
 /** Shows the notice if it is due and returns its dialog (undefined where it is not). */
 export function mountFirstVisit(doc: Document = document): HTMLDialogElement | undefined {
   const forced = new URLSearchParams(doc.defaultView?.location.search ?? '').has('notice');
-  if (!noticeDue({ webdriver: !!doc.defaultView?.navigator.webdriver, forced }) || doc.getElementById('first-visit')) return undefined;
+  if (!noticeDue({ webdriver: !!doc.defaultView?.navigator.webdriver, forced, seen: read(NOTICE_KEY) }) || doc.getElementById('first-visit')) return undefined;
   const dialog = doc.createElement('dialog');
   dialog.id = 'first-visit'; dialog.className = 'first-visit'; dialog.setAttribute('aria-labelledby', 'first-visit-title');
   dialog.innerHTML = noticeHtml();

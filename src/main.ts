@@ -6,6 +6,11 @@ import './originals/launch';
 import {BALL_ARENAS,type BallArenaId} from './game/ball/arenas';
 import {ballArenaFor,ballCourtFor,setBallArena,setBallCourt} from './render/ball/arenaChoice';
 import {setCommentary} from './audio/ballCaller';
+import {DuelCaller,DuelWatch,announcerOn,duelCallerFiles,setAnnouncer} from './audio/duelCaller';
+import {ParryPayoff} from './render/parryPayoff';
+import {STING_PEAK} from './audio/parrySting';
+import {parryPayPulse} from './input/rumble';
+import {PARRY_FREEZE} from './game/moves';
 import {errorReports,lossDetails,reportStartFailure} from './boot/errorReports';
 // In Player Two's player, a join link's room or party goes into the address before anything reads it (boot/playerTwoJoin.ts).
 import './boot/playerTwoJoin';
@@ -68,6 +73,8 @@ import {RiftAudio} from './audio/RiftAudio';
 import './render/meshopt';
 import {textureSharing} from './render/sharedTextures';
 import {CAREER_MODES,CareerTracker,type CareerMode} from './game/social/career';
+import {clearMastery} from './survival/progressStore';
+import {masteryCalls} from './ui/progress/masteryStrip';
 import {setActivity as playerTwoPresence} from './social/presence';
 import {inkSelectController} from './ui/inkSelect';
 import {CareerUI} from './ui/social/CareerUI';
@@ -229,6 +236,10 @@ import {mountGraphicsNotice} from './ui/graphicsNotice';
 import {textureBytes} from './render/textureBytes';
 import {showStartFailure} from './ui/startFailure';
 import {bootDone} from './boot/bootScreen'; // index.html's loading page (#boot) goes once the home is ready
+import {ArenaSimulation as ArenaRules} from './game/simulation';
+// `?ab=gcombo` turns the G in combos off in the arenas this page runs itself (a Duel against the CPU, couch, Training, a
+// local royale); a room online plays it whatever this says, and so does the page's prediction of one (game/prediction.ts).
+ArenaRules.areaComboDefault=!abOff('gcombo');
 
 const root=document.querySelector<HTMLElement>('#app')!;
 // The renderer, tried twice and else a message and a RETRY in place of the boot mark (boot/webglFailure.ts).
@@ -500,6 +511,10 @@ SIGNATURE.floor=(x,y,z)=>{try{const top=y+.5,hit=localCollision?.raycast?.({x,y:
 const hiddenRiftBodies=new Map<string,Fighter>();
 function clearFighters(){for(const body of [...fighters.values(),...hiddenRiftBodies.values()])body.dispose();fighters.clear();hiddenRiftBodies.clear();}
 const timeline=new CombatTimeline(),strikeTrails=new StrikeTrails(view.scene);
+/** A parry's payoff: a parry the player is in pays off - the drawn fight slowed a tenth of a second as its freeze lets go
+ *  and caught up again, a sting made in code, a rumble pulse - and nothing else moves: no camera, no simulation, no input
+ *  (render/parryPayoff.ts). `?ab=parrypay` turns it off. */
+const parryPay=new ParryPayoff(()=>!abOff('parrypay'));
 const awakeningEffects=new AwakeningEffects(view.scene);
 // The bodies the director's shots keep a clear sight line past and the lens out of.
 camera.director.crowd=fighters;
@@ -632,7 +647,7 @@ function wantStage(stage:StageId){
     void stages.show('harbor').then(()=>{if(stageWanted==='harbor'){view.applyStage(STAGES.harbor);stageShown='harbor';}}).catch(fallback=>console.warn('Harbour stand-in failed',fallback));
   });
 }
-input.sensitivity=settings.sensitivity;input.rumble.scale=settings.vibration;setCommentary(settings.commentary);hud.busy(true);const exercise=new CombatExercise(new URLSearchParams(location.search).has('contact-exercise'));installGameplayRecorder(view.renderer.domElement,async()=>{if(network.snapshot?.roomMode!=='training')throw new Error('Enter training first');await exercise.start(command=>network.room?.send('training',command));},()=>audio.captureOutput(music.captureElements()),()=>({...fighters.get(network.id)?.motionEvidence(),performance:view.perf(),player:shownSelf?{x:shownSelf.x,y:shownSelf.y,z:shownSelf.z,yaw:shownSelf.yaw,actionSeq:shownSelf.actionSeq}:undefined,view:{position:view.camera.position.toArray(),yaw:camera.yaw,movementYaw:camera.movementYaw},roster:network.snapshot?.players.map(p=>({id:p.id,fighter:p.fighter,action:p.action,hp:p.hp}))}));
+input.sensitivity=settings.sensitivity;input.rumble.scale=settings.vibration;setCommentary(settings.commentary);setAnnouncer(settings.announcer);hud.busy(true);const exercise=new CombatExercise(new URLSearchParams(location.search).has('contact-exercise'));installGameplayRecorder(view.renderer.domElement,async()=>{if(network.snapshot?.roomMode!=='training')throw new Error('Enter training first');await exercise.start(command=>network.room?.send('training',command));},()=>audio.captureOutput(music.captureElements()),()=>({...fighters.get(network.id)?.motionEvidence(),performance:view.perf(),player:shownSelf?{x:shownSelf.x,y:shownSelf.y,z:shownSelf.z,yaw:shownSelf.yaw,actionSeq:shownSelf.actionSeq}:undefined,view:{position:view.camera.position.toArray(),yaw:camera.yaw,movementYaw:camera.movementYaw},roster:network.snapshot?.players.map(p=>({id:p.id,fighter:p.fighter,action:p.action,hp:p.hp}))}));
 const damageNumbers=new DamageNumbers(root),manga=new MangaImpact(root);
 // The feel pass: an ultimate's cinema bars (render/FinisherCuts.ts), under the HUD.
 const letterbox=new Letterbox(root);
@@ -660,12 +675,24 @@ connectArmorySound(audio);
  *  the announcer's FIGHT! (the arcade's own voice, scripts/survival/announcer). */
 const FIGHT_LINE='/assets/audio/survival/announcer-fight.m4a';
 const VICTORY_LINE='/assets/audio/survival/announcer-victory.m4a',FLAWLESS_LINE='/assets/audio/survival/announcer-flawless.m4a';
+/** A 1 v 1 Duel's announcer (audio/duelCaller.ts) - against the CPU, couch, online, ranked - which also says its FIGHT!
+ *  and its result; `?ab=duelcaller` leaves the Duel as it was (FIGHT!, VICTORY!, FLAWLESS). Settings' ANNOUNCER off
+ *  silences it, and every match's FIGHT!, VICTORY! and FLAWLESS. */
+const duelCaller=new DuelCaller({announce:(url,gain,delay)=>audio.announce(url,gain,delay),sampleSeconds:url=>audio.sampleSeconds(url),preload:urls=>audio.preload(urls),takeBack:(owner,url)=>audio.takeBack(owner,url),fighterLines:()=>audio.fighterLines()});
+const duelWatch=new DuelWatch(duelCaller);let duelCalled='';
+const duelCalls=(snapshot:GameSnapshot|null|undefined)=>!abOff('duelcaller')&&announcerOn()&&!!snapshot?.duel&&snapshot.players.length===2;
+/** Once a frame: the Duel's moments as drawn, its files fetched as a set starts, and its rests cleared for a new one. */
+function duelCommentary(snapshot:GameSnapshot){
+  const set=duelCalls(snapshot)?`${snapshot.matchId??''}:${snapshot.duel!.set}`:'';
+  if(set!==duelCalled){duelCalled=set;duelCaller.reset();duelWatch.reset();if(set)audio.preload(duelCallerFiles());}
+  if(set)duelWatch.frame(snapshot);
+}
 const onVsBeat=(beat:VsBeat)=>{
   if(beat==='panels')audio.ui(UI_SFX.panels,.5,.16);
   else if(beat==='stamp')audio.ui(UI_SFX.stamp,.5,.1);
   else if(beat==='cut')audio.ui(UI_SFX.cut,.5,.02);
   // (The voice situations: the local fighter answers the bell, then the nearest opponent - CombatAudio.bell.)
-  else if(beat==='fight'){audio.ui(UI_SFX.fight,.55,.05);audio.announce(FIGHT_LINE,.95,.08);audio.bell();}
+  else if(beat==='fight'){audio.ui(UI_SFX.fight,.55,.05);if(duelCalls(network.snapshot))duelCaller.say('fight',{delay:.08,queue:true});else if(announcerOn())audio.announce(FIGHT_LINE,.95,.08);audio.bell();}
   else audio.ui(UI_SFX.slam,.5);
 };
 manga.onKnockout=()=>audio.ui(UI_SFX.ko,.5);
@@ -728,6 +755,8 @@ audio.setMix({master:settings.volume,sfx:settings.sfxVolume,voice:settings.voice
 const homeVoice=new HomeVoice(root);homeVoice.setMix(settings.volume,settings.voiceVolume);
 const startup=new Startup();startup.started=0;
 const career=new CareerTracker(),careerUI=new CareerUI(root,career);
+/** A fighter's mastery level gained, said as its results card shows the stamp (ui/progress/masteryStrip.ts). */
+const MASTERY_LINE='/assets/audio/survival/announcer-mastery-up.m4a';masteryCalls.up=()=>audio.announce(MASTERY_LINE,.95,.35);
 const party=new PartyClient(()=>({fighter:hud.selected,name:hud.playerName()})),partyUI=new PartyUI(root,party);
 let startEpoch=0;
 hud.onParty=()=>{homeVoice.stop();party.profileChanged();partyUI.show();};hud.onCareer=()=>{homeVoice.stop();careerUI.show();};
@@ -832,7 +861,7 @@ hud.objectives.onCommand=(action,role)=>{if(network===localObjective){if(action=
 localObjective.onNotice=message=>hud.objectives.notice(message);localObjective.onDisconnect=message=>{returnToLobby();hud.error(message);};
 let lastMatchStart:Parameters<typeof hud.onStart>|undefined;
 // A friends' royale's PLAY AGAIN says "I'm in" for the next match in the same room, and the host's starts it (ui/social/roomAgain.ts).
-hud.onPlayAgain=()=>{if(network.snapshot?.duel?.phase==='complete'&&network.snapshot.players.length===2){network.room?.send('duel-runback');return;}if(askRoomAgain(network.snapshot,network.room))return;if(party.joined){returnToLobby();partyUI.show();partyUI.notice('Ready up with your party for the next match.');return;}if(!lastMatchStart)return;const [fighter,mode,name,access]=lastMatchStart;
+hud.onPlayAgain=()=>{if(network.snapshot?.duel?.phase==='complete'&&network.snapshot.players.length===2&&!network.snapshot.ranked){network.room?.send('duel-runback');return;}if(askRoomAgain(network.snapshot,network.room))return;if(party.joined){returnToLobby();partyUI.show();partyUI.notice('Ready up with your party for the next match.');return;}if(!lastMatchStart)return;const [fighter,mode,name,access]=lastMatchStart;
   // Round 5 (UX corrections): PLAY AGAIN · THE SAME BOT RIVAL keeps the rival it names.
   const rival=access?.kind==='duel'&&access.access==='bot'?duel.snapshot?.players.find(p=>p.isBot)?.fighter:undefined;
   const nextAccess=rival&&access?.kind==='duel'?{...access,rival}:access?.kind==='duel'&&(access.access==='host'||access.access==='join')?{kind:'duel' as const,access:'host' as const,place:access.access==='host'?access.place:undefined}:access?.kind==='create-private'||access?.kind==='join-private'?{kind:'create-private' as const,players:network.snapshot?.lobby?.size??8,place:access.kind==='create-private'?access.place:undefined}:access;returnToLobby();void hud.onStart(fighter,mode,name,nextAccess);};
@@ -847,13 +876,13 @@ hud.onFightBot=()=>{const [fighter,,name,access]=lastMatchStart??[hud.selected,'
 mountSocialPlay(root.querySelector<HTMLElement>('#interface')??root,()=>pageWhere({started,online:network===online,snapshot:network.snapshot,selfId:network.id,access:lastMatchStart?.[3],
   local:network===royale?'royale':network===duel?'duel':network===localRift?'rift-war':network===arcade?'arcade':network===localObjective?objectiveOf(network.snapshot)?.kind:undefined}),
   mode=>{const [fighter,,name]=lastMatchStart??[hud.selected,'match',hud.playerName()],access=queueAccess(mode,fighter);if(!access)return;standby.end();returnToLobby();void hud.onStart(fighter,'match',name,access);});
-hud.onSettings=s=>{touchFeel(s);setVfxLevel(s.vfx);setCommentary(s.commentary);Fighter.animStyle=animOverride??s.animStyle;input.sensitivity=s.sensitivity;input.rumble.scale=s.vibration;effects.density=s.effects;manga.density=s.effects;view.applySettings(s);audio.setMix({master:s.volume,sfx:s.sfxVolume,voice:s.voiceVolume});homeVoice.setMix(s.volume,s.voiceVolume);music.setVolume(s.volume*s.musicVolume);};
+hud.onSettings=s=>{touchFeel(s);setVfxLevel(s.vfx);setCommentary(s.commentary);setAnnouncer(s.announcer);Fighter.animStyle=animOverride??s.animStyle;input.sensitivity=s.sensitivity;input.rumble.scale=s.vibration;effects.density=s.effects;manga.density=s.effects;view.applySettings(s);audio.setMix({master:s.volume,sfx:s.sfxVolume,voice:s.voiceVolume});homeVoice.setMix(s.volume,s.voiceVolume);music.setVolume(s.volume*s.musicVolume);};
 hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packRefuses(mode,access as {kind:string});if(refused){hud.error(refused);return;}}if(party.joined&&access?.kind!=='party'){partyUI.show();partyUI.notice(party.view?.leader===party.id?'You lead a party: choose the match here and START it together.':'You are in a party: READY here, and your leader starts the match.');return;}const laboratory=mode==='training'&&(!access||access.kind==='public')&&fighter===laboratoryFighter()?fighter:undefined;const epoch=++startEpoch;if(!laboratory&&lockedStart(fighter,mode==='training'))return;fighterLabEntry?.close();homeVoice.stop();
   // On a thin line (loading/backgroundPolicy.ts thinLine) the sound bank waits while the room's bodies, stage and effects come in
   // (CombatAudio.holdFetches; opened by the room's load as its compile begins, or when this start ends). Not for a survival run:
   // its story plays sounds over the load.
   let openAudio=()=>{};if(thinLine()&&!(access?.kind==='survival'||access?.kind==='coop-create'||access?.kind==='coop-join'||access?.kind==='party'&&access.travel.mode==='survival'))audio.holdFetches(new Promise<void>(open=>{openAudio=open;}),60_000);
-  void audio.unlock().then(()=>audio.preload([FIGHT_LINE,VICTORY_LINE,FLAWLESS_LINE])).catch(console.warn);try{hud.busy(true);
+  void audio.unlock().then(()=>audio.preload([FIGHT_LINE,VICTORY_LINE,FLAWLESS_LINE,MASTERY_LINE])).catch(console.warn);try{hud.busy(true);
     const riftRun=access?.kind==='rift-war'&&access.access==='bots';
     const ballRun=access?.kind==='ball'&&access.access==='bots';
     const arcadeRun=access?.kind==='survival',coopRun=access?.kind==='coop-create'||access?.kind==='coop-join'||access?.kind==='party'&&access.travel.mode==='survival';
@@ -885,7 +914,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     clearFighters();resetSwaps();
     pauseLink.reset();roomFrozen=false;fightShown=false;
     network=riftRun?localRift:ballRun?localBall:royaleRun?royale:duelRun?duel:arcadeRun?arcade:practiceRun?practice:objectiveRun?localObjective:online;timeline.delayMs=riftRun||ballRun||royaleRun||duelRun||arcadeRun||practiceRun||objectiveRun?LOCAL_DELAY:ONLINE_DELAY;
-    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();camera.reset();
+    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();parryPay.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();camera.reset();
     horde.clear();grunts.clear();gore.clear();survivalFx.reset();techniques.reset();lastEntrance=0;lastRoar=0;bossesWanted='';lastHordeVoice=0;lastBossVoice=0;lastSmash=0;bossShoutAt.clear();stages.rift?.restore();
     if(arcadeRun||coopRun)audio.preload(everyTake());
     if(access?.kind==='objective'&&access.objective==='last-stand'||access?.kind==='party'&&access.travel.mode==='last-stand')objectiveAudio.preload();
@@ -926,7 +955,8 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     }
     if(epoch!==startEpoch)return;
     const careerMode:CareerMode=access?.kind==='ball'?access.mode:access?.kind==='rift-war'?'rift-war':access?.kind==='duel'?'duel':arcadeRun?'survival':coopRun?'coop':access?.kind==='party'?(access.travel.mode==='royale'?'private':access.travel.mode) as CareerMode:access?.kind==='objective'?access.objective:access?.kind==='bots'?'bots':access?.kind==='create-private'||access?.kind==='join-private'?'private':'royale';
-    if(mode!=='training')career.start(careerMode);
+    // (Mastery in every mode: a match on this device pays its fighter's with its career report, a room's from the room.)
+    if(mode!=='training')career.start(careerMode,network!==online);clearMastery();
     playerTwoPresence(mode==='training'?'Training':CAREER_MODES[careerMode]);
     loadingScreen.progress('room');
     const joined=performance.now();while(!network.snapshot){if(epoch!==startEpoch)return;if(performance.now()-joined>12000)throw new Error('The arena did not respond. Try again.');await new Promise(resolve=>setTimeout(resolve,50));}
@@ -937,7 +967,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     await ensureSnapshotAssets(network.snapshot,()=>{loadingScreen.progress('warm');openAudio();},selection);if(epoch!==startEpoch)return;
     pilot=autopilotParam&&autopilotAllowed?new Autopilot(.8,network.id):undefined;
     if(couch.split&&network.snapshot)beginSplit(network.snapshot);else if(couch.on)couchHud.share(()=>couch.seats.seats);
-    hud.setSurvival(arcadeRun||coopRun);lastMatchStart=[fighter,mode,name,access?.kind==='bots'&&access.lone?{kind:'bots',players:access.players}:access];hud.resultAgainLabel=access?.kind==='duel'?(access.access==='online'?'FIND NEXT DUEL':access.access==='bot'?'DUEL AGAIN':'NEW FRIEND DUEL'):access?.kind==='create-private'||access?.kind==='join-private'?'NEW PRIVATE ROOM':'PLAY AGAIN';
+    hud.setSurvival(arcadeRun||coopRun);lastMatchStart=[fighter,mode,name,access?.kind==='bots'&&access.lone?{kind:'bots',players:access.players}:access];hud.resultAgainLabel=access?.kind==='duel'?(access.access==='online'?'FIND NEXT DUEL':access.access==='ranked'?'FIND RANKED DUEL':access.access==='bot'?'DUEL AGAIN':'NEW FRIEND DUEL'):access?.kind==='create-private'||access?.kind==='join-private'?'NEW PRIVATE ROOM':'PLAY AGAIN';
     music.setContext(fighter,undefined,'combat',{mode:network.snapshot?modeOfSnapshot(network.snapshot,arcadeRun||coopRun):undefined,turn:startEpoch});musicPanel.setEnabled(settings.musicEnabled);started=true;fetchPlannedBots();clearInterval(inputTimer);inputClock.reset();unacked.length=0;inputTimer=setInterval(pumpInput,1000/INPUT_HZ) as unknown as number;hud.enter(fighter);loadingScreen.done();input.enabled=true;
     // Round 5 (SOLOPAUSE): a frame of the fight drawn behind the fading loading screen - a local match's clock starts
     // now, and a versus room hears it (ReadyGate) and runs its READY hold from here, then FIGHT.
@@ -1155,7 +1185,7 @@ function ballSounds(snapshot:GameSnapshot){
     else if(e.kind==='clash'){const me=snapshot.players.find(p=>p.id===network.id);if(me&&Math.hypot(me.x-e.x,me.z-e.z)<18)camera.impact(.9);}
   }
 }
-function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
+function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();parryPay.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
 // Out of a party's match: home, and back on the party's sheet, where the others are seen coming home too.
 hud.onLeave=()=>{returnToLobby();if(party.joined)partyUI.show();};
 for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onDisconnect=(reason,code)=>{
@@ -1168,7 +1198,7 @@ for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,l
 // begins its clock and its events again from nothing, so the page lets go of the last one's, as for a Duel's next set; the
 // bodies are built again under the short intro's splash page.
 // An online ball room's rematch (its next round, BallRoom.rematch) is let go of the same way (onSnapshot).
-function ballRestart(){clearFighters();timeline.reset();lastEvent=0;localClock=0;camera.reset();introFor=null;victoryFor=null;finale.reset();targetId=null;targeting.reset();ballField.clear();ballUI.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;ballMark='';network.onControlReset();}
+function ballRestart(){clearFighters();timeline.reset();parryPay.reset();lastEvent=0;localClock=0;camera.reset();introFor=null;victoryFor=null;finale.reset();targetId=null;targeting.reset();ballField.clear();ballUI.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;ballMark='';network.onControlReset();}
 localBall.onRestart=ballRestart;let ballRound='';
 for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onControlReset=()=>{unacked.length=0;input.clear();input.enabled=false;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;inputClock.reset();};
 let objectiveRound=0,objectivePhase='',duelRoundKey='';
@@ -1184,10 +1214,10 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   // springs not carried across). Rebuilt for every round, the two were 45 ms of building in the round's first frame - a
   // 70-80 ms frame three seconds after every knockout. A new set (a runback, where a fighter may change) builds afresh,
   // as before; `?ab=roundbodies` builds every round afresh again.
-  if(snapshot.duel?.phase==='playing'&&snapshot.status==='active'&&duelKey!==duelRoundKey){if(duelRoundKey&&(duelRoundKey.split(':')[0]!==duelKey.split(':')[0]||abOff('roundbodies'))){clearFighters();}duelRoundKey=duelKey;timeline.reset();camera.reset();introFor=null;victoryFor=null;network.onControlReset();input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;camera.lookAlong(input.yaw);}
+  if(snapshot.duel?.phase==='playing'&&snapshot.status==='active'&&duelKey!==duelRoundKey){if(duelRoundKey&&(duelRoundKey.split(':')[0]!==duelKey.split(':')[0]||abOff('roundbodies'))){clearFighters();}duelRoundKey=duelKey;timeline.reset();parryPay.reset();camera.reset();introFor=null;victoryFor=null;network.onControlReset();input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;camera.lookAlong(input.yaw);}
   if(!snapshot.duel)duelRoundKey='';
   // A friends' royale's next match in the same room (server/social/RoomAgain.ts): its fighters afresh, as a Duel's next set's.
-  {const again=snapshot.lobby?.again?.match??0;if(again>againSeen&&againSeen){clearFighters();timeline.reset();camera.reset();introFor=null;victoryFor=null;targetId=null;targeting.reset();network.onControlReset();}againSeen=again;}
+  {const again=snapshot.lobby?.again?.match??0;if(again>againSeen&&againSeen){clearFighters();timeline.reset();parryPay.reset();camera.reset();introFor=null;victoryFor=null;targetId=null;targeting.reset();network.onControlReset();}againSeen=again;}
   if(matchBell.rang(snapshot)){input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;camera.reset();camera.lookAlong(input.yaw);}
   // Adaptive difficulty (game/adaptive.ts): the skill the match has learned, kept for the next one (boot/skill.ts).
   keepSkill(snapshot.players.find(p=>p.id===network.id)?.skill);
@@ -1197,7 +1227,7 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   if(started)streamSnapshotAssets(snapshot);
   const modeView=objectiveOf(snapshot),warView=riftOf(snapshot),round=modeView?.round??warView?.round??0;
   if(round!==objectiveRound){
-    objectiveRound=round;objectivePhase='';timeline.reset();lastEvent=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;input.clear();inputClock.reset();unacked.length=0;predictedCasts.clear();predictedVisuals.length=0;objectiveField.reset();horde.clear();techniques.reset();bossesWanted='';
+    objectiveRound=round;objectivePhase='';timeline.reset();parryPay.reset();lastEvent=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;input.clear();inputClock.reset();unacked.length=0;predictedCasts.clear();predictedVisuals.length=0;objectiveField.reset();horde.clear();techniques.reset();bossesWanted='';
     audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();camera.reset();victoryFor=null;introFor=null;targeting.reset();targetId=null;
     clearFighters();
   }
@@ -1780,7 +1810,7 @@ function cinematics(snapshot:GameSnapshot){
   if(champion&&victoryFor!==champion.id){const winner=fighters.get(champion.id);if(winner){victoryFor=champion.id;const mine=finaleMine(snapshot,network.id),team=!!objectiveOf(snapshot)||!!riftOf(snapshot)||!!ballOf(snapshot);audio.cheer(1,true);if(!survival())audio.ui(UI_SFX.victory,.45,.3);if(!survival()){const line=HOME_VOICES[winner.state.fighter],own=audio.winLine(winner.state.fighter,mine?1.9:.8);if(own===undefined&&line)audio.quote(line,.85,mine?1.9:.8);if(!mine)audio.lossLine(.8+(own??lineSeconds(winner.state.fighter)??0)+.4);}if(!ballOf(snapshot))camera.victory(winner,6);/* a ball match's end is its podium's orbit (BallCeremony) */
     // The feel pass, iteration four: the announcer calls the player's own win in the main game -
     // FLAWLESS! when nothing touched them - over the K.O. (MangaImpact) and the results.
-    const self=snapshot.players.find(p=>p.id===network.id);if(mine&&!survival()&&self)audio.announce(self.damageTaken||team?VICTORY_LINE:FLAWLESS_LINE,.95,.55);}}
+    const self=snapshot.players.find(p=>p.id===network.id);if(mine&&!survival()&&self){if(duelCalls(snapshot))duelCaller.say(self.damageTaken?'victory':'flawless',{delay:.55,queue:true});else if(announcerOn())audio.announce(self.damageTaken||team?VICTORY_LINE:FLAWLESS_LINE,.95,.55);}}}
   if(snapshot.status!=='finished')victoryFor=null;
 }
 /** Couch play's frame (couch/couch.ts): the two people's fighters as drawn, and in co-op the enemies nearest them, filmed
@@ -1880,6 +1910,8 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   if(!gate.draw(now,previous,view.frames.drawRate(settings.powerMode)))return;
   const steps=frameSteps((now-previous)/1000);previous=now;const dt=steps.world,rawDt=steps.camera;
   pausePump(); // Round 5 (SOLOPAUSE): and a room that pauses for this page.
+  // (A parry's payoff: the fight drawn `pay.lag` behind for a moment, the bodies' and effects' own steps at `pay.rate`.)
+  const pay=parryPay.frame(now,timeline.drawnAt),drawDt=dt*pay.rate;
   let presented:ReturnType<CombatTimeline['sample']>;
   if(network===arcade||network===practice||network===localObjective||network===localRift||network===localBall||network===duel||network===royale){
     // A clock the arena's own time scale drives, a tick behind the newest
@@ -1892,8 +1924,10 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // arcade's slow motion, whose ticks come a fraction a command.)
     if(steadyClock&&!local.paused&&!hit&&scale===1&&inputClock.last>0)next=steadyStep(next,newest+inputClock.backlog+(now-inputClock.last)/1000*inputClock.rate,rawDt);
     localClock=Math.min(newest,Math.max(newest-(hit?FOOT_HIT.most:3/60),next));
-    presented=timeline.at(localClock-LOCAL_DELAY/1000);
-  }else presented=timeline.sample(now);
+    presented=timeline.at(localClock-LOCAL_DELAY/1000-pay.lag);
+  }else presented=timeline.sample(now,pay.lag*1000);
+  // A parry the player is in (either seat's, on a couch): its payoff's sting, its peak on the freeze letting go, and its pulse.
+  if(started&&presented){const mine=(id:string)=>!!id&&(id===network.id||couch.on&&couch.ids.includes(id));for(const parried of parryPay.observe(presented.events,mine)){audio.sting(.62,Math.max(0,PARRY_FREEZE-STING_PEAK));const pulse=parryPayPulse(parried,network.id??'');if(pulse)input.feel(pulse);}}
   prediction.visualTime=presented?.time??NaN; // Round 5 (PARRY): a parry's vanish is drawn with the parry (Prediction.visualTime).
   const snapshot=presentSnapshot(started?presented?.snapshot:undefined);
   // A replay showing (Goal Rush's goals, Sky Spike's great points): the fighters and the ball are drawn from it, through its lens.
@@ -1946,7 +1980,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     {const courtNow=ballOf(snapshot)?.mode==='sky-spike'?ballOf(snapshot)!.ball.court:undefined;if(!sameCourt(courtNow,ballCourtFor())){setBallCourt(courtNow);if(stageWanted===snapshot.stage)stageWanted=null;}}
     wantStage(snapshot.stage??'harbor');
     const localImpacts=presentEvents(prediction.takeImpacts(),snapshot.players).map(event=>({...event,id:predictedImpactId++,serverTime}));
-    applyCombatFrame(snapshot);prediction.markAuthoritativeImpacts(snapshot.events);let self:PlayerState|undefined;
+    applyCombatFrame(snapshot);duelCommentary(snapshot);prediction.markAuthoritativeImpacts(snapshot.events);let self:PlayerState|undefined;
     cinematics(snapshot);cutIns(snapshot);
     // Measured in the input clock's own (possibly dilated) time, so a tick it
     // stretches is drawn stretched rather than frozen at its end.
@@ -1955,7 +1989,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // split screen has two: a body Player 2's half shows is seen, as one Player 1's shows is (couch/split.ts).
     viewProjection.multiplyMatrices(view.camera.projectionMatrix,view.camera.matrixWorldInverse);viewFrustum.setFromProjectionMatrix(viewProjection);
     const lens2=couch.split?camera2?.camera:undefined;if(lens2){viewProjection.multiplyMatrices(lens2.projectionMatrix,lens2.matrixWorldInverse);secondFrustum.setFromProjectionMatrix(viewProjection);}
-    for(const p of snapshot.players){if(p.enemy||!fighters.has(p.id))continue;const fighter=fighters.get(p.id)!,opponent=snapshot.players.find(o=>o.id===(p.id===network.id?targetId:p.target));const shown=ballCeremony.posed(p.id,replayed?replayed.snapshot.players.find(q=>q.id===p.id)??p:p.id===network.id?(prediction.sample(steps.correction,p,renderAlpha)??p):prediction.sampleRemote(steps.correction,p,renderAlpha));fighter.targetDistance=opponent?Math.hypot(opponent.x-shown.x,opponent.z-shown.z):Infinity;fighter.targetPoint=opponent?(fighter.targetPoint??new THREE.Vector3()).set(opponent.x,opponent.y+1.45,opponent.z):undefined;fighter.cameraPoint=view.camera.position;fighter.unseen=p.id!==network.id&&p.id!==targetId&&p.id!==spectating&&!fighter.inView(viewFrustum,view.camera.position)&&!(lens2&&fighter.inView(secondFrustum,lens2.position));fighter.update(dt,shown,true,rawDt);if(p.id===network.id){self=shown;shownSelf=shown;}}
+    for(const p of snapshot.players){if(p.enemy||!fighters.has(p.id))continue;const fighter=fighters.get(p.id)!,opponent=snapshot.players.find(o=>o.id===(p.id===network.id?targetId:p.target));const shown=ballCeremony.posed(p.id,replayed?replayed.snapshot.players.find(q=>q.id===p.id)??p:p.id===network.id?(prediction.sample(steps.correction,p,renderAlpha)??p):prediction.sampleRemote(steps.correction,p,renderAlpha));fighter.targetDistance=opponent?Math.hypot(opponent.x-shown.x,opponent.z-shown.z):Infinity;fighter.targetPoint=opponent?(fighter.targetPoint??new THREE.Vector3()).set(opponent.x,opponent.y+1.45,opponent.z):undefined;fighter.cameraPoint=view.camera.position;fighter.unseen=p.id!==network.id&&p.id!==targetId&&p.id!==spectating&&!fighter.inView(viewFrustum,view.camera.position)&&!(lens2&&fighter.inView(secondFrustum,lens2.position));fighter.update(drawDt,shown,true,rawDt);if(p.id===network.id){self=shown;shownSelf=shown;}}
     // (Goal Rush's SPORT mode: a kick on the run laid over the run, after the bodies are posed - render/ball/kickLayer.ts.)
     // (And the volleyball rules' touches, each from its ready pose - ballMoves.ts volleyPose.)
     if(ballOf(snapshot)?.football||ballOf(snapshot)?.volley)applyKicks(timeline.drawnAt??snapshot.serverTime);
@@ -2132,7 +2166,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // The area slot: the aim follows the fighter, its target and its move; the circles fill and strike.
     if(self){const move=areaMoveOf(self),lock=targetId?snapshot.players.find(p=>p.id===targetId&&p.alive):undefined;input.aim.follow(self,input.yaw,lock,move.range,move.radius,areaReady(self,snapshot.serverTime));}else input.aim.cancel();
     areaFx.update(serverTime,input.aim.view,self,floorAt);
-    effects.update(serverTime,dt,steady);awakeningEffects.update(serverTime,dt,fighters,settings.effects,view.camera);castFx.now?.update(serverTime,dt,steady,settings.effects,view.camera);strikeTrails.update(dt,steady,view.camera);clashEffects.update(serverTime,view.camera,settings.effects);
+    effects.update(serverTime,drawDt,steady);awakeningEffects.update(serverTime,drawDt,fighters,settings.effects,view.camera);castFx.now?.update(serverTime,drawDt,steady,settings.effects,view.camera);strikeTrails.update(drawDt,steady,view.camera);clashEffects.update(serverTime,view.camera,settings.effects);
     // After CombatEffects has opened this frame's beam slots.
     if(survival()||objectiveOf(snapshot)?.kind==='last-stand')techniques.update(serverTime);
   }

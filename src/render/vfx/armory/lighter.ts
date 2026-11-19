@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { abOff, onAbChange } from '../../look/abSwitch';
+import { WARMING } from '../../pipelineWarmup';
+import { onBeforeEffects } from '../../look/beforeEffects';
 
 /**
  * The Armory's heaviest work made lighter for the game's camera (the G moves' frame drops).
@@ -46,6 +48,18 @@ import { abOff, onAbChange } from '../../look/abSwitch';
  *    - a glowing one (VolumeHull's flame, the volumetric fires, the found pack's fire sim) marches half its steps,
  *      never under 12: each step is weighted by its length, so the density holds (Hinomoto's pall, Bellows' fire: no
  *      pixel moved more than 42 of 255, under a hundred moved more than 16).
+ *  - Volumes and pools that fill the screen, at half resolution (HALF): a spore or flame VolumeHull (Tsubute's pollen,
+ *    Hinomoto's pall; Yodaka's and Gorai's G too) and a liquid pool (Shakugo's lava) covering more than a quarter of the
+ *    screen are drawn into a target of their own at half the frame's size, just before the frame's effects (never inside
+ *    its multisampled pass: there it cost more than it saved), and laid over the frame by their own mesh with their own
+ *    blending's result. The volumes' steps could not be cut (squiggles under the ink); at a quarter of the fragments the
+ *    held frames differ from the whole draw by 0.1 to 0.8 of 255 on average (Tsubute's ink frame: a few edge pixels).
+ *    The pool by 3 of 255 on average: its finest crust lines a little softer, sharpened back up.
+ *  What these add at their worst held moment, against the Armory as it ships (the same frame both ways):
+ *    Tsubute 41 -> 11 ms (26%; it was 96%), Hinomoto 38 -> 15 (40%; was 61%), Shakugo 31 -> 9 (30%; was ~70%).
+ *  - A pool's waterline first (POOL_CUT, exact): a fragment its raggedness cannot bring inside the line is dropped before
+ *    the normal's four taps of the whole field.
+ *  - Shakugo's lava smoke thinned as Magatsu's pyre is (PUFF_THIN `magma.smoke` 0.5).
  *  - The dustiest casts (LIGHTER_SETS): a third fewer puffs, a little more opaque each, or smaller ones.
  * What the ten heaviest G moves add to a frame at their worst held moment, before -> after (1920x1080 at 2x, High, an
  * M4 Mac mini; two throws of the same dice): Magatsu 148 -> 88 ms, Tancho 94 -> 43, Murex 81 -> 37, Shakudo 69 -> 26,
@@ -78,7 +92,7 @@ export const DECAL_CUT = { value: 1 };
  *  ParticleSystem's name), the share of its puffs drawn, each of those that much more opaque, so the smoke is as dense
  *  as it was; their octaves still by the alpha they had (PUFF), so each is the puff it was. A puff is kept or not by its
  *  own seed for its whole life: the simulation and its dice are untouched, and the very frame can be drawn both ways. */
-export const PUFF_THIN: Readonly<Record<string, { value: number }>> = { 'ext_pyre.smoke': { value: .5 } };
+export const PUFF_THIN: Readonly<Record<string, { value: number }>> = { 'ext_pyre.smoke': { value: .5 }, 'magma.smoke': { value: .5 } };
 const THIN_NONE = { value: 1 };
 const THIN_OF = new WeakMap<object, { value: number }>();
 /** (host.ts adaptNode) A particle system's mesh and material: the material takes the system's share (PUFF_THIN). */
@@ -90,6 +104,9 @@ export function lighterParticles(mesh: THREE.Object3D, material: object) {
  *  prepass, so the scene depth the Armory's soft fade reads is the host's one texel of "nothing in front" (host.ts), and
  *  the fade comes to exactly 1 for every fragment drawn: a program reading that texel skips the read and the divide. */
 export const SOFT_SKIP = { value: 1 };
+/** A pool's waterline first (exact; LiquidSurface): a fragment its raggedness cannot bring inside the line is dropped
+ *  before the normal's four field taps, the crust and the light. */
+export const POOL_CUT = { value: 1 };
 /** The Armory's soft fade, as its shader library writes it (shaders/lib/common.glsl.js). */
 const SOFT_FN = 'float softFade(sampler2D sceneDepth, vec2 screenUV, float fragViewZ, float near, float far, float fadeDist) {';
 const SOFT_CALL = /\bsoftFade\(uSceneDepth,/g;
@@ -124,6 +141,17 @@ const PARTICLE_DEAD = `    if (age < 0.0 || t > 1.0) {
 const PARTICLE_PLACE = '    mvPosition.xy += corner;';
 /** The ground field's per-slot gate (GroundField.js: POCK's height, cover and heat, RUT's force). */
 const MARK_GATE = /float on = step\(float\(i\), uMarkCount - 1\.0\);/g;
+/** LiquidSurface's fragment, as the Armory writes it: the head of its main, and the waterline and alpha it ends with. */
+const POOL_MAIN = '/* ---------------- normal, by finite difference ---------------- */';
+const POOL_TAIL = ['vec2 nq = vParam / max(uHalf, vec2(1e-3));',
+  'float r = mix(max(abs(nq.x), abs(nq.y)), length(nq), clamp(uRound, 0.0, 1.0));',
+  'float jag = fbm3(vec3(vParam * uEdgeScale, uSeed * 5.7)) * 0.5 + 0.5;',
+  'r *= mix(1.0, 0.7 + 0.6 * jag, clamp(uEdgeNoise, 0.0, 1.0));',
+  'float mask = 1.0 - smoothstep(max(uFill - uEdgeSoft, 0.0), uFill, r);',
+  'float alpha = mask * uOpacity;',
+  'alpha *= 1.0 - vFace * clamp(uTranslucency * 0.4, 0.0, 0.85);',
+  'alpha = clamp(alpha + foam * 0.5, 0.0, 1.0);',
+  'if (alpha < 0.004) discard;'];
 
 /** A program of an Armory kit made lighter (see above), where it is one of the kits; any other is left as it is. */
 export function lighterShader(this: unknown, shader: { uniforms: Record<string, unknown>; fragmentShader: string; vertexShader?: string }) {
@@ -238,6 +266,24 @@ ${SHAPE_FN}`);
     shader.uniforms.armoryDecalCut = DECAL_CUT;
     touched = true;
   }
+  // A pool's waterline first (exact): with no foam to lift it, a fragment's alpha is at most its waterline mask times the
+  // opacity (the fold's lip, 0.15 to 1, and the soft fade only lower it), and the mask falls as r grows. The raggedness
+  // scales r by 1 - 0.3e + 0.6e x jag, where jag = fbm3 x 0.5 + 0.5 lies within 0.5 -+ 0.48125 (three octaves of a noise
+  // within 1.1; 1.04 sampled): a fragment past the line at the least of that is discarded, as the kit's own test would
+  // discard it, before the normal's four taps of the whole field, the crust's crack fields and the light.
+  if (src.includes(POOL_MAIN) && POOL_TAIL.every(line => src.includes(line))) {
+    src = src.replace(POOL_MAIN, `if (armoryLight > 0.5 && armoryPoolCut > 0.5 && uFoam <= 0.001 && uEdgeSoft > 1e-3) {
+      vec2 armoryNq = vParam / max(uHalf, vec2(1e-3));
+      float armoryE = clamp(uEdgeNoise, 0.0, 1.0);
+      float armoryR = mix(max(abs(armoryNq.x), abs(armoryNq.y)), length(armoryNq), clamp(uRound, 0.0, 1.0))
+        * (1.0 - 0.3 * armoryE + 0.6 * armoryE * 0.01875);
+      if ((1.0 - smoothstep(max(uFill - uEdgeSoft, 0.0), uFill, armoryR)) * uOpacity < 0.004) discard;
+    }
+    ${POOL_MAIN}`);
+    src = `uniform float armoryPoolCut;\n${src}`;
+    shader.uniforms.armoryPoolCut = POOL_CUT;
+    touched = true;
+  }
   // The soft fade (exact): with the host's texel of "nothing in front" as the scene depth, 1 for every fragment drawn.
   const soft = src.indexOf(SOFT_FN), main = src.lastIndexOf('void main()');
   if (soft >= 0 && main > soft && farTexel(shader.uniforms.uSceneDepth) && SOFT_CALL.test(src.slice(main))) {
@@ -316,6 +362,156 @@ function lighterHull(src: string, uniforms: Record<string, unknown>): string | n
  *  self-shadow, the shadow's taps down to `taps` (a lone tap stands `tapShift` shadow lengths further out, midway between
  *  the two it replaces) and their density `shadowCut` octaves fewer (never under one). */
 export const VOLUME = { on: true, least: 12, share: .25, steps: .5, taps: 1, tapShift: .55, shadowCut: 3 };
+/** A volume that fills the screen marched at a lower resolution (lighterVolume): a VolumeHull of a medium in `media`, drawn
+ *  premultiplied over (the kit's own blending), whose hull covers more than VOLUME.share of the screen, is marched into
+ *  a target of its own at `scale` of the frame's size and laid over the frame by the hull itself, with that blending: its
+ *  own colours, bilinear from a quarter of the fragments. Spores (Tsubute's pollen: its steps cannot be cut - fewer put
+ *  ink squiggles on its edge under the film look - and nothing exact in its march is idle) and flames (Hinomoto's pall;
+ *  Gorai's and Yodaka's G too); and, with `pool`, a liquid surface (LiquidSurface: Shakugo's lava pool), whose own depth
+ *  - it hides its far side - is drawn into the small target with it and again by its lay-over, at `poolScale`, its fine
+ *  crust lines brought back up by a Catmull-Rom filter (`sharp`; bilinear left them soft). The march is drawn before the
+ *  frame's effects (look/beforeEffects.ts), never inside the frame's multisampled pass; whether a volume is laid over is
+ *  settled there for the frame, from how much of the screen it covered in the last. The pipeline warm-up
+ *  (pipelineWarmup.ts WARMING) lays every one over, and draws it whole too, so no pipeline is first met in the fight. */
+export const HALF = { on: true, scale: .5, media: { 0: true, 3: true } as Record<number, boolean>, pool: true, poolScale: .5, sharp: { value: 1 } };
+const LAYOVER_FS = `uniform sampler2D armoryHalf;
+uniform vec2 armoryFull;
+// (lighter.ts HALF) The volume as its own march left it in a smaller target: premultiplied colour and alpha, laid over
+// with the volume's own blending.
+void main() {
+  gl_FragColor = texture2D(armoryHalf, gl_FragCoord.xy / armoryFull);
+}
+`;
+/** A surface that writes its depth is laid over only where it drew (its own discard, alpha under 0.004), so its depth is
+ *  written where it was. */
+const LAYOVER_DEPTH_FS = `uniform sampler2D armoryHalf;
+uniform vec2 armoryFull;
+uniform vec2 armorySmall;
+uniform float armorySharp;
+// (lighter.ts HALF) Catmull-Rom from the small target in nine bilinear taps (the weights of the four texels each way
+// folded into three taps a side): a surface's fine lines come back up crisper than bilinear brings them.
+vec4 armoryCatmullRom(vec2 uv) {
+  vec2 p = uv * armorySmall, t1 = floor(p - 0.5) + 0.5, f = p - t1;
+  vec2 w0 = f * (-0.5 + f * (1.0 - 0.5 * f)), w1 = 1.0 + f * f * (-2.5 + 1.5 * f);
+  vec2 w2 = f * (0.5 + f * (2.0 - 1.5 * f)), w3 = f * f * (-0.5 + 0.5 * f);
+  vec2 w12 = w1 + w2, o12 = w2 / w12;
+  vec2 a = (t1 - 1.0) / armorySmall, b = (t1 + o12) / armorySmall, c = (t1 + 2.0) / armorySmall;
+  vec4 r = texture2D(armoryHalf, vec2(a.x, a.y)) * w0.x * w0.y + texture2D(armoryHalf, vec2(b.x, a.y)) * w12.x * w0.y + texture2D(armoryHalf, vec2(c.x, a.y)) * w3.x * w0.y
+         + texture2D(armoryHalf, vec2(a.x, b.y)) * w0.x * w12.y + texture2D(armoryHalf, vec2(b.x, b.y)) * w12.x * w12.y + texture2D(armoryHalf, vec2(c.x, b.y)) * w3.x * w12.y
+         + texture2D(armoryHalf, vec2(a.x, c.y)) * w0.x * w3.y + texture2D(armoryHalf, vec2(b.x, c.y)) * w12.x * w3.y + texture2D(armoryHalf, vec2(c.x, c.y)) * w3.x * w3.y;
+  return clamp(r, 0.0, 1e4);
+}
+// A surface as it was drawn into a smaller target (its blending over nothing: premultiplied), laid over premultiplied -
+// its own blending's result - and only where it drew, so its depth is written where it was.
+void main() {
+  vec2 armoryUv = gl_FragCoord.xy / armoryFull;
+  vec4 armoryC = armorySharp > 0.5 ? armoryCatmullRom(armoryUv) : texture2D(armoryHalf, armoryUv);
+  // (premultiplied: never more colour than its alpha carries after the sharpening's overshoot)
+  armoryC.a = clamp(armoryC.a, 0.0, 1.0);
+  if (armoryC.a < 0.004) discard;
+  gl_FragColor = armoryC;
+}
+`;
+type HalfKind = 'volume' | 'pool';
+interface Half { kind: HalfKind; mesh: THREE.Mesh; real: THREE.ShaderMaterial; rt: THREE.WebGLRenderTarget; scene: THREE.Scene; proxy: THREE.Mesh;
+  layover: THREE.ShaderMaterial; full: THREE.Vector2; small: THREE.Vector2; want: boolean }
+/** Every volume that can be laid over, while its material lives. */
+const halves = new Set<Half>();
+const _viewport = new THREE.Vector4(), _clear = new THREE.Color(), _drawing = new THREE.Vector2();
+/** What HALF can lay over: a VolumeHull drawn premultiplied (which media are laid over is HALF.media's, read every frame),
+ *  or a liquid surface (LiquidSurface's own fragment) drawn with three's normal blending, which drawn over nothing leaves
+ *  premultiplied colour and alpha. */
+function layKind(material: THREE.ShaderMaterial): HalfKind | undefined {
+  const defines = material.defines as { MEDIUM?: unknown; HULL_SHAPE?: unknown } | undefined;
+  if (defines?.HULL_SHAPE !== undefined && defines?.MEDIUM !== undefined && material.blending === THREE.CustomBlending
+    && material.blendSrc === THREE.OneFactor && material.blendDst === THREE.OneMinusSrcAlphaFactor && material.blendEquation === THREE.AddEquation
+    && material.blendSrcAlpha === THREE.OneFactor && material.blendDstAlpha === THREE.OneMinusSrcAlphaFactor) return 'volume';
+  const src = String(material.fragmentShader ?? '');
+  if (material.transparent && material.blending === THREE.NormalBlending && !material.premultipliedAlpha
+    && src.includes(POOL_MAIN) && POOL_TAIL.every(line => src.includes(line))) return 'pool';
+  return undefined;
+}
+/** The target, the one-object scene its march is drawn in, and the lay-over: made the first time they are wanted. */
+function makeHalf(mesh: THREE.Mesh, real: THREE.ShaderMaterial, kind: HalfKind): Half {
+  const depth = real.depthWrite;
+  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, format: THREE.RGBAFormat, depthBuffer: depth, stencilBuffer: false,
+    minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, generateMipmaps: false });
+  const full = new THREE.Vector2(1, 1), small = new THREE.Vector2(1, 1);
+  // Its own vertex stage (a hull sized by uSize, a pool's heightfield), its uniforms shared; its depth and faces; its
+  // blending's result over nothing laid over premultiplied.
+  const layover = new THREE.ShaderMaterial({ vertexShader: real.vertexShader, fragmentShader: depth ? LAYOVER_DEPTH_FS : LAYOVER_FS, defines: { ...real.defines },
+    uniforms: { ...real.uniforms, armoryHalf: { value: rt.texture }, armoryFull: { value: full }, armorySmall: { value: small }, armorySharp: HALF.sharp },
+    transparent: true, depthWrite: real.depthWrite, depthTest: real.depthTest, side: real.side, toneMapped: false,
+    blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
+    blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor });
+  layover.forceSinglePass = real.forceSinglePass;
+  const proxy = new THREE.Mesh(mesh.geometry, real);
+  proxy.frustumCulled = false; proxy.matrixAutoUpdate = false; proxy.matrixWorldAutoUpdate = false;
+  const scene = new THREE.Scene();
+  scene.matrixWorldAutoUpdate = false;
+  scene.add(proxy);
+  const h: Half = { kind, mesh, real, rt, scene, proxy, layover, full, small, want: false };
+  halves.add(h);
+  real.addEventListener('dispose', () => { halves.delete(h); rt.dispose(); layover.dispose(); });
+  if (!marching) marching = onBeforeEffects(marchHalves);
+  return h;
+}
+let marching: (() => void) | undefined;
+/** Shown, with every holder above it. */
+const shownChain = (o: THREE.Object3D | null) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
+/** Before the frame's effects (look/beforeEffects.ts): each volume laid over this frame, or drawn whole - laid over
+ *  when it covered more than VOLUME.share of the screen in the last frame (every one in a warm-up frame), is shown, and
+ *  the frame's target is drawn whole (no split screen's viewport or scissor) - and the ones laid over marched now. */
+function marchHalves(renderer: THREE.WebGLRenderer, camera: THREE.Camera, target: THREE.WebGLRenderTarget | null) {
+  const whole = !!target && !target.scissorTest && target.viewport.x === 0 && target.viewport.y === 0
+    && target.viewport.z === target.width && target.viewport.w === target.height;
+  for (const h of halves) {
+    const kindOn = h.kind === 'pool' ? HALF.pool : HALF.media[Number((h.real.defines as { MEDIUM?: unknown }).MEDIUM)] === true;
+    const lay = (h.want || WARMING.value) && whole && HALF.on && kindOn && VOLUME.on && LIGHT.value > .5 && shownChain(h.mesh);
+    if (lay) {
+      h.mesh.updateWorldMatrix(true, false);
+      drawStandIn(h, h.mesh, renderer, camera, h.real, 'half', target);
+    }
+    h.mesh.material = lay ? h.layover : h.real;
+  }
+}
+/** Draws `material` on the hull's stand-in (the renderer's state put back after): into the half's own target (cleared
+ *  first), sized from `frame` - the target the frame's effects are about to be drawn into, whatever is bound now (the
+ *  painting's smaller target, at the film look's step before them) - or, a warm-up's, into the target bound now. */
+function drawStandIn(h: Half, mesh: THREE.Mesh, renderer: THREE.WebGLRenderer, camera: THREE.Camera, material: THREE.Material, into: 'half' | 'frame',
+  frame?: THREE.WebGLRenderTarget | null) {
+  const target = renderer.getRenderTarget(), autoClear = renderer.autoClear, autoReset = renderer.info.autoReset;
+  if (frame) _viewport.copy(frame.viewport); else renderer.getCurrentViewport(_viewport);
+  const w = frame ? frame.width : target ? target.width : renderer.getDrawingBufferSize(_drawing).x;
+  const ht = frame ? frame.height : target ? target.height : renderer.getDrawingBufferSize(_drawing).y;
+  h.proxy.material = material;
+  h.proxy.matrixWorld.copy(mesh.matrixWorld);
+  h.proxy.layers.mask = mesh.layers.mask;
+  renderer.info.autoReset = false;
+  renderer.autoClear = false;
+  try {
+    if (into === 'half') {
+      const s = h.kind === 'pool' ? HALF.poolScale : HALF.scale, hw = Math.max(1, Math.round(w * s)), hh = Math.max(1, Math.round(ht * s));
+      if (h.rt.width !== hw || h.rt.height !== hh) h.rt.setSize(hw, hh);
+      h.full.set(w, ht); h.small.set(hw, hh);
+      // (the frame's viewport, scaled: a split screen's half marches into the same half of the target)
+      h.rt.viewport.set(_viewport.x * hw / w, _viewport.y * hh / ht, _viewport.z * hw / w, _viewport.w * hh / ht);
+      const alpha = renderer.getClearAlpha();
+      renderer.getClearColor(_clear);
+      renderer.setRenderTarget(h.rt);
+      renderer.setClearColor(0x000000, 0);
+      renderer.clear(true, h.rt.depthBuffer, false);
+      renderer.render(h.scene, camera);
+      renderer.setClearColor(_clear, alpha);
+    } else {
+      renderer.render(h.scene, camera);
+    }
+  } finally {
+    renderer.setRenderTarget(target);
+    renderer.autoClear = autoClear;
+    renderer.info.autoReset = autoReset;
+  }
+}
 const _sphere = new THREE.Sphere(), _view = new THREE.Vector3();
 
 /** A raymarched volume of a participating medium (a material that marches `uSteps` and integrates a transmittance:
@@ -323,6 +519,34 @@ const _sphere = new THREE.Sphere(), _view = new THREE.Vector3();
  *  than VOLUME.share of the screen gives up what VOLUME says - steps, and on a VolumeHull its self-shadow's taps and
  *  octaves. What the ability writes (its steps, its taps) is read again whenever it changes, so all of it lets go as soon
  *  as the volume is small. */
+/** The share of the screen a sphere covers (all of it with the lens inside the sphere). */
+function shareOf(center: THREE.Vector3, radius: number, cam: THREE.PerspectiveCamera) {
+  _view.copy(center).applyMatrix4(cam.matrixWorldInverse);
+  const depth = -_view.z, tanHalf = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2);
+  return depth <= radius ? 1 : Math.min(1, Math.PI * (radius / (depth * tanHalf)) ** 2 / (4 * Math.max(cam.aspect, 1e-3)));
+}
+const _anchor = new THREE.Vector3();
+
+/** A liquid surface laid over from a small march once it fills the screen (HALF.pool): its share of the screen is taken
+ *  from where the kit stands it (uAnchor, the pool's centre; uHalf, its half-extents in metres, plus a metre for its
+ *  swell), as the volumes' is from their hulls. */
+export function lighterPool(mesh: THREE.Mesh) {
+  const material = mesh.material as THREE.ShaderMaterial;
+  if (!material?.isShaderMaterial || (mesh as { __lighterPool?: boolean }).__lighterPool || layKind(material) !== 'pool') return;
+  (mesh as { __lighterPool?: boolean }).__lighterPool = true;
+  const real = material, half = makeHalf(mesh, material, 'pool'), u = material.uniforms;
+  const before = mesh.onBeforeRender;
+  mesh.onBeforeRender = function (renderer, scene, camera, geometry, mat, group) {
+    before.call(this, renderer, scene, camera, geometry, mat, group);
+    const sceneOverride = !!(scene as THREE.Scene).overrideMaterial, cam = camera as THREE.PerspectiveCamera;
+    const anchor = u.uAnchor?.value as THREE.Vector3 | undefined, size = u.uHalf?.value as THREE.Vector2 | undefined;
+    if (!sceneOverride && cam.isPerspectiveCamera && anchor?.isVector3 && size?.isVector2)
+      half.want = shareOf(_anchor.copy(anchor), Math.hypot(size.x, size.y) + 1, cam) > VOLUME.share;
+    // (a warm-up frame lays it over - marchHalves - and draws it whole into the frame's target too)
+    if (mat === half.layover && WARMING.value && !sceneOverride) drawStandIn(half, mesh, renderer, camera, real, 'frame');
+  };
+}
+
 export function lighterVolume(mesh: THREE.Mesh) {
   const material = mesh.material as THREE.ShaderMaterial;
   const uniforms = material?.uniforms, steps = uniforms?.uSteps;
@@ -339,9 +563,13 @@ export function lighterVolume(mesh: THREE.Mesh) {
   const cut = (uniforms.armoryShadowCut ??= { value: 0 }) as { value: number }, shift = (uniforms.armoryTapShift ??= { value: 0 }) as { value: number };
   // What the ability asked for, read again whenever it writes a value other than the one set here last.
   let own = steps.value as number, set = NaN, ownTaps = taps ? taps.value as number : 0, setTaps = NaN;
+  // (HALF: this volume marched small and laid over the frame, once it fills the screen; the material switched between
+  // frames, so a frame draws whole one way or the other)
+  const real = material, half = layKind(material) === 'volume' ? makeHalf(mesh, material, 'volume') : undefined;
   const before = mesh.onBeforeRender;
   mesh.onBeforeRender = function (renderer, scene, camera, geometry, mat, group) {
     before.call(this, renderer, scene, camera, geometry, mat, group);
+    const sceneOverride = !!(scene as THREE.Scene).overrideMaterial;
     if (steps.value !== set) own = steps.value;
     if (taps && taps.value !== setTaps) ownTaps = taps.value;
     let next = own, nextTaps = ownTaps, nextCut = 0, nextShift = 0;
@@ -352,10 +580,9 @@ export function lighterVolume(mesh: THREE.Mesh) {
       _sphere.copy(geometry.boundingSphere!);
       if (size?.isVector3) { _sphere.center.multiply(size); _sphere.radius *= Math.max(size.x, size.y, size.z); }
       _sphere.applyMatrix4(mesh.matrixWorld);
-      _view.copy(_sphere.center).applyMatrix4(cam.matrixWorldInverse);
-      const depth = -_view.z, half = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2);
       // The share of the screen the hull's bounding sphere covers (all of it with the lens inside the sphere).
-      const share = depth <= _sphere.radius ? 1 : Math.min(1, Math.PI * (_sphere.radius / (depth * half)) ** 2 / (4 * Math.max(cam.aspect, 1e-3)));
+      const share = shareOf(_sphere.center, _sphere.radius, cam);
+      if (half && !sceneOverride) half.want = share > VOLUME.share;
       if (share > VOLUME.share) {
         if (glowing) { if (own > VOLUME.least) next = Math.max(VOLUME.least, Math.round(own * VOLUME.steps)); }
         else if (taps) {
@@ -367,5 +594,8 @@ export function lighterVolume(mesh: THREE.Mesh) {
     steps.value = set = next;
     if (taps) taps.value = setTaps = nextTaps;
     cut.value = nextCut; shift.value = nextShift;
+    // (a warm-up frame lays it over - marchHalves - and draws it whole into the frame's target too, so the whole volume's
+    // pipeline there is made as well)
+    if (half && mat === half.layover && WARMING.value && !sceneOverride) drawStandIn(half, mesh, renderer, camera, real, 'frame');
   };
 }

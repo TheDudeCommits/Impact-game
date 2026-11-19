@@ -2,6 +2,7 @@ import {riftOf} from '../moba/model';
 import type {FighterId,GameSnapshot} from '../types';
 import {MOVES} from '../moves';
 import {objectiveOf} from '../objectives/model';
+import {ballOf} from '../ball/model';
 import type {RunResult} from '../../survival/SurvivalGame';
 export type CareerMode='duel'|'royale'|'bots'|'private'|'boss-hunt'|'rift-control'|'last-stand'|'bad-blood'|'survival'|'coop'|'rift-war'|'goal-rush'|'sky-spike';
 /** Every mode a career can hold, the retired ones too, so an old save still reads (and still counts in the totals). */
@@ -9,7 +10,10 @@ export const CAREER_MODES:Record<CareerMode,string>={'goal-rush':'Goal Rush','sk
 /** The modes the Career page shows, in the home's order: the ones that exist (Boss Hunt and Rift Control never
  *  shipped). Duels were filed under BR vs Bots and Private Royale until 8 October 2026; they have their own now. */
 export const CAREER_SHOWN:readonly CareerMode[]=['duel','royale','bots','private','survival','coop','last-stand','bad-blood','rift-war'];
-export interface CareerMatch {id:string;at:number;mode:CareerMode;fighter:FighterId;outcome:'win'|'loss'|'draw'|'left';kills:number;damage:number;seconds:number;bosses:number;capture:number;score:number;round:number;}
+export interface CareerMatch {id:string;at:number;mode:CareerMode;fighter:FighterId;outcome:'win'|'loss'|'draw'|'left';kills:number;damage:number;seconds:number;bosses:number;capture:number;score:number;round:number;
+  /** Played on this device: its fighter's mastery is paid with this match's report (progress rules.ts);
+   *  a room's match pays it from the room's own completion instead. */
+  device?:true;}
 export interface CareerTotals {matches:number;wins:number;losses:number;draws:number;left:number;kills:number;damage:number;seconds:number;bosses:number;capture:number;}
 export interface Career {version:1;since:number;totals:CareerTotals;modes:Partial<Record<CareerMode,CareerTotals>>;fighters:Partial<Record<FighterId,CareerTotals>>;recent:CareerMatch[];seen:string[];title:string;}
 export const emptyTotals=():CareerTotals=>({matches:0,wins:0,losses:0,draws:0,left:0,kills:0,damage:0,seconds:0,bosses:0,capture:0});
@@ -45,33 +49,40 @@ function deviceStorage(){try{return typeof localStorage==='undefined'?undefined:
 /** A match counted or a title worn here, told to whoever keeps the career with the player's account (src/ui/progress/sync.ts:
  *  since 2 November 2026 this browser's career is a copy of the account's). What it throws is dropped. */
 export type CareerEvent={kind:'match';match:CareerMatch}|{kind:'title';title:string};
-export const careerEvents:{on?:(event:CareerEvent)=>void}={};
-const tell=(event:CareerEvent)=>{try{careerEvents.on?.(event);}catch{/* Counted here all the same. */}};
+/** `local`: this browser's own copy told first (survival/progressStore.ts: a match's mastery); `on`: the
+ *  account's (src/ui/progress/sync.ts). */
+export const careerEvents:{on?:(event:CareerEvent)=>void;local?:(event:CareerEvent)=>void}={};
+const tell=(event:CareerEvent)=>{try{careerEvents.local?.(event);}catch{/* Counted here all the same. */}try{careerEvents.on?.(event);}catch{/* Counted here all the same. */}};
 /** This browser's career as stored, and the account's written over it (the tracker reads it again before it shows or adds). */
 export const deviceCareer={read:():Career=>{try{return readCareer(deviceStorage()?.getItem(KEY)??null);}catch{return newCareer();}},write:(c:Career)=>{try{deviceStorage()?.setItem(KEY,JSON.stringify(c));}catch{/* Kept for the visit. */}}};
 export class CareerTracker {
   data:Career;
   saved=true;
-  private session='';private mode:CareerMode='bots';private first:number|undefined;private last?:GameSnapshot;private own='';private round=0;private finished=false;
+  private session='';private mode:CareerMode='bots';private device=false;private first:number|undefined;private last?:GameSnapshot;private own='';private round=0;private finished=false;
   constructor(private storage:Pick<Storage,'getItem'|'setItem'>|undefined=deviceStorage()){try{this.data=readCareer(storage?.getItem(KEY)??null);}catch{this.data=newCareer();this.saved=false;}}
   reload(){if(!this.storage)return;try{const saved=this.storage.getItem(KEY);if(saved)this.data=readCareer(saved);}catch{this.saved=false;}}
   save(){try{this.storage?.setItem(KEY,JSON.stringify(this.data));this.saved=!!this.storage;}catch{this.saved=false;}}
   title(id:string){this.reload();if(titleUnlocked(this.data,id)){this.data.title=id;this.save();if(this.storage===deviceStorage())tell({kind:'title',title:id});}}
-  start(mode:CareerMode){this.session=globalThis.crypto.randomUUID();this.mode=mode;this.first=undefined;this.last=undefined;this.round=0;this.finished=false;}
+  /** A session begins: its mode, and whether it is played on this device (`device`: its matches pay their mastery with
+   *  their reports; a room's pay it from the room). */
+  start(mode:CareerMode,device=false){this.session=globalThis.crypto.randomUUID();this.mode=mode;this.device=device;this.first=undefined;this.last=undefined;this.round=0;this.finished=false;}
   observe(snapshot:GameSnapshot,id:string){
-    if(!this.session||this.mode==='survival'||this.mode==='coop')return;const v=objectiveOf(snapshot),round=v?.round??riftOf(snapshot)?.round??snapshot.duel?.set??snapshot.lobby?.again?.match??0;
+    // (A ball match: its rematches are rounds of their own, and a fighter knocked out in it is wiped out
+    // and back, not out of the match - it ends at its final whistle.)
+    if(!this.session||this.mode==='survival'||this.mode==='coop')return;const v=objectiveOf(snapshot),ball=ballOf(snapshot),round=v?.round??riftOf(snapshot)?.round??ball?.round??snapshot.duel?.set??snapshot.lobby?.again?.match??0;
     if(round!==this.round){this.round=round;this.first=undefined;this.finished=false;}
     this.last=snapshot;this.own=id;if(snapshot.status==='active')this.first??=snapshot.serverTime;
-    if(snapshot.status==='finished'||!v&&!riftOf(snapshot)&&!snapshot.duel&&snapshot.status==='active'&&snapshot.players.find(p=>p.id===id)?.alive===false)this.finish();
+    if(snapshot.status==='finished'||!v&&!riftOf(snapshot)&&!ball&&!snapshot.duel&&snapshot.status==='active'&&snapshot.players.find(p=>p.id===id)?.alive===false)this.finish();
   }
   private add(m:Omit<CareerMatch,'id'|'at'>){
     // Re-read before writing so another tab's completed match is retained.
-    this.reload();const match={...m,id:this.session+':'+this.round,at:Date.now()};if(recordCareer(this.data,match)){this.save();if(this.storage===deviceStorage())tell({kind:'match',match});}this.finished=true;
+    this.reload();const match:CareerMatch={...m,id:this.session+':'+this.round,at:Date.now(),...(this.device?{device:true as const}:{})};if(recordCareer(this.data,match)){this.save();if(this.storage===deviceStorage())tell({kind:'match',match});}this.finished=true;
   }
   private finish(left=false){
     const s=this.last,p=s?.players.find(p=>p.id===this.own);if(!s||!p||this.finished||this.first===undefined)return;const v=objectiveOf(s),seat=v?.seats.find(p=>p.id===this.own);
-    const war=riftOf(s),warSeat=war?.seats.find(seat=>seat.id===this.own);
-    const won=war?war.winner===warSeat?.team:v?v.winner===seat?.team:s.winnerId===p.id,draw=war?war.phase==='over'&&war.winner===null:v?v.winner==='draw':s.status==='finished'&&s.winnerId===null;
+    const war=riftOf(s),warSeat=war?.seats.find(seat=>seat.id===this.own),ball=ballOf(s),ballSeat=ball?.seats.find(seat=>seat.id===this.own);
+    // (A ball match is won by a side: its winner is a team, as a war's is.)
+    const won=war?war.winner===warSeat?.team:v?v.winner===seat?.team:ball?!!ballSeat&&ball.winner===ballSeat.team:s.winnerId===p.id,draw=war?war.phase==='over'&&war.winner===null:v?v.winner==='draw':ball?ball.winner==='draw':s.status==='finished'&&s.winnerId===null;
     this.add({mode:this.mode,fighter:p.fighter,outcome:left?'left':won?'win':draw?'draw':'loss',kills:p.kills??0,damage:Math.round(p.damageDealt??0),seconds:Math.max(0,s.serverTime-this.first),bosses:seat?.bosses??0,capture:0,score:v?.village?.points??0,round:this.round});
   }
   survival(result:RunResult|undefined,run=0){

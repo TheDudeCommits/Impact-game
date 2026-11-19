@@ -55,6 +55,8 @@ interface P2Room {
   open(on?: boolean): void;
   log(...args: unknown[]): void;
   where?: { colo?: string | null; region?: string | null } | null;
+  /** A match's outcome for PlayerTwo's skill rating in this room's mode (its docs: room.result, places best first). */
+  result?(places: (string | string[])[]): void;
 }
 
 export const tickRate = 60;
@@ -134,6 +136,8 @@ class Driver {
       close: code => this.close(code),
       send: (client, type, message) => this.deliver(client as Seat, String(type), message),
       kick: (client, code) => this.kickSeat(client as Seat, code),
+      /* (a ranked Duel's set, for the matching by skill its queue joins with: p2Route.ts) */
+      result: places => { try { this.p2.result?.(places); } catch (error) { this.p2.log('[result]', String(error)); } },
     };
   }
 

@@ -143,7 +143,9 @@ export class Prediction {
     // resolveAreas: an area move's cast is predicted; where its circle lands, and on whom, is the server's word.
     // Lock combat (lockCombat.ts): the copy plays the rules the page's own fight plays, or the local fighter is drawn
     // throwing the live rules' string - the launcher where the experiment's second round goes, a blow in the beat.
-    this.sim = new ArenaSimulation({ roomMode: 'training', trainingBot: false, stage: this.stage, collision, capacity: 48, resolveAreas: false, ...(this.lockCombat ? { lockCombat: true } : {}) });
+    // (The G in combos: every room plays it, so the copy that predicts one does too - whatever `?ab=gcombo` says of the
+    // page's own arenas: ArenaSimulation.areaComboDefault.)
+    this.sim = new ArenaSimulation({ roomMode: 'training', trainingBot: false, stage: this.stage, collision, capacity: 48, resolveAreas: false, areaCombo: true, ...(this.lockCombat ? { lockCombat: true } : {}) });
     this.sim.serverTime = snapshot.serverTime;
     this.sync(snapshot);
   }

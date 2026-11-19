@@ -25,15 +25,25 @@
  *    the off switch brings back the frame held 1.15 s as a painting;
  *  - roundbodies: a Duel's next round keeps its two bodies (main.ts onSnapshot) where it built them afresh;
  *  - lightfx: the Armory's heaviest kits drawn lighter for the game's close camera (render/vfx/armory/lighter.ts:
- *    smoke-shaped particles, ground fields' marks and decals, volumes that fill the screen, the soft fade with no depth
- *    to read, the dustiest casts and Magatsu's pyre smoke thinned).
+ *    smoke-shaped particles, ground fields' marks and decals, volumes that fill the screen - spores, flames and a lava
+ *    pool drawn at half resolution - the soft fade with no depth to read, the dustiest casts, and Magatsu's pyre smoke
+ *    and Shakugo's lava smoke thinned).
+ *  And:
+ *  - gcombo: the G in combos - a launch or a wall splat opening a quick G whose hit holds the body for a follow-up
+ *    (game/moves.ts AREA_COMBO), in the arenas this page runs itself (a Duel against the CPU, couch, Training, a local
+ *    royale); a room online always plays it, and the page's prediction with it;
+ *  - duelcaller: the Duel's announcer (audio/duelCaller.ts), where the Duel said only FIGHT!, VICTORY! and FLAWLESS;
+ *  - parrypay: a parry's payoff - the drawn fight slowed a tenth of a second and caught up, its sting, its rumble
+ *    (render/parryPayoff.ts).
  *  The look's probe (window.__look.ab) flips them in a running page for the before/after stills. */
 export type AbName = 'upscale' | 'inkweight' | 'brush' | 'face' | 'phonepaint' | 'resmemory'
   | 'guard' | 'seethrough' | 'fxcap' | 'inkhits' | 'facefix' | 'onones' | 'hitflash' | 'posesnap' | 'hitzone' | 'settle' | 'hairhit'
-  | 'kostill' | 'roundbodies' | 'lightfx';
+  | 'kostill' | 'roundbodies' | 'lightfx'
+  | 'gcombo' | 'duelcaller' | 'parrypay';
 export const AB_NAMES: readonly AbName[] = ['upscale', 'inkweight', 'brush', 'face', 'phonepaint', 'resmemory',
   'guard', 'seethrough', 'fxcap', 'inkhits', 'facefix', 'onones', 'hitflash', 'posesnap', 'hitzone', 'settle', 'hairhit',
-  'kostill', 'roundbodies', 'lightfx'];
+  'kostill', 'roundbodies', 'lightfx',
+  'gcombo', 'duelcaller', 'parrypay'];
 
 const off = new Set<string>((() => {
   try { return (new URLSearchParams(location.search).get('ab') ?? '').split(',').map(s => s.trim()).filter(Boolean); }

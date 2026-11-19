@@ -48,10 +48,15 @@ export interface Pass {
    *  (opponent's account id -> [their wins, the opponent's]): what a room on PlayerTwo reads instead of the server's disk */
   ranked?: Record<string, { rating: number; games: number }>;
   rivals?: Record<string, [number, number]>;
+  /** (from the economy world) the account has a login - a signed-in PlayerTwo player's, not a guest's:
+   *  only such an account plays the ranked Duel (game/duel/ranked.ts). */
+  signed?: boolean;
 }
 /** A room's result for the economy world, carried by a player's page like a completion: a ranked match's change for one
  *  account (once per match and account), or a rivalry result (once per id). */
-export interface RankNote { k: 'rank'; pk: string; mode: string; delta: number; won: boolean; id: string; exp: number }
+export interface RankNote { k: 'rank'; pk: string; mode: string; delta: number; won: boolean; id: string; exp: number;
+  /** The name the room showed them by (the pass's own: roomName's), for the season's board. */
+  name?: string }
 export interface RivalNote { k: 'rival'; winner: string; loser: string; id: string; exp: number }
 export interface Done { k: 'done'; pk: string; report: unknown; exp: number }
 /** How long a pass is good for: a page asks for one as it joins a room. */

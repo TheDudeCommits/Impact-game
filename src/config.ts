@@ -190,6 +190,9 @@ export const VFX_OPTIONS:readonly (readonly [VfxLevel,string,string?])[]=default
  *  the effects down keeps them down: 0.85 and up Full, from 0.5 Reduced, under it Minimal. */
 export const vfxFromDensity=(density:number):VfxLevel=>density>=.85?'full':density>=.5?'reduced':'minimal';
 export interface Settings { /** The ball modes' COMMENTARY (audio/ballCaller.ts): the grandfather (default), the arena caller, or off. */ commentary?:'grandpa'|'arena'|'off';
+  /** ANNOUNCER: the announcer's calls - the Duel's (audio/duelCaller.ts) and every match's FIGHT!, VICTORY! and
+   *  FLAWLESS - on (absent: the same) or off. */
+  announcer?:boolean;
   /** The ball modes' camera options (render/ball/ballCamChoice.ts), each off until picked: SKY SPIKE CAMERA,
    *  'classic' (absent: the same) or the COURT-SIDE stand; GOAL RUSH CAMERA, 'classic' or the CLOSE lens. */
   spikeCam?:SpikeCamStyle; chaseCam?:ChaseCamStyle; superCam?:SuperCamStyle;
@@ -256,6 +259,7 @@ export function loadSettings():Settings {
     defaults.powerMode=['auto','cool','full'].includes(saved.powerMode)?saved.powerMode:'auto';
     if(typeof saved.musicEnabled==='boolean')defaults.musicEnabled=saved.musicEnabled;
     if(saved.commentary==='grandpa'||saved.commentary==='arena'||saved.commentary==='off')defaults.commentary=saved.commentary;
+    if(saved.announcer===false)defaults.announcer=false;
     // (Only a picked option is kept; anything else is the classic camera.)
     if(spikeCamOf(saved.spikeCam)!=='classic')defaults.spikeCam=spikeCamOf(saved.spikeCam);
     if(chaseCamOf(saved.chaseCam)!=='classic')defaults.chaseCam=chaseCamOf(saved.chaseCam);

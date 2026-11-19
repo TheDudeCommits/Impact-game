@@ -44,6 +44,8 @@ export class CombatTimeline {
   private jitterMs = 0;
   /** When `sample` last drew (page milliseconds), for the catch-up's pace (CATCH_UP). */
   private sampledAtMs: number | null = null;
+  /** The lag the last frame was drawn behind (ms): a parry's payoff (render/parryPayoff.ts). */
+  private lagMs = 0;
 
   /** How many snapshots it holds (a ball match's replay keeps a few seconds of them: render/ball/BallReplay.ts). */
   private readonly keep: number;
@@ -57,7 +59,7 @@ export class CombatTimeline {
 
   reset() {
     this.snapshots.length = 0; this.pending.length = 0; this.seen.clear();
-    this.receivedAtMs = 0; this.visualTime = null; this.highestEventId = 0; this.sampledAtMs = null;
+    this.receivedAtMs = 0; this.visualTime = null; this.highestEventId = 0; this.sampledAtMs = null; this.lagMs = 0;
     this.landings.clear();
     // Per-room state. Carried across a room change the old offset pins the
     // clock at the newest snapshot until the average converges.
@@ -123,18 +125,22 @@ export class CombatTimeline {
   /** The server time of the frame last drawn: what the page's inputs report as their view (PlayerInput.view). */
   get drawnAt(): number | null { return this.visualTime; }
 
-  sample(nowMs: number): CombatFrame | null {
+  /** The frame to draw at `nowMs`; `lagMs` behind where it would be (a parry's payoff, render/parryPayoff.ts: the drawn
+   *  fight slowed for a moment and caught up again - its lag growing slower than the clock, so the clock never rewinds). */
+  sample(nowMs: number, lagMs = 0): CombatFrame | null {
     const newest = this.snapshots.at(-1);
     if (!newest || !Number.isFinite(nowMs)) return null;
-    let desired = this.offsetMs === null
+    let desired = (this.offsetMs === null
       ? newest.serverTime + Math.max(0, nowMs - this.receivedAtMs) / 1000 - this.delayMs / 1000
-      : (nowMs - this.offsetMs - this.delayMs - 2 * this.jitterMs) / 1000;
+      : (nowMs - this.offsetMs - this.delayMs - 2 * this.jitterMs) / 1000) - Math.max(0, lagMs) / 1000;
     // Behind its delay by more than a fast frame's worth - the clock stood on the newest through a stall - and by less
     // than CATCH_UP_SNAP: run at CATCH_UP to it, rather than skipping every remote fighter forward on one frame.
+    // (A payoff giving its own lag back is no stall: what it gives back this frame runs on top of that.)
     const last = this.sampledAtMs; this.sampledAtMs = nowMs;
+    const giving = Math.max(0, this.lagMs - Math.max(0, lagMs)) / 1000; this.lagMs = Math.max(0, lagMs);
     if (this.visualTime !== null && last !== null && nowMs > last) {
       const step = (nowMs - last) / 1000, behind = desired - this.visualTime;
-      if (behind > step * CATCH_UP && behind < CATCH_UP_SNAP) desired = this.visualTime + step * CATCH_UP;
+      if (behind > step * CATCH_UP + giving && behind < CATCH_UP_SNAP) desired = this.visualTime + step * CATCH_UP + giving;
     }
     return this.at(desired);
   }

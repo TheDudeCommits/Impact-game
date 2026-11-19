@@ -4016,7 +4016,16 @@ export class Fighter {
     if(state.action==='ultimate')return ultimateMove(state.fighter,!!state.awakened);
     // A combo ender (game/combos.ts) is timed by its own move.
     const ender=Fighter.ender(state);if(ender){const move=comboMove(state.fighter,ender,!!state.awakened);if(move)return move;}
-    return this.lockMove(state)??this.rushMove(state)??MOVES[state.fighter][state.action as AttackSlot];
+    const own=this.lockMove(state)??this.rushMove(state)??MOVES[state.fighter][state.action as AttackSlot];
+    // The G in combos (game/moves.ts AREA_COMBO): a quick G is the area move at a share of its time - its release and
+    // its end where the simulation has them (state.actionDuration), so its wind-up is drawn to the release, as ever.
+    return state.action==='area'&&own&&state.actionDuration>0&&Math.abs(state.actionDuration-own.duration)>1e-3?this.retimedArea(own,state.actionDuration):own;
+  }
+  private retimed?:{from:MoveDefinition;duration:number;move:MoveDefinition};
+  private retimedArea(own:MoveDefinition,duration:number):MoveDefinition{
+    if(this.retimed?.from===own&&this.retimed.duration===duration)return this.retimed.move;
+    const k=duration/own.duration,move={...own,duration,contacts:own.contacts.map(c=>c*k)};
+    this.retimed={from:own,duration,move};return move;
   }
   /** Lock combat (game/lockCombat.ts): a second round's blow, timed as rushMove times a stage (one object per stage). */
   private lockMove(state:PlayerState){

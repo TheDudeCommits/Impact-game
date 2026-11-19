@@ -8,7 +8,7 @@ import { activeWindow, ADV_ON_HIT, PUSH_RADIUS, AIR_CAST_GRAVITY, PLUNGE_HANG, P
   MAX_PLAYERS, MOVES, PLAYER_RADIUS, TECH_DELAY, TECH_STAMINA,
   CHIP, GROUND_BOUNCE_LIFT, JUST_GUARD_ADVANTAGE, JUST_GUARD_METER, JUST_GUARD_WINDOW,
   AIR_CONTROL, BLOCK_PUSH, BLOCK_STUN, GROUND_ACCEL, GROUND_BRAKE, GROUND_TURN_ACCEL,
-  WALL_SPLAT_SPEED, WALL_SPLAT_STUN,
+  WALL_SPLAT_SPEED, WALL_SPLAT_STUN, AREA_COMBO, quickArea,
   FALL_GRAVITY, JUMP_CUT_GRAVITY, JUMP_CUT_AFTER, ULTIMATE_COST, ULTIMATE_PER_DAMAGE, AWAKENING_PER_DAMAGE, AWAKENING_PER_BLOCKED,
   DASH_EVADE, BACKDASH_SECONDS, BACKDASH_TRAVEL, BACKDASH_EVADE, BACKDASH_ALONG,
   SIDESTEP_SECONDS, SIDESTEP_TRAVEL, SIDESTEP_ALONG, dashPeakSpeed,
@@ -222,6 +222,9 @@ interface Cast {
   /** Round 3d (ULTS): the whole move, while a hit-confirm ultimate's opener
    *  that is a shot flies as a move of its own (see ultimateTick). */
   full?: MoveDefinition;
+  /** The G in combos (moves.ts AREA_COMBO): a quick G, thrown as the cancel of a combo - the body it was thrown at,
+   *  whose position its circle takes at the release and whom its strikes hold (areaComboHold). */
+  areaCombo?: string;
   /** Set once this move has landed on anyone. Only a move that connected may be
    *  cancelled into the next one, so a whiff stays fully committed. */
   connected: boolean;
@@ -391,6 +394,25 @@ interface Actor {
   /** Round 5 (PARRY): until when this fighter, parried, reels: the floor of
    *  any stun a blow gives them inside it. Public (REACTION_KEYS). */
   parriedUntil: number;
+  /** The G in combos (moves.ts AREA_COMBO), the thrower's side: until when its G may be thrown as the cancel of the combo
+   *  it is landing (its own clock: held through its impact freezes, as the chase's window is), on whom, and since when
+   *  (a bot's reaction counts from it). */
+  areaComboUntil: number;
+  areaComboOn: string;
+  areaComboFrom: number;
+  /** The floor the body the window is for comes down on (m): what its flight is reckoned to. */
+  areaComboFloor: number;
+  /** The G in combos, the body's side: the combo it is in has had its G thrown at it (one a combo; cleared when the
+   *  combo goes quiet), the last fighter's blow it took (whose wall splat it is), and the quick G whose strikes hold it
+   *  (`thrower:cast`) with when that hold ends. */
+  areaComboSpent: boolean;
+  hitBy: string;
+  areaHoldCast: string;
+  areaHoldUntil: number;
+  /** The G in combos, a bot's read of its own opening (botAreaCombo): which opening, when it can press, whether it will. */
+  botAreaRead?: string;
+  botAreaAt?: number;
+  botAreaGo?: boolean;
   /** Driven into the floor by a finisher, so the landing bounces. */
   bounceOnLand: boolean;
   /** v70 (moves.ts LAUNCH_LEAD): a launcher's throw running ahead of its arc - how far at most (metres; 0: none), over
@@ -621,7 +643,9 @@ const pressClock = () => ({ lightPressAt: -Infinity, mashStreak: 0, stringMash: 
   lockCounterOn: '', lockCounterUntil: -Infinity,
   // Techniques: nothing pressed, no beat or heavy chain open, every technique ready, no combo on the body, nothing read.
   attackDir: 'n' as StickDir, risenAt: -Infinity, delayFrom: -Infinity, delayUntil: -Infinity, heavyChainUntil: -Infinity, heavyChainStage: 0,
-  techniqueReady: {} as Partial<Record<TechniqueKey, number>>, comboKinds: 0, routeNow: '', routeCast: '', seenRoutes: [] as string[] });
+  techniqueReady: {} as Partial<Record<TechniqueKey, number>>, comboKinds: 0, routeNow: '', routeCast: '', seenRoutes: [] as string[],
+  // The G in combos (AREA_COMBO): no window open, no G spent on this body's combo, no blow taken, no quick G holding it.
+  areaComboUntil: -Infinity, areaComboOn: '', areaComboFrom: -Infinity, areaComboFloor: 0, areaComboSpent: false, hitBy: '', areaHoldCast: '', areaHoldUntil: -Infinity });
 
 /** What an arcade upgrade or an enemy's tier changes about a combatant. Every
  *  factor is 1 (and every chance 0) unless survival sets it. */
@@ -807,6 +831,11 @@ const BOT_ANTI_AIR = [.15, .65] as const;
 /** How fast a lock string's dash-in closes on its target, m/s, as a bot reckons it for a punish. */
 const BOT_DASH_IN_SPEED = 14;
 const BOT_AIR_REACT = [.22, .12] as const;
+/** The G in combos (moves.ts AREA_COMBO), least to most skilled bot: the chance it throws its G into a launch or a wall
+ *  splat of its own, and how long after it landed it can - a person seeing the launch and pressing (BOT_PUNISH_REACT's
+ *  reaction, and the ease's react on top; never before it happened). Fair bots: none at full ease, its edge adds to it. */
+const BOT_AREA_COMBO = [.25, .7] as const;
+const BOT_AREA_REACT = [.26, .16] as const;
 const BOT_REACTION_SPREAD = .03;
 const BOT_PARRY_LEAD = .03;
 const BOT_GUARD_LEAD = .19;
@@ -862,6 +891,9 @@ const DETACHED_METER = .35;
  *  holds. */
 const KIND_BIT: Readonly<Record<ComboKind, number>> = { string: 1, ender: 2, heavy: 4, opener: 8, counter: 16, delay: 32, air: 64, special: 128, ultimate: 256, area: 512 };
 const bitCount = (bits: number) => { let n = 0; for (let b = bits; b; b &= b - 1) n++; return n; };
+/** The G in combos (moves.ts AREA_COMBO): the time a G window leaves between its quick G's strike and the moment its body
+ *  could get up, at the least - three ticks. */
+const AREA_COMBO_SPARE = .05;
 /** What a bot reads of the combos landed on it (familiarity): the openings of the last ROUTES_KEPT, each its first
  *  ROUTE_HEAD + 1 casts; a combo's own record is cut at ROUTE_CHARS. A route it has seen ROUTE_KNOWN times is one it
  *  knows: it escapes, parries and blocks it more (botLockEscape, botAnswer). */
@@ -946,6 +978,10 @@ export interface SimulationOptions {
    *  everything else none. */
   koHeal?: number;
   resolveAreas?: boolean;
+  /** The G in combos (moves.ts AREA_COMBO): whether a launch or a wall splat opens the quick G. Unset: the class's
+   *  default (ArenaSimulation.areaComboDefault, on; the page turns it off for its own arenas with `?ab=gcombo`). The
+   *  page's prediction asks for it always: it predicts a room, and every room plays it. */
+  areaCombo?: boolean;
   lockCombat?: boolean;
 }
 
@@ -956,10 +992,12 @@ interface AreaStrike {
   /** When the first strike lands, when each lands after it (its look's strikes, areaDamage.ts), and which is next. */
   due: number; offsets: number[]; next: number;
   castId: number; opened: Map<string, number>;
+  /** The G in combos (AREA_COMBO): a quick G's, the body it was thrown at. */
+  combo?: string;
 }
 /** One area strike's blow on a body (round 3): its share of the damage for where the body stood (areaFalloff), and
  *  whether that was the bullseye. */
-interface AreaBlow { scale: number; bullseye: boolean }
+interface AreaBlow { scale: number; bullseye: boolean; /** The G in combos: a quick G's strike on the body it was thrown at. */ combo?: boolean }
 
 /** Strict transport boundary: only finite, bounded controls enter the simulation. */
 /** Which slots a landed move may cancel into. Cancelling on connect is what
@@ -1186,6 +1224,11 @@ export class ArenaSimulation {
   private projectiles: Projectile[] = [];
   private areas: AreaStrike[] = [];
   private readonly resolveAreas: boolean;
+  /** The G in combos (moves.ts AREA_COMBO): whether this simulation plays it (SimulationOptions.areaCombo). */
+  readonly areaCombo: boolean;
+  /** The G in combos: what a simulation that does not say plays - on; main.ts sets it from `?ab=gcombo` before it builds
+   *  an arena of its own (a Duel against the CPU, couch, Training, a local royale). */
+  static areaComboDefault = true;
   /** Lock combat (lockCombat.ts): asked for by this simulation. */
   /** Lock combat (lockCombat.ts): whether this simulation plays it. The page's prediction copy asks the same of its own. */
   readonly lockCombat: boolean;
@@ -1230,6 +1273,7 @@ export class ArenaSimulation {
     this.hpMax = options.maxHp ?? MAX_HP;
     this.koHeal = options.koHeal ?? 0;
     this.resolveAreas = options.resolveAreas ?? true;
+    this.areaCombo = options.areaCombo ?? ArenaSimulation.areaComboDefault;
     this.lockCombat = !!options.lockCombat;
     // Unseeded, the stream is drawn from the clock: a fixed default meant
     // every training room drafted the same sparring partner and every match
@@ -1908,7 +1952,49 @@ export class ArenaSimulation {
       if (cast.branch === 'rise') return false;
       return cast.nextContact >= cast.move.contacts.length && cast.stage + 1 < this.rushLimit(cast.airborne);
     }
+    // The G in combos (moves.ts AREA_COMBO): a launch or a wall splat this fighter landed opens its G, out of whatever of
+    // its own landed since - a light, a heavy, a special (an ultimate cancels into nothing, a G into nothing).
+    if (slot === 'area' && cast.slot !== 'ultimate' && cast.slot !== 'area' && this.areaComboVictim(a)) return true;
     return CANCEL_ROUTES[cast.slot].includes(slot);
+  }
+
+  /** The G in combos (moves.ts AREA_COMBO): the body this fighter's G would be thrown at as the cancel of its combo, if
+   *  its window is open now - the body alive, its combo's G not yet spent, and still in the combo: in the air from the
+   *  throw, pinned by the wall, or down from either (not getting up, not on its feet again, not out of it by an air
+   *  recovery). */
+  private areaComboVictim(a: Actor): Actor | undefined {
+    if (!this.areaCombo || this.serverTime > a.areaComboUntil || a.kit) return undefined;
+    const v = this.actors.get(a.areaComboOn);
+    if (!v || v === a || v.kit || !v.state.alive || v.areaComboSpent || !this.hostile(a.state, v.state)) return undefined;
+    if (v.reaction !== 'launched' && v.reaction !== 'splat' && v.reaction !== 'knockdown') return undefined;
+    // And still catchable from where it is now - a juggle since the window opened changes its flight: its quick G thrown
+    // now (once this fighter's own freeze is out) strikes before the body could get up (its own freeze holds that off).
+    const now = this.serverTime, quick = quickArea(this.moveOf(a, 'area')), windup = (quick.contacts[0] ?? 0) + (quick.area?.telegraph ?? 0);
+    const down = v.popLand ? POP_LAND_STUN : v.dizzyOnLand ? 0 : v.downFor ?? KNOCKDOWN_SECONDS;
+    const left = (v.reaction === 'launched' && !v.state.grounded ? this.airLeft(v, v.state.y - a.areaComboFloor) + down : v.stunUntil - now)
+      + Math.max(0, v.hitstopUntil - now);
+    return Math.max(0, a.hitstopUntil - now) + windup + AREA_COMBO_SPARE <= left ? v : undefined;
+  }
+
+  /** The G in combos: a launch or a wall splat `by` landed on `on` opens `by`'s G, where the rule is played, both are
+   *  fighters and that combo has not had its G. For as long as its quick G pressed then still strikes `on` before it can
+   *  get up - `left` is how long `on` stays in the combo from now, its own impact freeze not counted (the thrower's,
+   *  which holds the window, is never longer) - less AREA_COMBO_SPARE, and no longer than `most` (AREA_COMBO.launch or
+   *  .splat). A throw that leaves no such time opens nothing. */
+  private openAreaCombo(by: Actor | undefined, on: Actor, left: number, most: number, floor: number) {
+    if (!this.areaCombo || !by || by === on || by.kit || on.kit || this.assist?.sport || !by.state.alive || !on.state.alive || on.state.hp <= 0) return;
+    if (on.areaComboSpent || on.comboKinds & KIND_BIT.area) return;
+    const quick = quickArea(this.moveOf(by, 'area')), windup = (quick.contacts[0] ?? 0) + (quick.area?.telegraph ?? 0);
+    const seconds = Math.min(most, left - windup - AREA_COMBO_SPARE);
+    if (!(seconds > 1 / 60)) return;
+    by.areaComboUntil = this.serverTime + seconds; by.areaComboOn = on.state.id; by.areaComboFrom = this.serverTime;
+    by.areaComboFloor = floor;
+  }
+  /** The G in combos: how long a body in the air takes to come down to `above` metres under it, under a launch's
+   *  gravity - its rise and its fall. */
+  private airLeft(t: Actor, above = 0) {
+    const g = 23 * LAUNCH_GRAVITY, vy = t.vy;
+    return Math.max(0, (vy + Math.sqrt(Math.max(0, vy * vy + 2 * g * Math.max(0, above)))) / g);
   }
 
   /** How many stages a string may have: the whole rush on the ground, and
@@ -2257,7 +2343,10 @@ export class ArenaSimulation {
     // Awakened, the move may be a different one: KoKo's SLUMBER becomes the
     // barrage. The cast keeps this definition for its whole duration.
     const own = branch ? comboMove(p.fighter, branch, !!p.awakened)! : (round ? lockRoundMove(p.fighter, stage, !!p.awakened) : undefined) ?? this.moveOf(a, slot, stage);
-    const m = strike && !wound ? (p.grounded ? strike.move : strike.air ?? strike.move) : own;
+    // The G in combos (moves.ts AREA_COMBO): thrown inside a launch's or a wall splat's window, the G is that combo's
+    // cancel - the quick G, at the body the window is for.
+    const comboOn = slot === 'area' && !strike ? this.areaComboVictim(a) : undefined;
+    const m = comboOn ? quickArea(own) : strike && !wound ? (p.grounded ? strike.move : strike.air ?? strike.move) : own;
     const mods = a.mods;
     const chaining = !!a.cast;
     if (!this.cancellable(a, slot) || this.serverTime < a.stunUntil || p.guarding || this.status !== 'active') return 'blocked';
@@ -2299,6 +2388,8 @@ export class ArenaSimulation {
     this.chooseIntent(a, slot, m, stage > 0 || chaining || nextRound); // Round 3b (TARGET): the enemy the player faces.
     p.stamina = Math.max(0, p.stamina - staminaCost);
     if (slot === 'ultimate') p.ultimate = 0;
+    // The G in combos: the window is spent, and so is the combo's one G - thrown, whether or not it lands.
+    if (comboOn) { a.areaComboUntil = -Infinity; comboOn.areaComboSpent = true; }
     // A technique waits on its own clock, not its button's: a Rising Strike would otherwise hold the light that chases it.
     if (isTechnique(branch)) { if (m.cooldown > 0) a.techniqueReady[branch] = this.serverTime + (mods ? m.cooldown * mods.cooldown : m.cooldown); }
     else p.cooldowns[slot] = this.serverTime + (mods ? m.cooldown * mods.cooldown : m.cooldown);
@@ -2375,7 +2466,7 @@ export class ArenaSimulation {
     else if ((m.style === 'bomb'||m.style==='field') && this.assist && shotAim && distance(p, shotAim) <= m.range + 1.2) endpoint = shotAim;
     endpoint = this.collision?.raycast?.(from, endpoint) ?? endpoint;
     if (m.area) {
-      endpoint = this.areaCentre(a, m, target);
+      endpoint = comboOn ? this.comboCentre(a, m, comboOn) : this.areaCentre(a, m, target);
       const dx = endpoint.x - p.x, dz = endpoint.z - p.z, span = Math.hypot(dx, dz);
       if (span > .3) { p.yaw = Math.atan2(dx, dz); direction = { x: dx / span, y: 0, z: dz / span }; }
     }
@@ -2404,7 +2495,7 @@ export class ArenaSimulation {
     a.cast = { id: wound ? wound.id : ++a.castSerial, stage, ...(round ? { round } : {}), slot, ...(branch ? { branch } : {}), ...(beat ? { beat } : {}), ...(mash ? { mash } : {}), move: m, start: wound ? wound.start - (wound.waited ?? 0) : this.serverTime, nextContact: 0, live: [], direction, endpoint,
       ...(strike ? { sport: wound ? 'charge' as const : 'tap' as const, press: wound ? wound.press : a.attackSeq } : {}),
       lungeTargetId: nearbyMeleeTarget ? target.id : m.lockAim&&!branch&&!p.awakened?aimedMelee?.id:undefined, connected: false, airborne: !p.grounded, opened,
-      aimId: aimAt?.id, ...(aimedExternal ? { externalAim: aimedExternal.id } : {}), ...(backstep > .02 ? { backstep, backstepPlanned: backstep, backstepUntil: backstepWindow(p.fighter, m) } : {}) };
+      aimId: aimAt?.id, ...(aimedExternal ? { externalAim: aimedExternal.id } : {}), ...(comboOn ? { areaCombo: comboOn.state.id } : {}), ...(backstep > .02 ? { backstep, backstepPlanned: backstep, backstepUntil: backstepWindow(p.fighter, m) } : {}) };
     this.action(a, slot, m.duration);
     if (!p.grounded) this.airborneOpener(a, a.cast); // Round 4b (JUMP)
     else if (m.style === 'melee' && !a.kit) {
@@ -2526,7 +2617,7 @@ export class ArenaSimulation {
       if (p.hitstop) {
         p.actionFrozen = (p.actionFrozen ?? 0) + dt;
         if (a.cast) a.cast.start += dt;
-        for (const key of ['stunUntil', 'blockedUntil', 'dashUntil', 'evadeUntil', 'comboUntil', 'awakenEntryUntil', 'rushUntil', 'chaseUntil', 'lightChaseUntil', 'parriedUntil', 'floorUntil', 'lockGapUntil', 'lockCounterUntil'] as const) {
+        for (const key of ['stunUntil', 'blockedUntil', 'dashUntil', 'evadeUntil', 'comboUntil', 'awakenEntryUntil', 'rushUntil', 'chaseUntil', 'lightChaseUntil', 'parriedUntil', 'floorUntil', 'lockGapUntil', 'lockCounterUntil', 'areaComboUntil', 'areaHoldUntil'] as const) {
           if (a[key] > this.serverTime - dt) a[key] += dt;
         }
         if (p.awakened && (p.awakenedUntil ?? 0) > this.serverTime - dt) p.awakenedUntil = (p.awakenedUntil ?? 0) + dt;
@@ -2565,6 +2656,7 @@ export class ArenaSimulation {
           if(a.rushUntil>this.serverTime-dt)a.rushUntil+=dt;
           if(a.chaseUntil>this.serverTime-dt)a.chaseUntil+=dt;
           if(a.lightChaseUntil>this.serverTime-dt)a.lightChaseUntil+=dt;
+          if(a.areaComboUntil>this.serverTime-dt)a.areaComboUntil+=dt; // The G in combos (AREA_COMBO): its window, too.
           // Round 3c (LOCK): and a press waiting for the held move to end
           // waits with it, or the hold would spend its buffer.
           if(a.cast&&a.attackHold>this.serverTime-dt)a.attackHold+=dt;
@@ -3159,6 +3251,9 @@ export class ArenaSimulation {
           a.floorUntil = a.stunUntil + GROUND_HIT_MOST; a.floorHits = a.floorTaken = 0;
           this.action(a, 'splat', Math.max(.05, a.stunUntil - this.serverTime), true);
           this.emit({ kind: 'wall-splat', actorId: p.id, fighter: p.fighter, origin: position(p) });
+          // The G in combos (moves.ts AREA_COMBO): the splat opens the G of the fighter whose blow sent it there.
+          // (It stays in the combo for the splat's stun: getting up comes after it.)
+          if (a.hitBy) this.openAreaCombo(this.actors.get(a.hitBy), a, a.stunUntil - this.serverTime, AREA_COMBO.splat, p.y);
         }
       }
       if (a.wallBounce) this.wallBounceTick(a, delta, wantedX, wantedZ, corrected); // Round 3e (VARIETY): off the wall, not pinned to it.
@@ -3205,7 +3300,10 @@ export class ArenaSimulation {
           } else if (wasAirborne && a.reaction === 'launched' && a.popLand) {
             // Round 4b (COMBAT): a string's pop lands on its feet, reeling, still in the string - not down, and with no
             // getting-up evade for the blow after it to whiff on.
-            a.reaction = 'hurt'; a.stunUntil = Math.max(a.stunUntil, this.serverTime + POP_LAND_STUN);
+            // (The G in combos: a quick G's body lands so, reeling for its stagger from here - AREA_COMBO, areaComboHold.)
+            const reel = a.areaHoldUntil === Infinity && a.dazeFor > 0 ? a.dazeFor : POP_LAND_STUN;
+            if (a.areaHoldUntil === Infinity) a.areaHoldUntil = this.serverTime + reel;
+            a.reaction = 'hurt'; a.stunUntil = Math.max(a.stunUntil, this.serverTime + reel);
             a.kx *= .25; a.kz *= .25;
           } else if (wasAirborne && a.reaction === 'launched') {
             a.reaction = 'knockdown';
@@ -3569,6 +3667,11 @@ export class ArenaSimulation {
     a.dashUntil = this.serverTime + CHASE_SECONDS; a.evadeUntil = this.serverTime + DASH_EVADE;
     a.dashSpeed = Math.min(CHASE_MAX_SPEED, span * CHASE_UNIT);
     a.dashChase = true; a.chaseUntil = a.lightChaseUntil = -Infinity;
+    // (The G in combos: the chase is after this body, and its end - when the floor or a wall stops the
+    // body - is for a body in the air. A lock string's dash-in at a body on the floor is no such chase: it kept the last
+    // launch's body here, found it on the floor, and stopped on its first tick - the follow-up to a quick G's stagger, a
+    // few metres off after the knockaway, whiffed from where it stood.)
+    a.chaseTargetId = airborne ? q.id : undefined;
     // The chase cancels the launcher's recovery, so the follow-up light is a
     // chained normal: it comes out on arrival, not when the finisher's own
     // cooldown (its whole duration) would have let a fresh jab out.
@@ -4295,6 +4398,17 @@ export class ArenaSimulation {
     x = clamp(x, -halfX, halfX); z = clamp(z, -halfZ, halfZ);
     return { x: +x.toFixed(3), y: this.floorAt(x, z, p.y), z: +z.toFixed(3) };
   }
+  /** The G in combos (moves.ts AREA_COMBO): a quick G's circle goes on the body it was thrown at - where that body is,
+   *  kept within the move's range of the caster and the arena, on the floor under it. */
+  private comboCentre(a: Actor, m: MoveDefinition, on: Actor): Vec3 {
+    const p = a.state, q = on.state;
+    let x = q.x, z = q.z;
+    const dx = x - p.x, dz = z - p.z, d = Math.hypot(dx, dz);
+    if (d > m.range && d > 0) { x = p.x + dx / d * m.range; z = p.z + dz / d * m.range; }
+    const { halfX, halfZ } = this.bounds;
+    x = clamp(x, -halfX, halfX); z = clamp(z, -halfZ, halfZ);
+    return { x: +x.toFixed(3), y: this.floorAt(x, z, Math.min(p.y, q.y)), z: +z.toFixed(3) };
+  }
   /** The floor at (x, z): the first fixed surface down from well above the caster's height, else the ground (0). */
   private floorAt(x: number, z: number, near: number): number {
     if (!this.collision?.raycast) return 0;
@@ -4306,11 +4420,14 @@ export class ArenaSimulation {
   private releaseArea(a: Actor, cast: Cast, contact: number) {
     // A physical self-centered sweep follows its body through the windup. Remote casts keep their aimed point.
     if (cast.move.range === 0) cast.endpoint = this.areaCentre(a, cast.move, null);
+    // The G in combos: a quick G's circle goes where its body is at the release, not where it was at the press.
+    else if (cast.areaCombo) { const on = this.actors.get(cast.areaCombo); if (on?.state.alive) cast.endpoint = this.comboCentre(a, cast.move, on); }
     const m = cast.move, area = m.area!, due = this.serverTime + area.telegraph, offsets = strikeOffsets(m);
     this.emit({ kind: 'release', actorId: a.state.id, fighter: a.state.fighter, slot: cast.slot, origin: centre(a.state), endpoint: position(cast.endpoint),
       contactIndex: contact, radius: m.radius, due: +due.toFixed(4), move: m.name, ...(area.fx ? { look: area.fx } : {}), strikes: offsets.length });
     if (!this.resolveAreas) return;
-    this.areas.push({ actorId: a.state.id, fighter: a.state.fighter, move: m, at: position(cast.endpoint), due, offsets, next: 0, castId: cast.id, opened: new Map() });
+    this.areas.push({ actorId: a.state.id, fighter: a.state.fighter, move: m, at: position(cast.endpoint), due, offsets, next: 0, castId: cast.id, opened: new Map(),
+      ...(cast.areaCombo ? { combo: cast.areaCombo } : {}) });
   }
   /** Every circle whose strike is due lands it: an 'impact', then a blow on every opponent inside - the circle's
    *  radius on the floor, up to its height - wherever they stood when it was cast. Its caster need not be there. The
@@ -4328,7 +4445,9 @@ export class ArenaSimulation {
           const q = target.state, off = Math.hypot(q.x - at.x, q.z - at.z);
           if (q.id === caster.id || !q.alive || !this.hostile(caster, q)) continue;
           if (off > m.radius + radiusOf(q) || q.y < at.y - 1 || q.y > at.y + height) continue;
-          this.hit(strike.actorId, target, 'area', m, at, finisher, at, k, strike.opened, strike.castId, 0, undefined, false, false, areaBlow(off, m.radius));
+          // (The G in combos: on the body it was thrown at, every strike lands as at the rim - AREA_COMBO.share.)
+          const blow = strike.combo === q.id ? { scale: AREA_COMBO.share, bullseye: false, combo: true } : areaBlow(off, m.radius);
+          this.hit(strike.actorId, target, 'area', m, at, finisher, at, k, strike.opened, strike.castId, 0, undefined, false, false, blow);
         }
         if (caster && this.external) {
           const n = this.external.query(at, at, m.radius + 1.2, this.nearby);
@@ -4435,7 +4554,10 @@ export class ArenaSimulation {
     // for less, leaves the body where it lies, and keeps it there a beat at
     // most (GROUND_HIT_HOLD, never past `floorUntil`). An ultimate is not one:
     // it lands whole, as on a fighter standing.
-    const floored = fighters && slot !== 'ultimate' && this.down(target);
+    // The G in combos (moves.ts AREA_COMBO): a quick G's strike on the body it was thrown at lands whole on it down there,
+    // as an ultimate's does - the combo's payoff, not a ground hit (getting up still dodges it: floorDodges).
+    const comboArea = slot === 'area' && !!area?.combo;
+    const floored = fighters && slot !== 'ultimate' && !comboArea && this.down(target);
     // Whether this contact belongs to the cast its thrower is in now. By cast,
     // not by slot: a shot from one rush stage that lands during the next is
     // the earlier stage's hit, and must not open the new stage's cancels or
@@ -4593,6 +4715,8 @@ export class ArenaSimulation {
       target.chainHits = target.scalingHits = 0;
       // Techniques: a combo over - its kinds go.
       target.comboKinds = 0;
+      // The G in combos: and its one G is to be had again.
+      target.areaComboSpent = false;
     }
     // Techniques: a string over (ROUTE_GAP without a blow, or its record full) - a bot keeps how it opened (familiarity).
     if (this.serverTime - target.lastDamageAt > ROUTE_GAP || target.routeNow.length >= ROUTE_CHARS) {
@@ -4646,6 +4770,8 @@ export class ArenaSimulation {
     damage = floored ? groundHitDamage(standing, target.floorHits, target.floorTaken, p.maxHp) : Math.max(1, Math.round(standing));
     if (floored) { target.floorHits++; target.floorTaken += damage; }
     target.lastDamageAt = this.serverTime;
+    // The G in combos: whose blow it was, for a wall splat it ends in (AREA_COMBO.splat).
+    if (fighters) target.hitBy = actorId;
     const hpBefore = p.hp;
     p.hp = Math.max(0, p.hp - damage);
     this.tally(target, attacker, hpBefore - p.hp);
@@ -4696,15 +4822,18 @@ export class ArenaSimulation {
     // knockback threshold - only a budget, which MAX_JUGGLE provides.
     // Ground hits: a body down never goes up again off a ground hit - not off a
     // ledge it slid off, not off a launcher, not off an outcome of the blow's.
-    const juggling = !floored && !armoured && !escaped && !p.grounded && p.hp > 0 && target.juggleHits < MAX_JUGGLE;
+    // The G in combos (AREA_COMBO): a quick G's strike on its body holds it on its feet (areaComboHold) and throws it
+    // nowhere - no launch, no juggle, none of the move's own outcome.
+    const gHeld = comboArea && !armoured && !escaped && !guardBreak && p.hp > 0;
+    const juggling = !gHeld && !floored && !armoured && !escaped && !p.grounded && p.hp > 0 && target.juggleHits < MAX_JUGGLE;
     // Round 3e (VARIETY): the move's own outcome, where it has one (shapeBlow).
-    const shaped = floored ? undefined : this.outcomeOf(target, move, finisher && !armoured && !escaped && !guardBreak && p.hp > 0);
-    const launches = !floored && !target.anchored && (juggling || (!armoured && !escaped && finisher && (shaped && shaped !== 'spent' ? LAUNCHING.has(shaped) : knockback >= LAUNCH_KNOCKBACK) && p.hp > 0));
+    const shaped = floored || gHeld ? undefined : this.outcomeOf(target, move, finisher && !armoured && !escaped && !guardBreak && p.hp > 0);
+    const launches = !gHeld && !floored && !target.anchored && (juggling || (!armoured && !escaped && finisher && (shaped && shaped !== 'spent' ? LAUNCHING.has(shaped) : knockback >= LAUNCH_KNOCKBACK) && p.hp > 0));
     const broken = poise === 'broken';
     // A string's dizzy (combos.ts: Light x3 + Special) is a guard break's stun, earned by the string.
     const dizzy = shaped === 'dizzy' && !launches;
     // Ground hits: a flinch where it lies - the body keeps the reaction it is down in (see below).
-    const reaction: ReactionKind = floored ? 'flinch' : guardBreak || dizzy ? 'stun' : launches ? 'launched' : broken ? 'stun' : !finisher || escaped ? 'flinch' : 'hurt';
+    const reaction: ReactionKind = floored ? 'flinch' : gHeld ? 'hurt' : guardBreak || dizzy ? 'stun' : launches ? 'launched' : broken ? 'stun' : !finisher || escaped ? 'flinch' : 'hurt';
     // What landing a hit is worth. Hitstun is floored at the wind-up the
     // attacker paid plus the advantage the slot is owed, capped, so a normal
     // that connects leaves its thrower ahead instead of a tenth of a second
@@ -4734,7 +4863,7 @@ export class ArenaSimulation {
     // `floorUntil` (when it would have got up as it went down, and
     // GROUND_HIT_MOST), however many land.
     if (!armoured && floored) target.stunUntil = Math.max(target.stunUntil, Math.min(this.serverTime + GROUND_HIT_HOLD, target.floorUntil));
-    else if (!armoured) target.stunUntil = this.serverTime + (dizzy ? move.daze ?? DIZZY_SECONDS : guardBreak ? GUARD_BREAK_STUN
+    else if (!armoured && !gHeld) target.stunUntil = this.serverTime + (dizzy ? move.daze ?? DIZZY_SECONDS : guardBreak ? GUARD_BREAK_STUN
       : linkTo !== undefined ? Math.max(stun * stunScale, advantage) : Math.max(stun, advantage) * stunScale) * (target.mods ? target.mods.stunIn : 1);
     // Round 5 (PARRY): a parried thrower reels for the whole of the stagger
     // whatever lands on them inside it: a punish that opens on a short flinch
@@ -4856,10 +4985,10 @@ export class ArenaSimulation {
     }
     // A finisher that catches someone already off the floor drives them into
     // it, and they bounce once on the way down.
-    if (!floored && !armoured && !escaped && finisher && airborneBefore && p.hp > 0 && slot !== 'light') {
+    if (!gHeld && !floored && !armoured && !escaped && finisher && airborneBefore && p.hp > 0 && slot !== 'light') {
       target.bounceOnLand = true;
     }
-    if (!armoured && !floored) this.shapeBlow(target, shaped, move, fromX / n, fromZ / n, juggling, launches, attacker, slot === 'light' && stage < RUSH_STAGES - 1); // Round 3e (VARIETY); round 4b: a string's pop
+    if (!armoured && !floored && !gHeld) this.shapeBlow(target, shaped, move, fromX / n, fromZ / n, juggling, launches, attacker, slot === 'light' && stage < RUSH_STAGES - 1); // Round 3e (VARIETY); round 4b: a string's pop
     // Lock combat: the finisher knocks the body away low and long (lockKnockaway), and no blow of a string drives it into
     // a wall (lockClear) - after the blow's own shape, which can send it straight up (Ouga's Double Axe Handle).
     if (target.lockSlide) delete target.lockSlide;
@@ -4881,6 +5010,14 @@ export class ArenaSimulation {
       const hold = Math.max(.05, target.stunUntil - this.serverTime);
       this.action(target, reaction, reaction === 'flinch' || reaction === 'hurt' ? Math.min(hold, target.reactionClip) : hold, true);
     }
+    // The G in combos (AREA_COMBO): held by the quick G it was thrown at...
+    if (gHeld) this.areaComboHold(target, `${actorId}:${castId ?? ''}`);
+    // ...and a launch thrown from the floor - a launch, a groundBounce or the old rule's (a hop, a crumple, a knockdown
+    // and a wall bounce are throws of their own; a juggle is no launch) - opens the thrower's.
+    // (It stays in the combo through its flight back to the floor it was thrown from and its time down there.)
+    else if (launches && !juggling && !airborneBefore && fighters && slot !== 'area'
+      && (!shaped || shaped === 'spent' || shaped === 'launch' || shaped === 'groundBounce'))
+      this.openAreaCombo(attacker, target, this.airLeft(target) + (target.downFor ?? KNOCKDOWN_SECONDS), AREA_COMBO.launch, p.y);
     // Two meters, filled from opposite ends of the same blow. The one who
     // took it builds toward their transformation; the one who landed it
     // builds toward their ultimate. The victim used to get a sliver of the
@@ -4948,7 +5085,7 @@ export class ArenaSimulation {
       ...(area?.bullseye ? { bullseye: true } : {}),
       ...(shaped && shaped !== 'spent' && !armoured && (!juggling || shaped === 'groundBounce' || shaped === 'wallBounce') ? { outcome: shaped } : {}),
       ...(target.launchLead > 0 && target.launchRun === 0 ? { lift: target.vy } : {}),
-      ...(floored ? { downed: true } : {}), ...(counter ? { counter: true } : {}), ...(punish ? { punish: true } : {}), ...(ahead !== undefined ? { advantage: ahead } : {}),
+      ...(floored ? { downed: true } : {}), ...(gHeld ? { areaCombo: true } : {}), ...(counter ? { counter: true } : {}), ...(punish ? { punish: true } : {}), ...(ahead !== undefined ? { advantage: ahead } : {}),
       ...(own?.round && slot === 'light' ? { round: own.round } : {}) });
     if (finisher && move.status && p.hp > 0) this.afflict(target, actorId, move.status);
     if (p.hp === 0) this.eliminate(target, actorId);
@@ -5189,6 +5326,31 @@ export class ArenaSimulation {
     if (shaped === 'wallBounce') { t.wallBounce = true; t.wallBounceBy = attacker?.state.id; t.knockbackDrag = 4; }
   }
 
+  /** The G in combos (moves.ts AREA_COMBO): a quick G's strike on the body it was thrown at. Its first holds the body on
+   *  its feet, reeling, for AREA_COMBO.stagger - long enough for a light to follow and connect (a body in the air, or
+   *  sliding down a wall, is driven down onto its feet first, and held from its landing: `popLand`); the strikes after
+   *  it on the same body only flinch it where it stands, never past what holds it already. None throws it anywhere, and
+   *  the body is left in reach: its knockback dropped, any bounce, spin or throw still pending on it let go. */
+  private areaComboHold(t: Actor, cast: string) {
+    const p = t.state, now = this.serverTime, first = t.areaHoldCast !== cast;
+    t.kx = t.kz = 0; t.knockbackDrag = 9; t.spinLeft = 0; t.downFor = undefined; t.wallBounce = false; t.wallBounceBy = undefined;
+    t.bounceOnLand = false; t.dizzyOnLand = false; t.launchLead = 0; t.knockKind = '';
+    if (first) { t.areaHoldCast = cast; t.staggeredAt = now; }
+    if (!p.grounded) {
+      // Driven down onto its feet (a string's pop lands so, reeling - POP_LAND_STUN, here the stagger: the landing).
+      t.vy = Math.min(t.vy, -AREA_COMBO.drive); t.juggleHits = MAX_JUGGLE; t.popLand = true; t.launchSlot = undefined;
+      if (first) { t.dazeFor = AREA_COMBO.stagger; t.areaHoldUntil = Infinity; }
+      t.reaction = 'launched';
+      this.action(t, 'launched', Math.max(.05, t.stunUntil - now), true);
+      return;
+    }
+    if (first) t.areaHoldUntil = now + AREA_COMBO.stagger;
+    t.reaction = 'hurt';
+    t.stunUntil = first ? t.areaHoldUntil : Math.max(t.stunUntil, now + .1);
+    t.floorUntil = -Infinity; t.floorHits = t.floorTaken = 0;
+    this.action(t, 'hurt', Math.max(.05, Math.min(t.stunUntil - now, t.reactionClip)), true);
+  }
+
   /** Round 3e (VARIETY): a body blown into a wall by a wallBounce blow comes
    *  back off it instead of sticking - its speed reflected off the wall at
    *  WALL_BOUNCE_BACK, up into reach at WALL_BOUNCE_LIFT - and whoever threw
@@ -5216,6 +5378,9 @@ export class ArenaSimulation {
     a.stunUntil = Math.max(a.stunUntil, this.serverTime + .45);
     this.action(a, 'launched', Math.max(.05, a.stunUntil - this.serverTime), true);
     this.emit({ kind: 'wall-splat', actorId: p.id, fighter: p.fighter, origin: position(p), reaction: 'launched' });
+    // The G in combos (moves.ts AREA_COMBO): a wall bounce is a wall splat to the G of the fighter who threw it.
+    // (Thrown back up off the wall, it stays in the combo through its fall from here and its time down: OUTCOME_DOWN.)
+    if (a.wallBounceBy) { const floor = this.floorAt(p.x, p.z, 0); this.openAreaCombo(this.actors.get(a.wallBounceBy), a, this.airLeft(a, p.y - floor) + (a.downFor ?? KNOCKDOWN_SECONDS), AREA_COMBO.splat, floor); }
     const by = a.wallBounceBy ? this.actors.get(a.wallBounceBy) : undefined;
     if (by?.state.alive && !by.kit && by !== a && p.hp > 0) {
       by.chaseTargetId = p.id; by.chaseUntil = this.serverTime + CHASE_WINDOW; by.lightChaseUntil = this.serverTime + LIGHT_CHASE_WINDOW;
@@ -5495,6 +5660,8 @@ export class ArenaSimulation {
     this.botDefend(a);
     // and the openings a person punishes on sight - a swing over and its thrower still in it, a jump at it.
     if (!a.botClassic && this.botPunish(a)) return;
+    // The G in combos: and its G, into a launch or a wall splat of its own (botAreaCombo).
+    if (!a.botClassic && this.botAreaCombo(a)) return;
     if (this.serverTime < a.nextBotThink) return;
     // Not every bot thinks at the same rate. A field of twelve on one clock
     // reads as one opponent copied twelve times. (the best no slower than BOT_THINK_MOST.)
@@ -5732,6 +5899,30 @@ export class ArenaSimulation {
     if (!attack) return false;
     a.botPunishGo = false;
     return this.botPress(a, other, attack);
+  }
+  /** The G in combos (moves.ts AREA_COMBO): a bot's own launch or wall splat, seen as a person sees it - once it has
+   *  happened, BOT_AREA_REACT later (and the ease's react on top) - and its G thrown into it as often as its skill says
+   *  (BOT_AREA_COMBO; none at full ease), its circle on the body it is for, while the window is open and the G is up.
+   *  On every tick, as botPunish is: the window is half a second. True when it pressed. */
+  private botAreaCombo(a: Actor): boolean {
+    const p = a.state, now = this.serverTime;
+    if (a.kit || a.botWinded || a.input.attack || now > a.areaComboUntil || now <= (p.cooldowns.area ?? 0) || now < a.stunUntil || a.reaction) return false;
+    const on = this.areaComboVictim(a), m = this.moveOf(a, 'area');
+    if (!on || !m.area || p.stamina < m.stamina && !STAMINA_OVERDRAW) return false;
+    const key = `${on.state.id}:${a.areaComboFrom}`;
+    if (a.botAreaRead !== key) {
+      const skill = a.botSkill, scale = (range: readonly [number, number]) => range[0] + (range[1] - range[0]) * skill;
+      a.botAreaRead = key;
+      a.botAreaAt = a.areaComboFrom + Math.max(.05, scale(BOT_AREA_REACT) + BOT_EASE.react * a.botEase - BOT_SHARP.react * a.botSharp + this.gauss() * .03);
+      a.botAreaGo = this.random() < scale(BOT_AREA_COMBO) * (1 - a.botEase) + BOT_SHARP.ender * a.botSharp;
+    }
+    if (!a.botAreaGo || now < a.botAreaAt! || (a.cast && !this.cancellable(a, 'area'))) return false;
+    a.botAreaGo = false;
+    const dx = on.state.x - p.x, dz = on.state.z - p.z;
+    a.botGuardFrom = a.botGuardUntil = undefined; a.botTimed = false;
+    this.submitInput(p.id, { seq: a.lastSeq + 1, moveX: a.input.moveX, moveZ: a.input.moveZ, yaw: Math.atan2(dx, dz), targetId: on.state.id,
+      attack: 'area', aim: { x: +on.state.x.toFixed(2), z: +on.state.z.toFixed(2) }, guard: false });
+    return true;
   }
   /** a body jumping in on a bot - off the floor of its own accord (not thrown), within a
    *  few metres and coming its way - met as it comes into reach, once the bot has seen the jump (BOT_AIR_REACT), as often

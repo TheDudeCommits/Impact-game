@@ -15,7 +15,7 @@ import type { Fighter } from '../../Fighter';
 import { effekseerLoaded } from './effekseer';
 import { skipHiddenChildren } from '../../hiddenMatrices';
 import { VFX } from '../../vfxLevel';
-import { LIGHT, lighterParticles, lighterShader, lighterVolume } from './lighter';
+import { LIGHT, lighterParticles, lighterPool, lighterShader, lighterVolume } from './lighter';
 import { sceneDrawingSize } from '../../look/sceneBuffer';
 import type { ArmoryContext, ArmoryFlashApi, ArmoryLightHandle, ArmoryLightsApi, ArmoryShakeApi } from './types';
 
@@ -112,8 +112,9 @@ function adaptNode(node: THREE.Object3D, adapted: WeakSet<object>, clock?: { val
   if (mask !== GAME_MASK && mask !== DISTORTION_MASK) node.layers.set(GAME_LAYER);
   const mesh = node as THREE.Mesh;
   if (!mesh.material) return;
-  // (A raymarched volume marches fewer steps while it fills the screen: lighter.ts.)
-  if (mesh.isMesh) lighterVolume(mesh);
+  // (A raymarched volume marches fewer steps while it fills the screen, and a volume or a pool that fills it is marched
+  // small and laid over: lighter.ts.)
+  if (mesh.isMesh) { lighterVolume(mesh); lighterPool(mesh); }
   for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
     if (adapted.has(material)) continue;
     adapted.add(material);

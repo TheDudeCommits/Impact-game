@@ -309,6 +309,7 @@ export class Hud {
     else if(key==='cameraStyle')this.settings.cameraStyle=input.value==='close'||input.value==='chase'?input.value:'classic';
     else if(key==='lockStyle')this.settings.lockStyle=input.value==='brackets'?'brackets':'glow';
     else if(key==='commentary')this.settings.commentary=commentaryOf(input.value);   // the ball modes' voice (audio/ballCaller.ts)
+    else if(key==='announcer'){if((input as HTMLInputElement).checked)delete this.settings.announcer;else this.settings.announcer=false;}   // ANNOUNCER (audio/duelCaller.ts)
     else if(key==='spikeCam')this.settings.spikeCam=spikeCamOf(input.value);   // Sky Spike's stand (render/ball/ballCamChoice.ts)
     else if(key==='chaseCam')this.settings.chaseCam=chaseCamOf(input.value);   // Goal Rush's chase lens
     else if(key==='goalLook'){if(input.value==='free')this.settings.goalLook='free';else delete this.settings.goalLook;}   // Goal Rush's SPORT mode: BALL LOCK / FREE LOOK (render/ball/footballPage.ts)

@@ -10,7 +10,7 @@ import type { FighterId } from '../src/game/types';
  *  the rigid pushbox), so a v4 client must not be served by it either. */
 describe('the rush protocol', () => {
   it('is a new movement protocol', () => {
-    expect(MOVEMENT_PROTOCOL).toBe('omni-sequenced-input-v79-techniques');
+    expect(MOVEMENT_PROTOCOL).toBe('omni-sequenced-input-v80-area-combos');
     expect(healthReport().movementProtocol).toBe(MOVEMENT_PROTOCOL);
     expect(healthReport().lightChaseWindow).toBe(LIGHT_CHASE_WINDOW);
     expect(healthReport()).toMatchObject({riftWar:true,riftProtocol:4,riftSnapshotHz:20});

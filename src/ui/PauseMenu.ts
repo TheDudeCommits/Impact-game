@@ -14,7 +14,7 @@ export function pauseMenu(settings:Settings){
   // The game's own picker (inkSelect.ts) where a native select stood; Hud sets each one's value from the settings.
   // (A third word is the option's note in the list - RECOMMENDED, 60 FPS - keeping the button's value short.)
   const pick=(key:'artStyle'|'cameraMode'|'cameraStyle'|'lockStyle'|'quality'|'powerMode'|'animStyle'|'hudSkin'|'moveLayout'|'vfx'|'commentary'|'spikeCam'|'chaseCam'|'superCam'|'goalLook',id:string,label:string,options:readonly (readonly [string,string,string?])[])=>`<label><span>${label}</span><ink-select id="${id}" data-setting="${key}" label="${label}">${options.map(([value,text,tag])=>`<option value="${value}"${tag?` data-tag="${tag}"`:''}${value===(key==='quality'?qualityChoice(settings):settings[key]??options[0][0])?' selected':''}>${text}</option>`).join('')}</ink-select></label>`;
-  const toggle=(key:'cinematics'|'musicEnabled',label:string)=>`<label class="pause-toggle" for="pause-${key}"><span>${label}</span><input id="pause-${key}" data-setting="${key}" type="checkbox" ${settings[key]?'checked':''}></label>`;
+  const toggle=(key:'cinematics'|'musicEnabled'|'announcer',label:string)=>`<label class="pause-toggle" for="pause-${key}"><span>${label}</span><input id="pause-${key}" data-setting="${key}" type="checkbox" ${(key==='announcer'?settings.announcer!==false:settings[key])?'checked':''}></label>`;
   return `<section class="settings-scrim hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title"><div class="settings-card pause-menu">
     <header class="pause-header"><div class="pause-heading"><span class="pause-symbol" aria-hidden="true">Ⅱ</span><div><p id="pause-mode">IN THE ARENA</p><h2 id="pause-title">PAUSE MENU</h2></div></div><div class="pause-fighter"><span id="pause-portrait" aria-hidden="true"></span><strong id="pause-fighter-name"></strong></div><button id="settings-close" type="button" aria-label="Close pause menu">×</button></header>
     <p id="settings-session-note">The online match continues while this menu is open.</p>
@@ -29,7 +29,7 @@ export function pauseMenu(settings:Settings){
         ${toggle('cinematics','Cinematic camera')}
       </section>
       <section class="pause-group" aria-labelledby="pause-audio-title"><h3 id="pause-audio-title"><span>02</span> AUDIO</h3>
-        ${slider('volume','Master volume')}${slider('sfxVolume','Sound effects')}${slider('voiceVolume','Character voices')}${slider('musicVolume','Music volume')}${toggle('musicEnabled','Play music')}
+        ${slider('volume','Master volume')}${slider('sfxVolume','Sound effects')}${slider('voiceVolume','Character voices')}${slider('musicVolume','Music volume')}${toggle('musicEnabled','Play music')}${toggle('announcer','Announcer')}
         ${modeOpen('goal-rush')?`<div class="pause-selects">${pick('commentary','pause-commentary','Commentary',COMMENTARY_OPTIONS)}</div>`:''}
         ${errorReportsOption('pause-toggle','pause-errorReports','data-setting','Send error reports',settings)}
         <button type="button" class="pause-report" data-report-bug>Report a bug <span aria-hidden="true">↗</span></button>

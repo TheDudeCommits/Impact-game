@@ -75,10 +75,12 @@ export class PassEconomy implements RoomEconomy {
   /** The pass an account's page brought (its standings and records, from the economy world). */
   passOf(pk: string): Pass | undefined { return this.passes.get(`pass:${pk}`)?.pass; }
   /** A result for the economy world (a ranked change, a rivalry), signed and sent to `pk`'s page as a completion goes:
-   *  the page posts it to the economy (p2room-complete), which takes each once. False: no key, or no page to carry it. */
-  note(pk: string, body: Record<string, unknown> & { k: string; id: string }) {
+   *  the page posts it to the economy (p2room-complete), which takes each once. `carriers`: other accounts in the room
+   *  whose pages carry it too - a ranked Duel's leaver has no page left in the room, so the one who stayed carries the
+   *  leaver's loss (and each carries the other's, so neither can keep a result from the world by not posting it). */
+  note(pk: string, body: Record<string, unknown> & { k: string; id: string }, carriers: readonly string[] = []) {
     if (!this.secret) return;
-    void seal(this.secret, { ...body, exp: Date.now() + DONE_MS }).then(done => { this.route(pk, { key: `${body.k}:${body.id}`, done }); });
+    void seal(this.secret, { ...body, exp: Date.now() + DONE_MS }).then(done => { for (const each of new Set([pk, ...carriers])) this.route(each, { key: `${body.k}:${body.id}:${pk}`, done }); });
   }
   /** The page's word that the economy settled it (only ever shown to that page's own player). */
   settle(key: unknown, completion: unknown) {

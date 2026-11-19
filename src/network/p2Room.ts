@@ -47,6 +47,9 @@ export interface P2Ask {
   size: number;
   /** A public match whose faction can be full (Rift War, the objectives): this many pools of it, tried in turn. */
   pools?: number;
+  /** A public match by skill (the SDK's join `skill`): the waiting room whose players are rated nearest in this mode
+   *  first (PlayerTwo's own rating, which the room's room.result moves): the ranked Duel. */
+  skill?: boolean;
   /** POST a signed completion to the economy; its settlement back. */
   settle?: (done: string) => Promise<unknown>;
 }
@@ -119,7 +122,7 @@ export class P2ColyseusRoom {
     let live = 'code' in ask.how ? await rooms.join({ code: ask.how.code })
       : 'create' in ask.how ? await rooms.create(made)
       : 'party' in ask.how ? await partyRoom(rooms, made)
-      : await rooms.join({ mode: p2Mode(ask.kind, match), size: ask.size, between: false });
+      : await rooms.join({ mode: p2Mode(ask.kind, match), size: ask.size, between: false, ...(ask.skill ? { skill: true } : {}) });
     /* a code of six digits would be read as the match server's: made again (a chance of about 1 in 3,000) */
     for (let again = 0; 'create' in ask.how && live.code && /^\d{6}$/.test(live.code) && again < 3; again++) {
       live.leave(); live = await rooms.create({ mode: p2Mode(ask.kind), size: ask.size, between: false });

@@ -1,6 +1,13 @@
+/** Mastery in every mode: a match pays its fighter mastery by its length and its result (survival/progress.ts
+ *  masteryXpForMatch, at most MATCH_XP_MOST). A match played on the device pays it with its career report (`device`),
+ *  held as any match is - plausibleMatch, and its seconds to the same wall clock as the career's - so a device's mastery
+ *  can reach a wall clock's worth of play and never pass it. A match a room played pays it from the room's own completion
+ *  (creditRoomMatch: what the room saw, settled once per match and account), never from the page's word: its career
+ *  report pays none. */
 import type { FighterId } from '../types';
 import { MOVES } from '../moves';
-import { AURAS, CHALLENGES, UNLOCKS, buy, emptyProgress, masteryOf, settle, type AuraId, type RiftProgress, type RunFacts } from '../../survival/progress';
+import { AURAS, CHALLENGES, MATCH_XP_MOST, UNLOCKS, buy, careerMatchFacts, emptyProgress, masteryOf, reportMatchFacts, settle, settleMatch, type AuraId, type RiftProgress, type RunFacts } from '../../survival/progress';
+import type { Report } from '../economy/earn';
 import { FINAL_ROUND, LOCATIONS } from '../../survival/locations';
 import { RANKS, loopOf, rankFor, type Rank } from '../../survival/bosses';
 import { CAREER_MODES, emptyTotals, newCareer, readCareer, recordCareer, titleUnlocked, type Career, type CareerMatch, type CareerTotals } from '../social/career';
@@ -32,8 +39,9 @@ export const PROGRESS_LIMITS = {
   damagePerSecond: 20_000,
   // ---- an import: totals no run count could pass ----
   runs: 20_000,
-  /** Mastery experience a run gives (a sealed run about 355: round 14, 14 bosses, 25 minutes). */
-  xpPerRun: 1_000,
+  /** Mastery experience a run gives (a sealed run about 355: round 14, 14 bosses, 25 minutes), and a match (a royale won
+   *  in 45 minutes or more, MATCH_XP_MOST: survival/progress.ts). */
+  xpPerRun: 1_000, xpPerMatch: MATCH_XP_MOST,
   /** Shards a run pays, before its challenges (a sealed run about 450). */
   shardsPerRun: 1_000,
   bossesPerRun: 60,
@@ -98,7 +106,17 @@ export function plausibleMatch(raw: unknown, now = Infinity): CareerMatch | unde
   const seconds = num(m.seconds, L.matchSeconds);
   return { id: m.id, at: Math.min(num(m.at, 1e15), now), mode: m.mode as CareerMatch['mode'], fighter: m.fighter, outcome: m.outcome as CareerMatch['outcome'],
     kills: Math.min(int(m.kills, 1e6), Math.max(20, Math.ceil(seconds))), damage: Math.min(num(m.damage, 1e9), seconds * L.damagePerSecond + 20_000), seconds,
-    bosses: Math.min(int(m.bosses, 10_000), Math.floor(seconds / 10) + 3), capture: Math.min(num(m.capture, 3600), seconds), score: num(m.score, 1e9), round: int(m.round, 10_000) };
+    bosses: Math.min(int(m.bosses, 10_000), Math.floor(seconds / 10) + 3), capture: Math.min(num(m.capture, 3600), seconds), score: num(m.score, 1e9), round: int(m.round, 10_000),
+    ...(m.device === true ? { device: true as const } : {}) };
+}
+/** A room's completion paid into its fighter's mastery (Economy.complete on the match server, WorldEconomy.complete on
+ *  PlayerTwo: once per match and account, as the completion is). True if it paid anything. */
+export function creditRoomMatch(state: ProgressState, report: Report): boolean {
+  const facts = reportMatchFacts(report);
+  if (!facts || !isFighter(facts.fighter)) return false;
+  const settled = settleMatch(state.rift, { ...facts, seconds: num(facts.seconds, L.matchSeconds) });
+  state.rift = settled.progress;
+  return settled.xp > 0;
 }
 
 /** A report as it was sent, if it reads as one (its kind, its id, the shape of what it carries). */
@@ -126,7 +144,14 @@ export function applyReport(state: ProgressState, report: ProgressReport, now = 
       state.rift = { ...state.rift, aura: { ...state.rift.aura, [report.fighter]: report.aura } };
       return true;
     }
-    case 'match': { const match = plausibleMatch(report.match, now); return !!match && recordCareer(state.career, match); }
+    case 'match': {
+      const match = plausibleMatch(report.match, now);
+      if (!match || !recordCareer(state.career, match)) return false;
+      // (A match played on the device pays its fighter's mastery here; a room's pays it from the room: creditRoomMatch.)
+      const facts = match.device ? careerMatchFacts(match) : undefined;
+      if (facts) state.rift = settleMatch(state.rift, facts).progress;
+      return true;
+    }
     case 'title': { if (!titleUnlocked(state.career, report.title)) return false; state.career.title = report.title; return true; }
   }
   return false;
@@ -140,13 +165,15 @@ export function replay(state: ProgressState, reports: readonly ProgressReport[])
 
 // ---- an import, held to plausible totals ---------------------------------------------------------------------------
 /** A profile from a browser, read field by field and held to what its runs could have earned: every count to so much a
- *  run, nodes only as far as the shards earned paid for them, ids only of this game's places, challenges and nodes. */
-export function cleanRift(raw: unknown): RiftProgress {
+ *  run (mastery to so much a run and a match: `matches`, its career's, cleanCareer's), nodes only as far as the shards
+ *  earned paid for them, ids only of this game's places, challenges and nodes. */
+export function cleanRift(raw: unknown, matches = 0): RiftProgress {
   const p = emptyProgress();
   if (!raw || typeof raw !== 'object') return p;
   const r = raw as Record<string, unknown>;
   p.runs = int(r.runs, L.runs);
-  const xp = p.runs * L.xpPerRun;
+  // (Mastery from runs, and from the matches its career counts: survival/progress.ts settleMatch.)
+  const xp = p.runs * L.xpPerRun + int(matches, L.matches) * L.xpPerMatch;
   if (r.mastery && typeof r.mastery === 'object') {
     for (const [fighter, value] of Object.entries(r.mastery)) if (isFighter(fighter) && num(value, xp) > 0) p.mastery[fighter] = num(value, xp);
     const total = Object.values(p.mastery).reduce((sum, v) => sum + (v ?? 0), 0);

@@ -21,11 +21,10 @@ import { nameFreeAt, nameKey, nameProblem } from '../game/economy/names';
 import { NAME_FALLBACK } from '../game/displayName';
 import { currentId, currentSaved } from '../game/savedIds';
 import { sha256 } from '../engine/sim/hash';
-import { PROGRESS_LIMITS, anything, applyReport, cleanCareer, cleanRift, emptyState, fold, forward, plausibleFacts, plausibleMatch, readReport, type ProgressState, type SyncAnswer, type SyncBody } from '../game/progress/rules';
+import { PROGRESS_LIMITS, anything, applyReport, cleanCareer, cleanRift, creditRoomMatch, emptyState, fold, forward, plausibleFacts, plausibleMatch, readReport, type ProgressState, type SyncAnswer, type SyncBody } from '../game/progress/rules';
 import { decodeForge, forgeProblems, type ForgeKit } from '../engine/sim/forge';
 import { shortForgeHash } from '../engine/sim/forgedKits';
-import { BALL_MODES, type BallModeId } from '../game/ball/model';
-import { freshRating, intoSeason, seasonOf, type RankedAnswer, type Rating } from '../game/ball/ranked';
+import { RANKED, RANKED_MODES, freshRating, intoSeason, isRankedMode, seasonOf, tierOf, type RankedAnswer, type RankedBoard, type RankedBoardRow, type RankedMode, type Rating } from '../game/ball/ranked';
 import type { FighterId } from '../game/types';
 import { blockedName } from '../server/economy/names';
 import { displayName, heldKeys, refusedName } from '../server/displayName';
@@ -95,7 +94,7 @@ export class WorldEconomy {
     this.log = options.log ?? ((...a: unknown[]) => console.error(...a));
     this.book = new StoreBook(kv, this.now);
     this.book.onRetire = (gone, into) => this.foldProgress(gone, into);
-    this.book.onForget = pk => { this.kv.delete(K.progress(pk)); dropAll(this.kv, `fo/${pk}/`); };
+    this.book.onForget = pk => { this.kv.delete(K.progress(pk)); dropAll(this.kv, `fo/${pk}/`); this.offBoards(pk); };
   }
   config(): WorldConfig { return this.kv.get<WorldConfig>(CFG) ?? {}; }
   private codes(): readonly CodeDef[] { return [...(this.config().codes ?? []), ...CODES]; }
@@ -190,7 +189,14 @@ export class WorldEconomy {
     this.book.record('earn', next, { amount: settlement.total, why: `verified:${report.mode}:${report.id}`, completion });
     this.book.keepCompletion(completion);
     this.trophiesFor(next);
+    this.roomMastery(pk, next.created, report);
     return completion;
+  }
+  /** A room's match paid into its fighter's mastery (progress rules.ts creditRoomMatch: what the room saw), with its
+   *  completion and as once as it: the account's progress (p/<pk>) written beside the book. */
+  private roomMastery(pk: string, created: number, report: Report) {
+    const had = this.readProgress(pk), kept = had ? structuredClone(had) : freshProgress(pk, Number.isFinite(created) ? created : this.now());
+    if (creditRoomMatch(kept.state, report)) this.writeProgress(kept);
   }
 
   buy(seat: Seat | undefined, token: unknown, id: unknown) {
@@ -311,8 +317,9 @@ export class WorldEconomy {
     const names: Record<number, string> = {};
     for (const size of NAME_SIZES) names[size] = this.roomName(account, typed, size);
     const ranked: Record<string, { rating: number; games: number }> = {};
-    for (const mode of BALL_MODES) { const r = this.rating(account.pk, mode); ranked[mode] = { rating: r.rating, games: r.games }; }
-    const pass = await seal(this.key, { k: 'pass', pk: account.pk, account: slimAccount(account), names, ranked, rivals: this.rivalsOf(account.pk), exp: this.now() + PASS_MS });
+    for (const mode of RANKED_MODES) { const r = this.rating(account.pk, mode); ranked[mode] = { rating: r.rating, games: r.games }; }
+    /* (signed: the account has a login - the ranked Duel is a signed-in player's: game/duel/ranked.ts) */
+    const pass = await seal(this.key, { k: 'pass', pk: account.pk, account: slimAccount(account), names, ranked, rivals: this.rivalsOf(account.pk), signed: this.book.hasLogin(account.pk), exp: this.now() + PASS_MS });
     return { rooms: true, pass };
   }
   /** A signed note checked (its kind), or a refusal. */
@@ -325,7 +332,7 @@ export class WorldEconomy {
   async p2roomComplete(done: unknown) {
     /* (a ranked result or a rivalry result, carried the same way: room.ts stubs/ranked.ts, stubs/rivalries.ts) */
     const kind = this.key ? (await unseal<{ k?: string; exp?: number }>(this.key, done, this.now()))?.k : undefined;
-    if (kind === 'rank') { const n = await this.note<RankNote>(done, 'rank'); this.applyRanked(n.pk, n.mode, n.delta, n.won, n.id); return { completion: null }; }
+    if (kind === 'rank') { const n = await this.note<RankNote>(done, 'rank'); this.applyRanked(n.pk, n.mode, n.delta, n.won, n.id, n.name); return { completion: null }; }
     if (kind === 'rival') { const n = await this.note<RivalNote>(done, 'rival'); this.recordRival(n.winner, n.loser, n.id); return { completion: null }; }
     const note = await this.note<Done>(done, 'done');
     if (typeof note.pk !== 'string' || !note.report || typeof note.report !== 'object') refuse('That result is not one of ours.');
@@ -342,7 +349,7 @@ export class WorldEconomy {
     const had = this.readProgress(pk), kept = had ? structuredClone(had) : freshProgress(pk, Number.isFinite(created) ? created : now);
     let changed = false;
     if (body.import && typeof body.import === 'object') {
-      const brought = { rift: cleanRift(body.import.rift), career: cleanCareer(body.import.career, now) };
+      const career = cleanCareer(body.import.career, now), brought = { rift: cleanRift(body.import.rift, career.totals.matches), career };
       if (anything(brought)) { kept.state = forward(kept.state, brought); kept.base = forward(kept.base, brought); changed = true; }
     }
     const done: string[] = [];
@@ -426,8 +433,9 @@ export class WorldEconomy {
     return this.forgeMine(seat, token);
   }
 
-  // ---- ball RANKED (ranked.ts RankedBook: rk/<season>/<mode>/<pk> a standing, rkt/<id>/<pk> a result taken) ----
-  rating(pk: string, mode: BallModeId): Rating {
+  // ---- RANKED (ranked.ts RankedBook: rk/<season>/<mode>/<pk> a standing, rkt/<id>/<pk> a result taken, rkb/<season>/<mode>
+  //      the season's board: the ball modes' 3 v 3 and the Duel's 1 v 1) ----
+  rating(pk: string, mode: RankedMode): Rating {
     const season = seasonOf(this.now()).n, kept = this.kv.get<Rating>(`rk/${season}/${mode}/${pk}`);
     if (kept) return { ...kept };
     const last = this.kv.get<Rating>(`rk/${season - 1}/${mode}/${pk}`);
@@ -435,18 +443,49 @@ export class WorldEconomy {
   }
   ranked(seat: Seat | undefined, token: unknown): RankedAnswer {
     const season = seasonOf(this.now()), account = this.resolve(seat, token), modes: RankedAnswer['modes'] = {};
-    if (account) for (const mode of BALL_MODES) modes[mode] = this.rating(account.pk, mode);
+    if (account) for (const mode of RANKED_MODES) modes[mode] = this.rating(account.pk, mode);
     return { season: season.n, ends: season.end, modes };
   }
-  /** A rated result (a ranked match's end), once per match and account. */
-  applyRanked(pk: unknown, mode: unknown, delta: unknown, won: unknown, id: unknown): Rating | undefined {
-    if (!sane(pk) || !BALL_MODES.includes(mode as BallModeId) || typeof delta !== 'number' || !Number.isFinite(delta) || !sane(id)) return undefined;
-    const m = mode as BallModeId, taken = `rkt/${id}/${pk}`;
+  /** A rated result (a ranked match's end), once per match and account. The Duel's only for an account with a login (a
+   *  ranked Duel room seats no guest: this is the world's own word on it). `name`: the name the room showed them by,
+   *  for the season's board. */
+  applyRanked(pk: unknown, mode: unknown, delta: unknown, won: unknown, id: unknown, name?: unknown): Rating | undefined {
+    if (!sane(pk) || !isRankedMode(mode) || typeof delta !== 'number' || !Number.isFinite(delta) || !sane(id)) return undefined;
+    const m = mode, taken = `rkt/${id}/${pk}`;
     if (this.kv.get(taken)) return this.rating(pk, m);
+    if (m === 'duel' && !this.book.hasLogin(pk)) return undefined;
     const before = this.rating(pk, m), rating = Math.round(before.rating + Math.max(-100, Math.min(100, delta)));
     const after: Rating = { rating, games: before.games + 1, wins: before.wins + (won === true ? 1 : 0), peak: Math.max(before.peak, rating) };
-    this.kv.set(`rk/${seasonOf(this.now()).n}/${m}/${pk}`, after); this.kv.set(taken, this.now());
+    const season = seasonOf(this.now()).n;
+    this.kv.set(`rk/${season}/${m}/${pk}`, after); this.kv.set(taken, this.now());
+    this.onBoard(season, m, pk, after, name);
     return { ...after };
+  }
+  /** The season's board for a mode: one key, its rows by rating (BOARD_KEEP of them; a row once the placements are
+   *  played), each a standing and the name the account goes by (its username, else the name it last played ranked as,
+   *  as roomName gives it). Kept as each result is applied: no call reads more than this one key. */
+  private onBoard(season: number, mode: RankedMode, pk: string, r: Rating, typed?: unknown) {
+    const key = `rkb/${season}/${mode}`, rows = (this.kv.get<BoardRow[]>(key) ?? []).filter(row => row.pk !== pk);
+    if (r.games >= RANKED.placements) rows.push({ pk, name: this.roomName(this.book.account(pk), typed, 18), rating: r.rating, games: r.games, wins: r.wins });
+    rows.sort((a, b) => b.rating - a.rating || b.wins - a.wins || a.games - b.games);
+    this.kv.set(key, rows.slice(0, BOARD_KEEP));
+  }
+  /** An account's rows taken off this season's boards (its deletion). */
+  private offBoards(pk: string) {
+    const season = seasonOf(this.now()).n;
+    for (const mode of RANKED_MODES) {
+      const key = `rkb/${season}/${mode}`, rows = this.kv.get<BoardRow[]>(key);
+      if (rows?.some(row => row.pk === pk)) this.kv.set(key, rows.filter(row => row.pk !== pk));
+    }
+  }
+  /** A season's board as a page reads it: the top BOARD_SHOWN (names, standings, stamps; never an account's id), and the
+   *  asker's own place when they are on it. */
+  rankedBoard(seat: Seat | undefined, token: unknown, mode: unknown): RankedBoard {
+    const season = seasonOf(this.now()), m: RankedMode = isRankedMode(mode) ? mode : 'duel';
+    const rows = this.kv.get<BoardRow[]>(`rkb/${season.n}/${m}`) ?? [], me = this.resolve(seat, token)?.pk;
+    const place = me ? rows.findIndex(row => row.pk === me) : -1;
+    const shown = (row: BoardRow, i: number): RankedBoardRow => ({ place: i + 1, name: row.name, rating: row.rating, games: row.games, wins: row.wins, tier: tierOf(row)?.id ?? null, ...(row.pk === me ? { you: true as const } : {}) });
+    return { season: season.n, ends: season.end, mode: m, top: rows.slice(0, BOARD_SHOWN).map(shown), ...(place >= BOARD_SHOWN ? { me: shown(rows[place], place) } : {}) };
   }
 
   // ---- rivalries (Rivalries.ts RivalryBook: rv/<a>/<b>, a < b, [a's wins, b's]) ----
@@ -531,6 +570,7 @@ const ROUTES: Record<string, Route> = {
   'p2room-complete': (e, _s, b) => e.p2roomComplete(b.done),
   progress: (e, s, b) => e.progressSync(s, b.token, { ...b, ...(b.import ? { import: currentSaved(b.import) } : {}), ...(b.reports ? { reports: currentSaved(b.reports) } : {}) }),
   ranked: (e, s, b) => e.ranked(s, b.token),
+  'ranked-board': (e, s, b) => e.rankedBoard(s, b.token, b.mode),
   admin: (e, _s, b) => e.admin(b.note),
 };
 export const WORLD_ROUTES = Object.keys(ROUTES);
@@ -544,6 +584,9 @@ export function slimAccount(account: Account): PassAccount {
   return { pk: account.pk, ...(account.name ? { name: account.name } : {}), xp: account.xp ?? 0, items, ...(account.allAccess ? { allAccess: true } : {}), worn: account.worn };
 }
 const sane = (id: unknown): id is string => typeof id === 'string' && id.length > 0 && id.length <= 200;
+/** A season's board: rows kept (by rating), and shown to a page. */
+export const BOARD_KEEP = 100, BOARD_SHOWN = 10;
+interface BoardRow { pk: string; name: string; rating: number; games: number; wins: number }
 
 export const PROGRESS_CLOCK = { slack: 1.2, first: 120, hold: 24 * 3600 } as const;
 interface KeptProgress { v: 1; pk: string; state: ProgressState; base: ProgressState; ids: string[]; clock: { run: number; match: number }; at: number }

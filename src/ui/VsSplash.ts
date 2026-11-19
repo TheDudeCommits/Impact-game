@@ -8,10 +8,14 @@ import './vsSplash.css';
 /** One side of a match-up: the fighter (for the art and the colour), the name
  *  printed big, and a small line over it (who plays it: YOU, a player's name,
  *  CHALLENGER). */
-export type VsSide = { fighter: FighterId; name: string; tag?: string };
+export type VsSide = { fighter: FighterId; name: string; tag?: string;
+  /** The ranked Duel: this side's stamp as the set begins (ui/duel/ranked.ts vsStamp: trusted markup, the stamp's own). */
+  stamp?: string };
 export type VsPlay = { left: VsSide; rights: VsSide[]; stage?: string; seconds?: number;
   /** Where the two stand, when they have met before (ui/social/rivalry.ts: "AMIR LEADS 3–2"): a plain badge on the page. */
-  rivalry?: string };
+  rivalry?: string;
+  /** The ranked Duel: its tag in the corner (the season), and each side's stamp under their name. */
+  ranked?: string };
 /** The beats the splash and the card are drawn to, for the sound (main.ts): the panels slamming in, the VS stamp
  *  landing, the seam cut as the panels split, the FIGHT card's stroke and its word slammed down. Each fires on its
  *  CSS keyframe's moment (vsSplash.css); a skip cancels the ones not yet played. */
@@ -148,6 +152,7 @@ export class VsSplash {
       <div class="vs-mark"><svg viewBox="-50 -50 100 100"><path d="${splats[3]}"/></svg><b>VS</b></div>
       ${opts.stage ? `<div class="vs-stage-name"><span>STAGE</span>${esc(opts.stage)}</div>` : ''}
       ${opts.rivalry ? `<div class="vs-rivalry"><span>RIVALRY</span>${esc(opts.rivalry)}</div>` : ''}
+      ${opts.ranked ? `<div class="vs-ranked"><span>RANKED</span>${esc(opts.ranked)}</div>` : ''}
     </div><div class="vs-cut"></div><div class="vs-flash"></div>`;
     this.layout();
     const art = [...this.show.querySelectorAll<HTMLImageElement>('img')];
@@ -223,7 +228,7 @@ export class VsSplash {
   }
   private label(side: VsSide, cls: string) {
     const long = side.name.length > 10 ? ' vs-long' : '';
-    return `<div class="${cls}${long}">${side.tag ? `<small>${esc(side.tag)}</small>` : ''}<strong>${esc(side.name)}</strong></div>`;
+    return `<div class="${cls}${long}">${side.tag ? `<small>${esc(side.tag)}</small>` : ''}<strong>${esc(side.name)}</strong>${side.stamp ? `<span class="vs-rank">${side.stamp}</span>` : ''}</div>`;
   }
   private panel(side: VsSide, cls: string) {
     const kind = fullLength(side.fighter) ? 'vs-full' : 'vs-bust';

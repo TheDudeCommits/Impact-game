@@ -1,0 +1,5 @@
+{
+ "note": "The Duel's announcer: each recorded voice's lines by moment (src/audio/duelCaller.ts reads this; the line book is scripts/originals/duel/caller.json). No voice is recorded yet: once one of the anime-style voices made for the game is picked, its files go under public/assets/audio/duel/caller/<voice>/<line id>.m4a, listed here by moment, and `voice` is set to it. Until then every moment the Rift's announcer has a fitting line for borrows it (duelCaller.ts BORROWED), and the rest are quiet.",
+ "voice": "",
+ "voices": {}
+}

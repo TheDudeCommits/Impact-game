@@ -12,16 +12,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Link } from '../cluster/link';
-import { BALL_MODES, type BallModeId } from '../../game/ball/model';
-import { freshRating, intoSeason, seasonOf, type RankedAnswer, type Rating } from '../../game/ball/ranked';
+import { RANKED_MODES, freshRating, intoSeason, isRankedMode, seasonOf, type RankedAnswer, type RankedMode, type Rating } from '../../game/ball/ranked';
 
-type Line = { pk: string; m: BallModeId; s: number; r: Rating; id?: string; at: number };
+type Line = { pk: string; m: RankedMode; s: number; r: Rating; id?: string; at: number };
 /** Once the file holds this many lines more than it has standings, it is folded at the next start. */
 const FOLD_AFTER = 20_000;
 /** Results remembered, to take each once (a room tells its end once; a retry after a lost link may tell it again). */
 const REMEMBER = 4000;
 const sane = (id: unknown): id is string => typeof id === 'string' && id.length > 0 && id.length <= 200;
-const keyOf = (season: number, mode: BallModeId, pk: string) => `${season}\u0000${mode}\u0000${pk}`;
+const keyOf = (season: number, mode: RankedMode, pk: string) => `${season}\u0000${mode}\u0000${pk}`;
 const clean = (r: Partial<Rating> | undefined): Rating | undefined => r && Number.isFinite(r.rating) ? { rating: Math.round(r.rating!), games: Math.max(0, Math.floor(r.games ?? 0)), wins: Math.max(0, Math.floor(r.wins ?? 0)), peak: Math.round(Math.max(r.peak ?? r.rating!, r.rating!)) } : undefined;
 
 export class RankedBook {
@@ -42,7 +41,7 @@ export class RankedBook {
     if (this.lines > this.standings.size + FOLD_AFTER) this.fold();
   }
   /** `pk`'s standing in `mode` this season: kept, or carried from last season (halfway back to the start), or new. */
-  rating(pk: string, mode: BallModeId): Rating {
+  rating(pk: string, mode: RankedMode): Rating {
     const season = seasonOf(this.now()).n, kept = this.standings.get(keyOf(season, mode, pk));
     if (kept) return { ...kept };
     const last = this.standings.get(keyOf(season - 1, mode, pk));
@@ -51,8 +50,8 @@ export class RankedBook {
   /** A rated result: `delta` on `pk`'s standing in `mode`, a win or not, for match `id`. The standing after it; the one
    *  before it unchanged if the result was already taken (or the account or mode is nonsense). */
   apply(pk: unknown, mode: unknown, delta: unknown, won: unknown, id: unknown): Rating | undefined {
-    if (!sane(pk) || !BALL_MODES.includes(mode as BallModeId) || typeof delta !== 'number' || !Number.isFinite(delta) || !sane(id)) return undefined;
-    const m = mode as BallModeId, once = `${id}\u0000${pk}`;
+    if (!sane(pk) || !isRankedMode(mode) || typeof delta !== 'number' || !Number.isFinite(delta) || !sane(id)) return undefined;
+    const m = mode, once = `${id}\u0000${pk}`;
     if (this.taken.has(once)) return this.rating(pk, m);
     const before = this.rating(pk, m), rating = Math.round(before.rating + Math.max(-100, Math.min(100, delta)));
     const after: Rating = { rating, games: before.games + 1, wins: before.wins + (won === true ? 1 : 0), peak: Math.max(before.peak, rating) };
@@ -65,13 +64,13 @@ export class RankedBook {
   answer(pk: unknown): RankedAnswer {
     const season = seasonOf(this.now());
     const modes: RankedAnswer['modes'] = {};
-    if (sane(pk)) for (const mode of BALL_MODES) modes[mode] = this.rating(pk, mode);
+    if (sane(pk)) for (const mode of RANKED_MODES) modes[mode] = this.rating(pk, mode);
     return { season: season.n, ends: season.end, modes };
   }
   get size() { return this.standings.size; }
   private take(line: Line) {
     const r = clean(line?.r);
-    if (!sane(line?.pk) || !BALL_MODES.includes(line.m) || !Number.isInteger(line.s) || !r) return;
+    if (!sane(line?.pk) || !isRankedMode(line.m) || !Number.isInteger(line.s) || !r) return;
     this.standings.set(keyOf(line.s, line.m, line.pk), r);
     if (line.id) { this.taken.add(`${line.id}\u0000${line.pk}`); if (this.taken.size > REMEMBER) this.taken.delete(this.taken.values().next().value!); }
   }
@@ -87,29 +86,37 @@ export class RankedBook {
 
 /** What a room and the pages' route use of the ratings: the book itself (one process, or control), or control's over the link. */
 export interface Ranked {
-  rating(pk: string, mode: BallModeId): Promise<Rating>;
-  apply(pk: string, mode: BallModeId, delta: number, won: boolean, id: string): Promise<Rating | undefined>;
+  rating(pk: string, mode: RankedMode): Promise<Rating>;
+  /** A rated result. `extra`, on PlayerTwo: the other accounts whose pages carry the signed note too (a leaver's page is
+   *  gone, so the one who stayed carries their loss), and the name the room showed them by (the season's board). Unused
+   *  here. */
+  apply(pk: string, mode: RankedMode, delta: number, won: boolean, id: string, extra?: RankedExtra): Promise<Rating | undefined>;
   answer(pk: string): Promise<RankedAnswer>;
+  /** Whether an account may play the ranked Duel (a signed-in one: game/duel/ranked.ts). None: nobody may here. */
+  eligible?(pk: string): boolean;
 }
+export interface RankedExtra { carriers?: readonly string[]; name?: string }
 let service: Ranked | undefined;
 /** This process's ratings, once mounted (`mountRanked`) or reached through control (`installRoomRanked`). */
 export const ranked = () => service;
 
-/** One process, or control: the book in the economy's folder (`dir`; none: memory only). */
-export function mountRanked(dir?: string, now?: () => number): RankedBook {
+/** One process, or control: the book in the economy's folder (`dir`; none: memory only). `signedIn`: whether an account
+ *  has a login (the ranked Duel is for signed-in players). */
+export function mountRanked(dir?: string, now?: () => number, signedIn?: (pk: string) => boolean): RankedBook {
   let book: RankedBook;
   try { book = new RankedBook(dir, now); } catch (error) { console.error(`[ranked] the ratings cannot be kept in ${dir}: memory only`, error); book = new RankedBook(undefined, now); }
   service = {
     rating: async (pk, mode) => book.rating(pk, mode),
     apply: async (pk, mode, delta, won, id) => { try { return book.apply(pk, mode, delta, won, id); } catch (error) { console.error('[ranked] a result could not be written', error); return undefined; } },
     answer: async pk => book.answer(pk),
+    ...(signedIn ? { eligible: (pk: string) => signedIn(pk) } : {}),
   };
   return book;
 }
 /** Control: answer the room processes. */
 export function answerRanked(link: Link) {
-  link.handle('ranked.rating', (pk, mode) => service?.rating(String(pk), mode as BallModeId));
-  link.handle('ranked.apply', (pk, mode, delta, won, id) => service?.apply(String(pk), mode as BallModeId, Number(delta), won === true, String(id)));
+  link.handle('ranked.rating', (pk, mode) => service?.rating(String(pk), mode as RankedMode));
+  link.handle('ranked.apply', (pk, mode, delta, won, id) => service?.apply(String(pk), mode as RankedMode, Number(delta), won === true, String(id)));
 }
 /** A room process: ask control (the book's one writer). A call that fails is logged; a rating that cannot be read is a
  *  new one's, and a result that cannot be told is lost (the match is still played). */

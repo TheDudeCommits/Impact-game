@@ -1,0 +1,37 @@
+/* Fighter mastery on the results (ui/progress/masteryStrip.ts): a paper tag in ink - the fighter, LV n/10, the
+   experience the match paid, the bar filling from where it was to where it is, the title, and a level gained as a red
+   stamp with what it unlocked. Self-contained colours, so it reads on every mode's card. */
+.mastery-strip{--ms-ink:#0a0c15;--ms-red:#dc143c;--ms-gold:#ffd76a;box-sizing:border-box;display:grid;gap:.45em;width:max-content;min-width:min(100%,22em);max-width:min(100%,38em);margin:0;padding:.65em 1em .6em;background:#fff;color:var(--ms-ink);border:2px solid var(--ms-ink);box-shadow:.45em .45em 0 var(--ms-ink);text-align:left;font:700 14px/1.1 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.mastery-strip .mastery-top{display:flex;align-items:baseline;gap:.6em;margin:0;white-space:nowrap}
+.mastery-strip .mastery-name{font:italic 900 1.3em/1 'Barlow Condensed',sans-serif;letter-spacing:.02em;color:var(--ms-ink)}
+.mastery-strip .mastery-word{font:inherit;color:#5b564e}
+.mastery-strip .mastery-lv{display:inline;margin:0;font:italic 900 1.6em/1 'Barlow Condensed',sans-serif;letter-spacing:.02em;color:var(--ms-red)}
+.mastery-strip .mastery-lv small{display:inline;margin:0;padding:0;background:none;font:inherit;font-size:.6em;letter-spacing:.04em;color:#5b564e;box-shadow:none;transform:none}
+.mastery-strip .mastery-xp{margin-left:auto;padding:.15em .5em .1em;background:var(--ms-ink);color:#fff;font:italic 900 1.1em/1.05 'Barlow Condensed',sans-serif;font-style:normal;letter-spacing:.04em}
+.mastery-strip .mastery-bar{position:relative;display:block;height:.75em;min-height:7px;margin:0;background:rgba(10,12,21,.12);box-shadow:inset 0 0 0 2px var(--ms-ink);transform:skewX(-20deg);overflow:hidden}
+.mastery-strip .mastery-bar>i{position:absolute;left:0;top:0;bottom:0;width:calc(var(--to) * 100%);background:var(--ms-red);animation:mastery-fill 1.1s .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes mastery-fill{from{width:calc(var(--from) * 100%)}to{width:calc(var(--to) * 100%)}}
+.mastery-strip .mastery-foot{display:flex;flex-wrap:wrap;align-items:center;gap:.4em .7em;margin:0}
+.mastery-strip .mastery-title{font:800 .9em/1 'Barlow Condensed',sans-serif;letter-spacing:.14em;color:#5b564e}
+.mastery-strip .mastery-up{padding:.2em .55em .15em;border:2px solid var(--ms-red);color:var(--ms-red);background:#fff;font:italic 900 1.1em/1 'Barlow Condensed',sans-serif;font-style:normal;letter-spacing:.08em;transform:rotate(-5deg);animation:mastery-stamp .32s 1.45s cubic-bezier(.2,1.6,.4,1) both}
+.mastery-strip .mastery-reward{font:800 .9em/1.1 'Barlow Condensed',sans-serif;letter-spacing:.08em;color:var(--ms-ink);animation:mastery-in .3s 1.6s both}
+.mastery-strip.is-up{box-shadow:.45em .45em 0 var(--ms-red)}
+.mastery-strip.is-up .mastery-lv{animation:mastery-pop .35s 1.4s both}
+@keyframes mastery-stamp{from{opacity:0;transform:rotate(-14deg) scale(2.2)}to{opacity:1;transform:rotate(-5deg) scale(1)}}
+@keyframes mastery-in{from{opacity:0}to{opacity:1}}
+@keyframes mastery-pop{50%{transform:scale(1.25)}}
+@media (prefers-reduced-motion:reduce){.mastery-strip .mastery-bar>i,.mastery-strip .mastery-up,.mastery-strip .mastery-reward,.mastery-strip.is-up .mastery-lv{animation:none}}
+
+/* ---------- On the shared results frame (ResultsShell fills it): bottom left, over the bust's feet, clear of the actions ---------- */
+#interface .results-frame .results-mastery{position:absolute;z-index:4;left:calc(70 * var(--u));bottom:calc(150 * var(--u))}
+#interface .results-frame .results-mastery:empty{display:none}
+#interface .results-frame.is-settled .mastery-strip *{animation:none}
+#interface .results-frame .results-mastery .mastery-strip{transform:rotate(-2deg);font-size:max(12px,calc(25 * var(--u)))}
+@media(max-width:620px),(max-height:520px){
+  #interface .results-frame .results-mastery{position:relative;left:auto;bottom:auto}
+  #interface .results-frame .results-mastery .mastery-strip{transform:none;min-width:0;max-width:100%;font-size:14px;box-shadow:4px 4px 0 var(--ms-ink)}
+}
+
+/* ---------- The ball modes' card (BallUI) and Rift War's results (RiftWarUI): under their headings, centred ---------- */
+.ball-ui .bu-card>.mastery-strip{margin:0 auto 12px}
+.rift-panel-page .mastery-strip{margin:12px auto 4px}

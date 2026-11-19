@@ -29,7 +29,13 @@ type Drawable = THREE.Mesh | THREE.Points | THREE.Line | THREE.Sprite;
 const drawable = (o: THREE.Object3D): o is Drawable =>
   (o as THREE.Mesh).isMesh === true || (o as THREE.Points).isPoints === true || (o as THREE.Line).isLine === true || (o as THREE.Sprite).isSprite === true;
 
+/** True from `exposeForWarm` until its `restore`: a warm-up frame is being drawn. A drawable that draws another way at
+ *  times (render/vfx/armory/lighter.ts HALF: a volume marched at half resolution and laid over the frame) makes those
+ *  pipelines too while it is set. */
+export const WARMING = { value: false };
+
 export function exposeForWarm(roots: readonly THREE.Object3D[], scene: THREE.Object3D): Exposed {
+  WARMING.value = true;
   const shown: THREE.Object3D[] = [], unculled: THREE.Object3D[] = [], counted: THREE.InstancedMesh[] = [];
   const instanced: THREE.InstancedBufferGeometry[] = [], ranged: THREE.BufferGeometry[] = [], seen = new Set<THREE.BufferGeometry>();
   const materials: THREE.Material[] = [];
@@ -66,6 +72,7 @@ export function exposeForWarm(roots: readonly THREE.Object3D[], scene: THREE.Obj
   return {
     count,
     restore() {
+      WARMING.value = false;
       // (A callback the object had of its own goes back; one it inherited is inherited again.)
       for (const g of guarded) {
         if (g.ownBefore) g.o.onBeforeRender = g.before; else delete (g.o as Partial<THREE.Object3D>).onBeforeRender;

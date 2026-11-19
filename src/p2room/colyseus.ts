@@ -43,6 +43,9 @@ export interface Host {
   send(client: Client, type: string | number, message: unknown): void;
   /** One page out of the room, with a close code. */
   kick(client: Client, code: number): void;
+  /** A match's outcome for PlayerTwo's own skill rating in this room's mode (room.result: places, the best first), which
+   *  its matching by skill reads (a join with `skill: true`): a ranked Duel's set (server/duel/RankedDuel.ts). */
+  result?(places: string[]): void;
 }
 
 type Handler = (client: Client, message: unknown) => void;

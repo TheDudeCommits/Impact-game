@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { PROGRESS_LIMITS, anything, applyReport, cleanCareer, cleanRift, emptyState, fold, forward, plausibleFacts, plausibleMatch, readReport, type ProgressState, type SyncAnswer, type SyncBody } from '../../game/progress/rules';
+import { PROGRESS_LIMITS, anything, applyReport, cleanCareer, cleanRift, creditRoomMatch, emptyState, fold, forward, plausibleFacts, plausibleMatch, readReport, type ProgressState, type SyncAnswer, type SyncBody } from '../../game/progress/rules';
+import type { Report } from '../../game/economy/earn';
 import { currentSaved } from '../../game/savedIds';
 
 export const PROGRESS_CLOCK = {
@@ -88,7 +89,7 @@ export class ProgressStore {
     const had = this.read(pk), kept = had ? structuredClone(had) : fresh(pk, Number.isFinite(created) ? created : now);
     let changed = false;
     if (body.import && typeof body.import === 'object') {
-      const brought = { rift: cleanRift(body.import.rift), career: cleanCareer(body.import.career, now) };
+      const career = cleanCareer(body.import.career, now), brought = { rift: cleanRift(body.import.rift, career.totals.matches), career };
       if (anything(brought)) { kept.state = forward(kept.state, brought); kept.base = forward(kept.base, brought); changed = true; }
     }
     const done: string[] = [];
@@ -112,6 +113,13 @@ export class ProgressStore {
     }
     if (changed && (had || anything(kept.state))) this.write(kept);
     return { pk, rift: kept.state.rift, career: kept.state.career, done, ...(wait !== undefined ? { wait } : {}) };
+  }
+
+  /** A room's match paid into its fighter's mastery (Economy.complete, once per match and account: rules.ts
+   *  creditRoomMatch, what the room saw). */
+  credit(pk: string, created: number, report: Report) {
+    const had = this.read(pk), kept = had ? structuredClone(had) : fresh(pk, Number.isFinite(created) ? created : this.now());
+    if (creditRoomMatch(kept.state, report)) this.write(kept);
   }
 
   /** Account `gone` folded into `into` (Book.retire: a guest's taken in at sign-in): their progress made one (rules.ts

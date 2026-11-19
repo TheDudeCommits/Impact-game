@@ -229,6 +229,9 @@ export interface CombatEvent {
   strikes?: number;
   /** The area slot (round 3): on a 'hit', the strike found its body inside the circle's bullseye (all of its damage). */
   bullseye?: boolean;
+  /** The G in combos (moves.ts AREA_COMBO): on a 'hit', a quick G - thrown as a combo's cancel after a launch or a wall
+   *  splat - landing on the body it was thrown at, which it holds for the follow-up. */
+  areaCombo?: boolean;
   /** For a 'status' event: which one. */
   status?: 'burn' | 'slow' | 'freeze';
   id: number;
@@ -360,6 +363,9 @@ export interface GameSnapshot {
   /** Rivalries (server/social/RivalryWatch.ts): the recipient's record against each other player in the room they have
    *  met before, in a Duel or a friends' room - on its snapshots before and after the fight, never during it. */
   rivals?: RivalView[];
+  /** Ranked Duel (server/duel/RankedDuel.ts, game/duel/ranked.ts): a ranked Duel room's queue, season and each person's
+   *  standing, with the change once the set is rated. Unset in every other room. */
+  ranked?: import('./duel/ranked').RankedDuelView;
   /** The arena being fought in. The server owns it: it also owns collision. */
   stage: StageId;
   trainingBotMode?: 'passive'|'combat';

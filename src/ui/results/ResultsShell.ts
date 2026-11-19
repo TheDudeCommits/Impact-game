@@ -6,6 +6,8 @@ import type { FighterId } from '../../game/types';
 import type { UiAction } from '../../input/gamepad';
 import { attributeChanged } from '../panelFlags';
 import { ResultShare } from './shareResult';
+import { lastMastery } from '../../survival/progressStore';
+import { masteryShown, masteryStripHtml } from '../progress/masteryStrip';
 
 /**
  * Round 5 (UX), WP1: the results frame's shared behaviour, whatever drew it (MatchResults for the main game,
@@ -151,6 +153,10 @@ export class ResultsShell {
       if (!card.dataset.drawn) { card.dataset.drawn = ''; if (was && open && !this.justOpened(600)) card.classList.add('is-settled'); }
       const slot = card.querySelector<HTMLElement>('[data-results-rewards]');
       if (slot && pay && slot.innerHTML !== pay) slot.innerHTML = pay;
+      // The fighter's mastery, as the match (or the run) paid it: the bar filling, a level gained called once.
+      const mastery = card.querySelector<HTMLElement>('[data-results-mastery]'), gain = lastMastery();
+      if (mastery && mastery.dataset.key !== (gain?.key ?? '')) { mastery.dataset.key = gain?.key ?? ''; mastery.innerHTML = masteryStripHtml(gain); }
+      if (open && mastery?.firstElementChild && card.getClientRects().length) masteryShown(gain);
       this.share.decorate(card, this.hud.modes.layout ?? undefined);
       const started = this.started(), mast = card.querySelector<HTMLElement>('.results-masthead span'), layout = this.hud.modes.layout;
       if (mast && started && started.mode === layout) {

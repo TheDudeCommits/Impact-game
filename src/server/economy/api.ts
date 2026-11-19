@@ -181,6 +181,8 @@ export class Economy {
     this.book.record('earn', next, { amount: settlement.total, why: `verified:${report.mode}:${report.id}`, completion });
     this.book.accounts.set(pk, next); this.book.completions.set(key, completion);
     this.trophiesFor(next);
+    // (Mastery in every mode: the room's match pays its fighter's, as once as the completion: progress rules.ts.)
+    try { this.progress.credit(pk, next.created, report); } catch (error) { console.error('[progress] a room\'s mastery could not be kept', error); }
     return completion;
   }
 

@@ -1,8 +1,9 @@
 /* Which of a page's joins go to PlayerTwo's rooms (src/network/p2Room.ts), and what each asks for.
  *
  * Inside PlayerTwo's player every online match is seated in PlayerTwo's
- * rooms, near the player: the royale, the Duels, private royales, the ball modes (all but RANKED), Rift War, Last Stand,
- * Bad Blood, co-op Arcade and online Training. Ball RANKED, and every page outside PlayerTwo, play on the match server. Three ways back to the match server:
+ * rooms, near the player: the royale, the Duels (the ranked Duel too, PlayerTwo's only), private royales, the ball modes
+ * (RANKED once the economy is the PlayerTwo world), Rift War, Last Stand, Bad Blood, co-op Arcade and online Training.
+ * Every page outside PlayerTwo plays on the match server. Three ways back to the match server:
  * - the server's own switch: P2ROOMS=0 in its variables (the pass's answer says rooms: false), with no new build;
  * - `?server` in the address (a test, or a player told to);
  * - PlayerTwo's rooms refusing for a reason of their own (off, stopped, unreachable): that join goes to the server.
@@ -18,6 +19,7 @@ import { isP2Code, type P2Ask, type P2Rooms } from './p2Room';
 import { economyRoute } from './p2Economy';
 import { P2_KINDS, type P2Kind } from '../p2room/protocol';
 import { PARTY_MAX } from '../game/social/party';
+import { RANKED_DUEL } from '../game/duel/ranked';
 
 /** PlayerTwo's errors that mean its rooms can't have this match now: the match server takes it. */
 const ELSEWHERE = new Set(['rooms-off', 'rooms-hosted-only', 'rooms-stopped', 'offline', 'too-many-rooms']);
@@ -110,6 +112,9 @@ function askFor(access: NetworkAccess, mode: RoomMode, options: Record<string, u
     case 'create-private': return { kind: 'private_arena', how: { create: true }, size: access.players ?? 12, options };
     case 'join-private': return isP2Code(code) ? { kind: 'private_arena', how: { code }, size: 12, options } : undefined;
     case 'duel':
+      /* (the ranked Duel, game/duel/ranked.ts: its own queue, matched by PlayerTwo's skill rating for it - the nearest-rated
+         waiting player first - and only while this page's economy is the PlayerTwo world, whose passes carry the standings) */
+      if (access.access === 'ranked') return economyRoute().world ? { kind: 'duel_arena', how: { match: [RANKED_DUEL.match] }, size: 2, skill: true, options } : undefined;
       if (access.access === 'online') return { kind: 'duel_arena', how: { match: [] }, size: 2, options };
       if (access.access === 'host') return { kind: 'private_duel', how: { create: true }, size: 2, options };
       if (access.access === 'join' && isP2Code(code)) return { kind: 'private_duel', how: { code }, size: 2, options };

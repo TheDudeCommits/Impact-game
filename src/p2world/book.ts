@@ -21,7 +21,8 @@
  *                       deletion takes its lines with it; <seq> 12 digits, in order
  *   sold                copies sold of each counted item ({ id: n })
  *   seq                 the ledger's last number
- * Beside them (economy.ts): p/<pk> progress, f/ fo/ forged fighters, rv/ rivalries, rk/ rkt/ ball RANKED, tr/ trophies
+ * Beside them (economy.ts): p/<pk> progress, f/ fo/ forged fighters, rv/ rivalries, rk/ rkt/ rkb/ RANKED (the ball modes'
+ * and the Duel's: standings, results taken, each season's board), tr/ trophies
  * given, cfg the world's switches, imp/ the import's own. */
 import { newAccount, type Account } from '../game/economy/account';
 import { nameKey } from '../game/economy/names';
