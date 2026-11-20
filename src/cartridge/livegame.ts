@@ -977,9 +977,14 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       r.freshen(me);
       input.clear();
       input.enabled = true;
-      // (dude.work round 8, G8) the mouse looks once the pointer is locked: the first click on the picture asks for the
-      // lock and does nothing else (Input's own rule); a browser that refused it on the last visit is asked again
+      // (dude.work round 8, G8) the mouse looks once the pointer is locked: asked for now while the visitor's key still
+      // counts as his say-so (he walked in; Chrome gives it then), else at his first click on the picture, which asks for
+      // it and does nothing else (Input's own rule); until then O and [ turn the view and the duel's lock holds his rival
       input.lockRefused = false;
+      const activation = (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation;
+      if (!host.touch && activation?.isActive && document.pointerLockElement !== host.canvas && typeof host.canvas.requestPointerLock === 'function') {
+        try { void Promise.resolve(host.canvas.requestPointerLock()).catch(() => { input.lockRefused = true; }); } catch { input.lockRefused = true; }
+      }
       targeting.reset(); autoLock.reset(); targetId = null;
       input.yaw = best.yaw; input.pitch = .02;
       followCam.reset();
