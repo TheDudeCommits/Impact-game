@@ -83,6 +83,10 @@ const EAR_IN = 90, EAR_OUT = 130, EAR_NEAR_MS = 1500, EAR_FAR_MS = 4000;
 const INTRO = 2;
 /** Seconds a decided set holds its winner's pose before the next one starts. */
 const BETWEEN = 5;
+/** dude.work round 8 (S14): under this many pixels a metre in every picture (LiveView.pxPerMetre: a fighter a few
+ *  pixels tall) the duel's bodies and effects step TINY_HZ times a second, and its shadow map is drawn only when they
+ *  have stepped. */
+const TINY_PX = 2, TINY_HZ = 12;
 /** Most sim ticks one frame may run (a hitch is caught up over the next frames, not in one burst). */
 const MOST_STEPS = 6;
 const FIGHT_LINE = '/assets/audio/survival/announcer-fight.m4a';
@@ -283,6 +287,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   const lens = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.08, 900);
   const frustum = new THREE.Frustum(), viewProjection = new THREE.Matrix4();
   let rotation = Math.floor(Math.random() * ROSTER.length);
+  /** (S14) the largest size the duel was drawn at since the last frame, when it was last drawn, the time gathered since
+   *  its bodies last stepped, and whether they have stepped since its shadow map was last drawn */
+  let seenPx = 0, seenAt = -Infinity, stepAcc = 0, stepped = true;
   const courtMatrix = new THREE.Matrix4();
   const lensOf = () => (me ? camera : lens);
 
@@ -372,7 +379,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     rt0.dispose();
   }
   /** A body of `id` built, compiled and let go before it steps in (FighterLibrary.warmup's job, off the drawn scene). */
-  async function warmBody(id: FighterId) {
+  async function warmBody(id: FighterId, pictures?: Set<THREE.Texture>) {
     const body = library.create({ id: 'warm-' + id, name: 'Warmup', fighter: id, x: 0, y: 0, z: 0, yaw: 0, hp: 1000, maxHp: 1000, stamina: 100, ultimate: 100,
       action: 'idle', actionStarted: 0, actionDuration: 0, actionTime: 0, target: null, alive: true, isBot: true, grounded: true, guarding: false,
       cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 } });
@@ -380,7 +387,24 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     const only = new THREE.Scene();
     only.add(body.group);
     body.group.traverse(o => { o.visible = true; });
+    // (dude.work round 8, S14) the pictures its body draws with (the library's, shared by every body of the fighter: they
+    // stay when this one goes), to be put on the GPU one a frame before it steps in (upload())
+    if (pictures) body.group.traverse(o => {
+      for (const m of [(o as THREE.Mesh).material].flat() as (THREE.Material & Record<string, unknown>)[]) {
+        if (!m) continue;
+        for (const k of Object.keys(m)) { const t = m[k] as THREE.Texture | null; if (t?.isTexture && t.image) pictures.add(t); }
+      }
+    });
     try { await compile(only); } finally { body.dispose(); }
+  }
+  /** (dude.work round 8, S14) Pictures to put on the GPU, one each frame the duel runs (the challenger's: before, its
+   *  first frame in the ring uploaded all of them at once, 20.7 MB in one measure's five seconds). */
+  const uploads: THREE.Texture[] = [];
+  let uploadsDone: (() => void) | null = null;
+  function upload() {
+    const t = uploads.shift();
+    if (t) { try { gl.initTexture(t); } catch { /* drawn later */ } }
+    if (!uploads.length && uploadsDone) { const done = uploadsDone; uploadsDone = null; done(); }
   }
 
   /** The fighter who steps in next: the next of the five not in the ring now. Its files come in while the set before
@@ -392,7 +416,10 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     let next: FighterId = r.pair[0];
     for (let guard = 0; guard < ROSTER.length * 2; guard++) { rotation++; next = ROSTER[rotation % ROSTER.length]; if (!r.pair.includes(next)) break; }
     const chosen = challenger = next; challengerReady = false;
-    void loaded([chosen]).then(() => warmBody(chosen).catch(() => undefined)).then(() => { if (challenger === chosen) challengerReady = true; })
+    const pictures = new Set<THREE.Texture>();
+    void loaded([chosen]).then(() => warmBody(chosen, pictures).catch(() => undefined))
+      .then(() => new Promise<void>(done => { uploads.push(...pictures); uploadsDone = done; if (!uploads.length) upload(); }))
+      .then(() => { if (challenger === chosen) challengerReady = true; })
       .catch(error => { console.warn('Impact live: the next fighter did not load', chosen, error); if (challenger === chosen) challenger = null; });
   }
   /** The pair after a decided set: the winner stays in their seat (the visitor's fighter, if they play, stays in
@@ -785,6 +812,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
 
     update(dt: number, now: number) {
       judgeEar(performance.now());
+      if (uploads.length || uploadsDone) upload();
       Fighter.beginFrame(now);
       const rawDt = Math.max(0, dt), worldDt = Math.min(.05, rawDt);
       const r = ring;
@@ -808,9 +836,20 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         // the death ragdolls' physics (Rapier's wasm, render/Ragdoll.ts), off the first load: once the first bell has rung
         if (!ragdolls) { ragdolls = true; void import('../render/Ragdoll').then(m => m.prepareRagdolls()).catch(error => console.warn('Impact live: ragdolls unavailable', error)); }
       }
+      // (dude.work round 8, S14) a duel too small to see (under TINY_PX pixels a metre in every picture since the last
+      // frame, or in none for half a second) is drawn as it stands TINY_HZ times a second: its bodies' poses and effects
+      // step then, with the time gathered since; its sim, its rounds and its sets run every frame as ever, and its events
+      // wait in the timeline for the next step (none is lost). Played, or seen any bigger, it steps every frame.
+      const small = !me && (performance.now() - seenAt > 500 || seenPx < TINY_PX);
+      seenPx = 0;
+      stepAcc += rawDt;
+      if (small && stepAcc < 1 / TINY_HZ) return;
+      const stepDt = Math.min(.1, stepAcc);
+      stepAcc = 0; stepped = true;
+      const pdt = small ? stepDt : worldDt, prd = small ? stepDt : rawDt;
       // the frame drawn: one tick behind the newest (main.ts's local clock)
       const newest = timeline.newest ?? 0;
-      localClock = Math.min(newest, Math.max(newest - 3 / 60, localClock + rawDt));
+      localClock = Math.min(newest, Math.max(newest - 3 / 60, localClock + prd));
       const presented = timeline.at(localClock - LOCAL_DELAY / 1000);
       const snapshot = presentSnapshot(presented?.snapshot);
       if (!snapshot) return;
@@ -833,13 +872,13 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         if (looksAt) fighter.targetPoint = (fighter.targetPoint ?? new THREE.Vector3()).copy(looksAt);
         fighter.cameraPoint = view.position;
         fighter.unseen = p.id !== me && p.id !== targetId && !fighter.inView(frustum, view.position);
-        fighter.update(worldDt, p, true, rawDt);
-        if (glance?.id === p.id) nod(fighter, worldDt);
+        fighter.update(pdt, p, true, prd);
+        if (glance?.id === p.id) nod(fighter, pdt);
         if (p.id === me) self = p;
       }
       shownSelf = self;
       // the visitor's body takes the pose of the fighter they play (after every layer of its own)
-      worn?.pose(worldDt);
+      worn?.pose(pdt);
       for (const [id, body] of fighters) {
         if (!body.steps.length) continue;
         const mine = id === me;
@@ -876,10 +915,10 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       } else input.aim.cancel();
       areaFx.update(serverTime, me ? input.aim.view : undefined, self, () => 0);
       const steady = steadyBodies(shown);
-      effects.update(serverTime, worldDt, steady);
-      awakeningEffects.update(serverTime, worldDt, fighters, settings.effects, view);
-      castFx?.update(serverTime, worldDt, steady, settings.effects, view);
-      strikeTrails.update(worldDt, steady, view);
+      effects.update(serverTime, pdt, steady);
+      awakeningEffects.update(serverTime, pdt, fighters, settings.effects, view);
+      castFx?.update(serverTime, pdt, steady, settings.effects, view);
+      strikeTrails.update(pdt, steady, view);
       clashEffects.update(serverTime, view, settings.effects);
       if (me) { hud.tick(); damageNumbers.update(camera); manga.update(camera); }
       touch?.update(input.enabled, true);
@@ -902,6 +941,13 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       sun.position.copy(dir).normalize().multiplyScalar(40);
       sun.target.position.set(0, 0, 0);
       const fog = scene.fog, shadow = gl.shadowMap.enabled, info = gl.info.render, calls = info.calls, tris = info.triangles;
+      // (S14) how big the duel is in this picture (a world older than the hint: big); while it is tiny its shadow map is
+      // drawn again only once its bodies have stepped (a map the world already holds still stays still)
+      const px = view.pxPerMetre ?? Infinity;
+      seenPx = Math.max(seenPx, px); seenAt = performance.now();
+      const auto = gl.shadowMap.autoUpdate, needs = gl.shadowMap.needsUpdate;
+      if (!me && px < TINY_PX && auto) { gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = stepped; }
+      stepped = false;
       scene.fog = view.fog;
       gl.shadowMap.enabled = shadow && shadows;
       // (dude.work round 5) the effects' pools with nothing in them left out of the draw: an InstancedMesh at count 0 (the
@@ -912,7 +958,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       try { gl.render(scene, view.camera); }
       finally {
         for (const m of idle) m.visible = true;
-        scene.fog = fog; gl.shadowMap.enabled = shadow;
+        scene.fog = fog; gl.shadowMap.enabled = shadow; gl.shadowMap.autoUpdate = auto; gl.shadowMap.needsUpdate = needs;
         // (what this draw cost, for the tests: three counts on unless the page resets it per render)
         drawn.calls = gl.info.autoReset ? info.calls : info.calls - calls; drawn.tris = gl.info.autoReset ? info.triangles : info.triangles - tris;
       }
