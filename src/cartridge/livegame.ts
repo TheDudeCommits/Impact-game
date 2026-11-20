@@ -313,9 +313,29 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
    *  form's too, with the dither) let go with it. Fighter.dispose leaves them, which in the game's own page is nothing (they
    *  go with the body); here the cartridge runtime keeps every material the game had three upload until it is disposed,
    *  and each twin's shader edits hold its body: the body, its mixer, its rig and its clips' samplers stayed for the
-   *  page's life, every round and every warmed challenger (the heap 5 to 20 MB up over eight sets). */
+   *  page's life, every round and every warmed challenger (the heap 5 to 20 MB up over eight sets). The runtime forgets
+   *  them, undisposed: their programs live on (three releases a program only with its last material), so the next body of
+   *  the same fighter fades with no program to build, and the body itself is collected. */
   function dropTwins(body: Fighter) {
-    for (const { twin } of occlusionTwins(body)) { try { twin.dispose(); } catch { /* gone */ } }
+    for (const { twin } of occlusionTwins(body)) rt.forget(twin);
+  }
+  /** (dude.work round 8) The occlusion-fade twins of `bodies` drawn once into a scene of their own, for compile() and
+   *  firstUse(): the game's warm-up gives a warmed body hidden proxies drawn with them; a body that never was a warmed one
+   *  (the first set's) faded in its first moment in the visitor's view, building its programs then. */
+  function twinProxies(bodies: Iterable<Fighter>): THREE.Scene {
+    const only = new THREE.Scene();
+    for (const body of bodies) {
+      for (const { twin, original } of occlusionTwins(body)) {
+        let owner: THREE.Mesh | undefined;
+        body.group.traverse(o => { const m = o as THREE.Mesh; if (!owner && m.isMesh && ([m.material].flat() as THREE.Material[]).includes(original)) owner = m; });
+        if (!owner) continue;
+        const proxy = owner.clone(false);
+        proxy.material = twin;
+        proxy.visible = false; proxy.castShadow = false; proxy.receiveShadow = false;
+        only.add(proxy);
+      }
+    }
+    return only;
   }
   function clearFlights() {
     audio.reset(); areaFx.reset(); effects.reset(); castFx?.reset(); awakeningEffects.reset(); clashEffects.reset(); manga.reset();
@@ -811,6 +831,11 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   lens.position.set(0, 6, 16); lens.lookAt(0, 1, 0); lens.updateMatrixWorld();
   await compile();
   awakeningEffects.hideWarmup(); clashEffects.hideWarmup();
+  // (dude.work round 8) and the first set's fighters' occlusion-fade twins, which a warmed challenger's hidden proxies cover
+  // for the fighters after them; their first use paid a while later, behind the duel
+  const twins = twinProxies(fighters.values());
+  await compile(twins);
+  setTimeout(() => { void firstUse(twins).then(() => twins.clear()); }, 3000);
   progress(0.95);
   // the visitor's model: after the first set's own files (the duel never waits for it)
   loadLikeness();

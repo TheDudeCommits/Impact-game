@@ -294,6 +294,9 @@ class Runtime {
       const out = remove.call(this, type, fn); if (type === 'dispose' && !this._listeners?.dispose?.length) gpu.delete(this); return out; };
     this.unwatchGpu = () => { proto.addEventListener = add; proto.removeEventListener = remove; };
   }
+  /** (dude.work round 8) Stop keeping `object` for the visit's end: a material the game lets go without disposing (its
+   *  program is to live on for the next body that draws the same way), so that what it holds can be collected. */
+  forget(object: object) { this.gpu.delete(object as { dispose?: () => void }); }
   private releaseGpu() {
     for (const object of [...this.gpu]) { try { object.dispose?.(); } catch { /* already gone */ } }
     this.gpu.clear();
