@@ -87,6 +87,8 @@ const BETWEEN = 5;
  *  pixels tall) the duel's bodies and effects step TINY_HZ times a second, and its shadow map is drawn only when they
  *  have stepped. */
 const TINY_PX = 2, TINY_HZ = 12;
+/** Dev: ?impacttiny=0 steps a tiny duel every frame, as before (to compare). */
+const TINY_ON = typeof location !== 'object' || !/[?&]impacttiny=0\b/.test(location.search);
 /** Most sim ticks one frame may run (a hitch is caught up over the next frames, not in one burst). */
 const MOST_STEPS = 6;
 const FIGHT_LINE = '/assets/audio/survival/announcer-fight.m4a';
@@ -840,7 +842,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       // frame, or in none for half a second) is drawn as it stands TINY_HZ times a second: its bodies' poses and effects
       // step then, with the time gathered since; its sim, its rounds and its sets run every frame as ever, and its events
       // wait in the timeline for the next step (none is lost). Played, or seen any bigger, it steps every frame.
-      const small = !me && (performance.now() - seenAt > 500 || seenPx < TINY_PX);
+      const small = TINY_ON && !me && (performance.now() - seenAt > 500 || seenPx < TINY_PX);
       seenPx = 0;
       stepAcc += rawDt;
       if (small && stepAcc < 1 / TINY_HZ) return;
@@ -946,7 +948,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const px = view.pxPerMetre ?? Infinity;
       seenPx = Math.max(seenPx, px); seenAt = performance.now();
       const auto = gl.shadowMap.autoUpdate, needs = gl.shadowMap.needsUpdate;
-      if (!me && px < TINY_PX && auto) { gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = stepped; }
+      if (TINY_ON && !me && px < TINY_PX && auto) { gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = stepped; }
       stepped = false;
       scene.fog = view.fog;
       gl.shadowMap.enabled = shadow && shadows;
