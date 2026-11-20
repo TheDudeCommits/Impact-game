@@ -23,8 +23,9 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import type { Fighter } from '../render/Fighter';
 import type { LiveLikeness } from './live-contract';
-import { applyHitFlash, applyInkShell, applyLimbSmear, applyToonShading, headWeights, limbWeights } from '../render/look/toonShading';
+import { applyHitFlash, applyInkShell, applyLimbSmear, applyToonShading, headWeightsSteps, limbWeights } from '../render/look/toonShading';
 import { addShaderPatch } from '../render/look/shaderPatch';
+import { uploadInBands } from './bands';
 import { FIGHTERS } from '../config';
 
 /** The fighters' toon ramp (Fighter.ts toonGradient): the darkest band at 110, so a shaded garment keeps its colour. */
@@ -258,7 +259,7 @@ class Face {
 /** The visitor's meshes in a fighter's materials (Fighter.ts's chain: toon ramp and rim, hit flash, smear, and an ink
  *  hull on the body; the face decal over it showing one expression, shaded the same). Returns the materials made, and
  *  the face when the model has an expression atlas. */
-function dress(body: THREE.Object3D, looks: Looks, outlineWidth: number, atlas: FaceAtlas | null): { made: THREE.Material[]; face: Face | null } {
+function dress(body: THREE.Object3D, looks: Looks, outlineWidth: number, atlas: FaceAtlas | null, banded: ReadonlyMap<THREE.Texture, THREE.Texture> = NO_BANDS): { made: THREE.Material[]; face: Face | null } {
   const width = outlineWidth / .003, made: THREE.Material[] = [];
   const shells: [THREE.SkinnedMesh, THREE.Mesh][] = [];
   let face: Face | null = null;
@@ -269,9 +270,12 @@ function dress(body: THREE.Object3D, looks: Looks, outlineWidth: number, atlas: 
     // the face decal's atlas: its own copy of the map, showing one cell (all of it at once is seven faces on one)
     let map = src.map ?? null;
     if (decal && map && atlas && mesh.name === 'avatar-face' && !face) { map = map.clone(); map.needsUpdate = true; face = new Face(map, atlas); }
+    // (dude.work round 8, roadmap S2: a picture put on the GPU in bands as the model loaded is drawn in its place: Likeness.load)
+    else if (map) map = banded.get(map) ?? map;
+    const normalMap = src.normalMap ? banded.get(src.normalMap) ?? src.normalMap : null;
     const mat = new THREE.MeshToonMaterial({
       map, color: src.color?.clone() ?? new THREE.Color(1, 1, 1), gradientMap: TOON_GRADIENT,
-      normalMap: src.normalMap ?? null, transparent: decal, opacity: src.opacity ?? 1, alphaTest: src.alphaTest ?? 0,
+      normalMap, transparent: decal, opacity: src.opacity ?? 1, alphaTest: src.alphaTest ?? 0,
       side: src.side ?? THREE.FrontSide, depthWrite: decal ? false : src.depthWrite,
     });
     mat.name = `likeness-${src.name || 'body'}`;
@@ -291,7 +295,14 @@ function dress(body: THREE.Object3D, looks: Looks, outlineWidth: number, atlas: 
     if (mat.map) ink.map = mat.map;
     applyInkShell(ink, width, INK_DEPTH_BIAS); applyLimbSmear(ink, looks.smear);
     made.push(ink);
-    shells.push([mesh, mesh.isSkinnedMesh ? new THREE.SkinnedMesh(mesh.geometry, ink) : new THREE.Mesh(mesh.geometry, ink)]);
+    let shell: THREE.Mesh;
+    if (mesh.isSkinnedMesh) {
+      const skinned = new THREE.SkinnedMesh(mesh.geometry, ink);
+      // (dude.work round 8: the shell has its body's bounds, worked out as the model loaded: Likeness.load)
+      if (mesh.boundingSphere) skinned.boundingSphere = mesh.boundingSphere.clone();
+      shell = skinned;
+    } else shell = new THREE.Mesh(mesh.geometry, ink);
+    shells.push([mesh, shell]);
   });
   for (const [mesh, shell] of shells) {
     shell.name = mesh.name + '-ink'; shell.frustumCulled = false; shell.matrixAutoUpdate = false; shell.matrix.identity(); shell.castShadow = false; shell.receiveShadow = false;
@@ -300,6 +311,8 @@ function dress(body: THREE.Object3D, looks: Looks, outlineWidth: number, atlas: 
   }
   return { made, face };
 }
+
+const NO_BANDS: ReadonlyMap<THREE.Texture, THREE.Texture> = new Map();
 
 /** The model's expression atlas, from its manifest (the world reads the same: src/avatar/index.ts), if it has one. */
 function faceAtlas(gltf: { scene: THREE.Object3D; userData?: unknown }): FaceAtlas | null {
@@ -313,11 +326,14 @@ function faceAtlas(gltf: { scene: THREE.Object3D; userData?: unknown }): FaceAtl
 
 /** The visitor's model, loaded once and kept: each fighter they take over wears a copy (`wear`). */
 export class Likeness {
-  private constructor(private readonly template: THREE.Object3D, private readonly height: number, private readonly atlas: FaceAtlas | null) {}
+  private constructor(private readonly template: THREE.Object3D, private readonly height: number, private readonly atlas: FaceAtlas | null,
+    private readonly banded: ReadonlyMap<THREE.Texture, THREE.Texture> = NO_BANDS) {}
 
   /** Prepare the visitor's model: the world's own parsed copy (host.visitor.gltf, dude.work round 8: one download and one
    *  GPU copy of his 4096² picture a visit, shared with the world's avatar), else fetched from `model` (an older world). */
-  static async load(who: Pick<LiveLikeness, 'model' | 'gltf'>): Promise<Likeness> {
+  /** `slot` (dude.work round 8, roadmap S2): the world's frame budget (LiveHost.slot), waited for between the steps of the
+   *  look's work on the model (its crease field, its weights, its posed bounds): in one go it took 100 ms of a frame. */
+  static async load(who: Pick<LiveLikeness, 'model' | 'gltf'>, slot?: () => Promise<void>, renderer?: THREE.WebGLRenderer, within: <T>(fn: () => T) => T = fn => fn()): Promise<Likeness> {
     let shared: { scene: THREE.Group; animations: THREE.AnimationClip[]; userData: Record<string, unknown> } | null = null;
     if (who.gltf) { try { shared = await who.gltf(); } catch (error) { console.warn('Impact live: the world\'s copy of the visitor\'s model failed; fetching it', error); } }
     let gltf: { scene: THREE.Group; userData?: unknown };
@@ -342,35 +358,84 @@ export class Likeness {
       const k = ['R_Upperarm', 'L_Upperarm', 'R_Thigh', 'L_Thigh'].indexOf(b.name); if (k >= 0) limbs[k] = b;
     });
     template.updateMatrixWorld(true);
-    template.traverse(o => {
-      const mesh = o as THREE.SkinnedMesh; if (!mesh.isMesh) return;
+    const meshes: THREE.SkinnedMesh[] = [];
+    template.traverse(o => { if ((o as THREE.Mesh).isMesh) meshes.push(o as THREE.SkinnedMesh); });
+    for (const mesh of meshes) {
       const g = mesh.geometry;
       if (!g.hasAttribute('lookHead')) {
         // (the head weight and the crease field as a fighter's, but not the cel gate: the flattening and the painted ink
         // read the map a few mips up, and his atlas's tight islands bleed his black cloth into his skin there - lifting
         // the black and streaking it brown. He takes the fighters' light, rim and line, not that texture pass.)
-        const weights = headWeights(g, mesh.isSkinnedMesh ? mesh.skeleton : undefined, head);
+        const steps = headWeightsSteps(g, mesh.isSkinnedMesh ? mesh.skeleton : undefined, head);
+        let weights: THREE.BufferAttribute;
+        for (;;) { const step = steps.next(); if (step.done) { weights = step.value; break; } if (slot) await slot(); }
         for (let i = 0; i < weights.count; i++) weights.setY(i, 0);
         g.setAttribute('lookHead', weights);
       }
+      if (slot) await slot();
       if (!g.hasAttribute('smearLimb')) g.setAttribute('smearLimb', limbWeights(mesh, limbs));
-    });
+    }
     const box = new THREE.Box3();
-    template.traverse(o => { const mesh = o as THREE.Mesh; if (mesh.isMesh && !(mesh.material as THREE.Material).transparent) box.union(new THREE.Box3().setFromObject(mesh)); });
-    return new Likeness(template, Math.max(.5, box.isEmpty() ? 1.75 : box.max.y - box.min.y), faceAtlas(gltf));
+    for (const mesh of meshes) {
+      if ((mesh.material as THREE.Material).transparent) continue;
+      // (with a slot: a skinned mesh's posed bounds worked out a step at a time, as its computeBoundingBox would, which
+      // setFromObject then reads instead of working them out in one go)
+      if (slot && mesh.isSkinnedMesh && mesh.boundingBox === null) {
+        const posed = new THREE.Box3(), v = new THREE.Vector3(), count = mesh.geometry.getAttribute('position').count;
+        let at = performance.now();
+        await slot();
+        for (let i = 0; i < count; i++) {
+          mesh.getVertexPosition(i, v); posed.expandByPoint(v);
+          if ((i & 1023) === 0 && performance.now() - at > 3) { await slot(); at = performance.now(); }
+        }
+        mesh.boundingBox = posed;
+      }
+      box.union(new THREE.Box3().setFromObject(mesh));
+    }
+    // (dude.work round 8, roadmap S2) with a slot, what his first played frame worked out: each skinned mesh's bounds (a
+    // sphere through every posed vertex, which three works out the first time it sorts the mesh: 20 ms each in his join's
+    // frame) worked out a step at a time on the model at rest, as its box is (a body's meshes are never culled: the sphere
+    // only orders their draws); and his pictures put on the GPU in bands (uploadInBands), drawn in their places (dress):
+    // whole, his 4096 px picture took 100 ms of his join's frame
+    const banded = new Map<THREE.Texture, THREE.Texture>();
+    if (slot && renderer) {
+      for (const mesh of meshes) {
+        if (!mesh.isSkinnedMesh || mesh.boundingSphere !== null) continue;
+        const sphere = new THREE.Sphere(), v = new THREE.Vector3(), count = mesh.geometry.getAttribute('position').count;
+        sphere.makeEmpty();
+        let at = performance.now();
+        await slot();
+        for (let i = 0; i < count; i++) {
+          mesh.getVertexPosition(i, v); sphere.expandByPoint(v);
+          if ((i & 1023) === 0 && performance.now() - at > 3) { await slot(); at = performance.now(); }
+        }
+        mesh.boundingSphere = sphere;
+      }
+      for (const mesh of meshes) {
+        const m = mesh.material as THREE.MeshStandardMaterial;
+        // (never a picture drawn with its alpha: the face decal's, and any of a material that cuts out)
+        if (m.transparent || m.alphaTest > 0) continue;
+        for (const t of [m.map, m.normalMap]) {
+          if (!t || banded.has(t)) continue;
+          const copy = await uploadInBands(renderer, t, slot, within).catch(() => null);
+          if (copy) banded.set(t, copy);
+        }
+      }
+    }
+    return new Likeness(template, Math.max(.5, box.isEmpty() ? 1.75 : box.max.y - box.min.y), faceAtlas(gltf), banded);
   }
 
   /** A dressed copy that nobody wears, for compiling the visitor's materials before anyone walks in (its own
    *  uniforms: the programs are the same whoever wears them). `free` lets it go. */
   warm(): { body: THREE.Object3D; free(): void } {
     const body = cloneSkinned(this.template);
-    const { made, face } = dress(body, { flash: { value: new THREE.Vector4(1, 1, 1, 0) }, flashFlat: { value: 0 }, smear: { point: { value: new THREE.Vector4(0, 0, 0, .6) }, motion: { value: new THREE.Vector4(0, 1, 0, 0) }, limb: { value: new THREE.Vector4(1, 0, 0, 0) } } }, .003, this.atlas);
+    const { made, face } = dress(body, { flash: { value: new THREE.Vector4(1, 1, 1, 0) }, flashFlat: { value: 0 }, smear: { point: { value: new THREE.Vector4(0, 0, 0, .6) }, motion: { value: new THREE.Vector4(0, 1, 0, 0) }, limb: { value: new THREE.Vector4(1, 0, 0, 0) } } }, .003, this.atlas, this.banded);
     return { body, free: () => { body.removeFromParent(); for (const m of made) m.dispose(); face?.map.dispose(); } };
   }
 
   /** The visitor in `fighter`'s place, until `remove`. */
   wear(fighter: Fighter): Worn | null {
-    try { return new Worn(fighter, cloneSkinned(this.template), this.height, this.atlas); }
+    try { return new Worn(fighter, cloneSkinned(this.template), this.height, this.atlas, this.banded); }
     catch (error) { console.warn('Impact live: the visitor could not wear', fighter.state.fighter, error); return null; }
   }
 }
@@ -382,7 +447,7 @@ export class Worn {
   private readonly away = new Map<THREE.Object3D, number>();
   private readonly face: Face | null;
   readonly body: THREE.Object3D;
-  constructor(readonly fighter: Fighter, body: THREE.Object3D, ownHeight: number, atlas: FaceAtlas | null) {
+  constructor(readonly fighter: Fighter, body: THREE.Object3D, ownHeight: number, atlas: FaceAtlas | null, banded: ReadonlyMap<THREE.Texture, THREE.Texture> = NO_BANDS) {
     this.body = body;
     body.name = 'likeness';
     // the fighter's height (its standing box, weapons aside, as Fighter.ts normalises it)
@@ -393,7 +458,7 @@ export class Worn {
     box.applyMatrix4(into);
     const height = box.isEmpty() ? FIGHTERS[fighter.state.fighter]?.height ?? 1.7 : box.max.y - box.min.y;
     body.scale.setScalar(height / ownHeight);
-    const dressed = dress(body, fighter, FIGHTERS[fighter.state.fighter]?.outlineWidth ?? .003, atlas);
+    const dressed = dress(body, fighter, FIGHTERS[fighter.state.fighter]?.outlineWidth ?? .003, atlas, banded);
     this.materials.push(...dressed.made);
     this.face = dressed.face;
     fighter.group.add(body);

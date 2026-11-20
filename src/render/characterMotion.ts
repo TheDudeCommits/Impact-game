@@ -143,7 +143,17 @@ function arm(upper:T.Bone,lower:T.Bone,hand:T.Bone,target:T.Vector3,pole:T.Vecto
 /** The clips characterClips builds for a fighter, by name and length (src/engine/client/fighterCheck.ts reads them). */
 export const authoredClips=(id:FighterId)=>plans(id).map(plan=>({name:plan.name,duration:plan.duration}));
 
-export function characterClips(model:T.Object3D,source:T.AnimationClip[],id:FighterId,joints:Map<string,T.Bone>,form=false){
+/** (dude.work round 8) characterClipsSteps' step: about this many ms of work between two yields. */
+const STEP_MS=3;
+export function characterClips(model:T.Object3D,source:T.AnimationClip[],id:FighterId,joints:Map<string,T.Bone>,form=false):T.AnimationClip[]{
+  const steps=characterClipsSteps(model,source,id,joints,form);
+  for(;;){const step=steps.next();if(step.done)return step.value;}
+}
+/** (dude.work round 8, roadmap S2) characterClips in steps: it yields whenever STEP_MS has gone by since its last step
+ *  (between two of a clip's samples), so a caller can spread the work over several frames (FighterLibrary.prebake: the
+ *  live duel works out each fighter's clips before its first body is made, a step a slot of the world's frame budget; in
+ *  one go a fighter's took 60 to 70 ms of a frame). characterClips runs it straight through. Same work, same result. */
+export function* characterClipsSteps(model:T.Object3D,source:T.AnimationClip[],id:FighterId,joints:Map<string,T.Bone>,form=false):Generator<void,T.AnimationClip[],void>{
   // A form's own clips are its own - except Gummy's SUNRISE, who throws the Gatling as he does.
   if(form&&id!=='gummy')return source;
   const specifications=plans(id);if(!specifications.length)return source;
@@ -178,6 +188,7 @@ export function characterClips(model:T.Object3D,source:T.AnimationClip[],id:Figh
     bone.quaternion.premultiply(parent.clone().invert().multiply(new T.Quaternion().setFromAxisAngle(axis,angle)).multiply(parent));bone.updateMatrixWorld(true);
   };
   const clips: T.AnimationClip[]=[];
+  let stepAt=performance.now();
   for(const plan of specifications){
     if(!plan.name.endsWith('guard')){
       plan.keys[0]={...pose(0,restingR,restingL)};
@@ -275,6 +286,7 @@ export function characterClips(model:T.Object3D,source:T.AnimationClip[],id:Figh
         }
       }
       for(let i=0;i<base.length;i++){const bone=base[i].b;bone.position.toArray(samples[i].p,samples[i].p.length);bone.quaternion.toArray(samples[i].q,samples[i].q.length);bone.scale.toArray(samples[i].s,samples[i].s.length);}
+      if(performance.now()-stepAt>STEP_MS){yield;stepAt=performance.now();}
     }
     const tracks:T.KeyframeTrack[]=[];
     base.forEach(({b},i)=>{tracks.push(new T.VectorKeyframeTrack(`${b.name}.position`,clock,samples[i].p),new T.QuaternionKeyframeTrack(`${b.name}.quaternion`,clock,samples[i].q),new T.VectorKeyframeTrack(`${b.name}.scale`,clock,samples[i].s));});

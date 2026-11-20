@@ -31,14 +31,14 @@ import { rosterPrefetch } from '../loading/rosterPrefetch';
 import {PriorityQueue} from '../loading/PriorityQueue';
 import * as THREE from 'three';
 import { addShaderPatch } from './look/shaderPatch';
-import { applyAuthoredInk, applyHitFlash, applyInkShell, applyLimbSmear, applyTeamTrim, applyToonShading, headWeights, limbWeights, teamTrim, toonKind } from './look/toonShading';
+import { applyAuthoredInk, applyHitFlash, applyInkShell, applyLimbSmear, applyTeamTrim, applyToonShading, headWeights, headWeightsSteps, limbWeights, teamTrim, toonKind } from './look/toonShading';
 import { applyThreatInk, threatInk } from './ThreatOutline';
 import { SHADOW_SIDE_FIGHTERS, fixShadowSide } from './look/shadowSide';
 import { HAND_SCALE } from './look/proportions';
 import { HAND_GRIP, gripPlan } from './look/grip';
 import { HANDS, HandLayer } from './look/hands';
 import { handRow } from './look/handTable';
-import { characterClips, isCharacterMotion, mirrorClip, mirrorSource, sceneJoints, strikeFraction } from './characterMotion';
+import { characterClips, characterClipsSteps, isCharacterMotion, mirrorClip, mirrorSource, sceneJoints, strikeFraction } from './characterMotion';
 import { appendClips, clipKey, findClipIn, joinClips } from './clipMatch';
 import { clipMapFor, type BodyClipMap } from '../engine/client/clips';
 import { FIGHTER_SOCKETS, placeSocket, socketAsk, type SocketAsk, type SocketKind } from '../engine/client/sockets';
@@ -2046,7 +2046,56 @@ export class FighterLibrary {
       this.outfitBodies.set(id,{source,rush});
     }catch(error){console.warn(`outfit ${id}: its body did not load (${def.model}); the fighter's own is drawn`,error);this.outfitBodies.set(id,'failed');}
   }
-  create(state:PlayerState,outfit?:string){
+  /** (dude.work round 8, roadmap S2) What `id`'s first body works out once for every body after it (its procedural clips,
+   *  characterClips), worked out in steps before that body is made, on a copy of its file's scene with the joints a body
+   *  maps: the live duel's mount waits for the world's frame budget between the steps (a fighter's first body took 100 to
+   *  130 ms of one frame, its clips 60 to 70 of them). Nothing when the fighter isn't loaded or its clips are worked out. */
+  *prebake(id:FighterId):Generator<void,void,void>{
+    const source=this.sources.get(id);
+    if(!source)return;
+    yield* this.prebakeBody(id,source,false);
+    // (the borrowed hurts fitted to its rig: once a rig, as create asks for them for each body)
+    Fighter.borrowAhead?.(source.scene,source.animations,id);
+    yield;
+    // and its awakened form's body, which create makes with it (attachForm)
+    const form=this.forms.get(id);
+    if(form)yield* this.prebakeBody(id,form,true);
+  }
+  private *prebakeBody(id:FighterId,source:GLTF,form:boolean):Generator<void,void,void>{
+    const model=clone(source.scene);shareSkeletons(model);
+    const bones=new Map<string,THREE.Bone>(),names:string[]=[],joints=new Map<string,THREE.Bone>();
+    model.traverse(o=>{if((o as THREE.Bone).isBone){bones.set(clean(o.name),o as THREE.Bone);names.push(o.name);}});
+    for(const [canonical,actual] of resolveSkeleton(names)){const found=bones.get(clean(actual));if(found)joints.set(canonical,found);}
+    yield;
+    yield* characterClipsSteps(model,source.animations,id,joints,form);
+    // the look's head weights (the face's terminator, the crease field), as a body sets them on each geometry it draws
+    // (they live on the geometry, which every body of the fighter shares): the meshes a body keeps, its Head joint
+    const meshes:THREE.Mesh[]=[];
+    const walk=(o:THREE.Object3D)=>{if((o as THREE.Camera).isCamera||(o as THREE.Light).isLight||/icosphere/i.test(o.name))return;if((o as THREE.Mesh).isMesh)meshes.push(o as THREE.Mesh);for(const c of o.children)walk(c);};
+    for(const c of model.children)walk(c);
+    const headJoint=joints.get('Head'),smearRoots=SMEAR_LIMBS.map(name=>joints.get(name));
+    for(const mesh of meshes){
+      const skin=mesh as THREE.SkinnedMesh;
+      if(!mesh.geometry.hasAttribute('lookHead')){
+        const steps=headWeightsSteps(mesh.geometry,skin.isSkinnedMesh?skin.skeleton:undefined,headJoint);
+        let step=steps.next();
+        while(!step.done){yield;step=steps.next();}
+        if(!mesh.geometry.hasAttribute('lookHead'))mesh.geometry.setAttribute('lookHead',step.value);
+        yield;
+      }
+      // (and its share of the four striking limbs, the smear frame's, as a body sets it: on the shared geometry)
+      if(!mesh.geometry.hasAttribute('smearLimb')){mesh.geometry.setAttribute('smearLimb',limbWeights(mesh,smearRoots,heldHand(mesh.name+' '+(mesh.geometry.name??''))));yield;}
+    }
+    disposeSkeletons(model);
+  }
+  create(state:PlayerState,outfit?:string):Fighter{
+    const steps=this.createSteps(state,outfit);
+    for(;;){const step=steps.next();if(step.done)return step.value;}
+  }
+  /** (dude.work round 8, roadmap S2) create in steps: the body, then its awakened form, then its rush plan's pieces
+   *  (prepareRushSteps), each a step, so the live duel's mount can make a body over several frames of the world's frame
+   *  budget (a first body took 100 to 130 ms of one frame). create runs it straight through: the same work in the same order. */
+  *createSteps(state:PlayerState,outfit?:string):Generator<void,Fighter,void>{
     const body=outfit?this.outfitBodies.get(outfit):undefined,own=typeof body==='object'?body:undefined;
     const source=own?.source??this.sources.get(state.fighter);
     if(!source)throw new Error(`${state.fighter} model is not loaded`);
@@ -2057,11 +2106,12 @@ export class FighterLibrary {
     Fighter.borrowAhead?.(source.scene,source.animations,state.fighter);
     Fighter.strikesAhead?.(state.fighter);Fighter.stylesAhead?.();
     const form=this.forms.get(state.fighter);
-    if(form)fighter.attachForm(form);
+    if(form){yield;fighter.attachForm(form);}
     // The rush plan - and the mirrored copy of the light it may need - is
     // built here, which for the roster is the loading screen's warm-up,
     // rather than on the first rush of a match.
-    fighter.prepareRush();
+    yield;
+    yield* fighter.prepareRushSteps();
     // Round 3b: the camera's occlusion dither, on every material it draws with.
     installOcclusionFade(fighter);
     return fighter;
@@ -3915,7 +3965,11 @@ export class Fighter {
   }
   private lockTakes:({clip:THREE.AnimationClip;from:number;to:number;contact:number}|null|undefined)[]=[];
   /** Build the rush plan now rather than on the first rush of a match. */
-  prepareRush(){this.rushPlan??=this.planRush();this.prepareMoves();this.awakenedForm?.prepareRush();}
+  prepareRush(){const steps=this.prepareRushSteps();for(let step=steps.next();!step.done;step=steps.next()){/* straight on */}}
+  /** (dude.work round 8, roadmap S2) prepareRush in steps: it yields between its pieces of work (each technique's take
+   *  fitted, each clip's tables), so the live duel's mount can spread a first body's over several frames of the world's
+   *  frame budget (30 to 35 ms of one frame before). prepareRush runs it straight through. Same work, same result. */
+  *prepareRushSteps():Generator<void,void,void>{this.rushPlan??=this.planRush();yield* this.prepareMoves();if(this.awakenedForm)yield* this.awakenedForm.prepareRushSteps();}
   /** Everything a move builds the first time it is drawn, built now - which
    *  for the roster is the loading screen's warm-up, and for a fighter in a
    *  match the frame it arrives - rather than on the frame the move is used.
@@ -3929,7 +3983,10 @@ export class Fighter {
    *  own samplers and mixer bindings for the clip. The first two are cached
    *  by clip, so the warm-up body pays for the match's; the rest are this
    *  body's own. */
-  private prepareMoves(){
+  private *prepareMoves():Generator<void,void,void>{
+    let at=performance.now();
+    /** (dude.work round 8) a step's end once about 3 ms have gone by */
+    const due=()=>{if(performance.now()-at<3)return false;at=performance.now();return true;};
     const clips=new Set<THREE.AnimationClip>(),state=this.state;
     const add=(clip?:THREE.AnimationClip)=>{if(clip)clips.add(clip);};
     for(const action of ['light','heavy','special','ultimate'] as const)for(const grounded of [true,false])add(this.clipFor({...state,action,chain:0,grounded}));
@@ -3937,15 +3994,16 @@ export class Fighter {
     if(state.fighter==='taisei')TAISEI_MELEE_CONTACTS.forEach((_,i)=>add(this.clip(`melee ${i}`)));
     // The combo enders' own clips (comboClips.ts): the first ender of a match built its clip's tables, samplers and
     // mixer binding on the frame it was thrown - the first Light, Heavy of a match hitched where no other did.
-    if(hasCombos(state.fighter))for(const key of COMBO_KEYS)add(this.enderClip({...state,action:COMBO_SLOT[key],branch:key,chain:0})?.clip);
+    if(hasCombos(state.fighter))for(const key of COMBO_KEYS){add(this.enderClip({...state,action:COMBO_SLOT[key],branch:key,chain:0})?.clip);if(due())yield;}
     // Techniques (game/techniques.ts): each one's take fitted to this body now (styleMoves.ts) - behind the loading screen,
     // where the takes are already in (main.ts waits for them) - not on the first technique of a fight.
-    for(const key of TECHNIQUE_KEYS)add(this.enderClip({...state,action:TECHNIQUE_SLOT[key],branch:key,chain:0,grounded:key!=='airRush'&&key!=='airRise'})?.clip);
-    for(const clip of clips){clipMotionTable(clip);this.samplersFor(clip);this.mixer.clipAction(clip);}
+    for(const key of TECHNIQUE_KEYS){add(this.enderClip({...state,action:TECHNIQUE_SLOT[key],branch:key,chain:0,grounded:key!=='airRush'&&key!=='airRise'})?.clip);if(due())yield;}
+    for(const clip of clips){clipMotionTable(clip);this.samplersFor(clip);this.mixer.clipAction(clip);if(due())yield;}
     for(let stage=1;stage<RUSH_STAGES;stage++)for(const grounded of [true,false]){
       const staged={...state,action:'light' as const,chain:stage,grounded},clip=this.clipFor(staged);
       // (A stage's dream take, round 29, is none of the plan's: built here as they were above.)
       if(clip){if(!clips.has(clip)){clipMotionTable(clip);this.samplersFor(clip);this.mixer.clipAction(clip);}this.rushFraction(clip,stage,staged);}
+      if(due())yield;
     }
     // The clips a body is thrown into and stands in: a first hit, a first
     // fidget, the first time an opponent comes close.

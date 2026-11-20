@@ -74,8 +74,23 @@ export function cueFighter(cue: string, ids: readonly string[] = ALL_FIGHTERS): 
 
 const routed = new Set(Object.keys(VOICES.cues));
 
+/** (dude.work round 8, roadmap S2) Each fighter's unrouted cues, worked out once for them all: asked fighter by fighter, every
+ *  cue was matched against every fighter again for each (9 ms of the live duel's first load, at the gate's evaluation). */
+let unrouted: Map<string, string[]> | null = null;
 export function unroutedVoices(id: FighterId): string[] {
-  return Object.keys(VOICE_CUES).filter(cue => cueFighter(cue) === id && !routed.has(cue));
+  unrouted ??= (() => {
+    const byFighter = new Map<string, string[]>();
+    for (const cue of Object.keys(VOICE_CUES)) {
+      if (routed.has(cue)) continue;
+      const owner = cueFighter(cue);
+      if (owner === undefined) continue;
+      let list = byFighter.get(owner);
+      if (!list) byFighter.set(owner, list = []);
+      list.push(cue);
+    }
+    return byFighter;
+  })();
+  return [...(unrouted.get(id) ?? [])];
 }
 
 export const originalBody = (id: FighterId | string) => !!ORIGINALS[id as FighterId];

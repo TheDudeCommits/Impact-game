@@ -4,7 +4,7 @@ import { addShaderPatch, replaceOnce } from './shaderPatch';
 import { COOKIE_GLSL, cookieUniforms } from './lightCookie';
 import type { LookPreset } from './stageLooks';
 import { roanEnabled } from './roanPass';
-import { creaseDepths } from './crease';
+import { creaseDepthsSteps } from './crease';
 import { sparkProfile } from './powerupLook';
 
 /** The fighters' cel look, shared by every toon material through one set of
@@ -192,7 +192,13 @@ export function toonKind(meshName: string, materialName: string): ToonKind {
  *  shader's flattening and ink reach fighters only - the survival horde
  *  passes no head, and anything else that wears the toon patch carries no
  *  such attribute (an attribute of fewer components reads 0 in them). */
-export function headWeights(geometry: THREE.BufferGeometry, skeleton?: THREE.Skeleton, head?: THREE.Object3D) {
+export function headWeights(geometry: THREE.BufferGeometry, skeleton?: THREE.Skeleton, head?: THREE.Object3D): THREE.BufferAttribute {
+  const steps = headWeightsSteps(geometry, skeleton, head);
+  for (;;) { const s = steps.next(); if (s.done) return s.value; }
+}
+/** headWeights in steps (dude.work round 8, roadmap S2): its crease field worked out a step at a time (creaseDepthsSteps), so
+ *  a caller can spread it over several frames. Same work, same result. */
+export function* headWeightsSteps(geometry: THREE.BufferGeometry, skeleton?: THREE.Skeleton, head?: THREE.Object3D): Generator<void, THREE.BufferAttribute, void> {
   const count = geometry.getAttribute('position').count, weights = new Float32Array(count * 3);
   const ids = geometry.getAttribute('skinIndex'), amounts = geometry.getAttribute('skinWeight');
   if (skeleton && head && ids && amounts) {
@@ -205,7 +211,7 @@ export function headWeights(geometry: THREE.BufferGeometry, skeleton?: THREE.Ske
     // read as dashes of ink, so it gets the cel colour but no creases.
     let bones = 0;
     if (ids && amounts) { const seen = new Set<number>(); for (let i = 0; i < count && seen.size < 4; i++) for (let j = 0; j < 4; j++) if (amounts.getComponent(i, j) > .2) seen.add(ids.getComponent(i, j)); bones = seen.size; }
-    const crease = bones >= 4 ? creaseDepths(geometry) : new Float32Array(count);
+    const crease = bones >= 4 ? yield* creaseDepthsSteps(geometry) : new Float32Array(count);
     for (let i = 0; i < count; i++) { weights[i * 3 + 1] = 1; weights[i * 3 + 2] = crease[i] > 0 ? 1 : 0; }
   }
   return new THREE.BufferAttribute(weights, 3);

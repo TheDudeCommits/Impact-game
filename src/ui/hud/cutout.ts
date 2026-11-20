@@ -12,6 +12,11 @@ export interface Cutout { url: string; pad: number; width: number; height: numbe
 export interface CutoutOptions { lum?: number; seal?: number; margin?: number; rim?: number; ink?: string; paper?: string; scale?: number; crop?: readonly [number, number, number, number] }
 
 const cache = new Map<string, Promise<Cutout | undefined>>();
+/** (dude.work round 8, roadmap S2) Inside the world: its frame budget's next slot (LiveHost.slot), waited for between the
+ *  cut-out's passes over the pixels, so that none of them shares a frame with another (in one go a plate's portrait took
+ *  90 ms of the visitor's join's frame). Null on the game's own page: it runs straight through, as before. */
+let pause: (() => Promise<void>) | null = null;
+export function cutoutsWaitFor(slot: (() => Promise<void>) | null) { pause = slot; }
 const hex = (c: string) => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
 
 /** The cut-out of `src` at `scale` (of its natural size), cached by source and options. Resolves undefined where the
@@ -35,13 +40,22 @@ async function make(src: string, { lum = 236, seal = 1, margin = 3, rim = 5, ink
   cx.fillStyle = '#fff'; cx.fillRect(0, 0, W, H);
   cx.imageSmoothingQuality = 'high';
   cx.drawImage(img, sx, sy, sw, sh, pad, pad, w, h);
-  const px = cx.getImageData(0, 0, W, H), d = px.data;
+  // (inside the world: read back a band of rows a slot)
+  let px: ImageData;
+  if (pause) {
+    const all = new Uint8ClampedArray(W * H * 4), rows = Math.max(1, Math.floor(262144 / W));
+    for (let y = 0; y < H; y += rows) { await pause(); const band = cx.getImageData(0, y, W, Math.min(rows, H - y)); all.set(band.data, y * W * 4); }
+    px = new ImageData(all, W, H);
+    await pause();
+  } else px = cx.getImageData(0, 0, W, H);
+  const d = px.data;
   // Ink walls.
   const wall = new Uint8Array(N);
   for (let i = 0; i < N; i++) wall[i] = .3 * d[i * 4] + .59 * d[i * 4 + 1] + .11 * d[i * 4 + 2] < lum ? 1 : 0;
-  const dilate = (m: Uint8Array, r: number) => {
+  const dilate = async (m: Uint8Array, r: number) => {
     let a = m;
     for (let k = 0; k < r; k++) {
+      if (pause) await pause();
       const b = new Uint8Array(N);
       for (let y = 0; y < H; y++) for (let x = 0, i = y * W; x < W; x++, i++) {
         b[i] = a[i] || (x > 0 && a[i - 1]) || (x < W - 1 && a[i + 1]) || (y > 0 && a[i - W]) || (y < H - 1 && a[i + W]) ? 1 : 0;
@@ -50,15 +64,18 @@ async function make(src: string, { lum = 236, seal = 1, margin = 3, rim = 5, ink
     }
     return a;
   };
-  const sealed = dilate(wall, seal);
+  const sealed = await dilate(wall, seal);
+  if (pause) await pause();
   // Flood the paper from the border.
   const bg = new Uint8Array(N), q = new Int32Array(N); let qh = 0, qt = 0;
   const push = (i: number) => { if (!bg[i] && !sealed[i]) { bg[i] = 1; q[qt++] = i; } };
   for (let x = 0; x < W; x++) { push(x); push((H - 1) * W + x); }
   for (let y = 0; y < H; y++) { push(y * W); push(y * W + W - 1); }
   while (qh < qt) { const i = q[qh++], x = i % W; if (x > 0) push(i - 1); if (x < W - 1) push(i + 1); if (i >= W) push(i - W); if (i < N - W) push(i + W); }
+  if (pause) await pause();
   const fg = new Uint8Array(N); for (let i = 0; i < N; i++) fg[i] = bg[i] ? 0 : 1;
-  const inner = dilate(fg, margin), outer = dilate(inner, rim);
+  const inner = await dilate(fg, margin), outer = await dilate(inner, rim);
+  if (pause) await pause();
   const pc = hex(paper), ic = hex(ink);
   for (let i = 0; i < N; i++) {
     const o = i * 4;

@@ -10,8 +10,18 @@ export interface CreaseOptions {
 }
 export const CREASE: CreaseOptions = { seed: .2, grow: .11, full: .5, shortest: 3 };
 
+/** (dude.work round 8, roadmap S2) analyse's and creaseDepths' steps: about this many ms of work between two yields. */
+const STEP_MS = 3;
+/** A stepped job (a generator) run straight through. */
+function run<T>(steps: Generator<void, T, void>): T { for (;;) { const s = steps.next(); if (s.done) return s.value; } }
+
 /** The welded mesh, its smoothed concavity per welded vertex and its rings. */
-function analyse(geometry: THREE.BufferGeometry) {
+function analyse(geometry: THREE.BufferGeometry) { return run(analyseSteps(geometry)); }
+/** analyse in steps (dude.work round 8, roadmap S2): it yields whenever STEP_MS has gone by, between its passes and within
+ *  the long ones, so a caller can spread it over several frames (the visitor's model in the live duel took 60 ms of one
+ *  frame). Same work, same result. */
+function* analyseSteps(geometry: THREE.BufferGeometry): Generator<void, ReturnType<typeof analyseResult> | null, void> {
+  let at = performance.now();
   const position = geometry.getAttribute('position') as THREE.BufferAttribute;
   const count = position?.count ?? 0;
   if (count < 3) return null;
@@ -38,6 +48,7 @@ function analyse(geometry: THREE.BufferGeometry) {
   const cap = 1 << Math.ceil(Math.log2(count * 2 + 2)), table = new Int32Array(cap).fill(-1);
   let n = 0;
   for (let i = 0; i < count; i++) {
+    if ((i & 1023) === 0 && performance.now() - at > STEP_MS) { yield; at = performance.now(); }
     const qx = Math.round((X[i * 3] - minX) / step), qy = Math.round((X[i * 3 + 1] - minY) / step), qz = Math.round((X[i * 3 + 2] - minZ) / step);
     Q[i * 3] = qx; Q[i * 3 + 1] = qy; Q[i * 3 + 2] = qz;
     let h = (Math.imul(qx, 73856093) ^ Math.imul(qy, 19349663) ^ Math.imul(qz, 83492791)) & (cap - 1), id = -1;
@@ -56,6 +67,7 @@ function analyse(geometry: THREE.BufferGeometry) {
   const ix = index ? index.array : null;
   let kept = 0;
   for (let t = 0; t < tris; t++) {
+    if ((t & 1023) === 0 && performance.now() - at > STEP_MS) { yield; at = performance.now(); }
     const a = weld[ix ? ix[t * 3] : t * 3], b = weld[ix ? ix[t * 3 + 1] : t * 3 + 1], c = weld[ix ? ix[t * 3 + 2] : t * 3 + 2];
     if (a === b || b === c || a === c) continue;
     T[kept * 3] = a; T[kept * 3 + 1] = b; T[kept * 3 + 2] = c; kept++;
@@ -79,6 +91,7 @@ function analyse(geometry: THREE.BufferGeometry) {
   const degree = new Int32Array(n + 1), list = new Int32Array(kept * 6), stamp = new Int32Array(n).fill(-1), uses = new Int32Array(n), boundary = new Uint8Array(n);
   let filled = 0;
   for (let v = 0; v < n; v++) {
+    if ((v & 1023) === 0 && performance.now() - at > STEP_MS) { yield; at = performance.now(); }
     degree[v] = filled;
     for (let k = tdeg[v]; k < tdeg[v + 1]; k++) {
       const t = tadj[k];
@@ -96,6 +109,7 @@ function analyse(geometry: THREE.BufferGeometry) {
   // edges' length.
   const K = new Float32Array(n);
   for (let v = 0; v < n; v++) {
+    if ((v & 1023) === 0 && performance.now() - at > STEP_MS) { yield; at = performance.now(); }
     const from = degree[v], to = degree[v + 1];
     if (to - from < 3) continue;
     let cx = 0, cy = 0, cz = 0, d2 = 0;
@@ -109,14 +123,17 @@ function analyse(geometry: THREE.BufferGeometry) {
   // One pass of smoothing.
   const S = new Float32Array(n);
   for (let v = 0; v < n; v++) {
+    if ((v & 1023) === 0 && performance.now() - at > STEP_MS) { yield; at = performance.now(); }
     if (boundary[v]) continue;
     const from = degree[v], to = degree[v + 1];
     let sum = K[v] * 2, w = 2;
     for (let k = from; k < to; k++) { sum += K[adj[k]]; w++; }
     S[v] = sum / w;
   }
-  return { count, weld, n, T, degree, adj, tdeg, tadj, S };
+  return analyseResult(count, weld, n, T, degree, adj, tdeg, tadj, S);
 }
+const analyseResult = (count: number, weld: Int32Array, n: number, T: Int32Array, degree: Int32Array, adj: Int32Array, tdeg: Int32Array, tadj: Int32Array, S: Float32Array) =>
+  ({ count, weld, n, T, degree, adj, tdeg, tadj, S });
 
 /** The smoothed concavity (about sin(bend / 2)) at every vertex. */
 export function creaseConcavity(geometry: THREE.BufferGeometry): Float32Array {
@@ -126,13 +143,19 @@ export function creaseConcavity(geometry: THREE.BufferGeometry): Float32Array {
 }
 
 export function creaseDepths(geometry: THREE.BufferGeometry, options: CreaseOptions = CREASE): Float32Array {
+  return run(creaseDepthsSteps(geometry, options));
+}
+/** creaseDepths in steps (dude.work round 8, roadmap S2; analyseSteps). Same work, same result. */
+export function* creaseDepthsSteps(geometry: THREE.BufferGeometry, options: CreaseOptions = CREASE): Generator<void, Float32Array, void> {
   const out = new Float32Array(geometry.getAttribute('position')?.count ?? 0);
-  const a = analyse(geometry);
+  const a = yield* analyseSteps(geometry);
   if (!a) return out;
+  let at = performance.now();
   const { count, weld, n, T, degree, adj, tdeg, tadj, S } = a;
   const mark = new Uint8Array(n), queue: number[] = [];
   for (let v = 0; v < n; v++) if (S[v] >= options.seed) { mark[v] = 1; queue.push(v); }
-  while (queue.length) {
+  for (let k = 0; queue.length; k++) {
+    if ((k & 1023) === 0 && performance.now() - at > STEP_MS) { yield; at = performance.now(); }
     const v = queue.pop()!;
     for (let k = degree[v]; k < degree[v + 1]; k++) { const u = adj[k]; if (!mark[u] && S[u] >= options.grow) { mark[u] = 1; queue.push(u); } }
   }
@@ -141,7 +164,9 @@ export function creaseDepths(geometry: THREE.BufferGeometry, options: CreaseOpti
   for (let v = 0; v < n; v++) if (mark[v]) order.push(v);
   order.sort((a, b) => S[b] - S[a]);
   const kept2 = new Uint8Array(n);
-  for (const v of order) {
+  for (let o = 0; o < order.length; o++) {
+    if ((o & 1023) === 0 && performance.now() - at > STEP_MS) { yield; at = performance.now(); }
+    const v = order[o];
     let closes = false;
     for (let k = tdeg[v]; k < tdeg[v + 1] && !closes; k++) {
       const t = tadj[k]; let others = 0;
@@ -153,6 +178,7 @@ export function creaseDepths(geometry: THREE.BufferGeometry, options: CreaseOpti
   // Drop short runs.
   const run = new Int32Array(n).fill(-1), sizes: number[] = [];
   for (let v = 0; v < n; v++) {
+    if ((v & 1023) === 0 && performance.now() - at > STEP_MS) { yield; at = performance.now(); }
     if (!kept2[v] || run[v] >= 0) continue;
     const id = sizes.length, stack = [v]; run[v] = id; let size2 = 0;
     while (stack.length) { const a = stack.pop()!; size2++; for (let k = degree[a]; k < degree[a + 1]; k++) { const b = adj[k]; if (kept2[b] && run[b] < 0) { run[b] = id; stack.push(b); } } }

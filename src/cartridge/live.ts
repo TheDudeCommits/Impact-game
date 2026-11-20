@@ -36,6 +36,9 @@ export default function impactLive(): LiveGame {
         const root = rt.app!;
         const { boot } = await import('./livegame');
         progress(0.1);
+        // (dude.work round 8, roadmap S2: the duel's chunk's evaluation and the boot's first stretch each in a frame of
+        // their own, not one after the other in the same task)
+        await host.slot?.();
         game = await boot(host, root, progress);
         progress(1);
       } catch (error) {

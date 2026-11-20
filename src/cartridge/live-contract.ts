@@ -46,6 +46,12 @@ export interface LiveHost {
    *  Emit what the game already knows, as it happens, whether or not the visitor plays. A world older than this has no
    *  emit: call it as `host.emit?.(e)`. */
   emit?(e: LiveEvent): void;
+  /** (round 8, 2026-11-21; roadmap S2) Wait for a slot of the world's frame budget (src/core/scheduler.ts): it resolves in
+   *  the task that runs right after a frame has been drawn, with that frame's spare time ahead (a few ms, never in a
+   *  quiet window such as the arrival or a join's glide). A game's mount awaits it between its steps (parse, build,
+   *  compile, upload, the next fighter or ship) so that no step lands in a frame of its own: keep each step under about
+   *  4 ms. A world older than this has no slot: call it as `await host.slot?.()`. */
+  slot?(): Promise<void>;
 }
 
 /**

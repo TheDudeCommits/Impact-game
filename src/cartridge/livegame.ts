@@ -20,6 +20,7 @@ import type { LiveCourt, LiveEvent, LiveHost, LiveStatus, LiveView } from './liv
 import { rt } from './runtime';
 import { RING, RING_BOUNDS, RingCollision, registerRing } from './liveRing';
 import { LiveHud } from './liveHud';
+import { cutoutsWaitFor } from '../ui/hud/cutout';
 import { Likeness, type Worn } from './likeness';
 import { FIGHTERS, loadSettings, type Settings } from '../config';
 import { ArenaSimulation } from '../game/simulation';
@@ -186,6 +187,17 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   settings.quality = host.quality === 'high' ? 'high' : host.quality === 'mid' ? 'medium' : 'low';
   setVfxLevel(settings.vfx);
   const gl = host.renderer;
+  // (dude.work round 8, roadmap S2) the world's frame budget (LiveHost.slot): the mount's heavy steps each wait for a slot
+  // of it, so that none lands in a frame of its own; a world older than round 8 has none, and they run straight on
+  const slot = host.slot ? () => host.slot!() : null;
+  /** A job in steps (a generator), a step a slot. */
+  async function inSteps<T>(steps: Generator<void, T, void>): Promise<T> {
+    for (;;) { if (slot) await slot(); const s = steps.next(); if (s.done) return s.value; }
+  }
+  // (the HUD's cut-out stickers, made off the frame, a pass a slot: cutout.ts)
+  cutoutsWaitFor(slot);
+  /** (dude.work round 8, roadmap S2) Bodies made ahead, in slots, for the snapshot begin() is given (the first set's). */
+  const made = new Map<string, Fighter>();
 
   // ---- the scene: the fighters, their effects and shadows; no stage, no sky, no background
   const scene = new THREE.Scene();
@@ -222,7 +234,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   loadInkImpacts();
   const library = new FighterLibrary();
   const fighters = new Map<string, Fighter>();
+  if (slot) await slot();
   const effects = new CombatEffects(scene);
+  if (slot) await slot();
   const strikeTrails = new StrikeTrails(scene);
   const awakeningEffects = new AwakeningEffects(scene);
   const clashEffects = new ClashEffects(scene);
@@ -241,6 +255,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   input.rumble.scale = settings.vibration;
   const viewKeys = new ViewKeys();
   const targeting = new Targeting(), autoLock = new AutoLock();
+  if (slot) await slot();
   const hud = new LiveHud(root, settings);
   const damageNumbers = new DamageNumbers(root), manga = new MangaImpact(root);
   const cutIn = new CutIn(hud.root);
@@ -368,7 +383,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const have = fighters.get(p.id);
       if (have && have.bodyFighter !== p.fighter) { drop(have); fighters.delete(p.id); }
       if (!fighters.has(p.id)) {
-        const fighter = library.create(p);
+        const ahead = made.get(p.id);
+        made.delete(p.id);
+        const fighter = ahead && ahead.bodyFighter === p.fighter ? ahead : library.create(p);
         skinnedBoundsOn(fighter.group);
         fighters.set(p.id, fighter);
         scene.add(fighter.group);
@@ -402,8 +419,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   }
   function loadLikeness() {
     if (!visitor?.model || likeness) return;
-    void Likeness.load(visitor).then(async loaded => {
+    void Likeness.load(visitor, slot ?? undefined, gl, fn => rt.within(fn)).then(async loaded => {
       likeness = loaded;
+      if (slot) await slot();
       // its materials compiled for the world's picture before anyone walks in; (dude.work round 8) and kept, so that its
       // programs live on for every join (a body worn and let go releases its own), each program's first use paid behind
       // the duel (firstUse), and its programs built again from inside draw() for each kind of picture it may first be worn
@@ -411,6 +429,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const copy = loaded.warm(), only = new THREE.Scene();
       only.add(copy.body);
       likenessWarm = { copy, only, built: new Set() };
+      if (slot) await slot();
       await compile(only);
       await firstUse(only);
       wearMine();
@@ -463,9 +482,13 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     warms.started++;
     // (far off, as FighterLibrary's own warm-up stands them: a body is one of Fighter.drawn for as long as it is kept, and a
     // swing measures its room against the drawn body nearest what it swings at)
-    const body = library.create({ id: 'warm-' + id, name: 'Warmup', fighter: id, x: 1000, y: 0, z: 1000, yaw: 0, hp: 1000, maxHp: 1000, stamina: 100, ultimate: 100,
+    // (dude.work round 8, roadmap S2: its clips worked out a step a slot, its body made in a slot of its own and its rush plan
+    // in the next: 85 to 90 ms of one frame before)
+    await inSteps(library.prebake(id));
+    const body = await inSteps(library.createSteps({ id: 'warm-' + id, name: 'Warmup', fighter: id, x: 1000, y: 0, z: 1000, yaw: 0, hp: 1000, maxHp: 1000, stamina: 100, ultimate: 100,
       action: 'idle', actionStarted: 0, actionDuration: 0, actionTime: 0, target: null, alive: true, isBot: true, grounded: true, guarding: false,
-      cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 } });
+      cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 } }));
+    if (slot) await slot();
     skinnedBoundsOn(body.group);
     const only = new THREE.Scene();
     only.add(body.group);
@@ -847,15 +870,30 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   audio.preload([FIGHT_LINE, VICTORY_LINE, FLAWLESS_LINE]);
   await loaded(first, false);
   progress(0.8);
-  begin(RingSet.open(first));
+  // (dude.work round 8, roadmap S2) with the world's frame budget: each fighter's clips worked out a step a slot
+  // (FighterLibrary.prebake), then each of the first set's bodies made in a slot of its own and its rush plan in the next,
+  // begin() taking them as they are (the two bodies took 260 ms of one frame)
+  const opening = RingSet.open(first);
+  if (slot) {
+    for (const id of new Set(first)) await inSteps(library.prebake(id));
+    for (const p of opening.snapshot?.players ?? []) {
+      if (p.enemy || !library.has(p.fighter)) continue;
+      made.set(p.id, await inSteps(library.createSteps(p)));
+    }
+    await slot();
+  }
+  begin(opening);
   // warm: one body of each fighter, its effects' shared meshes, compiled before the first frame shows them
+  if (slot) await slot();
   rt.within(() => { awakeningEffects.warmup(); clashEffects.warmup(); });
   lens.position.set(0, 6, 16); lens.lookAt(0, 1, 0); lens.updateMatrixWorld();
+  if (slot) await slot();
   await compile();
   awakeningEffects.hideWarmup(); clashEffects.hideWarmup();
   // (dude.work round 8) and the first set's fighters' occlusion-fade twins, which a warmed challenger's hidden proxies cover
   // for the fighters after them; their first use paid a while later, behind the duel
   const twins = twinProxies(fighters.values());
+  if (slot) await slot();
   await compile(twins);
   // (and the first use of every program the duel's scene holds, its hidden effects' too: the ones only the visitor's play
   // draws, his aim, his telegraphs, were compiled here and first used in his join's frame)
@@ -1169,6 +1207,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     },
 
     dispose() {
+      cutoutsWaitFor(null);
       clearInterval(earTimer);
       ring?.dispose(); ring = null;
       clearFighters(); bury(true);
