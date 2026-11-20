@@ -863,10 +863,11 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         if (!ragdolls) { ragdolls = true; void import('../render/Ragdoll').then(m => m.prepareRagdolls()).catch(error => console.warn('Impact live: ragdolls unavailable', error)); }
       }
       // (dude.work round 8, S14) a duel too small to see (under TINY_PX pixels a metre in every picture since the last
-      // frame, or in none for half a second) is drawn as it stands TINY_HZ times a second: its bodies' poses and effects
-      // step then, with the time gathered since; its sim, its rounds and its sets run every frame as ever, and its events
-      // wait in the timeline for the next step (none is lost). Played, or seen any bigger, it steps every frame.
-      const small = TINY_ON && !me && (performance.now() - seenAt > 500 || seenPx < TINY_PX);
+      // frame) is drawn as it stands TINY_HZ times a second: its bodies' poses and effects step then, with the time gathered
+      // since; its sim, its rounds and its sets run every frame as ever, and its events wait in the timeline for the next
+      // step (none is lost). Played, seen any bigger, or run out of view near the visitor (who may turn round, and hears
+      // it), it steps every frame.
+      const small = TINY_ON && !me && performance.now() - seenAt < 500 && seenPx < TINY_PX;
       seenPx = 0;
       stepAcc += rawDt;
       if (small && stepAcc < 1 / TINY_HZ) return;
