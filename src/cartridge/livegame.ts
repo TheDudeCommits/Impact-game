@@ -645,7 +645,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     if (!s || me) return;
     let best: PlayerState | undefined, bd = Infinity;
     for (const p of s.players) { if (!p.alive || p.enemy) continue; const d = Math.hypot(p.x - at.x, p.z - at.z); if (d < bd) { bd = d; best = p; } }
-    if (best) glance = { id: best.id, at: new THREE.Vector3(at.x, 1.6, at.z), t: 0 };
+    if (best) glance = { id: best.id, at: new THREE.Vector3(at.x, at.y + 1.6, at.z), t: 0 };
   }
   /** The glance's head turn, before the fighter's update (its gaze eases toward the point at its own pace). */
   function glancePoint(id: string, state: PlayerState): THREE.Vector3 | undefined {
