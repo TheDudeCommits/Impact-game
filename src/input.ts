@@ -78,6 +78,8 @@ export class Input {
   /** Inside dude.work (src/cartridge/live.ts) the page and its keys are the world's: while the input is off, no key is
    *  the game's (P, Esc and the rest go by untouched). */
   shared=false;
+  /** The browser refused the pointer lock (or has none): clicks attack without it, the view turns by keys. */
+  lockRefused=false;
   constructor(readonly canvas:HTMLCanvasElement) {
     window.addEventListener(BINDINGS_EVENT,()=>this.clear());
     window.addEventListener('keydown',e=>{
@@ -101,7 +103,8 @@ export class Input {
     window.addEventListener('mouseup',e=>{this.keys.delete(`Mouse${e.button}`);if(boundTo('area',`Mouse${e.button}`))this.releaseAim('keyboard');});
     for(const type of ['touchstart','touchend'])window.addEventListener(type,()=>{this.touchedAt=performance.now();},{capture:true,passive:true});
     window.addEventListener('pointerdown',e=>{this.pointerType=e.pointerType||'mouse';},{capture:true,passive:true});
-    document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas)this.clear();});
+    document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas)this.clear();else this.lockRefused=false;});
+    document.addEventListener('pointerlockerror',()=>{this.lockRefused=true;});
     window.addEventListener('blur',()=>{this.focused=false;this.clear();this.rumble.stop(this.actuator);});
     window.addEventListener('focus',()=>{this.focused=true;this.clear();});
     document.addEventListener('visibilitychange',()=>{if(document.hidden){this.clear();this.rumble.stop(this.actuator);}});
@@ -111,8 +114,9 @@ export class Input {
       if(!this.enabled||isCapturingBinding()||this.fromTouch())return;
       this.useMode('keyboard');
       // Only a mouse takes the pointer (a phone has none to take: Chrome refused a tap's with "not valid for pointer
-      // lock"), and a refusal is never an error.
-      if(document.pointerLockElement!==canvas){try{(canvas.requestPointerLock() as unknown as Promise<void>|undefined)?.catch?.(()=>{});}catch{/* the view still turns by keys */}return;}
+      // lock"), and a refusal is never an error. The click that asks for it does nothing else; once a browser has
+      // refused (or has no lock), clicks are attacks again (dude.work round 8: never a mouse that cannot fight).
+      if(document.pointerLockElement!==canvas&&!this.lockRefused&&typeof canvas.requestPointerLock==='function'){try{(canvas.requestPointerLock() as unknown as Promise<void>|undefined)?.catch?.(()=>{this.lockRefused=true;});}catch{this.lockRefused=true;}return;}
       this.keys.add(`Mouse${e.button}`);this.press(`Mouse${e.button}`);
     });
     document.addEventListener('mousemove',e=>{
