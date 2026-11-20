@@ -382,6 +382,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   }
   /** A body of `id` built, compiled and let go before it steps in (FighterLibrary.warmup's job, off the drawn scene). */
   async function warmBody(id: FighterId, pictures?: Set<THREE.Texture>) {
+    warms.started++;
     const body = library.create({ id: 'warm-' + id, name: 'Warmup', fighter: id, x: 0, y: 0, z: 0, yaw: 0, hp: 1000, maxHp: 1000, stamina: 100, ultimate: 100,
       action: 'idle', actionStarted: 0, actionDuration: 0, actionTime: 0, target: null, alive: true, isBot: true, grounded: true, guarding: false,
       cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 } });
@@ -397,7 +398,24 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         for (const k of Object.keys(m)) { const t = m[k] as THREE.Texture | null; if (t?.isTexture && t.image) pictures.add(t); }
       }
     });
-    try { await compile(only); } finally { body.dispose(); }
+    try { await compile(only); } finally { letGo(body, id); }
+  }
+  /** (dude.work round 8, S14) A body built only to be compiled, let go for good, and counted (__impact.warms). Its
+   *  dispose() threw for some fighters' bodies (Kenzo's, with his awakened form) and the throw was swallowed: the body's
+   *  own materials were never disposed, so the cartridge runtime, which keeps whatever the game uploaded until it is
+   *  disposed, kept them, and their shader edits hold the body (its mixer, its rig, its clips' samplers): some 2.5 MB a
+   *  set at the Overlook. Its materials and its mixer are let go whatever its dispose() does. */
+  const warms = { started: 0, built: 0, gone: 0, threw: 0, last: '' };
+  function letGo(body: Fighter, id: FighterId) {
+    warms.built++;
+    try { body.dispose(); warms.gone++; return; }
+    catch (error) { warms.threw++; warms.last = `${id}: ${String((error as Error)?.stack ?? error).slice(0, 300)}`; console.warn('Impact live: a warmed body would not go', id, error); }
+    type Held = { outlineMaterials?: THREE.Material[]; awakenedForm?: Held; mixer: THREE.AnimationMixer; model: THREE.Object3D; group: THREE.Object3D };
+    for (let b: Held | undefined = body as unknown as Held; b; b = b.awakenedForm) {
+      for (const m of b.outlineMaterials ?? []) { try { m.dispose(); } catch { /* gone */ } }
+      try { b.mixer.stopAllAction(); b.mixer.uncacheRoot(b.model); } catch { /* gone */ }
+      b.group.removeFromParent();
+    }
   }
   /** (dude.work round 8, S14) Pictures to put on the GPU, one each frame the duel runs (the challenger's: before, its
    *  first frame in the ring uploaded all of them at once, 20.7 MB in one measure's five seconds). */
@@ -606,7 +624,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   };
   const bodyAt = (id: string | undefined) => { const p = id ? ring?.snapshot?.players.find(q => q.id === id) : undefined; return p ? { x: p.x, y: p.y + 1, z: p.z } : undefined; };
   /** One combat event as the world hears it (applyCombatFrame, each event once). */
+  let castsByMe = 0;
   function moment(event: CombatEvent) {
+    if (me && event.kind === 'cast' && event.actorId === me) castsByMe++;
     if (!emitter) return;
     const at = event.endpoint ?? bodyAt(event.actorId);
     if (event.kind === 'cast' && event.slot === 'ultimate') tell('big', event.actorId, .8, 'ultimate', bodyAt(event.actorId));
@@ -770,6 +790,10 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     /** Tests (dude.work round 8): the visitor's ultimate meter full (the cut-in), and the fighter glancing at him now. */
     charge: () => { const a = me ? ring?.sim.actors.get(me) : undefined; if (a) a.state.ultimate = 100; return !!a; },
     glance: () => glance && { id: glance.id, t: +glance.t.toFixed(2) },
+    /** Tests (dude.work round 8, S14): bodies built only to be compiled, let go, and whose dispose() threw. */
+    warms: () => ({ ...warms }),
+    /** Tests (dude.work round 8, G2): the visitor's casts since the page began (a touch button's attack is one). */
+    casts: () => castsByMe,
     /** Tests: the set decided now (the first seat wins), so the next one comes round. */
     decide: () => { const r = ring; if (r && !r.decided) r.set.forfeit(r.sim, r.set.startedAt === null ? null : SEATS[0]); },
   });
