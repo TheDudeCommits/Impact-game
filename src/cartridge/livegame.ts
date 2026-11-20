@@ -857,7 +857,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   // for the fighters after them; their first use paid a while later, behind the duel
   const twins = twinProxies(fighters.values());
   await compile(twins);
-  setTimeout(() => { void firstUse(twins).then(() => twins.clear()); }, 3000);
+  // (and the first use of every program the duel's scene holds, its hidden effects' too: the ones only the visitor's play
+  // draws, his aim, his telegraphs, were compiled here and first used in his join's frame)
+  setTimeout(() => { void firstUse(twins).then(() => { twins.clear(); return firstUse(scene); }); }, 3000);
   progress(0.95);
   // the visitor's model: after the first set's own files (the duel never waits for it)
   loadLikeness();
