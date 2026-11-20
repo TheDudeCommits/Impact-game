@@ -74,15 +74,19 @@ export class CutIn {
     parent.append(this.element);
   }
   get open() { return !this.element.hidden; }
-  /** Show `move`'s card for `fighter`, keeping off the boxes in `avoid`. */
-  show(fighter: FighterId, move: string, side: CutInSide, avoid: readonly ScreenBox[] = []) {
+  /** Show `move`'s card for `fighter`, keeping off the boxes in `avoid`. `own` (dude.work's live duel): the card of a
+   *  player who is someone else in the fighter's place - their name, their colour on the stroke's edge, and their face in
+   *  an inked panel beside the words. */
+  show(fighter: FighterId, move: string, side: CutInSide, avoid: readonly ScreenBox[] = [], own?: { name: string; face?: string; color?: string }) {
     clearTimeout(this.timer);
     const def = FIGHTERS[fighter];
     this.element.className = `cutin cutin-${side}`;
-    this.element.style.setProperty('--cut-color', def.color);
-    this.element.innerHTML = `<div class="cutin-card"><svg class="cutin-stroke" viewBox="0 0 1000 200" preserveAspectRatio="none" focusable="false"><path class="cutin-edge" d="${STROKE}"/><path class="cutin-ink" d="${STROKE}"/></svg><small></small><b></b></div>`;
+    this.element.style.setProperty('--cut-color', own?.color ?? def.color);
+    const face = own?.face ? '<i class="cutin-face" aria-hidden="true"></i>' : '';
+    this.element.innerHTML = `<div class="cutin-card${face ? ' cutin-faced' : ''}"><svg class="cutin-stroke" viewBox="0 0 1000 200" preserveAspectRatio="none" focusable="false"><path class="cutin-edge" d="${STROKE}"/><path class="cutin-ink" d="${STROKE}"/></svg>${face}<small></small><b></b></div>`;
     const card = this.element.querySelector<HTMLElement>('.cutin-card')!, name = card.querySelector('b')!;
-    card.querySelector('small')!.textContent = def.name;
+    card.querySelector('small')!.textContent = own?.name ?? def.name;
+    if (own?.face) card.querySelector<HTMLElement>('.cutin-face')!.style.setProperty('--face', `url("${own.face.replace(/"/g, '%22')}")`);
     name.textContent = move;
     this.element.hidden = false;
     // A long name ("Carrion Field") is set smaller until it fits the card's widest.
