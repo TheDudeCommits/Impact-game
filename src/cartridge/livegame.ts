@@ -32,6 +32,7 @@ import { Targeting } from '../game/Targeting';
 import { AutoLock } from '../game/autoLock';
 import { rushMove, moveFor, AWAKENINGS } from '../game/awakening';
 import { FighterLibrary, Fighter } from '../render/Fighter';
+import { occlusionTwins } from '../render/OcclusionFade';
 import { FollowCamera, hitTier } from '../render/FollowCamera';
 import { CombatEffects, screenWorth } from '../render/CombatEffects';
 import type { CastEffects } from '../render/castEffects';
@@ -307,7 +308,15 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
 
   function clearFighters() { for (const body of fighters.values()) drop(body); fighters.clear(); }
   /** A body let go (a new round, a new set): the visitor's likeness comes off it first (its geometries are kept). */
-  function drop(body: Fighter) { if (worn?.fighter === body) { worn.remove(); worn = null; } body.dispose(); }
+  function drop(body: Fighter) { if (worn?.fighter === body) { worn.remove(); worn = null; } body.dispose(); dropTwins(body); }
+  /** (dude.work round 8, S14) A body's occlusion-fade twins (render/OcclusionFade.ts: a copy of each of its materials, its
+   *  form's too, with the dither) let go with it. Fighter.dispose leaves them, which in the game's own page is nothing (they
+   *  go with the body); here the cartridge runtime keeps every material the game had three upload until it is disposed,
+   *  and each twin's shader edits hold its body: the body, its mixer, its rig and its clips' samplers stayed for the
+   *  page's life, every round and every warmed challenger (the heap 5 to 20 MB up over eight sets). */
+  function dropTwins(body: Fighter) {
+    for (const { twin } of occlusionTwins(body)) { try { twin.dispose(); } catch { /* gone */ } }
+  }
   function clearFlights() {
     audio.reset(); areaFx.reset(); effects.reset(); castFx?.reset(); awakeningEffects.reset(); clashEffects.reset(); manga.reset();
   }
@@ -353,12 +362,39 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     if (!visitor?.model || likeness) return;
     void Likeness.load(visitor).then(async loaded => {
       likeness = loaded;
-      // its materials compiled for the world's picture before anyone walks in
+      // its materials compiled for the world's picture before anyone walks in; (dude.work round 8) and kept, so that its
+      // programs live on for every join (a body worn and let go releases its own), each program's first use paid behind
+      // the duel (firstUse), and its programs built again from inside draw() for each kind of picture it may first be worn
+      // in (the world's, under its fog; a Plaza screen's, with none): the join's frame builds and asks nothing
       const copy = loaded.warm(), only = new THREE.Scene();
       only.add(copy.body);
-      try { await compile(only); } finally { copy.free(); }
+      likenessWarm = { copy, only, built: new Set() };
+      await compile(only);
+      await firstUse(only);
       wearMine();
     }).catch(error => console.warn('Impact live: the visitor\'s model did not load; they play the fighter as it is', error));
+  }
+  let likenessWarm: { copy: { body: THREE.Object3D; free(): void }; only: THREE.Scene; built: Set<string> } | null = null;
+  /** (dude.work round 8) Each program of what `root` holds used once now, one a breath, once the GPU's process has linked
+   *  it: three's first use of a program (its checks and its look-up of the program's uniforms and attributes) is a run of
+   *  round trips to the GPU's process, each waiting for it to catch up, and it came in the first frame that drew with the
+   *  program: the join's (40 to 70 ms at the visitor's first draw). */
+  async function firstUse(root: THREE.Object3D) {
+    type Program = { isReady?(): boolean; getUniforms?(): unknown; getAttributes?(): unknown };
+    const programs = new Set<Program>();
+    root.traverse(o => {
+      for (const m of [(o as THREE.Mesh).material].flat() as (THREE.Material | undefined)[]) {
+        if (!m) continue;
+        const props = gl.properties.get(m) as { programs?: Map<string, Program>; currentProgram?: Program };
+        for (const p of props.programs?.values() ?? []) programs.add(p);
+        if (props.currentProgram) programs.add(props.currentProgram);
+      }
+    });
+    for (const p of programs) {
+      for (let k = 0; k < 50 && p.isReady && !p.isReady(); k++) await new Promise(r => setTimeout(r, 20));
+      try { rt.within(() => { p.getUniforms?.(); p.getAttributes?.(); }); } catch { /* drawn later */ }
+      await new Promise(r => setTimeout(r, 16));
+    }
   }
 
   /** The materials of what the scene holds (or of `only`, lit as the scene is), compiled for the world's picture (a
@@ -398,16 +434,23 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         for (const k of Object.keys(m)) { const t = m[k] as THREE.Texture | null; if (t?.isTexture && t.image) pictures.add(t); }
       }
     });
-    try { await compile(only); } finally { letGo(body, id); }
+    // (dude.work round 8, S14) kept, hidden and in no scene, until it steps in: its materials keep their programs alive for
+    // the body that will (a body let go releases its programs, and the challenger's first frame built them again), and
+    // its programs' first use is paid now, behind the set
+    try { await compile(only); await firstUse(only); }
+    catch (error) { letGo(body, id); throw error; }
+    if (keptWarm) letGo(keptWarm.body, keptWarm.id);
+    keptWarm = { id, body };
   }
-  /** (dude.work round 8, S14) A body built only to be compiled, let go for good, and counted (__impact.warms). Its
-   *  dispose() threw for some fighters' bodies (Kenzo's, with his awakened form) and the throw was swallowed: the body's
-   *  own materials were never disposed, so the cartridge runtime, which keeps whatever the game uploaded until it is
-   *  disposed, kept them, and their shader edits hold the body (its mixer, its rig, its clips' samplers): some 2.5 MB a
-   *  set at the Overlook. Its materials and its mixer are let go whatever its dispose() does. */
+  /** The challenger's warmed body, kept until it has stepped in (begin) or another is chosen. */
+  let keptWarm: { id: FighterId; body: Fighter } | null = null;
+  /** (dude.work round 8, S14) A body built only to be compiled, let go for good, its occlusion twins with it (dropTwins),
+   *  and counted (__impact.warms); its materials and its mixer are let go even if its dispose() throws (a throw here was
+   *  swallowed). */
   const warms = { started: 0, built: 0, gone: 0, threw: 0, last: '' };
   function letGo(body: Fighter, id: FighterId) {
     warms.built++;
+    dropTwins(body);
     try { body.dispose(); warms.gone++; return; }
     catch (error) { warms.threw++; warms.last = `${id}: ${String((error as Error)?.stack ?? error).slice(0, 300)}`; console.warn('Impact live: a warmed body would not go', id, error); }
     type Held = { outlineMaterials?: THREE.Material[]; awakenedForm?: Held; mixer: THREE.AnimationMixer; model: THREE.Object3D; group: THREE.Object3D };
@@ -463,6 +506,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     targeting.reset(); autoLock.reset(); targetId = null;
     if (me) next.seat(me, true);
     if (next.snapshot) { timeline.push(next.snapshot, performance.now()); bodiesFor(next.snapshot); }
+    // (the challenger's warmed body, once its own body stands in the ring and holds the same programs)
+    if (keptWarm && next.pair.includes(keptWarm.id)) { letGo(keptWarm.body, keptWarm.id); keptWarm = null; }
     // only the two in the ring (and the one coming) are kept
     const keep = new Set<FighterId>([...next.pair, ...(challenger ? [challenger] : [])]);
     library.evict(keep, keep.size);
@@ -977,6 +1022,11 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       stepped = false;
       scene.fog = view.fog;
       gl.shadowMap.enabled = shadow && shadows;
+      // (dude.work round 8) the visitor's programs for this kind of picture, built from here, as it will draw him
+      if (likenessWarm && !me) {
+        const kind = view.fog ? 'fog' : 'plain', warm = likenessWarm;
+        if (!warm.built.has(kind)) { warm.built.add(kind); void Promise.resolve(gl.compileAsync(warm.only, view.camera, scene)).then(() => firstUse(warm.only)).catch(() => undefined); }
+      }
       // (dude.work round 5) the effects' pools with nothing in them left out of the draw: an InstancedMesh at count 0 (the
       // debris, steam, flames, auras, sparks and cores at rest, some twenty) draws nothing, but three still binds its program
       // and uniforms and issues a draw of no instances for each, every frame the ring is in view, the Overlook's and the
@@ -1071,6 +1121,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       ring?.dispose(); ring = null;
       clearFighters();
       worn?.remove(); worn = null; likeness = null;
+      likenessWarm?.copy.free(); likenessWarm = null;
+      if (keptWarm) { letGo(keptWarm.body, keptWarm.id); keptWarm = null; }
       for (const each of [effects, castFx, awakeningEffects, clashEffects, areaFx]) { try { each?.dispose(); } catch (error) { console.warn('Impact live: dispose', error); } }
       try { audio.dispose(); } catch { /* gone */ }
       cutIn.hide(); hud.dispose(); manga.dispose?.();
