@@ -1005,6 +1005,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       unwear();
       hud.likeness = null;
       input.enabled = false; input.clear(); input.aim.cancel();
+      // (the touch controls put away at once: a touch on the world is the world's again)
+      touch?.update(false, true);
       targeting.reset(); targetId = null;
       cutIn.hide(); vsSplash.skip(); letterbox.set(0); hud.leave(); manga.reset();
       effects.localId = ''; SIGNATURE.localId = '';
