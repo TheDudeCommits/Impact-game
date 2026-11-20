@@ -48,6 +48,7 @@ export default function impactLive(): LiveGame {
     join(at, yaw) { return rt.within(() => game?.join(at, yaw) ?? false); },
     leave() { return rt.within(() => game?.leave() ?? zero()); },
     you() { return rt.within(() => game?.you() ?? null); },
+    notice(at) { rt.within(() => game?.notice(at)); },
     resize(w, h) { rt.within(() => game?.resize(w, h)); },
     status() { return game?.status() ?? null; },
     unmount() {

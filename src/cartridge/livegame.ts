@@ -16,7 +16,7 @@
  * the picture), no menus, nothing online.
  */
 import * as THREE from 'three';
-import type { LiveCourt, LiveHost, LiveStatus, LiveView } from './live-contract';
+import type { LiveCourt, LiveEvent, LiveHost, LiveStatus, LiveView } from './live-contract';
 import { rt } from './runtime';
 import { RING, RING_BOUNDS, RingCollision, registerRing } from './liveRing';
 import { LiveHud } from './liveHud';
@@ -58,6 +58,7 @@ import { HOME_VOICES } from '../audio/HomeVoice';
 import { UI_SFX } from '../originals/sfx';
 import { displayMove } from '../originals/apply';
 import { Input } from '../input';
+import type { TouchControls } from '../input/touch';
 import { pulseFor } from '../input/rumble';
 import { DamageNumbers } from '../ui/DamageNumbers';
 import { MangaImpact } from '../ui/MangaImpact';
@@ -89,6 +90,8 @@ const VICTORY_LINE = '/assets/audio/survival/announcer-victory.m4a', FLAWLESS_LI
 /** main.ts: how long after an exchange of blows the chase camera's combo shot holds. */
 const LOCK_EXCHANGE_MS = 1100;
 const REJECTIONS: Record<string, string> = { cooldown: 'NOT READY', stamina: 'NO STAMINA', 'ultimate-meter': 'ULTIMATE NOT CHARGED' };
+/** dude.work round 8 (G2): the touch controls' pause and emote buttons left out (the world's Leave pill stands for pause). */
+const TOUCH_CSS = '[data-game="impact"] .touch-controls :is([data-tc="pause"],[data-tc="emote"]),[data-game="impact"] .touch-controls .tc-wheel{display:none!important}';
 
 export interface Running {
   readonly court: LiveCourt;
@@ -98,6 +101,7 @@ export interface Running {
   join(at: THREE.Vector3, yaw: number): boolean;
   leave(): { at: THREE.Vector3; yaw: number };
   you(): THREE.Vector3 | null;
+  notice(at: THREE.Vector3 | null): void;
   resize(w: number, h: number): void;
   status(): LiveStatus | null;
   dispose(): void;
@@ -428,6 +432,13 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     hud.notify(targeting.locked ? 'LOCKED ON' : 'LOCK RELEASED', 0.7);
   };
   input.onModeChange = mode => hud.setInput(mode === 'controller' ? 'controller' : mode === 'touch' ? 'touch' : 'keyboard', input.family);
+  // (dude.work round 8, G2) the game's own touch controls on a touch-first device (input/touch.ts: the stick where the
+  // left thumb lands, the fan of buttons with their moves' art and cooldowns, LOCK, a drag of the right thumb to look),
+  // shown only while the visitor plays and asking for landscape as the game does; the world's Leave pill is the way out
+  // (the controls' pause button is left out, and the live duel has no emote wheel)
+  // (its code comes only to a touch-first device: a chunk of its own)
+  const touch: TouchControls | null = host.touch ? new (await import('../input/touch')).TouchControls(input, root) : null;
+  if (touch) { rt.addCss(TOUCH_CSS); if (input.mode === 'touch') input.onModeChange('touch'); }
   input.onView = () => false;
   input.onInteract = () => false;
 
@@ -489,6 +500,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     for (const event of snapshot.events) {
       if (event.id <= lastEvent) continue;
       lastEvent = event.id;
+      moment(event);
       if (me) { const pulse = pulseFor(event, me, () => false); if (pulse) input.feel(pulse); }
       if (event.actorId === me && event.kind === 'cast' && event.move && event.slot !== 'ultimate') notify(event.actorId, displayMove(event.fighter, event.move).toUpperCase(), 1.1);
       if (event.kind === 'awaken' && event.move && event.actorId === me) followCam.impact(.4);
@@ -553,6 +565,82 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     if (snapshot.status !== 'finished') victoryFor = null;
   }
 
+  // ---- (dude.work round 8, G4) the world hears the duel (LiveHost.emit): its moments told once each, as they happen,
+  // whether or not the visitor plays - a set's first bell, an ultimate cast, an awakening, a parry, a broken guard, a
+  // counter, a long string, a knockout, a round and a set decided. `side` is the seat it was for (status().sides' order).
+  const emitter = (host as LiveHost & { emit?: (e: LiveEvent) => void }).emit;
+  const sideOf = (id: string | undefined): 0 | 1 | undefined => { const k = SEATS.indexOf(id as typeof SEATS[number]); return k === 0 ? 0 : k === 1 ? 1 : undefined; };
+  const tell = (kind: LiveEvent['kind'], id: string | undefined, weight: number, label: string, at?: { x: number; y: number; z: number }) => {
+    if (!emitter) return;
+    try { emitter.call(host, { kind, side: sideOf(id), weight, label, you: !!me && id === me, ...(at ? { at: { x: at.x, y: at.y, z: at.z } } : {}) }); }
+    catch (error) { console.warn('Impact live: emit', error); }
+  };
+  const bodyAt = (id: string | undefined) => { const p = id ? ring?.snapshot?.players.find(q => q.id === id) : undefined; return p ? { x: p.x, y: p.y + 1, z: p.z } : undefined; };
+  /** One combat event as the world hears it (applyCombatFrame, each event once). */
+  function moment(event: CombatEvent) {
+    if (!emitter) return;
+    const at = event.endpoint ?? bodyAt(event.actorId);
+    if (event.kind === 'cast' && event.slot === 'ultimate') tell('big', event.actorId, .8, 'ultimate', bodyAt(event.actorId));
+    else if (event.kind === 'awaken' && event.move) tell('big', event.actorId, .7, 'awakening', bodyAt(event.actorId));
+    else if (event.kind === 'just-guard') tell('big', event.targetId, .5, 'parry', at);
+    else if (event.kind === 'guard-break') tell('big', event.actorId, .55, 'guard break', at);
+    else if (event.kind === 'counter') tell('big', event.actorId, .5, 'counter', at);
+    else if (event.kind === 'hit' && (event.combo === 5 || event.combo === 8 || event.combo === 12)) tell('big', event.actorId, event.combo === 5 ? .45 : event.combo === 8 ? .65 : .85, `${event.combo}-hit combo`, at);
+    else if (event.kind === 'eliminated') tell('knockout', event.actorId, 1, 'K.O.', bodyAt(event.targetId));
+  }
+  /** A round's and a set's beginning and end, from the duel's own view of itself (each once). */
+  let toldRound = '', toldStart = '';
+  function rounds(snapshot: GameSnapshot) {
+    const duel = snapshot.duel;
+    if (!emitter || !duel) return;
+    const set = `${epoch}:${duel.set}`, key = `${set}:${duel.round}:${duel.phase}`;
+    if (snapshot.status === 'active' && duel.phase === 'playing' && duel.round === 1 && toldStart !== set) { toldStart = set; tell('start', undefined, .4, 'first bell'); }
+    if ((duel.phase === 'interval' || duel.phase === 'complete') && toldRound !== key) {
+      toldRound = key;
+      const won = duel.roundWinner ?? undefined;
+      tell('round', won, duel.phase === 'complete' ? .9 : .6, `round ${duel.phase === 'complete' ? duel.round : duel.round - 1}`);
+      if (duel.phase === 'complete') tell('end', duel.winner ?? undefined, 1, 'set won');
+    }
+  }
+
+  // ---- (dude.work round 8, G7) the visitor coming (LiveGame.notice): the fighter nearest him looks over at him and nods,
+  // whenever its own fight lets it look anywhere (Impact's own gaze, Fighter.aimHead, which turns a head only between
+  // blows: idle, walking, running, dashing or guarding), and goes back to its opponent. The fight never waits for it.
+  const GLANCE = 2.2, NOD_AT = .55, NOD_FOR = .5, NOD = .2;
+  const AIMS = ['idle', 'run', 'dash', 'guard', 'walk'];
+  let glance: { id: string; at: THREE.Vector3; t: number } | null = null;
+  const glanceAt = new THREE.Vector3(), nodAxis = new THREE.Vector3(), nodLook = new THREE.Vector3(), nodQ = new THREE.Quaternion(), nodP = new THREE.Quaternion(), nodPi = new THREE.Quaternion();
+  function noticed(at: THREE.Vector3 | null) {
+    if (!at) return;
+    const s = ring?.snapshot;
+    if (!s || me) return;
+    let best: PlayerState | undefined, bd = Infinity;
+    for (const p of s.players) { if (!p.alive || p.enemy) continue; const d = Math.hypot(p.x - at.x, p.z - at.z); if (d < bd) { bd = d; best = p; } }
+    if (best) glance = { id: best.id, at: new THREE.Vector3(at.x, 1.6, at.z), t: 0 };
+  }
+  /** The glance's head turn, before the fighter's update (its gaze eases toward the point at its own pace). */
+  function glancePoint(id: string, state: PlayerState): THREE.Vector3 | undefined {
+    if (!glance || glance.id !== id || me || glance.t > GLANCE || !AIMS.includes(state.action)) return undefined;
+    return glanceAt.copy(glance.at);
+  }
+  /** The nod, after the fighter's update: the head dips toward the visitor and comes up again. */
+  function nod(f: Fighter, dt: number) {
+    if (!glance) return;
+    glance.t += dt;
+    if (glance.t > GLANCE + 1) { glance = null; return; }
+    const u = (glance.t - NOD_AT) / NOD_FOR;
+    if (u <= 0 || u >= 1 || !AIMS.includes(f.state.action)) return;
+    const head = f.drawnJoint('Head');
+    if (!head?.parent) return;
+    nodLook.copy(glance.at).sub(f.group.position).setY(0);
+    if (nodLook.lengthSq() < 1e-6) return;
+    nodAxis.crossVectors(THREE.Object3D.DEFAULT_UP, nodLook.normalize()).normalize();
+    nodQ.setFromAxisAngle(nodAxis, NOD * Math.sin(Math.PI * u));
+    head.parent.getWorldQuaternion(nodP);
+    head.quaternion.premultiply(nodQ.premultiply(nodPi.copy(nodP).invert()).multiply(nodP));
+    head.updateMatrixWorld(true);
+  }
+
   /** The ultimate's and the awakening's cut-ins (main.ts cutIns), for the visitor. */
   const boxPoint = new THREE.Vector3(), boxRight = new THREE.Vector3();
   function screenBox(f: Fighter) {
@@ -577,9 +665,10 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       cutInSeen.set(p.id, key);
       const avoid = [];
       for (const id of new Set([p.id, p.target, me])) { const body = id ? fighters.get(id) : undefined, box = body ? screenBox(body) : undefined; if (box) avoid.push(box); }
-      cutIn.show(p.fighter, displayMove(p.fighter, awakening ? AWAKENINGS[p.fighter].name : slotNames(p, 'ultimate')?.name ?? moveFor(p.fighter, 'ultimate', !!p.awakened).name), side, avoid);
-      // (the visitor's card carries their name: the fighter is them now)
-      if (p.id === me && visitor) { const who = cutIn.element.querySelector('.cutin-card small'); if (who) who.textContent = visitor.name; }
+      // (dude.work round 8, G6) the visitor's own card is his: his name, his face (his portrait, the world's) in the card's
+      // inked panel, his colour (the red of his jacket's emblem) on the stroke's edge; the move is the kit's he plays
+      const own = p.id === me && visitor ? { name: visitor.name, face: visitor.pictures?.portrait, color: visitor.outfit?.jacket?.emblem } : undefined;
+      cutIn.show(p.fighter, displayMove(p.fighter, awakening ? AWAKENINGS[p.fighter].name : slotNames(p, 'ultimate')?.name ?? moveFor(p.fighter, 'ultimate', !!p.awakened).name), side, avoid, own);
     }
   }
 
@@ -649,6 +738,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     },
     /** Tests (dude.work round 5): whether the ring is heard now (its sound decoded), by the world's lens. */
     heard: () => heard,
+    /** Tests (dude.work round 8): the visitor's ultimate meter full (the cut-in), and the fighter glancing at him now. */
+    charge: () => { const a = me ? ring?.sim.actors.get(me) : undefined; if (a) a.state.ultimate = 100; return !!a; },
+    glance: () => glance && { id: glance.id, t: +glance.t.toFixed(2) },
     /** Tests: the set decided now (the first seat wins), so the next one comes round. */
     decide: () => { const r = ring; if (r && !r.decided) r.set.forfeit(r.sim, r.set.startedAt === null ? null : SEATS[0]); },
   });
@@ -725,6 +817,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const serverTime = presented!.time;
       applyCombatFrame(snapshot);
       cinematics(snapshot);
+      rounds(snapshot);
       cutIns(snapshot);
       const view = lensOf();
       viewProjection.multiplyMatrices(view.projectionMatrix, view.matrixWorldInverse);
@@ -736,9 +829,12 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         const opponent = snapshot.players.find(o => o.id === (p.id === me ? targetId : p.target)) ?? snapshot.players.find(o => o.id !== p.id);
         fighter.targetDistance = opponent ? Math.hypot(opponent.x - p.x, opponent.z - p.z) : Infinity;
         fighter.targetPoint = opponent ? (fighter.targetPoint ?? new THREE.Vector3()).set(opponent.x, opponent.y + 1.45, opponent.z) : undefined;
+        const looksAt = glancePoint(p.id, p);
+        if (looksAt) fighter.targetPoint = (fighter.targetPoint ?? new THREE.Vector3()).copy(looksAt);
         fighter.cameraPoint = view.position;
         fighter.unseen = p.id !== me && p.id !== targetId && !fighter.inView(frustum, view.position);
         fighter.update(worldDt, p, true, rawDt);
+        if (glance?.id === p.id) nod(fighter, worldDt);
         if (p.id === me) self = p;
       }
       shownSelf = self;
@@ -767,6 +863,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
           input.aim.follow(self, input.yaw, lock, move.range, move.radius, areaReady(self, snapshot.serverTime));
           const target = snapshot.players.find(p => p.id === targetId);
           if (now - lastHud > 70) { hud.update(snapshot, self, target); lastHud = now; }
+          touch?.meters(self, snapshot.serverTime, undefined, snapshot.players);
           if (target) {
             const drawn = fighters.get(target.id);
             if (drawn) drawn.visualCenter(marker); else marker.set(target.x, target.y + 1.1, target.z);
@@ -785,6 +882,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       strikeTrails.update(worldDt, steady, view);
       clashEffects.update(serverTime, view, settings.effects);
       if (me) { hud.tick(); damageNumbers.update(camera); manga.update(camera); }
+      touch?.update(input.enabled, true);
       letterbox.set(me ? followCam.cuts.bars : 0);
       // the drawn bodies' bones once a draw (skeletonOnce's rule, on these bodies alone)
     },
@@ -831,6 +929,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       r.freshen(me);
       input.clear();
       input.enabled = true;
+      // (dude.work round 8, G8) the mouse looks once the pointer is locked: the first click on the picture asks for the
+      // lock and does nothing else (Input's own rule); a browser that refused it on the last visit is asked again
+      input.lockRefused = false;
       targeting.reset(); autoLock.reset(); targetId = null;
       input.yaw = best.yaw; input.pitch = .02;
       followCam.reset();
@@ -866,6 +967,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const p = me ? ring?.snapshot?.players.find(q => q.id === me) : undefined;
       return p ? new THREE.Vector3(p.x, p.y, p.z) : null;
     },
+
+    notice(at: THREE.Vector3 | null) { noticed(at); },
 
     resize(w: number, h: number) {
       camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix();
