@@ -22,6 +22,7 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import type { Fighter } from '../render/Fighter';
+import type { LiveLikeness } from './live-contract';
 import { applyHitFlash, applyInkShell, applyLimbSmear, applyToonShading, headWeights, limbWeights } from '../render/look/toonShading';
 import { addShaderPatch } from '../render/look/shaderPatch';
 import { FIGHTERS } from '../config';
@@ -301,7 +302,7 @@ function dress(body: THREE.Object3D, looks: Looks, outlineWidth: number, atlas: 
 }
 
 /** The model's expression atlas, from its manifest (the world reads the same: src/avatar/index.ts), if it has one. */
-function faceAtlas(gltf: GLTF): FaceAtlas | null {
+function faceAtlas(gltf: { scene: THREE.Object3D; userData?: unknown }): FaceAtlas | null {
   type Manifest = { avatar?: { face?: Partial<FaceAtlas> } };
   const face = ((gltf.userData as Manifest | undefined)?.avatar ?? (gltf.scene.userData as Manifest | undefined)?.avatar)?.face;
   if (!face || !Array.isArray(face.cells) || !face.cells.length) return null;
@@ -314,12 +315,22 @@ function faceAtlas(gltf: GLTF): FaceAtlas | null {
 export class Likeness {
   private constructor(private readonly template: THREE.Object3D, private readonly height: number, private readonly atlas: FaceAtlas | null) {}
 
-  /** Fetch and prepare the visitor's model (the world serves it; the browser usually has it from the world already). */
-  static async load(url: string): Promise<Likeness> {
-    const loader = new GLTFLoader();
-    loader.setMeshoptDecoder(MeshoptDecoder);
-    const gltf: GLTF = await loader.loadAsync(url);
-    const template = gltf.scene;
+  /** Prepare the visitor's model: the world's own parsed copy (host.visitor.gltf, dude.work round 8: one download and one
+   *  GPU copy of his 4096² picture a visit, shared with the world's avatar), else fetched from `model` (an older world). */
+  static async load(who: Pick<LiveLikeness, 'model' | 'gltf'>): Promise<Likeness> {
+    let shared: { scene: THREE.Group; animations: THREE.AnimationClip[]; userData: Record<string, unknown> } | null = null;
+    if (who.gltf) { try { shared = await who.gltf(); } catch (error) { console.warn('Impact live: the world\'s copy of the visitor\'s model failed; fetching it', error); } }
+    let gltf: { scene: THREE.Group; userData?: unknown };
+    if (shared) gltf = shared;
+    else {
+      const loader = new GLTFLoader();
+      loader.setMeshoptDecoder(MeshoptDecoder);
+      gltf = await loader.loadAsync(who.model) as GLTF;
+    }
+    // (the world's copy is its avatar's too: the template is a clone of it, its geometries, materials and pictures the
+    // world's, never changed; the look's own attributes below are added beside each geometry's, which the contract allows
+    // and the world's avatar never reads)
+    const template = shared ? cloneSkinned(gltf.scene) : gltf.scene;
     // what the fighters' look reads off every geometry it draws (Fighter.ts: the face's softer terminator, the four
     // striking limbs for the smear), worked out once on the template (its copies share the geometries)
     let head: THREE.Bone | undefined;

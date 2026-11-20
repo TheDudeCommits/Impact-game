@@ -315,7 +315,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   }
 
   // ---- the visitor's likeness (./likeness.ts): their own model, worn by the fighter they take over
-  /** Loaded after the first set's files, and kept (the world serves it; its browser usually has it already). */
+  /** Loaded after the first set's files, and kept: the world's own parsed copy (host.visitor.gltf, dude.work round 8),
+   *  else fetched (the world serves it; its browser usually has it already). */
   let likeness: Likeness | null = null;
   let worn: Worn | null = null;
   const visitor = host.visitor;
@@ -337,7 +338,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   }
   function loadLikeness() {
     if (!visitor?.model || likeness) return;
-    void Likeness.load(visitor.model).then(async loaded => {
+    void Likeness.load(visitor).then(async loaded => {
       likeness = loaded;
       // its materials compiled for the world's picture before anyone walks in
       const copy = loaded.warm(), only = new THREE.Scene();
