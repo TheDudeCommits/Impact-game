@@ -38,6 +38,64 @@ export interface LiveHost {
   /** Who walks in. The player the visitor takes over becomes them, drawn in the game's own style; leave() gives the
    *  bot its own look back. */
   readonly visitor: LiveLikeness;
+  /** (round 5, 2026-11-20) Where the world's lens is and how it moves, told every frame the world runs, whether the game is
+   *  drawn, running or resting. A world older than this gives undefined (judge from draw() as before). */
+  readonly lens?: LiveLens;
+  /** (round 8, 2026-11-20) Tell the world a moment of the match (LiveEvent): the crowd round the venue cheers or groans and
+   *  turns to look, birds lift off the roofs, a firework goes up at a match's end, the cheer carries across the island.
+   *  Emit what the game already knows, as it happens, whether or not the visitor plays. A world older than this has no
+   *  emit: call it as `host.emit?.(e)`. */
+  emit?(e: LiveEvent): void;
+}
+
+/**
+ * (round 8, 2026-11-20) A moment of the match the world answers (LiveHost.emit). JSON-safe; every field but `kind` is
+ * optional. Emit each one once, when it happens (not every frame while it shows).
+ */
+export interface LiveEvent {
+  /** 'score': a point, a basket, a goal, the lead taken in a race. 'big': a big play that isn't a score (a block, a parry,
+   *  a long combo, a near miss, an ultimate). 'miss': an airball, a whiff, a shot off the post (the crowd groans).
+   *  'knockout': someone down (a K.O., a ship sunk, a pod wrecked, a death). 'round': a round, a half or a lap ended.
+   *  'boss': a boss came on or went down. 'start': a match started. 'end': a match ended (`side` won). */
+  kind: 'score' | 'big' | 'miss' | 'knockout' | 'round' | 'boss' | 'start' | 'end';
+  /** The side it was for (0 or 1, in the order of status().sides), when it has one. */
+  side?: 0 | 1;
+  /** How big a moment, 0..1: a free throw 0.3, a dunk 0.8, a knockout or match point 1 (default 0.5). */
+  weight?: number;
+  /** The visitor's own player did it. */
+  you?: boolean;
+  /** Where it happened, court space (the crowd turns toward it; a burst goes up there). Default: the court's centre. */
+  at?: { x: number; y: number; z: number };
+  /** A word or two for logs and captions: "dunk", "goal", "K.O.", "lap 3". */
+  label?: string;
+}
+
+/**
+ * The world's lens as one game sees it (round 5, 2026-11-20). draw() shows the lens only while the game is in view: out
+ * of view (behind the visitor's back, behind the Plaza's dome, or resting far off) a game saw nothing, judged the visitor
+ * near while the world kept its match running, and began its sound work under a flight past it with its court behind
+ * the lens. This is told for every live game every frame, in view or not: read it wherever the game judges where the
+ * visitor is or how they move (update, a timer). Values are this frame's, before the camera moves for it.
+ */
+export interface LiveLens {
+  /** The lens in court space: the game's own units, the court's centre at the origin, y up. (A screen game: from its
+   *  screen's foot, world metres.) */
+  readonly at: THREE.Vector3;
+  /** How far the lens is from the court's centre (court units). */
+  readonly distance: number;
+  /** How fast it moves (court units a second), judged over a quarter second or more. A cut (a teleport, the map's travel,
+   *  the camera taken into a game) is no motion. */
+  readonly speed: number;
+  /** The visitor is flying: in flight (Space held), or the lens moving faster than anyone runs or slides (a camera
+   *  flight, the fly-in). A flight passes; it is no arrival, and no time for heavy work. */
+  readonly flying: boolean;
+  /** performance.now() of the frame it was last told (a stale one: the world's frames have stopped). */
+  readonly time: number;
+  /** Where the visitor stands, in the same court space (their avatar's feet; while they play a game, where they will stand
+   *  again), and how far that is from the court's centre. Behind the title the lens flies round the island while the
+   *  visitor waits at the Overlook's rail: a game near where they will arrive judges by the nearer of the two. */
+  readonly visitor: THREE.Vector3;
+  readonly visitorDistance: number;
 }
 
 /**
@@ -61,14 +119,16 @@ export interface LiveLikeness {
   /** A cheerful face: a friendly closed smile, never a scowl. */
   mood: 'cheerful';
   hair: {
-    /** Tight curls piled on top and over the brow, the sides and back faded short (a skin fade at the bottom). */
-    style: 'curly-top-fade';
-    /** The curls: silver. */
+    /** The cut. 'tousled-curls' (since 2026-11-19): medium-length tousled curly waves swept back and up with soft volume,
+     *  a couple of loose locks over the brow, the sides and back full and curly over the ears and down to the nape, no
+     *  fade. 'curly-top-fade' (before): tight curls piled on top, the sides and back faded short into the skin. */
+    style: 'tousled-curls' | 'curly-top-fade';
+    /** The curls: silver-platinum. */
     color: string;
     /** Deep between the curls. */
     shade: string;
-    /** The faded sides, where they start (they fade into the skin below). */
-    fade: string;
+    /** The faded sides, where they start ('curly-top-fade' only). */
+    fade?: string;
   };
   outfit: {
     /** A zip-up bomber, worn open over the tee, with a shirt collar and ribbed cuffs and hem. */
@@ -108,6 +168,14 @@ export interface LiveLikeness {
    *  Tripo skeleton names (Hip, Spine01, Head, L_Upperarm...). For a game whose characters are full-size people: it
    *  wears the game's own materials and plays the game's own animations, retargeted. */
   model: string;
+  /** (round 8, 2026-11-20; roadmap S11) The world's own copy of `model`, fetched and parsed once for the visitor's avatar:
+   *  what GLTFLoader gives for it (scene, animations, and userData with its manifest). Take the model from here rather
+   *  than loading `model` again (each copy was 14 to 21 MB of download and parse and a 4096² texture on the GPU, some
+   *  85 MB). It is shared with the world's avatar: clone it (SkeletonUtils.clone) and never dispose, re-parent or change
+   *  what it holds. A material of the game's own may use its textures as they are (never change their settings); a
+   *  geometry may take attributes of the game's own beside its own (never change those it has: one to change, the game
+   *  clones). A world older than this has none: load `model`. */
+  gltf?: () => Promise<{ scene: THREE.Group; animations: THREE.AnimationClip[]; userData: Record<string, unknown> }>;
 }
 
 /** One draw of the game into the world's picture. */
@@ -121,6 +189,16 @@ export interface LiveView {
   /** The world's light, for a game that follows it: 0 at night .. 1 at full day, and the sun's direction (scene space). */
   readonly daylight: number;
   readonly sunDir: THREE.Vector3;
+  /**
+   * How big the game is in this picture (2026-11-19): the pixels of `target` that one metre of the court spans (court
+   * units, the game's own metres) where the game's floor comes nearest the camera (its court a margin wider, or its
+   * `area`). A level-of-detail hint: hundreds when the visitor stands on the court, about 4 for the Courts seen from the
+   * Overlook. A game may leave out, while it is small, what can't be told apart at that size: its own shadow maps (or
+   * draw them less often), outline shells under a pixel thick, props and effects of a pixel or two. It draws everything
+   * as before above a size it chose, and puts things back as soon as it grows again (the visitor walks up, or plays).
+   * The world passes it in every draw and feed; a game built against an older world gets undefined: draw everything.
+   */
+  readonly pxPerMetre?: number;
 }
 
 /** The court: the game's playing surface. Metres, y up, the surface's centre at the origin. */
@@ -160,12 +238,33 @@ export interface LiveGame {
   leave(): { at: THREE.Vector3; yaw: number };
   /** Where the visitor's player is now (court space; null when nobody plays): the world lights them up as they turn into it. */
   you?(): THREE.Vector3 | null;
+  /** (round 8, 2026-11-20) The visitor is coming (`at`: where they stand, court space) or has gone again (null). The world
+   *  calls it once as they come within NOTICE_IN (12 m) of the court's edge, and with null once they are NOTICE_OUT (22 m)
+   *  clear, fly off, or join. Acknowledge them the game's own way: the nearest bot looks up and waves, the Knight salutes,
+   *  the ship sounds its horn. Never stop the match for it. Optional. */
+  notice?(at: THREE.Vector3 | null): void;
   /** The page changed size (CSS pixels) or pixel ratio: size the HUD and the camera's aspect, never the renderer. */
   resize(width: number, height: number, dpr: number): void;
   /** The game is put away. Free everything it made: geometries, materials, textures, render targets, workers, timers,
    *  listeners, audio nodes, DOM, styles, window globals, and any change to three's shared state. */
   unmount(): void;
   status?(): LiveStatus | null;
+  /**
+   * A 2D game plays on one of the Plaza's screens instead of standing in the world (2026-11-19): it draws its own picture,
+   * through its own camera, into the screen's target; walking up into the screen hands the visitor a player (join), the
+   * world's camera filling the frame with the screen while the game's own controls, HUD (`host.ui`) and sound carry them;
+   * Esc steps them back out (leave). For such a game `court` and `camera` are unused: give a 1 x 1 court at the origin.
+   * While the visitor plays, the world puts the screen's place on the page on `host.ui` as the CSS properties
+   * --dw-screen-left, --dw-screen-top, --dw-screen-width and --dw-screen-height (px), so a HUD that frames the game's
+   * picture (Cell Hell's spreadsheet window) can lie exactly on the screen.
+   */
+  screen?: {
+    /** The picture's size in pixels while the visitor plays (about 16:9: the world sizes the screen's target to it; the
+     *  screen's size on the page at the world's pixel ratio is sharp). Read every frame: it may change with the page. */
+    readonly width: number; readonly height: number;
+    /** Draw the game's picture into `target` (the world cleared it). Put back whatever renderer state it changes. */
+    draw(target: THREE.WebGLRenderTarget): void;
+  };
 }
 
 /** What a live module (`live.js`) exports. */
