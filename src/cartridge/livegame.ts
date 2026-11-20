@@ -983,7 +983,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       input.lockRefused = false;
       const activation = (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation;
       if (!host.touch && activation?.isActive && document.pointerLockElement !== host.canvas && typeof host.canvas.requestPointerLock === 'function') {
-        try { void Promise.resolve(host.canvas.requestPointerLock()).catch(() => { input.lockRefused = true; }); } catch { input.lockRefused = true; }
+        try { void Promise.resolve(host.canvas.requestPointerLock()).catch(() => undefined); } catch { /* a click will ask */ }
       }
       targeting.reset(); autoLock.reset(); targetId = null;
       input.yaw = best.yaw; input.pitch = .02;

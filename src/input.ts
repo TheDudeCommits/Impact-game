@@ -80,6 +80,7 @@ export class Input {
   shared=false;
   /** The browser refused the pointer lock (or has none): clicks attack without it, the view turns by keys. */
   lockRefused=false;
+  private lockAskedAt=-Infinity;
   constructor(readonly canvas:HTMLCanvasElement) {
     window.addEventListener(BINDINGS_EVENT,()=>this.clear());
     window.addEventListener('keydown',e=>{
@@ -104,7 +105,8 @@ export class Input {
     for(const type of ['touchstart','touchend'])window.addEventListener(type,()=>{this.touchedAt=performance.now();},{capture:true,passive:true});
     window.addEventListener('pointerdown',e=>{this.pointerType=e.pointerType||'mouse';},{capture:true,passive:true});
     document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas)this.clear();else this.lockRefused=false;});
-    document.addEventListener('pointerlockerror',()=>{this.lockRefused=true;});
+    // (a refusal of the click's own request: one asked for without a click, which a browser may refuse, says nothing)
+    document.addEventListener('pointerlockerror',()=>{if(performance.now()-this.lockAskedAt<1500)this.lockRefused=true;});
     window.addEventListener('blur',()=>{this.focused=false;this.clear();this.rumble.stop(this.actuator);});
     window.addEventListener('focus',()=>{this.focused=true;this.clear();});
     document.addEventListener('visibilitychange',()=>{if(document.hidden){this.clear();this.rumble.stop(this.actuator);}});
@@ -116,7 +118,7 @@ export class Input {
       // Only a mouse takes the pointer (a phone has none to take: Chrome refused a tap's with "not valid for pointer
       // lock"), and a refusal is never an error. The click that asks for it does nothing else; once a browser has
       // refused (or has no lock), clicks are attacks again (dude.work round 8: never a mouse that cannot fight).
-      if(document.pointerLockElement!==canvas&&!this.lockRefused&&typeof canvas.requestPointerLock==='function'){try{(canvas.requestPointerLock() as unknown as Promise<void>|undefined)?.catch?.(()=>{this.lockRefused=true;});}catch{this.lockRefused=true;}return;}
+      if(document.pointerLockElement!==canvas&&!this.lockRefused&&typeof canvas.requestPointerLock==='function'){this.lockAskedAt=performance.now();try{(canvas.requestPointerLock() as unknown as Promise<void>|undefined)?.catch?.(()=>{this.lockRefused=true;});}catch{this.lockRefused=true;}return;}
       this.keys.add(`Mouse${e.button}`);this.press(`Mouse${e.button}`);
     });
     document.addEventListener('mousemove',e=>{
