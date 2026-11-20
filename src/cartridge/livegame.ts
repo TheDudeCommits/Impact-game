@@ -88,6 +88,8 @@ const BETWEEN = 5;
  *  pixels tall) the duel's bodies and effects step TINY_HZ times a second, and its shadow map is drawn only when they
  *  have stepped. */
 const TINY_PX = 2, TINY_HZ = 12;
+/** Dev: ?impactgrave=0 disposes a body the moment it is let go, as before (to compare). */
+const GRAVE_ON = typeof location !== 'object' || !/[?&]impactgrave=0\b/.test(location.search);
 /** Dev: ?impacttiny=0 steps a tiny duel every frame, as before (to compare). */
 const TINY_ON = typeof location !== 'object' || !/[?&]impacttiny=0\b/.test(location.search);
 /** Most sim ticks one frame may run (a hitch is caught up over the next frames, not in one burst). */
@@ -308,7 +310,27 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
 
   function clearFighters() { for (const body of fighters.values()) drop(body); fighters.clear(); }
   /** A body let go (a new round, a new set): the visitor's likeness comes off it first (its geometries are kept). */
-  function drop(body: Fighter) { if (worn?.fighter === body) { worn.remove(); worn = null; } body.dispose(); dropTwins(body); }
+  function drop(body: Fighter) {
+    if (worn?.fighter === body) { worn.remove(); worn = null; }
+    // (dude.work round 8) out of the picture now, disposed two frames on: the bodies that take its place (the next round's,
+    // the next set's) draw first with the same programs, which three releases with a body's last material and would build
+    // again in the new body's first frame: every program of both fighters at every round's start
+    if (!GRAVE_ON) { body.dispose(); dropTwins(body); return; }
+    body.group.removeFromParent();
+    (Fighter as unknown as { drawn: Set<Fighter> }).drawn.delete(body);
+    leaving.push({ body, frames: 2 });
+  }
+  /** Bodies let go, waiting their two frames to be disposed (drop). */
+  const leaving: { body: Fighter; frames: number }[] = [];
+  function bury(all = false) {
+    for (let i = leaving.length - 1; i >= 0; i--) {
+      if (!all && --leaving[i].frames > 0) continue;
+      const { body } = leaving[i];
+      leaving.splice(i, 1);
+      try { body.dispose(); } catch (error) { console.warn('Impact live: a body would not go', error); }
+      dropTwins(body);
+    }
+  }
   /** (dude.work round 8, S14) A body's occlusion-fade twins (render/OcclusionFade.ts: a copy of each of its materials, its
    *  form's too, with the dither) let go with it. Fighter.dispose leaves them, which in the game's own page is nothing (they
    *  go with the body); here the cartridge runtime keeps every material the game had three upload until it is disposed,
@@ -911,6 +933,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     update(dt: number, now: number) {
       judgeEar(performance.now());
       if (uploads.length || uploadsDone) upload();
+      if (leaving.length) bury();
       Fighter.beginFrame(now);
       const rawDt = Math.max(0, dt), worldDt = Math.min(.05, rawDt);
       const r = ring;
@@ -1146,7 +1169,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     dispose() {
       clearInterval(earTimer);
       ring?.dispose(); ring = null;
-      clearFighters();
+      clearFighters(); bury(true);
       worn?.remove(); worn = null; likeness = null;
       likenessWarm?.copy.free(); likenessWarm = null;
       if (keptWarm) { letGo(keptWarm.body, keptWarm.id); keptWarm = null; }
