@@ -419,7 +419,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   /** A body of `id` built, compiled and let go before it steps in (FighterLibrary.warmup's job, off the drawn scene). */
   async function warmBody(id: FighterId, pictures?: Set<THREE.Texture>) {
     warms.started++;
-    const body = library.create({ id: 'warm-' + id, name: 'Warmup', fighter: id, x: 0, y: 0, z: 0, yaw: 0, hp: 1000, maxHp: 1000, stamina: 100, ultimate: 100,
+    // (far off, as FighterLibrary's own warm-up stands them: a body is one of Fighter.drawn for as long as it is kept, and a
+    // swing measures its room against the drawn body nearest what it swings at)
+    const body = library.create({ id: 'warm-' + id, name: 'Warmup', fighter: id, x: 1000, y: 0, z: 1000, yaw: 0, hp: 1000, maxHp: 1000, stamina: 100, ultimate: 100,
       action: 'idle', actionStarted: 0, actionDuration: 0, actionTime: 0, target: null, alive: true, isBot: true, grounded: true, guarding: false,
       cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 } });
     skinnedBoundsOn(body.group);
