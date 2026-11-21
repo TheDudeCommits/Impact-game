@@ -505,8 +505,14 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
    *  it: three's first use of a program (its checks and its look-up of the program's uniforms and attributes) is a run of
    *  round trips to the GPU's process, each waiting for it to catch up, and it came in the first frame that drew with the
    *  program: the join's (40 to 70 ms at the visitor's first draw). */
+  /** (dude.work round 10) the game has left (dispose): firstUse's rounds stop */
+  let gone = false;
+  /** (dude.work round 10) Its rounds stop once the game has left (dispose) or a program has been let go meanwhile (three
+   *  deletes it with its last material, `program` then unset): a round still going as the world let the game go, 3 to 6 s
+   *  after it went live, went on asking the GPU about programs its own leaving had deleted, a WebGL warning each ('attempt
+   *  to use a deleted object'), a second each. */
   async function firstUse(root: THREE.Object3D) {
-    type Program = { isReady?(): boolean; getUniforms?(): unknown; getAttributes?(): unknown };
+    type Program = { isReady?(): boolean; getUniforms?(): unknown; getAttributes?(): unknown; program?: unknown };
     const programs = new Set<Program>();
     root.traverse(o => {
       for (const m of [(o as THREE.Mesh).material].flat() as (THREE.Material | undefined)[]) {
@@ -516,8 +522,11 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         if (props.currentProgram) programs.add(props.currentProgram);
       }
     });
+    const kept = (p: Program) => !gone && p.program !== undefined;
     for (const p of programs) {
-      for (let k = 0; k < 50 && p.isReady && !p.isReady(); k++) await new Promise(r => setTimeout(r, 20));
+      for (let k = 0; k < 50 && kept(p) && p.isReady && !p.isReady(); k++) await new Promise(r => setTimeout(r, 20));
+      if (gone) return;
+      if (!kept(p)) continue;
       try { rt.within(() => { p.getUniforms?.(); p.getAttributes?.(); }); } catch { /* drawn later */ }
       await new Promise(r => setTimeout(r, 16));
     }
@@ -1492,6 +1501,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     },
 
     dispose() {
+      gone = true;
       cutoutsWaitFor(null);
       clearInterval(earTimer);
       ring?.dispose(); ring = null;
