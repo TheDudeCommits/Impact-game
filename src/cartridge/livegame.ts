@@ -584,8 +584,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         const at = bodies[0]?.group.position ?? new THREE.Vector3();
         onceCam.position.set(at.x, at.y + 1.4, at.z + 5); onceCam.lookAt(at.x, at.y + 1, at.z); onceCam.updateMatrixWorld();
         scene.fog = onceFog;
-        // (the shadow map as it stands: bound, not drawn again)
-        gl.shadowMap.enabled = shadow && shadows; gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = false;
+        // (the shadow map as it stands: bound, not drawn again; drawn now only if there is none yet, the boot's, before the
+        // duel's first frame: with no map its receivers would sample a texture three never uploads, a GL error each)
+        gl.shadowMap.enabled = shadow && shadows; gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = gl.shadowMap.enabled && sun.castShadow && !sun.shadow.map;
         gl.setRenderTarget(onceTarget);
         gl.render(scene, onceCam);
         onceDrawn++;
