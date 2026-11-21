@@ -209,9 +209,10 @@ const FILM_GRADE: NonNullable<LiveGame['grade']> = {
   sat: 1.09, con: 1.15, lift: [0.007, 0.008, 0.016], gain: [1.2, 1.05, 0.8], vig: 0.47, grain: 0.06,
 };
 
-/** (dude.work round 9) The effects' hidden spares drawn once off stage, so many to a slot (sweepSpares): an afterimage
- *  pool is some 150 skinned meshes a fighter, a Guardian a few dozen. */
-const SPARES_A_SLOT = 24;
+/** (dude.work round 9) drawOnce's chunks: the things drawn for the first time in a slot, starting at ONCE_FIRST, each
+ *  chunk's draw sizing the next to about ONCE_MS (a skinned thing's first draw, its bone texture and its materials' first
+ *  use, is 1 to 3 ms; an afterimage pool is some 150 of them a fighter, a body with its form 30 to 60). */
+const ONCE_FIRST = 6, ONCE_MS = 6, ONCE_MOST = 64;
 
 /** The renderer stays the world's: the effects' calls on the game's own frame (impact frames, speed lines, the
  *  technique grade) belong to its post stack, which the world's film pipeline stands in for here. */
@@ -575,42 +576,63 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       if (slot) await slot();
       rt.within(() => { if (!onGpu(t)) { try { gl.initTexture(t); } catch { /* drawn when first used instead */ } } });
     }
-    if (slot) await slot();
-    rt.within(() => {
-      onceTarget ??= new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, depthBuffer: true });
-      const was = gl.getRenderTarget(), fog = scene.fog, shadow = gl.shadowMap.enabled, auto = gl.shadowMap.autoUpdate, needs = gl.shadowMap.needsUpdate;
-      const added: THREE.Object3D[] = [], shown: THREE.Object3D[] = [], away: THREE.Object3D[] = [], culled: THREE.Object3D[] = [];
-      try {
-        for (const root of roots) {
-          if (!root.parent) { scene.add(root); added.push(root); }
-          root.traverse(o => { if (!o.visible) { o.visible = true; shown.push(o); } });
-        }
-        if (!whole) for (const o of scene.children) if (o.visible && !(o as THREE.Light).isLight && !roots.includes(o)) { o.visible = false; away.push(o); }
-        scene.traverseVisible(o => { if (o.frustumCulled) { o.frustumCulled = false; culled.push(o); } });
-        const at = roots[0]?.position ?? new THREE.Vector3();
-        onceCam.position.set(at.x, at.y + 1.4, at.z + 5); onceCam.lookAt(at.x, at.y + 1, at.z); onceCam.updateMatrixWorld();
-        scene.fog = onceFog;
-        // (the shadow map as it stands: bound, not drawn again; drawn now only if there is none yet, the boot's, before the
-        // duel's first frame: with no map its receivers would sample a texture three never uploads, a GL error each)
-        gl.shadowMap.enabled = shadow && shadows; gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = gl.shadowMap.enabled && sun.castShadow && !sun.shadow.map;
-        gl.setRenderTarget(onceTarget);
-        gl.render(scene, onceCam);
-        onceDrawn++;
-      } catch (error) { console.warn('Impact live: bodies drawn once off stage (they draw as they come instead)', error); }
-      finally {
-        for (const o of culled) o.frustumCulled = true;
-        for (const o of shown) o.visible = false;
-        for (const o of away) o.visible = true;
-        for (const o of added) o.removeFromParent();
-        scene.fog = fog; gl.shadowMap.enabled = shadow; gl.shadowMap.autoUpdate = auto; gl.shadowMap.needsUpdate = needs;
-        gl.setRenderTarget(was);
-      }
-    });
+    // what is to be drawn: every drawable thing the roots hold, their hidden parts' too, and with `whole` all the scene shows;
+    // a chunk of it a slot, each chunk's cost sizing the next (a whole body's first draw, 20 to 40 ms, in one slot was a
+    // frame of its own: the hitch moved, not gone)
+    const things = new Set<THREE.Object3D>();
+    for (const root of roots) root.traverse(o => { if (drawable(o)) things.add(o); });
+    if (whole) scene.traverseVisible(o => { if (drawable(o)) things.add(o); });
+    const list = [...things];
+    for (let i = 0, per = ONCE_FIRST; i < list.length;) {
+      if (slot) await slot();
+      const chunk = new Set(list.slice(i, i + per));
+      i += per;
+      const ms = rt.within(() => renderOnce(roots, chunk));
+      per = Math.max(1, Math.min(ONCE_MOST, Math.round(per * ONCE_MS / Math.max(ms, 0.5))));
+    }
+    onceDrawn++;
   }
+  /** One chunk of drawOnce: the roots in the scene (one made ahead, in none, put in for it), their hidden parts shown, every
+   *  drawable thing but the chunk's hidden and nothing culled, drawn into the scratch picture; all of it put back. The
+   *  render's milliseconds. */
+  function renderOnce(roots: readonly THREE.Object3D[], chunk: ReadonlySet<THREE.Object3D>): number {
+    onceTarget ??= new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, depthBuffer: true });
+    const was = gl.getRenderTarget(), fog = scene.fog, shadow = gl.shadowMap.enabled, auto = gl.shadowMap.autoUpdate, needs = gl.shadowMap.needsUpdate;
+    const added: THREE.Object3D[] = [], shown: THREE.Object3D[] = [], away: THREE.Object3D[] = [], culled: THREE.Object3D[] = [];
+    try {
+      for (const root of roots) {
+        if (root !== scene && !root.parent) { scene.add(root); added.push(root); }
+        root.traverse(o => { if (!o.visible) { o.visible = true; shown.push(o); } });
+      }
+      scene.traverse(o => { if (o.visible && drawable(o) && !chunk.has(o)) { o.visible = false; away.push(o); } });
+      scene.traverseVisible(o => { if (o.frustumCulled) { o.frustumCulled = false; culled.push(o); } });
+      const at = roots[0] && roots[0] !== scene ? roots[0].position : _onceAt.set(0, 0, 0);
+      onceCam.position.set(at.x, at.y + 1.4, at.z + 5); onceCam.lookAt(at.x, at.y + 1, at.z); onceCam.updateMatrixWorld();
+      scene.fog = onceFog;
+      // (the shadow map as it stands: bound, not drawn again; drawn now only if there is none yet, the boot's, before the
+      // duel's first frame: with no map its receivers would sample a texture three never uploads, a GL error each)
+      gl.shadowMap.enabled = shadow && shadows; gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = gl.shadowMap.enabled && sun.castShadow && !sun.shadow.map;
+      gl.setRenderTarget(onceTarget);
+      const t = performance.now();
+      gl.render(scene, onceCam);
+      return performance.now() - t;
+    } catch (error) { console.warn('Impact live: bodies drawn once off stage (they draw as they come instead)', error); return 0; }
+    finally {
+      // (what was hidden and is hidden again last: a hidden part of a root is shown, then left out of a chunk not its own)
+      for (const o of culled) o.frustumCulled = true;
+      for (const o of away) o.visible = true;
+      for (const o of shown) o.visible = false;
+      for (const o of added) o.removeFromParent();
+      scene.fog = fog; gl.shadowMap.enabled = shadow; gl.shadowMap.autoUpdate = auto; gl.shadowMap.needsUpdate = needs;
+      gl.setRenderTarget(was);
+    }
+  }
+  const _onceAt = new THREE.Vector3();
+  const drawable = (o: THREE.Object3D) => !!((o as THREE.Mesh).isMesh || (o as THREE.Points).isPoints || (o as THREE.Line).isLine || (o as THREE.Sprite).isSprite);
   /**
    * (dude.work round 9) The effects' bodies built ahead and kept hidden at the scene's top till they are wanted (the
    * Guardian's spares, the dashes' afterimages, the Dune Oni's phantom, each one skinned), drawn once off stage as they
-   * come (drawOnce, SPARES_A_SLOT to a slot, their pictures first): first shown in the ring, each had its first draw in
+   * come (drawOnce: a chunk a slot, their pictures first): first shown in the ring, each had its first draw in
    * that frame, 35 to 53 ms of Impact's draw at a Guardian's every awakening, at a new set's first dash, at Kenzo's first
    * ultimate. Looked for once a second; what is hidden and holds nothing skinned is passed over for good.
    */
@@ -630,13 +652,11 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     sweeping = true;
     void (async () => {
       try {
-        for (let i = 0; i < fresh.length; i += SPARES_A_SLOT) {
-          // (still hidden and still in the scene: one taken meanwhile is the frame's own to draw)
-          const chunk = fresh.slice(i, i + SPARES_A_SLOT).filter(o => o.parent === scene && !o.visible);
-          if (chunk.length) await drawOnce(chunk);
-          for (const o of chunk) sparesSeen.add(o);
-          sparesDrawn += chunk.length;
-        }
+        // (still hidden and still in the scene: one taken meanwhile is the frame's own to draw)
+        const still = fresh.filter(o => o.parent === scene && !o.visible);
+        if (still.length) await drawOnce(still);
+        for (const o of fresh) sparesSeen.add(o);
+        sparesDrawn += still.length;
       } catch (error) { console.warn('Impact live: spares drawn once (they draw as they come instead)', error); }
       finally { sweeping = false; }
     })();
