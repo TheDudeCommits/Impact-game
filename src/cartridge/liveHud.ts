@@ -28,7 +28,13 @@ import '../ui/hud/protos/halo.css';
 import '../ui/hud/protos/haloModes.css';
 import '../ui/hud/zones.css';
 
-const WORLD_CSS = '[data-game="impact"] #interface .combat-hud .fighter-meter{translate:0 34px}';
+/** Room for the world's bar (Esc Leave · Enter Play the full game) in the page's top-left corner: the HUD's whole top band
+ *  steps down under it together - the plates, the clock and the plaque between them, the round pips under the plates and
+ *  the zones up there (zones.css) - so the band keeps the game's own layout. (dude.work round 9: only the plates stepped
+ *  before, which left them 34 px under the clock and the plaque that sit level with them in the game.) */
+const WORLD_DROP = 34;
+const WORLD_CSS = `[data-game="impact"] #interface .combat-hud :is(.fighter-meter,.mode-hud>[data-zone="1b"],.mode-hud>[data-zone="2"],.mode-hud>[data-zone="2b"],.mode-hud>[data-zone="3"],.mode-hud>[data-zone="3b"],.mode-hud>[data-zone="8b"]){translate:0 ${WORLD_DROP}px}`
+  + `[data-game="impact"] #interface .combat-hud .hd-clock{translate:-50% ${WORLD_DROP}px}`;
 
 export class LiveHud {
   readonly root: HTMLElement;
