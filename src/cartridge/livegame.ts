@@ -544,9 +544,11 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
           const seat = SEATS[i], fighter = pair[i], have = made.get(seat);
           if (have && have.bodyFighter === fighter) continue;
           if (!library.has(fighter)) continue;
-          const state = ring?.snapshot?.players.find(q => q.id === seat);
-          const body = await inSteps(library.createSteps({ ...(state ?? { id: seat, name: FIGHTERS[fighter].name, x: 0, y: 0, z: 0, yaw: 0, stamina: 100, ultimate: 0, target: null, isBot: true, grounded: true, guarding: false, cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 } }),
-            id: seat, fighter, hp: 1000, maxHp: 1000, alive: true, action: 'idle', actionStarted: 0, actionDuration: 0, actionTime: 0 } as PlayerState));
+          // (far off, as a warmed body stands: a body is one of Fighter.drawn while it is kept, and a swing measures its room
+          // against the drawn body nearest what it swings at; its first update in the ring puts it on its mark)
+          const body = await inSteps(library.createSteps({ id: seat, name: FIGHTERS[fighter].name, fighter, x: 1000 + i * 10, y: 0, z: 1000, yaw: 0, hp: 1000, maxHp: 1000, stamina: 100, ultimate: 0,
+            action: 'idle', actionStarted: 0, actionDuration: 0, actionTime: 0, target: null, alive: true, isBot: true, grounded: true, guarding: false,
+            cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 } } as PlayerState));
           if (preparing !== want) { letGo(body, fighter); return; }
           const old = made.get(seat);
           if (old && old !== body) letGo(old, old.bodyFighter as FighterId);
