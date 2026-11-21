@@ -17,7 +17,7 @@ declare const __IMPACT_SOURCE__: string;
 
 export const meta = { id: 'impact', title: 'Impact', source: __IMPACT_SOURCE__ };
 
-export default function impactLive(): LiveGame {
+export default function impactLive(): LiveGame & { probe(what: string): unknown } {
   let game: Running | null = null;
   let T: typeof THREE_NS | null = null;
   let idleCam: THREE_NS.PerspectiveCamera | null = null;
@@ -54,6 +54,8 @@ export default function impactLive(): LiveGame {
     notice(at) { rt.within(() => game?.notice(at)); },
     resize(w, h) { rt.within(() => game?.resize(w, h)); },
     status() { return game?.status() ?? null; },
+    // (round 9; tools only, never the world: the world's tools/doors.mjs --real)
+    probe(what: string) { return rt.within(() => game?.probe(what) ?? null); },
     unmount() {
       const g = game;
       game = null;

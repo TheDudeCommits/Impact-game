@@ -56,7 +56,7 @@ import { borrowedEvent, installTransplant, presentFighters, presentPlayers, pres
 import { installBorrowedHurts } from '../engine/client/borrowedHurts';
 import { installStyleMoves, stylesReady } from '../engine/client/styleMoves';
 import { CombatAudio } from '../audio/CombatAudio';
-import { HOME_VOICES } from '../audio/HomeVoice';
+import { HOME_VOICES, HOME_VOICE_SECONDS } from '../audio/HomeVoice';
 import { UI_SFX } from '../originals/sfx';
 import { displayMove } from '../originals/apply';
 import { Input } from '../input';
@@ -85,6 +85,14 @@ const EAR_IN = 90, EAR_OUT = 130, EAR_NEAR_MS = 1500, EAR_FAR_MS = 4000;
 const INTRO = 2;
 /** Seconds a decided set holds its winner's pose before the next one starts. */
 const BETWEEN = 5;
+/** (dude.work round 9) The visitor's set decided: its result moment, the 'end' event's hold (s), is the game's own finale
+ *  from the end to where its page puts up the results (ui/results/finale.ts FINALE and finaleSeconds, the same numbers:
+ *  the K.O. card and the winner's entry, their line from 1.9 s, held 0.3 s after it; 4 s at the least, 5.5 at the most,
+ *  a line of unknown length taken as the roster's median 2.8 s). */
+const FINALE = { least: 4, most: 5.5, lineAt: 1.9, after: .3, line: 2.8 };
+/** (round 9) The visitor's decided set waits this much longer for the world to take them out (s) before the next set
+ *  begins anyway, with them in it as before (a world older than round 9, or an end it took for the set they walked in on). */
+const END_WAIT = 8;
 /** dude.work round 8 (S14): under this many pixels a metre in every picture (LiveView.pxPerMetre: a fighter a few
  *  pixels tall) the duel's bodies and effects step TINY_HZ times a second, and its shadow map is drawn only when they
  *  have stepped. */
@@ -114,6 +122,9 @@ export interface Running {
   notice(at: THREE.Vector3 | null): void;
   resize(w: number, h: number): void;
   status(): LiveStatus | null;
+  /** (dude.work round 9; tools only, never the world: its tools/doors.mjs --real) 'finish': while the visitor plays, their
+   *  rival is knocked out as each round comes on, till the set is decided; 'state': where the set stands. */
+  probe(what: string): unknown;
   dispose(): void;
 }
 
@@ -297,6 +308,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   let duelRoundKey = '', introFor: number | null = null, victoryFor: string | null = null;
   let decidedAt = 0;
   let epoch = 0;
+  /** (round 9, tools only: probe('finish')) the set's epoch whose rounds are being brought to their end */
+  let finishing = -1;
   let ragdolls = false;
   let shownSelf: PlayerState | undefined;
   let lastHud = 0, markerHoldUntil = 0, lockExchangeAt = -Infinity;
@@ -385,6 +398,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       if (!fighters.has(p.id)) {
         const ahead = made.get(p.id);
         made.delete(p.id);
+        // (round 9: one made ahead for another fighter than the seat's now is let go, not left behind)
+        if (ahead && ahead.bodyFighter !== p.fighter) letGo(ahead, ahead.bodyFighter as FighterId);
         const fighter = ahead && ahead.bodyFighter === p.fighter ? ahead : library.create(p);
         skinnedBoundsOn(fighter.group);
         fighters.set(p.id, fighter);
@@ -509,6 +524,37 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     if (keptWarm) letGo(keptWarm.body, keptWarm.id);
     keptWarm = { id, body };
   }
+  /** (dude.work round 9) The bodies a set about to begin will want, made ahead a step a slot (as the first set's are) and
+   *  taken by begin's bodiesFor (`made`): the visitor's own set at his join (asked for as he comes near: notice), and the
+   *  set after a decided one (while its winner's moment plays). A new set's two bodies made in its first frame took 70 to
+   *  120 ms of it (the join's, and the frame the visitor came out in after his set: tools/doors.mjs). Two hidden bodies,
+   *  in no scene, until then: their geometry and pictures are the library's, shared. */
+  let preparing = '';
+  /** (round 9) the visitor is near (notice): the ring's own pair kept made ahead for his join */
+  let nearBy = false;
+  const bodiesReady = (pair: readonly [FighterId, FighterId]) => made.get(SEATS[0])?.bodyFighter === pair[0] && made.get(SEATS[1])?.bodyFighter === pair[1];
+  function prepareBodies(pair: readonly [FighterId, FighterId]) {
+    const want = `${SEATS[0]}:${pair[0]},${SEATS[1]}:${pair[1]}`;
+    // (one making at a time: a newer pair's waits for the making in flight to see it is not wanted and stop)
+    if (preparing === want || bodiesReady(pair)) return;
+    preparing = want;
+    void (async () => {
+      try {
+        for (let i = 0; i < 2; i++) {
+          const seat = SEATS[i], fighter = pair[i], have = made.get(seat);
+          if (have && have.bodyFighter === fighter) continue;
+          if (!library.has(fighter)) continue;
+          const state = ring?.snapshot?.players.find(q => q.id === seat);
+          const body = await inSteps(library.createSteps({ ...(state ?? { id: seat, name: FIGHTERS[fighter].name, x: 0, y: 0, z: 0, yaw: 0, stamina: 100, ultimate: 0, target: null, isBot: true, grounded: true, guarding: false, cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 } }),
+            id: seat, fighter, hp: 1000, maxHp: 1000, alive: true, action: 'idle', actionStarted: 0, actionDuration: 0, actionTime: 0 } as PlayerState));
+          if (preparing !== want) { letGo(body, fighter); return; }
+          const old = made.get(seat);
+          if (old && old !== body) letGo(old, old.bodyFighter as FighterId);
+          made.set(seat, body);
+        }
+      } finally { if (preparing === want) preparing = ''; }
+    })().catch(error => console.warn('Impact live: bodies ahead', error));
+  }
   /** The challenger's warmed body, kept until it has stepped in (begin) or another is chosen. */
   let keptWarm: { id: FighterId; body: Fighter } | null = null;
   /** (dude.work round 8, S14) A body built only to be compiled, let go for good, its occlusion twins with it (dropTwins),
@@ -568,7 +614,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     ring = next;
     old?.dispose();
     epoch++;
-    acc = 0; localClock = next.snapshot?.serverTime ?? 0; lastEvent = 0; duelRoundKey = ''; introFor = null; victoryFor = null; decidedAt = 0;
+    acc = 0; localClock = next.snapshot?.serverTime ?? 0; lastEvent = 0; duelRoundKey = ''; introFor = null; victoryFor = null; decidedAt = 0; finaleLine = undefined; preparing = '';
     timeline.reset(); clearFlights(); clearFighters(); cutInSeen.clear(); hud.resetEvents();
     targeting.reset(); autoLock.reset(); targetId = null;
     if (me) next.seat(me, true);
@@ -715,6 +761,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         if (me) audio.ui(UI_SFX.victory, .45, .3);
         const line = HOME_VOICES[winner.state.fighter], own = audio.winLine(winner.state.fighter, mine ? 1.9 : .8);
         if (own === undefined && line) audio.quote(line, .85, mine ? 1.9 : .8);
+        // (round 9: what the finale is timed on, as main.ts lineSeconds: the line said, else the home line's length)
+        finaleLine = own ?? (line ? audio.sampleSeconds(line) : undefined) ?? HOME_VOICE_SECONDS[winner.state.fighter];
         if (me && !mine) audio.lossLine(.8 + (own ?? 0) + .4);
         if (me) followCam.victory(winner, 6);
         const self = snapshot.players.find(p => p.id === me);
@@ -751,6 +799,17 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   }
   /** A round's and a set's beginning and end, from the duel's own view of itself (each once). */
   let toldRound = '', toldStart = '';
+  /** (round 9) The winner's line as the finale says it (cinematics: its length, s, when known) */
+  let finaleLine: number | undefined;
+  /** (round 9) THE END OF THE SET, told once as it is decided: the side that won and, while the visitor plays, whether it
+   *  was theirs (`you`) and their result moment's length (`hold`: the game's own finale); a bots' set leaves both out. */
+  function ended(winner: string | undefined) {
+    if (!emitter) return;
+    const side = sideOf(winner);
+    const hold = Math.min(FINALE.most, Math.max(FINALE.least, FINALE.lineAt + (finaleLine ?? FINALE.line) + FINALE.after));
+    try { emitter.call(host, { kind: 'end', weight: 1, label: 'set won', ...(side !== undefined ? { side } : {}), ...(me ? { hold, ...(winner ? { you: winner === me } : {}) } : {}) }); }
+    catch (error) { console.warn('Impact live: emit', error); }
+  }
   function rounds(snapshot: GameSnapshot) {
     const duel = snapshot.duel;
     if (!emitter || !duel) return;
@@ -760,7 +819,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       toldRound = key;
       const won = duel.roundWinner ?? undefined;
       tell('round', won, duel.phase === 'complete' ? .9 : .6, `round ${duel.phase === 'complete' ? duel.round : duel.round - 1}`);
-      if (duel.phase === 'complete') tell('end', duel.winner ?? undefined, 1, 'set won');
+      if (duel.phase === 'complete') ended(duel.winner ?? undefined);
     }
   }
 
@@ -772,9 +831,11 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   let glance: { id: string; at: THREE.Vector3; t: number } | null = null;
   const glanceAt = new THREE.Vector3(), nodAxis = new THREE.Vector3(), nodLook = new THREE.Vector3(), nodQ = new THREE.Quaternion(), nodP = new THREE.Quaternion(), nodPi = new THREE.Quaternion();
   function noticed(at: THREE.Vector3 | null) {
-    if (!at) return;
+    if (!at) { nearBy = false; return; }
     const s = ring?.snapshot;
     if (!s || me) return;
+    // (round 9) his own set's two bodies, made ahead for his join (kept made while he is near: update)
+    nearBy = true;
     let best: PlayerState | undefined, bd = Infinity;
     for (const p of s.players) { if (!p.alive || p.enemy) continue; const d = Math.hypot(p.x - at.x, p.z - at.z); if (d < bd) { bd = d; best = p; } }
     if (best) glance = { id: best.id, at: new THREE.Vector3(at.x, at.y + 1.6, at.z), t: 0 };
@@ -988,12 +1049,24 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         r.step(me, command());
         if (r.snapshot) arrived(r.snapshot);
       }
+      // (round 9, tools only) probe('finish'): the visitor's rival down as each round of their set comes on
+      if (finishing === epoch && me && r.sim.status === 'active' && r.set.view.phase === 'playing') {
+        for (const p of r.snapshot?.players ?? []) if (p.id !== me && p.alive && !p.enemy) r.sim.damage(p.id, 1e6, me, 'probe');
+      }
       // a decided set: its winner's moment, then the next set (the winner stays, the challenger steps in)
       if (r.decided) {
+        // (round 9: the next set's two bodies made while this one's winner has his moment; the visitor's set's, once the world
+        // has taken him out: leave)
+        if (!decidedAt && !me) prepareBodies(pairAfter(r));
         decidedAt ||= now;
-        if (now - decidedAt > BETWEEN * 1000) { begin(RingSet.open(pairAfter(r))); return; }
+        // (round 9: the visitor's own set plays its result moment out; the world takes them out, then the bots' next begins,
+        // its bodies made ahead first: a couple of seconds more at most)
+        const wait = (me ? BETWEEN + END_WAIT : BETWEEN) * 1000, next = now - decidedAt > wait ? pairAfter(r) : null;
+        if (next && (bodiesReady(next) || now - decidedAt > wait + 2500)) { begin(RingSet.open(next)); return; }
       } else if (r.set.startedAt !== null) {
         prepareChallenger();
+        // (round 9) the visitor near: his set's bodies kept made ahead (a round's start takes them too, and they are made again)
+        if (nearBy && !me && !bodiesReady(r.pair)) prepareBodies(r.pair);
         // the death ragdolls' physics (Rapier's wasm, render/Ragdoll.ts), off the first load: once the first bell has rung
         if (!ragdolls) { ragdolls = true; void import('../render/Ragdoll').then(m => m.prepareRagdolls()).catch(error => console.warn('Impact live: ragdolls unavailable', error)); }
       }
@@ -1132,14 +1205,18 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     },
 
     join(at: THREE.Vector3, _yaw: number) {
-      const r = ring, s = r?.snapshot;
-      if (!r || !s || !fighters.size) return false;
+      const r = ring;
+      if (!r || !r.snapshot || !fighters.size) return false;
+      // (dude.work round 9) a set of their own: the two fighters in the ring, both whole, the rounds at nought, from the
+      // set's own start (its round intro, then the first bell and FIGHT!); the bots' set in progress is let go. They take
+      // the seat whose mark is nearest where they stepped on (the new set stands both fighters on their marks).
+      const fresh = RingSet.open(r.pair), s = fresh.snapshot;
       let best: PlayerState | undefined, bd = Infinity;
-      for (const p of s.players) { const d = Math.hypot(p.x - at.x, p.z - at.z); if (d < bd) { bd = d; best = p; } }
-      if (!best) return false;
+      for (const p of s?.players ?? []) { const d = Math.hypot(p.x - at.x, p.z - at.z); if (d < bd) { bd = d; best = p; } }
+      if (!s || !best) { fresh.dispose(); return false; }
       me = best.id;
-      r.seat(me, true);
-      r.freshen(me);
+      nearBy = false;
+      begin(fresh);
       input.clear();
       input.enabled = true;
       // (dude.work round 8, G8) the mouse looks once the pointer is locked: asked for now while the visitor's key still
@@ -1171,6 +1248,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const out = { at: new THREE.Vector3(p?.x ?? 0, 0, p?.z ?? 0), yaw: p?.yaw ?? 0 };
       if (me) r?.seat(me, false);
       me = null;
+      // (round 9) his set decided: the bots' next set's bodies made now, while he glides out (update waits for them)
+      if (r?.decided) prepareBodies(pairAfter(r));
       // the bot plays its own fighter again: its own body, its own plate
       unwear();
       hud.likeness = null;
@@ -1189,6 +1268,12 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     },
 
     notice(at: THREE.Vector3 | null) { noticed(at); },
+
+    probe(what: string) {
+      if (what === 'finish') { if (!me) return null; finishing = epoch; return 'finishing'; }
+      if (what === 'state') { const d = ring?.snapshot?.duel; return { me, epoch, status: ring?.sim.status, phase: d?.phase ?? null, round: d?.round ?? null, scores: d?.scores ?? null, decided: !!ring?.decided, finaleLine: finaleLine ?? null }; }
+      return null;
+    },
 
     resize(w: number, h: number) {
       camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix();
@@ -1211,6 +1296,10 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       clearInterval(earTimer);
       ring?.dispose(); ring = null;
       clearFighters(); bury(true);
+      // (round 9: bodies made ahead and not taken)
+      preparing = '';
+      for (const body of made.values()) letGo(body, body.bodyFighter as FighterId);
+      made.clear();
       worn?.remove(); worn = null; likeness = null;
       likenessWarm?.copy.free(); likenessWarm = null;
       if (keptWarm) { letGo(keptWarm.body, keptWarm.id); keptWarm = null; }
