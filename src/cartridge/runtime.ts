@@ -290,10 +290,25 @@ class Runtime {
     // three's renderer listens for 'dispose' on every texture, geometry, material, render target and instanced mesh it
     // uploads: whatever gets one while the game is in (a live game: inside its own calls) is the game's, but what the world
     // handed it (keepWorlds)
-    proto.addEventListener = function (this: { dispose?: () => void }, type: string, fn: unknown) { if (type === 'dispose' && mine() && !worlds.has(this)) gpu.add(this); return add.call(this, type, fn); };
-    proto.removeEventListener = function (this: { dispose?: () => void; _listeners?: Record<string, unknown[]> }, type: string, fn: unknown) {
-      const out = remove.call(this, type, fn); if (type === 'dispose' && !this._listeners?.dispose?.length) gpu.delete(this); return out; };
-    this.unwatchGpu = () => { proto.addEventListener = add; proto.removeEventListener = remove; };
+    // (dude.work round 10) Each hook is put back as the game leaves only while it is still the one in front: a game mounted
+    // after this one may have hooked in over it and goes on noting through it (put back regardless, that game's hook was
+    // cut off with this one's, and it noted nothing more till it left). Left in place, it only passes calls on, and lets go
+    // of its place once it is in front again.
+    let live = true;
+    const letGo = (key: 'addEventListener' | 'removeEventListener', hook: unknown, under: unknown) => { if (!live && proto[key] === hook) (proto as Record<string, unknown>)[key] = under; };
+    const onAdd = function (this: { dispose?: () => void }, type: string, fn: unknown) {
+      if (!live) letGo('addEventListener', onAdd, add);
+      else if (type === 'dispose' && mine() && !worlds.has(this)) gpu.add(this);
+      return add.call(this, type, fn);
+    };
+    const onRemove = function (this: { dispose?: () => void; _listeners?: Record<string, unknown[]> }, type: string, fn: unknown) {
+      const out = remove.call(this, type, fn);
+      if (!live) letGo('removeEventListener', onRemove, remove);
+      else if (type === 'dispose' && !this._listeners?.dispose?.length) gpu.delete(this);
+      return out;
+    };
+    proto.addEventListener = onAdd; proto.removeEventListener = onRemove;
+    this.unwatchGpu = () => { live = false; letGo('addEventListener', onAdd, add); letGo('removeEventListener', onRemove, remove); };
   }
   /** (dude.work round 8) Stop keeping `object` for the visit's end: a material the game lets go without disposing (its
    *  program is to live on for the next body that draws the same way), so that what it holds can be collected. */
