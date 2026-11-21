@@ -713,6 +713,12 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   }
   /** The pair after a decided set: the winner stays in their seat (the visitor's fighter, if they play, stays in
    *  theirs), and the challenger takes the other. */
+  /** (round 9) The pair after the decided set, chosen once for it (nextPair): pairAfter takes the challenger, so asked a
+   *  second time it found none and gave the runback. Since the bodies made ahead (27e9222) asked it twice, once to make
+   *  the bodies and once to begin the set, every set after the first was its runback, the same two for good. Let go when
+   *  a set begins. */
+  let after: [FighterId, FighterId] | null = null;
+  const nextPair = (r: RingSet) => (after ??= pairAfter(r));
   function pairAfter(r: RingSet): [FighterId, FighterId] {
     const keepSeat = me ?? r.set.view.winner ?? SEATS[0], seat = Math.max(0, SEATS.indexOf(keepSeat as typeof SEATS[number]));
     const stays = r.snapshot?.players.find(p => p.id === keepSeat)?.fighter ?? r.pair[seat];
@@ -727,7 +733,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     ring = next;
     old?.dispose();
     epoch++;
-    acc = 0; localClock = next.snapshot?.serverTime ?? 0; lastEvent = 0; duelRoundKey = ''; introFor = null; victoryFor = null; decidedAt = 0; finaleLine = undefined; preparing = '';
+    acc = 0; localClock = next.snapshot?.serverTime ?? 0; lastEvent = 0; duelRoundKey = ''; introFor = null; victoryFor = null; decidedAt = 0; finaleLine = undefined; preparing = ''; after = null;
     // (round 9) The same two again (the visitor's own set at the join, RingSet.open of the ring's pair): their bodies stay,
     // as they do from one round to the next (bodiesFor keeps a seat's body while its fighter is the same). Made new, the
     // visitor's seat's body was worn at once and its own meshes never drawn, so its materials held no program, and three
@@ -1187,11 +1193,11 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       if (r.decided) {
         // (round 9: the next set's two bodies made while this one's winner has his moment; the visitor's set's, once the world
         // has taken him out: leave)
-        if (!decidedAt && !me) prepareBodies(pairAfter(r));
+        if (!decidedAt && !me) prepareBodies(nextPair(r));
         decidedAt ||= now;
         // (round 9: the visitor's own set plays its result moment out; the world takes them out, then the bots' next begins,
         // its bodies made ahead first: a couple of seconds more at most)
-        const wait = (me ? BETWEEN + END_WAIT : BETWEEN) * 1000, next = now - decidedAt > wait ? pairAfter(r) : null;
+        const wait = (me ? BETWEEN + END_WAIT : BETWEEN) * 1000, next = now - decidedAt > wait ? nextPair(r) : null;
         if (next && (bodiesReady(next) || now - decidedAt > wait + 2500)) { begin(RingSet.open(next)); return; }
       } else if (r.set.startedAt !== null) {
         prepareChallenger();
@@ -1380,7 +1386,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       if (me) r?.seat(me, false);
       me = null;
       // (round 9) his set decided: the bots' next set's bodies made now, while he glides out (update waits for them)
-      if (r?.decided) prepareBodies(pairAfter(r));
+      if (r?.decided) prepareBodies(nextPair(r));
       // the bot plays its own fighter again: its own body, its own plate
       unwear();
       hud.likeness = null;
