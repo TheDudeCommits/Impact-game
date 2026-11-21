@@ -209,6 +209,10 @@ const FILM_GRADE: NonNullable<LiveGame['grade']> = {
   sat: 1.09, con: 1.15, lift: [0.007, 0.008, 0.016], gain: [1.2, 1.05, 0.8], vig: 0.47, grain: 0.06,
 };
 
+/** (dude.work round 9) The effects' hidden spares drawn once off stage, so many to a slot (sweepSpares): an afterimage
+ *  pool is some 150 skinned meshes a fighter, a Guardian a few dozen. */
+const SPARES_A_SLOT = 24;
+
 /** The renderer stays the world's: the effects' calls on the game's own frame (impact frames, speed lines, the
  *  technique grade) belong to its post stack, which the world's film pipeline stands in for here. */
 const NO_SCREEN = undefined;
@@ -542,11 +546,12 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   let onceTarget: THREE.WebGLRenderTarget | null = null, onceDrawn = 0;
   const onceCam = new THREE.PerspectiveCamera(40, 1, 0.1, 60), onceFog = new THREE.Fog(0xd6e9f8, 160, 1150);
   const onGpu = (t: THREE.Texture) => (gl.properties.get(t) as { __version?: number }).__version === t.version;
-  /** The pictures a body draws with, its hidden forms' included (a material's maps and its uniforms'), not yet on the GPU. */
-  function picturesOf(body: Fighter): THREE.Texture[] {
+  /** The pictures what `root` holds draws with, its hidden parts' included (a material's maps and its uniforms'), not yet on
+   *  the GPU. */
+  function picturesOf(root: THREE.Object3D): THREE.Texture[] {
     const out = new Set<THREE.Texture>();
     const take = (t: unknown) => { const x = t as THREE.Texture | null; if (x?.isTexture && x.image && !onGpu(x)) out.add(x); };
-    body.group.traverse(o => {
+    root.traverse(o => {
       for (const m of [(o as THREE.Mesh).material].flat() as (THREE.Material & Record<string, unknown>)[]) {
         if (!m) continue;
         for (const k of Object.keys(m)) take(m[k]);
@@ -564,8 +569,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
    * (the boot's: the effects shown for their warm-up too); else only these bodies, the rest of the ring left out of the draw
    * (its lights kept: each program is built for their number and kind).
    */
-  async function drawOnce(bodies: readonly Fighter[], whole = false) {
-    for (const body of bodies) for (const t of picturesOf(body)) {
+  async function drawOnce(bodies: readonly (Fighter | THREE.Object3D)[], whole = false) {
+    const roots = bodies.map(b => (b instanceof Fighter ? b.group : b));
+    for (const root of roots) for (const t of picturesOf(root)) {
       if (slot) await slot();
       rt.within(() => { if (!onGpu(t)) { try { gl.initTexture(t); } catch { /* drawn when first used instead */ } } });
     }
@@ -575,13 +581,13 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       const was = gl.getRenderTarget(), fog = scene.fog, shadow = gl.shadowMap.enabled, auto = gl.shadowMap.autoUpdate, needs = gl.shadowMap.needsUpdate;
       const added: THREE.Object3D[] = [], shown: THREE.Object3D[] = [], away: THREE.Object3D[] = [], culled: THREE.Object3D[] = [];
       try {
-        for (const body of bodies) {
-          if (!body.group.parent) { scene.add(body.group); added.push(body.group); }
-          body.group.traverse(o => { if (!o.visible) { o.visible = true; shown.push(o); } });
+        for (const root of roots) {
+          if (!root.parent) { scene.add(root); added.push(root); }
+          root.traverse(o => { if (!o.visible) { o.visible = true; shown.push(o); } });
         }
-        if (!whole) for (const o of scene.children) if (o.visible && !(o as THREE.Light).isLight && !bodies.some(b => b.group === o)) { o.visible = false; away.push(o); }
+        if (!whole) for (const o of scene.children) if (o.visible && !(o as THREE.Light).isLight && !roots.includes(o)) { o.visible = false; away.push(o); }
         scene.traverseVisible(o => { if (o.frustumCulled) { o.frustumCulled = false; culled.push(o); } });
-        const at = bodies[0]?.group.position ?? new THREE.Vector3();
+        const at = roots[0]?.position ?? new THREE.Vector3();
         onceCam.position.set(at.x, at.y + 1.4, at.z + 5); onceCam.lookAt(at.x, at.y + 1, at.z); onceCam.updateMatrixWorld();
         scene.fog = onceFog;
         // (the shadow map as it stands: bound, not drawn again; drawn now only if there is none yet, the boot's, before the
@@ -600,6 +606,40 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         gl.setRenderTarget(was);
       }
     });
+  }
+  /**
+   * (dude.work round 9) The effects' bodies built ahead and kept hidden at the scene's top till they are wanted (the
+   * Guardian's spares, the dashes' afterimages, the Dune Oni's phantom, each one skinned), drawn once off stage as they
+   * come (drawOnce, SPARES_A_SLOT to a slot, their pictures first): first shown in the ring, each had its first draw in
+   * that frame, 35 to 53 ms of Impact's draw at a Guardian's every awakening, at a new set's first dash, at Kenzo's first
+   * ultimate. Looked for once a second; what is hidden and holds nothing skinned is passed over for good.
+   */
+  const sparesSeen = new WeakSet<THREE.Object3D>();
+  let sweeping = false, sweptAt = 0, sparesDrawn = 0;
+  function sweepSpares(now: number) {
+    if (sweeping || now - sweptAt < 1000) return;
+    sweptAt = now;
+    const fresh: THREE.Object3D[] = [];
+    for (const o of scene.children) {
+      if (o.visible || sparesSeen.has(o)) continue;
+      let skinned = false;
+      o.traverse(c => { if ((c as THREE.SkinnedMesh).isSkinnedMesh) skinned = true; });
+      if (skinned) fresh.push(o); else sparesSeen.add(o);
+    }
+    if (!fresh.length) return;
+    sweeping = true;
+    void (async () => {
+      try {
+        for (let i = 0; i < fresh.length; i += SPARES_A_SLOT) {
+          // (still hidden and still in the scene: one taken meanwhile is the frame's own to draw)
+          const chunk = fresh.slice(i, i + SPARES_A_SLOT).filter(o => o.parent === scene && !o.visible);
+          if (chunk.length) await drawOnce(chunk);
+          for (const o of chunk) sparesSeen.add(o);
+          sparesDrawn += chunk.length;
+        }
+      } catch (error) { console.warn('Impact live: spares drawn once (they draw as they come instead)', error); }
+      finally { sweeping = false; }
+    })();
   }
   /** A body of `id` built, compiled and let go before it steps in (FighterLibrary.warmup's job, off the drawn scene). */
   async function warmBody(id: FighterId, pictures?: Set<THREE.Texture>) {
@@ -1121,7 +1161,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     charge: () => { const a = me ? ring?.sim.actors.get(me) : undefined; if (a) a.state.ultimate = 100; return !!a; },
     glance: () => glance && { id: glance.id, t: +glance.t.toFixed(2) },
     /** Tests (dude.work round 8, S14): bodies built only to be compiled, let go, and whose dispose() threw. */
-    warms: () => ({ ...warms, onceDrawn }),
+    warms: () => ({ ...warms, onceDrawn, sparesDrawn }),
     /** Tests (dude.work round 8, G2): the visitor's casts since the page began (a touch button's attack is one). */
     casts: () => castsByMe,
     /** Tests: the set decided now (the first seat wins), so the next one comes round. */
@@ -1171,6 +1211,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     update(dt: number, now: number) {
       judgeEar(performance.now());
       if (uploads.length || uploadsDone) upload();
+      // (round 9) the effects' hidden spares drawn once off stage as they come
+      sweepSpares(performance.now());
       if (leaving.length) bury();
       Fighter.beginFrame(now);
       const rawDt = Math.max(0, dt), worldDt = Math.min(.05, rawDt);

@@ -71,7 +71,9 @@ type Loom = { root: THREE.Group; model: THREE.Object3D; mixer: THREE.AnimationMi
   /** The move its user is in and the second its blow lands on, read once a move (moveFor builds objects). */
   moveKey: number; contact: number;
   /** What it does this frame (see `take`), rewritten in place. */
-  plan: { name: string; time: number; laid: boolean; strike: boolean } };
+  plan: { name: string; time: number; laid: boolean; strike: boolean };
+  /** (dude.work round 9) Whose Guardian it is: let go at a reset, another is built for them ahead (`respare`). */
+  user: FighterId };
 
 export class GuardianLooms {
   private sources = new Map<string, GLTF>();
@@ -128,7 +130,7 @@ export class GuardianLooms {
     const low = joints.get(JOINT.hips) ?? root, high = joints.get(JOINT.head) ?? root;
     shell.fadeNear(low, GUARDIAN.near, GUARDIAN.far); shell.fadeRange(GUARDIAN.near, GUARDIAN.far, high);
     return { root, model, mixer, actions, shell, look, joints, low, high, presence: 0, shownAt: -1, bearing: 0, height: 0, surge: 0, placed: false, drawn: false, sideSign: 1, sideNow: GUARDIAN.side, drawnBefore: false,
-      moveKey: NaN, contact: 0, plan: { name: TAKES.idle, time: 0, laid: false, strike: false } };
+      moveKey: NaN, contact: 0, plan: { name: TAKES.idle, time: 0, laid: false, strike: false }, user: fighter };
   }
   /** Where its user's moves put it, this frame: the take and, for one laid on a move, the second of it (written into
    *  `loom.plan`; the move's contact is read once a move). */
@@ -155,7 +157,7 @@ export class GuardianLooms {
   /** Every Guardian user's Guardian, once a frame (Shirokane's lightning drawn into `kit`, begun and ended by its owner). */
   update(time: number, dt: number, fighters: ReadonlyMap<string, Fighter>, kit?: ElectricKit) {
     const local = SIGNATURE.localId === undefined ? undefined : fighters.get(SIGNATURE.localId);
-    for (const [id, loom] of this.looms) if (!fighters.has(id)) { this.drop(loom); this.looms.delete(id); setLoomTop(id, 0); }
+    for (const [id, loom] of this.looms) if (!fighters.has(id)) { this.drop(loom); this.looms.delete(id); setLoomTop(id, 0); this.respare([loom.user]); }
     for (const [id, f] of fighters) {
       const s = f.state, look = GUARDIAN_LOOKS[s.fighter];
       if (!look) continue;
@@ -259,8 +261,24 @@ export class GuardianLooms {
   /** The Guardian drawn for `f`, for tests and probes. */
   loomOf(f: Fighter) { const loom = this.looms.get(f.state.id); return loom ? { root: loom.root, take: loom.current?.getClip().name, time: loom.current?.time, presence: loom.presence, shell: loom.shell } : undefined; }
   private drop(loom: Loom) { loom.shell.dispose(); loom.mixer.stopAllAction(); loom.mixer.uncacheRoot(loom.model); loom.root.removeFromParent(); }
-  reset() { for (const [id, loom] of this.looms) { this.drop(loom); setLoomTop(id, 0); } this.looms.clear(); }
-  dispose() { this.reset(); for (const loom of this.spares.values()) this.drop(loom); this.spares.clear(); }
+  reset() {
+    const users: FighterId[] = [];
+    for (const [id, loom] of this.looms) { users.push(loom.user); this.drop(loom); setLoomTop(id, 0); }
+    this.looms.clear();
+    this.respare(users);
+  }
+  /** (dude.work round 9) A new spare for each of `users` whose own was taken (`update`), built a moment after (a task of
+   *  its own) and hidden, as `load` builds the first: the next awakening takes it ready. Built in that awakening's frame
+   *  instead, after every reset (a round's, a set's), it and its first draw took 40 to 50 ms of it (the live duel's sets). */
+  private respare(users: readonly FighterId[]) {
+    if (!users.length) return;
+    setTimeout(() => {
+      if (this.disposed) return;
+      for (const user of users) { if (this.spares.has(user)) continue; const look = GUARDIAN_LOOKS[user], loom = look && this.build(look, user); if (loom) this.spares.set(user, loom); }
+    }, 0);
+  }
+  private disposed = false;
+  dispose() { this.disposed = true; this.reset(); for (const loom of this.spares.values()) this.drop(loom); this.spares.clear(); }
 }
 
 /** Ikazuchi Arrow on the bow take: the draw laid over the move up to its release (MOVES.shiden.ultimate's contact) - the
