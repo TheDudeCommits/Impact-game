@@ -662,7 +662,13 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     old?.dispose();
     epoch++;
     acc = 0; localClock = next.snapshot?.serverTime ?? 0; lastEvent = 0; duelRoundKey = ''; introFor = null; victoryFor = null; decidedAt = 0; finaleLine = undefined; preparing = '';
-    timeline.reset(); clearFlights(); clearFighters(); cutInSeen.clear(); hud.resetEvents();
+    // (round 9) The same two again (the visitor's own set at the join, RingSet.open of the ring's pair): their bodies stay,
+    // as they do from one round to the next (bodiesFor keeps a seat's body while its fighter is the same). Made new, the
+    // visitor's seat's body was worn at once and its own meshes never drawn, so its materials held no program, and three
+    // released the old body's programs with it two frames on: the leave's first watched frame built them all again
+    // (Impact's draw 212 ms there, the journey of 21 Nov). Another pair (the bots' next set): every body goes, as before.
+    const same = !!old && old.pair[0] === next.pair[0] && old.pair[1] === next.pair[1];
+    timeline.reset(); clearFlights(); if (!same) clearFighters(); cutInSeen.clear(); hud.resetEvents();
     targeting.reset(); autoLock.reset(); targetId = null;
     if (me) next.seat(me, true);
     if (next.snapshot) { timeline.push(next.snapshot, performance.now()); bodiesFor(next.snapshot); }
