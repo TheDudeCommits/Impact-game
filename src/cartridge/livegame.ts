@@ -537,6 +537,69 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     await linked.catch(() => undefined);
     rt0.dispose();
   }
+  /** (dude.work round 9) A few pixels of the world's kind of picture (half floats, with depth) for drawOnce, its lens and
+   *  the world's kind of fog (programs are built for the fog's kind). */
+  let onceTarget: THREE.WebGLRenderTarget | null = null, onceDrawn = 0;
+  const onceCam = new THREE.PerspectiveCamera(40, 1, 0.1, 60), onceFog = new THREE.Fog(0xd6e9f8, 160, 1150);
+  const onGpu = (t: THREE.Texture) => (gl.properties.get(t) as { __version?: number }).__version === t.version;
+  /** The pictures a body draws with, its hidden forms' included (a material's maps and its uniforms'), not yet on the GPU. */
+  function picturesOf(body: Fighter): THREE.Texture[] {
+    const out = new Set<THREE.Texture>();
+    const take = (t: unknown) => { const x = t as THREE.Texture | null; if (x?.isTexture && x.image && !onGpu(x)) out.add(x); };
+    body.group.traverse(o => {
+      for (const m of [(o as THREE.Mesh).material].flat() as (THREE.Material & Record<string, unknown>)[]) {
+        if (!m) continue;
+        for (const k of Object.keys(m)) take(m[k]);
+        for (const u of Object.values((m as { uniforms?: Record<string, { value?: unknown }> }).uniforms ?? {})) take(u?.value);
+      }
+    });
+    return [...out];
+  }
+  /**
+   * (dude.work round 9) Bodies drawn once, off stage, as the world's picture draws them, before the ring shows them: what
+   * three does only at a body's first draw (its programs' first use, its vertex buffers, its morph and bone textures) done
+   * in a slot of its own, and its pictures put on the GPU one a slot before that; its awakened form's too, hidden till an
+   * awakening, whose programs compile() builds but whose pictures and buffers the world's warm-up (what is visible) never
+   * reaches. A body first drawn in the ring did all of it in that frame. `whole`: everything the scene holds drawn with them
+   * (the boot's: the effects shown for their warm-up too); else only these bodies, the rest of the ring left out of the draw
+   * (its lights kept: each program is built for their number and kind).
+   */
+  async function drawOnce(bodies: readonly Fighter[], whole = false) {
+    for (const body of bodies) for (const t of picturesOf(body)) {
+      if (slot) await slot();
+      rt.within(() => { if (!onGpu(t)) { try { gl.initTexture(t); } catch { /* drawn when first used instead */ } } });
+    }
+    if (slot) await slot();
+    rt.within(() => {
+      onceTarget ??= new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, depthBuffer: true });
+      const was = gl.getRenderTarget(), fog = scene.fog, shadow = gl.shadowMap.enabled, auto = gl.shadowMap.autoUpdate, needs = gl.shadowMap.needsUpdate;
+      const added: THREE.Object3D[] = [], shown: THREE.Object3D[] = [], away: THREE.Object3D[] = [], culled: THREE.Object3D[] = [];
+      try {
+        for (const body of bodies) {
+          if (!body.group.parent) { scene.add(body.group); added.push(body.group); }
+          body.group.traverse(o => { if (!o.visible) { o.visible = true; shown.push(o); } });
+        }
+        if (!whole) for (const o of scene.children) if (o.visible && !(o as THREE.Light).isLight && !bodies.some(b => b.group === o)) { o.visible = false; away.push(o); }
+        scene.traverseVisible(o => { if (o.frustumCulled) { o.frustumCulled = false; culled.push(o); } });
+        const at = bodies[0]?.group.position ?? new THREE.Vector3();
+        onceCam.position.set(at.x, at.y + 1.4, at.z + 5); onceCam.lookAt(at.x, at.y + 1, at.z); onceCam.updateMatrixWorld();
+        scene.fog = onceFog;
+        // (the shadow map as it stands: bound, not drawn again)
+        gl.shadowMap.enabled = shadow && shadows; gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = false;
+        gl.setRenderTarget(onceTarget);
+        gl.render(scene, onceCam);
+        onceDrawn++;
+      } catch (error) { console.warn('Impact live: bodies drawn once off stage (they draw as they come instead)', error); }
+      finally {
+        for (const o of culled) o.frustumCulled = true;
+        for (const o of shown) o.visible = false;
+        for (const o of away) o.visible = true;
+        for (const o of added) o.removeFromParent();
+        scene.fog = fog; gl.shadowMap.enabled = shadow; gl.shadowMap.autoUpdate = auto; gl.shadowMap.needsUpdate = needs;
+        gl.setRenderTarget(was);
+      }
+    });
+  }
   /** A body of `id` built, compiled and let go before it steps in (FighterLibrary.warmup's job, off the drawn scene). */
   async function warmBody(id: FighterId, pictures?: Set<THREE.Texture>) {
     warms.started++;
@@ -598,6 +661,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
           const old = made.get(seat);
           if (old && old !== body) letGo(old, old.bodyFighter as FighterId);
           made.set(seat, body);
+          // (and drawn once, off stage: its first frame in the ring has nothing left to put on the GPU)
+          await drawOnce([body]);
+          if (preparing !== want) return;
         }
       } finally { if (preparing === want) preparing = ''; }
     })().catch(error => console.warn('Impact live: bodies ahead', error));
@@ -1009,6 +1075,9 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   lens.position.set(0, 6, 16); lens.lookAt(0, 1, 0); lens.updateMatrixWorld();
   if (slot) await slot();
   await compile();
+  // (dude.work round 9) and drawn once, off stage, with the effects still shown for their warm-up: the first set's bodies'
+  // awakened forms and the effects' pictures and buffers put on the GPU now, not at a first awakening in the ring
+  await drawOnce([...fighters.values()], true);
   awakeningEffects.hideWarmup(); clashEffects.hideWarmup();
   // (dude.work round 8) and the first set's fighters' occlusion-fade twins, which a warmed challenger's hidden proxies cover
   // for the fighters after them; their first use paid a while later, behind the duel
@@ -1045,7 +1114,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
     charge: () => { const a = me ? ring?.sim.actors.get(me) : undefined; if (a) a.state.ultimate = 100; return !!a; },
     glance: () => glance && { id: glance.id, t: +glance.t.toFixed(2) },
     /** Tests (dude.work round 8, S14): bodies built only to be compiled, let go, and whose dispose() threw. */
-    warms: () => ({ ...warms }),
+    warms: () => ({ ...warms, onceDrawn }),
     /** Tests (dude.work round 8, G2): the visitor's casts since the page began (a touch button's attack is one). */
     casts: () => castsByMe,
     /** Tests: the set decided now (the first seat wins), so the next one comes round. */
