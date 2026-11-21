@@ -161,7 +161,7 @@ export function pressureWaveMaterial(violet = false) {
       uReach: { value: 7.8 }, uFront: { value: 1.8 }, uWidth: { value: .4 }, uLift: { value: .22 },
       uTint: { value: new Color(violet ? 0x8846ee : 0x069ecc) },
       uDust: { value: 1 }, uEnergy: { value: 1 },
-      ...veilUniforms(VEIL.dust),
+      ...veilUniforms(VEIL.dust, true),
     },
     vertexShader: `uniform float uReach;uniform float uFront;uniform float uWidth;uniform float uLift;
       varying vec2 vLocal;varying vec3 vVeil;
@@ -207,7 +207,7 @@ export function groundDustMaterial() {
   return new ShaderMaterial({
     name:'CombatGroundDust', transparent:true, depthWrite:false, toneMapped:false,
     blending:NormalBlending,
-    uniforms:{uAge:{value:0},uTime:{value:0},uOpacity:{value:.85},uSeed:{value:0},...veilUniforms(VEIL.dust)},
+    uniforms:{uAge:{value:0},uTime:{value:0},uOpacity:{value:.85},uSeed:{value:0},...veilUniforms(VEIL.dust, true)},
     vertexShader:`uniform float uAge;uniform float uTime;uniform float uSeed;
       varying vec3 vLocal;varying vec3 vNormal;varying vec3 vView;varying vec3 vVeil;${noiseGLSL}
       void main(){vLocal=normal;float n=snoise(normal*3.4+vec3(uSeed,uAge*.8,0.));

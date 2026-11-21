@@ -1,0 +1,357 @@
+{
+ "note": "The Duel's announcer: every moment's lines, 1-3 each, original English with the odd Japanese hype word (hajime, ikuzo, sugoi, kanpeki, yatta, mada mada, sore made). No line quotes or names any other work, character, technique, show or game; the voice is the game's own announcer (see voiceDesign), never a person's or a known announcer's. src/audio/duelCaller.ts calls the moments (DUEL_CALLER: priority, chance, rest) and reads the recorded takes from src/audio/data/duelCaller.json by voice and moment; a moment a voice has no line for borrows the Rift announcer's fitting line (duelCaller.ts BORROWED) or stays quiet.",
+ "archetype": "An anime tournament announcer: a big, bright, theatrical voice from the arena's booth, hype that rises with the fight, crisp on the short calls and roaring on the big ones, now and then a Japanese hype word. The voice is the Rift's announcer's, the game's own.",
+ "voiceDesign": "The game's own announcer: the Rift's voice, designed for the game with Qwen3-TTS from a description (no person cloned) and spoken in it (public/assets/audio/survival/announcer-*.m4a). Its design take was no longer at hand, so the voice was cloned (ElevenLabs Instant Voice Cloning) from its own 77 shipped lines, as they ship (the clone that kept the room scored closest to the original), and the Duel's lines are spoken in that clone.",
+ "generation": "The six lines the announcer already says word for word (Round one!, Round two!, Final round!, Fight!, Victory!, Flawless!) are its own shipped takes. Every other line: three takes in the clone (eleven_v3, stability 0.5, an audio tag from the line's `how`), each heard by Whisper (large-v3-turbo) and measured against the shipped lines (a speaker embedding's cosine to their centroid: the clone's kept takes 0.81 on average, the shipped lines 0.84 against each other, five other designed voices 0.67); the take that says the line, fits under maxSeconds where one does, and sounds closest is kept. Prepared as the ball caller's lines are (trimmed, the loudest 400 ms at -13 LUFS as the Rift's are, 48 kHz mono AAC) into public/assets/audio/duel/caller/rift/<id>.m4a, listed in src/audio/data/duelCaller.json by moment.",
+ "maxSeconds": 2.0,
+ "lines": [
+  {
+   "id": "round-1-1",
+   "moment": "round-1",
+   "text": "Round one!",
+   "how": "a big, rising call that fills the arena"
+  },
+  {
+   "id": "round-1-2",
+   "moment": "round-1",
+   "text": "Round one. Hajime!",
+   "how": "a big, rising call that fills the arena"
+  },
+  {
+   "id": "round-1-3",
+   "moment": "round-1",
+   "text": "First round. Show me something!",
+   "how": "a big, rising call that fills the arena"
+  },
+  {
+   "id": "round-2-1",
+   "moment": "round-2",
+   "text": "Round two!",
+   "how": "a big, rising call that fills the arena"
+  },
+  {
+   "id": "round-2-2",
+   "moment": "round-2",
+   "text": "Round two. No holding back!",
+   "how": "a big, rising call that fills the arena"
+  },
+  {
+   "id": "round-2-3",
+   "moment": "round-2",
+   "text": "Second round. Ikuzo!",
+   "how": "a big, rising call that fills the arena"
+  },
+  {
+   "id": "round-final-1",
+   "moment": "round-final",
+   "text": "Final round!",
+   "how": "slower and heavier, the weight of the whole set in it"
+  },
+  {
+   "id": "round-final-2",
+   "moment": "round-final",
+   "text": "Final round. Everything on the line!",
+   "how": "slower and heavier, the weight of the whole set in it"
+  },
+  {
+   "id": "round-final-3",
+   "moment": "round-final",
+   "text": "One round left. Make it count!",
+   "how": "slower and heavier, the weight of the whole set in it"
+  },
+  {
+   "id": "fight-1",
+   "moment": "fight",
+   "text": "Fight!",
+   "how": "one sharp, full-throated word"
+  },
+  {
+   "id": "fight-2",
+   "moment": "fight",
+   "text": "Begin!",
+   "how": "one sharp, full-throated word"
+  },
+  {
+   "id": "fight-3",
+   "moment": "fight",
+   "text": "Hajime!",
+   "how": "one sharp, full-throated word"
+  },
+  {
+   "id": "first-strike-1",
+   "moment": "first-strike",
+   "text": "First strike!",
+   "how": "quick and bright, the fight just lit"
+  },
+  {
+   "id": "first-strike-2",
+   "moment": "first-strike",
+   "text": "Opening blow!",
+   "how": "quick and bright, the fight just lit"
+  },
+  {
+   "id": "first-strike-3",
+   "moment": "first-strike",
+   "text": "And it's on!",
+   "how": "quick and bright, the fight just lit"
+  },
+  {
+   "id": "counter-1",
+   "moment": "counter",
+   "text": "Counter!",
+   "how": "a snap of delight"
+  },
+  {
+   "id": "counter-2",
+   "moment": "counter",
+   "text": "Countered! Sugoi!",
+   "how": "a snap of delight"
+  },
+  {
+   "id": "counter-3",
+   "moment": "counter",
+   "text": "Read it like a book!",
+   "how": "a snap of delight"
+  },
+  {
+   "id": "punish-1",
+   "moment": "punish",
+   "text": "Punished!",
+   "how": "a hard, satisfied bark"
+  },
+  {
+   "id": "punish-2",
+   "moment": "punish",
+   "text": "Caught in the whiff!",
+   "how": "a hard, satisfied bark"
+  },
+  {
+   "id": "punish-3",
+   "moment": "punish",
+   "text": "That's the price!",
+   "how": "a hard, satisfied bark"
+  },
+  {
+   "id": "parry-1",
+   "moment": "parry",
+   "text": "Parried!",
+   "how": "a sharp gasp into a shout"
+  },
+  {
+   "id": "parry-2",
+   "moment": "parry",
+   "text": "Perfect parry!",
+   "how": "a sharp gasp into a shout"
+  },
+  {
+   "id": "parry-3",
+   "moment": "parry",
+   "text": "Kanpeki! Turned it away!",
+   "how": "a sharp gasp into a shout"
+  },
+  {
+   "id": "deflect-1",
+   "moment": "deflect",
+   "text": "Deflected!",
+   "how": "quick, impressed"
+  },
+  {
+   "id": "deflect-2",
+   "moment": "deflect",
+   "text": "Batted it aside!",
+   "how": "quick, impressed"
+  },
+  {
+   "id": "guard-break-1",
+   "moment": "guard-break",
+   "text": "Guard break!",
+   "how": "a heavy crack of a call"
+  },
+  {
+   "id": "guard-break-2",
+   "moment": "guard-break",
+   "text": "The guard shatters!",
+   "how": "a heavy crack of a call"
+  },
+  {
+   "id": "guard-break-3",
+   "moment": "guard-break",
+   "text": "Wide open now!",
+   "how": "a heavy crack of a call"
+  },
+  {
+   "id": "wall-splat-1",
+   "moment": "wall-splat",
+   "text": "Into the wall!",
+   "how": "an impact you can hear him wince at"
+  },
+  {
+   "id": "wall-splat-2",
+   "moment": "wall-splat",
+   "text": "Pinned to the wall!",
+   "how": "an impact you can hear him wince at"
+  },
+  {
+   "id": "wall-splat-3",
+   "moment": "wall-splat",
+   "text": "Splat!",
+   "how": "an impact you can hear him wince at"
+  },
+  {
+   "id": "combo-5-1",
+   "moment": "combo-5",
+   "text": "Five hits!",
+   "how": "counting up, the energy rising"
+  },
+  {
+   "id": "combo-5-2",
+   "moment": "combo-5",
+   "text": "Five! Keep going!",
+   "how": "counting up, the energy rising"
+  },
+  {
+   "id": "combo-10-1",
+   "moment": "combo-10",
+   "text": "Ten hits! Sugoi!",
+   "how": "louder, the crowd in his voice"
+  },
+  {
+   "id": "combo-10-2",
+   "moment": "combo-10",
+   "text": "Ten! It doesn't stop!",
+   "how": "louder, the crowd in his voice"
+  },
+  {
+   "id": "combo-15-1",
+   "moment": "combo-15",
+   "text": "Fifteen hits! Unreal!",
+   "how": "a full roar, near the top of his range"
+  },
+  {
+   "id": "combo-15-2",
+   "moment": "combo-15",
+   "text": "Fifteen! Is there no end?!",
+   "how": "a full roar, near the top of his range"
+  },
+  {
+   "id": "g-combo-1",
+   "moment": "g-combo",
+   "text": "Combo finisher!",
+   "how": "a big, ringing call on the hit"
+  },
+  {
+   "id": "g-combo-2",
+   "moment": "g-combo",
+   "text": "And the seal comes down!",
+   "how": "a big, ringing call on the hit"
+  },
+  {
+   "id": "g-combo-3",
+   "moment": "g-combo",
+   "text": "The payoff!",
+   "how": "a big, ringing call on the hit"
+  },
+  {
+   "id": "comeback-1",
+   "moment": "comeback",
+   "text": "What a comeback!",
+   "how": "astonished, then a roar"
+  },
+  {
+   "id": "comeback-2",
+   "moment": "comeback",
+   "text": "Mada mada! Back from the brink!",
+   "how": "astonished, then a roar"
+  },
+  {
+   "id": "comeback-3",
+   "moment": "comeback",
+   "text": "Never count them out!",
+   "how": "astonished, then a roar"
+  },
+  {
+   "id": "ko-1",
+   "moment": "ko",
+   "text": "K.O.!",
+   "how": "one huge, final call"
+  },
+  {
+   "id": "ko-2",
+   "moment": "ko",
+   "text": "Down they go!",
+   "how": "one huge, final call"
+  },
+  {
+   "id": "ko-3",
+   "moment": "ko",
+   "text": "Knocked out!",
+   "how": "one huge, final call"
+  },
+  {
+   "id": "double-ko-1",
+   "moment": "double-ko",
+   "text": "Double K.O.!",
+   "how": "disbelief, then the call"
+  },
+  {
+   "id": "double-ko-2",
+   "moment": "double-ko",
+   "text": "Both fighters down!",
+   "how": "disbelief, then the call"
+  },
+  {
+   "id": "time-1",
+   "moment": "time",
+   "text": "Time!",
+   "how": "a firm stop, like a referee's"
+  },
+  {
+   "id": "time-2",
+   "moment": "time",
+   "text": "Time's up!",
+   "how": "a firm stop, like a referee's"
+  },
+  {
+   "id": "time-3",
+   "moment": "time",
+   "text": "Sore made!",
+   "how": "a firm stop, like a referee's"
+  },
+  {
+   "id": "victory-1",
+   "moment": "victory",
+   "text": "Victory!",
+   "how": "triumphant, held"
+  },
+  {
+   "id": "victory-2",
+   "moment": "victory",
+   "text": "Yatta! Victory!",
+   "how": "triumphant, held"
+  },
+  {
+   "id": "victory-3",
+   "moment": "victory",
+   "text": "The winner!",
+   "how": "triumphant, held"
+  },
+  {
+   "id": "flawless-1",
+   "moment": "flawless",
+   "text": "Flawless!",
+   "how": "awed, then triumphant"
+  },
+  {
+   "id": "flawless-2",
+   "moment": "flawless",
+   "text": "Untouched! Kanpeki!",
+   "how": "awed, then triumphant"
+  },
+  {
+   "id": "flawless-3",
+   "moment": "flawless",
+   "text": "Not a scratch!",
+   "how": "awed, then triumphant"
+  }
+ ]
+}

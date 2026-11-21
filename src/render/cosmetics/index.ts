@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { Cosmetics } from './Cosmetics';
 import { setSkinResolution } from './skins';
 import { auraShared } from './auras';
+import { sceneDrawingSize } from '../look/sceneBuffer';
 
 let layer: Cosmetics | undefined;
 let camera: THREE.Camera | undefined;
@@ -34,7 +35,7 @@ export function attachCosmetics(scene: THREE.Scene): Cosmetics {
     camera = eye; canvas = renderer.domElement;
     if (!cosmetics.worn) return;
     const now = performance.now(), dt = Math.min(.1, (now - last) / 1000); last = now;
-    renderer.getDrawingBufferSize(size);
+    sceneDrawingSize(renderer, size); // the scene's size: a desktop's canvas holds the screen's (look/sceneBuffer.ts)
     setSkinResolution(size.y); auraShared.uAuraHeight.value = size.y;
     cosmetics.update(now / 1000, dt);
   };

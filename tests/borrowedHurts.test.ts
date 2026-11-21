@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { FIGHTERS } from '../src/config';
 import type { FighterId } from '../src/game/types';
 import { DREAM_IMPACT } from '../src/render/dreamFlag';
+import { setAbOff } from '../src/render/look/abSwitch';
 import { DREAM_FLINCH, DREAM_HURTS, Fighter } from '../src/render/Fighter';
 import { HURT_DONOR, borrowReport, borrowedHurt, installBorrowedHurts, resetBorrowedHurts } from '../src/engine/client/borrowedHurts';
 import { decodeTakePack } from '../src/engine/client/takePacks';
@@ -70,6 +71,10 @@ function struck(samples: ReactSample[]) {
  *  Torsion 1.48 m) and the armed; each under a string of its own kind. */
 const UNDER: [FighterId, FighterId][] = [['konta', 'tempo'], ['gummy', 'konta'], ['kenzo', 'gummy'], ['nigo', 'taisei'], ['haldor', 'taisei'], ['torsion', 'konta'], ['magatsu', 'tempo'], ['tempo', 'ampere']];
 describe.runIf(DREAM_IMPACT)('a string on a body with borrowed takes', () => {
+  // Hit zones (hitzone): a standing body's take is picked by where each blow lands as it is drawn
+  // (tests/feelBatch2.test.ts). The string's turns below are the stage's, as `?ab=hitzone` draws them.
+  beforeAll(() => setAbOff('hitzone', true));
+  afterAll(() => setAbOff('hitzone', false));
   it.each(UNDER)('%s under %s\'s string: each blow its own take, no jump of a frame', async (id, by) => {
     const victim = await buildBody(id, 'b'), attacker = await buildBody(by, 'a');
     try {

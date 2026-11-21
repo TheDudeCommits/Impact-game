@@ -34,6 +34,8 @@ import { isRoseEmpress } from './signature/RoseEmpressContact';
 import { bigBlowOf, cinematicBlowOf } from './bigBlowEvent';
 import { VFX } from './vfxLevel';
 import { LOCK_ESCAPE_WINDOW } from '../game/lockCombat';
+import { filmOn } from './look/filmLook';
+import { abOff } from './look/abSwitch';
 export type { ScreenFx } from './vfx/MotionFx';
 
 type CastView = {
@@ -532,7 +534,7 @@ export class CombatEffects {
     const shell = new THREE.Mesh(this.sphere, shellMaterial); shell.name = 'impact-pressure-shell';
     const pressure = new THREE.Mesh(this.pressureGeometry, pressureWaveMaterial()); pressure.name = 'impact-ground-wave'; pressure.rotation.x = -Math.PI / 2; pressure.frustumCulled = false;
     const dust = new THREE.InstancedMesh(this.sphere, groundDustMaterial(), 12); dust.name = 'impact-ground-dust'; dust.frustumCulled = false; dust.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    const debrisMaterial = installVeil(new THREE.MeshBasicMaterial({ color: 0x6c604b, transparent: true, opacity: 1, depthWrite: false }), VEIL.rubble) as THREE.MeshBasicMaterial;
+    const debrisMaterial = installVeil(new THREE.MeshBasicMaterial({ color: 0x6c604b, transparent: true, opacity: 1, depthWrite: false }), VEIL.rubble, true) as THREE.MeshBasicMaterial;
     const debris = new THREE.InstancedMesh(this.spark, debrisMaterial, 10); debris.name = 'impact-ground-debris'; debris.frustumCulled = false; debris.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     group.add(shell, pressure, dust, debris, streaks, ink); this.scene.add(group);
     return { group, rim, streaks, ink, inkMaterial, shell, pressure, dust, debris, debrisMaterial, busy: false };
@@ -932,7 +934,7 @@ export class CombatEffects {
       this.detonations.add(key); if (this.detonations.size > 64) this.detonations.delete(this.detonations.values().next().value!);
       // A sword cut, a punch or an electric touch remains readable through its
       // contact spark; the barrage's ticks are not a string of bombs.
-      if (move.style === 'melee') { if (!this.claimTouchSpark(event)) this.melee(point, el, cls, time, dir, victim, floor, local, seed, anchor, !!source?.armed, hitTier(slot, event.branch, event.chain), MAGIC_MELEE.has(fighterId ?? ''), OWN_STEEL.has(fighterId ?? '')); }
+      if (move.style === 'melee') { if (!this.claimTouchSpark(event)) this.melee(point, el, cls, time, dir, victim, floor, local, seed, anchor, !!source?.armed, hitTier(slot, event.branch, event.chain), MAGIC_MELEE.has(fighterId ?? ''), OWN_STEEL.has(fighterId ?? ''), !!(event.counter || event.punish)); }
       else this.energy(point, time, seed, el, Math.max(cls, 2) as ImpactClass, local, victim, floor, anchor, dir);
       return;
     }
@@ -956,7 +958,7 @@ export class CombatEffects {
     }
     if (melee && !kazeyose || thrownSteel) {
       // Drawn already, on the frame the blow reached the body, where it did.
-      if (!(melee && !kazeyose && this.claimTouchSpark(event))) this.melee(point, el, thrownSteel ? Math.min(cls, 1) as ImpactClass : cls, time, dir, victim, floor, local, seed, anchor, !!source?.armed && !thrownSteel, hitTier(slot, event.branch, event.chain), MAGIC_MELEE.has(fighterId ?? ''), OWN_STEEL.has(fighterId ?? ''));
+      if (!(melee && !kazeyose && this.claimTouchSpark(event))) this.melee(point, el, thrownSteel ? Math.min(cls, 1) as ImpactClass : cls, time, dir, victim, floor, local, seed, anchor, !!source?.armed && !thrownSteel, hitTier(slot, event.branch, event.chain), MAGIC_MELEE.has(fighterId ?? ''), OWN_STEEL.has(fighterId ?? ''), !!(event.counter || event.punish));
       return;
     }
     this.energy(point, time, seed, el, Math.max(cls, 1) as ImpactClass, local, victim, floor, anchor, dir);
@@ -1041,11 +1043,11 @@ export class CombatEffects {
 
   /** A physical blow: the spark, and what it does to the floor - dust kicked
    *  out of the far side of the victim, never back over the attacker's feet. */
-  private melee(point: THREE.Vector3, el: Element, cls: ImpactClass, time: number, dir: THREE.Vector3 | undefined, victim: Fighter | undefined, floor: number, local: boolean, seed: number, anchor = 0, blade = false, tier?: HitTier, magic = false, ownSteel = false) {
+  private melee(point: THREE.Vector3, el: Element, cls: ImpactClass, time: number, dir: THREE.Vector3 | undefined, victim: Fighter | undefined, floor: number, local: boolean, seed: number, anchor = 0, blade = false, tier?: HitTier, magic = false, ownSteel = false, reward = false) {
     // The dream loop (22 October 2026): the burst sits on the body as it is drawn. A flung body is drawn a beat behind
     // where the blow found it, and an air string's last burst went off a metre and more from it - on the attacker.
     if (DREAM_IMPACT && victim) { const c = bodyCentre(victim, this.head), d = point.distanceTo(c); if (d > .8) point.sub(c).multiplyScalar(.45 / d).add(c); }
-    this.kit.hitSpark(point.x, point.y, point.z, el, cls, time, dir, local ? 2 : 1, anchor, magic ? 'blast' : blade ? 'slash' : 'burst', tier, ownSteel);
+    this.kit.hitSpark(point.x, point.y, point.z, el, cls, time, dir, local ? 2 : 1, anchor, magic ? 'blast' : blade ? 'slash' : 'burst', tier, ownSteel, reward);
     // (Round 38: and a big blow's body trails sparks and speed lines as it is thrown - VfxKit.trail.)
     if (tier && cls >= 2) this.kit.trail(victim, time, blade);
     const feet = victim?.group.position, low = !victim || victim.state.grounded;
@@ -1281,6 +1283,7 @@ export class CombatEffects {
     for (const cast of this.casts) if (cast.event.actorId === event.actorId && cast.event.slot === event.slot && cast.released && cast.contactAt === undefined) cast.contactAt = event.serverTime;
   }
 
+  private readonly koMid = new THREE.Vector3();
   /** A fighter going down for good: the biggest burst there is. */
   private knockout(event: CombatEvent, fighters?: ReadonlyMap<string, Fighter>) {
     const victim = event.targetId ? fighters?.get(event.targetId) : undefined, killer = fighters?.get(event.actorId);
@@ -1298,12 +1301,21 @@ export class CombatEffects {
     this.kit.groundImpact(p.x, p.y, p.z, 0, 1, 0, 3, time, el, p.y);
     this.kit.pulse(c.x, c.y + 1.4, c.z, 0xffffff, 14, 12, time, .7, 3);
     // The feel pass, iteration eleven: the knockout holds its ink frame as an ultimate's last blow does.
-    if (local) { this.frame(1, IMPACT_FRAME_HOLD); this.chroma(1); }
+    // In the film look the knockout keeps its own paper frame (a shorter rest than the other panels'). Its painted
+    // still (look/filmFreeze.ts: the frame held 1.15 s as a painting while the fight ran on underneath) is gone: it read
+    // as the game freezing on every knockout. The fight keeps moving through it; `?ab=kostill` brings it back.
+    if (local && filmOn()) {
+      this.screen?.impactFrame(1, undefined, IMPACT_FRAME_HOLD, true); this.chroma(1);
+      if (abOff('kostill')) this.screen?.paintedFreeze?.(killer ? bodyCentre(killer, this.koMid).add(c).multiplyScalar(.5) : c);
+    } else if (local) { this.frame(1, IMPACT_FRAME_HOLD); this.chroma(1); }
   }
 
   /** The screen's answers, throttled: a string of hits must read as a
    *  string of blows, not as a strobe. */
   private frame(strength: number, hold = 0) {
+    // The film look keeps the panel for an ultimate's last blow and a knockout only (its sakuga moments'
+    // biggest beats; GameRenderer.impactFrame rations them further).
+    if (filmOn() && !(hold >= IMPACT_FRAME_HOLD)) return;
     const now = performance.now() / 1000;
     if (now - this.lastFrame < .4) { if (hold > 0) this.screen?.extendImpact?.(hold); return; }
     this.lastFrame = this.lastPanel = now; this.screen?.impactFrame(Math.min(1, strength * Math.max(.5, this.kit.density)), undefined, hold);

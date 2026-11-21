@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { GamepadControls, UI_DIRECTION, type PadState, type UiAction } from '../src/input/gamepad';
-import { enterDigit, type DigitEntry } from '../src/ui/padEntry';
+import { enterDigit, CODE_RING, type DigitEntry } from '../src/ui/padEntry';
 import { stepRound } from '../src/ui/padNav';
 import { openPage, scrollFor, SCROLL_STEP } from '../src/ui/pageViewer';
 
@@ -28,10 +28,13 @@ describe('LB and RB in a menu', () => {
 
 describe('a code typed with the D-pad', () => {
   const run = (start: DigitEntry, actions: UiAction[]) => actions.reduce<DigitEntry & { done: boolean }>((entry, action) => enterDigit(entry, action), { ...start, done: false });
-  it('turns the digit up with up and down with down, round 9 and 0', () => {
+  it('turns a place up with up and down with down: the digits, then PlayerTwo\'s letters, round Z and 0', () => {
     expect(enterDigit({ value: '000000', digit: 0 }, 'previous')).toEqual({ value: '100000', digit: 0, done: false });
-    expect(enterDigit({ value: '000000', digit: 0 }, 'next')).toEqual({ value: '900000', digit: 0, done: false });
-    expect(enterDigit({ value: '900000', digit: 0 }, 'previous').value).toBe('000000');
+    expect(enterDigit({ value: '000000', digit: 0 }, 'next')).toEqual({ value: 'Z00000', digit: 0, done: false });
+    expect(enterDigit({ value: '900000', digit: 0 }, 'previous').value).toBe('A00000');
+    expect(enterDigit({ value: 'H00000', digit: 0 }, 'previous').value).toBe('J00000');
+    expect(enterDigit({ value: 'Z00000', digit: 0 }, 'previous').value).toBe('000000');
+    expect(CODE_RING).not.toMatch(/[ILO]/);
   });
   it('moves between the six digits with left and right, round the ends', () => {
     expect(enterDigit({ value: '000000', digit: 5 }, 'right').digit).toBe(0);
@@ -44,9 +47,10 @@ describe('a code typed with the D-pad', () => {
     expect(enterDigit(entry, 'confirm')).toEqual({ value: '123456', digit: 5, done: true });
     expect(enterDigit(entry, 'back').done).toBe(true);
   });
-  it('changes nothing for the other buttons (Y, LB, RB), and keeps only digits, six of them', () => {
+  it('changes nothing for the other buttons (Y, LB, RB), and keeps six letters and digits, in capitals', () => {
     for (const action of ['extra', 'tabPrevious', 'tabNext'] as UiAction[]) expect(enterDigit({ value: '123456', digit: 2 }, action)).toEqual({ value: '123456', digit: 2, done: false });
-    expect(enterDigit({ value: '12a3', digit: 9 }, 'previous')).toEqual({ value: '123100', digit: 3, done: false });
+    expect(enterDigit({ value: '12a3', digit: 9 }, 'previous')).toEqual({ value: '12A400', digit: 3, done: false });
+    expect(enterDigit({ value: '1-2 3', digit: 9 }, 'previous')).toEqual({ value: '123100', digit: 3, done: false });
     expect(enterDigit({ value: '1234567', digit: 0 }, 'right').value).toBe('123456');
   });
 });

@@ -30,7 +30,7 @@ describe('the main game\'s bots fight with their enders', () => {
     // stream, and on seed 8 Gaunt blocked or parried every string Nigo landed before it could be ended.
     // (2 November 2026, techniques: the bots' stick moves draw on the stream too, which re-deals the fights; Gummy against
     // Kenzo is seed 4 now, where the ground smash comes out.)
-    for (const [a, b, seed] of [['gummy', 'kenzo', 4], ['kenzo', 'kuon', 3], ['nigo', 'gaunt', 3], ['gaunt', 'kosho', 8], ['setsu', 'ouga', 8],
+    for (const [a, b, seed] of [['gummy', 'kenzo', 14], ['kenzo', 'kuon', 3], ['nigo', 'gaunt', 3], ['gaunt', 'kosho', 8], ['setsu', 'ouga', 8],
       ['ward', 'taisei', 8], ['oro', 'gummy', 3], ['shiden', 'ward', 6], ['ouga', 'nigo', 8]] as [FighterId, FighterId, number][]) {
       // (6 October, the feel pass: the big blows' longer hold re-deals these seeded fights; Shiden against
       // Ward is seed 4 now, where his ground smash still comes out - it did on 8 before.)
@@ -38,6 +38,9 @@ describe('the main game\'s bots fight with their enders', () => {
       // Shiden against Ward is seed 24, where the ground smash comes out.)
       // (24 October, v75: the air strike's fling - its body thrown three and a half metres down and away - re-deals them
       // once more; Shiden against Ward is seed 6, where the ground smash comes out.)
+      // (, a heavy blow holds its thrower by its weight, a COUNTER or a PUNISH holds both
+      // longer, and the bots punish a recovery and meet a jump on their own stream, which re-deals them again; Gummy
+      // against Kenzo is seed 14, where the ground smash comes out.)
       const { events, sound } = fight(a, b, seed);
       expect(sound, `${a} against ${b}: positions and health stay real`).toBe(true);
       // (2 November 2026: a bot's branches are its enders and, since then, the techniques every style has.)

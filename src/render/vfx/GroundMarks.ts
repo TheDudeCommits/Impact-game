@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { noiseGLSL } from './noise';
 import { noiseTexture, NOISE_GLSL } from './noiseTexture';
+import { refinedVfx } from '../look/filmLook';
 
 /** Marks left on a surface: a crater of radial cracks, or a burn. For the ball modes: a
  *  skid - the dry-brush streaks a sliding body leaves, laid along the mark's own x (its `rotation`) - and a stamp, one
@@ -163,6 +164,9 @@ export class GroundMarks {
    *  (nx,ny,nz): the floor is (0,1,0), a wall its own normal. `glow` lights
    *  the fresh crack or burn in the colour of what made it, cooling off. */
   mark(kind: number, x: number, y: number, z: number, nx: number, ny: number, nz: number, size: number, born: number, life: number, glow = 0xffffff, glowAmount = 0, rotation = Math.random() * Math.PI * 2) {
+    // The film look (look/filmLook.ts refinedVfx): no ink cracks on the floor; a burn small, faint and brief.
+    // (The area moves' stamps and the skids are the fight's to read: left as they are.)
+    if (refinedVfx()) { if (kind === MARK.crack) return; if (kind === MARK.scorch) { size *= .5; glowAmount *= .5; life *= .6; } }
     if (!this.started) { this.started = true; this.epoch = born; }
     if (this.cursor >= this.limit) this.cursor = 0;
     const d = this.data, o = this.cursor * STRIDE;

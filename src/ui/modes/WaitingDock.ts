@@ -32,11 +32,14 @@ export function dockText(frame: ModeHudFrame, waitedSeconds: number, offerAt = B
     // A party's own room (lobby.party) has no code to share: the party has its own invite.
     return { title: lobby.party ? (lobby.duel ? 'PARTY DUEL' : 'PARTY MATCH') : `${lobby.duel ? 'DUEL ROOM' : own ? 'YOUR ROOM' : 'PRIVATE ROOM'} · ${lobby.code ?? ''}`, detail: loading ? LOADING_ROOM : left !== null ? `STARTING IN ${left}s` : `${snapshot.players.length} / ${size} JOINED${bots ? ` · ${bots} BOT${bots === 1 ? '' : 'S'} AT START` : ''}` };
   }
+  // The ranked Duel (game/duel/ranked.ts): the same queue's words, said as RANKED - matched by rating, and its bot is
+  // offered as an unranked fight on this device (the queue is left for it).
+  const ranked = !!snapshot.ranked, queued = ranked ? 'RANKED · FINDING AN OPPONENT' : 'FINDING AN OPPONENT';
   if (lobby.duel) return snapshot.players.length < 2
     ? waitedSeconds >= offerAt
-      ? { title: `FINDING AN OPPONENT · ${time(waitedSeconds)}`, detail: "NOBODY'S QUEUED · TRY A BOT ON THIS DEVICE?", bot: 'FIGHT A BOT', cancel: 'CANCEL' }
-      : { title: `FINDING AN OPPONENT · ${time(waitedSeconds)}`, detail: 'REAL PLAYERS ONLY · NEVER A BOT', cancel: 'CANCEL' }
-    : { title: others.every(p => p.isBot) ? 'YOUR BOT RIVAL' : 'OPPONENT FOUND', detail: left !== null && !loading ? `GET READY · ${left}s` : 'LOADING THE ARENA', cancel: undefined };
+      ? { title: `${queued} · ${time(waitedSeconds)}`, detail: ranked ? "NOBODY'S QUEUED · AN UNRANKED BOT ON THIS DEVICE?" : "NOBODY'S QUEUED · TRY A BOT ON THIS DEVICE?", bot: 'FIGHT A BOT', cancel: 'CANCEL' }
+      : { title: `${queued} · ${time(waitedSeconds)}`, detail: ranked ? 'NEAREST RATING FIRST · NEVER A BOT' : 'REAL PLAYERS ONLY · NEVER A BOT', cancel: 'CANCEL' }
+    : { title: others.every(p => p.isBot) ? 'YOUR BOT RIVAL' : ranked ? 'RANKED OPPONENT FOUND' : 'OPPONENT FOUND', detail: left !== null && !loading ? `GET READY · ${left}s` : 'LOADING THE ARENA', cancel: undefined };
   // A field of bots (one human): the countdown runs while the arena loads.
   if (others.length && humans === 1 && others.every(p => p.isBot)) return { title: 'GET READY', detail: left !== null && !loading ? `THE FIGHT STARTS IN ${left}s` : 'LOADING THE ARENA' };
   const fill = Math.max(0, MIN_MATCH_FIELD - snapshot.players.length);

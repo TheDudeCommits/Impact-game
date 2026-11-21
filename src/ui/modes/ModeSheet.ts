@@ -1,3 +1,4 @@
+import { cleanCode, CODE_INPUT, isRoomCode } from '../roomCode';
 import {BALL_ARENAS, MODE_ARENAS, isBallArena} from '../../game/ball/arenas';
 import type {BallModeId} from '../../game/ball/model';
 import { isReleasedFighter } from '../../game/rosterAvailability';
@@ -21,6 +22,7 @@ import { readInvite } from '../roomInvite';
 import { modeOpen } from '../../originals/launch';
 import { ballChoice, ballLevelRow, ballPlayRow, ballPrefs, ballRulesRow, ballStart, traitBadge } from '../ball/ballSheet';
 import { onRanks } from '../ball/ranks';
+import { duelBoardSection, duelChoice, duelQueueOf, duelQueueRow, duelRankedPanel, onBoard, rankedBlocked } from '../duel/ranked';
 import { nearest, type Direction } from '../spatialFocus';
 import { MODES, VARIANT_ORDER, modeHere, type ModeId, type Panel, type VariantId } from './catalogue';
 import { defenceBasics } from './defence';
@@ -151,8 +153,10 @@ export class ModeSheet {
     // Couch: a controller plugged in or taken out while the sheet is up moves the seats (and the sheet polls the pads too:
     // a browser shows a pad only once a button on it is pressed, with or without an event - `watch`).
     for(const type of ['gamepadconnected','gamepaddisconnected'])window.addEventListener(type,()=>{if(this.dialog.open&&this.variant==='couch')this.checkPads();});
-    // RANKED's stamp, once the server has said where the account stands (ui/ball/ranks.ts).
-    onRanks(() => { if (this.dialog.open && this.variant === 'online' && (this.mode === 'goal-rush' || this.mode === 'sky-spike')) this.draw(); });
+    // RANKED's stamp, once the server has said where the account stands (ui/ball/ranks.ts); the Duel's season board too
+    // (ui/duel/ranked.ts). Drawn again where the focus was, for a pad on the sheet.
+    onRanks(() => { if (this.dialog.open && this.variant === 'online' && (this.mode === 'goal-rush' || this.mode === 'sky-spike')) this.draw(); else if (this.dialog.open && this.rankedDuel()) this.redrawFocused(); });
+    onBoard(() => { if (this.dialog.open && this.rankedDuel()) this.redrawFocused(); });
     this.dialog.addEventListener('input', event => this.input(event));
     this.dialog.addEventListener('paste', event => this.paste(event));
     this.dialog.addEventListener('close', () => { if (this.editing) { const code = this.dialog.querySelector<HTMLInputElement>('.ms-join input'); if (code) showEntry(code, undefined); } this.editing = false; });
@@ -178,7 +182,7 @@ export class ModeSheet {
   show(mode: ModeId, options: SheetOpen = {}) {
     if (!modeOpen(mode)) return;
     this.mode = mode; this.variant = this.variantFor(mode, options.variant);
-    this.code = options.code ?? ''; this.status = options.status ?? ''; this.invited = !!options.invited; this.editing = false;
+    this.code = cleanCode(options.code ?? ''); this.status = options.status ?? ''; this.invited = !!options.invited; this.editing = false;
     this.panels = options.showPanels ?? !explainerSeen(mode);
     this.rules = this.panels;
     const fighter = this.host.fighter();
@@ -187,7 +191,8 @@ export class ModeSheet {
     this.seats = undefined;
     this.draw();
     this.preload();
-    if (!this.dialog.open) this.dialog.showModal();
+    // (A sheet that scrolls - a phone on its side - opens at its top, not where the last mode's was left.)
+    if (!this.dialog.open) { this.dialog.scrollTop = 0; this.dialog.showModal(); }
     this.watch();
     // (An invite's GO joins: it takes the focus, rather than the code field - on a phone that raised the keyboard.)
     this.focus(this.code && this.variant === 'friends' && !this.invited ? '.ms-join input' : '.ms-go');
@@ -205,7 +210,7 @@ export class ModeSheet {
 
   private draw() {
     const info = this.info, v = info.variants[this.variant]!, fighter = this.fighter(), seen = explainerSeen(this.mode);
-    const go = goLabel(this.mode, v.go, fighterCaption(fighter), this.locked(fighter), this.joining ? this.code : undefined);
+    const go = goLabel(this.mode, this.rankedDuel() ? 'FIND RANKED MATCH' : v.go, fighterCaption(fighter), this.locked(fighter), this.joining ? this.code : undefined);
     const art = siteUrl(info.cover ?? `/assets/home/modes/${info.art}.webp`);
     const facts = [info.facts.players, info.facts.length, info.facts.lives].map(f => `<span>${escape(f)}</span>`).join('');
     // (A ball mode's lines name its own touch set's buttons on a phone: PASS, SHOOT, BOOST ... input/sportTouch.ts.)
@@ -226,7 +231,7 @@ export class ModeSheet {
     this.dialog.classList.toggle('ms-on-art', !place);
     const shots = pictures(fighter, false), couch = this.variant === 'couch';
     if (couch && !this.seats) { this.seats = [...plannedSeats(!!prefs.couchSwap)]; this.padsKey = this.presence.present(seatablePads(this.pads()), this.seats, performance.now()).join(','); }
-    const fight = `<button type="button" class="ms-go" data-ms-go${this.host.busy() || this.unsupported ? ' disabled' : ''}><span>${escape(go.label)}<small>${escape(go.note ?? this.goNote())}</small></span><i aria-hidden="true">▶</i></button>
+    const fight = `<button type="button" class="ms-go" data-ms-go${this.host.busy() || this.unsupported || (this.rankedDuel() && rankedBlocked()) ? ' disabled' : ''}><span>${escape(go.label)}<small>${escape(go.note ?? this.goNote())}</small></span><i aria-hidden="true">▶</i></button>
         <p class="ms-hint ux-keys">${this.hint(go.label)}</p>`;
     const play = couch
       ? `<div class="ms-right"><section class="ms-play ms-duo"><div class="ms-pair">${this.card(1, fighter)}${this.card(2, this.p2())}</div>${fight}</section>${this.p2Grid()}</div>`
@@ -247,11 +252,12 @@ export class ModeSheet {
         <p class="ms-note">${escape(this.joining ? "You're joining a friend's room: they choose the rules." : v.note)}</p>
         ${this.modeOptions()}
         ${this.variant === 'online' || this.variant === 'friends' ? `<label class="ms-name"><span>YOUR NAME</span><input maxlength="18" autocomplete="nickname" value="${escape(this.host.name())}"></label>` : ''}
-        ${this.variant === 'friends' ? `<form class="ms-join"><input inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6-DIGIT CODE" aria-label="Room code" autocomplete="off" value="${escape(this.code)}"><button type="submit">JOIN</button></form>` : ''}
+        ${this.variant === 'friends' ? `<form class="ms-join"><input ${CODE_INPUT} placeholder="ROOM CODE" aria-label="Room code" autocomplete="off" value="${escape(this.code)}"><button type="submit">JOIN</button></form>` : ''}
         <p class="ms-status" role="status" aria-live="polite">${escape(this.status)}</p>
       </section>
       ${shown ? `<section class="ms-where" aria-live="polite"><small>LOCATION · ${shown.at} / ${shown.of}</small><b>${escape(shown.name)}</b><em>${escape(shown.scene)}</em></section>` : ''}
       ${this.joining ? '' : placeRow(this.mode, this.variant, prefs.stage, this.field())}
+      ${this.rankedDuel() ? duelBoardSection() : ''}
       ${play}
       <section class="ms-rules" role="group" aria-label="How to play"${this.rules ? '' : ' hidden'}>
         <header><h3>HOW TO PLAY</h3>${!seen ? '<span class="ms-stamp">FIRST TIME</span>' : ''}<button type="button" class="ms-rules-close" data-ms-rules-close>${seen ? 'CLOSE ✕' : 'GOT IT ✓'}</button></header>
@@ -305,6 +311,8 @@ export class ModeSheet {
     const play = ball && this.variant === 'offline' ? ballPlayRow(this.mode as 'goal-rush' | 'sky-spike', prefs) : '';
     if (rules) return play + rules;
     if (this.mode === 'duel' && this.variant === 'offline') return rival('Bot opponent', 'Random rival');
+    // The Duel's ONLINE: QUICK, or RANKED with the account's stamp and the season's board (ui/duel/ranked.ts).
+    if (this.mode === 'duel' && this.variant === 'online') return duelQueueRow(prefs) + (duelQueueOf(prefs) === 'ranked' ? duelRankedPanel() : '');
     if (this.mode === 'training') return rival('Opponent', 'Random opponent');
     if (this.mode === 'royale' && this.variant === 'offline') return row('FIGHTERS', 'data-ms-fighters', FIGHTER_COUNTS, prefs.fighters ?? defaultRoyaleFighters());
     if (this.mode === 'royale' && this.variant === 'friends' && !this.joining) return row('ROOM SIZE', 'data-ms-room', ROOM_SIZES, prefs.roomSize ?? 8, n => n === 2 ? '1V1' : String(n));
@@ -480,8 +488,9 @@ export class ModeSheet {
   private locked(fighter: FighterId) { return this.mode !== 'training' && !mayPlay(fighter, account.account); }
   private goNote() {
     if (this.unsupported) return 'NEEDS WEBGL 2';
-    if (this.variant === 'friends') return "YOU'LL GET A 6-DIGIT CODE";
+    if (this.variant === 'friends') return "YOU'LL GET A ROOM CODE";
     if (this.variant === 'couch') return '2 PLAYERS · ON THIS DEVICE';
+    if (this.rankedDuel()) { const blocked = rankedBlocked(); return blocked === 'sign-in' ? 'SIGN IN ON PLAYERTWO FIRST' : blocked === 'p2' ? 'ON PLAYERTWO ONLY' : 'RATED · REAL PLAYERS ONLY'; }
     if (this.variant === 'online') return this.mode === 'duel' ? 'REAL PLAYERS ONLY' : 'MATCHMAKING';
     // Hosted rooms use their own ready gate; local modes can pause on this device.
     if (!this.info.variants[this.variant]?.onDevice) return 'STARTS AT ONCE';
@@ -505,7 +514,7 @@ export class ModeSheet {
     if (this.host.busy()) { this.say('Preparing your match…'); return; }
     if (this.unsupported) { this.say("This browser can't draw the game: it needs WebGL 2. Try the latest Chrome, Safari, Edge or Firefox."); return; }
     const fighter = this.fighter(), prefs = this.prefs(), mode = this.mode;
-    if (join && !/^\d{6}$/.test(this.code)) { this.say('Enter the 6-digit room code.'); this.focus('.ms-join input'); return; }
+    if (join && !isRoomCode(this.code)) { this.say('Enter the room code.'); this.focus('.ms-join input'); return; }
     // The place named for this way (undefined: RANDOM, or a way with no choice - online, or a joined room): the start deals it.
     const place = join ? undefined : namedPlaceFor(mode, this.variant, this.field());
     const objective = (access: 'quick' | 'bots' | 'solo' | 'host' | 'join'): Extract<NetworkAccess, { kind: 'objective' }> => ({ kind: 'objective', objective: mode as 'last-stand' | 'bad-blood', access, role: mode === 'bad-blood' ? factionOf(fighter) : 'defenders', fighter, code: join ? this.code : undefined, place });
@@ -520,7 +529,12 @@ export class ModeSheet {
         access = isBallArena(prefs.arena) && BALL_ARENAS[prefs.arena].mode === mode && this.variant !== 'online' && !join ? { ...start, arena: prefs.arena } : start; break;
       }
       case 'rift-war': access = couch ? { kind: 'rift-war', access: 'bots', couch } : {kind:'rift-war',access:join?'join':this.variant==='offline'?'bots':this.variant==='online'?'quick':'host',code:join?this.code:undefined}; break;
-      case 'duel': access = couch ? { kind: 'duel', access: 'couch', rival: couch.partner, place, couch } : { kind: 'duel', access: join ? 'join' : this.variant === 'offline' ? 'bot' : this.variant === 'online' ? 'online' : 'host', code: join ? this.code : undefined, rival: prefs.rival, place }; break;
+      case 'duel': {
+        // (RANKED, for a signed-in player on PlayerTwo: its own queue - game/duel/ranked.ts.)
+        const ranked = !join && this.rankedDuel(), blocked = ranked ? rankedBlocked() : undefined;
+        if (blocked) { this.say(blocked === 'sign-in' ? 'Ranked is for signed-in PlayerTwo players: sign in on PlayerTwo, then queue again.' : "Ranked Duel is played on PlayerTwo's rooms: open Impact on PlayerTwo to queue."); return; }
+        access = couch ? { kind: 'duel', access: 'couch', rival: couch.partner, place, couch } : { kind: 'duel', access: join ? 'join' : this.variant === 'offline' ? 'bot' : this.variant === 'online' ? ranked ? 'ranked' : 'online' : 'host', code: join ? this.code : undefined, rival: prefs.rival, place }; break;
+      }
       case 'royale': access = join ? { kind: 'join-private', code: this.code } : couch ? { kind: 'bots', players: prefs.fighters ?? defaultRoyaleFighters(), place, couch } : this.variant === 'offline' ? { kind: 'bots', players: prefs.fighters ?? defaultRoyaleFighters(), place } : this.variant === 'online' ? { kind: 'public' } : { kind: 'create-private', players: prefs.roomSize ?? 8, place }; break;
       case 'training': room = 'training'; if (couch) access = { kind: 'training', couch }; break;
       case 'arcade': access = join ? { kind: 'coop-join', code: this.code } : couch ? { kind: 'survival', partner: couch.partner, couch } : this.variant === 'offline' ? { kind: 'survival' } : this.variant === 'online' ? { kind: 'coop-join', code: '', quick: true } : { kind: 'coop-create' }; break;
@@ -576,7 +590,7 @@ export class ModeSheet {
     if (d.msClose !== undefined) this.close();
     else if (d.msVariant) this.setVariant(d.msVariant as VariantId);
     else if (d.msGo !== undefined) this.go(this.joining);
-    else if (b.closest('.ms-join') && b.type === 'submit') { event.preventDefault(); this.code = this.dialog.querySelector<HTMLInputElement>('.ms-join input')!.value.replace(/\D/g, ''); this.go(true); }
+    else if (b.closest('.ms-join') && b.type === 'submit') { event.preventDefault(); this.code = cleanCode(this.dialog.querySelector<HTMLInputElement>('.ms-join input')!.value); this.go(true); }
     else if (d.msPanels !== undefined) { this.panels = !this.panels; this.draw(); this.focus('[data-ms-panels]'); }
     else if (d.msHowto !== undefined) { this.rules = true; this.draw(); this.focus('[data-ms-rules-close]'); }
     else if (d.msRulesClose !== undefined) this.closeRules();
@@ -595,6 +609,7 @@ export class ModeSheet {
     else if (d.msArena !== undefined) { saveModePrefs(this.mode, { arena: d.msArena || undefined }); this.redrawKeeping(b); }
     else if (d.msPractice) { saveModePrefs(this.mode, { practice: d.msPractice === 'true' }); this.redrawKeeping(b); }
     else if (d.msBall) { const choice = ballChoice(d.msBall); if (choice) { saveModePrefs(this.mode, choice); this.redrawKeeping(b); } }
+    else if (d.msDuel) { const choice = duelChoice(d.msDuel); if (choice) { saveModePrefs(this.mode, choice); this.redrawKeeping(b); } }
     else if (d.msSwap !== undefined) { saveModePrefs(this.mode, { couchSwap: !this.prefs().couchSwap }); if (this.seats) this.seats = [this.seats[1], this.seats[0]]; this.redrawSeats(); this.focus('[data-ms-swap]'); }
     // Couch: Player 2's face, or a step along their picks with the arrows on their card.
     else if (d.msP2pick) this.setP2(d.msP2pick as PartnerPick);
@@ -618,6 +633,10 @@ export class ModeSheet {
     const at = tiles.findIndex(t => t.getAttribute('aria-selected') === 'true'), next = tiles[(Math.max(0, at) + step + tiles.length) % tiles.length];
     next?.click();
   }
+  /** The Duel's ONLINE with RANKED chosen (ui/duel/ranked.ts). */
+  private rankedDuel() { return this.mode === 'duel' && this.variant === 'online' && duelQueueOf(this.prefs()) === 'ranked'; }
+  /** Drawn again with the focus where it was (a standing or the board arriving while a pad is on the sheet). */
+  private redrawFocused() { const active = document.activeElement instanceof HTMLElement && this.dialog.contains(document.activeElement) ? document.activeElement : undefined; if (active) this.redrawKeeping(active); else this.draw(); }
   /** Redraw after an option, keeping focus on the same control. */
   private redrawKeeping(b: HTMLElement) {
     const attr = Object.keys(b.dataset).find(k => k.startsWith('ms'));
@@ -642,11 +661,11 @@ export class ModeSheet {
     }
     // Enter on a way's tab (after ← → or a click on it) starts that way, as the hint says.
     if (tab && event.key === 'Enter') { event.preventDefault(); this.go(this.joining); return; }
-    if (event.key === 'Enter' && (event.target as HTMLElement).closest('.ms-join input')) { event.preventDefault(); this.code = (event.target as HTMLInputElement).value.replace(/\D/g, ''); this.go(true); }
+    if (event.key === 'Enter' && (event.target as HTMLElement).closest('.ms-join input')) { event.preventDefault(); this.code = cleanCode((event.target as HTMLInputElement).value); this.go(true); }
   }
   private input(event: Event) {
     const el = event.target as HTMLInputElement;
-    if (el.closest('.ms-join')) { el.value = el.value.replace(/\D/g, '').slice(0, 6); this.code = el.value; }
+    if (el.closest('.ms-join')) { el.value = cleanCode(el.value); this.code = el.value; }
     else if (el.closest('.ms-name')) this.host.setName(el.value);
   }
   private paste(event: ClipboardEvent) {
@@ -685,7 +704,7 @@ export class ModeSheet {
     if (action === 'back') { this.close(); return true; }
     if (!items.includes(active)) { (this.rules ? scope.querySelector<HTMLElement>('[data-ms-rules-close]') : this.dialog.querySelector<HTMLElement>('.ms-go'))?.focus(); return true; }
     if (action === 'confirm') {
-      if (active === code) { this.editing = true; this.digit = 0; showEntry(code, { value: code.value.replace(/\D/g, '').padEnd(6, '0').slice(0, 6), digit: 0 }); this.code = code.value; this.say(entryHint()); }
+      if (active === code) { this.editing = true; this.digit = 0; showEntry(code, { value: cleanCode(code.value).padEnd(6, '0'), digit: 0 }); this.code = code.value; this.say(entryHint()); }
       // ✕ on a way's tab starts that way, as Enter does.
       else if (active.matches('[data-ms-variant]')) this.go(this.joining);
       else active.click();

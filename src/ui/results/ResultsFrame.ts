@@ -16,6 +16,9 @@ export interface ResultsModel {
   /** A small plain line under it: where the player stands with their rivals (ui/social/rivalry.ts, "AMIR LEADS 3–2"),
    *  or who is in for a friends' room's next match (ui/social/roomAgain.ts). */
   notes?: readonly string[];
+  /** Trusted markup under the notes, made by the game's own code: the ranked Duel's verdict on the standing (its stamp,
+   *  the change, a promotion: ui/duel/ranked.ts rankedResultHtml). */
+  badge?: string;
   key: { value: string; label: string };
   stats: readonly [string, string][];
   details?: { summary: string; html: string };
@@ -63,10 +66,11 @@ export function resultsFrame(m: ResultsModel): string {
     <div class="results-bust" aria-hidden="true"><img src="${art}" alt="" data-results-bust="${m.fighter}"${PORTRAIT.test(art) ? ' data-fallback' : ''} decoding="async" draggable="false">${tone === 'loss' ? CRACK : ''}</div>
     <header class="results-masthead"><span>${escape(m.mast)}</span><b>${escape(m.where)}</b></header>
     <div class="results-ride">
-      <div class="results-headline"><small>${escape(m.kicker)}</small><h2 id="results-title">${escape(m.outcome)}</h2>${m.line ? `<p class="results-line">${escape(m.line)}</p>` : ''}${(m.notes ?? []).filter(Boolean).map(note => `<p class="results-note">${escape(note)}</p>`).join('')}</div>
+      <div class="results-headline"><small>${escape(m.kicker)}</small><h2 id="results-title">${escape(m.outcome)}</h2>${m.line ? `<p class="results-line">${escape(m.line)}</p>` : ''}${(m.notes ?? []).filter(Boolean).map(note => `<p class="results-note">${escape(note)}</p>`).join('')}${m.badge ?? ''}</div>
       <div class="results-stats" aria-label="Your results"><p class="results-key"><strong>${escape(m.key.value)}</strong><span>${escape(m.key.label)}</span></p>${m.stats.map(([value, label]) => `<div><strong>${escape(value)}</strong><span>${escape(label)}</span></div>`).join('')}</div>
     </div>
     <div class="results-rewards" data-results-rewards aria-live="polite"></div>
+    <div class="results-mastery" data-results-mastery aria-live="polite"></div>
     ${m.details ? `<details class="results-standings"><summary>${escape(m.details.summary)} <span aria-hidden="true">+</span></summary><div class="results-fold match-results">${m.details.html}</div></details>` : ''}
     <footer class="results-actions">
       ${button(m.again, 'results-again', 'ENTER', 'south')}

@@ -19,7 +19,7 @@ export class SocialDialog {
     const items=[...this.element.querySelectorAll<HTMLElement>('button,input,select')].filter(e=>e.getBoundingClientRect().width&&!(e as HTMLButtonElement).disabled),active=document.activeElement as HTMLElement;
     if(!items.includes(active)){items[0]?.focus();return true;}
     if(active instanceof HTMLSelectElement&&(action==='left'||action==='right')){active.selectedIndex=(active.selectedIndex+(action==='right'?1:active.options.length-1))%active.options.length;active.dispatchEvent(new Event('change',{bubbles:true}));return true;}
-    if(action==='confirm'){if(active instanceof HTMLInputElement){active.focus();if(active.inputMode==='numeric'){this.editing=active;this.digit=0;showEntry(active,{value:active.value.replace(/\D/g,'').padEnd(6,'0').slice(0,6),digit:0});this.padHint(entryHint());}}else active.click();return true;}
+    if(action==='confirm'){if(active instanceof HTMLInputElement){active.focus();if(active.inputMode==='numeric'||active.dataset.roomCode!==undefined){this.editing=active;this.digit=0;showEntry(active,{value:active.value.toUpperCase().replace(/[^0-9A-Z]/g,'').padEnd(6,'0').slice(0,6),digit:0});this.padHint(entryHint());}}else active.click();return true;}
     const dir:Direction|undefined=UI_DIRECTION[action];if(!dir)return true;const i=nearest(active.getBoundingClientRect(),items.map(e=>e.getBoundingClientRect()),dir);if(i>=0)items[i].focus();return true;
   }
 }

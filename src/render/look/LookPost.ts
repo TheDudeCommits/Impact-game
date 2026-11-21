@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { Pass, FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import type { GradeLook, LookPreset } from './stageLooks';
+import { FILM } from './filmLook';
+import { ScreenUpscale, UPSCALE } from './upscale';
 
 const VERTEX = /* glsl */`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}`;
 
@@ -54,6 +56,17 @@ export class LookBloom {
           +2.*(texture2D(tLow,vUv+h).rgb+texture2D(tLow,vUv-h).rgb+texture2D(tLow,vUv+vec2(h.x,-h.y)).rgb+texture2D(tLow,vUv+vec2(-h.x,h.y)).rgb);
           gl_FragColor=vec4(texture2D(tHigh,vUv).rgb+s/12.*uRadius,1.);}`,
     });
+  }
+  /** The three programs linked now, each against the kind of target it draws into, so
+   *  the first frame the composer draws (a fight's first) links none: it linked two of them in that frame, 4.3 s and
+   *  6.7 s on software GL. Nothing is drawn. */
+  compile(renderer: THREE.WebGLRenderer, camera: THREE.Camera) {
+    const mesh = (this.quad as unknown as { _mesh: THREE.Mesh })._mesh, previous = renderer.getRenderTarget(), was = this.quad.material;
+    try {
+      for (const [material, target] of [[this.prefilter, this.down[0]], [this.downsample, this.down[1]], [this.upsample, this.up[0]]] as const) {
+        this.quad.material = material; renderer.setRenderTarget(target); renderer.compile(mesh, camera);
+      }
+    } finally { this.quad.material = was; renderer.setRenderTarget(previous); }
   }
   get texture() { return this.up[0].texture; }
   setSize(width: number, height: number) {
@@ -210,6 +223,25 @@ uniform vec3 uAnimeLift;
 uniform vec3 uAnimeWarm;
 uniform float uAnimeVignette;
 uniform float uWrapPx;
+// The film look (look/filmLook.ts): its film stage and the set's ink, on while uReel is 1. A: halation, bloom,
+// diffusion (0: not drawn), grain; B: -, lens fringe, colour bleed (px), vignette; C: black lift, saturation, contrast.
+// No flicker, gate weave, dust or scratches: a well-kept print, its grain re-dealt 24 times a second.
+uniform float uReel;
+uniform float uReelStep24;
+// 0 while the frame is upscaled to the screen (look/upscale.ts), which draws the film grain itself, after the upscale.
+uniform float uGrainHere;
+uniform vec4 uReelA;
+uniform vec4 uReelB;
+uniform vec4 uReelC;
+uniform vec3 uReelHalo;
+uniform vec3 uReelShadowTone;
+uniform vec3 uReelHighlightTone;
+uniform vec3 uReelLift;
+// The set's ink: x its radius (px in this buffer), y its strength (0: not drawn), z and w the depth (m) over which it
+// thins away.
+uniform vec4 uReelInk;
+// D: the grain's clump (px in this buffer), its colour share.
+uniform vec4 uReelD;
 ${FOCUS_GLSL}
 varying vec2 vUv;
 #include <tonemapping_pars_fragment>
@@ -257,18 +289,89 @@ float speedPattern( vec2 d, float seed, float amount, float reach ) {
 	float aa = min( fwidth( a * slots ) * 1.5, .5 );
 	return ( 1. - smoothstep( w - aa, w + aa, abs( f - .5 ) * 2. ) ) * present * t;
 }
+// The film look's ink on the set: lines where the depth parts ways (an outline) or the surface turns (a crease),
+// thin and steady, in a dark, rich version of the paint they border (an "iro trace"), thinning with distance.
+vec3 reelInkOf( vec3 c ) { float l = luma( c ); vec3 sat = clamp( mix( vec3( l ), c, 1.7 ), 0., 1. ); return sat * .04 + vec3( .004, .003, .007 ); }
+vec3 reelViewPos( vec2 uv, float z ) { return vec3( ( uv * 2. - 1. ) * uProj * z, - z ); }
+// darkest: the darkest of the colours round the point (the diffusion's four reads, main below), the line's own colour.
+// d0: the scene's depth here (main's depthHere, read once for everything that asks).
+vec3 reelInk( vec2 uv, vec3 col, vec3 darkest, float d0 ) {
+	vec2 px = 1. / max( uResolution, vec2( 1. ) );
+	// (no line in the sky: the depth's four reads and the arithmetic skipped there; the derivatives below stay outside any
+	// branch that differs between neighbouring pixels)
+	float z0 = lookViewZ( min( d0, .99999 ) );
+	vec3 p0 = reelViewPos( uv, z0 );
+	vec3 n0 = normalize( cross( dFdx( p0 ), dFdy( p0 ) ) );
+	if ( d0 >= .99999 ) return col;
+	float outline = 0., crease = 0.;
+	float zs[ 4 ];
+	for ( int i = 0; i < 4; i ++ ) {
+		float a = float( i ) * 1.5707963;
+		vec2 o = vec2( cos( a ), sin( a ) ) * uReelInk.x * px;
+		float d = texture2D( tDepth, uv + o ).r, z = lookViewZ( d );
+		zs[ i ] = z;
+		vec3 p = reelViewPos( uv + o, z );
+		float plane = abs( dot( n0, p - p0 ) ), dz = abs( z - z0 );
+		outline += step( .011 * z0 + .02, plane ) * step( .018 * z0 + .03, dz ) * step( d0, d );
+	}
+	// a crease: the depth bends across the pixel (its second difference) where it does not break
+	crease = step( .006 * z0 + .004, abs( zs[ 0 ] + zs[ 2 ] - 2. * z0 ) ) + step( .006 * z0 + .004, abs( zs[ 1 ] + zs[ 3 ] - 2. * z0 ) );
+	float le = clamp( outline * .6 + crease * .3, 0., 1. );
+	le *= 1. - smoothstep( uReelInk.z, uReelInk.w, z0 );
+	return mix( col, reelInkOf( darkest ) * 2.2 + col * .16, le * uReelInk.y );
+}
+// Soft value noise (the film's grain clumps and the print's density are blobs, not square pixels).
+float reelVnoise( vec2 p ) {
+	vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3. - 2. * f );
+	float a = hash12( i ), b = hash12( i + vec2( 1., 0. ) ), c = hash12( i + vec2( 0., 1. ) ), d = hash12( i + vec2( 1., 1. ) );
+	return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
+}
+// The film stage's print, on the linear frame after the tone curve: saturation and contrast round mid grey, cool shade
+// and warm highlights, the blacks lifted (a faded print never reaches black) and the corners darkened.
+vec3 reelPrint( vec3 c, vec2 uv ) {
+	float l = luma( c );
+	c = mix( vec3( l ), c, uReelC.y );
+	c = max( ( c - .18 ) * uReelC.z + .18, 0. );
+	c *= mix( uReelShadowTone, uReelHighlightTone, smoothstep( 0., .75, l ) );
+	c = c * ( 1. - uReelC.x ) + uReelC.x * uReelLift;
+	vec2 fromC = uv - .5;
+	c *= 1. - uReelB.w * smoothstep( .18, .85, dot( fromC, fromC ) * 2.2 );
+	return c;
+}
 void main() {
 	vec2 uv = vUv;
 	// The ball modes' screen punch (GameRenderer.screenPunch): the finished picture
 	// bumped in toward a point for a breath - a slam lands on the screen without the lens moving. 0 everywhere else.
-	if ( uZoom > .0001 ) uv = uZoomCenter + ( vUv - uZoomCenter ) * ( 1. - uZoom );
+	if ( uZoom > .0001 ) uv = uZoomCenter + ( uv - uZoomCenter ) * ( 1. - uZoom );
 	vec2 aspect = vec2( uResolution.x / max( uResolution.y, 1. ), 1. );
 	vec2 fromCenter = uv - uCenter;
 	float r = length( fromCenter * aspect );
 	vec3 c;
+	// The scene's depth here and the bloom's texel, each read once for every part below that takes it (the set's ink, the
+	// ball arenas' ink and the anime finish the depth; the glow, the film's halation and the anime finish's wrap and
+	// diffusion the bloom - tGlow is the bloom's own texture, LookFinalPass.render) - and not at all where none does.
+	float depthHere = ( uReel > .5 && uReelInk.y > 0. ) || uInkEdge > .0005 || uAnime > .0005 ? texture2D( tDepth, uv ).r : 1.;
+	vec3 bloomHere = uHasBloom > .5 ? texture2D( tBloom, uv ).rgb : vec3( 0. );
 	// The anime finish keeps a fringe of its own toward the frame's edges (uFinishB.w px), under a hit's pulse.
 	float chromaPx = uChroma + uAnime * uFinishB.w;
-	if ( chromaPx > .0005 ) {
+	if ( uReel > .5 ) {
+		// The film look: a lens fringe growing toward the corners and the telecine's sideways colour bleed, the
+		// print's diffusion (never quite sharp), then the set's ink.
+		vec2 px = 1. / max( uResolution, vec2( 1. ) ), fromC = uv - .5;
+		vec2 ca = fromC * dot( fromC, fromC ) * uReelB.y * 6. * px, bl = vec2( uReelB.z * px.x, 0. );
+		c = vec3( texture2D( tScene, uv + ca + bl ).r, texture2D( tScene, uv ).g, texture2D( tScene, uv - ca - bl ).b );
+		// (the diffusion's four reads give the set's ink its colour too: the darkest of them)
+		vec3 darkest = c;
+		if ( uReelA.z > 0. ) {
+			vec3 s0 = texture2D( tScene, uv + px * vec2( 1.6, .6 ) ).rgb, s1 = texture2D( tScene, uv + px * vec2( -1.6, -.6 ) ).rgb;
+			vec3 s2 = texture2D( tScene, uv + px * vec2( .6, -1.6 ) ).rgb, s3 = texture2D( tScene, uv + px * vec2( -.6, 1.6 ) ).rgb;
+			float dl = luma( c ), l0 = luma( s0 ), l1 = luma( s1 ), l2 = luma( s2 ), l3 = luma( s3 );
+			if ( l0 < dl ) { dl = l0; darkest = s0; } if ( l1 < dl ) { dl = l1; darkest = s1; }
+			if ( l2 < dl ) { dl = l2; darkest = s2; } if ( l3 < dl ) { darkest = s3; }
+			c = mix( c, ( s0 + s1 + s2 + s3 ) * .25, uReelA.z );
+		}
+		if ( uReelInk.y > 0. ) c = reelInk( uv, c, darkest, depthHere );
+	} else if ( chromaPx > .0005 ) {
 		// uChroma is the fringe in pixels: none around the centre of action,
 		// so the fighters stay clean, and never more than two at the edges.
 		vec2 dir = fromCenter / max( length( fromCenter ), 1e-4 );
@@ -320,7 +423,7 @@ void main() {
 	// of another: there the frame gets a brush line, thinning out into the distance.
 	if ( uInkEdge > .0005 ) {
 		vec2 o = vec2( max( 1., uResolution.y / 1080. ) ) / max( uResolution, vec2( 1. ) );
-		float d0 = texture2D( tDepth, uv ).r, z0 = lookViewZ( d0 );
+		float d0 = depthHere, z0 = lookViewZ( d0 );
 		float w0 = 1. / z0;
 		float wl = 1. / lookViewZ( texture2D( tDepth, uv - vec2( o.x, 0. ) ).r ), wr = 1. / lookViewZ( texture2D( tDepth, uv + vec2( o.x, 0. ) ).r );
 		float wd = 1. / lookViewZ( texture2D( tDepth, uv - vec2( 0., o.y ) ).r ), wu = 1. / lookViewZ( texture2D( tDepth, uv + vec2( 0., o.y ) ).r );
@@ -342,7 +445,7 @@ void main() {
 		// The anime finish's background, pushed back (powerupLook.ts) - never blurred: the bright background wrapped onto
 		// the fighters' edges, the air far behind them and the ground outside the fight darkened, all keyed on the depth,
 		// so the fighters themselves are left alone.
-		float sceneD = texture2D( tDepth, uv ).r, z = lookViewZ( sceneD );
+		float sceneD = depthHere, z = lookViewZ( sceneD );
 		lookBg = lookFarness( z );
 		float inBand = ( 1. - lookFarness( z ) ) * ( 1. - lookNearness( z ) );
 		if ( uHasFinish > .5 && uFinishA.y > .0005 && inBand > .02 ) {
@@ -350,7 +453,7 @@ void main() {
 			float behind = 0., far = z * 1.3 + .8;
 			behind += step( far, lookViewZ( texture2D( tDepth, uv + vec2( o.x, 0. ) ).r ) ) + step( far, lookViewZ( texture2D( tDepth, uv - vec2( o.x, 0. ) ).r ) );
 			behind += step( far, lookViewZ( texture2D( tDepth, uv + vec2( 0., o.y ) ).r ) ) + step( far, lookViewZ( texture2D( tDepth, uv - vec2( 0., o.y ) ).r ) );
-			c += texture2D( tGlow, uv ).rgb * behind * .25 * inBand * uFinishA.y * uAnime;
+			c += bloomHere * behind * .25 * inBand * uFinishA.y * uAnime;
 		}
 		float haze = uFinishA.z * smoothstep( uFocus.z, uFocus.z + uHaze.w, z ) * mix( 1., .3, step( .99999, sceneD ) );
 		c = mix( c, uHaze.rgb, haze * uAnime );
@@ -385,10 +488,15 @@ void main() {
 		room *= 1. - .5 * techK;
 		c = mix( room, c, energy );
 	}
-	if ( uHasBloom > .5 ) c += texture2D( tBloom, uv ).rgb * uBloom * uBloomGain * ( 1. + .5 * techK );
+	if ( uHasBloom > .5 ) c += bloomHere * uBloom * uBloomGain * ( 1. + .5 * techK );
+	if ( uReel > .5 ) {
+		// The film look: halation (the film's red-orange glow round bright things).
+		if ( uHasBloom > .5 ) c += bloomHere * uReelHalo * uReelA.x * uBloomGain;
+	}
 	if ( uToneMap == 1 ) c = ACESFilmicToneMapping( c );
 	else if ( uToneMap == 2 ) c = AgXToneMapping( c );
 	else c = lookNeutral( c );
+	if ( uReel > .5 ) c = reelPrint( c, vUv );
 	c = sRGBTransferOETF( vec4( clamp( c, 0., 1. ), 1. ) ).rgb;
 	// The grade, in display space where lift, gamma and gain mean what a
 	// colourist means by them.
@@ -415,7 +523,7 @@ void main() {
 	if ( uAnime > .0005 ) {
 		// The anime finish's diffusion: the bright half of the frame, blurred wide, screened over it.
 		if ( uHasFinish > .5 ) {
-			vec3 glow = 1. - exp( - texture2D( tGlow, uv ).rgb * uFinishA.x );
+			vec3 glow = 1. - exp( - bloomHere * uFinishA.x );
 			c = 1. - ( 1. - clamp( c, 0., 1. ) ) * ( 1. - glow * uAnime );
 		}
 		// Its grade: an S-curve, the darks deep blue-violet, the highlights warm and the mids rich.
@@ -476,7 +584,15 @@ void main() {
 		c = mix( c, vec3( .02, .025, .035 ), speedPattern( fromCenter * aspect, uSeed + 7., 1., .3 ) * uPunch * .45 );
 	}
 	if ( uSpeed > .0005 ) c = mix( c, uSpeedColor, speedPattern( fromCenter * aspect, uSeed, uSpeed, .32 ) * min( 1., uSpeed * 1.4 ) * .78 );
-	if ( uImpact > .0005 ) {
+	if ( uImpact > .0005 && uReel > .5 ) {
+		// The film look's impact frame (its sakuga moments, on light paper): the figures in ink, the set left whole
+		// and washed toward the paper, lines thrown from the blow; the grain and the dust below lie over it, as on any
+		// frame of the print.
+		vec3 paperColor = vec3( .97, .94, .87 ), inkColor = vec3( .035, .03, .045 );
+		float lines = speedPattern( ( uv - uImpactCenter ) * aspect, uSeed * 3.7 + 11., .8, .16 );
+		vec3 washed = mix( c, paperColor, .78 );
+		c = mix( c, mix( washed, inkColor, max( ink, lines * .9 ) ), uImpact );
+	} else if ( uImpact > .0005 ) {
 		// The impact frame, always on paper: the fighters are solid ink (they
 		// draw themselves black for it), the world is paper with screentone
 		// dots in its shade - the one place the halftone belongs - and radial
@@ -494,11 +610,21 @@ void main() {
 	}
 	// Half a code value of noise so the painted sky's long gradients do not
 	// band in 8 bits; invisible at any viewing distance.
-	if ( uAnime > .0005 ) {
+	if ( uAnime > .0005 && uFinishB.z > 0. ) {
 		// Film grain, re-dealt 24 times a second: two hashes summed (a soft, triangular spread), most in the mids.
 		float grainSeed = floor( uTime * 24. );
 		float n = hash12( gl_FragCoord.xy + fract( grainSeed * .618034 ) * 1013. ) + hash12( gl_FragCoord.xy * 1.37 + fract( grainSeed * .754878 ) * 997. ) - 1.;
 		c += n * uFinishB.z * uAnime * ( .4 + .6 * ( 1. - abs( luma( c ) - .45 ) * 1.6 ) );
+	}
+	if ( uReel > .5 && uGrainHere > .5 ) {
+		float s24 = uReelStep24;
+		// The film look's grain lives in the print (after the curve): soft clumps uReelD.x px wide in two sizes
+		// and a fine tooth, re-dealt 24 times a second, most in the mids, each dye layer a little its own.
+		vec2 gq = gl_FragCoord.xy / max( uReelD.x, .5 );
+		vec2 o1 = vec2( s24 * 7.31, s24 * 3.17 ), o2 = vec2( s24 * 1.93, s24 * 5.41 + 11. );
+		float g = ( reelVnoise( gq + o1 ) - .5 ) * 1.6 + ( reelVnoise( gq * 1.9 + o2 ) - .5 ) * .9 + ( hash12( gl_FragCoord.xy + o1 * 13. ) - .5 ) * .45;
+		vec3 gc = vec3( reelVnoise( gq + o1 + 17.3 ), reelVnoise( gq + o2 + 31.7 ), reelVnoise( gq * 1.3 + o1 + 5.9 ) ) - .5;
+		c += ( vec3( g ) * vec3( 1., .95, 1.05 ) + gc * 1.6 * uReelD.y ) * uReelA.w * ( 1. - abs( luma( c ) * 2. - 1. ) * .55 );
 	}
 	c += ( hash12( gl_FragCoord.xy + fract( uTime * 7.13 ) * 97. ) - .5 ) / 255.;
 	gl_FragColor = vec4( c, 1. );
@@ -545,6 +671,11 @@ export class LookFinalPass extends Pass {
     uHaze: { value: new THREE.Vector4(1, 1, 1, 40) },
     uAnimeShadow: { value: new THREE.Color(1, 1, 1) }, uAnimeLift: { value: new THREE.Color(0, 0, 0) }, uAnimeWarm: { value: new THREE.Color(1, 1, 1) },
     uAnimeVignette: { value: 0 }, uWrapPx: { value: 3 },
+    // The film look (look/filmLook.ts; see the shader's uReel): set by setFilmLook, stepped by stepFilm.
+    uReel: { value: 0 }, uReelStep24: { value: 0 }, uGrainHere: { value: 1 },
+    uReelA: { value: new THREE.Vector4() }, uReelB: { value: new THREE.Vector4() }, uReelC: { value: new THREE.Vector4() },
+    uReelHalo: { value: new THREE.Color(1, .36, .14) }, uReelShadowTone: { value: new THREE.Color(1, 1, 1) }, uReelHighlightTone: { value: new THREE.Color(1, 1, 1) }, uReelLift: { value: new THREE.Color(1, .92, .9) },
+    uReelInk: { value: new THREE.Vector4(1, .6, 40, 140) }, uReelD: { value: new THREE.Vector4(1.15, 0, 0, 0) },
   };
   readonly material: THREE.ShaderMaterial;
   private readonly quad: FullScreenQuad;
@@ -552,14 +683,64 @@ export class LookFinalPass extends Pass {
   private fringe = 0;
   constructor() {
     super();
+    // The last pass, drawn to the screen: nothing reads what it leaves in the composer's buffers, so they are not swapped
+    // after it. Swapped, the next frame's scene went into the composer's other target - two full-size targets
+    // (multisampled at HIGH: about 190 MB at 2880 x 1620) drawn into a frame each, both kept, both made again at each
+    // step of the resolution. Unswapped, the scene always goes into the first and the second is never made.
+    this.needsSwap = false;
     this.material = new THREE.ShaderMaterial({ name: 'LookFinal', uniforms: this.uniforms, vertexShader: VERTEX, fragmentShader: FINAL_FRAGMENT, depthTest: false, depthWrite: false, toneMapped: false });
     this.quad = new FullScreenQuad(this.material);
     // Dev builds: the game's own final pass (the first made), for tuning a look live from the console.
     if (import.meta.env?.DEV && typeof window !== 'undefined') (window as { __lookFinal?: LookFinalPass }).__lookFinal ??= this;
   }
+  /** A desktop's upscale (look/upscale.ts): `on` while the scene is drawn smaller than the screen, the frame then drawn
+   *  into a target of its own and taken to the screen with the grain; `possible` keeps the upscale made (and its
+   *  programs linked by compile) while the scene is the screen's size, so a later step down links nothing. */
+  setUpscale(on: boolean, possible = on) {
+    const u = this.uniforms;
+    if (on || possible) this.upscaler ??= new ScreenUpscale({ uTime: u.uTime, uReelStep24: u.uReelStep24, uReelA: u.uReelA, uReelD: u.uReelD });
+    this.upscaling = on && !!this.upscaler;
+    this.uniforms.uGrainHere.value = this.upscaling ? 0 : 1;
+  }
+  get upscaled() { return this.upscaling; }
+  private upscaler?: ScreenUpscale;
+  private upscaling = false;
+  private frame?: THREE.WebGLRenderTarget;
+  private readonly sceneSize = new THREE.Vector2(1, 1);
+  /** The target the frame is drawn into before the upscale: the scene's size, display-encoded 8-bit colour. */
+  private frameTarget() {
+    const w = Math.max(1, Math.floor(this.sceneSize.x)), h = Math.max(1, Math.floor(this.sceneSize.y));
+    if (!this.frame) this.frame = new THREE.WebGLRenderTarget(w, h, { depthBuffer: false, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false });
+    else if (this.frame.width !== w || this.frame.height !== h) this.frame.setSize(w, h);
+    return this.frame;
+  }
   setSize(width: number, height: number) {
+    this.sceneSize.set(width, height);
     const u = this.uniforms, scale = Math.max(.5, height / 1080);
     u.uResolution.value.set(width, height); u.uFinishB.value.w = this.fringe * scale; u.uWrapPx.value = 3 * scale;
+    this.reelScale = scale; if (u.uReel.value) this.setFilm(true, this.reelFull);
+  }
+  private reelScale = 1;
+  private reelFull = true;
+  /** The film look's film stage and the set's ink, on or off (look/filmLook.ts FILM; sizes kept at 1080p). `full`
+   *  false (LOW quality: a phone's) leaves out its two dearest parts, the print's diffusion and the set's ink (four
+   *  and nine reads of the frame a pixel); the colour, the print, the halation and the grain stay. */
+  setFilm(on: boolean, full = true) {
+    const u = this.uniforms, f = FILM, k = this.reelScale;
+    this.reelFull = full;
+    u.uReel.value = on ? 1 : 0;
+    u.uReelA.value.set(f.halation, f.bloom, full ? f.diffusion : 0, f.grain);
+    u.uReelB.value.set(0, f.chroma * k, f.bleed * k, f.vignette);
+    u.uReelC.value.set(f.blackLift, f.saturation, f.contrast, 0);
+    u.uReelHalo.value.setRGB(...f.halationTint);
+    u.uReelShadowTone.value.setRGB(...f.shadowTone); u.uReelHighlightTone.value.setRGB(...f.highlightTone); u.uReelLift.value.setRGB(...f.liftTint);
+    u.uReelInk.value.set(Math.max(.75, f.envLine * k), full ? f.envInk : 0, 40, 160);
+    u.uReelD.value.set(f.grainSize * k, f.grainColor, 0, 0);
+  }
+  /** Each frame: the film clock (24 steps a second, wrapped so its hashes keep their precision) for the grain. */
+  stepFilm(time: number) {
+    const u = this.uniforms; if (!u.uReel.value) return;
+    u.uReelStep24.value = Math.floor(time * 24) % 997;
   }
   setGrade(look: LookPreset) {
     const u = this.uniforms, g: GradeLook = look.grade;
@@ -601,8 +782,20 @@ export class LookFinalPass extends Pass {
     this.uniforms.tBloom.value = bloom; this.uniforms.uHasBloom.value = bloom ? 1 : 0;
     // The anime finish's diffusion glow: the bloom's pyramid, its threshold lowered.
     this.uniforms.tGlow.value = bloom; this.uniforms.uHasFinish.value = bloom ? 1 : 0;
-    renderer.setRenderTarget(this.renderToScreen ? null : writeBuffer);
+    const upscale = this.renderToScreen && this.upscaling, target = upscale ? this.frameTarget() : this.renderToScreen ? null : writeBuffer;
+    this.uniforms.uGrainHere.value = upscale && UPSCALE.screenGrain ? 0 : 1;
+    renderer.setRenderTarget(target);
     this.quad.render(renderer);
+    if (upscale) this.upscaler!.render(renderer, target!, UPSCALE.screenGrain && this.uniforms.uReel.value > .5);
   }
-  dispose() { this.material.dispose(); this.quad.dispose(); }
+  /** Its program linked now for where it draws (`target`: null for the screen), as LookBloom.compile. */
+  compile(renderer: THREE.WebGLRenderer, camera: THREE.Camera, target: THREE.WebGLRenderTarget | null) {
+    const mesh = (this.quad as unknown as { _mesh: THREE.Mesh })._mesh, previous = renderer.getRenderTarget();
+    try {
+      renderer.setRenderTarget(target); renderer.compile(mesh, camera);
+      // A desktop's upscale: this pass's program for its own target too, and the upscale's for the screen.
+      if (target === null && this.upscaler) { renderer.setRenderTarget(this.frameTarget()); renderer.compile(mesh, camera); this.upscaler.compile(renderer, camera); }
+    } finally { renderer.setRenderTarget(previous); }
+  }
+  dispose() { this.material.dispose(); this.quad.dispose(); this.upscaler?.dispose(); this.frame?.dispose(); }
 }

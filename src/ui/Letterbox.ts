@@ -1,4 +1,7 @@
 import { LETTERBOX } from '../render/FinisherCuts';
+import { filmOn } from '../render/look/filmLook';
+/** The film look's cut-in bars: 11.5% each, nearer a cel feature's than the game's thin pair. */
+const FILM_LETTERBOX = .09;
 
 /** The feel pass: the cinema bars an ultimate is framed in (render/FinisherCuts.ts) - two thin ink bands,
  *  LETTERBOX of the frame each, over the game canvas and under the HUD: they go in ahead of everything else the page
@@ -9,6 +12,7 @@ export class Letterbox {
   private readonly top: HTMLDivElement;
   private readonly bottom: HTMLDivElement;
   private shown = -1;
+  private tall = false;
   constructor(parent: HTMLElement) {
     const bar = (edge: 'top' | 'bottom') => {
       const el = document.createElement('div');
@@ -24,6 +28,8 @@ export class Letterbox {
   /** `amount` 0..1 of the bars' full height. */
   set(amount: number) {
     const a = Math.round(Math.max(0, Math.min(1, amount)) * 1000) / 1000;
+    const tall = filmOn();
+    if (tall !== this.tall) { this.tall = tall; for (const el of [this.top, this.bottom]) el.style.height = `${((tall ? FILM_LETTERBOX : LETTERBOX) * 100).toFixed(2)}vh`; }
     if (a === this.shown) return;
     this.shown = a;
     for (const el of [this.top, this.bottom]) { el.style.transform = `scaleY(${a})`; el.style.display = a > 0 ? 'block' : 'none'; }

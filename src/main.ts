@@ -6,6 +6,11 @@ import './originals/launch';
 import {BALL_ARENAS,type BallArenaId} from './game/ball/arenas';
 import {ballArenaFor,ballCourtFor,setBallArena,setBallCourt} from './render/ball/arenaChoice';
 import {setCommentary} from './audio/ballCaller';
+import {DuelCaller,DuelWatch,announcerOn,duelCallerFiles,setAnnouncer} from './audio/duelCaller';
+import {ParryPayoff} from './render/parryPayoff';
+import {STING_PEAK} from './audio/parrySting';
+import {parryPayPulse} from './input/rumble';
+import {PARRY_FREEZE} from './game/moves';
 import {errorReports,lossDetails,reportStartFailure} from './boot/errorReports';
 // In Player Two's player, a join link's room or party goes into the address before anything reads it (boot/playerTwoJoin.ts).
 import './boot/playerTwoJoin';
@@ -68,6 +73,8 @@ import {RiftAudio} from './audio/RiftAudio';
 import './render/meshopt';
 import {textureSharing} from './render/sharedTextures';
 import {CAREER_MODES,CareerTracker,type CareerMode} from './game/social/career';
+import {clearMastery} from './survival/progressStore';
+import {masteryCalls} from './ui/progress/masteryStrip';
 import {setActivity as playerTwoPresence} from './social/presence';
 import {inkSelectController} from './ui/inkSelect';
 import {CareerUI} from './ui/social/CareerUI';
@@ -96,6 +103,9 @@ import './ui/survival.css';
 import './ui/controller.css';
 import './ui/coop.css';
 import './ui/rift.css';
+import {freshDrawing} from './render/look/filmDrawings';
+import {filmLookFor,setFilmLook} from './render/look/filmLook';
+import {abOff} from './render/look/abSwitch';
 import * as THREE from 'three';
 import {FIGHTERS,loadSettings} from './config';
 import {setVfxLevel,setVfxSport} from './render/vfxLevel';import {MotionFx} from './render/vfx/MotionFx';
@@ -103,7 +113,7 @@ import {Input} from './input';
 import {pulseFor} from './input/rumble';
 import {INPUT_HZ} from './game/catchUp';
 import {InputClock} from './game/inputClock';
-import {FrameGate,frameSteps} from './render/frameClock';
+import {FrameGate,frameSteps,steadyStep} from './render/frameClock';
 import {DUEL_STAGE,LocalDuel} from './game/duel/LocalDuel';
 import {Couch,plannedSeats,type CouchKind} from './couch/couch';
 import {movementMaskOfSeat} from './couch/seats';
@@ -147,7 +157,8 @@ import {nextTask} from './render/textureWarmup';
 import {libraryCap,TRAINING_BENCH,TRAINING_BENCH_STRONG} from './loading/retention';
 import {AreaBanner} from './ui/AreaBanner';
 import {borrowedEvent,effectDonors,installTransplant,presentEvents,presentFighters,presentPlayers,presentSnapshot,slotNames,steadyBodies,transplantKey} from './engine/client/transplant';
-import {installBorrowedHurts} from './engine/client/borrowedHurts';
+import {hurtsReady,installBorrowedHurts} from './engine/client/borrowedHurts';
+import {loadInkImpacts} from './render/vfx/SparkField';
 import {installBorrowedStrikes} from './engine/client/borrowedStrikes';
 import {installStyleMoves,stylesReady} from './engine/client/styleMoves';
 import {bodyCentre} from './render/vfx/VfxKit';
@@ -167,6 +178,7 @@ import {CombatExercise} from './render/CombatExercise';
 import {CombatTimeline} from './render/CombatTimeline';
 import {installGameplayRecorder} from './render/GameplayRecorder';
 import {CombatAudio} from './audio/CombatAudio';
+import {onActivation} from './audio/wake';
 import {MOVES,BIG_HITSTOP} from './game/moves';
 import {moveFor,AWAKENINGS} from './game/awakening';
 import {rushMove} from './game/awakening';
@@ -226,13 +238,24 @@ import {showStartFailure} from './ui/startFailure';
 import {bootDone} from './boot/bootScreen'; // index.html's loading page (#boot) goes once the home is ready
 // The dude-world cartridge (src/cartridge): the same boot, inside the world's page, on its renderer and frame loop.
 import {rt} from './cartridge/runtime';
+import {ArenaSimulation as ArenaRules} from './game/simulation';
+// `?ab=gcombo` turns the G in combos off in the arenas this page runs itself (a Duel against the CPU, couch, Training, a
+// local royale); a room online plays it whatever this says, and so does the page's prediction of one (game/prediction.ts).
+ArenaRules.areaComboDefault=!abOff('gcombo');
 
 /** The game's boot: everything below, as the page has always run it. The page's own entry calls it once (at the end of
  *  this file); the dude-world cartridge (src/cartridge/index.ts) calls it on each visit and `dispose`s it on the way out. */
 export function bootImpact(){
 const root=rt.app??document.querySelector<HTMLElement>('#app')!;
 // The renderer, tried twice and else a message and a RETRY in place of the boot mark (boot/webglFailure.ts).
-const settings=loadSettings(),view=makeRenderer(gentle=>new GameRenderer(root,settings,gentle),root,(error,first)=>errorReports.report('webgl',error,'renderer',undefined,true,[`first try: ${String((first as Error)?.message??first)}`,`host: ${location.hostname}`]));
+const settings=loadSettings();
+/** TOUCH BUTTON SIZE and OPACITY on the page (handheld.css reads --tc-u and --tc-a; input/touch.ts the stick's reach). */
+const touchFeel=(s:{touchSize?:number;touchAlpha?:number})=>{const r=document.documentElement.style;r.setProperty('--tc-u',String(s.touchSize??1));r.setProperty('--tc-a',String(s.touchAlpha??1));};
+touchFeel(settings);
+// The ART STYLE (render/look/filmLook.ts): The film look unless the player chose the modern one, set before the renderer
+// is made so its first frame is drawn in it.
+setFilmLook(filmLookFor(settings.artStyle));
+const view=makeRenderer(gentle=>new GameRenderer(root,settings,gentle),root,(error,first)=>errorReports.report('webgl',error,'renderer',undefined,true,[`first try: ${String((first as Error)?.message??first)}`,`host: ${location.hostname}`]));
 // VISUAL EFFECTS (Settings.vfx): the level every effect reads live (render/vfxLevel.ts); a menu's change applies at once below.
 setVfxLevel(settings.vfx);
 // Until the player chooses, the quality is the machine's: from its GPU, a phone on low (render/qualityTier.ts).
@@ -367,20 +390,12 @@ techniques.bodyOf=id=>{const body=horde.body(id);return body?{x:body.group.posit
 /** The online display delay, and the local one: a tick behind the arena, so
  *  the two latest states can be interpolated and nothing waits on a wire. */
 const ONLINE_DELAY=60,LOCAL_DELAY=1000/60;
-/** A ball match on this device runs its drawing clock steered onto one steady lag behind the match (a PERFECT
- *  STRIKE timed by eye has to land the same way every time). The clock the other modes keep (below) runs free
- *  between its two clamps, so whichever end a session drifted to it stayed at: measured 2 to 4 ticks behind from one
- *  session to the next, the same press a PERFECT STRIKE in one and late in the next. This one is pulled onto `behind`
- *  the match's own clock (its newest tick plus the time the input clock has banked toward the next: smooth, real time) - gently (`gain` a second, never more than `pace` of the
- *  frame's time a frame, so the frames stay even), or at once past `snap` (a stall, the start). `behind` leaves the frame's
- *  own tick sent after the clock is read half a tick of room before the clamp at the newest (1.2 ticks hit it
- *  and doubled the uneven frames). */
-const BALL_CLOCK={behind:1.5/60,gain:4,pace:.08,snap:3/60} as const;
-/** On this machine only, for the checks' before and after on one build: `?freeclock` keeps a ball match on the free
- *  clock, `?noforecast` draws the page's own touches when the room's word comes, and an attack the room puts back into
- *  the page's time as the snapshots have it, as they were drawn before the forecast. */
+/** Every fight on this device is drawn on one steady lag behind its newest tick (render/frameClock.ts STEADY_CLOCK). On
+ *  this machine only, for the checks' before and after on one build: `?freeclock` keeps a fight on this device on the
+ *  free clock, `?noforecast` draws the page's own touches when the room's word comes, and an attack the room puts back
+ *  into the page's time as the snapshots have it, as they were drawn before the forecast. */
 const ballChecks=['localhost','127.0.0.1','[::1]'].includes(location.hostname)?new URLSearchParams(location.search):new URLSearchParams();
-const steadyBallClock=!ballChecks.has('freeclock'),forecastTouches=!ballChecks.has('noforecast');
+const steadyClock=!ballChecks.has('freeclock'),forecastTouches=!ballChecks.has('noforecast');
 /** The local arena's visual clock, in arena seconds: it runs at the arena's
  *  own time scale (slow motion on a boss's fall), a tick behind its newest. */
 let localClock=0;
@@ -501,6 +516,10 @@ SIGNATURE.floor=(x,y,z)=>{try{const top=y+.5,hit=localCollision?.raycast?.({x,y:
 const hiddenRiftBodies=new Map<string,Fighter>();
 function clearFighters(){for(const body of [...fighters.values(),...hiddenRiftBodies.values()])body.dispose();fighters.clear();hiddenRiftBodies.clear();}
 const timeline=new CombatTimeline(),strikeTrails=new StrikeTrails(view.scene);
+/** A parry's payoff: a parry the player is in pays off - the drawn fight slowed a tenth of a second as its freeze lets go
+ *  and caught up again, a sting made in code, a rumble pulse - and nothing else moves: no camera, no simulation, no input
+ *  (render/parryPayoff.ts). `?ab=parrypay` turns it off. */
+const parryPay=new ParryPayoff(()=>!abOff('parrypay'));
 const awakeningEffects=new AwakeningEffects(view.scene);
 // The bodies the director's shots keep a clear sight line past and the lens out of.
 camera.director.crowd=fighters;
@@ -541,7 +560,7 @@ const survivalTargets=new SurvivalTargets(),riftTargets=new RiftTargets(),riftAs
 // VOL.5, the move transplant (src/engine/client/transplant.ts): a borrowed move's clips and effects, loaded with the room's.
 installTransplant({ensure:ids=>library.ensure(ids),donor:state=>library.has(state.fighter)?library.create(state):undefined,bodies:()=>fighters.values(),effects:donors=>{const room=network.snapshot?riftAssets.ids(network.snapshot):[hud.selected],ids=[...new Set([...room,...(network.snapshot?effectDonors(network.snapshot.players,room):[]),...donors,...benched()])];return Promise.all([castFx.get().then(cast=>cast.load(ids)),effects.load(ids)]).then(()=>{});},compile:()=>view.compileScene()});
 // The dream loop, round 90: Taisei's authored hurts lent to every body that has none (src/engine/client/borrowedHurts.ts).
-void installBorrowedHurts();
+void installBorrowedHurts(undefined,false); // (fetched once the home is up: afterHome below)
 // Lock combat's preview: the second-round strikes of the fighters with none of their own (engine/client/borrowedStrikes.ts).
 if(lockCombatOn())void installBorrowedStrikes();
 // Techniques (game/techniques.ts): each style's takes, fitted to the bodies that throw them (engine/client/styleMoves.ts).
@@ -633,7 +652,7 @@ function wantStage(stage:StageId){
     void stages.show('harbor').then(()=>{if(stageWanted==='harbor'){view.applyStage(STAGES.harbor);stageShown='harbor';}}).catch(fallback=>console.warn('Harbour stand-in failed',fallback));
   });
 }
-input.sensitivity=settings.sensitivity;input.rumble.scale=settings.vibration;setCommentary(settings.commentary);hud.busy(true);const exercise=new CombatExercise(new URLSearchParams(location.search).has('contact-exercise'));installGameplayRecorder(view.renderer.domElement,async()=>{if(network.snapshot?.roomMode!=='training')throw new Error('Enter training first');await exercise.start(command=>network.room?.send('training',command));},()=>audio.captureOutput(music.captureElements()),()=>({...fighters.get(network.id)?.motionEvidence(),performance:view.perf(),player:shownSelf?{x:shownSelf.x,y:shownSelf.y,z:shownSelf.z,yaw:shownSelf.yaw,actionSeq:shownSelf.actionSeq}:undefined,view:{position:view.camera.position.toArray(),yaw:camera.yaw,movementYaw:camera.movementYaw},roster:network.snapshot?.players.map(p=>({id:p.id,fighter:p.fighter,action:p.action,hp:p.hp}))}));
+input.sensitivity=settings.sensitivity;input.rumble.scale=settings.vibration;setCommentary(settings.commentary);setAnnouncer(settings.announcer);hud.busy(true);const exercise=new CombatExercise(new URLSearchParams(location.search).has('contact-exercise'));installGameplayRecorder(view.renderer.domElement,async()=>{if(network.snapshot?.roomMode!=='training')throw new Error('Enter training first');await exercise.start(command=>network.room?.send('training',command));},()=>audio.captureOutput(music.captureElements()),()=>({...fighters.get(network.id)?.motionEvidence(),performance:view.perf(),player:shownSelf?{x:shownSelf.x,y:shownSelf.y,z:shownSelf.z,yaw:shownSelf.yaw,actionSeq:shownSelf.actionSeq}:undefined,view:{position:view.camera.position.toArray(),yaw:camera.yaw,movementYaw:camera.movementYaw},roster:network.snapshot?.players.map(p=>({id:p.id,fighter:p.fighter,action:p.action,hp:p.hp}))}));
 const damageNumbers=new DamageNumbers(root),manga=new MangaImpact(root);
 // The feel pass: an ultimate's cinema bars (render/FinisherCuts.ts), under the HUD.
 const letterbox=new Letterbox(root);
@@ -661,12 +680,24 @@ connectArmorySound(audio);
  *  the announcer's FIGHT! (the arcade's own voice, scripts/survival/announcer). */
 const FIGHT_LINE='/assets/audio/survival/announcer-fight.m4a';
 const VICTORY_LINE='/assets/audio/survival/announcer-victory.m4a',FLAWLESS_LINE='/assets/audio/survival/announcer-flawless.m4a';
+/** A 1 v 1 Duel's announcer (audio/duelCaller.ts) - against the CPU, couch, online, ranked - which also says its FIGHT!
+ *  and its result; `?ab=duelcaller` leaves the Duel as it was (FIGHT!, VICTORY!, FLAWLESS). Settings' ANNOUNCER off
+ *  silences it, and every match's FIGHT!, VICTORY! and FLAWLESS. */
+const duelCaller=new DuelCaller({announce:(url,gain,delay)=>audio.announce(url,gain,delay),sampleSeconds:url=>audio.sampleSeconds(url),preload:urls=>audio.preload(urls),takeBack:(owner,url)=>audio.takeBack(owner,url),fighterLines:()=>audio.fighterLines()});
+const duelWatch=new DuelWatch(duelCaller);let duelCalled='';
+const duelCalls=(snapshot:GameSnapshot|null|undefined)=>!abOff('duelcaller')&&announcerOn()&&!!snapshot?.duel&&snapshot.players.length===2;
+/** Once a frame: the Duel's moments as drawn, its files fetched as a set starts, and its rests cleared for a new one. */
+function duelCommentary(snapshot:GameSnapshot){
+  const set=duelCalls(snapshot)?`${snapshot.matchId??''}:${snapshot.duel!.set}`:'';
+  if(set!==duelCalled){duelCalled=set;duelCaller.reset();duelWatch.reset();if(set)audio.preload(duelCallerFiles());}
+  if(set)duelWatch.frame(snapshot);
+}
 const onVsBeat=(beat:VsBeat)=>{
   if(beat==='panels')audio.ui(UI_SFX.panels,.5,.16);
   else if(beat==='stamp')audio.ui(UI_SFX.stamp,.5,.1);
   else if(beat==='cut')audio.ui(UI_SFX.cut,.5,.02);
   // (The voice situations: the local fighter answers the bell, then the nearest opponent - CombatAudio.bell.)
-  else if(beat==='fight'){audio.ui(UI_SFX.fight,.55,.05);audio.announce(FIGHT_LINE,.95,.08);audio.bell();}
+  else if(beat==='fight'){audio.ui(UI_SFX.fight,.55,.05);if(duelCalls(network.snapshot))duelCaller.say('fight',{delay:.08,queue:true});else if(announcerOn())audio.announce(FIGHT_LINE,.95,.08);audio.bell();}
   else audio.ui(UI_SFX.slam,.5);
 };
 manga.onKnockout=()=>audio.ui(UI_SFX.ko,.5);
@@ -729,6 +760,8 @@ audio.setMix({master:settings.volume,sfx:settings.sfxVolume,voice:settings.voice
 const homeVoice=new HomeVoice(root);homeVoice.setMix(settings.volume,settings.voiceVolume);
 const startup=new Startup();startup.started=0;
 const career=new CareerTracker(),careerUI=new CareerUI(root,career);
+/** A fighter's mastery level gained, said as its results card shows the stamp (ui/progress/masteryStrip.ts). */
+const MASTERY_LINE='/assets/audio/survival/announcer-mastery-up.m4a';masteryCalls.up=()=>audio.announce(MASTERY_LINE,.95,.35);
 const party=new PartyClient(()=>({fighter:hud.selected,name:hud.playerName()})),partyUI=new PartyUI(root,party);
 let startEpoch=0;
 hud.onParty=()=>{homeVoice.stop();party.profileChanged();partyUI.show();};hud.onCareer=()=>{homeVoice.stop();careerUI.show();};
@@ -776,8 +809,7 @@ hud.onFighterSelect=fighter=>{music.setContext(fighter,undefined,'lobby');party.
 // starts the home playlist once, respecting the persisted music preference.
 let homeMusicActivated=false;
 const activateHomeMusic=()=>{if(homeMusicActivated||!settings.musicEnabled)return;homeMusicActivated=true;music.setContext(hud.selected,undefined,'lobby');musicPanel.setEnabled(true);};
-window.addEventListener('pointerdown',activateHomeMusic,{once:true});
-window.addEventListener('keydown',activateHomeMusic,{once:true});
+onActivation(activateHomeMusic);   // a finger's tap as it lifts, a mouse's press, a key (audio/wake.ts: a touch's pointerdown may not start sound)
 let musicContext='';
 input.onTarget=()=>{const s=network.snapshot,p=s?.players.find(p=>p.id===network.id);if(!s||!p)return;
   // A ball match: Tab turns the ball cam off (the follow camera you chose) and on again (render/ball/BallCam.ts).
@@ -834,7 +866,7 @@ hud.objectives.onCommand=(action,role)=>{if(network===localObjective){if(action=
 localObjective.onNotice=message=>hud.objectives.notice(message);localObjective.onDisconnect=message=>{returnToLobby();hud.error(message);};
 let lastMatchStart:Parameters<typeof hud.onStart>|undefined;
 // A friends' royale's PLAY AGAIN says "I'm in" for the next match in the same room, and the host's starts it (ui/social/roomAgain.ts).
-hud.onPlayAgain=()=>{if(network.snapshot?.duel?.phase==='complete'&&network.snapshot.players.length===2){network.room?.send('duel-runback');return;}if(askRoomAgain(network.snapshot,network.room))return;if(party.joined){returnToLobby();partyUI.show();partyUI.notice('Ready up with your party for the next match.');return;}if(!lastMatchStart)return;const [fighter,mode,name,access]=lastMatchStart;
+hud.onPlayAgain=()=>{if(network.snapshot?.duel?.phase==='complete'&&network.snapshot.players.length===2&&!network.snapshot.ranked){network.room?.send('duel-runback');return;}if(askRoomAgain(network.snapshot,network.room))return;if(party.joined){returnToLobby();partyUI.show();partyUI.notice('Ready up with your party for the next match.');return;}if(!lastMatchStart)return;const [fighter,mode,name,access]=lastMatchStart;
   // Round 5 (UX corrections): PLAY AGAIN · THE SAME BOT RIVAL keeps the rival it names.
   const rival=access?.kind==='duel'&&access.access==='bot'?duel.snapshot?.players.find(p=>p.isBot)?.fighter:undefined;
   const nextAccess=rival&&access?.kind==='duel'?{...access,rival}:access?.kind==='duel'&&(access.access==='host'||access.access==='join')?{kind:'duel' as const,access:'host' as const,place:access.access==='host'?access.place:undefined}:access?.kind==='create-private'||access?.kind==='join-private'?{kind:'create-private' as const,players:network.snapshot?.lobby?.size??8,place:access.kind==='create-private'?access.place:undefined}:access;returnToLobby();void hud.onStart(fighter,mode,name,nextAccess);};
@@ -849,13 +881,13 @@ hud.onFightBot=()=>{const [fighter,,name,access]=lastMatchStart??[hud.selected,'
 mountSocialPlay(root.querySelector<HTMLElement>('#interface')??root,()=>pageWhere({started,online:network===online,snapshot:network.snapshot,selfId:network.id,access:lastMatchStart?.[3],
   local:network===royale?'royale':network===duel?'duel':network===localRift?'rift-war':network===arcade?'arcade':network===localObjective?objectiveOf(network.snapshot)?.kind:undefined}),
   mode=>{const [fighter,,name]=lastMatchStart??[hud.selected,'match',hud.playerName()],access=queueAccess(mode,fighter);if(!access)return;standby.end();returnToLobby();void hud.onStart(fighter,'match',name,access);});
-hud.onSettings=s=>{setVfxLevel(s.vfx);setCommentary(s.commentary);Fighter.animStyle=animOverride??s.animStyle;input.sensitivity=s.sensitivity;input.rumble.scale=s.vibration;effects.density=s.effects;manga.density=s.effects;view.applySettings(s);audio.setMix({master:s.volume,sfx:s.sfxVolume,voice:s.voiceVolume});homeVoice.setMix(s.volume,s.voiceVolume);music.setVolume(s.volume*s.musicVolume);};
+hud.onSettings=s=>{touchFeel(s);setVfxLevel(s.vfx);setCommentary(s.commentary);setAnnouncer(s.announcer);Fighter.animStyle=animOverride??s.animStyle;input.sensitivity=s.sensitivity;input.rumble.scale=s.vibration;effects.density=s.effects;manga.density=s.effects;view.applySettings(s);audio.setMix({master:s.volume,sfx:s.sfxVolume,voice:s.voiceVolume});homeVoice.setMix(s.volume,s.voiceVolume);music.setVolume(s.volume*s.musicVolume);};
 hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packRefuses(mode,access as {kind:string});if(refused){hud.error(refused);return;}}if(party.joined&&access?.kind!=='party'){partyUI.show();partyUI.notice(party.view?.leader===party.id?'You lead a party: choose the match here and START it together.':'You are in a party: READY here, and your leader starts the match.');return;}const laboratory=mode==='training'&&(!access||access.kind==='public')&&fighter===laboratoryFighter()?fighter:undefined;const epoch=++startEpoch;if(!laboratory&&lockedStart(fighter,mode==='training'))return;fighterLabEntry?.close();homeVoice.stop();
   // On a thin line (loading/backgroundPolicy.ts thinLine) the sound bank waits while the room's bodies, stage and effects come in
   // (CombatAudio.holdFetches; opened by the room's load as its compile begins, or when this start ends). Not for a survival run:
   // its story plays sounds over the load.
   let openAudio=()=>{};if(thinLine()&&!(access?.kind==='survival'||access?.kind==='coop-create'||access?.kind==='coop-join'||access?.kind==='party'&&access.travel.mode==='survival'))audio.holdFetches(new Promise<void>(open=>{openAudio=open;}),60_000);
-  void audio.unlock().then(()=>audio.preload([FIGHT_LINE,VICTORY_LINE,FLAWLESS_LINE])).catch(console.warn);try{hud.busy(true);
+  void audio.unlock().then(()=>audio.preload([FIGHT_LINE,VICTORY_LINE,FLAWLESS_LINE,MASTERY_LINE])).catch(console.warn);try{hud.busy(true);
     const riftRun=access?.kind==='rift-war'&&access.access==='bots';
     const ballRun=access?.kind==='ball'&&access.access==='bots';
     const arcadeRun=access?.kind==='survival',coopRun=access?.kind==='coop-create'||access?.kind==='coop-join'||access?.kind==='party'&&access.travel.mode==='survival';
@@ -887,7 +919,7 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     clearFighters();resetSwaps();
     pauseLink.reset();roomFrozen=false;fightShown=false;
     network=riftRun?localRift:ballRun?localBall:royaleRun?royale:duelRun?duel:arcadeRun?arcade:practiceRun?practice:objectiveRun?localObjective:online;timeline.delayMs=riftRun||ballRun||royaleRun||duelRun||arcadeRun||practiceRun||objectiveRun?LOCAL_DELAY:ONLINE_DELAY;
-    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();camera.reset();
+    audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();parryPay.reset();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();camera.reset();
     horde.clear();grunts.clear();gore.clear();survivalFx.reset();techniques.reset();lastEntrance=0;lastRoar=0;bossesWanted='';lastHordeVoice=0;lastBossVoice=0;lastSmash=0;bossShoutAt.clear();stages.rift?.restore();
     if(arcadeRun||coopRun)audio.preload(everyTake());
     if(access?.kind==='objective'&&access.objective==='last-stand'||access?.kind==='party'&&access.travel.mode==='last-stand')objectiveAudio.preload();
@@ -928,7 +960,8 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     }
     if(epoch!==startEpoch)return;
     const careerMode:CareerMode=access?.kind==='ball'?access.mode:access?.kind==='rift-war'?'rift-war':access?.kind==='duel'?'duel':arcadeRun?'survival':coopRun?'coop':access?.kind==='party'?(access.travel.mode==='royale'?'private':access.travel.mode) as CareerMode:access?.kind==='objective'?access.objective:access?.kind==='bots'?'bots':access?.kind==='create-private'||access?.kind==='join-private'?'private':'royale';
-    if(mode!=='training')career.start(careerMode);
+    // (Mastery in every mode: a match on this device pays its fighter's with its career report, a room's from the room.)
+    if(mode!=='training')career.start(careerMode,network!==online);clearMastery();
     playerTwoPresence(mode==='training'?'Training':CAREER_MODES[careerMode]);
     loadingScreen.progress('room');
     const joined=performance.now();while(!network.snapshot){if(epoch!==startEpoch)return;if(performance.now()-joined>12000)throw new Error('The arena did not respond. Try again.');await new Promise(resolve=>setTimeout(resolve,50));}
@@ -939,8 +972,8 @@ hud.onStart=async(fighter,mode,name,access)=>{{const refused=activePack()&&packR
     await ensureSnapshotAssets(network.snapshot,()=>{loadingScreen.progress('warm');openAudio();},selection);if(epoch!==startEpoch)return;
     pilot=autopilotParam&&autopilotAllowed?new Autopilot(.8,network.id):undefined;
     if(couch.split&&network.snapshot)beginSplit(network.snapshot);else if(couch.on)couchHud.share(()=>couch.seats.seats);
-    hud.setSurvival(arcadeRun||coopRun);lastMatchStart=[fighter,mode,name,access?.kind==='bots'&&access.lone?{kind:'bots',players:access.players}:access];hud.resultAgainLabel=access?.kind==='duel'?(access.access==='online'?'FIND NEXT DUEL':access.access==='bot'?'DUEL AGAIN':'NEW FRIEND DUEL'):access?.kind==='create-private'||access?.kind==='join-private'?'NEW PRIVATE ROOM':'PLAY AGAIN';
-    music.setContext(fighter,undefined,'combat',{mode:network.snapshot?modeOfSnapshot(network.snapshot,arcadeRun||coopRun):undefined,turn:startEpoch});musicPanel.setEnabled(settings.musicEnabled);started=true;fetchPlannedBots();clearInterval(inputTimer);inputClock.reset();unacked.length=0;inputTimer=setInterval(pushInput,1000/INPUT_HZ) as unknown as number;hud.enter(fighter);loadingScreen.done();input.enabled=true;
+    hud.setSurvival(arcadeRun||coopRun);lastMatchStart=[fighter,mode,name,access?.kind==='bots'&&access.lone?{kind:'bots',players:access.players}:access];hud.resultAgainLabel=access?.kind==='duel'?(access.access==='online'?'FIND NEXT DUEL':access.access==='ranked'?'FIND RANKED DUEL':access.access==='bot'?'DUEL AGAIN':'NEW FRIEND DUEL'):access?.kind==='create-private'||access?.kind==='join-private'?'NEW PRIVATE ROOM':'PLAY AGAIN';
+    music.setContext(fighter,undefined,'combat',{mode:network.snapshot?modeOfSnapshot(network.snapshot,arcadeRun||coopRun):undefined,turn:startEpoch});musicPanel.setEnabled(settings.musicEnabled);started=true;fetchPlannedBots();clearInterval(inputTimer);inputClock.reset();unacked.length=0;inputTimer=setInterval(pumpInput,1000/INPUT_HZ) as unknown as number;hud.enter(fighter);loadingScreen.done();input.enabled=true;
     // Round 5 (SOLOPAUSE): a frame of the fight drawn behind the fading loading screen - a local match's clock starts
     // now, and a versus room hears it (ReadyGate) and runs its READY hold from here, then FIGHT.
     requestAnimationFrame(()=>requestAnimationFrame(()=>{if(epoch!==startEpoch)return;fightShown=true;if(network===online)online.ready();
@@ -1067,8 +1100,12 @@ function sendCommand(){
   if(network===online&&timeline.drawnAt!==null)command.view=timeline.drawnAt;
   // `?autopilot`: the arcade plays itself, for captures and checks.
   if(pilot&&survival()){const auto=pilot.command(snapshot.players,snapshot.serverTime);command={...auto,seq:command.seq};if(auto.targetId)targetId=auto.targetId;}
-  const sent=exercise.active?exercise.command(command,snapshot,network.id)
+  let sent=exercise.active?exercise.command(command,snapshot,network.id)
     :input.enabled?command:{...command,moveX:0,moveZ:0,attack:undefined,jump:false,dash:false,guard:false,awaken:false};
+  // A film's two takes (a local Duel with ?simseed): the first keeps this page's command for
+  // each tick of the simulation, the second sends those same commands on the same ticks - the same fight in either look.
+  const film=(globalThis as {__duelInputs?:{record?:Record<number,typeof sent>;replay?:Record<number,typeof sent>}}).__duelInputs;
+  if(film&&network!==online){const tick=Math.round(snapshot.serverTime*60),kept=film.replay?.[tick];if(kept)sent={...kept,seq:sent.seq};if(film.record)film.record[tick]=JSON.parse(JSON.stringify(sent)) as typeof sent;}
   footStick.x=sent.moveX;footStick.z=sent.moveZ;
   noteBallStick(network.id,sent.moveX,sent.moveZ); // The sport kit: the stick a spike's arm and a BACK SET are chosen by (ballMoves.ts)
   if(!network.send(sent))return;if(network===online)unacked.push(sent.seq);
@@ -1105,6 +1142,13 @@ function pushInput(){
   if(network===online)prediction.flush();
   const due=inputClock.advance(performance.now()),wire=network===online;
   for(let steps=0;steps<due&&!(wire&&inFlight()>=MAX_IN_FLIGHT);steps++)sendCommand();
+}
+/** The input pump's own beat (INPUT_HZ, between frames as well as on them): the pad read first, so the commands it makes
+ *  hold this moment's sticks and presses, not the last drawn frame's (Input.poll). Only while the fight takes this
+ *  input: a menu's pad is read by the frame alone, as it always was (its presses move the focus: Hud.keepPadFocus). */
+function pumpInput(){
+  if(started&&input.enabled)input.poll();
+  pushInput();
 }
 /** Round 5 (SOLOPAUSE): what this page wants of a room that pauses for it - held while the menu or a bug report
  *  is open, or the tab is hidden - told to the room (PauseLink). Every frame, every snapshot, and as the tab hides (no
@@ -1146,7 +1190,7 @@ function ballSounds(snapshot:GameSnapshot){
     else if(e.kind==='clash'){const me=snapshot.players.find(p=>p.id===network.id);if(me&&Math.hypot(me.x-e.x,me.z-e.z)<18)camera.impact(.9);}
   }
 }
-function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
+function returnToLobby(tellParty=true){couch.end();endSplit();finale.reset();resetSwaps();pauseLink.reset();roomFrozen=false;fightShown=false;vsSplash.skip();audio.setSpace(undefined);audio.setAmbience(undefined);cutIn.hide();cutInSeen.clear();loadingScreen.hide();library.background(true);startEpoch++;career.leave();playerTwoPresence(null);if(tellParty)party.send('party-home');objectivePhase='';objectiveRound=0;duelRoundKey='';matchBell.reset();objectiveField.reset();started=false;riftIntro.close();survivalHud.leave();horde.clear();grunts.clear();gore.clear();bossesWanted='';survivalFx.reset();techniques.reset();horde.keepOnly([]);hud.setSurvival(false);introFor=null;victoryFor=null;clearInterval(inputTimer);inputTimer=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;wantStage('harbor');input.enabled=false;input.clear();document.exitPointerLock?.();void network.leave();audio.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();timeline.reset();parryPay.reset();clearFighters();lastEvent=0;targetId=null;targeting.reset();viewKeys.reset();objectiveAudio.reset();riftAudio.reset();survivalTargets.clear();riftTargets.clear();riftPredictionTargets.clear();riftAssets.clear();riftField.clear();riftUI.clear();ballField.clear();ballUI.clear();ballTargets.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();spikeCues.clear();spikeCues2.clear();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;camera.reset();musicContext='';music.setContext(hud.selected,undefined,'lobby');network=online;timeline.delayMs=ONLINE_DELAY;hud.lobby();fighterLabEntry?.show();}
 // Out of a party's match: home, and back on the party's sheet, where the others are seen coming home too.
 hud.onLeave=()=>{returnToLobby();if(party.joined)partyUI.show();};
 for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onDisconnect=(reason,code)=>{
@@ -1159,7 +1203,7 @@ for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,l
 // begins its clock and its events again from nothing, so the page lets go of the last one's, as for a Duel's next set; the
 // bodies are built again under the short intro's splash page.
 // An online ball room's rematch (its next round, BallRoom.rematch) is let go of the same way (onSnapshot).
-function ballRestart(){clearFighters();timeline.reset();lastEvent=0;localClock=0;camera.reset();introFor=null;victoryFor=null;finale.reset();targetId=null;targeting.reset();ballField.clear();ballUI.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;ballMark='';network.onControlReset();}
+function ballRestart(){clearFighters();timeline.reset();parryPay.reset();lastEvent=0;localClock=0;camera.reset();introFor=null;victoryFor=null;finale.reset();targetId=null;targeting.reset();ballField.clear();ballUI.clear();ballReplay.clear();ballCeremony.clear();stanceMarks.clear();passMark?.hide();clearKicks();ballStances[0].reset();ballStances[1].reset();ballChases[0].cut();ballChases[1].cut();ballHeard=0;ballMark='';network.onControlReset();}
 localBall.onRestart=ballRestart;let ballRound='';
 for(const each of [online,arcade,practice,duel,royale,localObjective,localRift,localBall])each.onControlReset=()=>{unacked.length=0;input.clear();input.enabled=false;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;predictedCasts.clear();predictedVisuals.length=0;inputClock.reset();};
 let objectiveRound=0,objectivePhase='',duelRoundKey='';
@@ -1170,10 +1214,15 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   // on: the timeline learns its arrival offset afresh (CombatTimeline.reanchor).
   if(network===online){const frozen=!!snapshot.pause?.paused;if(roomFrozen&&!frozen)timeline.reanchor();roomFrozen=frozen;pauseLink.observe(snapshot);pausePump();}
   const duelKey=snapshot.duel?`${snapshot.duel.set}:${snapshot.duel.round}`:'';
-  if(snapshot.duel?.phase==='playing'&&snapshot.status==='active'&&duelKey!==duelRoundKey){if(duelRoundKey){clearFighters();}duelRoundKey=duelKey;timeline.reset();camera.reset();introFor=null;victoryFor=null;network.onControlReset();input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;camera.lookAlong(input.yaw);}
+  // A Duel's next round keeps its two bodies: the room puts both back on their
+  // marks, alive, and a body already takes a respawn's jump as one (its ragdoll handed back, its travel and its hair's
+  // springs not carried across). Rebuilt for every round, the two were 45 ms of building in the round's first frame - a
+  // 70-80 ms frame three seconds after every knockout. A new set (a runback, where a fighter may change) builds afresh,
+  // as before; `?ab=roundbodies` builds every round afresh again.
+  if(snapshot.duel?.phase==='playing'&&snapshot.status==='active'&&duelKey!==duelRoundKey){if(duelRoundKey&&(duelRoundKey.split(':')[0]!==duelKey.split(':')[0]||abOff('roundbodies'))){clearFighters();}duelRoundKey=duelKey;timeline.reset();parryPay.reset();camera.reset();introFor=null;victoryFor=null;network.onControlReset();input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;camera.lookAlong(input.yaw);}
   if(!snapshot.duel)duelRoundKey='';
   // A friends' royale's next match in the same room (server/social/RoomAgain.ts): its fighters afresh, as a Duel's next set's.
-  {const again=snapshot.lobby?.again?.match??0;if(again>againSeen&&againSeen){clearFighters();timeline.reset();camera.reset();introFor=null;victoryFor=null;targetId=null;targeting.reset();network.onControlReset();}againSeen=again;}
+  {const again=snapshot.lobby?.again?.match??0;if(again>againSeen&&againSeen){clearFighters();timeline.reset();parryPay.reset();camera.reset();introFor=null;victoryFor=null;targetId=null;targeting.reset();network.onControlReset();}againSeen=again;}
   if(matchBell.rang(snapshot)){input.yaw=snapshot.players.find(p=>p.id===network.id)?.yaw??Math.PI;camera.reset();camera.lookAlong(input.yaw);}
   // Adaptive difficulty (game/adaptive.ts): the skill the match has learned, kept for the next one (boot/skill.ts).
   keepSkill(snapshot.players.find(p=>p.id===network.id)?.skill);
@@ -1183,7 +1232,7 @@ const onSnapshot=(snapshot:GameSnapshot)=>{
   if(started)streamSnapshotAssets(snapshot);
   const modeView=objectiveOf(snapshot),warView=riftOf(snapshot),round=modeView?.round??warView?.round??0;
   if(round!==objectiveRound){
-    objectiveRound=round;objectivePhase='';timeline.reset();lastEvent=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;input.clear();inputClock.reset();unacked.length=0;predictedCasts.clear();predictedVisuals.length=0;objectiveField.reset();horde.clear();techniques.reset();bossesWanted='';
+    objectiveRound=round;objectivePhase='';timeline.reset();parryPay.reset();lastEvent=0;prediction.stop();localCollision=undefined;localCollisionStage=null;collisionGeneration++;input.clear();inputClock.reset();unacked.length=0;predictedCasts.clear();predictedVisuals.length=0;objectiveField.reset();horde.clear();techniques.reset();bossesWanted='';
     audio.reset();areaFx.reset();effects.reset();castFx.now?.reset();awakeningEffects.reset();clashEffects.reset();manga.reset();camera.reset();victoryFor=null;introFor=null;targeting.reset();targetId=null;
     clearFighters();
   }
@@ -1236,7 +1285,10 @@ const eventStyle=(event:CombatEvent)=>event.fighter&&event.slot
  *  (the finisher lands heavier), which side, and what the server decided. */
 // The feel pass: a big blow (game/bigBlow.ts) is snapped into, held shaking and flashed in its thrower's colour.
 const impactDetail=(event:CombatEvent)=>{const awakened=!borrowedEvent(event)&&!!network.snapshot?.players.find(p=>p.id===event.actorId)?.awakened,big=bigBlowOf(event,awakened)||cinematicBlowOf(event,awakened);
-  return {chain:event.chain,fromBehind:event.fromBehind,reaction:event.reaction,...(big?{big,tint:elementFor(event.fighter,event.slot,awakened,event.chain??0,event.branch as ComboKey|undefined).spike}:{}),...(event.downed?{downed:true}:{}),...(event.lift?{lift:event.lift}:{})};};
+  return {chain:event.chain,fromBehind:event.fromBehind,reaction:event.reaction,...(big?{big,tint:elementFor(event.fighter,event.slot,awakened,event.chain??0,event.branch as ComboKey|undefined).spike}:{}),...(event.downed?{downed:true}:{}),...(event.lift?{lift:event.lift}:{}),
+    // This (render/Fighter.ts): a COUNTER's or a PUNISH's ink frame (HIT_FLASH), and the thrower, whose limb
+    // says where on the body the blow landed (HIT_ZONE).
+    ...(event.kind==='hit'&&(event.counter||event.punish)?{reward:true}:{}),attacker:event.actorId};};
 /** A big blow heard (CombatAudio.bigBlow) and, in the player's own exchange, the score's beat under its freeze
  *  (CharacterMusic.punch, for the hold the simulation gives it: BIG_HITSTOP). Played where the blow is presented. */
 const bigBlowSound=(event:CombatEvent)=>{
@@ -1382,9 +1434,10 @@ function applyCombatFrame(snapshot:GameSnapshot){
     // loses a whole batch every time a frame runs longer than the snapshot
     // interval - which under software rendering is most of them.
     eventCounts[event.kind]=(eventCounts[event.kind]??0)+1;
+    if(event.kind==='hit')freshDrawing();// The film look: a landed blow is always drawn (render/look/filmDrawings.ts)
     // Felt in the hands, on a pad that can: blows taken and landed, guards,
-    // awakenings, ultimates and falls.
-    {const pulse=pulseFor(event,network.id??'',id=>!!snapshot.players.find(player=>player.id===id)?.enemy);if(pulse)input.feel(pulse);}if(event.actorId===network.id&&event.kind==='cast'&&event.move&&!echoed.has(event.id)&&!(event.slot==='ultimate'&&carded())){if(event.slot==='area'&&event.fighter&&!couch.split)showAreaBanner(event.body??event.fighter,event.move,event.fighter);else personal(event.actorId,displayMove(event.fighter,event.move).toUpperCase(),1.1);}
+    // awakenings, ultimates and falls. (A blow of the player's own the local copy presented already was felt then.)
+    if(!prediction.impactWasPresented(event)){const pulse=pulseFor(event,network.id??'',id=>!!snapshot.players.find(player=>player.id===id)?.enemy);if(pulse)input.feel(pulse);}if(event.actorId===network.id&&event.kind==='cast'&&event.move&&!echoed.has(event.id)&&!(event.slot==='ultimate'&&carded())){if(event.slot==='area'&&event.fighter&&!couch.split)showAreaBanner(event.body??event.fighter,event.move,event.fighter);else personal(event.actorId,displayMove(event.fighter,event.move).toUpperCase(),1.1);}
     else if(couch.split&&event.actorId===SECOND&&event.kind==='cast'&&event.move&&event.slot!=='ultimate')personal(event.actorId,displayMove(event.fighter,event.move).toUpperCase(),1.1);
     if(event.kind==='awaken'&&event.move&&(event.actorId===network.id||couch.split&&event.actorId===SECOND)){if(!carded())personal(event.actorId,displayMove(event.fighter,event.move).toUpperCase(),1.8);if(event.actorId===network.id)camera.impact(.4);}if((event.kind==='hit'||event.kind==='blocked')&&event.endpoint&&(event.damage||event.downed)){
       // Which way the blow travelled, so the body can be bent away from it.
@@ -1470,6 +1523,8 @@ function applyCombatFrame(snapshot:GameSnapshot){
         if((!personal(event.actorId,mine,!event.reason||event.reason==='counter'?.8:.6)||couch.split)&&onMe)personal(event.targetId,onMe,!event.reason?.6:.8);
       }
       if(event.kind==='hit'&&event.counter){if(!personal(event.actorId,'COUNTER',.6)||couch.split)personal(event.targetId,'COUNTERED',.6);}
+      // (a blow in the recovery of a swing that found nobody, held longer as a COUNTER is - simulation.ts hit.)
+      else if(event.kind==='hit'&&event.punish){if(!personal(event.actorId,'PUNISH',.6)||couch.split)personal(event.targetId,'PUNISHED',.6);}
       }
 };
 let commonLoad:Promise<void>|undefined;
@@ -1543,7 +1598,7 @@ async function ensureSnapshotAssets(snapshot:GameSnapshot,onWarm?:()=>void,also?
   const prepareEarly=(id:FighterId)=>{if(started)return;const go=()=>{if(!current()||started)return;try{for(const root of library.prepare(id))view.uploadTextures(root);}catch(error){console.warn('Fighter prepared on the warm-up instead',id,error);}};
     const idle=(globalThis as {requestIdleCallback?:(work:()=>void,options?:{timeout:number})=>number}).requestIdleCallback;if(idle)idle(go,{timeout:400});else setTimeout(go,0);};
   // (Techniques: the style takes come with the room's files, so its bodies fit theirs as they are built - styleMoves.ts.)
-  await Promise.all([stylesReady(),...(ballOf(snapshot)?[ballMovesReady()]:[]),Promise.all(ids.map(id=>library.ensure([id]).then(()=>prepareEarly(id)))).then(()=>stamp('bodies')),loadStage(snapshot.stage??'harbor').then(()=>stamp('stage')),extras,warmFx,...(also?[also]:[]),...(incoming?[horde.load(incoming),objectiveField.prepare()]:[]),...(riftOf(snapshot)?[riftField.load()]:[])]);
+  await Promise.all([stylesReady(),hurtsReady(),loadInkImpacts(),...(ballOf(snapshot)?[ballMovesReady()]:[]),Promise.all(ids.map(id=>library.ensure([id]).then(()=>prepareEarly(id)))).then(()=>stamp('bodies')),loadStage(snapshot.stage??'harbor').then(()=>stamp('stage')),extras,warmFx,...(also?[also]:[]),...(incoming?[horde.load(incoming),objectiveField.prepare()]:[]),...(riftOf(snapshot)?[riftField.load()]:[])]);
   stamp('assets-loaded');
   if(!current()){horde.collect();return;}
   if(incoming)horde.warm(view.scene,incoming);
@@ -1566,7 +1621,7 @@ async function ensureSnapshotAssets(snapshot:GameSnapshot,onWarm?:()=>void,also?
     const sharedEffects=!effectsWarmed;effectsWarmed=true;
     try{if(sharedEffects)try{awakeningEffects.warmup();clashEffects.warmup();}catch(error){console.warn('Shared effects warm-up',error);}
       castFx.now?.warmup(bodies);if(!started)await nextTask();await compileRoom();if(started)await view.uploadTexturesOverFrames(current);else await view.uploadTexturesInSlices(current);needed.forEach(id=>compiledFighters.add(id));}
-    finally{library.hideWarmup();library.disposeWarmup();if(sharedEffects){awakeningEffects.hideWarmup();clashEffects.hideWarmup();}}
+    finally{library.hideWarmup();library.retireWarmup();if(sharedEffects){awakeningEffects.hideWarmup();clashEffects.hideWarmup();}}
   });warming=warm.catch(()=>{});await warm;
   if(!current()){horde.collect();return;}
   // The stage's own images too, which are in the scene (hidden) once loaded: see uploadTextures. (In a fight already on - a
@@ -1579,7 +1634,10 @@ async function ensureSnapshotAssets(snapshot:GameSnapshot,onWarm?:()=>void,also?
     // Its roots: the Armory's pools, and whole, the room's bodies with their forms (hidden until an awakening) and the place, so
     // every shadow program a body, a form or a prop of the place needs is linked here and every buffer of theirs sent
     // (GameRenderer.warmDraw; launch day 15).
-    if(warmEnabled()&&performance.now()-loadStart<45000){const place=stages.root(snapshot.stage??'harbor');view.warmDraw(warmRoots(),[...[...fighters.values()].map(fighter=>fighter.group),...(place?[place]:[])]);stamp('warm-drawn');await warmEffekseer(view.renderer,view.camera).catch(()=>{});stamp('effekseer');}
+    if(warmEnabled()&&performance.now()-loadStart<45000){const place=stages.root(snapshot.stage??'harbor');view.warmDraw(warmRoots(),[...[...fighters.values()].map(fighter=>fighter.group),...(place?[place]:[])]);stamp('warm-drawn');await warmEffekseer(view.renderer,view.camera).catch(()=>{});stamp('effekseer');
+      // (And every GPU pipeline the fight will draw with, made here through the frame's own passes -
+      // GameRenderer.warmPipelines - not in the fight's first frames, its first G or its first knockout.)
+      await view.warmPipelines(current);stamp('pipelines');}
     // The sound, which came in while the room compiled: waited for here as it was before the compile. Its cap is 30 s, not the
     // old 3: on a thin line the bank starts only as the compile does (CombatAudio.holdFetches), and its 13.5 MB for a royale
     // of twelve take 9 s at 12 Mbit/s; a line under 3.6 Mbit/s would start the fight with some still to come (it starts
@@ -1639,6 +1697,9 @@ async function prepareSwap(room:GameSnapshot,fighter:FighterId,side:SwapSide){
   if(!warmEnabled())return;
   if(pooledCasters()>casters)view.warmDraw(warmRoots());
   await warmEffekseer(view.renderer,view.camera).catch(()=>{});
+  // (And the newcomer's effects' GPU pipelines, made now into the frame's own target rather than on their first cast:
+  // the scene's pass alone, which the next frame draws over - GameRenderer.warmPipelines.)
+  await view.warmPipelines(()=>started,false);
 }
 async function switchTraining(side:SwapSide,fighter:FighterId,random=false){
   const room=network.snapshot,now=room?.players.find(p=>p.id===swapActor(side));
@@ -1687,6 +1748,10 @@ function watchSwaps(snapshot:GameSnapshot){
 // Home is actionable independently of the full roster. Idle downloads use one worker;
 // selecting a fighter or entering a match promotes its assets ahead of that queue.
 startup.readyMs=Math.round(performance.now()-startup.started);hud.ready();bootDone(); // (the loading page's end: boot/bootScreen.ts)
+// What only a fight draws - the borrowed hurts' takes (0.9 MB) and the ink impacts' flipbooks (0.4 MB) - is fetched
+// once the home is up, not with the first screen's downloads, where a phone's connection waited for them before the
+// home could be used. A room's load waits for both (ensureSnapshotAssets).
+{const afterHome=()=>{void hurtsReady();void loadInkImpacts();};const idle=(globalThis as {requestIdleCallback?:(go:()=>void,options?:{timeout:number})=>number}).requestIdleCallback;if(idle)idle(afterHome,{timeout:3000});else setTimeout(afterHome,500);}
 // Rapier, every match's collision (the offline modes' own simulation, the online one's prediction), is fetched once the home
 // screen is up and the page has its images, not with the page: in the entry (game/moba/LocalRift.ts imported it at the top)
 // it was 1.07 MB of a first visit's 3.3 MB of code before PLAY could be pressed. A start pressed before this imports it itself.
@@ -1750,7 +1815,7 @@ function cinematics(snapshot:GameSnapshot){
   if(champion&&victoryFor!==champion.id){const winner=fighters.get(champion.id);if(winner){victoryFor=champion.id;const mine=finaleMine(snapshot,network.id),team=!!objectiveOf(snapshot)||!!riftOf(snapshot)||!!ballOf(snapshot);audio.cheer(1,true);if(!survival())audio.ui(UI_SFX.victory,.45,.3);if(!survival()){const line=HOME_VOICES[winner.state.fighter],own=audio.winLine(winner.state.fighter,mine?1.9:.8);if(own===undefined&&line)audio.quote(line,.85,mine?1.9:.8);if(!mine)audio.lossLine(.8+(own??lineSeconds(winner.state.fighter)??0)+.4);}if(!ballOf(snapshot))camera.victory(winner,6);/* a ball match's end is its podium's orbit (BallCeremony) */
     // The feel pass, iteration four: the announcer calls the player's own win in the main game -
     // FLAWLESS! when nothing touched them - over the K.O. (MangaImpact) and the results.
-    const self=snapshot.players.find(p=>p.id===network.id);if(mine&&!survival()&&self)audio.announce(self.damageTaken||team?VICTORY_LINE:FLAWLESS_LINE,.95,.55);}}
+    const self=snapshot.players.find(p=>p.id===network.id);if(mine&&!survival()&&self){if(duelCalls(snapshot))duelCaller.say(self.damageTaken?'victory':'flawless',{delay:.55,queue:true});else if(announcerOn())audio.announce(self.damageTaken||team?VICTORY_LINE:FLAWLESS_LINE,.95,.55);}}}
   if(snapshot.status!=='finished')victoryFor=null;
 }
 /** Couch play's frame (couch/couch.ts): the two people's fighters as drawn, and in co-op the enemies nearest them, filmed
@@ -1827,7 +1892,8 @@ installPanelFlags();
 // because handing it the clamp made the shot advance in slow motion while the
 // fight did not, and below 20 fps it fell metres behind. FollowCamera bounds
 // its own step; see the note on `update`. The policy is `frameSteps`.
-// At most about sixty frames a second, whatever the display asks for (see FrameGate).
+// At most about sixty frames a second, whatever the display asks for (see FrameGate) - FULL DETAIL on a desktop excepted,
+// drawn at the display's own rate (FramePolicy.drawRate).
 const gate=new FrameGate(),viewFrustum=new THREE.Frustum(),secondFrustum=new THREE.Frustum(),viewProjection=new THREE.Matrix4();
 function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   phoneShell.fighting(started&&!hud.settingsOpen);   // the screen kept on in a fight, not behind the pause menu (ui/phoneShell.ts)
@@ -1846,9 +1912,11 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   // (The pad is still read: its presses drive that card - until 28 October 2026 a paused match's menu never heard them,
   // START did not close it and the D-pad did not move.)
   if(covered&&canvasSize===drawnSize){previous=now;input.enabled=false;input.update(0);hud.keepPadFocus();return;}
-  if(!gate.draw(now,previous,view.frames.target(settings.powerMode)))return;
+  if(!gate.draw(now,previous,view.frames.drawRate(settings.powerMode)))return;
   const steps=frameSteps((now-previous)/1000);previous=now;const dt=steps.world,rawDt=steps.camera;
   pausePump(); // Round 5 (SOLOPAUSE): and a room that pauses for this page.
+  // (A parry's payoff: the fight drawn `pay.lag` behind for a moment, the bodies' and effects' own steps at `pay.rate`.)
+  const pay=parryPay.frame(now,timeline.drawnAt),drawDt=dt*pay.rate;
   let presented:ReturnType<CombatTimeline['sample']>;
   if(network===arcade||network===practice||network===localObjective||network===localRift||network===localBall||network===duel||network===royale){
     // A clock the arena's own time scale drives, a tick behind the newest
@@ -1857,13 +1925,14 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // (Football: a hit-stop - the drawn match held FOOT_HIT.hold s and caught up over FOOT_HIT.catch s.)
     const hit=network===localBall?footHitPhase(now):'';
     let next=localClock+rawDt*(local.paused||hit==='hold'?0:hit==='catch'?scale*FOOT_HIT.pace:scale);
-    if(network===localBall&&steadyBallClock&&!local.paused&&!hit&&inputClock.last>0){
-      const err=newest+inputClock.backlog+(now-inputClock.last)/1000*inputClock.rate-BALL_CLOCK.behind-next;
-      next+=Math.abs(err)>BALL_CLOCK.snap?err:Math.max(-rawDt*BALL_CLOCK.pace,Math.min(rawDt*BALL_CLOCK.pace,err*Math.min(1,rawDt*BALL_CLOCK.gain)));
-    }
+    // (Every mode on this device steers onto one steady lag: STEADY_CLOCK. Not through football's hit-stop, nor the
+    // arcade's slow motion, whose ticks come a fraction a command.)
+    if(steadyClock&&!local.paused&&!hit&&scale===1&&inputClock.last>0)next=steadyStep(next,newest+inputClock.backlog+(now-inputClock.last)/1000*inputClock.rate,rawDt);
     localClock=Math.min(newest,Math.max(newest-(hit?FOOT_HIT.most:3/60),next));
-    presented=timeline.at(localClock-LOCAL_DELAY/1000);
-  }else presented=timeline.sample(now);
+    presented=timeline.at(localClock-LOCAL_DELAY/1000-pay.lag);
+  }else presented=timeline.sample(now,pay.lag*1000);
+  // A parry the player is in (either seat's, on a couch): its payoff's sting, its peak on the freeze letting go, and its pulse.
+  if(started&&presented){const mine=(id:string)=>!!id&&(id===network.id||couch.on&&couch.ids.includes(id));for(const parried of parryPay.observe(presented.events,mine)){audio.sting(.62,Math.max(0,PARRY_FREEZE-STING_PEAK));const pulse=parryPayPulse(parried,network.id??'');if(pulse)input.feel(pulse);}}
   prediction.visualTime=presented?.time??NaN; // Round 5 (PARRY): a parry's vanish is drawn with the parry (Prediction.visualTime).
   const snapshot=presentSnapshot(started?presented?.snapshot:undefined);
   // A replay showing (Goal Rush's goals, Sky Spike's great points): the fighters and the ball are drawn from it, through its lens.
@@ -1882,11 +1951,16 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
   // Couch play: the same gate opens the two seats; the single player's own input stays off for the fight (its pause keys
   // and the menus are still its own).
   if(couch.on)couch.live=started&&!finale.holding(seconds())&&network.predictionReady&&!hud.introOpen&&!hud.resultsOpen&&!bugReport.open&&!hud.settingsOpen&&!document.hidden&&!vsSplash.open&&!(survival()&&(survivalHud.draftOpen||survivalHud.resultsOpen||runView()?.phase==='travel'));
-  input.update(dt);hud.keepPadFocus();pushInput();environment.update(now/1000);stages.update(now/1000);
+  // The pad, then the touch controls' stick and held buttons, then this frame's command: until now the touch
+  // controls were read after the command had gone, so the stick and GUARD reached the fight a frame late.
+  input.update(dt);hud.keepPadFocus();
   touch.update(input.enabled,started&&network.snapshot?.status!=='waiting'&&!hud.objectives.blocking,!!ceremony); // a room's lobby may be read upright; its fight asks for landscape; a ball match's ceremony pages (its intro, the podium) are not drawn over
+  pushInput();environment.update(now/1000);stages.update(now/1000);
   if(qualityWatch.frame(rawDt,started&&!settings.qualityChosen&&settings.quality!=='low'&&!hud.settingsOpen&&!document.hidden,view.resolutionSpent,view.frames.target(settings.powerMode))){stepDown(settings);view.applySettings(settings);}
   // A phone on Balanced that cannot hold sixty draws an even thirty (render/framePolicy.ts).
-  if(view.frames.frame(rawDt,started&&!hud.settingsOpen&&!document.hidden,settings.powerMode)){view.applySettings(settings);frameRateToast();}
+  // (Only once the resolution and the effects are spent, and back to sixty at a calm moment.)
+  view.calm=!started||network.snapshot?.status!=='active'||hud.introOpen||hud.resultsOpen||hud.settingsOpen||document.hidden;
+  {const [policyDt,policyCpu,times]=view.policyFrame(rawDt);for(let i=0;i<times;i++)if(view.frames.frame(policyDt,started&&!hud.settingsOpen&&!document.hidden,settings.powerMode,view.resolutionSpent,policyCpu,view.calm)){view.applySettings(settings);if(view.frames.stepped)frameRateToast();}}
   objectiveField.update(snapshot,presented?.time??0,network.id,view.camera);
   riftField.setTarget(targeting.locked?targetId:null);riftField.update(snapshot,network.id,view.camera,dt,couch.split?couch.ids[1]:undefined);riftUI.update(snapshot,network.id,targeting.locked?targetId:null);
   // (Online, how far behind the room this page draws - its prediction's clock less the frame's - for an attack the
@@ -1911,7 +1985,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     {const courtNow=ballOf(snapshot)?.mode==='sky-spike'?ballOf(snapshot)!.ball.court:undefined;if(!sameCourt(courtNow,ballCourtFor())){setBallCourt(courtNow);if(stageWanted===snapshot.stage)stageWanted=null;}}
     wantStage(snapshot.stage??'harbor');
     const localImpacts=presentEvents(prediction.takeImpacts(),snapshot.players).map(event=>({...event,id:predictedImpactId++,serverTime}));
-    applyCombatFrame(snapshot);prediction.markAuthoritativeImpacts(snapshot.events);let self:PlayerState|undefined;
+    applyCombatFrame(snapshot);duelCommentary(snapshot);prediction.markAuthoritativeImpacts(snapshot.events);let self:PlayerState|undefined;
     cinematics(snapshot);cutIns(snapshot);
     // Measured in the input clock's own (possibly dilated) time, so a tick it
     // stretches is drawn stretched rather than frozen at its end.
@@ -1920,7 +1994,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // split screen has two: a body Player 2's half shows is seen, as one Player 1's shows is (couch/split.ts).
     viewProjection.multiplyMatrices(view.camera.projectionMatrix,view.camera.matrixWorldInverse);viewFrustum.setFromProjectionMatrix(viewProjection);
     const lens2=couch.split?camera2?.camera:undefined;if(lens2){viewProjection.multiplyMatrices(lens2.projectionMatrix,lens2.matrixWorldInverse);secondFrustum.setFromProjectionMatrix(viewProjection);}
-    for(const p of snapshot.players){if(p.enemy||!fighters.has(p.id))continue;const fighter=fighters.get(p.id)!,opponent=snapshot.players.find(o=>o.id===(p.id===network.id?targetId:p.target));const shown=ballCeremony.posed(p.id,replayed?replayed.snapshot.players.find(q=>q.id===p.id)??p:p.id===network.id?(prediction.sample(steps.correction,p,renderAlpha)??p):prediction.sampleRemote(steps.correction,p,renderAlpha));fighter.targetDistance=opponent?Math.hypot(opponent.x-shown.x,opponent.z-shown.z):Infinity;fighter.targetPoint=opponent?(fighter.targetPoint??new THREE.Vector3()).set(opponent.x,opponent.y+1.45,opponent.z):undefined;fighter.cameraPoint=view.camera.position;fighter.unseen=p.id!==network.id&&p.id!==targetId&&p.id!==spectating&&!fighter.inView(viewFrustum,view.camera.position)&&!(lens2&&fighter.inView(secondFrustum,lens2.position));fighter.update(dt,shown,true,rawDt);if(p.id===network.id){self=shown;shownSelf=shown;}}
+    for(const p of snapshot.players){if(p.enemy||!fighters.has(p.id))continue;const fighter=fighters.get(p.id)!,opponent=snapshot.players.find(o=>o.id===(p.id===network.id?targetId:p.target));const shown=ballCeremony.posed(p.id,replayed?replayed.snapshot.players.find(q=>q.id===p.id)??p:p.id===network.id?(prediction.sample(steps.correction,p,renderAlpha)??p):prediction.sampleRemote(steps.correction,p,renderAlpha));fighter.targetDistance=opponent?Math.hypot(opponent.x-shown.x,opponent.z-shown.z):Infinity;fighter.targetPoint=opponent?(fighter.targetPoint??new THREE.Vector3()).set(opponent.x,opponent.y+1.45,opponent.z):undefined;fighter.cameraPoint=view.camera.position;fighter.unseen=p.id!==network.id&&p.id!==targetId&&p.id!==spectating&&!fighter.inView(viewFrustum,view.camera.position)&&!(lens2&&fighter.inView(secondFrustum,lens2.position));fighter.update(drawDt,shown,true,rawDt);if(p.id===network.id){self=shown;shownSelf=shown;}}
     // (Goal Rush's SPORT mode: a kick on the run laid over the run, after the bodies are posed - render/ball/kickLayer.ts.)
     // (And the volleyball rules' touches, each from its ready pose - ballMoves.ts volleyPose.)
     if(ballOf(snapshot)?.football||ballOf(snapshot)?.volley)applyKicks(timeline.drawnAt??snapshot.serverTime);
@@ -1966,12 +2040,19 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
       for(const step of body.steps){audio.step(step,step.speed,mine);effects.footstep(step,serverTime);}
       body.steps.length=0;
     }
+    // The local fighter's blows on a body that cannot get out of their way, presented on the tick the local copy lands
+    // them (Prediction.takeImpacts): heard, felt, shaken and sparked now; the server's event for each is passed over when
+    // it comes (impactWasPresented), and its damage number waits for it.
+    // (As the server's event is answered in applyCombatFrame: the move's own style and how far up the body it arrived,
+    // the thrower's arm stopped by a light or a heavy; until now only the Kazeyose came this way.)
     for(const event of localImpacts){
       const heading=blowHeading(event);
       const detail=impactDetail(event);
+      {const pulse=pulseFor(event,network.id??'',id=>!!snapshot.players.find(player=>player.id===id)?.enemy);if(pulse)input.feel(pulse);}
       bigBlowSound(event);
-      fighters.get(event.targetId??'')?.impact(true,event.slot,'melee',event.contactIndex,heading,event.damage,undefined,detail);
-      fighters.get(event.actorId)?.impact(false,event.slot,undefined,undefined,heading,event.damage,undefined,detail);
+      const struck=snapshot.players.find(player=>player.id===event.targetId),height=struck&&event.endpoint?event.endpoint.y-struck.y:undefined;
+      fighters.get(event.targetId??'')?.impact(true,event.slot,eventStyle(event)??'melee',event.contactIndex,heading,event.damage,height,detail);
+      if(event.slot==='light'||event.slot==='heavy')fighters.get(event.actorId)?.impact(false,event.slot,undefined,undefined,heading,event.damage,undefined,detail);
       camera.impact(Math.min(1,.2+screenWorth(event)/460),heading,hitTier(event.slot,event.chain));
       camera.holdFor(Math.min(1,(event.damage??0)/240));markerHoldUntil=performance.now()/1000+.5;
       view.punch(Math.min(.55,screenWorth(event)/420)*settings.effects);
@@ -2055,7 +2136,9 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
         superRide.aim(view.camera,rawDt,ballView,ballField.ballPosition(),superCamChoice(settings),snapshot.serverTime); // (An option, off by default)
         // (The marks are laid through the lens as the chase rig has just aimed it - before, they were laid
         // through the follow camera's, and stood well off the bodies they mark.)
-        passMark?.update(ballView,snapshot.players.find(p=>p.id===network.id),snapshot.players,footStick,yaw,view.camera,view.renderer.domElement.clientWidth,view.renderer.domElement.clientHeight,id=>fighters.get(id)?.group.position);ballField.namedMate=passMark?.pick??'';
+        // (The canvas's size as the renderer set it: its clientWidth and clientHeight laid the whole page out every frame,
+        // in every mode, wherever the HUD had written to it first.)
+        passMark?.update(ballView,snapshot.players.find(p=>p.id===network.id),snapshot.players,footStick,yaw,view.camera,view.canvasSize.w,view.canvasSize.h,id=>fighters.get(id)?.group.position);ballField.namedMate=passMark?.pick??'';
         if(chase)camera.fader.update(rawDt,view.camera,camera.director.crowd,own,undefined,NO_FOCUS);}
       // Locked on, the camera steers the heading, so the accumulator the next
       // mouse delta is added to must be the heading on screen (Targeting reads
@@ -2088,7 +2171,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // The area slot: the aim follows the fighter, its target and its move; the circles fill and strike.
     if(self){const move=areaMoveOf(self),lock=targetId?snapshot.players.find(p=>p.id===targetId&&p.alive):undefined;input.aim.follow(self,input.yaw,lock,move.range,move.radius,areaReady(self,snapshot.serverTime));}else input.aim.cancel();
     areaFx.update(serverTime,input.aim.view,self,floorAt);
-    effects.update(serverTime,dt,steady);awakeningEffects.update(serverTime,dt,fighters,settings.effects,view.camera);castFx.now?.update(serverTime,dt,steady,settings.effects,view.camera);strikeTrails.update(dt,steady,view.camera);clashEffects.update(serverTime,view.camera,settings.effects);
+    effects.update(serverTime,drawDt,steady);awakeningEffects.update(serverTime,drawDt,fighters,settings.effects,view.camera);castFx.now?.update(serverTime,drawDt,steady,settings.effects,view.camera);strikeTrails.update(drawDt,steady,view.camera);clashEffects.update(serverTime,view.camera,settings.effects);
     // After CombatEffects has opened this frame's beam slots.
     if(survival()||objectiveOf(snapshot)?.kind==='last-stand')techniques.update(serverTime);
   }
@@ -2097,7 +2180,7 @@ function frame(now:number){requestAnimationFrame(frame);Fighter.beginFrame(now);
     // Every body the ceremony films is its subject: none is faded as though it stood in the follow camera's way.
     const own=fighters.get(network.id);if(own){ceremonyBodies.length=0;for(const f of fighters.values())ceremonyBodies.push(f);camera.fader.update(rawDt,view.camera,undefined,own,undefined,ceremonyBodies);}}else if(shownSelf)view.setFocus(view.shadowCentred?ballShadowFocus(shownSelf,ballField.ballPosition(),ballShadow[0]):shownSelf);// look: the sun's shadow box and the screen effects follow the fight (a replay's, the ball)
   ballReplayBars+=((replayed?1:0)-ballReplayBars)*Math.min(1,rawDt*7);
-  hud.tick();damageNumbers.update(view.camera);manga.update(view.camera);letterbox.set(couch.on?0:Math.max(camera.cuts.bars,ballReplayBars,ballCeremony.bars));view.cinemaGrade(couch.on?0:camera.cuts.grade);if(camera.cuts.opened!==heardCinema){heardCinema=camera.cuts.opened;if(camera.cuts.openedKind==='confirm'&&camera.cuts.active)audio.ui('fx-swing-huge',.22,.1);}
+  hud.tick();damageNumbers.update(view.camera,rawDt);manga.update(view.camera);letterbox.set(couch.on?0:Math.max(camera.cuts.bars,ballReplayBars,ballCeremony.bars));view.cinemaGrade(couch.on?0:camera.cuts.grade);if(camera.cuts.opened!==heardCinema){heardCinema=camera.cuts.opened;if(camera.cuts.openedKind==='confirm'&&camera.cuts.active)audio.ui('fx-swing-huge',.22,.1);}
   if(((started||!hud.homeVisible)&&!survivalHud.treeShown)||reportCapture){if(sideLens){const o=fighters.get(network.id)?.group.position;if(o){view.camera.position.set(o.x+6,1.3,o.z);view.camera.lookAt(o.x,1,o.z);view.camera.updateMatrixWorld();}}if(!couch.split)grunts.prepareCamera(view.camera);view.render(rawDt);ballCeremony.afterDraw(view.renderer.domElement);drawnSize=view.renderer.domElement.width*65536+view.renderer.domElement.height;}
   // Training's switch, measured: the frame that drew the new body (swapLog).
   for(let i=swapLanding.length-1;i>=0;i--){const landing=swapLanding[i];if(fighters.get(landing.actor)?.bodyFighter===landing.fighter){landing.entry.shownMs=Math.round(performance.now()-landing.askedAt);swapLanding.splice(i,1);}}

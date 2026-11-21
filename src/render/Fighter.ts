@@ -31,7 +31,10 @@ import { rosterPrefetch } from '../loading/rosterPrefetch';
 import {PriorityQueue} from '../loading/PriorityQueue';
 import * as THREE from 'three';
 import { addShaderPatch } from './look/shaderPatch';
-import { applyAuthoredInk, applyHitFlash, applyInkShell, applyLimbSmear, applyTeamTrim, applyToonShading, headWeights, headWeightsSteps, limbWeights, teamTrim, toonKind } from './look/toonShading';
+import { drawnOnOnes } from './look/filmDrawings';
+import { abOff } from './look/abSwitch';
+import { applyFaceLight, FaceRig, faceLightUniforms } from './look/faceLight';
+import { applyAuthoredInk, applyHitFlash, applyInkFlash, applyInkShell, applyLimbSmear, applyTeamTrim, applyToonShading, headWeights, headWeightsSteps, limbWeights, teamTrim, toonKind } from './look/toonShading';
 import { applyThreatInk, threatInk } from './ThreatOutline';
 import { SHADOW_SIDE_FIGHTERS, fixShadowSide } from './look/shadowSide';
 import { HAND_SCALE } from './look/proportions';
@@ -66,7 +69,7 @@ import { Ragdoll, ragdollsReady } from './Ragdoll';
 import { COMBO_KEYS, COMBO_SLOT, comboMove, hasCombos, type ComboKey } from '../game/combos';
 import { isTechnique, TECHNIQUE_KEYS, TECHNIQUE_SLOT, type TechniqueKey } from '../game/techniques';
 import { comboClip, comboFormClip, type ComboClip } from './comboClips';
-import { LAUNCH_GRAVITY, MOVES, OUTCOME_LIFT, PUSH_RADIUS, RUSH_STAGES, WHIFF_RECOVERY, meleeReach, type MoveDefinition, type Outcome } from '../game/moves';
+import { LAUNCH_GRAVITY, MOVES, OUTCOME_LIFT, PUSH_RADIUS, RUSH_STAGES, WHIFF_RECOVERY, heftOf, meleeReach, type MoveDefinition, type Outcome } from '../game/moves';
 import { FALL_GRAVITY, jumpArc } from '../game/moves'; // Round 4b (JUMP): the jump clip paced on each fighter's own arc.
 import { AWAKENINGS, AWAKENING_ENTRY, AWAKENING_SWAP, awakeningSwapAt, moveFor as awakenedMoveFor, rushMove as authoredRushMove } from '../game/awakening';
 import { lockRoundMove } from '../game/lockCombat';
@@ -258,6 +261,7 @@ function contactStretch(A:number,B:number,C:number){
 /** One striking surface: how deep it is now (for the touch), and - where it
  *  is one the body should be pushed off (`push`) - its stretch. */
 function contactSurface(p:THREE.Vector3,push=true){
+  if(ZONE_VISIT){ZONE_VISIT(p);return;}
   const c=CONTACT;
   // The torso: the surface's offset from the nearest point of the spine, and
   // as the body slides along the heading, the same offset across the spine
@@ -1269,6 +1273,40 @@ const GATLING={out:.045,hold:.02,back:.065,aim:THREE.MathUtils.degToRad(80),ahea
 const SPRING_TIDE_LEAP={rise:2.6,drop:.3,travel:2.4};
 const HIT_REACT={headYaw:.42,headWhip:.37,twist:.4,lean:.3,arms:.35,dip:.052};
 const HIT_LIMIT={headYaw:.65,headWhip:.55,twist:.6,lean:.45,arms:.6,dip:.09};
+/** Hit zones (`hitzone`, look/abSwitch.ts): a blow on a body on its feet
+ *  is drawn by where it lands as the two bodies are drawn - the striking limb (a fist, a foot, a blade's steel: of the
+ *  attacker's striking surfaces, `strikeSurfaces`, the one nearest this body) against this body's own parts:
+ *  - high (the head and the neck): the snapped-back take, the head whipped `whip` times as far (`whipMost` times the
+ *    reaction layer's limit at most);
+ *  - middle (the chest and the belly): the take doubled over the blow;
+ *  - low (the hips and the legs): turned off the leg it took (a spin take, the way the blow travelled across the body),
+ *    the knees giving: the reaction layer's dip `knees` times as deep (`kneesMost` times its limit at most), the head
+ *    whipped less.
+ *  The simulation lands every melee blow at the body's centre, 1.05 m up, and the take was the string stage's. This is
+ *  drawn only, on each client from the bodies it draws: nothing the simulation or a room's messages carry changes. A
+ *  limb further than `reach` from the body (a blast, a beam) is no limb of the blow's, and the stage picks as before.
+ *  Each part is measured to its skin: the torso (from the hips' joint - a blow at the waist is a body blow - to `chest` of
+ *  the way from the chest to the neck) by TORSO_RADIUS, the head by HEAD_RADIUS, the neck `neck` and a leg `leg` round. A blow that throws the body lets its
+ *  knees' dip go over DIP_OUT seconds (a time constant), where it was dropped in the frame the body left its feet, and the
+ *  take it cuts short over `release` (the takes' own TAKE_EASE: picked by where blows land, a head shot's snap-back is
+ *  more often the take a throw interrupts), and a launch out of a hurt on its feet jack-knifes over `jack` times the
+ *  launch's own rise (LAUNCH_RISE): folded off a snap-back's arch in 90 ms, the head went 15 cm in two frames. */
+const DIP_OUT=.04;
+const HIT_ZONE={reach:.6,neck:.07,leg:.08,chest:.5,release:.16,jack:1.5,high:{whip:1.6,knees:.6,whipMost:1.25,kneesMost:1},middle:{whip:.85,knees:1,whipMost:1,kneesMost:1},low:{whip:.45,knees:2.6,whipMost:1,kneesMost:1.9}} as const;
+type HitZone='high'|'middle'|'low';
+/** The take a blow drawn by HIT_ZONE plays: back for the head, the fold for the body, a spin off a leg (`side`, + to the
+ *  body's left, as `dreamHurt` reads it). */
+export function zoneHurt(zone:HitZone,side:number):keyof typeof DREAM_HURTS{return zone==='high'?'dream back':zone==='middle'?'dream fold':side>0?'dream spin L':'dream spin R';}
+/** While set, every striking surface handed to `contactSurface` goes here instead (HIT_ZONE's search, `zoneFrom`). */
+let ZONE_VISIT:((p:THREE.Vector3)=>void)|undefined;
+const _zoneA=new THREE.Vector3(),_zoneB=new THREE.Vector3(),_zoneC=new THREE.Vector3(),_zoneH=new THREE.Vector3(),_zoneQ=new THREE.Vector3(),_zoneL=new THREE.Vector3();
+const _zoneHit={zone:'middle' as HitZone,gap:Infinity},_zoneBest={zone:'middle' as HitZone,gap:Infinity};
+/** How far `p` is from the segment a-b. */
+function segmentGap(p:THREE.Vector3,a:THREE.Vector3,b:THREE.Vector3){
+  _zoneQ.subVectors(b,a);const long=_zoneQ.lengthSq();
+  const t=long>1e-9?THREE.MathUtils.clamp(_zoneL.subVectors(p,a).dot(_zoneQ)/long,0,1):0;
+  return _zoneL.copy(a).addScaledVector(_zoneQ,t).distanceTo(p);
+}
 /** The weight of a blow, 0 for a jab to 1 for the biggest, off the scale it
  *  lands with: HIT_HEAVY[0] (a rush stage) to HIT_HEAVY[1] (a finisher, a
  *  special or an ultimate); a heavy is about two thirds of the way.
@@ -1303,6 +1341,31 @@ const LAUNCH_SPIN=1,LAUNCH_SPUN=.8,LAND_BOUNCE=.028,LAND_BOUNCE_MOST=.3,LAND_TIM
 /** The dream loop: how far a flung body's arms and legs flail (radians) and how fast (Hz) - Fighter.flail. Under five
  *  degrees a frame at sixty frames a second: a flung body's limbs windmill, where ours were held spread. */
 const LAUNCH_FLAIL={arms:.32,legs:.2,rate:2.2} as const;
+/** The settle (`settle`, look/abSwitch.ts): a body knocked down settles
+ *  onto the floor. For `time` seconds from the frame it is down - landed from a throw, or put there - its legs, arms and
+ *  head may not drop faster than a falling limb would: their height (radians over level, at the joint each turns at) falls
+ *  at most `drop` radians a second at first, `fall` more each second after (a falling limb's speed), never more than
+ *  `fastest`, so each comes down after the body has landed, faster as it goes; once down, it rebounds a little
+ *  (`rebound` radians x the landing's weight, over `reboundTime`). Where the clip already has a limb higher, the clip's;
+ *  and never more than `most` over the clip's pose nor past `top` over level. Only ever up from the clip (each limb turned
+ *  toward the sky at its root): never through the floor. The landing's rigid bounce is kept small - `bounce` metres a
+ *  metre a second of the fall, at most `bounceMost` (it was 0.028 and 0.3: a launch landed and rose 25-30 cm off the
+ *  floor as one board) - its roll `roll` of what it was. Let go over `out` seconds when the body rises
+ *  or is thrown again, so the lying pose and the get-up start where it leaves the body. The landing's weight is the fall's
+ *  speed over `speed` (`light` at least). A ground hit's bounce is its own, as before. Through the settle the floor guard
+ *  lifts a body whose clip lies under its floor at `guard` metres a second (FLOOR_GUARD_RATE's 8 took it up 9-15 cm in a
+ *  frame, which the old bounce's own 25-30 cm hid): it sinks a few centimetres into its landing and comes up. */
+const SETTLE={time:.45,drop:2.5,fall:26,fastest:9,rebound:.09,reboundTime:.14,most:.9,top:1.2,bounce:.009,bounceMost:.08,roll:.5,out:.1,speed:8,light:.45,guard:3} as const;
+const _settleRoot=new THREE.Vector3(),_settleTip=new THREE.Vector3(),_settleAxis=new THREE.Vector3(),_settleTurn=new THREE.Quaternion();
+/** Hair and cloth on a hit (`hairhit`, look/abSwitch.ts): a blow pushes the struck body's
+ *  hair and cloth springs along it (SecondaryMotion.kick) - `light` to `heavy` metres a second by the blow's heft, as the
+ *  reaction layer weighs it (HIT_HEAVY), a finisher's `finisher` times as hard, a guarded blow's `guarded` - lifted a
+ *  little (`up`, and half of an uppercut's own rise); and the striker's own along its strike, `striker` of it by the blow's
+ *  worth. The struck body's springs run through the blow's freeze for `live` seconds after it (they held still in every
+ *  freeze, and the hair only answered the blow after it), as its reaction layer does; never through a big blow's hold,
+ *  which holds the whole body. Before, the springs only answered the body's own travel. */
+const HAIR_HIT={light:.9,heavy:2.4,finisher:1.25,guarded:.3,up:.3,striker:.35,live:.3} as const;
+const _hairKick=new THREE.Vector3();
 /** Ground hits (8 October 2026): a blow on a body lying on the floor (ImpactDetail.downed) bounces it there - the
  *  landing's own bounce, as if it had met the floor at FLOOR_BOUNCE_SPEED m/s and FLOOR_BOUNCE_PER more for each point
  *  of damage (FLOOR_BOUNCE_MOST at most: 5 to 11 cm), rolled FLOOR_BOUNCE_ROLL of the landing's roll along the blow -
@@ -1504,6 +1567,11 @@ const FLOOR_PATCH=(lift:number)=>`
 /** Being hit, in any of its forms. Foot planting and gaze tracking are for a
  *  fighter who is in control of their own body. */
 const REACTION_ACTIONS=new Set<string>(['hurt','flinch','launched','knockdown','getup','stun','splat']);
+/** Action on every frame (`onones`, look/filmDrawings.ts): what a body is doing when the film look poses it on every
+ *  frame rather than on its twelve drawings a second - a move, from its wind-up to the end of its recovery, or taking a
+ *  blow (hurt, launched, down, splatted, stunned, getting up), and its knockout. Standing, moving, guarding, dashing
+ *  and jumping stay on the grid. */
+const ON_ONES=new Set<string>(['light','heavy','special','ultimate','area','awaken','hurt','flinch','launched','knockdown','getup','stun','splat','defeated']);
 /** A body taking a blow on its feet, whose feet the reaction layer holds
  *  while the hips go back (see HIP_SHOVE). */
 const STANDING_REACTIONS=new Set<string>(['hurt','flinch','stun','guard']);
@@ -1515,7 +1583,13 @@ const STANCE_ACTIONS=new Set<string>(['idle','guard']);
 
 // Ward's Block is a whole-body pose like Kosho's: blocking and walking measured
 // the planted foot sliding at 98% of travel without the stride.
-const GUARD_STRIDE=new Set<FighterId>(['koko','kosho','gummy','ward','kagari']);
+// (measured again over the whole released roster, a hundred bodies, with
+// tests/footContact.test.ts's skateRatio - the guard walked at 2.2 m/s for 3.2 s, the stride off and on. Eleven Blocks
+// are carried at 0.99-1.0 of travel without it and 0.10-0.63 with it: Senko, Kubiwa, Hinomoto, Bonsho, Psyche, Svanhild,
+// Shiun, Magatsu, Rook, Asahi and Shijima (0.99 to 0.63). Koko and Kosho still need it (1.00 to 0.11-0.29). Gummy, Ward
+// and Kagari no longer do - their bodies since stand planted without it (0.00-0.02) and slide with it (0.26-0.40) - so
+// they are out. The other eighty-four are planted without it; Torsion floats, 1.0 either way.)
+const GUARD_STRIDE=new Set<FighterId>(['koko','kosho','senko','kubiwa','hinomoto','bonsho','psyche','svanhild','shiun','magatsu','rook','asahi','shijima']);
 /** A touchdown softer than this is a step off a kerb and has nothing to
  *  absorb; above it, the knees give 2.6 cm per metre a second, to a limit.
  *  A jump lands at 8.8 m/s, which is the whole 15 cm. */
@@ -1624,6 +1698,11 @@ const TARGET_STRIDE=1.35,CADENCE_RANGE:[number,number]=[.7,2.2];
 // where the walk mixes in at 4.5 m/s (0.19-0.28 at the roster's), 3.8 steps a second. The cadence row's other steps and the
 // library's jog measured worse.
 const STRIDE_SCALE:Partial<Record<FighterId,number>>={taisei:1.27,kuzu:1.15};
+/** a travelling melee's legs around its last blow - the stride eased out over STRIDE_PLANT[0]
+ *  s up to the blow, so it lands planted as drawn, held out until [1] s after it, and eased back in by [2] for the recovery
+ *  the body still travels through. (It stayed out from 0.12 s after the blow to the end of the move: the feet skated
+ *  under the follow-through at the full run the simulation keeps through an attack.) */
+const STRIDE_PLANT=[.04,.1,.26] as const;
 /** Where the gait is all walk and where it is all run, in metres a second.
  *  Between them it is a mix of the two read from one stride clock. */
 const GAIT_RANGE:[number,number]=[1.6,6];
@@ -1688,7 +1767,12 @@ export type ImpactDetail={chain?:number;fromBehind?:boolean;reaction?:ReactionKi
   tint?:number;
   /** Ground hits (8 October 2026): the blow found the body down on the floor (the event's `downed`), and it takes it
    *  there - bounced on the floor, flinching less (see FLOOR_BOUNCE_SPEED). */
-  downed?:boolean};
+  downed?:boolean;
+  /** The hit flash (hitflash): a COUNTER or a PUNISH (the event's `counter` or `punish`), drawn with the ink
+   *  frame (HIT_FLASH). */
+  reward?:boolean;
+  /** Hit zones (hitzone): who threw it (the event's `actorId`), for where its limb is against the body. */
+  attacker?:string};
 /** The feel pass: how long a big blow's flash lasts, how far the
  *  frozen body shakes along the blow (metres, alternating each 30 Hz step, as
  *  a held cel shakes), and how long the hold may outlive a hitstop the drawn
@@ -1706,6 +1790,16 @@ const DREAM_FLASH_RED=new THREE.Color(1,.3,.24);
  *  as "washed pale yellow-white" and vanished into it (the calibration critic, every heavy blow); the victim
  *  should be a flat red/pink hit-flash silhouette from the frame after the blow as it flies off. */
 const DREAM_FLASH={big:.22,finisher:.18,light:.14,bigAmount:.6,amount:.32,redden:9,flat:.5,flatLight:.28} as const;
+/** The hit flash (`hitflash`, look/abSwitch.ts): the struck body's flash
+ *  held whole for `full` seconds from the first frame it is drawn - two frames at sixty - then let go fast: `third` of
+ *  it on the frame after, falling with a time constant of `fade`, gone `life` seconds after that. It held most of the way
+ *  for a tenth of a second and was gone in a fifth, and in the film look a heavy blow's took the struck body to pure white
+ *  for ten frames (the cels pushed it there): the pose the blow struck was never seen. Now the
+ *  reaction reads from the third frame. A counter or a punish (the COUNTER and PUNISH events, moves.ts REWARD_HITSTOP) is
+ *  drawn the other way round for the same two frames - an ink frame: the body's fill `ink`, `inkAmount` x the VISUAL
+ *  EFFECTS level's body flash of the way (at most `inkMost`), its line `paper` (applyInkFlash) - and lets go the same
+ *  way. The old flash's own clock (`hitFlash`) runs on as it did: the light blow's freeze pose is timed by it. */
+const HIT_FLASH={full:1/30,third:.4,fade:.02,life:.085,ink:new THREE.Color(.03,.028,.04),inkAmount:1.5,inkMost:.92,paper:new THREE.Color(.97,.95,.9),paperAmount:1.7} as const;
 /** (23 October 2026) The shake starts one 30 Hz step after the blow - the contact frame itself shows the fist on the
  *  skin; started on it, its first step threw the body 1.6 cm off the fist (tests/madakeConsecutiveContact) - and only
  *  while the drawn state is held (its hitstop), as BIG_SHAKE: a body sliding back is not shaken across the floor. */
@@ -1728,6 +1822,15 @@ const _impactAxis=new THREE.Vector3(),_impactLocal=new THREE.Vector3(),_impactPa
 /** A big blow's limbs reach their reaction pose in one frame (the impact
  *  frame), where every other blow's take STRUCK_BLEND. */
 const BIG_SNAP=1/60;
+/** A big blow's reaction is struck over `blend` seconds - three frames at sixty - not one (`posesnap`, look/abSwitch.ts):
+ *  a body on its feet keeps a crisp first key (eased out: more than half of the way on the frame the blow lands), a body
+ *  in the air or on the floor is eased in and out, and a launch starts from the pitch the body was drawn at (`drawnSpine`)
+ *  rather than the new clip's, so a juggled body lying flat never stands upright between two frames. A launch off the
+ *  floor does not go over on its way (`launchTurns`): it flies as it lay. The simulation's timing is untouched. A spine at
+ *  least `plane` of whose length lies in the plane of the throw (the blow's heading and up) is the one whose pitch is
+ *  kept; one lying across the throw has none, and starts as before. */
+const POSE_SNAP={blend:.05,plane:.6,fresh:.1} as const;
+const _drawnHips=new THREE.Vector3();
 export type AnimStyle='twos'|'snap'|'classic';
 /** The stepped pose's rate, in poses a second. */
 const STEP_RATE=30;
@@ -2013,7 +2116,15 @@ export class FighterLibrary {
    *  in the scene they still cost a matrix walk every frame - three thousand
    *  nodes, the most of any scene - so once compiled they leave it. */
   hideWarmup(){for(const f of this.warmFighters){f.group.visible=false;f.group.removeFromParent();}}
-  disposeWarmup(){for(const f of this.warmFighters)f.dispose();this.warmFighters=[];}
+  disposeWarmup(){for(const f of [...this.warmFighters,...this.retired])f.dispose();this.warmFighters=[];this.retired=[];}
+  /** The warm-up bodies kept, out of the scene, until the next room's are compiled. Their
+   *  materials were the only users of some programs - a form's body, the finale's pose - and three deletes a program
+   *  with its last user, so letting them go after the compile deleted those programs, and the fight linked them again in
+   *  the frame that first drew them: 10 s, 3 s and 2.8 s frames at a duel's end here (software GL). Kept, those draws
+   *  find their programs. The bodies kept before are let go only now, after the new room's compile has taken its own
+   *  hold of the programs the two share. */
+  retireWarmup(){const old=this.retired;this.retired=this.warmFighters;this.warmFighters=[];for(const f of this.retired)f.retire();for(const f of old)f.dispose();}
+  private retired:Fighter[]=[];
   /** Outfits with a body of their own (the shop's: economy/outfits.ts), loaded the first time a player wears one. */
   private outfitBodies=new Map<string,{source:GLTF;rush?:THREE.AnimationClip[]}|'loading'|'failed'>();
   /** The outfit a player can be drawn in now: theirs, if it is one of their fighter's and its body is here (and its
@@ -2383,6 +2494,11 @@ export class Fighter {
   /** The frame shows the last step's pose again (AnimStyle 'twos'). */
   private stepRepeat=false;
   private flashTotal=.12;private flashBig=false;private readonly flashTint=new THREE.Color(1,1,1);
+  /** The hit flash (HIT_FLASH): how long the running flash has been drawn (-1: a fresh one, not drawn yet), and
+   *  whether it is a counter's or a punish's ink frame; and the ink frame's light line, one uniform for every ink
+   *  material on this body (look/toonShading.ts applyInkFlash). */
+  private flashShown=-1;private flashInk=false;
+  readonly inkFlash={value:new THREE.Vector4(1,1,1,0)};
   /** A big blow being held (see BIG_SHAKE): wall-clock time left on it, its
    *  snap still to draw, and the level heading it travelled. */
   private bigLeft=0;private bigSnap=false;private bigHx=0;private bigHz=0;private bigStopSeen=false;
@@ -2570,6 +2686,8 @@ export class Fighter {
     // server turns it away (`withdrawRejected`), rather than holding its
     // reaction for its whole life.
     const ahead=recipient&&!blow&&paired===undefined&&detail?.reaction!==undefined?LANDED.predictedOn(this.state.id,slot,contactIndex):undefined;
+    // (HIT_ZONE: the thrower, for where its limb is against this body.)
+    this.blowFrom=recipient&&detail?.attacker!==undefined?Fighter.bodyOf(detail.attacker):undefined;this.blowPoint=undefined;
     if(recipient&&ahead){
       let touch:Touch|undefined;
       for(const t of this.touches)if(!t.withdrawn&&t.seq===ahead.seq&&t.index===ahead.contact&&t.from.state.id===ahead.attacker){touch=t;break;}
@@ -2594,6 +2712,11 @@ export class Fighter {
       const drive=DREAM_IMPACT&&!OWN_STEPS.has(this.state.fighter)&&!this.armed&&!this.blades?.length;
       if(direction){_leanAxis.copy(direction).setY(0);if(_leanAxis.lengthSq()>1e-6)this.recoil.copy(_leanAxis.normalize()).multiplyScalar(drive?DRIVE.lean:-.07);}
       this.drove=drive;this.driving=drive?DRIVE.hold:0;
+      // (HAIR_HIT: the striker's own hair and cloth carried on along its strike, a little.)
+      if(direction&&this.secondary&&!abOff('hairhit')&&_leanAxis.lengthSq()>1e-6){
+        const worth=THREE.MathUtils.clamp(((damage??40)*(finisher?1.4:1)-20)/120,0,1);
+        this.secondary.kick(_hairKick.set(_leanAxis.x,HAIR_HIT.up,_leanAxis.z).normalize().multiplyScalar(THREE.MathUtils.lerp(HAIR_HIT.light,HAIR_HIT.heavy,worth)*HAIR_HIT.striker));
+      }
     }
     // A transformation's body IS the fighter while it shows: Full Swell,
     // Kurobi, the NIGHTFALL, the DUNE ONI and the GRAVE PLATE flinch,
@@ -2601,6 +2724,7 @@ export class Fighter {
     // take every hit without a twitch, because only the fighter they hang
     // under was ever told about one. A worn Guardian is a shell the fighter
     // stands inside, and the fighter takes the hit.
+    this.blowFrom=undefined;
     if(this.awakenedForm?.group.visible&&AWAKENINGS[this.state.fighter].kind==='form')this.awakenedForm.impact(recipient,slot,style,contactIndex,direction,damage,height,detail,blow??null);
   }
   /** A blow landing on this body: from its event (`impact`), or from the
@@ -2627,6 +2751,8 @@ export class Fighter {
         // (The dream loop, round 24: a flash of a few frames - the impact's - where a big blow's held a quarter of a
         // second and left the victim white under his own effects.)
         this.flashBig=!!detail?.big;this.flashTotal=this.hitFlash=DREAM_IMPACT?(this.flashBig?DREAM_FLASH.big:finisher?DREAM_FLASH.finisher:DREAM_FLASH.light):this.flashBig?BIG_FLASH:finisher?.17:.12;
+        // (drawn whole from its first frame - HIT_FLASH - and a counter's or a punish's the ink frame.)
+        this.flashShown=-1;this.flashInk=!!detail?.reward;
         {const worth=THREE.MathUtils.clamp(((damage??40)*(finisher?1.4:1)-20)/120,0,1),flat=direction?Math.hypot(direction.x,direction.z):0;
           this.shakeTotal=this.shakeLeft=THREE.MathUtils.lerp(HIT_SHAKE_TIME[0],HIT_SHAKE_TIME[1],worth)+HIT_SHAKE_DELAY;this.shakeSize=THREE.MathUtils.lerp(HIT_SHAKE[0],HIT_SHAKE[1],worth);
           if(flat>1e-4){this.shakeHx=direction!.x/flat;this.shakeHz=direction!.z/flat;}else{this.shakeHx=-Math.sin(this.facing);this.shakeHz=-Math.cos(this.facing);}}
@@ -2634,6 +2760,9 @@ export class Fighter {
         if(DREAM_IMPACT)this.flashTint.copy(DREAM_FLASH_RED);else if(this.flashBig&&detail?.tint!==undefined)this.flashTint.setHex(detail.tint);else this.flashTint.setRGB(.62,.94,1);
       }
     }
+    // (HIT_FLASH: a counter or a punish answered where it was drawn before its event said what it
+    // was - the touch's - turns to the ink frame while its flash is still whole.)
+    else if(detail?.reward&&!this.flashInk&&this.hitFlash>0&&this.flashShown<HIT_FLASH.full)this.flashInk=true;
     // A big blow: snapped into, then held (see BIG_SNAP, BIG_SHAKE).
     if(detail?.big){
       this.bigLeft=BIG_HOLD_MAX;if(!confirms)this.bigSnap=true;
@@ -2682,7 +2811,9 @@ export class Fighter {
         const side=Math.abs(across)>.35?Math.sign(across):stage%2===0?1:-1;
         // (Round 90: never for a blow from behind - the takes are posed struck from in front, and a snap-back would throw
         // the head back into it; the body's own hurt answers one.)
-        if(DREAM_IMPACT&&!confirms)this.hurtTake=Fighter.dreamTakes&&!this.hitBehind?dreamHurt(stage,side,Fighter.lockHurts):undefined;
+        // (HIT_ZONE: on its feet, by where the blow lands as the bodies are drawn.)
+        const zone=confirms||detail?.downed||detail?.reaction==='launched'||detail?.reaction==='knockdown'||!this.state.grounded?undefined:this.zoneOfBlow();
+        if(DREAM_IMPACT&&!confirms)this.hurtTake=Fighter.dreamTakes&&!this.hitBehind?zone?zoneHurt(zone,side):dreamHurt(stage,side,Fighter.lockHurts):undefined;
         const guarded=this.state.action==='guard'&&!detail?.reaction;
         // And by what it was worth, as the lean is: a barrage tick is not a
         // Kazeyose.
@@ -2710,7 +2841,7 @@ export class Fighter {
           // pose the blow drives it into on the frame it lands, and holds it
           // through the freeze (the layer's clock waits while it lasts).
           const lead=detail?.big?HIT_RISE*(1+.3*heavy):0;
-          this.hits[this.hitCursor]={at:this.reactTime-lead,hx:_leanAxis.x,hz:_leanAxis.z,side,scale,heavy,gone:Infinity,stand:standing};
+          this.hits[this.hitCursor]={at:this.reactTime-lead,hx:_leanAxis.x,hz:_leanAxis.z,side,scale,heavy,gone:Infinity,stand:standing,zone};
           this.hitCursor=(this.hitCursor+1)%HIT_RING;this.hitCount++;
         }
         // The blow's own shove (see PUSH_SELL): started by the blow, and only
@@ -2718,12 +2849,18 @@ export class Fighter {
         const sell=Math.min(PUSH_SELL_MOST,DREAM_IMPACT?THREE.MathUtils.lerp(PUSH_SELL_STRING*scale/standing,PUSH_SELL*scale,heavy):PUSH_SELL*scale);
         const settle=DREAM_IMPACT?THREE.MathUtils.lerp(SELL_SETTLE_STRING,SELL_SETTLE,heavy):SELL_SETTLE;
         if(!confirms){this.sellAt=this.reactTime;this.sellAmount=sell;this.sellSettle=settle;this.sellDir.set(_leanAxis.x,0,_leanAxis.z);this.sellGone=Infinity;}
+        // (HAIR_HIT: the hair and the cloth pushed along the blow, by its heft.)
+        if(!confirms&&this.secondary&&!abOff('hairhit')){
+          const speed=THREE.MathUtils.lerp(HAIR_HIT.light,HAIR_HIT.heavy,heavy)*(finisher?HAIR_HIT.finisher:1)*(guarded?HAIR_HIT.guarded:1);
+          this.secondary.kick(_hairKick.set(_leanAxis.x,HAIR_HIT.up+Math.max(0,rise)*.5,_leanAxis.z).normalize().multiplyScalar(speed));
+          if(!guarded)this.hairLive=HAIR_HIT.live;
+        }
         else if(this.reactTime-this.sellAt<=SELL_RISE&&sell>this.sellAmount){this.sellAmount=sell;this.sellSettle=Math.max(this.sellSettle,settle);}
         if(detail?.reaction==='launched')this.startLaunch(detail,slot,finisher,_leanAxis.x,_leanAxis.z,across,side);
         // Ground hits: a body on the floor bounces there (FLOOR_BOUNCE_SPEED), rolled along the blow - the landing's
         // own bounce, started by the blow, whether or not a touch answered it first.
         if(detail?.downed){
-          this.landedAt=this.reactTime;this.landRoll=FLOOR_BOUNCE_ROLL;this.launchHeading.set(_leanAxis.x,0,_leanAxis.z);
+          this.landedAt=this.reactTime;this.landRoll=FLOOR_BOUNCE_ROLL;this.landFell=false;this.launchHeading.set(_leanAxis.x,0,_leanAxis.z);
           this.launchSide=_leanAxis.x*Math.sin(facing)+_leanAxis.z*Math.cos(facing)>LAUNCH_SIDE?-1:1;
           this.landSpeed=Math.min(FLOOR_BOUNCE_MOST,FLOOR_BOUNCE_SPEED+(damage??0)*FLOOR_BOUNCE_PER);
         }
@@ -2753,6 +2890,17 @@ export class Fighter {
     // as the downed clip lies. A re-launch keeps the line of flight, and the side with it.)
     if(!again){this.launchHeading.set(hx,0,hz);const facing=this.facing;this.launchSide=Math.sin(facing)*hx+Math.cos(facing)*hz>LAUNCH_SIDE*Math.hypot(hx,hz)?-1:1;}
     this.launchAt=this.reactTime;this.launchRise=0;this.launchFrom=NaN;this.launchArc=0;
+    this.launchOutOfHurt=!again&&this.state.action==='hurt'&&this.state.grounded&&!abOff('hitzone');
+    // No pose jumps (POSE_SNAP): a body thrown up off the floor starts at the pitch it was last drawn at, along the
+    // throw - lying, where its new clip stands it up. (Not one thrown off its feet: there the drawn pitch carries the
+    // reaction layer's own lean, which the layer lays on again, and the clip's pitch it eases from is the stance's.)
+    this.launchFromDrawn=NaN;
+    const floored=!!detail?.downed||this.state.action==='knockdown'&&this.state.grounded;
+    if(!again&&floored&&!abOff('posesnap')&&this.drawnSpineAt>=0&&this.reactTime-this.drawnSpineAt<POSE_SNAP.fresh){
+      const v=this.drawnSpine,heading=this.launchHeading,flat=Math.hypot(heading.x,heading.z);
+      const along=flat>1e-6?(v.x*heading.x+v.z*heading.z)/flat:0;
+      if(Math.hypot(along,v.y)>POSE_SNAP.plane*v.length())this.launchFromDrawn=Math.atan2(along,v.y);
+    }
     // Round 3e (REACT, for VARIETY): a throw the blow's outcome keeps
     // short - a crumple's quarter second, a hop, a wall bounce, a bounce
     // off the floor - is guessed at its own lift, not a launch's, and
@@ -2769,6 +2917,8 @@ export class Fighter {
     // stood upright, his legs went 20-50 cm through the tile for the last frames before the knockdown laid him flat.)
     // (Nor a body in a floor-length robe weighted to its legs, LAUNCH_NO_TURN: turned over, the robe stood up off the legs.)
     this.launchTurns=!short&&this.state.grounded&&(finisher||slot==='heavy'||slot==='special'||slot==='ultimate')&&!(FLIGHT_SPREAD[this.state.fighter]&&!this.isForm)&&!LAUNCH_NO_TURN.has(this.state.fighter)?1:0;
+    // (POSE_SNAP: one thrown up off the floor flies as it lay, as it was drawn.)
+    if(!abOff('posesnap')&&floored)this.launchTurns=0;
     // And corkscrews too off the biggest blows and off any that came
     // across the body (see LAUNCH_SPIN), the way the blow turned it.
     this.launchSpin=this.launchTurns&&(slot==='special'||slot==='ultimate'||Math.abs(across)>.5)?LAUNCH_SPIN*side:0;
@@ -2830,6 +2980,14 @@ export class Fighter {
   /** Whether a clip has been chosen for this body at least once. */
   private posed=false;
   private outlineMaterials:THREE.Material[]=[];
+  /** look/faceLight.ts: this fighter's face light, its head's calibration and the meshes it reads. */
+  private readonly faceLight=faceLightUniforms();
+  /** the head calibrated on the first frame it is drawn standing (its pose then is the idle's), then followed. */
+  private updateFaceLight(){
+    const head=this.headBone;if(!head||!this.faceMeshes.length)return;
+    if(!this.faceRig.ready)this.faceRig.calibrate(this.faceMeshes,head,this.neckBone,this.group.getWorldDirection(new THREE.Vector3()));
+    this.faceRig.update(this.faceLight,head);
+  }private readonly faceRig=new FaceRig();private readonly faceMeshes:THREE.Mesh[]=[];
   /** Round 4b (TARGETING): the lock's glow on this body's ink (ThreatOutline); unlit, the ink as it was. */
   readonly threatInk=threatInk();
   /** This body's side in a ball match, on its ink and its rim light (look/toonShading.ts applyTeamTrim;
@@ -2972,7 +3130,12 @@ export class Fighter {
    *  withdrawn (Infinity until it is: see `withdraw`). A ring of HIT_RING.
    *  See HIT_REACT. */
   /** `stand`: the dream loop's standing fold (DREAM_STAND) that `scale` carries, or 1. */
-  private hits:{at:number;hx:number;hz:number;side:number;scale:number;heavy:number;gone:number;stand?:number}[]=[];
+  private hits:{at:number;hx:number;hz:number;side:number;scale:number;heavy:number;gone:number;stand?:number;zone?:HitZone}[]=[];
+  /** Hit zones (HIT_ZONE): the knees' dip drawn last frame, let go over DIP_OUT once a blow throws the body. */
+  private dipDrawn=0;
+  /** Hit zones (HIT_ZONE): who threw the blow being taken, and where its surface met the skin (a touch's),
+   *  handed to `takeBlow` by its callers. */
+  private blowFrom?:Fighter;private blowPoint?:THREE.Vector3;
   private hitCursor=0;
   private hitCount=0;
   private reactTime=0;
@@ -3041,6 +3204,22 @@ export class Fighter {
    *  whole turns it goes over on the way down. */
   private launchFrom=NaN;
   private launchTurns=0;
+  /** No pose jumps (POSE_SNAP): the body's hips-to-neck line as drawn at the end of its last frame (world) and
+   *  the reaction clock then; the pitch a launch starts from where it is kept (NaN: the clip's, as before); and whether
+   *  the blend under way eases out (a big blow's crisp first key). */
+  private readonly drawnSpine=new THREE.Vector3();private drawnSpineAt=-1;private launchFromDrawn=NaN;private blendOut=false;
+  /** Hit zones (HIT_ZONE): the launch under way cut short a hurt on the body's feet (its jack-knife rises over
+   *  HIT_ZONE.jack x LAUNCH_RISE). */
+  private launchOutOfHurt=false;
+  /** The settle (SETTLE): each limb's height as drawn at the end of the last frame (radians over level: the
+   *  legs, the arms, the head) and when; the settle under way (when it began, -1 none; when it began to let go, -1 not
+   *  yet; the landing's weight; each limb's height as drawn last frame, and when it came down, -1 not yet); whether the
+   *  body was down last frame;
+   *  and whether the landing bounce under way is a fall's (a ground hit's is its own). */
+  private readonly limbHeight=new Float32Array(5);private limbHeightAt=-1;
+  private settleAt=-1;private settleOut=-1;private settleWeight=1;private readonly settleDrawn=new Float32Array(5);private readonly settleLanded=new Float32Array(5);private wasDown=false;private landFell=false;
+  /** Hair and cloth on a hit (HAIR_HIT): how much longer the struck body's springs run through a freeze. */
+  private hairLive=0;
   private launchArc=0;
   /** The roster-wide motion pass (see LAUNCH_SIDE): the side of the turn the landing is on (1: head first along the
    *  throw, -1: feet first); the pitch it lands at, and the one it was last drawn at in flight; and when the hand-back
@@ -3394,7 +3573,7 @@ export class Fighter {
       const originals=Array.isArray(mesh.material)?mesh.material:[mesh.material];
       const materials=originals.map(material=>{
         const src=material as THREE.MeshStandardMaterial;
-        if(/outline/i.test(mesh.name)){const outline=new THREE.MeshBasicMaterial({color:0x0d1b26,side:src.side});applyAuthoredInk(outline);applyTeamTrim(outline,this.teamTrim,'ink');applyThreatInk(outline,this.threatInk,false);this.outlineMaterials.push(outline);return outline;}
+        if(/outline/i.test(mesh.name)){const outline=new THREE.MeshBasicMaterial({color:0x0d1b26,side:src.side});applyAuthoredInk(outline);applyTeamTrim(outline,this.teamTrim,'ink');applyThreatInk(outline,this.threatInk,false);applyInkFlash(outline,this.inkFlash);this.outlineMaterials.push(outline);return outline;}
         const mat=new THREE.MeshToonMaterial({map:src.map??null,color:src.color??new THREE.Color(1,1,1),gradientMap:toonGradient,normalMap:src.normalMap??null,normalScale:src.normalScale??new THREE.Vector2(1,1),normalMapType:src.normalMapType??THREE.TangentSpaceNormalMap,bumpMap:src.bumpMap??null,bumpScale:src.bumpScale??1,aoMap:src.aoMap??null,aoMapIntensity:src.aoMapIntensity??1,side:src.side,alphaTest:src.alphaTest||0,transparent:src.transparent,opacity:src.opacity});
         mat.name=material.name;
         // An outfit of a blue (or any) gold awakening: the hair the form swaps in, in the outfit's colour, its shading kept.
@@ -3437,6 +3616,8 @@ export class Fighter {
         // highlight and face softening (src/render/look/toonShading.ts).
         applyToonShading(mat,toonKind(mesh.name,material.name));
         if(lensFacingNormals(state.fighter))addShaderPatch(mat,'lens-normal-v1',lensNormalPatch);
+        // The face lit as one form (look/faceLight.ts) - a body material's head-riding front, calibrated per fighter.
+        if(toonKind(mesh.name,material.name)==='body'){applyFaceLight(mat,this.faceLight);if(!this.faceMeshes.includes(mesh))this.faceMeshes.push(mesh);}
         applyTeamTrim(mat,this.teamTrim,'body'); // The side's colour on the rim in a ball match (nothing outside one).
         applyHitFlash(mat,this.flash,this.flashFlat);
         applyHagureMoonlessLook(mat,state.fighter,this.isForm);
@@ -3477,7 +3658,7 @@ export class Fighter {
         // The push is now a constant screen width (about 2.2 px at 1080p)
         // with the fighter's outlineWidth as a multiplier on the roster's
         // 3 mm, and the ink colour follows the stage; see applyInkShell.
-        applyInkShell(outline,inkWidth/.003,INK_DEPTH_BIAS);applyTeamTrim(outline,this.teamTrim,'ink');preserveAmagoiCloakSurface(outline,state.fighter,mesh.name);applyThreatInk(outline,this.threatInk);applyLimbSmear(outline,this.smear);
+        applyInkShell(outline,inkWidth/.003,INK_DEPTH_BIAS);applyTeamTrim(outline,this.teamTrim,'ink');preserveAmagoiCloakSurface(outline,state.fighter,mesh.name);applyThreatInk(outline,this.threatInk);applyLimbSmear(outline,this.smear);applyInkFlash(outline,this.inkFlash);
         const shell=(mesh as THREE.SkinnedMesh).isSkinnedMesh?new THREE.SkinnedMesh(mesh.geometry,outline):new THREE.Mesh(mesh.geometry,outline);
         shell.name=mesh.name+'-ink';shell.frustumCulled=false;shell.matrixAutoUpdate=false;shell.matrix.identity();shell.castShadow=false;shell.receiveShadow=false;
         shell.morphTargetInfluences=mesh.morphTargetInfluences;shell.morphTargetDictionary=mesh.morphTargetDictionary;
@@ -3903,7 +4084,16 @@ export class Fighter {
     if(state.action==='ultimate')return ultimateMove(state.fighter,!!state.awakened);
     // A combo ender (game/combos.ts) is timed by its own move.
     const ender=Fighter.ender(state);if(ender){const move=comboMove(state.fighter,ender,!!state.awakened);if(move)return move;}
-    return this.lockMove(state)??this.rushMove(state)??MOVES[state.fighter][state.action as AttackSlot];
+    const own=this.lockMove(state)??this.rushMove(state)??MOVES[state.fighter][state.action as AttackSlot];
+    // The G in combos (game/moves.ts AREA_COMBO): a quick G is the area move at a share of its time - its release and
+    // its end where the simulation has them (state.actionDuration), so its wind-up is drawn to the release, as ever.
+    return state.action==='area'&&own&&state.actionDuration>0&&Math.abs(state.actionDuration-own.duration)>1e-3?this.retimedArea(own,state.actionDuration):own;
+  }
+  private retimed?:{from:MoveDefinition;duration:number;move:MoveDefinition};
+  private retimedArea(own:MoveDefinition,duration:number):MoveDefinition{
+    if(this.retimed?.from===own&&this.retimed.duration===duration)return this.retimed.move;
+    const k=duration/own.duration,move={...own,duration,contacts:own.contacts.map(c=>c*k)};
+    this.retimed={from:own,duration,move};return move;
   }
   /** Lock combat (game/lockCombat.ts): a second round's blow, timed as rushMove times a stage (one object per stage). */
   private lockMove(state:PlayerState){
@@ -4887,7 +5077,9 @@ export class Fighter {
       const move=this.moveFor(state);
       if(move.style==='melee'){
         const big=!!Fighter.ender(state)||state.action==='special'||this.rushStage(state)>=RUSH_STAGES-1;
-        this.drawn.actionTime=Fighter.animeWarp(this.moveClock,move.contacts,duration,big?ANIME_HOLD.big:state.action==='heavy'?ANIME_HOLD.heavy:ANIME_HOLD.light)/duration;
+        // (held longer by how much heavier than a jab the blow is - a light's as it was, a
+        // heavy's about a fifth longer, a big blow's a quarter - as the simulation holds its thrower: moves.ts heftOf.)
+        this.drawn.actionTime=Fighter.animeWarp(this.moveClock,move.contacts,duration,(big?ANIME_HOLD.big:state.action==='heavy'?ANIME_HOLD.heavy:ANIME_HOLD.light)*(1+heftOf(move.damage)))/duration;
       }
     }
     return this.drawn;
@@ -4901,7 +5093,7 @@ export class Fighter {
   /** True while a transition is still being drawn. */
   private get transitioning(){return this.blendTime<this.blendDuration;}
   private startPoseBlend(duration:number,rootDuration=duration,kind:TransitionKind='motion'){
-    this.blendMode=Fighter.transitions[kind];this.blendKind=kind;
+    this.blendMode=Fighter.transitions[kind];this.blendKind=kind;this.blendOut=false;
     this.rootFromClamped=this.rootClamped;this.rootDrawnFrom.copy(this.rootDrawnLast);
     this.blendDuration=duration;this.blendTime=0;
     this.rootBlendDuration=rootDuration;this.rootBlendTime=0;
@@ -4969,7 +5161,8 @@ export class Fighter {
   private applyPoseBlend(dt:number){
     this.blendTime+=dt;this.rootBlendTime+=dt;
     const linear=this.blendDuration>0?Math.min(1,this.blendTime/this.blendDuration):1;
-    const weight=linear*linear*(3-2*linear);
+    // (POSE_SNAP: a big blow on a body on its feet eases out - its first key crisp.)
+    const weight=this.blendOut?1-(1-linear)*(1-linear):linear*linear*(3-2*linear);
     const rootLinear=this.rootBlendDuration>0?Math.min(1,this.rootBlendTime/this.rootBlendDuration):1;
     const rootWeight=rootLinear*rootLinear*(3-2*rootLinear);
     // How far the carried velocity has taken the pose, in seconds of it: the
@@ -5446,7 +5639,10 @@ export class Fighter {
       // fold over the blow (round 97), its soles 10-15 cm under the tile, the whole body was lifted 12-13 cm in one frame,
       // the head with it - Vesper's 18 cm, Shiun's, Levin's; the launch takes the soles off the floor within a few frames.)
       const fresh=state.action==='launched'&&state.actionTime*state.actionDuration<FLOOR_GUARD_FRESH.within;
-      if(real>0)this.support=under>this.support?Math.min(under,FLOOR_GUARD,this.support+(fresh?FLOOR_GUARD_FRESH.rate:FLOOR_GUARD_RATE)*real):Math.max(Math.max(0,under),this.support-FLOOR_GUARD_LET_GO*(state.grounded?1:3)*real);
+      // (SETTLE: and through a landing's settle at SETTLE.guard - a rig whose downed clip lies under
+      // its floor was lifted 9-15 cm in the frame its blend took the soles under, Gaku's and Rook's.)
+      const rate=fresh?FLOOR_GUARD_FRESH.rate:this.settleAt>=0?SETTLE.guard:FLOOR_GUARD_RATE;
+      if(real>0)this.support=under>this.support?Math.min(under,FLOOR_GUARD,this.support+rate*real):Math.max(Math.max(0,under),this.support-FLOOR_GUARD_LET_GO*(state.grounded?1:3)*real);
       this.soleGap=lowest+this.support-this.groundY;
       if(Math.abs(this.support)<1e-4)return;
       this.pelvis.getWorldPosition(p);p.y+=this.support;this.pelvis.position.copy(this.pelvis.parent.worldToLocal(p));
@@ -5797,6 +5993,7 @@ export class Fighter {
    *  the reaction gates fired at half rate against a simulation that had not
    *  slowed down at all. */
   update(dt:number,state:PlayerState,interpolated=false,real=dt){
+    this.updateFaceLight();
     if(DREAM_IMPACT)state=this.reeling(state,real);
     state=castHold(this.castHeld,state,real,this.locomotionSpeed,this.isForm,this.active);
     this.swap=Fighter.transplant?.(this,state);
@@ -6038,7 +6235,8 @@ export class Fighter {
         // Round 3e (REACT): a reaction's own phase changes - the throw into the
         // somersault, the floor, the get-up - are blended over REACT_PHASE,
         // scaled by how far apart the poses are (they were 35-90 ms).
-        let duration=reacting?struck?(this.bigSnap?BIG_SNAP:STRUCK_BLEND):THREE.MathUtils.clamp(this.poseDistance(clip)*.2,REACT_PHASE[0],REACT_PHASE[1])
+        const bigSnap=struck&&this.bigSnap;
+        let duration=reacting?struck?(this.bigSnap?this.bigSnapBlend():STRUCK_BLEND):THREE.MathUtils.clamp(this.poseDistance(clip)*.2,REACT_PHASE[0],REACT_PHASE[1])
           :melee?Math.max(0,Math.min(.11,melee.contact-melee.elapsed-.035)):state.action==='idle'?.24:state.action==='guard'?.08:.11;
         // Round 15 (REHIT): a launch is struck, but never so fast that its
         // widest joint turns more than ENTRY_STEP in a frame at the blend's
@@ -6103,6 +6301,7 @@ export class Fighter {
           // attack transition as much as the idle into a swing is.
           struck?'struck':reacting?'reaction':ATTACK_SLOTS.has(state.action)||ATTACK_SLOTS.has(this.previousAction)?'attack'
             :REACTION_ACTIONS.has(this.previousAction)?'reaction':'motion');
+        if(bigSnap)this.blendOut=this.crispSnap(state);
         this.posed=true;
         this.restoreSampledPose();
         this.mixer.stopAllAction();
@@ -6130,7 +6329,9 @@ export class Fighter {
       // one frame - a hand 40 cm - with no blend at all. Cross-faded, as a
       // reaction started again is.
       this.blendedEpoch=this.reactionEpoch;
-      this.startPoseBlend(this.bigSnap?BIG_SNAP:STRUCK_BLEND,STRUCK_ROOT,'struck');this.bigSnap=false;
+      const bigSnap=this.bigSnap;
+      this.startPoseBlend(this.bigSnap?this.bigSnapBlend():STRUCK_BLEND,STRUCK_ROOT,'struck');this.bigSnap=false;
+      if(bigSnap)this.blendOut=this.crispSnap(state);
     }
     this.restoreSampledPose();
     let runSign=1,wantHip=0;
@@ -6164,8 +6365,11 @@ export class Fighter {
     this.hipYaw+=(wantHip-this.hipYaw)*(1-Math.exp(-dt*9));
     // A melee approach, which is the one time a fighter crosses several metres
     // of floor without `state.action` being 'run'. The stride is mixed in by
-    // how fast the body is actually travelling and taken back out once the
-    // blow has landed, so the follow-through is the pose the animator drew.
+    // how fast the body is actually travelling and taken out at the blow, so
+    // the contact is the pose the animator drew. (
+    // and back in for the recovery while the body still travels - held travel
+    // owns translation through every attack - where it stayed out from 0.12 s
+    // after the blow and the recovery skated: STRIDE_PLANT.)
     {
       const stride=TARGET_STRIDE*(this.legLength||.85)*(STRIDE_SCALE[this.state.fighter]??1);
       this.strideClock+=this.travelled/Math.max(.2,stride);
@@ -6184,7 +6388,7 @@ export class Fighter {
       // (A combo ender in the special's slot that is a blow is a melee move like any other.)
       const walking=attacking&&(state.action==='special'||state.action==='ultimate')&&state.grounded&&!kicking&&!(Fighter.ender(state)&&move?.style==='melee');
       const want=attacking&&state.grounded&&!this.floating&&((move?.style==='melee'&&!kicking)||walking)
-        ?THREE.MathUtils.clamp((this.locomotionSpeed-1.1)/2.4,0,1)*(walking?1:(1-THREE.MathUtils.smoothstep(past,0,.12)))*.62:0;
+        ?THREE.MathUtils.clamp((this.locomotionSpeed-1.1)/2.4,0,1)*(walking?1:1-THREE.MathUtils.smoothstep(past,-STRIDE_PLANT[0],0)*(1-THREE.MathUtils.smoothstep(past,STRIDE_PLANT[1],STRIDE_PLANT[2])))*.62:0;
       // A previous lunge's residual gait must not bend the next authored kick.
       this.stride=kicking?0:this.stride+(want-this.stride)*(1-Math.exp(-dt*(want>this.stride?16:9)));
     }
@@ -6300,6 +6504,18 @@ export class Fighter {
       const toward=Fighter.whiteFlash?0:DREAM_IMPACT?Math.min(1,(1-f)*DREAM_FLASH.redden):this.flashBig?Math.min(1,(1-f)*2.2):.6+.4*(1-f),peak=DREAM_IMPACT?(this.flashBig?1.1:1):this.flashBig?1.25+.4*f:1.05,t=this.flashTint;
       this.flash.value.set(THREE.MathUtils.lerp(1,t.r,toward)*peak,THREE.MathUtils.lerp(1,t.g,toward)*peak,THREE.MathUtils.lerp(1,t.b,toward)*peak,amount*VFX.bodyFlash*(Fighter.whiteFlash&&!this.flashBig?.55:1));// (VISUAL EFFECTS: the level's share, render/vfxLevel.ts)
       this.flashFlat.value=DREAM_IMPACT?this.flashBig?DREAM_FLASH.flat:DREAM_FLASH.flatLight:0;
+      this.inkFlash.value.w=0;
+      if(this.hitFlash>0&&!abOff('hitflash')){
+        // The hit flash (HIT_FLASH): whole for its first two frames, then let go fast - the white flash at the
+        // strength it struck with, or a counter's or a punish's ink frame. The level's share as before.
+        this.flashShown=this.flashShown<0?0:this.flashShown+real;
+        const age=this.flashShown,k=age<HIT_FLASH.full-1e-4?1:age<HIT_FLASH.full+HIT_FLASH.life?HIT_FLASH.third*Math.exp(-(age-HIT_FLASH.full)/HIT_FLASH.fade):0;
+        if(this.flashInk){
+          const ink=HIT_FLASH.ink,paper=HIT_FLASH.paper;
+          this.flash.value.set(ink.r,ink.g,ink.b,Math.min(HIT_FLASH.inkMost,HIT_FLASH.inkAmount*VFX.bodyFlash)*k);this.flashFlat.value=1;
+          this.inkFlash.value.set(paper.r,paper.g,paper.b,Math.min(1,HIT_FLASH.paperAmount*VFX.bodyFlash)*k);
+        }else this.flash.value.w=(this.flashBig?(DREAM_IMPACT?DREAM_FLASH.bigAmount:.9):DREAM_IMPACT?DREAM_FLASH.amount:.6)*VFX.bodyFlash*(Fighter.whiteFlash&&!this.flashBig?.55:1)*k;
+      }
     }
     // Every frame, a hold included: the drawn clock holds (see `stepMoveClock`),
     // so a hold is the same frame drawn again rather than the clip left where
@@ -6439,12 +6655,15 @@ export class Fighter {
       // lag reflects where the body actually ended up this frame, and the hair
       // answers the head turn above as well as the body.
       this.secondary?.launch(state.alive&&(state.action==='launched'||(state.action==='knockdown'||state.action==='getup')&&coatFlownWhileDown(state.fighter)||coatFlownInKick(state))?1:0,this.groundY);
-      this.secondary?.update(state.timeStopped||state.hitstop?0:dt);
+      // (HAIR_HIT: a struck body's springs run through its blow's freeze, as its reaction layer does.)
+      this.hairLive=Math.max(0,this.hairLive-real);
+      this.secondary?.update(state.timeStopped?0:state.hitstop?(this.hairLive>0&&!this.bigHolding(state)&&!abOff('hairhit')?real:0):dt);
       // The feel pass (AnimStyle 'twos'): through an attack or a
       // reaction the body's whole pose - clip, layers, springs - is drawn on
       // the 30 Hz grid: the frames between two steps show the last step again,
       // while the body still travels, and the camera and the effects run on.
       this.stepPoseHold(state);
+      this.noteDrawnPose(state);
     }
     this.updateSmear(state,real);
     // What the blows inside this body push it to, from the next frame.
@@ -6571,6 +6790,9 @@ export class Fighter {
       }
     }
     this.cullBounds();
+    // The film look's drawings (look/filmDrawings.ts, `onones`): a body in a move or taking a
+    // blow is posed on every frame, the rest on the look's twelve a second.
+    if(!this.isForm)drawnOnOnes(this.group,ON_ONES.has(state.action)||!!this.ragdoll||this.bigHolding(state));
   }
 
   // Fighters that never look at each other read as mannequins no matter how
@@ -7428,8 +7650,100 @@ export class Fighter {
     const k=t<=contact?THREE.MathUtils.smoothstep(t,Math.max(0,contact-DREAM_STEP.rise),contact):1-THREE.MathUtils.smoothstep(t,contact+DREAM_STEP.hold,contact+DREAM_STEP.hold+DREAM_STEP.out);
     return DREAM_STEP.lead*k;
   }
+  /** Hit zones (HIT_ZONE): the part of this body (as drawn) nearest `p`, and the gap to its skin, into `out`. */
+  private zoneAt(p:THREE.Vector3,out:{zone:HitZone;gap:number}){
+    out.gap=Infinity;
+    const body=this.drawnBody(),hips=body.pelvis,neck=body.joints.get('Neck')??body.joints.get('Spine2'),chest=body.joints.get('Spine2')??body.joints.get('Spine1')??neck;
+    if(!hips||!neck||!chest)return out;
+    const scale=body===this?1:AWAKENINGS[this.state.fighter].formScale??1,torso=TORSO_RADIUS[this.state.fighter]*scale;
+    const take=(gap:number,zone:HitZone)=>{if(gap<out.gap){out.gap=gap;out.zone=zone;}};
+    _zoneA.setFromMatrixPosition(hips.matrixWorld);_zoneB.setFromMatrixPosition(chest.matrixWorld);_zoneC.setFromMatrixPosition(neck.matrixWorld);
+    // The belly from the hips' joint up, the chest to `chest` of the way on to the neck (its girth would take the jaw).
+    _zoneH.copy(_zoneB).lerp(_zoneC,HIT_ZONE.chest);
+    take(segmentGap(p,_zoneA,_zoneB)-torso,'middle');take(segmentGap(p,_zoneB,_zoneH)-torso,'middle');
+    if(body.headBone){
+      _zoneH.setFromMatrixPosition(body.headBone.matrixWorld);_zoneH.y+=HEAD_LIFT*scale;
+      take(segmentGap(p,_zoneC,_zoneH)-HIT_ZONE.neck*scale,'high');take(p.distanceTo(_zoneH)-HEAD_RADIUS*scale,'high');
+    }
+    // The legs, from the thighs' heads down: a blow at the waist is a body blow, one on a thigh a low one.
+    const legs=body.legs;
+    for(const leg of legs){
+      _zoneB.setFromMatrixPosition(leg.hip.matrixWorld);_zoneC.setFromMatrixPosition(leg.knee.matrixWorld);_zoneH.setFromMatrixPosition(leg.ankle.matrixWorld);
+      take(segmentGap(p,_zoneB,_zoneC)-HIT_ZONE.leg*scale,'low');take(segmentGap(p,_zoneC,_zoneH)-HIT_ZONE.leg*scale,'low');
+    }
+    return out;
+  }
+  /** Hit zones (HIT_ZONE): where on this body `attacker`'s striking limb is - of its striking surfaces, the
+   *  one nearest the body - or nothing, if none is within HIT_ZONE.reach of it. */
+  private zoneFrom(attacker:Fighter):HitZone|undefined{
+    const best=_zoneBest;best.gap=Infinity;
+    ZONE_VISIT=p=>{this.zoneAt(p,_zoneHit);if(_zoneHit.gap<best.gap){best.gap=_zoneHit.gap;best.zone=_zoneHit.zone;}};
+    try{attacker.drawnBody().strikeSurfaces(true,false);}finally{ZONE_VISIT=undefined;}
+    return best.gap<=HIT_ZONE.reach?best.zone:undefined;
+  }
+  /** Hit zones (HIT_ZONE): the zone of the blow `takeBlow` is taking, from what its caller handed over. */
+  private zoneOfBlow():HitZone|undefined{
+    if(abOff('hitzone'))return undefined;
+    if(this.blowPoint)return this.zoneAt(this.blowPoint,_zoneHit).gap<=HIT_ZONE.reach?_zoneHit.zone:undefined;
+    return this.blowFrom&&this.blowFrom!==this?this.zoneFrom(this.blowFrom):undefined;
+  }
   /** The feel pass: a big blow is being held (see BIG_SHAKE). */
   private bigHolding(state:PlayerState){return this.bigLeft>0&&!!state.hitstop;}
+  /** No pose jumps (POSE_SNAP): how long a big blow's struck blend takes - a frame (BIG_SNAP) with the switch
+   *  off - and whether it eases out: a body on its feet, standing up as it was last drawn, keeps a crisp first key. */
+  private bigSnapBlend(){return abOff('posesnap')?BIG_SNAP:POSE_SNAP.blend;}
+  private crispSnap(state:PlayerState){
+    if(abOff('posesnap'))return false;
+    const v=this.drawnSpine,length=v.length();
+    return state.grounded&&this.drawnSpineAt>=0&&this.reactTime-this.drawnSpineAt<POSE_SNAP.fresh&&length>1e-4&&v.y>.8*length;
+  }
+  /** No pose jumps (POSE_SNAP): the hips-to-neck line as this frame draws it, for the next blow to start from;
+   *  and (SETTLE) while the body is taking a blow, how high each limb is drawn, for a landing to start from. */
+  private noteDrawnPose(state:PlayerState){
+    const top=this.joints.get('Neck')??this.joints.get('Spine2')??this.headBone;
+    if(!this.pelvis||!top)return;
+    this.pelvis.getWorldPosition(_drawnHips);top.getWorldPosition(this.drawnSpine).sub(_drawnHips);this.drawnSpineAt=this.reactTime;
+    if(abOff('settle')||!state.alive||!REACTION_ACTIONS.has(state.action))return;
+    for(let i=0;i<5;i++){const limb=this.settleLimb(i);this.limbHeight[i]=limb?Fighter.limbRise(limb[0],limb[1]):0;}
+    this.limbHeightAt=this.reactTime;
+  }
+  /** The settle (SETTLE): limb `i` - the legs, the arms, the head - as the joint it turns at and the one at its
+   *  end. */
+  private settleLimb(i:number):[THREE.Object3D,THREE.Object3D]|undefined{
+    if(i<2){const leg=this.legs[i];return leg?[leg.hip,leg.ankle]:undefined;}
+    if(i<4){const side=i===2?'Left':'Right',arm=this.joints.get(side+'Arm'),hand=this.joints.get(side+'Hand')??this.joints.get(side+'ForeArm');return arm&&hand?[arm,hand]:undefined;}
+    const neck=this.joints.get('Neck');return neck&&this.headBone?[neck,this.headBone]:undefined;
+  }
+  /** How high a limb from `root` to `tip` points, in radians over level (into _settleTip, the line). */
+  private static limbRise(root:THREE.Object3D,tip:THREE.Object3D){
+    root.getWorldPosition(_settleRoot);tip.getWorldPosition(_settleTip).sub(_settleRoot);
+    return Math.atan2(_settleTip.y,Math.hypot(_settleTip.x,_settleTip.z));
+  }
+  /** The settle (SETTLE): the landing's settle on the pose just drawn - each limb no lower than the speed of
+   *  its fall lets it be since the last frame, raised toward the sky at its root by what it is short of that, and once
+   *  down, rebounding a little; let go of once the body rises. */
+  private settleLimbs(real:number){
+    const t=this.reactTime-this.settleAt;
+    const keep=this.settleOut>=0?1-THREE.MathUtils.smoothstep(this.reactTime-this.settleOut,0,SETTLE.out):1;
+    if(keep<=0){this.settleAt=-1;return;}
+    const speed=Math.min(SETTLE.fastest,SETTLE.drop+SETTLE.fall*t);
+    for(let i=0;i<5;i++){
+      const limb=this.settleLimb(i);if(!limb)continue;
+      const rise=Fighter.limbRise(limb[0],limb[1]),flat=Math.hypot(_settleTip.x,_settleTip.z);
+      if(flat<1e-4){this.settleDrawn[i]=rise;continue;}
+      // As low as it may have fallen since the last frame, and no lower; down, a small rebound.
+      const held=Math.max(0,this.settleDrawn[i]-speed*real-rise);
+      if(held<1e-3&&this.settleLanded[i]<0)this.settleLanded[i]=t;
+      const since=this.settleLanded[i]<0?-1:t-this.settleLanded[i];
+      const rebound=since>=0&&since<SETTLE.reboundTime?SETTLE.rebound*this.settleWeight*Math.sin(Math.PI*since/SETTLE.reboundTime):0;
+      const lift=Math.min(Math.max(held,rebound),SETTLE.most,Math.max(0,SETTLE.top-rise))*keep;
+      this.settleDrawn[i]=rise+lift;
+      if(lift<1e-4)continue;
+      // About the level line square to the limb: up toward the sky, whichever way the body lies.
+      _settleAxis.set(-_settleTip.z,0,_settleTip.x).divideScalar(flat);
+      this.leanBone(limb[0] as THREE.Bone,_settleTurn.setFromAxisAngle(_settleAxis,lift));
+    }
+  }
   /** The feel pass, iteration four: a big blow's freeze frame. While the hold lasts (bigHolding) the body
    *  is thrown back along the blow - the spine bent with it, the head whipped after it, the arms flung back the other
    *  way - over the reaction it snapped into, a held frame on impact; eased in on the snap and
@@ -7504,7 +7818,9 @@ export class Fighter {
    *  freeze - and held through a time stop. */
   private hitReact(real:number,state:PlayerState){
     this.reactTime+=real;this.reactAhead=0;this.bounceDrawn=0;
-    {const shape=this.takeOn?TAKE_SHAPE[this.takeOn]:undefined,ease=1-Math.exp(-real/TAKE_EASE);
+    // (HIT_ZONE: a take a throw cuts short is let go of over HIT_ZONE.release - a head shot's
+    // snap-back thrown into the launch's fold curled the spine 16 cm in two frames.)
+    {const shape=this.takeOn?TAKE_SHAPE[this.takeOn]:undefined,thrown=!shape&&(state.action==='launched'||state.action==='knockdown')&&!abOff('hitzone'),ease=1-Math.exp(-real/(thrown?HIT_ZONE.release:TAKE_EASE));
       this.takeFold+=((shape?.fold??1)-this.takeFold)*ease;this.takeLean+=((shape?.lean??1)-this.takeLean)*ease;this.takeHunch+=((shape?.hunch??1)-this.takeHunch)*ease;}
     // FLOOR_GUARD: how far the clip alone has the soles through the floor, before this layer turns the body over it.
     this.clipUnder=0;
@@ -7513,7 +7829,7 @@ export class Fighter {
     // let go of with a withdrawn blow (see `withdraw`).
     this.sellNow=this.sellAmount*Fighter.sellEnvelope(this.reactTime-this.sellAt,this.sellSettle)*Fighter.letGo(this.reactTime-this.sellGone);
     if(!this.dynamics||!this.leanChain.length){this.launchWeight=0;return;}
-    let twist=0,headYaw=0,dip=0,heaviest=0;
+    let twist=0,headYaw=0,dip=0,heaviest=0,whipMost=1,kneesMost=1;
     const lean=_hitLean.set(0,0,0),whip=_hitWhip.set(0,0,0),shove=_hitShove.set(0,0,0),fling=_hitFling.set(0,0,0);
     for(const hit of this.hits){
       const t=this.reactTime-hit.at,h=hit.heavy;
@@ -7530,15 +7846,18 @@ export class Fighter {
       // chest has been driven back, which is the weight reaching it - and it
       // keeps its fastest frames off the clip's own snap.
       const late=THREE.MathUtils.smoothstep(h,.3,.6),eh=late>0?Fighter.hitEnvelope(t-HEAD_LAG*late,rise*(1+.5*late),settle,hold,swing)*scale:e;
-      twist+=hit.side*e*HIT_REACT.twist*((1+((hit.stand??1)-1)*h)/(hit.stand??1));headYaw+=hit.side*eh*HIT_REACT.headYaw;
+      // (HIT_ZONE: a head shot's whip further, a low blow's knees deeper.)
+      const zone=hit.zone?HIT_ZONE[hit.zone]:undefined,whipBy=zone?.whip??1,kneesBy=zone?.knees??1;
+      if(zone&&e>.05){whipMost=Math.max(whipMost,zone.whipMost);kneesMost=Math.max(kneesMost,zone.kneesMost);}
+      twist+=hit.side*e*HIT_REACT.twist*((1+((hit.stand??1)-1)*h)/(hit.stand??1));headYaw+=hit.side*eh*HIT_REACT.headYaw*whipBy;
       // (The dream loop, 23 October 2026: the standing fold, DREAM_STAND, whips the head and flings the arms further on
       // every blow; the chest's lean and twist, the knees' give and the hips' shove grow with it only as the blow is
       // heavy - a string stage's body leant, turned and sunk away from the fist left the next blow short of the skin,
       // tests/madakeConsecutiveContact and tests/murexChainContactRuntime.)
       const stand=hit.stand??1,chest=(1+(stand-1)*h)/stand;
       lean.x+=hit.hx*e*HIT_REACT.lean*chest;lean.z+=hit.hz*e*HIT_REACT.lean*chest;
-      whip.x+=hit.hx*eh*HIT_REACT.headWhip;whip.z+=hit.hz*eh*HIT_REACT.headWhip;
-      dip+=Math.max(0,e)*chest*HIT_REACT.dip;
+      whip.x+=hit.hx*eh*HIT_REACT.headWhip*whipBy;whip.z+=hit.hz*eh*HIT_REACT.headWhip*whipBy;
+      dip+=Math.max(0,e)*chest*HIT_REACT.dip*kneesBy;
       // Round 15 (REHIT): the arms' fling is a heading of its own, as the lean
       // and the whip are. It was a turn by the limbs' envelope about the
       // lean's axis, and the limbs lag the body (LIMB_LAG): where the lean's
@@ -7558,12 +7877,12 @@ export class Fighter {
     // the body: the head's own limits stay, because the neck is where one more
     // degree a frame shows first, and the body carries the head with it.
     const wide=1+HIT_WIDER*heaviest;
-    twist=softTo(twist,HIT_LIMIT.twist*wide);headYaw=softTo(headYaw,HIT_LIMIT.headYaw);dip=softTo(dip,HIT_LIMIT.dip*wide);
+    twist=softTo(twist,HIT_LIMIT.twist*wide);headYaw=softTo(headYaw,HIT_LIMIT.headYaw*whipMost);dip=softTo(dip,HIT_LIMIT.dip*wide*kneesMost);
     if(this.takeLean<.999)lean.multiplyScalar(this.takeLean);
     let leanAmount=lean.length(),whipAmount=whip.length(),flingAmount=fling.length();
     if(flingAmount>1e-6){flingAmount=softTo(flingAmount,HIT_LIMIT.arms*wide);fling.setLength(flingAmount);}
     if(leanAmount>1e-6)lean.multiplyScalar(softTo(leanAmount,HIT_LIMIT.lean*wide)/leanAmount);
-    if(whipAmount>1e-6)whip.multiplyScalar(softTo(whipAmount,HIT_LIMIT.headWhip)/whipAmount);
+    if(whipAmount>1e-6)whip.multiplyScalar(softTo(whipAmount,HIT_LIMIT.headWhip*whipMost)/whipAmount);
     const shoveAmount=shove.length();
     if(shoveAmount>1e-6)shove.multiplyScalar(softTo(shoveAmount,HIP_SHOVE_MOST)/shoveAmount);
     // The launch: jack-knife, then a tumble back through the arc.
@@ -7580,7 +7899,7 @@ export class Fighter {
     // The landing (see LAND_BOUNCE): the frame a launched body is down, and
     // how fast it was falling when it got there.
     if(launched&&real>0)this.launchFall=Math.max(0,-this.velocity.y);
-    if(this.wasLaunched&&!launched&&state.grounded&&this.launchAt>=0&&REACTION_ACTIONS.has(state.action)){this.landedAt=this.reactTime;this.landSpeed=this.launchFall;this.landRoll=1;}
+    if(this.wasLaunched&&!launched&&state.grounded&&this.launchAt>=0&&REACTION_ACTIONS.has(state.action)){this.landedAt=this.reactTime;this.landSpeed=this.launchFall;this.landRoll=1;this.landFell=true;}
     if(launched)this.landedAt=-1;
     // The hand-back (LAUNCH_HOLD): from the first frame the flight is over.
     // Held only by a body down on the floor: one the flight set on its feet (a pop, a dizzy) stands straight up out of it.
@@ -7592,19 +7911,23 @@ export class Fighter {
     if(this.landedAt>=0){
       const t=this.reactTime-this.landedAt;
       if(t<LAND_TIME&&REACTION_ACTIONS.has(state.action)){
-        const u=t/LAND_TIME,height=Math.min(LAND_BOUNCE_MOST,this.landSpeed*LAND_BOUNCE);
+        // (SETTLE: a fall's landing bounces a little, the limbs settling in its place.)
+        const fell=this.landFell&&!abOff('settle');
+        const u=t/LAND_TIME,height=fell?Math.min(SETTLE.bounceMost,this.landSpeed*SETTLE.bounce):Math.min(LAND_BOUNCE_MOST,this.landSpeed*LAND_BOUNCE);
         // Up off the floor and down again, the way a thrown body rebounds; and
         // on over along the throw while it is up, settling back as it lands.
         // (The roster-wide motion pass: over, legs first - the side the body lies on decides which way that is, LAUNCH_SIDE.
         // Rolled the other way, a body lying feet first along the throw sat up with its legs through the floor.)
-        bounce=height*Math.sin(Math.PI*u)*(1-.35*u);roll=LAND_ROLL*this.landRoll*this.launchSide*Math.min(1,height/LAND_BOUNCE_MOST+.35)*Math.sin(Math.PI*u)*Math.sin(Math.PI*u*.5+Math.PI*.5);
+        bounce=height*Math.sin(Math.PI*u)*(1-.35*u);roll=LAND_ROLL*this.landRoll*this.launchSide*Math.min(1,height/LAND_BOUNCE_MOST+.35)*Math.sin(Math.PI*u)*Math.sin(Math.PI*u*.5+Math.PI*.5)*(fell?SETTLE.roll:1);
       }else this.landedAt=-1;
     }
     let jack=0,headLag=0,tumble=0,trail=0,limbs=0,spin=0;
     if((this.launchWeight>0||hand>0)&&this.launchAt>=0&&this.pelvis){
       const t=this.reactTime-this.launchAt;
-      jack=Fighter.hitEnvelope(t,LAUNCH_RISE,LAUNCH_SETTLE);
-      headLag=Fighter.hitEnvelope(t-.04,LAUNCH_RISE,LAUNCH_SETTLE);
+      // (HIT_ZONE: out of a hurt on its feet, the jack-knife rises a little slower.)
+      const jackRise=LAUNCH_RISE*(this.launchOutOfHurt?HIT_ZONE.jack:1);
+      jack=Fighter.hitEnvelope(t,jackRise,LAUNCH_SETTLE);
+      headLag=Fighter.hitEnvelope(t-.04,jackRise,LAUNCH_SETTLE);
       limbs=Fighter.hitEnvelope(t-LIMB_LAG,LIMB_RISE+.04,LAUNCH_SETTLE);
       // Round 3e (REACT): what a re-launch took over (see `launchCarry`), let
       // go of over LAUNCH_LET_GO while the new launch's own rises.
@@ -7640,10 +7963,13 @@ export class Fighter {
           // Round 3e (REACT): a re-launch starts its path where the body is
           // drawn - the clip's pitch and the tumble it carried - and ends on
           // its back the nearer way round from there.
-          if(!Number.isFinite(this.launchFrom))this.launchFrom=pitch+this.launchCarry;
+          // (POSE_SNAP: a fresh launch from the pitch the body was drawn at, taken whole from its
+          // first frame, and over from the nearest way it lies.)
+          const drawnFrom=Number.isFinite(this.launchFromDrawn)&&!this.launchCarry;
+          if(!Number.isFinite(this.launchFrom))this.launchFrom=drawnFrom?this.launchFromDrawn:pitch+this.launchCarry;
           // On its back as the downed clip lies, which side of the turn that is (LAUNCH_SIDE).
           const lie=this.launchSide*LAUNCH_LAND;
-          const land=lie+Math.PI*2*(this.launchCarry?Math.round((this.launchFrom-lie)/(Math.PI*2)):this.launchTurns);
+          const land=lie+Math.PI*2*(this.launchCarry||drawnFrom?Math.round((this.launchFrom-lie)/(Math.PI*2))+(drawnFrom?this.launchTurns:0):this.launchTurns);
           // Nearly even through the arc - a third faster off the blow than
           // into the landing - so a full turn is never more than eleven
           // degrees a frame at the hips. Done by LAUNCH_DONE of it, lying for the rest of the fall.
@@ -7656,7 +7982,7 @@ export class Fighter {
           // a turn and a half would spin the body back through it.
           const short=THREE.MathUtils.euclideanModulo(path-pitch+Math.PI,Math.PI*2)-Math.PI;
           // Eased in off a blow from nothing; a re-launch has its tumble already.
-          this.launchPitch=short*(this.launchCarry?1:THREE.MathUtils.smoothstep(t,0,.08));
+          this.launchPitch=short*(this.launchCarry||drawnFrom?1:THREE.MathUtils.smoothstep(t,0,.08));
         }
       }
       // The hand-back (LAUNCH_HOLD): the landing's pitch against the clip the body is in now, the turn it takes from
@@ -7698,7 +8024,20 @@ export class Fighter {
     if(real>0)this.staggerRoot.copy(root);
     const travel=Math.hypot(this.staggerVelocity.x,this.staggerVelocity.z);
     const stepping=state.grounded&&STEPPING_REACTIONS.has(state.action)&&this.legs.length>0&&travel<SKID_SPEED&&travel>(this.staggerWeight>0?STEP_SPEED*.8:STEP_SPEED);
-    if(Math.abs(twist)<1e-4&&leanAmount<1e-4&&whipAmount<1e-4&&flingAmount<1e-4&&Math.abs(dip)<1e-4&&shoveAmount<1e-4&&!hasLaunch&&bounce<1e-4&&!stepping&&this.staggerWeight<1e-3){this.staggerWeight=0;return;}
+    // The settle (SETTLE): the frame a body is down on the floor - landed, or put there - its limbs settle from
+    // as high as they were drawn; let go once it rises or is thrown again.
+    {const down=state.action==='knockdown'&&state.grounded&&state.alive&&!abOff('settle');
+      if(down&&!this.wasDown&&this.limbHeightAt>=0&&this.reactTime-this.limbHeightAt<POSE_SNAP.fresh){
+        this.settleAt=this.reactTime;this.settleOut=-1;this.settleDrawn.set(this.limbHeight);this.settleLanded.fill(-1);
+        this.settleWeight=THREE.MathUtils.clamp((this.landFell&&this.landedAt===this.reactTime?this.landSpeed:0)/SETTLE.speed,SETTLE.light,1);
+      }
+      this.wasDown=down;
+      if(this.settleAt>=0){
+        if(this.reactTime-this.settleAt>SETTLE.time||abOff('settle')||!state.alive)this.settleAt=-1;
+        else if(this.settleOut<0&&!down)this.settleOut=this.reactTime;
+      }}
+    const settling=this.settleAt>=0;
+    if(Math.abs(twist)<1e-4&&leanAmount<1e-4&&whipAmount<1e-4&&flingAmount<1e-4&&Math.abs(dip)<1e-4&&shoveAmount<1e-4&&!hasLaunch&&bounce<1e-4&&!stepping&&this.staggerWeight<1e-3&&!settling){this.staggerWeight=0;this.dipDrawn=0;return;}
     // Where the clip and the layers before this one have the ankles, before
     // anything here moves them.
     for(let i=0;i<this.legs.length&&i<this.legAnkles.length;i++)this.legs[i].ankle.getWorldPosition(this.legAnkles[i]);
@@ -7751,6 +8090,7 @@ export class Fighter {
       this.leanBone(leg.hip,_leanWorld.setFromAxisAngle(launchAxis,limbs*LAUNCH.legs+trail*.25+this.flail(leg===this.legs[0]?1.0:3.6,LAUNCH_FLAIL.legs)));
       this.leanBone(leg.knee,_leanWorld.setFromAxisAngle(launchAxis,-(limbs+trail*.4)*LAUNCH.knees));
     }
+    if(settling)this.settleLimbs(real);
     // The knees give under the blow, and a heavy one drives the hips back
     // and down into them (see HIP_SHOVE); a landing throws the body back up.
     // Only a body on its feet is shoved and has them held: one lying down or
@@ -7759,7 +8099,10 @@ export class Fighter {
     const standing=state.grounded&&bounce<=1e-4&&this.legs.length>0&&STANDING_REACTIONS.has(state.action);
     if(!standing)shove.set(0,0,0);
     this.staggerSteps(real,stepping,state);
-    const moved=(dip>1e-4||shove.lengthSq()>1e-8||bounce>1e-4)&&!!this.pelvis&&!!this.pelvis.parent&&!launched;
+    // (HIT_ZONE: thrown, the knees' dip is let go of over a few frames - DIP_OUT - not in one.)
+    if(launched)dip=abOff('hitzone')?0:this.dipDrawn*Math.exp(-real/DIP_OUT);
+    const moved=(dip>1e-4||shove.lengthSq()>1e-8||bounce>1e-4)&&!!this.pelvis&&!!this.pelvis.parent&&(!launched||dip>1e-4);
+    this.dipDrawn=moved?dip:0;
     const planted=!launched&&state.grounded&&bounce<=1e-4&&this.legs.length>0&&(standing&&moved||this.staggerWeight>1e-3);
     if(planted)for(let i=0;i<this.legs.length&&i<this.shoveAnkles.length;i++)this.shoveAnkles[i].copy(this.legAnkles[i]).lerp(this.staggerTarget[i],this.staggerWeight);
     if(moved&&this.pelvis&&this.pelvis.parent){
@@ -7936,11 +8279,11 @@ export class Fighter {
       // Where it lands: the surface at the skin, or the chest facing the blow.
       const point=arrived?CONTACT.point:_touchPoint.copy(_torsoA).lerp(_torsoB,.6);
       if(!arrived){point.x-=hx*radius;point.z-=hz*radius;}
-      this.answerTouch(other,move,index,seq,slot,hx,hz,point,!blow);
+      this.answerTouch(other,move,index,seq,slot,hx,hz,point,!blow,arrived);
     }
   }
   /** One blow answered as a touch (see `touchFrom`). */
-  private answerTouch(other:Fighter,move:MoveDefinition,index:number,seq:number,slot:AttackSlot,hx:number,hz:number,point:THREE.Vector3,guarded:boolean){
+  private answerTouch(other:Fighter,move:MoveDefinition,index:number,seq:number,slot:AttackSlot,hx:number,hz:number,point:THREE.Vector3,guarded:boolean,arrived=false){
     const s=other.state,chain=slot==='light'?other.rushStage(s):0;
     const finisher=slot==='light'&&chain>=RUSH_STAGES-1;
     // Round 3e (REACT, for ULTFIX): an ultimate's blow weighs what its damage
@@ -7952,10 +8295,15 @@ export class Fighter {
       _touchDir.set(hx,0,hz);
       const height=point.y-this.group.position.y;
       this.hitFreeze=Math.max(this.hitFreeze,finisher?.1:.07);
-      ring=this.takeBlow(slot,'melee',index,_touchDir,damage,height,{chain},finisher,undefined,true);
+      // (a COUNTER or a PUNISH the ledger knows of already is drawn with the ink frame - HIT_FLASH.)
+      const reward=!!LANDED.blow(s.id,seq,this.state.id,index)?.reward;
+      // (And HIT_ZONE's: the surface at the skin, or where none got there, the thrower's limb nearest the body.)
+      this.blowFrom=other;this.blowPoint=arrived?point:undefined;
+      ring=this.takeBlow(slot,'melee',index,_touchDir,damage,height,{chain,reward},finisher,undefined,true);
+      this.blowFrom=this.blowPoint=undefined;
       // The replacement form IS the body while it shows (see `impact`).
       const form=this.drawnBody();
-      if(form!==this){const inner=form.takeBlow(slot,'melee',index,_touchDir,damage,height,{chain},finisher,undefined,true);
+      if(form!==this){form.blowFrom=other;form.blowPoint=arrived?point:undefined;const inner=form.takeBlow(slot,'melee',index,_touchDir,damage,height,{chain,reward},finisher,undefined,true);form.blowFrom=form.blowPoint=undefined;
         form.touches.push({from:other,seq,index,at:form.reactTime,slot,ring:inner,claimed:false,hx,hz});if(form.touches.length>6)form.touches.shift();}
     }
     this.touches.push({from:other,seq,index,at:this.reactTime,slot,ring,claimed:guarded,hx,hz});
@@ -8634,6 +8982,9 @@ export class Fighter {
    *  places the contact itself. Taisei's hand bone is his fist now, so the general path serves him (a striking surface
    *  measured off the Oup77 mesh had it half a metre off the end of his arm). */
   meleeContactPoint(index:number,out:THREE.Vector3){return this.socket('contact',out,index);}
+  /** A warm-up body kept for its programs (FighterLibrary.retireWarmup): out of the scene and out of the bodies a swing
+   *  meets, nothing of it updated or drawn, its materials (and so their programs) kept until dispose. */
+  retire(){Fighter.drawn.delete(this);this.group.visible=false;this.group.removeFromParent();}
   dispose(){
     Fighter.drawn.delete(this);
     this.ragdoll?.dispose();this.ragdoll=undefined;

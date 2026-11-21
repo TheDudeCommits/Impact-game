@@ -42,6 +42,7 @@ export function stepLine(step: StepId, d: Device, technique: string, locked = tr
     case 'light': return prompt('light', d.device === 'touch' ? '× 3' : 'LIGHT × 3', o);
     case 'heavy': return act('heavy', 'HEAVY', o);
     case 'guard': return act('guard', 'GUARD', { ...o, hold: true });
+    case 'escape': return prompt('guard', 'ESCAPE', o);
     case 'parry': return prompt('guard', 'PERFECT PARRY', o);
     case 'dash': return act('dash', 'DASH', o);
     case 'special': return act('special', 'SPECIAL', o);
@@ -62,6 +63,7 @@ export function stepAsk(step: StepId, d: Device): string {
     case 'light': return 'LAND A STRING';
     case 'heavy': return 'LAND ONE';
     case 'guard': return 'BLOCK THE JAB';
+    case 'escape': return 'TAP AS THE GOLD RING CLOSES · BETWEEN THEIR ROUNDS';
     case 'parry': return 'TAP JUST BEFORE THE HIT';
     case 'dash': return 'ANY WAY';
     case 'special': return '';
@@ -76,6 +78,7 @@ export function stepFeedback(step: StepId, p: StepProgress, d: Device): string {
     case 'move': return `${p.moved ? '✓' : '·'} MOVE   ${p.looked ? '✓' : '·'} LOOK${d.device === 'keyboard' && !p.looked ? '   CLICK THE ARENA FIRST' : ''}`;
     case 'light': return p.hits ? `HITS ${Math.min(p.hits, 3)} / 3` : '';
     case 'guard': return p.miss === 'hit' ? 'HOLD IT BEFORE THE BLOW LANDS' : '';
+    case 'escape': return p.miss === 'early' ? 'TOO EARLY · WAIT FOR THE RING' : p.miss === 'late' ? 'A LITTLE SOONER' : p.miss === 'stamina' ? 'YOUR BAR IS EMPTY · LET IT FILL' : p.miss === 'missed' ? 'NOW · AS THE RING CLOSES' : 'ONE TAP, NOT HELD';
     case 'parry': return p.miss === 'blocked' ? "THAT'S A BLOCK · TAP, DON'T HOLD" : p.miss === 'hit' ? 'A LITTLE EARLIER' : 'WATCH THE WIND-UP';
     case 'technique': return p.miss === 'plain' ? 'PULL THE STICK AWAY AS YOU PRESS' : '';
     case 'fight': return 'MIX YOUR MOVES';

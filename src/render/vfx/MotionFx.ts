@@ -15,13 +15,15 @@ const GHOST_DIAL = { fewer: 1, fade: .7 } as const;
  *  colour while it plays; it and `timeStop` arrive with the round-2 look
  *  pass, so they are optional and every caller checks for them. */
 export interface ScreenFx {
-  impactFrame(strength: number, at?: import('three').Vector3, hold?: number): void; chromaticPulse(amount: number): void; speedLines(amount: number): void;
+  impactFrame(strength: number, at?: import('three').Vector3, hold?: number, knockout?: boolean): void; chromaticPulse(amount: number): void; speedLines(amount: number): void;
   /** The colour pass (GameRenderer.extendImpact): hold an impact frame that has just printed. */
   extendImpact?(hold: number): void;
   /** `at`/`reach` (round 3c): a local grade, a pool round a world point. */
   techniqueGrade?(color: number, strength: number, seconds: number, at?: { x: number; y: number; z: number }, reach?: number): void; timeStop?(amount: number): void;
   /** The colour pass (GameRenderer.impactBlur): the room behind a big blow blurred toward it, `keep` sharp. */
   impactBlur?(strength: number, at: { x: number; y: number; z: number }, keep?: import('../GameRenderer').BlurKeep[]): void;
+  /** The film look's painted freeze on a knockout (GameRenderer.paintedFreeze). */
+  paintedFreeze?(at?: import('three').Vector3): void;
 }
 
 interface Track { action: string; started: number; grounded: boolean; floor: number; airFrom: number; lastPuff: number; ghostNext: number; ghosts: number; chaseUntil: number; chaseFrom: number; seen: number; gx: number; gz: number }

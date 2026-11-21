@@ -86,6 +86,9 @@ export class FighterStage {
   constructor(private host: HTMLElement, private readonly options: StageOptions = {}) {
     this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace; this.renderer.toneMapping = THREE.NoToneMapping;
+    // As GameRenderer's: a shipped page does not read each program's log at its first draw (a synchronous question to the
+    // GPU process; 111 ms of the shop's first frames on software GL).
+    this.renderer.debug.checkShaderErrors = !!import.meta.env?.DEV;
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.canvas = this.renderer.domElement;
     host.append(this.canvas);
@@ -111,13 +114,18 @@ export class FighterStage {
 
   /** The stage fitted to its host. */
   resize() {
+    // A host hidden (its dialog closed) keeps the size it had: the canvas is not seen, and taking it to 2x2 and back
+    // reallocated its buffers twice, a 226 ms frame as the shop closed. An unchanged
+    // size is not set again.
+    if (this.sized && (!this.host.clientWidth || !this.host.clientHeight)) return;
     const w = Math.max(2, this.host.clientWidth), h = Math.max(2, this.host.clientHeight);
-    this.renderer.setSize(w, h, false); this.composer.setSize(w, h);
+    if (w !== this.sized?.w || h !== this.sized?.h) { this.renderer.setSize(w, h, false); this.composer.setSize(w, h); this.sized = { w, h }; }
     this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
     this.pixels = h * this.renderer.getPixelRatio();
     this.aim();
   }
   private pixels = 1;
+  private sized?: { w: number; h: number };
   /** The stage's picture moved into another element (the shop redraws the panel it sits in). */
   moveTo(host: HTMLElement) {
     if (host === this.host && this.canvas.parentElement === host) return;

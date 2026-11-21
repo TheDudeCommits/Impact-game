@@ -1,6 +1,7 @@
 import type { Account, Settlement } from '../../game/economy/account';
 import type { ItemKind } from '../../game/economy/catalog';
 import type { Report } from '../../game/economy/earn';
+import { economyPost } from '../../network/p2Economy';
 
 /** What the server offers: sign-in, when it has a Privy app (its id). (Sumi is earned only: nothing is sold for money.) */
 export interface ShopConfig { privy?: string }
@@ -39,12 +40,8 @@ const env = (typeof import.meta !== 'undefined' ? (import.meta as { env?: Record
 /** Where the economy's API is: the match server, unless VITE_ECONOMY_SERVER names another. */
 export const economyServer = () => (env.VITE_ECONOMY_SERVER || env.VITE_MATCH_SERVER || `${location.protocol === 'https:' ? 'https' : 'http'}://${location.hostname}:2567`).replace(/^ws/, 'http').replace(/\/+$/, '');
 
-const httpPost: Poster = async (path, body) => {
-  const response = await fetch(`${economyServer()}/api/economy/${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(5000) });
-  let json: unknown;
-  try { json = await response.json(); } catch { json = undefined; }
-  return { status: response.status, body: json };
-};
+/* (to the economy world inside PlayerTwo once it is on, to the match server otherwise: src/network/p2Economy.ts) */
+const httpPost: Poster = (path, body) => economyPost(path, body, 5000);
 const browserStore = (): Store => ({
   get: key => { try { return localStorage.getItem(key) ?? undefined; } catch { return undefined; } },
   set: (key, value) => { try { if (value === undefined) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch { /* Private browsing: the account lasts the visit. */ } },

@@ -12,6 +12,7 @@ import type { Element } from './vfx/palette';
 import { isProc, isQuiet, RESCUE_REACH, type FeedItem, type RunView } from '../survival/SurvivalGame';
 import type { CombatEvent } from '../game/types';
 import { RiftAudio } from '../audio/survival/RiftAudio';
+import { filmOn } from './look/filmLook';
 import { activeRift, prebuildRiftStage } from './rift/RiftStage';
 import { Bolt } from './rift/bolt';
 import { MARKS, UPLOAD } from './EnemyHorde';
@@ -30,6 +31,7 @@ import { riftMoment, riftMomentReset, seriesOfUniverse } from '../audio/musicTra
 import { ForkFx } from './survival/forkFx';
 import { PATH_MARKS } from '../ui/survival/pathMarks';
 import { THREAT_MARKS } from '../ui/survival/threatMarks';
+import { sceneDrawingSize } from './look/sceneBuffer';
 
 const _look = new THREE.Vector3();
 /** Techniques that cut through a line of bodies at once, and draw themselves. */
@@ -73,13 +75,13 @@ const PORTALS = 10, BLADES = 8;
 /** A boss's rank as the colour it wears: steel at F, gold at S. */
 const RANK_MARK: Record<string, number> = { F: 0x9aa0a8, E: 0x6fc79a, D: 0x5a9cff, C: 0xff8a2a, B: 0xa060ff, A: 0xff2038, S: 0xffc03a };
 
-type RiftScreen = { impactFrame(strength: number, at?: THREE.Vector3): void; chromaticPulse(amount: number): void;
+type RiftScreen = { impactFrame(strength: number, at?: THREE.Vector3, hold?: number, knockout?: boolean): void; chromaticPulse(amount: number): void;
   /** The renderer's stopped time (GameRenderer.timeStop): a boss relic's SLUMBER feeds it every frame it lasts. */
   timeStop?(amount: number): void; techniqueGrade(color: number, strength: number, seconds: number, at?: { x: number; y: number; z: number }, reach?: number): void; speedLines(amount: number): void;
   bloomPass?: { bloom: { strength: number; threshold: number } };
   finalPass?: { uniforms: { uBloom: { value: number } } };
   renderer?: THREE.WebGLRenderer;
-  composer?: { renderTarget1: THREE.WebGLRenderTarget };
+  composer?: { readBuffer: THREE.WebGLRenderTarget };
   hemi?: THREE.HemisphereLight; sun?: THREE.DirectionalLight; fill?: THREE.DirectionalLight;
   look?: { hemi: { intensity: number }; key: { intensity: number }; fill: { intensity: number } } };
 /** The arcade's warm-ups (main.ts: a round's horde, and bosses loaded a round
@@ -97,7 +99,8 @@ function compileForTarget(view: RiftScreen) {
   COMPILES.add(renderer);
   const compile = renderer.compileAsync.bind(renderer);
   renderer.compileAsync = (scene, camera, targetScene) => {
-    const previous = renderer.getRenderTarget(), target = view.composer?.renderTarget1;
+    // (the composer's read buffer: the target the scene draws into, every frame the same one)
+    const previous = renderer.getRenderTarget(), target = view.composer?.readBuffer;
     if (!target) return compile(scene, camera, targetScene);
     renderer.setRenderTarget(target);
     try { return compile(scene, camera, targetScene); } finally { renderer.setRenderTarget(previous); }
@@ -122,7 +125,7 @@ function rationInk(view: RiftScreen) {
   const ink = view.impactFrame.bind(view), grade = view.techniqueGrade.bind(view);
   OWN_GRADE.set(view, grade);
   let last = -10;
-  view.impactFrame = (strength: number, at?: THREE.Vector3) => {
+  view.impactFrame = (strength: number, at?: THREE.Vector3, hold?: number, knockout?: boolean) => {
     if (activeRift()) {
       // A horde is hit ten times a second: even the heaviest blows take a
       // paper-white frame at most once a second, the rest once in two.
@@ -130,7 +133,9 @@ function rationInk(view: RiftScreen) {
       if (now - last < (strength < .95 ? 2 : 1)) return;
       last = now;
     }
-    ink(strength, at);
+    // (The film look: its hold and the knockout's own frame passed on - look/filmLook.ts FILM_IMPACT. The modern look is
+    // left as it was, where this wrapper drops them.)
+    if (filmOn()) ink(strength, at, hold, knockout); else ink(strength, at);
   };
   // (Everything else passed on as given: the roster's grade can be local to
   // a point, `at` within `reach`.)
@@ -1263,7 +1268,7 @@ export class SurvivalFx {
     const subjects: GlowSubject[] = party.map((member, i) => ({ id: member.id, colour: i ? seatColour(member.seat) : SELF_AURA.colour,
       strength: i ? 1 : aura ? .8 : .55, ring: i > 0, down: member.down }));
     const renderer = this.screen?.renderer;
-    if (renderer) { renderer.getDrawingBufferSize(_size); this.glow.resize(_size.x, _size.y); }
+    if (renderer) { sceneDrawingSize(renderer, _size); this.glow.resize(_size.x, _size.y); }
     this.glow.update(subjects, time, dt);
     const marks: MarkSubject[] = [];
     for (let i = 1; i < party.length; i++) {

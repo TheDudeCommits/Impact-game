@@ -4,13 +4,13 @@ import { BUDGET_MS, MIN_SCALE, STEP, STRONG_BUDGET_MS, UP_AFTER_DOWN_S, nextScal
 
 
 /** Ten seconds of a display at `hz`, its requests jittered by 2%: the gaps between the frames the gate draws. */
-function drawn(hz: number, slowEvery = 0) {
+function drawn(hz: number, slowEvery = 0, fps = 60) {
   const gate = new FrameGate(), gaps: number[] = [];
   let now = 0, previous = 0, seed = 7;
   const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let i = 0; i < hz * 10; i++) {
     now += 1000 / hz * (1 + (random() - .5) * .04) + (slowEvery && i % slowEvery === 0 ? 25 : 0);
-    if (!gate.draw(now, previous)) continue;
+    if (!gate.draw(now, previous, fps)) continue;
     if (i > hz) gaps.push(now - previous);
     previous = now;
   }
@@ -18,19 +18,36 @@ function drawn(hz: number, slowEvery = 0) {
 }
 
 describe('the frame gate', () => {
-  it('draws every frame of a 60, 75 or 90 Hz display', () => {
-    for (const hz of [60, 75, 90]) {
+  it('draws every frame of a 60, 75, 90 or 100 Hz display', () => {
+    for (const hz of [60, 75, 90, 100]) {
       const gaps = drawn(hz);
       expect(gaps[gaps.length >> 1]).toBeCloseTo(1000 / hz, 0);
       expect(gaps.length).toBeGreaterThan(hz * 8.5);
     }
   });
   it('holds a high-refresh display to about sixty, evenly', () => {
-    for (const [hz, every] of [[120, 2], [144, 2], [165, 3], [240, 4]] as const) {
+    // (A 165 Hz display every other frame, 82: the count rounded to the nearest until now drew it every
+    // third, 55, under the target - and a 100 Hz one every other, 50.)
+    for (const [hz, every] of [[120, 2], [144, 2], [165, 2], [240, 4]] as const) {
       const gaps = drawn(hz), want = 1000 / hz * every;
       // Every drawn frame the same number of refreshes apart: no beat between two counts.
       expect(gaps[0]).toBeGreaterThan(want * .95);
       expect(gaps[gaps.length - 1]).toBeLessThan(want * 1.05);
+    }
+  });
+  it('never draws under its target for the count\'s sake, at sixty or at thirty', () => {
+    for (const [hz, fps] of [[60, 60], [75, 60], [100, 60], [120, 60], [144, 60], [165, 60], [175, 60], [200, 60], [240, 60], [360, 60],
+      [60, 30], [100, 30], [120, 30], [144, 30], [165, 30], [240, 30]] as const) {
+      const gaps = drawn(hz, 0, fps);
+      // The median drawn gap within a refresh's jitter of the target's interval, or shorter.
+      expect(gaps[gaps.length >> 1], `${hz} Hz at ${fps}`).toBeLessThan(1000 / fps * 1.03);
+    }
+  });
+  it('FULL DETAIL on a desktop (no cap) draws every frame the display shows', () => {
+    for (const hz of [60, 120, 144, 240]) {
+      const gaps = drawn(hz, 0, Infinity);
+      expect(gaps[gaps.length >> 1]).toBeCloseTo(1000 / hz, 0);
+      expect(gaps.length).toBeGreaterThan(hz * 8.5);
     }
   });
   it('never holds back a page that is already running behind its display', () => {

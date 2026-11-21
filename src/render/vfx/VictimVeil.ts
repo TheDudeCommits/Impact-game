@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Fighter } from '../Fighter';
 import { drawnBulk } from '../CameraDirector';
 import { DREAM_IMPACT } from '../dreamFlag';
+import { abOff, onAbChange } from '../look/abSwitch';
 
 /** Keeping the victim readable through the attacker's own effects.
  *
@@ -47,12 +48,23 @@ export const VEIL = DREAM_IMPACT
   ? { sparks: .9, dust: 1, beam: .75, corona: .8, burst: .95, ghost: 1, rubble: 1 } as const
   : { sparks: .75, dust: .85, beam: .75, corona: .8, burst: .8, ghost: .85, rubble: .6 } as const;
 const REACTING = new Set<string>(['hurt', 'flinch', 'launched', 'knockdown', 'splat', 'stun', 'getup']);
+/** The cap on what buries a fighter (?ab=fxcap
+ *  turns it off): the layers that only ever cover a body - the smoke and dust, the ghosts, the rubble, each made with
+ *  `cap` (veilUniforms, installVeil, SparkField) - thin over EVERY fighter in the fight, not only one taking a blow:
+ *  the caster inside their own smoke, a bystander in someone else's. CAP_WEIGHT of the layer's own strength, eased in
+ *  and out as a victim's veil is; never the sparks, bursts, beams or coronas, so the hit itself lands as it did. */
+export const CAP_WEIGHT = .75;
 
 /** Shared by every veiled material: one write a frame reaches all of them. */
 const uniforms = {
   uVeilA: { value: Array.from({ length: VEIL_BODIES }, () => new THREE.Vector4()) },
   uVeilB: { value: Array.from({ length: VEIL_BODIES }, () => new THREE.Vector4()) },
+  /** Each body's cap (CAP_WEIGHT), for the layers made with `cap`. */
+  uVeilC: { value: Array.from({ length: VEIL_BODIES }, () => 0) },
+  /** The cap's switch (?ab=fxcap), flipped at once so a held frame's redraw shows it (the weights ease in update). */
+  uVeilCapOn: { value: abOff('fxcap') ? 0 : 1 },
 };
+onAbChange(() => { uniforms.uVeilCapOn.value = abOff('fxcap') ? 0 : 1; });
 
 /** `victimVeil(p, strength)`: how much of an effect fragment at world point
  *  `p` to keep. For each body, the least distance between the view ray
@@ -65,12 +77,12 @@ const uniforms = {
  *  `victimVeilThrough` also thins what lies inside the body's own volume,
  *  for the beams, whose core passing through the victim blooms over them. */
 export const VEIL_GLSL = /* glsl */`
-uniform vec4 uVeilA[${VEIL_BODIES}]; uniform vec4 uVeilB[${VEIL_BODIES}];
+uniform vec4 uVeilA[${VEIL_BODIES}]; uniform vec4 uVeilB[${VEIL_BODIES}]; uniform float uVeilC[${VEIL_BODIES}]; uniform float uVeilCap; uniform float uVeilCapOn;
 float victimVeil(vec3 p, float strength){
   vec3 d = p - cameraPosition; float t0 = length(d); d /= max(t0, 1e-4);
   float keep = 1.0;
   for (int i = 0; i < ${VEIL_BODIES}; i++) {
-    float w = uVeilB[i].w;
+    float w = max(uVeilB[i].w, uVeilC[i] * uVeilCap * uVeilCapOn);
     if (w < .002) continue;
     vec3 a = uVeilA[i].xyz, ab = uVeilB[i].xyz - a, w0 = a - cameraPosition;
     float aa = dot(ab, ab), b = dot(ab, d), c = dot(ab, w0), e = dot(d, w0), den = aa - b * b;
@@ -113,21 +125,21 @@ export function veilKeep(p: THREE.Vector3, lens: THREE.Vector3, a: THREE.Vector3
 
 /** The veil's uniforms, for a ShaderMaterial that calls `victimVeil` itself;
  *  `strength` is its own `uVeilStrength`. */
-export function veilUniforms(strength: number) {
-  return { ...uniforms, uVeilStrength: { value: strength } };
+export function veilUniforms(strength: number, cap = false) {
+  return { ...uniforms, uVeilStrength: { value: strength }, uVeilCap: { value: cap ? 1 : 0 } };
 }
 
 const installed = new WeakSet<THREE.Material>();
 /** Veil a built-in material (a MeshBasicMaterial): its world position is
  *  carried to the fragment, which gives up `strength` of its alpha over a
  *  victim. Instancing-aware, as the scenery cutaway is. */
-export function installVeil(material: THREE.Material, strength: number) {
+export function installVeil(material: THREE.Material, strength: number, cap = false) {
   if (installed.has(material)) return material;
   installed.add(material);
   const previous = material.onBeforeCompile, cache = material.customProgramCacheKey.bind(material);
   material.onBeforeCompile = function (shader, renderer) {
     previous.call(this, shader, renderer);
-    Object.assign(shader.uniforms, uniforms, { uVeilStrength: { value: strength } });
+    Object.assign(shader.uniforms, uniforms, { uVeilStrength: { value: strength }, uVeilCap: { value: cap ? 1 : 0 } });
     shader.vertexShader = 'varying vec3 vVeilWorld;\n' + shader.vertexShader.replace('#include <project_vertex>', `
       vec4 veilLocal = vec4(transformed, 1.0);
       #ifdef USE_INSTANCING
@@ -155,6 +167,8 @@ export class VictimVeil {
   /** The bodies a big blow has landed on since they were last up (VEIL_LIGHT). */
   private big = new Set<string>();
   private weights = new Map<string, number>();
+  /** Each body's cap (CAP_WEIGHT), eased as the weights are. */
+  private caps = new Map<string, number>();
   private order: Fighter[] = [];
   private byWeight = (a: Fighter, b: Fighter) => (this.weights.get(b.state.id) ?? 0) - (this.weights.get(a.state.id) ?? 0);
   /** A blow landed on `id` at `time` (the match clock); `big`, a launcher, a slam or a finisher. */
@@ -166,19 +180,25 @@ export class VictimVeil {
     const order = this.order; order.length = 0;
     for (const body of fighters.values()) {
       const id = body.state.id, since = time - (this.struckAt.get(id) ?? -Infinity);
-      const active = body.state.alive !== false && body.group.visible && (REACTING.has(body.state.action) || since < VEIL_LINGER);
+      const live = body.state.alive !== false && body.group.visible;
+      const active = live && (REACTING.has(body.state.action) || since < VEIL_LINGER);
       if (!active) this.big.delete(id);
       const want = active && since >= VEIL_DELAY ? this.big.has(id) ? 1 : VEIL_LIGHT : 0;
       let w = this.weights.get(id) ?? 0;
       w = want > w ? Math.min(want, w + dt / VEIL_IN) : Math.max(want, w - dt / VEIL_OUT);
       this.weights.set(id, w);
-      if (w > .002) order.push(body);
+      const wantCap = live ? CAP_WEIGHT : 0;
+      let c = this.caps.get(id) ?? 0;
+      c = wantCap > c ? Math.min(wantCap, c + dt / VEIL_IN) : Math.max(wantCap, c - dt / VEIL_OUT);
+      this.caps.set(id, c);
+      if (w > .002 || c > .002) order.push(body);
     }
-    // The most veiled first; a slot left over is switched off.
+    // The most veiled first (then the capped, as they come); a slot left over is switched off.
     order.sort(this.byWeight);
     for (let i = 0; i < VEIL_BODIES; i++) {
       const a = uniforms.uVeilA.value[i], b = uniforms.uVeilB.value[i], body = order[i];
-      if (!body) { b.w = 0; continue; }
+      if (!body) { b.w = 0; uniforms.uVeilC.value[i] = 0; continue; }
+      uniforms.uVeilC.value[i] = this.caps.get(body.state.id) ?? 0;
       const bulk = drawnBulk(body), w = this.weights.get(body.state.id) ?? 0;
       this.span(body, bulk);
       // Widened as the weight climbs past an ordinary blow's.

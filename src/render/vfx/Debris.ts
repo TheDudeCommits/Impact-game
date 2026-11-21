@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { DREAM_IMPACT } from '../dreamFlag';
+import { refinedVfx } from '../look/filmLook';
 
 const STONE = [0x8c8172, 0xa0968a, 0x6e665a, 0xb3a894, 0x7b7466];
 const GRAVITY = 13.5;
@@ -124,6 +125,7 @@ export class Debris {
   /** A ring or a cone of chunks out of a point on a surface. `nx,ny,nz` is
    *  the surface normal they are thrown along; `spread` how far off it. */
   burst(count: number, x: number, y: number, z: number, nx: number, ny: number, nz: number, speed: number, spread: number, size: number, floor: number, life = 1.8) {
+    if (refinedVfx()) return; // The film look: no rubble (look/filmLook.ts refinedVfx)
     for (let k = 0; k < count; k++) {
       const a = Math.random() * Math.PI * 2, tilt = spread * (.35 + Math.random() * .65);
       // A direction in a cone about the normal.

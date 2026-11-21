@@ -1,3 +1,4 @@
+import { isP2Code } from '../network/p2Room';
 import { keptSkill } from '../boot/skill';
 import { ROSTER_PROTOCOL } from '../game/rosterProtocol';
 import {RIFT_PROTOCOL} from '../game/moba/model';
@@ -9,9 +10,15 @@ import type {PartyView,PartyMode} from '../game/social/party';
 import {COOP_LINK,SURVIVAL_PROTOCOL} from '../survival/coopNet';
 import {carried} from '../survival/progressStore';
 import {joinFailure} from '../network';
-export interface PartyTravel {id:string;mode:PartyMode;reservation:SeatReservation;}
+import {P2ColyseusRoom} from '../network/p2Room';
+import {p2Elsewhere,p2PartyRoute,type P2Ticket} from '../network/p2Route';
+/** A member's way to the party's match: a Colyseus seat reservation, or on PlayerTwo a ticket (`p2`: the leader's opens
+ *  the room and `announce`s its code back to the party, the others' carry it). */
+export interface PartyTravel {id:string;mode:PartyMode;reservation:SeatReservation&{p2?:P2Ticket};announce?:(code:string)=>void;}
 export class PartyClient {
   room:Room|null=null;view?:PartyView;connecting=false;online=true;
+  /** In the player's PlayerTwo party's own room: its members are PlayerTwo's party, so it has no code to share. */
+  p2Party=false;
   onChange=()=>{};onNotice=(_message:string)=>{};onTravel=async(_travel:PartyTravel):Promise<boolean>=>false;private travelId='';private travelState:'loading'|'playing'|'failed'='loading';onReturn=()=>{};
   constructor(private profile:()=>{fighter:FighterId;name:string}){}
   get id(){return this.room?.sessionId??'';}
@@ -20,11 +27,11 @@ export class PartyClient {
   async connect(code?:string){
     if(this.connecting||this.room)return;this.connecting=true;this.onChange();
     try{const url=import.meta.env.VITE_MATCH_SERVER||`${location.protocol==='https:'?'https':'http'}://${location.hostname}:2567`,client=new Client(url);
-      if(code&&!/^\d{6}$/.test(code))throw new Error('Enter the six-digit party code.');
-      const room=code?await client.joinById('party-'+code,{...this.identity(),code}):await client.create('party',{...this.identity(),creationToken:crypto.randomUUID()});
+      if(code&&!/^\d{6}$/.test(code)&&!isP2Code(code))throw new Error('Enter the party code.');
+      const room=await this.viaP2(code)??(code?await client.joinById('party-'+code,{...this.identity(),code}):await client.create('party',{...this.identity(),creationToken:crypto.randomUUID()}));
       this.room=room;this.online=true;room.reconnection.minUptime=0;
       room.onMessage('party',(view:PartyView)=>{if(this.room===room){this.view=view;this.onChange();}});
-      room.onMessage('party-travel',async(travel:PartyTravel)=>{if(this.room!==room)return;if(this.travelId===travel.id){if(this.travelState==='playing')this.send('party-arrived',travel.id);return;}this.travelId=travel.id;this.travelState='loading';let joined=false;try{joined=await this.onTravel(travel);}catch{}if(this.room!==room||this.travelId!==travel.id)return;this.travelState=joined?'playing':'failed';this.send(joined?'party-arrived':'party-failed',travel.id);});
+      room.onMessage('party-travel',async(travel:PartyTravel)=>{if(this.room!==room)return;if(travel.reservation?.p2&&!travel.reservation.p2.code)travel.announce=c=>this.send('party-p2-room',{id:travel.id,code:c});if(this.travelId===travel.id){if(this.travelState==='playing')this.send('party-arrived',travel.id);return;}this.travelId=travel.id;this.travelState='loading';let joined=false;try{joined=await this.onTravel(travel);}catch{}if(this.room!==room||this.travelId!==travel.id)return;this.travelState=joined?'playing':'failed';this.send(joined?'party-arrived':'party-failed',travel.id);});
       room.onMessage('party-return',({message}:{message:string})=>{if(this.room===room){this.travelId='';this.onReturn();this.onNotice(message);}});
       room.onMessage('notice',({message}:{message:string})=>this.onNotice(message));
       room.onDrop(()=>{this.online=false;this.onChange();});room.onReconnect(()=>{this.online=true;room.send('party-sync');if(this.travelId&&this.travelState!=='loading')this.send(this.travelState==='playing'?'party-arrived':'party-failed',this.travelId);this.onChange();});
@@ -33,7 +40,15 @@ export class PartyClient {
     }catch(e){const message=e instanceof Error?e.message:'';this.onNotice(joinFailure(e)??(code&&/not found|no rooms? found|locked/i.test(message)?'No party is open with that code. Check it, or ask for a new invite.':message||'Could not connect to the party.'));}
     finally{this.connecting=false;this.onChange();}
   }
+  /** On PlayerTwo: its rooms, the party's account kept out (the room reads the economy's pass). */
+  private async viaP2(code?:string):Promise<Room|undefined>{
+    const {account:_secret,...identity}=this.identity(),p=this.profile();
+    const route=await p2PartyRoute(code,{...identity,...(code?{code}:{creationToken:crypto.randomUUID()})},COOP_LINK.token,p.name).catch(()=>undefined);
+    if(!route)return undefined;
+    try{const room=await P2ColyseusRoom.open(route.rooms,route.ask);this.p2Party=!code&&!room.code;return room as unknown as Room;}
+    catch(error){if(p2Elsewhere(error))return undefined;throw error;}
+  }
   send(type:string,value?:unknown){if(this.online&&this.room?.connection.isOpen)this.room.send(type,value);}
   profileChanged(){this.send('party-profile',this.identity());}
-  async leave(){const room=this.room;this.room=null;this.view=undefined;this.travelId='';if(room){room.reconnection.enabled=false;room.reconnection.enqueuedMessages=[];if(room.connection.isOpen)await room.leave();}this.onChange();}
+  async leave(){const room=this.room;this.room=null;this.p2Party=false;this.view=undefined;this.travelId='';if(room){room.reconnection.enabled=false;room.reconnection.enqueuedMessages=[];if(room.connection.isOpen)await room.leave();}this.onChange();}
 }

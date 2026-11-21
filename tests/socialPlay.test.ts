@@ -311,6 +311,14 @@ describe('the online queue on the page', () => {
     link.dock = true; expect(await link.tick(false, 1e9)).toBe(true); expect(urls.at(-1)).not.toMatch(/&at=/);
     expect(link.view?.online).toBe(3);
   });
+  it('asks nobody inside PlayerTwo\'s player, wherever the page is, and shows no counts there', async () => {
+    const urls: string[] = [];
+    const link = new PopulationLink(async url => { urls.push(url); return { online: 3, modes: {}, at: 1 }; }, () => 'http://server', () => true);
+    let where: ReturnType<typeof link.where> = { at: 'home' }; link.where = () => where;
+    expect(await link.tick(false, 0)).toBe(false); expect(await link.tick(true, 1e9)).toBe(false);
+    where = { at: 'standby', mode: 'royale' }; link.dock = true; expect(await link.tick(false, 1e9)).toBe(false);
+    expect(urls).toEqual([]); expect(link.view).toBeUndefined();
+  });
   it('finds a lone page in a queue, holds its room for a standby, and keeps a standby to its mode', () => {
     const royale = { roomMode: 'match', status: 'waiting', serverTime: 3, stage: 'harbor', events: [], players: [{ id: 'me', fighter }], lobby: { visibility: 'public', hostId: null, canStart: false, startsAt: 20, expiresAt: null } } as unknown as GameSnapshot;
     expect(loneIn(royale, 'me', { kind: 'public' })).toBe('royale');

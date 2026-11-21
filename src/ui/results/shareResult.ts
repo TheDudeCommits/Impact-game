@@ -96,8 +96,11 @@ export class ResultShare {
       if (card) this.open(card, b);
     });
   }
-  /** ResultsShell.fill, for each results frame on screen: its SHARE CARD (once), before HOME, and the picture drawn
-   *  ahead so the press shows it at once. Not on Arcade's (its own SHARE CARD) or Training's. */
+  /** ResultsShell.fill, for each results frame on screen: its SHARE CARD (once), before HOME. The picture is drawn
+   *  on the press (open), not ahead: its first read (shareCard.ts ink, getImageData) waits for everything queued for
+   *  the GPU, and as the results open that is still the end of the fight, which froze the results for seconds on a
+   *  slow GPU. Arcade's own SHARE CARD already drew on
+   *  its press. Not on Arcade's or Training's. */
   decorate(card: HTMLElement, mode?: ModeId) {
     if (card.closest('#sv-results, .hidden')) return;
     const actions = card.querySelector('.results-actions');
@@ -108,9 +111,9 @@ export class ResultShare {
     b.type = 'button'; b.dataset.shareResult = ''; if (mode) b.dataset.mode = mode;
     b.innerHTML = '<span>SHARE CARD</span><small>PICTURE + LINK</small>';
     actions.insertBefore(b, actions.lastElementChild);
-    // Drawn once the card has slammed in, while the player reads it.
+    // Only the link is asked for ahead (a request, nothing drawn), once the card has slammed in.
     window.clearTimeout(this.timer);
-    this.timer = window.setTimeout(() => { prefetchResultLink(); void this.draw(result).catch(() => undefined); }, 900);
+    this.timer = window.setTimeout(prefetchResultLink, 900);
   }
   /** Rift War's panel: its button, with the result in it. */
   static riftButton(view: RiftView, seat: RiftSeat | undefined, escape: (s: string) => string) {
@@ -171,7 +174,9 @@ export class ResultShare {
       share.hidden = !drawn.file || !canShareFile(drawn.file); share.disabled = false;
       (share.hidden ? save : share).focus({ preventScroll: true });
     };
-    void this.draw(card).then(fill).catch(() => { wait.textContent = 'The picture could not be drawn. COPY LINK still works.'; });
+    // Drawn once the dialog has painted (DRAWING YOUR CARD…), so the press answers at once however long the draw takes.
+    const painted = ready ? Promise.resolve() : new Promise<void>(resolve => requestAnimationFrame(() => window.setTimeout(resolve, 0)));
+    void painted.then(() => this.draw(card)).then(fill).catch(() => { wait.textContent = 'The picture could not be drawn. COPY LINK still works.'; });
   }
   /** SHARE: the picture, its words and the link, all at hand, so the sheet opens inside the press. */
   private share() {

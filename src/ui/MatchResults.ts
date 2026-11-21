@@ -9,10 +9,11 @@ import {FALLS} from './results/placement';
 import './matchPresentation.css';
 import {rivalryLine} from './social/rivalry';
 import {againCard,roomAgainOn} from './social/roomAgain';
+import {rankedResultHtml,rankedSetSeen} from './duel/ranked';
 const escape=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const number=(n=0)=>Math.max(0,Math.round(n)).toLocaleString('en-US');
 /** Round 5 (UX), WP1: what main.ts's again-label (Hud.resultAgainLabel) means, as PLAY AGAIN's own line. */
-const AGAIN:Record<string,string>={'FIND NEXT DUEL':'A NEW OPPONENT','DUEL AGAIN':'THE SAME BOT RIVAL','NEW FRIEND DUEL':'A NEW FRIEND ROOM','NEW PRIVATE ROOM':'A NEW PRIVATE ROOM','PLAY AGAIN':'SAME SETTINGS'};
+const AGAIN:Record<string,string>={'FIND NEXT DUEL':'A NEW OPPONENT','FIND RANKED DUEL':'QUEUE RANKED AGAIN','DUEL AGAIN':'THE SAME BOT RIVAL','NEW FRIEND DUEL':'A NEW FRIEND ROOM','NEW PRIVATE ROOM':'A NEW PRIVATE ROOM','PLAY AGAIN':'SAME SETTINGS'};
 /** A standings row's two lines: who, then their fighter. Overnight UX (8 October 2026): a bot on this device is named
  *  for its fighter's id (LocalRoyale: "jinlin", "gaku"), which the table showed as it was, in lower case; such a
  *  bot reads as its fighter, then BOT. A room's bots keep their names (Rival, Challenger) and players theirs, unless
@@ -40,11 +41,13 @@ export function matchResults(snapshot:GameSnapshot,viewer:PlayerState,fallen:str
   const rivalLeft=duel&&won&&snapshot.players.length<2&&(snapshot.duel?.scores[self.id]??0)<(snapshot.duel?.firstTo??2);
   // The way it was played: a private room, a field of bots (one human), or online.
   const others=snapshot.players.filter(p=>p.id!==self.id),humans=others.filter(p=>!p.isBot).length;
-  const way=couch?'COUCH':snapshot.lobby?.visibility==='private'?(duel?'FRIEND':'PRIVATE ROOM'):others.length&&!humans&&!rivalLeft?(duel?'VS BOT':'VS BOTS'):'ONLINE';
+  const way=couch?'COUCH':snapshot.lobby?.visibility==='private'?(duel?'FRIEND':'PRIVATE ROOM'):snapshot.ranked?'RANKED':others.length&&!humans&&!rivalLeft?(duel?'VS BOT':'VS BOTS'):'ONLINE';
   const outcome=couch?(won?`${seat(self)} WINS`:duel?'DRAW':'MATCH OVER'):won?'VICTORY':duel?'DEFEAT':self.alive?'MATCH OVER':'KNOCKED OUT';
   // A Duel's RUN IT BACK asks its room for the next set. A room gone (Hud.roomGone: closed after the end, or lost) has no
   // next set to give: the card offers PLAY AGAIN's own way instead, as main.ts plays it without the room.
-  const runback=duel&&!!snapshot.duel&&!roomGone;
+  // (A ranked set is queued for again, never run back: ui/duel/ranked.ts.)
+  const runback=duel&&!!snapshot.duel&&!roomGone&&!snapshot.ranked;
+  if(snapshot.ranked)rankedSetSeen(snapshot.ranked,snapshot.matchId);
   // A friends' royale's next match in the same room (ui/social/roomAgain.ts), while the room is there to hold it.
   const nextHere=!roomGone&&roomAgainOn(snapshot)?againCard(snapshot,self.id):undefined;
   const line=couch?(won?`${seat(self)} · ${FIGHTERS[self.fighter].name} ${duel?'won the best-of-three set.':'is the last one standing.'}`:duel?'':`${placing} of ${ranked.length}.`):rivalLeft?'Your rival left the duel.':won?(duel?'You won the best-of-three set.':'Last fighter standing.'):winner?(duel?`${name(winner)} won the best-of-three set.`:`Winner: ${name(winner)}${winner.isBot?' (bot)':''}.`):'';
@@ -54,7 +57,7 @@ export function matchResults(snapshot:GameSnapshot,viewer:PlayerState,fallen:str
     fighter:self.fighter,fighterName:FIGHTERS[self.fighter].name,kicker:self.name&&self.name!=='Fighter'?`${self.name} · ${FIGHTERS[self.fighter].name.toUpperCase()}`:FIGHTERS[self.fighter].name.toUpperCase(),
     // R1 (12 October 2026): the kanji cut into the back - 勝 the win, 敗 a duel lost or a fighter knocked out, 終 a
     // royale that ended with you still standing.
-    outcome,line,notes:couch?[]:[rivalryLine(snapshot,self.id,3),nextHere?.note??''],won,kanji:won?'勝':outcome==='MATCH OVER'?'終':'敗',
+    outcome,line,notes:couch?[]:[rivalryLine(snapshot,self.id,3),nextHere?.note??''],badge:rankedResultHtml(snapshot.ranked,self.id),won,kanji:won?'勝':outcome==='MATCH OVER'?'終':'敗',
     key:duel?{value:snapshot.duel?`${snapshot.duel.scores[self.id]??0}–${Math.max(0,...Object.entries(snapshot.duel.scores).filter(([id])=>id!==self.id).map(([,n])=>n))}`:won?'1–0':'0–1',label:'ROUNDS WON'}:{value:`#${place}`,label:`OF ${ranked.length} FIGHTERS`},
     stats:[[number(self.kills),'KOs'],[number(self.damageDealt),'DAMAGE DEALT'],[number(self.damageTaken),'DAMAGE TAKEN']],
     // Hud.results keeps this fold's open state (it expects one): a duel's is the two of them.

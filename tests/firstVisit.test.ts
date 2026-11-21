@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { NOTICE_LINES, noticeDue, noticeHtml } from '../src/ui/firstVisit';
+import { NOTICE_LINES, NOTICE_VERSION, noticeDue, noticeHtml } from '../src/ui/firstVisit';
 import { CONTACT, CREDITS_PAGE, FAN_MADE, PRIVACY_PAGE, REPO_PAGE } from '../src/ui/legalLinks';
 import { brandPrivacyHtml } from '../scripts/build/brandPlugin';
 import { TITLE } from '../src/originals/brand';
@@ -31,8 +31,13 @@ describe('the first-visit notice', () => {
     expect(html).toMatch(/class="first-visit-go"/);
   });
 
-  it('shows every time the game opens, and never to an automated browser unless it is asked for', () => {
+  it('shows until this device has closed it (once per device), and never to an automated browser unless asked for', () => {
     expect(noticeDue({ webdriver: false, forced: false })).toBe(shows);
+    expect(noticeDue({ webdriver: false, forced: false, seen: null })).toBe(shows);
+    expect(noticeDue({ webdriver: false, forced: false, seen: NOTICE_VERSION })).toBe(false);
+    // new words (a new version) show it again; ?notice always shows it
+    expect(noticeDue({ webdriver: false, forced: false, seen: '1' })).toBe(shows);
+    expect(noticeDue({ webdriver: false, forced: true, seen: NOTICE_VERSION })).toBe(shows);
     expect(noticeDue({ webdriver: true, forced: false })).toBe(false);
     expect(noticeDue({ webdriver: true, forced: true })).toBe(shows);
   });

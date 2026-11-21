@@ -1,3 +1,4 @@
+import { cleanCode, CODE_INPUT, isRoomCode } from '../roomCode';
 import { isReleasedFighter } from '../../game/rosterAvailability';
 import {DIFFICULTIES,PARTY_ARENAS,PARTY_MAX,PARTY_MODES,PARTY_ORDER,ROYALE_SEATS,modeBlocked,partyCapacity,startCheck,voteCounts,type PartyArena,type PartyMember,type PartyMode,type PartyView} from '../../game/social/party';
 import {DURATIONS,type Difficulty} from '../../game/social/custom';
@@ -46,7 +47,7 @@ export function welcomeMarkup({joining='',connecting=false,code=''}:{joining?:st
       <div class="pt-start"><small class="pt-kicker">PARTY · ONE CREW, EVERY MODE</small><h2 id="pt-title">PLAY TOGETHER</h2>
         <p>Duel a friend, or bring the whole crew: choose the mode and the place together, ready up, and stay together match after match.</p>
         ${joining?`<div class="pt-joining" role="status"><b>JOINING PARTY</b><span>${spaced(joining)}</span></div>`:`<button type="button" class="pt-go" data-party-create data-focus="go"${busy?' disabled':''}><span>${connecting?'CONNECTING…':'CREATE PARTY'}<small>YOU GET A CODE TO SHARE</small></span><i aria-hidden="true">▶</i></button>
-        <form class="pt-join"><label for="party-code">JOIN A FRIEND'S PARTY</label><div><input id="party-code" data-party-code data-focus="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6-DIGIT CODE" autocomplete="off" value="${escape(code)}" required><button type="submit" data-focus="join"${busy?' disabled':''}>JOIN</button></div></form>`}
+        <form class="pt-join"><label for="party-code">JOIN A FRIEND'S PARTY</label><div><input id="party-code" data-party-code data-focus="code" ${CODE_INPUT} placeholder="PARTY CODE" autocomplete="off" value="${escape(code)}" required><button type="submit" data-focus="join"${busy?' disabled':''}>JOIN</button></div></form>`}
         ${discordButton()}
         <p class="pt-notice" data-party-notice role="status" aria-live="polite"></p></div></div>`;
 }
@@ -76,7 +77,7 @@ export class PartyUI extends SocialDialog {
     // Its own sheet (party.css), not the social dialog's frame.
     this.element.className='party-sheet';this.element.removeAttribute('aria-label');this.element.setAttribute('aria-labelledby','pt-title');
     client.onChange=()=>{this.changed();this.render();this.badge();setParty(client.view);};client.onNotice=m=>this.notice(m);
-    this.element.addEventListener('input',e=>{const input=e.target as HTMLInputElement;if(input.dataset.partyCode!==undefined){input.value=input.value.replace(/\D/g,'').slice(0,6);this.code=input.value;}});
+    this.element.addEventListener('input',e=>{const input=e.target as HTMLInputElement;if(input.dataset.partyCode!==undefined){input.value=cleanCode(input.value);this.code=input.value;}});
     this.element.addEventListener('submit',e=>{e.preventDefault();void this.join(this.code);});
     this.element.addEventListener('change',e=>{const pick=e.target as HTMLElement&{value:string};if(pick.dataset.partyFighter!==undefined&&pick.value)this.chooseFighter(pick.value as FighterId);});
     this.element.addEventListener('click',e=>{this.wantPrimary=false;this.click(e);});
@@ -88,7 +89,7 @@ export class PartyUI extends SocialDialog {
     account.on(()=>{if(this.client.joined)this.client.profileChanged();this.drawn.delete('you');if(this.open)this.render();});
     // An invite link (#party=CODE) goes straight into that party.
     const invite=LAUNCH.online?new URLSearchParams(location.hash.slice(1)).get('party'):null;
-    if(invite&&/^\d{6}$/.test(invite)){this.code=invite;this.joining=invite;queueMicrotask(()=>{this.show();void this.join(invite,true);});}
+    if(isRoomCode(invite)){this.code=invite;this.joining=invite;queueMicrotask(()=>{this.show();void this.join(invite,true);});}
   }
   private badge(){const b=document.querySelector<HTMLButtonElement>('#home-party');if(b)b.textContent=this.client.view?`PARTY · ${this.client.view.members.length}`:'PARTY';}
   /** Opened: the focus goes to the one button (READY, START, CREATE PARTY) as soon as there is one to press, unless the
@@ -105,7 +106,7 @@ export class PartyUI extends SocialDialog {
     el.textContent=message;el.classList.remove('pt-fresh');void el.offsetWidth;el.classList.toggle('pt-fresh',!!message);
   }
   private async join(code:string,invited=false){
-    if(!/^\d{6}$/.test(code)){this.notice('Enter the six-digit party code.');return;}
+    if(!isRoomCode(code)){this.notice('Enter the party code.');return;}
     this.joining=code;this.render();
     try{await this.client.connect(code);}finally{this.joining='';}
     // The link has done its work: a reload, or the party left, must not join it again.
@@ -218,7 +219,7 @@ export class PartyUI extends SocialDialog {
   private head(view:PartyView){
     const open=Math.max(0,partyCapacity(view.mode,view.rules)-view.members.length),wide=open>0;
     return `<div class="pt-title"><small class="pt-kicker">PARTY OF ${view.members.length}</small><h2 id="pt-title">PLAY TOGETHER</h2></div>
-      <div class="pt-invite${wide?' pt-open':''}"><span class="pt-code"><small>PARTY CODE</small><b>${spaced(view.code)}</b></span><button type="button" class="pt-copy" data-party-copy data-focus="copy">COPY INVITE</button>${canNativeShare()?'<button type="button" class="pt-copy pt-share" data-party-share data-focus="share">SHARE</button>':''}${wide?`<small class="pt-seats">${open} SEAT${open===1?'':'S'} OPEN</small>`:''}</div>
+      <div class="pt-invite${wide?' pt-open':''}">${this.client.p2Party?'<span class="pt-code"><small>YOUR PLAYERTWO PARTY</small><b>INVITE FRIENDS ON PLAYERTWO</b></span>':`<span class="pt-code"><small>PARTY CODE</small><b>${spaced(view.code)}</b></span><button type="button" class="pt-copy" data-party-copy data-focus="copy">COPY INVITE</button>${canNativeShare()?'<button type="button" class="pt-copy pt-share" data-party-share data-focus="share">SHARE</button>':''}`}${wide?`<small class="pt-seats">${open} SEAT${open===1?'':'S'} OPEN</small>`:''}</div>
       ${this.client.online?'':'<span class="pt-offline" role="status">RECONNECTING…</span>'}`;
   }
 

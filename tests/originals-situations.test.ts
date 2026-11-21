@@ -2,14 +2,15 @@ import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { AUDIO_CUES } from '../src/audio/cuePlan';
 import { cueFighter } from '../src/audio/CombatAudio';
-import { SITUATION_RULES, VOICE_SITUATIONS, allSituationLines, situationLines, situationSamples, type VoiceSituation } from '../src/audio/voiceSituations';
+import { SITUATION_RULES, VOICE_SITUATIONS, allSituationLines, situationLines, situationSamples, situationSources, type VoiceSituation } from '../src/audio/voiceSituations';
 import { FIGHTERS } from '../src/config';
+import { RELEASED_FIGHTERS } from '../src/game/rosterAvailability';
 import type { FighterId } from '../src/game/types';
 import { fighterShown } from '../src/originals/launch';
-import { QUALITY_LINES } from '../src/originals/situations';
+import { CRY_LINES, QUALITY_LINES } from '../src/originals/situations';
 import VOICES from '../src/originals/voices.json';
 
-const cues = VOICES.cues as Record<string, { file: string; seconds: number; voice: string }>;
+const cues = VOICES.cues as Record<string, { file: string; seconds: number; voice: string; text: string }>;
 const fighters = Object.keys(FIGHTERS) as FighterId[];
 
 describe('the game\'s situation lines', () => {
@@ -23,7 +24,7 @@ describe('the game\'s situation lines', () => {
       expect(line in AUDIO_CUES, `${fighter} ${kind}: ${line}`).toBe(true);
       expect(cueFighter(line), `${line} is ${fighter}'s`).toBe(fighter);
     }
-    for (const [fighter, kinds] of Object.entries(QUALITY_LINES)) for (const [kind, list] of Object.entries(kinds)) for (const cue of list) {
+    for (const [fighter, kinds] of [...Object.entries(QUALITY_LINES), ...Object.entries(CRY_LINES)]) for (const [kind, list] of Object.entries(kinds)) for (const cue of list) {
       const row = cues[cue];
       expect(row, `${fighter} ${kind}: ${cue} is routed (src/originals/voices.json)`).toBeDefined();
       expect(fs.existsSync(`public/assets/audio/v2/${row.file}`), row.file).toBe(true);
@@ -54,6 +55,20 @@ describe('the game\'s situation lines', () => {
       'kusushi', 'hinomoto', 'bruin', 'akaito', 'tempo', 'sashigane', 'chohan'] as FighterId[];
     const silent = groupD.flatMap(fighter => VOICE_SITUATIONS.filter(kind => !situationLines(fighter, kind).length).map(kind => `${fighter} ${kind}`));
     expect(silent).toEqual([]);
+  });
+
+  it('give every released fighter a cry of their own when hit, and a heavier one when launched, knocked down or splatted', () => {
+    // src/originals/situations.ts CRY_LINES gives every released fighter both; a fighter released later needs both before it ships.
+    const missing = RELEASED_FIGHTERS.flatMap(fighter => [
+      ...(situationSources(fighter, 'hurt').length ? [] : [`${fighter}: no hurt cry`]),
+      ...(situationSources(fighter, 'hurt-heavy').some(row => row.from === 'own') ? [] : [`${fighter}: no hurt-heavy line of its own`])]);
+    expect(missing).toEqual([]);
+    // Each fighter's cries are its own voice's (one voice folder, the fighter's other cries'), and none is said twice in a kind.
+    for (const [fighter, kinds] of Object.entries(CRY_LINES)) for (const [kind, list] of Object.entries(kinds)) {
+      expect(new Set(list.map(cue => cues[cue].text)).size, `${fighter} ${kind}: each cry its own`).toBe(list.length);
+      const voices = new Set(Object.entries(cues).filter(([cue]) => cueFighter(cue) === fighter).map(([, row]) => row.voice));
+      expect(voices.size, `${fighter}: one voice`).toBe(1);
+    }
   });
 });
 

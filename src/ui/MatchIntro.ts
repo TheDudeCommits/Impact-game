@@ -3,6 +3,7 @@ import {shownStage} from '../originals/stages';
 import type {GameSnapshot, PlayerState} from '../game/types';
 import {VsSplash, type VsSide} from './VsSplash';
 import {rivalryLine} from './social/rivalry';
+import {vsStamp} from './duel/ranked';
 import './matchPresentation.css';
 
 /** The match-up page holds the countdown's first seconds, never longer than
@@ -67,17 +68,18 @@ export class MatchIntro {
     const now=performance.now();
     if(now>=this.until){this.close();return;}
     const opponents=snapshot.players.filter(p=>p.id!==selfId);
-    const roster=snapshot.players.map(p=>p.id+p.fighter+p.name).join('|')+snapshot.stage;
+    const roster=snapshot.players.map(p=>p.id+p.fighter+p.name).join('|')+snapshot.stage+(snapshot.ranked?JSON.stringify(snapshot.ranked.seats):'');
     if(roster===this.roster)return;
     const first=!this.roster;this.roster=roster;
     const stage=shownStage(snapshot.stage)?.name;
-    const side=(p:PlayerState,own=false):VsSide=>({fighter:p.fighter,name:FIGHTERS[p.fighter].name,tag:own?`YOU · ${p.name}`:p.isBot?'CHALLENGER':p.name});
+    // (The ranked Duel: each side's stamp as the set begins, and RANKED's tag in the corner: ui/duel/ranked.ts.)
+    const side=(p:PlayerState,own=false):VsSide=>({fighter:p.fighter,name:FIGHTERS[p.fighter].name,tag:own?`YOU · ${p.name}`:p.isBot?'CHALLENGER':p.name,stamp:vsStamp(snapshot.ranked,p.id)});
     this.element.querySelector('.intro-summary')!.textContent=`${FIGHTERS[self.fighter].name} versus ${opponents.length?opponents.map(p=>FIGHTERS[p.fighter].name).join(', '):'rivals still arriving'}${stage?`, ${stage}`:''}. ${snapshot.players.length} fighter${snapshot.players.length===1?'':'s'} ready.`;
     // The page plays once; a roster settling as it opens starts it again, later changes only reach the summary.
     if(first||now-this.shownAt<REPLAY_WINDOW){
       if(first)this.shownAt=now;
       const play=++this.plays,seconds=Math.min(INTRO_SECONDS,starts-snapshot.serverTime-SLACK);
-      void this.splash.play({left:side(self,true),rights:opponents.slice(0,11).map(p=>side(p)),stage,seconds,rivalry:rivalryLine(snapshot,selfId)||undefined}).then(()=>{if(play===this.plays)this.close();});
+      void this.splash.play({left:side(self,true),rights:opponents.slice(0,11).map(p=>side(p)),stage,seconds,rivalry:rivalryLine(snapshot,selfId)||undefined,ranked:snapshot.ranked?`SEASON ${snapshot.ranked.season}`:undefined}).then(()=>{if(play===this.plays)this.close();});
     }
     this.element.querySelector<HTMLButtonElement>('button')!.focus({preventScroll:true});
   }

@@ -60,6 +60,9 @@ export type LandedBlow = {
   /** Round 3e (REACT, for VARIETY): the outcome the blow gave the body, off
    *  its event (a crumple, a hop, a true launch all read 'launched'). */
   outcome?: CombatEvent['outcome'];
+  /** The hit flash (hitflash, render/Fighter.ts HIT_FLASH): the blow was a COUNTER or a PUNISH (its event's
+   *  `counter` or `punish`), drawn with the ink frame where it is answered as a touch. Presentation only. */
+  reward?: boolean;
 };
 type Guarded = { target: string; slot?: AttackSlot; contact: number; at: number };
 
@@ -309,10 +312,11 @@ export class LandedBlows {
   private upsert(event: CombatEvent) {
     const attacker = event.actorId, seq = event.actionSeq!, target = event.targetId!, contact = event.contactIndex ?? 0;
     const known = this.blow(attacker, seq, target, contact);
-    if (known) return known;
+    if (known) { if (event.counter || event.punish) known.reward = true; return known; }
     let list = this.blows.get(attacker);
     if (!list) { list = []; this.blows.set(attacker, list); }
     const blow: LandedBlow = { attacker, seq, target, contact, slot: event.slot, predicted: false, confirmed: false, rejected: false, delivered: false, tick: -1, at: event.serverTime, outcome: event.outcome };
+    if (event.counter || event.punish) blow.reward = true;
     list.push(blow);
     if (list.length > KEPT) list.shift();
     return blow;

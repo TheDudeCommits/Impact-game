@@ -74,23 +74,26 @@ export function cueFighter(cue: string, ids: readonly string[] = ALL_FIGHTERS): 
 
 const routed = new Set(Object.keys(VOICES.cues));
 
-/** (dude.work round 8, roadmap S2) Each fighter's unrouted cues, worked out once for them all: asked fighter by fighter, every
- *  cue was matched against every fighter again for each (9 ms of the live duel's first load, at the gate's evaluation). */
-let unrouted: Map<string, string[]> | null = null;
+/** (dude.work round 8, roadmap S2, and the game's own since: one pass for every fighter, unroutedByFighter below) */
 export function unroutedVoices(id: FighterId): string[] {
-  unrouted ??= (() => {
-    const byFighter = new Map<string, string[]>();
-    for (const cue of Object.keys(VOICE_CUES)) {
-      if (routed.has(cue)) continue;
-      const owner = cueFighter(cue);
-      if (owner === undefined) continue;
-      let list = byFighter.get(owner);
-      if (!list) byFighter.set(owner, list = []);
-      list.push(cue);
-    }
-    return byFighter;
-  })();
-  return [...(unrouted.get(id) ?? [])];
+  return unroutedByFighter().get(id)?.slice() ?? [];
+}
+/** Each fighter's unrouted cues, from one pass over the cues (asked fighter by fighter,
+ *  every cue's owner was worked out again for every fighter - `SHOWN_FIGHTERS` below, at the module's load, held the
+ *  page's boot 0.35 s on a desktop and about 1.4 s on a phone's CPU). The same lists, in the cues' own order. */
+let unrouted: Map<string, string[]> | undefined;
+function unroutedByFighter() {
+  if (unrouted) return unrouted;
+  unrouted = new Map();
+  for (const cue of Object.keys(VOICE_CUES)) {
+    if (routed.has(cue)) continue;
+    const owner = cueFighter(cue);
+    if (owner === undefined) continue;
+    let list = unrouted.get(owner);
+    if (!list) unrouted.set(owner, list = []);
+    list.push(cue);
+  }
+  return unrouted;
 }
 
 export const originalBody = (id: FighterId | string) => !!ORIGINALS[id as FighterId];

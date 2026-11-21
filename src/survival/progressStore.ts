@@ -5,8 +5,9 @@
  *  Nothing here may stop a run: storage that is missing, full or refused reads
  *  as a fresh profile, and a write that fails is dropped. */
 import type { FighterId } from '../game/types';
-import { AURAS, auraOf, buy, emptyProgress, factsOf, masteryOf, settle, startPointsAt, type AuraId, type RiftProgress, type RunFacts, type Settled } from './progress';
+import { AURAS, auraOf, buy, careerMatchFacts, emptyProgress, factsOf, masteryOf, settle, settleMatch, startPointsAt, type AuraId, type RiftProgress, type RunFacts, type Settled } from './progress';
 import type { RunResult } from './SurvivalGame';
+import { careerEvents, type CareerMatch } from '../game/social/career';
 
 /** What changed here, told to whoever keeps it with the player's account (src/ui/progress/sync.ts) once this
  *  browser's copy is written. Nothing it does can stop a run: what it throws is dropped. */
@@ -61,8 +62,34 @@ export function settleRun(result: RunResult): Settled {
   const settled = settle(loadProgress(), result);
   save(settled.progress);
   tell({ kind: 'run', facts: factsOf(result) });
+  const after = settled.progress.mastery[result.fighter] ?? 0;
+  gained({ key: `run-${++runs}`, fighter: result.fighter, xp: settled.xp, before: after - settled.xp, after, from: settled.from, to: settled.to });
   return settled;
 }
+
+// ---- mastery in every mode -----------------------------------------------------------------------------------------
+/** What a match or a run paid its fighter's mastery, for the results (ui/progress/masteryStrip.ts): the experience, before
+ *  and after, and the levels. `key`: the match's (or the run's), so a card says its own and a level-up is called once. */
+export interface MasteryGain { key: string; fighter: FighterId; xp: number; before: number; after: number; from: number; to: number }
+let last: MasteryGain | undefined, runs = 0;
+const gained = (gain: MasteryGain) => { if (gain.xp > 0) last = gain; };
+/** The last match's or run's gain, until the next match starts (clearMastery). */
+export const lastMastery = () => last;
+export function clearMastery() { last = undefined; }
+/** A match in any mode, as the career counted it (game/social/career.ts): its mastery paid into this browser's copy at
+ *  once - the account's server pays the same (a device's match with its report, a room's from the room), and its answer
+ *  becomes this copy (src/ui/progress/sync.ts). Nothing for Arcade (a run pays as a run), a match left, or Training. */
+export function creditMatch(match: Pick<CareerMatch, 'id' | 'mode' | 'fighter' | 'outcome' | 'seconds'>): MasteryGain | undefined {
+  const facts = careerMatchFacts(match);
+  if (!facts) return undefined;
+  const before = loadProgress(), settled = settleMatch(before, facts);
+  if (!settled.xp) return undefined;
+  save(settled.progress);
+  const had = before.mastery[facts.fighter] ?? 0, gain = { key: match.id, fighter: facts.fighter, xp: settled.xp, before: had, after: had + settled.xp, from: settled.from, to: settled.to };
+  gained(gain);
+  return gain;
+}
+careerEvents.local = event => { if (event.kind === 'match') creditMatch(event.match); };
 /** A node bought with shards: the profile after, or undefined when it could not be. */
 export function buyNode(node: string) {
   const after = buy(loadProgress(), node);

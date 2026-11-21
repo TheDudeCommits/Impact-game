@@ -1,10 +1,15 @@
 import type { CombatEvent } from '../game/types';
+import { LOCK_ESCAPE_WINDOW } from '../game/lockCombat';
+import { PARRY_FREEZE } from '../game/moves';
 
 /** One burst of the pad's two motors: the heavy low one and the light high
- *  one, each 0-1, for so many milliseconds. */
-export interface Pulse { strong: number; weak: number; ms: number }
+ *  one, each 0-1, for so many milliseconds. `delay`: milliseconds from now it
+ *  starts (the lock gap's waits for its window to open). `urgent`: a cue to act
+ *  on, sent through whatever is still playing (a phone's GAP included). */
+export interface Pulse { strong: number; weak: number; ms: number; delay?: number; urgent?: boolean }
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
+const clock = () => typeof performance === 'object' ? performance.now() : 0;
 
 /** What a combat event feels like in the hands of the fighter `self`, if
  *  anything. Blows taken shake by what they were worth; blows landed tick,
@@ -17,10 +22,10 @@ export function pulseFor(event: CombatEvent, self: string, enemy?: (id: string) 
       if (onMe) return { strong: clamp(.25 + damage / 250), weak: clamp(.35 + damage / 400), ms: Math.min(260, 80 + damage * .9) };
       if (!mine) return undefined;
       const slot = event.slot ?? 'light', extra = event.critical ? .15 : 0;
-      if (slot === 'ultimate') return { strong: .6, weak: .75 + extra, ms: 130 };
-      if (slot === 'special') return { strong: .35, weak: .45 + extra, ms: 90 };
-      if (slot === 'heavy') return { strong: .25, weak: .4 + extra, ms: 70 };
-      return { strong: 0, weak: .22 + extra, ms: 40 };
+      const pulse = slot === 'ultimate' ? { strong: .6, weak: .75 + extra, ms: 130 } : slot === 'special' ? { strong: .35, weak: .45 + extra, ms: 90 }
+        : slot === 'heavy' ? { strong: .25, weak: .4 + extra, ms: 70 } : { strong: 0, weak: .22 + extra, ms: 40 };
+      // A COUNTER or a PUNISH (held longer: simulation.ts REWARD_HITSTOP) kicks harder and longer than the blow alone.
+      return event.counter || event.punish ? { strong: Math.max(pulse.strong, .35), weak: clamp(pulse.weak + .3), ms: Math.max(pulse.ms, 95) } : pulse;
     }
     case 'blocked': return onMe ? { strong: .1, weak: .28, ms: 50 } : mine ? { strong: 0, weak: .12, ms: 35 } : undefined;
     case 'just-guard': return onMe ? { strong: .45, weak: .7, ms: 110 } : undefined;
@@ -31,6 +36,17 @@ export function pulseFor(event: CombatEvent, self: string, enemy?: (id: string) 
     case 'awaken': return mine ? { strong: .6, weak: .85, ms: 450 } : undefined;
     case 'cast': return mine && event.slot === 'ultimate' ? { strong: .4, weak: .75, ms: 320 } : undefined;
     case 'poise-break': return onMe ? { strong: .55, weak: .45, ms: 160 } : undefined;
+    // the escape's moments, felt as sharp as they are seen. The gap a round of a lock string
+    // leaves its body (lockCombat.ts): a crisp tick of the light motor as the escape window opens - when the blow's
+    // freeze lets go (`due` less the window) - the cue to press GUARD; nothing when a press made during the round has
+    // already shut it. The defender's own vanish out of it, or out of a parry, a whoosh; a failed try a dull bump; a
+    // string broken (BREAK) a shove for the one breaking out and a jolt for the one broken; a counter stance meeting a
+    // blow (techniques.ts), a parry's kick.
+    case 'lock-gap': return onMe && !event.reason ? { strong: .12, weak: .85, ms: 55, urgent: true, delay: Math.max(0, ((event.due ?? event.serverTime + LOCK_ESCAPE_WINDOW) - LOCK_ESCAPE_WINDOW - event.serverTime) * 1000) } : undefined;
+    case 'vanish': return mine ? { strong: .08, weak: .55, ms: 75 } : onMe ? { strong: 0, weak: .3, ms: 45 } : undefined;
+    case 'lock-escape': return mine && event.reason && event.reason !== 'counter' ? { strong: .3, weak: 0, ms: 45 } : undefined;
+    case 'break': return mine ? { strong: .45, weak: .6, ms: 120 } : onMe ? { strong: .3, weak: .25, ms: 80 } : undefined;
+    case 'counter': return mine ? { strong: .45, weak: .75, ms: 110 } : onMe ? { strong: .35, weak: .3, ms: 90 } : undefined;
     // Falling is the biggest thing a run has to say; a horde's every death
     // would be a buzz that never stops, so only a fighter's fall is felt.
     case 'eliminated':
@@ -38,6 +54,15 @@ export function pulseFor(event: CombatEvent, self: string, enemy?: (id: string) 
       return mine && event.targetId && !enemy?.(event.targetId) ? { strong: .5, weak: .6, ms: 200 } : undefined;
     default: return undefined;
   }
+}
+
+/** A parry's payoff (render/parryPayoff.ts): a second pulse as the parry's freeze lets go (PARRY_FREEZE after the parry's own
+ *  kick, which pulseFor gives at once) - a heavy thump in the parrier's hands, a dull knock in the parried thrower's. On a
+ *  pad and, through TouchHaptics, a phone that buzzes. */
+export function parryPayPulse(event: CombatEvent, self: string): Pulse | undefined {
+  if (event.kind !== 'just-guard') return undefined;
+  const delay = PARRY_FREEZE * 1000;
+  return event.targetId === self ? { strong: .75, weak: .3, ms: 90, delay } : event.actorId === self ? { strong: .4, weak: 0, ms: 60, delay } : undefined;
 }
 
 /** The part of a Gamepad's vibrationActuator the game uses. */
@@ -58,19 +83,23 @@ export class Rumble {
   private pending?: Pulse;
   private playing = { until: -Infinity, strong: 0, weak: 0 };
   private sentAt = -Infinity;
+  /** Pulses waiting on their `delay`, with when they are due. */
+  private later: { at: number; pulse: Pulse }[] = [];
 
-  add(pulse: Pulse) {
+  add(pulse: Pulse, now = clock()) {
+    if (pulse.delay && pulse.delay > 0) { this.later.push({ at: now + pulse.delay, pulse: { ...pulse, delay: 0 } }); return; }
     const p = this.pending;
-    this.pending = p ? { strong: Math.max(p.strong, pulse.strong), weak: Math.max(p.weak, pulse.weak), ms: Math.max(p.ms, pulse.ms) } : { ...pulse };
+    this.pending = p ? { strong: Math.max(p.strong, pulse.strong), weak: Math.max(p.weak, pulse.weak), ms: Math.max(p.ms, pulse.ms), urgent: p.urgent || pulse.urgent } : { ...pulse };
   }
 
   /** Sends what has gathered, if the window allows. Returns the effect sent. */
   flush(now: number, actuator?: Actuator): Pulse | undefined {
-    if (!this.pending || now - this.sentAt < Rumble.WINDOW) return undefined;
+    if (this.later.length) this.later = this.later.filter(wait => { if (wait.at > now) return true; this.add(wait.pulse, now); return false; });
+    if (!this.pending || now - this.sentAt < Rumble.WINDOW && !this.pending.urgent) return undefined;
     const pulse = this.pending; this.pending = undefined;
     if (this.scale <= 0 || !actuator?.playEffect) return undefined;
     const live = now < this.playing.until, left = live ? this.playing.until - now : 0;
-    if (live && pulse.strong <= this.playing.strong && pulse.weak <= this.playing.weak) return undefined;
+    if (live && pulse.strong <= this.playing.strong && pulse.weak <= this.playing.weak && !pulse.urgent) return undefined;
     const effect = {
       strong: Math.max(pulse.strong, live ? this.playing.strong : 0),
       weak: Math.max(pulse.weak, live ? this.playing.weak : 0),
@@ -85,7 +114,7 @@ export class Rumble {
 
   /** Silences the pad, for a blur, a pause or a disconnect. */
   stop(actuator?: Actuator) {
-    this.pending = undefined;
+    this.pending = undefined; this.later.length = 0;
     if (this.playing.until > -Infinity) void actuator?.reset?.()?.catch?.(() => {});
     this.playing = { until: -Infinity, strong: 0, weak: 0 };
   }

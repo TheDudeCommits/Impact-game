@@ -19,6 +19,37 @@ import * as THREE from 'three';
 export interface IntrospectableProgram { getUniforms(): unknown; getAttributes(): unknown }
 export interface ProgramSource { info: { programs: readonly IntrospectableProgram[] | null } }
 
+/** The programs queued so far, linked, waited for beside the page.
+ *
+ *  Where the browser has KHR_parallel_shader_compile, three's compileAsync already waits for each program's link that way
+ *  (COMPLETION_STATUS) and this resolves at once. Where it does not (software GL, and some Firefox and Safari builds), three
+ *  resolves compileAsync at the next task with nothing linked, and the first question put to a program (introspectPrograms
+ *  below, or its first draw) waits, page frozen, for the GPU process to link everything queued before it: the duel's load
+ *  held the page 14.3 s in one task here (SwiftShader), the loading screen frozen with it. The GPU process works through its
+ *  queue in order, so a fence put in right behind the compile's programs is passed once they are linked, and asking a fence
+ *  never waits (clientWaitSync with a timeout of 0). Polled every few milliseconds, never in a frame's work. Gives up after
+ *  `capMs` (the question then waits as before) and on a lost context (WAIT_FAILED). Nothing drawn changes. */
+export function programsLinked(renderer: THREE.WebGLRenderer, capMs = 60000): Promise<void> {
+  if (renderer.extensions.has('KHR_parallel_shader_compile')) return Promise.resolve();
+  const gl = renderer.getContext();
+  if (typeof (gl as WebGL2RenderingContext).fenceSync !== 'function') return Promise.resolve();
+  const gl2 = gl as WebGL2RenderingContext;
+  let sync: WebGLSync | null = null;
+  try { sync = gl2.fenceSync(gl2.SYNC_GPU_COMMANDS_COMPLETE, 0); gl2.flush(); } catch { /* none: asked as before */ }
+  if (!sync) return Promise.resolve();
+  const until = performance.now() + capMs;
+  return new Promise(resolve => {
+    const done = () => { try { gl2.deleteSync(sync); } catch { /* lost */ } resolve(); };
+    const poll = () => {
+      let state: number = gl2.WAIT_FAILED;
+      try { state = gl2.clientWaitSync(sync!, 0, 0); } catch { /* lost */ }
+      if (state !== gl2.TIMEOUT_EXPIRED || performance.now() > until) { done(); return; }
+      setTimeout(poll, 4);
+    };
+    setTimeout(poll, 4);
+  });
+}
+
 /** Every program `renderer` has linked asked for its uniforms and attributes now. Returns how many were. Never throws: a
  *  program that cannot be asked (a lost context) is asked again at its first draw, as before. */
 export function introspectPrograms(renderer: ProgramSource): number {
@@ -26,6 +57,23 @@ export function introspectPrograms(renderer: ProgramSource): number {
   for (const program of renderer.info.programs ?? []) {
     try { program.getUniforms(); program.getAttributes(); asked++; }
     catch { /* at its first draw instead */ }
+  }
+  return asked;
+}
+
+/** introspectPrograms a few at a time, a task's turn between. Each question waits for the
+ *  GPU process to answer, and where a program's link is finished only when it is first asked (ANGLE on software GL does
+ *  this, and the fence in programsLinked passes before it) each answer took 40-270 ms: asked all in one go, the duel's load
+ *  froze the loading screen for 12 s here. Asked within `budgetMs` a slice, the page draws between slices; on a GPU whose
+ *  answers take well under a millisecond it is the same work in a handful of slices. A program let go meanwhile is skipped. */
+export async function introspectProgramsInSlices(renderer: ProgramSource, budgetMs = 8, turn: () => Promise<void> = () => new Promise(r => setTimeout(r, 0))): Promise<number> {
+  const all = [...(renderer.info.programs ?? [])];
+  let asked = 0, start = performance.now();
+  for (const program of all) {
+    if (!(renderer.info.programs ?? []).includes(program)) continue;
+    try { program.getUniforms(); program.getAttributes(); asked++; }
+    catch { /* at its first draw instead */ }
+    if (performance.now() - start > budgetMs) { await turn(); start = performance.now(); }
   }
   return asked;
 }

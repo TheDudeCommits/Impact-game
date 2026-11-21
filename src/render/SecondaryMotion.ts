@@ -70,6 +70,8 @@ const LAUNCH_UPSIDE=.15,LAUNCH_UPRIGHT=.75;
 const _sweepAxis=new THREE.Vector3(),_sweepTurn=new THREE.Quaternion();
 /** Round 5b (RIG): the default soft start of every cone (see `soft`). */
 const SOFT=.6;
+/** The hair's kick (`kick`): the most push the blows pending on one body add up to, metres a second. */
+const KICK_MOST=3.2;
 /** Round 5b (RIG): the run speed the flutter is measured against (the simulation's 7.5 m/s), and its rate there. */
 const FLUTTER_SPEED=7.5,FLUTTER_HZ=2.6;
 
@@ -347,6 +349,9 @@ export class SecondaryMotion {
   private ground?:number;
   private velocity=new THREE.Vector3();
   private sweepDir=new THREE.Vector3(0,-1,0);
+  /** Hair and cloth on a hit (`hairhit`, `kick`): the push a blow gives every garment link, metres a second (world), handed
+   *  to the next step that moves. */
+  private kicked=new THREE.Vector3();
 
   constructor(root:THREE.Object3D,fighter:FighterId|'nightfall'){
     this.root=root;
@@ -437,6 +442,14 @@ export class SecondaryMotion {
   /** How much of a long garment's hang toward the floor holds, 0..1 (look/hemDrape.ts `hangScale`); 1 by default. */
   hang(share:number){if(this.drape)this.drape.hangScale=THREE.MathUtils.clamp(share,0,1);}
   launch(wanted:number,ground?:number){if(!this.launchy)return;this.launchWanted=THREE.MathUtils.clamp(wanted,0,1);this.ground=ground;}
+  /** Hair and cloth on a hit (`hairhit`, look/abSwitch.ts; Fighter's HAIR_HIT): a blow pushes every garment link along it,
+   *  `velocity` metres a second (world) added to its motion on the next step that moves, at most KICK_MOST: the springs
+   *  carry it, their cones hold it and their drag settles it, as they do the body's own motion. */
+  kick(velocity:THREE.Vector3){
+    if(!this.nodes.length)return;
+    this.kicked.add(velocity);
+    if(this.kicked.lengthSq()>KICK_MOST*KICK_MOST)this.kicked.setLength(KICK_MOST);
+  }
 
   update(dt:number){
     if(!this.nodes.length)return;
@@ -482,6 +495,8 @@ export class SecondaryMotion {
     this.capsules?.update(this.launchShare>0?this.ground:undefined);
     const clamped=Math.min(Math.max(dt,0),1/20);
     const steps=clamped>0?Math.max(1,Math.ceil(clamped*45)):1;
+    // A blow's push (`kick`): its motion over the first slice, which the Verlet history carries from there.
+    if(clamped>0&&this.kicked.lengthSq()>0){for(const node of this.nodes)node.previous.addScaledVector(this.kicked,-clamped/steps);this.kicked.set(0,0,0);}
     for(let i=0;i<steps;i++)this.solve(clamped/steps);
   }
 

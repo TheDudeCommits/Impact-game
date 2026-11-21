@@ -5,6 +5,7 @@ import { VEIL, VEIL_GLSL, veilUniforms } from './VictimVeil';
 import { FIGHTERS } from '../../config';
 import { GHOST_FADE, ghostScale } from '../closeStyle';
 import { DREAM_IMPACT } from '../dreamFlag';
+import { refinedVfx } from '../look/filmLook';
 
 const VERTEX = /* glsl */`
 #include <common>
@@ -133,7 +134,7 @@ export class Afterimages {
   private material() {
     return new THREE.ShaderMaterial({
       name: 'Afterimage', vertexShader: VERTEX, fragmentShader: FILL,
-      uniforms: { uTint: { value: new THREE.Color(0x9fe6ff) }, uOpacity: { value: 0 }, uInk: { value: 0 }, uLens: GHOST_FADE, uNearScale: { value: 1 }, ...veilUniforms(VEIL.ghost) },
+      uniforms: { uTint: { value: new THREE.Color(0x9fe6ff) }, uOpacity: { value: 0 }, uInk: { value: 0 }, uLens: GHOST_FADE, uNearScale: { value: 1 }, ...veilUniforms(VEIL.ghost, true) },
       transparent: true, depthWrite: false, toneMapped: false,
       blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
       blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
@@ -142,7 +143,7 @@ export class Afterimages {
   private inkMaterial() {
     return new THREE.ShaderMaterial({
       name: 'AfterimageInk', vertexShader: VERTEX, fragmentShader: INK, side: THREE.BackSide,
-      uniforms: { uOpacity: { value: 0 }, uInk: { value: INK_WIDTH }, uLens: GHOST_FADE, uNearScale: { value: 1 }, ...veilUniforms(VEIL.ghost) },
+      uniforms: { uOpacity: { value: 0 }, uInk: { value: INK_WIDTH }, uLens: GHOST_FADE, uNearScale: { value: 1 }, ...veilUniforms(VEIL.ghost, true) },
       transparent: true, depthWrite: false, toneMapped: false,
       blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
       blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
@@ -219,6 +220,7 @@ export class Afterimages {
     // in two thirds the time - full ones, flat in the fighter's tint, covered both fighters at the start of a string and
     // hung there unmoving (the calibration critic's "ghost stamps").
     if (DREAM_IMPACT) { opacity *= .5; life *= .65; }
+    if (refinedVfx()) { opacity *= .45; life *= .75; } // The film look: a faint trace, never a stamp
     this.prepare(fighter);
     const pool = this.pools.get(fighter)!;
     const body = pool.bodies[pool.next]; pool.next = (pool.next + 1) % pool.bodies.length;

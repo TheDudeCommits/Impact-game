@@ -8,6 +8,9 @@ import {DuelSet} from '../game/duel/DuelSet';
 import {AssetGate} from './social/AssetGate';
 import {EmoteRelay,SOCIAL_PROTOCOL} from './social/EmoteRelay';
 import {RivalryWatch} from './social/RivalryWatch';
+import {RankedDuel} from './duel/RankedDuel';
+import {ranked} from './ball/ranked';
+import {RANKED_DUEL,RANKED_SIGN_IN} from '../game/duel/ranked';
 import {RoomAgain} from './social/RoomAgain';
 import {QueueHold} from './social/QueueHold';
 import {CustomLobby} from './social/CustomLobby';
@@ -50,7 +53,9 @@ interface JoinOptions extends RosterProtocolOptions { mode?: RoomMode; fighter?:
   party?:unknown;
   /** Round 5 (SOLOPAUSE): the page says `ready` once its fight is on screen (ReadyGate). */
   readyGate?:boolean;
-  forge?:unknown }
+  forge?:unknown;
+  /** A public Duel's queue: 'ranked' for the ranked Duel (game/duel/ranked.ts); none, the casual one. */
+  queue?:unknown }
 export const RECONNECTION_SECONDS = 15;
 /** Roster sizes offered for a battle royale against bots. Twelve is the arena's
  *  own ceiling; four is the smallest count that still reads as a royale rather
@@ -135,6 +140,8 @@ export class ArenaRoom extends Room {
   private emotes?:EmoteRelay;
   /** A Duel's or a friends' room's head-to-head records (social/RivalryWatch): every other room has none. */
   private rivals?:RivalryWatch;
+  /** The ranked Duel's rating (duel/RankedDuel.ts): a public Duel queued as ranked; every other room has none. */
+  private ranked?:RankedDuel;
   /** A friends' royale's next match in the same room (social/RoomAgain): every other room has none. */
   private again?:RoomAgain;
   /** When a private room's lobby last opened - its first, or a next match's - on its clock: its fifteen minutes run from here. */
@@ -144,6 +151,12 @@ export class ArenaRoom extends Room {
 
   async onCreate(options: JoinOptions = {}) {
     requireRosterProtocol(options.rosterProtocol);
+    // Ranked Duel (game/duel/ranked.ts): a public Duel queued as ranked, rated at its set's end. Matched by its queue only:
+    // never a room PlayerTwo made for a code (its name ends /c-<id>; a match's /m-<id>), where two could trade wins.
+    if(this.duelRoom&&!this.privateRoom&&options.queue===RANKED_DUEL.queue){
+      if(/\/c-[^/]*$/.test(this.roomId))throw new Error('Ranked is matched by its queue: queue for it from the Duel sheet.');
+      this.ranked=new RankedDuel(ranked,sharedEconomy,places=>(this as unknown as {__host?:{result?(places:string[]):void}}).__host?.result?.(places));
+    }
     const mode: RoomMode = this.duelRoom || this.privateRoom || this.botRoom || options.mode === 'match' ? 'match' : 'training';
     if(this.botRoom){
       const asked=Number(options.players);
@@ -233,7 +246,8 @@ export class ArenaRoom extends Room {
     // The page's account (the economy, on this server): the outfit the player wears for their fighter, if it is theirs.
     this.onMessage('account', (client, token: unknown) => freshAccount(token, () => this.dress(client, token), () => this.clients.includes(client)));
     // (One of the two asking for it starts the finished room's wait again: the other has the whole of it to answer.)
-    this.onMessage('duel-runback',client=>{const asked=this.duelSet?.view.runback.length??0;if(this.duelSet?.request(this.simulation,client.sessionId)){for(const queue of this.inputQueues.values())queue.clear();}else if((this.duelSet?.view.runback.length??0)>asked)this.overAt=this.simulation.serverTime;this.sendSnapshots();});
+    // (A ranked set is queued for, never run back: each one is matched by the queue, not by a friend's say.)
+    this.onMessage('duel-runback',client=>{if(this.ranked)return;const asked=this.duelSet?.view.runback.length??0;if(this.duelSet?.request(this.simulation,client.sessionId)){for(const queue of this.inputQueues.values())queue.clear();}else if((this.duelSet?.view.runback.length??0)>asked)this.overAt=this.simulation.serverTime;this.sendSnapshots();});
     this.onMessage('ping', (client, raw: unknown) => {
       if (typeof raw === 'number' && Number.isFinite(raw)) client.send('pong', { clientTime: raw, serverTime: this.simulation.serverTime });
     });
@@ -347,7 +361,7 @@ export class ArenaRoom extends Room {
   /** Every client its own copy of the snapshot (forOwner), with the events since the last. */
   private sendSnapshots(){
     const began=performance.now();
-    const snapshot=this.snapshot(true);if(this.simulation.roomMode==='match'){this.rewards.observe(snapshot);this.rivals?.observe(snapshot,this.rewards.matchId);}
+    const snapshot=this.snapshot(true);if(this.simulation.roomMode==='match'){this.rewards.observe(snapshot);this.rivals?.observe(snapshot,this.rewards.matchId);this.ranked?.observe(snapshot,this.rewards.matchId);}
     for(const client of this.clients)client.send('snapshot',this.forOwner(snapshot,client.sessionId));
     netStats.onSnapshots(performance.now()-began);
   }
@@ -431,6 +445,9 @@ export class ArenaRoom extends Room {
   onAuth(_client:Client,options:JoinOptions={}){requireRosterProtocol(options.rosterProtocol);
     if(this.duelRoom&&this.simulation.status!=='waiting')throw new Error('This Duel has already started.');
     if(this.duelRoom&&this.simulation.actors.size>=2&&!this.simulation.actors.has(_client.sessionId))throw new Error('This Duel is full.');
+    // (A ranked Duel seats only the ranked queue, and only a signed-in account: a guest is told how to sign in.)
+    if(this.duelRoom&&!this.privateRoom&&(options.queue===RANKED_DUEL.queue)!==!!this.ranked)throw new Error('This Duel plays another queue.');
+    if(this.ranked&&!this.ranked.eligible(options.account))throw new Error(RANKED_SIGN_IN);
     if (options.fighter !== undefined && !isReleasedFighter(options.fighter)) throw new Error('Fighter is not available');
     // A fighter from the shop (economy/fighters.ts) only for the account that bought them, but anyone's in training.
     const locked = options.fighter !== undefined && this.simulation.roomMode !== 'training' ? lockedOut(options.fighter, sharedEconomy()?.book.find(options.account)) : undefined;
@@ -446,7 +463,7 @@ export class ArenaRoom extends Room {
   /** The shop's outfit a player wears for their fighter (src/game/economy/outfits.ts), read from their account - never
    *  the browser's word - and put on their body, which every screen draws. */
   private dress(client: Client, token: unknown) {
-    this.rewards.bind(client.sessionId,token);this.emotes?.bind(client.sessionId,token);this.rivals?.bind(client.sessionId,token);
+    this.rewards.bind(client.sessionId,token);this.emotes?.bind(client.sessionId,token);this.rivals?.bind(client.sessionId,token);this.ranked?.bind(client.sessionId,token);
     const account = sharedEconomy()?.book.find(token), state = this.simulation.actors.get(client.sessionId)?.state;
     if (!account || !state) return;
     const outfit = account.worn.outfits?.[state.fighter];
@@ -461,7 +478,7 @@ export class ArenaRoom extends Room {
     if(options.forge!==undefined){const kit=roomKit(options.forge,options.fighter,this.privateRoom);this.simulation.forge(client.sessionId,kit.moves,kit.hash);this.forgeCodes.set(kit.hash,kit.code);this.broadcast('forge-kits',Object.fromEntries(this.forgeCodes));}
     else if(this.forgeCodes.size)client.send('forge-kits',Object.fromEntries(this.forgeCodes));
     this.inputQueues.set(client.sessionId,new InputQueue());
-    this.rewards.bind(client.sessionId,options.account);this.emotes?.bind(client.sessionId,options.account);this.rivals?.bind(client.sessionId,options.account);
+    this.rewards.bind(client.sessionId,options.account);this.emotes?.bind(client.sessionId,options.account);this.rivals?.bind(client.sessionId,options.account);this.ranked?.bind(client.sessionId,options.account,this.simulation.actors.get(client.sessionId)?.state.name);
     // A solo royale is complete the moment its bots are standing, so its
     // countdown starts here. A public match drafts at kickoff instead.
     // (Round 5, SOLOPAUSE: a page that says when its fight is on screen starts its READY hold then, not now.)
@@ -541,6 +558,8 @@ export class ArenaRoom extends Room {
     this.dropped.delete(client.sessionId);this.rejected.delete(client.sessionId);this.resync?.forget(client.sessionId);
     this.inputQueues.delete(client.sessionId);
     this.rewards.leave(client.sessionId);this.emotes?.leave(client.sessionId);this.rivals?.leave(client.sessionId);this.again?.leave(client.sessionId);
+    // (A ranked set not yet decided: the leaver is rated as beaten now, before the set is forfeited to the other below.)
+    this.ranked?.leave(client.sessionId,this.duelSet?.view);
     // Expiry may also reach Colyseus' final onLeave callback. Removal is idempotent.
     this.simulation.removePlayer(client.sessionId);
     if(this.duelRoom&&this.simulation.actors.size<2)this.duelSet?.forfeit(this.simulation,this.simulation.playerStates()[0]?.id??null);
@@ -557,6 +576,7 @@ export class ArenaRoom extends Room {
       ...this.partyStart.view(snapshot.serverTime),
       startsAt:this.startAt,expiresAt:this.privateRoom&&snapshot.status==='waiting'?this.lobbyAt+PRIVATE_WAIT_SECONDS:null,...(this.again?{again:this.again.view()}:{})};
     this.duelSet?.snapshot(snapshot);
+    if(this.ranked)snapshot.ranked=this.ranked.snapshot();
     if(this.custom)(snapshot as GameSnapshot&{custom:CustomView}).custom=this.custom.snapshot();
     if(this.pause)snapshot.pause=this.pause.view();
     return snapshot;

@@ -84,7 +84,7 @@ export class RiftProfile {
       + `<dl><div><dt>SHARDS</dt><dd class="shards">◆ ${GROUPED.format(p.shards)}</dd></div><div><dt>RUNS</dt><dd>${p.runs}</dd></div><div><dt>BEST</dt><dd>${p.best.score ? `ROUND ${p.best.round} · ${GROUPED.format(p.best.score)}` : '—'}</dd></div></dl>`
       + `<button type="button" class="sv-prof-close" data-act="close" aria-label="Close">✕</button></header>`
       + `<nav class="sv-prof-tabs">${tabs}</nav><div class="sv-prof-body ${this.page}">${body}</div>`
-      + `<footer class="sv-prof-foot">Every run pays shards: its score, its bosses, its finishers, how far it went. Shards buy new skill-tree nodes.</footer></div>`;
+      + `<footer class="sv-prof-foot">${this.page === 'fighters' ? 'A fighter\'s mastery grows with every match they finish, in every mode (Training aside): a win pays more than a loss. ' : ''}Every run pays shards: its score, its bosses, its finishers, how far it went. Shards buy new skill-tree nodes.</footer></div>`;
   }
 
   private fighters() {

@@ -30,6 +30,8 @@ const VANISH_HOLD = .25;
  *  copy has already started - it is a snapshot from before it heard. */
 const UNDECIDED = new Set(['idle', 'run', 'jump', 'dash', 'guard']);
 const ATTACKS = new Set(['light', 'heavy', 'special', 'ultimate', 'area']);
+/** The local fighter's blows presented ahead of the server on a committed body (`consumeEvents`, `takeImpacts`). */
+const PREVIEWED = new Set(['light', 'heavy', 'special']);
 export const impactKey=(event:CombatEvent)=>`${event.actorId}:${event.actionSeq}:${event.targetId}:${event.contactIndex??0}`;
 const REACTIONS=new Set(['hurt','flinch','launched','knockdown','getup','stun','splat']);
 type ContactView={age:number;confirmed:boolean;offset:{x:number;y:number;z:number};placed:boolean;action?:string;started:number;phase:number;
@@ -141,7 +143,9 @@ export class Prediction {
     // resolveAreas: an area move's cast is predicted; where its circle lands, and on whom, is the server's word.
     // Lock combat (lockCombat.ts): the copy plays the rules the page's own fight plays, or the local fighter is drawn
     // throwing the live rules' string - the launcher where the experiment's second round goes, a blow in the beat.
-    this.sim = new ArenaSimulation({ roomMode: 'training', trainingBot: false, stage: this.stage, collision, capacity: 48, resolveAreas: false, ...(this.lockCombat ? { lockCombat: true } : {}) });
+    // (The G in combos: every room plays it, so the copy that predicts one does too - whatever `?ab=gcombo` says of the
+    // page's own arenas: ArenaSimulation.areaComboDefault.)
+    this.sim = new ArenaSimulation({ roomMode: 'training', trainingBot: false, stage: this.stage, collision, capacity: 48, resolveAreas: false, areaCombo: true, ...(this.lockCombat ? { lockCombat: true } : {}) });
     this.sim.serverTime = snapshot.serverTime;
     this.sync(snapshot);
   }
@@ -222,9 +226,15 @@ export class Prediction {
       // stands it still where the last snapshot had it - lands a Kazeyose the
       // server does not: the third blind critic drew a fleeing Gummy launched
       // in 7 of 12 trials and a guarding one for 180 ms. Such a blow is drawn
-      // when the server lands it, as every other move's is.
-      if(event.kind==='hit'&&event.actorId===this.id&&event.fighter==='konta'&&event.slot==='heavy'&&!event.branch
-          &&event.actionSeq!==undefined&&event.targetId&&!current.awakened&&current.grounded&&this.committed(event.targetId,event.serverTime)){
+      // when the server lands it.
+      // (every light, heavy and special of the
+      // local fighter's on a committed body, where the Kazeyose was the only one
+      // - the rest of a string's blows froze at once and were heard, felt and
+      // sparked a round trip later, 150-250 ms online. An ultimate's blows keep
+      // its own confirm and cinematic, an area's strike is drawn where the room
+      // puts its circle, and a combo ender is never presented ahead of the server.)
+      if(event.kind==='hit'&&event.actorId===this.id&&PREVIEWED.has(event.slot??'')&&!event.branch
+          &&event.actionSeq!==undefined&&event.targetId&&this.committed(event.targetId,event.serverTime)){
         const key=impactKey(event);if(this.reportedImpacts.has(key))continue;
         this.reportedImpacts.add(key);this.impacts.push(event);
         if(this.reportedImpacts.size>128)this.reportedImpacts.delete(this.reportedImpacts.values().next().value!);
@@ -277,7 +287,9 @@ export class Prediction {
       const playback=this.playback;
       if(!playback||playback.seq!==event.actionSeq)return false;
       if(event.branch)return false; // A combo ender is no Kazeyose: never presented ahead of the server (game/combos.ts).
-      if(playback.age<MOVES.konta.heavy.contacts[0])return true; // Round 3d (PACE): the Kazeyose's own contact (was .94).
+      // The Kazeyose's own contact (was .94) - its charge-in can find the body before its palm is drawn
+      // there. Every other blow is presented on the tick it lands, the tick the drawn swing reaches it.
+      if(event.move===MOVES.konta.heavy.name&&event.slot==='heavy'&&playback.age<MOVES.konta.heavy.contacts[0])return true;
       ready.push(event);
       const key=impactKey(event);this.presentedImpacts.add(key);
       if(this.presentedImpacts.size>128)this.presentedImpacts.delete(this.presentedImpacts.values().next().value!);

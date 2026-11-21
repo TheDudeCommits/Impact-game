@@ -20,6 +20,7 @@ import { OWN_ENTRANCES } from '../game/powerUp';
 import { POWER_SOUNDS, powerVoice } from './powerSound';
 import { holdAt } from './holdParam';
 import { trimAac } from './aacTrim';
+import { parrySting } from './parrySting';
 import { wakeOnReturn } from './wake';
 import { byNeed, fighterCues } from './roomCues';
 import { GIANT, STEPS, surfaceAt, weightGain, weightNow, weightRate } from './floors';
@@ -89,7 +90,9 @@ const AWAY = new Error('out of earshot');
 const RESTORE_GAP_MS = 12;
 
 /** `start`: when it sounds, on the audio clock - a layer's delay after it was scheduled. */
-interface ActiveSound { source: AudioBufferSourceNode; gain: GainNode; pan: StereoPannerNode; priority: number; owner: string; bus: 'sfx' | 'voice'; phase?: CueLayer['phase']; stopping: boolean; sequence?:number; start: number; level: number; end: number }
+interface ActiveSound { source: AudioBufferSourceNode; gain: GainNode; pan: StereoPannerNode; priority: number; owner: string; bus: 'sfx' | 'voice'; phase?: CueLayer['phase']; stopping: boolean; sequence?:number; start: number; level: number; end: number;
+  /** What a voice line gives way to (CueLayer.yields): 'all' is a cry. */
+  yields?: CueLayer['yields'] }
 export interface AudioMix { master: number; sfx: number; voice: number }
 
 /** Event-timed sourced layers, protected dialogue, natural tails, and cancellable charge beds. */
@@ -697,6 +700,24 @@ export class CombatAudio {
   private bellTimer?: ReturnType<typeof setTimeout>;
   /** A loaded sample's length in seconds, or undefined until it has been decoded (preload). */
   sampleSeconds(url: string) { return this.samples.get(url)?.duration; }
+  /** A parry's payoff (render/parryPayoff.ts): its sting, made in code (audio/parrySting.ts) once for this context's rate,
+   *  heard centred on the effects bus, `delay` seconds from now. */
+  sting(gain: number, delay = 0) {
+    const ctx = this.context;
+    if (!ctx || this.dead) return;
+    if (!this.stingBuffer) { const data = parrySting(ctx.sampleRate), buffer = ctx.createBuffer(1, data.length, ctx.sampleRate); buffer.copyToChannel(data, 0); this.stingBuffer = buffer; }
+    this.play({ cue: 'swing-a', gain, delay, phase: 'impact', bus: 'sfx' }, this.here(), 7, 'parry-sting', undefined, this.stingBuffer);
+  }
+  private stingBuffer?: AudioBuffer;
+  /** The Duel's announcer (audio/duelCaller.ts): the fighters' own lines on the voice bus - a move's call, a transformation's
+   *  name, a win line, a situation's line; not a cry of pain, and not the announcer's - each as [start, end], seconds from
+   *  now (a line scheduled ahead starts later). */
+  fighterLines(): (readonly [number, number])[] {
+    const now = this.context?.currentTime ?? 0, out: (readonly [number, number])[] = [];
+    for (const sound of this.sounds) if (sound.bus === 'voice' && !sound.stopping && sound.owner !== 'announcer' && sound.yields !== 'all' && sound.end > now)
+      out.push([sound.start - now, sound.end - now]);
+    return out;
+  }
   /** A big blow (game/bigBlow.ts: the last blow of a special, an ultimate, an ender, a rush finisher) lands with
    *  more than its own impact: the ground's weight under it, a fall pitched down, and a low crack, on top of the
    *  plan's layers - the sound of the freeze the picture holds (main.ts dips the score under it). */
@@ -978,7 +999,7 @@ export class CombatAudio {
     const side = listener ? dx * Math.cos(listener.yaw) - dz * Math.sin(listener.yaw) : 0;
     pan.pan.value = Math.max(-.8, Math.min(.8, side / (bus === 'voice' ? 20 : 12)));
     source.connect(gain).connect(pan).connect(bus === 'voice' ? this.speech! : this.sfx!);
-    const sound: ActiveSound = { source, gain, pan, priority, owner, bus, phase: layer.phase, stopping: false,sequence, start, level, end: start + duration };
+    const sound: ActiveSound = { source, gain, pan, priority, owner, bus, phase: layer.phase, stopping: false,sequence, start, level, end: start + duration, ...(layer.yields ? { yields: layer.yields } : {}) };
     this.sounds.add(sound);
     source.onended = () => { this.sounds.delete(sound); source.disconnect(); gain.disconnect(); pan.disconnect(); this.updateVoiceActivity(); };
     source.start(start, onset); source.stop(start + duration + .005); this.updateVoiceActivity();

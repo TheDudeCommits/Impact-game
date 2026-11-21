@@ -6,6 +6,7 @@ import type { LookPreset } from './stageLooks';
 import { roanEnabled } from './roanPass';
 import { creaseDepthsSteps } from './crease';
 import { sparkProfile } from './powerupLook';
+import { filmUniforms } from './filmLook';
 
 /** The fighters' cel look, shared by every toon material through one set of
  *  uniform objects: a stage change rewrites these values once and every
@@ -32,6 +33,8 @@ export const toonUniforms = {
   uHairSpec: { value: new THREE.Color(.35, .33, .3) },
   uToonSaturation: { value: 1 },
   uToonFlatten: { value: 0 },
+  /** The film look's boil (filmLook.ts): the shadow edge re-drawn every animation step. */
+  uReelBoil: filmUniforms.uReelBoil,
 };
 /** The frame's answers that reach the fighters themselves, written by
  *  GameRenderer every frame (see techniqueGrade, timeStop and impactFrame
@@ -49,11 +52,20 @@ export const frameUniforms = {
 };
 /** Ink: its colour, and its width as a fraction of the viewport height -
  *  2.2 px at 1080p, the same on every fighter at every distance up close. */
+/** the widths (inkUniforms.uInkWeight): the line facing the key light, and away from it, of its even width. */
+export const INK_WEIGHT = { lit: .55, shade: 1.7 };
 export const inkUniforms = {
   uInkColor: { value: new THREE.Color(.012, .008, .01) },
   // The colour pass: a silhouette line a good deal heavier than 2.2 px at
   // 1080p reads better; 3.2 with the same thinning at distance.
   uInkWidth: { value: (roanEnabled() ? 3.2 : 2.2) / 1080 },
+  /** The film look's boil (filmLook.ts): the line's pressure re-drawn every animation step. */
+  uReelBoil: filmUniforms.uReelBoil,
+  /** : the key light's direction in the lens's space
+   *  (GameRenderer.updatePost), and the line's width on the side facing it (x) and on the side away from it (y) - the
+   *  pen heavier in the shade and lighter in the light, as a hand-inked cel is drawn. (1, 1): the even line before. */
+  uInkLight: { value: new THREE.Vector3(0, 1, 0) },
+  uInkWeight: { value: new THREE.Vector2(1, 1) },
 };
 
 const celOn = roanEnabled() && (typeof location === 'undefined' || new URLSearchParams(location.search).get('cel') !== '0');
@@ -249,6 +261,11 @@ uniform vec4 uSparkShade;
 uniform vec4 uRig;
 uniform vec3 uRigFill;
 uniform vec4 uRigShade;
+// The film look (filmLook.ts): x the shadow edge's wobble, y the animation step (12 a second).
+uniform vec4 uReelBoil;
+float hissHash( vec2 p ) { vec3 q = fract( vec3( p.xyx ) * .1031 ); q += dot( q, q.yzx + 33.33 ); return fract( ( q.x + q.y ) * q.z ); }
+float reelNoise( vec2 p ) { vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3. - 2. * f );
+	return mix( mix( hissHash( i ), hissHash( i + vec2( 1., 0. ) ), f.x ), mix( hissHash( i + vec2( 0., 1. ) ), hissHash( i + vec2( 1., 1. ) ), f.x ), f.y ); }
 struct ToonMaterial { vec3 diffuseColor; };
 // The stage key's side of the screen (-1 left .. 1 right): the rig's key and warm rim take it, the fill and cool rim the other.
 float toonSide = 1.0;
@@ -278,7 +295,9 @@ void RE_Direct_Toon( const in IncidentLight directLight, const in vec3 geometryP
 		toonIsKey = false;
 		float face = vLookHead * LOOK_FACE;
 		float soft = mix( uToonSoft, uToonFaceSoft, face );
-		float lit = smoothstep( uToonEdge - soft, uToonEdge + soft, d ) * mix( 1.0, smoothstep( .2, .7, toonShadowTerm ), uRig.w );
+		// The film look: the edge re-drawn a little differently every animation step, as a painter's hand would.
+		float reelWob = uReelBoil.x > 0.0 ? ( reelNoise( gl_FragCoord.xy / 34.0 + uReelBoil.y * 17.13 ) - .5 ) * uReelBoil.x * ( 1.0 - face ) : 0.0;
+		float lit = smoothstep( uToonEdge + reelWob - soft, uToonEdge + reelWob + soft, d ) * mix( 1.0, smoothstep( .2, .7, toonShadowTerm ), uRig.w );
 		// The hall's windows and a passing cloud each reach the fighters by their own share (lightCookie.ts).
 		lit *= mix( 1., lookWindow( vLookWorld ), uCookieFighters ) * mix( 1., lookCloud( vLookWorld ), uCloudFighters );
 		float band = lit * ( 1.0 - smoothstep( uToonEdge + soft, uToonEdge + soft + .24, d ) );
@@ -667,6 +686,18 @@ export function applyHitFlash(material: THREE.MeshToonMaterial, flash: { value: 
   });
 }
 const NO_FLAT = { value: 0 };
+/** The hit flash (`hitflash`, look/abSwitch.ts): a counter's or a punish's ink frame - the struck body drawn the
+ *  other way round for two frames, its fill near black (applyHitFlash's colour) and its line light. This is the line's
+ *  half: on a body's ink (its hull, or a rip's own outline mesh), `flash.w` of the way to `flash.rgb`, after the lock's
+ *  threat colour; nothing at 0, which is every frame but those. Under a silhouette frame the line is still the black
+ *  key (INK_SILHOUETTE comes after). */
+export function applyInkFlash(material: THREE.Material, flash: { value: THREE.Vector4 }) {
+  addShaderPatch(material, 'look-ink-flash-v1', shader => {
+    shader.uniforms.uInkFlash = flash;
+    shader.fragmentShader = 'uniform vec4 uInkFlash;\n' + shader.fragmentShader;
+    shader.fragmentShader = replaceOnce(shader.fragmentShader, '#include <opaque_fragment>', 'if ( uInkFlash.w > 0.0 ) outgoingLight = mix( outgoingLight, uInkFlash.rgb, uInkFlash.w );\n#include <opaque_fragment>', 'ink flash');
+  });
+}
 
 export function applyLimbSmear(material: THREE.Material, smear: { point: { value: THREE.Vector4 }; motion: { value: THREE.Vector4 }; limb?: { value: THREE.Vector4 } }) {
   const limb = smear.limb;
@@ -727,12 +758,30 @@ export function applyInkShell(material: THREE.MeshToonMaterial, relativeWidth: n
     Object.assign(shader.uniforms, inkUniforms, frameUniforms);
     shader.uniforms.uInkTint = sparkUniforms.uInkTint;
     shader.uniforms.uInkScale = { value: relativeWidth };
-    shader.vertexShader = 'uniform float uInkWidth;\nuniform float uInkScale;\n' + shader.vertexShader;
+    shader.vertexShader = 'uniform float uInkWidth;\nuniform float uInkScale;\nuniform vec4 uReelBoil;\nuniform vec3 uInkLight;\nuniform vec2 uInkWeight;\n' + shader.vertexShader;
     shader.vertexShader = replaceOnce(shader.vertexShader, '#include <project_vertex>', `#include <project_vertex>
 	{
 		float inkDepth = max( - mvPosition.z, .05 );
 		float inkPixel = 2.0 * inkDepth / projectionMatrix[ 1 ][ 1 ];
 		float inkFar = mix( 1.0, .6, smoothstep( 12.0, 45.0, inkDepth ) );
+		// The film look: the pen's pressure along the line, re-drawn every animation step (0.78 to 1.28 of the width).
+		if ( uReelBoil.z > 0.0 ) {
+			vec3 hp = position * 7.0 + vec3( uReelBoil.y * 3.17, uReelBoil.y * 1.91, uReelBoil.y * 2.53 );
+			vec3 hi = floor( hp ), hf = fract( hp ); hf = hf * hf * ( 3. - 2. * hf );
+			float h000 = fract( sin( dot( hi, vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
+			float h100 = fract( sin( dot( hi + vec3( 1., 0., 0. ), vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
+			float h010 = fract( sin( dot( hi + vec3( 0., 1., 0. ), vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
+			float h110 = fract( sin( dot( hi + vec3( 1., 1., 0. ), vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
+			float h001 = fract( sin( dot( hi + vec3( 0., 0., 1. ), vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
+			float h101 = fract( sin( dot( hi + vec3( 1., 0., 1. ), vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
+			float h011 = fract( sin( dot( hi + vec3( 0., 1., 1. ), vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
+			float h111 = fract( sin( dot( hi + vec3( 1., 1., 1. ), vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
+			float press = mix( mix( mix( h000, h100, hf.x ), mix( h010, h110, hf.x ), hf.y ), mix( mix( h001, h101, hf.x ), mix( h011, h111, hf.x ), hf.y ), hf.z );
+			inkFar *= 1.0 + ( press - .5 ) * uReelBoil.z;
+		}
+		// heavier on the side away from the key light, lighter in it (the hull's normal is turned inward).
+		float inkLit = dot( - normalize( transformedNormal ), uInkLight );
+		inkFar *= mix( uInkWeight.y, uInkWeight.x, smoothstep( -.35, .55, inkLit ) );
 		mvPosition.xyz -= normalize( transformedNormal ) * uInkWidth * uInkScale * inkPixel * inkFar;
 		mvPosition.z -= ${depthBias.toFixed(4)};
 		gl_Position = projectionMatrix * mvPosition;

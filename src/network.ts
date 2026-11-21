@@ -5,6 +5,7 @@ import {BALL_PROTOCOL,type BallModeId} from './game/ball/model';
 import {weeklyMutator,type BallMutator} from './game/ball/mutators';
 import type {DrillId} from './game/ball/drills';
 import {rankBand} from './ui/ball/ranks';
+import {RANKED_DUEL,RANKED_ONLY_P2} from './game/duel/ranked';
 import { ROSTER_PROTOCOL, ROSTER_REFRESH_MESSAGE } from './game/rosterProtocol';
 import { ARENAS_FULL_MESSAGE, isArenasFull } from './game/arenasFull';
 import { isReleasedFighter, requireReleasedFighter } from './game/rosterAvailability';
@@ -18,6 +19,9 @@ import {RIFT_PROTOCOL} from './game/moba/model';
 import {OBJECTIVE_PROTOCOL,type ObjectiveKind,type ObjectiveAccess,type RolePreference} from './game/objectives/model';
 import { Client, type Room } from '@colyseus/sdk';
 import { LinkQuality } from './network/linkQuality';
+import { P2ColyseusRoom, isP2Code } from './network/p2Room';
+import { p2TicketRoute } from './network/p2Route';
+import { p2Elsewhere, p2Route } from './network/p2Route';
 import { devLag } from './network/devLag';
 import { errorReports } from './boot/errorReports';
 import { REJOIN_FAILED, REJOIN_WINDOW } from './boot/rejoin';
@@ -43,7 +47,7 @@ export interface CouchStart { partner: FighterId; screen: CouchScreen; sides?: '
 export type CouchScreen = 'shared' | 'split-v' | 'split-h';
 export type NetworkAccess={kind:'rift-war';access:'quick'|'bots'|'host'|'join';code?:string;couch?:CouchStart}
   /** The ball modes (game/ball): Goal Rush and Sky Spike, on this device against bots or in a ball room. */
-  |{kind:'ball';mode:BallModeId;access:'quick'|'bots'|'host'|'join';code?:string;couch?:CouchStart;/** RUMBLE's charms (on this device, or a room the page opens). */rumble?:boolean;/** FREE PLAY: alone with the ball, on this device. */practice?:boolean;/** A mutator (game/ball/mutators.ts) on this device or for a room the page opens; matchmaking's queue (the weekly playlist plays this week's); a training drill (game/ball/drills.ts) on this device. */mutator?:BallMutator;queue?:'classic'|'playlist'|'ranked';drill?:DrillId;/** FREE PLAY as LEARN TO PLAY, the guided first game (game/ball/lesson.ts), on this device. */lesson?:boolean;/** The arena picked on the mode sheet (game/ball/arenas.ts); none: the mode's arenas in turn. */arena?:BallArenaId;/** The other side's bots' level on this device (BallBrain BOT_LEVELS), and a private room's, the host's pick; none: NORMAL. */difficulty?:BotLevel}|{kind:'duel';access:'online'|'bot'|'host'|'join'|'couch';code?:string;couch?:CouchStart;/** A bot duel's rival, kept for PLAY AGAIN (Round 5 UX); a couch duel's, Player 2's fighter. */rival?:FighterId;/** The place the player named on the sheet (a bot Duel's, or the one a friends' room is opened on); none: dealt. */place?:StageId}|{kind:'party';travel:PartyTravel}|{kind:'objective';objective:ObjectiveKind;access:ObjectiveAccess;role?:RolePreference;fighter?:FighterId;code?:string;couch?:CouchStart;/** Bad Blood's place, when the player named one (bots, or a room the host opens). */place?:StageId}|{kind:'public'}|{kind:'create-private';players?:number;/** The place the host named for the room; none: the room deals it. */place?:StageId}|{kind:'join-private';code:string}|{kind:'bots';players:number;couch?:CouchStart;/** The place the player named; none: the royale's deck deals it. */place?:StageId;/** The bots, when a public room the page left had drafted them (loneQueue: their files already fetched); none: drafted here. */field?:FighterId[];/** Played on the device because nobody else queued (loneQueue): its place and field are that room's, not kept for PLAY AGAIN. */lone?:true}
+  |{kind:'ball';mode:BallModeId;access:'quick'|'bots'|'host'|'join';code?:string;couch?:CouchStart;/** RUMBLE's charms (on this device, or a room the page opens). */rumble?:boolean;/** FREE PLAY: alone with the ball, on this device. */practice?:boolean;/** A mutator (game/ball/mutators.ts) on this device or for a room the page opens; matchmaking's queue (the weekly playlist plays this week's); a training drill (game/ball/drills.ts) on this device. */mutator?:BallMutator;queue?:'classic'|'playlist'|'ranked';drill?:DrillId;/** FREE PLAY as LEARN TO PLAY, the guided first game (game/ball/lesson.ts), on this device. */lesson?:boolean;/** The arena picked on the mode sheet (game/ball/arenas.ts); none: the mode's arenas in turn. */arena?:BallArenaId;/** The other side's bots' level on this device (BallBrain BOT_LEVELS), and a private room's, the host's pick; none: NORMAL. */difficulty?:BotLevel}|{kind:'duel';/** 'ranked': the ranked Duel's queue (game/duel/ranked.ts), on PlayerTwo's rooms only. */access:'online'|'bot'|'host'|'join'|'couch'|'ranked';code?:string;couch?:CouchStart;/** A bot duel's rival, kept for PLAY AGAIN (Round 5 UX); a couch duel's, Player 2's fighter. */rival?:FighterId;/** The place the player named on the sheet (a bot Duel's, or the one a friends' room is opened on); none: dealt. */place?:StageId}|{kind:'party';travel:PartyTravel}|{kind:'objective';objective:ObjectiveKind;access:ObjectiveAccess;role?:RolePreference;fighter?:FighterId;code?:string;couch?:CouchStart;/** Bad Blood's place, when the player named one (bots, or a room the host opens). */place?:StageId}|{kind:'public'}|{kind:'create-private';players?:number;/** The place the host named for the room; none: the room deals it. */place?:StageId}|{kind:'join-private';code:string}|{kind:'bots';players:number;couch?:CouchStart;/** The place the player named; none: the royale's deck deals it. */place?:StageId;/** The bots, when a public room the page left had drafted them (loneQueue: their files already fetched); none: drafted here. */field?:FighterId[];/** Played on the device because nobody else queued (loneQueue): its place and field are that room's, not kept for PLAY AGAIN. */lone?:true}
   /** Arcade survival: no room at all - the arena runs in the browser (LocalArena). */
   |{kind:'survival';/** Couch co-op (couch/seats.ts): the second person's hero, beside the first. */partner?:FighterId;couch?:CouchStart}
   /** Training on this device with a second person in the ground (couch): none, it is the solo Training it always was. */
@@ -134,47 +138,72 @@ export class Network {
     const account=playerAccount.secret()??COOP_LINK.token;
     // (The player's skill, for the room's bots to stand ahead of: adaptive.ts.)
     const skill=keptSkill();
+    // PlayerTwo's rooms: inside its player, the royale, the bot royale and the Duels are seated in a room
+    // near the player that runs this server's own room code; anywhere else, or when PlayerTwo's rooms are off or out of
+    // reach, the same join goes to the match server below. (The account's secret never leaves for PlayerTwo: the room
+    // reads the account from the economy's signed pass instead.)
+    const viaP2=async(options:Record<string,unknown>):Promise<Room|undefined>=>{
+      const {account:_secret,...shared}=options;
+      const route=await p2Route(access,mode,shared,account,name);if(!route)return undefined;
+      try{return await P2ColyseusRoom.open(route.rooms,route.ask) as unknown as Room;}catch(error){if(p2Elsewhere(error))return undefined;throw error;}
+    };
     try {
       if(resume)activeRoom=await client.reconnect(resume);
       else if(access.kind==='duel'){
         const options={rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,name,mode:'match'};
-        if(access.access==='online')activeRoom=await client.joinOrCreate('duel_arena',options);
-        else if(access.access==='host'){const stage=placeForStart(access.place,'duel','friends');activeRoom=await client.create('private_duel',{...options,...forgeJoinOption(fighter),creationToken:crypto.randomUUID(),...(stage?{stage}:{})});}
+        if(access.access==='online')activeRoom=await viaP2(options)??await client.joinOrCreate('duel_arena',options);
+        // The ranked Duel (game/duel/ranked.ts): its own queue on PlayerTwo's rooms, matched by rating; never the match server.
+        else if(access.access==='ranked'){const seated=await viaP2({...options,queue:RANKED_DUEL.queue});if(!seated)throw new Error(RANKED_ONLY_P2);activeRoom=seated;}
+        else if(access.access==='host'){const stage=placeForStart(access.place,'duel','friends'),hosted={...options,...forgeJoinOption(fighter),creationToken:crypto.randomUUID(),...(stage?{stage}:{})};activeRoom=await viaP2(hosted)??await client.create('private_duel',hosted);}
+        else if(access.access==='join'&&isP2Code(access.code?.trim().toUpperCase()??'')){const joined=await viaP2({...options,...forgeJoinOption(fighter)});if(!joined)throw new Error('This Duel is unavailable. Check the code — it may be full, started, or expired.');activeRoom=joined;}
         else if(access.access==='join'){const code=access.code?.trim();if(!code||!/^\d{6}$/.test(code))throw new Error('Enter the six-digit Duel code.');activeRoom=await client.joinById(`duel-${code}`,{...options,...forgeJoinOption(fighter),code});}
         else throw new Error('Bot Duel runs locally.');
+      }else if(access.kind==='party'&&access.travel.reservation.p2){
+        // A party's match on PlayerTwo (social/PartyClient.ts): the leader's page opens it and sends its code back to the
+        // party, whose other members' tickets then carry it. The account stays here: the room reads the page's pass.
+        const ticket=access.travel.reservation.p2,{account:_secret,...options}=ticket.options;
+        const route=await p2TicketRoute({...ticket,options},account,name);if(!route)throw new Error('Could not open the match. Your party is still together.');
+        const room=await P2ColyseusRoom.open(route.rooms,route.ask);if(!ticket.code&&room.code)access.travel.announce?.(room.code);
+        activeRoom=room as unknown as Room;
       }else if(access.kind==='party')activeRoom=await client.consumeSeatReservation(access.travel.reservation);
       else if(access.kind==='rift-war'){
         const options={rosterProtocol:ROSTER_PROTOCOL,assetGate:true,riftProtocol:RIFT_PROTOCOL,fighter,account,skill,name,access:access.access};
-        if(access.access==='join'){const code=access.code?.trim();if(!code||!/^\d{6}$/.test(code))throw new Error('Enter the 6-digit room code.');activeRoom=await client.joinById(`rift-${code}`,{...options,code});}
-        else if(access.access==='quick')activeRoom=await joinRiftPublic(client,url,options);
-        else activeRoom=await client.create('rift_war',{...options,creationToken:crypto.randomUUID()});
+        if(access.access==='join'&&isP2Code(access.code?.trim().toUpperCase()??'')){const joined=await viaP2(options);if(!joined)throw new Error('This room is unavailable. Check the code — it may be full, started, or expired.');activeRoom=joined;}
+        else if(access.access==='join'){const code=access.code?.trim();if(!code||!/^\d{6}$/.test(code))throw new Error('Enter the 6-digit room code.');activeRoom=await client.joinById(`rift-${code}`,{...options,code});}
+        else if(access.access==='quick')activeRoom=await viaP2(options)??await joinRiftPublic(client,url,options);
+        else{const hosted={...options,creationToken:crypto.randomUUID()};activeRoom=await viaP2(hosted)??await client.create('rift_war',hosted);}
       }
       else if(access.kind==='ball'){
         const options={rosterProtocol:ROSTER_PROTOCOL,assetGate:true,ballProtocol:BALL_PROTOCOL,fighter,account,skill,name,ball:access.mode,access:access.access};
-        if(access.access==='join'){const code=access.code?.trim();if(!code||!/^\d{6}$/.test(code))throw new Error('Enter the 6-digit room code.');activeRoom=await client.joinById(`ball-${code}`,{...options,code});}
+        if(access.access==='join'&&isP2Code(access.code?.trim().toUpperCase()??'')){const joined=await viaP2(options);if(!joined)throw new Error('This room is unavailable. Check the code — it may be full, started, or expired.');activeRoom=joined;}
+        else if(access.access==='join'){const code=access.code?.trim();if(!code||!/^\d{6}$/.test(code))throw new Error('Enter the 6-digit room code.');activeRoom=await client.joinById(`ball-${code}`,{...options,code});}
+        else if(access.access==='quick'&&(access.queue??'classic')!=='ranked'){const queue=access.queue??'classic',quick={...options,queue,...(queue==='playlist'?{mutator:weeklyMutator(Date.now())}:{})};activeRoom=await viaP2(quick)??await client.joinOrCreate('ball_arena',quick);}
         else if(access.access==='quick'){
           // Matchmaking's queues. The weekly playlist plays this week's mutator; ranked looks first for a room of
           // people near the page's own rating (its band), then for any ranked room, then opens one (ui/ball/ranks.ts).
           const queue=access.queue??'classic',quick={...options,queue,...(queue==='playlist'?{mutator:weeklyMutator(Date.now())}:{})};
-          if(queue==='ranked'){const band=rankBand(access.mode),near=band===undefined?undefined:await client.join('ball_arena',{...quick,band}).catch(()=>undefined);activeRoom=near??await client.joinOrCreate('ball_arena',quick);}
+          if(queue==='ranked'){const seated=await viaP2(quick);if(seated){activeRoom=seated;}else{const band=rankBand(access.mode),near=band===undefined?undefined:await client.join('ball_arena',{...quick,band}).catch(()=>undefined);activeRoom=near??await client.joinOrCreate('ball_arena',quick);}}
           else activeRoom=await client.joinOrCreate('ball_arena',quick);
         }
-        else if(access.access==='host')activeRoom=await client.create('ball_arena',{...options,creationToken:crypto.randomUUID(),rumble:!!access.rumble,...(access.mutator?{mutator:access.mutator}:{}),...(access.arena?{arena:access.arena}:{}),...(access.difficulty&&access.difficulty!=='normal'?{difficulty:access.difficulty}:{})});
+        else if(access.access==='host'){const hosted={...options,creationToken:crypto.randomUUID(),rumble:!!access.rumble,...(access.mutator?{mutator:access.mutator}:{}),...(access.arena?{arena:access.arena}:{}),...(access.difficulty&&access.difficulty!=='normal'?{difficulty:access.difficulty}:{})};activeRoom=await viaP2(hosted)??await client.create('ball_arena',hosted);}
         else throw new Error('A match against bots runs on this device.');
       }
       else if(access.kind==='objective'){
         const options={rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,objectiveProtocol:OBJECTIVE_PROTOCOL,fighter,account,skill,name,objective:access.objective,access:access.access,role:access.role};
-        if(access.access==='join'){const code=access.code?.trim();if(!code||!/^\d{6}$/.test(code))throw new Error('Enter the 6-digit room code.');activeRoom=await client.joinById(`objective-${code}`,{...options,code});}
-        else if(access.access==='quick'){try{activeRoom=await client.joinOrCreate('objective_arena',options);}catch(error){if(error instanceof Error&&error.message.includes('faction is full'))activeRoom=await client.create('objective_arena',options);else throw error;}}
+        if(access.access==='join'&&isP2Code(access.code?.trim().toUpperCase()??'')){const joined=await viaP2(options);if(!joined)throw new Error('This room is unavailable. Check the code — it may be full, started, or expired.');activeRoom=joined;}
+        else if(access.access==='join'){const code=access.code?.trim();if(!code||!/^\d{6}$/.test(code))throw new Error('Enter the 6-digit room code.');activeRoom=await client.joinById(`objective-${code}`,{...options,code});}
+        else if(access.access==='quick'){const seated=await viaP2(options);if(seated)activeRoom=seated;else try{activeRoom=await client.joinOrCreate('objective_arena',options);}catch(error){if(error instanceof Error&&error.message.includes('faction is full'))activeRoom=await client.create('objective_arena',options);else throw error;}}
         else{
           // (A Bad Blood host's place, from the sheet: the same `rules.arena` a party's launch sends. Last Stand's village is fixed.)
           const arena=access.objective==='bad-blood'&&access.access==='host'?placeForStart(access.place,'bad-blood','friends'):undefined;
-          activeRoom=await client.create('objective_arena',{...options,creationToken:crypto.randomUUID(),...(arena?{rules:{arena}}:{})});
+          const hosted={...options,creationToken:crypto.randomUUID(),...(arena?{rules:{arena}}:{})};
+          activeRoom=await viaP2(hosted)??await client.create('objective_arena',hosted);
         }
-      }else if(access.kind==='bots')activeRoom=await client.create('bot_arena',{rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,mode:'match',name,players:access.players});
+      }else if(access.kind==='bots'){const options={rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,mode:'match',name,players:access.players};activeRoom=await viaP2(options)??await client.create('bot_arena',options);}
       // (A co-op fighter brings their rift progress: the nodes bought with shards, their mastery's skill points.)
-      else if(access.kind==='coop-create'){const {unlocked,bonus}=carried(fighter);activeRoom=await client.create(COOP_ROOM,{rosterProtocol:ROSTER_PROTOCOL,survivalProtocol:SURVIVAL_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,name,creationToken:crypto.randomUUID(),unlocked,bonus});}
-      else if(access.kind==='coop-join'&&access.quick){const {unlocked,bonus}=carried(fighter);activeRoom=await client.joinOrCreate(COOP_ROOM,{rosterProtocol:ROSTER_PROTOCOL,survivalProtocol:SURVIVAL_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,name,quick:true,unlocked,bonus});}
+      else if(access.kind==='coop-create'){const {unlocked,bonus}=carried(fighter),hosted={rosterProtocol:ROSTER_PROTOCOL,survivalProtocol:SURVIVAL_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,name,creationToken:crypto.randomUUID(),unlocked,bonus};activeRoom=await viaP2(hosted)??await client.create(COOP_ROOM,hosted);}
+      else if(access.kind==='coop-join'&&access.quick){const {unlocked,bonus}=carried(fighter),quick={rosterProtocol:ROSTER_PROTOCOL,survivalProtocol:SURVIVAL_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,name,quick:true,unlocked,bonus};activeRoom=await viaP2(quick)??await client.joinOrCreate(COOP_ROOM,quick);}
+      else if(access.kind==='coop-join'&&isP2Code(access.code.trim().toUpperCase())){const {unlocked,bonus}=carried(fighter),joined=await viaP2({rosterProtocol:ROSTER_PROTOCOL,survivalProtocol:SURVIVAL_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,name,code:access.code.trim().toUpperCase(),unlocked,bonus});if(!joined)throw new Error('This co-op room is unavailable. Check the code — it may be full or ended.');activeRoom=joined;}
       else if(access.kind==='coop-join'){
         const code=access.code.trim();
         if(!/^\d{6}$/.test(code))throw new Error('Enter the 6-digit room code from your friend.');
@@ -184,13 +213,18 @@ export class Network {
       else if(access.kind==='create-private'){
         // (The host's place, if one was named: the same `rules` a party's launch sends. None: the room deals it, as it always has.)
         const rules=royaleRules(access.place,access.players);
-        activeRoom=await client.create('private_arena',{rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,mode:'match',name,creationToken:crypto.randomUUID(),...(access.players?{players:access.players}:{}),...(rules?{rules}:{}),...forgeJoinOption(fighter)});
+        const options={rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,mode:'match',name,creationToken:crypto.randomUUID(),...(access.players?{players:access.players}:{}),...(rules?{rules}:{}),...forgeJoinOption(fighter)};
+        activeRoom=await viaP2(options)??await client.create('private_arena',options);
+      }
+      else if(access.kind==='join-private'&&isP2Code(access.code.trim().toUpperCase())){
+        const joined=await viaP2({rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,mode:'match',name,...forgeJoinOption(fighter)});
+        if(!joined)throw new Error('This room is unavailable. Check the code — it may be full, started, or expired.');activeRoom=joined;
       }
       else if(access.kind==='join-private'){
         const code=access.code.trim();
         if(!/^\d{6}$/.test(code))throw new Error('Enter the 6-digit room code from your friend.');
         activeRoom=await client.joinById(`private-${code}`,{rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,mode:'match',name,code,...forgeJoinOption(fighter)});
-      }else activeRoom=await client.joinOrCreate('arena',{rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,mode,name});
+      }else{const options={rosterProtocol:ROSTER_PROTOCOL,assetGate:true,readyGate:true,fighter,account,skill,mode,name};activeRoom=await viaP2(options)??await client.joinOrCreate('arena',options);}
     }catch(error){
       if(resume)throw new Error(REJOIN_FAILED);
       const down=joinFailure(error);if(down)throw new Error(down);

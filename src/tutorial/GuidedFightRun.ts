@@ -110,6 +110,7 @@ export class GuidedFightRun {
     if (sim.trainingBotMode !== 'passive') sim.trainingCommand(lesson.self, 'passive');
     if (bot?.state.alive) bot.state.hp = bot.state.maxHp;
     if (step.fill && me) me.state.ultimate = 100;
+    if (step.stamina && me) me.state.stamina = me.state.maxStamina ?? me.state.stamina;
   }
   /** The dummy's command for the tick (TrainingLab `script`), from the step's plan. */
   private dummy(sim: ArenaSimulation, id: string): DummyCommand | undefined {
@@ -117,7 +118,9 @@ export class GuidedFightRun {
     const bot = sim.actors.get(id), me = lesson ? sim.actors.get(lesson.self) : [...sim.actors.values()].find(a => !a.state.isBot);
     if (!bot || !me) return undefined;
     const busy = !!bot.cast || sim.serverTime < bot.stunUntil || !bot.state.alive;
-    return dummyCommand(plan, { x: bot.state.x, z: bot.state.z, busy }, { id: me.state.id, x: me.state.x, z: me.state.z, alive: me.state.alive }, sim.serverTime, this.clock);
+    // (ESCAPE: the stage of its own light string while it runs, which it mashes on.)
+    const stringStage = bot.cast?.slot === 'light' && bot.state.alive && sim.serverTime >= bot.stunUntil ? bot.cast.stage : undefined;
+    return dummyCommand(plan, { x: bot.state.x, z: bot.state.z, busy, stringStage }, { id: me.state.id, x: me.state.x, z: me.state.z, alive: me.state.alive }, sim.serverTime, this.clock);
   }
 
   private live() {

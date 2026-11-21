@@ -13,6 +13,8 @@ import { inkImpactsReady } from './SparkField';
 import { INK_IMPACTS } from './inkImpactAtlas';
 import { roanEnabled } from '../look/roanPass';
 import { DREAM_IMPACT } from '../dreamFlag';
+import { refinedVfx } from '../look/filmLook';
+import { abOff } from '../look/abSwitch';
 
 /** How loud an impact is. Light jabs are small and snappy; heavies are big;
  *  finishers and specials are huge; ultimates and KOs take the screen. */
@@ -186,7 +188,7 @@ export class VfxKit {
   private keySearch = 0;
   private constructor(private scene: THREE.Scene) {
     this.liquid = liquids.get(scene);
-    this.dust = new SparkField(scene, 768, 'vfx-dust', 5, VEIL.dust);
+    this.dust = new SparkField(scene, 768, 'vfx-dust', 5, VEIL.dust, true);
     this.sparks = new SparkField(scene, 1536, 'vfx-sparks', 9, VEIL.sparks);
     this.marks = new GroundMarks(scene, 48);
     this.debris = new Debris(scene, 160);
@@ -306,7 +308,14 @@ export class VfxKit {
    *  the blow - away from whoever threw it - a thin ring, and streaks thrown
    *  the same way. It lives a fifth to a third of a second and rides
    *  `anchor`, the struck body, if given. `dir` is the way the blow travelled. */
-  hitSpark(x: number, y: number, z: number, el: Element, cls: ImpactClass, born: number, dir?: THREE.Vector3, priority = 1, anchor = 0, look: InkLook = 'burst', tier?: HitTier, ownSteel = false) {
+  hitSpark(x: number, y: number, z: number, el: Element, cls: ImpactClass, born: number, dir?: THREE.Vector3, priority = 1, anchor = 0, look: InkLook = 'burst', tier?: HitTier, ownSteel = false, reward = false) {
+    if (refinedVfx()) {
+      // The film look: the big hits (a heavy up, a string's last blow, a counter or a punish) in the hand-drawn ink;
+      // the rest, and every hit with ?ab=inkhits, as the needle star.
+      if (!abOff('inkhits') && inkImpactsReady() && (cls >= 2 || tier === 'finish' || reward)) this.refinedInk(x, y, z, el, cls, born, dir, priority, anchor, look, reward);
+      else this.refinedSpark(x, y, z, el, cls, born, dir, priority, anchor, look);
+      return;
+    }
     if (DREAM_IMPACT) { this.szImpact(x, y, z, el, cls, born, dir, priority, anchor, look, tier, ownSteel); return; }
     const s = BURST[cls], life = LIFE[cls], f = this.sparks, sp = f.spec, bias = SPARK_BIAS;
     if (roanEnabled() && inkImpactsReady()) { this.inkSpark(x, y, z, el, cls, born, dir, priority, anchor, look); return; }
@@ -330,7 +339,90 @@ export class VfxKit {
     this.pulse(x, y + 1, z, el.light, LIGHT[cls], REACH[cls], born, .16 + cls * .05, priority);
   }
 
+  /** The film look's refined hit (look/filmLook.ts refinedVfx, drawn as a TV anime's effects are): a white-hot heart
+   *  for a frame or two; a needle star - four long rays and four short - white at the heart
+   *  and the technique's own colour at its tips; a second, smaller one turned on a heavy blow; a few hairline bolts along
+   *  the blow; one clean crescent swept through the contact from a medium blow up (two on a finisher); a pinch of sparks
+   *  falling away; a thin ring on the biggest. Short and sharp, in the move's own colours, and nothing left behind. */
+  private refinedSpark(x: number, y: number, z: number, el: Element, cls: ImpactClass, born: number, dir: THREE.Vector3 | undefined, priority: number, anchor: number, look: InkLook) {
+    const f = this.sparks, sp = f.spec, near = SZ.near, ride = cls >= 2 ? 0 : anchor;
+    const S = [.4, .52, .74, .98][cls] * (look === 'slash' ? .85 : 1);
+    sp.reset(SPRITE.core, born, .045 + cls * .01).pos(x, y, z).sized(S * .14, S * .2, .3).hot(0xffffff, 1.05 + cls * .08).cool(el.spike); sp.bias = near; sp.anchor = ride; f.emit();
+    sp.reset(SPRITE.flare, born, .1 + cls * .024).pos(x, y, z).sized(S * .85, S * 1.1, .35).hot(0xffffff, 1.05 + cls * .1).cool(el.rim, .9);
+    sp.rotation = (Math.random() - .5) * .5; sp.bias = near; sp.anchor = ride; f.emit();
+    if (cls >= 2) { sp.reset(SPRITE.flare, born + 1 / 60, .08 + cls * .015).pos(x, y, z).sized(S * .45, S * .6, .35).hot(el.spike, 1.1).cool(el.rim, .8); sp.rotation = .785 + (Math.random() - .5) * .3; sp.bias = near; sp.anchor = ride; f.emit(); }
+    this.refinedBolts(x, y, z, el, cls, born, dir, this.n([2, 3, 5, 7][cls], 1), ride);
+    for (let k = 0, arcs = look === 'slash' ? Math.max(1, cls) : cls >= 3 ? 2 : cls >= 1 ? 1 : 0; k < arcs; k++) {
+      const R = [.36, .46, .64, .82][cls] * (.9 + Math.random() * .2);
+      randomUnit(_a); _b.copy(_t1).addScaledVector(_a, .3); if (_b.lengthSq() < 1e-4) _b.set(0, 1, 0); _b.normalize();
+      const back = R * .85;
+      _a.set(0, 1, 0); if (Math.abs(_b.y) > .99) _a.set(1, 0, 0);
+      _v.crossVectors(_b, _a).normalize(); _a.crossVectors(_b, _v);
+      const rot = Math.atan2(_c.dot(_a), _c.dot(_v)) + (Math.random() - .5) * .5 + k * .9;
+      sp.reset(SPRITE.crescent, born + k * .03, .16 + cls * .03).pos(x - _c.x * back, y - _c.y * back, z - _c.z * back).sized(R * .85, R * 1.05, .5).hot(el.spike, .95).cool(el.rim, .92);
+      sp.orient = ORIENT.plane; sp.axis(_b.x, _b.y, _b.z); sp.rotation = rot; sp.stretch = 1.5; sp.bias = near * .5; sp.anchor = ride; f.emit();
+    }
+    for (let i = 0, n = this.n([0, 3, 5, 8][cls], 0); i < n; i++) {
+      randomUnit(_v); if (dir) _v.addScaledVector(_c, 1.6).normalize();
+      const v = 3 + Math.random() * 4.5, s = .018 + Math.random() * .018;
+      sp.reset(SPRITE.streak, born + Math.random() * .03, .25 + Math.random() * .25).pos(x, y, z).velocity(_v.x * v, _v.y * v + 1.2, _v.z * v);
+      sp.orient = ORIENT.velocity; sp.sized(s, s * .5, .8); sp.stretch = 1.3; sp.trail = .01; sp.drag = 2.6; sp.gravity = 8;
+      sp.bias = near * .5; sp.hot(Math.random() < .4 ? 0xffffff : el.spike, 1.15).cool(el.rim, 0); sp.anchor = ride; f.emit();
+    }
+    if (cls >= 2) { sp.reset(SPRITE.ring, born, .13 + cls * .02).pos(x, y, z).sized(S * .3, S * (1 + cls * .08), .5).hot(0xffffff, .9).cool(el.rim, .07); sp.bias = near; sp.anchor = ride; f.emit(); }
+    this.pulse(x, y + 1, z, el.light, LIGHT[cls] * .5, REACH[cls] * .8, born, .12 + cls * .04, priority);
+  }
+
+  /** The refined hit's hairline bolts along the blow (refinedSpark, refinedInk). Leaves _c along the blow and _t1, _t2
+   *  square to it. */
+  private refinedBolts(x: number, y: number, z: number, el: Element, cls: ImpactClass, born: number, dir: THREE.Vector3 | undefined, bolts: number, ride: number) {
+    const f = this.sparks, sp = f.spec, near = SZ.near;
+    if (dir && dir.lengthSq() > 1e-6) _c.copy(dir).normalize(); else _c.set(0, 0, 1);
+    _t1.set(Math.abs(_c.y) < .9 ? 0 : 1, Math.abs(_c.y) < .9 ? 1 : 0, 0).cross(_c).normalize(); _t2.crossVectors(_c, _t1);
+    const L = [.5, .7, 1, 1.3][cls], w = [.011, .013, .017, .021][cls];
+    for (let i = 0; i < bolts; i++) {
+      randomUnit(_v); if (dir && i % 3 !== 2) _v.addScaledVector(_c, i % 3 === 0 ? 1.8 : -1).normalize();
+      const half = L * (.5 + Math.random() * .6) * .5;
+      sp.reset(SPRITE.bolt, born + Math.random() * .015, .08 + cls * .012 + Math.random() * .02).pos(x + _v.x * half, y + _v.y * half, z + _v.z * half);
+      sp.orient = ORIENT.axial; sp.axis(_v.x, _v.y, _v.z); sp.sized(w, w, 1); sp.stretch = half / w;
+      sp.hot(el.spike, 1.1).cool(el.rim, .85); sp.bias = near * .6; sp.anchor = ride; f.emit();
+    }
+  }
+
+  /** The film look's big hit (refinedVfx; ?ab=inkhits draws refinedSpark's needle star instead): the hand-drawn
+   *  flipbook (vfx/inkImpactAtlas.ts) at the refined star's size, turned to the blow - the starburst, or a blade's
+   *  crescent - with a few hairline bolts and less of the hit's light than the star (it bloomed the drawing away), and
+   *  as short as the look's other hits. A counter or a punish adds the brushed shockwave ring. Never the fireball or the
+   *  burst that ends in ink splats (burst2): the look leaves nothing behind. */
+  private refinedInk(x: number, y: number, z: number, el: Element, cls: ImpactClass, born: number, dir: THREE.Vector3 | undefined, priority: number, anchor: number, look: InkLook, reward: boolean) {
+    const f = this.sparks, sp = f.spec, near = SZ.near, ride = cls >= 2 ? 0 : anchor;
+    const S = [.4, .52, .74, .98][cls] * (look === 'slash' ? .85 : 1), seq = look === 'slash' ? INK_IMPACTS.slash : INK_IMPACTS.burst;
+    // No separate white-hot heart: the flipbook draws its own, and a second one bloomed the drawn spikes into a blob.
+    sp.reset(SPRITE.ink, born, .2 + cls * .03).pos(x, y, z).sized(S * .95, S * 1.15, .12).hot(el.spike, .85 + cls * .03).cool(el.rim, .95);
+    sp.inkCell = seq.start; sp.inkFrames = seq.frames;
+    if (seq.directional && dir) { sp.axis(dir.x, dir.y, dir.z); sp.rotation = (Math.random() - .5) * .45; } else { sp.axis(0, 0, 0); sp.rotation = Math.random() * 6.283; }
+    sp.bias = near; sp.anchor = ride; f.emit();
+    if (reward) {
+      sp.reset(SPRITE.ink, born + .02, .24 + cls * .03).pos(x, y, z).sized(S * .8, S * 1.3, .5).hot(el.spike, .95).cool(el.rim, .85);
+      sp.inkCell = INK_IMPACTS.ring.start; sp.inkFrames = INK_IMPACTS.ring.frames; sp.axis(0, 0, 0); sp.rotation = Math.random() * 6.283; sp.bias = near; sp.anchor = ride; f.emit();
+    }
+    this.refinedBolts(x, y, z, el, cls, born, dir, this.n([1, 2, 3, 4][cls], 1), ride);
+    this.pulse(x, y + 1, z, el.light, LIGHT[cls] * .3, REACH[cls] * .7, born, .12 + cls * .04, priority);
+  }
+
+  /** The film look's refined ground (refinedVfx): a blow into a surface presses a thin ring of air out over it and
+   *  breathes a little dust out of the far side of the body - no rubble, no dirt flecks, no column, no crack or crater. */
+  private refinedGround(x: number, y: number, z: number, nx: number, ny: number, nz: number, cls: ImpactClass, born: number, el: Element | undefined, floor: number, away?: THREE.Vector3) {
+    const big = cls >= 3;
+    if (ny > .5) {
+      this.ring(x, floor + .04, z, .3, big ? 3.2 : 2.2, born, big ? .34 : .26, 0xffffff, el?.rim ?? DUST_SHADE, .1, 'flat');
+      if (away && Math.hypot(away.x, away.z) > .2) this.dustSpray(x, floor, z, away.x, away.z, big ? 5 : 3, 2.4, big ? .5 : .38, born, .38, 1);
+      else this.dustRing(x, floor, z, big ? 7 : 4, .25, 2.6, big ? .6 : .45, born, .5);
+    } else this.ring(x, y, z, .3, 2, born, .3, 0xffffff, el?.rim ?? 0xcfd8e2, .1, 'plane', nx, ny, nz);
+  }
+
   explosion(x: number, y: number, z: number, el: Element, size: number, born: number, count = 10) {
+    if (refinedVfx()) { size *= .7; count = Math.max(3, Math.round(count * .4)); } // The film look: a smaller, cleaner blast
     const d = this.dust, ds = d.spec;
     // Saturated: the rim colour lit, a deep shade of it in shadow - pale clouds vanished into the white of a beam.
     const lit = _litTone.setHex(el.rim).lerp(_white, .15).getHex(), shade = _shadeTone.setHex(el.rim).multiplyScalar(.24).getHex();
@@ -616,6 +708,7 @@ export class VfxKit {
    *  in under half a second. It used to stand a metre tall for most of a
    *  second and swallow the legs of whoever was standing beside it. */
   dustRing(x: number, floor: number, z: number, count: number, radius: number, speed: number, size: number, born: number, life = .75) {
+    if (refinedVfx()) { count = Math.max(1, Math.round(count * .55)); size *= .75; } // The film look: a breath of dust, not a cloud
     if (onLiquid(this.liquid, floor)) { this.splash(x, z, Math.min(1.6, .25 + size * .55 + speed * .06 + radius * .3), born); return; }
     const f = this.dust, sp = f.spec, s = size * .5, l = Math.min(.5, life * .62);
     for (let i = 0, n = this.n(count, 2); i < n; i++) {
@@ -632,6 +725,7 @@ export class VfxKit {
    *  radians about (dx,dz): the dust of a blow goes out of the far side of
    *  the body it hit, not back over the feet of whoever threw it. */
   dustSpray(x: number, floor: number, z: number, dx: number, dz: number, count: number, speed: number, size: number, born: number, life = .45, spread = 1.4) {
+    if (refinedVfx()) { count = Math.max(1, Math.round(count * .55)); size *= .75; } // The film look: a breath of dust, not a cloud
     if (onLiquid(this.liquid, floor)) { this.splash(x, z, Math.min(1.4, .3 + size * .8 + speed * .05), born, dx, dz); return; }
     const f = this.dust, sp = f.spec, base = Math.atan2(dz, dx);
     for (let i = 0, n = this.n(count, 2); i < n; i++) {
@@ -644,6 +738,7 @@ export class VfxKit {
 
   /** One puff of dust, for kicks, skids and slides. */
   puff(x: number, y: number, z: number, vx: number, vy: number, vz: number, size: number, born: number, life = .6, opacity = .62) {
+    if (refinedVfx()) { size *= .7; opacity *= .6; }
     const sp = this.dust.spec;
     sp.reset(SPRITE.puff, born, Math.min(.5, life)).pos(x, y, z).velocity(vx, vy, vz); sp.drag = 3; sp.gravity = -.5;
     sp.sized(size * .5, size, .5).hot(DUST_LIT, 1).cool(DUST_SHADE, Math.min(1, opacity * 1.35)); sp.bias = size * .8; this.dust.emit();
@@ -691,6 +786,7 @@ export class VfxKit {
   /** A cloud of manga smoke: three flat tones lit by the key light, an ink
    *  rim, ragged as it dissolves. For blasts and steam, bigger than dust. */
   smoke(x: number, y: number, z: number, vx: number, vy: number, vz: number, size: number, born: number, life = .5, lit = DUST_LIT, shade = DUST_SHADE) {
+    if (refinedVfx()) size *= .7;
     const sp = this.dust.spec;
     sp.reset(SPRITE.puff, born, life).pos(x, y, z).velocity(vx, vy, vz); sp.drag = 2.4; sp.gravity = -.6;
     sp.sized(size * .55, size, .45).hot(lit, 1).cool(shade, .92); sp.bias = size * .8; this.dust.emit();
@@ -716,6 +812,8 @@ export class VfxKit {
    *  the floor (normal up) or a wall (its normal). */
   groundImpact(x: number, y: number, z: number, nx: number, ny: number, nz: number, cls: ImpactClass, born: number, el?: Element, floor = y, away?: THREE.Vector3) {
     const big = cls >= 3;
+    // The film look (refinedVfx): a ring and a breath of dust, nothing more (a liquid floor still splashes).
+    if (refinedVfx() && !(ny > .5 && onLiquid(this.liquid, floor))) { this.refinedGround(x, y, z, nx, ny, nz, cls, born, el, floor, away); return; }
     // A blow into a liquid floor throws up a column of it and rings the surface: no rubble, no crack.
     if (ny > .5 && onLiquid(this.liquid, floor)) {
       this.splash(x, z, big ? 1.6 : cls >= 2 ? 1.15 : .8, born, away?.x ?? 0, away?.z ?? 0);

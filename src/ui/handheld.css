@@ -4,12 +4,15 @@
    every position keeps clear of the notch and the home bar (safe-area insets) and is sized for a thumb. */
 /* Absolute against the page's own box, as the HUD is, not fixed: a phone's browser can widen the viewport fixed things
    hang from past the screen (Chrome did, to 1756 px on an 844 px phone, mid-royale) and the buttons went with it. */
-.touch-controls{--tc-ink:#0b0c0e;--tc-paper:#fbf6ea;--tc-red:#cc202b;--tc-gold:#f0c35a;--tc-teal:#3ad1c9;--tc-rim:#fbf6eadb;--tc-k:1;position:absolute;inset:0;z-index:40;pointer-events:none;overflow:hidden;
+.touch-controls{--tc-ink:#0b0c0e;--tc-paper:#fbf6ea;--tc-red:#cc202b;--tc-gold:#f0c35a;--tc-teal:#3ad1c9;--tc-rim:#fbf6eadb;--tc-k:var(--tc-u,1);position:absolute;inset:0;z-index:40;pointer-events:none;overflow:hidden;
   touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
   font-family:'Barlow Condensed','Arial Narrow',sans-serif;font-style:italic;font-weight:900;
   --tc-l:env(safe-area-inset-left,0px);--tc-r:env(safe-area-inset-right,0px);--tc-b:env(safe-area-inset-bottom,0px);--tc-t:env(safe-area-inset-top,0px)}
 .touch-controls[hidden]{display:none}
-.touch-controls.tc-tablet{--tc-k:1.3}
+.touch-controls.tc-tablet{--tc-k:calc(1.3 * var(--tc-u,1))}
+/* TOUCH BUTTON OPACITY (Settings.touchAlpha, main.ts touchFeel: --tc-a): the buttons faded at rest, a press whole */
+.touch-controls .tc-btn{opacity:var(--tc-a,1)}
+.touch-controls .tc-btn.down{opacity:1}
 .touch-controls *{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 
 .tc-stick{position:absolute;left:0;top:0;width:0;height:0;opacity:0;transition:opacity .12s}
@@ -122,6 +125,10 @@ html.tc-upright .tc-turn{display:grid}
 .tc-turn i{display:block;font-style:normal;font-size:64px;line-height:1;color:#cc202b;animation:tc-turn 1.8s ease-in-out infinite}
 .tc-turn strong{font-size:34px;letter-spacing:.02em}
 .tc-turn span{font-size:18px;font-weight:800;letter-spacing:.04em}
+/* Its way past (touch.ts, MY SCREEN WON'T TURN): offered at once in an app's own browser, after a few seconds elsewhere. */
+.tc-turn .tc-turn-anyway{min-height:44px;margin-top:6px;padding:8px 16px;border:2px solid #111;border-radius:0;background:#fff;color:#111;font:inherit;font-size:15px;letter-spacing:.06em;
+  opacity:0;pointer-events:none;transition:opacity .3s;touch-action:manipulation}
+html.tc-turn-stuck .tc-turn .tc-turn-anyway{opacity:1;pointer-events:auto}
 @keyframes tc-turn{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(90deg)}}
 
 /* The graphics notice: the quality stepped down for smoother play (render/qualityTier.ts). */
@@ -184,6 +191,45 @@ html.tc-upright .tc-turn{display:grid}
    mode's name was sized for six cards sharing the width (1.18vw: 10 px) - smaller than the BOTS / ONLINE / FRIENDS line
    under it. The name is the card's title again. */
 @media (max-height:520px) and (orientation:landscape){.manga-home .home-mode-label{font-size:14px}}
+/* A phone on its side (360-430 px tall) leaves the rail's cards about 45 px, less than
+   the card's name strip (46): the picture got none of it, and the chosen card's thicker red frame squeezed its name up
+   under its top edge and down onto BOTS / ONLINE / FRIENDS. There the card is its name: no picture (MangaHome.ts loads it
+   lazily on a phone, so it is not fetched), the name at the same place in every card, chosen or not, and the ways to
+   play along the foot. A touch screen only: a desktop window however short keeps its cards. */
+@media (orientation:landscape) and (max-height:440px) and (pointer:coarse){
+  html .manga-home .home-mode-panel .home-mode-art{display:none}
+  html .manga-home .home-mode-panel .home-mode-label{flex:1 1 auto;height:auto;min-height:0;align-items:flex-start;padding:calc(7px - var(--frame)) 0 0;border-top:0}
+  html .manga-home .home-mode-panel .home-variants{bottom:5px;height:20px}
+  /* The words are too small for a thumb to choose between, and they cover most of a 45 px card: a first tap on a card
+     chooses the card (its words do nothing until it is chosen), a tap on the chosen card opens its sheet on the word
+     under the finger, and the sheet's own tabs (in view, below) switch the way to play. */
+  html .manga-home .home-mode-panel:not(:has(.home-mode[aria-pressed=true])) .home-variants{pointer-events:none}
+}
+/* The home's dialogs on a short touch screen (OPTIONS, CONTROLS, a room): their settings run past the first screen and the
+   dialog scrolls, and its × went up with the page - a phone scrolled to GRAPHICS had no way out but back to the top. The ×
+   stays at the dialog's top right as it scrolls, a thumb's size (44 px). */
+@media (pointer:coarse) and (max-height:520px){
+  html .home-dialog #home-dialog-close{position:sticky;top:0;float:right;z-index:3;min-width:44px;min-height:44px;margin:-21px -29px 0 6px}
+}
+/* The mode sheet on a phone on its side (360-430 px tall): the mode's picture took the first 130 px and the ways to play
+   (BOTS / ONLINE / FRIENDS) fell under the YOUR FIGHTER + GO bar at the foot, so the first screen offered only the default
+   (a Duel's ONLINE: FIND MATCH) and a thumb on the hidden tabs hit the bar; with places to pick (BOTS) the tabs were two
+   screens down. Here the picture is a band of 64 px with the place's name on it, the mode and its tabs come next, over
+   the bar, and the places' strip after them (RANDOM is chosen until a place is); its × stays at the top right as the
+   sheet scrolls. */
+@media (orientation:landscape) and (max-height:440px) and (pointer:coarse){
+  html .mode-sheet.ms-select .ms-stage{height:64px}
+  html .mode-sheet.ms-select .ms-where{top:6px}
+  html .mode-sheet.ms-select .ms-where em{display:none}
+  html .mode-sheet.ms-select .ms-mode{order:1}
+  html .mode-sheet.ms-select .ms-place{order:2}
+  html .mode-sheet.ms-select .ms-close{position:sticky;top:12px;order:-1;align-self:flex-end;flex:none;width:44px;height:44px;margin:12px max(17px,env(safe-area-inset-right,0px)) -56px 0}
+}
+/* HOW TO PLAY over the whole sheet (a phone, a narrow window): it covers the sheet's × too, which sat on its GOT IT. */
+@media (max-width:900px),(max-height:560px){
+  html .mode-sheet.ms-select .ms-rules{z-index:6}
+  html .mode-sheet.ms-select:has(.ms-rules:not([hidden])) .ms-close{visibility:hidden}
+}
 /* Overnight UX (8 October 2026): the home's small words on a touch screen. A tablet keeps the desktop's page, where
    BOTS / ONLINE / FRIENDS are 25×24, HOW TO PLAY 73×17 and the VOL. tabs 48×21 - small for a thumb. Their tappable
    area grows past their ink (an invisible margin, never over the card's own name above the words); nothing moves. */

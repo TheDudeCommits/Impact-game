@@ -1,3 +1,4 @@
+import { isRoomCode } from '../roomCode';
 import type { FighterId, RoomMode } from '../../game/types';
 import { FIGHTERS } from '../../config';
 import { isLaboratoryPreviewFighter } from '../../fighterLab';
@@ -246,7 +247,7 @@ export class HomeShell {
       this.showInvite();
     });
     if (invite) open(invite.kind === 'duel' ? 'duel' : invite.kind === 'coop' ? 'arcade' : 'royale', invite.code);
-    else if ((isObjectiveKind(objective)||objective==='rift-war') && code && /^\d{6}$/.test(code)) open(objective, code);
+    else if ((isObjectiveKind(objective)||objective==='rift-war') && isRoomCode(code)) open(objective, code);
   }
 
   /** A start that failed puts the player back on the sheet, with the reason and the same button to try again. */

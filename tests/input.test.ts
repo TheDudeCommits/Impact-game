@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { afterEach,describe,it,expect,vi } from 'vitest';
 import { Input } from '../src/input';
 import { bindKey, resetBindings } from '../src/input/bindings';
@@ -92,5 +93,28 @@ describe('browser input command integration',()=>{
     expect(input.command(null).guard).toBe(true);expect(Math.abs(input.command(null).moveZ)).toBeGreaterThan(.9);
     emit(win,'blur');input.update(1/60);expect(input.command(null)).toMatchObject({moveX:0,moveZ:0,guard:false});
     emit(win,'focus');input.update(1/60);disconnect();input.update(1/60);expect(input.command(null)).toMatchObject({moveX:0,moveZ:0,guard:false});expect(input.mode).toBe('keyboard');
+  });
+  // The input pump reads the pad itself (main.ts pumpInput): a press or a let-go guard between two drawn
+  // frames is in the next command, and only a frame's own time turns the view.
+  it('poll reads presses and holds between frames; the view turns by update alone',()=>{
+    const {input,pad}=fixture();pad();input.update(0);
+    const yaw=input.yaw,pitch=input.pitch;
+    pad([3,4],[0,-1,.8,.5]);input.poll();
+    expect(input.command(null)).toMatchObject({attack:'heavy',guard:true});
+    expect(input.yaw).toBe(yaw);expect(input.pitch).toBe(pitch);
+    pad([],[0,0,.8,.5]);input.poll();expect(input.command(null).guard).toBe(false);
+    input.update(1/60);expect(input.yaw).toBeLessThan(yaw);
+  });
+  it('a press seen by the pump is not fired again by the next frame',()=>{
+    const {input,pad}=fixture();pad();input.update(0);
+    pad([2]);input.poll();expect(input.command(null).attack).toBe('light');
+    input.update(1/60);expect(input.command(null).attack).toBeUndefined();
+  });
+  it('main.ts: the touch controls write their holds before the frame\'s command, and the pump reads the pad',()=>{
+    const main=readFileSync('src/main.ts','utf8');
+    const frame=main.indexOf('input.update(dt);hud.keepPadFocus();'),touch=main.indexOf('touch.update(input.enabled',frame),push=main.indexOf('pushInput();',frame);
+    expect(frame).toBeGreaterThan(0);expect(touch).toBeGreaterThan(frame);expect(push).toBeGreaterThan(touch);
+    expect(main).toContain('inputTimer=setInterval(pumpInput,1000/INPUT_HZ)');
+    expect(main).toMatch(/function pumpInput\(\)\{\s*if\(started&&input\.enabled\)input\.poll\(\);\s*pushInput\(\);/);
   });
 });

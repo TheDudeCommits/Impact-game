@@ -1,15 +1,19 @@
 import type { CombatEvent, PlayerInput } from '../game/types';
 
-export type StepId = 'move' | 'light' | 'heavy' | 'guard' | 'parry' | 'dash' | 'special' | 'technique' | 'ultimate' | 'fight';
-/** What the dummy does while a step is on: stands, jabs at the player (the guard), swings a slow heavy (the parry), or
- *  fights as a gentle bot (the finish). */
-export type DummyPlan = 'still' | 'jab' | 'swing' | 'fight';
-export interface StepDef { id: StepId; title: string; dummy: DummyPlan; /** The ultimate's meter is filled as the step opens. */ fill?: boolean }
+export type StepId = 'move' | 'light' | 'heavy' | 'guard' | 'escape' | 'parry' | 'dash' | 'special' | 'technique' | 'ultimate' | 'fight';
+/** What the dummy does while a step is on: stands, jabs at the player (the guard), runs a light string at them (the
+ *  escape), swings a slow heavy (the parry), or fights as a gentle bot (the finish). */
+export type DummyPlan = 'still' | 'jab' | 'string' | 'swing' | 'fight';
+export interface StepDef { id: StepId; title: string; dummy: DummyPlan; /** The ultimate's meter is filled as the step opens. */ fill?: boolean;
+  /** The stamina bar is filled as the step opens (the escape costs a third of it: LOCK_VANISH_STAMINA). */ stamina?: boolean }
 export const STEPS: readonly StepDef[] = [
   { id: 'move', title: 'MOVE & LOOK', dummy: 'still' },
   { id: 'light', title: 'LIGHT STRING', dummy: 'still' },
   { id: 'heavy', title: 'HEAVY', dummy: 'still' },
   { id: 'guard', title: 'GUARD', dummy: 'jab' },
+  // the lock escape - GUARD pressed as the ring closes, between a string's rounds - is the
+  // default defence in every mode (lockCombat.ts), and the lesson never taught it.
+  { id: 'escape', title: 'ESCAPE A STRING', dummy: 'string', stamina: true },
   { id: 'parry', title: 'PERFECT PARRY', dummy: 'swing' },
   { id: 'dash', title: 'DASH', dummy: 'still' },
   { id: 'special', title: 'SPECIAL', dummy: 'still' },
@@ -35,7 +39,7 @@ export const TECHNIQUE = 'rise', TECHNIQUES: ReadonlySet<string> = new Set(['ris
 /** The player's state, as each HUD tick has it: where they stand, the view's heading (input.yaw), what they are doing. */
 export interface LessonFrame { time: number; x: number; z: number; viewYaw: number; action: string; alive: boolean }
 /** What the step's line adds under it: the half of MOVE & LOOK done, the string's count, why a guard or a parry did not count. */
-export interface StepProgress { moved: boolean; looked: boolean; hits: number; miss?: 'hit' | 'blocked' | 'plain'; tries: number }
+export interface StepProgress { moved: boolean; looked: boolean; hits: number; miss?: 'hit' | 'blocked' | 'plain' | 'early' | 'late' | 'stamina' | 'missed'; tries: number }
 const fresh = (): StepProgress => ({ moved: false, looked: false, hits: 0, tries: 0 });
 
 /** The lesson: which step is on, what is done or skipped, and what ticks the step on. Times are the fight's own clock
@@ -52,6 +56,8 @@ export class GuidedFight {
   /** Bumped on every change worth redrawing. */
   version = 0;
   private walked = 0; private turned = 0;
+  /** ESCAPE: a round's gap has opened on the player and nothing has been made of it yet. */
+  private gapOpen = false;
   private last?: { x: number; z: number; yaw: number };
   constructor(readonly self: string) {}
   get step(): StepDef | undefined { return STEPS[this.index]; }
@@ -95,6 +101,14 @@ export class GuidedFight {
         if (onMe && (e.kind === 'blocked' || e.kind === 'just-guard')) this.tick(time);
         else if (onMe && e.kind === 'hit') miss('hit');
         break;
+      case 'escape':
+        // Out of the string between its rounds: a clean press is a vanish behind the dummy (lock-escape with no reason).
+        // A press made during the round, one after the window, one on an empty bar each say so; a round that lands with
+        // no press at all, the ring's gap let go by.
+        if (mine && e.kind === 'lock-escape') { this.gapOpen = false; if (!e.reason) this.tick(time); else if (e.reason === 'early' || e.reason === 'late' || e.reason === 'stamina') miss(e.reason); }
+        else if (onMe && e.kind === 'lock-gap') { if (e.reason === 'early') miss('early'); else this.gapOpen = true; }
+        else if (onMe && e.kind === 'hit' && this.gapOpen) { this.gapOpen = false; miss('missed'); }
+        break;
       case 'parry':
         // A Perfect Parry (just-guard), the counter stance answering the blow, or the vanish a parry steps out of.
         if (onMe && e.kind === 'just-guard' || mine && (e.kind === 'counter' || e.kind === 'vanish')) this.tick(time);
@@ -122,31 +136,43 @@ export class GuidedFight {
 
   private tick(time: number) { const step = this.step; if (!step || this.doneAt !== undefined) return; this.done.add(step.id); this.doneAt = time; this.version++; }
   private next(time: number) {
-    this.index++; this.doneAt = undefined; this.openedAt = time; this.progress = fresh(); this.walked = this.turned = 0; this.last = undefined; this.version++;
+    this.index++; this.doneAt = undefined; this.openedAt = time; this.progress = fresh(); this.walked = this.turned = 0; this.last = undefined; this.gapOpen = false; this.version++;
   }
 }
 
 /** The dummy's command, as Training's lab sends one (game/training/TrainingLab.ts `script`). */
 export type DummyCommand = Omit<PlayerInput, 'seq'>;
 /** The guard's jab and the parry's slow heavy: which button, how often (fight seconds), from how near (m). */
-export const SWINGS: Readonly<Record<'jab' | 'swing', { slot: 'light' | 'heavy'; every: number; reach: number }>> = {
+export const SWINGS: Readonly<Record<'jab' | 'string' | 'swing', { slot: 'light' | 'heavy'; every: number; reach: number }>> = {
   jab: { slot: 'light', every: 1.8, reach: 2.1 },
+  // A string's first light, this often; its stages are mashed on (MASH) until its finisher's round, as a person mashes.
+  string: { slot: 'light', every: 3.2, reach: 2.1 },
   swing: { slot: 'heavy', every: 2.7, reach: 2.2 },
 };
+/** ESCAPE's string: the dummy presses its light this often while its own string runs (fight seconds), until the stage
+ *  before the finisher - so the rounds land, the gap opens between them, and nothing chases after the knockaway. */
+export const MASH = .12, MASH_UNTIL = 3;
 /** The dummy's pace walking in to swing (a share of a run): slow enough to read. */
 export const DUMMY_PACE = .55;
 /** The first swing waits this long after its step opens, so the line is read first. */
 export const FIRST_SWING = 1.4;
-export interface DummyBody { x: number; z: number; /** In a move, a reaction or a stun: it cannot swing now. */ busy: boolean }
+export interface DummyBody { x: number; z: number; /** In a move, a reaction or a stun: it cannot swing now. */ busy: boolean;
+  /** The stage of its own light string while one runs (0-3), for ESCAPE's mashing; undefined otherwise. */ stringStage?: number }
 export interface LessonBody { id: string; x: number; z: number; alive: boolean }
 
 /** What the dummy does this tick for a plan: faces the player and stands; walks in and swings on its clock (`clock.next`,
  *  fight seconds, moved on by each swing); or, for the real fight, nothing (undefined: the bot's own mind decides). */
-export function dummyCommand(plan: DummyPlan, bot: DummyBody, human: LessonBody, time: number, clock: { next: number }): DummyCommand | undefined {
+export function dummyCommand(plan: DummyPlan, bot: DummyBody, human: LessonBody, time: number, clock: { next: number; mash?: number }): DummyCommand | undefined {
   if (plan === 'fight') return undefined;
   const dx = human.x - bot.x, dz = human.z - bot.z, d = Math.hypot(dx, dz);
   const base: DummyCommand = { moveX: 0, moveZ: 0, yaw: d > 1e-6 ? Math.atan2(dx, dz) : 0, targetId: human.id, lock: true };
   if (plan === 'still' || !human.alive) return base;
+  // ESCAPE: its string carried on light by light, as a person mashing carries it.
+  if (plan === 'string' && bot.stringStage !== undefined) {
+    if (bot.stringStage >= MASH_UNTIL || time < (clock.mash ?? -Infinity)) return base;
+    clock.mash = time + MASH;
+    return { ...base, attack: 'light' };
+  }
   const swing = SWINGS[plan];
   if (d > swing.reach) return { ...base, moveX: dx / d * DUMMY_PACE, moveZ: dz / d * DUMMY_PACE };
   if (bot.busy || time < clock.next) return base;

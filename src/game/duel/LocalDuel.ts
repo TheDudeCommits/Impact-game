@@ -40,7 +40,10 @@ export class LocalDuel {
     const stage=placeForStart(place,'duel','offline')??DUEL_STAGE.id;
     // Lock combat (the experiment's preview, lockMode.ts): for its fighters, against one of them.
     const lock=lockCombatFor(fighter)||this.couch&&lockCombatFor(rival!);
-    const sim=new ArenaSimulation({roomMode:'match',stage,collision:await createRapierCollision(stage),maxStamina:COMBO_STAMINA,maxHp:COMBO_HP,...(lock?{lockCombat:true}:{})});
+    // `?simseed=N` (a film's two takes): the simulation's own random stream starts from N, so the
+    // same inputs on the same ticks play the same fight.
+    const seed=typeof location!=='undefined'?Number(new URLSearchParams(location.search).get('simseed'))||undefined:undefined;
+    const sim=new ArenaSimulation({roomMode:'match',stage,collision:await createRapierCollision(stage),maxStamina:COMBO_STAMINA,maxHp:COMBO_HP,...(lock?{lockCombat:true}:{}),...(seed?{seed}:{})});
     sim.addPlayer('you',fighter,name);
     if(this.couch){
       sim.addPlayer(SECOND,rival!,'Player 2');
@@ -53,6 +56,8 @@ export class LocalDuel {
     // The featured rivalry is the first choice for these two; everyone else draws a live rival.
     const foe=rival&&isReleasedFighter(rival)&&!HELD.has(rival)?rival:fighter==='koko'?'oro':fighter==='oro'?'koko':sim.pick(lock?roster.filter(locks):roster);
     sim.addPlayer('duel-bot',foe,'Rival',true);
+    // The rival's play is set from the player's skill as the fight starts and as it goes (adaptive.ts: a level 5% ahead of
+    // them, their body exactly the rival's), where its skill was a roll of the dice each match.
     this.sim=sim;this.startsAt=sim.serverTime+3;
     this.room={send:type=>{if(type==='duel-runback'){this.set.request(this.sim!,'you');this.onControlReset();this.publish();}}};this.predictionReady=true;this.publish();
   }

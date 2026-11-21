@@ -1,3 +1,4 @@
+import { P2RoomRefusal, p2roomComplete, p2roomPass } from './p2room';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -40,7 +41,7 @@ export interface EconomyOptions {
 /** A refusal, and how it is answered: 400 (the player is told why), 401 (the token opens nothing:
  *  the browser asks for an account again), 429 (too soon: the browser keeps it and tries later).
  *  `need`: what the browser can bring to try again - `identity`, Privy's identity token for its login. */
-class Refusal extends Error { constructor(message: string, readonly status: 400 | 401 | 429 = 400, readonly need?: 'identity') { super(message); } }
+class Refusal extends Error { constructor(message: string, readonly status: 400 | 401 | 429 | 503 = 400, readonly need?: 'identity') { super(message); } }
 const refuse = (message: string, status: 400 | 401 | 429 = 400, need?: 'identity'): never => { throw new Refusal(message, status, need); };
 
 /** Codes one account, or one address, may get wrong in an hour before it waits. */
@@ -169,6 +170,7 @@ export class Economy {
    * one synced ledger entry, so a retry or restart returns the original payment. */
   complete(pk: string, report: Report) {
     if (!this.kept && this.options.dir !== false) throw new Error('Verified rewards require a writable economy ledger.');
+    if (economyFrozen(this.kept)) throw new Error('The economy is moving to PlayerTwo: nothing is written here now.');
     const key = `${report.id}:${pk}`, known = this.book.completions.get(key);
     if (known) return known;
     const current = this.book.accounts.get(pk); if (!current) return undefined;
@@ -179,6 +181,8 @@ export class Economy {
     this.book.record('earn', next, { amount: settlement.total, why: `verified:${report.mode}:${report.id}`, completion });
     this.book.accounts.set(pk, next); this.book.completions.set(key, completion);
     this.trophiesFor(next);
+    // (Mastery in every mode: the room's match pays its fighter's, as once as the completion: progress rules.ts.)
+    try { this.progress.credit(pk, next.created, report); } catch (error) { console.error('[progress] a room\'s mastery could not be kept', error); }
     return completion;
   }
 
@@ -379,6 +383,20 @@ async function bodyOf(req: Req, limit = 16384): Promise<Record<string, unknown>>
   });
 }
 
+/** The economy's freeze for its move to PlayerTwo's world: ECONOMY_FROZEN=1 in the server's variables, or a file FROZEN
+ *  in the book's folder (no redeploy: `touch <dir>/FROZEN` on the server).
+ *  Frozen, nothing is written - the book, the progress, the Forge - so what is copied out is what there is: the routes
+ *  answer 503 (the page keeps a result for later, as when the server is away), except those that only read
+ *  (a known account's hello, a room pass, a kept forged fighter). Read at most once every 5 seconds. */
+let frozenAt = 0, frozenWas = false;
+export function economyFrozen(dir: string | undefined, now = Date.now()): boolean {
+  if (process.env.ECONOMY_FROZEN === '1') return true;
+  if (!dir) return false;
+  if (now - frozenAt > 5000) { frozenAt = now; try { frozenWas = fs.existsSync(path.join(dir, 'FROZEN')); } catch { frozenWas = false; } }
+  return frozenWas;
+}
+const READS_WHILE_FROZEN = new Set(['p2room-pass', 'forge-get', 'forge-mine']);
+
 let shared: Economy | undefined;
 export const sharedEconomy = (): RoomEconomy | undefined => shared ?? remoteEconomy();
 
@@ -416,7 +434,11 @@ export function mountEconomy(app: App, options: EconomyOptions = {}): Economy {
   const route = (name: string, run: (body: Record<string, unknown>, req: Req, address: string) => unknown, limit?: number) => app.post(`/api/economy/${name}`, (req, res) => {
     const address = String(req.headers['x-forwarded-for'] ?? req.socket?.remoteAddress ?? '').split(',')[0].trim();
     res.setHeader('Content-Type', 'application/json'); res.setHeader('Cache-Control', 'no-store');
-    void bodyOf(req, limit).then(body => run(body, req, address)).then(answer => { res.statusCode = 200; res.end(JSON.stringify(answer)); })
+    void bodyOf(req, limit).then(body => {
+      if (economyFrozen(economy.kept) && !READS_WHILE_FROZEN.has(name) && !(name === 'hello' && economy.book.find(body.token)))
+        throw new Refusal('The shop is moving. Try again in a few minutes.', 503);
+      return run(body, req, address);
+    }).then(answer => { res.statusCode = 200; res.end(JSON.stringify(answer)); })
       .catch((error: unknown) => {
         if (!(error instanceof Refusal)) console.error(`[economy] ${name} failed`, error);
         res.statusCode = error instanceof Refusal ? error.status : 500;
@@ -440,6 +462,9 @@ export function mountEconomy(app: App, options: EconomyOptions = {}): Economy {
   route('forge-mine', body => economy.forgeMine(body.token));
   route('forge-get', body => economy.forgeGet(body.hash));
   route('forge-remove', body => economy.forgeRemove(body.token, body.hash));
+  // Impact's rooms on PlayerTwo: the page's signed pass into a room, and a room's signed result settled.
+  route('p2room-pass', body => p2roomPass(economy, body.token, body.name, roomName));
+  route('p2room-complete', body => p2roomComplete(economy, body.done).catch(error => { if (error instanceof P2RoomRefusal) refuse(error.message); throw error; }));
   // Arcade progress and the career, kept with the account (src/server/progress/ProgressStore.ts).
   route('progress', body => economy.progressSync(body.token, { ...body, ...(body.import ? { import: currentSaved(body.import) } : {}), ...(body.reports ? { reports: currentSaved(body.reports) } : {}) }), 64 * 1024);
   // The book is written as the server goes down: on the way out (the match server's own shutdown

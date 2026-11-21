@@ -1,4 +1,4 @@
-import type {BallModeId, BallTeam} from './model';
+import {BALL_MODES, type BallModeId, type BallTeam} from './model';
 
 /** Ranked 3 v 3: a rating per person per mode, per season, shown
  *  as an ink stamp. The server keeps the ratings (src/server/ball/ranked.ts) and rates a match at its end; the page
@@ -31,6 +31,12 @@ export const RANKED = {
   /** Seasons: weeks each, from the first one's Monday (9 November 2026, midnight UTC). */
   seasonWeeks: 8, seasonZero: Date.UTC(2026, 10, 9),
 } as const;
+
+/** The modes rated in these tables (rk/<season>/<mode>/<pk> in the economy world): the ball modes' RANKED 3 v 3, and
+ *  the 1 v 1 Duel's RANKED (game/duel/ranked.ts) - one more mode id, the same rating, seasons and stamps. */
+export type RankedMode = BallModeId | 'duel';
+export const RANKED_MODES: readonly RankedMode[] = [...BALL_MODES, 'duel'];
+export const isRankedMode = (mode: unknown): mode is RankedMode => RANKED_MODES.includes(mode as RankedMode);
 
 /** A person's standing in one mode, one season. */
 export interface Rating { rating: number; games: number; wins: number; peak: number }
@@ -95,5 +101,10 @@ export function rate(started: readonly RankedSeat[], rated: readonly RankedSeat[
 /** What a page is told of a seat's standing (BallSeat.rank): the rating, the matches played this season, and at the
  *  end the change. */
 export interface SeatRank { rating: number; games: number; delta?: number }
-/** A page's ask for its own standing, and the server's answer (src/server/ball/ranked.ts). */
-export interface RankedAnswer { season: number; ends: number; modes: Partial<Record<BallModeId, Rating>> }
+/** A page's ask for its own standing, and the server's answer (src/server/ball/ranked.ts; the economy world's `ranked`). */
+export interface RankedAnswer { season: number; ends: number; modes: Partial<Record<RankedMode, Rating>> }
+/** A season's board for a mode as a page reads it (the economy world's `ranked-board`: p2world/economy.ts rankedBoard):
+ *  the top rows by rating, each a name, a standing and its stamp (never an account's id), and the asker's own place when
+ *  they are on the board below the rows shown. */
+export interface RankedBoardRow { place: number; name: string; rating: number; games: number; wins: number; tier: Tier['id'] | null; you?: true }
+export interface RankedBoard { season: number; ends: number; mode: RankedMode; top: RankedBoardRow[]; me?: RankedBoardRow }

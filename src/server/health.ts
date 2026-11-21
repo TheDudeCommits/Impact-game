@@ -94,7 +94,11 @@ import { errorCounts } from './ops/errorCounts';
  *  and another ring the duelling rings and the small royales' rings; and a public match drafts its bots as its countdown starts and says whom (`planned-bots`,
  *  ArenaRoom.planBots), so its pages fetch them meanwhile and a lone page's match on the device keeps them. A page from
  *  before them would be sent a stage it has never heard of. */
-export const MOVEMENT_PROTOCOL = 'omni-sequenced-input-v79-techniques';
+/** v80: the G in combos (game/moves.ts AREA_COMBO) - a launch or a wall splat opens a quick G thrown as the combo's
+ *  cancel, whose strikes hold its body for the follow-up, once a combo. A page from before it would predict its own G
+ *  there as the slow one from neutral. (A PlayerTwo build seats its pages only with its own rooms -
+ *  src/p2room/protocol.ts - so the room's protocol, P2_ROOM_PROTOCOL, and the roster's stay as they were.) */
+export const MOVEMENT_PROTOCOL = 'omni-sequenced-input-v80-area-combos';
 
 const timing = (move: { duration: number; contacts: number[] }) => ({ duration: move.duration, contacts: move.contacts });
 

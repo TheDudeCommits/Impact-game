@@ -1,4 +1,5 @@
-import { account as browserAccount, economyServer, type AccountClient, type Poster, type Store } from '../shop/account';
+import { account as browserAccount, type AccountClient, type Poster, type Store } from '../shop/account';
+import { economyPost } from '../../network/p2Economy';
 import { emptyState, importOf, replay, type ProgressReport, type ProgressState, type SyncAnswer, type SyncBody } from '../../game/progress/rules';
 import { adoptProgress, loadProgress, riftEvents, type RiftEvent } from '../../survival/progressStore';
 import { careerEvents, deviceCareer, type CareerEvent } from '../../game/social/career';
@@ -144,12 +145,8 @@ export class ProgressSync {
 const behind = (a: ProgressState, b: ProgressState) => a.rift.runs < b.rift.runs || a.rift.earned < b.rift.earned || a.career.totals.matches < b.career.totals.matches;
 
 // ---- in the page -----------------------------------------------------------------------------------------------------
-const httpPost: Poster = async (path, body) => {
-  const response = await fetch(`${economyServer()}/api/economy/${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(8000) });
-  let json: unknown;
-  try { json = await response.json(); } catch { json = undefined; }
-  return { status: response.status, body: json };
-};
+/* (to the economy world inside PlayerTwo once it is on, to the match server otherwise: src/network/p2Economy.ts) */
+const httpPost: Poster = (path, body) => economyPost(path, body, 8000);
 const browserStore: Store = {
   get: key => { try { return localStorage.getItem(key) ?? undefined; } catch { return undefined; } },
   set: (key, value) => { try { if (value === undefined) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch { /* Kept for the visit. */ } },

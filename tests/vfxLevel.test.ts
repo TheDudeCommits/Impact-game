@@ -4,11 +4,17 @@ import { loadSettings, VFX_DENSITY, VFX_LEVELS, VFX_OPTIONS, vfxFromDensity } fr
 import { homeOptions } from '../src/ui/HomePanels';
 import { pauseMenu } from '../src/ui/PauseMenu';
 import { LETTERING_CALM, MangaImpact } from '../src/ui/MangaImpact';
-import { setVfxLevel, VFX, VFX_PROFILES } from '../src/render/vfxLevel';
+import { REFINED_VFX, setVfxLevel, VFX, VFX_PROFILES } from '../src/render/vfxLevel';
+import { filmLookFor, filmOn, setFilmLook } from '../src/render/look/filmLook';
 import { CombatEffects } from '../src/render/CombatEffects';
 import type { CombatEvent, PlayerState } from '../src/game/types';
 
+/** The levels as the modern ART STYLE draws them; the film look (the default) holds every level to its refined effects
+ *  as well (the last describe below). */
+const modernLook = () => { beforeEach(() => setFilmLook(false)); };
+
 describe('the visual effects setting', () => {
+  modernLook();
   afterEach(() => { delete (globalThis as { localStorage?: Storage }).localStorage; setVfxLevel('full'); });
   const saved = (value: object) => { (globalThis as { localStorage?: unknown }).localStorage = { getItem: () => JSON.stringify(value) }; };
 
@@ -97,6 +103,7 @@ describe('the visual effects setting', () => {
 const player = (props: Partial<PlayerState> = {}): PlayerState => ({ id: 'a', name: 'X', fighter: 'taisei', x: 0, y: 0, z: 0, yaw: 0, hp: 1000, maxHp: 1000, stamina: 100, ultimate: 100, action: 'idle', actionStarted: .5, actionTime: 0, actionDuration: 1, target: null, alive: true, isBot: false, grounded: true, guarding: false, cooldowns: { light: 0, heavy: 0, special: 0, ultimate: 0 }, ...props });
 
 describe('the effects at each level', () => {
+  modernLook();
   afterEach(() => setVfxLevel('full'));
 
   it('draws the kit\'s sprites at the level\'s size and opacity, and its light at the level\'s share', () => {
@@ -123,6 +130,7 @@ describe('the effects at each level', () => {
 });
 
 describe('the lettering at each level', () => {
+  modernLook();
   /** Just enough of a document for the lettering to build its elements on (as tests/ultimateWhiffShown.test.ts). */
   class Element {
     style: Record<string, unknown> = { setProperty(this: Record<string, unknown>, k: string, v: string) { this[k] = v; } };
@@ -169,5 +177,26 @@ describe('the lettering at each level', () => {
     expect(minimal.word, 'an ultimate\'s word is not printed at Minimal').toEqual([]);
     // The parry is read at every level.
     for (const each of [full, reduced, minimal]) expect(each.all.join('')).toContain('PARRY');
+  });
+});
+
+describe('the film look\'s refined effects (a TV anime\'s as the benchmark)', () => {
+  beforeEach(() => setFilmLook(true));
+  afterEach(() => { setFilmLook(false); setVfxLevel('full'); });
+  it('is the ART STYLE\'s default, and holds every level to the refined factors; the modern look gives each level back whole', () => {
+    expect(filmLookFor(undefined)).toBe(true); expect(filmLookFor('film')).toBe(true); expect(filmLookFor('modern')).toBe(false);
+    expect(filmOn()).toBe(true);
+    const order = ['tags', 'big', 'all'] as const;
+    for (const level of ['full', 'reduced', 'minimal'] as const) {
+      setVfxLevel(level);
+      const profile = VFX_PROFILES[level];
+      for (const key of Object.keys(REFINED_VFX) as (keyof typeof REFINED_VFX)[]) {
+        if (key === 'lettering') expect(VFX.lettering).toBe(order[Math.min(order.indexOf(profile.lettering), order.indexOf(REFINED_VFX.lettering))]);
+        else expect(VFX[key], `${level} ${key}`).toBe(Math.min(profile[key] as number, REFINED_VFX[key] as number));
+      }
+      setFilmLook(false);
+      for (const key of Object.keys(profile) as (keyof typeof profile)[]) expect(VFX[key], `modern ${level} ${key}`).toBe(profile[key]);
+      setFilmLook(true);
+    }
   });
 });

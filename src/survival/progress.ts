@@ -1,4 +1,6 @@
 import type { FighterId } from '../game/types';
+import type { CareerMatch, CareerMode } from '../game/social/career';
+import type { Report } from '../game/economy/earn';
 import type { RunResult } from './SurvivalGame';
 import { LOCATIONS } from './locations';
 import { SKILL_TREE } from './skillTree';
@@ -110,6 +112,52 @@ export function shardsFor(r: RunFacts) {
   return Math.max(1, Math.round(r.score / 25000 + (r.bossLog?.length ?? r.bosses) * 3 + (r.finishers ?? 0) * 2 + r.round + (r.sealed ? 20 : 0)));
 }
 export function masteryXpFor(r: RunFacts) { return Math.round(r.round * 12 + (r.bossLog?.length ?? r.bosses) * 8 + r.seconds / 20); }
+
+// ---- mastery in every mode ----------------------------------------------------------------
+/** The modes a match pays mastery in: every mode that plays a fighter but Arcade (whose runs pay it above, settle) and
+ *  Training (which pays nothing). The royale's three ways are one: BR vs Bots, vs Players and a private royale. */
+export type MasteryMode = 'duel' | 'royale' | 'last-stand' | 'bad-blood' | 'rift-war' | 'goal-rush' | 'sky-spike';
+export const MASTERY_MODES: readonly MasteryMode[] = ['duel', 'royale', 'last-stand', 'bad-blood', 'rift-war', 'goal-rush', 'sky-spike'];
+/** A match as mastery reads it: the fighter, the mode, how long it was played and how it ended. */
+export interface MatchFacts { fighter: FighterId; mode: MasteryMode; seconds: number; result: 'win' | 'loss' | 'draw' }
+/** What a match pays: its minutes (to `minutes` at most) at the mode's rate, times its result's. Sized on Arcade, whose
+ *  runs pay about 14 a minute played (masteryXpFor: round 12, its boss 8, a twentieth of a second; a round of about
+ *  100 s, one boss: 25 in 107 s; a sealed run 355 in 25 minutes), so a level takes about as long in any mode at an even
+ *  record: 13 a minute times 1.3 for a win and 0.85 for a loss is 14 a minute at half and half. The royale, won by one
+ *  in a field and played to a knockout, pays 15 (14 a minute at one win in five). A match under 10 s pays nothing, as
+ *  RoomRewards pays nothing under 10 s. */
+export const MATCH_MASTERY = { perMinute: 13, royalePerMinute: 15, win: 1.3, draw: 1, loss: 0.85, minutes: 45, least: 10 } as const;
+export function masteryXpForMatch(m: MatchFacts): number {
+  if (!(m.seconds >= MATCH_MASTERY.least)) return 0;
+  const minutes = Math.min(MATCH_MASTERY.minutes, m.seconds / 60), rate = m.mode === 'royale' ? MATCH_MASTERY.royalePerMinute : MATCH_MASTERY.perMinute;
+  return Math.max(1, Math.round(minutes * rate * MATCH_MASTERY[m.result]));
+}
+/** The most a match can pay (a win of `minutes` in the royale): the bound an import and a report are held to. */
+export const MATCH_XP_MOST = Math.ceil(MATCH_MASTERY.minutes * MATCH_MASTERY.royalePerMinute * MATCH_MASTERY.win);
+export interface MatchSettled { progress: RiftProgress; fighter: FighterId; xp: number; from: number; to: number }
+/** A match into the progress: its fighter's mastery, and nothing else of Arcade's (a new progress; the old untouched). */
+export function settleMatch(before: RiftProgress, m: MatchFacts): MatchSettled {
+  const xp = masteryXpForMatch(m), from = masteryOf(before.mastery[m.fighter]).level;
+  if (!xp) return { progress: before, fighter: m.fighter, xp: 0, from, to: from };
+  const progress: RiftProgress = { ...before, mastery: { ...before.mastery, [m.fighter]: (before.mastery[m.fighter] ?? 0) + xp } };
+  return { progress, fighter: m.fighter, xp, from, to: masteryOf(progress.mastery[m.fighter]).level };
+}
+const CAREER_MASTERY: Readonly<Partial<Record<CareerMode, MasteryMode>>> = { duel: 'duel', royale: 'royale', bots: 'royale', private: 'royale', 'last-stand': 'last-stand', 'bad-blood': 'bad-blood', 'rift-war': 'rift-war', 'goal-rush': 'goal-rush', 'sky-spike': 'sky-spike' };
+/** A career's match (game/social/career.ts) as mastery reads it: none for Arcade's runs, a match left before its end, or
+ *  one of a mode that never shipped. */
+export function careerMatchFacts(m: Pick<CareerMatch, 'mode' | 'fighter' | 'outcome' | 'seconds'>): MatchFacts | undefined {
+  const mode = CAREER_MASTERY[m.mode];
+  if (!mode || m.outcome === 'left') return undefined;
+  return { fighter: m.fighter, mode, seconds: m.seconds, result: m.outcome };
+}
+/** A room's completion (RoomRewards' report, src/game/economy/earn.ts) as mastery reads it: what the room saw. None for
+ *  Arcade (a run pays its mastery as a run) or a forged fighter's. */
+export function reportMatchFacts(r: Report): MatchFacts | undefined {
+  if (r.mode === 'survival' || typeof r.fighter !== 'string') return undefined;
+  const mode: MasteryMode | undefined = r.ball ?? (r.mode === 'duel' || r.mode === 'last-stand' || r.mode === 'bad-blood' || r.mode === 'rift-war' ? r.mode : r.mode === 'match' || r.mode === 'bots' || r.mode === 'private' ? 'royale' : undefined);
+  if (!mode || !MASTERY_MODES.includes(mode)) return undefined;
+  return { fighter: r.fighter as FighterId, mode, seconds: Number(r.seconds) || 0, result: r.place === 1 ? 'win' : 'loss' };
+}
 
 export interface Settled {
   progress: RiftProgress;

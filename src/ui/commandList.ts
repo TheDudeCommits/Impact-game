@@ -51,6 +51,9 @@ const steps = (list: readonly Step[], device: CommandDevice, family: PadFamily) 
 const row = (keys: string, name: string, tags: readonly string[], role?: string) =>
   `<li class="cmd-row${role ? ' cmd-ender' : ''}">${keys}<span class="cmd-name">${escape(name)}</span><span class="cmd-tags">${role ? `<b>${escape(role)}</b>` : ''}${tags.map(t => `<small>${escape(t)}</small>`).join('')}</span></li>`;
 
+/** The G in combos (game/moves.ts AREA_COMBO): the area row's word for it. */
+export const AREA_COMBO_TAG = 'Quick after a launch or wall splat: holds them for a follow-up';
+
 export function commandList(id: FighterId, device: CommandDevice, family: PadFamily) {
   const combos = hasCombos(id), string: string[] = [], enders: string[] = [], air: string[] = [], specials: string[] = [];
   for (let stage = 0; stage < RUSH_STAGES; stage++) {
@@ -72,8 +75,10 @@ export function commandList(id: FighterId, device: CommandDevice, family: PadFam
   else air.push(row(inputs(['jump', 'light'], device, family), (AIR_NORMAL_FIGHTERS.includes(id) ? airRushName(id, 0) : undefined) ?? rushMove(id, 0, false).name, [], 'Air string'));
   if (combos) { ender('airHeavy', air); ender('airSpecial', air); }
   for (const slot of ['heavy', 'special'] as const) { const move = moveFor(id, slot, false); specials.push(row(inputs([slot], device, family), move.name, traits(move))); }
+  // The G in combos (game/moves.ts AREA_COMBO): right after a launch or a wall splat the area move is a combo's quick
+  // finisher on the body, whose hit holds them for a follow-up - once a combo.
   const area = moveFor(id, 'area', false), strikes = strikeOffsets(area).length;
-  specials.push(row(inputs(['area'], device, family), area.name, ['Hold to aim, let go to cast', 'Most damage dead centre', ...(area.guardBreak ? ['Breaks guard'] : []), ...(strikes > 1 ? [`${strikes} hits`] : [])], 'Area'));
+  specials.push(row(inputs(['area'], device, family), area.name, ['Hold to aim, let go to cast', 'Most damage dead centre', AREA_COMBO_TAG, ...(area.guardBreak ? ['Breaks guard'] : []), ...(strikes > 1 ? [`${strikes} hits`] : [])], 'Area'));
   const ultimate = moveFor(id, 'ultimate', false);
   specials.push(row(inputs(['ultimate'], device, family), ultimate.name, [...traits(ultimate), `${ULTIMATE_COST}% meter`], 'Ultimate'));
   specials.push(row(inputs(['awaken'], device, family), titled(AWAKENINGS[id].name), ['Full awakening meter'], 'Awakening'));
@@ -91,7 +96,7 @@ export function commandList(id: FighterId, device: CommandDevice, family: PadFam
     if (combos) for (const key of ['lh', 'llh', 'lllh', 'llls', 'airHeavy', 'airSpecial'] as const) { const move = comboMove(id, key, true); if (move) own(inputs(COMBO_INPUTS[key], device, family), move, traits(move), COMBO_ROLES[key]); }
     for (const slot of ['heavy', 'special'] as const) { const move = moveFor(id, slot, true); own(inputs([slot], device, family), move, traits(move)); }
     const zone = moveFor(id, 'area', true), blow = moveFor(id, 'ultimate', true);
-    own(inputs(['area'], device, family), zone, ['Hold to aim, let go to cast', ...(zone.guardBreak ? ['Breaks guard'] : [])], 'Area');
+    own(inputs(['area'], device, family), zone, ['Hold to aim, let go to cast', AREA_COMBO_TAG, ...(zone.guardBreak ? ['Breaks guard'] : [])], 'Area');
     own(inputs(['ultimate'], device, family), blow, [...traits(blow), `${ULTIMATE_COST}% meter`], 'Ultimate');
   }
   return `<div class="command-list" data-command-fighter="${id}" aria-label="${escape(FIGHTERS[id].name)} command list">
@@ -99,7 +104,7 @@ export function commandList(id: FighterId, device: CommandDevice, family: PadFam
     ${combos ? section('ENDERS', enders, 'Finish a string early with Heavy or Special - on the beat, once its last hit lands, for a heavier finish.') : ''}
     ${section('TECHNIQUES', techniques, '→ is toward your opponent, ← away, ↕ sideways (the stick or the movement keys), pressed with nothing else running. Mix them into your strings: every kind of technique a combo uses adds STYLE, up to ×1.4. Bots learn a string you repeat.')}
     ${section('IN THE AIR', air, 'After a launch, one timed Light (or Jump + Light) chases them up.')}
-    ${section('SPECIAL MOVES', specials)}
+    ${section('SPECIAL MOVES', specials, 'Right after a launch or a wall splat, Area is the combo\'s quick finisher, centred on them: its hit holds them for one more string. Once a combo.')}
     ${form.length ? section(escape(titled(AWAKENINGS[id].name)).toUpperCase(), form, 'Awakened, he fights as another body: the same buttons, its own moves.') : ''}
     ${section('DEFENCE', GUARD_GUIDE.map((g, i) => row(i < 2 ? inputs(['guard'], device, family) : '<span class="cmd-input">-</span>', g.name, [g.how], i === 1 ? 'Skill' : undefined)),
       GUARD_GUIDE.map(g => `<b>${g.name}.</b> ${escape(g.line)}`).join(' '))}

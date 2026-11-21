@@ -5,6 +5,13 @@ import { catchUp, INPUT_HZ } from './catchUp';
  *  equal by tests/inputDrain.test.ts): what the queue rebuilds after a packet
  *  gap starves it is never drained away again. */
 export const QUEUE_TARGET = 3;
+/** on a clean link the queue is steered one command shallower - every online exchange
+ *  a tick (17 ms) sooner. Clean is the server's own word: its low-water mark has stood at QUEUE_TARGET or deeper (two
+ *  commands to spare at every tick) for CLEAN_AFTER seconds on end. One report under QUEUE_CLEAN (a tick with nothing
+ *  to spare, or the queue starved, which the room re-warms to BUFFER_TICKS by itself) hands the target back to
+ *  QUEUE_TARGET, and the clean target is not tried again for CLEAN_HOLD seconds. The client alone decides: the room
+ *  keeps its warm buffer, and a room or a client without it plays as before. */
+export const QUEUE_CLEAN = 2, CLEAN_AFTER = 10, CLEAN_HOLD = 60;
 /** A drain starts only once the low-water mark stands this far above target,
  *  and then runs until it is back at target: the hysteresis that keeps one
  *  jittery tick from switching it on and off. */
@@ -25,10 +32,12 @@ export const RATE_SLEW = .5;
 export const REPORT_STALE = .5;
 
 /** How much slower than real time to run for a reported low-water mark.
- *  Pure, for the tests. */
-export function drainFor(low: number, draining: boolean) {
-  const over = low - QUEUE_TARGET;
-  if (!(over >= (draining ? 1 : DRAIN_ENGAGE))) return 0;
+ *  Pure, for the tests. Toward the clean target (QUEUE_CLEAN) the one command
+ *  over it is drained at once: the queue standing at its warm buffer is the
+ *  clean link's evidence, not a jittery tick. */
+export function drainFor(low: number, draining: boolean, target = QUEUE_TARGET) {
+  const over = low - target;
+  if (!(over >= (draining || target < QUEUE_TARGET ? 1 : DRAIN_ENGAGE))) return 0;
   return Math.min(DRAIN_MAX, DRAIN_GENTLE + DRAIN_STEP * (over - 1));
 }
 
@@ -67,15 +76,30 @@ export class InputClock {
   private wanted = 0;
   /** `last` when that report arrived. */
   private heard = 0;
+  /** The depth steered to: QUEUE_TARGET, or QUEUE_CLEAN on a clean link. */
+  target = QUEUE_TARGET;
+  /** `last` when the reports began to stand clean (NaN: they do not), and until when the clean target is not tried. */
+  private cleanSince = NaN;
+  private heldUntil = 0;
 
-  reset() { this.backlog = 0; this.last = 0; this.rate = 1; this.wanted = 0; this.heard = 0; }
+  reset() { this.backlog = 0; this.last = 0; this.rate = 1; this.wanted = 0; this.heard = 0; this.target = QUEUE_TARGET; this.cleanSince = NaN; this.heldUntil = 0; }
 
   /** The server's low-water mark for this client's queue, off an owner
    *  snapshot. A snapshot without one (an older server) leaves the clock at
    *  real time. */
   report(queued: number | undefined) {
     if (typeof queued !== 'number' || !Number.isFinite(queued)) return;
-    this.wanted = drainFor(queued, this.wanted > 0);
+    // (`last` is this clock's own time: none before its first advance, and then no evidence is counted.)
+    const now = this.last;
+    if (queued < QUEUE_CLEAN) {
+      if (this.target === QUEUE_CLEAN) this.heldUntil = now + CLEAN_HOLD * 1000;
+      this.target = QUEUE_TARGET; this.cleanSince = NaN;
+    } else if (this.target === QUEUE_TARGET && now > 0) {
+      if (queued < QUEUE_TARGET) this.cleanSince = NaN;
+      else if (!(this.cleanSince <= now)) this.cleanSince = now;
+      else if (now - this.cleanSince >= CLEAN_AFTER * 1000 && now >= this.heldUntil) this.target = QUEUE_CLEAN;
+    }
+    this.wanted = drainFor(queued, this.wanted > 0, this.target);
     this.heard = this.last;
   }
 

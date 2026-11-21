@@ -190,6 +190,9 @@ export const VFX_OPTIONS:readonly (readonly [VfxLevel,string,string?])[]=default
  *  the effects down keeps them down: 0.85 and up Full, from 0.5 Reduced, under it Minimal. */
 export const vfxFromDensity=(density:number):VfxLevel=>density>=.85?'full':density>=.5?'reduced':'minimal';
 export interface Settings { /** The ball modes' COMMENTARY (audio/ballCaller.ts): the grandfather (default), the arena caller, or off. */ commentary?:'grandpa'|'arena'|'off';
+  /** ANNOUNCER: the announcer's calls - the Duel's (audio/duelCaller.ts) and every match's FIGHT!, VICTORY! and
+   *  FLAWLESS - on (absent: the same) or off. */
+  announcer?:boolean;
   /** The ball modes' camera options (render/ball/ballCamChoice.ts), each off until picked: SKY SPIKE CAMERA,
    *  'classic' (absent: the same) or the COURT-SIDE stand; GOAL RUSH CAMERA, 'classic' or the CLOSE lens. */
   spikeCam?:SpikeCamStyle; chaseCam?:ChaseCamStyle; superCam?:SuperCamStyle;
@@ -202,12 +205,20 @@ export interface Settings { /** The ball modes' COMMENTARY (audio/ballCaller.ts)
    *  GPU at boot and stepped down in a fight that cannot hold its frame rate. A save holding the old default 'high'
    *  without this is not a choice. */
   qualityChosen?:boolean;
+  /** ART STYLE (render/look/filmLook.ts): 'film', the default, the painted cel picture on a film print; 'modern' Impact's
+   *  look before it. Unset is 'film'. */
+  artStyle?:'film'|'modern';
   powerMode?:'auto'|'cool'|'full';
   animStyle:'twos'|'snap'|'classic';
   /** The animation default the save was written under (ANIM_VERSION). */
   animVersion?:number;
   /** How hard a controller rumbles, 0-1. */
   vibration:number;
+  /** TOUCH BUTTON SIZE and OPACITY, phones and tablets: the controls drawn 0.85-1.15 of their size (handheld.css --tc-u,
+   *  under the tablet's own 1.3) and standing 0.4-1 solid at rest (--tc-a; a press shows a button whole). main.ts
+   *  touchFeel. */
+  touchSize:number;
+  touchAlpha:number;
   hudSkin:HudSkin;
   hudVersion?:number;
   moveLayout:MoveLayout;
@@ -220,6 +231,8 @@ export const HUD_SKINS=['halo','inked'] as const;
 export type HudSkin=typeof HUD_SKINS[number];
 /** The HUD looks a menu offers (Settings.hudSkin), the default first. */
 export const HUD_SKIN_OPTIONS:readonly (readonly [HudSkin,string])[]=[['halo','Halo'],['inked','Inked']];
+/** The ART STYLE's choices (Settings.artStyle), the default first. */
+export const ART_STYLE_OPTIONS:readonly (readonly ['film'|'modern',string,string?])[]=[['film','Retro film','Recommended'],['modern','Modern']];
 /** The graphics quality's choices, for every menu that offers them: AUTO is the machine's own (qualityTier.ts). */
 export const QUALITY_OPTIONS:readonly (readonly ['auto'|Settings['quality'],string])[]=[['auto','AUTO'],['high','HIGH'],['medium','MEDIUM'],['low','LOW']];
 /** What a quality menu shows: AUTO until the player has chosen. */
@@ -232,18 +245,21 @@ export function chooseQuality(settings:Settings,value:string,machine?:Settings['
 }
 export function loadSettings():Settings {
   const vfx=defaultVfx();
-  const defaults:Settings={sensitivity:1,shake:.5,effects:VFX_DENSITY[vfx],vfx,volume:.7,sfxVolume:.85,voiceVolume:1,musicVolume:.75,musicEnabled:true,homeAnimations:true,audioMixVersion:3,quality:'high',powerMode:'auto',cameraMode:'dynamic',cameraStyle:'classic',cameraVersion:CAMERA_VERSION,cinematics:true,lockStyle:'glow',vibration:1,animStyle:'snap',animVersion:ANIM_VERSION,hudSkin:'halo',hudVersion:HUD_VERSION,moveLayout:'row',errorReports:true};
+  const defaults:Settings={touchSize:1,touchAlpha:1,sensitivity:1,shake:.5,effects:VFX_DENSITY[vfx],vfx,volume:.7,sfxVolume:.85,voiceVolume:1,musicVolume:.75,musicEnabled:true,homeAnimations:true,audioMixVersion:3,quality:'high',powerMode:'auto',cameraMode:'dynamic',cameraStyle:'classic',cameraVersion:CAMERA_VERSION,cinematics:true,lockStyle:'glow',vibration:1,animStyle:'snap',animVersion:ANIM_VERSION,hudSkin:'halo',hudVersion:HUD_VERSION,moveLayout:'row',errorReports:true};
   try {
     const saved=JSON.parse(localStorage.getItem('rift-settings')||'{}');
     if(!saved||typeof saved!=='object')return defaults;
     for(const key of ['shake','volume','sfxVolume','voiceVolume','musicVolume','vibration'] as const)if(Number.isFinite(saved[key]))defaults[key]=Math.max(0,Math.min(1,saved[key]));
     if(saved.audioMixVersion!==3&&Number.isFinite(saved.musicVolume)&&saved.musicVolume>0)defaults.musicVolume=Math.min(1,saved.musicVolume*2.5);
     if(Number.isFinite(saved.sensitivity))defaults.sensitivity=Math.max(.3,Math.min(2,saved.sensitivity));
+    if(Number.isFinite(saved.touchSize))defaults.touchSize=Math.max(.85,Math.min(1.15,saved.touchSize));
+    if(Number.isFinite(saved.touchAlpha))defaults.touchAlpha=Math.max(.4,Math.min(1,saved.touchAlpha));
     if(['high','medium','low'].includes(saved.quality))defaults.quality=saved.quality;
     defaults.qualityChosen=saved.qualityChosen===true;
     defaults.powerMode=['auto','cool','full'].includes(saved.powerMode)?saved.powerMode:'auto';
     if(typeof saved.musicEnabled==='boolean')defaults.musicEnabled=saved.musicEnabled;
     if(saved.commentary==='grandpa'||saved.commentary==='arena'||saved.commentary==='off')defaults.commentary=saved.commentary;
+    if(saved.announcer===false)defaults.announcer=false;
     // (Only a picked option is kept; anything else is the classic camera.)
     if(spikeCamOf(saved.spikeCam)!=='classic')defaults.spikeCam=spikeCamOf(saved.spikeCam);
     if(chaseCamOf(saved.chaseCam)!=='classic')defaults.chaseCam=chaseCamOf(saved.chaseCam);
@@ -261,6 +277,7 @@ export function loadSettings():Settings {
     if(olderCamera&&defaults.cameraStyle==='close')defaults.cameraStyle='classic';
     if(typeof saved.cinematics==='boolean')defaults.cinematics=saved.cinematics;
     if(saved.lockStyle==='glow'||saved.lockStyle==='brackets')defaults.lockStyle=saved.lockStyle;
+    if(saved.artStyle==='modern')defaults.artStyle='modern';
     // (A save from before ANIM_VERSION holding 'twos', the default of its day, is moved to Anime (smooth) once.)
     if((saved.animStyle==='twos'&&saved.animVersion===ANIM_VERSION)||saved.animStyle==='snap'||saved.animStyle==='classic')defaults.animStyle=saved.animStyle;
     // (A save from before HUD_VERSION holding 'inked', the default of its day, is moved to Halo once.)

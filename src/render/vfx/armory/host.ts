@@ -15,6 +15,8 @@ import type { Fighter } from '../../Fighter';
 import { effekseerLoaded } from './effekseer';
 import { skipHiddenChildren } from '../../hiddenMatrices';
 import { VFX } from '../../vfxLevel';
+import { LIGHT, lighterParticles, lighterPool, lighterShader, lighterVolume } from './lighter';
+import { sceneDrawingSize } from '../../look/sceneBuffer';
 import type { ArmoryContext, ArmoryFlashApi, ArmoryLightHandle, ArmoryLightsApi, ArmoryShakeApi } from './types';
 
 /**
@@ -78,18 +80,25 @@ function ensureNoise(shader: { vertexShader: string; fragmentShader: string }) {
   }
 }
 
-/** The fade, wrapped round a fragment shader's own main (whatever order its functions are in). */
-function lensFade(shader: { uniforms: Record<string, unknown>; fragmentShader: string }) {
+/** The fade, wrapped round a fragment shader's own main (whatever order its functions are in). (lighter.ts: a fragment
+ *  the fade takes wholly away is dropped before its own main is paid for - the same picture wherever the blending adds
+ *  or lays over, as nothing of a zero colour reaches the frame there; a material blended any other way is drawn as
+ *  before.) */
+function lensFade(this: THREE.Material, shader: { uniforms: Record<string, unknown>; fragmentShader: string }) {
   const src = shader.fragmentShader;
   if (!MAIN.test(src) || !(src.includes('gl_FragColor') || src.includes('_fragment>'))) return;
   shader.uniforms.armoryLens = LENS;
   shader.uniforms.armoryNear = frame.uCameraNear;
   shader.uniforms.armoryFar = frame.uCameraFar;
-  shader.fragmentShader = `uniform vec2 armoryLens;\nuniform float armoryNear;\nuniform float armoryFar;\n${src.replace(MAIN, 'void armoryLensMain()')}
+  const early = this?.blending === THREE.NormalBlending || this?.blending === THREE.AdditiveBlending;
+  if (early) shader.uniforms.armoryLightLens = LIGHT;
+  shader.fragmentShader = `uniform vec2 armoryLens;\nuniform float armoryNear;\nuniform float armoryFar;\n${early ? 'uniform float armoryLightLens;\n' : ''}${src.replace(MAIN, 'void armoryLensMain()')}
 void main() {
-  armoryLensMain();
   float armoryDepth = (armoryNear * armoryFar) / (armoryFar - gl_FragCoord.z * (armoryFar - armoryNear));
-  gl_FragColor *= smoothstep(armoryLens.x, armoryLens.y, armoryDepth);
+  float armoryLensFade = smoothstep(armoryLens.x, armoryLens.y, armoryDepth);
+  ${early ? 'if (armoryLightLens > 0.5 && armoryLensFade <= 0.0) discard;' : ''}
+  armoryLensMain();
+  gl_FragColor *= armoryLensFade;
 }
 `;
 }
@@ -103,6 +112,9 @@ function adaptNode(node: THREE.Object3D, adapted: WeakSet<object>, clock?: { val
   if (mask !== GAME_MASK && mask !== DISTORTION_MASK) node.layers.set(GAME_LAYER);
   const mesh = node as THREE.Mesh;
   if (!mesh.material) return;
+  // (A raymarched volume marches fewer steps while it fills the screen, and a volume or a pool that fills it is marched
+  // small and laid over: lighter.ts.)
+  if (mesh.isMesh) { lighterVolume(mesh); lighterPool(mesh); }
   for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
     if (adapted.has(material)) continue;
     adapted.add(material);
@@ -111,6 +123,12 @@ function adaptNode(node: THREE.Object3D, adapted: WeakSet<object>, clock?: { val
     // depth test, the ki lens, is the screen's own: none is faded.)
     if (material.transparent && material.depthTest !== false && !(material as THREE.RawShaderMaterial).isRawShaderMaterial) patchOnBeforeCompile(material, lensFade);
     if (!(material as THREE.RawShaderMaterial).isRawShaderMaterial && !(material as THREE.ShaderMaterial).isShaderMaterial) patchOnBeforeCompile(material, ensureNoise);
+    // (The kits the game's close camera makes heaviest - smoke-shaped particles, ground fields' marks - drawn lighter:
+    // lighter.ts. A kit's program is told apart by its own text; any other is left as it is.)
+    if ((material as THREE.ShaderMaterial).isShaderMaterial && !(material as THREE.RawShaderMaterial).isRawShaderMaterial) {
+      lighterParticles(mesh, material);
+      patchOnBeforeCompile(material, lighterShader);
+    }
     const uniforms = (material as THREE.ShaderMaterial).uniforms;
     if (uniforms && clock && delta) {
       if (uniforms.uTime === frame.uTime) uniforms.uTime = clock;
@@ -504,7 +522,7 @@ export class ArmoryHost implements EffectLayer {
     if (this.begun.size !== 0 && !this.begun.has(owner)) { this.begun.add(owner); return; }
     this.begun.clear(); this.begun.add(owner);
     this.frames++;
-    if (this.renderer) { this.renderer.getDrawingBufferSize(_s); if (_s.x > 0) frame.uResolution.value.set(_s.x, _s.y); }
+    if (this.renderer) { sceneDrawingSize(this.renderer, _s); if (_s.x > 0) frame.uResolution.value.set(_s.x, _s.y); }
     const camera = this.gameCamera as THREE.PerspectiveCamera | undefined;
     if (camera?.isPerspectiveCamera) { frame.uCameraNear.value = camera.near; frame.uCameraFar.value = camera.far; }
     frame.uShaderIntensity.value = settings.global.shaderIntensity;

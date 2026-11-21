@@ -1463,7 +1463,14 @@ function impactLayers(event: CombatEvent, awakened: boolean): CueLayer[] {
     : opened && index === 0 ? catchBlow(c)
     : opened && c.move.style !== 'melee' ? [{ cue: pick(FAMILY.energyHit, seed, index), gain: .46, rate: wobble(seed + index, .06) }]
     : c.move.style === 'melee' ? meleeImpact(c, index, final) : energyImpact(c);
-  return [...layers, ...awakenedImpact(c), ...familyHit(c, index, final, layers), ...signatureHit(c, final), ...sentUp(event, c)].map(layer => ({ ...layer, phase: 'impact' as const }));
+  return [...layers, ...awakenedImpact(c), ...familyHit(c, index, final, layers), ...signatureHit(c, final), ...sentUp(event, c), ...rewardLayer(event, c)].map(layer => ({ ...layer, phase: 'impact' as const }));
+}
+
+/** a COUNTER's and a PUNISH's blow (the hit's `counter`, `punish`: simulation.ts, held
+ *  REWARD_HITSTOP longer) rings sharper than the blow alone - a crack on its front and a snap just behind it, pitched up,
+ *  over the blow's own layers. */
+function rewardLayer(event: CombatEvent, c: Ctx): CueLayer[] {
+  return event.counter || event.punish ? [{ cue: 'crack', gain: .34, rate: 1.28 }, { cue: pick(FAMILY.snap, c.seed, 2), gain: .2, rate: 1.18, delay: .008 }] : [];
 }
 
 /** A blow that launches (the hit's `reaction`): the air the body takes with it as it goes up, over the blow itself. A

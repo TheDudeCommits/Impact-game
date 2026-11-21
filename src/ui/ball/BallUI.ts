@@ -14,6 +14,8 @@ import { BallBadge } from './BallBadge';
 import { MEDAL_MARK, recordDrill } from './drillMedals';
 import { refreshRanks, stampHtml } from './ranks';
 import { liftCover } from './BallCover';
+import { lastMastery } from '../../survival/progressStore';
+import { masteryShown, masteryStripHtml } from '../progress/masteryStrip';
 import { keptFor } from './coverShelf';
 import './ballUi.css';
 import './learnToPlay.css';
@@ -121,12 +123,12 @@ export class BallUI {
       if (key !== this.key) { this.key = key; this.root.dataset.mode = v.mode; this.root.innerHTML = this.drillCard(v); this.root.querySelector<HTMLButtonElement>('button[data-act="drill-again"]')?.focus({ preventScroll: true }); }
       return;
     }
-    const key = `${v.phase}|${v.code}|${v.fillBots}|${v.rumble}|${v.mutator}|${v.arena}|${v.level}|${v.ranked}|${v.seats.map(s => s.rank ? `${s.rank.rating}:${s.rank.delta}` : '').join(',')}|${v.hostId}|${v.startsAt ? Math.ceil(v.startsAt - (snapshot?.serverTime ?? 0)) : ''}|${v.seats.map(s => `${s.id}:${s.team}:${s.goals}:${s.kills}:${s.points}`).join(',')}|${v.score.red}-${v.score.blue}|${results ? keptFor(coverMatch(v)) : ''}`;
+    const key = `${v.phase}|${v.code}|${v.fillBots}|${v.rumble}|${v.mutator}|${v.arena}|${v.level}|${v.ranked}|${v.seats.map(s => s.rank ? `${s.rank.rating}:${s.rank.delta}` : '').join(',')}|${v.hostId}|${v.startsAt ? Math.ceil(v.startsAt - (snapshot?.serverTime ?? 0)) : ''}|${v.seats.map(s => `${s.id}:${s.team}:${s.goals}:${s.kills}:${s.points}`).join(',')}|${v.score.red}-${v.score.blue}|${results ? `${keptFor(coverMatch(v))}|${lastMastery()?.key ?? ''}` : ''}`;
     if (key === this.key) return;
     this.key = key;
     this.root.dataset.mode = v.mode;
     this.root.innerHTML = lobby ? this.lobby(v, selfId, snapshot?.serverTime ?? 0) : this.results(v, selfId);
-    if (results) { this.root.querySelector('.bu-pay-slot')?.replaceWith(this.pay); this.root.querySelector<HTMLButtonElement>('footer button.go:not(:disabled)')?.focus({ preventScroll: true }); }
+    if (results) { this.root.querySelector('.bu-pay-slot')?.replaceWith(this.pay); this.root.querySelector<HTMLButtonElement>('footer button.go:not(:disabled)')?.focus({ preventScroll: true }); if (this.root.querySelector('.mastery-strip')) masteryShown(lastMastery()); }
   }
   private seatRow(seat: BallSeat, selfId: string, stats: string, feats = false) {
     // The accolades earned (each once, with how many times: HAT TRICK ×2).
@@ -172,7 +174,7 @@ export class BallUI {
     }).join('');
     return `<div class="bu-card results ${won ? 'won' : 'lost'}"><header><small>${goal ? 'GOAL RUSH' : 'SKY SPIKE'}${v.rumble ? ' RUMBLE' : v.mutator ? ` ${MUTATOR_NAMES[v.mutator]}` : ''}${v.ranked ? ' · RANKED' : v.ranked === false ? ' · UNRANKED' : ''} · ${escape(v.reason.toUpperCase())}</small><h2>${head}</h2>
       <p class="bu-final"><span class="red">${v.score.red}</span> – <span class="blue">${v.score.blue}</span></p>${mvp ? `<p class="bu-mvp">MVP <b>${escape(nameOf(mvp))}</b> · ${mvp.points} PTS</p>` : ''}${rank}${kept}</header>
-      <div class="bu-teams results">${columns}</div>
+      ${masteryStripHtml(lastMastery())}<div class="bu-teams results">${columns}</div>
       <footer><div class="bu-pay-slot"></div>${again}<button data-act="leave">LEAVE</button></footer></div>`;
   }
   /** A drill's ten balls done: how many were right, the medal, the best kept, and AGAIN, NEXT DRILL, LEAVE. */
