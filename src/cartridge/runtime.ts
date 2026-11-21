@@ -286,10 +286,11 @@ class Runtime {
   private unwatchGpu?: () => void;
   private watchGpu(T: Three) {
     const proto = T.EventDispatcher.prototype as unknown as { addEventListener: (type: string, fn: unknown) => void; removeEventListener: (type: string, fn: unknown) => void };
-    const add = proto.addEventListener, remove = proto.removeEventListener, gpu = this.gpu, mine = () => !this.live || this.inside > 0;
+    const add = proto.addEventListener, remove = proto.removeEventListener, gpu = this.gpu, worlds = this.worlds, mine = () => !this.live || this.inside > 0;
     // three's renderer listens for 'dispose' on every texture, geometry, material, render target and instanced mesh it
-    // uploads: whatever gets one while the game is in (a live game: inside its own calls) is the game's.
-    proto.addEventListener = function (this: { dispose?: () => void }, type: string, fn: unknown) { if (type === 'dispose' && mine()) gpu.add(this); return add.call(this, type, fn); };
+    // uploads: whatever gets one while the game is in (a live game: inside its own calls) is the game's, but what the world
+    // handed it (keepWorlds)
+    proto.addEventListener = function (this: { dispose?: () => void }, type: string, fn: unknown) { if (type === 'dispose' && mine() && !worlds.has(this)) gpu.add(this); return add.call(this, type, fn); };
     proto.removeEventListener = function (this: { dispose?: () => void; _listeners?: Record<string, unknown[]> }, type: string, fn: unknown) {
       const out = remove.call(this, type, fn); if (type === 'dispose' && !this._listeners?.dispose?.length) gpu.delete(this); return out; };
     this.unwatchGpu = () => { proto.addEventListener = add; proto.removeEventListener = remove; };
@@ -298,8 +299,45 @@ class Runtime {
    *  program is to live on for the next body that draws the same way), so that what it holds can be collected. */
   forget(object: object) { this.gpu.delete(object as { dispose?: () => void }); }
   private releaseGpu() {
-    for (const object of [...this.gpu]) { try { object.dispose?.(); } catch { /* already gone */ } }
+    // (dude.work round 10) the world's copy of his model looked at again as the game leaves: what it holds now stays
+    for (const model of this.worldModels) this.markWorlds(model.scene);
+    for (const object of [...this.gpu]) { if (this.worlds.has(object)) continue; try { object.dispose?.(); } catch { /* already gone */ } }
     this.gpu.clear();
+  }
+
+  // ---- (dude.work round 10) what the world handed the game with the visitor's likeness: never the game's to let go -------
+  /** The world's own parsed copy of his model (LiveLikeness.gltf, its avatar's too) and what it holds: its geometries, its
+   *  materials, their pictures (maps and uniforms) and its skeletons' bone pictures. three takes them up in the game's calls
+   *  (his body drawn in the ring), and the world's rule is to clone it and never dispose it (its docs/LIVE.md, the visitor).
+   *  Let go with the game's, his body's geometry took with it the buffers the world's avatar draws with (it shares its
+   *  index and attributes: 4.9 MB put up again in the world's next frame); and a picture of his first put up in a call of
+   *  the game's (its banded copy refused) would take every game's copy of it (put up whole again at its next draw: his
+   *  4096 px one, 100 to 250 ms of a frame on an Air). Never noted (watchGpu), and passed over as the game leaves
+   *  (releaseGpu). The copies the game makes of his pictures (likeness.ts, bands.ts) are its own, and go. */
+  private readonly worlds = new WeakSet<object>();
+  private worldModels: { scene: THREE_NS.Object3D }[] = [];
+  /** The world's copy of his model is the world's, from when `gltf` (host.visitor.gltf) resolves. */
+  keepWorlds(gltf: (() => Promise<{ scene: THREE_NS.Object3D }>) | undefined) {
+    if (!gltf) return;
+    void Promise.resolve().then(gltf).then(model => { if (model?.scene && !this.worldModels.includes(model)) { this.worldModels.push(model); this.markWorlds(model.scene); } }, () => undefined);
+  }
+  private markWorlds(root: THREE_NS.Object3D) {
+    const worlds = this.worlds;
+    const picture = (v: unknown) => { if (v && typeof v === 'object' && (v as { isTexture?: boolean }).isTexture) worlds.add(v); };
+    const material = (m: THREE_NS.Material | null | undefined) => {
+      if (!m) return;
+      worlds.add(m);
+      for (const v of Object.values(m)) picture(v);
+      const uniforms = (m as unknown as { uniforms?: Record<string, { value?: unknown } | undefined> }).uniforms;
+      if (uniforms) for (const k of Object.keys(uniforms)) { const v = uniforms[k]?.value; if (Array.isArray(v)) v.forEach(picture); else picture(v); }
+    };
+    root.traverse(o => {
+      const mesh = o as THREE_NS.Mesh & { skeleton?: { boneTexture?: unknown } };
+      if (mesh.geometry) worlds.add(mesh.geometry);
+      for (const m of [mesh.material].flat() as (THREE_NS.Material | undefined)[]) material(m);
+      material(mesh.customDepthMaterial); material(mesh.customDistanceMaterial);
+      picture(mesh.skeleton?.boneTexture);
+    });
   }
 
   // ---- the world's renderer: what the game sets on the instance itself, put back ------------------------------------

@@ -34,6 +34,8 @@ export default function impactLive(): LiveGame & { probe(what: string): unknown 
       noCourt = { matrix: new T.Matrix4(), bounds: { minX: 0, maxX: 0, minZ: 0, maxZ: 0 } };
       progress(0.02);
       rt.begin(host, true);
+      // (dude.work round 10) the world's own copy of his model, never the game's to dispose: the sandbox leaves it out
+      rt.keepWorlds(host.visitor?.gltf);
       try {
         const root = rt.app!;
         const { boot } = await import('./livegame');
