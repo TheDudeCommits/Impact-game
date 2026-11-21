@@ -49,6 +49,7 @@ import { bodyCentre } from '../render/vfx/VfxKit';
 import { loadInkImpacts } from '../render/vfx/SparkField';
 import { setVfxLevel } from '../render/vfxLevel';
 import { setToonLook, setToonResolution } from '../render/look/toonShading';
+import { filmLookFor, setFilmLook } from '../render/look/filmLook';
 import { lookFor } from '../render/look/stageLooks';
 import { skinnedBoundsOn } from '../render/skinnedBounds';
 import { ViewKeys, movementMask } from '../render/viewKeys';
@@ -56,6 +57,7 @@ import { borrowedEvent, installTransplant, presentFighters, presentPlayers, pres
 import { installBorrowedHurts } from '../engine/client/borrowedHurts';
 import { installStyleMoves, stylesReady } from '../engine/client/styleMoves';
 import { CombatAudio } from '../audio/CombatAudio';
+import { DuelCaller, DuelWatch, announcerOn, duelCallerFiles } from '../audio/duelCaller';
 import { HOME_VOICES, HOME_VOICE_SECONDS } from '../audio/HomeVoice';
 import { UI_SFX } from '../originals/sfx';
 import { displayMove } from '../originals/apply';
@@ -194,6 +196,14 @@ const NO_SCREEN = undefined;
 export async function boot(host: LiveHost, root: HTMLElement, progress: (f: number) => void): Promise<Running> {
   registerRing();
   const settings: Settings = loadSettings();
+  // (dude.work round 9) The ART STYLE, as the game's boot applies it before anything is drawn (main.ts): the film look, the
+  // game's default since 20 Nov (render/look/filmLook.ts), unless the setting says the modern one. Of it the live duel takes
+  // what is the fighters' and the effects' own: the cels' line, shade and sheen and their boil (toonShading.ts), the stage's
+  // colour script in the light (stageLooks.ts), bodies drawn twelve times a second in neutral (filmDrawings.ts), effects on
+  // twos and the film's impacts. The painted set, the painted far view and the film stage's final pass are the stage's and
+  // the post's: the world's own place and film stand in for them. (Its class goes on the game's own page root: the
+  // cartridge pass points document.documentElement there.)
+  setFilmLook(filmLookFor(settings.artStyle));
   // The world's quality is the machine's (render/qualityTier.ts reads the host's): effects and shadows follow it.
   settings.quality = host.quality === 'high' ? 'high' : host.quality === 'mid' ? 'medium' : 'low';
   setVfxLevel(settings.vfx);
@@ -273,8 +283,23 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   cutIn.onShow = () => audio.ui(UI_SFX.cutIn, 0.4);
   // the FIGHT card at each bell, and the finisher's cinema bars (the visitor's alone, as host.ui is)
   const vsSplash = new VsSplash(hud.root), letterbox = new Letterbox(root);
+  // (dude.work round 9) the Duel's announcer, as main.ts has it since the game's own 20 Nov (audio/duelCaller.ts: the Rift's
+  // voice calling the round, FIGHT!, the K.O., first blood, counters, parries, guard breaks, long strings, a comeback and the
+  // result, rarely and never over a fighter's own line); the visitor's own duel alone, as the FIGHT! and VICTORY! it takes
+  // over were. Settings' ANNOUNCER off leaves the old FIGHT!, VICTORY! and FLAWLESS, as the game does.
+  const duelCaller = new DuelCaller({ announce: (url, gain, delay) => audio.announce(url, gain, delay), sampleSeconds: url => audio.sampleSeconds(url), preload: urls => audio.preload(urls), takeBack: (owner, url) => audio.takeBack(owner, url), fighterLines: () => audio.fighterLines() });
+  const duelWatch = new DuelWatch(duelCaller);
+  let duelCalled = '';
+  const duelCalls = (snapshot: GameSnapshot | null | undefined) => !!me && announcerOn() && !!snapshot?.duel && snapshot.players.length === 2;
+  /** Once a frame while the visitor plays: the Duel's moments as drawn, its files fetched as his set starts (main.ts
+   *  duelCommentary). */
+  function duelCommentary(snapshot: GameSnapshot) {
+    const set = duelCalls(snapshot) ? `${epoch}:${snapshot.duel!.set}` : '';
+    if (set !== duelCalled) { duelCalled = set; duelCaller.reset(); duelWatch.reset(); if (set) audio.preload(duelCallerFiles()); }
+    if (set) duelWatch.frame(snapshot);
+  }
   vsSplash.onBeat = beat => {
-    if (beat === 'fight') { audio.ui(UI_SFX.fight, .55, .05); audio.announce(FIGHT_LINE, .95, .08); audio.bell(); }
+    if (beat === 'fight') { audio.ui(UI_SFX.fight, .55, .05); if (duelCalls(ring?.snapshot)) duelCaller.say('fight', { delay: .08, queue: true }); else if (announcerOn()) audio.announce(FIGHT_LINE, .95, .08); audio.bell(); }
     else if (beat === 'fight-slam') audio.ui(UI_SFX.slam, .5);
   };
   manga.onKnockout = () => audio.ui(UI_SFX.ko, .5);
@@ -681,7 +706,10 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
   function arrived(snapshot: GameSnapshot) {
     const duelKey = snapshot.duel ? `${snapshot.duel.set}:${snapshot.duel.round}` : '';
     if (snapshot.duel?.phase === 'playing' && snapshot.status === 'active' && duelKey !== duelRoundKey) {
-      if (duelRoundKey) clearFighters();
+      // (dude.work round 9, as main.ts since the game's own 19 Nov: a Duel's next round keeps its two bodies - the room puts
+      // both back on their marks, alive, and a body takes a respawn's jump as one, its ragdoll handed back; built again for
+      // every round, the two were a 70 to 120 ms frame three seconds after every knockout. A new set builds afresh.)
+      if (duelRoundKey && duelRoundKey.split(':')[0] !== duelKey.split(':')[0]) clearFighters();
       duelRoundKey = duelKey;
       timeline.reset(); followCam.reset(); introFor = null; victoryFor = null;
       localClock = snapshot.serverTime;
@@ -768,7 +796,10 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
         if (me && !mine) audio.lossLine(.8 + (own ?? 0) + .4);
         if (me) followCam.victory(winner, 6);
         const self = snapshot.players.find(p => p.id === me);
-        if (mine && self && snapshot.duel?.phase === 'complete') audio.announce(self.damageTaken ? VICTORY_LINE : FLAWLESS_LINE, .95, .55);
+        if (mine && self && snapshot.duel?.phase === 'complete') {
+          if (duelCalls(snapshot)) duelCaller.say(self.damageTaken ? 'victory' : 'flawless', { delay: .55, queue: true });
+          else if (announcerOn()) audio.announce(self.damageTaken ? VICTORY_LINE : FLAWLESS_LINE, .95, .55);
+        }
       }
     }
     if (snapshot.status !== 'finished') victoryFor = null;
@@ -1092,6 +1123,7 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       if (!snapshot) return;
       const serverTime = presented!.time;
       applyCombatFrame(snapshot);
+      if (me) duelCommentary(snapshot);
       cinematics(snapshot);
       rounds(snapshot);
       cutIns(snapshot);
