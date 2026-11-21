@@ -16,7 +16,7 @@
  * the picture), no menus, nothing online.
  */
 import * as THREE from 'three';
-import type { LiveCourt, LiveEvent, LiveHost, LiveStatus, LiveView } from './live-contract';
+import type { LiveCourt, LiveEvent, LiveGame, LiveHost, LiveStatus, LiveView } from './live-contract';
 import { rt } from './runtime';
 import { RING, RING_BOUNDS, RingCollision, registerRing } from './liveRing';
 import { LiveHud } from './liveHud';
@@ -49,7 +49,7 @@ import { bodyCentre } from '../render/vfx/VfxKit';
 import { loadInkImpacts } from '../render/vfx/SparkField';
 import { setVfxLevel } from '../render/vfxLevel';
 import { setToonLook, setToonResolution } from '../render/look/toonShading';
-import { filmLookFor, setFilmLook } from '../render/look/filmLook';
+import { filmLookFor, filmOn, setFilmLook } from '../render/look/filmLook';
 import { lookFor } from '../render/look/stageLooks';
 import { skinnedBoundsOn } from '../render/skinnedBounds';
 import { ViewKeys, movementMask } from '../render/viewKeys';
@@ -124,6 +124,9 @@ export interface Running {
   notice(at: THREE.Vector3 | null): void;
   resize(w: number, h: number): void;
   status(): LiveStatus | null;
+  /** (dude.work round 9) The picture's grade as the game's site prints it (FILM_GRADE), for the world's film to lay on
+   *  while the visitor plays (LiveGame.grade); none in the modern ART STYLE. */
+  readonly grade: LiveGame['grade'];
   /** (dude.work round 9; tools only, never the world: its tools/doors.mjs --real) 'finish': while the visitor plays, their
    *  rival is knocked out as each round comes on, till the set is decided; 'state': where the set stands. */
   probe(what: string): unknown;
@@ -188,6 +191,23 @@ class RingSet {
   get decided() { return this.set.view.phase === 'complete'; }
   dispose() { this.sim.dispose(); }
 }
+
+/**
+ * (dude.work round 9) The film look's grade as the game's own site prints it (render/look/LookPost.ts: the film stage's
+ * print in linear after the tone curve, reelPrint: saturation 1.06, contrast 1.1 about 0.18, cool shade and warm light,
+ * the blacks lifted 0.035 toward a cool tint and the corners 0.45 darker; then the Gate Ring's stage grade on the encoded
+ * picture, sunfall-arena's turned to the film's dusk, and the anime finish's S-curve and warm highlights; its grain 0.07
+ * in the mids), for the world's film to lay on while the visitor plays (LiveGame.grade: the world's own grade steps back
+ * to a plain picture). Of the world's two formulas 'splash' comes closer: fitted by least squares to the site's whole
+ * grade over the live duel's pixels (every tenth of the brightness counted alike), 8.9 of 255 off on average against
+ * 9.2 for 'cinematic' (19.0 with no grade). Its numbers: the fit's, rounded; the grain the site's in the mids. Its
+ * blacks a little lifted and blue, its light warm (the gain), its vignette the print's. Without the split tone of the
+ * print the mids come out a little warmer than the site's (the 'splash' formula has none).
+ */
+const FILM_GRADE: NonNullable<LiveGame['grade']> = {
+  formula: 'splash', space: 'linear',
+  sat: 1.09, con: 1.15, lift: [0.007, 0.008, 0.016], gain: [1.2, 1.05, 0.8], vig: 0.47, grain: 0.06,
+};
 
 /** The renderer stays the world's: the effects' calls on the game's own frame (impact frames, speed lines, the
  *  technique grade) belong to its post stack, which the world's film pipeline stands in for here. */
@@ -1063,6 +1083,8 @@ export async function boot(host: LiveHost, root: HTMLElement, progress: (f: numb
       bounds: RING_BOUNDS,
     },
     get camera() { return camera; },
+    // (round 9) the film look's grade, as its site prints it (FILM_GRADE); the modern ART STYLE's is not declared
+    grade: filmOn() ? FILM_GRADE : undefined,
 
     update(dt: number, now: number) {
       judgeEar(performance.now());

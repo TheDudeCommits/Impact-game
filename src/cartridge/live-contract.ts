@@ -1,7 +1,8 @@
 // THE LIVE CONTRACT. Each of Dude's games plays live inside the world, at its own place: an ongoing match on the game's
 // own code, rules and bots, standing in the world and drawn through the world's camera like everything else. A visitor
 // who walks in takes over one of its players. From that moment the game's own camera, controls, HUD and sound carry
-// them, until they leave (Esc, the Leave button, or the game's own quit), and the world takes them back where they are.
+// them, until they leave (Esc, the Leave button, or the game's own quit) or their match ends (round 9: LiveEvent 'end'),
+// and the world takes them back where they are. Enter takes them on to the game's own site (round 9, src/games/portal.ts).
 // No doors, no menus, no loading screens, nothing to click. docs/LIVE.md has the rules; every game port codes against
 // this file (a copy sits in each game's src/cartridge/live-contract.ts). Change it only with the lead's agreement.
 import type * as THREE from 'three';
@@ -30,7 +31,8 @@ export interface LiveHost {
   readonly touch: boolean;
   /** Is the visitor playing (between join() and leave())? */
   readonly playing: boolean;
-  /** The game's own quit: the visitor wants out. The world calls leave() and takes them back. */
+  /** The game's own quit: the visitor wants out. The world calls leave() and takes them back. (round 9: the end of the
+   *  visitor's match is not a quit: emit 'end', and the world takes them out after the game's own result moment.) */
   exit(): void;
   /** A small JSON-safe store for the game's settings (localStorage under `dw.game.<id>.<key>`). */
   save(key: string, value: unknown): void;
@@ -57,19 +59,34 @@ export interface LiveHost {
 /**
  * (round 8, 2026-11-20) A moment of the match the world answers (LiveHost.emit). JSON-safe; every field but `kind` is
  * optional. Emit each one once, when it happens (not every frame while it shows).
+ *
+ * (round 9, 2026-11-21) THE END OF THE VISITOR'S MATCH. Dude: "When a fight/match in any of the games ends, it should
+ * finish and the visitors come out of the game. They can re-enter if they want." An 'end' while the visitor plays is
+ * the end of their match: the world lets the game's own result moment play for `hold` seconds (its K.O. and victory
+ * pose, the final buzzer and the score, the finish line), then takes them out (the leave, as Esc does: leave() is
+ * called) and stands them just off the court, where "E Play again · Enter Full game" waits. Emit it once, the moment the
+ * match is decided, with `side` the winner and `you` whether the visitor's side won (true) or lost (false); leave `you`
+ * out only when nobody wins (a draw, a shift worked to its end). An 'end' within 3 s of the join is taken for the end of
+ * the match they walked in on (a buzzer at the very moment they stepped on) and changes nothing. Never call exit() for
+ * it, and put no buttons on the result moment (Rematch, Main menu): the world's prompt is the way back in.
  */
 export interface LiveEvent {
   /** 'score': a point, a basket, a goal, the lead taken in a race. 'big': a big play that isn't a score (a block, a parry,
    *  a long combo, a near miss, an ultimate). 'miss': an airball, a whiff, a shot off the post (the crowd groans).
    *  'knockout': someone down (a K.O., a ship sunk, a pod wrecked, a death). 'round': a round, a half or a lap ended.
-   *  'boss': a boss came on or went down. 'start': a match started. 'end': a match ended (`side` won). */
+   *  'boss': a boss came on or went down. 'start': a match started. 'end': a match ended (`side` won); while the visitor
+   *  plays, the end of their match (round 9: see above). */
   kind: 'score' | 'big' | 'miss' | 'knockout' | 'round' | 'boss' | 'start' | 'end';
-  /** The side it was for (0 or 1, in the order of status().sides), when it has one. */
+  /** The side it was for (0 or 1, in the order of status().sides), when it has one. On 'end': the side that won. */
   side?: 0 | 1;
   /** How big a moment, 0..1: a free throw 0.3, a dunk 0.8, a knockout or match point 1 (default 0.5). */
   weight?: number;
-  /** The visitor's own player did it. */
+  /** The visitor's own player did it. On 'end' (round 9): the visitor's side won (true) or lost (false); left out when
+   *  the visitor isn't playing or nobody won. Never "the visitor is playing" (a lost voyage would read as won). */
   you?: boolean;
+  /** (round 9) 'end' only: the seconds the game's own result moment needs before the world takes the visitor out (default
+   *  4, at most 12). Its camera, HUD and sound stay the game's meanwhile, and the visitor's keys still reach it. */
+  hold?: number;
   /** Where it happened, court space (the crowd turns toward it; a burst goes up there). Default: the court's centre. */
   at?: { x: number; y: number; z: number };
   /** A word or two for logs and captions: "dunk", "goal", "K.O.", "lap 3". */
@@ -236,11 +253,16 @@ export interface LiveGame {
   readonly court: LiveCourt;
   /** The visitor walked onto the court at `at` (court space), facing `yaw` (court space, 0 = +z): hand them a player.
    *  From now the game reads its own controls for that player, its HUD shows, its camera follows them. Return false
-   *  when it can't right now (a replay, a cut scene): the world asks again next frame. */
+   *  when it can't right now (a replay, a cut scene): the world asks again next frame.
+   *  (round 9) Start a fresh match for them: the game's own start (its round intro, tip-off, kick-off, countdown), every
+   *  side whole and the score at nought, so they play a whole match to its 'end' (LiveEvent). The bots' match in progress
+   *  is let go. A game that can't hands over the match in progress and says so (docs/LIVE.md, its row in "The end of the
+   *  match"). The world owns Escape (leave) and Enter (the full game) while a game is played: bind neither in play. */
   join(at: THREE.Vector3, yaw: number): boolean;
   /** The game's own camera while the visitor plays (scene space). The world films everything through it. */
   readonly camera: THREE.PerspectiveCamera;
-  /** The visitor left: the bots take that player back. Returns where the player stands and faces (court space). */
+  /** The visitor left: the bots take that player back. Returns where the player stands and faces (court space). (round 9)
+   *  Also called once the visitor's match has ended and its `hold` has passed, and as Enter takes them to the full game. */
   leave(): { at: THREE.Vector3; yaw: number };
   /** Where the visitor's player is now (court space; null when nobody plays): the world lights them up as they turn into it. */
   you?(): THREE.Vector3 | null;
@@ -271,6 +293,55 @@ export interface LiveGame {
     /** Draw the game's picture into `target` (the world cleared it). Put back whatever renderer state it changes. */
     draw(target: THREE.WebGLRenderTarget): void;
   };
+  /**
+   * (round 9, lead) The game's own colour grade, as its site applies it in its post stack (which never runs in the world):
+   * while the visitor plays it, the world's film steps back to a plain picture (no grade, no ink of its own) and lays
+   * this grade on instead, so the game reads as its site does. Hoop It's and Foot It's Splash look: sat 1.18, con 1.1,
+   * lift (0.015, 0.01, 0), gain (1.03, 1, 0.95), vignette 0.28, grain 0.035. All optional: a missing value is neutral
+   * (sat 1, con 1, lift 0, gain 1, vig 0, grain 0). Read at the join. (The film's use of it lands with the heat track's
+   * src/look/pipeline.ts; until then it is declared only.)
+   * The world lays it on as Hoop It's renderer does (render/renderer.ts, a post effect), in this order, then the vignette
+   * and the grain:
+   *   c = max(mix(luma709(c), c, sat), 0);   c = max((c - 0.2) * con + 0.2, 0);   c = c * gain + lift * (1 - c)
+   * in the `space` the game grades in: 'linear' (before the encode: Hoop It, Foot It; the default) or 'display' (after its
+   * tone map: the Cruise's colour script).
+   */
+  grade?: {
+    /** saturation about Rec. 709 luma, 1 plain */ sat?: number;
+    /** contrast about 0.2, 1 plain */ con?: number;
+    /** lifted toward, scaled by (1 - c) */ lift?: readonly [number, number, number];
+    /** each channel multiplied */ gain?: readonly [number, number, number];
+    /** a vignette's darkness (postprocessing's VignetteEffect, offset 0.32), 0 none */ vig?: number;
+    /** film grain strength, 0 none */ grain?: number;
+    /** where the game grades: 'linear' (default) or 'display' */ space?: 'linear' | 'display';
+    /**
+     * (round 9, lead) Whose formula: 'splash' (the default: Hoop It's, above) or 'cinematic' (Thrustline's
+     * src/render/post/cinematicShaders.ts, display space after exposure, its tone map and the sRGB encode):
+     *   c = pow(max(c * gain + lift, 0), 1 / gamma)          (lift added, not scaled)
+     *   c = mix(luma709(c), c, sat);   c = (c - 0.5) * con + 0.5     (contrast about 0.5)
+     *   c += (shadow - 0.5) * (1 - smoothstep(0, .55, luma)) * amount + (highlight - 0.5) * smoothstep(.45, 1, luma) * amount
+     *   v = smoothstep(.35, 1.15, length((uv - .5) * vec2(aspect, 1)) * 1.12);   c = mix(c, c * vigColor, v * vig)
+     *   c += (hash - .5) * grain;   clamp
+     */
+    formula?: 'splash' | 'cinematic';
+    // (round 9, lead) the rest of a cinematic grade (Thrustline's CinematicLook SUNSCAR: exposure 1.06, gamma
+    // [1.02, 1, 0.97], split 0.28 with shadow [0.46, 0.43, 0.60] and highlight [0.64, 0.53, 0.40], a vignette tinted
+    // [0.36, 0.24, 0.42], bloom 0.62 over 0.92). Applied first (exposure), and after the gain (gamma, then the split
+    // tone, then the vignette's colour); bloom sets the film's own bloom while it is played. All optional, neutral if left out.
+    /** exposure multiplier, 1 plain */ exposure?: number;
+    /** per-channel gamma (c = pow(c, 1 / gamma)), 1 plain */ gamma?: readonly [number, number, number];
+    /** split toning: shadows toward `shadow`, highlights toward `highlight`, by `amount` */
+    split?: { amount: number; shadow: readonly [number, number, number]; highlight: readonly [number, number, number] };
+    /** the vignette's colour (black if left out) */ vigColor?: readonly [number, number, number];
+    /** the film's bloom while it is played: strength and threshold */ bloom?: { strength: number; threshold: number };
+  };
+  /**
+   * (round 9, lead) The game's lens response this frame, which its own post chain draws on its site (Thrustline's
+   * GameApp.updateLens: a speed blur, chromatic aberration, a flash on a boost or an impact): asked every frame while the
+   * visitor plays it, and laid on by the film. Each 0..1; null or absent: none. Optional. (The film's use of it lands
+   * after the heat track's pipeline; until then it is declared only.)
+   */
+  lens?(): { blur: number; chroma: number; flash: number } | null;
 }
 
 /** What a live module (`live.js`) exports. */

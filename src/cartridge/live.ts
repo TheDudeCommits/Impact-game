@@ -26,6 +26,8 @@ export default function impactLive(): LiveGame & { probe(what: string): unknown 
   return {
     get court() { return game?.court ?? noCourt!; },
     get camera() { return game?.camera ?? idleCam!; },
+    /** (dude.work round 9) The film look's grade as the site prints it (livegame.ts FILM_GRADE), read at the join. */
+    get grade() { return game?.grade; },
     async mount(host: LiveHost, progress) {
       T = host.THREE;
       idleCam = new T.PerspectiveCamera();
